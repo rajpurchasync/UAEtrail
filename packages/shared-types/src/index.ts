@@ -9,7 +9,7 @@ export type TenantType = 'company' | 'guide_owned';
 export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
 
 export type ActivityType = 'hiking' | 'camping';
-export type LocationStatus = 'active' | 'inactive';
+export type LocationStatus = 'draft' | 'active' | 'inactive';
 export type EventStatus = 'draft' | 'published' | 'cancelled' | 'suspended';
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
@@ -41,6 +41,13 @@ export interface LocationDTO {
   images: string[];
   featured: boolean;
   status: LocationStatus;
+  distance?: number;
+  duration?: number;
+  elevation?: number;
+  campingType?: 'self-guided' | 'operator-led';
+  latitude?: number | null;
+  longitude?: number | null;
+  highlights?: string[];
 }
 
 export interface EventDTO {

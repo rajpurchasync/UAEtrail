@@ -8,3 +8,4 @@ export { FilterPanel } from './FilterPanel';
 export { ShareButton } from './ShareButton';
 export { Breadcrumb } from './Breadcrumb';
 export { TenantSwitcher } from './TenantSwitcher';
+export { MapPinPicker } from './MapPinPicker';

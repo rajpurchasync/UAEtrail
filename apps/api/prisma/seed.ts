@@ -161,11 +161,17 @@ async function main() {
       region: 'RAK',
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.HARD,
-      description: 'A demanding mountain route with panoramic views.',
+      description: 'A demanding mountain route with panoramic views of the Hajar Mountains. The trail traverses rugged terrain with steep ascents and descents, rewarding hikers with breathtaking vistas from the highest peak in the UAE.',
       season: ['winter', 'year-round'],
       childFriendly: false,
       images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'],
-      featured: true
+      featured: true,
+      distance: 12.5,
+      duration: 6,
+      elevation: 1934,
+      latitude: 25.9545,
+      longitude: 56.2730,
+      highlights: ['Summit views', 'Rock formations', 'Wildlife spotting', 'Via Ferrata option']
     },
     {
       id: 'wadi-shawka-loop',
@@ -173,24 +179,34 @@ async function main() {
       region: 'RAK',
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.MODERATE,
-      description: 'Scenic wadi route suitable for groups.',
+      description: 'Scenic wadi route suitable for groups with beautiful pools and rock formations. The trail follows the seasonal riverbed through dramatic canyon walls.',
       season: ['winter', 'year-round'],
       childFriendly: true,
       images: ['https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=800'],
-      featured: true
+      featured: true,
+      distance: 8,
+      duration: 4,
+      elevation: 450,
+      latitude: 25.3400,
+      longitude: 56.1200,
+      highlights: ['Natural pools', 'Canyon views', 'Family friendly', 'Dam viewpoint']
     },
     {
       id: 'fossil-rock-desert-camp',
       name: 'Fossil Rock Desert Camp',
       region: 'Sharjah',
       activityType: ActivityType.CAMPING,
-      description: 'Popular desert camping location for group overnights.',
+      description: 'Popular desert camping location for group overnights near the iconic Fossil Rock formation. Perfect for stargazing and exploring the surrounding desert landscape.',
       season: ['winter'],
       childFriendly: true,
       maxGroupSize: 20,
       accessibility: Accessibility.REMOTE,
       images: ['https://images.unsplash.com/photo-1520904549193-5ab44c10b0d8?w=800'],
-      featured: true
+      featured: true,
+      campingType: 'operator-led',
+      latitude: 25.2200,
+      longitude: 55.8500,
+      highlights: ['Stargazing', 'Fossil hunting', 'Desert sunrise', 'BBQ area']
     }
   ];
 

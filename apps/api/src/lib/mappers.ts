@@ -23,8 +23,8 @@ export const toSharedRequestStatus = (status: RequestStatus): SharedRequestStatu
 const mapActivity = (activityType: ActivityType): 'hiking' | 'camping' =>
   enumMap<'hiking' | 'camping'>(activityType);
 
-const mapLocationStatus = (status: LocationStatus): 'active' | 'inactive' =>
-  enumMap<'active' | 'inactive'>(status);
+const mapLocationStatus = (status: LocationStatus): 'draft' | 'active' | 'inactive' =>
+  enumMap<'draft' | 'active' | 'inactive'>(status);
 
 const mapEventStatus = (status: EventStatus): 'draft' | 'published' | 'cancelled' | 'suspended' =>
   enumMap<'draft' | 'published' | 'cancelled' | 'suspended'>(status);
@@ -44,7 +44,14 @@ export const toLocationDto = (location: Location): LocationDTO => ({
     : undefined,
   images: location.images,
   featured: location.featured,
-  status: mapLocationStatus(location.status)
+  status: mapLocationStatus(location.status),
+  distance: location.distance ?? undefined,
+  duration: location.duration ?? undefined,
+  elevation: location.elevation ?? undefined,
+  campingType: (location.campingType as 'self-guided' | 'operator-led') ?? undefined,
+  latitude: location.latitude,
+  longitude: location.longitude,
+  highlights: location.highlights
 });
 
 export const toEventDto = ({

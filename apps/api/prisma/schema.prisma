@@ -43,6 +43,7 @@ enum ActivityType {
 }
 
 enum LocationStatus {
+  DRAFT
   ACTIVE
   INACTIVE
 }
@@ -193,6 +194,13 @@ model Location {
   images        String[]
   featured      Boolean        @default(false)
   status        LocationStatus @default(ACTIVE)
+  distance      Float?
+  duration      Float?
+  elevation     Int?
+  campingType   String?
+  latitude      Float?
+  longitude     Float?
+  highlights    String[]
   submittedById String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

@@ -35,7 +35,14 @@ const locationCreateSchema = z.object({
   accessibility: z.enum(['car-accessible', 'remote']).optional(),
   images: z.array(z.string().url()).default([]),
   featured: z.boolean().default(false),
-  status: z.enum(['active', 'inactive']).default('active')
+  status: z.enum(['draft', 'active', 'inactive']).default('active'),
+  distance: z.number().positive().optional(),
+  duration: z.number().positive().optional(),
+  elevation: z.number().int().nonnegative().optional(),
+  campingType: z.enum(['self-guided', 'operator-led']).optional(),
+  latitude: z.number().min(-90).max(90).optional().nullable(),
+  longitude: z.number().min(-180).max(180).optional().nullable(),
+  highlights: z.array(z.string()).default([])
 });
 
 const locationPatchSchema = locationCreateSchema.partial();
@@ -78,8 +85,9 @@ const toPrismaAccessibility = (
   return accessibility === 'car-accessible' ? 'CAR_ACCESSIBLE' : 'REMOTE';
 };
 
-const toPrismaLocationStatus = (status?: 'active' | 'inactive'): LocationStatus | undefined => {
+const toPrismaLocationStatus = (status?: 'draft' | 'active' | 'inactive'): LocationStatus | undefined => {
   if (!status) return undefined;
+  if (status === 'draft') return 'DRAFT';
   return status === 'active' ? 'ACTIVE' : 'INACTIVE';
 };
 
@@ -112,7 +120,14 @@ adminRouter.post('/locations', validate({ body: locationCreateSchema }), async (
         accessibility: toPrismaAccessibility(body.accessibility),
         images: body.images,
         featured: body.featured,
-        status: toPrismaLocationStatus(body.status) ?? LocationStatus.ACTIVE
+        status: toPrismaLocationStatus(body.status) ?? LocationStatus.ACTIVE,
+        distance: body.distance,
+        duration: body.duration,
+        elevation: body.elevation,
+        campingType: body.campingType,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        highlights: body.highlights ?? []
       }
     });
     await createAuditLog({
@@ -146,7 +161,14 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
         accessibility: toPrismaAccessibility(body.accessibility),
         images: body.images,
         featured: body.featured,
-        status: toPrismaLocationStatus(body.status)
+        status: toPrismaLocationStatus(body.status),
+        distance: body.distance,
+        duration: body.duration,
+        elevation: body.elevation,
+        campingType: body.campingType,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        highlights: body.highlights
       }
     });
 
