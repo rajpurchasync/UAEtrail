@@ -58,10 +58,10 @@ const mapLocationToCamp = (location: LocationDTO): CampingSpot => ({
 });
 
 export const featureFlags = {
-  useApiHome: import.meta.env.VITE_USE_API_HOME === 'true',
-  useApiDiscovery: import.meta.env.VITE_USE_API_DISCOVERY === 'true',
-  useApiCalendar: import.meta.env.VITE_USE_API_CALENDAR === 'true',
-  useApiTripDetail: import.meta.env.VITE_USE_API_TRIP_DETAIL === 'true'
+  useApiHome: true,
+  useApiDiscovery: true,
+  useApiCalendar: true,
+  useApiTripDetail: true
 };
 
 export const fetchPublicMappedData = async (): Promise<{
