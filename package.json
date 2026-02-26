@@ -1,0 +1,49 @@
+{
+  "name": "uaetrail",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "dev:api": "npm --workspace @uaetrail/api run dev",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
+    "build": "vite build",
+    "build:api": "npm --workspace @uaetrail/api run build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "typecheck:api": "npm --workspace @uaetrail/api run typecheck",
+    "prisma:generate": "npm --workspace @uaetrail/api run prisma:generate",
+    "prisma:migrate": "npm --workspace @uaetrail/api run prisma:migrate",
+    "prisma:seed": "npm --workspace @uaetrail/api run prisma:seed"
+  },
+  "dependencies": {
+    "@uaetrail/shared-types": "*",
+    "lucide-react": "^0.344.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.12.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.18",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.9.1",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.11",
+    "globals": "^15.9.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.3.0",
+    "vite": "^5.4.2"
+  }
+}
