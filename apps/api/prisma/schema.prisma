@@ -84,6 +84,12 @@ enum NotificationType {
   EVENT
 }
 
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
 model User {
   id                    String                   @id @default(uuid())
   email                 String                   @unique
@@ -110,6 +116,10 @@ model User {
   reviewedApplications  OrganizerApplication[]   @relation("ApplicationReviewer")
   reviewedRequests      EventRequest[]           @relation("RequestReviewer")
   reviewedByParticipants EventParticipant[]      @relation("ParticipantReviewer")
+  sentMessages           ChatMessage[]            @relation("SentMessages")
+  receivedMessages       ChatMessage[]            @relation("ReceivedMessages")
+  merchantProfile        MerchantProfile?
+  submittedLocations     Location[]               @relation("SubmittedLocations")
 }
 
 model Profile {
@@ -183,9 +193,11 @@ model Location {
   images        String[]
   featured      Boolean        @default(false)
   status        LocationStatus @default(ACTIVE)
+  submittedById String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   events        Event[]
+  submittedBy   User?          @relation("SubmittedLocations", fields: [submittedById], references: [id])
 }
 
 model Event {
@@ -213,6 +225,7 @@ model Event {
   guide        User?       @relation("EventGuide", fields: [guideId], references: [id])
   requests     EventRequest[]
   participants EventParticipant[]
+  chatMessages ChatMessage[]
 }
 
 model EventRequest {
@@ -240,6 +253,7 @@ model EventParticipant {
   userId       String
   requestId    String   @unique
   approvedById String
+  checkedInAt  DateTime?
   createdAt    DateTime @default(now())
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -321,4 +335,50 @@ model PasswordResetToken {
   usedAt    DateTime?
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChatMessage {
+  id         String    @id @default(uuid())
+  senderId   String
+  receiverId String
+  eventId    String?
+  content    String
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  sender     User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User      @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  event      Event?    @relation(fields: [eventId], references: [id])
+
+  @@index([senderId, receiverId])
+  @@index([receiverId, readAt])
+}
+
+model MerchantProfile {
+  id           String    @id @default(uuid())
+  userId       String    @unique
+  shopName     String
+  description  String?
+  logo         String?
+  contactEmail String?
+  contactPhone String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products     Product[]
+}
+
+model Product {
+  id              String          @id @default(uuid())
+  merchantId      String
+  name            String
+  description     String?
+  images          String[]
+  priceAed        Int
+  discountPercent Int?
+  packagingInfo   String?
+  category        String
+  status          ProductStatus   @default(DRAFT)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  merchant        MerchantProfile @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 }

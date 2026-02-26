@@ -6,6 +6,7 @@ const userLinks = [
   { to: '/dashboard/overview', label: 'Overview' },
   { to: '/dashboard/requests', label: 'Join Requests' },
   { to: '/dashboard/trips', label: 'My Trips' },
+  { to: '/dashboard/messages', label: 'Messages' },
   { to: '/dashboard/profile', label: 'Profile' }
 ];
 

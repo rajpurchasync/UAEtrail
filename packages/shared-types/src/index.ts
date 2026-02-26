@@ -98,3 +98,88 @@ export interface AuthResponse {
   user: AuthUser;
   tokens: AuthTokens;
 }
+
+// ─── Chat DTOs ──────────────────────────────────────────────────────────────
+
+export interface ChatConversationDTO {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
+}
+
+export interface ChatMessageDTO {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  eventId?: string;
+  readAt?: string;
+  createdAt: string;
+}
+
+// ─── Shop DTOs ──────────────────────────────────────────────────────────────
+
+export type ProductStatusType = 'draft' | 'active' | 'inactive';
+
+export interface ProductDTO {
+  id: string;
+  name: string;
+  description?: string;
+  images: string[];
+  priceAed: number;
+  discountPercent?: number;
+  packagingInfo?: string;
+  category: string;
+  status: ProductStatusType;
+  merchantId: string;
+  merchantName: string;
+}
+
+export interface MerchantProfileDTO {
+  id: string;
+  shopName: string;
+  description?: string;
+  logo?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
+// ─── Admin DTOs ─────────────────────────────────────────────────────────────
+
+export type UserStatusType = 'active' | 'suspended';
+
+export interface UserListDTO {
+  id: string;
+  email: string;
+  role: UserRole;
+  status: UserStatusType;
+  displayName?: string;
+  createdAt: string;
+}
+
+export interface TenantListDTO {
+  id: string;
+  name: string;
+  slug: string;
+  type: TenantType;
+  status: 'pending' | 'active' | 'suspended';
+  ownerName: string;
+  memberCount: number;
+  eventCount: number;
+}
+
+// ─── Participant DTO ────────────────────────────────────────────────────────
+
+export interface ParticipantDTO {
+  id: string;
+  userId: string;
+  displayName: string;
+  email: string;
+  phone?: string;
+  avatarUrl?: string;
+  checkedInAt?: string;
+  joinedAt: string;
+}

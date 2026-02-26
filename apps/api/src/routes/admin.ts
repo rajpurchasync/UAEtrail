@@ -9,7 +9,8 @@ import {
   RequestStatus,
   TenantStatus,
   TenantType,
-  UserRole
+  UserRole,
+  UserStatus
 } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
@@ -332,11 +333,15 @@ adminRouter.patch(
 
 adminRouter.get('/metrics', async (_req, res, next) => {
   try {
-    const [tenantCount, eventCount, pendingApplications, pendingRequests] = await Promise.all([
+    const [tenantCount, eventCount, pendingApplications, pendingRequests, totalUsers, activeUsers, totalLocations, totalParticipants] = await Promise.all([
       prisma.tenant.count({ where: { status: TenantStatus.ACTIVE } }),
       prisma.event.count(),
       prisma.organizerApplication.count({ where: { status: OrganizerApplicationStatus.PENDING } }),
-      prisma.eventRequest.count({ where: { status: RequestStatus.PENDING } })
+      prisma.eventRequest.count({ where: { status: RequestStatus.PENDING } }),
+      prisma.user.count(),
+      prisma.user.count({ where: { status: UserStatus.ACTIVE } }),
+      prisma.location.count(),
+      prisma.eventParticipant.count()
     ]);
 
     res.json({
@@ -344,9 +349,283 @@ adminRouter.get('/metrics', async (_req, res, next) => {
         tenants: tenantCount,
         events: eventCount,
         pendingApplications,
-        pendingRequests
+        pendingRequests,
+        totalUsers,
+        activeUsers,
+        totalLocations,
+        totalParticipants
       }
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── User Management ────────────────────────────────────────────────────────
+
+const userListQuerySchema = z.object({
+  role: z.string().optional(),
+  status: z.string().optional(),
+  search: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).default(20)
+});
+
+adminRouter.get('/users', validate({ query: userListQuerySchema }), async (req, res, next) => {
+  try {
+    const { role, status, search, page, pageSize } = req.query as unknown as z.infer<typeof userListQuerySchema>;
+
+    const where: Record<string, unknown> = {};
+    if (role) where.role = role.toUpperCase() as UserRole;
+    if (status) where.status = status.toUpperCase() as UserStatus;
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { profile: { displayName: { contains: search, mode: 'insensitive' } } }
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        include: { profile: true },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    res.json({
+      data: users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        role: u.role.toLowerCase(),
+        status: u.status.toLowerCase(),
+        displayName: u.profile?.displayName ?? null,
+        avatarUrl: u.profile?.avatarUrl ?? null,
+        createdAt: u.createdAt
+      })),
+      total,
+      page,
+      pageSize
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        profile: true,
+        memberships: { include: { tenant: true } },
+        requests: {
+          include: { event: { include: { location: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 20
+        },
+        participants: {
+          include: { event: { include: { location: true, tenant: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 20
+        }
+      }
+    });
+
+    if (!user) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
+    }
+
+    res.json({
+      data: {
+        id: user.id,
+        email: user.email,
+        role: user.role.toLowerCase(),
+        status: user.status.toLowerCase(),
+        createdAt: user.createdAt,
+        profile: user.profile ? {
+          displayName: user.profile.displayName,
+          phone: user.profile.phone,
+          bio: user.profile.bio,
+          avatarUrl: user.profile.avatarUrl
+        } : null,
+        memberships: user.memberships.map((m) => ({
+          tenantId: m.tenantId,
+          tenantName: m.tenant.name,
+          role: m.role.toLowerCase(),
+          joinedAt: m.createdAt
+        })),
+        requests: user.requests.map((r) => ({
+          id: r.id,
+          eventId: r.eventId,
+          eventTitle: r.event.title,
+          locationName: r.event.location.name,
+          status: r.status.toLowerCase(),
+          createdAt: r.createdAt
+        })),
+        trips: user.participants.map((p) => ({
+          eventId: p.eventId,
+          eventTitle: p.event.title,
+          locationName: p.event.location.name,
+          organizerName: p.event.tenant.name,
+          date: p.event.startAt.toISOString().slice(0, 10),
+          checkedInAt: p.checkedInAt
+        }))
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+const userStatusSchema = z.object({
+  status: z.enum(['active', 'suspended'])
+});
+
+adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: userStatusSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+    const { status } = req.body as z.infer<typeof userStatusSchema>;
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) throw new ApiError(404, 'user_not_found', 'User not found.');
+    if (user.role === UserRole.PLATFORM_ADMIN) throw new ApiError(400, 'cannot_modify_admin', 'Cannot modify admin status.');
+
+    const prismaStatus = status === 'active' ? UserStatus.ACTIVE : UserStatus.SUSPENDED;
+    await prisma.user.update({ where: { id }, data: { status: prismaStatus } });
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: `user.${status === 'active' ? 'activate' : 'suspend'}`,
+      entityType: 'user',
+      entityId: id
+    });
+
+    res.json({ message: `User ${status === 'active' ? 'activated' : 'suspended'}.` });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Tenant Oversight ───────────────────────────────────────────────────────
+
+adminRouter.get('/tenants', async (_req, res, next) => {
+  try {
+    const tenants = await prisma.tenant.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        owner: { include: { profile: true } },
+        _count: { select: { memberships: true, events: true } }
+      }
+    });
+
+    res.json({
+      data: tenants.map((t) => ({
+        id: t.id,
+        name: t.name,
+        slug: t.slug,
+        type: t.type.toLowerCase(),
+        status: t.status.toLowerCase(),
+        ownerName: t.owner.profile?.displayName ?? t.owner.email,
+        ownerEmail: t.owner.email,
+        memberCount: t._count.memberships,
+        eventCount: t._count.events,
+        createdAt: t.createdAt
+      }))
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get('/tenants/:id', validate({ params: idParamSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+
+    const tenant = await prisma.tenant.findUnique({
+      where: { id },
+      include: {
+        owner: { include: { profile: true } },
+        memberships: { include: { user: { include: { profile: true } } } },
+        events: {
+          orderBy: { startAt: 'desc' },
+          include: {
+            location: true,
+            participants: { select: { id: true, checkedInAt: true } },
+            guide: { include: { profile: true } }
+          }
+        }
+      }
+    });
+
+    if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
+
+    res.json({
+      data: {
+        id: tenant.id,
+        name: tenant.name,
+        slug: tenant.slug,
+        type: tenant.type.toLowerCase(),
+        status: tenant.status.toLowerCase(),
+        owner: {
+          id: tenant.owner.id,
+          email: tenant.owner.email,
+          displayName: tenant.owner.profile?.displayName ?? null
+        },
+        createdAt: tenant.createdAt,
+        members: tenant.memberships.map((m) => ({
+          userId: m.userId,
+          email: m.user.email,
+          displayName: m.user.profile?.displayName ?? null,
+          role: m.role.toLowerCase(),
+          joinedAt: m.createdAt
+        })),
+        events: tenant.events.map((e) => ({
+          id: e.id,
+          title: e.title,
+          locationName: e.location.name,
+          startAt: e.startAt,
+          status: e.status.toLowerCase(),
+          capacity: e.capacity,
+          participantCount: e.participants.length,
+          checkedInCount: e.participants.filter((p) => p.checkedInAt !== null).length,
+          guideName: e.guide?.profile?.displayName ?? null
+        }))
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+const tenantStatusSchema = z.object({
+  status: z.enum(['active', 'suspended'])
+});
+
+adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body: tenantStatusSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+    const { status } = req.body as z.infer<typeof tenantStatusSchema>;
+
+    const tenant = await prisma.tenant.findUnique({ where: { id } });
+    if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
+
+    const prismaStatus = status === 'active' ? TenantStatus.ACTIVE : TenantStatus.SUSPENDED;
+    await prisma.tenant.update({ where: { id }, data: { status: prismaStatus } });
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: `tenant.${status === 'active' ? 'activate' : 'suspend'}`,
+      entityType: 'tenant',
+      entityId: id
+    });
+
+    res.json({ message: `Tenant ${status === 'active' ? 'activated' : 'suspended'}.` });
   } catch (error) {
     next(error);
   }

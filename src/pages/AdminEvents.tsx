@@ -6,6 +6,7 @@ import { DashboardLayout } from '../components/layout';
 const adminLinks = [
   { to: '/admin/overview', label: 'Overview' },
   { to: '/admin/locations', label: 'Locations' },
+  { to: '/admin/users', label: 'Users' },
   { to: '/admin/organizers', label: 'Organizer Approvals' },
   { to: '/admin/events', label: 'Event Moderation' }
 ];

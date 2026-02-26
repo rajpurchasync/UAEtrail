@@ -18,15 +18,20 @@ import {
   AdminLocations,
   AdminOrganizers,
   AdminEvents,
+  AdminUsers,
   OrganizerOverview,
   OrganizerEvents,
   OrganizerRequests,
   OrganizerTeam,
   OrganizerProfile,
+  OrganizerLocations,
+  OrganizerHistory,
   UserOverview,
   UserRequests,
   UserTrips,
-  UserProfile
+  UserProfile,
+  Messages,
+  MerchantDashboard
 } from './pages';
 
 function App() {
@@ -80,6 +85,14 @@ function App() {
             }
           />
           <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/organizer/overview"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
@@ -128,6 +141,22 @@ function App() {
             }
           />
           <Route
+            path="/organizer/locations"
+            element={
+              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+                <OrganizerLocations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organizer/history"
+            element={
+              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+                <OrganizerHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/dashboard/overview"
             element={
               <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
@@ -156,6 +185,22 @@ function App() {
             element={
               <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <UserProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/messages"
+            element={
+              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/merchant/dashboard"
+            element={
+              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+                <MerchantDashboard />
               </ProtectedRoute>
             }
           />

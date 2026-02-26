@@ -1,11 +1,11 @@
-import { EventStatus, LocationStatus, MembershipRole, NotificationType, RequestStatus, TenantType, UserRole } from '@prisma/client';
+import { ActivityType, EventStatus, LocationStatus, MembershipRole, NotificationType, RequestStatus, TenantType, UserRole } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { assertCapacityAvailable } from '../domain/capacity.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { randomToken } from '../lib/hash.js';
-import { toEventDto } from '../lib/mappers.js';
+import { toEventDto, toLocationDto } from '../lib/mappers.js';
 import { hashPassword } from '../lib/password.js';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
@@ -590,3 +590,197 @@ organizerRouter.patch(
     }
   }
 );
+
+// ─── Participant Check-in ───────────────────────────────────────────────────
+
+const participantIdSchema = z.object({
+  id: z.string().min(1),
+  participantId: z.string().min(1)
+});
+
+organizerRouter.get('/events/:id/participants', validate({ params: idParamSchema }), async (req, res, next) => {
+  try {
+    const tenantId = req.tenantContext!.tenantId;
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+
+    const event = await prisma.event.findFirst({ where: { id, tenantId } });
+    if (!event) throw new ApiError(404, 'event_not_found', 'Event not found.');
+
+    const participants = await prisma.eventParticipant.findMany({
+      where: { eventId: id },
+      include: { user: { include: { profile: true } } },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    res.json({
+      data: {
+        eventId: id,
+        eventTitle: event.title,
+        capacity: event.capacity,
+        participants: participants.map((p) => ({
+          id: p.id,
+          userId: p.userId,
+          displayName: p.user.profile?.displayName ?? p.user.email,
+          email: p.user.email,
+          phone: p.user.profile?.phone ?? null,
+          avatarUrl: p.user.profile?.avatarUrl ?? null,
+          checkedInAt: p.checkedInAt,
+          joinedAt: p.createdAt
+        }))
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+organizerRouter.post('/events/:id/participants/:participantId/checkin', validate({ params: participantIdSchema }), async (req, res, next) => {
+  try {
+    const tenantId = req.tenantContext!.tenantId;
+    const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
+
+    const event = await prisma.event.findFirst({ where: { id, tenantId } });
+    if (!event) throw new ApiError(404, 'event_not_found', 'Event not found.');
+
+    const participant = await prisma.eventParticipant.findFirst({ where: { id: participantId, eventId: id } });
+    if (!participant) throw new ApiError(404, 'participant_not_found', 'Participant not found.');
+
+    await prisma.eventParticipant.update({
+      where: { id: participantId },
+      data: { checkedInAt: new Date() }
+    });
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: 'participant.checkin',
+      entityType: 'event_participant',
+      entityId: participantId,
+      tenantId
+    });
+
+    res.json({ message: 'Participant checked in.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+organizerRouter.delete('/events/:id/participants/:participantId/checkin', validate({ params: participantIdSchema }), async (req, res, next) => {
+  try {
+    const tenantId = req.tenantContext!.tenantId;
+    const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
+
+    const event = await prisma.event.findFirst({ where: { id, tenantId } });
+    if (!event) throw new ApiError(404, 'event_not_found', 'Event not found.');
+
+    const participant = await prisma.eventParticipant.findFirst({ where: { id: participantId, eventId: id } });
+    if (!participant) throw new ApiError(404, 'participant_not_found', 'Participant not found.');
+
+    await prisma.eventParticipant.update({
+      where: { id: participantId },
+      data: { checkedInAt: null }
+    });
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: 'participant.undo_checkin',
+      entityType: 'event_participant',
+      entityId: participantId,
+      tenantId
+    });
+
+    res.json({ message: 'Check-in undone.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Location Submission ────────────────────────────────────────────────────
+
+const locationSubmitSchema = z.object({
+  name: z.string().min(2),
+  region: z.string().min(2),
+  activityType: z.enum(['hiking', 'camping']),
+  description: z.string().min(20),
+  difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
+  season: z.array(z.string()).min(1),
+  childFriendly: z.boolean().default(false),
+  maxGroupSize: z.number().int().positive().optional(),
+  accessibility: z.enum(['car-accessible', 'remote']).optional(),
+  images: z.array(z.string().url()).default([]),
+  featured: z.boolean().default(false)
+});
+
+const toPrismaActivityType = (activityType: 'hiking' | 'camping'): ActivityType =>
+  activityType === 'hiking' ? ActivityType.HIKING : ActivityType.CAMPING;
+
+organizerRouter.post('/locations', validate({ body: locationSubmitSchema }), async (req, res, next) => {
+  try {
+    const body = req.body as z.infer<typeof locationSubmitSchema>;
+
+    const created = await prisma.location.create({
+      data: {
+        name: body.name,
+        region: body.region,
+        activityType: toPrismaActivityType(body.activityType),
+        description: body.description,
+        difficulty: body.difficulty ? body.difficulty.toUpperCase() as 'EASY' | 'MODERATE' | 'HARD' : undefined,
+        season: body.season,
+        childFriendly: body.childFriendly,
+        maxGroupSize: body.maxGroupSize,
+        accessibility: body.accessibility === 'car-accessible' ? 'CAR_ACCESSIBLE' : body.accessibility === 'remote' ? 'REMOTE' : undefined,
+        images: body.images,
+        featured: body.featured,
+        status: LocationStatus.INACTIVE,
+        submittedById: req.auth!.userId
+      }
+    });
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: 'location.submit',
+      entityType: 'location',
+      entityId: created.id,
+      tenantId: req.tenantContext!.tenantId
+    });
+
+    res.status(201).json({ data: toLocationDto(created) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Event History ──────────────────────────────────────────────────────────
+
+organizerRouter.get('/events/history', async (req, res, next) => {
+  try {
+    const tenantId = req.tenantContext!.tenantId;
+
+    const events = await prisma.event.findMany({
+      where: {
+        tenantId,
+        startAt: { lt: new Date() }
+      },
+      orderBy: { startAt: 'desc' },
+      include: {
+        location: true,
+        participants: { select: { id: true, checkedInAt: true } }
+      }
+    });
+
+    res.json({
+      data: events.map((e) => ({
+        id: e.id,
+        title: e.title,
+        locationName: e.location.name,
+        activityType: e.location.activityType.toLowerCase(),
+        startAt: e.startAt,
+        status: e.status.toLowerCase(),
+        capacity: e.capacity,
+        participantCount: e.participants.length,
+        checkedInCount: e.participants.filter((p) => p.checkedInAt !== null).length
+      }))
+    });
+  } catch (error) {
+    next(error);
+  }
+});
