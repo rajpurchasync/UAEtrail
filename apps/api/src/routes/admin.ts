@@ -630,3 +630,229 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
     next(error);
   }
 });
+
+// ─── Location Delete ────────────────────────────────────────────────────────
+
+adminRouter.delete('/locations/:id', validate({ params: idParamSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+
+    const location = await prisma.location.findUnique({ where: { id } });
+    if (!location) throw new ApiError(404, 'location_not_found', 'Location not found.');
+
+    const activeEventCount = await prisma.event.count({
+      where: { locationId: id, status: { in: [EventStatus.PUBLISHED, EventStatus.DRAFT] } }
+    });
+    if (activeEventCount > 0) {
+      throw new ApiError(400, 'location_has_events', `Cannot delete location: ${activeEventCount} active event(s) reference it.`);
+    }
+
+    await prisma.location.delete({ where: { id } });
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: 'location.delete',
+      entityType: 'location',
+      entityId: id
+    });
+
+    res.json({ message: 'Location deleted.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Audit Logs ─────────────────────────────────────────────────────────────
+
+const auditLogQuerySchema = z.object({
+  action: z.string().optional(),
+  entityType: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).default(20)
+});
+
+adminRouter.get('/audit-logs', validate({ query: auditLogQuerySchema }), async (req, res, next) => {
+  try {
+    const { action, entityType, page, pageSize } = req.query as unknown as z.infer<typeof auditLogQuerySchema>;
+
+    const where: Record<string, unknown> = {};
+    if (action) where.action = { contains: action };
+    if (entityType) where.entityType = entityType;
+
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        include: { actor: { include: { profile: true } } },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize
+      }),
+      prisma.auditLog.count({ where })
+    ]);
+
+    res.json({
+      data: logs.map((l) => ({
+        id: l.id,
+        action: l.action,
+        entityType: l.entityType,
+        entityId: l.entityId,
+        actorEmail: l.actor.email,
+        actorName: l.actor.profile?.displayName ?? null,
+        tenantId: l.tenantId,
+        metadata: l.metadata,
+        createdAt: l.createdAt
+      })),
+      pagination: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── System Notifications ───────────────────────────────────────────────────
+
+const sendNotificationSchema = z.object({
+  title: z.string().min(2).max(200),
+  body: z.string().min(2).max(1000),
+  targetRole: z.string().optional()
+});
+
+adminRouter.post('/notifications', validate({ body: sendNotificationSchema }), async (req, res, next) => {
+  try {
+    const { title, body, targetRole } = req.body as z.infer<typeof sendNotificationSchema>;
+
+    const userWhere: Record<string, unknown> = { status: UserStatus.ACTIVE };
+    if (targetRole) userWhere.role = targetRole.toUpperCase() as UserRole;
+
+    const users = await prisma.user.findMany({ where: userWhere, select: { id: true } });
+
+    if (users.length === 0) {
+      throw new ApiError(400, 'no_recipients', 'No users match the target criteria.');
+    }
+
+    await prisma.notification.createMany({
+      data: users.map((u) => ({
+        userId: u.id,
+        title,
+        body,
+        type: 'SYSTEM' as const
+      }))
+    });
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: 'notification.broadcast',
+      entityType: 'notification',
+      entityId: 'system',
+      metadata: { recipientCount: users.length, targetRole: targetRole ?? 'all' }
+    });
+
+    res.status(201).json({ data: { count: users.length } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get('/notifications', async (req, res, next) => {
+  try {
+    const logs = await prisma.auditLog.findMany({
+      where: { action: 'notification.broadcast' },
+      include: { actor: { include: { profile: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+
+    res.json({
+      data: logs.map((l) => {
+        const meta = l.metadata as Record<string, unknown> | null;
+        return {
+          id: l.id,
+          title: 'System Notification',
+          body: `Sent by ${l.actor.profile?.displayName ?? l.actor.email}`,
+          targetRole: (meta?.targetRole as string) ?? null,
+          recipientCount: (meta?.recipientCount as number) ?? 0,
+          createdAt: l.createdAt
+        };
+      })
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Shop / Product Moderation ──────────────────────────────────────────────
+
+const productListQuerySchema = z.object({
+  status: z.string().optional(),
+  category: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).default(20)
+});
+
+adminRouter.get('/products', validate({ query: productListQuerySchema }), async (req, res, next) => {
+  try {
+    const { status, category, page, pageSize } = req.query as unknown as z.infer<typeof productListQuerySchema>;
+
+    const where: Record<string, unknown> = {};
+    if (status) where.status = status.toUpperCase();
+    if (category) where.category = category;
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: { merchant: true },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize
+      }),
+      prisma.product.count({ where })
+    ]);
+
+    res.json({
+      data: products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        images: p.images as string[],
+        priceAed: p.priceAed,
+        discountPercent: p.discountPercent,
+        packagingInfo: p.packagingInfo,
+        category: p.category,
+        status: p.status.toLowerCase(),
+        merchantId: p.merchantId,
+        merchantName: p.merchant.shopName
+      })),
+      pagination: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+const productStatusSchema = z.object({
+  status: z.enum(['active', 'inactive'])
+});
+
+adminRouter.patch('/products/:id/status', validate({ params: idParamSchema, body: productStatusSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+    const { status } = req.body as z.infer<typeof productStatusSchema>;
+
+    const product = await prisma.product.findUnique({ where: { id } });
+    if (!product) throw new ApiError(404, 'product_not_found', 'Product not found.');
+
+    const prismaStatus = status === 'active' ? 'ACTIVE' : 'INACTIVE';
+    await prisma.product.update({ where: { id }, data: { status: prismaStatus as import('@prisma/client').ProductStatus } });
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: `product.${status === 'active' ? 'approve' : 'suspend'}`,
+      entityType: 'product',
+      entityId: id
+    });
+
+    res.json({ message: `Product ${status === 'active' ? 'approved' : 'suspended'}.` });
+  } catch (error) {
+    next(error);
+  }
+});

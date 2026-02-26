@@ -28,6 +28,10 @@ export interface AdminMetrics {
   events: number;
   pendingApplications: number;
   pendingRequests: number;
+  totalUsers: number;
+  activeUsers: number;
+  totalLocations: number;
+  totalParticipants: number;
 }
 
 export interface TeamMember {
@@ -81,6 +85,30 @@ export interface TenantMembershipView {
   tenantSlug: string;
   tenantType: string;
   membershipRole: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  actorEmail: string;
+  actorName: string | null;
+  tenantId: string | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export interface TenantDetail {
+  id: string;
+  name: string;
+  slug: string;
+  type: string;
+  status: string;
+  owner: { id: string; email: string; displayName: string | null };
+  createdAt: string;
+  members: Array<{ userId: string; email: string; displayName: string | null; role: string; joinedAt: string }>;
+  events: Array<{ id: string; title: string; locationName: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number; guideName: string | null }>;
 }
 
 export const api = {
@@ -198,7 +226,7 @@ export const api = {
   },
   getAdminUserDetail: (id: string) =>
     apiRequest<{ data: Record<string, unknown> }>(`/admin/users/${id}`, { auth: true }),
-  updateAdminUserStatus: (id: string, status: 'ACTIVE' | 'SUSPENDED') =>
+  updateAdminUserStatus: (id: string, status: 'active' | 'suspended') =>
     apiRequest(`/admin/users/${id}/status`, {
       method: 'PATCH',
       auth: true,
@@ -210,8 +238,8 @@ export const api = {
   getAdminTenants: () =>
     apiRequest<{ data: TenantListDTO[] }>('/admin/tenants', { auth: true }),
   getAdminTenantDetail: (id: string) =>
-    apiRequest<{ data: Record<string, unknown> }>(`/admin/tenants/${id}`, { auth: true }),
-  updateAdminTenantStatus: (id: string, status: 'ACTIVE' | 'SUSPENDED') =>
+    apiRequest<{ data: TenantDetail }>(`/admin/tenants/${id}`, { auth: true }),
+  updateAdminTenantStatus: (id: string, status: 'active' | 'suspended') =>
     apiRequest(`/admin/tenants/${id}/status`, {
       method: 'PATCH',
       auth: true,
@@ -331,5 +359,69 @@ export const api = {
     apiRequest(`/shop/merchant/products/${id}`, {
       method: 'DELETE',
       auth: true
+    }),
+
+  // ─── Admin - Audit Logs ────────────────────────────────────────────────
+
+  getAdminAuditLogs: (filters?: { action?: string; entityType?: string; page?: number; pageSize?: number }) => {
+    const params = new URLSearchParams();
+    if (filters?.action) params.set('action', filters.action);
+    if (filters?.entityType) params.set('entityType', filters.entityType);
+    if (filters?.page) params.set('page', String(filters.page));
+    if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
+    const qs = params.toString();
+    return apiRequest<{ data: AuditLogEntry[]; pagination: { total: number; page: number; pageSize: number; totalPages: number } }>(
+      `/admin/audit-logs${qs ? `?${qs}` : ''}`,
+      { auth: true }
+    );
+  },
+
+  // ─── Admin - Location Delete ───────────────────────────────────────────
+
+  deleteAdminLocation: (id: string) =>
+    apiRequest(`/admin/locations/${id}`, {
+      method: 'DELETE',
+      auth: true
+    }),
+
+  // ─── Admin - Notifications ─────────────────────────────────────────────
+
+  sendAdminNotification: (payload: { title: string; body: string; targetRole?: string }) =>
+    apiRequest<{ data: { count: number } }>('/admin/notifications', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+
+  getAdminNotifications: (page?: number) => {
+    const params = new URLSearchParams();
+    if (page) params.set('page', String(page));
+    const qs = params.toString();
+    return apiRequest<{ data: Array<{ id: string; title: string; body: string; targetRole: string | null; recipientCount: number; createdAt: string }> }>(
+      `/admin/notifications${qs ? `?${qs}` : ''}`,
+      { auth: true }
+    );
+  },
+
+  // ─── Admin - Shop Moderation ───────────────────────────────────────────
+
+  getAdminProducts: (filters?: { status?: string; category?: string; page?: number; pageSize?: number }) => {
+    const params = new URLSearchParams();
+    if (filters?.status) params.set('status', filters.status);
+    if (filters?.category) params.set('category', filters.category);
+    if (filters?.page) params.set('page', String(filters.page));
+    if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
+    const qs = params.toString();
+    return apiRequest<{ data: ProductDTO[]; pagination: { total: number; page: number; pageSize: number; totalPages: number } }>(
+      `/admin/products${qs ? `?${qs}` : ''}`,
+      { auth: true }
+    );
+  },
+
+  updateAdminProductStatus: (id: string, status: 'active' | 'inactive') =>
+    apiRequest(`/admin/products/${id}/status`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ status })
     })
 };

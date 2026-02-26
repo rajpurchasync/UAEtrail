@@ -19,6 +19,9 @@ import {
   AdminOrganizers,
   AdminEvents,
   AdminUsers,
+  AdminAuditLog,
+  AdminSettings,
+  AdminShop,
   OrganizerOverview,
   OrganizerEvents,
   OrganizerRequests,
@@ -89,6 +92,30 @@ function App() {
             element={
               <ProtectedRoute roles={['platform_admin']}>
                 <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/audit-log"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminAuditLog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/shop"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminShop />
               </ProtectedRoute>
             }
           />

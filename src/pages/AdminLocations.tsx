@@ -2,14 +2,7 @@ import { useEffect, useState } from 'react';
 import { LocationDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { DashboardLayout } from '../components/layout';
-
-const adminLinks = [
-  { to: '/admin/overview', label: 'Overview' },
-  { to: '/admin/locations', label: 'Locations' },
-  { to: '/admin/users', label: 'Users' },
-  { to: '/admin/organizers', label: 'Organizer Approvals' },
-  { to: '/admin/events', label: 'Event Moderation' }
-];
+import { ADMIN_LINKS } from '../constants';
 
 const emptyForm: Partial<LocationDTO> = {
   name: '',
@@ -35,21 +28,25 @@ export const AdminLocations = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [imageInput, setImageInput] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [search, setSearch] = useState('');
+  const [confirmAction, setConfirmAction] = useState<{ type: 'status' | 'delete'; loc: LocationDTO } | null>(null);
 
   const loadLocations = async () => {
+    setLoading(true);
     try {
       const res = await api.getAdminLocations();
       setLocations(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load locations');
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadLocations();
-  }, []);
+  useEffect(() => { loadLocations(); }, []);
 
   const openCreate = () => {
     setEditingId(null);
@@ -95,18 +92,27 @@ export const AdminLocations = () => {
     }
   };
 
-  const toggleStatus = async (loc: LocationDTO) => {
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return;
     try {
-      await api.updateAdminLocation(loc.id, {
-        status: loc.status === 'active' ? 'inactive' : 'active'
-      });
+      if (confirmAction.type === 'status') {
+        await api.updateAdminLocation(confirmAction.loc.id, {
+          status: confirmAction.loc.status === 'active' ? 'inactive' : 'active'
+        });
+      } else {
+        await api.deleteAdminLocation(confirmAction.loc.id);
+      }
+      setConfirmAction(null);
       await loadLocations();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update status');
+      setError(err instanceof Error ? err.message : 'Action failed');
+      setConfirmAction(null);
     }
   };
 
-  const filtered = filterType === 'all' ? locations : locations.filter((l) => l.activityType === filterType);
+  const filtered = locations
+    .filter((l) => filterType === 'all' || l.activityType === filterType)
+    .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.region.toLowerCase().includes(search.toLowerCase()));
 
   const difficultyBadge = (d?: string) => {
     const colors: Record<string, string> = { easy: 'bg-green-100 text-green-800', moderate: 'bg-yellow-100 text-yellow-800', hard: 'bg-red-100 text-red-800' };
@@ -114,15 +120,17 @@ export const AdminLocations = () => {
   };
 
   return (
-    <DashboardLayout title="Admin Dashboard" links={adminLinks}>
+    <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
       <div className="space-y-4">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-gray-900">Locations</h2>
-            <span className="text-sm text-gray-500">({locations.length})</span>
+            <span className="text-sm text-gray-500">({filtered.length})</span>
           </div>
           <div className="flex items-center gap-3">
+            <input type="text" placeholder="Search name or region..." value={search} onChange={(e) => setSearch(e.target.value)}
+              className="border rounded px-3 py-1.5 text-sm w-52" />
             <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="border rounded px-3 py-1.5 text-sm">
               <option value="all">All Types</option>
               <option value="hiking">Hiking</option>
@@ -152,7 +160,13 @@ export const AdminLocations = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((loc) => (
+              {loading ? (
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                  <div className="inline-block w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2" />Loading...
+                </td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">No locations found</td></tr>
+              ) : filtered.map((loc) => (
                 <tr key={loc.id} className="border-t hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-900">{loc.name}</p>
@@ -170,27 +184,49 @@ export const AdminLocations = () => {
                   </td>
                   <td className="px-4 py-3 text-center">{loc.featured ? '⭐' : '—'}</td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => toggleStatus(loc)}
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${loc.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    >
+                    <button onClick={() => setConfirmAction({ type: 'status', loc })}
+                      className={`px-2 py-0.5 rounded text-xs font-medium ${loc.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                       {loc.status}
                     </button>
                   </td>
                   <td className="px-4 py-3">
-                    <button onClick={() => openEdit(loc)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">
-                      Edit
-                    </button>
+                    <div className="flex gap-2">
+                      <button onClick={() => openEdit(loc)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
+                      <button onClick={() => setConfirmAction({ type: 'delete', loc })} className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs">Delete</button>
+                    </div>
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">No locations found</td></tr>
-              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmAction && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmAction(null)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {confirmAction.type === 'delete' ? 'Delete Location?' : confirmAction.loc.status === 'active' ? 'Deactivate Location?' : 'Activate Location?'}
+            </h3>
+            <p className="text-sm text-gray-600 mb-1">
+              {confirmAction.type === 'delete'
+                ? 'This will permanently remove the location. This cannot be undone if there are no active events.'
+                : confirmAction.loc.status === 'active'
+                  ? 'This will hide the location from public listings.'
+                  : 'This will make the location visible in public listings.'}
+            </p>
+            <p className="text-sm font-medium text-gray-900 mb-4">{confirmAction.loc.name}</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setConfirmAction(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button onClick={executeConfirmAction}
+                className={`px-4 py-2 rounded-md text-sm text-white ${confirmAction.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                {confirmAction.type === 'delete' ? 'Delete' : confirmAction.loc.status === 'active' ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create / Edit Modal */}
       {modalOpen && (

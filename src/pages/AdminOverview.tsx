@@ -3,52 +3,74 @@ import { Link } from 'react-router-dom';
 import { api, AdminMetrics, OrganizerApplication } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { EventDTO } from '@uaetrail/shared-types';
-
-const adminLinks = [
-  { to: '/admin/overview', label: 'Overview' },
-  { to: '/admin/locations', label: 'Locations' },
-  { to: '/admin/users', label: 'Users' },
-  { to: '/admin/organizers', label: 'Organizer Approvals' },
-  { to: '/admin/events', label: 'Event Moderation' }
-];
+import { ADMIN_LINKS } from '../constants';
 
 export const AdminOverview = () => {
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [recentEvents, setRecentEvents] = useState<EventDTO[]>([]);
   const [recentApps, setRecentApps] = useState<OrganizerApplication[]>([]);
-  const [userCount, setUserCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadData = () => {
+    setLoading(true);
     Promise.all([
       api.getAdminMetrics(),
       api.getAdminEvents(),
-      api.getAdminApplications(),
-      api.getAdminUsers({ pageSize: 1 })
+      api.getAdminApplications()
     ])
-      .then(([metricsRes, eventsRes, appsRes, usersRes]) => {
+      .then(([metricsRes, eventsRes, appsRes]) => {
         setMetrics(metricsRes.data);
         setRecentEvents(eventsRes.data.slice(0, 5));
         setRecentApps(appsRes.data.filter((a) => a.status === 'pending').slice(0, 5));
-        setUserCount(usersRes.pagination?.total ?? 0);
       })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load metrics'));
-  }, []);
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load metrics'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const metricCards = [
-    { label: 'Total Users', value: userCount, color: 'bg-blue-50 text-blue-700', link: '/admin/users' },
+    { label: 'Total Users', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', link: '/admin/users' },
+    { label: 'Active Users', value: metrics?.activeUsers ?? '-', color: 'bg-cyan-50 text-cyan-700', link: '/admin/users' },
     { label: 'Active Tenants', value: metrics?.tenants ?? '-', color: 'bg-purple-50 text-purple-700', link: '/admin/organizers' },
+    { label: 'Locations', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', link: '/admin/locations' },
     { label: 'Total Events', value: metrics?.events ?? '-', color: 'bg-emerald-50 text-emerald-700', link: '/admin/events' },
-    { label: 'Pending Applications', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-700', link: '/admin/organizers' },
+    { label: 'Participants', value: metrics?.totalParticipants ?? '-', color: 'bg-indigo-50 text-indigo-700', link: null },
+    { label: 'Pending Apps', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-700', link: '/admin/organizers' },
     { label: 'Pending Requests', value: metrics?.pendingRequests ?? '-', color: 'bg-orange-50 text-orange-700', link: null }
   ];
 
+  if (loading) {
+    return (
+      <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="rounded-lg p-4 bg-gray-100 animate-pulse h-20" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-gray-100 animate-pulse rounded-lg h-64" />
+          <div className="bg-gray-100 animate-pulse rounded-lg h-64" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
-    <DashboardLayout title="Admin Dashboard" links={adminLinks}>
+    <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
+      {/* Header with refresh */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">Platform Overview</h2>
+        <button onClick={loadData} className="text-sm px-3 py-1.5 border rounded-lg hover:bg-gray-50 text-gray-600 flex items-center gap-1.5">
+          ↻ Refresh
+        </button>
+      </div>
+
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {metricCards.map((card) => (
           <div key={card.label} className={`rounded-lg p-4 ${card.color}`}>
             <p className="text-xs font-medium opacity-80">{card.label}</p>

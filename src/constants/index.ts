@@ -21,6 +21,17 @@ export const STATUS_COLORS = {
   full: 'bg-gray-400'
 };
 
+export const ADMIN_LINKS = [
+  { to: '/admin/overview', label: 'Overview' },
+  { to: '/admin/locations', label: 'Locations' },
+  { to: '/admin/users', label: 'Users' },
+  { to: '/admin/organizers', label: 'Organizers' },
+  { to: '/admin/events', label: 'Events' },
+  { to: '/admin/shop', label: 'Shop' },
+  { to: '/admin/audit-log', label: 'Audit Log' },
+  { to: '/admin/settings', label: 'Notifications' }
+];
+
 export const HIKING_SUBCATEGORIES = [
   'Shoes',
   'Backpacks',
