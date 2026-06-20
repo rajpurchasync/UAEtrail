@@ -86,6 +86,19 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
         displayName: profile.displayName,
         phone: profile.phone
       });
+
+      const { currentPassword, newPassword, confirmPassword } = passwordFields;
+      if (currentPassword || newPassword || confirmPassword) {
+        if (newPassword !== confirmPassword) {
+          throw new Error('New passwords do not match.');
+        }
+        if (!currentPassword || !newPassword) {
+          throw new Error('Enter current and new password to change it.');
+        }
+        await api.changePassword({ currentPassword, newPassword });
+        setPasswordFields({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      }
+
       setProfileSuccess(true);
     } catch (err) {
       setProfileError(err instanceof Error ? err.message : 'Failed to update profile');

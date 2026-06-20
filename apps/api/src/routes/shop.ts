@@ -1,4 +1,4 @@
-import { ProductStatus, OrderStatus } from '@prisma/client';
+import { ProductStatus } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
@@ -208,47 +208,6 @@ shopRouter.post('/checkout', requireAuth, requireVerifiedEmail, validate({ body:
     });
 
     res.json({ data: { sessionId: session.id, url: session.url } });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Stripe webhook — mount raw body in app.ts if needed; here accept JSON for dev
-shopRouter.post('/webhook/stripe', async (req, res, next) => {
-  try {
-    if (!isStripeConfigured()) {
-      res.status(503).json({ error: 'stripe_not_configured' });
-      return;
-    }
-
-    const stripe = await getStripe();
-    const sig = req.headers['stripe-signature'] as string | undefined;
-    let event: import('stripe').Stripe.Event;
-
-    if (sig && process.env.STRIPE_WEBHOOK_SECRET) {
-      event = stripe.webhooks.constructEvent(
-        (req as { rawBody?: Buffer }).rawBody ?? JSON.stringify(req.body),
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } else if (process.env.NODE_ENV !== 'production') {
-      event = req.body as import('stripe').Stripe.Event;
-    } else {
-      throw new ApiError(400, 'missing_signature', 'Webhook signature required.');
-    }
-
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as import('stripe').Stripe.Checkout.Session;
-      const orderId = session.metadata?.orderId ?? session.client_reference_id;
-      if (orderId) {
-        await prisma.shopOrder.updateMany({
-          where: { id: orderId, status: OrderStatus.PENDING },
-          data: { status: OrderStatus.PAID }
-        });
-      }
-    }
-
-    res.json({ received: true });
   } catch (error) {
     next(error);
   }

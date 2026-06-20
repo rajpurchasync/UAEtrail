@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, UserProfile, OrganizerApplication } from '../api/services';
+import { api, UserProfile } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { COUNTRIES } from '../constants';
 

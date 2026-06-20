@@ -1,4 +1,4 @@
-import { HeadBucketCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CreateBucketCommand, HeadBucketCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '../config/env.js';
 import { ApiError } from './api-error.js';
@@ -42,7 +42,22 @@ export const probeS3 = async (): Promise<void> => {
     console.log(`[storage] S3 bucket "${env.S3_BUCKET}" is reachable — using S3 storage.`);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    console.warn(`[storage] S3 is not reachable (${message}) — falling back to local file storage.`);
+    const notFound =
+      (err as { name?: string; $metadata?: { httpStatusCode?: number } }).name === 'NotFound' ||
+      (err as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 404;
+    if (notFound) {
+      try {
+        await s3Client.send(new CreateBucketCommand({ Bucket: env.S3_BUCKET }));
+        s3Available = true;
+        console.log(`[storage] Created S3 bucket "${env.S3_BUCKET}".`);
+        return;
+      } catch (createErr: unknown) {
+        const createMsg = createErr instanceof Error ? createErr.message : String(createErr);
+        console.warn(`[storage] Could not create bucket (${createMsg}) — falling back to local storage.`);
+      }
+    } else {
+      console.warn(`[storage] S3 is not reachable (${message}) — falling back to local file storage.`);
+    }
     s3Available = false;
   }
 };

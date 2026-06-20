@@ -24,6 +24,7 @@ export interface OrganizerApplication {
   requestedName: string;
   requestedType: string;
   status: string;
+  reviewerNote?: string;
   metadata?: {
     phone?: string;
     nationality?: string;
@@ -168,6 +169,12 @@ export const api = {
   getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
   updateMeProfile: (payload: UserProfile) =>
     apiRequest<{ data: UserProfile }>('/me/profile', {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  changePassword: (payload: { currentPassword: string; newPassword: string }) =>
+    apiRequest<{ message: string }>('/auth/change-password', {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(payload)

@@ -5,6 +5,7 @@ import { PostDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { ImageUpload } from '../components/ui/ImageUpload';
+import { COMMUNITY_CATEGORIES } from '../config/platform';
 
 export const Community = () => {
   const { user } = useAuth();

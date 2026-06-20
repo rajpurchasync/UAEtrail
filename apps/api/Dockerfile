@@ -28,4 +28,7 @@ COPY --from=build /app/node_modules node_modules
 
 EXPOSE 4000
 
-CMD ["npm", "--workspace", "@uaetrail/api", "run", "start"]
+COPY apps/api/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+CMD ["/docker-entrypoint.sh"]

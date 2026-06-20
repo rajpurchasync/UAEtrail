@@ -9,7 +9,9 @@ import { hashPassword, verifyPassword } from '../lib/password.js';
 import { prisma } from '../lib/prisma.js';
 import { slugify } from '../lib/slug.js';
 import { validate } from '../middleware/validate.js';
+import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
+import { sendPasswordResetEmail, sendVerificationEmail, isEmailConfigured } from '../lib/email.js';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -41,6 +43,13 @@ const resetSchema = z.object({
     .regex(/[a-z]/, 'Must include at least one lowercase letter')
     .regex(/[0-9]/, 'Must include at least one number')
 });
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: resetSchema.shape.password
+});
+
+const resendVerificationSchema = z.object({ email: z.string().email() });
 
 const mapAccountTypeToTenantType = (accountType: 'company' | 'guide'): 'COMPANY' | 'GUIDE_OWNED' =>
   accountType === 'company' ? 'COMPANY' : 'GUIDE_OWNED';
@@ -139,10 +148,17 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       userAgent: req.headers['user-agent']
     });
 
+    void sendVerificationEmail({
+      to: created.email,
+      name: displayName,
+      token: verificationToken
+    }).catch(() => undefined);
+
     res.status(201).json({
       ...buildAuthResponse(created, tokens),
       requiresEmailVerification: true,
-      verificationToken: env.NODE_ENV === 'production' ? undefined : verificationToken
+      verificationToken:
+        env.NODE_ENV === 'production' && isEmailConfigured() ? undefined : verificationToken
     });
   } catch (error) {
     next(error);
@@ -284,9 +300,16 @@ authRouter.post('/forgot-password', validate({ body: forgotSchema }), async (req
       }
     });
 
+    const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
+    void sendPasswordResetEmail({
+      to: user.email,
+      name: profile?.displayName ?? user.email,
+      token
+    }).catch(() => undefined);
+
     res.json({
-      message: 'Password reset token generated.',
-      resetToken: env.NODE_ENV === 'production' ? undefined : token
+      message: 'If the account exists, a reset link was sent.',
+      resetToken: env.NODE_ENV === 'production' && isEmailConfigured() ? undefined : token
     });
   } catch (error) {
     next(error);
@@ -318,6 +341,74 @@ authRouter.post('/reset-password', validate({ body: resetSchema }), async (req, 
     ]);
 
     res.json({ message: 'Password updated successfully.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.post('/resend-verification', validate({ body: resendVerificationSchema }), async (req, res, next) => {
+  try {
+    const { email } = req.body as z.infer<typeof resendVerificationSchema>;
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { profile: true }
+    });
+
+    if (!user || user.emailVerifiedAt) {
+      res.json({ message: 'If the account exists and is unverified, a verification email was sent.' });
+      return;
+    }
+
+    let tokenRecord = await prisma.emailVerificationToken.findFirst({
+      where: { userId: user.id, usedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!tokenRecord) {
+      const token = randomToken(24);
+      tokenRecord = await prisma.emailVerificationToken.create({
+        data: {
+          userId: user.id,
+          token,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        }
+      });
+    }
+
+    void sendVerificationEmail({
+      to: user.email,
+      name: user.profile?.displayName ?? user.email,
+      token: tokenRecord.token
+    }).catch(() => undefined);
+
+    res.json({
+      message: 'Verification email sent.',
+      verificationToken:
+        env.NODE_ENV === 'production' && isEmailConfigured() ? undefined : tokenRecord.token
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.patch('/change-password', requireAuth, validate({ body: changePasswordSchema }), async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body as z.infer<typeof changePasswordSchema>;
+    const user = await prisma.user.findUnique({ where: { id: req.auth!.userId } });
+    if (!user || !(await verifyPassword(currentPassword, user.passwordHash))) {
+      throw new ApiError(401, 'invalid_password', 'Current password is incorrect.');
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: user.id }, data: { passwordHash } }),
+      prisma.refreshToken.updateMany({
+        where: { userId: user.id, revokedAt: null },
+        data: { revokedAt: new Date() }
+      })
+    ]);
+
+    res.json({ message: 'Password changed successfully.' });
   } catch (error) {
     next(error);
   }

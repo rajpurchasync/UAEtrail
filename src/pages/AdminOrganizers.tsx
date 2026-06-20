@@ -136,7 +136,7 @@ export const AdminOrganizers = () => {
                       ) : (
                         <span className="text-gray-500 text-xs italic">
                           {app.status === 'approved' ? 'Approved' : 'Rejected'}
-                          {app.reviewNote && <span className="ml-1" title={app.reviewNote}>📝</span>}
+                          {app.reviewerNote && <span className="ml-1" title={app.reviewerNote}>📝</span>}
                         </span>
                       )}
                     </td>

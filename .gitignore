@@ -28,3 +28,6 @@ nginx/certs/*.key
 *.njsproj
 *.sln
 *.sw?
+
+# Local API uploads (dev fallback storage)
+apps/api/uploads/

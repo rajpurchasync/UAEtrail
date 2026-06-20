@@ -4,6 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { ApiError } from '../lib/api-error.js';
 import { createPresignedUpload, isS3Available, publicAssetUrl } from '../lib/s3.js';
+import { safePathUnder } from '../lib/safe-path.js';
 import { prisma } from '../lib/prisma.js';
 import { randomToken } from '../lib/hash.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
@@ -35,7 +36,11 @@ export const mediaRouter = Router();
 /* ─── Serve local uploads when S3 is not configured ─────────────────────── */
 mediaRouter.get('/local/*', (req, res) => {
   const filePath = (req.params as unknown as Record<string, string>)[0] ?? req.path.replace('/local/', '');
-  const absolute = join(LOCAL_UPLOADS_DIR, filePath);
+  const absolute = safePathUnder(LOCAL_UPLOADS_DIR, filePath);
+  if (!absolute) {
+    res.status(400).json({ error: { code: 'invalid_path', message: 'Invalid file path.' } });
+    return;
+  }
   res.sendFile(absolute, (err) => {
     if (err) {
       res.status(404).json({ error: { code: 'not_found', message: 'File not found.' } });
@@ -50,7 +55,11 @@ mediaRouter.put(
   raw({ type: '*/*', limit: '20mb' }),
   async (req, res) => {
     const key = (req.params as unknown as Record<string, string>)[0] ?? req.path.replace('/upload-local/', '');
-    const filePath = join(LOCAL_UPLOADS_DIR, key);
+    const filePath = safePathUnder(LOCAL_UPLOADS_DIR, key);
+    if (!filePath) {
+      res.status(400).json({ error: { code: 'invalid_path', message: 'Invalid upload path.' } });
+      return;
+    }
 
     try {
       await mkdir(dirname(filePath), { recursive: true });

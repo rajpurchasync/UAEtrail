@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 /** Global: 500 requests per minute per IP */
 export const globalLimiter = rateLimit({
@@ -34,7 +34,7 @@ export const viewLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => `${req.ip}-${req.params?.id ?? 'unknown'}`,
+  keyGenerator: (req) => `${ipKeyGenerator(req.ip ?? 'unknown')}-${req.params?.id ?? 'unknown'}`,
   message: {
     error: {
       code: 'rate_limit_exceeded',

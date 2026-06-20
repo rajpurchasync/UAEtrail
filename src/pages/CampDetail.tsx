@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Users, Tent, Car, Calendar, Lock } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
-import { TripCard, BookingModal, ShareButton, Breadcrumb, FavoriteButton } from '../components/ui';
+import { TripCard, BookingModal, ShareButton, Breadcrumb } from '../components/ui';
 import { CampingSpot, Trip } from '../types';
 import { fetchApiLocationDetail, mapEventToTrip } from '../api/public';
 import { api } from '../api/services';

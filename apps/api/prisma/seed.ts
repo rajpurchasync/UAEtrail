@@ -69,6 +69,23 @@ const upsertUser = async ({
 };
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    const adminEmail = process.env.SEED_ADMIN_EMAIL;
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+    if (!adminEmail || !adminPassword) {
+      console.log('[seed] Skipping demo seed in production. Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD to create an admin user.');
+      return;
+    }
+    await upsertUser({
+      email: adminEmail,
+      password: adminPassword,
+      role: UserRole.PLATFORM_ADMIN,
+      displayName: 'Platform Admin'
+    });
+    console.log(`[seed] Production admin ensured: ${adminEmail}`);
+    return;
+  }
+
   const admin = await upsertUser({
     email: 'admin@uaetrails.app',
     password: credentials.admin,

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, TrendingUp, Clock, Mountain, Baby, Calendar, Lock } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
-import { TripCard, BookingModal, ShareButton, Breadcrumb, FavoriteButton } from '../components/ui';
+import { TripCard, ShareButton, Breadcrumb } from '../components/ui';
 import { getDifficultyColor, capitalize } from '../utils';
 import { Trail, Trip } from '../types';
 import { fetchApiLocationDetail, mapEventToTrip } from '../api/public';
@@ -15,7 +15,6 @@ export const TrailDetail = () => {
   const [trailTrips, setTrailTrips] = useState<Trip[]>([]);
   const [trailReviews, setTrailReviews] = useState<ReviewDTO[]>([]);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [bookingTrip, setBookingTrip] = useState<Trip | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'route' | 'location'>('overview');
 
   useEffect(() => {
@@ -54,10 +53,6 @@ export const TrailDetail = () => {
       </div>
     );
   }
-
-  const trailTripsSorted = trailTrips.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
 
   const handleTabClick = (tab: 'overview' | 'route' | 'location') => {
     setActiveTab(tab);
@@ -253,11 +248,7 @@ export const TrailDetail = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {trailTrips.map((trip) => (
-                <TripCard
-                  key={trip.id}
-                  trip={trip}
-                  onJoin={() => setBookingTrip(trip)}
-                />
+                <TripCard key={trip.id} trip={trip} />
               ))}
             </div>
           )}
@@ -298,10 +289,6 @@ export const TrailDetail = () => {
           )}
         </section>
       </div>
-
-      {bookingTrip && (
-        <BookingModal trip={bookingTrip} onClose={() => setBookingTrip(null)} />
-      )}
     </div>
   );
 };

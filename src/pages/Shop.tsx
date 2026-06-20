@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { SlidersHorizontal, ChevronDown, ChevronRight, X, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProductDTO } from '@uaetrail/shared-types';

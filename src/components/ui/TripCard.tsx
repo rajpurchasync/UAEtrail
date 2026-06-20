@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, Users, MapPin, ArrowRight } from 'lucide-react';
+import { Clock, Users, MapPin, ArrowRight } from 'lucide-react';
 import { Trip } from '../../types';
-import { formatDate, formatPrice } from '../../utils';
+import { formatPrice } from '../../utils';
 
 interface TripCardProps {
   trip: Trip;

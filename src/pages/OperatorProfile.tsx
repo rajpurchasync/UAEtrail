@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Globe, Mountain, Calendar, ArrowLeft, Users, Loader2, MessageSquare, ShieldCheck, Star } from 'lucide-react';
+import { Mountain, Calendar, ArrowLeft, Users, Loader2, MessageSquare, ShieldCheck, Star } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
 import { api, TenantProfile } from '../api/services';
 import { mapEventToTrip } from '../api/public';
@@ -75,7 +75,7 @@ export const OperatorProfile = () => {
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl md:text-3xl font-bold">{tenant.name}</h1>
-                <ShieldCheck className="w-5 h-5 text-emerald-300" title="Verified organizer" />
+                <ShieldCheck className="w-5 h-5 text-emerald-300" aria-hidden />
               </div>
               <p className="text-emerald-100 mt-1">{tenant.ownerName}</p>
               {tenant.ownerBio && <p className="text-emerald-50/90 mt-3 max-w-2xl">{tenant.ownerBio}</p>}
