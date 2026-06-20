@@ -1,7 +1,9 @@
 import { Mountain, Facebook, Instagram, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export const Footer = () => {
+  const { user } = useAuth();
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -25,8 +27,8 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/calendar" className="hover:text-emerald-500 transition-colors">
-                  Calendar
+                <Link to="/trips" className="hover:text-emerald-500 transition-colors">
+                  Trips
                 </Link>
               </li>
               <li>
@@ -37,6 +39,14 @@ export const Footer = () => {
               <li>
                 <Link to="/membership" className="hover:text-emerald-500 transition-colors">
                   Membership
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to={user ? '/become-organizer' : '/signin?redirect=/become-organizer'}
+                  className="hover:text-emerald-500 transition-colors"
+                >
+                  Become an Organizer
                 </Link>
               </li>
             </ul>

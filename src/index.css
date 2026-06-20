@@ -6,4 +6,30 @@
   body {
     font-family: 'Open Sans', sans-serif;
   }
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --nav-height: 4rem;
+  }
+}
+
+@layer utilities {
+  /* iOS safe area support */
+  .safe-area-bottom {
+    padding-bottom: var(--safe-bottom);
+  }
+  .safe-area-top {
+    padding-top: var(--safe-top);
+  }
+  .pb-nav-safe {
+    padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
+  }
+  /* Hide scrollbar but keep scroll */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }

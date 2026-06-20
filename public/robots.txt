@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /organizer/
+Disallow: /merchant/
+Disallow: /signin
+Disallow: /signup
+
+Sitemap: https://uaetrail.ae/sitemap.xml

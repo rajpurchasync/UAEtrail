@@ -1,0 +1,3 @@
+# Placeholder directory for TLS certificates.
+# Mount fullchain.pem and privkey.pem here, then uncomment the
+# HTTPS server block in nginx/default.conf.

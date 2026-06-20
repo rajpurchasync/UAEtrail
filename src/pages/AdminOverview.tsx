@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, AdminMetrics, OrganizerApplication } from '../api/services';
+import { api, AdminMetrics, OrganizerApplication, AuditLogEntry } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { EventDTO } from '@uaetrail/shared-types';
 import { ADMIN_LINKS } from '../constants';
@@ -9,6 +9,7 @@ export const AdminOverview = () => {
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [recentEvents, setRecentEvents] = useState<EventDTO[]>([]);
   const [recentApps, setRecentApps] = useState<OrganizerApplication[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,12 +18,14 @@ export const AdminOverview = () => {
     Promise.all([
       api.getAdminMetrics(),
       api.getAdminEvents(),
-      api.getAdminApplications()
+      api.getAdminApplications(),
+      api.getAdminAuditLogs({ pageSize: 10 }).catch(() => ({ data: [] as AuditLogEntry[] }))
     ])
-      .then(([metricsRes, eventsRes, appsRes]) => {
+      .then(([metricsRes, eventsRes, appsRes, auditRes]) => {
         setMetrics(metricsRes.data);
         setRecentEvents(eventsRes.data.slice(0, 5));
         setRecentApps(appsRes.data.filter((a) => a.status === 'pending').slice(0, 5));
+        setAuditLogs(auditRes.data.slice(0, 10));
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load metrics'))
       .finally(() => setLoading(false));
@@ -31,22 +34,18 @@ export const AdminOverview = () => {
   useEffect(() => { loadData(); }, []);
 
   const metricCards = [
-    { label: 'Total Users', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', link: '/admin/users' },
-    { label: 'Active Users', value: metrics?.activeUsers ?? '-', color: 'bg-cyan-50 text-cyan-700', link: '/admin/users' },
-    { label: 'Active Tenants', value: metrics?.tenants ?? '-', color: 'bg-purple-50 text-purple-700', link: '/admin/organizers' },
-    { label: 'Locations', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', link: '/admin/locations' },
-    { label: 'Total Events', value: metrics?.events ?? '-', color: 'bg-emerald-50 text-emerald-700', link: '/admin/events' },
-    { label: 'Participants', value: metrics?.totalParticipants ?? '-', color: 'bg-indigo-50 text-indigo-700', link: null },
-    { label: 'Pending Apps', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-700', link: '/admin/organizers' },
-    { label: 'Pending Requests', value: metrics?.pendingRequests ?? '-', color: 'bg-orange-50 text-orange-700', link: null }
+    { label: 'Total Locations', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', icon: '📍', link: '/admin/locations' },
+    { label: 'Total Users', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥', link: '/admin/users' },
+    { label: 'Total Organizers', value: metrics?.totalOrganizers ?? '-', color: 'bg-purple-50 text-purple-700', icon: '🏢', link: '/admin/organizers' },
+    { label: 'Active Trips', value: metrics?.activeTrips ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾', link: '/admin/events' }
   ];
 
   if (loading) {
     return (
       <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="rounded-lg p-4 bg-gray-100 animate-pulse h-20" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-lg p-4 bg-gray-100 animate-pulse h-24" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -72,11 +71,14 @@ export const AdminOverview = () => {
       {/* Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {metricCards.map((card) => (
-          <div key={card.label} className={`rounded-lg p-4 ${card.color}`}>
-            <p className="text-xs font-medium opacity-80">{card.label}</p>
-            <p className="text-2xl font-bold mt-1">{card.value}</p>
+          <div key={card.label} className={`rounded-xl p-5 ${card.color}`}>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium opacity-80">{card.label}</p>
+              <span className="text-xl">{card.icon}</span>
+            </div>
+            <p className="text-3xl font-bold mt-2">{card.value}</p>
             {card.link && (
-              <Link to={card.link} className="text-xs underline opacity-70 hover:opacity-100 mt-1 inline-block">View →</Link>
+              <Link to={card.link} className="text-xs underline opacity-70 hover:opacity-100 mt-2 inline-block">View →</Link>
             )}
           </div>
         ))}
@@ -125,6 +127,34 @@ export const AdminOverview = () => {
             ))}
             {recentApps.length === 0 && <p className="px-4 py-6 text-sm text-gray-500 text-center">No pending applications</p>}
           </div>
+        </div>
+      </div>
+
+      {/* Recent Activity (Audit Log) */}
+      <div className="bg-white border rounded-lg mt-6">
+        <div className="px-4 py-3 border-b flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">Recent Activity</h3>
+          <Link to="/admin/audit-log" className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
+        </div>
+        <div className="divide-y max-h-64 overflow-y-auto">
+          {auditLogs.map((log) => (
+            <div key={log.id} className="px-4 py-2.5 flex items-center gap-3 text-sm">
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                log.action.includes('create') || log.action.includes('approve') ? 'bg-green-500' :
+                log.action.includes('delete') || log.action.includes('suspend') || log.action.includes('reject') ? 'bg-red-500' :
+                'bg-blue-500'
+              }`} />
+              <div className="min-w-0 flex-1">
+                <p className="text-gray-900 truncate">
+                  <span className="font-medium">{log.actorName || log.actorEmail}</span>{' '}
+                  <span className="text-gray-500">{log.action.replace(/_/g, ' ')}</span>{' '}
+                  <span className="text-gray-700">{log.entityType}</span>
+                </p>
+              </div>
+              <span className="text-xs text-gray-400 flex-shrink-0">{new Date(log.createdAt).toLocaleDateString()}</span>
+            </div>
+          ))}
+          {auditLogs.length === 0 && <p className="px-4 py-6 text-sm text-gray-500 text-center">No recent activity</p>}
         </div>
       </div>
     </DashboardLayout>

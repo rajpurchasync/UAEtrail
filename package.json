@@ -19,7 +19,9 @@
     "typecheck:api": "npm --workspace @uaetrail/api run typecheck",
     "prisma:generate": "npm --workspace @uaetrail/api run prisma:generate",
     "prisma:migrate": "npm --workspace @uaetrail/api run prisma:migrate",
-    "prisma:seed": "npm --workspace @uaetrail/api run prisma:seed"
+    "prisma:deploy": "npm --workspace @uaetrail/api run prisma:deploy",
+    "prisma:seed": "npm --workspace @uaetrail/api run prisma:seed",
+    "test:api": "npm --workspace @uaetrail/api run test"
   },
   "dependencies": {
     "@uaetrail/shared-types": "*",

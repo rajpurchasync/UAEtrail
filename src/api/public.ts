@@ -8,21 +8,26 @@ const mapTripStatus = (event: EventDTO): Trip['status'] => {
   return 'free';
 };
 
-const mapEventToTrip = (event: EventDTO): Trip => ({
+export const mapEventToTrip = (event: EventDTO): Trip => ({
   id: event.id,
   locationId: event.locationId,
   locationName: event.locationName,
   activityType: event.activityType,
+  title: event.title,
+  description: event.description,
   date: event.date,
   time: event.time,
   operatorId: event.tenantId,
+  tenantSlug: event.tenantSlug,
   organizerName: event.organizerName,
   organizerAvatar: event.organizerAvatar ?? undefined,
+  images: event.images,
   price: event.price,
   slotsAvailable: event.slotsAvailable,
   slotsTotal: event.slotsTotal,
   status: mapTripStatus(event),
-  participantIds: [],
+  participantIds: event.participantPreviews?.map((p) => p.id) ?? [],
+  participantPreviews: event.participantPreviews,
   meetingPoint: event.meetingPoint ?? undefined,
   itinerary: event.itinerary ?? undefined,
   requirements: event.requirements ?? undefined
@@ -33,35 +38,45 @@ const mapLocationToTrail = (location: LocationDTO): Trail => ({
   name: location.name,
   region: location.region as Trail['region'],
   difficulty: location.difficulty ?? 'moderate',
-  distance: 0,
-  duration: 0,
-  elevation: 0,
+  distance: location.distance ?? 0,
+  duration: location.duration ?? 0,
+  elevation: location.elevation ?? 0,
   season: (location.season as Trail['season']) ?? ['winter'],
   childFriendly: location.childFriendly,
   description: location.description,
   images: location.images,
-  featured: location.featured
+  featured: location.featured,
+  latitude: location.latitude,
+  longitude: location.longitude
 });
 
 const mapLocationToCamp = (location: LocationDTO): CampingSpot => ({
   id: location.id,
   name: location.name,
   region: location.region as CampingSpot['region'],
-  campingType: 'operator-led',
+  campingType: (location.campingType as CampingSpot['campingType']) ?? 'operator-led',
   season: (location.season as CampingSpot['season']) ?? ['winter'],
   maxGroupSize: location.maxGroupSize ?? 10,
   accessibility: location.accessibility ?? 'car-accessible',
   difficulty: location.difficulty,
   description: location.description,
   images: location.images,
-  featured: location.featured
+  featured: location.featured,
+  latitude: location.latitude,
+  longitude: location.longitude
 });
 
-export const featureFlags = {
-  useApiHome: true,
-  useApiDiscovery: true,
-  useApiCalendar: true,
-  useApiTripDetail: true
+export const fetchPopularLocations = async (): Promise<{ trails: Trail[]; camps: CampingSpot[] }> => {
+  const res = await api.getPopularLocations(6);
+  return {
+    trails: res.data.filter((l) => l.activityType === 'hiking').map(mapLocationToTrail),
+    camps: res.data.filter((l) => l.activityType === 'camping').map(mapLocationToCamp)
+  };
+};
+
+export const fetchFeaturedEvents = async (): Promise<Trip[]> => {
+  const res = await api.getFeaturedEvents(6);
+  return res.data.map(mapEventToTrip);
 };
 
 export const fetchPublicMappedData = async (): Promise<{
@@ -81,8 +96,8 @@ export const fetchApiTrips = async (): Promise<Trip[]> => {
   return events.data.map(mapEventToTrip);
 };
 
-export const fetchApiLocations = async (): Promise<{ trails: Trail[]; camps: CampingSpot[] }> => {
-  const locations = await api.getPublicLocations();
+export const fetchApiLocations = async (countryCode?: string): Promise<{ trails: Trail[]; camps: CampingSpot[] }> => {
+  const locations = await api.getPublicLocations(countryCode);
   return {
     trails: locations.data.filter((item) => item.activityType === 'hiking').map(mapLocationToTrail),
     camps: locations.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp)
@@ -92,4 +107,13 @@ export const fetchApiLocations = async (): Promise<{ trails: Trail[]; camps: Cam
 export const fetchApiTripDetail = async (id: string) => {
   const response = await api.getPublicEventDetail(id);
   return response.data;
+};
+
+export const fetchApiLocationDetail = async (id: string): Promise<{ trail?: Trail; camp?: CampingSpot }> => {
+  const response = await api.getPublicLocationDetail(id);
+  const loc = response.data;
+  if (loc.activityType === 'hiking') {
+    return { trail: mapLocationToTrail(loc) };
+  }
+  return { camp: mapLocationToCamp(loc) };
 };

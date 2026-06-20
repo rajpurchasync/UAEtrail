@@ -1,13 +1,8 @@
 import { UAERegion } from '../types';
+import { getRegionsForCountry, DEFAULT_COUNTRY } from '../config/regions';
 
-export const UAE_REGIONS: UAERegion[] = [
-  'Dubai',
-  'RAK',
-  'Fujairah',
-  'Abu Dhabi',
-  'Al Ain',
-  'Sharjah'
-];
+/** @deprecated Use getRegionsForCountry() for GCC support */
+export const UAE_REGIONS: UAERegion[] = getRegionsForCountry(DEFAULT_COUNTRY) as UAERegion[];
 
 export const DIFFICULTY_COLORS = {
   easy: 'bg-green-100 text-green-800',
@@ -29,7 +24,7 @@ export const ADMIN_LINKS = [
   { to: '/admin/events', label: 'Events' },
   { to: '/admin/shop', label: 'Shop' },
   { to: '/admin/audit-log', label: 'Audit Log' },
-  { to: '/admin/settings', label: 'Notifications' }
+  { to: '/admin/settings', label: 'Broadcast' }
 ];
 
 export const HIKING_SUBCATEGORIES = [
@@ -44,4 +39,20 @@ export const CAMPING_SUBCATEGORIES = [
   'Chairs',
   'BBQ',
   'Accessories'
+];
+
+export const COUNTRIES = [
+  'Afghanistan','Albania','Algeria','Andorra','Angola','Argentina','Armenia','Australia','Austria','Azerbaijan',
+  'Bahrain','Bangladesh','Belarus','Belgium','Bhutan','Bolivia','Bosnia and Herzegovina','Brazil','Brunei','Bulgaria',
+  'Cambodia','Cameroon','Canada','Chile','China','Colombia','Costa Rica','Croatia','Cuba','Cyprus','Czech Republic',
+  'Denmark','Dominican Republic','Ecuador','Egypt','El Salvador','Estonia','Ethiopia','Fiji','Finland','France',
+  'Georgia','Germany','Ghana','Greece','Guatemala','Honduras','Hungary','Iceland','India','Indonesia','Iran','Iraq',
+  'Ireland','Israel','Italy','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kuwait','Kyrgyzstan','Laos','Latvia',
+  'Lebanon','Libya','Lithuania','Luxembourg','Malaysia','Maldives','Malta','Mexico','Moldova','Monaco','Mongolia',
+  'Montenegro','Morocco','Mozambique','Myanmar','Nepal','Netherlands','New Zealand','Nigeria','North Macedonia',
+  'Norway','Oman','Pakistan','Palestine','Panama','Paraguay','Peru','Philippines','Poland','Portugal','Qatar',
+  'Romania','Russia','Rwanda','Saudi Arabia','Senegal','Serbia','Singapore','Slovakia','Slovenia','Somalia',
+  'South Africa','South Korea','Spain','Sri Lanka','Sudan','Sweden','Switzerland','Syria','Taiwan','Tajikistan',
+  'Tanzania','Thailand','Tunisia','Turkey','Turkmenistan','UAE','Uganda','Ukraine','United Kingdom','United States',
+  'Uruguay','Uzbekistan','Venezuela','Vietnam','Yemen','Zambia','Zimbabwe',
 ];

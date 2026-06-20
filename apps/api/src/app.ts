@@ -6,6 +6,8 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
+import { globalLimiter } from './middleware/rate-limit.js';
+import { requestTimeout } from './middleware/request-timeout.js';
 import { traceIdMiddleware } from './middleware/trace-id.js';
 import { openApiSpec } from './openapi.js';
 import { apiRouter } from './routes/index.js';
@@ -39,13 +41,16 @@ app.use(
       }
       callback(new Error(`CORS blocked origin: ${origin}`));
     },
-    credentials: true
+    credentials: true,
+    maxAge: 86400
   })
 );
 app.use(helmet());
+app.use(globalLimiter);
+app.use(requestTimeout());
 app.use(traceIdMiddleware);
-app.use(morgan('dev'));
-app.use(express.json({ limit: '5mb' }));
+app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
 app.get('/health', (_req, res) => {

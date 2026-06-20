@@ -19,6 +19,8 @@ export interface Trail {
   description: string;
   images: string[];
   featured: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface CampingSpot {
@@ -33,6 +35,8 @@ export interface CampingSpot {
   description: string;
   images: string[];
   featured: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface Operator {
@@ -56,18 +60,23 @@ export interface Trip {
   id: string;
   locationId: string;
   locationName: string;
+  title?: string;
+  description?: string;
   region?: UAERegion | string;
   activityType: ActivityType;
   date: string;
   time: string;
   operatorId: string;
+  tenantSlug?: string;
   organizerName?: string;
   organizerAvatar?: string;
+  images?: string[];
   price: number;
   slotsAvailable: number;
   slotsTotal: number;
   status: TripStatus;
   participantIds: string[];
+  participantPreviews?: Array<{ id: string; name: string; avatar?: string | null }>;
   meetingPoint?: string;
   itinerary?: string[];
   requirements?: string[];

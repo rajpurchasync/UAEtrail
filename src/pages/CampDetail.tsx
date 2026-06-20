@@ -1,17 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Users, Tent, Car, Calendar, Lock } from 'lucide-react';
-import { campingSpots, trips, reviews } from '../data';
-import { TripCard, BookingModal, ShareButton, Breadcrumb } from '../components/ui';
-import { Trip } from '../types';
+import { ReviewDTO } from '@uaetrail/shared-types';
+import { TripCard, BookingModal, ShareButton, Breadcrumb, FavoriteButton } from '../components/ui';
+import { CampingSpot, Trip } from '../types';
+import { fetchApiLocationDetail, mapEventToTrip } from '../api/public';
+import { api } from '../api/services';
 
 export const CampDetail = () => {
   const { id } = useParams();
-  const camp = campingSpots.find((c) => c.id === id);
+  const [camp, setCamp] = useState<CampingSpot | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [campTrips, setCampTrips] = useState<Trip[]>([]);
+  const [campReviews, setCampReviews] = useState<ReviewDTO[]>([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [bookingTrip, setBookingTrip] = useState<Trip | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'route' | 'location'>('overview');
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    api.trackLocationView(id).catch(() => undefined);
+    setLoading(true);
+    Promise.all([
+      fetchApiLocationDetail(id),
+      api.getLocationEvents(id).catch(() => ({ data: [] })),
+      api.getReviews('location', id).catch(() => ({ data: [] }))
+    ])
+      .then(([locResult, eventsRes, reviewsRes]) => {
+        setCamp(locResult.camp ?? null);
+        setCampTrips(eventsRes.data.map(mapEventToTrip));
+        setCampReviews(reviewsRes.data);
+      })
+      .catch(() => setCamp(null))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-600" />
+      </div>
+    );
+  }
 
   if (!camp) {
     return (
@@ -24,18 +54,8 @@ export const CampDetail = () => {
     );
   }
 
-  const campTrips = trips.filter(
-    (t) => t.locationId === camp.id && new Date(t.date) >= new Date()
-  ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  const campReviews = reviews.filter((r) => r.locationId === camp.id);
-
   const handleTabClick = (tab: 'overview' | 'route' | 'location') => {
-    if (tab === 'route' || tab === 'location') {
-      setShowPremiumModal(true);
-    } else {
-      setActiveTab(tab);
-    }
+    setActiveTab(tab);
   };
 
   return (
@@ -80,7 +100,7 @@ export const CampDetail = () => {
             <div>
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{camp.name}</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{camp.name}</h1>
                   <div className="flex items-center text-gray-600">
                     <MapPin className="w-5 h-5 mr-1" />
                     <span>{camp.region}</span>
@@ -164,20 +184,37 @@ export const CampDetail = () => {
               </button>
               <button
                 onClick={() => handleTabClick('route')}
-                className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center"
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'route' ? 'border-amber-600 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
               >
                 Route
-                <Lock className="w-4 h-4 ml-1" />
               </button>
               <button
                 onClick={() => handleTabClick('location')}
-                className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center"
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'location' ? 'border-amber-600 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
               >
                 Location
-                <Lock className="w-4 h-4 ml-1" />
               </button>
             </nav>
           </div>
+
+          {activeTab === 'route' && (
+            <div className="py-6 text-center bg-amber-50 rounded-xl mt-4 px-4">
+              <Lock className="w-8 h-8 text-amber-600 mx-auto mb-2" />
+              <p className="text-gray-700 text-sm mb-3">Detailed route maps are a premium member benefit.</p>
+              <Link to="/membership" className="text-amber-700 font-medium text-sm hover:underline">View membership →</Link>
+            </div>
+          )}
+          {activeTab === 'location' && (
+            <div className="py-6 text-center bg-amber-50 rounded-xl mt-4 px-4">
+              <Lock className="w-8 h-8 text-amber-600 mx-auto mb-2" />
+              <p className="text-gray-700 text-sm mb-3">Parking and access coordinates unlock with membership.</p>
+              <Link to="/membership" className="text-amber-700 font-medium text-sm hover:underline">View membership →</Link>
+            </div>
+          )}
         </div>
       </div>
 
@@ -186,11 +223,11 @@ export const CampDetail = () => {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Upcoming Camping Trips</h2>
+              <h2 className="text-lg md:text-xl font-bold text-gray-900">Upcoming Camping Trips</h2>
               <p className="text-gray-600 mt-1">Join organized camping at this location</p>
             </div>
             <Link
-              to="/calendar"
+              to="/trips"
               className="text-amber-600 hover:text-amber-700 font-medium inline-flex items-center"
             >
               <Calendar className="w-5 h-5 mr-1" />
@@ -201,25 +238,21 @@ export const CampDetail = () => {
           {campTrips.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <p className="text-gray-600">No upcoming trips scheduled for this location yet.</p>
-              <Link to="/calendar" className="text-amber-600 hover:text-amber-700 mt-2 inline-block">
+              <Link to="/trips" className="text-amber-600 hover:text-amber-700 mt-2 inline-block">
                 Check all upcoming trips
               </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {campTrips.map((trip) => (
-                <TripCard
-                  key={trip.id}
-                  trip={trip}
-                  onJoin={() => setBookingTrip(trip)}
-                />
+                <TripCard key={trip.id} trip={trip} />
               ))}
             </div>
           )}
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h2>
+          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-6">Reviews</h2>
           {campReviews.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <p className="text-gray-600">No reviews yet for this camping spot.</p>
@@ -246,7 +279,7 @@ export const CampDetail = () => {
                     </div>
                   </div>
                   <p className="text-gray-600">{review.comment}</p>
-                  <div className="text-sm text-gray-500 mt-2">{review.date}</div>
+                  <div className="text-sm text-gray-500 mt-2">{new Date(review.createdAt).toLocaleDateString()}</div>
                 </div>
               ))}
             </div>
@@ -256,36 +289,6 @@ export const CampDetail = () => {
 
       {bookingTrip && (
         <BookingModal trip={bookingTrip} onClose={() => setBookingTrip(null)} />
-      )}
-
-      {showPremiumModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-8 relative">
-            <button
-              onClick={() => setShowPremiumModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <div className="text-center">
-              <Lock className="w-16 h-16 text-amber-600 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Premium Feature</h3>
-              <p className="text-gray-600 mb-6">
-                Access detailed route maps, parking locations, and camping start points with a premium membership.
-              </p>
-              <Link
-                to="/membership"
-                className="block w-full bg-amber-600 text-white text-center py-3 rounded-lg hover:bg-amber-700 transition-colors font-medium"
-                onClick={() => setShowPremiumModal(false)}
-              >
-                View Membership Plans
-              </Link>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

@@ -1,492 +1,291 @@
-import { useState } from 'react';
-import { Search, MessageSquare, ThumbsUp, MapPin, Tent, TrendingUp, Plus, X, Send } from 'lucide-react';
-
-interface Discussion {
-  id: string;
-  title: string;
-  author: string;
-  avatar: string;
-  category: string;
-  replies: Reply[];
-  likes: string[];
-  lastActivity: string;
-  excerpt: string;
-  content: string;
-}
-
-interface Reply {
-  id: string;
-  author: string;
-  avatar: string;
-  content: string;
-  timestamp: string;
-  likes: string[];
-}
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, MessageSquare, ThumbsUp, Plus, X, Send, MapPin } from 'lucide-react';
+import { PostDTO } from '@uaetrail/shared-types';
+import { api } from '../api/services';
+import { useAuth } from '../context/AuthContext';
+import { ImageUpload } from '../components/ui/ImageUpload';
 
 export const Community = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState<PostDTO[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [showNewDiscussionModal, setShowNewDiscussionModal] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [expandedDiscussion, setExpandedDiscussion] = useState<string | null>(null);
+  const [expandedPost, setExpandedPost] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
-  const [discussions, setDiscussions] = useState<Discussion[]>([
-    {
-      id: '1',
-      title: 'Best time to visit Jebel Jais Summit Trail?',
-      author: 'Ahmed Al Mansoori',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
-      category: 'questions',
-      replies: [
-        {
-          id: 'r1',
-          author: 'Sarah Williams',
-          avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
-          content: 'I recommend going in winter months (November to March). The weather is perfect and the views are stunning!',
-          timestamp: '1 hour ago',
-          likes: []
-        },
-        {
-          id: 'r2',
-          author: 'Mohammed Hassan',
-          avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100',
-          content: 'Also bring plenty of water and start early in the morning to avoid the midday heat even in winter.',
-          timestamp: '45 minutes ago',
-          likes: []
-        }
-      ],
-      likes: [],
-      lastActivity: '2 hours ago',
-      excerpt: 'Planning my first hike to Jebel Jais and wondering what\'s the best time of year to go? Any recommendations on what to bring?',
-      content: 'Planning my first hike to Jebel Jais and wondering what\'s the best time of year to go? Any recommendations on what to bring?'
-    },
-    {
-      id: '2',
-      title: 'Amazing sunrise at Fossil Rock - Trip Report',
-      author: 'Sarah Williams',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
-      category: 'trip-reports',
-      replies: [],
-      likes: [],
-      lastActivity: '5 hours ago',
-      excerpt: 'Just got back from an incredible camping trip at Fossil Rock. The sunrise was absolutely breathtaking! Here are some tips...',
-      content: 'Just got back from an incredible camping trip at Fossil Rock. The sunrise was absolutely breathtaking! Here are some tips for anyone planning to visit.'
-    },
-    {
-      id: '3',
-      title: 'Hiking boots recommendation for UAE terrain',
-      author: 'Mohammed Hassan',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100',
-      category: 'gear',
-      replies: [],
-      likes: [],
-      lastActivity: '1 day ago',
-      excerpt: 'Looking for durable hiking boots suitable for rocky terrain and hot weather. What have you all been using?',
-      content: 'Looking for durable hiking boots suitable for rocky terrain and hot weather. What have you all been using?'
-    },
-    {
-      id: '4',
-      title: 'Family-friendly camping spots near Dubai?',
-      author: 'Fatima Al Zaabi',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100',
-      category: 'questions',
-      replies: [],
-      likes: [],
-      lastActivity: '1 day ago',
-      excerpt: 'Planning a weekend camping trip with kids (ages 5 and 8). Looking for safe, accessible spots with basic facilities...',
-      content: 'Planning a weekend camping trip with kids (ages 5 and 8). Looking for safe, accessible spots with basic facilities...'
-    },
-    {
-      id: '5',
-      title: 'Pro tip: Always check weather forecasts before mountain hikes',
-      author: 'David Chen',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
-      category: 'tips',
-      replies: [],
-      likes: [],
-      lastActivity: '2 days ago',
-      excerpt: 'After experiencing sudden weather changes during my last hike, here are some safety tips everyone should know...',
-      content: 'After experiencing sudden weather changes during my last hike, here are some safety tips everyone should know...'
-    },
-    {
-      id: '6',
-      title: 'Wadi Shawka Loop - Complete Guide',
-      author: 'Lisa Anderson',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100',
-      category: 'trip-reports',
-      replies: [],
-      likes: [],
-      lastActivity: '3 days ago',
-      excerpt: 'Comprehensive guide to the Wadi Shawka Loop trail including parking, trail conditions, and must-see viewpoints...',
-      content: 'Comprehensive guide to the Wadi Shawka Loop trail including parking, trail conditions, and must-see viewpoints...'
+  const [showNewPost, setShowNewPost] = useState(false);
+  const [newPost, setNewPost] = useState({ title: '', content: '', category: 'questions', locationId: '', images: [] as string[] });
+  const [submitting, setSubmitting] = useState(false);
+
+  const loadPosts = async () => {
+    setLoading(true);
+    try {
+      const res = await api.getPosts({
+        category: selectedCategory,
+        search: searchQuery || undefined
+      });
+      setPosts(res.data);
+    } catch {
+      setPosts([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
-
-  const categories = [
-    { id: 'all', name: 'All', icon: MessageSquare },
-    { id: 'trip-reports', name: 'Trip Reports', icon: MapPin },
-    { id: 'questions', name: 'Questions', icon: MessageSquare },
-    { id: 'tips', name: 'Tips & Tricks', icon: TrendingUp },
-    { id: 'gear', name: 'Gear Reviews', icon: Tent }
-  ];
-
-  const filteredDiscussions = discussions.filter((discussion) => {
-    const matchesCategory = selectedCategory === 'all' || discussion.category === selectedCategory;
-    const matchesSearch = discussion.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      discussion.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  const getCategoryColor = (categoryId: string) => {
-    const colors: Record<string, string> = {
-      'trip-reports': 'bg-blue-100 text-blue-700',
-      'questions': 'bg-stone-200 text-stone-800',
-      'tips': 'bg-emerald-100 text-emerald-700',
-      'gear': 'bg-teal-100 text-teal-700'
-    };
-    return colors[categoryId] || 'bg-stone-100 text-stone-700';
   };
 
-  const handleLike = (discussionId: string) => {
-    if (!isSignedIn) {
-      alert('Please sign in to like discussions');
-      return;
-    }
+  useEffect(() => {
+    loadPosts();
+  }, [selectedCategory]);
 
-    setDiscussions(prev => prev.map(d => {
-      if (d.id === discussionId) {
-        const userId = 'current-user';
-        const hasLiked = d.likes.includes(userId);
-        return {
-          ...d,
-          likes: hasLiked
-            ? d.likes.filter(id => id !== userId)
-            : [...d.likes, userId]
-        };
-      }
-      return d;
-    }));
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    loadPosts();
   };
 
-  const handleReplyLike = (discussionId: string, replyId: string) => {
-    if (!isSignedIn) {
-      alert('Please sign in to like replies');
+  const handleReply = async (postId: string) => {
+    if (!user) {
+      navigate('/signin');
       return;
     }
-
-    setDiscussions(prev => prev.map(d => {
-      if (d.id === discussionId) {
-        return {
-          ...d,
-          replies: d.replies.map(r => {
-            if (r.id === replyId) {
-              const userId = 'current-user';
-              const hasLiked = r.likes.includes(userId);
-              return {
-                ...r,
-                likes: hasLiked
-                  ? r.likes.filter(id => id !== userId)
-                  : [...r.likes, userId]
-              };
-            }
-            return r;
-          })
-        };
-      }
-      return d;
-    }));
-  };
-
-  const handleReply = (discussionId: string) => {
-    if (!isSignedIn) {
-      alert('Please sign in to reply to discussions');
-      return;
-    }
-
     if (!replyText.trim()) return;
-
-    setDiscussions(prev => prev.map(d => {
-      if (d.id === discussionId) {
-        const newReply: Reply = {
-          id: `r${Date.now()}`,
-          author: 'Current User',
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100',
-          content: replyText,
-          timestamp: 'Just now',
-          likes: []
-        };
-        return {
-          ...d,
-          replies: [...d.replies, newReply],
-          lastActivity: 'Just now'
-        };
-      }
-      return d;
-    }));
-
+    await api.replyToPost(postId, replyText.trim());
     setReplyText('');
+    const res = await api.getPost(postId);
+    setPosts((prev) => prev.map((p) => (p.id === postId ? res.data : p)));
+  };
+
+  const handleLike = async (postId: string) => {
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+    await api.togglePostLike(postId);
+    loadPosts();
+  };
+
+  const handleCreatePost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.createPost({
+        category: newPost.category,
+        title: newPost.title,
+        content: newPost.content,
+        locationId: newPost.locationId || undefined,
+        images: newPost.images
+      });
+      setShowNewPost(false);
+      setNewPost({ title: '', content: '', category: 'questions', locationId: '', images: [] });
+      loadPosts();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <section
-        className="relative h-80 bg-cover bg-center"
-        style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1504851149312-7a075b496cc7?w=1600)'
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-stone-800/70 to-stone-900/80" />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-          <div className="text-white max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Welcome to Our Community</h1>
-            <p className="text-lg md:text-xl text-stone-100 mb-6">
-              Connect with fellow adventurers, share your experiences, and discover new trails together.
-              A warm and welcoming space for all outdoor enthusiasts.
-            </p>
-            {!isSignedIn && (
-              <button
-                onClick={() => setIsSignedIn(true)}
-                className="bg-emerald-600 text-white px-8 py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium inline-flex items-center"
-              >
-                Join Our Community
-              </button>
-            )}
+    <div className="min-h-screen bg-gray-50 pb-nav-safe md:pb-8">
+      <div className="bg-white border-b sticky top-16 z-30">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Community</h1>
+              <p className="text-sm text-gray-600 mt-1">Questions, trip reports & photos — anchored to UAE locations</p>
+            </div>
+            <button
+              onClick={() => (user ? setShowNewPost(true) : navigate('/signin'))}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700"
+            >
+              <Plus className="w-4 h-4" />
+              New post
+            </button>
           </div>
-        </div>
-      </section>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <form onSubmit={handleSearch} className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
-              type="text"
-              placeholder="Search discussions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              placeholder="Search discussions..."
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
             />
-          </div>
+          </form>
 
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
-                    selectedCategory === category.id
-                      ? 'bg-emerald-600 text-white shadow-md'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{category.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {filteredDiscussions.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-              <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No discussions found matching your search.</p>
-            </div>
-          ) : (
-            filteredDiscussions.map((discussion) => (
-              <div
-                key={discussion.id}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden"
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${selectedCategory === 'all' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600'}`}
+            >
+              All
+            </button>
+            {COMMUNITY_CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${selectedCategory === cat.id ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600'}`}
               >
-                <div className="p-6">
-                  <div className="flex items-start gap-4">
-                    <img
-                      src={discussion.avatar}
-                      alt={discussion.author}
-                      className="w-14 h-14 rounded-full flex-shrink-0 border-2 border-stone-200"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4 mb-2">
-                        <div>
-                          <h3
-                            className="text-xl font-semibold text-gray-900 hover:text-emerald-600 transition-colors cursor-pointer"
-                            onClick={() => setExpandedDiscussion(expandedDiscussion === discussion.id ? null : discussion.id)}
-                          >
-                            {discussion.title}
-                          </h3>
-                          <p className="text-sm text-gray-600 mt-1">{discussion.author} • {discussion.lastActivity}</p>
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 ${getCategoryColor(discussion.category)}`}>
-                          {categories.find(c => c.id === discussion.category)?.name || discussion.category}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 mb-4 leading-relaxed">{discussion.excerpt}</p>
-
-                      <div className="flex items-center gap-6 text-sm">
-                        <button
-                          onClick={() => handleLike(discussion.id)}
-                          className={`flex items-center gap-1 transition-colors ${
-                            discussion.likes.includes('current-user') && isSignedIn
-                              ? 'text-emerald-600 font-medium'
-                              : 'text-gray-600 hover:text-emerald-600'
-                          }`}
-                        >
-                          <ThumbsUp className={`w-4 h-4 ${discussion.likes.includes('current-user') && isSignedIn ? 'fill-current' : ''}`} />
-                          <span>{discussion.likes.length} {discussion.likes.length === 1 ? 'Like' : 'Likes'}</span>
-                        </button>
-                        <button
-                          onClick={() => setExpandedDiscussion(expandedDiscussion === discussion.id ? null : discussion.id)}
-                          className="flex items-center gap-1 text-gray-600 hover:text-emerald-600 transition-colors"
-                        >
-                          <MessageSquare className="w-4 h-4" />
-                          <span>{discussion.replies.length} {discussion.replies.length === 1 ? 'Reply' : 'Replies'}</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {expandedDiscussion === discussion.id && (
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                      <div className="space-y-4 mb-6">
-                        {discussion.replies.map((reply) => (
-                          <div key={reply.id} className="flex gap-3 pl-4">
-                            <img
-                              src={reply.avatar}
-                              alt={reply.author}
-                              className="w-10 h-10 rounded-full flex-shrink-0 border border-stone-200"
-                            />
-                            <div className="flex-1 bg-gray-50 rounded-lg p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-gray-900">{reply.author}</span>
-                                <span className="text-xs text-gray-500">{reply.timestamp}</span>
-                              </div>
-                              <p className="text-gray-700 mb-2">{reply.content}</p>
-                              <button
-                                onClick={() => handleReplyLike(discussion.id, reply.id)}
-                                className={`flex items-center gap-1 text-xs transition-colors ${
-                                  reply.likes.includes('current-user') && isSignedIn
-                                    ? 'text-emerald-600 font-medium'
-                                    : 'text-gray-600 hover:text-emerald-600'
-                                }`}
-                              >
-                                <ThumbsUp className={`w-3 h-3 ${reply.likes.includes('current-user') && isSignedIn ? 'fill-current' : ''}`} />
-                                <span>{reply.likes.length}</span>
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="flex gap-3 pl-4">
-                        <img
-                          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"
-                          alt="You"
-                          className="w-10 h-10 rounded-full flex-shrink-0 border border-stone-200"
-                        />
-                        <div className="flex-1 flex gap-2">
-                          <input
-                            type="text"
-                            placeholder={isSignedIn ? "Write a reply..." : "Sign in to reply..."}
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleReply(discussion.id)}
-                            disabled={!isSignedIn}
-                            className="flex-1 px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100"
-                          />
-                          <button
-                            onClick={() => handleReply(discussion.id)}
-                            disabled={!isSignedIn || !replyText.trim()}
-                            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                          >
-                            <Send className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
+                {cat.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {isSignedIn && (
-        <button
-          onClick={() => setShowNewDiscussionModal(true)}
-          className="fixed bottom-8 right-8 bg-emerald-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 hover:bg-emerald-700"
-          aria-label="Start new discussion"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      )}
-
-      {showNewDiscussionModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-emerald-600 text-white px-6 py-4 flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Start a New Discussion</h2>
-              <button
-                onClick={() => setShowNewDiscussionModal(false)}
-                className="text-white hover:text-gray-200 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
-                    <option value="">Select a category</option>
-                    <option value="trip-reports">Trip Reports</option>
-                    <option value="questions">Questions</option>
-                    <option value="tips">Tips & Tricks</option>
-                    <option value="gear">Gear Reviews</option>
-                  </select>
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+            <MessageSquare className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+            <p className="text-gray-600">No posts yet. Be the first to ask a question!</p>
+          </div>
+        ) : (
+          posts.map((post) => (
+            <article key={post.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="p-5">
+                <div className="flex items-start gap-3">
+                  {post.authorAvatar ? (
+                    <img src={post.authorAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
+                      {post.authorName.charAt(0)}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-gray-900">{post.authorName}</span>
+                      <span className="text-xs text-gray-400 capitalize">{post.category.replace('-', ' ')}</span>
+                    </div>
+                    {post.locationName && (
+                      <p className="text-xs text-emerald-600 flex items-center gap-1 mt-0.5">
+                        <MapPin className="w-3 h-3" />
+                        {post.locationName}
+                      </p>
+                    )}
+                    <h2 className="text-lg font-bold text-gray-900 mt-2">{post.title}</h2>
+                    <p className="text-gray-600 mt-1 text-sm">{post.excerpt}</p>
+                    {post.images.length > 0 && (
+                      <div className="grid grid-cols-2 gap-2 mt-3">
+                        {post.images.map((img, i) => (
+                          <img key={i} src={img} alt="" className="rounded-xl aspect-video object-cover" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                  <input
-                    type="text"
-                    placeholder="What's your discussion about?"
-                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <textarea
-                    rows={6}
-                    placeholder="Share your thoughts, experiences, or questions..."
-                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-4">
+                <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-50">
                   <button
-                    onClick={() => {
-                      setShowNewDiscussionModal(false);
-                    }}
-                    className="flex-1 bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-all font-medium"
+                    onClick={() => handleLike(post.id)}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600"
                   >
-                    Post Discussion
+                    <ThumbsUp className="w-4 h-4" />
+                    {post.likeCount}
                   </button>
                   <button
-                    onClick={() => setShowNewDiscussionModal(false)}
-                    className="px-6 py-3 border border-stone-300 text-gray-700 rounded-lg hover:bg-stone-50 transition-colors font-medium"
+                    onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600"
                   >
-                    Cancel
+                    <MessageSquare className="w-4 h-4" />
+                    {post.replyCount} replies
                   </button>
                 </div>
+
+                {expandedPost === post.id && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                    {post.replies.map((reply) => (
+                      <div key={reply.id} className="flex gap-2 text-sm">
+                        <span className="font-medium text-gray-900">{reply.authorName}:</span>
+                        <span className="text-gray-600">{reply.content}</span>
+                      </div>
+                    ))}
+                    <div className="flex gap-2">
+                      <input
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder="Write a reply..."
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                      />
+                      <button
+                        onClick={() => handleReply(post.id)}
+                        className="p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      {showNewPost && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="font-bold text-gray-900">New post</h2>
+              <button onClick={() => setShowNewPost(false)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
+            <form onSubmit={handleCreatePost} className="p-4 space-y-4">
+              <select
+                value={newPost.category}
+                onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+              >
+                {COMMUNITY_CATEGORIES.map((c) => (
+                  <option key={c.id} value={c.id}>{c.label}</option>
+                ))}
+              </select>
+              <input
+                required
+                value={newPost.title}
+                onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                placeholder="Title"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2"
+              />
+              <textarea
+                required
+                rows={4}
+                value={newPost.content}
+                onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                placeholder="Share your question, trip report, or tip..."
+                className="w-full border border-gray-200 rounded-xl px-3 py-2"
+              />
+              <input
+                value={newPost.locationId}
+                onChange={(e) => setNewPost({ ...newPost, locationId: e.target.value })}
+                placeholder="Location ID (optional — link to a trail/camp)"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+              />
+              {(newPost.category === 'photos' || newPost.category === 'trip-reports') && (
+                <ImageUpload
+                  images={newPost.images}
+                  onChange={(urls) => setNewPost({ ...newPost, images: urls })}
+                  keyPrefix="community"
+                  kind="community"
+                  max={6}
+                  label="Photos"
+                />
+              )}
+              <p className="text-xs text-gray-500">
+                Tip: open a <Link to="/discovery" className="text-emerald-600">location page</Link> and paste its ID to anchor your post.
+              </p>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {submitting ? 'Posting…' : 'Publish'}
+              </button>
+            </form>
           </div>
         </div>
       )}

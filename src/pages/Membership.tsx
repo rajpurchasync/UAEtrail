@@ -14,7 +14,7 @@ export const Membership = () => {
     'Everything in Free',
     'Advanced offline maps with GPX downloads',
     'Early access to trip bookings',
-    '15% discount on all gear purchases',
+    '10% member discount on partner gear (Shop)',
     'Access to exclusive premium trails & camps',
     'Priority customer support',
     'Detailed trail conditions & weather updates',
@@ -61,6 +61,14 @@ export const Membership = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Coming Soon Banner */}
+      <div className="bg-amber-50 border-b border-amber-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-200 text-amber-800">COMING SOON</span>
+          <p className="text-sm text-amber-800">Premium memberships are launching soon. Stay tuned for exclusive trails, offline maps &amp; gear discounts!</p>
+        </div>
+      </div>
+
       <section
         className="relative h-80 bg-cover bg-center"
         style={{
@@ -70,8 +78,8 @@ export const Membership = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/40" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
           <div className="text-white">
-            <h1 className="text-5xl font-bold mb-4">Choose Your Membership</h1>
-            <p className="text-xl">Unlock the full potential of UAE outdoor adventures</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-3">Choose Your Membership</h1>
+            <p className="text-sm md:text-base">Unlock the full potential of UAE outdoor adventures</p>
           </div>
         </div>
       </section>
@@ -79,8 +87,8 @@ export const Membership = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Free</h2>
-            <div className="text-4xl font-bold text-gray-900 mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Free</h2>
+            <div className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
               AED 0<span className="text-lg font-normal text-gray-600">/month</span>
             </div>
 
@@ -95,7 +103,7 @@ export const Membership = () => {
 
             <Link
               to="/discovery"
-              className="block w-full bg-gray-900 text-white text-center py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+              className="block w-full bg-gray-900 text-white text-center py-3 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
             >
               Get Started Free
             </Link>
@@ -106,9 +114,9 @@ export const Membership = () => {
               POPULAR
             </div>
 
-            <h2 className="text-2xl font-bold mb-2">Premium</h2>
+            <h2 className="text-xl font-bold mb-2">Premium</h2>
             <div className="mb-2">
-              <span className="text-4xl font-bold">AED 99</span>
+              <span className="text-2xl md:text-3xl font-bold">AED 99</span>
               <span className="text-lg">/month</span>
             </div>
             <div className="text-emerald-100 mb-6">or AED 999/year (save 16%)</div>
@@ -122,26 +130,26 @@ export const Membership = () => {
               ))}
             </ul>
 
-            <button className="block w-full bg-white text-emerald-600 text-center py-3 rounded-lg hover:bg-gray-100 transition-colors font-medium">
+            <button className="block w-full bg-white text-emerald-600 text-center py-3 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium">
               Upgrade to Premium
             </button>
           </div>
         </div>
 
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Gift Membership</h2>
+          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-6 text-center">Gift Membership</h2>
           <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto">
             <p className="text-gray-600 mb-6 text-center">
               Give the gift of adventure! Purchase a premium membership for someone special.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <button className="border-2 border-emerald-600 text-emerald-600 py-3 rounded-lg hover:bg-emerald-50 transition-colors font-medium">
+              <button className="border-2 border-emerald-600 text-emerald-600 py-3 rounded-lg hover:bg-emerald-50 transition-colors text-sm font-medium">
                 3 Months - AED 297
               </button>
-              <button className="border-2 border-emerald-600 text-emerald-600 py-3 rounded-lg hover:bg-emerald-50 transition-colors font-medium">
+              <button className="border-2 border-emerald-600 text-emerald-600 py-3 rounded-lg hover:bg-emerald-50 transition-colors text-sm font-medium">
                 6 Months - AED 594
               </button>
-              <button className="bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+              <button className="bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium">
                 1 Year - AED 999
               </button>
             </div>
@@ -149,7 +157,7 @@ export const Membership = () => {
         </section>
 
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What Members Say</h2>
+          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-6 text-center">What Members Say</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-white rounded-lg shadow-md p-6">
@@ -166,7 +174,7 @@ export const Membership = () => {
         </section>
 
         <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-6 text-center">
             Frequently Asked Questions
           </h2>
           <div className="max-w-3xl mx-auto space-y-4">

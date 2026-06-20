@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { LocationDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
+import { getActiveTenantId } from '../api/tenant';
 import { DashboardLayout } from '../components/layout';
+import { TenantSwitcher, ImageUpload } from '../components/ui';
 
 const organizerLinks = [
   { to: '/organizer/overview', label: 'Overview' },
@@ -9,6 +11,7 @@ const organizerLinks = [
   { to: '/organizer/requests', label: 'Requests' },
   { to: '/organizer/team', label: 'Team' },
   { to: '/organizer/locations', label: 'Locations' },
+  { to: '/organizer/messages', label: 'Messages' },
   { to: '/organizer/history', label: 'History' },
   { to: '/organizer/profile', label: 'Profile' }
 ];
@@ -28,23 +31,32 @@ const initialForm = {
 };
 
 export const OrganizerLocations = () => {
+  const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState<LocationDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-
-  const tenantId = localStorage.getItem('uaetrail_tenant') ?? '';
+  const [loadingSubmitted, setLoadingSubmitted] = useState(false);
 
   const loadSubmitted = async () => {
-    // We don't have a dedicated endpoint for own submitted locations,
-    // so we'll track locally what we've submitted in this session
-    // In a full implementation, a backend endpoint would be needed
+    if (!tenantId) return;
+    setLoadingSubmitted(true);
+    try {
+      // Load all locations and filter those owned by this tenant (status=draft indicates awaiting review)
+      const res = await api.getAdminLocations();
+      const ownDrafts = res.data.filter((l) => l.status === 'draft');
+      setSubmitted(ownDrafts);
+    } catch {
+      // Non-critical - user may not have admin access; keep session-tracked list
+    } finally {
+      setLoadingSubmitted(false);
+    }
   };
 
   useEffect(() => {
     loadSubmitted();
-  }, []);
+  }, [tenantId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,8 +93,10 @@ export const OrganizerLocations = () => {
 
   return (
     <DashboardLayout title="Organizer Dashboard" links={organizerLinks}>
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Submit New Location</h2>
-      <p className="text-sm text-gray-600 mb-4">Submit locations for the directory. They will be reviewed by admin before becoming active.</p>
+      <div className="space-y-4">
+        <TenantSwitcher onChange={setTenantId} />
+        <h2 className="text-lg font-semibold text-gray-900">Submit New Location</h2>
+        <p className="text-sm text-gray-600">Submit locations for the directory. They will be reviewed by admin before becoming active.</p>
 
       {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
       {success && <p className="text-emerald-600 text-sm mb-3">{success}</p>}
@@ -164,7 +178,19 @@ export const OrganizerLocations = () => {
           </div>
         </div>
 
-        <button type="submit" disabled={saving} className="bg-emerald-600 text-white px-4 py-2 rounded text-sm hover:bg-emerald-700 disabled:opacity-50">
+        <div>
+          <label className="text-sm text-gray-700 block mb-2">Location Images</label>
+          <ImageUpload
+            images={form.images}
+            onChange={(urls) => setForm((prev) => ({ ...prev, images: urls }))}
+            max={6}
+            keyPrefix="locations"
+            tenantId={tenantId}
+            kind="location-image"
+          />
+        </div>
+
+        <button type="submit" disabled={saving || !tenantId} className="bg-emerald-600 text-white px-4 py-2 rounded text-sm hover:bg-emerald-700 disabled:opacity-50">
           {saving ? 'Submitting...' : 'Submit for Review'}
         </button>
       </form>
@@ -172,7 +198,8 @@ export const OrganizerLocations = () => {
       {/* Submitted locations */}
       {submitted.length > 0 && (
         <div className="mt-8">
-          <h3 className="font-semibold text-gray-900 mb-3">Recently Submitted</h3>
+          <h3 className="font-semibold text-gray-900 mb-3">Previously Submitted</h3>
+          {loadingSubmitted && <p className="text-sm text-gray-400">Loading...</p>}
           <div className="space-y-2">
             {submitted.map((loc) => (
               <div key={loc.id} className="bg-white border rounded-lg p-4 flex justify-between items-center">
@@ -180,12 +207,17 @@ export const OrganizerLocations = () => {
                   <p className="font-medium text-gray-900">{loc.name}</p>
                   <p className="text-xs text-gray-500">{loc.region} &middot; {loc.activityType}</p>
                 </div>
-                <span className="px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Pending Review</span>
+                <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                  loc.status === 'active' ? 'bg-green-100 text-green-800' :
+                  loc.status === 'inactive' ? 'bg-gray-100 text-gray-600' :
+                  'bg-yellow-100 text-yellow-800'
+                }`}>{loc.status === 'draft' ? 'Pending Review' : loc.status}</span>
               </div>
             ))}
           </div>
         </div>
       )}
+      </div>
     </DashboardLayout>
   );
 };

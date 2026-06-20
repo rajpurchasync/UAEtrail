@@ -1,9 +1,11 @@
-import { ProductStatus } from '@prisma/client';
+import { ProductStatus, OrderStatus } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
 import { createAuditLog } from '../lib/audit.js';
 import { prisma } from '../lib/prisma.js';
+import { getStripe, isStripeConfigured } from '../lib/stripe.js';
+import { env } from '../config/env.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
@@ -51,6 +53,7 @@ shopRouter.get('/products', validate({ query: productListSchema }), async (req, 
         images: p.images,
         priceAed: p.priceAed,
         discountPercent: p.discountPercent,
+        externalUrl: p.externalUrl,
         packagingInfo: p.packagingInfo,
         category: p.category,
         status: p.status.toLowerCase(),
@@ -81,6 +84,7 @@ shopRouter.get('/products/:id', validate({ params: idParamSchema }), async (req,
         images: product.images,
         priceAed: product.priceAed,
         discountPercent: product.discountPercent,
+        externalUrl: product.externalUrl,
         packagingInfo: product.packagingInfo,
         category: product.category,
         status: product.status.toLowerCase(),
@@ -133,6 +137,118 @@ shopRouter.get('/merchants/:id', validate({ params: idParamSchema }), async (req
         }))
       }
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+shopRouter.get('/checkout/config', (_req, res) => {
+  res.json({ data: { stripeEnabled: isStripeConfigured() } });
+});
+
+const checkoutSchema = z.object({
+  productId: z.string().min(1),
+  quantity: z.coerce.number().int().min(1).max(10).default(1)
+});
+
+shopRouter.post('/checkout', requireAuth, requireVerifiedEmail, validate({ body: checkoutSchema }), async (req, res, next) => {
+  try {
+    const { productId, quantity } = req.body as z.infer<typeof checkoutSchema>;
+    const product = await prisma.product.findFirst({
+      where: { id: productId, status: ProductStatus.ACTIVE }
+    });
+    if (!product) throw new ApiError(404, 'product_not_found', 'Product not found.');
+    if (product.externalUrl) {
+      throw new ApiError(400, 'external_product', 'This product uses an external buy link.');
+    }
+
+    const stripe = await getStripe();
+    const unitPrice = product.priceAed;
+    const totalAed = unitPrice * quantity;
+
+    const order = await prisma.shopOrder.create({
+      data: {
+        userId: req.auth!.userId,
+        totalAed,
+        items: {
+          create: {
+            productId: product.id,
+            quantity,
+            unitPriceAed: unitPrice
+          }
+        }
+      }
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      success_url: `${env.APP_BASE_URL}/shop?checkout=success&order=${order.id}`,
+      cancel_url: `${env.APP_BASE_URL}/product/${product.id}?checkout=cancelled`,
+      client_reference_id: order.id,
+      metadata: { orderId: order.id, userId: req.auth!.userId },
+      line_items: [
+        {
+          quantity,
+          price_data: {
+            currency: 'aed',
+            unit_amount: unitPrice * 100,
+            product_data: {
+              name: product.name,
+              description: product.description?.slice(0, 200) ?? undefined,
+              images: product.images.slice(0, 1)
+            }
+          }
+        }
+      ]
+    });
+
+    await prisma.shopOrder.update({
+      where: { id: order.id },
+      data: { stripeSessionId: session.id }
+    });
+
+    res.json({ data: { sessionId: session.id, url: session.url } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Stripe webhook — mount raw body in app.ts if needed; here accept JSON for dev
+shopRouter.post('/webhook/stripe', async (req, res, next) => {
+  try {
+    if (!isStripeConfigured()) {
+      res.status(503).json({ error: 'stripe_not_configured' });
+      return;
+    }
+
+    const stripe = await getStripe();
+    const sig = req.headers['stripe-signature'] as string | undefined;
+    let event: import('stripe').Stripe.Event;
+
+    if (sig && process.env.STRIPE_WEBHOOK_SECRET) {
+      event = stripe.webhooks.constructEvent(
+        (req as { rawBody?: Buffer }).rawBody ?? JSON.stringify(req.body),
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } else if (process.env.NODE_ENV !== 'production') {
+      event = req.body as import('stripe').Stripe.Event;
+    } else {
+      throw new ApiError(400, 'missing_signature', 'Webhook signature required.');
+    }
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as import('stripe').Stripe.Checkout.Session;
+      const orderId = session.metadata?.orderId ?? session.client_reference_id;
+      if (orderId) {
+        await prisma.shopOrder.updateMany({
+          where: { id: orderId, status: OrderStatus.PENDING },
+          data: { status: OrderStatus.PAID }
+        });
+      }
+    }
+
+    res.json({ received: true });
   } catch (error) {
     next(error);
   }
@@ -246,10 +362,17 @@ shopRouter.get('/merchant/products', requireAuth, requireVerifiedEmail, async (r
     const profile = await getMerchantProfile(req.auth!.userId);
     if (!profile) throw new ApiError(404, 'profile_not_found', 'Merchant profile not found.');
 
-    const products = await prisma.product.findMany({
-      where: { merchantId: profile.id },
-      orderBy: { createdAt: 'desc' }
-    });
+    const pg = paginationSchema.parse(req.query);
+    const where = { merchantId: profile.id };
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (pg.page - 1) * pg.pageSize,
+        take: pg.pageSize
+      }),
+      prisma.product.count({ where })
+    ]);
 
     res.json({
       data: products.map((p) => ({
@@ -259,11 +382,18 @@ shopRouter.get('/merchant/products', requireAuth, requireVerifiedEmail, async (r
         images: p.images,
         priceAed: p.priceAed,
         discountPercent: p.discountPercent,
+        externalUrl: p.externalUrl,
         packagingInfo: p.packagingInfo,
         category: p.category,
         status: p.status.toLowerCase(),
         createdAt: p.createdAt.toISOString()
-      }))
+      })),
+      meta: {
+        page: pg.page,
+        pageSize: pg.pageSize,
+        total,
+        totalPages: Math.ceil(total / pg.pageSize)
+      }
     });
   } catch (error) {
     next(error);

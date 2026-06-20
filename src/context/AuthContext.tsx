@@ -1,10 +1,11 @@
 import { AuthResponse, AuthUser } from '@uaetrail/shared-types';
-import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { apiRequest, getStoredSession, setStoredSession, USER_STORAGE_KEY } from '../api/client';
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
+  initializing: boolean;
   signIn: (email: string, password: string) => Promise<AuthUser>;
   signOut: () => Promise<void>;
   register: (payload: {
@@ -39,6 +40,39 @@ const setStoredUser = (user: AuthUser | null): void => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser);
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(() => !!getStoredSession());
+
+  // Revalidate stored session on mount
+  useEffect(() => {
+    const session = getStoredSession();
+    if (!session?.accessToken) {
+      setInitializing(false);
+      return;
+    }
+
+    apiRequest<{ data: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string } }>('/me/profile', { auth: true })
+      .then((res) => {
+        const profile = res.data;
+        const revalidatedUser: AuthUser = {
+          id: profile.id,
+          email: profile.email,
+          role: profile.role as AuthUser['role'],
+          displayName: profile.displayName,
+          avatarUrl: profile.avatarUrl
+        };
+        setStoredUser(revalidatedUser);
+        setUser(revalidatedUser);
+      })
+      .catch(() => {
+        // Token invalid — clear everything
+        setStoredSession(null);
+        setStoredUser(null);
+        setUser(null);
+      })
+      .finally(() => {
+        setInitializing(false);
+      });
+  }, []);
 
   const signIn = async (email: string, password: string): Promise<AuthUser> => {
     setLoading(true);
@@ -107,11 +141,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       user,
       loading,
+      initializing,
       signIn,
       signOut,
       register
     }),
-    [user, loading]
+    [user, loading, initializing]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,18 +1,23 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, SlidersHorizontal } from 'lucide-react';
-import { trails, campingSpots } from '../data';
+import { Link } from 'react-router-dom';
+import { Search, SlidersHorizontal, Map, List } from 'lucide-react';
 import { TrailCard } from '../components/ui/TrailCard';
 import { CampingCard } from '../components/ui/CampingCard';
-import { ActivityType, DifficultyLevel, CampingType, Accessibility } from '../types';
-import { featureFlags, fetchApiLocations } from '../api/public';
+import { PageMeta } from '../components/seo/PageMeta';
+import { ActivityType, DifficultyLevel, CampingType, Accessibility, Trail, CampingSpot } from '../types';
+import { fetchApiLocations } from '../api/public';
+import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, getMapBounds, CountryCode } from '../config/regions';
 
 export const Discovery = () => {
   const [activityType, setActivityType] = useState<ActivityType>('hiking');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [trailSource, setTrailSource] = useState(trails);
-  const [campSource, setCampSource] = useState(campingSpots);
-  const [loading, setLoading] = useState(false);
+  const [trailSource, setTrailSource] = useState<Trail[]>([]);
+  const [campSource, setCampSource] = useState<CampingSpot[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY);
 
   const [filters, setFilters] = useState({
     difficulty: [] as DifficultyLevel[],
@@ -25,19 +30,23 @@ export const Discovery = () => {
   });
 
   useEffect(() => {
-    if (!featureFlags.useApiDiscovery) return;
     setLoading(true);
-    fetchApiLocations()
+    setLoadError(null);
+    fetchApiLocations(countryCode)
       .then((response) => {
         setTrailSource(response.trails);
         setCampSource(response.camps);
       })
-      .catch(() => {
-        setTrailSource(trails);
-        setCampSource(campingSpots);
+      .catch((err) => {
+        setTrailSource([]);
+        setCampSource([]);
+        setLoadError(err instanceof Error ? err.message : 'Failed to load locations');
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [countryCode]);
+
+  const regionOptions = getRegionsForCountry(countryCode);
+  const mapBounds = getMapBounds(countryCode);
 
   const filteredLocations = useMemo(() => {
     let locations: Array<{ type: 'trail' | 'camp'; data: any }> = [];
@@ -145,12 +154,36 @@ export const Discovery = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <PageMeta
+        title="Explore trails & camps"
+        description="Browse hiking trails and camping spots across UAE, Saudi Arabia, Oman, and the wider GCC."
+        path="/discovery"
+      />
       <div className="bg-white border-b sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Discover Trails & Camps</h1>
-          <p className="text-gray-600 text-sm mb-4">Explore hiking trails and camping spots across the UAE</p>
+          <p className="text-gray-600 text-sm mb-4">Explore hiking trails and camping spots across the GCC</p>
+          {loadError && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+              {loadError}
+            </p>
+          )}
 
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-none">
+            {SUPPORTED_COUNTRIES.map((c) => (
+              <button
+                key={c.code}
+                onClick={() => { setCountryCode(c.code); setFilters((f) => ({ ...f, regions: [] })); }}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
+                  countryCode === c.code ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-3">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -164,34 +197,50 @@ export const Discovery = () => {
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center"
+              className="lg:hidden px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center shrink-0"
             >
-              <SlidersHorizontal className="w-5 h-5 mr-2" />
-              Filters
+              <SlidersHorizontal className="w-5 h-5" />
+              <span className="hidden sm:inline ml-2">Filters</span>
             </button>
           </div>
 
-          <div className="flex gap-2 mt-4 justify-center md:justify-start">
+          <div className="flex gap-2 mt-4 justify-center md:justify-start items-center flex-wrap">
             <button
               onClick={() => setActivityType('hiking')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                 activityType === 'hiking'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Hiking
             </button>
             <button
               onClick={() => setActivityType('camping')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                 activityType === 'camping'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Camping
             </button>
+            <div className="ml-auto flex gap-1 bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-md ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500'}`}
+                aria-label="List view"
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={`p-2 rounded-md ${viewMode === 'map' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500'}`}
+                aria-label="Map view"
+              >
+                <Map className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -215,7 +264,7 @@ export const Discovery = () => {
               <div className="mb-6">
                 <h3 className="font-medium text-gray-900 mb-3">Location</h3>
                 <div className="space-y-2">
-                  {['Dubai', 'RAK', 'Sharjah', 'Fujairah', 'Abu Dhabi'].map((region) => (
+                  {regionOptions.map((region) => (
                     <label key={region} className="flex items-center">
                       <input
                         type="checkbox"
@@ -344,8 +393,40 @@ export const Discovery = () => {
                   Clear filters
                 </button>
               </div>
+            ) : viewMode === 'map' ? (
+              <div className="relative bg-emerald-50 rounded-2xl border border-emerald-100 overflow-hidden min-h-[420px]">
+                <iframe
+                  title="UAE locations map"
+                  className="w-full h-[420px] border-0 opacity-90"
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapBounds.west}%2C${mapBounds.south}%2C${mapBounds.east}%2C${mapBounds.north}&layer=mapnik`}
+                />
+                <div className="absolute inset-0 pointer-events-none">
+                  {filteredLocations.map((location) => {
+                    const item = location.data;
+                    const lat = item.latitude;
+                    const lng = item.longitude;
+                    if (lat == null || lng == null) return null;
+                    const left = ((lng - mapBounds.west) / (mapBounds.east - mapBounds.west)) * 100;
+                    const top = ((mapBounds.north - lat) / (mapBounds.north - mapBounds.south)) * 100;
+                    const path = location.type === 'trail' ? `/trail/${item.id}` : `/camp/${item.id}`;
+                    return (
+                      <Link
+                        key={item.id}
+                        to={path}
+                        className="pointer-events-auto absolute -translate-x-1/2 -translate-y-full"
+                        style={{ left: `${left}%`, top: `${top}%` }}
+                        title={item.name}
+                      >
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold shadow-lg ring-2 ring-white">
+                          {item.name.charAt(0)}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredLocations.map((location, index) =>
                   location.type === 'trail' ? (
                     <TrailCard key={`trail-${location.data.id}-${index}`} trail={location.data} />

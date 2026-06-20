@@ -1,59 +1,84 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import {
-  Home,
-  Discovery,
-  TrailDetail,
-  CampDetail,
-  Calendar,
-  Membership,
-  Shop,
-  Community,
-  TripDetail,
-  OperatorProfile,
-  SignUp,
-  SignIn,
-  AdminOverview,
-  AdminLocations,
-  AdminOrganizers,
-  AdminEvents,
-  AdminUsers,
-  AdminAuditLog,
-  AdminSettings,
-  AdminShop,
-  OrganizerOverview,
-  OrganizerEvents,
-  OrganizerRequests,
-  OrganizerTeam,
-  OrganizerProfile,
-  OrganizerLocations,
-  OrganizerHistory,
-  UserOverview,
-  UserRequests,
-  UserTrips,
-  UserProfile,
-  Messages,
-  MerchantDashboard
-} from './pages';
+
+// ─── Lazy-loaded pages ───────────────────────────────────────────────────────
+const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
+const Discovery = lazy(() => import('./pages/Discovery').then((m) => ({ default: m.Discovery })));
+const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
+const CampDetail = lazy(() => import('./pages/CampDetail').then((m) => ({ default: m.CampDetail })));
+
+const Membership = lazy(() => import('./pages/Membership').then((m) => ({ default: m.Membership })));
+const Shop = lazy(() => import('./pages/Shop').then((m) => ({ default: m.Shop })));
+const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
+const MerchantPublic = lazy(() => import('./pages/MerchantPublic').then((m) => ({ default: m.MerchantPublic })));
+const Community = lazy(() => import('./pages/Community').then((m) => ({ default: m.Community })));
+const TripDetail = lazy(() => import('./pages/TripDetail').then((m) => ({ default: m.TripDetail })));
+const OperatorProfile = lazy(() => import('./pages/OperatorProfile').then((m) => ({ default: m.OperatorProfile })));
+const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
+const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
+const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
+const Onboarding = lazy(() => import('./pages/Onboarding').then((m) => ({ default: m.Onboarding })));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
+const AdminOverview = lazy(() => import('./pages/AdminOverview').then((m) => ({ default: m.AdminOverview })));
+const AdminLocations = lazy(() => import('./pages/AdminLocations').then((m) => ({ default: m.AdminLocations })));
+const AdminOrganizers = lazy(() => import('./pages/AdminOrganizers').then((m) => ({ default: m.AdminOrganizers })));
+const AdminEvents = lazy(() => import('./pages/AdminEvents').then((m) => ({ default: m.AdminEvents })));
+const AdminUsers = lazy(() => import('./pages/AdminUsers').then((m) => ({ default: m.AdminUsers })));
+const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog').then((m) => ({ default: m.AdminAuditLog })));
+const AdminSettings = lazy(() => import('./pages/AdminSettings').then((m) => ({ default: m.AdminSettings })));
+const AdminShop = lazy(() => import('./pages/AdminShop').then((m) => ({ default: m.AdminShop })));
+const OrganizerOverview = lazy(() => import('./pages/OrganizerOverview').then((m) => ({ default: m.OrganizerOverview })));
+const OrganizerEvents = lazy(() => import('./pages/OrganizerEvents').then((m) => ({ default: m.OrganizerEvents })));
+const OrganizerRequests = lazy(() => import('./pages/OrganizerRequests').then((m) => ({ default: m.OrganizerRequests })));
+const OrganizerTeam = lazy(() => import('./pages/OrganizerTeam').then((m) => ({ default: m.OrganizerTeam })));
+const OrganizerProfile = lazy(() => import('./pages/OrganizerProfile').then((m) => ({ default: m.OrganizerProfile })));
+const OrganizerLocations = lazy(() => import('./pages/OrganizerLocations').then((m) => ({ default: m.OrganizerLocations })));
+const OrganizerHistory = lazy(() => import('./pages/OrganizerHistory').then((m) => ({ default: m.OrganizerHistory })));
+const UserOverview = lazy(() => import('./pages/UserOverview').then((m) => ({ default: m.UserOverview })));
+const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
+const UserTrips = lazy(() => import('./pages/UserTrips').then((m) => ({ default: m.UserTrips })));
+const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
+const MerchantDashboard = lazy(() => import('./pages/MerchantDashboard').then((m) => ({ default: m.MerchantDashboard })));
+const Trips = lazy(() => import('./pages/Trips').then((m) => ({ default: m.Trips })));
+const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
+const BecomeOrganizer = lazy(() => import('./pages/BecomeOrganizer').then((m) => ({ default: m.BecomeOrganizer })));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
+  </div>
+);
 
 function App() {
   return (
-    <Router>
-      <Layout>
+    <ErrorBoundary>
+      <Router>
+        <Layout>
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/discovery" element={<Discovery />} />
           <Route path="/trail/:id" element={<TrailDetail />} />
           <Route path="/camp/:id" element={<CampDetail />} />
-          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/calendar" element={<Navigate to="/trips" replace />} />
+          <Route path="/trips" element={<Trips />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/trip/:id" element={<TripDetail />} />
           <Route path="/operator/:id" element={<OperatorProfile />} />
+          <Route path="/become-organizer" element={<BecomeOrganizer />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/shop" element={<Shop />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/merchant/:id" element={<MerchantPublic />} />
           <Route path="/community" element={<Community />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/verify" element={<VerifyOTP />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/login" element={<SignIn />} />
           <Route
             path="/admin/overview"
@@ -184,6 +209,14 @@ function App() {
             }
           />
           <Route
+            path="/organizer/messages"
+            element={
+              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/dashboard/overview"
             element={
               <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
@@ -209,11 +242,7 @@ function App() {
           />
           <Route
             path="/dashboard/profile"
-            element={
-              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
-                <UserProfile />
-              </ProtectedRoute>
-            }
+            element={<Navigate to="/profile" replace />}
           />
           <Route
             path="/dashboard/messages"
@@ -240,8 +269,10 @@ function App() {
             </div>
           } />
         </Routes>
+        </Suspense>
       </Layout>
     </Router>
+    </ErrorBoundary>
   );
 }
 

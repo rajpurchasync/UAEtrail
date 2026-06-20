@@ -71,6 +71,7 @@ enum RequestStatus {
   APPROVED
   REJECTED
   CANCELLED
+  WAITLISTED
 }
 
 enum OrganizerApplicationStatus {
@@ -83,12 +84,20 @@ enum NotificationType {
   REQUEST_UPDATE
   SYSTEM
   EVENT
+  REVIEW_PROMPT
 }
 
 enum ProductStatus {
   DRAFT
   ACTIVE
   INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
 }
 
 model User {
@@ -121,6 +130,13 @@ model User {
   receivedMessages       ChatMessage[]            @relation("ReceivedMessages")
   merchantProfile        MerchantProfile?
   submittedLocations     Location[]               @relation("SubmittedLocations")
+  favorites              UserFavorite[]
+  reviews                Review[]
+  posts                  Post[]
+  postReplies            PostReply[]
+  postLikes              PostLike[]
+  pushSubscriptions      PushSubscription[]
+  shopOrders             ShopOrder[]
 }
 
 model Profile {
@@ -140,6 +156,7 @@ model Tenant {
   type                  TenantType
   status                TenantStatus           @default(PENDING)
   ownerId               String
+  countryCode           String                 @default("AE")
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   owner                 User                   @relation("TenantOwner", fields: [ownerId], references: [id])
@@ -173,11 +190,15 @@ model OrganizerApplication {
   reviewerId         String?
   reviewerNote       String?
   reviewedAt         DateTime?
+  metadata           Json?
   createdAt          DateTime                   @default(now())
   updatedAt          DateTime                   @updatedAt
   applicant          User                       @relation("ApplicationApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
   requestedTenant    Tenant?                    @relation(fields: [requestedTenantId], references: [id])
   reviewer           User?                      @relation("ApplicationReviewer", fields: [reviewerId], references: [id])
+
+  @@index([status])
+  @@index([applicantId])
 }
 
 model Location {
@@ -201,11 +222,22 @@ model Location {
   latitude      Float?
   longitude     Float?
   highlights    String[]
+  surfaceType   String[]
+  tags          String[]
+  parkingLink   String?
+  accessibleBy  String[]
+  viewCount     Int            @default(0)
+  countryCode   String         @default("AE")
   submittedById String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   events        Event[]
   submittedBy   User?          @relation("SubmittedLocations", fields: [submittedById], references: [id])
+  favorites     UserFavorite[]
+  posts         Post[]
+
+  @@index([status, activityType])
+  @@index([status, featured, createdAt])
 }
 
 model Event {
@@ -221,9 +253,11 @@ model Event {
   meetingPoint String?
   itinerary    String[]
   requirements String[]
+  images       String[]
   priceAed     Int         @default(0)
   capacity     Int
   status       EventStatus @default(DRAFT)
+  featured     Boolean     @default(false)
   publishedAt  DateTime?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -234,6 +268,12 @@ model Event {
   requests     EventRequest[]
   participants EventParticipant[]
   chatMessages ChatMessage[]
+  favorites    UserFavorite[]
+  posts        Post[]
+
+  @@index([tenantId, startAt])
+  @@index([status, startAt])
+  @@index([locationId])
 }
 
 model EventRequest {
@@ -253,6 +293,9 @@ model EventRequest {
   participant   EventParticipant?
 
   @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
 }
 
 model EventParticipant {
@@ -284,6 +327,8 @@ model MediaAsset {
   createdAt    DateTime @default(now())
   uploadedBy   User     @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
   tenant       Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
 }
 
 model Notification {
@@ -296,6 +341,9 @@ model Notification {
   meta      Json?
   createdAt DateTime         @default(now())
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, isRead])
 }
 
 model RefreshToken {
@@ -323,6 +371,10 @@ model AuditLog {
   createdAt  DateTime @default(now())
   actor      User     @relation("AuditActor", fields: [actorId], references: [id], onDelete: Cascade)
   tenant     Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([entityType, createdAt])
+  @@index([action])
+  @@index([tenantId])
 }
 
 model EmailVerificationToken {
@@ -359,6 +411,7 @@ model ChatMessage {
 
   @@index([senderId, receiverId])
   @@index([receiverId, readAt])
+  @@index([eventId])
 }
 
 model MerchantProfile {
@@ -383,10 +436,142 @@ model Product {
   images          String[]
   priceAed        Int
   discountPercent Int?
+  externalUrl     String?
   packagingInfo   String?
   category        String
   status          ProductStatus   @default(DRAFT)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   merchant        MerchantProfile @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  orderItems      ShopOrderItem[]
+
+  @@index([merchantId])
+  @@index([status])
+  @@index([category])
+}
+
+model ShopOrder {
+  id              String          @id @default(uuid())
+  userId          String
+  stripeSessionId String?         @unique
+  status          OrderStatus     @default(PENDING)
+  totalAed        Int
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items           ShopOrderItem[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model ShopOrderItem {
+  id           String    @id @default(uuid())
+  orderId      String
+  productId    String
+  quantity     Int
+  unitPriceAed Int
+  order        ShopOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product   @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, endpoint])
+  @@index([userId])
+}
+
+enum ReviewTargetType {
+  LOCATION
+  TENANT
+}
+
+enum PostCategory {
+  QUESTIONS
+  TRIP_REPORTS
+  PHOTOS
+  TIPS
+}
+
+model UserFavorite {
+  id         String    @id @default(uuid())
+  userId     String
+  locationId String?
+  eventId    String?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  event      Event?    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, locationId])
+  @@unique([userId, eventId])
+  @@index([userId])
+}
+
+model Review {
+  id         String           @id @default(uuid())
+  targetType ReviewTargetType
+  targetId   String
+  userId     String
+  rating     Int
+  comment    String
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetId])
+  @@index([targetType, targetId])
+}
+
+model Post {
+  id         String       @id @default(uuid())
+  category   PostCategory
+  title      String
+  content    String
+  images     String[]
+  locationId String?
+  eventId    String?
+  authorId   String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  author     User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  location   Location?    @relation(fields: [locationId], references: [id])
+  event      Event?       @relation(fields: [eventId], references: [id])
+  replies    PostReply[]
+  likes      PostLike[]
+
+  @@index([category, createdAt])
+  @@index([locationId])
+}
+
+model PostReply {
+  id        String   @id @default(uuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
 }

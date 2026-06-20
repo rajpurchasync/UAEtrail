@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api/services';
 import { MerchantProfileDTO, ProductDTO } from '@uaetrail/shared-types';
 import { DashboardLayout } from '../components/layout';
+import { ImageUpload } from '../components/ui';
 
 const merchantLinks = [
   { to: '/merchant/dashboard', label: 'Dashboard' },
@@ -25,6 +26,7 @@ export const MerchantDashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<'profile' | 'products'>('profile');
+  const [confirmDelete, setConfirmDelete] = useState<MerchantProduct | null>(null);
 
   const loadProfile = async () => {
     try {
@@ -128,12 +130,13 @@ export const MerchantDashboard = () => {
   };
 
   const deleteProduct = async (id: string) => {
-    if (!confirm('Deactivate this product?')) return;
     try {
       await api.deleteMerchantProduct(id);
+      setConfirmDelete(null);
       await loadProducts();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to delete product');
+      setConfirmDelete(null);
     }
   };
 
@@ -234,6 +237,16 @@ export const MerchantDashboard = () => {
                     <label className="text-sm text-gray-700 block mb-1">Packaging Info</label>
                     <input type="text" value={productForm.packagingInfo} onChange={(e) => setProductForm({ ...productForm, packagingInfo: e.target.value })} className="border rounded w-full px-3 py-2 text-sm" />
                   </div>
+                  <div>
+                    <label className="text-sm text-gray-700 block mb-2">Product Images</label>
+                    <ImageUpload
+                      images={productForm.images}
+                      onChange={(urls) => setProductForm((prev) => ({ ...prev, images: urls }))}
+                      max={6}
+                      keyPrefix="products"
+                      kind="product-image"
+                    />
+                  </div>
                   <div className="flex gap-2">
                     <button type="submit" disabled={saving} className="bg-emerald-600 text-white px-4 py-2 rounded text-sm hover:bg-emerald-700 disabled:opacity-50">
                       {saving ? 'Saving...' : editingProductId ? 'Update' : 'Add Product'}
@@ -273,7 +286,7 @@ export const MerchantDashboard = () => {
                           <div className="flex gap-2">
                             <button onClick={() => editProduct(p)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
                             {p.status !== 'inactive' && (
-                              <button onClick={() => deleteProduct(p.id)} className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs">Deactivate</button>
+                              <button onClick={() => setConfirmDelete(p)} className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs">Deactivate</button>
                             )}
                           </div>
                         </td>
@@ -284,6 +297,22 @@ export const MerchantDashboard = () => {
               </div>
             </>
           )}
+        </div>
+      )}
+      {/* Deactivate Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmDelete(null)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Deactivate Product?</h3>
+            <p className="text-sm text-gray-600 mb-1">
+              This will remove the product from the public shop. You can re-activate it later from your product list.
+            </p>
+            <p className="text-sm font-medium text-gray-900 mb-4">{confirmDelete.name}</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setConfirmDelete(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button onClick={() => deleteProduct(confirmDelete.id)} className="px-4 py-2 rounded-md text-sm text-white bg-red-600 hover:bg-red-700">Deactivate</button>
+            </div>
+          </div>
         </div>
       )}
     </DashboardLayout>

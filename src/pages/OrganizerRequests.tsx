@@ -10,6 +10,7 @@ const organizerLinks = [
   { to: '/organizer/requests', label: 'Join Requests' },
   { to: '/organizer/team', label: 'Team' },
   { to: '/organizer/locations', label: 'Locations' },
+  { to: '/organizer/messages', label: 'Messages' },
   { to: '/organizer/history', label: 'History' },
   { to: '/organizer/profile', label: 'Profile' }
 ];

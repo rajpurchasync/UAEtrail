@@ -22,7 +22,9 @@ const credentials = {
   organizer: 'Organizer@12345',
   guide: 'Guide@12345',
   visitor: 'Visitor@12345',
-  pendingVisitor: 'Visitor2@12345'
+  pendingVisitor: 'Visitor2@12345',
+  suspended: 'Suspended@12345',
+  guide2: 'Guide2@12345'
 };
 
 const upsertUser = async ({
@@ -102,6 +104,33 @@ async function main() {
     displayName: 'Pending Visitor'
   });
 
+  // Suspended user — for admin user-management testing
+  const suspendedHash = await bcrypt.hash(credentials.suspended, 10);
+  const suspendedUser = await prisma.user.upsert({
+    where: { email: 'suspended@uaetrails.app' },
+    update: { status: UserStatus.SUSPENDED },
+    create: {
+      email: 'suspended@uaetrails.app',
+      passwordHash: suspendedHash,
+      role: UserRole.VISITOR,
+      status: UserStatus.SUSPENDED,
+      emailVerifiedAt: new Date()
+    }
+  });
+  await prisma.profile.upsert({
+    where: { userId: suspendedUser.id },
+    update: { displayName: 'Suspended User' },
+    create: { userId: suspendedUser.id, displayName: 'Suspended User' }
+  });
+
+  // Second guide who owns a guide-owned tenant
+  const guide2 = await upsertUser({
+    email: 'guide2@uaetrails.app',
+    password: credentials.guide2,
+    role: UserRole.TENANT_OWNER,
+    displayName: 'Desert Explorer Guide'
+  });
+
   const tenant = await prisma.tenant.upsert({
     where: { slug: 'uae-adventure-co' },
     update: {
@@ -151,6 +180,61 @@ async function main() {
       tenantId: tenant.id,
       userId: guide.id,
       role: MembershipRole.TENANT_GUIDE
+    }
+  });
+
+  // ─── Second Tenant (GUIDE_OWNED) ─────────────────────────────────────────
+
+  const tenant2 = await prisma.tenant.upsert({
+    where: { slug: 'desert-explorer' },
+    update: {
+      name: 'Desert Explorer',
+      type: TenantType.GUIDE_OWNED,
+      status: TenantStatus.ACTIVE,
+      ownerId: guide2.id
+    },
+    create: {
+      id: 'tenant-desert-explorer',
+      name: 'Desert Explorer',
+      slug: 'desert-explorer',
+      type: TenantType.GUIDE_OWNED,
+      status: TenantStatus.ACTIVE,
+      ownerId: guide2.id
+    }
+  });
+
+  await prisma.tenantMembership.upsert({
+    where: {
+      tenantId_userId: {
+        tenantId: tenant2.id,
+        userId: guide2.id
+      }
+    },
+    update: { role: MembershipRole.TENANT_OWNER },
+    create: {
+      tenantId: tenant2.id,
+      userId: guide2.id,
+      role: MembershipRole.TENANT_OWNER
+    }
+  });
+
+  // ─── Pending Organizer Application ────────────────────────────────────────
+
+  await prisma.organizerApplication.upsert({
+    where: { id: 'seed-app-pending' },
+    update: {
+      applicantId: pendingVisitor.id,
+      requestedName: 'Hatta Hiking Club',
+      requestedSlug: 'hatta-hiking-club',
+      requestedType: TenantType.COMPANY,
+      status: 'PENDING' as never
+    },
+    create: {
+      id: 'seed-app-pending',
+      applicantId: pendingVisitor.id,
+      requestedName: 'Hatta Hiking Club',
+      requestedSlug: 'hatta-hiking-club',
+      requestedType: TenantType.COMPANY
     }
   });
 
@@ -251,6 +335,44 @@ async function main() {
       requirements: ['Water 2L', 'Hiking shoes', 'Cap and sunscreen'],
       priceAed: 120,
       capacity: 15,
+      status: EventStatus.PUBLISHED,
+      publishedAt: new Date()
+    }
+  });
+
+  // ─── Second Event (tenant2 — Desert Explorer) ────────────────────────────
+
+  const start2 = new Date();
+  start2.setDate(start2.getDate() + 14);
+  start2.setHours(16, 0, 0, 0);
+
+  await prisma.event.upsert({
+    where: { id: 'seed-event-fossil-camp' },
+    update: {
+      tenantId: tenant2.id,
+      locationId: 'fossil-rock-desert-camp',
+      createdById: guide2.id,
+      title: 'Fossil Rock Overnight Camp',
+      description: 'Desert camping with stargazing and sunrise photography.',
+      startAt: start2,
+      priceAed: 200,
+      capacity: 12,
+      status: EventStatus.PUBLISHED,
+      publishedAt: new Date()
+    },
+    create: {
+      id: 'seed-event-fossil-camp',
+      tenantId: tenant2.id,
+      locationId: 'fossil-rock-desert-camp',
+      createdById: guide2.id,
+      title: 'Fossil Rock Overnight Camp',
+      description: 'Desert camping with stargazing and sunrise photography.',
+      startAt: start2,
+      meetingPoint: 'Sharjah Desert Road (coordinates shared upon booking)',
+      itinerary: ['Arrive by 4 PM', 'Set up camp', 'Sunset BBQ', 'Stargazing session', 'Sunrise photography'],
+      requirements: ['Sleeping bag', 'Warm jacket', 'Camera (optional)', 'Water 3L'],
+      priceAed: 200,
+      capacity: 12,
       status: EventStatus.PUBLISHED,
       publishedAt: new Date()
     }
@@ -459,9 +581,13 @@ async function main() {
   console.log(`Admin: admin@uaetrails.app / ${credentials.admin}`);
   console.log(`Organizer: organizer@uaetrails.app / ${credentials.organizer}`);
   console.log(`Guide: guide@uaetrails.app / ${credentials.guide}`);
+  console.log(`Guide2 (tenant owner): guide2@uaetrails.app / ${credentials.guide2}`);
   console.log(`Visitor: visitor@uaetrails.app / ${credentials.visitor}`);
   console.log(`Pending Visitor: visitor2@uaetrails.app / ${credentials.pendingVisitor}`);
-  console.log(`Organizer tenant id: ${tenant.id}`);
+  console.log(`Suspended: suspended@uaetrails.app / ${credentials.suspended}`);
+  console.log(`Tenant 1 (COMPANY): ${tenant.id} — ${tenant.slug}`);
+  console.log(`Tenant 2 (GUIDE_OWNED): ${tenant2.id} — ${tenant2.slug}`);
+  console.log(`Pending application: Hatta Hiking Club (by ${pendingVisitor.email})`);
   console.log(`Seeded by admin id: ${admin.id}`);
   console.log(`Merchant profile: ${merchantProfile.shopName} (${seedProducts.length} products)`);
   console.log(`Chat messages: ${chatMessages.length} seeded`);

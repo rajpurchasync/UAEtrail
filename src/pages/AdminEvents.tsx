@@ -1,18 +1,42 @@
 import { useEffect, useState } from 'react';
-import { EventDTO } from '@uaetrail/shared-types';
+import { EventDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { DashboardLayout } from '../components/layout';
+import { ImageUpload } from '../components/ui';
 import { ADMIN_LINKS } from '../constants';
+
+type Tab = 'active' | 'past';
+
+const emptyForm = {
+  tenantId: '',
+  locationId: '',
+  title: '',
+  description: '',
+  date: '',
+  time: '',
+  capacity: 10,
+  price: 0,
+  meetingPoint: '',
+  itinerary: '',
+  requirements: '',
+  images: [] as string[]
+};
 
 export const AdminEvents = () => {
   const [events, setEvents] = useState<EventDTO[]>([]);
+  const [locations, setLocations] = useState<LocationDTO[]>([]);
+  const [tenants, setTenants] = useState<TenantListDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [tab, setTab] = useState<Tab>('active');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<{ event: EventDTO; action: 'suspend' | 'unsuspend' } | null>(null);
+
+  // Create event state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
 
   const loadEvents = async () => {
     setLoading(true);
@@ -26,7 +50,15 @@ export const AdminEvents = () => {
     }
   };
 
-  useEffect(() => { loadEvents(); }, []);
+  const loadRefs = async () => {
+    try {
+      const [locRes, tenRes] = await Promise.all([api.getAdminLocations(), api.getAdminTenants()]);
+      setLocations(locRes.data);
+      setTenants(tenRes.data);
+    } catch { /* non-critical */ }
+  };
+
+  useEffect(() => { loadEvents(); loadRefs(); }, []);
 
   const executeModerate = async () => {
     if (!confirmTarget) return;
@@ -39,15 +71,42 @@ export const AdminEvents = () => {
     }
   };
 
-  const filtered = events.filter((e) => {
-    if (statusFilter !== 'all' && e.status !== statusFilter) return false;
-    if (typeFilter !== 'all' && e.activityType !== typeFilter) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      if (!e.locationName.toLowerCase().includes(q) && !e.organizerName.toLowerCase().includes(q) && !(e.title ?? '').toLowerCase().includes(q)) return false;
-    }
-    return true;
+  const now = new Date().toISOString().slice(0, 10);
+  const activeEvents = events.filter((e) => e.date >= now && e.status !== 'cancelled');
+  const pastEvents = events.filter((e) => e.date < now || e.status === 'cancelled');
+  const displayed = tab === 'active' ? activeEvents : pastEvents;
+
+  const filtered = displayed.filter((e) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      e.locationName.toLowerCase().includes(q) ||
+      e.organizerName.toLowerCase().includes(q) ||
+      (e.title ?? '').toLowerCase().includes(q)
+    );
   });
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      await api.createAdminEvent({
+        ...form,
+        itinerary: form.itinerary ? form.itinerary.split('\n').filter(Boolean) : [],
+        requirements: form.requirements ? form.requirements.split('\n').filter(Boolean) : [],
+        meetingPoint: form.meetingPoint || undefined,
+        images: form.images
+      });
+      setModalOpen(false);
+      setForm(emptyForm);
+      await loadEvents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create event');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const statusBadge = (status: string) => {
     const colors: Record<string, string> = {
@@ -59,30 +118,43 @@ export const AdminEvents = () => {
     return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] ?? 'bg-gray-100 text-gray-800'}`}>{status}</span>;
   };
 
+  const toggleFeatured = async (eventId: string) => {
+    try {
+      await api.toggleEventFeatured(eventId);
+      await loadEvents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to toggle featured');
+    }
+  };
+
   return (
     <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
       <div className="space-y-4">
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3 items-center">
-          <h2 className="text-lg font-semibold text-gray-900 mr-auto">Event Moderation</h2>
-          <input type="text" placeholder="Search title, location, organizer..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm w-60" />
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border rounded px-3 py-1.5 text-sm">
-            <option value="all">All Status</option>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="suspended">Suspended</option>
-          </select>
-          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="border rounded px-3 py-1.5 text-sm">
-            <option value="all">All Types</option>
-            <option value="hiking">Hiking</option>
-            <option value="camping">Camping</option>
-          </select>
+        {/* Header + Tabs */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <button onClick={() => setTab('active')}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${tab === 'active' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}>
+              Active Events ({activeEvents.length})
+            </button>
+            <button onClick={() => setTab('past')}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${tab === 'past' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}>
+              Past Events ({pastEvents.length})
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="text" placeholder="Search events..." value={search} onChange={(e) => setSearch(e.target.value)}
+              className="border rounded-lg px-3 py-1.5 text-sm w-56" />
+            <button onClick={() => { setForm(emptyForm); setModalOpen(true); }}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
+              + Create Event
+            </button>
+          </div>
         </div>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
+        {/* Events Table */}
         <div className="bg-white border rounded-lg overflow-hidden">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
@@ -102,7 +174,9 @@ export const AdminEvents = () => {
                   <div className="inline-block w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2" />Loading...
                 </td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">No events found</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                  {tab === 'active' ? 'No active events' : 'No past events'}
+                </td></tr>
               ) : filtered.map((event) => (
                 <>
                   <tr key={event.id} className="border-t hover:bg-gray-50 cursor-pointer" onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}>
@@ -122,13 +196,24 @@ export const AdminEvents = () => {
                     <td className="px-4 py-3 text-center">{event.price > 0 ? `AED ${event.price}` : 'Free'}</td>
                     <td className="px-4 py-3">{statusBadge(event.status)}</td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      {event.status === 'suspended' ? (
-                        <button onClick={() => setConfirmTarget({ event, action: 'unsuspend' })}
-                          className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Unsuspend</button>
-                      ) : event.status !== 'cancelled' ? (
-                        <button onClick={() => setConfirmTarget({ event, action: 'suspend' })}
-                          className="px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs">Suspend</button>
-                      ) : null}
+                      <div className="flex items-center gap-1.5">
+                        {/* Featured toggle */}
+                        {event.status === 'published' && (
+                          <button onClick={() => toggleFeatured(event.id)}
+                            title={event.featured ? 'Remove from featured' : 'Feature on landing page'}
+                            className={`px-2 py-1 rounded text-xs font-medium ${event.featured ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                            {event.featured ? '★ Featured' : '☆ Feature'}
+                          </button>
+                        )}
+                        {/* Moderation */}
+                        {event.status === 'suspended' ? (
+                          <button onClick={() => setConfirmTarget({ event, action: 'unsuspend' })}
+                            className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Unsuspend</button>
+                        ) : event.status !== 'cancelled' ? (
+                          <button onClick={() => setConfirmTarget({ event, action: 'suspend' })}
+                            className="px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs">Suspend</button>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                   {expandedId === event.id && (
@@ -180,10 +265,124 @@ export const AdminEvents = () => {
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-gray-500">Showing {filtered.length} of {events.length} events. Click a row to expand details.</p>
+        <p className="text-xs text-gray-500">Showing {filtered.length} of {displayed.length} {tab} events</p>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* Create Event Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setModalOpen(false)}>
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+              <h2 className="text-lg font-semibold text-gray-900">Create New Event</h2>
+              <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <form onSubmit={handleCreateEvent} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Organizer *</label>
+                  <select required value={form.tenantId} onChange={(e) => setForm({ ...form, tenantId: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm">
+                    <option value="">Select organizer...</option>
+                    {tenants.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Location *</label>
+                  <select required value={form.locationId} onChange={(e) => setForm({ ...form, locationId: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm">
+                    <option value="">Select location...</option>
+                    {locations.map((loc) => (
+                      <option key={loc.id} value={loc.id}>{loc.name} ({loc.region} - {loc.activityType})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Title *</label>
+                <input type="text" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="e.g. Weekend Jebel Jais Hike" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Date *</label>
+                  <input type="date" required value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Time *</label>
+                  <input type="time" required value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Capacity *</label>
+                  <input type="number" required min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Price (AED)</label>
+                  <input type="number" min={0} value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="0 for free" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Description *</label>
+                <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" rows={3} placeholder="Describe the event, what to expect..." />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Meeting Point</label>
+                <input type="text" value={form.meetingPoint} onChange={(e) => setForm({ ...form, meetingPoint: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="e.g. RAK Gateway parking lot" />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Itinerary (one step per line)</label>
+                <textarea value={form.itinerary} onChange={(e) => setForm({ ...form, itinerary: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" rows={3}
+                  placeholder="6:00 AM - Meet at parking&#10;6:30 AM - Start hike&#10;10:00 AM - Summit" />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Requirements (one per line)</label>
+                <textarea value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm" rows={3}
+                  placeholder="Hiking boots required&#10;Bring 2L water minimum&#10;Moderate fitness level" />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Event Images</label>
+                <ImageUpload
+                  images={form.images}
+                  onChange={(urls) => setForm((prev) => ({ ...prev, images: urls }))}
+                  max={6}
+                  keyPrefix="events"
+                  kind="event-image"
+                />
+              </div>
+
+              {error && <p className="text-sm text-red-600">{error}</p>}
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                <button type="submit" disabled={saving} className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-60">
+                  {saving ? 'Creating...' : 'Create & Publish'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Moderation Confirmation Modal */}
       {confirmTarget && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmTarget(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>

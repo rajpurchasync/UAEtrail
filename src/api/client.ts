@@ -28,26 +28,89 @@ export const setStoredSession = (session: AuthSession | null): void => {
   localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
 };
 
-export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: boolean }): Promise<T> => {
-  const headers = new Headers(init?.headers);
-  headers.set('Content-Type', 'application/json');
-  if (init?.auth) {
-    const session = getStoredSession();
-    if (session?.accessToken) {
-      headers.set('Authorization', `Bearer ${session.accessToken}`);
-    }
-  }
+// ─── Token Refresh Logic ─────────────────────────────────────────────────────
 
-  let response: Response;
+let refreshPromise: Promise<AuthSession | null> | null = null;
+
+const attemptTokenRefresh = async (): Promise<AuthSession | null> => {
+  const session = getStoredSession();
+  if (!session?.refreshToken) return null;
+
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: session.refreshToken })
+    });
+
+    if (!response.ok) {
+      // Refresh failed — clear session
+      setStoredSession(null);
+      localStorage.removeItem(USER_STORAGE_KEY);
+      return null;
+    }
+
+    const data = await response.json() as { tokens: AuthSession };
+    setStoredSession(data.tokens);
+    return data.tokens;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Ensures only one refresh request runs at a time.
+ * Concurrent 401s queue behind the same promise.
+ */
+const refreshToken = (): Promise<AuthSession | null> => {
+  if (!refreshPromise) {
+    refreshPromise = attemptTokenRefresh().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+};
+
+// ─── API Request ──────────────────────────────────────────────────────────────
+
+export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: boolean }): Promise<T> => {
+  const makeRequest = async (token?: string): Promise<Response> => {
+    const headers = new Headers(init?.headers);
+    headers.set('Content-Type', 'application/json');
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    } else if (init?.auth) {
+      const session = getStoredSession();
+      if (session?.accessToken) {
+        headers.set('Authorization', `Bearer ${session.accessToken}`);
+      }
+    }
+
+    return fetch(`${API_BASE_URL}${path}`, {
       ...init,
       headers
     });
+  };
+
+  let response: Response;
+  try {
+    response = await makeRequest();
   } catch {
     throw new Error(
       `Failed to reach API at ${API_BASE_URL}. Start backend on port 4000 and allow your frontend origin in CORS.`
     );
+  }
+
+  // If 401 and we have auth, attempt token refresh and retry once
+  if (response.status === 401 && init?.auth) {
+    const newSession = await refreshToken();
+    if (newSession) {
+      try {
+        response = await makeRequest(newSession.accessToken);
+      } catch {
+        throw new Error(`Failed to reach API at ${API_BASE_URL}.`);
+      }
+    }
   }
 
   if (!response.ok) {

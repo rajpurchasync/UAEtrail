@@ -94,10 +94,10 @@ export const UserRequests = () => {
             {filtered.map((request) => (
               <tr key={request.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-3">
-                  <p className="font-medium text-gray-900">{(request.event as any).title || request.event.locationName}</p>
+                  <p className="font-medium text-gray-900">{request.event.title || request.event.locationName}</p>
                   <p className="text-xs text-gray-500">{request.event.locationName}</p>
                 </td>
-                <td className="px-4 py-3 text-gray-600">{request.event.organizerName}</td>
+                <td className="px-4 py-3 text-gray-600">{request.event.organizerName || '—'}</td>
                 <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                   {request.event.date}<br />
                   <span className="text-xs text-gray-400">{request.event.time}</span>
@@ -142,7 +142,7 @@ export const UserRequests = () => {
               Are you sure you want to cancel your join request for:
             </p>
             <p className="text-sm font-medium text-gray-900 mb-4">
-              {(cancelTarget.event as any).title || cancelTarget.event.locationName} — {cancelTarget.event.date}
+              {(cancelTarget.event).title || cancelTarget.event.locationName} — {cancelTarget.event.date}
             </p>
             <div className="flex gap-3 justify-end">
               <button

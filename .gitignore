@@ -13,6 +13,11 @@ apps/api/dist
 *.local
 .env
 .env.*
+!.env.example
+
+# TLS certificates (never commit)
+nginx/certs/*.pem
+nginx/certs/*.key
 
 .vscode/*
 !.vscode/extensions.json

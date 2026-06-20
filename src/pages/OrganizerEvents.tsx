@@ -3,7 +3,7 @@ import { EventDTO, LocationDTO, ParticipantDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 import { DashboardLayout } from '../components/layout';
-import { TenantSwitcher } from '../components/ui';
+import { TenantSwitcher, ImageUpload } from '../components/ui';
 
 const organizerLinks = [
   { to: '/organizer/overview', label: 'Overview' },
@@ -11,6 +11,7 @@ const organizerLinks = [
   { to: '/organizer/requests', label: 'Join Requests' },
   { to: '/organizer/team', label: 'Team' },
   { to: '/organizer/locations', label: 'Locations' },
+  { to: '/organizer/messages', label: 'Messages' },
   { to: '/organizer/history', label: 'History' },
   { to: '/organizer/profile', label: 'Profile' }
 ];
@@ -25,7 +26,8 @@ const emptyForm = {
   price: 0,
   meetingPoint: '',
   itinerary: '',
-  requirements: ''
+  requirements: '',
+  images: [] as string[]
 };
 
 type ViewMode = 'list' | 'checkin';
@@ -37,7 +39,9 @@ export const OrganizerEvents = () => {
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState<EventDTO | null>(null);
 
   // Check-in state
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -69,7 +73,26 @@ export const OrganizerEvents = () => {
   }, [tenantId]);
 
   const openCreate = () => {
+    setEditingId(null);
     setForm(emptyForm);
+    setModalOpen(true);
+  };
+
+  const openEdit = (event: EventDTO) => {
+    setEditingId(event.id);
+    setForm({
+      locationId: event.locationId,
+      title: event.title ?? '',
+      description: event.description ?? '',
+      date: event.date,
+      time: event.time,
+      capacity: event.slotsTotal,
+      price: event.price,
+      meetingPoint: event.meetingPoint ?? '',
+      itinerary: (event.itinerary ?? []).join('\n'),
+      requirements: (event.requirements ?? []).join('\n'),
+      images: event.images ?? []
+    });
     setModalOpen(true);
   };
 
@@ -88,11 +111,17 @@ export const OrganizerEvents = () => {
         ...form,
         itinerary: form.itinerary ? form.itinerary.split('\n').filter(Boolean) : [],
         requirements: form.requirements ? form.requirements.split('\n').filter(Boolean) : [],
-        meetingPoint: form.meetingPoint || undefined
+        meetingPoint: form.meetingPoint || undefined,
+        images: form.images
       };
-      await api.createOrganizerEvent(tenantId, payload);
+      if (editingId) {
+        await api.updateOrganizerEvent(tenantId, editingId, payload);
+      } else {
+        await api.createOrganizerEvent(tenantId, payload);
+      }
       closeModal();
       setForm(emptyForm);
+      setEditingId(null);
       await loadEvents(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create event');
@@ -108,6 +137,18 @@ export const OrganizerEvents = () => {
       await loadEvents(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish event');
+    }
+  };
+
+  const cancelEvent = async () => {
+    if (!tenantId || !confirmCancel) return;
+    try {
+      await api.cancelOrganizerEvent(tenantId, confirmCancel.id);
+      setConfirmCancel(null);
+      await loadEvents(tenantId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel event');
+      setConfirmCancel(null);
     }
   };
 
@@ -206,12 +247,22 @@ export const OrganizerEvents = () => {
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
                           {event.status === 'draft' && (
-                            <button onClick={() => publish(event.id)}
-                              className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Publish</button>
+                            <>
+                              <button onClick={() => openEdit(event)}
+                                className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
+                              <button onClick={() => publish(event.id)}
+                                className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Publish</button>
+                            </>
                           )}
                           {event.status === 'published' && (
-                            <button onClick={() => openCheckin(event)}
-                              className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Check-in</button>
+                            <>
+                              <button onClick={() => openEdit(event)}
+                                className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
+                              <button onClick={() => openCheckin(event)}
+                                className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Check-in</button>
+                              <button onClick={() => setConfirmCancel(event)}
+                                className="px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs">Cancel</button>
+                            </>
                           )}
                         </div>
                       </td>
@@ -303,12 +354,12 @@ export const OrganizerEvents = () => {
         )}
       </div>
 
-      {/* Create Event Modal */}
+      {/* Create / Edit Event Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Create New Event</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Event' : 'Create New Event'}</h2>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
@@ -382,15 +433,44 @@ export const OrganizerEvents = () => {
                   placeholder="Hiking boots required\nBring 2L water minimum\nModerate fitness level" />
               </div>
 
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Event Images</label>
+                <ImageUpload
+                  images={form.images}
+                  onChange={(urls) => setForm((prev) => ({ ...prev, images: urls }))}
+                  max={6}
+                  keyPrefix="events"
+                  tenantId={tenantId}
+                  kind="event-image"
+                />
+              </div>
+
               {error && <p className="text-sm text-red-600">{error}</p>}
 
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={closeModal} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Cancel</button>
                 <button type="submit" disabled={saving} className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-60">
-                  {saving ? 'Saving...' : 'Save as Draft'}
+                  {saving ? 'Saving...' : editingId ? 'Update Event' : 'Save as Draft'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Event Confirmation Modal */}
+      {confirmCancel && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmCancel(null)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Cancel Event?</h3>
+            <p className="text-sm text-gray-600 mb-1">
+              This will cancel the event and notify all registered participants. This action cannot be undone.
+            </p>
+            <p className="text-sm font-medium text-gray-900 mb-4">{confirmCancel.title || confirmCancel.locationName}</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setConfirmCancel(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Keep Event</button>
+              <button onClick={cancelEvent} className="px-4 py-2 rounded-md text-sm text-white bg-red-600 hover:bg-red-700">Cancel Event</button>
+            </div>
           </div>
         </div>
       )}

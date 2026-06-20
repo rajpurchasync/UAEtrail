@@ -1,12 +1,17 @@
-import { Router } from 'express';
+import { Router, raw } from 'express';
 import { z } from 'zod';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import { ApiError } from '../lib/api-error.js';
-import { createPresignedUpload, publicAssetUrl } from '../lib/s3.js';
+import { createPresignedUpload, isS3Available, publicAssetUrl } from '../lib/s3.js';
 import { prisma } from '../lib/prisma.js';
 import { randomToken } from '../lib/hash.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { env } from '../config/env.js';
+
+/** Resolve absolute path for local uploads (relative to apps/api/) */
+const LOCAL_UPLOADS_DIR = join(process.cwd(), 'uploads');
 
 const presignSchema = z.object({
   filename: z.string().min(1),
@@ -26,6 +31,36 @@ const commitSchema = z.object({
 });
 
 export const mediaRouter = Router();
+
+/* ─── Serve local uploads when S3 is not configured ─────────────────────── */
+mediaRouter.get('/local/*', (req, res) => {
+  const filePath = (req.params as unknown as Record<string, string>)[0] ?? req.path.replace('/local/', '');
+  const absolute = join(LOCAL_UPLOADS_DIR, filePath);
+  res.sendFile(absolute, (err) => {
+    if (err) {
+      res.status(404).json({ error: { code: 'not_found', message: 'File not found.' } });
+    }
+  });
+});
+
+/* ─── Local PUT upload endpoint (dev fallback when no S3) ───────────────── */
+mediaRouter.put(
+  '/upload-local/*',
+  requireAuth,
+  raw({ type: '*/*', limit: '20mb' }),
+  async (req, res) => {
+    const key = (req.params as unknown as Record<string, string>)[0] ?? req.path.replace('/upload-local/', '');
+    const filePath = join(LOCAL_UPLOADS_DIR, key);
+
+    try {
+      await mkdir(dirname(filePath), { recursive: true });
+      await writeFile(filePath, req.body as Buffer);
+      res.status(200).json({ ok: true });
+    } catch (error) {
+      res.status(500).json({ error: { code: 'upload_failed', message: 'Local file write failed.' } });
+    }
+  }
+);
 
 mediaRouter.use(requireAuth, requireVerifiedEmail);
 
@@ -48,7 +83,14 @@ mediaRouter.post('/presign-upload', validate({ body: presignSchema }), async (re
 
     const sanitizedName = body.filename.replace(/[^a-zA-Z0-9._-]/g, '-');
     const key = `${body.keyPrefix}/${Date.now()}-${randomToken(6)}-${sanitizedName}`;
-    const uploadUrl = await createPresignedUpload({ key, contentType: body.mimeType });
+
+    let uploadUrl: string;
+    if (isS3Available()) {
+      uploadUrl = await createPresignedUpload({ key, contentType: body.mimeType });
+    } else {
+      // Local dev fallback — direct PUT to our own endpoint
+      uploadUrl = `${env.API_BASE_URL}/api/v1/media/upload-local/${key}`;
+    }
 
     res.json({
       data: {

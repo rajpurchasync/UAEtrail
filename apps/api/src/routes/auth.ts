@@ -34,7 +34,12 @@ const refreshSchema = z.object({ refreshToken: z.string().min(20) });
 const forgotSchema = z.object({ email: z.string().email() });
 const resetSchema = z.object({
   token: z.string().min(20),
-  password: z.string().min(8)
+  password: z
+    .string()
+    .min(8)
+    .regex(/[A-Z]/, 'Must include at least one uppercase letter')
+    .regex(/[a-z]/, 'Must include at least one lowercase letter')
+    .regex(/[0-9]/, 'Must include at least one number')
 });
 
 const mapAccountTypeToTenantType = (accountType: 'company' | 'guide'): 'COMPANY' | 'GUIDE_OWNED' =>
@@ -305,6 +310,10 @@ authRouter.post('/reset-password', validate({ body: resetSchema }), async (req, 
       prisma.passwordResetToken.update({
         where: { id: record.id },
         data: { usedAt: new Date() }
+      }),
+      prisma.refreshToken.updateMany({
+        where: { userId: record.userId, revokedAt: null },
+        data: { revokedAt: new Date() }
       })
     ]);
 

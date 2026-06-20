@@ -32,41 +32,59 @@ chatRouter.get('/conversations', async (req, res, next) => {
       ...received.map((m) => m.senderId)
     ])];
 
-    const conversations = await Promise.all(
-      partnerIds.map(async (partnerId) => {
-        const partner = await prisma.user.findUnique({
-          where: { id: partnerId },
-          include: { profile: true }
-        });
+    if (partnerIds.length === 0) {
+      return res.json({ data: [] });
+    }
 
-        const lastMessage = await prisma.chatMessage.findFirst({
+    // Batch all partner data in parallel instead of N+1 per partner
+    const [partners, unreadCounts] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: partnerIds } },
+        include: { profile: true }
+      }),
+      prisma.chatMessage.groupBy({
+        by: ['senderId'],
+        where: {
+          receiverId: userId,
+          senderId: { in: partnerIds },
+          readAt: null
+        },
+        _count: { id: true }
+      })
+    ]);
+
+    const partnerMap = new Map(partners.map((p) => [p.id, p]));
+    const unreadMap = new Map(unreadCounts.map((u) => [u.senderId, u._count.id]));
+
+    // Get last message per partner (batched via Promise.all)
+    const lastMessages = await Promise.all(
+      partnerIds.map((partnerId) =>
+        prisma.chatMessage.findFirst({
           where: {
             OR: [
               { senderId: userId, receiverId: partnerId },
               { senderId: partnerId, receiverId: userId }
             ]
           },
-          orderBy: { createdAt: 'desc' }
-        });
-
-        const unreadCount = await prisma.chatMessage.count({
-          where: {
-            senderId: partnerId,
-            receiverId: userId,
-            readAt: null
-          }
-        });
-
-        return {
-          userId: partnerId,
-          displayName: partner?.profile?.displayName ?? partner?.email ?? 'Unknown',
-          avatarUrl: partner?.profile?.avatarUrl ?? undefined,
-          lastMessage: lastMessage?.content ?? '',
-          lastMessageAt: lastMessage?.createdAt?.toISOString() ?? '',
-          unreadCount
-        };
-      })
+          orderBy: { createdAt: 'desc' },
+          select: { content: true, createdAt: true }
+        }).then((msg) => ({ partnerId, msg }))
+      )
     );
+    const lastMessageMap = new Map(lastMessages.map((lm) => [lm.partnerId, lm.msg]));
+
+    const conversations = partnerIds.map((partnerId) => {
+      const partner = partnerMap.get(partnerId);
+      const lastMsg = lastMessageMap.get(partnerId);
+      return {
+        userId: partnerId,
+        displayName: partner?.profile?.displayName ?? partner?.email ?? 'Unknown',
+        avatarUrl: partner?.profile?.avatarUrl ?? undefined,
+        lastMessage: lastMsg?.content ?? '',
+        lastMessageAt: lastMsg?.createdAt?.toISOString() ?? '',
+        unreadCount: unreadMap.get(partnerId) ?? 0
+      };
+    });
 
     // Sort by last message time descending
     conversations.sort((a, b) =>

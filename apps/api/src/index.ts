@@ -1,16 +1,23 @@
 import { app } from './app.js';
 import { env } from './config/env.js';
 import { prisma } from './lib/prisma.js';
+import { probeS3 } from './lib/s3.js';
 
-const server = app.listen(env.PORT, () => {
-  console.log(`UAE Trails API listening on http://localhost:${env.PORT}`);
-});
+const start = async () => {
+  await probeS3();
 
-const shutdown = async () => {
-  server.close();
-  await prisma.$disconnect();
-  process.exit(0);
+  const server = app.listen(env.PORT, () => {
+    console.log(`UAE Trails API listening on http://localhost:${env.PORT}`);
+  });
+
+  const shutdown = async () => {
+    server.close();
+    await prisma.$disconnect();
+    process.exit(0);
+  };
+
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 };
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+start();

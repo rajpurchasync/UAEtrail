@@ -1,15 +1,18 @@
 import { ActivityType, EventStatus, LocationStatus, MembershipRole, NotificationType, RequestStatus, TenantType, UserRole } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
-import { assertCapacityAvailable } from '../domain/capacity.js';
+import { assertCanApproveRequest } from '../services/join-request.js';
+import { promptPostEventReview } from '../services/review-prompt.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { randomToken } from '../lib/hash.js';
-import { toEventDto, toLocationDto } from '../lib/mappers.js';
+import { toEventDto, toLocationDto, buildEventDto } from '../lib/mappers.js';
+import { paginate, paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { hashPassword } from '../lib/password.js';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { requireMembershipRole, requireTenantContext } from '../middleware/tenant.js';
+import { notifyRequestDecision, notifyEventCancelled } from '../lib/email.js';
 import { validate } from '../middleware/validate.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
@@ -28,6 +31,7 @@ const eventCreateSchema = z.object({
   requirements: z.array(z.string()).default([]),
   price: z.number().int().min(0).default(0),
   capacity: z.number().int().positive(),
+  images: z.array(z.string()).default([]),
   guideId: z.string().optional()
 });
 
@@ -47,7 +51,7 @@ const teamPatchSchema = z.object({
   role: z.enum(['tenant_admin', 'tenant_guide'])
 });
 
-const parseDateTime = (date: string, time: string): Date => new Date(`${date}T${time}:00.000Z`);
+import { parseLocalDateTime } from '../lib/datetime.js';
 
 const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): MembershipRole =>
   role === 'tenant_admin' ? MembershipRole.TENANT_ADMIN : MembershipRole.TENANT_GUIDE;
@@ -59,29 +63,28 @@ organizerRouter.use(requireAuth, requireVerifiedEmail, requireTenantContext);
 organizerRouter.get('/events', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
-    const events = await prisma.event.findMany({
-      where: { tenantId },
-      orderBy: { startAt: 'asc' },
-      include: {
-        location: true,
-        tenant: true,
-        guide: { include: { profile: true } },
-        participants: { select: { id: true } }
-      }
-    });
+    const pg = paginationSchema.parse(req.query);
+    const where = { tenantId };
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        where,
+        orderBy: { startAt: 'asc' },
+        ...paginate(pg),
+        include: {
+          location: true,
+          tenant: true,
+          guide: { include: { profile: true } },
+          participants: { select: { id: true } }
+        }
+      }),
+      prisma.event.count({ where })
+    ]);
 
-    res.json({
-      data: events.map((event) =>
-        toEventDto({
-          event,
-          locationName: event.location.name,
-          activityType: event.location.activityType,
-          slotsAvailable: Math.max(event.capacity - event.participants.length, 0),
-          organizerName: event.guide?.profile?.displayName ?? event.tenant.name,
-          organizerAvatar: event.guide?.profile?.avatarUrl
-        })
-      )
-    });
+    res.json(paginatedResponse(
+      events.map((event) => buildEventDto(event)),
+      total,
+      pg
+    ));
   } catch (error) {
     next(error);
   }
@@ -111,6 +114,9 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
       }
     }
 
+    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { countryCode: true } });
+    const countryCode = tenant?.countryCode ?? location.countryCode ?? 'AE';
+
     const created = await prisma.event.create({
       data: {
         tenantId,
@@ -119,11 +125,12 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
         guideId: body.guideId ?? req.auth!.userId,
         title: body.title,
         description: body.description,
-        startAt: parseDateTime(body.date, body.time),
-        endAt: body.endDate && body.endTime ? parseDateTime(body.endDate, body.endTime) : undefined,
+        startAt: parseLocalDateTime(body.date, body.time, countryCode),
+        endAt: body.endDate && body.endTime ? parseLocalDateTime(body.endDate, body.endTime, countryCode) : undefined,
         meetingPoint: body.meetingPoint,
         itinerary: body.itinerary,
         requirements: body.requirements,
+        images: body.images,
         priceAed: body.price,
         capacity: body.capacity
       },
@@ -144,14 +151,7 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
     });
 
     res.status(201).json({
-      data: toEventDto({
-        event: created,
-        locationName: created.location.name,
-        activityType: created.location.activityType,
-        slotsAvailable: Math.max(created.capacity - created.participants.length, 0),
-        organizerName: created.guide?.profile?.displayName ?? created.tenant.name,
-        organizerAvatar: created.guide?.profile?.avatarUrl
-      })
+      data: buildEventDto(created)
     });
   } catch (error) {
     next(error);
@@ -164,10 +164,22 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const body = req.body as z.infer<typeof eventPatchSchema>;
 
-    const existing = await prisma.event.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.event.findFirst({
+      where: { id, tenantId },
+      include: { participants: { select: { id: true } } }
+    });
     if (!existing) {
       throw new ApiError(404, 'event_not_found', 'Event not found.');
     }
+    if (existing.status === EventStatus.CANCELLED || existing.status === EventStatus.SUSPENDED) {
+      throw new ApiError(400, 'event_not_editable', `Cannot edit an event that is ${existing.status.toLowerCase()}.`);
+    }
+    if (body.capacity !== undefined && body.capacity < existing.participants.length) {
+      throw new ApiError(400, 'capacity_too_low', `Capacity cannot be less than current participants (${existing.participants.length}).`);
+    }
+
+    const tenantMeta = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { countryCode: true } });
+    const countryCode = tenantMeta?.countryCode ?? 'AE';
 
     const updated = await prisma.event.update({
       where: { id },
@@ -175,11 +187,12 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
         locationId: body.locationId,
         title: body.title,
         description: body.description,
-        startAt: body.date && body.time ? parseDateTime(body.date, body.time) : undefined,
-        endAt: body.endDate && body.endTime ? parseDateTime(body.endDate, body.endTime) : undefined,
+        startAt: body.date && body.time ? parseLocalDateTime(body.date, body.time, countryCode) : undefined,
+        endAt: body.endDate && body.endTime ? parseLocalDateTime(body.endDate, body.endTime, countryCode) : undefined,
         meetingPoint: body.meetingPoint,
         itinerary: body.itinerary,
         requirements: body.requirements,
+        images: body.images,
         priceAed: body.price,
         capacity: body.capacity,
         guideId: body.guideId
@@ -201,14 +214,7 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
     });
 
     res.json({
-      data: toEventDto({
-        event: updated,
-        locationName: updated.location.name,
-        activityType: updated.location.activityType,
-        slotsAvailable: Math.max(updated.capacity - updated.participants.length, 0),
-        organizerName: updated.guide?.profile?.displayName ?? updated.tenant.name,
-        organizerAvatar: updated.guide?.profile?.avatarUrl
-      })
+      data: buildEventDto(updated)
     });
   } catch (error) {
     next(error);
@@ -223,6 +229,9 @@ organizerRouter.delete('/events/:id', validate({ params: idParamSchema }), async
       where: {
         id,
         tenantId
+      },
+      include: {
+        participants: { select: { userId: true } }
       }
     });
     if (!event) {
@@ -232,6 +241,20 @@ organizerRouter.delete('/events/:id', validate({ params: idParamSchema }), async
       where: { id: event.id },
       data: { status: EventStatus.CANCELLED }
     });
+
+    // Notify all participants about the cancellation
+    if (event.participants.length > 0) {
+      await prisma.notification.createMany({
+        data: event.participants.map((p) => ({
+          userId: p.userId,
+          title: 'Event Cancelled',
+          body: `The event "${event.title}" has been cancelled by the organizer.`,
+          type: NotificationType.EVENT,
+          meta: { eventId: event.id }
+        }))
+      });
+    }
+
     await createAuditLog({
       actorId: req.auth!.userId,
       action: 'event.cancel',
@@ -252,6 +275,9 @@ organizerRouter.post('/events/:id/publish', validate({ params: idParamSchema }),
     const event = await prisma.event.findFirst({ where: { id, tenantId } });
     if (!event) {
       throw new ApiError(404, 'event_not_found', 'Event not found.');
+    }
+    if (event.status !== EventStatus.DRAFT) {
+      throw new ApiError(400, 'event_not_draft', 'Only draft events can be published.');
     }
     const updated = await prisma.event.update({
       where: { id: event.id },
@@ -276,22 +302,26 @@ organizerRouter.post('/events/:id/publish', validate({ params: idParamSchema }),
 organizerRouter.get('/requests', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
-    const requests = await prisma.eventRequest.findMany({
-      where: {
-        event: { tenantId }
-      },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        event: {
-          include: {
-            location: true
-          }
-        },
-        user: { include: { profile: true } }
-      }
-    });
-    res.json({
-      data: requests.map((request) => ({
+    const pg = paginationSchema.parse(req.query);
+    const where = { event: { tenantId } };
+    const [requests, total] = await Promise.all([
+      prisma.eventRequest.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...paginate(pg),
+        include: {
+          event: {
+            include: {
+              location: true
+            }
+          },
+          user: { include: { profile: true } }
+        }
+      }),
+      prisma.eventRequest.count({ where })
+    ]);
+    res.json(paginatedResponse(
+      requests.map((request) => ({
         id: request.id,
         status: request.status.toLowerCase(),
         note: request.note,
@@ -308,8 +338,10 @@ organizerRouter.get('/requests', async (req, res, next) => {
           locationName: request.event.location.name,
           startAt: request.event.startAt
         }
-      }))
-    });
+      })),
+      total,
+      pg
+    ));
   } catch (error) {
     next(error);
   }
@@ -324,6 +356,7 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
     const request = await prisma.eventRequest.findFirst({
       where: { id, event: { tenantId } },
       include: {
+        user: { include: { profile: true } },
         event: { include: { participants: true } }
       }
     });
@@ -344,7 +377,7 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
         if (!freshEvent || freshEvent.status !== EventStatus.PUBLISHED) {
           throw new ApiError(400, 'event_not_publishable', 'Event must be published before approval.');
         }
-        assertCapacityAvailable(freshEvent.capacity, freshEvent.participants.length);
+        assertCanApproveRequest(freshEvent.capacity, freshEvent.participants.length);
 
         await tx.eventRequest.update({
           where: { id: request.id },
@@ -406,6 +439,17 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
       tenantId
     });
 
+    const userName = request.user.profile?.displayName ?? request.user.email.split('@')[0];
+    const eventDate = request.event.startAt.toISOString().slice(0, 10);
+    notifyRequestDecision({
+      to: request.user.email,
+      userName,
+      eventTitle: request.event.title,
+      eventDate,
+      approved: status === 'approved',
+      note: organizerNote
+    }).catch(() => undefined);
+
     res.json({ message: `Request ${status}.` });
   } catch (error) {
     next(error);
@@ -458,6 +502,7 @@ organizerRouter.post(
       }
 
       let user = await prisma.user.findUnique({ where: { email: body.email }, include: { profile: true } });
+      let isNewUser = false;
       if (!user) {
         const tempPassword = `Temp#${randomToken(6)}`;
         user = await prisma.user.create({
@@ -465,6 +510,7 @@ organizerRouter.post(
             email: body.email,
             passwordHash: await hashPassword(tempPassword),
             role: role === MembershipRole.TENANT_ADMIN ? UserRole.TENANT_ADMIN : UserRole.TENANT_GUIDE,
+            emailVerifiedAt: new Date(),
             profile: {
               create: {
                 displayName: body.displayName ?? body.email.split('@')[0]
@@ -473,6 +519,7 @@ organizerRouter.post(
           },
           include: { profile: true }
         });
+        isNewUser = true;
       }
 
       if (role === MembershipRole.TENANT_GUIDE && tenant.type === TenantType.COMPANY) {
@@ -522,13 +569,28 @@ organizerRouter.post(
         tenantId
       });
 
+      // For new users, create a password reset token so they can set their own password
+      let resetToken: string | undefined;
+      if (isNewUser) {
+        resetToken = randomToken(24);
+        await prisma.passwordResetToken.create({
+          data: {
+            userId: user.id,
+            token: resetToken,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days for invites
+          }
+        });
+      }
+
       res.status(201).json({
         data: {
           id: membership.id,
           userId: user.id,
           email: user.email,
           displayName: user.profile?.displayName ?? user.email,
-          role: membership.role.toLowerCase()
+          role: membership.role.toLowerCase(),
+          isNewUser,
+          resetToken: isNewUser ? resetToken : undefined
         }
       });
     } catch (error) {
@@ -639,10 +701,16 @@ organizerRouter.post('/events/:id/participants/:participantId/checkin', validate
     const tenantId = req.tenantContext!.tenantId;
     const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
 
-    const event = await prisma.event.findFirst({ where: { id, tenantId } });
+    const event = await prisma.event.findFirst({
+      where: { id, tenantId },
+      include: { location: true }
+    });
     if (!event) throw new ApiError(404, 'event_not_found', 'Event not found.');
 
-    const participant = await prisma.eventParticipant.findFirst({ where: { id: participantId, eventId: id } });
+    const participant = await prisma.eventParticipant.findFirst({
+      where: { id: participantId, eventId: id },
+      include: { user: true }
+    });
     if (!participant) throw new ApiError(404, 'participant_not_found', 'Participant not found.');
 
     await prisma.eventParticipant.update({
@@ -656,6 +724,15 @@ organizerRouter.post('/events/:id/participants/:participantId/checkin', validate
       entityType: 'event_participant',
       entityId: participantId,
       tenantId
+    });
+
+    const activityType = event.location.activityType === 'HIKING' ? 'hiking' : 'camping';
+    await promptPostEventReview(prisma, {
+      userId: participant.userId,
+      eventId: event.id,
+      locationId: event.locationId,
+      locationName: event.location.name,
+      activityType
     });
 
     res.json({ message: 'Participant checked in.' });
@@ -754,21 +831,26 @@ organizerRouter.post('/locations', validate({ body: locationSubmitSchema }), asy
 organizerRouter.get('/events/history', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
+    const pg = paginationSchema.parse(req.query);
+    const where = {
+      tenantId,
+      startAt: { lt: new Date() }
+    };
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        where,
+        orderBy: { startAt: 'desc' },
+        ...paginate(pg),
+        include: {
+          location: true,
+          participants: { select: { id: true, checkedInAt: true } }
+        }
+      }),
+      prisma.event.count({ where })
+    ]);
 
-    const events = await prisma.event.findMany({
-      where: {
-        tenantId,
-        startAt: { lt: new Date() }
-      },
-      orderBy: { startAt: 'desc' },
-      include: {
-        location: true,
-        participants: { select: { id: true, checkedInAt: true } }
-      }
-    });
-
-    res.json({
-      data: events.map((e) => ({
+    res.json(paginatedResponse(
+      events.map((e) => ({
         id: e.id,
         title: e.title,
         locationName: e.location.name,
@@ -778,8 +860,10 @@ organizerRouter.get('/events/history', async (req, res, next) => {
         capacity: e.capacity,
         participantCount: e.participants.length,
         checkedInCount: e.participants.filter((p) => p.checkedInAt !== null).length
-      }))
-    });
+      })),
+      total,
+      pg
+    ));
   } catch (error) {
     next(error);
   }

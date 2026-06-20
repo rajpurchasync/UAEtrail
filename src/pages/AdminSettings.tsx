@@ -66,7 +66,7 @@ export const AdminSettings = () => {
   return (
     <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold text-gray-900">Notifications & Settings</h2>
+        <h2 className="text-lg font-semibold text-gray-900">Broadcast</h2>
 
         {/* Broadcast Form */}
         <div className="bg-white border rounded-lg p-6 max-w-2xl">

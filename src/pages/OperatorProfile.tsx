@@ -1,19 +1,50 @@
-import { useParams, Link } from 'react-router-dom';
-import { Award, Globe, Mountain, Calendar, ArrowLeft, Star } from 'lucide-react';
-import { operators, operatorReviews } from '../data';
-import { trips } from '../data/trips';
+import { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Globe, Mountain, Calendar, ArrowLeft, Users, Loader2, MessageSquare, ShieldCheck, Star } from 'lucide-react';
+import { ReviewDTO } from '@uaetrail/shared-types';
+import { api, TenantProfile } from '../api/services';
+import { mapEventToTrip } from '../api/public';
 import { TripCard } from '../components/ui/TripCard';
+import { useAuth } from '../context/AuthContext';
 
 export const OperatorProfile = () => {
   const { id } = useParams<{ id: string }>();
-  const operator = operators.find((op) => op.id === id);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [tenant, setTenant] = useState<TenantProfile | null>(null);
+  const [trips, setTrips] = useState<ReturnType<typeof mapEventToTrip>[]>([]);
+  const [reviews, setReviews] = useState<ReviewDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!operator) {
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    api.getTenantProfile(id)
+      .then(async (tenantRes) => {
+        setTenant(tenantRes.data);
+        setTrips(tenantRes.data.events.map(mapEventToTrip));
+        const reviewsRes = await api.getReviews('tenant', tenantRes.data.id).catch(() => ({ data: [] }));
+        setReviews(reviewsRes.data);
+      })
+      .catch(() => setError('Organizer not found'))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+      </div>
+    );
+  }
+
+  if (error || !tenant) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Operator Not Found</h1>
-          <Link to="/calendar" className="text-emerald-600 hover:text-emerald-700">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Organizer Not Found</h1>
+          <Link to="/trips" className="text-emerald-600 hover:text-emerald-700">
             View all trips
           </Link>
         </div>
@@ -21,170 +52,124 @@ export const OperatorProfile = () => {
     );
   }
 
-  const operatorTrips = trips.filter((trip) => trip.operatorId === operator.id);
-  const reviews = operatorReviews.filter((review) => review.operatorId === operator.id);
-  const averageRating = reviews.length > 0
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-    : 0;
+  const avgRating =
+    reviews.length > 0
+      ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+      : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Link
-            to="/calendar"
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Trips
+    <div className="min-h-screen bg-gray-50 pb-nav-safe md:pb-0">
+      <div className="bg-gradient-to-br from-emerald-800 to-teal-900 text-white">
+        <div className="max-w-5xl mx-auto px-4 py-8">
+          <Link to="/trips" className="inline-flex items-center gap-1 text-emerald-200 hover:text-white text-sm mb-6">
+            <ArrowLeft className="w-4 h-4" /> Back to trips
           </Link>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <aside className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
-              <div className="text-center mb-6">
-                <img
-                  src={operator.avatar}
-                  alt={operator.name}
-                  className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-emerald-100"
-                />
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">{operator.name}</h1>
-                <p className="text-gray-600">{operator.experience}</p>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center text-gray-700 mb-2">
-                    <Mountain className="w-5 h-5 mr-2 text-emerald-600" />
-                    <span className="font-semibold">Activity Types</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2 ml-7">
-                    {operator.activityTypes.map((type) => (
-                      <span
-                        key={type}
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          type === 'hiking'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center text-gray-700 mb-2">
-                    <Globe className="w-5 h-5 mr-2 text-emerald-600" />
-                    <span className="font-semibold">Languages</span>
-                  </div>
-                  <p className="text-gray-600 ml-7">{operator.languages.join(', ')}</p>
-                </div>
-
-                <div>
-                  <div className="flex items-center text-gray-700 mb-2">
-                    <Award className="w-5 h-5 mr-2 text-emerald-600" />
-                    <span className="font-semibold">Certifications</span>
-                  </div>
-                  <ul className="space-y-1 ml-7">
-                    {operator.certifications.map((cert, index) => (
-                      <li key={index} className="text-sm text-gray-600">
-                        • {cert}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">About</h2>
-              <p className="text-gray-700 leading-relaxed">{operator.bio}</p>
-            </div>
-
-            {reviews.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Reviews</h2>
-                  <div className="flex items-center">
-                    <Star className="w-5 h-5 text-yellow-400 fill-current mr-1" />
-                    <span className="text-lg font-semibold">{averageRating.toFixed(1)}</span>
-                    <span className="text-gray-600 ml-2">({reviews.length} reviews)</span>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  {reviews.map((review) => (
-                    <div key={review.id} className="border-b border-gray-200 last:border-0 pb-6 last:pb-0">
-                      <div className="flex items-start gap-4">
-                        <img
-                          src={review.avatar}
-                          alt={review.author}
-                          className="w-12 h-12 rounded-full"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <div>
-                              <h4 className="font-semibold text-gray-900">{review.author}</h4>
-                              <p className="text-sm text-gray-600">{review.tripName}</p>
-                            </div>
-                            <div className="flex items-center">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-4 h-4 ${
-                                    i < review.rating
-                                      ? 'text-yellow-400 fill-current'
-                                      : 'text-gray-300'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                          <p className="text-gray-700 leading-relaxed">{review.comment}</p>
-                          <p className="text-sm text-gray-500 mt-2">
-                            {new Date(review.date).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          <div className="flex flex-col sm:flex-row items-start gap-5">
+            {tenant.ownerAvatar ? (
+              <img src={tenant.ownerAvatar} alt={tenant.ownerName} className="w-24 h-24 rounded-2xl object-cover ring-4 ring-white/20" />
+            ) : (
+              <div className="w-24 h-24 rounded-2xl bg-emerald-600 flex items-center justify-center text-3xl font-bold ring-4 ring-white/20">
+                {tenant.ownerName.charAt(0)}
               </div>
             )}
-
-            <div>
-              <div className="flex items-center mb-6">
-                <Calendar className="w-6 h-6 mr-2 text-emerald-600" />
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Upcoming Trips ({operatorTrips.length})
-                </h2>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl md:text-3xl font-bold">{tenant.name}</h1>
+                <ShieldCheck className="w-5 h-5 text-emerald-300" title="Verified organizer" />
               </div>
-
-              {operatorTrips.length === 0 ? (
-                <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                  <p className="text-gray-600">No upcoming trips scheduled at the moment.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {operatorTrips.map((trip) => (
-                    <TripCard key={trip.id} trip={trip} />
-                  ))}
-                </div>
+              <p className="text-emerald-100 mt-1">{tenant.ownerName}</p>
+              {tenant.ownerBio && <p className="text-emerald-50/90 mt-3 max-w-2xl">{tenant.ownerBio}</p>}
+              <div className="flex flex-wrap gap-4 mt-4 text-sm text-emerald-100">
+                <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {tenant.memberCount} team</span>
+                <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {trips.length} upcoming</span>
+                {avgRating && (
+                  <span className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-amber-300 text-amber-300" /> {avgRating} ({reviews.length})
+                  </span>
+                )}
+              </div>
+              {user && tenant.ownerId !== user.id && (
+                <button
+                  onClick={() => navigate(`/dashboard/messages?to=${tenant.ownerId}`)}
+                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium"
+                >
+                  <MessageSquare className="w-4 h-4" /> Message
+                </button>
               )}
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        {tenant.team.length > 1 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">Team</h2>
+            <div className="flex flex-wrap gap-3">
+              {tenant.team.map((member, i) => (
+                <div key={i} className="flex items-center gap-2 bg-white rounded-xl border px-3 py-2">
+                  {member.avatarUrl ? (
+                    <img src={member.avatarUrl} alt="" className="w-8 h-8 rounded-full" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700">
+                      {member.displayName.charAt(0)}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{member.displayName}</p>
+                    <p className="text-xs text-gray-500 capitalize">{member.role.replace('_', ' ')}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Mountain className="w-5 h-5 text-emerald-600" />
+            <h2 className="text-lg font-bold text-gray-900">Upcoming trips</h2>
+          </div>
+          {trips.length === 0 ? (
+            <div className="bg-white rounded-xl border p-8 text-center text-gray-600">
+              No upcoming trips scheduled.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {trips.map((trip) => (
+                <TripCard key={trip.id} trip={trip} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {reviews.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Star className="w-5 h-5 text-amber-500" />
+              <h2 className="text-lg font-bold text-gray-900">Reviews</h2>
+              {avgRating && (
+                <span className="text-sm font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">{avgRating}</span>
+              )}
+            </div>
+            <div className="space-y-3">
+              {reviews.map((review) => (
+                <div key={review.id} className="bg-white rounded-xl border p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-semibold text-gray-900 text-sm">{review.userName}</p>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}`} />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">{review.comment}</p>
+                  <p className="text-xs text-gray-400 mt-2">{new Date(review.createdAt).toLocaleDateString()}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

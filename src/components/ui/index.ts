@@ -9,3 +9,6 @@ export { ShareButton } from './ShareButton';
 export { Breadcrumb } from './Breadcrumb';
 export { TenantSwitcher } from './TenantSwitcher';
 export { MapPinPicker } from './MapPinPicker';
+export { ImageUpload } from './ImageUpload';
+export { FavoriteButton } from './FavoriteButton';
+export { CreateTripModal } from './CreateTripModal';

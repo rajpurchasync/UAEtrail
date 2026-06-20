@@ -16,7 +16,9 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
-import { toEventDto, toLocationDto } from '../lib/mappers.js';
+import { parseLocalDateTime } from '../lib/datetime.js';
+import { toLocationDto, buildEventDto } from '../lib/mappers.js';
+import { paginate, paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { prisma } from '../lib/prisma.js';
 import { slugify } from '../lib/slug.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
@@ -42,7 +44,11 @@ const locationCreateSchema = z.object({
   campingType: z.enum(['self-guided', 'operator-led']).optional(),
   latitude: z.number().min(-90).max(90).optional().nullable(),
   longitude: z.number().min(-180).max(180).optional().nullable(),
-  highlights: z.array(z.string()).default([])
+  highlights: z.array(z.string()).default([]),
+  surfaceType: z.array(z.string()).default([]),
+  tags: z.array(z.string()).default([]),
+  parkingLink: z.string().max(500).optional().nullable(),
+  accessibleBy: z.array(z.string()).default([])
 });
 
 const locationPatchSchema = locationCreateSchema.partial();
@@ -95,10 +101,14 @@ export const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireVerifiedEmail, requireRole([UserRole.PLATFORM_ADMIN]));
 
-adminRouter.get('/locations', async (_req, res, next) => {
+adminRouter.get('/locations', async (req, res, next) => {
   try {
-    const locations = await prisma.location.findMany({ orderBy: { createdAt: 'desc' } });
-    res.json({ data: locations.map(toLocationDto) });
+    const pg = paginationSchema.parse(req.query);
+    const [locations, total] = await Promise.all([
+      prisma.location.findMany({ orderBy: { createdAt: 'desc' }, ...paginate(pg) }),
+      prisma.location.count()
+    ]);
+    res.json(paginatedResponse(locations.map(toLocationDto), total, pg));
   } catch (error) {
     next(error);
   }
@@ -127,7 +137,11 @@ adminRouter.post('/locations', validate({ body: locationCreateSchema }), async (
         campingType: body.campingType,
         latitude: body.latitude,
         longitude: body.longitude,
-        highlights: body.highlights ?? []
+        highlights: body.highlights ?? [],
+        surfaceType: body.surfaceType ?? [],
+        tags: body.tags ?? [],
+        parkingLink: body.parkingLink,
+        accessibleBy: body.accessibleBy ?? []
       }
     });
     await createAuditLog({
@@ -168,7 +182,11 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
         campingType: body.campingType,
         latitude: body.latitude,
         longitude: body.longitude,
-        highlights: body.highlights
+        highlights: body.highlights,
+        surfaceType: body.surfaceType,
+        tags: body.tags,
+        parkingLink: body.parkingLink,
+        accessibleBy: body.accessibleBy
       }
     });
 
@@ -185,17 +203,22 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
   }
 });
 
-adminRouter.get('/organizer-applications', async (_req, res, next) => {
+adminRouter.get('/organizer-applications', async (req, res, next) => {
   try {
-    const applications = await prisma.organizerApplication.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        applicant: { include: { profile: true } }
-      }
-    });
+    const pg = paginationSchema.parse(req.query);
+    const [applications, total] = await Promise.all([
+      prisma.organizerApplication.findMany({
+        orderBy: { createdAt: 'desc' },
+        ...paginate(pg),
+        include: {
+          applicant: { include: { profile: true } }
+        }
+      }),
+      prisma.organizerApplication.count()
+    ]);
 
-    res.json({
-      data: applications.map((item) => ({
+    res.json(paginatedResponse(
+      applications.map((item) => ({
         id: item.id,
         applicantId: item.applicantId,
         applicantEmail: item.applicant.email,
@@ -206,8 +229,10 @@ adminRouter.get('/organizer-applications', async (_req, res, next) => {
         status: item.status.toLowerCase(),
         reviewerNote: item.reviewerNote,
         createdAt: item.createdAt
-      }))
-    });
+      })),
+      total,
+      pg
+    ));
   } catch (error) {
     next(error);
   }
@@ -292,29 +317,95 @@ adminRouter.patch(
   }
 );
 
-adminRouter.get('/events/moderation', async (_req, res, next) => {
+// ─── Admin Event Creation ───────────────────────────────────────────────────
+
+const adminEventCreateSchema = z.object({
+  tenantId: z.string().min(1),
+  locationId: z.string().min(1),
+  title: z.string().min(4).max(120),
+  description: z.string().min(20),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  time: z.string().regex(/^\d{2}:\d{2}$/),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  meetingPoint: z.string().max(200).optional(),
+  itinerary: z.array(z.string()).default([]),
+  requirements: z.array(z.string()).default([]),
+  price: z.number().int().min(0).default(0),
+  capacity: z.number().int().positive(),
+  images: z.array(z.string().url()).default([])
+});
+
+adminRouter.post('/events', validate({ body: adminEventCreateSchema }), async (req, res, next) => {
   try {
-    const events = await prisma.event.findMany({
-      orderBy: { startAt: 'asc' },
-      include: {
-        location: true,
-        tenant: true,
-        guide: { include: { profile: true } },
-        participants: { select: { id: true } }
-      }
+    const body = req.body as z.infer<typeof adminEventCreateSchema>;
+    const tenant = await prisma.tenant.findUnique({ where: { id: body.tenantId } });
+    if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
+    const location = await prisma.location.findUnique({ where: { id: body.locationId } });
+    if (!location) throw new ApiError(404, 'location_not_found', 'Location not found.');
+
+    const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
+    const startAt = parseLocalDateTime(body.date, body.time, countryCode);
+    const endAt = body.endDate && body.endTime ? parseLocalDateTime(body.endDate, body.endTime, countryCode) : undefined;
+
+    const event = await prisma.event.create({
+      data: {
+        tenantId: body.tenantId,
+        locationId: body.locationId,
+        createdById: req.auth!.userId,
+        title: body.title,
+        description: body.description,
+        startAt,
+        endAt,
+        meetingPoint: body.meetingPoint,
+        itinerary: body.itinerary,
+        requirements: body.requirements,
+        priceAed: body.price,
+        capacity: body.capacity,
+        images: body.images,
+        status: EventStatus.PUBLISHED
+      },
+      include: { location: true, tenant: true }
     });
-    res.json({
-      data: events.map((event) =>
-        toEventDto({
-          event,
-          locationName: event.location.name,
-          activityType: event.location.activityType,
-          slotsAvailable: Math.max(event.capacity - event.participants.length, 0),
-          organizerName: event.guide?.profile?.displayName ?? event.tenant.name,
-          organizerAvatar: event.guide?.profile?.avatarUrl
-        })
-      )
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: 'event.admin_create',
+      entityType: 'event',
+      entityId: event.id,
+      tenantId: event.tenantId
     });
+
+    res.status(201).json({
+      data: buildEventDto({ ...event, participants: [] })
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get('/events/moderation', async (req, res, next) => {
+  try {
+    const pg = paginationSchema.parse(req.query);
+    const where = {};
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        orderBy: { startAt: 'asc' },
+        ...paginate(pg),
+        include: {
+          location: true,
+          tenant: true,
+          guide: { include: { profile: true } },
+          participants: { select: { id: true } }
+        }
+      }),
+      prisma.event.count()
+    ]);
+    res.json(paginatedResponse(
+      events.map((event) => buildEventDto(event)),
+      total,
+      pg
+    ));
   } catch (error) {
     next(error);
   }
@@ -353,9 +444,43 @@ adminRouter.patch(
   }
 );
 
+// ─── Toggle Featured Event ──────────────────────────────────────────────────
+
+adminRouter.patch(
+  '/events/:id/featured',
+  validate({ params: idParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as z.infer<typeof idParamSchema>;
+      const event = await prisma.event.findUnique({ where: { id } });
+      if (!event) {
+        throw new ApiError(404, 'event_not_found', 'Event not found.');
+      }
+
+      const updated = await prisma.event.update({
+        where: { id: event.id },
+        data: { featured: !event.featured }
+      });
+
+      await createAuditLog({
+        actorId: req.auth!.userId,
+        action: updated.featured ? 'event.feature' : 'event.unfeature',
+        entityType: 'event',
+        entityId: event.id,
+        tenantId: event.tenantId
+      });
+
+      res.json({ message: `Event ${updated.featured ? 'featured' : 'unfeatured'} successfully.`, featured: updated.featured });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 adminRouter.get('/metrics', async (_req, res, next) => {
   try {
-    const [tenantCount, eventCount, pendingApplications, pendingRequests, totalUsers, activeUsers, totalLocations, totalParticipants] = await Promise.all([
+    const now = new Date();
+    const [tenantCount, eventCount, pendingApplications, pendingRequests, totalUsers, activeUsers, totalLocations, totalParticipants, totalOrganizers, activeTrips] = await Promise.all([
       prisma.tenant.count({ where: { status: TenantStatus.ACTIVE } }),
       prisma.event.count(),
       prisma.organizerApplication.count({ where: { status: OrganizerApplicationStatus.PENDING } }),
@@ -363,7 +488,9 @@ adminRouter.get('/metrics', async (_req, res, next) => {
       prisma.user.count(),
       prisma.user.count({ where: { status: UserStatus.ACTIVE } }),
       prisma.location.count(),
-      prisma.eventParticipant.count()
+      prisma.eventParticipant.count(),
+      prisma.user.count({ where: { role: { in: [UserRole.TENANT_OWNER, UserRole.PLATFORM_ADMIN] } } }),
+      prisma.event.count({ where: { status: EventStatus.PUBLISHED, startAt: { gte: now } } })
     ]);
 
     res.json({
@@ -375,7 +502,9 @@ adminRouter.get('/metrics', async (_req, res, next) => {
         totalUsers,
         activeUsers,
         totalLocations,
-        totalParticipants
+        totalParticipants,
+        totalOrganizers,
+        activeTrips
       }
     });
   } catch (error) {
@@ -536,18 +665,23 @@ adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: u
 
 // ─── Tenant Oversight ───────────────────────────────────────────────────────
 
-adminRouter.get('/tenants', async (_req, res, next) => {
+adminRouter.get('/tenants', async (req, res, next) => {
   try {
-    const tenants = await prisma.tenant.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        owner: { include: { profile: true } },
-        _count: { select: { memberships: true, events: true } }
-      }
-    });
+    const pg = paginationSchema.parse(req.query);
+    const [tenants, total] = await Promise.all([
+      prisma.tenant.findMany({
+        orderBy: { createdAt: 'desc' },
+        ...paginate(pg),
+        include: {
+          owner: { include: { profile: true } },
+          _count: { select: { memberships: true, events: true } }
+        }
+      }),
+      prisma.tenant.count()
+    ]);
 
-    res.json({
-      data: tenants.map((t) => ({
+    res.json(paginatedResponse(
+      tenants.map((t) => ({
         id: t.id,
         name: t.name,
         slug: t.slug,
@@ -558,8 +692,10 @@ adminRouter.get('/tenants', async (_req, res, next) => {
         memberCount: t._count.memberships,
         eventCount: t._count.events,
         createdAt: t.createdAt
-      }))
-    });
+      })),
+      total,
+      pg
+    ));
   } catch (error) {
     next(error);
   }

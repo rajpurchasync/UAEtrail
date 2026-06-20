@@ -11,7 +11,7 @@ export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
 export type ActivityType = 'hiking' | 'camping';
 export type LocationStatus = 'draft' | 'active' | 'inactive';
 export type EventStatus = 'draft' | 'published' | 'cancelled' | 'suspended';
-export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | 'waitlisted';
 
 export interface ApiError {
   code: string;
@@ -48,14 +48,29 @@ export interface LocationDTO {
   latitude?: number | null;
   longitude?: number | null;
   highlights?: string[];
+  surfaceType?: string[];
+  tags?: string[];
+  parkingLink?: string;
+  accessibleBy?: string[];
+  viewCount?: number;
+  countryCode?: string;
+}
+
+export interface ParticipantPreviewDTO {
+  id: string;
+  name: string;
+  avatar?: string | null;
 }
 
 export interface EventDTO {
   id: string;
   tenantId: string;
+  tenantSlug: string;
   locationId: string;
   locationName: string;
   activityType: ActivityType;
+  title: string;
+  description: string;
   date: string;
   time: string;
   price: number;
@@ -65,8 +80,18 @@ export interface EventDTO {
   meetingPoint?: string | null;
   itinerary?: string[] | null;
   requirements?: string[] | null;
+  images?: string[];
   organizerName: string;
   organizerAvatar?: string | null;
+  featured?: boolean;
+  participantPreviews?: ParticipantPreviewDTO[];
+  countryCode?: string;
+}
+
+export interface EventDetailDTO extends EventDTO {
+  organizerId?: string;
+  participants: ParticipantPreviewDTO[];
+  location: LocationDTO;
 }
 
 export interface JoinRequestDTO {
@@ -74,6 +99,7 @@ export interface JoinRequestDTO {
   eventId: string;
   userId: string;
   status: RequestStatus;
+  waitlisted?: boolean;
   note?: string | null;
   organizerNote?: string | null;
   createdAt: string;
@@ -84,8 +110,9 @@ export interface NotificationDTO {
   id: string;
   title: string;
   body: string;
-  type: 'request_update' | 'system' | 'event';
+  type: 'request_update' | 'system' | 'event' | 'review_prompt';
   isRead: boolean;
+  meta?: Record<string, unknown> | null;
   createdAt: string;
 }
 
@@ -94,6 +121,7 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   displayName?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface AuthTokens {
@@ -138,11 +166,65 @@ export interface ProductDTO {
   images: string[];
   priceAed: number;
   discountPercent?: number;
+  memberDiscountPercent?: number;
+  externalUrl?: string | null;
   packagingInfo?: string;
   category: string;
   status: ProductStatusType;
   merchantId: string;
   merchantName: string;
+}
+
+export type ReviewTargetType = 'location' | 'tenant';
+
+export interface ReviewDTO {
+  id: string;
+  targetType: ReviewTargetType;
+  targetId: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string | null;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export type PostCategory = 'questions' | 'trip-reports' | 'photos' | 'tips';
+
+export interface PostReplyDTO {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar?: string | null;
+  content: string;
+  createdAt: string;
+}
+
+export interface PostDTO {
+  id: string;
+  category: PostCategory;
+  title: string;
+  content: string;
+  excerpt: string;
+  images: string[];
+  locationId?: string | null;
+  locationName?: string | null;
+  eventId?: string | null;
+  authorId: string;
+  authorName: string;
+  authorAvatar?: string | null;
+  likeCount: number;
+  replyCount: number;
+  replies: PostReplyDTO[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FavoriteDTO {
+  id: string;
+  locationId?: string | null;
+  eventId?: string | null;
+  createdAt: string;
 }
 
 export interface MerchantProfileDTO {

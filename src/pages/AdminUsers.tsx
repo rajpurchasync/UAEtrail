@@ -134,20 +134,21 @@ export const AdminUsers = () => {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left">User</th>
-              <th className="px-4 py-3 text-left">Role</th>
+              <th className="px-4 py-3 text-left">Name</th>
+              <th className="px-4 py-3 text-left">Type</th>
               <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-left">Joined</th>
+              <th className="px-4 py-3 text-left">Joined On</th>
+              <th className="px-4 py-3 text-left">Last Active</th>
               <th className="px-4 py-3 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                 <div className="inline-block w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2" />Loading...
               </td></tr>
             ) : users.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No users found</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No users found</td></tr>
             ) : users.map((u) => (
               <tr key={u.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-3">
@@ -167,7 +168,8 @@ export const AdminUsers = () => {
                 </td>
                 <td className="px-4 py-3">{roleBadge(u.role)}</td>
                 <td className="px-4 py-3">{statusBadge(u.status)}</td>
-                <td className="px-4 py-3 text-gray-600">{new Date(u.createdAt).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">{new Date(u.createdAt).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-gray-400 text-xs">—</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button onClick={() => openDetail(u.id)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">View</button>
