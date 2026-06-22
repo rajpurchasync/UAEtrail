@@ -19,7 +19,8 @@ const envSchema = z.object({
   S3_BUCKET: z.string().default('uaetrail-assets'),
   S3_ACCESS_KEY_ID: z.string().optional(),
   S3_SECRET_ACCESS_KEY: z.string().optional(),
-  S3_FORCE_PATH_STYLE: z.coerce.boolean().default(true)
+  S3_FORCE_PATH_STYLE: z.coerce.boolean().default(true),
+  GOOGLE_CLIENT_ID: z.string().optional()
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -30,3 +31,15 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data;
+
+/** Warn at startup when payment features are partially configured. */
+export const validateOptionalIntegrations = (): void => {
+  const hasStripeKey = Boolean(process.env.STRIPE_SECRET_KEY);
+  const hasWebhookSecret = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
+  if (hasStripeKey && !hasWebhookSecret && env.NODE_ENV === 'production') {
+    console.warn('[config] STRIPE_SECRET_KEY is set but STRIPE_WEBHOOK_SECRET is missing — webhooks will fail.');
+  }
+  if (!hasStripeKey && hasWebhookSecret) {
+    console.warn('[config] STRIPE_WEBHOOK_SECRET is set but STRIPE_SECRET_KEY is missing.');
+  }
+};

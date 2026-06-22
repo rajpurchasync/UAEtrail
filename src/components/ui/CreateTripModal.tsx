@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { X, MapPin, Plus } from 'lucide-react';
-import { LocationDTO } from '@uaetrail/shared-types';
+import { LocationSelect } from './LocationSelect';
+import { MapPinFields, parseCoord } from './MeetingPointMap';
+import { HostSelect } from './HostSelect';
+import { Dialog } from './Dialog';
 import { api } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
 
@@ -10,7 +12,8 @@ type PricingType = 'free' | 'paid';
 interface CreateTripModalProps {
   open: boolean;
   onClose: () => void;
-  onCreated?: () => void;
+  /** Called after save; published=true when trip was published immediately */
+  onCreated?: (published: boolean) => void;
 }
 
 const emptyForm = {
@@ -21,62 +24,72 @@ const emptyForm = {
   description: '',
   date: '',
   time: '',
+  endDate: '',
+  endTime: '',
   capacity: 10,
   price: 0,
   meetingPoint: '',
+  meetingLat: '',
+  meetingLng: '',
+  itinerary: '',
   instructions: '',
+  paymentTerms: '',
   carPooling: false,
+  hostUserId: '',
 };
 
 export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalProps) => {
   const [form, setForm] = useState(emptyForm);
-  const [locations, setLocations] = useState<LocationDTO[]>([]);
+  const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showNewLocation, setShowNewLocation] = useState(false);
 
   useEffect(() => {
     if (open) {
       setForm(emptyForm);
       setError(null);
-      setShowNewLocation(false);
-      loadLocations();
+      setTenantId(getActiveTenantId());
     }
   }, [open]);
 
-  const loadLocations = async () => {
-    try {
-      const res = await api.getPublicLocations();
-      setLocations(res.data);
-    } catch { /* non-critical */ }
-  };
+  const buildPayload = (): Record<string, unknown> => ({
+    locationId: form.locationId,
+    title: form.title,
+    description: form.description,
+    date: form.date,
+    time: form.time,
+    endDate: form.endDate || undefined,
+    endTime: form.endTime || undefined,
+    capacity: form.capacity,
+    price: form.pricing === 'free' ? 0 : form.price,
+    meetingPoint: form.meetingPoint || undefined,
+    meetingLat: parseCoord(form.meetingLat),
+    meetingLng: parseCoord(form.meetingLng),
+    itinerary: form.itinerary ? form.itinerary.split('\n').filter(Boolean) : [],
+    requirements: form.instructions ? form.instructions.split('\n').filter(Boolean) : [],
+    paymentTerms: form.pricing === 'paid' && form.paymentTerms ? form.paymentTerms : undefined,
+    images: [],
+    guideId: form.hostUserId || undefined,
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = async (publish: boolean) => {
     const tenantId = getActiveTenantId();
     if (!tenantId) {
-      setError('No organizer profile selected. Use the tenant switcher in your dashboard first.');
+      setError('No organizer profile selected. Open Trips → Organized and pick your organization.');
+      return;
+    }
+    if (form.pricing === 'paid' && !form.paymentTerms.trim()) {
+      setError('Payment terms are required for paid trips.');
       return;
     }
     setSaving(true);
     setError(null);
     try {
-      const payload: Record<string, unknown> = {
-        locationId: form.locationId,
-        title: form.title,
-        description: form.description,
-        date: form.date,
-        time: form.time,
-        capacity: form.capacity,
-        price: form.pricing === 'free' ? 0 : form.price,
-        meetingPoint: form.meetingPoint,
-        itinerary: '',
-        requirements: form.instructions,
-        images: [],
-        carPooling: form.carPooling,
-      };
-      await api.createOrganizerEvent(tenantId, payload);
-      onCreated?.();
+      const created = await api.createOrganizerEvent(tenantId, buildPayload());
+      if (publish) {
+        await api.publishOrganizerEvent(tenantId, created.data.id);
+      }
+      onCreated?.(publish);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create trip');
@@ -85,30 +98,15 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
     }
   };
 
-  if (!open) return null;
-
-  const filteredLocations = form.activityType
-    ? locations.filter(
-        (l) => l.activityType.toLowerCase() === form.activityType
-      )
-    : locations;
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+    <Dialog open={open} onClose={onClose} title="Create a Trip" className="max-w-lg">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void submit(true);
+        }}
+        className="space-y-5"
       >
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-5 py-4 flex items-center justify-between rounded-t-2xl z-10">
-          <h2 className="text-lg font-bold text-gray-900">Create a Trip</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-5 space-y-5">
-          {/* Activity Type */}
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Activity Type</label>
             <div className="flex gap-2">
@@ -123,13 +121,12 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {type === 'hiking' ? '🥾 Hike' : '⛺ Camp'}
+                  {type === 'hiking' ? 'Hike' : 'Camp'}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Pricing */}
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Pricing</label>
             <div className="flex gap-2">
@@ -149,57 +146,51 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
               ))}
             </div>
             {form.pricing === 'paid' && (
-              <div className="mt-3">
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Price (AED)</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={form.price}
-                  onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                  className="w-full border rounded-xl px-3 py-2.5 text-sm"
-                  placeholder="e.g. 50"
-                />
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Price (AED)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={form.price}
+                    onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                    className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                    placeholder="e.g. 50"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Payment terms *</label>
+                  <textarea
+                    required
+                    value={form.paymentTerms}
+                    onChange={(e) => setForm({ ...form, paymentTerms: e.target.value })}
+                    className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                    rows={2}
+                    placeholder="Refund policy, payment method, what's included…"
+                  />
+                </div>
               </div>
             )}
           </div>
 
-          {/* Location */}
+          <HostSelect
+            tenantId={tenantId}
+            value={form.hostUserId}
+            onChange={(hostUserId) => setForm({ ...form, hostUserId })}
+            required
+          />
+
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              <MapPin className="w-3.5 h-3.5 inline mr-1" />
-              Location
-            </label>
-            <select
-              required
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Location *</label>
+            <LocationSelect
               value={form.locationId}
-              onChange={(e) => {
-                if (e.target.value === '__new__') {
-                  setShowNewLocation(true);
-                  setForm({ ...form, locationId: '' });
-                } else {
-                  setShowNewLocation(false);
-                  setForm({ ...form, locationId: e.target.value });
-                }
-              }}
-              className="w-full border rounded-xl px-3 py-2.5 text-sm"
-            >
-              <option value="">Select location...</option>
-              {filteredLocations.map((loc) => (
-                <option key={loc.id} value={loc.id}>
-                  {loc.name} ({loc.region})
-                </option>
-              ))}
-              <option value="__new__">+ Add new location</option>
-            </select>
-            {showNewLocation && (
-              <p className="mt-2 text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-                <Plus className="w-3.5 h-3.5 inline mr-1" />
-                New locations can be added from your Organizer Dashboard → Locations page. Select an existing location for now.
-              </p>
-            )}
+              onChange={(locationId) => setForm({ ...form, locationId })}
+              tenantId={tenantId}
+              activityType={form.activityType}
+            />
           </div>
 
-          {/* Title */}
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1 block">Trip Title</label>
             <input
@@ -212,7 +203,6 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
             />
           </div>
 
-          {/* Description */}
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1 block">Description</label>
             <textarea
@@ -225,10 +215,9 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
             />
           </div>
 
-          {/* Date & Time */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Trip Date</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Start date</label>
               <input
                 type="date"
                 required
@@ -238,7 +227,7 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Meeting Time</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Start time</label>
               <input
                 type="time"
                 required
@@ -249,19 +238,57 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
             </div>
           </div>
 
-          {/* Meeting Point */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">End date</label>
+              <input
+                type="date"
+                value={form.endDate}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                className="w-full border rounded-xl px-3 py-2.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">End time</label>
+              <input
+                type="time"
+                value={form.endTime}
+                onChange={(e) => setForm({ ...form, endTime: e.target.value })}
+                className="w-full border rounded-xl px-3 py-2.5 text-sm"
+              />
+            </div>
+          </div>
+
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Meeting / Parking Point</label>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Meeting / parking point</label>
             <input
               type="text"
               value={form.meetingPoint}
               onChange={(e) => setForm({ ...form, meetingPoint: e.target.value })}
               className="w-full border rounded-xl px-3 py-2.5 text-sm"
-              placeholder="Google Maps link or address"
+              placeholder="Address or landmark"
+            />
+            <div className="mt-2">
+              <MapPinFields
+                lat={form.meetingLat}
+                lng={form.meetingLng}
+                onLatChange={(meetingLat) => setForm({ ...form, meetingLat })}
+                onLngChange={(meetingLng) => setForm({ ...form, meetingLng })}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Itinerary (one step per line)</label>
+            <textarea
+              value={form.itinerary}
+              onChange={(e) => setForm({ ...form, itinerary: e.target.value })}
+              className="w-full border rounded-xl px-3 py-2.5 text-sm"
+              rows={3}
+              placeholder={'6:00 — Meet at parking\n7:00 — Start hike'}
             />
           </div>
 
-          {/* Instructions */}
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1 block">Instructions</label>
             <textarea
@@ -269,13 +296,12 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
               onChange={(e) => setForm({ ...form, instructions: e.target.value })}
               className="w-full border rounded-xl px-3 py-2.5 text-sm"
               rows={2}
-              placeholder="What to bring, fitness level required, etc."
+              placeholder="What to bring, fitness level, etc."
             />
           </div>
 
-          {/* Capacity */}
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Capacity</label>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Spots</label>
             <input
               type="number"
               required
@@ -287,42 +313,29 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
             />
           </div>
 
-          {/* Car Pooling (optional) */}
-          <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
-            <input
-              type="checkbox"
-              id="carPooling"
-              checked={form.carPooling}
-              onChange={(e) => setForm({ ...form, carPooling: e.target.checked })}
-              className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-            />
-            <label htmlFor="carPooling" className="text-sm text-gray-700">
-              Car pooling available
-              <span className="text-gray-400 ml-1">(optional)</span>
-            </label>
-          </div>
-
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2.5 border rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
+          <div className="flex flex-col gap-2 pt-1">
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-60"
+              className="w-full px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-60"
             >
-              {saving ? 'Creating...' : 'Create Trip'}
+              {saving ? 'Publishing…' : 'Publish trip'}
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => void submit(false)}
+              className="w-full px-4 py-2.5 border rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+            >
+              Save as draft
+            </button>
+            <button type="button" onClick={onClose} className="text-sm text-gray-500 py-1">
+              Cancel
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Dialog>
   );
 };

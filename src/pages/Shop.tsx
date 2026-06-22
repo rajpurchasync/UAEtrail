@@ -3,7 +3,19 @@ import { SlidersHorizontal, ChevronDown, ChevronRight, X, ExternalLink } from 'l
 import { Link } from 'react-router-dom';
 import { ProductDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
-import { SHOP_V1 } from '../config/platform';
+import { SHOP_V1, FEATURE_FLAGS } from '../config/platform';
+import { PageMeta } from '../components/seo/PageMeta';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { FilterChips } from '../components/mobile/FilterChips';
+import { FilterIconButton } from '../components/mobile/FilterIconButton';
+import { PAGE_BANNERS } from '../config/pageBanners';
+
+const SHOP_CHIP_CATEGORIES = [
+  { key: 'all', label: 'All' },
+  { key: 'apparel', label: 'Apparel' },
+  { key: 'camping accessories', label: 'Camping' },
+  { key: 'hiking gears', label: 'Hiking' },
+];
 
 const SHOP_CATEGORIES = [
   {
@@ -61,10 +73,43 @@ export const Shop = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero */}
+    <>
+      <PageMeta
+        title="Outdoor gear shop"
+        description="Hiking and camping equipment for UAE adventures — apparel, tents, backpacks, and more."
+        path="/shop"
+      />
+    <ConsumerShell
+      layout="tab"
+      title="Shop"
+      banner={{ src: PAGE_BANNERS.shop, alt: 'Camping tent under the stars' }}
+      toolbar={
+        <div className="md:hidden space-y-3">
+          <div className="flex items-center gap-2">
+            <form onSubmit={handleSearch} className="flex-1 relative">
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search products..."
+                className="glass-search pl-4"
+              />
+            </form>
+            <FilterIconButton onClick={() => setShowFilters(true)} aria-label="Filters">
+              <SlidersHorizontal className="w-4 h-4" />
+            </FilterIconButton>
+          </div>
+          <FilterChips
+            options={SHOP_CHIP_CATEGORIES}
+            value={categoryFilter}
+            onChange={selectCategory}
+          />
+        </div>
+      }
+    >
+      {/* Hero — desktop */}
       <div
-        className="relative h-28 sm:h-36 md:h-48 bg-cover bg-center"
+        className="hidden md:block relative h-48 bg-cover bg-center"
         style={{
           backgroundImage: 'url(https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600)'
         }}
@@ -78,8 +123,8 @@ export const Shop = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Premium Banner */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+        {FEATURE_FLAGS.membershipEnabled && (
         <div className="bg-emerald-600 text-white rounded-lg p-6 mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -91,74 +136,76 @@ export const Shop = () => {
             </a>
           </div>
         </div>
+        )}
 
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Filter Toggle (mobile) */}
-          <div className="md:hidden flex items-center gap-2">
-            <form onSubmit={handleSearch} className="flex-1 relative">
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search products..."
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              />
-            </form>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`shrink-0 p-2.5 rounded-lg border transition-colors ${showFilters ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
-            >
-              <SlidersHorizontal className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Mobile Filter Panel */}
+          {/* Mobile filter bottom sheet */}
           {showFilters && (
-            <div className="md:hidden bg-white rounded-lg shadow-sm border p-4 space-y-3">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="font-semibold text-gray-900 text-sm">Filter by Category</h3>
-                <button onClick={() => setShowFilters(false)} className="p-1 text-gray-400 hover:text-gray-600">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <button
-                onClick={() => selectCategory('all')}
-                className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${categoryFilter === 'all' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+            <div
+              className="md:hidden fixed inset-0 z-50 bg-black/40"
+              onClick={() => setShowFilters(false)}
+              role="presentation"
+            >
+              <div
+                className="absolute inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto bg-white rounded-t-[20px] p-4 pb-nav-safe shadow-ios"
+                onClick={(e) => e.stopPropagation()}
               >
-                All Products
-              </button>
-              {SHOP_CATEGORIES.map((cat) => (
-                <div key={cat.name}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-neutral-900">Filter by Category</h3>
                   <button
-                    onClick={() => setExpandedCat(expandedCat === cat.name ? null : cat.name)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      categoryFilter === cat.name.toLowerCase() ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                    type="button"
+                    onClick={() => setShowFilters(false)}
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-400"
+                    aria-label="Close filters"
                   >
-                    <span>{cat.name}</span>
-                    {expandedCat === cat.name ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    <X className="w-5 h-5" />
                   </button>
-                  {expandedCat === cat.name && (
-                    <div className="ml-4 mt-1 space-y-0.5">
-                      <button
-                        onClick={() => selectCategory(cat.name.toLowerCase())}
-                        className={`block w-full text-left px-3 py-1.5 rounded text-xs transition-colors ${categoryFilter === cat.name.toLowerCase() ? 'text-emerald-700 font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
-                      >
-                        All {cat.name}
-                      </button>
-                      {cat.subcategories.map((sub) => (
-                        <button
-                          key={sub}
-                          onClick={() => selectCategory(sub.toLowerCase())}
-                          className={`block w-full text-left px-3 py-1.5 rounded text-xs transition-colors ${categoryFilter === sub.toLowerCase() ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-gray-500 hover:text-gray-700'}`}
-                        >
-                          {sub}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => selectCategory('all')}
+                  className={`block w-full text-left px-3 py-3 rounded-ios text-[17px] ${categoryFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-neutral-700 active:bg-neutral-100'}`}
+                >
+                  All Products
+                </button>
+                {SHOP_CATEGORIES.map((cat) => (
+                  <div key={cat.name} className="mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedCat(expandedCat === cat.name ? null : cat.name)}
+                      className={`w-full flex items-center justify-between px-3 py-3 rounded-ios text-[17px] ${
+                        categoryFilter === cat.name.toLowerCase()
+                          ? 'bg-emerald-600/10 text-emerald-700 font-semibold'
+                          : 'text-neutral-700 active:bg-neutral-100'
+                      }`}
+                    >
+                      <span>{cat.name}</span>
+                      {expandedCat === cat.name ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </button>
+                    {expandedCat === cat.name && (
+                      <div className="ml-3 mt-1 space-y-0.5">
+                        <button
+                          type="button"
+                          onClick={() => selectCategory(cat.name.toLowerCase())}
+                          className={`block w-full text-left px-3 py-2 rounded-lg text-sm ${categoryFilter === cat.name.toLowerCase() ? 'text-emerald-700 font-semibold' : 'text-neutral-500'}`}
+                        >
+                          All {cat.name}
+                        </button>
+                        {cat.subcategories.map((sub) => (
+                          <button
+                            key={sub}
+                            type="button"
+                            onClick={() => selectCategory(sub.toLowerCase())}
+                            className={`block w-full text-left px-3 py-2 rounded-lg text-sm ${categoryFilter === sub.toLowerCase() ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-neutral-500'}`}
+                          >
+                            {sub}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -328,6 +375,7 @@ export const Shop = () => {
           </div>
         </div>
       </div>
-    </div>
+    </ConsumerShell>
+    </>
   );
 };

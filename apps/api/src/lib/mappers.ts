@@ -45,8 +45,8 @@ export const toParticipantPreviews = (participants: ParticipantWithUser[]) =>
 
 type EventWithRelations = Event & {
   location: Location;
-  tenant: { slug: string; name: string; countryCode?: string };
-  guide?: { profile?: { displayName?: string | null; avatarUrl?: string | null } | null } | null;
+  tenant: { slug: string; name: string; countryCode?: string; ownerId: string };
+  guide?: { profile?: { displayName?: string | null; avatarUrl?: string | null; bio?: string | null } | null } | null;
   participants?: Array<{ id: string } | ParticipantWithUser>;
 };
 
@@ -54,6 +54,10 @@ export const buildEventDto = (event: EventWithRelations): EventDTO => {
   const participantsWithUser = (event.participants ?? []).filter(
     (p): p is ParticipantWithUser => 'user' in p && Boolean(p.user)
   );
+  const hostUserId = event.guideId ?? event.tenant.ownerId;
+  const hostName = event.guide?.profile?.displayName ?? 'Host';
+  const hostAvatar = event.guide?.profile?.avatarUrl ?? null;
+  const tenantName = event.tenant.name;
   return toEventDto({
     event,
     locationName: event.location.name,
@@ -62,15 +66,19 @@ export const buildEventDto = (event: EventWithRelations): EventDTO => {
       event.capacity - (event.participants?.length ?? 0),
       0
     ),
-    organizerName: event.guide?.profile?.displayName ?? event.tenant.name,
-    organizerAvatar: event.guide?.profile?.avatarUrl,
+    hostName,
+    hostUserId,
+    hostAvatar,
+    hostBio: event.guide?.profile?.bio ?? null,
+    tenantName,
+    guideId: event.guideId ?? undefined,
     tenantSlug: event.tenant.slug,
     participantPreviews: participantsWithUser.length > 0 ? toParticipantPreviews(participantsWithUser) : undefined,
     countryCode: event.location.countryCode ?? event.tenant.countryCode ?? 'AE'
   });
 };
 
-export const toLocationDto = (location: Location): LocationDTO => ({
+export const toLocationDto = (location: Location, opts?: { admin?: boolean }): LocationDTO => ({
   id: location.id,
   name: location.name,
   region: location.region,
@@ -98,7 +106,19 @@ export const toLocationDto = (location: Location): LocationDTO => ({
   parkingLink: location.parkingLink ?? undefined,
   accessibleBy: location.accessibleBy,
   viewCount: location.viewCount,
-  countryCode: location.countryCode
+  countryCode: location.countryCode,
+  submittedById: location.submittedById,
+  hasRouteMap: Boolean(location.gpxKey),
+  hasGuide: Boolean(location.guideMarkdown || location.guidePdfKey),
+  guidePreview: location.guidePreview ?? undefined,
+  unlockPriceAed: location.unlockPriceAed,
+  ...(opts?.admin
+    ? {
+        gpxKey: location.gpxKey,
+        guidePdfKey: location.guidePdfKey,
+        guideMarkdown: location.guideMarkdown
+      }
+    : {})
 });
 
 export const toEventDto = ({
@@ -106,8 +126,12 @@ export const toEventDto = ({
   locationName,
   activityType,
   slotsAvailable,
-  organizerName,
-  organizerAvatar,
+  hostName,
+  hostUserId,
+  hostAvatar,
+  hostBio,
+  tenantName,
+  guideId,
   tenantSlug,
   participantPreviews,
   countryCode = 'AE'
@@ -116,13 +140,18 @@ export const toEventDto = ({
   locationName: string;
   activityType: ActivityType;
   slotsAvailable: number;
-  organizerName: string;
-  organizerAvatar?: string | null;
+  hostName: string;
+  hostUserId: string;
+  hostAvatar?: string | null;
+  hostBio?: string | null;
+  tenantName: string;
+  guideId?: string;
   tenantSlug: string;
   participantPreviews?: Array<{ id: string; name: string; avatar?: string | null }>;
   countryCode?: string;
 }): EventDTO => {
   const local = formatEventLocal(event.startAt, countryCode);
+  const endLocal = event.endAt ? formatEventLocal(event.endAt, countryCode) : null;
   return {
   id: event.id,
   tenantId: event.tenantId,
@@ -134,16 +163,28 @@ export const toEventDto = ({
   description: event.description,
   date: local.date,
   time: local.time,
+  endDate: endLocal?.date ?? null,
+  endTime: endLocal?.time ?? null,
   price: event.priceAed,
   slotsTotal: event.capacity,
   slotsAvailable,
   status: mapEventStatus(event.status),
   meetingPoint: event.meetingPoint,
+  meetingLat: event.meetingLat,
+  meetingLng: event.meetingLng,
+  paymentTerms: event.paymentTerms,
   itinerary: event.itinerary,
   requirements: event.requirements,
   images: event.images ?? [],
-  organizerName,
-  organizerAvatar,
+  hostName,
+  hostUserId,
+  hostAvatar: hostAvatar ?? undefined,
+  hostBio: hostBio ?? undefined,
+  tenantName,
+  guideId: guideId ?? null,
+  organizerName: hostName,
+  organizerAvatar: hostAvatar ?? undefined,
+  organizerUserId: hostUserId,
   featured: event.featured,
   participantPreviews,
   countryCode

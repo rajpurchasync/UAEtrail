@@ -1,66 +1,98 @@
-import { Compass, Map, ShoppingBag, Users, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
+import { isConsumerChromeHidden, MOBILE_NAV } from '../../config/platform';
 import { useAuth } from '../../context/AuthContext';
-import { MOBILE_NAV } from '../../config/platform';
-
-const iconMap = {
-  Explore: Map,
-  Trips: Compass,
-  Community: Users,
-  Shop: ShoppingBag,
-  Profile: User
-} as const;
+import { accountRouteByRole } from '../../utils/authRouting';
+import { getInitials } from '../../utils/userDisplay';
 
 export const BottomNav = () => {
-  const { user } = useAuth();
   const { pathname } = useLocation();
+  const { user } = useAuth();
 
-  const hidden =
-    pathname.startsWith('/admin') ||
-    pathname.startsWith('/organizer') ||
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/merchant') ||
-    pathname === '/signin' ||
-    pathname === '/signup' ||
-    pathname === '/verify' ||
-    pathname === '/onboarding' ||
-    pathname === '/forgot-password';
+  if (isConsumerChromeHidden(pathname)) return null;
 
-  if (hidden) return null;
-
-  const tabs = MOBILE_NAV.filter((tab) => tab.label !== 'Profile' || user);
+  const profileDestination = user
+    ? accountRouteByRole(user.role)
+    : { pathname: '/signin', state: { from: pathname } };
 
   const isActive = (tab: (typeof MOBILE_NAV)[number]) =>
-    tab.match.some((prefix) => (prefix === '/discovery' ? pathname === '/discovery' || pathname.startsWith('/trail') || pathname.startsWith('/camp') : pathname.startsWith(prefix)));
+    tab.match.some((prefix) =>
+      prefix === '/'
+        ? pathname === '/'
+        : pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-50">
-      <div className="absolute inset-0 bg-white/90 backdrop-blur-xl border-t border-gray-200/80" />
-      <div className="relative flex justify-around items-center h-16 max-w-lg mx-auto px-2 safe-area-bottom">
-        {tabs.map((tab) => {
-          const active = isActive(tab);
-          const Icon = iconMap[tab.label as keyof typeof iconMap] ?? Compass;
-          return (
-            <Link
-              key={tab.to}
-              to={tab.to}
-              className={`relative flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 ${
-                active ? 'text-emerald-600' : 'text-gray-600 active:text-gray-700'
-              }`}
-            >
-              {active && <span className="absolute top-1 w-6 h-0.5 rounded-full bg-emerald-500" />}
-              <span className={`p-1.5 rounded-xl transition-all duration-200 ${active ? 'bg-emerald-50' : ''}`}>
-                <Icon
-                  className={`transition-all duration-200 ${active ? 'w-[22px] h-[22px]' : 'w-[21px] h-[21px]'}`}
-                  strokeWidth={active ? 2.2 : 2}
-                />
-              </span>
-              <span className={`text-xs mt-0.5 leading-tight transition-all ${active ? 'font-semibold' : 'font-medium'}`}>
-                {tab.label}
-              </span>
-            </Link>
-          );
-        })}
+    <nav
+      className="md:hidden fixed inset-x-0 bottom-0 z-50 pointer-events-none"
+      aria-label="Main navigation"
+    >
+      <div
+        className="pointer-events-auto mx-3 mb-3 rounded-[28px] glass-nav"
+        style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}
+      >
+        <div className="flex items-stretch justify-around px-1 pt-2.5 pb-1">
+          {MOBILE_NAV.map((tab) => {
+            const active = isActive(tab);
+            const Icon = MOBILE_NAV_ICON_MAP[tab.label];
+            const isProfile = tab.label === 'Profile';
+            const destination = isProfile ? profileDestination : tab.to;
+            return (
+              <Link
+                key={tab.to}
+                to={destination}
+                className="group flex flex-1 flex-col items-center justify-center gap-0.5 min-h-[52px] rounded-2xl transition-all duration-200 active:scale-90"
+                aria-current={active ? 'page' : undefined}
+                aria-label={isProfile && user ? 'Your account' : tab.label}
+              >
+                <span
+                  className={`flex items-center justify-center rounded-2xl transition-all duration-300 ${
+                    active
+                      ? 'w-11 h-11 bg-emerald-600/12 shadow-sm shadow-emerald-600/10'
+                      : 'w-10 h-10'
+                  }`}
+                >
+                  {isProfile && user ? (
+                    user.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt=""
+                        className={`rounded-full object-cover ${
+                          active ? 'w-[22px] h-[22px] ring-2 ring-emerald-600/30' : 'w-5 h-5'
+                        }`}
+                      />
+                    ) : (
+                      <span
+                        className={`rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center ${
+                          active ? 'w-[22px] h-[22px] text-[10px]' : 'w-5 h-5 text-[9px]'
+                        }`}
+                      >
+                        {getInitials(user.displayName, user.email)}
+                      </span>
+                    )
+                  ) : (
+                    <Icon
+                      className={`transition-all duration-200 text-emerald-600 ${
+                        active ? 'w-[22px] h-[22px]' : 'w-5 h-5 opacity-70'
+                      }`}
+                      strokeWidth={active ? iconStroke.active : iconStroke.default}
+                      fill="none"
+                    />
+                  )}
+                </span>
+                <span
+                  className={`text-[10px] leading-tight tracking-tight transition-colors ${
+                    active
+                      ? 'font-bold text-emerald-700 opacity-100'
+                      : 'font-medium text-emerald-600/75 opacity-90'
+                  }`}
+                >
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

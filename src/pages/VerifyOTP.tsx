@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { apiRequest } from '../api/client';
+import { PageMeta } from '../components/seo/PageMeta';
 
 export const VerifyOTP = () => {
   const location = useLocation();
@@ -11,6 +12,7 @@ export const VerifyOTP = () => {
     email?: string;
     verificationToken?: string;
     mode?: 'email' | 'password-reset';
+    redirectTo?: string;
   } | null;
 
   const email = searchParams.get('email') ?? state?.email ?? '';
@@ -45,7 +47,15 @@ export const VerifyOTP = () => {
           body: JSON.stringify({ token })
         });
         setSuccess(true);
-        setTimeout(() => navigate('/onboarding', { replace: true }), 1200);
+        const redirectTo = state?.redirectTo;
+        setTimeout(
+          () =>
+            navigate('/signin', {
+              replace: true,
+              state: redirectTo ? { from: redirectTo } : undefined
+            }),
+          1200
+        );
       } else {
         navigate('/forgot-password', {
           state: { email, resetToken: token, step: 'reset' },
@@ -101,8 +111,9 @@ export const VerifyOTP = () => {
   if (!email) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-xl border shadow-sm p-8 text-center">
+    <div className="min-h-screen bg-ios-bg flex items-center justify-center p-6 safe-area-top safe-area-bottom">
+      <PageMeta title="Verify email" noIndex />
+      <div className="max-w-md w-full bg-white rounded-[20px] shadow-ios p-8 text-center">
         <div className="mx-auto w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
           <ShieldCheck className="w-7 h-7 text-emerald-600" />
         </div>
@@ -164,7 +175,7 @@ export const VerifyOTP = () => {
         )}
 
         {success && (
-          <div className="text-emerald-600 text-sm font-medium">Redirecting to onboarding…</div>
+          <div className="text-emerald-600 text-sm font-medium">Email verified — redirecting to sign in…</div>
         )}
       </div>
     </div>

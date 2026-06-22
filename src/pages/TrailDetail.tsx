@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, TrendingUp, Clock, Mountain, Baby, Calendar, Lock } from 'lucide-react';
+import { MapPin, TrendingUp, Clock, Mountain, Baby, ChevronRight } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
-import { TripCard, ShareButton, Breadcrumb } from '../components/ui';
+import { TripCard, ShareButton, Breadcrumb, LocationDetailTabs, toLocationDetailData, ReviewSection, LocationPremiumPanel } from '../components/ui';
+import { LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
+import { PageMeta } from '../components/seo/PageMeta';
+import { JsonLd } from '../components/seo/JsonLd';
+import { trailSchema } from '../components/seo/schemas';
+import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { getDifficultyColor, capitalize } from '../utils';
 import { Trail, Trip } from '../types';
 import { fetchApiLocationDetail, mapEventToTrip } from '../api/public';
@@ -14,8 +19,8 @@ export const TrailDetail = () => {
   const [loading, setLoading] = useState(true);
   const [trailTrips, setTrailTrips] = useState<Trip[]>([]);
   const [trailReviews, setTrailReviews] = useState<ReviewDTO[]>([]);
+  const [premium, setPremium] = useState<LocationPremiumSummaryDTO | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [activeTab, setActiveTab] = useState<'overview' | 'route' | 'location'>('overview');
 
   useEffect(() => {
     if (!id) return;
@@ -28,6 +33,7 @@ export const TrailDetail = () => {
     ])
       .then(([locResult, eventsRes, reviewsRes]) => {
         setTrail(locResult.trail ?? null);
+        setPremium(locResult.premium ?? null);
         setTrailTrips(eventsRes.data.map(mapEventToTrip));
         setTrailReviews(reviewsRes.data);
       })
@@ -37,32 +43,43 @@ export const TrailDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-      </div>
+      <>
+        <PageMeta title="Loading trail" path={id ? `/trail/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
+        </div>
+      </>
     );
   }
 
   if (!trail) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Trail not found</h1>
-        <Link to="/discovery" className="text-emerald-600 hover:text-emerald-700 mt-4 inline-block">
-          Back to discovery
-        </Link>
-      </div>
+      <>
+        <PageMeta title="Trail not found" noIndex path={id ? `/trail/${id}` : undefined} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Trail not found</h1>
+          <Link to="/discovery" className="text-emerald-600 hover:text-emerald-700 mt-4 inline-block">
+            Back to discovery
+          </Link>
+        </div>
+      </>
     );
   }
 
-  const handleTabClick = (tab: 'overview' | 'route' | 'location') => {
-    setActiveTab(tab);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <MobileDetailShell backTo="/" backLabel="Explore">
+    <div className="min-h-screen bg-ios-bg md:bg-gray-50">
+      <PageMeta
+        title={trail.name}
+        description={trail.description?.slice(0, 160) ?? `Explore ${trail.name} — ${trail.region}, UAE`}
+        path={`/trail/${trail.id}`}
+        image={trail.images?.[0]}
+        imageAlt={`${trail.name} hiking trail`}
+      />
+      <JsonLd data={trailSchema(trail)} id={`trail-${trail.id}`} />
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 hidden md:flex">
             <Breadcrumb
               items={[
                 { label: 'Hiking', to: '/discovery?activity=hiking' },
@@ -70,18 +87,30 @@ export const TrailDetail = () => {
                 { label: trail.name }
               ]}
             />
-            <ShareButton title={trail.name} />
+            <ShareButton
+              title={trail.name}
+              text={`${trail.region} · ${trail.distance} km trail on UAE Trails`}
+              path={`/trail/${trail.id}`}
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
-              <div className="mb-4">
-                <img
-                  src={trail.images[selectedImage]}
-                  alt={trail.name}
-                  className="w-full h-96 object-cover rounded-lg"
+              <div className="relative mb-4">
+              <img
+                src={trail.images[selectedImage]}
+                alt={trail.name}
+                className="w-full h-96 object-cover rounded-lg"
+              />
+              <div className="absolute top-3 right-3 z-10">
+                <ShareButton
+                  title={trail.name}
+                  text={`${trail.region} · ${trail.distance} km trail on UAE Trails`}
+                  path={`/trail/${trail.id}`}
+                  compact
                 />
               </div>
+            </div>
               <div className="grid grid-cols-4 gap-2">
                 {trail.images.map((image, index) => (
                   <button
@@ -169,53 +198,18 @@ export const TrailDetail = () => {
             </div>
           </div>
 
-          <div className="border-b mt-8">
-            <nav className="flex space-x-8">
-              <button
-                onClick={() => handleTabClick('overview')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'overview'
-                    ? 'border-emerald-600 text-emerald-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => handleTabClick('route')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center ${
-                  activeTab === 'route'
-                    ? 'border-emerald-600 text-emerald-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Route
-              </button>
-              <button
-                onClick={() => handleTabClick('location')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center ${
-                  activeTab === 'location'
-                    ? 'border-emerald-600 text-emerald-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Location
-              </button>
-            </nav>
-          </div>
+          <LocationDetailTabs data={toLocationDetailData(trail, 'hiking')} accent="emerald" />
 
-          {activeTab === 'route' && (
-            <div className="py-6 text-center bg-amber-50 rounded-xl mt-4 px-4">
-              <Lock className="w-8 h-8 text-amber-600 mx-auto mb-2" />
-              <p className="text-gray-700 text-sm mb-3">Detailed route maps and GPX downloads are a premium member benefit.</p>
-              <Link to="/membership" className="text-emerald-700 font-medium text-sm hover:underline">View membership →</Link>
-            </div>
-          )}
-          {activeTab === 'location' && (
-            <div className="py-6 text-center bg-amber-50 rounded-xl mt-4 px-4">
-              <Lock className="w-8 h-8 text-amber-600 mx-auto mb-2" />
-              <p className="text-gray-700 text-sm mb-3">Parking coordinates and start-point navigation unlock with membership.</p>
-              <Link to="/membership" className="text-emerald-700 font-medium text-sm hover:underline">View membership →</Link>
+          {premium && (
+            <div className="mt-8">
+              <LocationPremiumPanel
+                locationId={trail.id}
+                locationName={trail.name}
+                activityType="hiking"
+                premium={premium}
+                onPremiumChange={setPremium}
+                accent="emerald"
+              />
             </div>
           )}
         </div>
@@ -231,10 +225,10 @@ export const TrailDetail = () => {
             </div>
             <Link
               to="/trips"
-              className="text-emerald-600 hover:text-emerald-700 font-medium inline-flex items-center"
+              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
-              <Calendar className="w-5 h-5 mr-1" />
               View all trips
+              <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
 
@@ -254,41 +248,14 @@ export const TrailDetail = () => {
           )}
         </section>
 
-        <section>
-          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-6">Reviews</h2>
-          {trailReviews.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <p className="text-gray-600">No reviews yet for this trail.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {trailReviews.map((review) => (
-                <div key={review.id} className="bg-white rounded-lg shadow-sm p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="font-semibold text-gray-900">{review.userName}</div>
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className={`w-5 h-5 ${
-                            i < review.rating ? 'text-yellow-400' : 'text-gray-300'
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-gray-600">{review.comment}</p>
-                  <div className="text-sm text-gray-500 mt-2">{new Date(review.createdAt).toLocaleDateString()}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+        <ReviewSection
+          targetType="location"
+          targetId={id!}
+          reviews={trailReviews}
+          onReviewSubmitted={(review) => setTrailReviews((prev) => [review, ...prev])}
+        />
       </div>
     </div>
+    </MobileDetailShell>
   );
 };

@@ -2,7 +2,23 @@ import { NextFunction, Request, Response } from 'express';
 import { UserStatus } from '@prisma/client';
 import { verifyAccessToken } from '../lib/jwt.js';
 import { prisma } from '../lib/prisma.js';
+import { touchLastActive } from '../lib/user-activity.js';
+import { validateSseTicket } from '../lib/sse-ticket.js';
 import { ApiError } from '../lib/api-error.js';
+
+const authenticateBearer = async (token: string) => {
+  const payload = verifyAccessToken(token);
+  const user = await prisma.user.findUnique({
+    where: { id: payload.sub },
+    select: { id: true, email: true, role: true, status: true }
+  });
+
+  if (!user || user.status !== UserStatus.ACTIVE) {
+    throw new ApiError(401, 'unauthorized', 'User is not active.');
+  }
+
+  return user;
+};
 
 export const requireAuth = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -12,9 +28,39 @@ export const requireAuth = async (req: Request, _res: Response, next: NextFuncti
     }
 
     const token = authHeader.split(' ')[1];
-    const payload = verifyAccessToken(token);
+    const user = await authenticateBearer(token);
+
+    req.auth = {
+      userId: user.id,
+      email: user.email,
+      role: user.role
+    };
+    void touchLastActive(user.id);
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** SSE clients use a short-lived ticket (see POST /chat/stream-ticket). */
+export const requireSseTicket = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const ticket = typeof req.query.ticket === 'string' ? req.query.ticket : undefined;
+    if (!ticket) {
+      throw new ApiError(401, 'unauthorized', 'Missing stream ticket.');
+    }
+
+    const userId = await validateSseTicket(ticket);
+    if (!userId) {
+      throw new ApiError(401, 'unauthorized', 'Stream ticket is invalid or expired.');
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
+      where: { id: userId },
       select: { id: true, email: true, role: true, status: true }
     });
 
@@ -27,6 +73,7 @@ export const requireAuth = async (req: Request, _res: Response, next: NextFuncti
       email: user.email,
       role: user.role
     };
+    void touchLastActive(user.id);
     next();
   } catch (error) {
     next(error);

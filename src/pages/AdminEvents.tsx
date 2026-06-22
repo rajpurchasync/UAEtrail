@@ -81,7 +81,7 @@ export const AdminEvents = () => {
     const q = search.toLowerCase();
     return (
       e.locationName.toLowerCase().includes(q) ||
-      e.organizerName.toLowerCase().includes(q) ||
+      (e.organizerName ?? e.hostName ?? '').toLowerCase().includes(q) ||
       (e.title ?? '').toLowerCase().includes(q)
     );
   });
@@ -188,7 +188,7 @@ export const AdminEvents = () => {
                       <p className="text-gray-900">{event.date}</p>
                       <p className="text-xs text-gray-500">{event.time}</p>
                     </td>
-                    <td className="px-4 py-3">{event.organizerName}</td>
+                    <td className="px-4 py-3">{event.hostName ?? event.organizerName ?? '—'}</td>
                     <td className="px-4 py-3 text-center">
                       <span className="text-gray-900">{event.slotsTotal - event.slotsAvailable}</span>
                       <span className="text-gray-400">/{event.slotsTotal}</span>

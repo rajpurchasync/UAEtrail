@@ -3,14 +3,23 @@
  * Reference: UAE Trail Platform Audit & Strategy plan.
  */
 
-/** Mobile bottom navigation: Explore | Trips | Community | Shop | Profile */
+/** Mobile bottom navigation: Explore (Home) | Trips | Community | Shop | Profile */
 export const MOBILE_NAV = [
-  { to: '/discovery', label: 'Explore', match: ['/discovery', '/trail', '/camp'] },
+  { to: '/', label: 'Explore', match: ['/'] },
   { to: '/trips', label: 'Trips', match: ['/trips', '/trip'] },
   { to: '/community', label: 'Community', match: ['/community'] },
   { to: '/shop', label: 'Shop', match: ['/shop', '/product', '/merchant'] },
-  { to: '/profile', label: 'Profile', match: ['/profile', '/dashboard'] },
+  { to: '/profile', label: 'Profile', match: ['/profile', '/my-requests', '/messages', '/notifications'] },
 ] as const;
+
+/**
+ * User taxonomy (admin + product):
+ * - Participant (visitor): mobile app experience only — no sidebar dashboard
+ * - Business / Guide Organizer: tenant_owner with COMPANY or GUIDE_OWNED tenant
+ * - Organizer Staff: tenant_admin, tenant_guide
+ * - Platform Admin: full admin console
+ * Accounts are ACTIVE on signup/OAuth; organizer tenants may still require approval.
+ */
 
 /** Community MVP: location-anchored Q&A, trip reports, and photo posts — not a generic forum. */
 export const COMMUNITY_CATEGORIES = [
@@ -22,11 +31,21 @@ export const COMMUNITY_CATEGORIES = [
 
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number]['id'];
 
+/** Feature toggles — flip without redeploying copy in many files. */
+export const FEATURE_FLAGS = {
+  /** Premium subscription checkout — keep false until launch. */
+  membershipEnabled: false,
+} as const;
+
+export const MEMBERSHIP_NAV_LINK = FEATURE_FLAGS.membershipEnabled
+  ? ({ to: '/membership' as const, label: 'Membership' })
+  : null;
+
 /** Shop v1: catalog + external buy link + member discount badge — no native checkout. */
 export const SHOP_V1 = {
   checkoutMode: 'external' as const,
   memberDiscountPercent: 10,
-  showMemberBadge: true,
+  showMemberBadge: FEATURE_FLAGS.membershipEnabled,
 };
 
 /**
@@ -50,3 +69,23 @@ export const MAP_CONFIG = {
 
 /** Default platform country — see src/config/regions.ts for GCC catalog. */
 export const PLATFORM_DEFAULT_COUNTRY = 'AE';
+
+/** Routes where bottom nav, footer padding, and mobile chrome are hidden. */
+export const CONSUMER_CHROME_HIDDEN_PREFIXES = [
+  '/admin',
+  '/organizer',
+  '/dashboard',
+  '/merchant'
+] as const;
+
+export const CONSUMER_CHROME_HIDDEN_EXACT = [
+  '/signin',
+  '/signup',
+  '/verify',
+  '/onboarding',
+  '/forgot-password'
+] as const;
+
+export const isConsumerChromeHidden = (pathname: string): boolean =>
+  CONSUMER_CHROME_HIDDEN_EXACT.includes(pathname as (typeof CONSUMER_CHROME_HIDDEN_EXACT)[number]) ||
+  CONSUMER_CHROME_HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix));

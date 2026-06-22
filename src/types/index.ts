@@ -21,6 +21,11 @@ export interface Trail {
   featured: boolean;
   latitude?: number | null;
   longitude?: number | null;
+  parkingLink?: string;
+  highlights?: string[];
+  surfaceType?: string[];
+  tags?: string[];
+  accessibleBy?: string[];
 }
 
 export interface CampingSpot {
@@ -37,6 +42,11 @@ export interface CampingSpot {
   featured: boolean;
   latitude?: number | null;
   longitude?: number | null;
+  parkingLink?: string;
+  highlights?: string[];
+  surfaceType?: string[];
+  tags?: string[];
+  accessibleBy?: string[];
 }
 
 export interface Operator {
@@ -68,8 +78,14 @@ export interface Trip {
   time: string;
   operatorId: string;
   tenantSlug?: string;
+  tenantName?: string;
+  hostName?: string;
+  hostUserId?: string;
+  hostAvatar?: string;
+  /** @deprecated use hostName */
   organizerName?: string;
   organizerAvatar?: string;
+  organizerUserId?: string;
   images?: string[];
   price: number;
   slotsAvailable: number;

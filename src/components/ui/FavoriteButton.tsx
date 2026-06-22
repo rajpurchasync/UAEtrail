@@ -56,7 +56,7 @@ export const FavoriteButton = ({ locationId, eventId, className = '' }: Favorite
       onClick={toggle}
       disabled={loading}
       aria-label={saved ? 'Remove from saved' : 'Save location'}
-      className={`p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-sm border border-gray-100 hover:scale-105 transition-all disabled:opacity-60 ${className}`}
+      className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-sm border border-gray-100 active:scale-95 transition-all disabled:opacity-60 ${className}`}
     >
       <Heart
         className={`w-5 h-5 ${saved ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}

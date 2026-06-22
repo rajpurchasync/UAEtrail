@@ -1,8 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
-import { OrderStatus } from '@prisma/client';
+import { LocationUnlockSource, OrderStatus } from '@prisma/client';
 import { getStripe, isStripeConfigured } from '../lib/stripe.js';
 import { prisma } from '../lib/prisma.js';
 import { ApiError } from '../lib/api-error.js';
+import { unlockLocationForUser } from '../services/location-premium.js';
 
 /** Stripe webhook — must be mounted with express.raw() before express.json(). */
 export const stripeWebhookHandler = async (req: Request, res: Response, next: NextFunction) => {
@@ -25,16 +26,36 @@ export const stripeWebhookHandler = async (req: Request, res: Response, next: Ne
       throw new ApiError(400, 'missing_signature', 'Webhook signature required.');
     }
 
+    const alreadyProcessed = await prisma.stripeWebhookEvent.findUnique({ where: { id: event.id } });
+    if (alreadyProcessed) {
+      res.json({ received: true, duplicate: true });
+      return;
+    }
+
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as import('stripe').Stripe.Checkout.Session;
-      const orderId = session.metadata?.orderId ?? session.client_reference_id;
-      if (orderId) {
-        await prisma.shopOrder.updateMany({
-          where: { id: orderId, status: OrderStatus.PENDING },
-          data: { status: OrderStatus.PAID }
-        });
+
+      if (session.metadata?.type === 'location_unlock') {
+        const userId = session.metadata.userId;
+        const locationId = session.metadata.locationId;
+        if (userId && locationId) {
+          await unlockLocationForUser(userId, locationId, LocationUnlockSource.PURCHASE);
+        }
+      } else {
+        const orderId = session.metadata?.orderId ?? session.client_reference_id;
+        if (orderId) {
+          const order = await prisma.shopOrder.findUnique({ where: { id: orderId } });
+          if (order && order.status === OrderStatus.PENDING) {
+            await prisma.shopOrder.update({
+              where: { id: orderId },
+              data: { status: OrderStatus.PAID }
+            });
+          }
+        }
       }
     }
+
+    await prisma.stripeWebhookEvent.create({ data: { id: event.id } });
 
     res.json({ received: true });
   } catch (error) {

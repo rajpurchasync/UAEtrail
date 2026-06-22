@@ -1,21 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mountain, Calendar, Star, MapPin, ChevronRight, Tent, Compass } from 'lucide-react';
-import { TrailCard, CampingCard, TripCard, LocationSelector } from '../components/ui';
+import { Mountain, Star, MapPin, ChevronRight, Tent, Compass, User } from 'lucide-react';
+import { TrailCard, CampingCard, TripCard, LocationSelector, EmptyTripsBanner } from '../components/ui';
+import { DEFAULT_OG_IMAGE, HOME_HERO_IMAGE } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
+import { JsonLd } from '../components/seo/JsonLd';
+import { FaqPreview } from '../components/seo/FaqPreview';
+import { websiteSchema } from '../components/seo/schemas';
+import { HOME_FAQ_PREVIEW } from '../content/platformFaqs';
 import { CampingSpot, Trail, Trip } from '../types';
 import { fetchPopularLocations, fetchFeaturedEvents, fetchPublicMappedData } from '../api/public';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import { accountRouteByRole } from '../utils/authRouting';
+import { getInitials, getFirstName } from '../utils/userDisplay';
+import { TrailPointsPromoBanner } from '../components/rewards';
+import { MEMBERSHIP_NAV_LINK } from '../config/platform';
+import { EXPLORE_UAE_REGIONS, type ExploreRegionIcon } from '../config/exploreUaeRegions';
 
-const getInitials = (name?: string | null, email?: string | null) => {
-  if (name) {
-    const parts = name.trim().split(/\s+/);
-    return parts.length > 1
-      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-      : parts[0][0].toUpperCase();
-  }
-  return email?.[0]?.toUpperCase() ?? '?';
+const EXPLORE_REGION_ICONS: Record<ExploreRegionIcon, typeof Mountain> = {
+  mountain: Mountain,
+  tent: Tent,
+  compass: Compass
 };
 
 export const Home = () => {
@@ -108,7 +114,9 @@ export const Home = () => {
         title="Discover hiking & camping in the UAE & GCC"
         description="Find trails, camping spots, and join organized outdoor trips with trusted guides across the UAE and GCC."
         path="/"
+        image={DEFAULT_OG_IMAGE}
       />
+      <JsonLd data={websiteSchema()} id="website" />
       {loadError && (
         <div className="bg-amber-50 border-b border-amber-200 text-amber-800 text-sm text-center py-2 px-4">
           {loadError}. Some sections may be empty until the API is available.
@@ -118,20 +126,20 @@ export const Home = () => {
       <section
         className="relative h-[36vh] min-h-[260px] sm:h-[50vh] md:h-[70vh] md:max-h-[600px] bg-cover bg-center"
         style={{
-          backgroundImage: 'url(/traveler-hiking-mountains-while-having-his-essentials-backpack.jpg)'
+          backgroundImage: `url(${HOME_HERO_IMAGE})`
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
 
         <div className="relative h-full flex flex-col">
           {/* Hero header / nav */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-safe-plus-2 md:pt-4">
             <div className="flex justify-between items-center">
               <Link to="/" className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-lg flex items-center justify-center">
                   <Mountain className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-base font-bold text-white tracking-tight">UAE Trails</span>
+                <span className="text-base font-bold text-white tracking-tight">UAE Trail</span>
               </Link>
 
               <nav className="hidden md:flex gap-1 items-center bg-white/10 backdrop-blur-md rounded-full px-2 py-1">
@@ -141,7 +149,7 @@ export const Home = () => {
                   { to: '/trips', label: 'Trips' },
                   { to: '/shop', label: 'Shop' },
                   { to: '/community', label: 'Community' },
-                  { to: '/membership', label: 'Membership' },
+                  ...(MEMBERSHIP_NAV_LINK ? [MEMBERSHIP_NAV_LINK] : []),
                 ].map((link) => (
                   <Link
                     key={link.to}
@@ -155,13 +163,13 @@ export const Home = () => {
 
               {user ? (
                 <Link
-                  to="/dashboard/overview"
+                  to={accountRouteByRole(user.role)}
                   className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-medium"
                 >
                   <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
                     {getInitials(user.displayName, user.email)}
                   </span>
-                  {user.displayName?.split(' ')[0] || 'Dashboard'}
+                  {getFirstName(user.displayName, user.email)}
                 </Link>
               ) : (
                 <Link
@@ -173,13 +181,15 @@ export const Home = () => {
               )}
 
               <Link
-                to={user ? '/profile' : '/signin'}
-                className="md:hidden w-9 h-9 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm text-white"
+                to={user ? accountRouteByRole(user.role) : '/signin'}
+                state={user ? undefined : { from: '/' }}
+                className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm text-white"
+                aria-label={user ? 'Your profile' : 'Profile'}
               >
                 {user ? (
                   <span className="text-xs font-bold">{getInitials(user.displayName, user.email)}</span>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+                  <User className="w-5 h-5" strokeWidth={2} />
                 )}
               </Link>
             </div>
@@ -188,23 +198,23 @@ export const Home = () => {
           {/* Hero content */}
           <div className="flex-1 flex items-center justify-center">
             <div className="text-white max-w-3xl text-center px-6 md:px-12">
-              <h1 className="text-xl xs:text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-2 md:mb-4 leading-tight tracking-tight">
+              <h1 className="text-xl xs:text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-2 md:mb-4 leading-[1.12] tracking-tight">
                 Discover Hiking &<br className="hidden sm:block" /> Camping in the UAE
               </h1>
               <p className="text-xs xs:text-sm sm:text-lg md:text-xl text-white/80 mb-3 md:mb-8 max-w-2xl mx-auto leading-relaxed">
                 Explore breathtaking trails, discover perfect camping spots, and join guided adventures across the Emirates.
               </p>
-              <div className="flex flex-col xs:flex-row gap-3 justify-center">
+              <div className="flex flex-col md:flex-row gap-3 justify-center items-center">
                 <Link
                   to="/discovery"
-                  className="px-5 py-2.5 md:px-6 md:py-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all font-semibold inline-flex items-center justify-center shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 text-sm md:text-base"
+                  className="w-[70%] md:w-auto md:min-w-[14rem] px-5 py-2.5 md:px-10 md:py-3.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all font-semibold inline-flex items-center justify-center shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 text-sm md:text-base"
                 >
-                  <Mountain className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                  Explore Venues
+                  <Compass className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                  Explore
                 </Link>
                 <button
                   onClick={() => setShowLocationSelector(true)}
-                  className="px-5 py-2.5 md:px-6 md:py-3 bg-white/15 backdrop-blur-sm text-white rounded-full hover:bg-white/25 transition-all font-medium border border-white/20 inline-flex items-center justify-center text-sm md:text-base"
+                  className="w-[70%] md:w-auto md:min-w-[14rem] px-5 py-2.5 md:px-10 md:py-3.5 bg-white/15 backdrop-blur-sm text-white rounded-full hover:bg-white/25 transition-all font-medium border border-white/20 inline-flex items-center justify-center text-sm md:text-base"
                 >
                   <MapPin className="w-4 h-4 mr-2" />
                   Near You
@@ -214,6 +224,8 @@ export const Home = () => {
           </div>
         </div>
       </section>
+
+      <TrailPointsPromoBanner variant="home" />
 
       {/* ──── Explore UAE Regions ──── */}
       <section className="py-8 md:py-12">
@@ -225,30 +237,37 @@ export const Home = () => {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {[
-              { name: 'Ras Al Khaimah', image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400', icon: Mountain, count: allTrails.filter(t => t.region.includes('RAK') || t.region.includes('Ras')).length + allCamps.filter(c => c.region.includes('RAK') || c.region.includes('Ras')).length },
-              { name: 'Fujairah', image: 'https://images.unsplash.com/photo-1504233529578-6d46baba6d34?w=400', icon: Tent, count: allTrails.filter(t => t.region.includes('Fujairah')).length + allCamps.filter(c => c.region.includes('Fujairah')).length },
-              { name: 'Hatta', image: 'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=400', icon: Mountain, count: allTrails.filter(t => t.region.includes('Hatta')).length + allCamps.filter(c => c.region.includes('Hatta')).length },
-              { name: 'Al Ain', image: 'https://images.unsplash.com/photo-1451337516015-6b6e9a44a8a3?w=400', icon: Compass, count: allTrails.filter(t => t.region.includes('Al Ain')).length + allCamps.filter(c => c.region.includes('Al Ain')).length },
-            ].map((region) => (
+            {EXPLORE_UAE_REGIONS.map((region) => {
+              const RegionIcon = EXPLORE_REGION_ICONS[region.icon];
+              const count =
+                allTrails.filter((t) => region.regionKeys.some((k) => t.region.includes(k))).length +
+                allCamps.filter((c) => region.regionKeys.some((k) => c.region.includes(k))).length;
+
+              return (
               <Link
                 key={region.name}
-                to={`/discovery?q=${encodeURIComponent(region.name)}`}
-                className="group relative aspect-[4/3] rounded-2xl overflow-hidden"
+                to={region.discoveryLink}
+                className="group relative aspect-[4/3] rounded-[22px] overflow-hidden glass-card-interactive shadow-glass"
               >
-                <img src={region.image} alt={region.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                <img
+                  src={region.image}
+                  alt={region.imageAlt}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <region.icon className="w-3.5 h-3.5 text-emerald-400" />
+                    <RegionIcon className="w-3.5 h-3.5 text-emerald-400" />
                     <p className="text-white font-semibold text-sm">{region.name}</p>
                   </div>
-                  {region.count > 0 && (
-                    <p className="text-white/70 text-xs">{region.count} locations</p>
+                  {count > 0 && (
+                    <p className="text-white/70 text-xs">{count} locations</p>
                   )}
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -259,7 +278,7 @@ export const Home = () => {
           <div className="flex justify-between items-end mb-5">
             <div>
               <h2 className="text-xl md:text-3xl font-bold text-gray-900">
-                {featuredTrips.length > 0 ? 'Featured Events' : 'Upcoming Trips'}
+                {featuredTrips.length > 0 ? 'Featured Events' : 'Organized Trips'}
               </h2>
               <p className="text-sm text-gray-500 mt-1 hidden md:block">
                 {featuredTrips.length > 0 ? 'Handpicked adventures selected for you' : 'Join organized hiking and camping adventures'}
@@ -267,22 +286,21 @@ export const Home = () => {
             </div>
             <Link
               to="/trips"
-              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0"
+              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
-              <Calendar className="w-4 h-4" />
-              All trips <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              All trips
+              <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
           <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none">
             {displayedTrips.map((trip) => (
-              <div key={trip.id} className="min-w-[280px] md:min-w-0 snap-center shrink-0 md:shrink">
-                <TripCard trip={trip} />
+              <div key={trip.id} className="min-w-[300px] md:min-w-0 snap-center shrink-0 md:shrink">
+                <TripCard trip={trip} variant="featured" />
               </div>
             ))}
             {displayedTrips.length === 0 && (
-              <div className="col-span-full text-center py-12 min-w-full">
-                <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">No upcoming events yet. Check back soon!</p>
+              <div className="col-span-full min-w-full">
+                <EmptyTripsBanner />
               </div>
             )}
           </div>
@@ -336,6 +354,13 @@ export const Home = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ──── FAQ preview ──── */}
+      <section className="py-10 md:py-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FaqPreview items={HOME_FAQ_PREVIEW} />
         </div>
       </section>
 

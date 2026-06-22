@@ -3,5 +3,71 @@ import { UserRole } from '@uaetrail/shared-types';
 export const defaultRouteByRole = (role: UserRole): string => {
   if (role === 'platform_admin') return '/admin/overview';
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/organizer/overview';
-  return '/discovery';
+  return '/';
+};
+
+/** Mobile-first home for account access — no desktop dashboard for participants. */
+export const accountRouteByRole = (role: UserRole): string => {
+  if (role === 'platform_admin') return '/admin/overview';
+  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/organizer/overview';
+  return '/profile';
+};
+
+export const isParticipantRole = (role: UserRole): boolean => role === 'visitor';
+
+export const visitorDashboardRedirect = (subpath: string): string => {
+  switch (subpath) {
+    case 'overview':
+      return '/profile';
+    case 'requests':
+      return '/my-requests';
+    case 'trips':
+      return '/trips?tab=mine';
+    case 'messages':
+      return '/messages';
+    case 'profile':
+      return '/profile';
+    default:
+      return '/profile';
+  }
+};
+
+export const organizerDashboardRedirect = (subpath: string): string => {
+  switch (subpath) {
+    case 'messages':
+      return '/organizer/messages';
+    case 'requests':
+      return '/organizer/requests';
+    case 'trips':
+    case 'events':
+      return '/organizer/events';
+    case 'profile':
+      return '/organizer/profile';
+    default:
+      return '/organizer/overview';
+  }
+};
+
+export const adminDashboardRedirect = (subpath: string): string => {
+  switch (subpath) {
+    case 'users':
+      return '/admin/users';
+    case 'events':
+      return '/admin/events';
+    case 'locations':
+      return '/admin/locations';
+    case 'settings':
+      return '/admin/settings';
+    default:
+      return '/admin/overview';
+  }
+};
+
+/** Deep link to messages for the current role. */
+export const messagesRouteForRole = (role: UserRole, userId: string): string => {
+  if (role === 'platform_admin') return '/admin/overview';
+  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
+    return `/organizer/messages?to=${userId}`;
+  }
+  return `/messages?to=${userId}`;
 };

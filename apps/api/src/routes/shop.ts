@@ -2,7 +2,6 @@ import { ProductStatus } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
-import { createAuditLog } from '../lib/audit.js';
 import { prisma } from '../lib/prisma.js';
 import { getStripe, isStripeConfigured } from '../lib/stripe.js';
 import { env } from '../config/env.js';

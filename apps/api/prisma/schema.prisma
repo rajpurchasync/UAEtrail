@@ -20,6 +20,11 @@ enum UserStatus {
   SUSPENDED
 }
 
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
 enum TenantType {
   COMPANY
   GUIDE_OWNED
@@ -87,6 +92,33 @@ enum NotificationType {
   REVIEW_PROMPT
 }
 
+enum RewardAction {
+  SIGNUP_WELCOME
+  REFERRAL_BONUS_REFERRER
+  REFERRAL_BONUS_JOINER
+  LOCATION_SUBMITTED
+  LOCATION_PUBLISHED
+  EVENT_PUBLISHED
+  EVENT_HOSTED
+  TRIP_ATTENDED
+  COMMUNITY_POST
+  COMMUNITY_REPLY
+  REVIEW_WRITTEN
+}
+
+enum LocationUnlockSource {
+  PURCHASE
+  SUBSCRIPTION
+  ADMIN_GRANT
+}
+
+enum MembershipTier {
+  FREE
+  ACTIVE
+  PRO
+  GOAT
+}
+
 enum ProductStatus {
   DRAFT
   ACTIVE
@@ -103,10 +135,13 @@ enum OrderStatus {
 model User {
   id                    String                   @id @default(uuid())
   email                 String                   @unique
-  passwordHash          String
+  passwordHash          String?
+  googleId              String?                  @unique
+  authProvider          AuthProvider             @default(EMAIL)
   role                  UserRole                 @default(VISITOR)
   status                UserStatus               @default(ACTIVE)
   emailVerifiedAt       DateTime?
+  lastActiveAt          DateTime?
   createdAt             DateTime                 @default(now())
   updatedAt             DateTime                 @updatedAt
   profile               Profile?
@@ -137,16 +172,51 @@ model User {
   postLikes              PostLike[]
   pushSubscriptions      PushSubscription[]
   shopOrders             ShopOrder[]
+  referralCode           String         @unique
+  referredById           String?
+  referredBy             User?          @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals              User[]         @relation("UserReferrals")
+  rewardLedger           RewardLedger[]
+  badges                 UserBadge[]
+  locationUnlocks        LocationUnlock[]
 }
 
 model Profile {
-  id          String  @id @default(uuid())
-  userId      String  @unique
-  displayName String?
-  phone       String?
-  bio         String?
-  avatarUrl   String?
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String  @id @default(uuid())
+  userId       String  @unique
+  displayName  String?
+  phone        String?
+  bio          String?
+  avatarUrl      String?
+  rewardPoints   Int            @default(0)
+  membershipTier MembershipTier @default(FREE)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RewardLedger {
+  id          String       @id @default(uuid())
+  userId      String
+  action      RewardAction
+  points      Int
+  referenceId String
+  label       String?
+  meta        Json?
+  createdAt   DateTime     @default(now())
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, action, referenceId])
+  @@index([userId, createdAt])
+}
+
+model UserBadge {
+  id        String   @id @default(uuid())
+  userId    String
+  badgeKey  String
+  earnedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeKey])
+  @@index([userId])
 }
 
 model Tenant {
@@ -228,6 +298,11 @@ model Location {
   accessibleBy  String[]
   viewCount     Int            @default(0)
   countryCode   String         @default("AE")
+  gpxKey        String?
+  guidePdfKey   String?
+  guideMarkdown String?
+  guidePreview  String?
+  unlockPriceAed Int           @default(29)
   submittedById String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -235,9 +310,23 @@ model Location {
   submittedBy   User?          @relation("SubmittedLocations", fields: [submittedById], references: [id])
   favorites     UserFavorite[]
   posts         Post[]
+  unlocks       LocationUnlock[]
 
   @@index([status, activityType])
   @@index([status, featured, createdAt])
+}
+
+model LocationUnlock {
+  id         String               @id @default(uuid())
+  userId     String
+  locationId String
+  source     LocationUnlockSource @default(PURCHASE)
+  createdAt  DateTime             @default(now())
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location   Location             @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, locationId])
+  @@index([locationId])
 }
 
 model Event {
@@ -251,6 +340,9 @@ model Event {
   startAt      DateTime
   endAt        DateTime?
   meetingPoint String?
+  meetingLat   Float?
+  meetingLng   Float?
+  paymentTerms String?
   itinerary    String[]
   requirements String[]
   images       String[]
@@ -283,6 +375,9 @@ model EventRequest {
   status        RequestStatus @default(PENDING)
   note          String?
   organizerNote String?
+  cancelReason  String?
+  cancelMessage String?
+  cancelledAt   DateTime?
   reviewedById  String?
   reviewedAt    DateTime?
   createdAt     DateTime      @default(now())
@@ -395,6 +490,11 @@ model PasswordResetToken {
   usedAt    DateTime?
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StripeWebhookEvent {
+  id          String   @id
+  processedAt DateTime @default(now())
 }
 
 model ChatMessage {

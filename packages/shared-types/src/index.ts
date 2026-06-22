@@ -54,6 +54,42 @@ export interface LocationDTO {
   accessibleBy?: string[];
   viewCount?: number;
   countryCode?: string;
+  submittedById?: string | null;
+  /** Public-safe premium hints (no private file keys on consumer APIs). */
+  hasRouteMap?: boolean;
+  hasGuide?: boolean;
+  guidePreview?: string | null;
+  unlockPriceAed?: number;
+  /** Admin-only — storage keys for GPX / PDF assets. */
+  gpxKey?: string | null;
+  guidePdfKey?: string | null;
+  guideMarkdown?: string | null;
+}
+
+export type PremiumAccessReason = 'pro' | 'goat' | 'admin' | 'unlocked' | 'locked';
+
+export interface LocationPremiumSummaryDTO {
+  hasPremium: boolean;
+  hasRouteMap: boolean;
+  hasGuide: boolean;
+  hasGuidePdf: boolean;
+  unlockPriceAed: number;
+  guidePreview: string | null;
+  isUnlocked: boolean;
+  accessReason: PremiumAccessReason;
+  membershipTier: string;
+}
+
+export interface LocationGuideDTO {
+  locationId: string;
+  locationName: string;
+  markdown: string | null;
+  hasPdf: boolean;
+}
+
+export interface LocationDetailResponse {
+  data: LocationDTO;
+  premium: LocationPremiumSummaryDTO | null;
 }
 
 export interface ParticipantPreviewDTO {
@@ -73,16 +109,31 @@ export interface EventDTO {
   description: string;
   date: string;
   time: string;
+  endDate?: string | null;
+  endTime?: string | null;
   price: number;
   slotsTotal: number;
   slotsAvailable: number;
   status: EventStatus;
   meetingPoint?: string | null;
+  meetingLat?: number | null;
+  meetingLng?: number | null;
+  paymentTerms?: string | null;
   itinerary?: string[] | null;
   requirements?: string[] | null;
   images?: string[];
-  organizerName: string;
-  organizerAvatar?: string | null;
+  /** Person responsible for hosting this trip on the ground */
+  hostName?: string;
+  hostUserId?: string;
+  hostAvatar?: string;
+  hostBio?: string | null;
+  /** Organization or guide brand running the trip */
+  tenantName?: string;
+  /** @deprecated Use hostName — kept for compatibility */
+  organizerName?: string;
+  organizerAvatar?: string;
+  organizerUserId?: string;
+  guideId?: string | null;
   featured?: boolean;
   participantPreviews?: ParticipantPreviewDTO[];
   countryCode?: string;
@@ -92,6 +143,28 @@ export interface EventDetailDTO extends EventDTO {
   organizerId?: string;
   participants: ParticipantPreviewDTO[];
   location: LocationDTO;
+  myParticipation?: TripParticipationDTO | null;
+  myRequest?: MyTripRequestDTO | null;
+}
+
+export interface TripParticipationDTO {
+  participantId: string;
+  requestId: string;
+  status: 'confirmed';
+  checkedInAt?: string | null;
+  canCheckIn: boolean;
+  checkInOpensAt?: string;
+  checkInClosesAt?: string;
+}
+
+export interface MyTripRequestDTO {
+  id: string;
+  status: RequestStatus;
+  canWithdraw: boolean;
+}
+
+export interface MyTripDTO extends EventDTO {
+  participation: TripParticipationDTO;
 }
 
 export interface JoinRequestDTO {
@@ -102,9 +175,27 @@ export interface JoinRequestDTO {
   waitlisted?: boolean;
   note?: string | null;
   organizerNote?: string | null;
+  cancelReason?: string | null;
+  cancelMessage?: string | null;
+  cancelledAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
+
+/** Predefined reasons when a user withdraws from a trip */
+export const WITHDRAW_REASONS = [
+  { value: 'schedule_conflict', label: 'Schedule conflict' },
+  { value: 'cant_attend', label: "Can't make it anymore" },
+  { value: 'found_other', label: 'Found another trip' },
+  { value: 'health', label: 'Health or personal reasons' },
+  { value: 'changed_mind', label: 'Changed my mind' },
+  { value: 'other', label: 'Other' }
+] as const;
+
+export type WithdrawReason = (typeof WITHDRAW_REASONS)[number]['value'];
+
+export const withdrawReasonLabel = (value: string): string =>
+  WITHDRAW_REASONS.find((r) => r.value === value)?.label ?? value;
 
 export interface NotificationDTO {
   id: string;
@@ -126,7 +217,8 @@ export interface AuthUser {
 
 export interface AuthTokens {
   accessToken: string;
-  refreshToken: string;
+  /** Omitted when refresh token is sent via httpOnly cookie. */
+  refreshToken?: string;
 }
 
 export interface AuthResponse {
@@ -184,6 +276,7 @@ export interface ReviewDTO {
   userId: string;
   userName: string;
   userAvatar?: string | null;
+  userMembershipTier?: MembershipTierDTO | null;
   rating: number;
   comment: string;
   createdAt: string;
@@ -196,6 +289,7 @@ export interface PostReplyDTO {
   authorId: string;
   authorName: string;
   authorAvatar?: string | null;
+  authorMembershipTier?: MembershipTierDTO | null;
   content: string;
   createdAt: string;
 }
@@ -213,6 +307,7 @@ export interface PostDTO {
   authorId: string;
   authorName: string;
   authorAvatar?: string | null;
+  authorMembershipTier?: MembershipTierDTO | null;
   likeCount: number;
   replyCount: number;
   replies: PostReplyDTO[];
@@ -240,13 +335,26 @@ export interface MerchantProfileDTO {
 
 export type UserStatusType = 'active' | 'suspended';
 
+export type AdminUserType =
+  | 'participant'
+  | 'business_organizer'
+  | 'guide_organizer'
+  | 'organizer_staff'
+  | 'platform_admin';
+
+export type AuthProviderType = 'email' | 'google';
+
 export interface UserListDTO {
   id: string;
   email: string;
   role: UserRole;
+  userType?: AdminUserType;
   status: UserStatusType;
-  displayName?: string;
+  authProvider?: AuthProviderType;
+  displayName?: string | null;
+  avatarUrl?: string | null;
   createdAt: string;
+  lastActiveAt?: string | null;
 }
 
 export interface TenantListDTO {
@@ -271,4 +379,104 @@ export interface ParticipantDTO {
   avatarUrl?: string;
   checkedInAt?: string;
   joinedAt: string;
+}
+
+// ─── Rewards / Trail Points ─────────────────────────────────────────────────
+
+export type MembershipTierKey = 'free' | 'active' | 'pro' | 'goat';
+
+export interface MembershipTierDTO {
+  key: MembershipTierKey;
+  name: string;
+  minPoints: number;
+  emoji?: string;
+  tagline?: string;
+  benefits?: string[];
+}
+
+export interface RewardLevelDTO {
+  key: string;
+  name: string;
+  minPoints: number;
+}
+
+export interface RewardBadgeDTO {
+  key: string;
+  name: string;
+  description: string;
+  emoji: string;
+  earned: boolean;
+  earnedAt: string | null;
+}
+
+export interface RewardActivityDTO {
+  id: string;
+  action: string;
+  points: number;
+  label: string;
+  createdAt: string;
+}
+
+export interface RewardPathSuggestionDTO {
+  title: string;
+  points: number;
+  path: string;
+  note?: string;
+}
+
+export interface RewardPathToNextTierDTO {
+  pointsRemaining: number;
+  nextTierName: string;
+  nextTierKey: MembershipTierKey;
+  nextTierEmoji?: string;
+  suggestions: RewardPathSuggestionDTO[];
+}
+
+export interface RewardStatsDTO {
+  activeCount: number;
+  proCount: number;
+  goatCount: number;
+  contributorsCount: number;
+  totalPointsAwarded: number;
+  tierThresholds: Pick<MembershipTierDTO, 'key' | 'name' | 'minPoints' | 'emoji'>[];
+}
+
+export interface RewardSummaryDTO {
+  points: number;
+  membershipTier: MembershipTierDTO;
+  nextTier: (Pick<MembershipTierDTO, 'key' | 'name' | 'minPoints' | 'emoji'> & { pointsRemaining: number }) | null;
+  pathToNextTier: RewardPathToNextTierDTO | null;
+  /** @deprecated use membershipTier */
+  level: RewardLevelDTO;
+  /** @deprecated use nextTier */
+  nextLevel: (RewardLevelDTO & { pointsRemaining: number }) | null;
+  referralCode: string;
+  tierBadges: RewardBadgeDTO[];
+  badges: RewardBadgeDTO[];
+  recentActivity: RewardActivityDTO[];
+}
+
+export interface RewardLeaderboardEntryDTO {
+  rank: number;
+  userId: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  points: number;
+  tier: string;
+  /** @deprecated use tier */
+  level: string;
+}
+
+export interface RewardCatalogDTO {
+  currencyName: string;
+  membershipTiers: MembershipTierDTO[];
+  /** @deprecated use membershipTiers */
+  levels: RewardLevelDTO[];
+  earnOpportunities: Array<{
+    action: string;
+    title: string;
+    description: string;
+    points: number;
+  }>;
+  pointValues: Record<string, number>;
 }

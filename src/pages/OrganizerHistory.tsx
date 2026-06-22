@@ -1,17 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/services';
-import { DashboardLayout } from '../components/layout';
-
-const organizerLinks = [
-  { to: '/organizer/overview', label: 'Overview' },
-  { to: '/organizer/events', label: 'Events' },
-  { to: '/organizer/requests', label: 'Requests' },
-  { to: '/organizer/team', label: 'Team' },
-  { to: '/organizer/locations', label: 'Locations' },
-  { to: '/organizer/messages', label: 'Messages' },
-  { to: '/organizer/history', label: 'History' },
-  { to: '/organizer/profile', label: 'Profile' }
-];
+import { OrganizerShell } from '../components/organizer/OrganizerShell';
 
 interface HistoryEvent {
   id: string;
@@ -55,7 +44,7 @@ export const OrganizerHistory = () => {
   };
 
   return (
-    <DashboardLayout title="Organizer Dashboard" links={organizerLinks}>
+    <OrganizerShell title="History">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Past Events</h2>
 
       {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
@@ -103,6 +92,6 @@ export const OrganizerHistory = () => {
           </tbody>
         </table>
       </div>
-    </DashboardLayout>
+    </OrganizerShell>
   );
 };

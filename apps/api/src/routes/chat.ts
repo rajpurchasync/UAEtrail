@@ -1,14 +1,45 @@
-import { NotificationType } from '@prisma/client';
+import { NotificationType, type ChatMessage } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
+import type { ChatMessageDTO } from '@uaetrail/shared-types';
 import { prisma } from '../lib/prisma.js';
-import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
+import { requireAuth, requireSseTicket, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import { createSseTicket, SSE_TICKET_TTL_SECONDS } from '../lib/sse-ticket.js';
+import { assertCanMessageUser, assertChatRateLimit } from '../services/chat-policy.js';
+import { publishChatStreamEvent, registerChatStreamClient } from '../services/chat-stream.js';
 
 export const chatRouter = Router();
 
+const toChatMessageDto = (message: ChatMessage): ChatMessageDTO => ({
+  id: message.id,
+  senderId: message.senderId,
+  receiverId: message.receiverId,
+  content: message.content,
+  eventId: message.eventId ?? undefined,
+  readAt: message.readAt?.toISOString() ?? undefined,
+  createdAt: message.createdAt.toISOString()
+});
+
+chatRouter.get('/stream', requireSseTicket, requireVerifiedEmail, (req, res) => {
+  const userId = req.auth!.userId;
+  const unregister = registerChatStreamClient(userId, res);
+
+  req.on('close', () => {
+    unregister();
+  });
+});
+
 chatRouter.use(requireAuth, requireVerifiedEmail);
 
+chatRouter.post('/stream-ticket', async (req, res, next) => {
+  try {
+    const ticket = await createSseTicket(req.auth!.userId);
+    res.json({ data: { ticket, expiresIn: SSE_TICKET_TTL_SECONDS } });
+  } catch (error) {
+    next(error);
+  }
+});
 // ─── Conversations ──────────────────────────────────────────────────────────
 
 chatRouter.get('/conversations', async (req, res, next) => {
@@ -143,15 +174,7 @@ chatRouter.get('/messages/:userId', validate({ params: messageThreadSchema, quer
     });
 
     res.json({
-      data: messages.map((m) => ({
-        id: m.id,
-        senderId: m.senderId,
-        receiverId: m.receiverId,
-        content: m.content,
-        eventId: m.eventId ?? undefined,
-        readAt: m.readAt?.toISOString() ?? undefined,
-        createdAt: m.createdAt.toISOString()
-      })),
+      data: messages.map(toChatMessageDto),
       pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) }
     });
   } catch (error) {
@@ -175,6 +198,9 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
     if (senderId === receiverId) {
       return res.status(400).json({ error: { code: 'self_message', message: 'Cannot message yourself.' } });
     }
+
+    await assertChatRateLimit(senderId);
+    await assertCanMessageUser(senderId, receiverId);
 
     // Verify receiver exists
     const receiver = await prisma.user.findUnique({ where: { id: receiverId } });
@@ -207,15 +233,11 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
       return msg;
     });
 
+    const messageDto = toChatMessageDto(message);
+    void publishChatStreamEvent(receiverId, { type: 'chat_message', data: messageDto });
+
     res.status(201).json({
-      data: {
-        id: message.id,
-        senderId: message.senderId,
-        receiverId: message.receiverId,
-        content: message.content,
-        eventId: message.eventId ?? undefined,
-        createdAt: message.createdAt.toISOString()
-      }
+      data: messageDto
     });
   } catch (error) {
     next(error);

@@ -5,6 +5,7 @@ import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { MapPinPicker } from '../components/ui/MapPinPicker';
 import { ImageUpload } from '../components/ui';
+import { AssetKeyUpload } from '../components/ui/AssetKeyUpload';
 
 /* ─── Constants ──────────────────────────────────────────────────────────── */
 
@@ -13,7 +14,7 @@ const CAMPING_SURFACES = ['Sand', 'Grass', 'Rocky', 'Mixed terrain'];
 const HIKING_ACCESSIBLE = ['4X4 required', 'Any cars', 'Bike'];
 const CAMPING_ACCESSIBLE = ['4X4 required', 'Any cars'];
 const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-friendly', 'Wheelchair-accessible', 'Night-hiking', 'Sunrise spot', 'Sunset spot'];
-const REGIONS = ['Dubai', 'RAK', 'Fujairah', 'Abu Dhabi', 'Al Ain', 'Sharjah', 'Ajman', 'Umm Al Quwain', 'Hatta'];
+import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../config/regions';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
 
 const emptyForm: Partial<LocationDTO> = {
@@ -21,7 +22,8 @@ const emptyForm: Partial<LocationDTO> = {
   season: ['winter'], childFriendly: false, maxGroupSize: 20, accessibility: 'car-accessible',
   images: [], featured: false, status: 'draft', distance: undefined, duration: undefined,
   elevation: undefined, campingType: undefined, latitude: null, longitude: null,
-  highlights: [], surfaceType: [], tags: [], parkingLink: '', accessibleBy: []
+  highlights: [], surfaceType: [], tags: [], parkingLink: '', accessibleBy: [], countryCode: DEFAULT_COUNTRY,
+  gpxKey: null, guidePdfKey: null, guideMarkdown: '', guidePreview: '', unlockPriceAed: 29
 };
 
 /* ─── Component ──────────────────────────────────────────────────────────── */
@@ -35,7 +37,7 @@ export const AdminLocations = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [highlightInput, setHighlightInput] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'hiking' | 'camping'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'hiking' | 'camping'>('all');
   const [search, setSearch] = useState('');
   const [confirmAction, setConfirmAction] = useState<{ type: 'status' | 'delete' | 'publish'; loc: LocationDTO } | null>(null);
   const [previewLoc, setPreviewLoc] = useState<LocationDTO | null>(null);
@@ -104,11 +106,24 @@ export const AdminLocations = () => {
     }
   };
 
+  const canApprove = (loc: Partial<LocationDTO>) => {
+    const hikingOk = loc.activityType !== 'hiking' || Boolean(loc.difficulty);
+    const parkingOk = Boolean(loc.parkingLink) || (loc.latitude != null && loc.longitude != null);
+    return hikingOk && parkingOk;
+  };
+
   const executeConfirmAction = async () => {
     if (!confirmAction) return;
     try {
-      if (confirmAction.type === 'publish') await api.updateAdminLocation(confirmAction.loc.id, { status: 'active' });
-      else if (confirmAction.type === 'status') {
+      if (confirmAction.type === 'publish') {
+        if (!canApprove(confirmAction.loc)) {
+          setError('Complete difficulty (hikes), parking link or map pin before approving.');
+          setConfirmAction(null);
+          openEdit(confirmAction.loc);
+          return;
+        }
+        await api.updateAdminLocation(confirmAction.loc.id, { status: 'active' });
+      } else if (confirmAction.type === 'status') {
         const newStatus = confirmAction.loc.status === 'active' ? 'inactive' : 'active';
         await api.updateAdminLocation(confirmAction.loc.id, { status: newStatus });
       } else await api.deleteAdminLocation(confirmAction.loc.id);
@@ -128,15 +143,22 @@ export const AdminLocations = () => {
   };
 
   const filtered = locations
-    .filter((l) => activeTab === 'all' || l.activityType === activeTab)
+    .filter((l) => {
+      if (activeTab === 'pending') return l.status === 'draft';
+      if (activeTab === 'all') return true;
+      return l.activityType === activeTab;
+    })
     .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.region.toLowerCase().includes(search.toLowerCase()));
 
   const hikingCount = locations.filter((l) => l.activityType === 'hiking').length;
   const campingCount = locations.filter((l) => l.activityType === 'camping').length;
+  const pendingCount = locations.filter((l) => l.status === 'draft').length;
+  const regionOptions = getRegionsForCountry((form.countryCode as CountryCode) ?? DEFAULT_COUNTRY);
 
   const statusBadge = (status: string) => {
+    const labels: Record<string, string> = { active: 'Active', inactive: 'Inactive', draft: 'Pending review' };
     const colors: Record<string, string> = { active: 'bg-green-100 text-green-800', inactive: 'bg-gray-100 text-gray-600', draft: 'bg-amber-100 text-amber-800' };
-    return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] ?? 'bg-gray-100 text-gray-600'}`}>{status}</span>;
+    return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] ?? 'bg-gray-100 text-gray-600'}`}>{labels[status] ?? status}</span>;
   };
 
   /* ─── Chip multi-select ────────────────────────────────────────────────── */
@@ -164,6 +186,10 @@ export const AdminLocations = () => {
             <button onClick={() => setActiveTab('all')}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
               All ({locations.length})
+            </button>
+            <button onClick={() => setActiveTab('pending')}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'pending' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+              Pending ({pendingCount})
             </button>
             <button onClick={() => setActiveTab('hiking')}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'hiking' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
@@ -230,7 +256,7 @@ export const AdminLocations = () => {
                     <div className="flex gap-1.5 flex-wrap">
                       <button onClick={() => openEdit(loc)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
                       {loc.status === 'draft' && (
-                        <button onClick={() => setConfirmAction({ type: 'publish', loc })} className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Publish</button>
+                        <button onClick={() => setConfirmAction({ type: 'publish', loc })} className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Approve</button>
                       )}
                       {loc.status !== 'draft' && (
                         <button onClick={() => setConfirmAction({ type: 'status', loc })}
@@ -303,17 +329,23 @@ export const AdminLocations = () => {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmAction(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {confirmAction.type === 'delete' ? 'Delete Location?' : confirmAction.type === 'publish' ? 'Publish Location?' : confirmAction.loc.status === 'active' ? 'Deactivate Location?' : 'Activate Location?'}
+              {confirmAction.type === 'delete' ? 'Delete Location?' : confirmAction.type === 'publish' ? 'Approve location?' : confirmAction.loc.status === 'active' ? 'Deactivate Location?' : 'Activate Location?'}
             </h3>
             <p className="text-sm text-gray-600 mb-1">
-              {confirmAction.type === 'delete' ? 'This will permanently remove the location.' : confirmAction.type === 'publish' ? 'This will make it visible publicly.' : confirmAction.loc.status === 'active' ? 'This will hide the location.' : 'This will make the location visible.'}
+              {confirmAction.type === 'delete'
+                ? 'This will permanently remove the location.'
+                : confirmAction.type === 'publish'
+                  ? 'Approving makes it public. Ensure difficulty (hikes), child/pet tags, and parking are complete.'
+                  : confirmAction.loc.status === 'active'
+                    ? 'This will hide the location.'
+                    : 'This will make the location visible.'}
             </p>
             <p className="text-sm font-medium text-gray-900 mb-4">{confirmAction.loc.name}</p>
             <div className="flex gap-3 justify-end">
               <button onClick={() => setConfirmAction(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
               <button onClick={executeConfirmAction}
                 className={`px-4 py-2 rounded-md text-sm text-white ${confirmAction.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
-                {confirmAction.type === 'delete' ? 'Delete' : confirmAction.type === 'publish' ? 'Publish' : confirmAction.loc.status === 'active' ? 'Deactivate' : 'Activate'}
+                {confirmAction.type === 'delete' ? 'Delete' : confirmAction.type === 'publish' ? 'Approve' : confirmAction.loc.status === 'active' ? 'Deactivate' : 'Activate'}
               </button>
             </div>
           </div>
@@ -355,6 +387,11 @@ export const AdminLocations = () => {
             {/* ── Step 1: Dynamic Form ── */}
             {(formStep === 1 || editingId) && (
               <form onSubmit={handleSave} className="p-6 space-y-6">
+                {form.status === 'draft' && form.submittedById && (
+                  <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-900">
+                    Organizer submission — add child-friendly / pet-friendly tags, parking link or map pin, and difficulty (hikes) before approving.
+                  </div>
+                )}
 
                 {/* Section 1: Basic Info */}
                 <fieldset className="space-y-4">
@@ -371,11 +408,23 @@ export const AdminLocations = () => {
                         placeholder={form.activityType === 'hiking' ? 'e.g. Jebel Jais Summit Trail' : 'e.g. Al Qudra Desert Camp'} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">Select Region *</label>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">Country</label>
+                      <select
+                        value={form.countryCode ?? DEFAULT_COUNTRY}
+                        onChange={(e) => setForm({ ...form, countryCode: e.target.value as CountryCode, region: '' })}
+                        className="w-full border rounded-lg px-3 py-2 text-sm"
+                      >
+                        {SUPPORTED_COUNTRIES.map((c) => (
+                          <option key={c.code} value={c.code}>{c.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">State / Region *</label>
                       <select required value={form.region ?? ''} onChange={(e) => setForm({ ...form, region: e.target.value })}
                         className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
                         <option value="">Select a region</option>
-                        {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                        {regionOptions.map((r) => <option key={r} value={r}>{r}</option>)}
                       </select>
                     </div>
                   </div>
@@ -498,9 +547,65 @@ export const AdminLocations = () => {
                   />
                 </fieldset>
 
-                {/* Section 5: Additional Settings */}
+                {/* Section 5: Premium map & guide */}
                 <fieldset className="space-y-4">
-                  <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">5. Additional Settings</legend>
+                  <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">
+                    5. Route map &amp; paid guide
+                  </legend>
+                  <p className="text-xs text-gray-500">
+                    Upload GPX for offline navigation and a detailed guide for Active (pay-as-you-go), Pro, and GOAT members.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <AssetKeyUpload
+                      label="Route map (GPX)"
+                      value={form.gpxKey}
+                      onChange={(key) => setForm({ ...form, gpxKey: key })}
+                      accept=".gpx,application/gpx+xml"
+                      kind="location-gpx"
+                    />
+                    <AssetKeyUpload
+                      label="Guide PDF (optional)"
+                      value={form.guidePdfKey}
+                      onChange={(key) => setForm({ ...form, guidePdfKey: key })}
+                      accept=".pdf,application/pdf"
+                      kind="location-guide-pdf"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Unlock price (AED)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.unlockPriceAed ?? 29}
+                      onChange={(e) => setForm({ ...form, unlockPriceAed: Number(e.target.value) })}
+                      className="w-full max-w-xs border rounded-lg px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Guide preview (shown when locked)</label>
+                    <textarea
+                      rows={2}
+                      value={form.guidePreview ?? ''}
+                      onChange={(e) => setForm({ ...form, guidePreview: e.target.value })}
+                      className="w-full border rounded-lg px-3 py-2 text-sm"
+                      placeholder="Teaser text — parking tips, best season, what the full guide covers…"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Full guide content (markdown)</label>
+                    <textarea
+                      rows={8}
+                      value={form.guideMarkdown ?? ''}
+                      onChange={(e) => setForm({ ...form, guideMarkdown: e.target.value })}
+                      className="w-full border rounded-lg px-3 py-2 text-sm font-mono text-xs"
+                      placeholder="## Getting there&#10;…&#10;## Route notes&#10;…"
+                    />
+                  </div>
+                </fieldset>
+
+                {/* Section 6: Additional Settings */}
+                <fieldset className="space-y-4">
+                  <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">6. Additional Settings</legend>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1 block">Status</label>

@@ -1,41 +1,90 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, User, Phone, Mail, Camera, ChevronRight } from 'lucide-react';
-import { api, UserProfile as UserProfileData } from '../api/services';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Briefcase, Compass, Crown, Shield, Sparkles, Trophy } from 'lucide-react';
+import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
-import { registerPushNotifications } from '../utils/push';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { PAGE_BANNERS } from '../config/pageBanners';
+import { GlassCard } from '../components/mobile/GlassCard';
+import {
+  AccountActivityPreview,
+  AccountEditModal,
+  AccountIdentityBar,
+  AccountLinkList,
+  AccountSignOutButton,
+  AccountStatGrid,
+  buildParticipantStats,
+} from '../components/account';
+import { FEATURE_FLAGS } from '../config/platform';
+import { useParticipantHubData } from '../hooks/useParticipantHubData';
+import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
+import { ProfileTrailPointsChip, TrailPointsPathSheet } from '../components/rewards';
+import { RewardSummaryDTO } from '@uaetrail/shared-types';
 
 export const Profile = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<UserProfileData>({});
+  const {
+    profile,
+    setProfile,
+    conversations,
+    pendingRequests,
+    upcomingTripsCount,
+    upcomingTrip,
+    unreadMessages,
+    unreadNotifications,
+    pastTripsCount,
+    loading,
+    error,
+    reload,
+  } = useParticipantHubData();
+
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [pushStatus, setPushStatus] = useState<string | null>(null);
+  const [showEdit, setShowEdit] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [rewardPoints, setRewardPoints] = useState<number | null>(null);
+  const [rewardTier, setRewardTier] = useState<{ key: string; name: string; emoji?: string } | null>(null);
+  const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
+  const [showPointsPath, setShowPointsPath] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    api.getMyRewards()
+      .then((res) => {
+        setRewardPoints(res.data.points);
+        setRewardTier(res.data.membershipTier);
+        setRewardSummary(res.data);
+      })
+      .catch(() => undefined);
+  }, [user]);
 
   const isOrganizer =
     user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
 
-  useEffect(() => {
-    api
-      .getMeProfile()
-      .then((res) => setProfile(res.data))
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load profile'))
-      .finally(() => setLoading(false));
+  const openEdit = useCallback(() => {
+    setShowEdit(true);
+    setShowDetails(false);
   }, []);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setMessage(null);
     setSaving(true);
     try {
-      await api.updateMeProfile(profile);
-      setMessage('Profile updated.');
+      await api.updateMeProfile({
+        displayName: profile.displayName,
+        phone: profile.phone,
+        bio: profile.bio,
+        avatarUrl: profile.avatarUrl,
+      });
+      await refreshUser();
+      setMessage('Profile saved.');
+      setShowEdit(false);
+      await reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save profile');
+      setMessage(err instanceof Error ? err.message : 'Failed to save profile');
     } finally {
       setSaving(false);
     }
@@ -46,188 +95,146 @@ export const Profile = () => {
     navigate('/');
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-gray-600 mb-3">Sign in to view your profile</p>
-          <Link to="/signin" className="text-emerald-600 hover:text-emerald-700 font-medium">
-            Sign In →
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const roleLabel = user!.role === 'visitor' ? 'Participant' : 'Explorer';
+  const messagesPath = isOrganizer ? '/organizer/messages' : '/messages';
+  const displayName = profile.displayName || user!.displayName || 'Explorer';
+
+  const statItems = buildParticipantStats({
+    upcomingTripsCount,
+    pendingRequestsCount: pendingRequests.length,
+    unreadMessages,
+    unreadNotifications,
+    messagesPath,
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Profile header */}
-      <div className="bg-white border-b">
-        <div className="max-w-2xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-4">
-            {profile.avatarUrl ? (
-              <img src={profile.avatarUrl} alt="" className="w-16 h-16 rounded-full object-cover" />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
-                <User className="w-7 h-7 text-emerald-600" />
-              </div>
-            )}
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                {profile.displayName || user.displayName || 'Your Profile'}
-              </h1>
-              <p className="text-sm text-gray-500">{profile.email || user.email}</p>
-              <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium capitalize">
-                {user.role.replace('tenant_', '').replace('platform_', '')}
-              </span>
-            </div>
+    <ConsumerShell
+      layout="tab"
+      title="Profile"
+      banner={{ src: PAGE_BANNERS.profile, alt: 'Mountain peaks at dawn' }}
+      action={
+        rewardSummary ? (
+          <ProfileTrailPointsChip summary={rewardSummary} onClick={() => setShowPointsPath(true)} />
+        ) : undefined
+      }
+    >
+      {error && !loading && (
+        <GlassCard padding className="mb-3 border-red-200/50 bg-red-50/50">
+          <p className="text-sm text-red-600">{error}</p>
+          <button type="button" onClick={reload} className="text-sm font-semibold text-emerald-600 mt-2">
+            Retry
+          </button>
+        </GlassCard>
+      )}
+
+      <AccountIdentityBar
+        displayName={displayName}
+        email={profile.email || user!.email || ''}
+        avatarUrl={profile.avatarUrl}
+        roleLabel={roleLabel}
+        bio={profile.bio}
+        phone={profile.phone}
+        expanded={showDetails}
+        onToggle={() => setShowDetails((open) => !open)}
+        onEdit={openEdit}
+        extra={
+          rewardTier && rewardTier.key !== 'free' ? (
+            <MembershipTierBadge tierKey={rewardTier.key} name={rewardTier.name} size="md" />
+          ) : rewardPoints != null ? (
+            <span className="text-xs font-semibold text-gray-500">{rewardPoints.toLocaleString()} pts</span>
+          ) : null
+        }
+      />
+
+      <div className="space-y-3 animate-fade-up">
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           </div>
-        </div>
+        ) : (
+          <>
+            <AccountStatGrid stats={statItems} />
+
+            <AccountActivityPreview
+              messagesPath={messagesPath}
+              upcomingTrip={upcomingTrip}
+              pendingRequests={pendingRequests}
+              conversations={conversations}
+            />
+
+            <AccountLinkList
+              items={[
+                {
+                  to: '/my-rewards',
+                  icon: <Trophy className="w-4 h-4" />,
+                  label: 'Trail Points',
+                  badge: rewardPoints ?? undefined,
+                  accent: 'emerald' as const,
+                },
+                {
+                  to: '/trips?tab=mine&sub=past',
+                  icon: <Compass className="w-4 h-4" />,
+                  label: 'Past trips',
+                  badge: pastTripsCount || undefined,
+                  accent: 'neutral',
+                },
+                ...(FEATURE_FLAGS.membershipEnabled
+                  ? [
+                      {
+                        to: '/membership',
+                        icon: <Crown className="w-4 h-4" />,
+                        label: 'Membership',
+                        accent: 'amber' as const,
+                      },
+                    ]
+                  : []),
+                isOrganizer
+                  ? {
+                      to: '/organizer/overview',
+                      icon: <Briefcase className="w-4 h-4" />,
+                      label: 'Organizer console',
+                    }
+                  : user!.role === 'platform_admin'
+                    ? {
+                        to: '/admin/overview',
+                        icon: <Shield className="w-4 h-4" />,
+                        label: 'Admin console',
+                        accent: 'blue' as const,
+                      }
+                    : {
+                        to: '/become-host',
+                        icon: <Sparkles className="w-4 h-4" />,
+                        label: 'Become a host',
+                        accent: 'amber' as const,
+                      },
+              ]}
+            />
+          </>
+        )}
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Quick links */}
-        <div className="bg-white border rounded-lg divide-y">
-          <Link to="/trips" className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-            <span className="text-sm font-medium text-gray-700">My Trips</span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </Link>
-          {isOrganizer && (
-            <Link to="/trips" className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-              <span className="text-sm font-medium text-gray-700">Organized Events</span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-            </Link>
-          )}
-          <Link to="/dashboard/overview" className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-            <span className="text-sm font-medium text-gray-700">Full Dashboard</span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </Link>
-          {isOrganizer && (
-            <Link to="/organizer/overview" className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-              <span className="text-sm font-medium text-gray-700">Organizer Dashboard</span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-            </Link>
-          )}
-          {isOrganizer && (
-            <Link to="/organizer/profile" className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-              <span className="text-sm font-medium text-gray-700">My Organizer Profile</span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-            </Link>
-          )}
-          {!isOrganizer && (
-            <Link to="/become-organizer" className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-              <span className="text-sm font-medium text-emerald-700">Become an Organizer</span>
-              <ChevronRight className="w-4 h-4 text-emerald-400" />
-            </Link>
-          )}
-        </div>
+      <AccountSignOutButton onSignOut={handleSignOut} />
 
-        {/* Edit profile form */}
-        <div className="bg-white border rounded-lg p-4">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">Edit Profile</h2>
-          {loading ? (
-            <div className="py-6 text-center">
-              <div className="inline-block w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2" />
-              <span className="text-sm text-gray-500">Loading...</span>
-            </div>
-          ) : (
-            <form className="space-y-3" onSubmit={save}>
-              {/* Photo */}
-              <div>
-                <label className="flex items-center gap-2 text-xs font-medium text-gray-600 mb-2">
-                  <Camera className="w-3.5 h-3.5" /> Profile Photo
-                </label>
-                <div className="flex items-center gap-4">
-                  {profile.avatarUrl ? (
-                    <img src={profile.avatarUrl} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-gray-200" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
-                      <User className="w-6 h-6 text-emerald-600" />
-                    </div>
-                  )}
-                  <input
-                    className="flex-1 border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    placeholder="Paste photo URL..."
-                    value={profile.avatarUrl ?? ''}
-                    onChange={(e) => setProfile((p) => ({ ...p, avatarUrl: e.target.value }))}
-                  />
-                </div>
-              </div>
+      {rewardSummary && (
+        <TrailPointsPathSheet
+          open={showPointsPath}
+          onClose={() => setShowPointsPath(false)}
+          summary={rewardSummary}
+        />
+      )}
 
-              <div>
-                <label className="flex items-center gap-2 text-xs font-medium text-gray-600 mb-1">
-                  <User className="w-3.5 h-3.5" /> Display Name
-                </label>
-                <input
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="Your display name"
-                  value={profile.displayName ?? ''}
-                  onChange={(e) => setProfile((p) => ({ ...p, displayName: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2 text-xs font-medium text-gray-600 mb-1">
-                  <Mail className="w-3.5 h-3.5" /> Email
-                </label>
-                <input
-                  type="email"
-                  className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
-                  value={profile.email ?? ''}
-                  disabled
-                />
-                <p className="text-xs text-gray-400 mt-0.5">Email cannot be changed</p>
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2 text-xs font-medium text-gray-600 mb-1">
-                  <Phone className="w-3.5 h-3.5" /> Phone
-                </label>
-                <input
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="Phone number"
-                  value={profile.phone ?? ''}
-                  onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Push notifications</label>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const ok = await registerPushNotifications();
-                    setPushStatus(ok ? 'Notifications enabled.' : 'Could not enable notifications.');
-                  }}
-                  className="text-sm px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
-                >
-                  Enable trip updates
-                </button>
-                {pushStatus && <p className="text-xs text-gray-500 mt-1">{pushStatus}</p>}
-              </div>
-
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-60 transition-colors"
-              >
-                {saving ? 'Saving...' : 'Save Profile'}
-              </button>
-              {message && <p className="text-sm text-emerald-700 text-center">{message}</p>}
-              {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-            </form>
-          )}
-        </div>
-
-        {/* Sign out */}
-        <button
-          onClick={handleSignOut}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-white border border-red-200 rounded-lg text-red-600 text-sm font-medium hover:bg-red-50 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Sign Out
-        </button>
-      </div>
-    </div>
+      <AccountEditModal
+        open={showEdit}
+        onClose={() => setShowEdit(false)}
+        profile={profile}
+        setProfile={setProfile}
+        email={user!.email ?? ''}
+        saving={saving}
+        message={message}
+        pushStatus={pushStatus}
+        setPushStatus={setPushStatus}
+        onSubmit={save}
+      />
+    </ConsumerShell>
   );
 };

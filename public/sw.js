@@ -17,7 +17,7 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const data = event.notification.data as { reviewPath?: string } | undefined;
-  const target = data?.reviewPath ?? '/';
+  const data = event.notification.data;
+  const target = data && data.reviewPath ? data.reviewPath : '/';
   event.waitUntil(clients.openWindow(target));
 });

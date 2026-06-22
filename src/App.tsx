@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { DashboardRedirect } from './components/auth/DashboardRedirect';
+import { FEATURE_FLAGS } from './config/platform';
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
@@ -20,7 +22,6 @@ const OperatorProfile = lazy(() => import('./pages/OperatorProfile').then((m) =>
 const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
 const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
 const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
-const Onboarding = lazy(() => import('./pages/Onboarding').then((m) => ({ default: m.Onboarding })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 const AdminOverview = lazy(() => import('./pages/AdminOverview').then((m) => ({ default: m.AdminOverview })));
 const AdminLocations = lazy(() => import('./pages/AdminLocations').then((m) => ({ default: m.AdminLocations })));
@@ -37,14 +38,28 @@ const OrganizerTeam = lazy(() => import('./pages/OrganizerTeam').then((m) => ({ 
 const OrganizerProfile = lazy(() => import('./pages/OrganizerProfile').then((m) => ({ default: m.OrganizerProfile })));
 const OrganizerLocations = lazy(() => import('./pages/OrganizerLocations').then((m) => ({ default: m.OrganizerLocations })));
 const OrganizerHistory = lazy(() => import('./pages/OrganizerHistory').then((m) => ({ default: m.OrganizerHistory })));
-const UserOverview = lazy(() => import('./pages/UserOverview').then((m) => ({ default: m.UserOverview })));
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
-const UserTrips = lazy(() => import('./pages/UserTrips').then((m) => ({ default: m.UserTrips })));
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
 const MerchantDashboard = lazy(() => import('./pages/MerchantDashboard').then((m) => ({ default: m.MerchantDashboard })));
 const Trips = lazy(() => import('./pages/Trips').then((m) => ({ default: m.Trips })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
-const BecomeOrganizer = lazy(() => import('./pages/BecomeOrganizer').then((m) => ({ default: m.BecomeOrganizer })));
+const JoinRequestDetail = lazy(() =>
+  import('./pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
+);
+const Notifications = lazy(() =>
+  import('./pages/Notifications').then((m) => ({ default: m.Notifications }))
+);
+const BecomeOrganizer = lazy(() =>
+  import('./pages/BecomeOrganizer').then((m) => ({ default: m.BecomeOrganizer }))
+);
+const MyRewards = lazy(() => import('./pages/MyRewards').then((m) => ({ default: m.MyRewards })));
+const TrailPointsAbout = lazy(() =>
+  import('./pages/TrailPointsAbout').then((m) => ({ default: m.TrailPointsAbout }))
+);
+const Terms = lazy(() => import('./pages/Terms').then((m) => ({ default: m.Terms })));
+const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })));
+const Faq = lazy(() => import('./pages/Faq').then((m) => ({ default: m.Faq })));
+const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -65,19 +80,75 @@ function App() {
           <Route path="/camp/:id" element={<CampDetail />} />
           <Route path="/calendar" element={<Navigate to="/trips" replace />} />
           <Route path="/trips" element={<Trips />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute roles={['visitor']}>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/trail-points" element={<TrailPointsAbout />} />
+          <Route
+            path="/my-rewards"
+            element={
+              <ProtectedRoute>
+                <MyRewards />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/rewards" element={<Navigate to="/trail-points" replace />} />
+          <Route
+            path="/my-requests"
+            element={
+              <ProtectedRoute roles={['visitor']}>
+                <UserRequests />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-requests/:requestId"
+            element={
+              <ProtectedRoute roles={['visitor']}>
+                <JoinRequestDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute roles={['visitor']}>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/trip/:id" element={<TripDetail />} />
           <Route path="/operator/:id" element={<OperatorProfile />} />
           <Route path="/become-organizer" element={<BecomeOrganizer />} />
-          <Route path="/membership" element={<Membership />} />
+          <Route path="/become-host" element={<BecomeOrganizer />} />
+          <Route
+            path="/membership"
+            element={FEATURE_FLAGS.membershipEnabled ? <Membership /> : <Navigate to="/trail-points" replace />}
+          />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/merchant/:id" element={<MerchantPublic />} />
           <Route path="/community" element={<Community />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/faq" element={<Faq />} />
           <Route path="/verify" element={<VerifyOTP />} />
-          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/onboarding" element={<Navigate to="/" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/login" element={<SignIn />} />
           <Route
@@ -220,7 +291,7 @@ function App() {
             path="/dashboard/overview"
             element={
               <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
-                <UserOverview />
+                <DashboardRedirect />
               </ProtectedRoute>
             }
           />
@@ -228,7 +299,7 @@ function App() {
             path="/dashboard/requests"
             element={
               <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
-                <UserRequests />
+                <DashboardRedirect />
               </ProtectedRoute>
             }
           />
@@ -236,21 +307,21 @@ function App() {
             path="/dashboard/trips"
             element={
               <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
-                <UserTrips />
+                <DashboardRedirect />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/messages"
+            element={
+              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+                <DashboardRedirect />
               </ProtectedRoute>
             }
           />
           <Route
             path="/dashboard/profile"
             element={<Navigate to="/profile" replace />}
-          />
-          <Route
-            path="/dashboard/messages"
-            element={
-              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
-                <Messages />
-              </ProtectedRoute>
-            }
           />
           <Route
             path="/merchant/dashboard"
@@ -260,14 +331,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="*" element={
-            <div className="min-h-screen flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">404 - Page Not Found</h1>
-                <a href="/" className="text-emerald-600 hover:text-emerald-700">Go back home</a>
-              </div>
-            </div>
-          } />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>
       </Layout>

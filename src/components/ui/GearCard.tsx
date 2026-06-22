@@ -41,9 +41,6 @@ export const GearCard = ({ item }: GearCardProps) => {
           <span className="text-lg font-bold text-emerald-600">
             {formatPrice(item.price)}
           </span>
-          <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full group-hover:bg-emerald-100 transition-colors">
-            View →
-          </span>
         </div>
       </div>
     </Link>

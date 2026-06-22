@@ -1,10 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { Search, Send, ArrowLeft, Plus, X, MessageSquare, Loader2 } from 'lucide-react';
 import { api } from '../api/services';
 import { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { DashboardLayout } from '../components/layout';
+import { MobileScreen } from '../components/layout/MobileScreen';
+import { ORGANIZER_DASHBOARD_LINKS } from '../constants';
+import { useChatStream } from '../hooks/useChatStream';
 
 const userLinks = [
   { to: '/dashboard/overview', label: 'Overview' },
@@ -14,28 +17,19 @@ const userLinks = [
   { to: '/dashboard/profile', label: 'Profile' }
 ];
 
-const organizerLinks = [
-  { to: '/organizer/overview', label: 'Overview' },
-  { to: '/organizer/events', label: 'Events' },
-  { to: '/organizer/requests', label: 'Join Requests' },
-  { to: '/organizer/team', label: 'Team' },
-  { to: '/organizer/locations', label: 'Locations' },
-  { to: '/organizer/messages', label: 'Messages' },
-  { to: '/organizer/history', label: 'History' },
-  { to: '/organizer/profile', label: 'Profile' }
-];
-
 interface SearchUser {
   id: string;
-  email: string;
   displayName: string | null;
   avatarUrl: string | null;
 }
 
-const POLL_INTERVAL = 8000;
+const userLabel = (u: Pick<SearchUser, 'displayName' | 'id'>) =>
+  u.displayName?.trim() || `User ${u.id.slice(0, 8)}`;
 
 export const Messages = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const isMobileRoute = location.pathname === '/messages';
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('to'));
@@ -54,13 +48,18 @@ export const Messages = () => {
 
   // Mobile: show thread or list
   const [mobileShowThread, setMobileShowThread] = useState(!!searchParams.get('to'));
+  const [partnerBrief, setPartnerBrief] = useState<{ displayName: string; avatarUrl?: string | null } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const selectedUserIdRef = useRef<string | null>(selectedUserId);
+
+  useEffect(() => {
+    selectedUserIdRef.current = selectedUserId;
+  }, [selectedUserId]);
 
   const isOrganizer = user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
-  const links = isOrganizer ? organizerLinks : userLinks;
+  const links = isOrganizer ? ORGANIZER_DASHBOARD_LINKS : userLinks;
 
   // Scroll to bottom of messages
   const scrollToBottom = useCallback(() => {
@@ -125,17 +124,74 @@ export const Messages = () => {
     }
   }, [selectedUserId]);
 
-  // Poll for new messages
   useEffect(() => {
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = setInterval(() => {
-      loadConversations();
-      if (selectedUserId) loadMessages(selectedUserId, true);
-    }, POLL_INTERVAL);
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [selectedUserId, loadConversations, loadMessages]);
+    if (!selectedUserId) {
+      setPartnerBrief(null);
+      return;
+    }
+    const conv = conversations.find((c) => c.userId === selectedUserId);
+    if (conv) {
+      setPartnerBrief({ displayName: conv.displayName, avatarUrl: conv.avatarUrl });
+      return;
+    }
+    api.getUserBrief(selectedUserId)
+      .then((res) => setPartnerBrief(res.data))
+      .catch(() => setPartnerBrief(null));
+  }, [selectedUserId, conversations]);
+
+  useChatStream({
+    enabled: !!user,
+    onMessage: (message) => {
+      const partnerId = selectedUserIdRef.current;
+      if (
+        partnerId &&
+        (message.senderId === partnerId || message.receiverId === partnerId)
+      ) {
+        setMessages((prev) => {
+          if (prev.some((item) => item.id === message.id)) return prev;
+          return [...prev, message];
+        });
+      }
+
+      setConversations((prev) => {
+        const partner =
+          message.senderId === user?.id ? message.receiverId : message.senderId;
+        const existing = prev.find((conversation) => conversation.userId === partner);
+        if (!existing) {
+          void loadConversations();
+          return prev;
+        }
+
+        return prev
+          .map((conversation) =>
+            conversation.userId === partner
+              ? {
+                  ...conversation,
+                  lastMessage: message.content,
+                  lastMessageAt: message.createdAt,
+                  unreadCount:
+                    partnerId === partner && message.senderId === partner
+                      ? 0
+                      : message.senderId === partner
+                        ? conversation.unreadCount + 1
+                        : conversation.unreadCount
+                }
+              : conversation
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+          );
+      });
+    },
+    onReconnect: () => {
+      void loadConversations();
+      const partnerId = selectedUserIdRef.current;
+      if (partnerId) {
+        void loadMessages(partnerId, true);
+      }
+    }
+  });
 
   // Handle "to" URL param on mount
   useEffect(() => {
@@ -184,6 +240,10 @@ export const Messages = () => {
   };
 
   const startConversation = (userResult: SearchUser) => {
+    setPartnerBrief({
+      displayName: userLabel(userResult),
+      avatarUrl: userResult.avatarUrl
+    });
     setSelectedUserId(userResult.id);
     setMobileShowThread(true);
     setShowNewChat(false);
@@ -195,7 +255,7 @@ export const Messages = () => {
       return [
         {
           userId: userResult.id,
-          displayName: userResult.displayName ?? userResult.email,
+          displayName: userLabel(userResult),
           avatarUrl: userResult.avatarUrl ?? undefined,
           lastMessage: '',
           lastMessageAt: new Date().toISOString(),
@@ -218,6 +278,8 @@ export const Messages = () => {
   };
 
   const selectedConversation = conversations.find((c) => c.userId === selectedUserId);
+  const threadPartnerName = selectedConversation?.displayName ?? partnerBrief?.displayName ?? 'User';
+  const threadPartnerAvatar = selectedConversation?.avatarUrl ?? partnerBrief?.avatarUrl ?? undefined;
 
   const formatTime = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -251,7 +313,7 @@ export const Messages = () => {
         <h3 className="font-semibold text-gray-900">Messages</h3>
         <button
           onClick={() => setShowNewChat(true)}
-          className="p-2 rounded-full hover:bg-gray-100 text-emerald-600 transition-colors"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 text-emerald-600 transition-colors"
           title="New conversation"
         >
           <Plus className="w-5 h-5" />
@@ -330,17 +392,17 @@ export const Messages = () => {
           <div className="p-3 border-b bg-white flex items-center gap-3 shadow-sm">
             <button
               onClick={backToList}
-              className="md:hidden p-1 rounded hover:bg-gray-100 text-gray-600"
+              className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <Avatar
-              name={selectedConversation?.displayName ?? 'User'}
-              url={selectedConversation?.avatarUrl}
+              name={threadPartnerName}
+              url={threadPartnerAvatar}
             />
             <div>
               <p className="font-semibold text-sm text-gray-900">
-                {selectedConversation?.displayName ?? 'User'}
+                {threadPartnerName}
               </p>
             </div>
           </div>
@@ -419,7 +481,7 @@ export const Messages = () => {
             <button
               type="submit"
               disabled={sending || !newMessage.trim()}
-              className="p-2.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 disabled:opacity-40 disabled:hover:bg-emerald-600 transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center bg-emerald-600 text-white rounded-full hover:bg-emerald-700 disabled:opacity-40 transition-colors"
             >
               {sending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -474,12 +536,9 @@ export const Messages = () => {
                   onClick={() => startConversation(u)}
                   className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b last:border-0 transition-colors"
                 >
-                  <Avatar name={u.displayName ?? u.email} url={u.avatarUrl ?? undefined} size="sm" />
+                  <Avatar name={userLabel(u)} url={u.avatarUrl ?? undefined} size="sm" />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{u.displayName ?? u.email}</p>
-                    {u.displayName && (
-                      <p className="text-xs text-gray-500 truncate">{u.email}</p>
-                    )}
+                    <p className="text-sm font-medium text-gray-900 truncate">{userLabel(u)}</p>
                   </div>
                 </button>
               ))
@@ -489,21 +548,44 @@ export const Messages = () => {
       </div>
     ) : null;
 
-  return (
-    <DashboardLayout title="Messages" links={links}>
+  const chatContent = (
+    <div className={`flex flex-col ${isMobileRoute ? 'flex-1 min-h-0' : ''}`}>
       {error && (
-        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
+        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-ios flex items-center justify-between shrink-0">
           <p className="text-red-700 text-sm">{error}</p>
-          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600">
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-red-400"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
-      <div className="flex bg-white border rounded-xl overflow-hidden shadow-sm" style={{ height: 'calc(100vh - 220px)', minHeight: '400px' }}>
+      <div
+        className={`flex bg-white border rounded-ios-lg overflow-hidden shadow-ios-sm ${
+          isMobileRoute ? 'flex-1 min-h-0' : ''
+        }`}
+        style={isMobileRoute ? undefined : { height: 'calc(100vh - 220px)', minHeight: '400px' }}
+      >
         <ConversationList />
         <MessageThread />
       </div>
       <NewChatModal />
+    </div>
+  );
+
+  if (isMobileRoute) {
+    return (
+      <MobileScreen title="Messages" backTo="/profile">
+        {chatContent}
+      </MobileScreen>
+    );
+  }
+
+  return (
+    <DashboardLayout title="Messages" links={links}>
+      {chatContent}
     </DashboardLayout>
   );
 };

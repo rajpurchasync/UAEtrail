@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { MerchantProfileDTO, ProductDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
+import { PageMeta } from '../components/seo/PageMeta';
 
 export const MerchantPublic = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,22 +20,35 @@ export const MerchantPublic = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-      </div>
+      <>
+        <PageMeta title="Loading shop" path={id ? `/merchant/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
+        </div>
+      </>
     );
   }
 
   if (!merchant) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Link to="/shop" className="text-emerald-600 font-medium">Back to shop</Link>
-      </div>
+      <>
+        <PageMeta title="Shop not found" noIndex path={id ? `/merchant/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center">
+          <Link to="/shop" className="text-emerald-600 font-medium">Back to shop</Link>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-nav-safe md:pb-8">
+    <div className="min-h-screen bg-gray-50 md:pb-8">
+      <PageMeta
+        title={merchant.shopName}
+        description={merchant.description?.slice(0, 160) ?? `${merchant.shopName} — outdoor gear on UAE Trail`}
+        path={`/merchant/${id}`}
+        image={merchant.logo}
+        imageAlt={merchant.shopName}
+      />
       <div className="bg-white border-b">
         <div className="max-w-5xl mx-auto px-4 py-8 flex items-center gap-4">
           {merchant.logo ? (

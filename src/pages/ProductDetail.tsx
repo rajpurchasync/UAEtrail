@@ -3,8 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import { ExternalLink, ShoppingBag, Loader2 } from 'lucide-react';
 import { ProductDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
-import { SHOP_V1 } from '../config/platform';
+import { SHOP_V1, FEATURE_FLAGS } from '../config/platform';
 import { PageMeta } from '../components/seo/PageMeta';
+import { JsonLd } from '../components/seo/JsonLd';
+import { productSchema } from '../components/seo/schemas';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -54,20 +56,26 @@ export const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-      </div>
+      <>
+        <PageMeta title="Loading product" path={id ? `/product/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
+        </div>
+      </>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 text-center">
-        <div>
-          <p className="text-gray-600 mb-3">{error ?? 'Product not found'}</p>
-          <Link to="/shop" className="text-emerald-600 font-medium">Back to shop</Link>
+      <>
+        <PageMeta title="Product not found" noIndex path={id ? `/product/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center p-4 text-center">
+          <div>
+            <p className="text-gray-600 mb-3">{error ?? 'Product not found'}</p>
+            <Link to="/shop" className="text-emerald-600 font-medium">Back to shop</Link>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -78,12 +86,15 @@ export const ProductDetail = () => {
   const canStripeCheckout = stripeEnabled && !product.externalUrl;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-nav-safe md:pb-8">
+    <div className="min-h-screen bg-gray-50 md:pb-8">
       <PageMeta
         title={product.name}
         description={product.description?.slice(0, 160) ?? `Shop ${product.name} on UAE Trail`}
         path={`/product/${product.id}`}
+        image={product.images[0]}
+        imageAlt={product.name}
       />
+      <JsonLd data={productSchema(product)} id={`product-${product.id}`} />
       <div className="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-3">
           <img
@@ -149,13 +160,21 @@ export const ProductDetail = () => {
               {checkingOut ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShoppingBag className="w-5 h-5" />}
               {checkingOut ? 'Starting checkout…' : 'Buy now'}
             </button>
-          ) : (
+          ) : FEATURE_FLAGS.membershipEnabled ? (
             <Link
               to="/membership"
               className="mt-8 w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               <ShoppingBag className="w-5 h-5" />
               Get member deal
+            </Link>
+          ) : (
+            <Link
+              to="/shop"
+              className="mt-8 w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              Back to shop
             </Link>
           )}
         </div>

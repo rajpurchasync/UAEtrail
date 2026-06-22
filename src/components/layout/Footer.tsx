@@ -1,6 +1,7 @@
 import { Mountain, Facebook, Instagram, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { FEATURE_FLAGS } from '../../config/platform';
 
 export const Footer = () => {
   const { user } = useAuth();
@@ -11,7 +12,7 @@ export const Footer = () => {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Mountain className="w-8 h-8 text-emerald-500" />
-              <span className="text-xl font-bold text-white">UAE Trails</span>
+              <span className="text-xl font-bold text-white">UAE Trail</span>
             </div>
             <p className="text-sm">
               Discover the beauty of UAE's mountains and deserts through guided hiking and camping experiences.
@@ -37,16 +38,23 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/membership" className="hover:text-emerald-500 transition-colors">
-                  Membership
+                <Link to="/trail-points" className="hover:text-emerald-500 transition-colors">
+                  Trail Points
                 </Link>
               </li>
+              {FEATURE_FLAGS.membershipEnabled && (
+                <li>
+                  <Link to="/membership" className="hover:text-emerald-500 transition-colors">
+                    Membership
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
-                  to={user ? '/become-organizer' : '/signin?redirect=/become-organizer'}
+                  to={user ? '/become-host' : '/signin?redirect=/become-host'}
                   className="hover:text-emerald-500 transition-colors"
                 >
-                  Become an Organizer
+                  Become a Host
                 </Link>
               </li>
             </ul>
@@ -56,24 +64,29 @@ export const Footer = () => {
             <h3 className="text-white font-semibold mb-4">About</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="hover:text-emerald-500 transition-colors">
-                  About Us
-                </a>
+                <Link to="/faq" className="hover:text-emerald-500 transition-colors">
+                  FAQ
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-emerald-500 transition-colors">
+                <a href="mailto:support@uaetrail.ae" className="hover:text-emerald-500 transition-colors">
                   Contact
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-emerald-500 transition-colors">
-                  Safety Guidelines
-                </a>
+                <Link to="/faq" className="hover:text-emerald-500 transition-colors">
+                  Safety & preparation
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-emerald-500 transition-colors">
+                <Link to="/terms" className="hover:text-emerald-500 transition-colors">
                   Terms & Conditions
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:text-emerald-500 transition-colors">
+                  Privacy Policy
+                </Link>
               </li>
             </ul>
           </div>
@@ -98,7 +111,10 @@ export const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
-          <p>&copy; 2026 UAE Trails. All rights reserved.</p>
+          <p>&copy; 2026 UAE Trail. All rights reserved.</p>
+          <a href="/llms.txt" className="hover:text-emerald-500 transition-colors text-xs mt-2 inline-block">
+            AI / LLM site guide
+          </a>
         </div>
       </div>
     </footer>

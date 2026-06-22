@@ -1,5 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { isConsumerChromeHidden } from '../../config/platform';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { BottomNav } from './BottomNav';
@@ -16,22 +17,26 @@ export const Layout = ({ children }: LayoutProps) => {
   }, [location.pathname]);
 
   const isHomePage = location.pathname === '/';
-  const isDashboardRoute =
-    location.pathname.startsWith('/admin') ||
-    location.pathname.startsWith('/organizer') ||
-    location.pathname.startsWith('/dashboard') ||
-    location.pathname.startsWith('/merchant') ||
-    location.pathname === '/signin' ||
-    location.pathname === '/signup' ||
-    location.pathname === '/verify' ||
-    location.pathname === '/onboarding' ||
-    location.pathname === '/forgot-password';
+  const hideChrome = isConsumerChromeHidden(location.pathname);
+  const showConsumerChrome = !hideChrome;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {!isHomePage && !isDashboardRoute && <Header />}
-      <main className={`flex-grow ${!isDashboardRoute ? 'pb-nav-safe md:pb-0' : ''}`}>{children}</main>
-      {!isDashboardRoute && <Footer />}
+    <div className="min-h-screen flex flex-col consumer-bg md:bg-white">
+      {!isHomePage && !hideChrome && (
+        <div className="hidden md:block">
+          <Header />
+        </div>
+      )}
+      <main
+        className={`flex-grow scroll-touch ${showConsumerChrome ? 'pb-nav-safe md:pb-0' : ''}`}
+      >
+        {children}
+      </main>
+      {showConsumerChrome && (
+        <div className="hidden md:block">
+          <Footer />
+        </div>
+      )}
       <BottomNav />
     </div>
   );

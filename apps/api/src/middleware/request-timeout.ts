@@ -6,6 +6,11 @@ import { NextFunction, Request, Response } from 'express';
  */
 export const requestTimeout = (ms = 30_000) => {
   return (req: Request, res: Response, next: NextFunction): void => {
+    if (req.path.includes('/chat/stream')) {
+      next();
+      return;
+    }
+
     const timer = setTimeout(() => {
       if (!res.headersSent) {
         res.status(503).json({

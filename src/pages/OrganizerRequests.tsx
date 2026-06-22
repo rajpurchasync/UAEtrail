@@ -1,19 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api, EventRequestView } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
-import { DashboardLayout } from '../components/layout';
+import { OrganizerShell } from '../components/organizer/OrganizerShell';
 import { TenantSwitcher } from '../components/ui';
-
-const organizerLinks = [
-  { to: '/organizer/overview', label: 'Overview' },
-  { to: '/organizer/events', label: 'Events' },
-  { to: '/organizer/requests', label: 'Join Requests' },
-  { to: '/organizer/team', label: 'Team' },
-  { to: '/organizer/locations', label: 'Locations' },
-  { to: '/organizer/messages', label: 'Messages' },
-  { to: '/organizer/history', label: 'History' },
-  { to: '/organizer/profile', label: 'Profile' }
-];
+import { withdrawReasonLabel } from '@uaetrail/shared-types';
 
 export const OrganizerRequests = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
@@ -63,7 +53,7 @@ export const OrganizerRequests = () => {
   };
 
   return (
-    <DashboardLayout title="Organizer Dashboard" links={organizerLinks}>
+    <OrganizerShell title="Join Requests">
       <div className="space-y-4">
         <TenantSwitcher onChange={setTenantId} />
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -125,6 +115,15 @@ export const OrganizerRequests = () => {
                         <button onClick={() => { setDecisionModal({ request: req, action: 'rejected' }); setOrganizerNote(''); }}
                           className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs">Reject</button>
                       </div>
+                    ) : req.status === 'cancelled' && req.cancelReason ? (
+                      <div className="text-xs text-gray-600 max-w-[200px]">
+                        <p className="font-medium">{withdrawReasonLabel(req.cancelReason)}</p>
+                        {req.cancelMessage && (
+                          <p className="text-gray-500 truncate" title={req.cancelMessage}>
+                            {req.cancelMessage}
+                          </p>
+                        )}
+                      </div>
                     ) : (
                       <>
                         {req.organizerNote && (
@@ -178,6 +177,6 @@ export const OrganizerRequests = () => {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </OrganizerShell>
   );
 };

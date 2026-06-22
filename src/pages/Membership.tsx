@@ -1,187 +1,292 @@
-import { Check, Star } from 'lucide-react';
+import { ArrowRight, Check, Star, Trophy, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { FEATURE_FLAGS } from '../config/platform';
+import { SUBSCRIPTION_PLANS } from '../constants/membershipTiers';
+
+const PLAN_STYLES: Record<string, { card: string; accent: string; ring: string; cta: string }> = {
+  active: {
+    card: 'from-sky-50 to-blue-100',
+    accent: 'text-sky-800',
+    ring: 'ring-sky-300/60',
+    cta: 'bg-gray-900 hover:bg-gray-800 text-white',
+  },
+  pro: {
+    card: 'from-emerald-50 to-teal-100',
+    accent: 'text-emerald-800',
+    ring: 'ring-emerald-400/70',
+    cta: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+  },
+  goat: {
+    card: 'from-amber-50 via-orange-50 to-amber-100',
+    accent: 'text-amber-900',
+    ring: 'ring-amber-400/80',
+    cta: 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white',
+  },
+};
 
 export const Membership = () => {
-  const freeTierFeatures = [
-    'Join up to 3 trails',
-    'Join free community trips',
-    'Access basic location information',
-    'Standard map views',
-    'Community forum access'
-  ];
-
-  const premiumTierFeatures = [
-    'Everything in Free',
-    'Advanced offline maps with GPX downloads',
-    'Early access to trip bookings',
-    '10% member discount on partner gear (Shop)',
-    'Access to exclusive premium trails & camps',
-    'Priority customer support',
-    'Detailed trail conditions & weather updates',
-    'Personalized trip recommendations',
-    'No ads'
-  ];
-
   const testimonials = [
     {
       name: 'Ahmed Al Mansoori',
-      text: 'Premium membership is worth every dirham! The offline maps have saved me multiple times in remote areas.',
-      rating: 5
+      tier: 'Pro member',
+      text: 'Unlimited map downloads have saved me in wadis with zero signal. The partner discounts on gear paid for the membership in one shop visit.',
+      rating: 5,
     },
     {
       name: 'Sarah Williams',
-      text: 'Early booking access means I never miss out on popular trips. The gear discounts are a great bonus too!',
-      rating: 5
+      tier: 'GOAT member',
+      text: 'Five free hikes a month plus a personal guide on call — I finally stopped second-guessing route choices in new emirates.',
+      rating: 5,
     },
     {
       name: 'Mohammed Hassan',
-      text: 'The exclusive trails available to premium members are absolutely stunning. Highly recommended!',
-      rating: 5
-    }
+      tier: 'Active member',
+      text: 'Started on Active pay-as-you-go. Only bought guides for the trails I actually hiked — perfect before I upgraded to Pro.',
+      rating: 5,
+    },
   ];
 
   const faqs = [
     {
-      question: 'Can I cancel my premium membership anytime?',
-      answer: 'Yes, you can cancel your premium membership at any time. Your access will continue until the end of your billing period.'
+      question: 'What is Active pay-as-you-go?',
+      answer:
+        'Active is free to join. When you want a location guide, you pay per trail or camp — that unlocks the offline map download and guide-on-call for that specific location.',
     },
     {
-      question: 'Do offline maps work without internet?',
-      answer: 'Yes! Once downloaded, offline maps work completely without internet connection, perfect for remote trails and desert areas.'
+      question: 'What does Pro include vs Active?',
+      answer:
+        'Pro (AED 99/month) removes per-location fees for maps and guides, gives you unlimited offline downloads, and unlocks partner discounts across the Shop and experience partners.',
     },
     {
-      question: 'What payment methods do you accept?',
-      answer: 'We accept all major credit cards, debit cards, and popular digital payment methods in the UAE.'
+      question: 'Why choose GOAT at AED 499/month?',
+      answer:
+        'GOAT is built for serious explorers: 5 free guided hikes every month, unlimited maps, a personal guide on call, and free access to our full library of location guides — no pay-per-trail.',
     },
     {
-      question: 'Can I gift a premium membership?',
-      answer: 'Yes! You can purchase gift memberships for friends and family. Gift vouchers are also available.'
-    }
+      question: 'Can I earn Pro or GOAT through Trail Points instead?',
+      answer:
+        'Paid checkout launches soon. Today you can still earn contributor status and badges via Trail Points while subscriptions roll out.',
+    },
+    {
+      question: 'Can I cancel Pro or GOAT anytime?',
+      answer:
+        'Yes. Cancel anytime and your access continues until the end of your billing period. Active remains free with no subscription required.',
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Coming Soon Banner */}
-      <div className="bg-amber-50 border-b border-amber-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-200 text-amber-800">COMING SOON</span>
-          <p className="text-sm text-amber-800">Premium memberships are launching soon. Stay tuned for exclusive trails, offline maps &amp; gear discounts!</p>
+    <div className="min-h-screen consumer-bg">
+      {!FEATURE_FLAGS.membershipEnabled && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-center gap-2 text-center sm:text-left">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-200 text-amber-800 shrink-0">
+              COMING SOON
+            </span>
+            <p className="text-sm text-amber-800">
+              Pro &amp; GOAT checkout launches soon — start free on <strong>Active</strong> today, or earn badges via{' '}
+              <Link to="/trail-points" className="underline font-semibold hover:text-amber-900">
+                Trail Points
+              </Link>
+              .
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
-      <section
-        className="relative h-80 bg-cover bg-center"
-        style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600)'
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/40" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-          <div className="text-white">
-            <h1 className="text-2xl md:text-3xl font-bold mb-3">Choose Your Membership</h1>
-            <p className="text-sm md:text-base">Unlock the full potential of UAE outdoor adventures</p>
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center scale-105"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600)',
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/60 to-[#eef6f3]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-16 md:pt-20 md:pb-20">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/90 text-xs font-semibold uppercase tracking-wider mb-5">
+              <Trophy className="w-3.5 h-3.5" />
+              Membership
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4">
+              Three tiers. One trail community.
+            </h1>
+            <p className="text-lg text-white/80 leading-relaxed max-w-2xl">
+              Start free on <strong className="text-white">Active</strong> with pay-as-you-go guides. Upgrade to{' '}
+              <strong className="text-white">Pro</strong> or <strong className="text-white">GOAT</strong> when the
+              mountains call more often.
+            </p>
           </div>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Free</h2>
-            <div className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-              AED 0<span className="text-lg font-normal text-gray-600">/month</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 -mt-4">
+        {/* 3-tier pricing */}
+        <section className="mb-20">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <p className="text-emerald-600 text-xs font-bold uppercase tracking-[0.2em] mb-3">Plans</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+              Pick the pace that fits your adventures
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 items-stretch">
+            {SUBSCRIPTION_PLANS.map((plan) => {
+              const styles = PLAN_STYLES[plan.key] ?? PLAN_STYLES.active;
+              const isPaid = plan.price > 0;
+              const checkoutDisabled = isPaid && !FEATURE_FLAGS.membershipEnabled;
+
+              return (
+                <article
+                  key={plan.key}
+                  className={`relative flex flex-col rounded-2xl bg-gradient-to-b ${styles.card} ring-1 ${styles.ring} p-6 md:p-7 shadow-sm hover:shadow-lg transition-shadow ${
+                    plan.popular ? 'md:-mt-3 md:mb-3 md:pb-10 ring-2 ring-emerald-400/80' : ''
+                  } ${plan.key === 'goat' && !plan.popular ? 'md:mt-0' : ''}`}
+                >
+                  {plan.popular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white px-3 py-1 rounded-full shadow-md">
+                      Most popular
+                    </span>
+                  )}
+                  {plan.key === 'goat' && (
+                    <span className="absolute -top-3 right-4 text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-amber-400 to-orange-400 text-amber-950 px-3 py-1 rounded-full shadow-sm">
+                      Ultimate
+                    </span>
+                  )}
+
+                  <div className="text-center mb-5">
+                    <span className="text-4xl block mb-2" aria-hidden>
+                      {plan.emoji}
+                    </span>
+                    <h3 className={`text-2xl font-extrabold ${styles.accent}`}>{plan.name}</h3>
+                    <p className="text-sm text-gray-600 mt-1.5 leading-snug min-h-[2.5rem]">{plan.tagline}</p>
+                  </div>
+
+                  <div className="text-center mb-6 py-3 rounded-xl bg-white/70 border border-white/90">
+                    <p className={`text-3xl font-extrabold tabular-nums ${styles.accent}`}>
+                      {plan.priceLabel}
+                      {plan.priceSuffix && (
+                        <span className="text-base font-semibold text-gray-500">{plan.priceSuffix}</span>
+                      )}
+                    </p>
+                    {plan.priceNote && <p className="text-xs text-gray-500 mt-1">{plan.priceNote}</p>}
+                  </div>
+
+                  <ul className="space-y-3 flex-1 mb-6">
+                    {plan.benefits.map((benefit) => (
+                      <li key={benefit} className="flex items-start gap-2.5 text-sm text-gray-700 leading-snug">
+                        <Check className={`w-4 h-4 mt-0.5 shrink-0 ${styles.accent}`} />
+                        {benefit}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {!isPaid ? (
+                    <Link
+                      to={plan.ctaPath}
+                      className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm transition-colors ${styles.cta}`}
+                    >
+                      {plan.ctaLabel}
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={checkoutDisabled}
+                      className={`w-full py-3.5 rounded-xl font-bold text-sm transition-colors ${
+                        checkoutDisabled
+                          ? 'bg-white/70 text-gray-400 cursor-not-allowed border border-gray-200'
+                          : styles.cta
+                      }`}
+                    >
+                      {checkoutDisabled ? `${plan.ctaLabel} — coming soon` : plan.ctaLabel}
+                    </button>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Trail Points cross-sell */}
+        <section className="mb-20">
+          <div className="glass-card p-6 md:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10">
+            <div className="max-w-xl mb-6 lg:mb-0">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-5 h-5 text-emerald-600" />
+                <h2 className="text-xl font-bold text-gray-900">Earn your status too</h2>
+              </div>
+              <p className="text-gray-600 leading-relaxed">
+                Subscriptions unlock maps and guides. <strong>Trail Points</strong> unlock contributor badges on your
+                profile — post, host, review, and invite friends to climb toward Active, Pro, and GOAT recognition in
+                the community.
+              </p>
             </div>
-
-            <ul className="space-y-3 mb-8">
-              {freeTierFeatures.map((feature, index) => (
-                <li key={index} className="flex items-start">
-                  <Check className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
             <Link
-              to="/discovery"
-              className="block w-full bg-gray-900 text-white text-center py-3 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+              to="/trail-points"
+              className="inline-flex items-center justify-center gap-2 shrink-0 px-6 py-3.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors"
             >
-              Get Started Free
+              How Trail Points work
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+        </section>
 
-          <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg shadow-xl p-8 text-white relative">
-            <div className="absolute top-4 right-4 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-semibold">
-              POPULAR
-            </div>
-
-            <h2 className="text-xl font-bold mb-2">Premium</h2>
-            <div className="mb-2">
-              <span className="text-2xl md:text-3xl font-bold">AED 99</span>
-              <span className="text-lg">/month</span>
-            </div>
-            <div className="text-emerald-100 mb-6">or AED 999/year (save 16%)</div>
-
-            <ul className="space-y-3 mb-8">
-              {premiumTierFeatures.map((feature, index) => (
-                <li key={index} className="flex items-start">
-                  <Check className="w-5 h-5 text-white mr-2 flex-shrink-0 mt-0.5" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button className="block w-full bg-white text-emerald-600 text-center py-3 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium">
-              Upgrade to Premium
-            </button>
-          </div>
-        </div>
-
-        <section className="mb-16">
-          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-6 text-center">Gift Membership</h2>
-          <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto">
-            <p className="text-gray-600 mb-6 text-center">
-              Give the gift of adventure! Purchase a premium membership for someone special.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <button className="border-2 border-emerald-600 text-emerald-600 py-3 rounded-lg hover:bg-emerald-50 transition-colors text-sm font-medium">
-                3 Months - AED 297
+        {/* Gift */}
+        <section className="mb-20">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Gift a membership</h2>
+          <p className="text-gray-500 text-center mb-8 max-w-lg mx-auto">
+            Give Pro or GOAT to someone who lives for the outdoors.
+          </p>
+          <div className="glass-card p-6 md:p-8 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                type="button"
+                disabled
+                className="py-4 px-4 rounded-xl border-2 border-emerald-200 text-gray-400 cursor-not-allowed text-sm font-semibold"
+              >
+                Pro — 3 months
+                <span className="block text-xs font-normal mt-0.5">Coming soon</span>
               </button>
-              <button className="border-2 border-emerald-600 text-emerald-600 py-3 rounded-lg hover:bg-emerald-50 transition-colors text-sm font-medium">
-                6 Months - AED 594
-              </button>
-              <button className="bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium">
-                1 Year - AED 999
+              <button
+                type="button"
+                disabled
+                className="py-4 px-4 rounded-xl border-2 border-amber-200 text-gray-400 cursor-not-allowed text-sm font-semibold"
+              >
+                GOAT — 1 month
+                <span className="block text-xs font-normal mt-0.5">Coming soon</span>
               </button>
             </div>
           </div>
         </section>
 
-        <section className="mb-16">
-          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-6 text-center">What Members Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center mb-3">
+        {/* Testimonials */}
+        <section className="mb-20">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">What members say</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {testimonials.map((testimonial) => (
+              <div key={testimonial.name} className="glass-card p-6">
+                <div className="flex items-center gap-0.5 mb-3">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star key={i} className="w-4 h-4 text-amber-400 fill-current" />
                   ))}
                 </div>
-                <p className="text-gray-600 mb-4">{testimonial.text}</p>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">&ldquo;{testimonial.text}&rdquo;</p>
                 <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                <p className="text-xs text-emerald-600 font-medium mt-0.5">{testimonial.tier}</p>
               </div>
             ))}
           </div>
         </section>
 
+        {/* FAQ */}
         <section>
-          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-6 text-center">
-            Frequently Asked Questions
-          </h2>
-          <div className="max-w-3xl mx-auto space-y-4">
-            {faqs.map((faq, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="font-semibold text-gray-900 mb-2">{faq.question}</h3>
-                <p className="text-gray-600">{faq.answer}</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently asked questions</h2>
+          <div className="max-w-3xl mx-auto space-y-3">
+            {faqs.map((faq) => (
+              <div key={faq.question} className="glass-card p-5 md:p-6">
+                <h3 className="font-bold text-gray-900 mb-2">{faq.question}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{faq.answer}</p>
               </div>
             ))}
           </div>

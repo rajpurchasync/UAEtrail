@@ -2,19 +2,8 @@ import { useEffect, useState } from 'react';
 import { EventDTO, LocationDTO, ParticipantDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
-import { DashboardLayout } from '../components/layout';
-import { TenantSwitcher, ImageUpload } from '../components/ui';
-
-const organizerLinks = [
-  { to: '/organizer/overview', label: 'Overview' },
-  { to: '/organizer/events', label: 'Events' },
-  { to: '/organizer/requests', label: 'Join Requests' },
-  { to: '/organizer/team', label: 'Team' },
-  { to: '/organizer/locations', label: 'Locations' },
-  { to: '/organizer/messages', label: 'Messages' },
-  { to: '/organizer/history', label: 'History' },
-  { to: '/organizer/profile', label: 'Profile' }
-];
+import { OrganizerShell } from '../components/organizer/OrganizerShell';
+import { TenantSwitcher, ImageUpload, ShareButton } from '../components/ui';
 
 const emptyForm = {
   locationId: '',
@@ -199,7 +188,7 @@ export const OrganizerEvents = () => {
   const checkedInCount = participants.filter((p) => p.checkedInAt).length;
 
   return (
-    <DashboardLayout title="Organizer Dashboard" links={organizerLinks}>
+    <OrganizerShell title="Events">
       <div className="space-y-4">
         <TenantSwitcher onChange={setTenantId} />
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -260,6 +249,13 @@ export const OrganizerEvents = () => {
                                 className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
                               <button onClick={() => openCheckin(event)}
                                 className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Check-in</button>
+                              <ShareButton
+                                title={event.title || event.locationName}
+                                text={`${event.date} · ${event.activityType} trip on UAE Trails`}
+                                path={`/trip/${event.id}`}
+                      iconOnly
+                      light
+                    />
                               <button onClick={() => setConfirmCancel(event)}
                                 className="px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs">Cancel</button>
                             </>
@@ -474,6 +470,6 @@ export const OrganizerEvents = () => {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </OrganizerShell>
   );
 };

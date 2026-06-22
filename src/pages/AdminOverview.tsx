@@ -34,10 +34,10 @@ export const AdminOverview = () => {
   useEffect(() => { loadData(); }, []);
 
   const metricCards = [
-    { label: 'Total Locations', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', icon: '📍', link: '/admin/locations' },
-    { label: 'Total Users', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥', link: '/admin/users' },
-    { label: 'Total Organizers', value: metrics?.totalOrganizers ?? '-', color: 'bg-purple-50 text-purple-700', icon: '🏢', link: '/admin/organizers' },
-    { label: 'Active Trips', value: metrics?.activeTrips ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾', link: '/admin/events' }
+    { label: 'Total Locations', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', icon: '📍' },
+    { label: 'Total Users', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥' },
+    { label: 'Total Organizers', value: metrics?.totalOrganizers ?? '-', color: 'bg-purple-50 text-purple-700', icon: '🏢' },
+    { label: 'Active Trips', value: metrics?.activeTrips ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾' }
   ];
 
   if (loading) {
@@ -77,9 +77,6 @@ export const AdminOverview = () => {
               <span className="text-xl">{card.icon}</span>
             </div>
             <p className="text-3xl font-bold mt-2">{card.value}</p>
-            {card.link && (
-              <Link to={card.link} className="text-xs underline opacity-70 hover:opacity-100 mt-2 inline-block">View →</Link>
-            )}
           </div>
         ))}
       </div>

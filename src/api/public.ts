@@ -1,4 +1,4 @@
-import { EventDTO, LocationDTO } from '@uaetrail/shared-types';
+import { EventDTO, LocationDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { api } from './services';
 import { CampingSpot, Trail, Trip } from '../types';
 
@@ -19,8 +19,13 @@ export const mapEventToTrip = (event: EventDTO): Trip => ({
   time: event.time,
   operatorId: event.tenantId,
   tenantSlug: event.tenantSlug,
-  organizerName: event.organizerName,
-  organizerAvatar: event.organizerAvatar ?? undefined,
+  tenantName: event.tenantName,
+  hostName: event.hostName ?? event.organizerName,
+  hostUserId: event.hostUserId ?? event.organizerUserId,
+  hostAvatar: event.hostAvatar ?? event.organizerAvatar ?? undefined,
+  organizerName: event.hostName ?? event.organizerName,
+  organizerAvatar: event.hostAvatar ?? event.organizerAvatar ?? undefined,
+  organizerUserId: event.hostUserId ?? event.organizerUserId,
   images: event.images,
   price: event.price,
   slotsAvailable: event.slotsAvailable,
@@ -31,6 +36,14 @@ export const mapEventToTrip = (event: EventDTO): Trip => ({
   meetingPoint: event.meetingPoint ?? undefined,
   itinerary: event.itinerary ?? undefined,
   requirements: event.requirements ?? undefined
+});
+
+const mapLocationFields = (location: LocationDTO) => ({
+  parkingLink: location.parkingLink,
+  highlights: location.highlights,
+  surfaceType: location.surfaceType,
+  tags: location.tags,
+  accessibleBy: location.accessibleBy,
 });
 
 const mapLocationToTrail = (location: LocationDTO): Trail => ({
@@ -47,7 +60,8 @@ const mapLocationToTrail = (location: LocationDTO): Trail => ({
   images: location.images,
   featured: location.featured,
   latitude: location.latitude,
-  longitude: location.longitude
+  longitude: location.longitude,
+  ...mapLocationFields(location),
 });
 
 const mapLocationToCamp = (location: LocationDTO): CampingSpot => ({
@@ -63,7 +77,8 @@ const mapLocationToCamp = (location: LocationDTO): CampingSpot => ({
   images: location.images,
   featured: location.featured,
   latitude: location.latitude,
-  longitude: location.longitude
+  longitude: location.longitude,
+  ...mapLocationFields(location),
 });
 
 export const fetchPopularLocations = async (): Promise<{ trails: Trail[]; camps: CampingSpot[] }> => {
@@ -109,11 +124,13 @@ export const fetchApiTripDetail = async (id: string) => {
   return response.data;
 };
 
-export const fetchApiLocationDetail = async (id: string): Promise<{ trail?: Trail; camp?: CampingSpot }> => {
+export const fetchApiLocationDetail = async (
+  id: string
+): Promise<{ trail?: Trail; camp?: CampingSpot; premium: LocationPremiumSummaryDTO | null }> => {
   const response = await api.getPublicLocationDetail(id);
   const loc = response.data;
   if (loc.activityType === 'hiking') {
-    return { trail: mapLocationToTrail(loc) };
+    return { trail: mapLocationToTrail(loc), premium: response.premium };
   }
-  return { camp: mapLocationToCamp(loc) };
+  return { camp: mapLocationToCamp(loc), premium: response.premium };
 };

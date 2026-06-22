@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authLimiter } from '../middleware/rate-limit.js';
+import { authLimiter } from '../middleware/rate-limit-instances.js';
 import { adminRouter } from './admin.js';
 import { authRouter } from './auth.js';
 import { chatRouter } from './chat.js';

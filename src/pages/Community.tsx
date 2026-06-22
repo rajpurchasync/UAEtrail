@@ -6,6 +6,14 @@ import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { ImageUpload } from '../components/ui/ImageUpload';
 import { COMMUNITY_CATEGORIES } from '../config/platform';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { FilterChips } from '../components/mobile/FilterChips';
+import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
+import { PAGE_BANNERS } from '../config/pageBanners';
+import { PageMeta } from '../components/seo/PageMeta';
+import { GlassCard } from '../components/mobile/GlassCard';
+import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
+import { TrailPointsPromoBanner } from '../components/rewards';
 
 export const Community = () => {
   const { user } = useAuth();
@@ -15,10 +23,12 @@ export const Community = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [expandedPost, setExpandedPost] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState('');
+  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
+  const [actionError, setActionError] = useState<string | null>(null);
   const [showNewPost, setShowNewPost] = useState(false);
   const [newPost, setNewPost] = useState({ title: '', content: '', category: 'questions', locationId: '', images: [] as string[] });
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const loadPosts = async () => {
     setLoading(true);
@@ -44,16 +54,36 @@ export const Community = () => {
     loadPosts();
   };
 
+  const toggleExpanded = async (postId: string) => {
+    if (expandedPost === postId) {
+      setExpandedPost(null);
+      return;
+    }
+    setExpandedPost(postId);
+    try {
+      const res = await api.getPost(postId);
+      setPosts((prev) => prev.map((p) => (p.id === postId ? res.data : p)));
+    } catch {
+      /* keep list version */
+    }
+  };
+
   const handleReply = async (postId: string) => {
     if (!user) {
       navigate('/signin');
       return;
     }
-    if (!replyText.trim()) return;
-    await api.replyToPost(postId, replyText.trim());
-    setReplyText('');
-    const res = await api.getPost(postId);
-    setPosts((prev) => prev.map((p) => (p.id === postId ? res.data : p)));
+    const text = replyTexts[postId]?.trim() ?? '';
+    if (!text) return;
+    setActionError(null);
+    try {
+      await api.replyToPost(postId, text);
+      setReplyTexts((prev) => ({ ...prev, [postId]: '' }));
+      const res = await api.getPost(postId);
+      setPosts((prev) => prev.map((p) => (p.id === postId ? res.data : p)));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to post reply');
+    }
   };
 
   const handleLike = async (postId: string) => {
@@ -61,8 +91,13 @@ export const Community = () => {
       navigate('/signin');
       return;
     }
-    await api.togglePostLike(postId);
-    loadPosts();
+    setActionError(null);
+    try {
+      await api.togglePostLike(postId);
+      loadPosts();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to like post');
+    }
   };
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -71,85 +106,88 @@ export const Community = () => {
       navigate('/signin');
       return;
     }
+    setFormError(null);
+    if (newPost.title.trim().length < 5) {
+      setFormError('Title must be at least 5 characters.');
+      return;
+    }
+    if (newPost.content.trim().length < 10) {
+      setFormError('Content must be at least 10 characters.');
+      return;
+    }
     setSubmitting(true);
     try {
       await api.createPost({
         category: newPost.category,
-        title: newPost.title,
-        content: newPost.content,
+        title: newPost.title.trim(),
+        content: newPost.content.trim(),
         locationId: newPost.locationId || undefined,
         images: newPost.images
       });
       setShowNewPost(false);
       setNewPost({ title: '', content: '', category: 'questions', locationId: '', images: [] });
       loadPosts();
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Failed to create post');
     } finally {
       setSubmitting(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 pb-nav-safe md:pb-8">
-      <div className="bg-white border-b sticky top-16 z-30">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Community</h1>
-              <p className="text-sm text-gray-600 mt-1">Questions, trip reports & photos — anchored to UAE locations</p>
-            </div>
-            <button
-              onClick={() => (user ? setShowNewPost(true) : navigate('/signin'))}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700"
-            >
-              <Plus className="w-4 h-4" />
-              New post
-            </button>
-          </div>
+  const categoryTabs = [
+    { key: 'all', label: 'All' },
+    ...COMMUNITY_CATEGORIES.map((cat) => ({ key: cat.id, label: cat.label })),
+  ];
 
-          <form onSubmit={handleSearch} className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+  return (
+    <>
+      <PageMeta
+        title="Outdoor community"
+        description="Ask questions, share trip reports, and get tips from hikers and campers across the UAE."
+        path="/community"
+      />
+    <ConsumerShell
+      layout="tab"
+      title="Community"
+      maxWidth="4xl"
+      banner={{ src: PAGE_BANNERS.community, alt: 'Friends hiking together' }}
+      toolbar={
+        <>
+          <form onSubmit={handleSearch} className="relative mb-3">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search discussions..."
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+              className="glass-search"
             />
           </form>
-
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${selectedCategory === 'all' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600'}`}
-            >
-              All
-            </button>
-            {COMMUNITY_CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${selectedCategory === cat.id ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600'}`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+          <FilterChips options={categoryTabs} value={selectedCategory} onChange={setSelectedCategory} />
+        </>
+      }
+    >
+      <FloatingActionButton
+        icon={<Plus className="w-6 h-6" strokeWidth={2.25} />}
+        label="New post"
+        onClick={() => (user ? setShowNewPost(true) : navigate('/signin'))}
+      />
+      <div className="space-y-4 animate-fade-up pb-20 md:pb-4">
+        <TrailPointsPromoBanner variant="community" />
+        {actionError && (
+          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{actionError}</p>
+        )}
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
           </div>
         ) : posts.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
-            <MessageSquare className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-            <p className="text-gray-600">No posts yet. Be the first to ask a question!</p>
-          </div>
+          <GlassCard padding className="text-center py-16">
+            <MessageSquare className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+            <p className="text-neutral-600 font-medium">No posts yet. Be the first to ask a question!</p>
+          </GlassCard>
         ) : (
           posts.map((post) => (
-            <article key={post.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              <div className="p-5">
+            <GlassCard key={post.id} padding className="overflow-hidden">
                 <div className="flex items-start gap-3">
                   {post.authorAvatar ? (
                     <img src={post.authorAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
@@ -161,6 +199,13 @@ export const Community = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-gray-900">{post.authorName}</span>
+                      {post.authorMembershipTier && (
+                        <MembershipTierBadge
+                          tierKey={post.authorMembershipTier.key}
+                          name={post.authorMembershipTier.name}
+                          emoji={post.authorMembershipTier.emoji}
+                        />
+                      )}
                       <span className="text-xs text-gray-400 capitalize">{post.category.replace('-', ' ')}</span>
                     </div>
                     {post.locationName && (
@@ -181,17 +226,19 @@ export const Community = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-50">
+                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-50">
                   <button
+                    type="button"
                     onClick={() => handleLike(post.id)}
-                    className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600"
+                    className="inline-flex items-center gap-1.5 min-h-[44px] px-3 text-sm text-neutral-500 active:text-emerald-600"
                   >
                     <ThumbsUp className="w-4 h-4" />
                     {post.likeCount}
                   </button>
                   <button
-                    onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}
-                    className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600"
+                    type="button"
+                    onClick={() => toggleExpanded(post.id)}
+                    className="inline-flex items-center gap-1.5 min-h-[44px] px-3 text-sm text-neutral-500 active:text-emerald-600"
                   >
                     <MessageSquare className="w-4 h-4" />
                     {post.replyCount} replies
@@ -201,15 +248,24 @@ export const Community = () => {
                 {expandedPost === post.id && (
                   <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
                     {post.replies.map((reply) => (
-                      <div key={reply.id} className="flex gap-2 text-sm">
-                        <span className="font-medium text-gray-900">{reply.authorName}:</span>
+                      <div key={reply.id} className="flex flex-wrap gap-x-2 gap-y-0.5 text-sm">
+                        <span className="font-medium text-gray-900 inline-flex items-center gap-1.5">
+                          {reply.authorName}
+                          {reply.authorMembershipTier && (
+                            <MembershipTierBadge
+                              tierKey={reply.authorMembershipTier.key}
+                              name={reply.authorMembershipTier.name}
+                              emoji={reply.authorMembershipTier.emoji}
+                            />
+                          )}
+                        </span>
                         <span className="text-gray-600">{reply.content}</span>
                       </div>
                     ))}
                     <div className="flex gap-2">
                       <input
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
+                        value={replyTexts[post.id] ?? ''}
+                        onChange={(e) => setReplyTexts((prev) => ({ ...prev, [post.id]: e.target.value }))}
                         placeholder="Write a reply..."
                         className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm"
                       />
@@ -222,8 +278,7 @@ export const Community = () => {
                     </div>
                   </div>
                 )}
-              </div>
-            </article>
+            </GlassCard>
           ))
         )}
       </div>
@@ -236,6 +291,7 @@ export const Community = () => {
               <button onClick={() => setShowNewPost(false)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
             <form onSubmit={handleCreatePost} className="p-4 space-y-4">
+              {formError && <p className="text-sm text-red-600">{formError}</p>}
               <select
                 value={newPost.category}
                 onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
@@ -279,6 +335,9 @@ export const Community = () => {
               <p className="text-xs text-gray-500">
                 Tip: open a <Link to="/discovery" className="text-emerald-600">location page</Link> and paste its ID to anchor your post.
               </p>
+              <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+                Earn <strong>+20 Trail Points</strong> when you publish.
+              </p>
               <button
                 type="submit"
                 disabled={submitting}
@@ -290,6 +349,7 @@ export const Community = () => {
           </div>
         </div>
       )}
-    </div>
+    </ConsumerShell>
+    </>
   );
 };

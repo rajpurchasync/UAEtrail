@@ -1,6 +1,7 @@
 import { UserRole } from '@uaetrail/shared-types';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { accountRouteByRole } from '../../utils/authRouting';
 
 interface ProtectedRouteProps {
   roles?: UserRole[];
@@ -20,11 +21,13 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    return <Navigate to="/signin" replace state={{ from: location.pathname }} />;
+    return (
+      <Navigate to="/signin" replace state={{ from: location.pathname + location.search }} />
+    );
   }
 
   if (roles && !roles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={accountRouteByRole(user.role)} replace />;
   }
 
   return children;

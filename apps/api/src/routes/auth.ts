@@ -1,8 +1,9 @@
-import { UserRole, UserStatus } from '@prisma/client';
+import { AuthProvider, UserRole, UserStatus } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
-import { randomToken, sha256 } from '../lib/hash.js';
+import { clearRefreshCookie, REFRESH_COOKIE_NAME, setRefreshCookie } from '../lib/auth-cookies.js';
+import { hashToken, randomToken, sha256 } from '../lib/hash.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
 import { toSharedRole } from '../lib/mappers.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
@@ -12,6 +13,9 @@ import { validate } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
 import { sendPasswordResetEmail, sendVerificationEmail, isEmailConfigured } from '../lib/email.js';
+import { verifyGoogleIdToken } from '../lib/google-auth.js';
+import { createUniqueReferralCode } from '../lib/referral-code.js';
+import { processSignupRewards } from '../services/rewards.js';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -23,7 +27,8 @@ const registerSchema = z.object({
     .regex(/[0-9]/, 'Must include at least one number'),
   displayName: z.string().min(2).max(80),
   accountType: z.enum(['visitor', 'company', 'guide']).default('visitor'),
-  organizationName: z.string().min(2).max(120).optional()
+  organizationName: z.string().min(2).max(120).optional(),
+  referralCode: z.string().min(4).max(12).optional()
 });
 
 const loginSchema = z.object({
@@ -32,7 +37,7 @@ const loginSchema = z.object({
 });
 
 const tokenSchema = z.object({ token: z.string().min(20) });
-const refreshSchema = z.object({ refreshToken: z.string().min(20) });
+const refreshBodySchema = z.object({ refreshToken: z.string().min(20).optional() });
 const forgotSchema = z.object({ email: z.string().email() });
 const resetSchema = z.object({
   token: z.string().min(20),
@@ -50,18 +55,45 @@ const changePasswordSchema = z.object({
 });
 
 const resendVerificationSchema = z.object({ email: z.string().email() });
+const googleAuthSchema = z.object({
+  idToken: z.string().min(20),
+  referralCode: z.string().min(4).max(12).optional()
+});
 
 const mapAccountTypeToTenantType = (accountType: 'company' | 'guide'): 'COMPANY' | 'GUIDE_OWNED' =>
   accountType === 'company' ? 'COMPANY' : 'GUIDE_OWNED';
 
-const buildAuthResponse = (user: { id: string; email: string; role: UserRole }, tokens: { accessToken: string; refreshToken: string }) => ({
+const buildAuthResponse = (user: { id: string; email: string; role: UserRole }, tokens: { accessToken: string }) => ({
   user: {
     id: user.id,
     email: user.email,
     role: toSharedRole(user.role)
   },
-  tokens
+  tokens: { accessToken: tokens.accessToken }
 });
+
+const readRefreshToken = (req: { cookies?: Record<string, string>; body?: { refreshToken?: string } }): string | null => {
+  const fromCookie = req.cookies?.[REFRESH_COOKIE_NAME];
+  if (typeof fromCookie === 'string' && fromCookie.length >= 20) {
+    return fromCookie;
+  }
+  const fromBody = req.body?.refreshToken;
+  if (typeof fromBody === 'string' && fromBody.length >= 20) {
+    return fromBody;
+  }
+  return null;
+};
+
+const respondWithAuth = (
+  res: import('express').Response,
+  status: number,
+  user: { id: string; email: string; role: UserRole },
+  tokens: { accessToken: string; refreshToken: string },
+  extra: Record<string, unknown> = {}
+): void => {
+  setRefreshCookie(res, tokens.refreshToken);
+  res.status(status).json({ ...buildAuthResponse(user, tokens), ...extra });
+};
 
 const createSession = async ({
   userId,
@@ -97,7 +129,7 @@ export const authRouter = Router();
 
 authRouter.post('/register', validate({ body: registerSchema }), async (req, res, next) => {
   try {
-    const { email, password, displayName, accountType, organizationName } = req.body as z.infer<typeof registerSchema>;
+    const { email, password, displayName, accountType, organizationName, referralCode } = req.body as z.infer<typeof registerSchema>;
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       throw new ApiError(409, 'email_taken', 'Email is already registered.');
@@ -105,11 +137,13 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
 
     const passwordHash = await hashPassword(password);
     const verificationToken = randomToken(24);
+    const userReferralCode = await createUniqueReferralCode();
 
     const created = await prisma.user.create({
       data: {
         email,
         passwordHash,
+        referralCode: userReferralCode,
         role: UserRole.VISITOR,
         profile: {
           create: {
@@ -118,7 +152,7 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
         },
         emailVerification: {
           create: {
-            token: verificationToken,
+            token: hashToken(verificationToken),
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
           }
         },
@@ -140,6 +174,8 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       }
     });
 
+    void processSignupRewards(prisma, created.id, referralCode).catch(() => undefined);
+
     const tokens = await createSession({
       userId: created.id,
       email: created.email,
@@ -154,8 +190,7 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       token: verificationToken
     }).catch(() => undefined);
 
-    res.status(201).json({
-      ...buildAuthResponse(created, tokens),
+    respondWithAuth(res, 201, created, tokens, {
       requiresEmailVerification: true,
       verificationToken:
         env.NODE_ENV === 'production' && isEmailConfigured() ? undefined : verificationToken
@@ -172,7 +207,10 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
       where: { email },
       select: { id: true, email: true, role: true, passwordHash: true, emailVerifiedAt: true, status: true }
     });
-    if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    if (!user?.passwordHash) {
+      throw new ApiError(401, 'oauth_account', 'This account uses Google sign-in.');
+    }
+    if (!(await verifyPassword(password, user.passwordHash))) {
       throw new ApiError(401, 'invalid_credentials', 'Invalid email or password.');
     }
     if (user.status !== UserStatus.ACTIVE) {
@@ -187,8 +225,7 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
       userAgent: req.headers['user-agent']
     });
 
-    res.json({
-      ...buildAuthResponse(user, tokens),
+    respondWithAuth(res, 200, user, tokens, {
       emailVerified: Boolean(user.emailVerifiedAt)
     });
   } catch (error) {
@@ -196,9 +233,12 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
   }
 });
 
-authRouter.post('/refresh', validate({ body: refreshSchema }), async (req, res, next) => {
+authRouter.post('/refresh', validate({ body: refreshBodySchema }), async (req, res, next) => {
   try {
-    const { refreshToken } = req.body as z.infer<typeof refreshSchema>;
+    const refreshToken = readRefreshToken(req);
+    if (!refreshToken) {
+      throw new ApiError(401, 'invalid_refresh_token', 'Refresh token is missing.');
+    }
     const payload = verifyRefreshToken(refreshToken);
     const tokenHash = sha256(refreshToken);
 
@@ -229,24 +269,27 @@ authRouter.post('/refresh', validate({ body: refreshSchema }), async (req, res, 
       userAgent: req.headers['user-agent']
     });
 
-    res.json(buildAuthResponse(stored.user, tokens));
+    respondWithAuth(res, 200, stored.user, tokens);
   } catch (error) {
     next(error);
   }
 });
 
-authRouter.post('/logout', validate({ body: refreshSchema }), async (req, res, next) => {
+authRouter.post('/logout', validate({ body: refreshBodySchema }), async (req, res, next) => {
   try {
-    const { refreshToken } = req.body as z.infer<typeof refreshSchema>;
-    await prisma.refreshToken.updateMany({
-      where: {
-        tokenHash: sha256(refreshToken),
-        revokedAt: null
-      },
-      data: {
-        revokedAt: new Date()
-      }
-    });
+    const refreshToken = readRefreshToken(req);
+    if (refreshToken) {
+      await prisma.refreshToken.updateMany({
+        where: {
+          tokenHash: sha256(refreshToken),
+          revokedAt: null
+        },
+        data: {
+          revokedAt: new Date()
+        }
+      });
+    }
+    clearRefreshCookie(res);
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -257,7 +300,7 @@ authRouter.post('/verify-email', validate({ body: tokenSchema }), async (req, re
   try {
     const { token } = req.body as z.infer<typeof tokenSchema>;
     const record = await prisma.emailVerificationToken.findUnique({
-      where: { token },
+      where: { token: hashToken(token) },
       include: { user: true }
     });
 
@@ -295,7 +338,7 @@ authRouter.post('/forgot-password', validate({ body: forgotSchema }), async (req
     await prisma.passwordResetToken.create({
       data: {
         userId: user.id,
-        token,
+        token: hashToken(token),
         expiresAt: new Date(Date.now() + 60 * 60 * 1000)
       }
     });
@@ -319,7 +362,7 @@ authRouter.post('/forgot-password', validate({ body: forgotSchema }), async (req
 authRouter.post('/reset-password', validate({ body: resetSchema }), async (req, res, next) => {
   try {
     const { token, password } = req.body as z.infer<typeof resetSchema>;
-    const record = await prisma.passwordResetToken.findUnique({ where: { token } });
+    const record = await prisma.passwordResetToken.findUnique({ where: { token: hashToken(token) } });
     if (!record || record.usedAt || record.expiresAt < new Date()) {
       throw new ApiError(400, 'invalid_token', 'Reset token is invalid or expired.');
     }
@@ -359,32 +402,135 @@ authRouter.post('/resend-verification', validate({ body: resendVerificationSchem
       return;
     }
 
-    let tokenRecord = await prisma.emailVerificationToken.findFirst({
-      where: { userId: user.id, usedAt: null, expiresAt: { gt: new Date() } },
-      orderBy: { createdAt: 'desc' }
+    const verificationToken = randomToken(24);
+    await prisma.emailVerificationToken.updateMany({
+      where: { userId: user.id, usedAt: null },
+      data: { usedAt: new Date() }
     });
-
-    if (!tokenRecord) {
-      const token = randomToken(24);
-      tokenRecord = await prisma.emailVerificationToken.create({
-        data: {
-          userId: user.id,
-          token,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-        }
-      });
-    }
+    await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        token: hashToken(verificationToken),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    });
 
     void sendVerificationEmail({
       to: user.email,
       name: user.profile?.displayName ?? user.email,
-      token: tokenRecord.token
+      token: verificationToken
     }).catch(() => undefined);
 
     res.json({
       message: 'Verification email sent.',
       verificationToken:
-        env.NODE_ENV === 'production' && isEmailConfigured() ? undefined : tokenRecord.token
+        env.NODE_ENV === 'production' && isEmailConfigured() ? undefined : verificationToken
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res, next) => {
+  try {
+    const { idToken, referralCode } = req.body as z.infer<typeof googleAuthSchema>;
+    const profile = await verifyGoogleIdToken(idToken);
+
+    const existing = await prisma.user.findFirst({
+      where: { OR: [{ googleId: profile.googleId }, { email: profile.email }] },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        googleId: true,
+        emailVerifiedAt: true,
+        authProvider: true,
+        passwordHash: true
+      }
+    });
+
+    let user: { id: string; email: string; role: UserRole; status: UserStatus };
+    let isNewUser = false;
+
+    if (existing) {
+      if (existing.status !== UserStatus.ACTIVE) {
+        throw new ApiError(403, 'account_suspended', 'Account is suspended.');
+      }
+
+      if (
+        !existing.googleId &&
+        existing.authProvider === AuthProvider.EMAIL &&
+        existing.passwordHash
+      ) {
+        throw new ApiError(
+          409,
+          'account_exists_use_password',
+          'An account with this email already exists. Sign in with your password first.'
+        );
+      }
+
+      user = await prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          googleId: existing.googleId ?? profile.googleId,
+          authProvider: AuthProvider.GOOGLE,
+          emailVerifiedAt: existing.emailVerifiedAt ?? new Date(),
+          lastActiveAt: new Date()
+        },
+        select: { id: true, email: true, role: true, status: true }
+      });
+
+      await prisma.profile.upsert({
+        where: { userId: existing.id },
+        update: {
+          displayName: profile.displayName,
+          avatarUrl: profile.avatarUrl ?? undefined
+        },
+        create: {
+          userId: existing.id,
+          displayName: profile.displayName,
+          avatarUrl: profile.avatarUrl ?? undefined
+        }
+      });
+    } else {
+      isNewUser = true;
+      const userReferralCode = await createUniqueReferralCode();
+      user = await prisma.user.create({
+        data: {
+          email: profile.email,
+          googleId: profile.googleId,
+          referralCode: userReferralCode,
+          authProvider: AuthProvider.GOOGLE,
+          role: UserRole.VISITOR,
+          status: UserStatus.ACTIVE,
+          emailVerifiedAt: new Date(),
+          lastActiveAt: new Date(),
+          profile: {
+            create: {
+              displayName: profile.displayName,
+              avatarUrl: profile.avatarUrl ?? undefined
+            }
+          }
+        },
+        select: { id: true, email: true, role: true, status: true }
+      });
+
+      void processSignupRewards(prisma, user.id, referralCode).catch(() => undefined);
+    }
+
+    const tokens = await createSession({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent']
+    });
+
+    respondWithAuth(res, isNewUser ? 201 : 200, user, tokens, {
+      isNewUser,
+      emailVerified: true,
+      authProvider: 'google'
     });
   } catch (error) {
     next(error);
@@ -395,7 +541,10 @@ authRouter.patch('/change-password', requireAuth, validate({ body: changePasswor
   try {
     const { currentPassword, newPassword } = req.body as z.infer<typeof changePasswordSchema>;
     const user = await prisma.user.findUnique({ where: { id: req.auth!.userId } });
-    if (!user || !(await verifyPassword(currentPassword, user.passwordHash))) {
+    if (!user?.passwordHash) {
+      throw new ApiError(400, 'oauth_account', 'Google accounts cannot change password here.');
+    }
+    if (!(await verifyPassword(currentPassword, user.passwordHash))) {
       throw new ApiError(401, 'invalid_password', 'Current password is incorrect.');
     }
 

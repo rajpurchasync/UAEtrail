@@ -5,16 +5,29 @@ import {
   Clock,
   Users,
   MapPin,
-  MessageSquare,
   ChevronRight,
-  CheckCircle2
+  CheckCircle2,
+  Car
 } from 'lucide-react';
-import { EventDetailDTO } from '@uaetrail/shared-types';
+import { EventDetailDTO, MyTripRequestDTO, TripParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { formatDate, formatPrice } from '../utils';
+import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../utils/hostLabels';
 import { useAuth } from '../context/AuthContext';
+import { organizerProfilePath } from '../utils/organizerLinks';
 import { PARTICIPANT_PRIVACY } from '../config/platform';
 import { PageMeta } from '../components/seo/PageMeta';
+import { JsonLd } from '../components/seo/JsonLd';
+import { tripEventSchema } from '../components/seo/schemas';
+import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
+import {
+  ShareButton,
+  MeetingPointMap,
+  ParticipantPreview,
+  OrganizerMessageButton,
+  TripCheckInPanel,
+  WithdrawRequestModal
+} from '../components/ui';
 
 export const TripDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,23 +38,45 @@ export const TripDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [participation, setParticipation] = useState<TripParticipationDTO | null | undefined>(undefined);
+  const [myRequest, setMyRequest] = useState<MyTripRequestDTO | null | undefined>(undefined);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
 
-  useEffect(() => {
+  const loadTrip = () => {
     if (!id) return;
     setLoading(true);
+    setParticipation(undefined);
+    setMyRequest(undefined);
     api
       .getPublicEventDetail(id)
-      .then((res) => setTrip(res.data))
+      .then((res) => {
+        setTrip(res.data);
+        setParticipation(res.data.myParticipation ?? null);
+        setMyRequest(res.data.myRequest ?? null);
+      })
       .catch((loadError) =>
         setError(loadError instanceof Error ? loadError.message : 'Failed to load trip details')
       )
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadTrip();
   }, [id]);
+
+  const requiresTerms = Boolean(trip && trip.price > 0 && trip.paymentTerms);
+  const canJoin = !requiresTerms || termsAccepted;
 
   const handleJoin = async () => {
     if (!id || !trip) return;
     if (!user) {
       navigate('/signin', { state: { from: `/trip/${id}` } });
+      return;
+    }
+    if (!canJoin) {
+      setError('Please accept the payment terms to continue.');
       return;
     }
     setJoining(true);
@@ -52,8 +87,9 @@ export const TripDetail = () => {
       if (res.data.waitlisted || res.data.status === 'waitlisted') {
         setMessage('Added to waitlist. We will notify you when a spot opens.');
       } else {
-        setMessage('Request submitted. Track status in your dashboard.');
+        setMessage('Request submitted. Track status in My Requests.');
       }
+      loadTrip();
     } catch (joinError) {
       setError(joinError instanceof Error ? joinError.message : 'Failed to submit request');
     } finally {
@@ -63,22 +99,28 @@ export const TripDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-      </div>
+      <>
+        <PageMeta title="Loading trip" path={id ? `/trip/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
+        </div>
+      </>
     );
   }
 
   if (!trip) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center px-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Trip Not Found</h1>
-          <Link to="/trips" className="text-emerald-600 hover:text-emerald-700 font-medium">
-            View all trips
-          </Link>
+      <>
+        <PageMeta title="Trip not found" noIndex path={id ? `/trip/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center px-4">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Trip Not Found</h1>
+            <Link to="/trips" className="text-emerald-600 hover:text-emerald-700 font-medium">
+              View all trips
+            </Link>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -90,24 +132,162 @@ export const TripDetail = () => {
       : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
   const participants = trip.participants ?? [];
-  const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin
-    ? participants.slice(0, PARTICIPANT_PRIVACY.maxPreviewCount)
-    : [];
+  const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
+  const organizerPath = organizerProfilePath(trip.tenantSlug);
   const isFull = trip.slotsAvailable <= 0;
   const locationPath =
     trip.activityType === 'hiking' ? `/trail/${trip.locationId}` : `/camp/${trip.locationId}`;
 
+  const dateRangeLabel = trip.endDate
+    ? `${formatDate(trip.date)} – ${formatDate(trip.endDate)}`
+    : formatDate(trip.date);
+
+  const joinLabel = joining ? 'Submitting…' : isFull ? 'Join Waitlist' : 'Request to Join';
+  const isConfirmed = Boolean(participation);
+  const hasActiveRequest = Boolean(myRequest?.canWithdraw);
+  const requestStatus = myRequest?.status;
+
+  const handleCheckIn = async (eventId: string) => api.checkInToTrip(eventId);
+
+  const handleWithdraw = async (payload: { reason: WithdrawReason; message?: string }) => {
+    if (!trip || !myRequest) return;
+    setWithdrawing(true);
+    setError(null);
+    try {
+      await api.cancelJoinRequest(trip.id, myRequest.id, payload);
+      setShowWithdraw(false);
+      setParticipation(null);
+      setMyRequest(null);
+      setMessage('You have withdrawn from this trip.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to withdraw');
+      setShowWithdraw(false);
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
+  const withdrawButton = hasActiveRequest ? (
+    <button
+      type="button"
+      onClick={() => setShowWithdraw(true)}
+      className="w-full mt-2 py-2.5 text-sm font-semibold text-red-600 hover:text-red-700"
+    >
+      {isConfirmed ? 'Withdraw from trip' : 'Cancel request'}
+    </button>
+  ) : null;
+
+  const requestStatusBanner =
+    hasActiveRequest && !isConfirmed ? (
+      <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-3 text-center">
+        <p className="text-sm font-semibold text-amber-900 capitalize">
+          {requestStatus === 'waitlisted' ? 'On waitlist' : 'Request pending approval'}
+        </p>
+        <p className="text-xs text-amber-700/80 mt-0.5">The organizer will confirm your spot</p>
+      </div>
+    ) : null;
+
+  const checkInFooter = participation ? (
+    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
+      <TripCheckInPanel
+        eventId={trip!.id}
+        participation={participation}
+        onCheckIn={handleCheckIn}
+        onUpdated={setParticipation}
+      />
+      {withdrawButton}
+    </div>
+  ) : hasActiveRequest ? (
+    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
+      {requestStatusBanner}
+      {withdrawButton}
+    </div>
+  ) : null;
+
+  const termsBlock = requiresTerms && !isConfirmed ? (
+    <label className="flex items-start gap-2 text-left text-sm text-gray-700 mb-3 cursor-pointer">
+      <input
+        type="checkbox"
+        checked={termsAccepted}
+        onChange={(e) => setTermsAccepted(e.target.checked)}
+        className="mt-0.5 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+      />
+      <span>
+        I agree to the{' '}
+        <span className="font-medium text-gray-900">payment terms</span> for this {formatPrice(trip.price)} trip.
+      </span>
+    </label>
+  ) : null;
+
+  const joinButton = checkInFooter ?? (
+    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
+      {termsBlock}
+      <button
+        type="button"
+        onClick={handleJoin}
+        disabled={joining || !canJoin || hasActiveRequest}
+        className={`w-full ios-btn shadow-lg disabled:opacity-60 ${
+          isFull ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
+        }`}
+      >
+        {joinLabel}
+      </button>
+    </div>
+  );
+
+  const sidebarJoin = isConfirmed ? (
+    participation && (
+      <>
+        <TripCheckInPanel
+          eventId={trip.id}
+          participation={participation}
+          onCheckIn={handleCheckIn}
+          onUpdated={setParticipation}
+        />
+        {withdrawButton}
+      </>
+    )
+  ) : hasActiveRequest ? (
+    <>
+      {requestStatusBanner}
+      {withdrawButton}
+    </>
+  ) : (
+    <>
+      {termsBlock}
+      <button
+        onClick={handleJoin}
+        disabled={joining || !canJoin}
+        className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
+          isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
+        }`}
+      >
+        {joinLabel}
+      </button>
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 md:pb-8">
+    <MobileDetailShell backTo="/trips" backLabel="Trips" footer={joinButton}>
       <PageMeta
         title={trip.title || trip.locationName}
-        description={trip.description?.slice(0, 160) ?? `Join this ${trip.activityType} trip on UAE Trail`}
+        description={trip.description?.slice(0, 160) ?? `Join this ${trip.activityType} trip in the UAE on UAE Trail`}
         path={`/trip/${trip.id}`}
+        image={heroImage}
+        imageAlt={trip.title || trip.locationName}
       />
-      {/* Hero */}
+      <JsonLd data={tripEventSchema(trip)} id={`trip-${trip.id}`} />
       <div className="relative h-56 sm:h-72 md:h-80 overflow-hidden">
         <img src={heroImage} alt={trip.locationName} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="absolute top-4 right-4">
+          <ShareButton
+            title={trip.title || trip.locationName}
+            text={`${dateRangeLabel} · Join this ${trip.activityType} trip on UAE Trails`}
+            path={`/trip/${trip.id}`}
+            compact
+          />
+        </div>
         <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 max-w-6xl mx-auto">
           <span
             className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold mb-2 ${
@@ -118,13 +298,13 @@ export const TripDetail = () => {
           </span>
           <h1 className="text-2xl md:text-3xl font-bold text-white">{trip.title || trip.locationName}</h1>
           <p className="text-white/90 mt-1 text-sm md:text-base">
-            {formatDate(trip.date)} · {trip.time}
+            {dateRangeLabel} · {trip.time}
+            {trip.endTime ? ` – ${trip.endTime}` : ''}
           </p>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main content */}
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-3">About this trip</h2>
@@ -133,13 +313,23 @@ export const TripDetail = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
               <div className="bg-gray-50 rounded-xl p-3">
                 <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
-                <p className="text-xs text-gray-500">Date</p>
+                <p className="text-xs text-gray-500">Start</p>
                 <p className="text-sm font-semibold text-gray-900">{formatDate(trip.date)}</p>
               </div>
+              {trip.endDate && (
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
+                  <p className="text-xs text-gray-500">End</p>
+                  <p className="text-sm font-semibold text-gray-900">{formatDate(trip.endDate)}</p>
+                </div>
+              )}
               <div className="bg-gray-50 rounded-xl p-3">
                 <Clock className="w-4 h-4 text-emerald-600 mb-1" />
                 <p className="text-xs text-gray-500">Time</p>
-                <p className="text-sm font-semibold text-gray-900">{trip.time}</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {trip.time}
+                  {trip.endTime ? ` – ${trip.endTime}` : ''}
+                </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <Users className="w-4 h-4 text-emerald-600 mb-1" />
@@ -157,9 +347,27 @@ export const TripDetail = () => {
             {trip.meetingPoint && (
               <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
                 <MapPin className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
+                <div className="flex-1">
                   <p className="font-medium text-gray-900">Meeting point</p>
                   <p>{trip.meetingPoint}</p>
+                  <MeetingPointMap lat={trip.meetingLat} lng={trip.meetingLng} label={trip.meetingPoint} />
+                </div>
+              </div>
+            )}
+
+            {trip.location.parkingLink && (
+              <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
+                <Car className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-gray-900">Parking</p>
+                  <a
+                    href={trip.location.parkingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-700 hover:text-emerald-800 font-medium"
+                  >
+                    View parking on map →
+                  </a>
                 </div>
               </div>
             )}
@@ -172,6 +380,13 @@ export const TripDetail = () => {
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
+
+          {trip.paymentTerms && trip.price > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-3">Payment terms</h2>
+              <p className="text-gray-700 text-sm whitespace-pre-wrap">{trip.paymentTerms}</p>
+            </div>
+          )}
 
           {trip.itinerary && trip.itinerary.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
@@ -189,7 +404,7 @@ export const TripDetail = () => {
 
           {trip.requirements && trip.requirements.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Requirements</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-3">Instructions</h2>
               <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
                 {trip.requirements.map((item, i) => (
                   <li key={i}>{item}</li>
@@ -210,120 +425,111 @@ export const TripDetail = () => {
           )}
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-20">
-            <p className="text-2xl font-bold text-gray-900">{formatPrice(trip.price)}</p>
-            <p className="text-sm text-gray-500">per person</p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{formatPrice(trip.price)}</p>
+                <p className="text-sm text-gray-500">per person</p>
+              </div>
+              <div className="hidden md:block">
+                <ShareButton
+                  title={trip.title || trip.locationName}
+                  text={`${dateRangeLabel} · Join this ${trip.activityType} trip on UAE Trails`}
+                  path={`/trip/${trip.id}`}
+                />
+              </div>
+            </div>
 
-            {!isFull ? (
-              <button
-                onClick={handleJoin}
-                disabled={joining}
-                className="hidden md:block w-full mt-4 px-4 py-3 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-60 transition-colors"
-              >
-                {joining ? 'Submitting…' : 'Request to Join'}
-              </button>
-            ) : (
-              <button
-                onClick={handleJoin}
-                disabled={joining}
-                className="hidden md:block w-full mt-4 px-4 py-3 bg-amber-600 text-white text-sm font-semibold rounded-xl hover:bg-amber-700 disabled:opacity-60 transition-colors"
-              >
-                {joining ? 'Submitting…' : 'Join Waitlist'}
-              </button>
-            )}
+            {sidebarJoin}
 
             {message && <p className="mt-3 text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">{message}</p>}
             {error && <p className="mt-3 text-sm text-amber-800 bg-amber-50 px-3 py-2 rounded-lg">{error}</p>}
 
-            {/* Organizer */}
             <div className="mt-5 pt-5 border-t border-gray-100">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Organizer</p>
-              <Link
-                to={`/operator/${trip.tenantSlug}`}
-                className="flex items-center gap-3 group"
-              >
-                {trip.organizerAvatar ? (
-                  <img
-                    src={trip.organizerAvatar}
-                    alt={trip.organizerName}
-                    className="w-11 h-11 rounded-full object-cover ring-2 ring-emerald-50"
-                  />
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Host</p>
+              <div className="flex items-center gap-2">
+                {organizerPath ? (
+                  <Link to={organizerPath} className="flex items-center gap-3 group flex-1 min-w-0">
+                    {tripHostAvatar(trip) ? (
+                      <img
+                        src={tripHostAvatar(trip)}
+                        alt={tripHostName(trip)}
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-emerald-50"
+                      />
+                    ) : (
+                      <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
+                        {tripHostName(trip).charAt(0)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-gray-900 group-hover:text-emerald-700 truncate">
+                        {tripHostName(trip)}
+                      </p>
+                      {showTenantBrand(trip) && trip.tenantName && (
+                        <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
+                      )}
+                      <p className="text-xs text-gray-500">Runs this trip · view organization</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                  </Link>
                 ) : (
-                  <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
-                    {trip.organizerName.charAt(0)}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {tripHostAvatar(trip) ? (
+                      <img
+                        src={tripHostAvatar(trip)}
+                        alt={tripHostName(trip)}
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-emerald-50"
+                      />
+                    ) : (
+                      <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
+                        {tripHostName(trip).charAt(0)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-gray-900 truncate">{tripHostName(trip)}</p>
+                      {showTenantBrand(trip) && trip.tenantName && (
+                        <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
+                      )}
+                    </div>
                   </div>
                 )}
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-gray-900 group-hover:text-emerald-700 truncate">
-                    {trip.organizerName}
-                  </p>
-                  <p className="text-xs text-gray-500">View profile</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
-              </Link>
-              {user && trip.organizerId && (
-                <button
-                  onClick={() => navigate(`/dashboard/messages?to=${trip.organizerId}`)}
-                  className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Message organizer
-                </button>
+                <OrganizerMessageButton
+                  organizerUserId={tripHostUserId(trip)}
+                  signInReturnTo={`/trip/${trip.id}`}
+                  size="md"
+                />
+              </div>
+              {trip.hostBio && (
+                <p className="mt-3 text-sm text-gray-600 leading-relaxed">{trip.hostBio}</p>
               )}
             </div>
 
-            {/* Participants */}
-            {PARTICIPANT_PRIVACY.showPreJoin && previewParticipants.length > 0 && (
+            {PARTICIPANT_PRIVACY.showPreJoin && (
               <div className="mt-5 pt-5 border-t border-gray-100">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   Who&apos;s going ({participants.length})
                 </p>
-                <div className="flex -space-x-2">
-                  {previewParticipants.map((p) =>
-                    p.avatar && PARTICIPANT_PRIVACY.showAvatar ? (
-                      <img
-                        key={p.id}
-                        src={p.avatar}
-                        alt={p.name}
-                        title={p.name}
-                        className="w-8 h-8 rounded-full border-2 border-white object-cover"
-                      />
-                    ) : (
-                      <div
-                        key={p.id}
-                        title={p.name}
-                        className="w-8 h-8 rounded-full border-2 border-white bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700"
-                      >
-                        {p.name.charAt(0)}
-                      </div>
-                    )
-                  )}
-                  {participants.length > previewParticipants.length && (
-                    <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">
-                      +{participants.length - previewParticipants.length}
-                    </div>
-                  )}
-                </div>
+                <ParticipantPreview
+                  participants={previewParticipants}
+                  size="md"
+                  showNames
+                  emptyLabel="No confirmed participants yet — be the first to join!"
+                />
               </div>
             )}
           </div>
         </div>
       </div>
-
-      {/* Sticky mobile CTA */}
-      <div className="md:hidden fixed bottom-16 inset-x-0 z-40 px-4 pb-safe">
-        <button
-          onClick={handleJoin}
-          disabled={joining}
-          className={`w-full px-4 py-3.5 text-white text-sm font-semibold rounded-xl shadow-lg disabled:opacity-60 transition-colors ${
-            isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
-          }`}
-        >
-          {joining ? 'Submitting…' : isFull ? 'Join Waitlist' : 'Request to Join'}
-        </button>
-      </div>
-    </div>
+      <WithdrawRequestModal
+        open={showWithdraw}
+        onClose={() => setShowWithdraw(false)}
+        tripTitle={trip.title || trip.locationName}
+        tripDate={trip.date}
+        variant={isConfirmed ? 'trip' : 'request'}
+        submitting={withdrawing}
+        onConfirm={handleWithdraw}
+      />
+    </MobileDetailShell>
   );
 };

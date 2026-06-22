@@ -5,8 +5,10 @@ import {
   EventStatus,
   LocationStatus,
   MembershipRole,
+  NotificationType,
   OrganizerApplicationStatus,
   RequestStatus,
+  RewardAction,
   TenantStatus,
   TenantType,
   UserRole,
@@ -21,9 +23,12 @@ import { toLocationDto, buildEventDto } from '../lib/mappers.js';
 import { paginate, paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { prisma } from '../lib/prisma.js';
 import { slugify } from '../lib/slug.js';
+import { adminUserTypeFilter, resolveAdminUserType } from '../lib/user-type.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { requireRole } from '../middleware/rbac.js';
 import { validate } from '../middleware/validate.js';
+import { dispatchNotification } from '../services/notifications.js';
+import { awardPoints } from '../services/rewards.js';
 
 const locationCreateSchema = z.object({
   name: z.string().min(2),
@@ -48,7 +53,13 @@ const locationCreateSchema = z.object({
   surfaceType: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
   parkingLink: z.string().max(500).optional().nullable(),
-  accessibleBy: z.array(z.string()).default([])
+  accessibleBy: z.array(z.string()).default([]),
+  countryCode: z.string().length(2).optional(),
+  gpxKey: z.string().max(500).optional().nullable(),
+  guidePdfKey: z.string().max(500).optional().nullable(),
+  guideMarkdown: z.string().max(50000).optional().nullable(),
+  guidePreview: z.string().max(2000).optional().nullable(),
+  unlockPriceAed: z.number().int().min(0).max(9999).optional()
 });
 
 const locationPatchSchema = locationCreateSchema.partial();
@@ -108,7 +119,7 @@ adminRouter.get('/locations', async (req, res, next) => {
       prisma.location.findMany({ orderBy: { createdAt: 'desc' }, ...paginate(pg) }),
       prisma.location.count()
     ]);
-    res.json(paginatedResponse(locations.map(toLocationDto), total, pg));
+    res.json(paginatedResponse(locations.map((l) => toLocationDto(l, { admin: true })), total, pg));
   } catch (error) {
     next(error);
   }
@@ -141,7 +152,8 @@ adminRouter.post('/locations', validate({ body: locationCreateSchema }), async (
         surfaceType: body.surfaceType ?? [],
         tags: body.tags ?? [],
         parkingLink: body.parkingLink,
-        accessibleBy: body.accessibleBy ?? []
+        accessibleBy: body.accessibleBy ?? [],
+        countryCode: body.countryCode?.toUpperCase() ?? 'AE'
       }
     });
     await createAuditLog({
@@ -150,7 +162,7 @@ adminRouter.post('/locations', validate({ body: locationCreateSchema }), async (
       entityType: 'location',
       entityId: created.id
     });
-    res.status(201).json({ data: toLocationDto(created) });
+    res.status(201).json({ data: toLocationDto(created, { admin: true }) });
   } catch (error) {
     next(error);
   }
@@ -161,11 +173,49 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const body = req.body as z.infer<typeof locationPatchSchema>;
 
+    const existing = await prisma.location.findUnique({ where: { id } });
+    if (!existing) {
+      throw new ApiError(404, 'location_not_found', 'Location not found.');
+    }
+
+    const nextStatus = toPrismaLocationStatus(body.status);
+    const activating =
+      nextStatus === LocationStatus.ACTIVE &&
+      (existing.status === LocationStatus.DRAFT || existing.status === LocationStatus.INACTIVE);
+
+    if (activating) {
+      const activityType = body.activityType
+        ? toPrismaActivityType(body.activityType)
+        : existing.activityType;
+      const difficulty = body.difficulty
+        ? toPrismaDifficulty(body.difficulty)
+        : existing.difficulty;
+      const parkingLink = body.parkingLink !== undefined ? body.parkingLink : existing.parkingLink;
+      const latitude = body.latitude !== undefined ? body.latitude : existing.latitude;
+      const longitude = body.longitude !== undefined ? body.longitude : existing.longitude;
+
+      if (activityType === ActivityType.HIKING && !difficulty) {
+        throw new ApiError(
+          400,
+          'difficulty_required',
+          'Hiking locations require a difficulty level before approval.'
+        );
+      }
+      if (!parkingLink && (latitude == null || longitude == null)) {
+        throw new ApiError(
+          400,
+          'parking_required',
+          'Add a parking link or map coordinates before approving this location.'
+        );
+      }
+    }
+
     const updated = await prisma.location.update({
       where: { id },
       data: {
         name: body.name,
         region: body.region,
+        countryCode: body.countryCode?.toUpperCase(),
         activityType: body.activityType ? toPrismaActivityType(body.activityType) : undefined,
         description: body.description,
         difficulty: toPrismaDifficulty(body.difficulty),
@@ -175,7 +225,7 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
         accessibility: toPrismaAccessibility(body.accessibility),
         images: body.images,
         featured: body.featured,
-        status: toPrismaLocationStatus(body.status),
+        status: nextStatus,
         distance: body.distance,
         duration: body.duration,
         elevation: body.elevation,
@@ -186,18 +236,39 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
         surfaceType: body.surfaceType,
         tags: body.tags,
         parkingLink: body.parkingLink,
-        accessibleBy: body.accessibleBy
+        accessibleBy: body.accessibleBy,
+        gpxKey: body.gpxKey,
+        guidePdfKey: body.guidePdfKey,
+        guideMarkdown: body.guideMarkdown,
+        guidePreview: body.guidePreview,
+        unlockPriceAed: body.unlockPriceAed
       }
     });
 
     await createAuditLog({
       actorId: req.auth!.userId,
-      action: 'location.update',
+      action: activating ? 'location.approve' : 'location.update',
       entityType: 'location',
       entityId: updated.id
     });
 
-    res.json({ data: toLocationDto(updated) });
+    if (activating && updated.submittedById) {
+      await dispatchNotification(prisma, {
+        userId: updated.submittedById,
+        title: 'Location approved',
+        body: `"${updated.name}" is now live. You can use it when creating trips.`,
+        type: NotificationType.SYSTEM,
+        meta: { locationId: updated.id, kind: 'location_approved' }
+      });
+      void awardPoints(prisma, {
+        userId: updated.submittedById,
+        action: RewardAction.LOCATION_PUBLISHED,
+        referenceId: updated.id,
+        label: `Location approved: ${updated.name}`
+      }).catch(() => undefined);
+    }
+
+    res.json({ data: toLocationDto(updated, { admin: true }) });
   } catch (error) {
     next(error);
   }
@@ -279,6 +350,26 @@ adminRouter.patch(
             where: { id: application.applicantId },
             data: { role: UserRole.TENANT_OWNER }
           });
+
+          const meta = (application.metadata as Record<string, string> | null) ?? {};
+          if (meta.hostDisplayName || meta.bio || meta.profilePhoto || meta.phone) {
+            await tx.profile.upsert({
+              where: { userId: application.applicantId },
+              update: {
+                ...(meta.hostDisplayName ? { displayName: meta.hostDisplayName } : {}),
+                ...(meta.bio ? { bio: meta.bio } : {}),
+                ...(meta.phone ? { phone: meta.phone } : {}),
+                ...(meta.profilePhoto ? { avatarUrl: meta.profilePhoto } : {})
+              },
+              create: {
+                userId: application.applicantId,
+                displayName: meta.hostDisplayName ?? application.requestedName,
+                bio: meta.bio ?? null,
+                phone: meta.phone ?? null,
+                avatarUrl: meta.profilePhoto ?? null
+              }
+            });
+          }
 
           await tx.organizerApplication.update({
             where: { id: application.id },
@@ -387,7 +478,6 @@ adminRouter.post('/events', validate({ body: adminEventCreateSchema }), async (r
 adminRouter.get('/events/moderation', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
-    const where = {};
     const [events, total] = await Promise.all([
       prisma.event.findMany({
         orderBy: { startAt: 'asc' },
@@ -516,6 +606,7 @@ adminRouter.get('/metrics', async (_req, res, next) => {
 
 const userListQuerySchema = z.object({
   role: z.string().optional(),
+  userType: z.string().optional(),
   status: z.string().optional(),
   search: z.string().optional(),
   page: z.coerce.number().int().positive().default(1),
@@ -524,11 +615,15 @@ const userListQuerySchema = z.object({
 
 adminRouter.get('/users', validate({ query: userListQuerySchema }), async (req, res, next) => {
   try {
-    const { role, status, search, page, pageSize } = req.query as unknown as z.infer<typeof userListQuerySchema>;
+    const { role, userType, status, search, page, pageSize } = req.query as unknown as z.infer<typeof userListQuerySchema>;
 
     const where: Record<string, unknown> = {};
     if (role) where.role = role.toUpperCase() as UserRole;
     if (status) where.status = status.toUpperCase() as UserStatus;
+    if (userType) {
+      const typeFilter = adminUserTypeFilter(userType);
+      if (typeFilter) Object.assign(where, typeFilter);
+    }
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
@@ -539,7 +634,11 @@ adminRouter.get('/users', validate({ query: userListQuerySchema }), async (req, 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        include: { profile: true },
+        include: {
+          profile: true,
+          ownedTenants: { select: { type: true, name: true } },
+          memberships: { include: { tenant: { select: { type: true, name: true } } } }
+        },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize
@@ -552,10 +651,13 @@ adminRouter.get('/users', validate({ query: userListQuerySchema }), async (req, 
         id: u.id,
         email: u.email,
         role: u.role.toLowerCase(),
+        userType: resolveAdminUserType(u),
         status: u.status.toLowerCase(),
+        authProvider: u.authProvider.toLowerCase(),
         displayName: u.profile?.displayName ?? null,
         avatarUrl: u.profile?.avatarUrl ?? null,
-        createdAt: u.createdAt
+        createdAt: u.createdAt,
+        lastActiveAt: u.lastActiveAt
       })),
       total,
       page,
@@ -574,6 +676,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
       where: { id },
       include: {
         profile: true,
+        ownedTenants: { select: { id: true, name: true, type: true, status: true } },
         memberships: { include: { tenant: true } },
         requests: {
           include: { event: { include: { location: true } } },
@@ -597,8 +700,13 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
         id: user.id,
         email: user.email,
         role: user.role.toLowerCase(),
+        userType: resolveAdminUserType(user),
         status: user.status.toLowerCase(),
+        authProvider: user.authProvider.toLowerCase(),
+        googleLinked: Boolean(user.googleId),
         createdAt: user.createdAt,
+        lastActiveAt: user.lastActiveAt,
+        emailVerifiedAt: user.emailVerifiedAt,
         profile: user.profile ? {
           displayName: user.profile.displayName,
           phone: user.profile.phone,
@@ -648,7 +756,17 @@ adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: u
     if (user.role === UserRole.PLATFORM_ADMIN) throw new ApiError(400, 'cannot_modify_admin', 'Cannot modify admin status.');
 
     const prismaStatus = status === 'active' ? UserStatus.ACTIVE : UserStatus.SUSPENDED;
-    await prisma.user.update({ where: { id }, data: { status: prismaStatus } });
+    await prisma.$transaction([
+      prisma.user.update({ where: { id }, data: { status: prismaStatus } }),
+      ...(status === 'suspended'
+        ? [
+            prisma.refreshToken.updateMany({
+              where: { userId: id, revokedAt: null },
+              data: { revokedAt: new Date() }
+            })
+          ]
+        : [])
+    ]);
 
     await createAuditLog({
       actorId: req.auth!.userId,

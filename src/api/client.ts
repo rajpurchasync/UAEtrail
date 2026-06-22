@@ -1,31 +1,46 @@
 import { ApiError } from '@uaetrail/shared-types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+
+export { API_BASE_URL };
 
 export interface AuthSession {
   accessToken: string;
-  refreshToken: string;
 }
 
 export const SESSION_STORAGE_KEY = 'uaetrail_session';
 export const USER_STORAGE_KEY = 'uaetrail_user';
 
+let onSessionInvalidated: (() => void) | null = null;
+
+/** Register a handler when refresh fails and stored session is cleared. */
+export const setSessionInvalidatedHandler = (handler: (() => void) | null): void => {
+  onSessionInvalidated = handler;
+};
+
+const notifySessionInvalidated = (): void => {
+  onSessionInvalidated?.();
+};
+
 export const getStoredSession = (): AuthSession | null => {
-  const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+  const raw = sessionStorage.getItem(SESSION_STORAGE_KEY) ?? localStorage.getItem(SESSION_STORAGE_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as AuthSession;
+    const parsed = JSON.parse(raw) as { accessToken?: string; refreshToken?: string };
+    if (!parsed.accessToken) return null;
+    return { accessToken: parsed.accessToken };
   } catch {
     return null;
   }
 };
 
 export const setStoredSession = (session: AuthSession | null): void => {
+  localStorage.removeItem(SESSION_STORAGE_KEY);
   if (!session) {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
     return;
   }
-  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
 };
 
 // ─── Token Refresh Logic ─────────────────────────────────────────────────────
@@ -33,24 +48,21 @@ export const setStoredSession = (session: AuthSession | null): void => {
 let refreshPromise: Promise<AuthSession | null> | null = null;
 
 const attemptTokenRefresh = async (): Promise<AuthSession | null> => {
-  const session = getStoredSession();
-  if (!session?.refreshToken) return null;
-
   try {
     const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: session.refreshToken })
+      credentials: 'include'
     });
 
     if (!response.ok) {
-      // Refresh failed — clear session
       setStoredSession(null);
       localStorage.removeItem(USER_STORAGE_KEY);
+      notifySessionInvalidated();
       return null;
     }
 
-    const data = await response.json() as { tokens: AuthSession };
+    const data = (await response.json()) as { tokens: AuthSession };
     setStoredSession(data.tokens);
     return data.tokens;
   } catch {
@@ -62,7 +74,7 @@ const attemptTokenRefresh = async (): Promise<AuthSession | null> => {
  * Ensures only one refresh request runs at a time.
  * Concurrent 401s queue behind the same promise.
  */
-const refreshToken = (): Promise<AuthSession | null> => {
+const refreshAccessToken = (): Promise<AuthSession | null> => {
   if (!refreshPromise) {
     refreshPromise = attemptTokenRefresh().finally(() => {
       refreshPromise = null;
@@ -88,6 +100,7 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
 
     return fetch(`${API_BASE_URL}${path}`, {
       ...init,
+      credentials: 'include',
       headers
     });
   };
@@ -101,9 +114,8 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
     );
   }
 
-  // If 401 and we have auth, attempt token refresh and retry once
   if (response.status === 401 && init?.auth) {
-    const newSession = await refreshToken();
+    const newSession = await refreshAccessToken();
     if (newSession) {
       try {
         response = await makeRequest(newSession.accessToken);
@@ -124,4 +136,38 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
   }
 
   return response.json() as Promise<T>;
+};
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+
+/** Download a file with auth (GPX, PDF, etc.). Retries once after token refresh on 401. */
+export const downloadAuthenticatedFile = async (path: string): Promise<{ blob: Blob; filename: string }> => {
+  const makeRequest = async (token?: string): Promise<Response> => {
+    const headers: Record<string, string> = {};
+    const accessToken = token ?? getStoredSession()?.accessToken;
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return fetch(`${API_BASE}${path}`, { credentials: 'include', headers });
+  };
+
+  let response = await makeRequest();
+
+  if (response.status === 401) {
+    const newSession = await refreshAccessToken();
+    if (newSession) {
+      response = await makeRequest(newSession.accessToken);
+    }
+  }
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { error?: ApiError } | null;
+    throw new Error(body?.error?.message ?? `Download failed (${response.status})`);
+  }
+
+  const disposition = response.headers.get('Content-Disposition') ?? '';
+  const match = disposition.match(/filename="([^"]+)"/);
+  const filename = match?.[1] ?? 'download';
+  const blob = await response.blob();
+  return { blob, filename };
 };

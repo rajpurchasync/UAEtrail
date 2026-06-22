@@ -1,19 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api, TeamMember } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
-import { DashboardLayout } from '../components/layout';
+import { OrganizerShell } from '../components/organizer/OrganizerShell';
 import { TenantSwitcher } from '../components/ui';
-
-const organizerLinks = [
-  { to: '/organizer/overview', label: 'Overview' },
-  { to: '/organizer/events', label: 'Events' },
-  { to: '/organizer/requests', label: 'Join Requests' },
-  { to: '/organizer/team', label: 'Team' },
-  { to: '/organizer/locations', label: 'Locations' },
-  { to: '/organizer/messages', label: 'Messages' },
-  { to: '/organizer/history', label: 'History' },
-  { to: '/organizer/profile', label: 'Profile' }
-];
 
 export const OrganizerTeam = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
@@ -53,8 +42,11 @@ export const OrganizerTeam = () => {
   };
 
   return (
-    <DashboardLayout title="Organizer Dashboard" links={organizerLinks}>
+    <OrganizerShell title="Team">
       <div className="space-y-4">
+        <p className="text-sm text-gray-600">
+          Add guides and admins who help run events. Your public profile lists team members separately.
+        </p>
         <TenantSwitcher onChange={setTenantId} />
         <section className="bg-white border rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-3">Add Team Member</h2>
@@ -101,6 +93,6 @@ export const OrganizerTeam = () => {
           </table>
         </section>
       </div>
-    </DashboardLayout>
+    </OrganizerShell>
   );
 };

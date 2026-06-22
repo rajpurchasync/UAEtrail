@@ -1,19 +1,22 @@
 import { AuthResponse, AuthUser } from '@uaetrail/shared-types';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { apiRequest, getStoredSession, setStoredSession, USER_STORAGE_KEY } from '../api/client';
+import { apiRequest, getStoredSession, setStoredSession, setSessionInvalidatedHandler, USER_STORAGE_KEY } from '../api/client';
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   initializing: boolean;
   signIn: (email: string, password: string) => Promise<AuthUser>;
+  signInWithGoogle: (idToken: string, referralCode?: string) => Promise<AuthUser>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   register: (payload: {
     email: string;
     password: string;
     displayName: string;
     accountType: 'visitor' | 'company' | 'guide';
     organizationName?: string;
+    referralCode?: string;
   }) => Promise<{ verificationToken?: string }>;
 }
 
@@ -42,12 +45,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(() => !!getStoredSession());
 
-  // Revalidate stored session on mount
+  // Revalidate stored session on mount; clear stale user if session is missing
   useEffect(() => {
+    setSessionInvalidatedHandler(() => {
+      setStoredUser(null);
+      setUser(null);
+    });
+
     const session = getStoredSession();
     if (!session?.accessToken) {
+      if (getStoredUser()) {
+        setStoredUser(null);
+        setUser(null);
+      }
       setInitializing(false);
-      return;
+      return () => setSessionInvalidatedHandler(null);
     }
 
     apiRequest<{ data: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string } }>('/me/profile', { auth: true })
@@ -72,6 +84,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .finally(() => {
         setInitializing(false);
       });
+
+    return () => setSessionInvalidatedHandler(null);
   }, []);
 
   const signIn = async (email: string, password: string): Promise<AuthUser> => {
@@ -95,13 +109,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password,
     displayName,
     accountType,
-    organizationName
+    organizationName,
+    referralCode
   }: {
     email: string;
     password: string;
     displayName: string;
     accountType: 'visitor' | 'company' | 'guide';
     organizationName?: string;
+    referralCode?: string;
   }): Promise<{ verificationToken?: string }> => {
     setLoading(true);
     try {
@@ -112,7 +128,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           password,
           displayName,
           accountType,
-          organizationName
+          organizationName,
+          referralCode
         })
       });
       setStoredSession(response.tokens);
@@ -124,17 +141,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signOut = async (): Promise<void> => {
-    const session = getStoredSession();
-    if (session?.refreshToken) {
-      await apiRequest('/auth/logout', {
+  const signInWithGoogle = async (idToken: string, referralCode?: string): Promise<AuthUser> => {
+    setLoading(true);
+    try {
+      const response = await apiRequest<AuthResponse & { isNewUser?: boolean; emailVerified?: boolean }>('/auth/google', {
         method: 'POST',
-        body: JSON.stringify({ refreshToken: session.refreshToken })
-      }).catch(() => undefined);
+        body: JSON.stringify({ idToken, referralCode })
+      });
+      setStoredSession(response.tokens);
+      setStoredUser(response.user);
+      setUser(response.user);
+      return response.user;
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const signOut = async (): Promise<void> => {
+    await apiRequest('/auth/logout', {
+      method: 'POST',
+      body: JSON.stringify({})
+    }).catch(() => undefined);
     setStoredSession(null);
     setStoredUser(null);
     setUser(null);
+  };
+
+  const refreshUser = async (): Promise<void> => {
+    const session = getStoredSession();
+    if (!session?.accessToken) return;
+    const res = await apiRequest<{
+      data: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string };
+    }>('/me/profile', { auth: true });
+    const profile = res.data;
+    const next: AuthUser = {
+      id: profile.id,
+      email: profile.email,
+      role: profile.role as AuthUser['role'],
+      displayName: profile.displayName,
+      avatarUrl: profile.avatarUrl,
+    };
+    setStoredUser(next);
+    setUser(next);
   };
 
   const value = useMemo(
@@ -143,8 +191,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       initializing,
       signIn,
+      signInWithGoogle,
       signOut,
-      register
+      refreshUser,
+      register,
     }),
     [user, loading, initializing]
   );

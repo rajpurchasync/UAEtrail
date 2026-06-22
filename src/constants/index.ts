@@ -16,6 +16,19 @@ export const STATUS_COLORS = {
   full: 'bg-gray-400'
 };
 
+/** Desktop organizer dashboard sidebar — Team is separate from public profile. */
+export const ORGANIZER_DASHBOARD_LINKS = [
+  { to: '/organizer/overview', label: 'Overview' },
+  { to: '/organizer/profile', label: 'Public Profile' },
+  { to: '/organizer/events', label: 'Events' },
+  { to: '/organizer/requests', label: 'Join Requests' },
+  { to: '/organizer/team', label: 'Team' },
+  { to: '/organizer/locations', label: 'Locations' },
+  { to: '/organizer/messages', label: 'Messages' },
+  { to: '/organizer/history', label: 'History' },
+  { to: '/my-rewards', label: 'Trail Points' },
+];
+
 export const ADMIN_LINKS = [
   { to: '/admin/overview', label: 'Overview' },
   { to: '/admin/locations', label: 'Locations' },

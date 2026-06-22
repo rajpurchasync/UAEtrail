@@ -3,33 +3,332 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    font-family: 'Open Sans', sans-serif;
-  }
   :root {
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --nav-height: 4rem;
+    --nav-height: calc(68px + 12px + var(--safe-bottom));
+    --sticky-top: var(--safe-top);
+    --cta-bottom: var(--nav-height);
+    --cta-height: 56px;
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+    background-color: #eef6f3;
+  }
+
+  button,
+  a,
+  [role='button'] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@layer components {
+  /* ── Consumer mesh background ── */
+  .consumer-bg {
+    background-color: #eef6f3;
+    background-image:
+      radial-gradient(ellipse 90% 60% at 10% -5%, rgba(16, 185, 129, 0.14), transparent 55%),
+      radial-gradient(ellipse 70% 50% at 95% 5%, rgba(245, 158, 11, 0.09), transparent 50%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(5, 150, 105, 0.07), transparent 55%);
+  }
+
+  /* ── Glass morphism ── */
+  .glass {
+    @apply bg-white/65 backdrop-blur-xl border border-white/70;
+  }
+
+  .glass-header {
+    @apply bg-white/50 backdrop-blur-2xl border-b border-white/50;
+  }
+
+  .consumer-top-strip {
+    @apply bg-white/40 backdrop-blur-xl border-b border-black/[0.05];
+  }
+
+  .consumer-tab-banner {
+    @apply flex items-center justify-between gap-3 min-h-[40px];
+  }
+
+  .consumer-tab-title {
+    @apply text-[17px] md:text-xl font-semibold text-neutral-900 tracking-[-0.01em] truncate leading-tight;
+  }
+
+  .glass-card {
+    @apply glass rounded-glass shadow-glass;
+  }
+
+  .glass-card-interactive {
+    @apply glass-card transition-all duration-300 ease-out active:scale-[0.98] hover:shadow-glass-lg;
+  }
+
+  .glass-nav {
+    @apply bg-white/60 backdrop-blur-2xl border border-white/70 shadow-glass-nav;
+  }
+
+  .glass-pill {
+    @apply app-chip-inactive;
+  }
+
+  .glass-pill-active {
+    @apply app-chip-active;
+  }
+
+  .glass-pill-inactive {
+    @apply app-chip-inactive;
+  }
+
+  /* ── Standard consumer controls ── */
+  .app-chip {
+    @apply inline-flex items-center justify-center h-8 px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97];
+  }
+
+  .app-chip-active {
+    @apply app-chip bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
+  }
+
+  .app-chip-active-neutral {
+    @apply app-chip-active;
+  }
+
+  .app-chip-inactive {
+    @apply app-chip bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
+  }
+
+  .app-chip-row {
+    @apply flex gap-1.5 overflow-x-auto scrollbar-none;
+  }
+
+  .app-segmented {
+    @apply inline-flex p-0.5 rounded-xl bg-neutral-100/90 ring-1 ring-inset ring-neutral-200/60;
+  }
+
+  .app-segment {
+    @apply inline-flex items-center justify-center h-7 px-3 rounded-[10px] text-xs font-medium text-neutral-500 transition-all active:scale-[0.98];
+  }
+
+  .app-segment-active {
+    @apply app-segment bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
+  }
+
+  .app-cta-sm {
+    @apply inline-flex items-center justify-center gap-1 h-8 px-3.5 rounded-full bg-emerald-600 text-white text-xs font-semibold shadow-sm shadow-emerald-600/20 transition-all active:scale-[0.97] active:bg-emerald-700 disabled:opacity-50;
+  }
+
+  .app-icon-btn {
+    @apply shrink-0 h-9 w-9 flex items-center justify-center rounded-xl bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90 active:scale-95 transition-transform;
+  }
+
+  .consumer-page-banner {
+    @apply relative h-[4.5rem] md:h-20 rounded-2xl overflow-hidden;
+  }
+
+  .consumer-hero-banner {
+    @apply relative h-[5.25rem] md:h-[5.75rem] rounded-2xl overflow-hidden;
+  }
+
+  .consumer-hero-eyebrow {
+    @apply text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200/90 mb-0.5;
+  }
+
+  .consumer-hero-title {
+    @apply text-xl md:text-2xl font-bold text-white tracking-[-0.02em] leading-tight drop-shadow-md;
+  }
+
+  .app-fab {
+    @apply fixed z-40 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/25 transition-all active:scale-95 hover:bg-emerald-700;
+    bottom: calc(var(--nav-height) + 12px);
+  }
+
+  @media (min-width: 768px) {
+    .app-fab {
+      bottom: 2rem;
+    }
+  }
+
+  /* ── Typography ── */
+  .consumer-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90;
+  }
+
+  .consumer-page-heading {
+    @apply text-[26px] md:text-[2rem] font-bold tracking-[-0.02em] text-neutral-900 leading-[1.15];
+  }
+
+  .consumer-page-lead {
+    @apply text-[15px] text-neutral-500 font-normal leading-relaxed mt-1.5 max-w-lg;
+  }
+
+  /** @deprecated Prefer consumer-page-heading in scroll content */
+  .consumer-title {
+    @apply consumer-page-heading;
+  }
+
+  .consumer-subtitle {
+    @apply consumer-page-lead;
+  }
+
+  .ios-large-title {
+    @apply consumer-page-heading;
+  }
+
+  .ios-section-title {
+    @apply px-1 mb-2 text-[11px] font-bold uppercase tracking-widest text-neutral-400;
+  }
+
+  .ios-section-footer {
+    @apply px-1 mt-2 text-xs leading-relaxed text-neutral-500;
+  }
+
+  /* ── Surfaces (legacy + modern) ── */
+  .ios-grouped {
+    @apply mx-0 md:mx-0 rounded-glass glass-card overflow-hidden;
+  }
+
+  .ios-row {
+    @apply flex items-center gap-3 min-h-[52px] px-4 py-3.5 transition-colors active:bg-emerald-500/[0.06];
+  }
+
+  .ios-row-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600;
+  }
+
+  .ios-btn {
+    @apply inline-flex items-center justify-center gap-2 min-h-[48px] px-5 rounded-2xl text-[15px] font-medium transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .ios-input {
+    @apply w-full min-h-[48px] px-4 py-2.5 rounded-2xl glass text-[16px] text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-shadow;
+  }
+
+  .ios-search,
+  .glass-search {
+    @apply w-full min-h-[44px] pl-11 pr-4 rounded-2xl glass text-[16px] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/25 transition-shadow;
+  }
+
+  .ios-chip {
+    @apply app-chip-inactive;
+  }
+
+  .ios-chip-active {
+    @apply app-chip-active;
+  }
+
+  .ios-chip-inactive {
+    @apply app-chip-inactive;
+  }
+
+  /* ── Touch expand ── */
+  .expand-panel-content {
+    display: grid;
+    transition: grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    grid-template-rows: 0fr;
+  }
+
+  .expand-panel-content[data-expanded='true'] {
+    grid-template-rows: 1fr;
+  }
+
+  .expand-panel-inner {
+    overflow: hidden;
   }
 }
 
 @layer utilities {
-  /* iOS safe area support */
   .safe-area-bottom {
     padding-bottom: var(--safe-bottom);
   }
+
   .safe-area-top {
     padding-top: var(--safe-top);
   }
-  .pb-nav-safe {
-    padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
+
+  .pt-safe-plus-2 {
+    padding-top: calc(var(--safe-top) + 8px);
   }
-  /* Hide scrollbar but keep scroll */
+
+  .pb-nav-safe {
+    padding-bottom: var(--nav-height);
+  }
+
+  .pb-safe {
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .bottom-nav-offset {
+    bottom: var(--nav-height);
+  }
+
+  .pb-cta-safe {
+    padding-bottom: calc(var(--nav-height) + var(--cta-height) + 8px);
+  }
+
+  @media (min-width: 768px) {
+    .pb-nav-safe,
+    .pb-cta-safe {
+      padding-bottom: 0;
+    }
+
+    .bottom-nav-offset {
+      bottom: 0;
+    }
+  }
+
   .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Rewards promo banner — subtle life without distraction */
+  @keyframes rewards-promo-shine {
+    0% {
+      transform: translateX(-120%) skewX(-12deg);
+    }
+    100% {
+      transform: translateX(220%) skewX(-12deg);
+    }
+  }
+
+  .rewards-promo-banner {
+    position: relative;
+  }
+
+  .rewards-promo-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 42%,
+      rgba(255, 255, 255, 0.28) 50%,
+      transparent 58%
+    );
+    pointer-events: none;
+    animation: rewards-promo-shine 7s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rewards-promo-banner::after {
+      animation: none;
+    }
   }
 }

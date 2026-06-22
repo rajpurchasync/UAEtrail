@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowLeft, ShieldCheck, CheckCircle } from 'lucide-react';
 import { apiRequest } from '../api/client';
+import { PageMeta } from '../components/seo/PageMeta';
 
 type Step = 'email' | 'otp' | 'reset' | 'done';
 
@@ -78,8 +79,9 @@ export const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-xl border shadow-sm p-8">
+    <div className="min-h-screen bg-ios-bg flex items-center justify-center p-6 safe-area-top safe-area-bottom">
+      <PageMeta title="Reset password" noIndex />
+      <div className="max-w-md w-full bg-white rounded-[20px] shadow-ios p-8">
         {/* Step 1: Enter email */}
         {step === 'email' && (
           <>

@@ -6,16 +6,26 @@ import {
   FavoriteDTO,
   JoinRequestDTO,
   LocationDTO,
+  LocationDetailResponse,
+  LocationGuideDTO,
+  LocationPremiumSummaryDTO,
   MerchantProfileDTO,
+  MyTripDTO,
   NotificationDTO,
   ParticipantDTO,
   PostDTO,
   ProductDTO,
   ReviewDTO,
+  RewardCatalogDTO,
+  RewardLeaderboardEntryDTO,
+  RewardStatsDTO,
+  RewardSummaryDTO,
   TenantListDTO,
-  UserListDTO
+  TripParticipationDTO,
+  UserListDTO,
+  WithdrawReason
 } from '@uaetrail/shared-types';
-import { apiRequest } from './client';
+import { apiRequest, downloadAuthenticatedFile, getStoredSession } from './client';
 
 export interface OrganizerApplication {
   id: string;
@@ -64,6 +74,9 @@ export interface EventRequestView {
   status: string;
   note?: string;
   organizerNote?: string;
+  cancelReason?: string | null;
+  cancelMessage?: string | null;
+  cancelledAt?: string | null;
   createdAt: string;
   user?: {
     id: string;
@@ -77,7 +90,11 @@ export interface EventRequestView {
     date?: string;
     time?: string;
     startAt?: string;
+    hostName?: string;
+    tenantName?: string;
     organizerName?: string;
+    organizerUserId?: string;
+    tenantSlug?: string;
   };
 }
 
@@ -91,7 +108,7 @@ export interface UserProfile {
   avatarUrl?: string;
 }
 
-export interface EventDetail extends EventDetailDTO {}
+export type EventDetail = EventDetailDTO;
 
 export interface TenantMembershipView {
   tenantId: string;
@@ -125,6 +142,15 @@ export interface TenantDetail {
   events: Array<{ id: string; title: string; locationName: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number; guideName: string | null }>;
 }
 
+export interface OrganizerDetails {
+  experience?: string;
+  languages?: string;
+  certificates?: string;
+  notableHikes?: string;
+  nationality?: string;
+  residence?: string;
+}
+
 export interface TenantProfile {
   id: string;
   name: string;
@@ -134,38 +160,91 @@ export interface TenantProfile {
   ownerName: string;
   ownerAvatar: string | null;
   ownerBio: string | null;
+  organizerDetails?: OrganizerDetails;
   memberCount: number;
   team: { role: string; displayName: string; avatarUrl: string | null }[];
   events: EventDTO[];
 }
 
 export const api = {
-  getPublicLocations: (countryCode?: string) =>
-    apiRequest<{ data: LocationDTO[] }>(
-      countryCode ? `/locations?countryCode=${countryCode}` : '/locations'
-    ),
-  getPublicLocationDetail: (id: string) => apiRequest<{ data: LocationDTO }>(`/locations/${id}`),
+  getPublicLocations: async (countryCode?: string) => {
+    const pageSize = 100;
+    const all: LocationDTO[] = [];
+    let page = 1;
+    let total = Number.POSITIVE_INFINITY;
+
+    while (all.length < total && page <= 20) {
+      const params = new URLSearchParams({ pageSize: String(pageSize), page: String(page) });
+      if (countryCode) params.set('countryCode', countryCode);
+      const response = await apiRequest<{ data: LocationDTO[]; meta?: { total: number } }>(
+        `/locations?${params.toString()}`
+      );
+      all.push(...response.data);
+      total = response.meta?.total ?? response.data.length;
+      if (response.data.length === 0) break;
+      page += 1;
+    }
+
+    return { data: all };
+  },
+  getPublicLocationDetail: (id: string) => apiRequest<LocationDetailResponse>(`/locations/${id}`, { auth: true }),
+  getLocationGuide: (id: string) =>
+    apiRequest<{ data: LocationGuideDTO }>(`/locations/${id}/premium/guide`, { auth: true }),
+  checkoutLocationPremium: (id: string) =>
+    apiRequest<{
+      data: {
+        url?: string | null;
+        sessionId?: string;
+        alreadyUnlocked?: boolean;
+        premium?: LocationPremiumSummaryDTO;
+      };
+      message?: string;
+    }>(`/locations/${id}/premium/checkout`, {
+      method: 'POST',
+      auth: true
+    }),
+  downloadLocationRouteMap: (id: string) => downloadAuthenticatedFile(`/locations/${id}/premium/map/download`),
+  downloadLocationGuidePdf: (id: string) => downloadAuthenticatedFile(`/locations/${id}/premium/guide/pdf`),
   getLocationEvents: (locationId: string) =>
     apiRequest<{ data: EventDTO[] }>(`/locations/${locationId}/events`),
   getPopularLocations: (limit = 6) => apiRequest<{ data: LocationDTO[] }>(`/locations/popular?limit=${limit}`),
   trackLocationView: (id: string) => apiRequest('/locations/' + id + '/view', { method: 'POST' }),
   getTenantProfile: (slug: string) => apiRequest<{ data: TenantProfile }>(`/tenants/${slug}`),
-  getPublicEvents: () => apiRequest<{ data: EventDTO[] }>('/events'),
+  getPublicEvents: () => apiRequest<{ data: EventDTO[] }>('/events?pageSize=100'),
   getFeaturedEvents: (limit = 6) => apiRequest<{ data: EventDTO[] }>(`/events/featured?limit=${limit}`),
-  getPublicEventDetail: (id: string) => apiRequest<{ data: EventDetail }>(`/events/${id}`),
+  getPublicEventDetail: (id: string) =>
+    apiRequest<{ data: EventDetail }>(`/events/${id}`, { auth: Boolean(getStoredSession()) }),
+  checkInToTrip: (eventId: string) =>
+    apiRequest<{ message: string; checkedInAt: string; participation: TripParticipationDTO }>(
+      `/events/${eventId}/checkin`,
+      { method: 'POST', auth: true }
+    ).then((res) => res.participation),
   createJoinRequest: (eventId: string, note?: string) =>
     apiRequest<{ data: JoinRequestDTO }>(`/events/${eventId}/requests`, {
       method: 'POST',
       auth: true,
       body: JSON.stringify({ note })
     }),
-  cancelJoinRequest: (eventId: string, requestId: string) =>
+  cancelJoinRequest: (
+    eventId: string,
+    requestId: string,
+    payload: { reason: WithdrawReason; message?: string }
+  ) =>
     apiRequest(`/events/${eventId}/requests/${requestId}/cancel`, {
       method: 'PATCH',
-      auth: true
+      auth: true,
+      body: JSON.stringify(payload)
     }),
-  getMeRequests: () => apiRequest<{ data: EventRequestView[] }>('/me/requests', { auth: true }),
-  getMeTrips: () => apiRequest<{ data: EventDTO[] }>('/me/trips', { auth: true }),
+  updateJoinRequestNote: (eventId: string, requestId: string, note: string) =>
+    apiRequest<{ data: { id: string; note: string } }>(`/events/${eventId}/requests/${requestId}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ note }),
+    }),
+  getMeRequests: () => apiRequest<{ data: EventRequestView[] }>('/me/requests?pageSize=100', { auth: true }),
+  getMeRequest: (requestId: string) =>
+    apiRequest<{ data: EventRequestView }>(`/me/requests/${requestId}`, { auth: true }),
+  getMeTrips: () => apiRequest<{ data: MyTripDTO[] }>('/me/trips', { auth: true }),
   getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
   updateMeProfile: (payload: UserProfile) =>
     apiRequest<{ data: UserProfile }>('/me/profile', {
@@ -207,7 +286,7 @@ export const api = {
     }),
   getMyTenants: () => apiRequest<{ data: TenantMembershipView[] }>('/me/tenants', { auth: true }),
   getAdminMetrics: () => apiRequest<{ data: AdminMetrics }>('/admin/metrics', { auth: true }),
-  getAdminLocations: () => apiRequest<{ data: LocationDTO[] }>('/admin/locations', { auth: true }),
+  getAdminLocations: () => apiRequest<{ data: LocationDTO[] }>('/admin/locations?pageSize=100', { auth: true }),
   createAdminLocation: (payload: Partial<LocationDTO>) =>
     apiRequest<{ data: LocationDTO }>('/admin/locations', {
       method: 'POST',
@@ -247,7 +326,7 @@ export const api = {
       auth: true
     }),
   getOrganizerEvents: (tenantId: string) =>
-    apiRequest<{ data: EventDTO[] }>('/organizer/events', {
+    apiRequest<{ data: EventDTO[] }>('/organizer/events?pageSize=100', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
@@ -265,7 +344,7 @@ export const api = {
       headers: { 'x-tenant-id': tenantId }
     }),
   getOrganizerRequests: (tenantId: string) =>
-    apiRequest<{ data: EventRequestView[] }>('/organizer/requests', {
+    apiRequest<{ data: EventRequestView[] }>('/organizer/requests?pageSize=100', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
@@ -291,15 +370,16 @@ export const api = {
 
   // ─── Admin - Users ──────────────────────────────────────────────────────
 
-  getAdminUsers: (filters?: { role?: string; status?: string; search?: string; page?: number; pageSize?: number }) => {
+  getAdminUsers: (filters?: { role?: string; userType?: string; status?: string; search?: string; page?: number; pageSize?: number }) => {
     const params = new URLSearchParams();
     if (filters?.role) params.set('role', filters.role);
+    if (filters?.userType) params.set('userType', filters.userType);
     if (filters?.status) params.set('status', filters.status);
     if (filters?.search) params.set('search', filters.search);
     if (filters?.page) params.set('page', String(filters.page));
     if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
     const qs = params.toString();
-    return apiRequest<{ data: UserListDTO[]; pagination: { total: number; page: number; pageSize: number; totalPages: number } }>(
+    return apiRequest<{ data: UserListDTO[]; total: number; page: number; pageSize: number }>(
       `/admin/users${qs ? `?${qs}` : ''}`,
       { auth: true }
     );
@@ -356,6 +436,12 @@ export const api = {
       body: JSON.stringify(payload)
     }),
 
+  getOrganizerSubmittedLocations: (tenantId: string) =>
+    apiRequest<{ data: LocationDTO[] }>('/organizer/locations', {
+      auth: true,
+      headers: { 'x-tenant-id': tenantId }
+    }),
+
   // ─── Organizer - Event History ──────────────────────────────────────────
 
   getEventHistory: (tenantId: string) =>
@@ -368,6 +454,11 @@ export const api = {
 
   getConversations: () =>
     apiRequest<{ data: ChatConversationDTO[] }>('/chat/conversations', { auth: true }),
+  createChatStreamTicket: () =>
+    apiRequest<{ data: { ticket: string; expiresIn: number } }>('/chat/stream-ticket', {
+      method: 'POST',
+      auth: true
+    }),
   getMessages: (userId: string, page?: number, pageSize?: number) => {
     const params = new URLSearchParams();
     if (page) params.set('page', String(page));
@@ -388,8 +479,13 @@ export const api = {
   // ─── User Search ──────────────────────────────────────────────────────
 
   searchUsers: (q: string) =>
-    apiRequest<{ data: { id: string; email: string; displayName: string | null; avatarUrl: string | null }[] }>(
+    apiRequest<{ data: { id: string; displayName: string | null; avatarUrl: string | null }[] }>(
       `/users/search?q=${encodeURIComponent(q)}`,
+      { auth: true }
+    ),
+  getUserBrief: (userId: string) =>
+    apiRequest<{ data: { id: string; displayName: string; avatarUrl: string | null } }>(
+      `/users/${userId}/brief`,
       { auth: true }
     ),
 
@@ -558,6 +654,13 @@ export const api = {
   getMyOrganizerApplication: () =>
     apiRequest<{ data: OrganizerApplication | null }>('/me/organizer-application', { auth: true }),
 
+  updateOrganizerDetails: (data: OrganizerDetails) =>
+    apiRequest<{ data: OrganizerDetails }>('/me/organizer-details', {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(data),
+    }),
+
   // ─── Social: Reviews ───────────────────────────────────────────────────
 
   getReviews: (targetType: 'location' | 'tenant', targetId: string, page = 1) =>
@@ -579,7 +682,7 @@ export const api = {
     if (filters?.locationId) params.set('locationId', filters.locationId);
     if (filters?.search) params.set('search', filters.search);
     if (filters?.page) params.set('page', String(filters.page));
-    params.set('pageSize', '20');
+    params.set('pageSize', '50');
     return apiRequest<{ data: PostDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
       `/posts?${params.toString()}`
     );
@@ -632,5 +735,15 @@ export const api = {
     apiRequest(`/me/favorites/${id}`, { method: 'DELETE', auth: true }),
 
   getMerchantPublic: (id: string) =>
-    apiRequest<{ data: MerchantProfileDTO & { products: ProductDTO[] } }>(`/shop/merchants/${id}`)
+    apiRequest<{ data: MerchantProfileDTO & { products: ProductDTO[] } }>(`/shop/merchants/${id}`),
+
+  // ─── Trail Points / Rewards ─────────────────────────────────────────────
+
+  getRewardCatalog: () => apiRequest<{ data: RewardCatalogDTO }>('/rewards/catalog'),
+
+  getRewardStats: () => apiRequest<{ data: RewardStatsDTO }>('/rewards/stats'),
+
+  getMyRewards: () => apiRequest<{ data: RewardSummaryDTO }>('/me/rewards', { auth: true }),
+
+  getRewardsLeaderboard: () => apiRequest<{ data: RewardLeaderboardEntryDTO[] }>('/rewards/leaderboard'),
 };

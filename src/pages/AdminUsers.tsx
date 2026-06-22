@@ -1,24 +1,34 @@
 import { useEffect, useState } from 'react';
+import { AdminUserType } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
+import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../constants/userTypes';
 
 interface UserRow {
   id: string;
   email: string;
   role: string;
+  userType?: AdminUserType;
   status: string;
+  authProvider?: string;
   displayName?: string;
   avatarUrl?: string | null;
   createdAt: string;
+  lastActiveAt?: string | null;
 }
 
 interface UserDetail {
   id: string;
   email: string;
   role: string;
+  userType?: AdminUserType;
   status: string;
+  authProvider?: string;
+  googleLinked?: boolean;
   createdAt: string;
+  lastActiveAt?: string | null;
+  emailVerifiedAt?: string | null;
   profile?: { displayName?: string; phone?: string; bio?: string; avatarUrl?: string };
   requests?: Array<{ id: string; eventTitle: string; status: string; createdAt: string }>;
   trips?: Array<{ eventId: string; eventTitle: string; date: string; checkedInAt?: string | null }>;
@@ -30,6 +40,7 @@ export const AdminUsers = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [roleFilter, setRoleFilter] = useState('');
+  const [userTypeFilter, setUserTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -43,13 +54,14 @@ export const AdminUsers = () => {
     try {
       const res = await api.getAdminUsers({
         role: roleFilter || undefined,
+        userType: userTypeFilter || undefined,
         status: statusFilter || undefined,
         search: search || undefined,
         page,
         pageSize: 20
       });
       setUsers(res.data as unknown as UserRow[]);
-      setTotal(res.pagination?.total ?? 0);
+      setTotal(res.total ?? 0);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load users');
     } finally {
@@ -57,7 +69,7 @@ export const AdminUsers = () => {
     }
   };
 
-  useEffect(() => { loadUsers(); }, [page, roleFilter, statusFilter]);
+  useEffect(() => { loadUsers(); }, [page, roleFilter, userTypeFilter, statusFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,15 +99,13 @@ export const AdminUsers = () => {
     }
   };
 
-  const roleBadge = (role: string) => {
-    const colors: Record<string, string> = {
-      platform_admin: 'bg-purple-100 text-purple-800',
-      tenant_owner: 'bg-blue-100 text-blue-800',
-      tenant_admin: 'bg-cyan-100 text-cyan-800',
-      tenant_guide: 'bg-emerald-100 text-emerald-800',
-      visitor: 'bg-gray-100 text-gray-800'
-    };
-    return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[role] ?? 'bg-gray-100 text-gray-800'}`}>{role.replace(/_/g, ' ')}</span>;
+  const typeBadge = (userType?: AdminUserType) => {
+    const key = userType ?? 'participant';
+    return (
+      <span className={`px-2 py-0.5 rounded text-xs font-medium ${USER_TYPE_BADGE[key]}`}>
+        {USER_TYPE_LABELS[key]}
+      </span>
+    );
   };
 
   const statusBadge = (status: string) => {
@@ -112,8 +122,16 @@ export const AdminUsers = () => {
             className="border rounded px-3 py-1.5 text-sm w-60" />
           <button type="submit" className="bg-emerald-600 text-white px-3 py-1.5 rounded text-sm hover:bg-emerald-700">Search</button>
         </form>
+        <select value={userTypeFilter} onChange={(e) => { setUserTypeFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
+          <option value="">All User Types</option>
+          <option value="participant">Participant</option>
+          <option value="business_organizer">Business Organizer</option>
+          <option value="guide_organizer">Guide Organizer</option>
+          <option value="organizer_staff">Organizer Staff</option>
+          <option value="platform_admin">Platform Admin</option>
+        </select>
         <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
-          <option value="">All Roles</option>
+          <option value="">All Roles (legacy)</option>
           <option value="platform_admin">Admin</option>
           <option value="tenant_owner">Tenant Owner</option>
           <option value="tenant_admin">Tenant Admin</option>
@@ -166,10 +184,12 @@ export const AdminUsers = () => {
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3">{roleBadge(u.role)}</td>
+                <td className="px-4 py-3">{typeBadge(u.userType)}</td>
                 <td className="px-4 py-3">{statusBadge(u.status)}</td>
                 <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">{new Date(u.createdAt).toLocaleDateString()}</td>
-                <td className="px-4 py-3 text-gray-400 text-xs">—</td>
+                <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">
+                  {u.lastActiveAt ? new Date(u.lastActiveAt).toLocaleString() : '—'}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button onClick={() => openDetail(u.id)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">View</button>
@@ -244,10 +264,18 @@ export const AdminUsers = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="flex gap-3 items-center">
-                {roleBadge(selectedUser.role)}
+              <div className="flex gap-3 items-center flex-wrap">
+                {typeBadge(selectedUser.userType)}
                 {statusBadge(selectedUser.status)}
+                {selectedUser.authProvider && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700 capitalize">
+                    via {selectedUser.authProvider}
+                  </span>
+                )}
                 <span className="text-xs text-gray-500">Joined {new Date(selectedUser.createdAt).toLocaleDateString()}</span>
+                {selectedUser.lastActiveAt && (
+                  <span className="text-xs text-gray-500">Last active {new Date(selectedUser.lastActiveAt).toLocaleString()}</span>
+                )}
               </div>
 
               {selectedUser.profile?.bio && (
@@ -269,7 +297,10 @@ export const AdminUsers = () => {
                   <p className="text-xs text-gray-500 uppercase font-medium mb-1">Tenant Memberships</p>
                   <ul className="text-sm text-gray-700 space-y-1">
                     {selectedUser.memberships.map((m, i) => (
-                      <li key={i} className="flex justify-between"><span>{m.tenantName}</span>{roleBadge(m.role)}</li>
+                      <li key={i} className="flex justify-between">
+                        <span>{m.tenantName}</span>
+                        <span className="text-xs capitalize text-gray-600">{m.role.replace(/_/g, ' ')}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>

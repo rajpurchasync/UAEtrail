@@ -3,8 +3,14 @@ Allow: /
 Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /organizer/
-Disallow: /merchant/
 Disallow: /signin
 Disallow: /signup
+Disallow: /verify
+Disallow: /forgot-password
+Disallow: /messages
+Disallow: /notifications
+Disallow: /my-requests
+Disallow: /my-rewards
+Disallow: /profile
 
 Sitemap: https://uaetrail.ae/sitemap.xml

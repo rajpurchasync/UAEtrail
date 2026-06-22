@@ -1,15 +1,30 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { lazy, Suspense, useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, Map, List } from 'lucide-react';
 import { TrailCard } from '../components/ui/TrailCard';
 import { CampingCard } from '../components/ui/CampingCard';
+import type { LocationMapPin } from '../components/ui/LocationsMap';
+
+const LocationsMap = lazy(() =>
+  import('../components/ui/LocationsMap').then((m) => ({ default: m.LocationsMap }))
+);
 import { PageMeta } from '../components/seo/PageMeta';
-import { ActivityType, DifficultyLevel, CampingType, Accessibility, Trail, CampingSpot } from '../types';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { FilterChips } from '../components/mobile/FilterChips';
+import { FilterIconButton } from '../components/mobile/FilterIconButton';
+import { PAGE_BANNERS } from '../config/pageBanners';
+import { DifficultyLevel, CampingType, Accessibility, Trail, CampingSpot } from '../types';
 import { fetchApiLocations } from '../api/public';
-import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, getMapBounds, CountryCode } from '../config/regions';
+import { DEFAULT_COUNTRY, getRegionsForCountry, getMapBounds } from '../config/regions';
+import { matchesLocationSearch, resolveRegionFilter } from '../utils/locationSearch';
+
+type LocationItem = { type: 'trail'; data: Trail } | { type: 'camp'; data: CampingSpot };
+type ActivityFilter = 'all' | 'hiking' | 'camping';
 
 export const Discovery = () => {
-  const [activityType, setActivityType] = useState<ActivityType>('hiking');
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [trailSource, setTrailSource] = useState<Trail[]>([]);
@@ -17,7 +32,6 @@ export const Discovery = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY);
 
   const [filters, setFilters] = useState({
     difficulty: [] as DifficultyLevel[],
@@ -30,9 +44,44 @@ export const Discovery = () => {
   });
 
   useEffect(() => {
+    const q = searchParams.get('q');
+    const regionParam = searchParams.get('region');
+    const activity = searchParams.get('activity');
+
+    if (regionParam) {
+      const resolved = resolveRegionFilter(regionParam);
+      if (resolved) {
+        setFilters((prev) => ({ ...prev, regions: [resolved] }));
+        setSearchQuery('');
+      } else {
+        setFilters((prev) => ({ ...prev, regions: [] }));
+        setSearchQuery(regionParam);
+      }
+    } else if (q) {
+      const resolved = resolveRegionFilter(q);
+      if (resolved) {
+        setFilters((prev) => ({ ...prev, regions: [resolved] }));
+        setSearchQuery('');
+      } else {
+        setFilters((prev) => ({ ...prev, regions: [] }));
+        setSearchQuery(q);
+      }
+    } else {
+      setSearchQuery('');
+      setFilters((prev) => ({ ...prev, regions: [] }));
+    }
+
+    if (activity === 'hiking' || activity === 'camping') {
+      setActivityFilter(activity);
+    } else {
+      setActivityFilter('all');
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     setLoading(true);
     setLoadError(null);
-    fetchApiLocations(countryCode)
+    fetchApiLocations()
       .then((response) => {
         setTrailSource(response.trails);
         setCampSource(response.camps);
@@ -43,17 +92,19 @@ export const Discovery = () => {
         setLoadError(err instanceof Error ? err.message : 'Failed to load locations');
       })
       .finally(() => setLoading(false));
-  }, [countryCode]);
+  }, []);
 
-  const regionOptions = getRegionsForCountry(countryCode);
-  const mapBounds = getMapBounds(countryCode);
+  const regionOptions = getRegionsForCountry(DEFAULT_COUNTRY);
+  const mapBounds = getMapBounds(DEFAULT_COUNTRY);
 
   const filteredLocations = useMemo(() => {
-    let locations: Array<{ type: 'trail' | 'camp'; data: any }> = [];
+    const locations: LocationItem[] = [];
+    const showTrails = activityFilter === 'all' || activityFilter === 'hiking';
+    const showCamps = activityFilter === 'all' || activityFilter === 'camping';
 
-    if (activityType === 'hiking') {
+    if (showTrails) {
       const filteredTrails = trailSource.filter((trail) => {
-        if (searchQuery && !trail.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        if (!matchesLocationSearch(trail, searchQuery)) {
           return false;
         }
         if (filters.regions.length > 0 && !filters.regions.includes(trail.region)) {
@@ -70,15 +121,12 @@ export const Discovery = () => {
         }
         return true;
       });
-      locations = [
-        ...locations,
-        ...filteredTrails.map((trail) => ({ type: 'trail' as const, data: trail }))
-      ];
+      locations.push(...filteredTrails.map((trail) => ({ type: 'trail' as const, data: trail })));
     }
 
-    if (activityType === 'camping') {
+    if (showCamps) {
       const filteredCamps = campSource.filter((camp) => {
-        if (searchQuery && !camp.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        if (!matchesLocationSearch(camp, searchQuery)) {
           return false;
         }
         if (filters.regions.length > 0 && !filters.regions.includes(camp.region)) {
@@ -95,14 +143,28 @@ export const Discovery = () => {
         }
         return true;
       });
-      locations = [
-        ...locations,
-        ...filteredCamps.map((camp) => ({ type: 'camp' as const, data: camp }))
-      ];
+      locations.push(...filteredCamps.map((camp) => ({ type: 'camp' as const, data: camp })));
     }
 
     return locations;
-  }, [activityType, searchQuery, filters, trailSource, campSource]);
+  }, [activityFilter, searchQuery, filters, trailSource, campSource]);
+
+  const mapPins = useMemo((): LocationMapPin[] => {
+    return filteredLocations.flatMap((location) => {
+      const item = location.data;
+      if (item.latitude == null || item.longitude == null) return [];
+      return [
+        {
+          id: item.id,
+          name: item.name,
+          latitude: item.latitude,
+          longitude: item.longitude,
+          activityType: location.type === 'trail' ? 'hiking' : 'camping',
+          path: location.type === 'trail' ? `/trail/${item.id}` : `/camp/${item.id}`,
+        },
+      ];
+    });
+  }, [filteredLocations]);
 
   const toggleDifficulty = (level: DifficultyLevel) => {
     setFilters((prev) => ({
@@ -140,7 +202,18 @@ export const Discovery = () => {
     }));
   };
 
+  const activeFilterSummary = useMemo(() => {
+    const parts: string[] = [];
+    if (filters.regions.length > 0) parts.push(filters.regions.join(', '));
+    if (activityFilter !== 'all') parts.push(activityFilter);
+    if (searchQuery.trim()) parts.push(`"${searchQuery.trim()}"`);
+    if (filters.difficulty.length > 0) parts.push(filters.difficulty.join(', '));
+    return parts;
+  }, [filters.regions, filters.difficulty, activityFilter, searchQuery]);
+
   const clearFilters = () => {
+    setSearchQuery('');
+    setActivityFilter('all');
     setFilters({
       difficulty: [],
       childFriendly: false,
@@ -150,115 +223,118 @@ export const Discovery = () => {
       accessibility: [],
       regions: []
     });
+    navigate('/discovery', { replace: true });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PageMeta
-        title="Explore trails & camps"
-        description="Browse hiking trails and camping spots across UAE, Saudi Arabia, Oman, and the wider GCC."
-        path="/discovery"
-      />
-      <div className="bg-white border-b sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Discover Trails & Camps</h1>
-          <p className="text-gray-600 text-sm mb-4">Explore hiking trails and camping spots across the GCC</p>
+    <ConsumerShell
+      layout="editorial"
+      eyebrow="Explore"
+      title="Trails & spots"
+      banner={{ src: PAGE_BANNERS.discovery, alt: 'Mountain landscape at sunrise' }}
+      back={{ fallbackTo: '/', label: 'Home' }}
+      toolbar={
+        <>
           {loadError && (
-            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+            <p className="text-sm text-amber-800 glass rounded-2xl px-3 py-2 mb-3 border-amber-200/50">
               {loadError}
             </p>
           )}
-
-          <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-none">
-            {SUPPORTED_COUNTRIES.map((c) => (
-              <button
-                key={c.code}
-                onClick={() => { setCountryCode(c.code); setFilters((f) => ({ ...f, regions: [] })); }}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                  countryCode === c.code ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600'
-                }`}
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex gap-3">
+          <div className="flex gap-2 mb-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search by name..."
+                placeholder="Search trails & camps"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="glass-search"
               />
             </div>
-
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center shrink-0"
-            >
-              <SlidersHorizontal className="w-5 h-5" />
-              <span className="hidden sm:inline ml-2">Filters</span>
-            </button>
+            <FilterIconButton onClick={() => setShowFilters(!showFilters)} aria-label="Filters">
+              <SlidersHorizontal className="w-4 h-4" />
+            </FilterIconButton>
           </div>
-
-          <div className="flex gap-2 mt-4 justify-center md:justify-start items-center flex-wrap">
-            <button
-              onClick={() => setActivityType('hiking')}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                activityType === 'hiking'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Hiking
-            </button>
-            <button
-              onClick={() => setActivityType('camping')}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                activityType === 'camping'
-                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Camping
-            </button>
-            <div className="ml-auto flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-2 justify-between items-center flex-wrap">
+            <FilterChips
+              options={[
+                { key: 'all', label: 'All' },
+                { key: 'hiking', label: 'Hiking' },
+                { key: 'camping', label: 'Camping' },
+              ]}
+              value={activityFilter}
+              onChange={(key) => setActivityFilter(key as ActivityFilter)}
+            />
+            <div className="app-segmented">
               <button
+                type="button"
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-md ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500'}`}
+                className={`inline-flex items-center justify-center h-7 w-8 rounded-[10px] transition-all active:scale-95 ${
+                  viewMode === 'list' ? 'app-segment-active' : 'app-segment'
+                }`}
                 aria-label="List view"
               >
-                <List className="w-4 h-4" />
+                <List className="w-3.5 h-3.5" />
               </button>
               <button
+                type="button"
                 onClick={() => setViewMode('map')}
-                className={`p-2 rounded-md ${viewMode === 'map' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500'}`}
+                className={`inline-flex items-center justify-center h-7 w-8 rounded-[10px] transition-all active:scale-95 ${
+                  viewMode === 'map' ? 'app-segment-active' : 'app-segment'
+                }`}
                 aria-label="Map view"
               >
-                <Map className="w-4 h-4" />
+                <Map className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      }
+    >
+      <PageMeta
+        title="Explore trails & camps"
+        description="Browse hiking trails and camping spots across the UAE."
+        path="/discovery"
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="py-2 md:py-4">
         <div className="flex flex-col lg:flex-row gap-8">
           <aside
-            className={`w-full lg:w-64 ${showFilters ? 'block' : 'hidden lg:block'}`}
+            className={`lg:block lg:w-64 shrink-0 ${
+              showFilters
+                ? 'fixed inset-0 z-50 lg:static lg:inset-auto bg-black/40 lg:bg-transparent'
+                : 'hidden lg:block'
+            }`}
+            onClick={() => showFilters && setShowFilters(false)}
+            role="presentation"
           >
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-32">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-emerald-600 hover:text-emerald-700"
-                >
-                  Clear all
-                </button>
+            <div
+              className={`bg-white p-6 lg:rounded-ios-lg lg:shadow-ios-sm lg:sticky lg:top-32 ${
+                showFilters
+                  ? 'absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-[20px] pb-nav-safe lg:static lg:max-h-none lg:pb-6 lg:rounded-ios-lg'
+                  : ''
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4 lg:mb-4">
+                <h2 className="text-lg font-semibold text-neutral-900">Filters</h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="text-sm text-emerald-600 font-medium min-h-[44px] px-2"
+                  >
+                    Clear all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowFilters(false)}
+                    className="lg:hidden min-h-[44px] min-w-[44px] text-neutral-500"
+                    aria-label="Close filters"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               <div className="mb-6">
@@ -278,10 +354,12 @@ export const Discovery = () => {
                 </div>
               </div>
 
-              {activityType === 'hiking' && (
+              {(activityFilter === 'all' || activityFilter === 'hiking') && (
                 <>
                   <div className="mb-6">
-                    <h3 className="font-medium text-gray-900 mb-3">Difficulty</h3>
+                    <h3 className="font-medium text-gray-900 mb-3">
+                      {activityFilter === 'all' ? 'Trail difficulty' : 'Difficulty'}
+                    </h3>
                     <div className="space-y-2">
                       {(['easy', 'moderate', 'hard'] as DifficultyLevel[]).map((level) => (
                         <label key={level} className="flex items-center">
@@ -298,7 +376,9 @@ export const Discovery = () => {
                   </div>
 
                   <div className="mb-6">
-                    <h3 className="font-medium text-gray-900 mb-3">Distance (km)</h3>
+                    <h3 className="font-medium text-gray-900 mb-3">
+                      {activityFilter === 'all' ? 'Trail distance (km)' : 'Distance (km)'}
+                    </h3>
                     <div className="space-y-2">
                       <input
                         type="range"
@@ -333,10 +413,12 @@ export const Discovery = () => {
                 </>
               )}
 
-              {activityType === 'camping' && (
+              {(activityFilter === 'all' || activityFilter === 'camping') && (
                 <>
                   <div className="mb-6">
-                    <h3 className="font-medium text-gray-900 mb-3">Camping Type</h3>
+                    <h3 className="font-medium text-gray-900 mb-3">
+                      {activityFilter === 'all' ? 'Camping type' : 'Camping Type'}
+                    </h3>
                     <div className="space-y-2">
                       {(['self-guided', 'operator-led'] as CampingType[]).map((type) => (
                         <label key={type} className="flex items-center">
@@ -379,52 +461,59 @@ export const Discovery = () => {
 
           <div className="flex-1">
             <div className="mb-4 text-sm text-gray-600">
-              {loading && <span className="mr-2">Loading API locations...</span>}
-              {filteredLocations.length} results found
+              {loading ? (
+                <span>Loading locations…</span>
+              ) : (
+                <span>{filteredLocations.length} results found</span>
+              )}
             </div>
 
-            {filteredLocations.length === 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="h-64 rounded-2xl bg-gray-100 animate-pulse" />
+                ))}
+              </div>
+            ) : loadError ? (
               <div className="text-center py-12">
-                <p className="text-gray-600 mb-4">No results found matching your filters.</p>
+                <p className="text-gray-800 font-medium mb-2">Could not load locations</p>
+                <p className="text-sm text-gray-600 mb-4">{loadError}</p>
+                <p className="text-xs text-gray-500">
+                  Make sure the API is running on port 4000 and try refreshing.
+                </p>
+              </div>
+            ) : filteredLocations.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-800 font-medium mb-2">No results found matching your filters.</p>
+                {activeFilterSummary.length > 0 && (
+                  <p className="text-sm text-gray-600 mb-4">
+                    Active filters: {activeFilterSummary.join(' · ')}
+                  </p>
+                )}
+                {!loadError && trailSource.length + campSource.length === 0 && (
+                  <p className="text-sm text-gray-500 mb-4">
+                    No locations are loaded yet. Run the API seed if this is a fresh install.
+                  </p>
+                )}
                 <button
+                  type="button"
                   onClick={clearFilters}
                   className="text-emerald-600 hover:text-emerald-700 font-medium"
                 >
-                  Clear filters
+                  Clear filters and show all
                 </button>
               </div>
             ) : viewMode === 'map' ? (
-              <div className="relative bg-emerald-50 rounded-2xl border border-emerald-100 overflow-hidden min-h-[420px]">
-                <iframe
-                  title="UAE locations map"
-                  className="w-full h-[420px] border-0 opacity-90"
-                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapBounds.west}%2C${mapBounds.south}%2C${mapBounds.east}%2C${mapBounds.north}&layer=mapnik`}
-                />
-                <div className="absolute inset-0 pointer-events-none">
-                  {filteredLocations.map((location) => {
-                    const item = location.data;
-                    const lat = item.latitude;
-                    const lng = item.longitude;
-                    if (lat == null || lng == null) return null;
-                    const left = ((lng - mapBounds.west) / (mapBounds.east - mapBounds.west)) * 100;
-                    const top = ((mapBounds.north - lat) / (mapBounds.north - mapBounds.south)) * 100;
-                    const path = location.type === 'trail' ? `/trail/${item.id}` : `/camp/${item.id}`;
-                    return (
-                      <Link
-                        key={item.id}
-                        to={path}
-                        className="pointer-events-auto absolute -translate-x-1/2 -translate-y-full"
-                        style={{ left: `${left}%`, top: `${top}%` }}
-                        title={item.name}
-                      >
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold shadow-lg ring-2 ring-white">
-                          {item.name.charAt(0)}
-                        </span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
+              <Suspense
+                fallback={
+                  <div
+                    className="rounded-2xl border border-emerald-100 bg-emerald-50/50 animate-pulse"
+                    style={{ minHeight: 420 }}
+                  />
+                }
+              >
+                <LocationsMap pins={mapPins} bounds={mapBounds} minHeight={420} />
+              </Suspense>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredLocations.map((location, index) =>
@@ -439,6 +528,6 @@ export const Discovery = () => {
           </div>
         </div>
       </div>
-    </div>
+    </ConsumerShell>
   );
 };

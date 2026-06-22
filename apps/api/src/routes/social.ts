@@ -6,6 +6,17 @@ import { paginate, paginatedResponse, paginationSchema } from '../lib/pagination
 import { prisma } from '../lib/prisma.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import { RewardAction } from '@prisma/client';
+import { awardPoints } from '../services/rewards.js';
+import { tierEnumToDisplay } from '../lib/rewards-config.js';
+
+type AuthorWithProfile = {
+  profile?: { displayName?: string | null; avatarUrl?: string | null; membershipTier?: string } | null;
+  email: string;
+};
+
+const mapAuthorTier = (author: AuthorWithProfile) =>
+  tierEnumToDisplay(author.profile?.membershipTier ?? null);
 
 export const socialRouter = Router();
 
@@ -34,14 +45,14 @@ const mapPost = (post: {
   authorId: string;
   createdAt: Date;
   updatedAt: Date;
-  author: { profile?: { displayName?: string | null; avatarUrl?: string | null } | null; email: string };
+  author: AuthorWithProfile;
   location?: { name: string } | null;
   replies: Array<{
     id: string;
     authorId: string;
     content: string;
     createdAt: Date;
-    author: { profile?: { displayName?: string | null; avatarUrl?: string | null } | null; email: string };
+    author: AuthorWithProfile;
   }>;
   _count?: { likes: number; replies: number };
   likeCount?: number;
@@ -59,6 +70,7 @@ const mapPost = (post: {
   authorId: post.authorId,
   authorName: post.author.profile?.displayName ?? post.author.email.split('@')[0],
   authorAvatar: post.author.profile?.avatarUrl ?? null,
+  authorMembershipTier: mapAuthorTier(post.author),
   likeCount: post.likeCount ?? post._count?.likes ?? 0,
   replyCount: post.replyCount ?? post._count?.replies ?? post.replies.length,
   replies: post.replies.map((r) => ({
@@ -66,6 +78,7 @@ const mapPost = (post: {
     authorId: r.authorId,
     authorName: r.author.profile?.displayName ?? r.author.email.split('@')[0],
     authorAvatar: r.author.profile?.avatarUrl ?? null,
+    authorMembershipTier: mapAuthorTier(r.author),
     content: r.content,
     createdAt: r.createdAt.toISOString()
   })),
@@ -113,6 +126,7 @@ socialRouter.get('/reviews', validate({ query: reviewListSchema }), async (req, 
           userId: r.userId,
           userName: r.user.profile?.displayName ?? r.user.email.split('@')[0],
           userAvatar: r.user.profile?.avatarUrl ?? null,
+          userMembershipTier: tierEnumToDisplay(r.user.profile?.membershipTier ?? null),
           rating: r.rating,
           comment: r.comment,
           createdAt: r.createdAt.toISOString()
@@ -139,6 +153,11 @@ socialRouter.post('/reviews', requireAuth, requireVerifiedEmail, validate({ body
       },
       include: { user: { include: { profile: true } } }
     });
+    void awardPoints(prisma, {
+      userId: req.auth!.userId,
+      action: RewardAction.REVIEW_WRITTEN,
+      referenceId: review.id
+    }).catch(() => undefined);
     res.status(201).json({
       data: {
         id: review.id,
@@ -147,6 +166,7 @@ socialRouter.post('/reviews', requireAuth, requireVerifiedEmail, validate({ body
         userId: review.userId,
         userName: review.user.profile?.displayName ?? review.user.email.split('@')[0],
         userAvatar: review.user.profile?.avatarUrl ?? null,
+        userMembershipTier: tierEnumToDisplay(review.user.profile?.membershipTier ?? null),
         rating: review.rating,
         comment: review.comment,
         createdAt: review.createdAt.toISOString()
@@ -253,6 +273,11 @@ socialRouter.post('/posts', requireAuth, requireVerifiedEmail, validate({ body: 
         _count: { select: { likes: true, replies: true } }
       }
     });
+    void awardPoints(prisma, {
+      userId: req.auth!.userId,
+      action: RewardAction.COMMUNITY_POST,
+      referenceId: post.id
+    }).catch(() => undefined);
     res.status(201).json({ data: mapPost(post) });
   } catch (error) {
     next(error);
@@ -275,12 +300,18 @@ socialRouter.post(
         data: { postId: id, authorId: req.auth!.userId, content },
         include: { author: { include: { profile: true } } }
       });
+      void awardPoints(prisma, {
+        userId: req.auth!.userId,
+        action: RewardAction.COMMUNITY_REPLY,
+        referenceId: reply.id
+      }).catch(() => undefined);
       res.status(201).json({
         data: {
           id: reply.id,
           authorId: reply.authorId,
           authorName: reply.author.profile?.displayName ?? reply.author.email.split('@')[0],
           authorAvatar: reply.author.profile?.avatarUrl ?? null,
+          authorMembershipTier: tierEnumToDisplay(reply.author.profile?.membershipTier ?? null),
           content: reply.content,
           createdAt: reply.createdAt.toISOString()
         }
