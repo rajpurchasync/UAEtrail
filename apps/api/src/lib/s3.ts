@@ -84,7 +84,7 @@ export const createPresignedUpload = async ({
 
 export const publicAssetUrl = (key: string): string => {
   if (!s3Available) {
-    return `${env.API_BASE_URL}/api/v1/media/local/${key}`;
+    return `/api/v1/media/local/${key}`;
   }
   return `${env.S3_ENDPOINT!.replace(/\/$/, '')}/${env.S3_BUCKET}/${key}`;
 };

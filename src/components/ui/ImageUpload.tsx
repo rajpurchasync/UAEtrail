@@ -35,13 +35,14 @@ export const ImageUpload = ({
     if (!files || files.length === 0) return;
     setError(null);
 
+    const replaceMode = max === 1 && images.length >= 1;
     const remaining = max - images.length;
-    if (remaining <= 0) {
+    if (!replaceMode && remaining <= 0) {
       setError(`Maximum ${max} images allowed`);
       return;
     }
 
-    const toUpload = Array.from(files).slice(0, remaining);
+    const toUpload = Array.from(files).slice(0, replaceMode ? 1 : remaining);
     const newUploading: UploadingFile[] = toUpload.map((f) => ({ name: f.name, progress: 'uploading' }));
     setUploading((prev) => [...prev, ...newUploading]);
 
@@ -58,7 +59,10 @@ export const ImageUpload = ({
         });
 
         // 2. Upload to S3 or local dev endpoint
-        const isLocalUpload = presign.data.uploadUrl.includes('/media/upload-local/');
+        const uploadUrl = presign.data.uploadUrl.startsWith('/')
+          ? presign.data.uploadUrl
+          : presign.data.uploadUrl;
+        const isLocalUpload = uploadUrl.includes('/media/upload-local/');
         const uploadHeaders: Record<string, string> = {
           'Content-Type': file.type || 'application/octet-stream'
         };
@@ -69,7 +73,7 @@ export const ImageUpload = ({
           }
         }
 
-        const putRes = await fetch(presign.data.uploadUrl, {
+        const putRes = await fetch(uploadUrl, {
           method: 'PUT',
           headers: uploadHeaders,
           body: file
@@ -113,7 +117,7 @@ export const ImageUpload = ({
     const newUrls = results.filter((url): url is string => url !== null);
 
     if (newUrls.length > 0) {
-      onChange([...images, ...newUrls]);
+      onChange(replaceMode ? newUrls : [...images, ...newUrls]);
     }
 
     // Clear finished uploads after a delay
@@ -152,7 +156,8 @@ export const ImageUpload = ({
               <button
                 type="button"
                 onClick={() => removeImage(i)}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                aria-label="Remove image"
               >
                 ×
               </button>
@@ -161,8 +166,8 @@ export const ImageUpload = ({
         </div>
       )}
 
-      {/* Upload area */}
-      {images.length < max && (
+      {/* Upload area — always available for single-image replace */}
+      {(images.length < max || max === 1) && (
         <div
           className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-colors"
           onClick={() => inputRef.current?.click()}
@@ -174,12 +179,15 @@ export const ImageUpload = ({
             ref={inputRef}
             type="file"
             accept="image/*"
-            multiple
+            multiple={max > 1}
             className="hidden"
             onChange={(e) => handleFiles(e.target.files)}
           />
           <p className="text-sm text-gray-500">
-            <span className="text-emerald-600 font-medium">Click to upload</span> or drag and drop
+            <span className="text-emerald-600 font-medium">
+              {max === 1 && images.length > 0 ? 'Click to change photo' : 'Click to upload'}
+            </span>{' '}
+            or drag and drop
           </p>
           <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP up to 10 MB each</p>
         </div>

@@ -143,34 +143,34 @@ export const TrailPointsAbout = () => {
       />
       <JsonLd data={faqPageSchema(TRAIL_POINTS_FAQS)} id="trail-points-faq" />
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden min-h-0">
         <div
-          className="absolute inset-0 bg-cover bg-center scale-105"
-          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600)' }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&q=80)' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/60 to-[#eef6f3]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/55 to-[#eef6f3]" />
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-safe-plus-2 pb-10 lg:pb-16 lg:pt-8">
-          <div className="md:hidden mb-4">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-safe-plus-2 pb-8 sm:pb-10 lg:pb-16 lg:pt-8">
+          <div className="md:hidden mb-3">
             <MobileBackButton fallbackTo="/" label="Home" />
           </div>
 
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-end">
             <div className="lg:py-8">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 ring-1 ring-white/20 mb-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 ring-1 ring-white/20 mb-3 sm:mb-4">
                 <Trophy className="w-4 h-4 text-amber-400 fill-amber-400/30" />
                 <span className="text-amber-200/95 text-[11px] font-bold uppercase tracking-widest">
                   Trail Points
                 </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.1]">
+              <h1 className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
                 Show up for the trails.
                 <span className="block text-emerald-300 mt-1">Watch your status climb.</span>
               </h1>
-              <p className="text-base sm:text-lg text-white/80 mt-4 max-w-lg leading-relaxed">
+              <p className="text-sm sm:text-base lg:text-lg text-white/80 mt-3 sm:mt-4 max-w-lg leading-relaxed">
                 Every hike, post, and trip you lead earns points — and a badge your profile actually wears.
               </p>
-              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <div className="mt-5 sm:mt-6 flex flex-col gap-2.5 sm:flex-row sm:gap-3">
                 <Link
                   to={primaryCta.path}
                   className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full text-sm font-bold shadow-lg shadow-emerald-900/30 transition-colors"
@@ -188,7 +188,7 @@ export const TrailPointsAbout = () => {
             </div>
 
             {stats && stats.contributorsCount > 0 && (
-              <div className="mt-8 lg:mt-0 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-3">
+              <div className="mt-6 lg:mt-0 grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-2">
                 {[
                   { label: 'Trail builders', value: stats.contributorsCount },
                   { label: 'Active badges', value: stats.activeCount },
@@ -209,7 +209,7 @@ export const TrailPointsAbout = () => {
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2 space-y-12 lg:space-y-16 pb-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2 space-y-10 lg:space-y-16 pb-24 lg:pb-8">
         {/* Quick wins — action first */}
         <section id="start" className="scroll-mt-6">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-5">

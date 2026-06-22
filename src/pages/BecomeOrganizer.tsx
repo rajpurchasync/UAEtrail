@@ -1,19 +1,87 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Mountain, CheckCircle, Users, MapPin, Star, ArrowRight, Loader2, Clock, XCircle, X, User, Building2 } from 'lucide-react';
-import { NAV_ICONS } from '../config/navIcons';
+import {
+  ArrowRight,
+  Building2,
+  CalendarPlus,
+  CheckCircle,
+  Clock,
+  Globe2,
+  HandHeart,
+  Heart,
+  Loader2,
+  Mountain,
+  Sparkles,
+  User,
+  Users,
+  X,
+  XCircle,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useEffect, useState } from 'react';
 import { api } from '../api/services';
-import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { GlassCard } from '../components/mobile/GlassCard';
+import { PAGE_BANNERS } from '../config/pageBanners';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ImageUpload } from '../components/ui/ImageUpload';
 import { COUNTRIES } from '../constants';
 
-const benefits = [
-  { icon: NAV_ICONS.trips, title: 'Host trips', description: 'Lead hikes and camps as an independent guide or on behalf of your business.' },
-  { icon: Users, title: 'Build your community', description: 'Connect with outdoor enthusiasts and grow a following around your adventures.' },
-  { icon: MapPin, title: 'Public host profile', description: 'Showcase your bio, certificates, and reviews — visitors see who is responsible on the day.' },
-  { icon: Star, title: 'Individual or business', description: 'Apply as a solo host or register a company and add team members who can host events.' },
+const whyHostReasons = [
+  {
+    icon: Users,
+    title: 'Make new friends',
+    description:
+      'Bring together people who love the outdoors. A shared summit, a campfire chat — hosting turns strangers into your trail family.',
+    accent: 'bg-sky-50 text-sky-600',
+  },
+  {
+    icon: HandHeart,
+    title: 'Give back to the community',
+    description:
+      'Welcome beginners, share safety tips, and help more residents & visitors experience the UAE outdoors with confidence.',
+    accent: 'bg-rose-50 text-rose-600',
+  },
+  {
+    icon: Globe2,
+    title: 'Promote the UAE',
+    description:
+      'From Fossil Rock to Jebel Jais — show the landscapes you love and inspire others to explore beyond the city.',
+    accent: 'bg-amber-50 text-amber-600',
+  },
+  {
+    icon: Heart,
+    title: 'Create real connections',
+    description:
+      'This is not just logistics. You are building memories — sunrise coffees, summit high-fives, and stories people retell for years.',
+    accent: 'bg-emerald-50 text-emerald-600',
+  },
+  {
+    icon: Sparkles,
+    title: 'Grow your reputation',
+    description:
+      'Earn reviews, build a following, and become a trusted voice in the outdoor community — one great trip at a time.',
+    accent: 'bg-violet-50 text-violet-600',
+  },
+  {
+    icon: Mountain,
+    title: 'Host your way',
+    description:
+      'Solo guide or registered business. Free meetups or paid adventures. You choose the pace, places, and people you lead.',
+    accent: 'bg-teal-50 text-teal-600',
+  },
+];
+
+const howItWorks = [
+  { step: '1', title: 'Share your story', desc: 'Tell us who you are and what kind of adventures you want to lead.' },
+  { step: '2', title: 'Quick verification', desc: 'We review your profile to keep the community safe and trustworthy.' },
+  { step: '3', title: 'Post your event', desc: 'Publish a hike, camp, or meetup — set the date, details, and who can join.' },
+  { step: '4', title: 'Welcome your group', desc: 'Meet participants, lead the day, and watch your community grow.' },
+];
+
+const communityQuotes = [
+  '"I hosted my first wadi walk and left with eight new hiking buddies."',
+  '"Giving newcomers their first summit view — that feeling never gets old."',
+  '"The UAE has so much to offer. Hosting lets me share that pride every weekend."',
 ];
 
 type HostType = 'individual' | 'business';
@@ -82,6 +150,22 @@ export const BecomeOrganizer = () => {
     setShowFormModal(true);
   };
 
+  const handlePostEvent = () => {
+    if (!user) {
+      navigate('/signup?redirect=/become-host');
+      return;
+    }
+    if (appStatus === 'pending') {
+      document.getElementById('host-status')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    openForm();
+  };
+
+  const ctaDisabled = Boolean(user && appStatus === 'pending');
+  const ctaLabel =
+    user && appStatus === 'pending' ? 'Application in review' : 'Post your next event';
+
   if (isHost) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,161 +209,244 @@ export const BecomeOrganizer = () => {
     }
   };
 
+  const PostEventButton = ({
+    className = '',
+    fullWidth = false,
+  }: {
+    className?: string;
+    fullWidth?: boolean;
+  }) => (
+    <button
+      type="button"
+      onClick={handlePostEvent}
+      disabled={ctaDisabled}
+      className={`inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full font-bold text-sm shadow-sm hover:bg-emerald-700 disabled:opacity-70 disabled:cursor-not-allowed transition-colors ${fullWidth ? 'w-full' : ''} ${className}`}
+    >
+      <CalendarPlus className="w-4 h-4" />
+      {ctaLabel}
+      {!ctaDisabled && <ArrowRight className="w-4 h-4" />}
+    </button>
+  );
+
   return (
-    <MobileDetailShell backTo="/profile" backLabel="Profile">
+    <>
       <PageMeta
         title="Become a host"
-        description="Apply to host hikes and camping trips on UAE Trail — as an individual guide or registered outdoor business."
+        description="Join the UAE Trails community as a host — make friends, give back, promote the outdoors, and post your next hike or camp."
         path="/become-organizer"
       />
-      <div className="min-h-screen bg-ios-bg md:bg-gray-50">
-        <section
-          className="relative h-[40vh] min-h-[280px] bg-cover bg-center flex items-center justify-center"
-          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200)' }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
-          <div className="relative text-center text-white px-6 max-w-2xl">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-3 leading-tight">
-              Become a Host
-            </h1>
-            <p className="text-sm sm:text-base text-white/80 leading-relaxed">
-              Any member can apply to host trips — as an individual guide or a registered business. Fill in your host profile and start leading adventures after verification.
+      <ConsumerShell
+        layout="editorial"
+        maxWidth="4xl"
+        eyebrow="Join the community"
+        title="Become a host"
+        banner={{ src: PAGE_BANNERS.community, alt: 'Group of friends hiking together' }}
+        back={{ fallbackTo: user ? '/profile' : '/trips', label: user ? 'Profile' : 'Trips' }}
+        toolbar={
+          <div className="space-y-3">
+            <p className="text-sm text-neutral-700 leading-relaxed">
+              <span className="font-semibold text-neutral-900">Share the trails. Grow the tribe.</span>{' '}
+              Host hikes and camps that bring people together — make friends, give back, and show off the UAE
+              outdoors you love.
             </p>
+            <PostEventButton fullWidth />
+            {!user && (
+              <p className="text-xs text-neutral-500 text-center">
+                Already have an account?{' '}
+                <Link to="/signin?redirect=/become-host" className="text-emerald-700 font-semibold hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            )}
           </div>
-        </section>
-
-        <section className="py-10 md:py-16">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900 text-center mb-8">Why host on UAE Trails?</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {benefits.map((b) => (
-                <div key={b.title} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3">
-                    <b.icon className="w-5 h-5 text-emerald-600" />
+        }
+      >
+        <div className="space-y-8 md:space-y-10 pb-nav-safe animate-fade-up">
+          {/* Why become a Host? */}
+          <section>
+            <div className="text-center mb-5">
+              <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-1.5">Community first</p>
+              <h2 className="text-xl md:text-2xl font-extrabold text-neutral-900">Why become a Host?</h2>
+              <p className="mt-2 text-sm text-neutral-600 max-w-xl mx-auto leading-relaxed">
+                Hosting is about people — not just routes on a map. Lead with heart, welcome newcomers, and help
+                build the UAE&apos;s outdoor community.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {whyHostReasons.map((item) => (
+                <GlassCard key={item.title} padding>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${item.accent}`}>
+                    <item.icon className="w-5 h-5" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{b.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{b.description}</p>
-                </div>
+                  <h3 className="font-bold text-neutral-900 mb-1">{item.title}</h3>
+                  <p className="text-sm text-neutral-600 leading-relaxed">{item.description}</p>
+                </GlassCard>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="py-10 md:py-16 bg-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900 text-center mb-8">How it works</h2>
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-              {[
-                { step: '1', title: 'Sign up', desc: 'Create a free account or sign in.' },
-                { step: '2', title: 'Host profile', desc: 'Choose individual or business and complete your host profile.' },
-                { step: '3', title: 'Verification', desc: 'Our team reviews your application.' },
-                { step: '4', title: 'Start hosting', desc: 'Create trips, assign yourself or team members as the on-day host.' },
-              ].map((s) => (
-                <div key={s.step} className="flex-1 text-center">
-                  <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center mx-auto mb-3 text-sm">
+          {/* Community voices */}
+          <section>
+            <GlassCard padding className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white border-0">
+              <p className="text-center text-xs font-bold uppercase tracking-widest text-emerald-200/90 mb-4">
+                From the community
+              </p>
+              <div className="space-y-3">
+                {communityQuotes.map((quote) => (
+                  <blockquote key={quote} className="text-center text-sm text-emerald-50/95 italic leading-relaxed">
+                    {quote}
+                  </blockquote>
+                ))}
+              </div>
+            </GlassCard>
+          </section>
+
+          {/* How it works */}
+          <section>
+            <h2 className="text-lg md:text-xl font-bold text-neutral-900 text-center mb-1">How it works</h2>
+            <p className="text-sm text-neutral-500 text-center mb-5 max-w-md mx-auto">
+              From application to your first group on the trail — we keep it simple.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {howItWorks.map((s) => (
+                <GlassCard key={s.step} padding className="text-center">
+                  <div className="w-9 h-9 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center mx-auto mb-2.5 text-sm">
                     {s.step}
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-1 text-sm">{s.title}</h3>
-                  <p className="text-xs text-gray-500">{s.desc}</p>
-                </div>
+                  <h3 className="font-semibold text-neutral-900 mb-1 text-sm">{s.title}</h3>
+                  <p className="text-xs text-neutral-500 leading-relaxed">{s.desc}</p>
+                </GlassCard>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="py-12 md:py-16">
-          <div className="max-w-lg mx-auto px-4">
+          {/* Status / apply */}
+          <section id="host-status">
             {!user && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
+              <GlassCard padding className="text-center">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center mx-auto mb-4">
-                  <Mountain className="w-7 h-7 text-white" />
+                  <CalendarPlus className="w-7 h-7 text-white" />
                 </div>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">Ready to host?</h2>
-                <p className="text-sm text-gray-500 mb-6">Sign up for a free account, then complete your host profile.</p>
-                <Link
-                  to="/signup?redirect=/become-host"
-                  className="w-full px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-2 text-sm"
-                >
-                  Sign up to apply <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
+                <h2 className="text-lg font-bold text-neutral-900 mb-2">Ready to bring people together?</h2>
+                <p className="text-sm text-neutral-600 mb-6 leading-relaxed">
+                  Create a free account, complete a short host profile, and post your first event when approved.
+                </p>
+                <PostEventButton fullWidth />
+              </GlassCard>
             )}
 
             {user && appStatus === 'loading' && (
-              <div className="bg-white rounded-2xl border p-8 text-center">
+              <GlassCard padding className="text-center">
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-3" />
-                <p className="text-sm text-gray-500">Checking application status…</p>
-              </div>
+                <p className="text-sm text-neutral-500">Checking your host status…</p>
+              </GlassCard>
             )}
 
             {user && (appStatus === 'pending' || submitSuccess) && (
-              <div className="bg-white rounded-2xl border p-8 text-center">
+              <GlassCard padding className="text-center border-amber-200/50">
                 <Clock className="w-10 h-10 text-amber-600 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-gray-900 mb-2">Host application under review</h2>
-                <p className="text-sm text-gray-500 mb-4">
-                  We received your host profile. You&apos;ll be notified once approved — then you can create trips and appear on the platform.
+                <h2 className="text-lg font-bold text-neutral-900 mb-2">Almost there — we&apos;re reviewing your profile</h2>
+                <p className="text-sm text-neutral-600 mb-4 leading-relaxed">
+                  Thanks for applying! Once approved, you can post your next event and start welcoming hikers &
+                  campers to the community.
                 </p>
-                <Link to="/profile" className="text-sm text-emerald-600 font-medium">Back to profile</Link>
-              </div>
+                <Link to="/profile" className="text-sm text-emerald-600 font-semibold">
+                  Back to profile
+                </Link>
+              </GlassCard>
             )}
 
             {user && appStatus === 'approved' && (
-              <div className="bg-white rounded-2xl border p-8 text-center">
+              <GlassCard padding className="text-center">
                 <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-gray-900 mb-2">You&apos;re approved!</h2>
-                <Link to="/organizer/overview" className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-semibold">
-                  Go to host hub <ArrowRight className="w-4 h-4" />
+                <h2 className="text-lg font-bold text-neutral-900 mb-2">You&apos;re approved — let&apos;s go!</h2>
+                <Link
+                  to="/organizer/overview"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold"
+                >
+                  Post your next event <ArrowRight className="w-4 h-4" />
                 </Link>
-              </div>
+              </GlassCard>
             )}
 
             {user && appStatus === 'rejected' && !submitSuccess && (
-              <div className="bg-white rounded-2xl border p-8 text-center">
+              <GlassCard padding className="text-center">
                 <XCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-gray-900 mb-2">Application not approved</h2>
-                <p className="text-sm text-gray-500 mb-4">Update your host profile and apply again.</p>
-                <button type="button" onClick={() => { setAppStatus('none'); openForm(); }}
-                  className="px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-semibold">
-                  Re-apply
+                <h2 className="text-lg font-bold text-neutral-900 mb-2">Let&apos;s try again</h2>
+                <p className="text-sm text-neutral-600 mb-4">
+                  Update your host profile and re-apply — we&apos;d love to have you in the community.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAppStatus('none');
+                    openForm();
+                  }}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold"
+                >
+                  Post your next event <ArrowRight className="w-4 h-4" />
                 </button>
-              </div>
+              </GlassCard>
             )}
 
             {user && appStatus === 'none' && !submitSuccess && (
-              <div className="bg-white rounded-2xl border p-8 shadow-sm text-center">
-                <Mountain className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-gray-900 mb-2">Apply to become a host</h2>
-                <p className="text-sm text-gray-500 mb-6">
-                  Complete your host profile — individual guide or business. This is what visitors see when you lead a trip.
+              <GlassCard padding className="text-center">
+                <Sparkles className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
+                <h2 className="text-lg font-bold text-neutral-900 mb-2">Your community is waiting</h2>
+                <p className="text-sm text-neutral-600 mb-6 leading-relaxed">
+                  Complete a short host profile — individual guide or business — then post hikes, camps, and
+                  meetups for others to join.
                 </p>
-                <button type="button" onClick={openForm}
-                  className="w-full px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold text-sm">
-                  Start host profile <ArrowRight className="w-4 h-4 inline ml-1" />
-                </button>
-              </div>
+                <PostEventButton fullWidth />
+              </GlassCard>
             )}
-          </div>
-        </section>
+          </section>
+
+          {/* Bottom CTA */}
+          <GlassCard padding className="bg-gradient-to-br from-emerald-700 to-emerald-900 text-white border-0 text-center">
+            <h2 className="text-lg md:text-xl font-extrabold mb-2">The UAE outdoors is better shared</h2>
+            <p className="text-sm text-emerald-100/90 mb-5 leading-relaxed">
+              Someone out there is looking for their first hiking friend. Maybe that&apos;s you — ready to host.
+            </p>
+            <PostEventButton className="!bg-white !text-emerald-800 hover:!bg-emerald-50" />
+          </GlassCard>
+        </div>
 
         {showFormModal && user && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50" onClick={() => setShowFormModal(false)}>
-            <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50"
+            onClick={() => setShowFormModal(false)}
+          >
+            <div
+              className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="sticky top-0 bg-white border-b px-5 py-4 flex items-center justify-between z-10">
-                <h2 className="text-base font-bold text-gray-900">Host profile</h2>
-                <button type="button" onClick={() => setShowFormModal(false)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg">
+                <div>
+                  <h2 className="text-base font-bold text-gray-900">Host profile</h2>
+                  <p className="text-xs text-gray-500">Step 1 before you post your first event</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFormModal(false)}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-5">
-                <p className="text-sm text-gray-500 mb-4">
-                  Choose how you want to host. Every trip must name the person responsible on the day.
+                <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                  Tell the community who you are. Every trip names the person responsible on the day — this is
+                  the profile participants will trust.
                 </p>
 
                 <div className="flex gap-2 mb-5">
-                  {([
-                    { key: 'individual' as const, label: 'Individual', icon: User },
-                    { key: 'business' as const, label: 'Business', icon: Building2 },
-                  ]).map(({ key, label, icon: Icon }) => (
+                  {(
+                    [
+                      { key: 'individual' as const, label: 'Individual', icon: User },
+                      { key: 'business' as const, label: 'Business', icon: Building2 },
+                    ] as const
+                  ).map(({ key, label, icon: Icon }) => (
                     <button
                       key={key}
                       type="button"
@@ -299,7 +466,9 @@ export const BecomeOrganizer = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {form.hostType === 'business' && (
                     <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Business / organization name *</label>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">
+                        Business / organization name *
+                      </label>
                       <input
                         type="text"
                         required
@@ -312,9 +481,7 @@ export const BecomeOrganizer = () => {
                   )}
 
                   <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">
-                      Your name (as host) *
-                    </label>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Your name (as host) *</label>
                     <input
                       type="text"
                       required
@@ -334,9 +501,11 @@ export const BecomeOrganizer = () => {
                       onChange={(e) => setForm({ ...form, bio: e.target.value })}
                       rows={3}
                       className="w-full border rounded-xl px-3 py-2.5 text-sm"
-                      placeholder="Your experience, what you offer, and why people should join your trips…"
+                      placeholder="Why do you love the outdoors? What kind of trips do you want to host? What makes your groups special?"
                     />
-                    <p className="text-xs text-gray-400 mt-1">Min 20 characters — shown on your public profile and trip pages.</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Min 20 characters — shown on your public profile and trip pages.
+                    </p>
                   </div>
 
                   <div>
@@ -353,33 +522,59 @@ export const BecomeOrganizer = () => {
 
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">Phone *</label>
-                    <input type="tel" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      className="w-full border rounded-xl px-3 py-2.5 text-sm" placeholder="+971 50 123 4567" />
+                    <input
+                      type="tel"
+                      required
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                      placeholder="+971 50 123 4567"
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium text-gray-700 mb-1 block">Nationality *</label>
-                      <select required value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })}
-                        className="w-full border rounded-xl px-3 py-2.5 text-sm">
+                      <select
+                        required
+                        value={form.nationality}
+                        onChange={(e) => setForm({ ...form, nationality: e.target.value })}
+                        className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                      >
                         <option value="">Select</option>
-                        {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                        {COUNTRIES.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
                       <label className="text-xs font-medium text-gray-700 mb-1 block">Based in *</label>
-                      <select required value={form.residence} onChange={(e) => setForm({ ...form, residence: e.target.value })}
-                        className="w-full border rounded-xl px-3 py-2.5 text-sm">
+                      <select
+                        required
+                        value={form.residence}
+                        onChange={(e) => setForm({ ...form, residence: e.target.value })}
+                        className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                      >
                         <option value="">Select</option>
-                        {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                        {COUNTRIES.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
 
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">Experience *</label>
-                    <select required value={form.experience} onChange={(e) => setForm({ ...form, experience: e.target.value })}
-                      className="w-full border rounded-xl px-3 py-2.5 text-sm">
+                    <select
+                      required
+                      value={form.experience}
+                      onChange={(e) => setForm({ ...form, experience: e.target.value })}
+                      className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                    >
                       <option value="">Select…</option>
                       <option value="<1 year">Less than 1 year</option>
                       <option value="1-3 years">1–3 years</option>
@@ -390,32 +585,56 @@ export const BecomeOrganizer = () => {
 
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">Languages *</label>
-                    <input type="text" required value={form.languages} onChange={(e) => setForm({ ...form, languages: e.target.value })}
-                      className="w-full border rounded-xl px-3 py-2.5 text-sm" placeholder="English, Arabic…" />
+                    <input
+                      type="text"
+                      required
+                      value={form.languages}
+                      onChange={(e) => setForm({ ...form, languages: e.target.value })}
+                      className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                      placeholder="English, Arabic…"
+                    />
                   </div>
 
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">Certificates</label>
-                    <textarea value={form.certificates} onChange={(e) => setForm({ ...form, certificates: e.target.value })}
-                      rows={2} className="w-full border rounded-xl px-3 py-2.5 text-sm"
-                      placeholder="First aid, wilderness guide, etc." />
+                    <textarea
+                      value={form.certificates}
+                      onChange={(e) => setForm({ ...form, certificates: e.target.value })}
+                      rows={2}
+                      className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                      placeholder="First aid, wilderness guide, etc."
+                    />
                   </div>
 
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">Notable hikes & trips</label>
-                    <textarea value={form.notableHikes} onChange={(e) => setForm({ ...form, notableHikes: e.target.value })}
-                      rows={2} className="w-full border rounded-xl px-3 py-2.5 text-sm"
-                      placeholder="Jebel Jais, Wadi Shawka…" />
+                    <textarea
+                      value={form.notableHikes}
+                      onChange={(e) => setForm({ ...form, notableHikes: e.target.value })}
+                      rows={2}
+                      className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                      placeholder="Jebel Jais, Wadi Shawka…"
+                    />
                   </div>
 
-                  {submitError && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{submitError}</p>}
+                  {submitError && (
+                    <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{submitError}</p>
+                  )}
 
-                  <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={() => setShowFormModal(false)}
-                      className="flex-1 px-4 py-2.5 border rounded-full text-sm font-medium">Cancel</button>
-                    <button type="submit" disabled={submitting}
-                      className="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-semibold disabled:opacity-60">
-                      {submitting ? 'Submitting…' : 'Submit application'}
+                  <div className="flex gap-3 pt-2 pb-nav-safe sm:pb-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowFormModal(false)}
+                      className="flex-1 px-4 py-2.5 border rounded-full text-sm font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold disabled:opacity-60"
+                    >
+                      {submitting ? 'Submitting…' : 'Submit & get ready to host'}
                     </button>
                   </div>
                 </form>
@@ -423,7 +642,7 @@ export const BecomeOrganizer = () => {
             </div>
           </div>
         )}
-      </div>
-    </MobileDetailShell>
+      </ConsumerShell>
+    </>
   );
 };

@@ -216,53 +216,49 @@ export const ExploreSection = () => {
       <p className="text-sm text-neutral-500 mb-3">
         Organized trips you can browse and join.
       </p>
-      <div className="space-y-3 mb-4">
-        <div className="flex gap-2">
-          <div className="flex-1 relative min-w-0">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search by location..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="glass-search md:pl-10"
-            />
-          </div>
-          <div className="relative shrink-0 lg:hidden">
-            <FilterIconButton
-              active={showFilters}
-              badge={activeFilterCount}
-              onClick={() => setShowFilters((open) => !open)}
-              aria-label="Filters"
-              aria-expanded={showFilters}
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-            </FilterIconButton>
-            {showFilters && (
-              <>
-                <button
-                  type="button"
-                  className="fixed inset-0 z-40 cursor-default"
-                  aria-label="Close filters"
-                  onClick={() => setShowFilters(false)}
-                />
-                <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(18rem,calc(100vw-2rem))] glass rounded-2xl border border-white/80 shadow-xl shadow-black/10 p-4 animate-fade-up">
-                  {filterPanel}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <AppSegmented
-            segments={[
-              { key: 'upcoming', label: 'Upcoming' },
-              { key: 'past', label: 'Past' },
-            ]}
-            value={timeFilter}
-            onChange={(key) => setTimeFilter(key as 'upcoming' | 'past')}
+      <div className="flex items-center gap-2 mb-4">
+        <AppSegmented
+          className="shrink-0"
+          segments={[
+            { key: 'upcoming', label: 'Upcoming' },
+            { key: 'past', label: 'Past' },
+          ]}
+          value={timeFilter}
+          onChange={(key) => setTimeFilter(key as 'upcoming' | 'past')}
+        />
+        <div className="flex-1 relative min-w-0">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4 pointer-events-none hidden md:block" />
+          <input
+            type="text"
+            placeholder="Search by location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="glass-search md:pl-10"
           />
+        </div>
+        <div className="relative shrink-0 lg:hidden">
+          <FilterIconButton
+            active={showFilters}
+            badge={activeFilterCount}
+            onClick={() => setShowFilters((open) => !open)}
+            aria-label="Filters"
+            aria-expanded={showFilters}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+          </FilterIconButton>
+          {showFilters && (
+            <>
+              <button
+                type="button"
+                className="fixed inset-0 z-40 cursor-default"
+                aria-label="Close filters"
+                onClick={() => setShowFilters(false)}
+              />
+              <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(18rem,calc(100vw-2rem))] glass rounded-2xl border border-white/80 shadow-xl shadow-black/10 p-4 animate-fade-up">
+                {filterPanel}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

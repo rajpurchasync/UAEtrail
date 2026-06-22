@@ -29,13 +29,19 @@ import { apiRequest, downloadAuthenticatedFile, getStoredSession } from './clien
 
 export interface OrganizerApplication {
   id: string;
+  applicantId?: string;
   applicantEmail: string;
   applicantName: string;
   requestedName: string;
   requestedType: string;
+  requestedSlug?: string;
+  requestedTenantId?: string | null;
   status: string;
   reviewerNote?: string;
+  reviewedAt?: string | null;
   metadata?: {
+    hostDisplayName?: string;
+    bio?: string;
     phone?: string;
     nationality?: string;
     residence?: string;
@@ -281,11 +287,16 @@ export const api = {
       body: JSON.stringify({ endpoint })
     }),
   getCheckoutConfig: () => apiRequest<{ data: { stripeEnabled: boolean } }>('/shop/checkout/config'),
-  createCheckoutSession: (productId: string, quantity = 1) =>
+  createCheckoutSession: (payload: {
+    productId?: string;
+    quantity?: number;
+    items?: Array<{ productId: string; quantity: number }>;
+    includeVat?: boolean;
+  }) =>
     apiRequest<{ data: { sessionId: string; url: string | null } }>('/shop/checkout', {
       method: 'POST',
       auth: true,
-      body: JSON.stringify({ productId, quantity })
+      body: JSON.stringify(payload)
     }),
   getMyTenants: () => apiRequest<{ data: TenantMembershipView[] }>('/me/tenants', { auth: true }),
   getAdminMetrics: () => apiRequest<{ data: AdminMetrics }>('/admin/metrics', { auth: true }),
@@ -438,6 +449,16 @@ export const api = {
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify(payload)
     }),
+
+  submitUserLocation: (payload: Partial<LocationDTO>) =>
+    apiRequest<{ data: LocationDTO }>('/me/locations', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+
+  getMySubmittedLocations: () =>
+    apiRequest<{ data: LocationDTO[] }>('/me/locations', { auth: true }),
 
   getOrganizerSubmittedLocations: (tenantId: string) =>
     apiRequest<{ data: LocationDTO[] }>('/organizer/locations', {
@@ -592,10 +613,11 @@ export const api = {
 
   // ─── Admin - Shop Moderation ───────────────────────────────────────────
 
-  getAdminProducts: (filters?: { status?: string; category?: string; page?: number; pageSize?: number }) => {
+  getAdminProducts: (filters?: { status?: string; category?: string; featured?: boolean; page?: number; pageSize?: number }) => {
     const params = new URLSearchParams();
     if (filters?.status) params.set('status', filters.status);
     if (filters?.category) params.set('category', filters.category);
+    if (filters?.featured) params.set('featured', 'true');
     if (filters?.page) params.set('page', String(filters.page));
     if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
     const qs = params.toString();

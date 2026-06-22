@@ -5,6 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
+import { ShopCartProvider } from './context/ShopCartContext';
 import { getGoogleClientId } from './components/auth/GoogleSignInButton';
 import { queryClient } from './lib/queryClient';
 
@@ -13,7 +14,9 @@ const googleClientId = getGoogleClientId();
 const AppTree = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <App />
+      <ShopCartProvider>
+        <App />
+      </ShopCartProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

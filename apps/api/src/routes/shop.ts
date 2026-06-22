@@ -145,59 +145,105 @@ shopRouter.get('/checkout/config', (_req, res) => {
   res.json({ data: { stripeEnabled: isStripeConfigured() } });
 });
 
-const checkoutSchema = z.object({
+const checkoutItemSchema = z.object({
   productId: z.string().min(1),
-  quantity: z.coerce.number().int().min(1).max(10).default(1)
+  quantity: z.coerce.number().int().min(1).max(10)
 });
+
+const checkoutSchema = z
+  .object({
+    productId: z.string().min(1).optional(),
+    quantity: z.coerce.number().int().min(1).max(10).default(1),
+    items: z.array(checkoutItemSchema).min(1).max(20).optional(),
+    includeVat: z.boolean().optional().default(true)
+  })
+  .refine((body) => Boolean(body.items?.length || body.productId), {
+    message: 'Provide productId or items'
+  });
 
 shopRouter.post('/checkout', requireAuth, requireVerifiedEmail, validate({ body: checkoutSchema }), async (req, res, next) => {
   try {
-    const { productId, quantity } = req.body as z.infer<typeof checkoutSchema>;
-    const product = await prisma.product.findFirst({
-      where: { id: productId, status: ProductStatus.ACTIVE }
+    const body = req.body as z.infer<typeof checkoutSchema>;
+    const lineInputs =
+      body.items && body.items.length > 0
+        ? body.items
+        : [{ productId: body.productId!, quantity: body.quantity }];
+
+    const productIds = [...new Set(lineInputs.map((line) => line.productId))];
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds }, status: ProductStatus.ACTIVE }
     });
-    if (!product) throw new ApiError(404, 'product_not_found', 'Product not found.');
-    if (product.externalUrl) {
-      throw new ApiError(400, 'external_product', 'This product uses an external buy link.');
+    if (products.length !== productIds.length) {
+      throw new ApiError(404, 'product_not_found', 'One or more products were not found.');
     }
 
+    const productById = new Map(products.map((p) => [p.id, p]));
+    const external = lineInputs.find((line) => productById.get(line.productId)?.externalUrl);
+    if (external) {
+      throw new ApiError(400, 'external_product', 'Cart contains a product that uses an external buy link.');
+    }
+
+    const orderLines = lineInputs.map((line) => {
+      const product = productById.get(line.productId)!;
+      return { product, quantity: line.quantity, unitPrice: product.priceAed };
+    });
+    const subtotalAed = orderLines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
+    const includeVat = body.includeVat !== false;
+    const vatAed = includeVat ? Math.round(subtotalAed * 0.05) : 0;
+    const totalAed = subtotalAed + vatAed;
+
     const stripe = await getStripe();
-    const unitPrice = product.priceAed;
-    const totalAed = unitPrice * quantity;
 
     const order = await prisma.shopOrder.create({
       data: {
         userId: req.auth!.userId,
         totalAed,
         items: {
-          create: {
-            productId: product.id,
-            quantity,
-            unitPriceAed: unitPrice
-          }
+          create: orderLines.map((line) => ({
+            productId: line.product.id,
+            quantity: line.quantity,
+            unitPriceAed: line.unitPrice
+          }))
         }
       }
     });
 
+    const cancelPath =
+      orderLines.length === 1
+        ? `/product/${orderLines[0].product.id}?checkout=cancelled`
+        : '/shop?checkout=cancelled';
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       success_url: `${env.APP_BASE_URL}/shop?checkout=success&order=${order.id}`,
-      cancel_url: `${env.APP_BASE_URL}/product/${product.id}?checkout=cancelled`,
+      cancel_url: `${env.APP_BASE_URL}${cancelPath}`,
       client_reference_id: order.id,
       metadata: { orderId: order.id, userId: req.auth!.userId },
       line_items: [
-        {
-          quantity,
+        ...orderLines.map((line) => ({
+          quantity: line.quantity,
           price_data: {
             currency: 'aed',
-            unit_amount: unitPrice * 100,
+            unit_amount: line.unitPrice * 100,
             product_data: {
-              name: product.name,
-              description: product.description?.slice(0, 200) ?? undefined,
-              images: product.images.slice(0, 1)
+              name: line.product.name,
+              description: line.product.description?.slice(0, 200) ?? undefined,
+              images: line.product.images.slice(0, 1)
             }
           }
-        }
+        })),
+        ...(vatAed > 0
+          ? [
+              {
+                quantity: 1,
+                price_data: {
+                  currency: 'aed',
+                  unit_amount: vatAed * 100,
+                  product_data: { name: 'VAT (5%)' }
+                }
+              }
+            ]
+          : [])
       ]
     });
 

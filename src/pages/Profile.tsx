@@ -77,7 +77,7 @@ export const Profile = () => {
         displayName: profile.displayName,
         phone: profile.phone,
         bio: profile.bio,
-        avatarUrl: profile.avatarUrl,
+        ...(profile.avatarUrl ? { avatarUrl: profile.avatarUrl } : {}),
       });
       await refreshUser();
       setMessage('Profile saved.');

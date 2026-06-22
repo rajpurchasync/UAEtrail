@@ -420,7 +420,7 @@ Unlock includes same-day guide support while you're on the trail.`
       childFriendly: true,
       maxGroupSize: 20,
       accessibility: Accessibility.REMOTE,
-      images: ['https://images.unsplash.com/photo-1520904549193-5ab44c10b0d8?w=800'],
+      images: ['https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800'],
       featured: true,
       campingType: 'operator-led',
       latitude: 25.2200,

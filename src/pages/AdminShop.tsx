@@ -1,40 +1,45 @@
 import { useEffect, useState } from 'react';
+import { ProductDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 
-interface ProductRow {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  category: string;
-  status: string;
-  images: string[];
-  merchantName: string;
-  createdAt: string;
+type ShopView = 'all' | 'featured' | 'draft';
+
+interface AdminProduct extends ProductDTO {
+  createdAt?: string;
+  featured?: boolean;
 }
 
+const SHOP_CATEGORIES = [
+  { value: '', label: 'All Categories' },
+  { value: 'apparel', label: 'Apparel' },
+  { value: 'camping accessories', label: 'Camping Accessories' },
+  { value: 'hiking gears', label: 'Hiking Gears' },
+];
+
 export const AdminShop = () => {
-  const [products, setProducts] = useState<ProductRow[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [view, setView] = useState<ShopView>('all');
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [confirmTarget, setConfirmTarget] = useState<{ product: ProductRow; newStatus: string } | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<{ product: AdminProduct; newStatus: string } | null>(null);
 
   const loadProducts = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await api.getAdminProducts({
         page,
         pageSize: 20,
-        status: statusFilter || undefined,
-        category: categoryFilter || undefined
+        status: view === 'draft' ? 'draft' : undefined,
+        featured: view === 'featured' ? true : undefined,
+        category: categoryFilter || undefined,
       });
-      setProducts((res.data ?? []) as unknown as ProductRow[]);
+      setProducts(res.data ?? []);
       setTotal(res.pagination?.total ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load products');
@@ -43,7 +48,9 @@ export const AdminShop = () => {
     }
   };
 
-  useEffect(() => { loadProducts(); }, [page, statusFilter, categoryFilter]);
+  useEffect(() => {
+    loadProducts();
+  }, [page, view, categoryFilter]);
 
   const executeStatusChange = async () => {
     if (!confirmTarget) return;
@@ -61,44 +68,58 @@ export const AdminShop = () => {
     const colors: Record<string, string> = {
       active: 'bg-green-100 text-green-800',
       inactive: 'bg-gray-100 text-gray-600',
-      pending: 'bg-yellow-100 text-yellow-800',
-      suspended: 'bg-red-100 text-red-800'
+      draft: 'bg-yellow-100 text-yellow-800',
     };
     return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] ?? 'bg-gray-100 text-gray-800'}`}>{status}</span>;
   };
 
-  const categoryBadge = (cat: string) => {
-    const colors: Record<string, string> = {
-      gear: 'bg-blue-50 text-blue-700',
-      clothing: 'bg-purple-50 text-purple-700',
-      accessories: 'bg-amber-50 text-amber-700',
-      food: 'bg-emerald-50 text-emerald-700',
-      equipment: 'bg-cyan-50 text-cyan-700'
-    };
-    return <span className={`px-2 py-0.5 rounded text-xs ${colors[cat] ?? 'bg-gray-50 text-gray-700'}`}>{cat}</span>;
+  const formatPrice = (p: AdminProduct) => {
+    const base = p.priceAed ?? 0;
+    if (p.discountPercent && p.discountPercent > 0) {
+      const sale = Math.round(base * (1 - p.discountPercent / 100));
+      return (
+        <span>
+          <span className="text-gray-400 line-through text-xs mr-1">AED {base}</span>
+          AED {sale}
+        </span>
+      );
+    }
+    return <>AED {base}</>;
   };
 
   return (
     <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-900">Shop Moderation</h2>
-          <div className="flex gap-3">
-            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="pending">Pending</option>
-            </select>
-            <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
-              <option value="">All Categories</option>
-              <option value="gear">Gear</option>
-              <option value="clothing">Clothing</option>
-              <option value="accessories">Accessories</option>
-              <option value="food">Food</option>
-              <option value="equipment">Equipment</option>
-            </select>
-          </div>
+          <h2 className="text-lg font-semibold text-gray-900">Shop</h2>
+          <select
+            value={categoryFilter}
+            onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+            className="border rounded px-3 py-1.5 text-sm"
+          >
+            {SHOP_CATEGORIES.map((c) => (
+              <option key={c.value || 'all'} value={c.value}>{c.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="border-b flex gap-0">
+          {([
+            { key: 'all' as const, label: 'All items' },
+            { key: 'featured' as const, label: 'Featured (on sale)' },
+            { key: 'draft' as const, label: 'Pending review' },
+          ]).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => { setView(tab.key); setPage(1); }}
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                view === tab.key ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -135,23 +156,30 @@ export const AdminShop = () => {
                       <div>
                         <p className="font-medium text-gray-900">{p.name}</p>
                         {p.description && <p className="text-xs text-gray-500 line-clamp-1 max-w-xs">{p.description}</p>}
+                        {p.featured && <span className="text-xs text-amber-700 font-medium">Featured in shop</span>}
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-700">{p.merchantName}</td>
-                  <td className="px-4 py-3">{categoryBadge(p.category)}</td>
-                  <td className="px-4 py-3 text-right font-medium">AED {p.price.toFixed(2)}</td>
+                  <td className="px-4 py-3 capitalize text-xs">{p.category}</td>
+                  <td className="px-4 py-3 text-right font-medium">{formatPrice(p)}</td>
                   <td className="px-4 py-3">{statusBadge(p.status)}</td>
-                  <td className="px-4 py-3 text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-xs text-gray-500">
+                    {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       {p.status !== 'active' && (
                         <button onClick={() => setConfirmTarget({ product: p, newStatus: 'active' })}
                           className="px-2 py-1 rounded bg-green-100 text-green-800 hover:bg-green-200 text-xs">Approve</button>
                       )}
-                      {p.status !== 'inactive' && (
+                      {p.status === 'active' && (
                         <button onClick={() => setConfirmTarget({ product: p, newStatus: 'inactive' })}
                           className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs">Suspend</button>
+                      )}
+                      {p.status === 'inactive' && (
+                        <button onClick={() => setConfirmTarget({ product: p, newStatus: 'active' })}
+                          className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Reopen</button>
                       )}
                     </div>
                   </td>
@@ -161,7 +189,6 @@ export const AdminShop = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         {total > 20 && (
           <div className="flex justify-between items-center">
             <p className="text-sm text-gray-600">Showing {(page - 1) * 20 + 1}-{Math.min(page * 20, total)} of {total}</p>
@@ -173,24 +200,23 @@ export const AdminShop = () => {
         )}
       </div>
 
-      {/* Status Change Confirmation */}
       {confirmTarget && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmTarget(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {confirmTarget.newStatus === 'active' ? 'Approve Product?' : 'Suspend Product?'}
+              {confirmTarget.newStatus === 'active' ? 'Approve / reopen product?' : 'Suspend product?'}
             </h3>
             <p className="text-sm text-gray-600 mb-1">
               {confirmTarget.newStatus === 'active'
-                ? 'This will make the product visible in the shop.'
-                : 'This will hide the product from the shop.'}
+                ? 'This will make the product visible in the public shop.'
+                : 'This will hide the product from the public shop.'}
             </p>
             <p className="text-sm font-medium text-gray-900 mb-4">{confirmTarget.product.name} — {confirmTarget.product.merchantName}</p>
             <div className="flex gap-3 justify-end">
               <button onClick={() => setConfirmTarget(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
               <button onClick={executeStatusChange}
                 className={`px-4 py-2 rounded-md text-sm text-white ${confirmTarget.newStatus === 'active' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'}`}>
-                {confirmTarget.newStatus === 'active' ? 'Approve' : 'Suspend'}
+                {confirmTarget.newStatus === 'active' ? 'Confirm' : 'Suspend'}
               </button>
             </div>
           </div>

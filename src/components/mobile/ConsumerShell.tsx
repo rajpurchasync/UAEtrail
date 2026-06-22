@@ -52,13 +52,18 @@ export const ConsumerShell = ({
   return (
     <div className="min-h-screen consumer-bg md:bg-gray-50">
       {(layout === 'tab' || layout === 'editorial') && banner && (
-        <div className={`${maxWidthClass[maxWidth]} mx-auto ${pad} pt-safe-plus-2`}>
+        <div
+          className={`${maxWidthClass[maxWidth]} mx-auto ${
+            layout === 'editorial' ? 'px-0 sm:px-6 lg:px-8' : pad
+          } pt-safe-plus-2`}
+        >
           <ConsumerHeroBanner
             src={banner.src}
             alt={banner.alt}
             title={title}
             eyebrow={layout === 'editorial' ? eyebrow : undefined}
             action={layout === 'tab' ? action : undefined}
+            size={layout === 'editorial' ? 'editorial' : 'tab'}
             className="animate-fade-up"
           />
         </div>

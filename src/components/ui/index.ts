@@ -15,6 +15,7 @@ export { Breadcrumb } from './Breadcrumb';
 export { TenantSwitcher } from './TenantSwitcher';
 export { MapPinPicker } from './MapPinPicker';
 export { MeetingPointMap, MapPinFields, parseCoord } from './MeetingPointMap';
+export { MapLocationPicker } from './MapLocationPicker';
 export { LocationsMap, boundsFromPins } from './LocationsMap';
 export type { LocationMapPin, MapBounds } from './LocationsMap';
 export { ImageUpload } from './ImageUpload';

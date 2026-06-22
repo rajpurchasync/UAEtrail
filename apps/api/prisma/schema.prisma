@@ -295,6 +295,10 @@ model Location {
   surfaceType   String[]
   tags          String[]
   parkingLink   String?
+  parkingLat    Float?
+  parkingLng    Float?
+  emirate       String?
+  premiumImages String[]       @default([])
   accessibleBy  String[]
   viewCount     Int            @default(0)
   countryCode   String         @default("AE")
@@ -342,6 +346,14 @@ model Event {
   meetingPoint String?
   meetingLat   Float?
   meetingLng   Float?
+  parkingPoint String?
+  parkingLat   Float?
+  parkingLng   Float?
+  meetingDifferent Boolean @default(false)
+  carPoolEnabled   Boolean @default(false)
+  carPoolFree      Boolean?
+  carPoolPriceAed  Int?
+  carPoolDetails   String?
   paymentTerms String?
   itinerary    String[]
   requirements String[]

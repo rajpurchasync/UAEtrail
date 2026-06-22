@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -66,6 +66,11 @@ const PageLoader = () => (
     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
   </div>
 );
+
+const AuthAliasRedirect = ({ to }: { to: string }) => {
+  const { search } = useLocation();
+  return <Navigate to={`${to}${search}`} replace />;
+};
 
 function App() {
   return (
@@ -144,6 +149,8 @@ function App() {
           <Route path="/community" element={<Community />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/sign-up" element={<AuthAliasRedirect to="/signup" />} />
+          <Route path="/sign-in" element={<AuthAliasRedirect to="/signin" />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/faq" element={<Faq />} />

@@ -86,9 +86,12 @@ export const MyRewards = () => {
 
   return (
     <ConsumerShell
-      layout="stack"
+      layout="editorial"
+      eyebrow="Rewards"
       title="My Trail Points"
-      banner={{ src: PAGE_BANNERS.profile, alt: 'Mountain landscape' }}
+      maxWidth="4xl"
+      banner={{ src: PAGE_BANNERS.rewards, alt: 'Hikers on a UAE trail' }}
+      back={{ fallbackTo: '/profile', label: 'Profile' }}
     >
       {loading && (
         <div className="flex justify-center py-12">
@@ -103,15 +106,15 @@ export const MyRewards = () => {
       )}
 
       {summary && !loading && (
-        <div className="space-y-4 animate-fade-up">
+        <div className="space-y-4 animate-fade-up pb-2">
           <GlassCard padding className="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white border-0">
             <div className="flex items-start justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-emerald-100 text-xs font-semibold uppercase tracking-wider mb-1">Your balance</p>
-                <p className="text-4xl font-extrabold tracking-tight">{summary.points.toLocaleString()}</p>
+                <p className="text-3xl sm:text-4xl font-extrabold tracking-tight">{summary.points.toLocaleString()}</p>
                 <p className="text-emerald-100 text-sm mt-1">Trail Points</p>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center text-2xl">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/15 flex items-center justify-center text-xl sm:text-2xl shrink-0">
                 {summary.membershipTier.emoji ?? '🌱'}
               </div>
             </div>
@@ -123,18 +126,18 @@ export const MyRewards = () => {
                 size="md"
               />
               {summary.membershipTier.key === 'free' && (
-                <span className="text-emerald-100 text-sm">Earn points to unlock Active</span>
+                <span className="text-emerald-100 text-xs sm:text-sm">Earn points to unlock Active</span>
               )}
             </div>
             <div className="mt-4 pt-4 border-t border-white/20">
-              <div className="flex items-center justify-between text-sm mb-2">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-sm mb-2">
                 <span className="font-semibold">{summary.membershipTier.name} tier</span>
                 {summary.nextTier ? (
-                  <span className="text-emerald-100">
+                  <span className="text-emerald-100 text-xs sm:text-sm">
                     {summary.nextTier.pointsRemaining} pts to {summary.nextTier.name}
                   </span>
                 ) : (
-                  <span className="text-emerald-100">GOAT — highest tier</span>
+                  <span className="text-emerald-100 text-xs sm:text-sm">GOAT — highest tier</span>
                 )}
               </div>
               <div className="h-2 rounded-full bg-white/20 overflow-hidden">
@@ -162,49 +165,47 @@ export const MyRewards = () => {
 
           <TierUnlockShareCard tier={summary.membershipTier} referralCode={summary.referralCode} />
 
-          {summary.pathToNextTier && (
-            <TrailPointsProgressCard summary={summary} />
-          )}
+          {summary.pathToNextTier && <TrailPointsProgressCard summary={summary} />}
 
           <Link
             to="/trail-points"
-            className="flex items-center justify-between gap-2 px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-emerald-700 hover:bg-emerald-50 transition-colors"
+            className="flex items-center justify-between gap-2 px-4 py-3.5 bg-white rounded-xl border border-gray-100 text-sm font-medium text-emerald-700 hover:bg-emerald-50 transition-colors"
           >
             How Trail Points & tiers work
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-4 h-4 shrink-0" />
           </Link>
 
           <GlassCard padding>
             <div className="flex items-center gap-2 mb-2">
-              <Share2 className="w-4 h-4 text-emerald-600" />
+              <Share2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <h2 className="font-bold text-gray-900">Invite friends</h2>
             </div>
             <p className="text-sm text-gray-500 mb-3">
               Share your link — you earn <strong>50 pts</strong> when they join, they get <strong>25 pts</strong>.
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 readOnly
                 value={inviteLink}
-                className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 truncate"
+                className="w-full min-w-0 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700"
               />
               <button
                 type="button"
                 onClick={copyInvite}
-                className="shrink-0 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold flex items-center gap-1.5 hover:bg-emerald-700 transition-colors"
+                className="w-full sm:w-auto shrink-0 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-emerald-700 transition-colors"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? 'Copied' : 'Copy'}
+                {copied ? 'Copied' : 'Copy link'}
               </button>
             </div>
           </GlassCard>
 
           <GlassCard padding>
             <div className="flex items-center gap-2 mb-3">
-              <Star className="w-4 h-4 text-amber-500" />
+              <Star className="w-4 h-4 text-amber-500 shrink-0" />
               <h2 className="font-bold text-gray-900">Tier badges</h2>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {summary.tierBadges.map((badge) => (
                 <div
                   key={badge.key}
@@ -213,7 +214,7 @@ export const MyRewards = () => {
                   }`}
                 >
                   <span className="text-2xl block mb-1">{badge.emoji}</span>
-                  <p className="text-xs font-semibold text-gray-900">{badge.name}</p>
+                  <p className="text-xs font-semibold text-gray-900 leading-snug">{badge.name}</p>
                 </div>
               ))}
             </div>
@@ -221,20 +222,22 @@ export const MyRewards = () => {
 
           <GlassCard padding>
             <div className="flex items-center gap-2 mb-3">
-              <Award className="w-4 h-4 text-emerald-600" />
+              <Award className="w-4 h-4 text-emerald-600 shrink-0" />
               <h2 className="font-bold text-gray-900">Achievements</h2>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {summary.badges.map((badge) => (
                 <div
                   key={badge.key}
-                  className={`p-3 rounded-xl border text-center ${
+                  className={`flex items-start gap-3 p-3 rounded-xl border text-left ${
                     badge.earned ? 'border-emerald-200 bg-emerald-50/80' : 'border-gray-100 bg-gray-50/50 opacity-60'
                   }`}
                 >
-                  <span className="text-2xl block mb-1">{badge.emoji}</span>
-                  <p className="text-xs font-semibold text-gray-900">{badge.name}</p>
-                  <p className="text-[10px] text-gray-500 mt-0.5 leading-tight">{badge.description}</p>
+                  <span className="text-2xl shrink-0">{badge.emoji}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">{badge.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{badge.description}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -243,25 +246,25 @@ export const MyRewards = () => {
           {leaderboard.length > 0 && (
             <GlassCard padding>
               <div className="flex items-center gap-2 mb-3">
-                <Trophy className="w-4 h-4 text-emerald-600" />
+                <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />
                 <h2 className="font-bold text-gray-900">Top contributors</h2>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-1">
                 {leaderboard.map((entry) => (
-                  <li key={entry.userId} className="flex items-center gap-3 py-2">
-                    <span className="w-6 text-center text-sm font-bold text-gray-400">#{entry.rank}</span>
+                  <li key={entry.userId} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+                    <span className="w-6 text-center text-sm font-bold text-gray-400 shrink-0">#{entry.rank}</span>
                     {entry.avatarUrl ? (
-                      <img src={entry.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      <img src={entry.avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold">
+                      <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold shrink-0">
                         {entry.displayName.charAt(0)}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">{entry.displayName}</p>
-                      <p className="text-xs text-gray-500">{entry.tier ?? entry.level}</p>
+                      <p className="text-xs text-gray-500 truncate">{entry.tier ?? entry.level}</p>
                     </div>
-                    <span className="text-sm font-bold text-emerald-700">{entry.points}</span>
+                    <span className="text-sm font-bold text-emerald-700 shrink-0">{entry.points}</span>
                   </li>
                 ))}
               </ul>
@@ -271,21 +274,21 @@ export const MyRewards = () => {
           {summary.recentActivity.length > 0 && (
             <GlassCard padding>
               <h2 className="font-bold text-gray-900 mb-3">Recent activity</h2>
-              <ul className="space-y-2">
+              <ul className="space-y-1">
                 {summary.recentActivity.map((entry) => {
                   const Icon = EARN_ICONS[entry.action] ?? Award;
                   return (
-                    <li key={entry.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                    <li key={entry.id} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+                      <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
                         <Icon className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-900 truncate">{entry.label}</p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-sm text-gray-900 leading-snug">{entry.label}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
                           {new Date(entry.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </p>
                       </div>
-                      <span className="text-sm font-bold text-emerald-600">+{entry.points}</span>
+                      <span className="text-sm font-bold text-emerald-600 shrink-0">+{entry.points}</span>
                     </li>
                   );
                 })}

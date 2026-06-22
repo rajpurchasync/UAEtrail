@@ -16,6 +16,8 @@ import { validate } from '../middleware/validate.js';
 import { awardPoints } from '../services/rewards.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
 import { performParticipantCheckIn } from '../services/checkin.js';
+import { buildLocationCreateData } from '../services/location-submit.js';
+import { locationSubmitBodySchema } from '../domain/location-submit.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 const membershipIdSchema = z.object({ membershipId: z.string().min(1) });
@@ -31,6 +33,14 @@ const eventCreateSchema = z.object({
   meetingPoint: z.string().max(200).optional(),
   meetingLat: z.number().min(-90).max(90).optional(),
   meetingLng: z.number().min(-180).max(180).optional(),
+  parkingPoint: z.string().max(200).optional(),
+  parkingLat: z.number().min(-90).max(90).optional(),
+  parkingLng: z.number().min(-180).max(180).optional(),
+  meetingDifferent: z.boolean().optional(),
+  carPoolEnabled: z.boolean().optional(),
+  carPoolFree: z.boolean().optional(),
+  carPoolPriceAed: z.number().int().min(0).optional(),
+  carPoolDetails: z.string().max(1000).optional(),
   paymentTerms: z.string().max(1000).optional(),
   itinerary: z.array(z.string()).default([]),
   requirements: z.array(z.string()).default([]),
@@ -72,6 +82,23 @@ import {
 const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): MembershipRole =>
   role === 'tenant_admin' ? MembershipRole.TENANT_ADMIN : MembershipRole.TENANT_GUIDE;
 
+const assertEventLocation = async (locationId: string, userId: string) => {
+  const location = await prisma.location.findUnique({ where: { id: locationId } });
+  if (!location) {
+    throw new ApiError(400, 'invalid_location', 'Location not found.');
+  }
+  const ownDraft =
+    location.status === LocationStatus.DRAFT && location.submittedById === userId;
+  if (location.status !== LocationStatus.ACTIVE && !ownDraft) {
+    throw new ApiError(
+      400,
+      'invalid_location',
+      'Location must be active, or a draft you submitted while it is under review.'
+    );
+  }
+  return location;
+};
+
 export const organizerRouter = Router();
 
 organizerRouter.use(requireAuth, requireVerifiedEmail, requireTenantContext);
@@ -111,9 +138,11 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
     const tenantId = req.tenantContext!.tenantId;
     const body = req.body as z.infer<typeof eventCreateSchema>;
 
-    const location = await prisma.location.findUnique({ where: { id: body.locationId } });
-    if (!location || location.status !== LocationStatus.ACTIVE) {
-      throw new ApiError(400, 'invalid_location', 'Location must exist and be active.');
+    const location = body.locationId
+      ? await assertEventLocation(body.locationId, req.auth!.userId)
+      : null;
+    if (!location) {
+      throw new ApiError(400, 'invalid_location', 'Location is required.');
     }
 
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
@@ -157,6 +186,15 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
         meetingPoint: body.meetingPoint,
         meetingLat: body.meetingLat,
         meetingLng: body.meetingLng,
+        parkingPoint: body.parkingPoint,
+        parkingLat: body.parkingLat,
+        parkingLng: body.parkingLng,
+        meetingDifferent: body.meetingDifferent ?? false,
+        carPoolEnabled: body.carPoolEnabled ?? false,
+        carPoolFree: body.carPoolEnabled ? (body.carPoolFree ?? true) : null,
+        carPoolPriceAed:
+          body.carPoolEnabled && body.carPoolFree === false ? body.carPoolPriceAed ?? 0 : null,
+        carPoolDetails: body.carPoolEnabled ? body.carPoolDetails : null,
         paymentTerms: body.paymentTerms,
         itinerary: body.itinerary,
         requirements: body.requirements,
@@ -229,6 +267,10 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
       }
     }
 
+    if (body.locationId) {
+      await assertEventLocation(body.locationId, req.auth!.userId);
+    }
+
     const tenantMeta = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { countryCode: true } });
     const countryCode = tenantMeta?.countryCode ?? 'AE';
 
@@ -257,6 +299,14 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
         meetingPoint: body.meetingPoint,
         meetingLat: body.meetingLat,
         meetingLng: body.meetingLng,
+        parkingPoint: body.parkingPoint,
+        parkingLat: body.parkingLat,
+        parkingLng: body.parkingLng,
+        meetingDifferent: body.meetingDifferent,
+        carPoolEnabled: body.carPoolEnabled,
+        carPoolFree: body.carPoolFree,
+        carPoolPriceAed: body.carPoolPriceAed,
+        carPoolDetails: body.carPoolDetails,
         paymentTerms: body.paymentTerms,
         itinerary: body.itinerary,
         requirements: body.requirements,
@@ -848,20 +898,6 @@ organizerRouter.delete('/events/:id/participants/:participantId/checkin', valida
 
 // ─── Location Submission ────────────────────────────────────────────────────
 
-const locationSubmitSchema = z.object({
-  name: z.string().min(2).max(120),
-  countryCode: z.string().length(2),
-  region: z.string().min(2).max(80),
-  activityType: z.enum(['hiking', 'camping']),
-  description: z.string().min(20).max(3000),
-  latitude: z.number().min(-90).max(90).optional(),
-  longitude: z.number().min(-180).max(180).optional(),
-  images: z.array(z.string().url()).min(1)
-});
-
-const toPrismaActivityType = (activityType: 'hiking' | 'camping'): ActivityType =>
-  activityType === 'hiking' ? ActivityType.HIKING : ActivityType.CAMPING;
-
 organizerRouter.get('/locations', async (req, res, next) => {
   try {
     const locations = await prisma.location.findMany({
@@ -874,24 +910,12 @@ organizerRouter.get('/locations', async (req, res, next) => {
   }
 });
 
-organizerRouter.post('/locations', validate({ body: locationSubmitSchema }), async (req, res, next) => {
+organizerRouter.post('/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
   try {
-    const body = req.body as z.infer<typeof locationSubmitSchema>;
+    const body = req.body as z.infer<typeof locationSubmitBodySchema>;
 
     const created = await prisma.location.create({
-      data: {
-        name: body.name,
-        countryCode: body.countryCode.toUpperCase(),
-        region: body.region,
-        activityType: toPrismaActivityType(body.activityType),
-        description: body.description,
-        latitude: body.latitude,
-        longitude: body.longitude,
-        images: body.images,
-        season: ['year-round'],
-        status: LocationStatus.DRAFT,
-        submittedById: req.auth!.userId
-      }
+      data: buildLocationCreateData(body, req.auth!.userId)
     });
 
     await createAuditLog({

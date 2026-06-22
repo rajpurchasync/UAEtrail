@@ -1,8 +1,11 @@
 import { lazy, Suspense, useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, Map, List } from 'lucide-react';
+import { Search, SlidersHorizontal, Map, List, Plus } from 'lucide-react';
 import { TrailCard } from '../components/ui/TrailCard';
 import { CampingCard } from '../components/ui/CampingCard';
+import { Dialog } from '../components/ui/Dialog';
+import { SubmitLocationForm } from '../components/ui/SubmitLocationForm';
+import { useAuth } from '../context/AuthContext';
 import type { LocationMapPin } from '../components/ui/LocationsMap';
 
 const LocationsMap = lazy(() =>
@@ -22,8 +25,11 @@ type LocationItem = { type: 'trail'; data: Trail } | { type: 'camp'; data: Campi
 type ActivityFilter = 'all' | 'hiking' | 'camping';
 
 export const Discovery = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [addLocationOpen, setAddLocationOpen] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -77,6 +83,14 @@ export const Discovery = () => {
       setActivityFilter('all');
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!user || searchParams.get('addLocation') !== '1') return;
+    setAddLocationOpen(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete('addLocation');
+    setSearchParams(next, { replace: true });
+  }, [user, searchParams, setSearchParams]);
 
   useEffect(() => {
     setLoading(true);
@@ -226,6 +240,14 @@ export const Discovery = () => {
     navigate('/discovery', { replace: true });
   };
 
+  const openAddLocation = () => {
+    if (!user) {
+      navigate(`/signup?redirect=${encodeURIComponent('/discovery?addLocation=1')}`);
+      return;
+    }
+    setAddLocationOpen(true);
+  };
+
   return (
     <ConsumerShell
       layout="editorial"
@@ -238,6 +260,11 @@ export const Discovery = () => {
           {loadError && (
             <p className="text-sm text-amber-800 glass rounded-2xl px-3 py-2 mb-3 border-amber-200/50">
               {loadError}
+            </p>
+          )}
+          {submitSuccess && (
+            <p className="text-sm text-emerald-800 glass rounded-2xl px-3 py-2 mb-3 border-emerald-200/50">
+              {submitSuccess}
             </p>
           )}
           <div className="flex gap-2 mb-3">
@@ -254,6 +281,14 @@ export const Discovery = () => {
             <FilterIconButton onClick={() => setShowFilters(!showFilters)} aria-label="Filters">
               <SlidersHorizontal className="w-4 h-4" />
             </FilterIconButton>
+            <button
+              type="button"
+              onClick={openAddLocation}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Add location</span>
+            </button>
           </div>
           <div className="flex gap-2 justify-between items-center flex-wrap">
             <FilterChips
@@ -528,6 +563,17 @@ export const Discovery = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={addLocationOpen} onClose={() => setAddLocationOpen(false)} title="Suggest a location">
+        <SubmitLocationForm
+          defaultActivityType={activityFilter === 'camping' ? 'camping' : 'hiking'}
+          onSubmitted={(loc) => {
+            setAddLocationOpen(false);
+            setSubmitSuccess(`"${loc.name}" submitted for admin review. You'll see it on Trails & Spots once published.`);
+          }}
+          onCancel={() => setAddLocationOpen(false)}
+        />
+      </Dialog>
     </ConsumerShell>
   );
 };

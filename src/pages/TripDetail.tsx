@@ -402,7 +402,18 @@ export const TripDetail = () => {
               </div>
             )}
 
-            {trip.meetingPoint && (
+            {trip.parkingPoint && (
+              <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
+                <Car className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900">Parking</p>
+                  <p>{trip.parkingPoint}</p>
+                  <MeetingPointMap lat={trip.parkingLat} lng={trip.parkingLng} label={trip.parkingPoint} />
+                </div>
+              </div>
+            )}
+
+            {trip.meetingPoint && (trip.meetingDifferent || !trip.parkingPoint) && (
               <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
                 <MapPin className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -413,7 +424,26 @@ export const TripDetail = () => {
               </div>
             )}
 
-            {trip.location.parkingLink && (
+            {trip.carPoolEnabled && (
+              <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
+                <Car className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-gray-900">Car pool</p>
+                  <p>
+                    {trip.carPoolFree
+                      ? 'Free shared ride'
+                      : trip.carPoolPriceAed != null
+                        ? `AED ${trip.carPoolPriceAed} per seat`
+                        : 'Paid shared ride'}
+                  </p>
+                  {trip.carPoolDetails && (
+                    <p className="text-gray-600 mt-1 whitespace-pre-line">{trip.carPoolDetails}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {trip.location.parkingLink && !trip.parkingPoint && (
               <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
                 <Car className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                 <div>

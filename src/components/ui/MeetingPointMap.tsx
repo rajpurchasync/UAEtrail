@@ -1,3 +1,6 @@
+import { MapLocationPicker } from './MapLocationPicker';
+import { parseCoord } from '../../utils/coords';
+
 interface MeetingPointMapProps {
   lat?: number | null;
   lng?: number | null;
@@ -41,42 +44,56 @@ interface MapPinFieldsProps {
   lng: string;
   onLatChange: (value: string) => void;
   onLngChange: (value: string) => void;
+  centerLat?: number | null;
+  centerLng?: number | null;
 }
 
-export const MapPinFields = ({ lat, lng, onLatChange, onLngChange }: MapPinFieldsProps) => (
-  <div className="grid grid-cols-2 gap-3">
-    <div>
-      <label className="text-xs font-medium text-gray-600 mb-1 block">Map pin latitude</label>
-      <input
-        type="number"
-        step="any"
-        min={-90}
-        max={90}
-        value={lat}
-        onChange={(e) => onLatChange(e.target.value)}
-        className="w-full border rounded-lg px-3 py-2 text-sm"
-        placeholder="e.g. 25.0657"
-      />
-    </div>
-    <div>
-      <label className="text-xs font-medium text-gray-600 mb-1 block">Map pin longitude</label>
-      <input
-        type="number"
-        step="any"
-        min={-180}
-        max={180}
-        value={lng}
-        onChange={(e) => onLngChange(e.target.value)}
-        className="w-full border rounded-lg px-3 py-2 text-sm"
-        placeholder="e.g. 56.1221"
-      />
+export const MapPinFields = ({
+  lat,
+  lng,
+  onLatChange,
+  onLngChange,
+  centerLat,
+  centerLng,
+}: MapPinFieldsProps) => (
+  <div className="space-y-3">
+    <MapLocationPicker
+      lat={lat}
+      lng={lng}
+      onLatChange={onLatChange}
+      onLngChange={onLngChange}
+      centerLat={centerLat}
+      centerLng={centerLng}
+    />
+    <div className="grid grid-cols-2 gap-3">
+      <div>
+        <label className="text-xs font-medium text-gray-600 mb-1 block">Latitude</label>
+        <input
+          type="number"
+          step="any"
+          min={-90}
+          max={90}
+          value={lat}
+          onChange={(e) => onLatChange(e.target.value)}
+          className="w-full border rounded-lg px-3 py-2 text-sm"
+          placeholder="e.g. 25.0657"
+        />
+      </div>
+      <div>
+        <label className="text-xs font-medium text-gray-600 mb-1 block">Longitude</label>
+        <input
+          type="number"
+          step="any"
+          min={-180}
+          max={180}
+          value={lng}
+          onChange={(e) => onLngChange(e.target.value)}
+          className="w-full border rounded-lg px-3 py-2 text-sm"
+          placeholder="e.g. 56.1221"
+        />
+      </div>
     </div>
   </div>
 );
 
-export const parseCoord = (value: string): number | undefined => {
-  const trimmed = value.trim();
-  if (!trimmed) return undefined;
-  const n = Number(trimmed);
-  return Number.isFinite(n) ? n : undefined;
-};
+export { parseCoord };

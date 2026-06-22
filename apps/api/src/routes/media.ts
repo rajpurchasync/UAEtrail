@@ -114,8 +114,8 @@ mediaRouter.post('/presign-upload', validate({ body: presignSchema }), async (re
     if (isS3Available()) {
       uploadUrl = await createPresignedUpload({ key, contentType: body.mimeType });
     } else {
-      // Local dev fallback — direct PUT to our own endpoint
-      uploadUrl = `${env.API_BASE_URL}/api/v1/media/upload-local/${key}`;
+      // Relative path — works through Vite dev proxy and same-origin production
+      uploadUrl = `/api/v1/media/upload-local/${key}`;
     }
 
     res.json({

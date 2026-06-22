@@ -37,7 +37,10 @@ export const AssetKeyUpload = ({
         kind,
       });
 
-      const isLocalUpload = presign.data.uploadUrl.includes('/media/upload-local/');
+      const uploadUrl = presign.data.uploadUrl.startsWith('/')
+        ? presign.data.uploadUrl
+        : presign.data.uploadUrl;
+      const isLocalUpload = uploadUrl.includes('/media/upload-local/');
       const headers: Record<string, string> = {
         'Content-Type': file.type || 'application/octet-stream',
       };
@@ -48,7 +51,7 @@ export const AssetKeyUpload = ({
         }
       }
 
-      const putRes = await fetch(presign.data.uploadUrl, { method: 'PUT', headers, body: file });
+      const putRes = await fetch(uploadUrl, { method: 'PUT', headers, body: file });
       if (!putRes.ok) throw new Error(`Upload failed (${putRes.status})`);
 
       await api.commitUpload({

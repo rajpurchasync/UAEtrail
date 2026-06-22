@@ -1,11 +1,12 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { CreateTripModal } from '../components/ui';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { AppHeaderAction } from '../components/mobile/AppHeaderAction';
+import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PAGE_BANNERS } from '../config/pageBanners';
 import { isOrganizer, parseTabParam, type PageTab } from './trips/shared';
@@ -15,6 +16,7 @@ import { OrganizedSection } from './trips/OrganizedSection';
 
 export const Trips = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const showOrganized = isOrganizer(user?.role);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -62,6 +64,14 @@ export const Trips = () => {
     [user, showOrganized]
   );
 
+  const handlePostEvent = useCallback(() => {
+    if (showOrganized) {
+      setShowCreateModal(true);
+      return;
+    }
+    navigate('/become-host');
+  }, [showOrganized, navigate]);
+
   return (
     <ConsumerShell
       layout="tab"
@@ -86,9 +96,19 @@ export const Trips = () => {
         path="/trips"
       />
 
-      {activeTab === 'explore' && <ExploreSection />}
-      {activeTab === 'mine' && user && <MineSection onExplore={() => setTab('explore')} />}
-      {activeTab === 'organized' && showOrganized && <OrganizedSection refreshKey={organizedRefresh} />}
+      <div className="pb-24 md:pb-8">
+        {activeTab === 'explore' && <ExploreSection />}
+        {activeTab === 'mine' && user && <MineSection onExplore={() => setTab('explore')} />}
+        {activeTab === 'organized' && showOrganized && <OrganizedSection refreshKey={organizedRefresh} />}
+      </div>
+
+      <FloatingActionButton
+        extended
+        icon={<Plus className="w-5 h-5 shrink-0" strokeWidth={2.5} />}
+        text="Post your next event"
+        label="Post your next event"
+        onClick={handlePostEvent}
+      />
 
       <CreateTripModal
         open={showCreateModal}

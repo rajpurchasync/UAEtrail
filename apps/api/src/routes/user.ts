@@ -1,4 +1,4 @@
-import { ActivityType, EventStatus, LocationStatus, LocationUnlockSource, OrganizerApplicationStatus, RequestStatus, TenantStatus } from '@prisma/client';
+import { ActivityType, EventStatus, LocationStatus, LocationUnlockSource, OrganizerApplicationStatus, RequestStatus, RewardAction, TenantStatus } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
@@ -15,7 +15,10 @@ import { buildParticipationDto, performParticipantCheckIn } from '../services/ch
 import { canWithdrawRequest, withdrawReasonSchema } from '../lib/withdraw-reasons.js';
 import { getVapidPublicKey } from '../lib/push.js';
 import { EARN_OPPORTUNITIES, MEMBERSHIP_TIERS, REWARD_POINTS } from '../lib/rewards-config.js';
-import { getLeaderboard, getRewardStats, getRewardSummary } from '../services/rewards.js';
+import { awardPoints, getLeaderboard, getRewardStats, getRewardSummary } from '../services/rewards.js';
+import { buildLocationCreateData } from '../services/location-submit.js';
+import { locationSubmitBodySchema } from '../domain/location-submit.js';
+import { createAuditLog } from '../lib/audit.js';
 import {
   assertPremiumAccess,
   buildPremiumSummary,
@@ -51,7 +54,10 @@ const updateProfileSchema = z.object({
   displayName: z.string().min(2).max(80).optional(),
   phone: z.string().max(30).optional(),
   bio: z.string().max(400).optional(),
-  avatarUrl: z.string().url().optional()
+  avatarUrl: z.preprocess(
+    (value) => (value === '' || value === null ? undefined : value),
+    z.string().url().optional()
+  )
 });
 
 const listFilterSchema = z.object({
@@ -1226,6 +1232,48 @@ userRouter.post(
     }
   }
 );
+
+// ─── User location submission (any signed-in user) ─────────────────────────
+
+userRouter.get('/me/locations', async (req, res, next) => {
+  try {
+    const locations = await prisma.location.findMany({
+      where: { submittedById: req.auth!.userId },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ data: locations.map((l) => toLocationDto(l)) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
+  try {
+    const body = req.body as z.infer<typeof locationSubmitBodySchema>;
+
+    const created = await prisma.location.create({
+      data: buildLocationCreateData(body, req.auth!.userId)
+    });
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: 'location.submit',
+      entityType: 'location',
+      entityId: created.id
+    });
+
+    void awardPoints(prisma, {
+      userId: req.auth!.userId,
+      action: RewardAction.LOCATION_SUBMITTED,
+      referenceId: created.id,
+      label: `Submitted location: ${created.name}`
+    }).catch(() => undefined);
+
+    res.status(201).json({ data: toLocationDto(created) });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // ─── Trail Points / Rewards ─────────────────────────────────────────────────
 

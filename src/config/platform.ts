@@ -41,11 +41,13 @@ export const MEMBERSHIP_NAV_LINK = FEATURE_FLAGS.membershipEnabled
   ? ({ to: '/membership' as const, label: 'Membership' })
   : null;
 
-/** Shop v1: catalog + external buy link + member discount badge — no native checkout. */
+/** Shop: catalog, cart, and Stripe checkout (when configured). */
 export const SHOP_V1 = {
-  checkoutMode: 'external' as const,
   memberDiscountPercent: 10,
   showMemberBadge: FEATURE_FLAGS.membershipEnabled,
+  /** UAE standard VAT rate — shown in cart and added at checkout. */
+  vatPercent: 5,
+  vatEnabled: true,
 };
 
 /**

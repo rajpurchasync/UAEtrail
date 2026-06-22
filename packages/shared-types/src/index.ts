@@ -51,6 +51,10 @@ export interface LocationDTO {
   surfaceType?: string[];
   tags?: string[];
   parkingLink?: string;
+  parkingLat?: number | null;
+  parkingLng?: number | null;
+  emirate?: string | null;
+  premiumImages?: string[];
   accessibleBy?: string[];
   viewCount?: number;
   countryCode?: string;
@@ -125,6 +129,14 @@ export interface EventDTO {
   meetingPoint?: string | null;
   meetingLat?: number | null;
   meetingLng?: number | null;
+  parkingPoint?: string | null;
+  parkingLat?: number | null;
+  parkingLng?: number | null;
+  meetingDifferent?: boolean;
+  carPoolEnabled?: boolean;
+  carPoolFree?: boolean | null;
+  carPoolPriceAed?: number | null;
+  carPoolDetails?: string | null;
   paymentTerms?: string | null;
   itinerary?: string[] | null;
   requirements?: string[] | null;

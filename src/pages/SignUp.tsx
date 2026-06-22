@@ -176,7 +176,10 @@ export const SignUp = () => {
 
         <p className="text-sm text-gray-500 mt-5 text-center">
           Already have an account?{' '}
-          <Link to="/signin" className="text-emerald-700 hover:text-emerald-900 font-medium">
+          <Link
+            to={redirectTo ? `/signin?redirect=${encodeURIComponent(redirectTo)}` : '/signin'}
+            className="text-emerald-700 hover:text-emerald-900 font-medium"
+          >
             Log in
           </Link>
         </p>

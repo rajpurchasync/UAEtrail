@@ -297,8 +297,11 @@ adminRouter.get('/organizer-applications', async (req, res, next) => {
         requestedName: item.requestedName,
         requestedType: item.requestedType.toLowerCase(),
         requestedSlug: item.requestedSlug,
+        requestedTenantId: item.requestedTenantId,
         status: item.status.toLowerCase(),
         reviewerNote: item.reviewerNote,
+        reviewedAt: item.reviewedAt,
+        metadata: item.metadata,
         createdAt: item.createdAt
       })),
       total,
@@ -1061,17 +1064,19 @@ adminRouter.get('/notifications', async (req, res, next) => {
 const productListQuerySchema = z.object({
   status: z.string().optional(),
   category: z.string().optional(),
+  featured: z.enum(['true', 'false']).optional(),
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(20)
 });
 
 adminRouter.get('/products', validate({ query: productListQuerySchema }), async (req, res, next) => {
   try {
-    const { status, category, page, pageSize } = req.query as unknown as z.infer<typeof productListQuerySchema>;
+    const { status, category, featured, page, pageSize } = req.query as unknown as z.infer<typeof productListQuerySchema>;
 
     const where: Record<string, unknown> = {};
     if (status) where.status = status.toUpperCase();
     if (category) where.category = category;
+    if (featured === 'true') where.discountPercent = { gt: 0 };
 
     const [products, total] = await Promise.all([
       prisma.product.findMany({
@@ -1096,7 +1101,9 @@ adminRouter.get('/products', validate({ query: productListQuerySchema }), async 
         category: p.category,
         status: p.status.toLowerCase(),
         merchantId: p.merchantId,
-        merchantName: p.merchant.shopName
+        merchantName: p.merchant.shopName,
+        createdAt: p.createdAt.toISOString(),
+        featured: Boolean(p.discountPercent && p.discountPercent > 0)
       })),
       pagination: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) }
     });

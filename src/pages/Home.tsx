@@ -199,7 +199,16 @@ export const Home = () => {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-white max-w-3xl text-center px-6 md:px-12">
               <h1 className="text-xl xs:text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-2 md:mb-4 leading-[1.12] tracking-tight">
-                Discover Hiking &<br className="hidden sm:block" /> Camping in the UAE
+                <span className="sm:hidden">
+                  Discover Hiking and Camping
+                  <br />
+                  in the UAE
+                </span>
+                <span className="hidden sm:block">
+                  Discover Hiking &amp;
+                  <br />
+                  Camping in the UAE
+                </span>
               </h1>
               <p className="text-xs xs:text-sm sm:text-lg md:text-xl text-white/80 mb-3 md:mb-8 max-w-2xl mx-auto leading-relaxed">
                 Explore breathtaking trails, discover perfect camping spots, and join guided adventures across the Emirates.
