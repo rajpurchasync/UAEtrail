@@ -88,6 +88,7 @@ export interface Trip {
   organizerUserId?: string;
   images?: string[];
   price: number;
+  pricePackages?: Array<{ label: string; amount: number; currency: string }>;
   slotsAvailable: number;
   slotsTotal: number;
   status: TripStatus;

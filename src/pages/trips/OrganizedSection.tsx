@@ -4,7 +4,8 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { EventDTO } from '@uaetrail/shared-types';
 import { api, EventRequestView } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
-import { TenantSwitcher, ImageUpload, MapPinFields, parseCoord, LocationSelect, ShareButton, HostSelect } from '../../components/ui';
+import { TenantSwitcher, ImageUpload, MapPinFields, parseCoord, LocationSelect, ShareButton, HostSelect, TripPricePackagesEditor } from '../../components/ui';
+import { derivePriceAed, tripHasPaidPricing } from '../../utils/tripPricing';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { daysUntil, isUpcomingTrip } from '../../utils/tripDates';
 import { emptyForm } from './shared';
@@ -60,6 +61,12 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
   };
 
   const openEdit = (event: EventDTO) => {
+    const pricePackages =
+      event.pricePackages && event.pricePackages.length > 0
+        ? event.pricePackages
+        : event.price > 0
+          ? [{ label: 'Standard', amount: event.price, currency: 'AED' as const }]
+          : [];
     setEditingId(event.id);
     setForm({
       locationId: event.locationId,
@@ -70,7 +77,9 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
       endDate: event.endDate ?? '',
       endTime: event.endTime ?? '',
       capacity: event.slotsTotal,
+      pricing: tripHasPaidPricing({ price: event.price, pricePackages }) ? 'paid' : 'free',
       price: event.price,
+      pricePackages,
       meetingPoint: event.meetingPoint ?? '',
       meetingLat: event.meetingLat != null ? String(event.meetingLat) : '',
       meetingLng: event.meetingLng != null ? String(event.meetingLng) : '',
@@ -97,6 +106,23 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
     setSaving(true);
     setError(null);
     try {
+      const pricePackages =
+        form.pricing === 'paid'
+          ? form.pricePackages.filter((p) => p.label.trim()).map((p) => ({ ...p, label: p.label.trim() }))
+          : [];
+      const price = form.pricing === 'free' ? 0 : derivePriceAed(pricePackages, form.price);
+
+      if (form.pricing === 'paid' && pricePackages.length === 0) {
+        setError('Add at least one package option for paid trips.');
+        setSaving(false);
+        return;
+      }
+      if (form.pricing === 'paid' && tripHasPaidPricing({ price, pricePackages }) && !form.paymentTerms.trim()) {
+        setError('Payment terms are required when any package has a price.');
+        setSaving(false);
+        return;
+      }
+
       const payload: Record<string, unknown> = {
         locationId: form.locationId,
         title: form.title,
@@ -106,11 +132,13 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
         endDate: form.endDate || undefined,
         endTime: form.endTime || undefined,
         capacity: form.capacity,
-        price: form.price,
+        price,
+        pricePackages: pricePackages.length > 0 ? pricePackages : [],
         meetingPoint: form.meetingPoint || undefined,
         meetingLat: parseCoord(form.meetingLat),
         meetingLng: parseCoord(form.meetingLng),
-        paymentTerms: form.price > 0 && form.paymentTerms ? form.paymentTerms : undefined,
+        paymentTerms:
+          tripHasPaidPricing({ price, pricePackages }) && form.paymentTerms ? form.paymentTerms : undefined,
         itinerary: form.itinerary ? form.itinerary.split('\n').filter(Boolean) : [],
         requirements: form.requirements ? form.requirements.split('\n').filter(Boolean) : [],
         images: form.images,
@@ -464,19 +492,41 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Price (AED)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.price}
-                    onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
-                    placeholder="0 for free"
-                  />
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Pricing</label>
+                  <div className="flex gap-2">
+                    {(['free', 'paid'] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            pricing: type,
+                            price: type === 'free' ? 0 : form.price,
+                            pricePackages: type === 'free' ? [] : form.pricePackages,
+                          })
+                        }
+                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium ${
+                          form.pricing === type ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        {type === 'free' ? 'Free' : 'Paid options'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {form.price > 0 && (
+              {form.pricing === 'paid' && (
+                <div className="space-y-3">
+                  <TripPricePackagesEditor
+                    packages={form.pricePackages}
+                    onChange={(pricePackages) => setForm({ ...form, pricePackages })}
+                  />
+                </div>
+              )}
+
+              {form.pricing === 'paid' && tripHasPaidPricing({ price: form.price, pricePackages: form.pricePackages }) && (
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Payment terms *</label>
                   <textarea

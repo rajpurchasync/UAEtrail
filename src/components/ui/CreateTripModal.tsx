@@ -3,8 +3,10 @@ import { LocationSelect } from './LocationSelect';
 import { MapPinFields, parseCoord } from './MeetingPointMap';
 import { HostSelect } from './HostSelect';
 import { Dialog } from './Dialog';
+import { TripPricePackagesEditor } from './TripPricePackagesEditor';
 import { api } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
+import { derivePriceAed, tripHasPaidPricing, TripPricePackage } from '../../utils/tripPricing';
 
 type ActivityType = 'hiking' | 'camping';
 type PricingType = 'free' | 'paid';
@@ -28,6 +30,7 @@ const emptyForm = {
   endTime: '',
   capacity: 10,
   price: 0,
+  pricePackages: [] as TripPricePackage[],
   meetingPoint: '',
   meetingLat: '',
   meetingLng: '',
@@ -52,25 +55,37 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
     }
   }, [open]);
 
-  const buildPayload = (): Record<string, unknown> => ({
-    locationId: form.locationId,
-    title: form.title,
-    description: form.description,
-    date: form.date,
-    time: form.time,
-    endDate: form.endDate || undefined,
-    endTime: form.endTime || undefined,
-    capacity: form.capacity,
-    price: form.pricing === 'free' ? 0 : form.price,
-    meetingPoint: form.meetingPoint || undefined,
-    meetingLat: parseCoord(form.meetingLat),
-    meetingLng: parseCoord(form.meetingLng),
-    itinerary: form.itinerary ? form.itinerary.split('\n').filter(Boolean) : [],
-    requirements: form.instructions ? form.instructions.split('\n').filter(Boolean) : [],
-    paymentTerms: form.pricing === 'paid' && form.paymentTerms ? form.paymentTerms : undefined,
-    images: [],
-    guideId: form.hostUserId || undefined,
-  });
+  const buildPayload = (): Record<string, unknown> => {
+    const pricePackages =
+      form.pricing === 'paid'
+        ? form.pricePackages.filter((p) => p.label.trim()).map((p) => ({ ...p, label: p.label.trim() }))
+        : [];
+    const price = form.pricing === 'free' ? 0 : derivePriceAed(pricePackages, form.price);
+
+    return {
+      locationId: form.locationId,
+      title: form.title,
+      description: form.description,
+      date: form.date,
+      time: form.time,
+      endDate: form.endDate || undefined,
+      endTime: form.endTime || undefined,
+      capacity: form.capacity,
+      price,
+      pricePackages: pricePackages.length > 0 ? pricePackages : undefined,
+      meetingPoint: form.meetingPoint || undefined,
+      meetingLat: parseCoord(form.meetingLat),
+      meetingLng: parseCoord(form.meetingLng),
+      itinerary: form.itinerary ? form.itinerary.split('\n').filter(Boolean) : [],
+      requirements: form.instructions ? form.instructions.split('\n').filter(Boolean) : [],
+      paymentTerms:
+        form.pricing === 'paid' && tripHasPaidPricing({ price, pricePackages }) && form.paymentTerms
+          ? form.paymentTerms
+          : undefined,
+      images: [],
+      guideId: form.hostUserId || undefined,
+    };
+  };
 
   const submit = async (publish: boolean) => {
     const tenantId = getActiveTenantId();
@@ -78,9 +93,17 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
       setError('No organizer profile selected. Open Trips → Organized and pick your organization.');
       return;
     }
-    if (form.pricing === 'paid' && !form.paymentTerms.trim()) {
-      setError('Payment terms are required for paid trips.');
-      return;
+    if (form.pricing === 'paid') {
+      const packages = form.pricePackages.filter((p) => p.label.trim());
+      if (packages.length === 0) {
+        setError('Add at least one package option for paid trips.');
+        return;
+      }
+      const price = derivePriceAed(packages, form.price);
+      if (tripHasPaidPricing({ price, pricePackages: packages }) && !form.paymentTerms.trim()) {
+        setError('Payment terms are required when any package has a price.');
+        return;
+      }
     }
     setSaving(true);
     setError(null);
@@ -134,7 +157,14 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
                 <button
                   key={type}
                   type="button"
-                  onClick={() => setForm({ ...form, pricing: type, price: type === 'free' ? 0 : form.price })}
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      pricing: type,
+                      price: type === 'free' ? 0 : form.price,
+                      pricePackages: type === 'free' ? [] : form.pricePackages,
+                    })
+                  }
                   className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                     form.pricing === type
                       ? 'bg-emerald-600 text-white'
@@ -147,18 +177,10 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
             </div>
             {form.pricing === 'paid' && (
               <div className="mt-3 space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Price (AED)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    required
-                    value={form.price}
-                    onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                    className="w-full border rounded-xl px-3 py-2.5 text-sm"
-                    placeholder="e.g. 50"
-                  />
-                </div>
+                <TripPricePackagesEditor
+                  packages={form.pricePackages}
+                  onChange={(pricePackages) => setForm({ ...form, pricePackages })}
+                />
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Payment terms *</label>
                   <textarea

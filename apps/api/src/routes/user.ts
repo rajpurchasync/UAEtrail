@@ -43,7 +43,8 @@ const eventWithParticipantPreviews = {
 } as const;
 
 const createRequestSchema = z.object({
-  note: z.string().max(300).optional()
+  note: z.string().max(300).optional(),
+  selectedPackageIndex: z.number().int().min(0).max(11).optional()
 });
 
 const updateProfileSchema = z.object({
@@ -538,12 +539,13 @@ userRouter.post(
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-      const { note } = req.body as z.infer<typeof createRequestSchema>;
+      const { note, selectedPackageIndex } = req.body as z.infer<typeof createRequestSchema>;
 
       const { request, waitlisted } = await createJoinOrWaitlistRequest(prisma, {
         eventId: id,
         userId: req.auth!.userId,
-        note
+        note,
+        selectedPackageIndex
       });
 
       res.status(201).json({

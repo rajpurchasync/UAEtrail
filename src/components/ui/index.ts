@@ -25,4 +25,5 @@ export { ReviewSection } from './ReviewSection';
 export { LocationPremiumPanel } from './LocationPremiumPanel';
 export { EmptyTripsBanner } from './EmptyTripsBanner';
 export { TripCheckInPanel } from './TripCheckInPanel';
+export { TripPricePackagesEditor } from './TripPricePackagesEditor';
 export { WithdrawRequestModal } from './WithdrawRequestModal';

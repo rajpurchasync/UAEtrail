@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { EventDetailDTO, MyTripRequestDTO, TripParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
 import { api } from '../api/services';
-import { formatDate, formatPrice } from '../utils';
+import { formatDate } from '../utils';
+import { formatPackagePrice, tripHasPaidPricing, tripPriceLabel } from '../utils/tripPricing';
 import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../utils/hostLabels';
 import { useAuth } from '../context/AuthContext';
 import { organizerProfilePath } from '../utils/organizerLinks';
@@ -43,6 +44,7 @@ export const TripDetail = () => {
   const [myRequest, setMyRequest] = useState<MyTripRequestDTO | null | undefined>(undefined);
   const [withdrawing, setWithdrawing] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
 
   const loadTrip = () => {
     if (!id) return;
@@ -66,8 +68,16 @@ export const TripDetail = () => {
     loadTrip();
   }, [id]);
 
-  const requiresTerms = Boolean(trip && trip.price > 0 && trip.paymentTerms);
-  const canJoin = !requiresTerms || termsAccepted;
+  const pricePackages = trip?.pricePackages?.filter((p) => p.label.trim()) ?? [];
+  const hasMultiplePackages = pricePackages.length > 1;
+  const selectedPackage = hasMultiplePackages ? pricePackages[selectedPackageIndex] : pricePackages[0];
+  const isPaidTrip = trip ? tripHasPaidPricing(trip) : false;
+
+  const requiresTerms = Boolean(trip && isPaidTrip && trip.paymentTerms);
+  const canJoin =
+    !requiresTerms || termsAccepted;
+  const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
+  const canSubmitJoin = canJoin && packageSelected;
 
   const handleJoin = async () => {
     if (!id || !trip) return;
@@ -75,15 +85,19 @@ export const TripDetail = () => {
       navigate('/signin', { state: { from: `/trip/${id}` } });
       return;
     }
-    if (!canJoin) {
-      setError('Please accept the payment terms to continue.');
+    if (!canSubmitJoin) {
+      setError(hasMultiplePackages && !packageSelected ? 'Please select a package option.' : 'Please accept the payment terms to continue.');
       return;
     }
     setJoining(true);
     setError(null);
     setMessage(null);
     try {
-      const res = await api.createJoinRequest(id);
+      const res = await api.createJoinRequest(
+        id,
+        undefined,
+        hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined
+      );
       if (res.data.waitlisted || res.data.status === 'waitlisted') {
         setMessage('Added to waitlist. We will notify you when a spot opens.');
       } else {
@@ -214,7 +228,8 @@ export const TripDetail = () => {
       />
       <span>
         I agree to the{' '}
-        <span className="font-medium text-gray-900">payment terms</span> for this {formatPrice(trip.price)} trip.
+        <span className="font-medium text-gray-900">payment terms</span>
+        {selectedPackage ? ` for ${formatPackagePrice(selectedPackage)}` : isPaidTrip ? ` (${tripPriceLabel(trip)})` : ''}.
       </span>
     </label>
   ) : null;
@@ -225,7 +240,7 @@ export const TripDetail = () => {
       <button
         type="button"
         onClick={handleJoin}
-        disabled={joining || !canJoin || hasActiveRequest}
+        disabled={joining || !canSubmitJoin || hasActiveRequest}
         className={`w-full ios-btn shadow-lg disabled:opacity-60 ${
           isFull ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
         }`}
@@ -257,7 +272,7 @@ export const TripDetail = () => {
       {termsBlock}
       <button
         onClick={handleJoin}
-        disabled={joining || !canJoin}
+        disabled={joining || !canSubmitJoin}
         className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
           isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
         }`}
@@ -340,9 +355,52 @@ export const TripDetail = () => {
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-500 mb-1">Price</p>
-                <p className="text-sm font-semibold text-gray-900">{formatPrice(trip.price)}</p>
+                <p className="text-sm font-semibold text-gray-900">{trip ? tripPriceLabel(trip) : ''}</p>
               </div>
             </div>
+
+            {pricePackages.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Join options</h3>
+                <div className="space-y-2">
+                  {pricePackages.map((pkg, index) => (
+                    <label
+                      key={`${pkg.label}-${index}`}
+                      className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${
+                        hasMultiplePackages && selectedPackageIndex === index
+                          ? 'border-emerald-500 bg-emerald-50'
+                          : hasMultiplePackages
+                            ? 'border-gray-200 hover:border-gray-300'
+                            : 'border-gray-100 bg-gray-50'
+                      }`}
+                    >
+                      {hasMultiplePackages ? (
+                        <>
+                          <span className="flex items-center gap-3 min-w-0">
+                            <input
+                              type="radio"
+                              name="trip-package"
+                              checked={selectedPackageIndex === index}
+                              onChange={() => setSelectedPackageIndex(index)}
+                              className="text-emerald-600 focus:ring-emerald-500"
+                            />
+                            <span className="text-sm text-gray-800">{pkg.label}</span>
+                          </span>
+                          <span className="text-sm font-semibold text-gray-900 shrink-0">
+                            {formatPackagePrice(pkg)}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-sm text-gray-800">{pkg.label}</span>
+                          <span className="text-sm font-semibold text-gray-900">{formatPackagePrice(pkg)}</span>
+                        </>
+                      )}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {trip.meetingPoint && (
               <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
@@ -381,7 +439,7 @@ export const TripDetail = () => {
             </Link>
           </div>
 
-          {trip.paymentTerms && trip.price > 0 && (
+          {trip.paymentTerms && isPaidTrip && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Payment terms</h2>
               <p className="text-gray-700 text-sm whitespace-pre-wrap">{trip.paymentTerms}</p>
@@ -429,8 +487,8 @@ export const TripDetail = () => {
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-20">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-2xl font-bold text-gray-900">{formatPrice(trip.price)}</p>
-                <p className="text-sm text-gray-500">per person</p>
+                <p className="text-2xl font-bold text-gray-900">{tripPriceLabel(trip)}</p>
+                <p className="text-sm text-gray-500">{pricePackages.length > 1 ? 'options available' : 'per person'}</p>
               </div>
               <div className="hidden md:block">
                 <ShareButton

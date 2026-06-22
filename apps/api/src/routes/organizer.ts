@@ -35,6 +35,7 @@ const eventCreateSchema = z.object({
   itinerary: z.array(z.string()).default([]),
   requirements: z.array(z.string()).default([]),
   price: z.number().int().min(0).default(0),
+  pricePackages: tripPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
   images: z.array(z.string()).default([]),
   guideId: z.string().optional()
@@ -57,6 +58,12 @@ const teamPatchSchema = z.object({
 });
 
 import { parseLocalDateTime } from '../lib/datetime.js';
+import {
+  eventHasPaidPricing,
+  normalizeEventPricing,
+  parseStoredPricePackages,
+  tripPricePackagesSchema
+} from '../lib/trip-pricing.js';
 import {
   notifyParticipantsOfScheduleChange,
   scheduleInstantChanged
@@ -132,6 +139,10 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
     }
 
     const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
+    const pricing = normalizeEventPricing({
+      price: body.price,
+      pricePackages: body.pricePackages
+    });
 
     const created = await prisma.event.create({
       data: {
@@ -150,7 +161,8 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
         itinerary: body.itinerary,
         requirements: body.requirements,
         images: body.images,
-        priceAed: body.price,
+        priceAed: pricing.priceAed,
+        pricePackages: pricing.pricePackages,
         capacity: body.capacity
       },
       include: {
@@ -226,6 +238,14 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
       nextStartAt !== undefined &&
       scheduleInstantChanged(existing.startAt, nextStartAt, countryCode);
 
+    const pricing =
+      body.price !== undefined || body.pricePackages !== undefined
+        ? normalizeEventPricing({
+            price: body.price ?? existing.priceAed,
+            pricePackages: body.pricePackages ?? parseStoredPricePackages(existing.pricePackages)
+          })
+        : null;
+
     const updated = await prisma.event.update({
       where: { id },
       data: {
@@ -241,7 +261,11 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
         itinerary: body.itinerary,
         requirements: body.requirements,
         images: body.images,
-        priceAed: body.price,
+        ...(pricing
+          ? { priceAed: pricing.priceAed, pricePackages: pricing.pricePackages }
+          : body.price !== undefined
+            ? { priceAed: body.price }
+            : {}),
         capacity: body.capacity,
         guideId: body.guideId
       },

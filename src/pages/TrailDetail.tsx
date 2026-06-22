@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, TrendingUp, Clock, Mountain, Baby, ChevronRight } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
-import { TripCard, ShareButton, Breadcrumb, LocationDetailTabs, toLocationDetailData, ReviewSection, LocationPremiumPanel } from '../components/ui';
+import { TripCard, ShareButton, Breadcrumb, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
 import { LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -178,11 +178,6 @@ export const TrailDetail = () => {
               </div>
 
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">About this trail</h2>
-                <p className="text-gray-600">{trail.description}</p>
-              </div>
-
-              <div className="mb-6">
                 <h3 className="font-medium text-gray-900 mb-2">Best Season</h3>
                 <div className="flex gap-2">
                   {trail.season.map((s) => (
@@ -198,20 +193,13 @@ export const TrailDetail = () => {
             </div>
           </div>
 
-          <LocationDetailTabs data={toLocationDetailData(trail, 'hiking')} accent="emerald" />
-
-          {premium && (
-            <div className="mt-8">
-              <LocationPremiumPanel
-                locationId={trail.id}
-                locationName={trail.name}
-                activityType="hiking"
-                premium={premium}
-                onPremiumChange={setPremium}
-                accent="emerald"
-              />
-            </div>
-          )}
+          <LocationDetailTabs
+            data={toLocationDetailData(trail, 'hiking')}
+            accent="emerald"
+            locationId={trail.id}
+            premium={premium}
+            onPremiumChange={setPremium}
+          />
         </div>
       </div>
 

@@ -98,6 +98,12 @@ export interface ParticipantPreviewDTO {
   avatar?: string | null;
 }
 
+export interface EventPricePackageDTO {
+  label: string;
+  amount: number;
+  currency: string;
+}
+
 export interface EventDTO {
   id: string;
   tenantId: string;
@@ -112,6 +118,7 @@ export interface EventDTO {
   endDate?: string | null;
   endTime?: string | null;
   price: number;
+  pricePackages?: EventPricePackageDTO[];
   slotsTotal: number;
   slotsAvailable: number;
   status: EventStatus;

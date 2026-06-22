@@ -347,6 +347,7 @@ model Event {
   requirements String[]
   images       String[]
   priceAed     Int         @default(0)
+  pricePackages Json       @default("[]")
   capacity     Int
   status       EventStatus @default(DRAFT)
   featured     Boolean     @default(false)
@@ -373,7 +374,8 @@ model EventRequest {
   eventId       String
   userId        String
   status        RequestStatus @default(PENDING)
-  note          String?
+  note                  String?
+  selectedPackageIndex  Int?
   organizerNote String?
   cancelReason  String?
   cancelMessage String?

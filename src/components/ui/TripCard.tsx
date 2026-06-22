@@ -2,7 +2,7 @@ import { type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Users, MapPin, ChevronRight } from 'lucide-react';
 import { Trip } from '../../types';
-import { formatPrice } from '../../utils';
+import { tripPriceLabel } from '../../utils/tripPricing';
 import { organizerProfilePath } from '../../utils/organizerLinks';
 import { ShareButton } from './ShareButton';
 import { ParticipantPreview } from './ParticipantPreview';
@@ -33,7 +33,7 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
 
   const statusStyles: Record<Trip['status'], { bg: string; text: string; label: string }> = {
     free: { bg: 'bg-emerald-500/15', text: 'text-emerald-700', label: 'Free' },
-    paid: { bg: 'bg-blue-500/15', text: 'text-blue-700', label: formatPrice(trip.price) },
+    paid: { bg: 'bg-blue-500/15', text: 'text-blue-700', label: tripPriceLabel(trip) },
     full: { bg: 'bg-neutral-500/10', text: 'text-neutral-500', label: 'Full' },
   };
 

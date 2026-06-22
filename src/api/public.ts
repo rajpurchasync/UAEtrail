@@ -1,10 +1,11 @@
 import { EventDTO, LocationDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { api } from './services';
 import { CampingSpot, Trail, Trip } from '../types';
+import { tripHasPaidPricing } from '../utils/tripPricing';
 
 const mapTripStatus = (event: EventDTO): Trip['status'] => {
   if (event.slotsAvailable <= 0) return 'full';
-  if (event.price > 0) return 'paid';
+  if (tripHasPaidPricing(event)) return 'paid';
   return 'free';
 };
 
@@ -28,6 +29,7 @@ export const mapEventToTrip = (event: EventDTO): Trip => ({
   organizerUserId: event.hostUserId ?? event.organizerUserId,
   images: event.images,
   price: event.price,
+  pricePackages: event.pricePackages,
   slotsAvailable: event.slotsAvailable,
   slotsTotal: event.slotsTotal,
   status: mapTripStatus(event),

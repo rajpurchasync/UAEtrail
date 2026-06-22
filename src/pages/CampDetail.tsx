@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, Users, Tent, Car, ChevronRight } from 'lucide-react';
+import { MapPin, Car, ChevronRight } from 'lucide-react';
 import { ReviewDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
-import { TripCard, BookingModal, ShareButton, Breadcrumb, LocationDetailTabs, toLocationDetailData, ReviewSection, LocationPremiumPanel } from '../components/ui';
+import { TripCard, BookingModal, ShareButton, Breadcrumb, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { campSchema } from '../components/seo/schemas';
@@ -126,61 +126,20 @@ export const CampDetail = () => {
             </div>
 
             <div>
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{camp.name}</h1>
-                  <div className="flex items-center text-gray-600">
-                    <MapPin className="w-5 h-5 mr-1" />
-                    <span>{camp.region}</span>
-                  </div>
+              <div className="mb-4">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{camp.name}</h1>
+                <div className="flex items-center text-gray-600">
+                  <MapPin className="w-5 h-5 mr-1" />
+                  <span>{camp.region}</span>
                 </div>
-                <span className="px-4 py-2 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
-                  {camp.campingType === 'operator-led' ? 'Guided' : 'Self-Guided'}
-                </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center text-gray-600 mb-1">
-                    <Users className="w-5 h-5 mr-2" />
-                    <span className="text-sm">Max Group</span>
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">{camp.maxGroupSize}</div>
+              {camp.accessibility && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
+                  <Car className="w-4 h-4 text-amber-600" />
+                  <span className="capitalize">{camp.accessibility.replace('-', ' ')}</span>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center text-gray-600 mb-1">
-                    <Tent className="w-5 h-5 mr-2" />
-                    <span className="text-sm">Type</span>
-                  </div>
-                  <div className="text-lg font-bold text-gray-900 capitalize">
-                    {camp.campingType.replace('-', ' ')}
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center text-gray-600 mb-1">
-                    <Car className="w-5 h-5 mr-2" />
-                    <span className="text-sm">Access</span>
-                  </div>
-                  <div className="text-lg font-bold text-gray-900 capitalize">
-                    {camp.accessibility.replace('-', ' ')}
-                  </div>
-                </div>
-                {camp.difficulty && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex items-center text-gray-600 mb-1">
-                      <span className="text-sm">Difficulty</span>
-                    </div>
-                    <div className="text-lg font-bold text-gray-900 capitalize">
-                      {camp.difficulty}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">About this camp</h2>
-                <p className="text-gray-600">{camp.description}</p>
-              </div>
+              )}
 
               <div className="mb-6">
                 <h3 className="font-medium text-gray-900 mb-2">Best Season</h3>
@@ -198,20 +157,13 @@ export const CampDetail = () => {
             </div>
           </div>
 
-          <LocationDetailTabs data={toLocationDetailData(camp, 'camping')} accent="amber" />
-
-          {premium && (
-            <div className="mt-8">
-              <LocationPremiumPanel
-                locationId={camp.id}
-                locationName={camp.name}
-                activityType="camping"
-                premium={premium}
-                onPremiumChange={setPremium}
-                accent="amber"
-              />
-            </div>
-          )}
+          <LocationDetailTabs
+            data={toLocationDetailData(camp, 'camping')}
+            accent="amber"
+            locationId={camp.id}
+            premium={premium}
+            onPremiumChange={setPremium}
+          />
         </div>
       </div>
 

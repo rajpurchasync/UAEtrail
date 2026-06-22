@@ -1,5 +1,7 @@
 import type { AuthUser } from '@uaetrail/shared-types';
 
+import type { TripPricePackage } from '../../utils/tripPricing';
+
 export const isOrganizer = (role?: string) =>
   role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide';
 
@@ -12,7 +14,9 @@ export const emptyForm = {
   endDate: '',
   endTime: '',
   capacity: 10,
+  pricing: 'free' as 'free' | 'paid',
   price: 0,
+  pricePackages: [] as TripPricePackage[],
   meetingPoint: '',
   meetingLat: '',
   meetingLng: '',

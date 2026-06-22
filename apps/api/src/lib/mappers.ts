@@ -12,6 +12,7 @@ import {
 import { EventDTO, LocationDTO, MembershipRole as SharedMembershipRole, RequestStatus as SharedRequestStatus, TenantType as SharedTenantType, UserRole as SharedUserRole } from '@uaetrail/shared-types';
 
 import { formatEventLocal } from './datetime.js';
+import { parseStoredPricePackages } from './trip-pricing.js';
 
 const enumMap = <T extends string>(value: string): T => value.toLowerCase() as T;
 
@@ -166,6 +167,7 @@ export const toEventDto = ({
   endDate: endLocal?.date ?? null,
   endTime: endLocal?.time ?? null,
   price: event.priceAed,
+  pricePackages: parseStoredPricePackages(event.pricePackages),
   slotsTotal: event.capacity,
   slotsAvailable,
   status: mapEventStatus(event.status),

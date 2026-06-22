@@ -219,11 +219,14 @@ export const api = {
       `/events/${eventId}/checkin`,
       { method: 'POST', auth: true }
     ).then((res) => res.participation),
-  createJoinRequest: (eventId: string, note?: string) =>
+  createJoinRequest: (eventId: string, note?: string, selectedPackageIndex?: number) =>
     apiRequest<{ data: JoinRequestDTO }>(`/events/${eventId}/requests`, {
       method: 'POST',
       auth: true,
-      body: JSON.stringify({ note })
+      body: JSON.stringify({
+        ...(note !== undefined ? { note } : {}),
+        ...(selectedPackageIndex !== undefined ? { selectedPackageIndex } : {})
+      })
     }),
   cancelJoinRequest: (
     eventId: string,

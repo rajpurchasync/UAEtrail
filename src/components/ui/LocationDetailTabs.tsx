@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { Car, MapPin, Mountain, TrendingUp, Clock } from 'lucide-react';
-import { ActivityType } from '@uaetrail/shared-types';
+import { ActivityType, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { MeetingPointMap } from './MeetingPointMap';
+import { LocationPremiumPanel } from './LocationPremiumPanel';
 import { capitalize } from '../../utils';
 
-export type LocationTab = 'overview' | 'route' | 'location';
+export type LocationTab = 'overview' | 'location' | 'guide';
 
 export interface LocationDetailData {
   name: string;
   activityType: ActivityType;
+  description?: string;
   region?: string;
   latitude?: number | null;
   longitude?: number | null;
@@ -21,7 +23,6 @@ export interface LocationDetailData {
   duration?: number;
   elevation?: number;
   difficulty?: string;
-  maxGroupSize?: number;
   accessibility?: string;
   campingType?: string;
 }
@@ -29,6 +30,9 @@ export interface LocationDetailData {
 interface LocationDetailTabsProps {
   data: LocationDetailData;
   accent?: 'emerald' | 'amber';
+  locationId?: string;
+  premium?: LocationPremiumSummaryDTO | null;
+  onPremiumChange?: (premium: LocationPremiumSummaryDTO) => void;
 }
 
 const accentStyles = {
@@ -36,57 +40,73 @@ const accentStyles = {
     active: 'border-emerald-600 text-emerald-600',
     chip: 'bg-emerald-100 text-emerald-800',
     link: 'text-emerald-700 hover:text-emerald-800',
-    freeBadge: 'text-emerald-700 bg-emerald-50 border-emerald-100',
   },
   amber: {
     active: 'border-amber-600 text-amber-600',
     chip: 'bg-amber-100 text-amber-800',
     link: 'text-amber-700 hover:text-amber-800',
-    freeBadge: 'text-amber-800 bg-amber-50 border-amber-100',
   },
 };
 
-export const LocationDetailTabs = ({ data, accent = 'emerald' }: LocationDetailTabsProps) => {
+export const LocationDetailTabs = ({
+  data,
+  accent = 'emerald',
+  locationId,
+  premium,
+  onPremiumChange,
+}: LocationDetailTabsProps) => {
   const [activeTab, setActiveTab] = useState<LocationTab>('overview');
   const styles = accentStyles[accent];
   const isHiking = data.activityType === 'hiking';
+  const showGuideTab = Boolean(locationId && premium?.hasPremium);
 
   const tabClass = (tab: LocationTab) =>
-    `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+    `py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
       activeTab === tab ? styles.active : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
     }`;
+
+  const hasOverviewContent =
+    Boolean(data.description?.trim()) ||
+    (isHiking && (data.distance || data.duration || data.elevation)) ||
+    (!isHiking && data.accessibility) ||
+    (data.surfaceType && data.surfaceType.length > 0) ||
+    (data.highlights && data.highlights.length > 0) ||
+    Boolean(data.difficulty);
+
+  const hasLocationContent =
+    Boolean(data.region) ||
+    (data.latitude != null && data.longitude != null) ||
+    Boolean(data.parkingLink) ||
+    (data.accessibleBy && data.accessibleBy.length > 0) ||
+    (data.tags && data.tags.length > 0);
 
   return (
     <>
       <div className="border-b mt-8">
-        <nav className="flex space-x-8">
+        <nav className="flex space-x-6 sm:space-x-8 overflow-x-auto">
           <button type="button" onClick={() => setActiveTab('overview')} className={tabClass('overview')}>
             Overview
           </button>
-          <button type="button" onClick={() => setActiveTab('route')} className={tabClass('route')}>
-            {isHiking ? 'Route' : 'Site info'}
-          </button>
           <button type="button" onClick={() => setActiveTab('location')} className={tabClass('location')}>
-            Map
+            Location & map
           </button>
+          {showGuideTab && (
+            <button type="button" onClick={() => setActiveTab('guide')} className={tabClass('guide')}>
+              Guided information
+            </button>
+          )}
         </nav>
       </div>
 
       {activeTab === 'overview' && (
-        <div className="py-6 mt-4">
-          <p className="text-sm text-neutral-600 leading-relaxed">
-            {isHiking
-              ? 'Photos, description, and trail stats above are free. Upgrade for the full hiking route track (GPX) and detailed trail guide below.'
-              : 'Photos, description, and site basics above are free. Premium camps include a detailed overnight guide below.'}
-          </p>
-        </div>
-      )}
-
-      {activeTab === 'route' && (
         <div className="py-6 mt-4 space-y-4">
-          <p className={`text-xs font-medium rounded-lg px-3 py-2 border ${styles.freeBadge}`}>
-            Free — basic {isHiking ? 'trail' : 'site'} information
-          </p>
+          {data.description?.trim() && (
+            <div>
+              <h3 className="text-sm font-semibold text-neutral-900 mb-2">About</h3>
+              <p className="text-sm text-neutral-600 leading-relaxed whitespace-pre-wrap">{data.description}</p>
+            </div>
+          )}
+
           {isHiking ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {data.distance != null && data.distance > 0 && (
@@ -118,22 +138,14 @@ export const LocationDetailTabs = ({ data, accent = 'emerald' }: LocationDetailT
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {data.maxGroupSize != null && (
-                <div className="glass rounded-xl p-4">
-                  <p className="text-sm text-neutral-500 mb-1">Max group size</p>
-                  <p className="text-xl font-bold text-neutral-900">{data.maxGroupSize}</p>
-                </div>
-              )}
-              {data.accessibility && (
-                <div className="glass rounded-xl p-4">
-                  <p className="text-sm text-neutral-500 mb-1">Access</p>
-                  <p className="text-base font-semibold text-neutral-900 capitalize">
-                    {data.accessibility.replace('-', ' ')}
-                  </p>
-                </div>
-              )}
-            </div>
+            data.accessibility && (
+              <div className="glass rounded-xl p-4 max-w-xs">
+                <p className="text-sm text-neutral-500 mb-1">Access</p>
+                <p className="text-base font-semibold text-neutral-900 capitalize">
+                  {data.accessibility.replace('-', ' ')}
+                </p>
+              </div>
+            )
           )}
 
           {data.surfaceType && data.surfaceType.length > 0 && (
@@ -155,18 +167,12 @@ export const LocationDetailTabs = ({ data, accent = 'emerald' }: LocationDetailT
               <ul className="space-y-1.5">
                 {data.highlights.map((item) => (
                   <li key={item} className="text-sm text-neutral-600 flex items-start gap-2">
-                    <span className="text-emerald-500 mt-0.5">•</span>
+                    <span className={`mt-0.5 ${accent === 'emerald' ? 'text-emerald-500' : 'text-amber-500'}`}>•</span>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
-          )}
-
-          {!isHiking && data.campingType && (
-            <p className="text-sm text-neutral-600">
-              Camping type: <span className="font-medium capitalize">{data.campingType.replace('-', ' ')}</span>
-            </p>
           )}
 
           {data.difficulty && (
@@ -175,24 +181,14 @@ export const LocationDetailTabs = ({ data, accent = 'emerald' }: LocationDetailT
             </p>
           )}
 
-          {isHiking && (
-            <p className="text-xs text-neutral-500 border-t border-neutral-100 pt-4">
-              The <strong>hiking route track</strong> (GPX for navigation apps) is separate from this free summary — see
-              the premium section below.
-            </p>
-          )}
-
-          {!data.distance && !data.highlights?.length && !data.surfaceType?.length && !data.maxGroupSize && (
-            <p className="text-sm text-neutral-500 text-center py-4">Route details will be added soon.</p>
+          {!hasOverviewContent && (
+            <p className="text-sm text-neutral-500 text-center py-4">More details coming soon.</p>
           )}
         </div>
       )}
 
       {activeTab === 'location' && (
         <div className="py-6 mt-4 space-y-4">
-          <p className={`text-xs font-medium rounded-lg px-3 py-2 border ${styles.freeBadge}`}>
-            Free — basic location map (meeting point &amp; parking area)
-          </p>
           {data.region && (
             <div className="flex items-center gap-2 text-neutral-700">
               <MapPin className={`w-5 h-5 shrink-0 ${accent === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`} />
@@ -201,13 +197,10 @@ export const LocationDetailTabs = ({ data, accent = 'emerald' }: LocationDetailT
           )}
 
           {data.latitude != null && data.longitude != null && (
-            <div>
-              <h3 className="text-sm font-semibold text-neutral-900 mb-2">Location map</h3>
-              <p className="text-xs text-neutral-500 mb-2">
-                Pin map for parking and meeting point — not the full {isHiking ? 'hiking route' : 'camp guide'}.
-              </p>
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-neutral-900">Map</h3>
               <MeetingPointMap lat={data.latitude} lng={data.longitude} label={data.name} />
-              <p className="text-xs text-neutral-400 mt-2 font-mono">
+              <p className="text-xs text-neutral-400 font-mono">
                 {data.latitude.toFixed(5)}, {data.longitude.toFixed(5)}
               </p>
             </div>
@@ -258,10 +251,22 @@ export const LocationDetailTabs = ({ data, accent = 'emerald' }: LocationDetailT
             </div>
           )}
 
-          {data.latitude == null && data.longitude == null && !data.parkingLink && (
-            <p className="text-sm text-neutral-500 text-center py-4">Location coordinates not available yet.</p>
+          {!hasLocationContent && (
+            <p className="text-sm text-neutral-500 text-center py-4">Location details will be added soon.</p>
           )}
         </div>
+      )}
+
+      {activeTab === 'guide' && showGuideTab && locationId && (
+        <LocationPremiumPanel
+          locationId={locationId}
+          locationName={data.name}
+          activityType={data.activityType}
+          premium={premium ?? null}
+          onPremiumChange={onPremiumChange}
+          accent={accent}
+          variant="embedded"
+        />
       )}
     </>
   );
@@ -271,6 +276,7 @@ export const LocationDetailTabs = ({ data, accent = 'emerald' }: LocationDetailT
 export const toLocationDetailData = (
   item: {
     name: string;
+    description?: string;
     region: string;
     latitude?: number | null;
     longitude?: number | null;
@@ -283,13 +289,13 @@ export const toLocationDetailData = (
     duration?: number;
     elevation?: number;
     difficulty?: string;
-    maxGroupSize?: number;
     accessibility?: string;
     campingType?: string;
   },
   activityType: ActivityType
 ): LocationDetailData => ({
   name: item.name,
+  description: item.description,
   activityType,
   region: item.region,
   latitude: item.latitude,
@@ -303,7 +309,6 @@ export const toLocationDetailData = (
   duration: item.duration,
   elevation: item.elevation,
   difficulty: item.difficulty,
-  maxGroupSize: item.maxGroupSize,
   accessibility: item.accessibility,
   campingType: item.campingType,
 });
