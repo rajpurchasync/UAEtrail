@@ -4,6 +4,7 @@ import { fetchApiTrips } from '../../api/public';
 import { Trip } from '../../types';
 import { TripCard, EmptyTripsBanner } from '../../components/ui';
 import { FilterIconButton } from '../../components/mobile/FilterIconButton';
+import { ListBrowseLayout } from '../../components/layout/ListBrowseLayout';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 
 type TripFilterPill = 'hiking' | 'camping' | 'free' | 'paid';
@@ -262,14 +263,15 @@ export const ExploreSection = () => {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-        <aside className="hidden lg:block lg:w-56 shrink-0">
-          <div className="glass rounded-2xl p-5 sticky top-32 border border-white/80">
-            {filterPanel}
-          </div>
-        </aside>
-
-        <div className="flex-1 min-w-0">
+      <ListBrowseLayout
+        sidebar={
+          <aside className="hidden lg:block lg:w-56 shrink-0">
+            <div className="glass rounded-2xl p-5 sticky top-32 border border-white/80">
+              {filterPanel}
+            </div>
+          </aside>
+        }
+      >
             {loadError && (
               <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
                 {loadError}
@@ -296,14 +298,13 @@ export const ExploreSection = () => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
+              <div className="browse-card-grid">
                 {filteredTrips.map((trip) => (
                   <TripCard key={trip.id} trip={trip} />
                 ))}
               </div>
             )}
-          </div>
-        </div>
+      </ListBrowseLayout>
     </>
   );
 };

@@ -3,12 +3,36 @@ import { MapPin, Car } from 'lucide-react';
 import { CampingSpot } from '../../types';
 import { FavoriteButton } from './FavoriteButton';
 import { ShareButton } from './ShareButton';
+import { useComposePreview } from '../../hooks/useComposePreview';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface CampingCardProps {
   camp: CampingSpot;
 }
 
 export const CampingCard = ({ camp }: CampingCardProps) => {
+  const isMobile = useIsMobile();
+  const openPreview = useComposePreview();
+  const campPath = `/camp/${camp.id}`;
+
+  const openInRail = (event: React.MouseEvent) => {
+    if (isMobile) return;
+    event.preventDefault();
+    openPreview({
+      path: campPath,
+      title: camp.name,
+      content: (
+        <div className="p-4 space-y-4">
+          <img src={camp.images[0]} alt={camp.name} className="w-full aspect-video object-cover rounded-xl" />
+          <p className="text-sm text-gray-600">{camp.region}</p>
+          <p className="text-sm text-gray-600 leading-relaxed">{camp.description}</p>
+          <Link to={campPath} className="app-cta-sm w-full">
+            Open camping spot
+          </Link>
+        </div>
+      ),
+    });
+  };
   const imageBlock = (
     <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
       <img src={camp.images[0]} alt={camp.name} className="w-full h-full object-cover" />
@@ -45,7 +69,7 @@ export const CampingCard = ({ camp }: CampingCardProps) => {
   );
 
   return (
-    <Link to={`/camp/${camp.id}`} className="group glass-card-interactive overflow-hidden hover:shadow-glass-lg block">
+    <Link to={campPath} onClick={openInRail} className="group glass-card-interactive overflow-hidden hover:shadow-glass-lg block">
       {imageBlock}
       {detailsBlock}
     </Link>

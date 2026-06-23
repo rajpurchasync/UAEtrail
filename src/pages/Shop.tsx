@@ -6,6 +6,7 @@ import { api } from '../api/services';
 import { FEATURE_FLAGS } from '../config/platform';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { ListBrowseLayout } from '../components/layout/ListBrowseLayout';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { FilterIconButton } from '../components/mobile/FilterIconButton';
 import { PAGE_BANNERS } from '../config/pageBanners';
@@ -172,141 +173,142 @@ export const Shop = () => {
             </div>
           )}
 
-          <div className="flex flex-col md:flex-row gap-8">
-            {showFilters && (
+          {showFilters && (
+            <div
+              className="md:hidden fixed inset-0 z-50 bg-black/40"
+              onClick={() => setShowFilters(false)}
+              role="presentation"
+            >
               <div
-                className="md:hidden fixed inset-0 z-50 bg-black/40"
-                onClick={() => setShowFilters(false)}
-                role="presentation"
+                className="absolute inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto bg-white rounded-t-[20px] p-4 pb-nav-safe shadow-ios"
+                onClick={(e) => e.stopPropagation()}
               >
-                <div
-                  className="absolute inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto bg-white rounded-t-[20px] p-4 pb-nav-safe shadow-ios"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-neutral-900">Filter by Category</h3>
-                    <button
-                      type="button"
-                      onClick={() => setShowFilters(false)}
-                      className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-400"
-                      aria-label="Close filters"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-neutral-900">Filter by Category</h3>
                   <button
                     type="button"
-                    onClick={() => selectCategory('all')}
-                    className={`block w-full text-left px-3 py-3 rounded-ios text-[17px] ${categoryFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-neutral-700 active:bg-neutral-100'}`}
+                    onClick={() => setShowFilters(false)}
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-400"
+                    aria-label="Close filters"
                   >
-                    All Products
+                    <X className="w-5 h-5" />
                   </button>
-                  {SHOP_CATEGORIES.map((cat) => (
-                    <div key={cat.name} className="mt-1">
-                      <button
-                        type="button"
-                        onClick={() => setExpandedCat(expandedCat === cat.name ? null : cat.name)}
-                        className={`w-full flex items-center justify-between px-3 py-3 rounded-ios text-[17px] ${
-                          categoryFilter === cat.name.toLowerCase()
-                            ? 'bg-emerald-600/10 text-emerald-700 font-semibold'
-                            : 'text-neutral-700 active:bg-neutral-100'
-                        }`}
-                      >
-                        <span>{cat.name}</span>
-                        {expandedCat === cat.name ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                      </button>
-                      {expandedCat === cat.name && (
-                        <div className="ml-3 mt-1 space-y-0.5">
-                          <button
-                            type="button"
-                            onClick={() => selectCategory(cat.name.toLowerCase())}
-                            className={`block w-full text-left px-3 py-2 rounded-lg text-sm ${categoryFilter === cat.name.toLowerCase() ? 'text-emerald-700 font-semibold' : 'text-neutral-500'}`}
-                          >
-                            All {cat.name}
-                          </button>
-                          {cat.subcategories.map((sub) => (
-                            <button
-                              key={sub}
-                              type="button"
-                              onClick={() => selectCategory(sub.toLowerCase())}
-                              className={`block w-full text-left px-3 py-2 rounded-lg text-sm ${categoryFilter === sub.toLowerCase() ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-neutral-500'}`}
-                            >
-                              {sub}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
                 </div>
-              </div>
-            )}
-
-            <aside className="hidden md:block md:w-64 shrink-0">
-              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20 space-y-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Search</h3>
-                  <form onSubmit={handleSearch}>
-                    <input
-                      type="text"
-                      value={searchInput}
-                      onChange={(e) => setSearchInput(e.target.value)}
-                      placeholder="Search products..."
-                      className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    />
-                  </form>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Category</h3>
-                  <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => selectCategory('all')}
+                  className={`block w-full text-left px-3 py-3 rounded-ios text-[17px] ${categoryFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-neutral-700 active:bg-neutral-100'}`}
+                >
+                  All Products
+                </button>
+                {SHOP_CATEGORIES.map((cat) => (
+                  <div key={cat.name} className="mt-1">
                     <button
                       type="button"
-                      onClick={() => setCategoryFilter('all')}
-                      className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${categoryFilter === 'all' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                      onClick={() => setExpandedCat(expandedCat === cat.name ? null : cat.name)}
+                      className={`w-full flex items-center justify-between px-3 py-3 rounded-ios text-[17px] ${
+                        categoryFilter === cat.name.toLowerCase()
+                          ? 'bg-emerald-600/10 text-emerald-700 font-semibold'
+                          : 'text-neutral-700 active:bg-neutral-100'
+                      }`}
                     >
-                      All Products
+                      <span>{cat.name}</span>
+                      {expandedCat === cat.name ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                     </button>
-                    {SHOP_CATEGORIES.map((cat) => (
-                      <div key={cat.name}>
+                    {expandedCat === cat.name && (
+                      <div className="ml-3 mt-1 space-y-0.5">
                         <button
                           type="button"
-                          onClick={() => setExpandedCat(expandedCat === cat.name ? null : cat.name)}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                            categoryFilter === cat.name.toLowerCase() ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-gray-100'
-                          }`}
+                          onClick={() => selectCategory(cat.name.toLowerCase())}
+                          className={`block w-full text-left px-3 py-2 rounded-lg text-sm ${categoryFilter === cat.name.toLowerCase() ? 'text-emerald-700 font-semibold' : 'text-neutral-500'}`}
                         >
-                          <span>{cat.name}</span>
-                          {expandedCat === cat.name ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                          All {cat.name}
                         </button>
-                        {expandedCat === cat.name && (
-                          <div className="ml-3 mt-1 space-y-0.5">
-                            <button
-                              type="button"
-                              onClick={() => setCategoryFilter(cat.name.toLowerCase())}
-                              className={`block w-full text-left px-3 py-1.5 rounded text-sm transition-colors ${categoryFilter === cat.name.toLowerCase() ? 'text-emerald-700 font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                              All {cat.name}
-                            </button>
-                            {cat.subcategories.map((sub) => (
-                              <button
-                                key={sub}
-                                type="button"
-                                onClick={() => setCategoryFilter(sub.toLowerCase())}
-                                className={`block w-full text-left px-3 py-1.5 rounded text-sm transition-colors ${categoryFilter === sub.toLowerCase() ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-gray-500 hover:text-gray-700'}`}
-                              >
-                                {sub}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        {cat.subcategories.map((sub) => (
+                          <button
+                            key={sub}
+                            type="button"
+                            onClick={() => selectCategory(sub.toLowerCase())}
+                            className={`block w-full text-left px-3 py-2 rounded-lg text-sm ${categoryFilter === sub.toLowerCase() ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-neutral-500'}`}
+                          >
+                            {sub}
+                          </button>
+                        ))}
                       </div>
-                    ))}
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <ListBrowseLayout
+            sidebar={
+              <aside className="hidden md:block md:w-64 shrink-0">
+                <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20 space-y-6">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-3">Search</h3>
+                    <form onSubmit={handleSearch}>
+                      <input
+                        type="text"
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        placeholder="Search products..."
+                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      />
+                    </form>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-3">Category</h3>
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => setCategoryFilter('all')}
+                        className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${categoryFilter === 'all' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                      >
+                        All Products
+                      </button>
+                      {SHOP_CATEGORIES.map((cat) => (
+                        <div key={cat.name}>
+                          <button
+                            type="button"
+                            onClick={() => setExpandedCat(expandedCat === cat.name ? null : cat.name)}
+                            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                              categoryFilter === cat.name.toLowerCase() ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            <span>{cat.name}</span>
+                            {expandedCat === cat.name ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                          </button>
+                          {expandedCat === cat.name && (
+                            <div className="ml-3 mt-1 space-y-0.5">
+                              <button
+                                type="button"
+                                onClick={() => setCategoryFilter(cat.name.toLowerCase())}
+                                className={`block w-full text-left px-3 py-1.5 rounded text-sm transition-colors ${categoryFilter === cat.name.toLowerCase() ? 'text-emerald-700 font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
+                              >
+                                All {cat.name}
+                              </button>
+                              {cat.subcategories.map((sub) => (
+                                <button
+                                  key={sub}
+                                  type="button"
+                                  onClick={() => setCategoryFilter(sub.toLowerCase())}
+                                  className={`block w-full text-left px-3 py-1.5 rounded text-sm transition-colors ${categoryFilter === sub.toLowerCase() ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                  {sub}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </aside>
-
-            <div className="flex-1 min-w-0">
+              </aside>
+            }
+          >
               <div className="mb-4 flex items-center justify-between gap-2">
                 <p className="text-sm text-gray-600">{products.length} products found</p>
                 {search && (
@@ -330,7 +332,7 @@ export const Shop = () => {
               )}
 
               {loading ? (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+                <div className="browse-card-grid">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div key={i} className="bg-white rounded-lg shadow-sm overflow-hidden animate-pulse">
                       <div className="h-48 bg-gray-200" />
@@ -349,7 +351,7 @@ export const Shop = () => {
                   <p className="text-gray-500 text-sm">Try adjusting your filters or search</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+                <div className="browse-card-grid">
                   {products.map((product) => (
                     <article
                       key={product.id}
@@ -392,8 +394,7 @@ export const Shop = () => {
                   ))}
                 </div>
               )}
-            </div>
-          </div>
+          </ListBrowseLayout>
         </div>
       </ConsumerShell>
       <ShopCartSheet open={cartOpen} onClose={() => setCartOpen(false)} />

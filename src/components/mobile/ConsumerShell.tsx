@@ -23,8 +23,8 @@ interface ConsumerShellProps {
 }
 
 const maxWidthClass = {
-  '4xl': 'max-w-4xl',
-  '7xl': 'max-w-7xl',
+  '4xl': 'max-w-4xl md:max-w-none',
+  '7xl': 'max-w-7xl md:max-w-none',
 };
 
 export const ConsumerShell = ({
@@ -124,7 +124,7 @@ export const ConsumerShell = ({
       )}
 
       <div
-        className={`${maxWidthClass[maxWidth]} mx-auto ${flush ? '' : `${pad} py-4 md:py-6`} ${
+        className={`${maxWidthClass[maxWidth]} w-full mx-auto ${flush ? '' : `${pad} py-4 md:py-6`} ${
           !hasStickyChrome && !banner ? 'pt-safe-plus-2' : ''
         }`}
       >

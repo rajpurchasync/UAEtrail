@@ -12,6 +12,7 @@ const LocationsMap = lazy(() =>
   import('../components/ui/LocationsMap').then((m) => ({ default: m.LocationsMap }))
 );
 import { PageMeta } from '../components/seo/PageMeta';
+import { ListBrowseLayout } from '../components/layout/ListBrowseLayout';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { FilterIconButton } from '../components/mobile/FilterIconButton';
@@ -333,16 +334,17 @@ export const Discovery = () => {
       />
 
       <div className="py-2 md:py-4">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <aside
-            className={`lg:block lg:w-64 shrink-0 ${
-              showFilters
-                ? 'fixed inset-0 z-50 lg:static lg:inset-auto bg-black/40 lg:bg-transparent'
-                : 'hidden lg:block'
-            }`}
-            onClick={() => showFilters && setShowFilters(false)}
-            role="presentation"
-          >
+        <ListBrowseLayout
+          sidebar={
+            <aside
+              className={`lg:block lg:w-64 shrink-0 ${
+                showFilters
+                  ? 'fixed inset-0 z-50 lg:static lg:inset-auto bg-black/40 lg:bg-transparent'
+                  : 'hidden lg:block'
+              }`}
+              onClick={() => showFilters && setShowFilters(false)}
+              role="presentation"
+            >
             <div
               className={`bg-white p-6 lg:rounded-ios-lg lg:shadow-ios-sm lg:sticky lg:top-32 ${
                 showFilters
@@ -492,9 +494,9 @@ export const Discovery = () => {
                 </>
               )}
             </div>
-          </aside>
-
-          <div className="flex-1">
+            </aside>
+          }
+        >
             <div className="mb-4 text-sm text-gray-600">
               {loading ? (
                 <span>Loading locations…</span>
@@ -504,7 +506,7 @@ export const Discovery = () => {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <div className="browse-card-grid">
                 {[1, 2, 3].map((n) => (
                   <div key={n} className="h-64 rounded-2xl bg-gray-100 animate-pulse" />
                 ))}
@@ -550,7 +552,7 @@ export const Discovery = () => {
                 <LocationsMap pins={mapPins} bounds={mapBounds} minHeight={420} />
               </Suspense>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <div className="browse-card-grid">
                 {filteredLocations.map((location, index) =>
                   location.type === 'trail' ? (
                     <TrailCard key={`trail-${location.data.id}-${index}`} trail={location.data} />
@@ -560,8 +562,7 @@ export const Discovery = () => {
                 )}
               </div>
             )}
-          </div>
-        </div>
+        </ListBrowseLayout>
       </div>
 
       <Dialog open={addLocationOpen} onClose={() => setAddLocationOpen(false)} title="Suggest a location">

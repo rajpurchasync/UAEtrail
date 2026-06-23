@@ -4,12 +4,42 @@ import { Trail } from '../../types';
 import { getDifficultyColor, capitalize } from '../../utils';
 import { FavoriteButton } from './FavoriteButton';
 import { ShareButton } from './ShareButton';
+import { useComposePreview } from '../../hooks/useComposePreview';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface TrailCardProps {
   trail: Trail;
 }
 
 export const TrailCard = ({ trail }: TrailCardProps) => {
+  const isMobile = useIsMobile();
+  const openPreview = useComposePreview();
+  const trailPath = `/trail/${trail.id}`;
+
+  const openInRail = (event: React.MouseEvent) => {
+    if (isMobile) return;
+    event.preventDefault();
+    openPreview({
+      path: trailPath,
+      title: trail.name,
+      content: (
+        <div className="p-4 space-y-4">
+          <img src={trail.images[0]} alt={trail.name} className="w-full aspect-video object-cover rounded-xl" />
+          <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+            <span className="font-medium">{trail.region}</span>
+            <span>·</span>
+            <span>{trail.distance} km</span>
+            <span>·</span>
+            <span className="capitalize">{trail.difficulty}</span>
+          </div>
+          <p className="text-sm text-gray-600 leading-relaxed">{trail.description}</p>
+          <Link to={trailPath} className="app-cta-sm w-full">
+            Open trail
+          </Link>
+        </div>
+      ),
+    });
+  };
   const imageBlock = (
     <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
       <img src={trail.images[0]} alt={trail.name} className="w-full h-full object-cover" />
@@ -59,7 +89,7 @@ export const TrailCard = ({ trail }: TrailCardProps) => {
   );
 
   return (
-    <Link to={`/trail/${trail.id}`} className="group glass-card-interactive overflow-hidden hover:shadow-glass-lg block">
+    <Link to={trailPath} onClick={openInRail} className="group glass-card-interactive overflow-hidden hover:shadow-glass-lg block">
       {imageBlock}
       {detailsBlock}
     </Link>

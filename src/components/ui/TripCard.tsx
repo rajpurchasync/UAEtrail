@@ -8,6 +8,8 @@ import { ShareButton } from './ShareButton';
 import { ParticipantPreview } from './ParticipantPreview';
 import { OrganizerMessageButton } from './OrganizerMessageButton';
 import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../../utils/hostLabels';
+import { useComposePreview } from '../../hooks/useComposePreview';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface TripCardProps {
   trip: Trip;
@@ -17,6 +19,9 @@ interface TripCardProps {
 
 export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const openPreview = useComposePreview();
+  const tripPath = `/trip/${trip.id}`;
 
   const locationImage =
     trip.images?.[0] ??
@@ -40,7 +45,32 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
   const status = statusStyles[trip.status];
   const slotsPercent = Math.round(((trip.slotsTotal - trip.slotsAvailable) / trip.slotsTotal) * 100);
 
-  const goToTrip = () => navigate(`/trip/${trip.id}`);
+  const goToTrip = () => {
+    if (isMobile) {
+      navigate(tripPath);
+      return;
+    }
+    openPreview({
+      path: tripPath,
+      title: trip.title || trip.locationName,
+      content: (
+        <div className="p-4 space-y-4">
+          <img src={locationImage} alt={trip.locationName} className="w-full aspect-video object-cover rounded-xl" />
+          <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+            <span>{trip.date}</span>
+            <span>·</span>
+            <span>{trip.time}</span>
+            <span>·</span>
+            <span className="capitalize">{trip.activityType}</span>
+          </div>
+          <p className="text-sm text-gray-600">{trip.description}</p>
+          <Link to={tripPath} className="app-cta-sm w-full">
+            Open trip
+          </Link>
+        </div>
+      ),
+    });
+  };
 
   const hostName = tripHostName(trip);
   const hostAvatar = tripHostAvatar(trip);
