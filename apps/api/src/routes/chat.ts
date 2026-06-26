@@ -200,7 +200,7 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
     }
 
     await assertChatRateLimit(senderId);
-    await assertCanMessageUser(senderId, receiverId);
+    await assertCanMessageUser(senderId, receiverId, { eventId });
 
     // Verify receiver exists
     const receiver = await prisma.user.findUnique({ where: { id: receiverId } });

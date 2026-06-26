@@ -5,6 +5,7 @@ import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { DashboardRedirect } from './components/auth/DashboardRedirect';
 import { FEATURE_FLAGS } from './config/platform';
+import { NativeDeepLinkHandler } from './components/NativeDeepLinkHandler';
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
@@ -76,6 +77,7 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
+        <NativeDeepLinkHandler />
         <Layout>
         <Suspense fallback={<PageLoader />}>
         <Routes>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { Search, Send, ArrowLeft, Plus, X, MessageSquare, Loader2 } from 'lucide-react';
+import { Search, Send, ArrowLeft, Plus, X, MessageSquare, Loader2, Flag } from 'lucide-react';
 import { api } from '../api/services';
 import { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +8,8 @@ import { DashboardLayout } from '../components/layout';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { ORGANIZER_DASHBOARD_LINKS } from '../constants';
 import { useChatStream } from '../hooks/useChatStream';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { ReportContentDialog } from '../components/ui/ReportContentDialog';
 
 const userLinks = [
   { to: '/dashboard/overview', label: 'Overview' },
@@ -29,10 +31,14 @@ const userLabel = (u: Pick<SearchUser, 'displayName' | 'id'>) =>
 export const Messages = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const isMobileRoute = location.pathname === '/messages';
+  const isMobile = useIsMobile();
+  const isConsumerMessages = location.pathname === '/messages';
+  const isOrganizerMessages = location.pathname === '/organizer/messages';
+  const useMobileShell = isConsumerMessages || (isOrganizerMessages && isMobile);
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('to'));
+  const [contextEventId, setContextEventId] = useState<string | null>(searchParams.get('event'));
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -49,6 +55,7 @@ export const Messages = () => {
   // Mobile: show thread or list
   const [mobileShowThread, setMobileShowThread] = useState(!!searchParams.get('to'));
   const [partnerBrief, setPartnerBrief] = useState<{ displayName: string; avatarUrl?: string | null } | null>(null);
+  const [showReport, setShowReport] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,13 +111,31 @@ export const Messages = () => {
   useEffect(() => {
     if (selectedUserId) {
       loadMessages(selectedUserId);
-      // Update URL param
       setSearchParams((prev) => {
         prev.set('to', selectedUserId);
+        if (contextEventId) prev.set('event', contextEventId);
+        else prev.delete('event');
         return prev;
       });
     }
-  }, [selectedUserId, loadMessages, setSearchParams]);
+  }, [selectedUserId, contextEventId, loadMessages, setSearchParams]);
+
+  // Sync deep-link query params when navigating from trip cards, etc.
+  useEffect(() => {
+    const toUser = searchParams.get('to');
+    const eventId = searchParams.get('event');
+    setContextEventId(eventId);
+
+    if (toUser) {
+      if (toUser !== selectedUserId) setSelectedUserId(toUser);
+      setMobileShowThread(true);
+      return;
+    }
+
+    if (!toUser && selectedUserId && !mobileShowThread) {
+      setSelectedUserId(null);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -193,15 +218,6 @@ export const Messages = () => {
     }
   });
 
-  // Handle "to" URL param on mount
-  useEffect(() => {
-    const toUser = searchParams.get('to');
-    if (toUser && toUser !== selectedUserId) {
-      setSelectedUserId(toUser);
-      setMobileShowThread(true);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   // User search for new conversations
   useEffect(() => {
     if (!searchQuery.trim() || searchQuery.length < 2) {
@@ -226,10 +242,14 @@ export const Messages = () => {
     e.preventDefault();
     if (!selectedUserId || !newMessage.trim()) return;
     setSending(true);
+    setError(null);
     try {
-      const res = await api.sendMessage({ receiverId: selectedUserId, content: newMessage.trim() });
+      const res = await api.sendMessage({
+        receiverId: selectedUserId,
+        content: newMessage.trim(),
+        ...(contextEventId ? { eventId: contextEventId } : {}),
+      });
       setNewMessage('');
-      // Optimistically add message
       setMessages((prev) => [...prev, res.data]);
       loadConversations();
     } catch (err) {
@@ -274,8 +294,11 @@ export const Messages = () => {
   const backToList = () => {
     setMobileShowThread(false);
     setSelectedUserId(null);
+    setContextEventId(null);
     setSearchParams({});
   };
+
+  const inThread = mobileShowThread && !!selectedUserId;
 
   const selectedConversation = conversations.find((c) => c.userId === selectedUserId);
   const threadPartnerName = selectedConversation?.displayName ?? partnerBrief?.displayName ?? 'User';
@@ -389,7 +412,7 @@ export const Messages = () => {
       ) : (
         <>
           {/* Thread header */}
-          <div className="p-3 border-b bg-white flex items-center gap-3 shadow-sm">
+          <div className="shrink-0 p-3 border-b bg-white flex items-center gap-3 shadow-sm pt-safe-plus-2 md:pt-3">
             <button
               onClick={backToList}
               className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600"
@@ -400,11 +423,20 @@ export const Messages = () => {
               name={threadPartnerName}
               url={threadPartnerAvatar}
             />
-            <div>
+            <div className="flex-1">
               <p className="font-semibold text-sm text-gray-900">
                 {threadPartnerName}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => setShowReport(true)}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500"
+              aria-label="Report user"
+              title="Report user"
+            >
+              <Flag className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Messages */}
@@ -469,14 +501,14 @@ export const Messages = () => {
           </div>
 
           {/* Send bar */}
-          <form onSubmit={handleSend} className="p-3 border-t bg-white flex items-center gap-2">
+          <form onSubmit={handleSend} className="shrink-0 p-3 pb-safe border-t bg-white flex items-center gap-2">
             <input
               ref={inputRef}
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
-              className="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="flex-1 min-w-0 border border-gray-200 rounded-full px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
             <button
               type="submit"
@@ -549,7 +581,7 @@ export const Messages = () => {
     ) : null;
 
   const chatContent = (
-    <div className={`flex flex-col ${isMobileRoute ? 'flex-1 min-h-0' : ''}`}>
+    <div className={`flex flex-col ${useMobileShell ? 'flex-1 min-h-0' : ''}`}>
       {error && (
         <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-ios flex items-center justify-between shrink-0">
           <p className="text-red-700 text-sm">{error}</p>
@@ -563,22 +595,35 @@ export const Messages = () => {
         </div>
       )}
       <div
-        className={`flex bg-white border rounded-ios-lg overflow-hidden shadow-ios-sm ${
-          isMobileRoute ? 'flex-1 min-h-0' : ''
-        }`}
-        style={isMobileRoute ? undefined : { height: 'calc(100vh - 220px)', minHeight: '400px' }}
+        className={`flex bg-white overflow-hidden shadow-ios-sm ${
+          useMobileShell ? 'flex-1 min-h-0' : 'border rounded-ios-lg'
+        } ${!useMobileShell || !inThread ? 'border rounded-ios-lg' : ''}`}
+        style={useMobileShell ? undefined : { height: 'calc(100vh - 220px)', minHeight: '400px' }}
       >
         <ConversationList />
         <MessageThread />
       </div>
       <NewChatModal />
+      {selectedUserId && (
+        <ReportContentDialog
+          open={showReport}
+          onClose={() => setShowReport(false)}
+          targetType="user"
+          targetId={selectedUserId}
+          title="Report user"
+        />
+      )}
     </div>
   );
 
-  if (isMobileRoute) {
+  if (useMobileShell) {
     return (
-      <MobileScreen title="Messages" backTo="/profile">
-        {chatContent}
+      <MobileScreen
+        title="Messages"
+        backTo={isOrganizer ? '/organizer/overview' : '/profile'}
+        hideHeader={inThread}
+      >
+        <div className={`flex flex-col flex-1 min-h-0 ${inThread ? 'px-0' : ''}`}>{chatContent}</div>
       </MobileScreen>
     );
   }

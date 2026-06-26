@@ -3,13 +3,33 @@
  * Reference: UAE Trail Platform Audit & Strategy plan.
  */
 
-/** Mobile bottom navigation: Explore (Home) | Trips | Community | Shop | Profile */
+/** Primary mobile menu + desktop icon rail: Explore | Trips | Community | Shop | Profile */
 export const MOBILE_NAV = [
   { to: '/', label: 'Explore', match: ['/'] },
   { to: '/trips', label: 'Trips', match: ['/trips', '/trip'] },
   { to: '/community', label: 'Community', match: ['/community'] },
   { to: '/shop', label: 'Shop', match: ['/shop', '/product', '/merchant'] },
   { to: '/profile', label: 'Profile', match: ['/profile', '/my-requests', '/messages', '/notifications'] },
+] as const;
+
+/** Extra links shown in the mobile hamburger menu (not in the desktop icon rail). */
+export const MOBILE_MENU_EXTRAS = [
+  { to: '/discovery', label: 'Trails & Spots', match: ['/discovery', '/trail', '/camp'] },
+  { to: '/faq', label: 'Help', match: ['/faq'] },
+] as const;
+
+/** Right-side hamburger drawer order (mobile/PWA only). */
+export const MOBILE_DRAWER_MENU = [
+  {
+    label: 'My Profile',
+    to: '/profile',
+    match: ['/profile', '/my-requests', '/messages', '/notifications'],
+    profileLink: true,
+  },
+  { label: 'Trails & Spots', to: '/discovery', match: ['/discovery', '/trail', '/camp'] },
+  { label: 'Upcoming Trips', to: '/trips', match: ['/trips', '/trip'] },
+  { label: 'Gears Shop', to: '/shop', match: ['/shop', '/product', '/merchant'] },
+  { label: 'Community', to: '/community', match: ['/community'] },
 ] as const;
 
 /**
@@ -91,3 +111,20 @@ export const CONSUMER_CHROME_HIDDEN_EXACT = [
 export const isConsumerChromeHidden = (pathname: string): boolean =>
   CONSUMER_CHROME_HIDDEN_EXACT.includes(pathname as (typeof CONSUMER_CHROME_HIDDEN_EXACT)[number]) ||
   CONSUMER_CHROME_HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+/** Mobile detail pages render their own back header (trip, trail, camp, product). */
+export const isMobileDetailRoute = (pathname: string): boolean =>
+  /^\/(trip|trail|camp|product)\//.test(pathname);
+
+/** Tab pages with a hero banner — logo + menu live on the banner, not Layout header. */
+export const MOBILE_BANNER_CHROME_ROUTES = [
+  '/trips',
+  '/discovery',
+  '/community',
+  '/shop',
+  '/trail-points',
+  '/my-rewards',
+] as const;
+
+export const isMobileBannerChromeRoute = (pathname: string): boolean =>
+  MOBILE_BANNER_CHROME_ROUTES.includes(pathname as (typeof MOBILE_BANNER_CHROME_ROUTES)[number]);

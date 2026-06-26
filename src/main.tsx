@@ -8,6 +8,10 @@ import { AuthProvider } from './context/AuthContext';
 import { ShopCartProvider } from './context/ShopCartContext';
 import { getGoogleClientId } from './components/auth/GoogleSignInButton';
 import { queryClient } from './lib/queryClient';
+import { initPwaDisplayMode, registerAppServiceWorker } from './utils/pwa';
+
+initPwaDisplayMode();
+registerAppServiceWorker();
 
 const googleClientId = getGoogleClientId();
 

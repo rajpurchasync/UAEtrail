@@ -103,6 +103,46 @@ docker compose exec api npm --workspace @uaetrail/api run prisma:seed
 
 ## 4 — Enable HTTPS (Recommended)
 
+### Quick path (Docker)
+
+```bash
+# 1. Obtain certs (Let's Encrypt or your CA)
+sudo certbot certonly --standalone -d uaetrail.ae -d www.uaetrail.ae
+cp /etc/letsencrypt/live/uaetrail.ae/fullchain.pem nginx/certs/
+cp /etc/letsencrypt/live/uaetrail.ae/privkey.pem nginx/certs/
+
+# 2. Enable HTTPS server block
+cp nginx/ssl-server.conf.example nginx/conf.d/ssl.conf
+# Edit server_name if your domain differs
+
+# 3. In docker-compose.yml, uncomment the ssl.conf volume mount under frontend
+
+# 4. Rebuild and restart
+docker compose up -d --build frontend
+```
+
+The example config in `nginx/ssl-server.conf.example` includes HSTS, shared security headers, and HTTP→HTTPS redirect.
+
+### Production environment checklist
+
+Set these in `.env` before going live:
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `POSTGRES_PASSWORD` | Yes | Database |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Yes | Auth tokens |
+| `APP_BASE_URL` | Yes | `https://uaetrail.ae` |
+| `APP_BASE_URLS` | Yes | Comma-separated allowed origins |
+| `VITE_SITE_ORIGIN` | Yes | SEO / Open Graph (Docker build arg) |
+| `GOOGLE_CLIENT_ID` | Recommended | API Google token verification |
+| `VITE_GOOGLE_CLIENT_ID` | Recommended | Frontend Google button |
+| `SMTP_URL` or `SENDGRID_API_KEY` | Yes (prod) | Verification & password reset emails |
+| `EMAIL_FROM` | Yes (prod) | Sender address |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Optional | Web push notifications |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | If shop live | Payments |
+
+> Do **not** run `prisma:seed` with default passwords in production. Set `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` only for intentional first-time bootstrap.
+
 ### Option A: Certbot (Let's Encrypt)
 
 ```bash

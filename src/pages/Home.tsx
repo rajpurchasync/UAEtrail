@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mountain, Star, MapPin, ChevronRight, Tent, Compass, User } from 'lucide-react';
-import { TrailCard, CampingCard, TripCard, LocationSelector, EmptyTripsBanner } from '../components/ui';
+import { Mountain, Star, MapPin, ChevronRight, Tent, Compass, Calendar } from 'lucide-react';
+import { TrailCard, CampingCard, TripCard, EmptyTripsBanner } from '../components/ui';
 import { DEFAULT_OG_IMAGE, HOME_HERO_IMAGE } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -17,6 +17,7 @@ import { getInitials, getFirstName } from '../utils/userDisplay';
 import { TrailPointsPromoBanner } from '../components/rewards';
 import { MEMBERSHIP_NAV_LINK } from '../config/platform';
 import { EXPLORE_UAE_REGIONS, type ExploreRegionIcon } from '../config/exploreUaeRegions';
+import { MobileBrandBar } from '../components/layout/MobileBrandBar';
 
 const EXPLORE_REGION_ICONS: Record<ExploreRegionIcon, typeof Mountain> = {
   mountain: Mountain,
@@ -25,7 +26,6 @@ const EXPLORE_REGION_ICONS: Record<ExploreRegionIcon, typeof Mountain> = {
 };
 
 export const Home = () => {
-  const [showLocationSelector, setShowLocationSelector] = useState(false);
   const [popularTrails, setPopularTrails] = useState<Trail[]>([]);
   const [popularCamps, setPopularCamps] = useState<CampingSpot[]>([]);
   const [featuredTrips, setFeaturedTrips] = useState<Trip[]>([]);
@@ -109,7 +109,7 @@ export const Home = () => {
   ];
 
   return (
-    <div>
+    <div className="overflow-x-clip max-w-full">
       <PageMeta
         title="Discover hiking & camping in the UAE & GCC"
         description="Find trails, camping spots, and join organized outdoor trips with trusted guides across the UAE and GCC."
@@ -124,7 +124,7 @@ export const Home = () => {
       )}
       {/* ──── Hero ──── */}
       <section
-        className="relative h-[36vh] min-h-[260px] sm:h-[50vh] md:h-[70vh] md:max-h-[600px] bg-cover bg-center"
+        className="relative h-[42vh] min-h-[300px] sm:h-[50vh] md:h-[70vh] md:max-h-[600px] bg-cover bg-center"
         style={{
           backgroundImage: `url(${HOME_HERO_IMAGE})`
         }}
@@ -134,7 +134,11 @@ export const Home = () => {
         <div className="relative h-full flex flex-col">
           {/* Hero header / nav */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-safe-plus-2 md:pt-4">
-            <div className="flex justify-between items-center">
+            <div className="md:hidden">
+              <MobileBrandBar tone="light" />
+            </div>
+
+            <div className="hidden md:flex justify-between items-center">
               <Link to="/" className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-lg flex items-center justify-center">
                   <Mountain className="w-4 h-4 text-white" />
@@ -142,7 +146,7 @@ export const Home = () => {
                 <span className="text-base font-bold text-white tracking-tight">UAE Trail</span>
               </Link>
 
-              <nav className="hidden md:flex gap-1 items-center bg-white/10 backdrop-blur-md rounded-full px-2 py-1">
+              <nav className="flex gap-1 items-center bg-white/10 backdrop-blur-md rounded-full px-2 py-1">
                 {[
                   { to: '/', label: 'Home' },
                   { to: '/discovery', label: 'Trails & Spots' },
@@ -164,7 +168,7 @@ export const Home = () => {
               {user ? (
                 <Link
                   to={accountRouteByRole(user.role)}
-                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-medium"
                 >
                   <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
                     {getInitials(user.displayName, user.email)}
@@ -174,60 +178,38 @@ export const Home = () => {
               ) : (
                 <Link
                   to="/signin"
-                  className="hidden md:block px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-white/30 transition-colors text-sm font-medium border border-white/30"
+                  className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-white/30 transition-colors text-sm font-medium border border-white/30"
                 >
                   Log in
                 </Link>
               )}
-
-              <Link
-                to={user ? accountRouteByRole(user.role) : '/signin'}
-                state={user ? undefined : { from: '/' }}
-                className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm text-white"
-                aria-label={user ? 'Your profile' : 'Profile'}
-              >
-                {user ? (
-                  <span className="text-xs font-bold">{getInitials(user.displayName, user.email)}</span>
-                ) : (
-                  <User className="w-5 h-5" strokeWidth={2} />
-                )}
-              </Link>
             </div>
           </div>
 
           {/* Hero content */}
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-white max-w-3xl text-center px-6 md:px-12">
-              <h1 className="text-xl xs:text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-2 md:mb-4 leading-[1.12] tracking-tight">
-                <span className="sm:hidden">
-                  Discover Hiking and Camping
-                  <br />
-                  in the UAE
-                </span>
-                <span className="hidden sm:block">
-                  Discover Hiking &amp;
-                  <br />
-                  Camping in the UAE
-                </span>
+          <div className="flex-1 flex items-center justify-center pb-4 md:pb-0">
+            <div className="text-white w-full max-w-3xl text-center px-5 sm:px-6 md:px-12">
+              <h1 className="text-[1.625rem] leading-[1.2] sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-2.5 md:mb-4 tracking-tight text-balance">
+                Your pocket guide for Hiking &amp; Camping in the UAE
               </h1>
-              <p className="text-xs xs:text-sm sm:text-lg md:text-xl text-white/80 mb-3 md:mb-8 max-w-2xl mx-auto leading-relaxed">
-                Explore breathtaking trails, discover perfect camping spots, and join guided adventures across the Emirates.
+              <p className="text-sm sm:text-lg md:text-xl text-white/90 mb-5 md:mb-8 max-w-[22rem] sm:max-w-2xl mx-auto leading-relaxed text-balance">
+                Hike, camp, host trips, and connect with the outdoor community, all in one place.
               </p>
-              <div className="flex flex-col md:flex-row gap-3 justify-center items-center">
+              <div className="flex flex-row flex-wrap justify-center gap-2.5 md:gap-3">
                 <Link
                   to="/discovery"
-                  className="w-[70%] md:w-auto md:min-w-[14rem] px-5 py-2.5 md:px-10 md:py-3.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all font-semibold inline-flex items-center justify-center shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 text-sm md:text-base"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 md:min-h-0 md:px-10 md:py-3.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all font-semibold shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 text-sm md:text-base"
                 >
-                  <Compass className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                  Explore
+                  <MapPin className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                  Trails &amp; Spots
                 </Link>
-                <button
-                  onClick={() => setShowLocationSelector(true)}
-                  className="w-[70%] md:w-auto md:min-w-[14rem] px-5 py-2.5 md:px-10 md:py-3.5 bg-white/15 backdrop-blur-sm text-white rounded-full hover:bg-white/25 transition-all font-medium border border-white/20 inline-flex items-center justify-center text-sm md:text-base"
+                <Link
+                  to="/trips"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 md:min-h-0 md:px-10 md:py-3.5 bg-white/15 backdrop-blur-sm text-white rounded-full hover:bg-white/25 transition-all font-medium border border-white/20 text-sm md:text-base"
                 >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Near You
-                </button>
+                  <Calendar className="w-4 h-4 shrink-0" />
+                  Upcoming Trips
+                </Link>
               </div>
             </div>
           </div>
@@ -237,15 +219,15 @@ export const Home = () => {
       <TrailPointsPromoBanner variant="home" />
 
       {/* ──── Explore UAE Regions ──── */}
-      <section className="py-8 md:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-5">
+      <section className="py-8 md:py-12 mobile-snap-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+          <div className="flex justify-between items-end mb-5 gap-3">
             <h2 className="text-xl md:text-3xl font-bold text-gray-900">Explore UAE</h2>
-            <Link to="/discovery" className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group">
+            <Link to="/discovery" className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0">
               See all <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 min-w-0">
             {EXPLORE_UAE_REGIONS.map((region) => {
               const RegionIcon = EXPLORE_REGION_ICONS[region.icon];
               const count =
@@ -256,7 +238,7 @@ export const Home = () => {
               <Link
                 key={region.name}
                 to={region.discoveryLink}
-                className="group relative aspect-[4/3] rounded-[22px] overflow-hidden glass-card-interactive shadow-glass"
+                className="group relative aspect-[4/3] min-w-0 rounded-[22px] overflow-hidden glass-card-interactive shadow-glass"
               >
                 <img
                   src={region.image}
@@ -282,10 +264,10 @@ export const Home = () => {
       </section>
 
       {/* ──── Upcoming Trips (swipe) ──── */}
-      <section className="py-8 md:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-5">
-            <div>
+      <section className="py-8 md:py-12 mobile-snap-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+          <div className="flex justify-between items-end mb-5 gap-3">
+            <div className="min-w-0">
               <h2 className="text-xl md:text-3xl font-bold text-gray-900">
                 {featuredTrips.length > 0 ? 'Featured Events' : 'Organized Trips'}
               </h2>
@@ -301,9 +283,9 @@ export const Home = () => {
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none">
+          <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {displayedTrips.map((trip) => (
-              <div key={trip.id} className="min-w-[300px] md:min-w-0 snap-center shrink-0 md:shrink">
+              <div key={trip.id} className="mobile-snap-rail__item">
                 <TripCard trip={trip} variant="featured" />
               </div>
             ))}
@@ -316,24 +298,24 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* ──── Popular Trails ──── */}
-      <section className="py-10 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-6 md:mb-8">
-            <div>
-              <h2 className="text-xl md:text-3xl font-bold text-gray-900">Popular Trails</h2>
+      {/* ──── Amazing Trails ──── */}
+      <section className="py-10 md:py-16 mobile-snap-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+          <div className="flex justify-between items-end mb-6 md:mb-8 gap-3">
+            <div className="min-w-0">
+              <h2 className="text-xl md:text-3xl font-bold text-gray-900">Amazing Trails</h2>
               <p className="text-sm text-gray-500 mt-1 hidden md:block">Top-rated hiking routes across the Emirates</p>
             </div>
             <Link
               to="/discovery?activity=hiking"
-              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group"
+              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0"
             >
               View all <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {(popularTrails.length > 0 ? popularTrails : allTrails.filter((t) => t.featured).slice(0, 3)).map((trail) => (
-              <div key={trail.id} onClick={() => trackView(trail.id)}>
+              <div key={trail.id} className="mobile-snap-rail__item" onClick={() => trackView(trail.id)}>
                 <TrailCard trail={trail} />
               </div>
             ))}
@@ -341,24 +323,24 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* ──── Popular Camping Spots ──── */}
-      <section className="py-10 md:py-16 bg-gray-50/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-6 md:mb-8">
-            <div>
-              <h2 className="text-xl md:text-3xl font-bold text-gray-900">Popular Camping Spots</h2>
+      {/* ──── Awesome Camping Spots ──── */}
+      <section className="py-10 md:py-16 bg-gray-50/80 mobile-snap-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+          <div className="flex justify-between items-end mb-6 md:mb-8 gap-3">
+            <div className="min-w-0">
+              <h2 className="text-xl md:text-3xl font-bold text-gray-900">Awesome Camping Spots</h2>
               <p className="text-sm text-gray-500 mt-1 hidden md:block">Best camp sites handpicked by the community</p>
             </div>
             <Link
               to="/discovery?activity=camping"
-              className="text-amber-600 hover:text-amber-700 font-medium text-sm inline-flex items-center gap-1 group"
+              className="text-amber-600 hover:text-amber-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0"
             >
               View all <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {(popularCamps.length > 0 ? popularCamps : allCamps.filter((c) => c.featured).slice(0, 3)).map((camp) => (
-              <div key={camp.id} onClick={() => trackView(camp.id)}>
+              <div key={camp.id} className="mobile-snap-rail__item" onClick={() => trackView(camp.id)}>
                 <CampingCard camp={camp} />
               </div>
             ))}
@@ -374,18 +356,17 @@ export const Home = () => {
       </section>
 
       {/* ──── Testimonials ──── */}
-      <section className="py-10 md:py-16 bg-gray-50/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-10 md:py-16 bg-gray-50/80 mobile-snap-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
           <div className="text-center mb-8 md:mb-12">
             <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-2">What Our Community Says</h2>
             <p className="text-sm md:text-base text-gray-500">Join thousands of outdoor enthusiasts exploring the UAE</p>
           </div>
-          {/* Horizontal scroll on mobile, grid on desktop */}
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0">
+          <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-4 md:gap-6">
             {testimonials.map((testimonial, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl border border-gray-100 p-5 min-w-[280px] md:min-w-0 snap-center shrink-0 md:shrink hover:shadow-lg hover:border-gray-200 transition-all"
+                className="mobile-snap-rail__item bg-white rounded-2xl border border-gray-100 p-5 md:min-w-0 hover:shadow-lg hover:border-gray-200 transition-all"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <img
@@ -410,9 +391,6 @@ export const Home = () => {
         </div>
       </section>
 
-      {showLocationSelector && (
-        <LocationSelector onClose={() => setShowLocationSelector(false)} />
-      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ReactNode } from 'react';
+import { MobileMenuButton } from '../layout/MobileMenu';
 
 interface MobileDetailShellProps {
   backTo: string;
@@ -8,7 +9,7 @@ interface MobileDetailShellProps {
   children: ReactNode;
   /** Optional right-side header action (e.g. cart button) */
   headerAction?: ReactNode;
-  /** Optional fixed bottom action (e.g. join CTA) — positioned above tab bar */
+  /** Optional fixed bottom action (e.g. join CTA) */
   footer?: ReactNode;
 }
 
@@ -25,12 +26,15 @@ export const MobileDetailShell = ({ backTo, backLabel = 'Back', children, header
           <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
           <span className="text-[17px]">{backLabel}</span>
         </Link>
-        {headerAction}
+        <div className="flex items-center gap-2 shrink-0">
+          {headerAction}
+          <MobileMenuButton />
+        </div>
       </div>
     </div>
     {children}
     {footer && (
-      <div className="md:hidden fixed inset-x-0 bottom-nav-offset z-40 px-4 pb-safe">{footer}</div>
+      <div className="md:hidden fixed inset-x-0 bottom-0 z-40 px-4 pb-safe">{footer}</div>
     )}
   </div>
 );

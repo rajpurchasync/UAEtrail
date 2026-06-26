@@ -32,6 +32,26 @@ npm run dev:all
 Frontend runs on `http://localhost:5175`.  
 API runs on `http://localhost:4000`.
 
+## Mobile & store deployment
+
+See **[docs/MOBILE_DEPLOYMENT_PLAN.md](docs/MOBILE_DEPLOYMENT_PLAN.md)** for the full checklist.
+
+| Guide | Purpose |
+|-------|---------|
+| [PRE_DEPLOY_CHECKLIST.md](docs/PRE_DEPLOY_CHECKLIST.md) | Go-live on VPS |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker + HTTPS |
+| [ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md) | Play Store AAB |
+| [IOS_RELEASE.md](docs/IOS_RELEASE.md) | TestFlight / App Store |
+| [PLAY_STORE_LISTING.md](docs/PLAY_STORE_LISTING.md) | Store copy & screenshots |
+| [MODERATION.md](docs/MODERATION.md) | UGC reports workflow |
+
+```bash
+npm run validate:env:prod    # after filling .env on server
+npm run icons:generate
+npm run cap:sync
+npm run cap:android
+```
+
 ## Seed Accounts
 - Admin: `admin@uaetrails.app` / `Admin@12345`
 - Organizer: `organizer@uaetrails.app` / `Organizer@12345`

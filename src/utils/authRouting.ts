@@ -64,10 +64,17 @@ export const adminDashboardRedirect = (subpath: string): string => {
 };
 
 /** Deep link to messages for the current role. */
-export const messagesRouteForRole = (role: UserRole, userId: string): string => {
+export const messagesRouteForRole = (
+  role: UserRole,
+  userId: string,
+  options?: { eventId?: string }
+): string => {
   if (role === 'platform_admin') return '/admin/overview';
+  const params = new URLSearchParams({ to: userId });
+  if (options?.eventId) params.set('event', options.eventId);
+  const query = params.toString();
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    return `/organizer/messages?to=${userId}`;
+    return `/organizer/messages?${query}`;
   }
-  return `/messages?to=${userId}`;
+  return `/messages?${query}`;
 };

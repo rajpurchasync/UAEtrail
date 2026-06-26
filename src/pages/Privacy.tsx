@@ -41,8 +41,12 @@ export const Privacy = () => (
           </p>
           <h2 className="text-lg font-semibold text-gray-900">Your choices</h2>
           <p>
-            You may update your profile, disable notifications, or request account deletion by contacting
-            support. You can sign out at any time from your profile.
+            You may update your profile, disable notifications, export your data, or delete your account from Profile settings.
+            For other data requests, email{' '}
+            <a href="mailto:privacy@uaetrail.ae" className="text-emerald-700 hover:underline">
+              privacy@uaetrail.ae
+            </a>
+            .
           </p>
           <h2 className="text-lg font-semibold text-gray-900">Contact</h2>
           <p>

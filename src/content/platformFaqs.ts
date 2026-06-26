@@ -121,7 +121,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How do I delete my account or update my profile?',
         answer:
-          'Sign in and open Profile to update your display name, photo, and preferences. For account deletion or data requests, email privacy@uaetrail.ae and we will process your request in line with our Privacy Policy.'
+          'Sign in and open Profile to update your display name, photo, and preferences. To delete your account, scroll to Delete account at the bottom of Profile. For other data requests, email privacy@uaetrail.ae.'
       }
     ]
   }

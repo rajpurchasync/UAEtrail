@@ -25,6 +25,24 @@ export const REGIONS_BY_COUNTRY: Record<CountryCode, string[]> = {
 export const getRegionsForCountry = (code: CountryCode = DEFAULT_COUNTRY): string[] =>
   REGIONS_BY_COUNTRY[code] ?? REGIONS_BY_COUNTRY.AE;
 
+/** Human labels for discovery location filter pills (filter value → display). */
+export const DISCOVERY_REGION_PILL_LABELS: Record<string, string> = {
+  'Abu Dhabi': 'Abu Dhabi',
+  Dubai: 'Dubai',
+  RAK: 'Ras Al Khaimah',
+  Fujairah: 'Fujairah',
+  'Al Ain': 'Al Ain',
+  Sharjah: 'Sharjah',
+};
+
+export const getDiscoveryRegionPillOptions = (code: CountryCode = DEFAULT_COUNTRY) => [
+  { key: 'all', label: 'All UAE' },
+  ...getRegionsForCountry(code).map((region) => ({
+    key: region,
+    label: DISCOVERY_REGION_PILL_LABELS[region] ?? region,
+  })),
+];
+
 export const getMapBounds = (code: CountryCode = DEFAULT_COUNTRY): { west: number; south: number; east: number; north: number } => {
   const bounds: Record<CountryCode, { west: number; south: number; east: number; north: number }> = {
     AE: { west: 51.5, south: 22.5, east: 56.5, north: 26.5 },

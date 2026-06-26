@@ -584,7 +584,7 @@ export const TripDetail = () => {
                 )}
                 <OrganizerMessageButton
                   organizerUserId={tripHostUserId(trip)}
-                  signInReturnTo={`/trip/${trip.id}`}
+                  eventId={trip.id}
                   size="md"
                 />
               </div>

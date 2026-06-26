@@ -12,6 +12,8 @@ import {
   AccountIdentityBar,
   AccountLinkList,
   AccountSignOutButton,
+  AccountDeleteSection,
+  AccountDataExportSection,
   AccountStatGrid,
   buildParticipantStats,
 } from '../components/account';
@@ -214,6 +216,9 @@ export const Profile = () => {
       </div>
 
       <AccountSignOutButton onSignOut={handleSignOut} />
+
+      <AccountDataExportSection />
+      <AccountDeleteSection onDeleted={handleSignOut} />
 
       {rewardSummary && (
         <TrailPointsPathSheet

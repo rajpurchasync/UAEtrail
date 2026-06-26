@@ -42,6 +42,7 @@ export const AdminAuditLog = () => {
       suspend: 'bg-red-100 text-red-800',
       activate: 'bg-green-100 text-green-800',
       moderate: 'bg-purple-100 text-purple-800',
+      content_report: 'bg-rose-100 text-rose-800',
       login: 'bg-gray-100 text-gray-800',
       broadcast: 'bg-indigo-100 text-indigo-800'
     };
@@ -77,6 +78,7 @@ export const AdminAuditLog = () => {
               <option value="suspend">Suspend</option>
               <option value="activate">Activate</option>
               <option value="moderate">Moderate</option>
+              <option value="content_report">Content reports</option>
               <option value="broadcast">Broadcast</option>
             </select>
             <select value={entityFilter} onChange={(e) => { setEntityFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
@@ -88,6 +90,10 @@ export const AdminAuditLog = () => {
               <option value="application">Application</option>
               <option value="product">Product</option>
               <option value="notification">Notification</option>
+              <option value="post">Post</option>
+              <option value="review">Review</option>
+              <option value="message">Message</option>
+              <option value="reply">Reply</option>
             </select>
           </div>
         </div>

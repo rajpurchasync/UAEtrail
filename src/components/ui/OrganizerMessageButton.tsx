@@ -5,8 +5,8 @@ import { messagesRouteForRole } from '../../utils/authRouting';
 
 interface OrganizerMessageButtonProps {
   organizerUserId?: string | null;
-  /** Path to return to after sign-in (defaults to current location). */
-  signInReturnTo?: string;
+  /** Trip/event context — enables inquiry messages before a join request exists. */
+  eventId?: string | null;
   size?: 'sm' | 'md';
   className?: string;
 }
@@ -24,7 +24,7 @@ const iconSizes = {
 /** Message organizer — guests are sent to sign-in first. */
 export const OrganizerMessageButton = ({
   organizerUserId,
-  signInReturnTo,
+  eventId,
   size = 'sm',
   className = '',
 }: OrganizerMessageButtonProps) => {
@@ -34,17 +34,16 @@ export const OrganizerMessageButton = ({
   if (!organizerUserId) return null;
   if (user?.id === organizerUserId) return null;
 
+  const messageOptions = eventId ? { eventId } : undefined;
   const messagePath = user
-    ? messagesRouteForRole(user.role, organizerUserId)
-    : `/messages?to=${organizerUserId}`;
+    ? messagesRouteForRole(user.role, organizerUserId, messageOptions)
+    : messagesRouteForRole('visitor', organizerUserId, messageOptions);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     if (!user) {
-      navigate('/signin', {
-        state: { from: signInReturnTo ?? messagePath },
-      });
+      navigate('/signin', { state: { from: messagePath } });
       return;
     }
     navigate(messagePath);

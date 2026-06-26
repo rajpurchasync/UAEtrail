@@ -17,14 +17,18 @@ export const NAV_ICONS = {
 } satisfies Record<string, LucideIcon>;
 
 export const MOBILE_NAV_ICON_MAP: Record<
-  'Explore' | 'Trips' | 'Community' | 'Shop' | 'Profile',
+  'Explore' | 'Trips' | 'Community' | 'Shop' | 'Profile' | 'Trails & Spots' | 'Upcoming Trips' | 'Gears Shop' | 'My Profile',
   LucideIcon
 > = {
   Explore: NAV_ICONS.explore,
   Trips: NAV_ICONS.trips,
   Community: NAV_ICONS.community,
   Shop: NAV_ICONS.shop,
-  Profile: NAV_ICONS.profile
+  Profile: NAV_ICONS.profile,
+  'My Profile': NAV_ICONS.profile,
+  'Trails & Spots': Map,
+  'Upcoming Trips': NAV_ICONS.trips,
+  'Gears Shop': NAV_ICONS.shop,
 };
 
 /** Consistent stroke for outline icons in consumer UI */

@@ -176,7 +176,7 @@ const JoinedTripCard = ({ trip, variant }: { trip: EventDTO; variant: 'confirmed
             )}
             <OrganizerMessageButton
               organizerUserId={trip.hostUserId ?? trip.organizerUserId}
-              signInReturnTo={`/trip/${trip.id}`}
+              eventId={trip.id}
             />
           </div>
         )}
@@ -246,7 +246,7 @@ const JoinedRequestCard = ({ request }: { request: EventRequestView }) => {
           )}
           <OrganizerMessageButton
             organizerUserId={request.event.organizerUserId}
-            signInReturnTo={`/trip/${request.event.id}`}
+            eventId={request.event.id}
           />
         </div>
       )}

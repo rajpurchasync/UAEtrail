@@ -124,7 +124,7 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
       {!isFeatured && (
         <OrganizerMessageButton
           organizerUserId={hostUserId}
-          signInReturnTo={`/trip/${trip.id}`}
+          eventId={trip.id}
         />
       )}
     </div>
@@ -232,7 +232,7 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
           goToTrip();
         }
       }}
-      className="group block glass-card-interactive overflow-hidden hover:shadow-glass-lg cursor-pointer"
+      className="group block w-full max-w-full glass-card-interactive overflow-hidden hover:shadow-glass-lg cursor-pointer"
     >
       {children}
     </article>

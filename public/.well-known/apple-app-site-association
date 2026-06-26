@@ -1,0 +1,20 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.ae.uaetrail.app",
+        "paths": [
+          "/trip/*",
+          "/trail/*",
+          "/camp/*",
+          "/community",
+          "/profile",
+          "/shop",
+          "/signin",
+          "/signup"
+        ]
+      }
+    ]
+  }
+}

@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../api/services';
 import { RewardStatsDTO } from '@uaetrail/shared-types';
 import { MEMBERSHIP_TIERS, EARN_WAYS } from '../constants/membershipTiers';
-import { MobileBackButton } from '../components/mobile/MobileBackButton';
+import { MobileBrandBar } from '../components/layout/MobileBrandBar';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { faqPageSchema } from '../components/seo/schemas';
@@ -135,7 +135,7 @@ export const TrailPointsAbout = () => {
   };
 
   return (
-    <div className="min-h-screen consumer-bg pb-nav-safe lg:pb-16">
+    <div className="min-h-screen consumer-bg pb-safe lg:pb-16 overflow-x-clip max-w-full">
       <PageMeta
         title="Trail Points rewards"
         description="Earn Trail Points for hiking, camping, and community participation on UAE Trail. Unlock tiers and perks as you explore."
@@ -151,8 +151,17 @@ export const TrailPointsAbout = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/55 to-[#eef6f3]" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-safe-plus-2 pb-8 sm:pb-10 lg:pb-16 lg:pt-8">
-          <div className="md:hidden mb-3">
-            <MobileBackButton fallbackTo="/" label="Home" />
+          <div className="md:hidden mb-4">
+            <MobileBrandBar tone="light" />
+          </div>
+
+          <div className="hidden md:flex mb-4">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white"
+            >
+              ← Home
+            </Link>
           </div>
 
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-end">
@@ -377,7 +386,7 @@ export const TrailPointsAbout = () => {
       </div>
 
       {/* Mobile sticky CTA */}
-      <div className="lg:hidden fixed bottom-[calc(var(--nav-height)+0.5rem)] left-4 right-4 z-40">
+      <div className="lg:hidden fixed bottom-[calc(var(--safe-bottom)+0.5rem)] left-4 right-4 z-40">
         <Link
           to={primaryCta.path}
           className="flex items-center justify-center gap-2 w-full py-3.5 bg-emerald-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-emerald-900/30 ring-1 ring-emerald-500/50"

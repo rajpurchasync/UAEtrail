@@ -69,7 +69,7 @@ export const CampingCard = ({ camp }: CampingCardProps) => {
   );
 
   return (
-    <Link to={campPath} onClick={openInRail} className="group glass-card-interactive overflow-hidden hover:shadow-glass-lg block">
+    <Link to={campPath} onClick={openInRail} className="group glass-card-interactive overflow-hidden hover:shadow-glass-lg block w-full max-w-full">
       {imageBlock}
       {detailsBlock}
     </Link>

@@ -19,7 +19,7 @@ import { FilterIconButton } from '../components/mobile/FilterIconButton';
 import { PAGE_BANNERS } from '../config/pageBanners';
 import { DifficultyLevel, CampingType, Accessibility, Trail, CampingSpot } from '../types';
 import { fetchApiLocations } from '../api/public';
-import { DEFAULT_COUNTRY, getRegionsForCountry, getMapBounds } from '../config/regions';
+import { DEFAULT_COUNTRY, DISCOVERY_REGION_PILL_LABELS, getDiscoveryRegionPillOptions, getRegionsForCountry, getMapBounds } from '../config/regions';
 import { matchesLocationSearch, resolveRegionFilter } from '../utils/locationSearch';
 
 type LocationItem = { type: 'trail'; data: Trail } | { type: 'camp'; data: CampingSpot };
@@ -110,6 +110,8 @@ export const Discovery = () => {
   }, []);
 
   const regionOptions = getRegionsForCountry(DEFAULT_COUNTRY);
+  const regionPillOptions = getDiscoveryRegionPillOptions(DEFAULT_COUNTRY);
+  const activeRegionPill = filters.regions.length === 1 ? filters.regions[0] : 'all';
   const mapBounds = getMapBounds(DEFAULT_COUNTRY);
 
   const filteredLocations = useMemo(() => {
@@ -249,6 +251,22 @@ export const Discovery = () => {
     setAddLocationOpen(true);
   };
 
+  const selectRegionPill = (key: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (key === 'all') {
+      setFilters((prev) => ({ ...prev, regions: [] }));
+      setSearchQuery('');
+      next.delete('region');
+      next.delete('q');
+    } else {
+      setFilters((prev) => ({ ...prev, regions: [key] }));
+      setSearchQuery('');
+      next.set('region', key);
+      next.delete('q');
+    }
+    setSearchParams(next, { replace: true });
+  };
+
   return (
     <ConsumerShell
       layout="editorial"
@@ -268,31 +286,39 @@ export const Discovery = () => {
               {submitSuccess}
             </p>
           )}
-          <div className="flex gap-2 mb-3">
-            <div className="flex-1 relative">
+          <FilterChips
+            className="mb-3"
+            options={regionPillOptions}
+            value={activeRegionPill}
+            onChange={selectRegionPill}
+          />
+          <div className="flex gap-2 mb-3 min-w-0">
+            <div className="flex-1 relative min-w-0">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search trails & camps"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="glass-search"
+                className="glass-search w-full min-w-0"
               />
             </div>
-            <FilterIconButton onClick={() => setShowFilters(!showFilters)} aria-label="Filters">
+            <FilterIconButton onClick={() => setShowFilters(!showFilters)} aria-label="Filters" className="shrink-0">
               <SlidersHorizontal className="w-4 h-4" />
             </FilterIconButton>
             <button
               type="button"
               onClick={openAddLocation}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 shrink-0"
+              className="inline-flex shrink-0 items-center justify-center h-9 w-9 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 md:w-auto md:px-3 md:gap-1.5"
+              aria-label="Add location"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add location</span>
+              <span className="hidden md:inline text-sm font-medium">Add location</span>
             </button>
           </div>
-          <div className="flex gap-2 justify-between items-center flex-wrap">
+          <div className="flex gap-2 items-center min-w-0">
             <FilterChips
+              className="min-w-0 flex-1"
               options={[
                 { key: 'all', label: 'All' },
                 { key: 'hiking', label: 'Hiking' },
@@ -301,7 +327,7 @@ export const Discovery = () => {
               value={activityFilter}
               onChange={(key) => setActivityFilter(key as ActivityFilter)}
             />
-            <div className="app-segmented">
+            <div className="app-segmented shrink-0">
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
@@ -385,7 +411,9 @@ export const Discovery = () => {
                         onChange={() => toggleRegion(region)}
                         className="rounded text-emerald-600 focus:ring-emerald-500"
                       />
-                      <span className="ml-2 text-sm text-gray-700">{region}</span>
+                      <span className="ml-2 text-sm text-gray-700">
+                        {DISCOVERY_REGION_PILL_LABELS[region] ?? region}
+                      </span>
                     </label>
                   ))}
                 </div>

@@ -114,6 +114,15 @@ export interface UserProfile {
   avatarUrl?: string;
 }
 
+export interface AccountDeletionInfo {
+  canDelete: boolean;
+  blockers: string[];
+  requiresPassword: boolean;
+}
+
+export type ContentReportTargetType = 'user' | 'message' | 'post' | 'review' | 'reply';
+export type ContentReportReason = 'spam' | 'harassment' | 'inappropriate' | 'scam' | 'other';
+
 export type EventDetail = EventDetailDTO;
 
 export interface TenantMembershipView {
@@ -258,6 +267,29 @@ export const api = {
   updateMeProfile: (payload: UserProfile) =>
     apiRequest<{ data: UserProfile }>('/me/profile', {
       method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  getAccountDeletionInfo: () =>
+    apiRequest<{ data: AccountDeletionInfo }>('/me/account/deletion-info', { auth: true }),
+  deleteAccount: (payload: { password?: string; confirmPhrase?: 'DELETE' }) =>
+    apiRequest<{ message: string }>('/me/account', {
+      method: 'DELETE',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  downloadMyDataExport: async (): Promise<Blob> => {
+    const { blob } = await downloadAuthenticatedFile('/me/export');
+    return blob;
+  },
+  reportContent: (payload: {
+    targetType: ContentReportTargetType;
+    targetId: string;
+    reason: ContentReportReason;
+    details?: string;
+  }) =>
+    apiRequest<{ message: string }>('/reports', {
+      method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
     }),

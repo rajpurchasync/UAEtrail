@@ -30,6 +30,9 @@ import {
 import { listActiveLocations } from '../lib/location-query.js';
 import { env } from '../config/env.js';
 import { getStripe, isStripeConfigured } from '../lib/stripe.js';
+import { clearRefreshCookie } from '../lib/auth-cookies.js';
+import { deleteUserAccount, getAccountDeletionInfo } from '../services/account-deletion.js';
+import { buildUserDataExport } from '../services/data-export.js';
 
 const eventIdParamSchema = z.object({ id: z.string().min(1) });
 const requestIdParamSchema = z.object({ id: z.string().min(1), requestId: z.string().min(1) });
@@ -654,6 +657,43 @@ userRouter.patch(
     }
   }
 );
+
+const deleteAccountSchema = z.object({
+  password: z.string().min(1).optional(),
+  confirmPhrase: z.literal('DELETE').optional()
+});
+
+userRouter.get('/me/account/deletion-info', requireAuth, async (req, res, next) => {
+  try {
+    const info = await getAccountDeletionInfo(req.auth!.userId);
+    res.json({ data: info });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.get('/me/export', requireAuth, async (req, res, next) => {
+  try {
+    const data = await buildUserDataExport(req.auth!.userId);
+    const filename = `uaetrail-export-${req.auth!.userId.slice(0, 8)}.json`;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(JSON.stringify(data, null, 2));
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.delete('/me/account', requireAuth, validate({ body: deleteAccountSchema }), async (req, res, next) => {
+  try {
+    const body = req.body as z.infer<typeof deleteAccountSchema>;
+    await deleteUserAccount(req.auth!.userId, body);
+    clearRefreshCookie(res);
+    res.json({ message: 'Your account has been deleted.' });
+  } catch (error) {
+    next(error);
+  }
+});
 
 userRouter.use(requireAuth, requireVerifiedEmail);
 

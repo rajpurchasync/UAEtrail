@@ -217,7 +217,6 @@ export const OrganizerPublicProfile = ({
                 <div className="mt-4">
                   <OrganizerMessageButton
                     organizerUserId={tenant.ownerId}
-                    signInReturnTo={`/operator/${tenant.slug}`}
                     size="md"
                     className="!bg-white/10 !text-white !border-white/20 hover:!bg-white/20"
                   />

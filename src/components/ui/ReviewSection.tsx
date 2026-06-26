@@ -5,6 +5,7 @@ import { ReviewDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 import { MembershipTierBadge } from '../ui/MembershipTierBadge';
+import { ReportContentButton } from './ReportContentDialog';
 
 interface ReviewSectionProps {
   targetType: 'location' | 'tenant';
@@ -150,8 +151,13 @@ export const ReviewSection = ({
                 </div>
               </div>
               <p className="text-gray-600">{review.comment}</p>
-              <div className="text-sm text-gray-500 mt-2">
-                {new Date(review.createdAt).toLocaleDateString()}
+              <div className="flex items-center justify-between mt-2 gap-2">
+                <div className="text-sm text-gray-500">
+                  {new Date(review.createdAt).toLocaleDateString()}
+                </div>
+                {user && review.userId !== user.id && (
+                  <ReportContentButton targetType="review" targetId={review.id} label="Report" />
+                )}
               </div>
             </div>
           ))}

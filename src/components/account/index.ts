@@ -5,4 +5,6 @@ export { AccountActivityPreview } from './AccountActivityPreview';
 export { AccountLinkList, type AccountLinkItem } from './AccountLinkList';
 export { OrganizerHubSections, buildOrganizerStats } from './OrganizerHubSections';
 export { AccountEditModal, AccountSignOutButton } from './AccountEditModal';
+export { AccountDeleteSection } from './AccountDeleteSection';
+export { AccountDataExportSection } from './AccountDataExportSection';
 export { buildParticipantStats } from './participantStats';

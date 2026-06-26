@@ -3,6 +3,7 @@ import { Mountain } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { MEMBERSHIP_NAV_LINK } from '../../config/platform';
+import { MobileMenuButton } from './MobileMenu';
 
 const getInitials = (name?: string | null, email?: string | null) => {
   if (name) {
@@ -79,6 +80,7 @@ export const Header = () => {
                 Sign In
               </Link>
             )}
+            <MobileMenuButton />
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { MembershipRole, RequestStatus } from '@prisma/client';
+import { MembershipRole, RequestStatus, EventStatus } from '@prisma/client';
 import { ApiError } from '../lib/api-error.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -30,7 +30,11 @@ export async function assertChatRateLimit(senderId: string): Promise<void> {
 /**
  * Users may message if they already have a thread, share a trip, or have a join-request relationship.
  */
-export async function assertCanMessageUser(senderId: string, receiverId: string): Promise<void> {
+export async function assertCanMessageUser(
+  senderId: string,
+  receiverId: string,
+  options?: { eventId?: string }
+): Promise<void> {
   const existingThread = await prisma.chatMessage.findFirst({
     where: {
       OR: [
@@ -126,6 +130,28 @@ export async function assertCanMessageUser(senderId: string, receiverId: string)
     select: { id: true }
   });
   if (hostToParticipant) return;
+
+  if (options?.eventId) {
+    const tripInquiry = await prisma.event.findFirst({
+      where: {
+        id: options.eventId,
+        status: EventStatus.PUBLISHED,
+        OR: [
+          { guideId: receiverId },
+          { createdById: receiverId },
+          {
+            tenant: {
+              memberships: {
+                some: { userId: receiverId, role: { in: ORGANIZER_ROLES } }
+              }
+            }
+          }
+        ]
+      },
+      select: { id: true }
+    });
+    if (tripInquiry) return;
+  }
 
   throw new ApiError(
     403,

@@ -14,6 +14,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
 import { TrailPointsPromoBanner } from '../components/rewards';
+import { ReportContentButton } from '../components/ui/ReportContentDialog';
 
 export const Community = () => {
   const { user } = useAuth();
@@ -243,12 +244,15 @@ export const Community = () => {
                     <MessageSquare className="w-4 h-4" />
                     {post.replyCount} replies
                   </button>
+                  {user && post.authorId !== user.id && (
+                    <ReportContentButton targetType="post" targetId={post.id} label="Report" className="ml-auto" />
+                  )}
                 </div>
 
                 {expandedPost === post.id && (
                   <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
                     {post.replies.map((reply) => (
-                      <div key={reply.id} className="flex flex-wrap gap-x-2 gap-y-0.5 text-sm">
+                      <div key={reply.id} className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
                         <span className="font-medium text-gray-900 inline-flex items-center gap-1.5">
                           {reply.authorName}
                           {reply.authorMembershipTier && (
@@ -260,6 +264,9 @@ export const Community = () => {
                           )}
                         </span>
                         <span className="text-gray-600">{reply.content}</span>
+                        {user && reply.authorId !== user.id && (
+                          <ReportContentButton targetType="reply" targetId={reply.id} label="Report" />
+                        )}
                       </div>
                     ))}
                     <div className="flex gap-2">

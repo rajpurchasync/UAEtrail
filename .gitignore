@@ -31,3 +31,8 @@ nginx/certs/*.key
 
 # Local API uploads (dev fallback storage)
 apps/api/uploads/
+
+# Capacitor signing secrets (never commit)
+android/keystore.properties
+android/*.keystore
+*.keystore

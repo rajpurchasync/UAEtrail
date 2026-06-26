@@ -69,4 +69,18 @@ describe('chat messaging policy', () => {
     expect(response.status).toBe(201);
     expect(response.body.data?.content).toBe('Hi organizer');
   });
+
+  it('allows trip inquiry messages when eventId matches a published trip host', async () => {
+    const response = await request(app)
+      .post('/api/v1/chat/messages')
+      .set('Authorization', `Bearer ${visitorA.accessToken}`)
+      .send({
+        receiverId: organizerId,
+        content: 'Is this trip beginner friendly?',
+        eventId
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.data?.content).toBe('Is this trip beginner friendly?');
+  });
 });

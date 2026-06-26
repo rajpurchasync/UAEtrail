@@ -6,16 +6,15 @@
   :root {
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --nav-height: calc(68px + 12px + var(--safe-bottom));
-    --sticky-top: var(--safe-top);
-    --cta-bottom: var(--nav-height);
     --cta-height: 56px;
+    --sticky-top: var(--safe-top);
     color-scheme: light;
   }
 
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
@@ -24,7 +23,23 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overscroll-behavior-y: none;
+    overflow-x: clip;
+    max-width: 100vw;
     background-color: #eef6f3;
+  }
+
+  html[data-pwa-installed='true'] {
+    /* Splash + status bar continuity when launched from home screen */
+    background-color: #059669;
+  }
+
+  html[data-pwa-installed='true'] body {
+    min-height: 100dvh;
+  }
+
+  img,
+  video {
+    max-width: 100%;
   }
 
   button,
@@ -111,7 +126,19 @@
   }
 
   .app-chip-row {
-    @apply flex gap-1.5 overflow-x-auto scrollbar-none;
+    @apply flex gap-1.5 overflow-x-auto scrollbar-none min-w-0 max-w-full;
+  }
+
+  .mobile-snap-section {
+    @apply overflow-x-clip;
+  }
+
+  .mobile-snap-rail {
+    @apply flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none -mx-4 px-4 pb-4 md:mx-0 md:px-0 md:pb-0 md:grid md:overflow-visible md:snap-none;
+  }
+
+  .mobile-snap-rail__item {
+    @apply w-[calc(100vw-2rem)] max-w-[22rem] shrink-0 snap-center md:w-auto md:max-w-none md:min-w-0 md:shrink;
   }
 
   .app-segmented {
@@ -143,7 +170,15 @@
   }
 
   .consumer-hero-banner--editorial {
-    @apply h-[8.75rem] sm:h-[7.5rem] md:h-[8rem] rounded-b-2xl rounded-t-none sm:rounded-2xl -mx-4 sm:mx-0;
+    @apply h-[8.75rem] sm:h-[7.5rem] md:h-[8rem] rounded-b-2xl rounded-t-none sm:rounded-2xl;
+  }
+
+  .consumer-hero-banner--mobile-chrome {
+    @apply h-[7.5rem] rounded-t-none rounded-b-2xl md:rounded-2xl md:h-[5.75rem];
+  }
+
+  .consumer-hero-banner--editorial.consumer-hero-banner--mobile-chrome {
+    @apply h-[9.5rem] sm:h-[8.5rem] md:h-[8rem];
   }
 
   .consumer-hero-eyebrow {
@@ -156,7 +191,7 @@
 
   .app-fab {
     @apply fixed z-40 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/25 transition-all active:scale-95 hover:bg-emerald-700;
-    bottom: calc(var(--nav-height) + 12px);
+    bottom: calc(var(--safe-bottom) + 12px);
   }
 
   .app-fab--extended {
@@ -276,7 +311,7 @@
   }
 
   .pb-nav-safe {
-    padding-bottom: var(--nav-height);
+    padding-bottom: var(--safe-bottom);
   }
 
   .pb-safe {
@@ -284,11 +319,11 @@
   }
 
   .bottom-nav-offset {
-    bottom: var(--nav-height);
+    bottom: var(--safe-bottom);
   }
 
   .pb-cta-safe {
-    padding-bottom: calc(var(--nav-height) + var(--cta-height) + 8px);
+    padding-bottom: calc(var(--cta-height) + var(--safe-bottom) + 8px);
   }
 
   @media (min-width: 768px) {

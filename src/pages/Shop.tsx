@@ -124,18 +124,18 @@ export const Shop = () => {
         banner={{ src: PAGE_BANNERS.shop, alt: 'Camping tent under the stars' }}
         action={<ShopCartButton onClick={() => setCartOpen(true)} />}
         toolbar={
-          <div className="md:hidden space-y-3">
-            <div className="flex items-center gap-2">
-              <form onSubmit={handleSearch} className="flex-1 relative">
+          <div className="md:hidden space-y-3 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <form onSubmit={handleSearch} className="flex-1 relative min-w-0">
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Search products..."
-                  className="glass-search pl-4"
+                  className="glass-search pl-4 w-full min-w-0"
                 />
               </form>
-              <FilterIconButton onClick={() => setShowFilters(true)} aria-label="Filters">
+              <FilterIconButton onClick={() => setShowFilters(true)} aria-label="Filters" className="shrink-0">
                 <SlidersHorizontal className="w-4 h-4" />
               </FilterIconButton>
             </div>
