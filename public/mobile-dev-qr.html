@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UAE Trails — Mobile Dev QR</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    main {
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 28px 24px 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    }
+    h1 { font-size: 1.25rem; margin: 0 0 8px; }
+    p { margin: 0 0 20px; color: #94a3b8; font-size: 0.9rem; line-height: 1.5; }
+    .warn { color: #fbbf24; }
+    .qr-wrap {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+    canvas { display: block; }
+    a { color: #38bdf8; word-break: break-all; font-size: 0.95rem; }
+    .hint { margin-top: 20px; font-size: 0.8rem; color: #64748b; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Open on your phone</h1>
+    <p id="lead">Scan this code on the same Wi‑Fi as your laptop.</p>
+    <div class="qr-wrap"><canvas id="qr"></canvas></div>
+    <a id="url" href="#"></a>
+    <p class="hint">Run <code>npm run dev:all</code> so the API is available too.</p>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script>
+    const host = window.location.hostname;
+    const isLocal = host === 'localhost' || host === '127.0.0.1';
+    const target = window.location.origin + '/';
+    const link = document.getElementById('url');
+    const lead = document.getElementById('lead');
+
+    if (isLocal) {
+      lead.innerHTML =
+        '<span class="warn">Open this page using the <strong>Network</strong> URL from your terminal ' +
+        '(not localhost), e.g. <code>http://192.168.x.x:5175/mobile-dev-qr.html</code></span>';
+    }
+
+    link.href = target;
+    link.textContent = target;
+    QRCode.toCanvas(document.getElementById('qr'), target, { width: 280, margin: 2 });
+  </script>
+</body>
+</html>

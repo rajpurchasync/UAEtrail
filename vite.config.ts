@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { devQrPlugin } from './scripts/vite-plugin-dev-qr.mjs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), devQrPlugin()],
   server: {
     port: 5175,
     strictPort: true,
