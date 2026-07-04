@@ -64,9 +64,10 @@ const useMobileMenu = () => {
 interface MobileMenuButtonProps {
   tone?: MobileMenuTone;
   className?: string;
+  showOnDesktop?: boolean;
 }
 
-export const MobileMenuButton = ({ tone = 'default', className = '' }: MobileMenuButtonProps) => {
+export const MobileMenuButton = ({ tone = 'default', className = '', showOnDesktop = false }: MobileMenuButtonProps) => {
   const { openMenu } = useMobileMenu();
   const toneClass =
     tone === 'light'
@@ -77,7 +78,7 @@ export const MobileMenuButton = ({ tone = 'default', className = '' }: MobileMen
     <button
       type="button"
       onClick={openMenu}
-      className={`md:hidden min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
+      className={`${showOnDesktop ? '' : 'md:hidden'} min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
       aria-label="Open menu"
     >
       <Menu className="w-5 h-5" strokeWidth={2.25} />
@@ -114,7 +115,7 @@ const MobileMenuPanel = () => {
 
   return (
     <div
-      className={`md:hidden fixed inset-0 z-[70] transition-opacity duration-200 ${
+      className={`fixed inset-0 z-[70] transition-opacity duration-200 ${
         open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
       aria-hidden={!open}

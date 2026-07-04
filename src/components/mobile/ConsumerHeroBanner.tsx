@@ -12,6 +12,8 @@ interface ConsumerHeroBannerProps {
   size?: 'tab' | 'editorial';
   /** Logo + hamburger overlaid on the banner (mobile PWA). */
   showMobileChrome?: boolean;
+  /** Keep logo + menu on the banner at desktop widths (e.g. Profile). */
+  chromeOnDesktop?: boolean;
 }
 
 /** Compact image banner with page title overlaid on top. */
@@ -24,6 +26,7 @@ export const ConsumerHeroBanner = ({
   className = '',
   size = 'tab',
   showMobileChrome = false,
+  chromeOnDesktop = false,
 }: ConsumerHeroBannerProps) => (
   <div
     className={`consumer-hero-banner ${size === 'editorial' ? 'consumer-hero-banner--editorial' : ''} ${
@@ -36,8 +39,12 @@ export const ConsumerHeroBanner = ({
       aria-hidden
     />
     {showMobileChrome && (
-      <div className="absolute inset-x-0 top-0 z-10 md:hidden px-4 pt-safe-plus-2">
-        <MobileBrandBar tone="light" />
+      <div
+        className={`absolute inset-x-0 top-0 z-10 px-4 pt-safe-plus-2 ${
+          chromeOnDesktop ? '' : 'md:hidden'
+        }`}
+      >
+        <MobileBrandBar tone="light" menuOnDesktop />
       </div>
     )}
     {(title || eyebrow || action) && (

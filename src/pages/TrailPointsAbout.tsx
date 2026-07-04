@@ -151,17 +151,8 @@ export const TrailPointsAbout = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/55 to-[#eef6f3]" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-safe-plus-2 pb-8 sm:pb-10 lg:pb-16 lg:pt-8">
-          <div className="md:hidden mb-4">
-            <MobileBrandBar tone="light" />
-          </div>
-
-          <div className="hidden md:flex mb-4">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white"
-            >
-              ← Home
-            </Link>
+          <div className="mb-4">
+            <MobileBrandBar tone="light" menuOnDesktop />
           </div>
 
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-end">

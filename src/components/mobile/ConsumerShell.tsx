@@ -46,20 +46,18 @@ export const ConsumerShell = ({
   const pad = flush ? '' : 'px-4 sm:px-6 lg:px-8';
   const showTabTitleStrip = layout === 'tab' && title && !banner;
   const showTabActionInStrip = layout === 'tab' && action && !banner;
-  const hasTabSticky = layout === 'tab' && Boolean(toolbar || showTabTitleStrip || showTabActionInStrip);
+  const hasTabSticky =
+    layout === 'tab' && Boolean((toolbar && !banner) || showTabTitleStrip || showTabActionInStrip);
   const hasEditorialSticky =
-    layout === 'editorial' && Boolean(toolbar || back || action);
-  const hideEditorialStickyOnMobile = layout === 'editorial' && Boolean(banner && !toolbar);
-  const hasStickyChrome = layout === 'stack' || hasEditorialSticky || hasTabSticky;
+    layout === 'editorial' && !banner && Boolean(toolbar || back || action);
+  const hasStackSticky = layout === 'stack' && !banner;
+  const hasStickyChrome = hasStackSticky || hasEditorialSticky || hasTabSticky;
+  const bannerPad = layout === 'editorial' ? 'px-0 sm:px-6 lg:px-8' : 'px-0 md:px-4 lg:px-8';
 
   return (
     <div className="min-h-screen consumer-bg md:bg-gray-50 overflow-x-clip max-w-full">
       {(layout === 'tab' || layout === 'editorial') && banner && (
-        <div
-          className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${
-            layout === 'editorial' ? 'px-0 sm:px-6 lg:px-8' : 'px-0 md:px-4 lg:px-8'
-          } md:pt-safe-plus-2`}
-        >
+        <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${bannerPad} md:pt-safe-plus-2`}>
           <ConsumerHeroBanner
             src={banner.src}
             alt={banner.alt}
@@ -68,8 +66,21 @@ export const ConsumerShell = ({
             action={layout === 'tab' ? action : undefined}
             size={layout === 'editorial' ? 'editorial' : 'tab'}
             showMobileChrome
+            chromeOnDesktop
             className="animate-fade-up"
           />
+        </div>
+      )}
+
+      {banner && back && (
+        <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} pt-3 pb-1`}>
+          <MobileBackButton fallbackTo={back.fallbackTo ?? '/'} label={back.label ?? 'Back'} />
+        </div>
+      )}
+
+      {banner && toolbar && (
+        <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} ${back ? 'pb-3' : 'pt-3 pb-3'} md:pb-4`}>
+          {toolbar}
         </div>
       )}
 
@@ -77,7 +88,7 @@ export const ConsumerShell = ({
         <div
           className={`sticky top-0 z-40 md:bg-white/90 md:border-b md:border-gray-100 ${
             layout === 'tab' ? 'consumer-top-strip' : 'glass-header'
-          } ${hideEditorialStickyOnMobile ? 'hidden md:block' : ''}`}
+          }`}
         >
           <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad}`}>
             {layout === 'stack' && (
@@ -104,11 +115,7 @@ export const ConsumerShell = ({
             {layout === 'editorial' && (
               <>
                 {(back || action) && (
-                  <div
-                    className={`items-center justify-between gap-3 pb-2 md:pb-3 ${
-                      banner ? 'hidden md:flex' : 'flex'
-                    } ${banner ? 'md:pt-3' : 'pt-safe-plus-2 md:pt-4'}`}
-                  >
+                  <div className="flex items-center justify-between gap-3 pt-safe-plus-2 md:pt-4 pb-2 md:pb-3">
                     {back ? (
                       <MobileBackButton fallbackTo={back.fallbackTo ?? '/'} label={back.label ?? 'Home'} />
                     ) : (
@@ -122,7 +129,7 @@ export const ConsumerShell = ({
             )}
 
             {layout === 'tab' && (
-              <div className={`${banner ? 'pt-3 md:pt-safe-plus-2' : 'pt-safe-plus-2'} pb-3 md:py-4`}>
+              <div className="pt-safe-plus-2 pb-3 md:py-4">
                 {showTabTitleStrip && (
                   <ConsumerTabBanner title={title!} action={showTabActionInStrip ? action : undefined} />
                 )}
@@ -136,7 +143,7 @@ export const ConsumerShell = ({
       <div
         className={`${maxWidthClass[maxWidth]} w-full max-w-full min-w-0 mx-auto ${flush ? '' : `${pad} py-4 md:py-6`} ${
           !hasStickyChrome && !banner ? 'pt-safe-plus-2' : ''
-        }`}
+        } ${banner && !hasStickyChrome ? 'pt-0 md:pt-2' : ''}`}
       >
         {title && layout === 'editorial' && !banner && (
           <ConsumerPageHeading

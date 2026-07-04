@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
+import { ConsumerShell } from '../mobile/ConsumerShell';
 import { MobileBackButton } from '../mobile/MobileBackButton';
+import { PAGE_BANNERS } from '../../config/pageBanners';
 
 interface MobileScreenProps {
   title: string;
@@ -10,7 +12,7 @@ interface MobileScreenProps {
   children: ReactNode;
 }
 
-/** Stacked sub-screen — compact nav bar with thin title strip. */
+/** Stacked sub-screen — banner chrome + optional back row. */
 export const MobileScreen = ({
   title,
   backTo = '/profile',
@@ -18,25 +20,17 @@ export const MobileScreen = ({
   hideHeader = false,
   children,
 }: MobileScreenProps) => (
-  <div className="min-h-[calc(100dvh-var(--safe-top))] md:min-h-screen consumer-bg md:bg-gray-50 flex flex-col">
+  <ConsumerShell
+    layout="tab"
+    title={title}
+    maxWidth="4xl"
+    banner={{ src: PAGE_BANNERS.profile, alt: title }}
+  >
     {!hideHeader && (
-      <div className="sticky top-0 z-30 shrink-0 consumer-top-strip md:bg-white/90 md:border-b md:border-gray-100">
-        <div className="max-w-2xl mx-auto px-4 pt-safe-plus-2 pb-2.5">
-          <div className="relative flex items-center min-h-[40px]">
-            <div className="absolute left-0 z-10">
-              <MobileBackButton fallbackTo={backTo} label={backLabel} />
-            </div>
-            <h1 className="flex-1 text-center consumer-tab-title truncate px-14">{title}</h1>
-          </div>
-        </div>
+      <div className="mb-3 -mt-2">
+        <MobileBackButton fallbackTo={backTo} label={backLabel} />
       </div>
     )}
-    <div
-      className={`flex-1 flex flex-col min-h-0 max-w-2xl mx-auto w-full ${
-        hideHeader ? 'pt-safe-plus-2' : 'px-4 py-4 md:py-6'
-      }`}
-    >
-      {children}
-    </div>
-  </div>
+    <div className={`flex-1 flex flex-col min-h-0 ${hideHeader ? 'pt-safe-plus-2' : ''}`}>{children}</div>
+  </ConsumerShell>
 );
