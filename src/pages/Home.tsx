@@ -25,6 +25,21 @@ const EXPLORE_REGION_ICONS: Record<ExploreRegionIcon, typeof Mountain> = {
   compass: Compass
 };
 
+const getLandingLoadErrorMessage = (error: unknown): string => {
+  if (!(error instanceof Error)) {
+    return 'Live content is temporarily unavailable';
+  }
+
+  if (
+    /Request failed with status \d{3}/i.test(error.message) ||
+    error.message.includes('Failed to reach API')
+  ) {
+    return 'Live content is temporarily unavailable';
+  }
+
+  return error.message;
+};
+
 export const Home = () => {
   const [popularTrails, setPopularTrails] = useState<Trail[]>([]);
   const [popularCamps, setPopularCamps] = useState<CampingSpot[]>([]);
@@ -55,7 +70,7 @@ export const Home = () => {
           setAllTrips(tr);
         })
         .catch((err) => {
-          setLoadError(err instanceof Error ? err.message : 'Failed to load content');
+          setLoadError(getLandingLoadErrorMessage(err));
         })
     ]);
   }, []);
