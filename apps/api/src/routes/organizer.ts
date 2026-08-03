@@ -1,11 +1,11 @@
-import { ActivityType, EventStatus, LocationStatus, MembershipRole, NotificationType, RequestStatus, RewardAction, TenantType, UserRole } from '../domain/enums.js';
+import { EventStatus, LocationStatus, MembershipRole, NotificationType, RequestStatus, RewardAction, TenantType, UserRole } from '../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
-import { randomToken, hashToken } from '../lib/hash.js';
+import { randomToken } from '../lib/hash.js';
 import { toLocationDto, buildEventDto } from '../lib/mappers.js';
-import { paginate, paginatedResponse, paginationSchema } from '../lib/pagination.js';
+import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { hashPassword } from '../lib/password.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { requireMembershipRole, requireTenantContext } from '../middleware/tenant.js';
@@ -104,7 +104,6 @@ const teamPatchSchema = z.object({
 
 import { parseLocalDateTime } from '../lib/datetime.js';
 import {
-  eventHasPaidPricing,
   normalizeEventPricing,
   parseStoredPricePackages,
   tripPricePackagesSchema

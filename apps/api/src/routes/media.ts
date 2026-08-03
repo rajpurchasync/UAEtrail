@@ -18,9 +18,9 @@ const LOCAL_UPLOADS_DIR = join(process.cwd(), 'uploads');
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 
-const mediaKindSchema = z.enum(['general', 'avatar', 'event', 'location', 'shop', 'guide']);
+type MediaKind = 'general' | 'avatar' | 'event' | 'location' | 'shop' | 'guide';
 
-const KIND_PREFIX: Record<z.infer<typeof mediaKindSchema>, string> = {
+const KIND_PREFIX: Record<MediaKind, string> = {
   general: 'uploads',
   avatar: 'avatars',
   event: 'events',
@@ -36,7 +36,7 @@ const isAllowedMimeType = (mimeType: string): boolean =>
   mimeType === 'application/octet-stream';
 
 const resolveMediaKeyPrefix = (input: {
-  kind: z.infer<typeof mediaKindSchema>;
+  kind: MediaKind;
   tenantId?: string;
   userId: string;
 }): string => {
@@ -48,8 +48,8 @@ const resolveMediaKeyPrefix = (input: {
 const resolveMediaKind = (input: {
   kind?: string;
   keyPrefix?: string;
-}): z.infer<typeof mediaKindSchema> => {
-  const fromPrefix: Record<string, z.infer<typeof mediaKindSchema>> = {
+}): MediaKind => {
+  const fromPrefix: Record<string, MediaKind> = {
     uploads: 'general',
     avatars: 'avatar',
     events: 'event',
@@ -64,7 +64,7 @@ const resolveMediaKind = (input: {
     return fromPrefix[input.keyPrefix];
   }
   if (input.kind && input.kind in KIND_PREFIX) {
-    return input.kind as z.infer<typeof mediaKindSchema>;
+    return input.kind as MediaKind;
   }
   return 'general';
 };

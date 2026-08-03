@@ -24,13 +24,12 @@ export const stripeWebhookHandler = async (req: Request, res: Response, next: Ne
     const stripe = await getStripe();
     const sig = req.headers['stripe-signature'] as string | undefined;
     const rawBody = req.body as Buffer;
-    let event: import('stripe').Stripe.Event;
 
     if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
       throw new ApiError(400, 'missing_signature', 'Webhook signature required.');
     }
 
-    event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    const event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
 
     const alreadyProcessed = await hasProcessedStripeWebhookEvent(event.id);
     if (alreadyProcessed) {

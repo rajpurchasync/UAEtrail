@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Response } from 'express';
 
 const redisPublish = vi.fn(async () => 1);
-const redisGet = vi.fn(async () => null);
 
 vi.mock('../src/lib/redis.js', () => ({
   getRedisClient: vi.fn(async () => ({

@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
 import { clearRefreshCookie, REFRESH_COOKIE_NAME, setRefreshCookie } from '../lib/auth-cookies.js';
-import { randomToken, sha256 } from '../lib/hash.js';
+import { randomToken } from '../lib/hash.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
 import { toSharedRole } from '../lib/mappers.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
@@ -11,7 +11,7 @@ import { slugify } from '../lib/slug.js';
 import { validate } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
-import { sendPasswordResetEmail, sendVerificationEmail, isEmailConfigured } from '../lib/email.js';
+import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email.js';
 import { verifyGoogleIdToken } from '../lib/google-auth.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
 import {
@@ -34,9 +34,7 @@ import {
   updateAuthUserEmailVerifiedAt,
   updateAuthUserGoogleLink,
   updateAuthUserPassword,
-  updateAuthUserProfile,
-  updateAuthUserLastActive,
-  updateAuthUserStatus
+  updateAuthUserLastActive
 } from '../lib/auth-users.js';
 import { createOrganizerApplicationRecord } from '../lib/organizer-applications-store.js';
 import { processSignupRewardsDefault } from '../services/rewards.js';

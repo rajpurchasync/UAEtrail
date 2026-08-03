@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 describe('jwt helpers', () => {
   it('signs and verifies access tokens', async () => {

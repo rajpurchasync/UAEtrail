@@ -1,7 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
-import { REFRESH_COOKIE_NAME } from '../src/lib/auth-cookies.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 
 let app: Express;

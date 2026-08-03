@@ -2,7 +2,7 @@ import { PostCategory, ReviewTargetType, RewardAction } from '../domain/enums.js
 import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
-import { paginate, paginatedResponse, paginationSchema } from '../lib/pagination.js';
+import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { awardPointsDefault } from '../services/rewards.js';
@@ -15,16 +15,6 @@ type SocialAuthor = {
   _id: string;
   email: string;
   profile: { displayName?: string | null; avatarUrl?: string | null };
-};
-
-type SocialPostAuthor = {
-  author: SocialAuthor | undefined;
-  authorMembershipTier: string | null;
-};
-
-type AuthorWithProfile = {
-  profile?: { displayName?: string | null; avatarUrl?: string | null } | null;
-  email: string;
 };
 
 export const socialRouter = Router();

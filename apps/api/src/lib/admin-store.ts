@@ -1,6 +1,6 @@
 import type { Collection } from 'mongodb';
 import type { Event, Location, Product, Tenant, TenantMembership } from '../domain/types.js';
-import { EventStatus, MembershipRole, ProductStatus, TenantStatus } from '../domain/enums.js';
+import { EventStatus, ProductStatus, TenantStatus } from '../domain/enums.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import { createLocationRecord } from './events-store.js';
 import { newEntityId, type MongoEventDoc } from './entity-builders.js';
