@@ -1,4 +1,4 @@
-import { prisma } from './prisma.js';
+import { updateAuthUserLastActive } from './auth-users.js';
 import { getRedisClient } from './redis.js';
 
 /** Minimum interval between persisted lastActiveAt writes per user. */
@@ -21,9 +21,7 @@ export async function touchLastActive(userId: string): Promise<void> {
     memoryLastTouch.set(userId, now);
   }
 
-  await prisma.user
-    .update({ where: { id: userId }, data: { lastActiveAt: new Date() } })
-    .catch(() => undefined);
+  await updateAuthUserLastActive(userId).catch(() => undefined);
 }
 
 /** Test helper — reset in-memory throttle state. */

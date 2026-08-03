@@ -1,7 +1,7 @@
 # UAE Trails
 
 Monorepo web platform for UAE hiking/camping with:
-- Express + Prisma backend (`apps/api`)
+- Express backend with MongoDB-first auth/data plumbing (`apps/api`)
 - React + Vite frontend (`src`)
 - Shared DTO/types package (`packages/shared-types`)
 
@@ -17,14 +17,17 @@ npm install
 cp apps/api/.env.example apps/api/.env
 ```
 
-3. Run database migration and seed:
+3. Start local services:
 ```bash
-npm run prisma:generate
-npm run prisma:migrate
-npm run prisma:seed
+docker compose up -d mongo redis minio
 ```
 
-4. Start frontend + API:
+4. Seed the database:
+```bash
+npm run seed
+```
+
+5. Start frontend + API:
 ```bash
 npm run dev:all
 ```
@@ -67,6 +70,8 @@ VITE_USE_API_DISCOVERY=true
 VITE_USE_API_CALENDAR=true
 VITE_USE_API_TRIP_DETAIL=true
 ```
+
+Postgres is no longer used — MongoDB is the only database. Ensure `MONGODB_URI` is set in `apps/api/.env` before starting the API.
 
 ## API Docs
 - Swagger UI: `http://localhost:4000/api/docs`

@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "Event" ADD COLUMN "meetingLat" DOUBLE PRECISION,
-ADD COLUMN "meetingLng" DOUBLE PRECISION,
-ADD COLUMN "paymentTerms" TEXT;

@@ -1,4 +1,4 @@
-import { UserRole } from '@prisma/client';
+import { UserRole } from '../domain/enums.js';
 import { NextFunction, Request, Response } from 'express';
 import { ApiError } from '../lib/api-error.js';
 

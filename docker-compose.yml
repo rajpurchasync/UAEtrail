@@ -1,19 +1,14 @@
-version: "3.9"
-
 services:
-  postgres:
-    image: postgres:16-alpine
+  mongo:
+    image: mongo:7
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: ${POSTGRES_DB:-uaetrail}
+    command: ["mongod", "--bind_ip_all"]
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${MONGO_PORT:-27017}:27017"
     volumes:
-      - uaetrail_postgres:/var/lib/postgresql/data
+      - uaetrail_mongo:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-uaetrail}"]
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep 1"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -53,7 +48,7 @@ services:
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     depends_on:
-      postgres:
+      mongo:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -62,7 +57,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?err}@postgres:5432/${POSTGRES_DB:-uaetrail}?schema=public
+      MONGODB_URI: mongodb://mongo:27017/uaetrail
       REDIS_URL: redis://redis:6379
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?Set JWT_ACCESS_SECRET in .env}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Set JWT_REFRESH_SECRET in .env}
@@ -115,5 +110,5 @@ services:
       # - ./nginx/conf.d/ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
 
 volumes:
-  uaetrail_postgres:
+  uaetrail_mongo:
   uaetrail_minio:

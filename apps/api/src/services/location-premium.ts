@@ -1,14 +1,30 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { randomUUID } from 'crypto';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { Location, LocationUnlockSource, MembershipTier, UserRole } from '@prisma/client';
+import type { Collection } from 'mongodb';
+import type { Location } from '../domain/types.js';
+import { LocationUnlockSource, MembershipTier, UserRole } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
-import { prisma } from '../lib/prisma.js';
+import { findLocationInMongo } from '../lib/entity-sync.js';
+import { getMongoClient } from '../lib/mongo.js';
+import { getAuthUserMembershipTier } from '../lib/auth-users.js';
 import { isS3Available, s3Client } from '../lib/s3.js';
 import { safePathUnder } from '../lib/safe-path.js';
 import { env } from '../config/env.js';
 
 const LOCAL_UPLOADS_DIR = join(process.cwd(), 'uploads');
+
+type MongoLocationUnlock = {
+  _id: string;
+  userId: string;
+  locationId: string;
+  source: LocationUnlockSource;
+  createdAt: Date;
+};
+
+const locationUnlocksCollection = (): Collection<MongoLocationUnlock> =>
+  getMongoClient()!.db().collection<MongoLocationUnlock>('location_unlocks');
 
 export type PremiumAccessReason = 'pro' | 'goat' | 'admin' | 'unlocked' | 'locked';
 
@@ -22,11 +38,7 @@ export const locationHasPremiumContent = (location: Pick<Location, 'gpxKey' | 'g
   Boolean(location.gpxKey || location.guideMarkdown || location.guidePdfKey);
 
 export async function getUserMembershipTier(userId: string): Promise<MembershipTier> {
-  const profile = await prisma.profile.findUnique({
-    where: { userId },
-    select: { membershipTier: true }
-  });
-  return profile?.membershipTier ?? MembershipTier.FREE;
+  return getAuthUserMembershipTier(userId);
 }
 
 export async function checkPremiumAccess(
@@ -51,9 +63,7 @@ export async function checkPremiumAccess(
     return { hasAccess: true, reason: 'goat', membershipTier: tier };
   }
 
-  const unlock = await prisma.locationUnlock.findUnique({
-    where: { userId_locationId: { userId, locationId } }
-  });
+  const unlock = await locationUnlocksCollection().findOne({ userId, locationId });
   if (unlock) {
     return { hasAccess: true, reason: 'unlocked', membershipTier: tier };
   }
@@ -74,7 +84,7 @@ export async function unlockLocationForUser(
   locationId: string,
   source: LocationUnlockSource = LocationUnlockSource.PURCHASE
 ) {
-  const location = await prisma.location.findUnique({ where: { id: locationId } });
+  const location = await findLocationInMongo(locationId);
   if (!location) {
     throw new ApiError(404, 'location_not_found', 'Location not found.');
   }
@@ -87,11 +97,25 @@ export async function unlockLocationForUser(
     return existing;
   }
 
-  await prisma.locationUnlock.create({
-    data: { userId, locationId, source }
-  });
+  await locationUnlocksCollection().updateOne(
+    { userId, locationId },
+    {
+      $setOnInsert: {
+        _id: randomUUID(),
+        userId,
+        locationId,
+        source,
+        createdAt: new Date()
+      }
+    },
+    { upsert: true }
+  );
 
   return checkPremiumAccess(userId, locationId);
+}
+
+export async function deleteLocationUnlocksByUser(userId: string): Promise<void> {
+  await locationUnlocksCollection().deleteMany({ userId });
 }
 
 export async function readStoredFile(key: string): Promise<{ buffer: Buffer; mimeType: string; filename: string }> {

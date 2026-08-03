@@ -1,4 +1,4 @@
-import { MembershipRole, UserRole } from '@prisma/client';
+import type { MembershipRole, UserRole } from '../domain/enums.js';
 
 declare global {
   namespace Express {

@@ -1,12 +1,27 @@
-import { ProductStatus } from '@prisma/client';
+import { ProductStatus } from '../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
-import { prisma } from '../lib/prisma.js';
 import { getStripe, isStripeConfigured } from '../lib/stripe.js';
 import { env } from '../config/env.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import {
+  createMerchantProduct,
+  createMerchantProfileForUser,
+  createShopOrderWithItems,
+  deactivateMerchantProductById,
+  findActiveProductById,
+  findMerchantProductById,
+  findMerchantProfileByUserId,
+  findMerchantPublicById,
+  listActiveProductsByIds,
+  listMerchantProducts,
+  listPublicProducts,
+  setShopOrderStripeSession,
+  updateMerchantProductById,
+  updateMerchantProfileForUser
+} from '../lib/shop-store.js';
 
 export const shopRouter = Router();
 
@@ -27,22 +42,12 @@ shopRouter.get('/products', validate({ query: productListSchema }), async (req, 
   try {
     const { page, pageSize, category, search } = req.query as unknown as z.infer<typeof productListSchema>;
 
-    const where = {
-      status: ProductStatus.ACTIVE,
-      ...(category ? { category } : {}),
-      ...(search ? { name: { contains: search, mode: 'insensitive' as const } } : {})
-    };
-
-    const [total, products] = await Promise.all([
-      prisma.product.count({ where }),
-      prisma.product.findMany({
-        where,
-        include: { merchant: { select: { id: true, shopName: true } } },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize
-      })
-    ]);
+    const { total, items: products } = await listPublicProducts({
+      category,
+      search,
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    });
 
     res.json({
       data: products.map((p) => ({
@@ -69,10 +74,7 @@ shopRouter.get('/products', validate({ query: productListSchema }), async (req, 
 shopRouter.get('/products/:id', validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
-    const product = await prisma.product.findFirst({
-      where: { id, status: ProductStatus.ACTIVE },
-      include: { merchant: { select: { id: true, shopName: true, description: true, logo: true } } }
-    });
+    const product = await findActiveProductById(id);
     if (!product) throw new ApiError(404, 'product_not_found', 'Product not found.');
 
     res.json({
@@ -105,15 +107,7 @@ shopRouter.get('/products/:id', validate({ params: idParamSchema }), async (req,
 shopRouter.get('/merchants/:id', validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
-    const merchant = await prisma.merchantProfile.findUnique({
-      where: { id },
-      include: {
-        products: {
-          where: { status: ProductStatus.ACTIVE },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    });
+    const merchant = await findMerchantPublicById(id);
     if (!merchant) throw new ApiError(404, 'merchant_not_found', 'Merchant not found.');
 
     res.json({
@@ -170,9 +164,7 @@ shopRouter.post('/checkout', requireAuth, requireVerifiedEmail, validate({ body:
         : [{ productId: body.productId!, quantity: body.quantity }];
 
     const productIds = [...new Set(lineInputs.map((line) => line.productId))];
-    const products = await prisma.product.findMany({
-      where: { id: { in: productIds }, status: ProductStatus.ACTIVE }
-    });
+    const products = await listActiveProductsByIds(productIds);
     if (products.length !== productIds.length) {
       throw new ApiError(404, 'product_not_found', 'One or more products were not found.');
     }
@@ -194,18 +186,14 @@ shopRouter.post('/checkout', requireAuth, requireVerifiedEmail, validate({ body:
 
     const stripe = await getStripe();
 
-    const order = await prisma.shopOrder.create({
-      data: {
-        userId: req.auth!.userId,
-        totalAed,
-        items: {
-          create: orderLines.map((line) => ({
-            productId: line.product.id,
-            quantity: line.quantity,
-            unitPriceAed: line.unitPrice
-          }))
-        }
-      }
+    const order = await createShopOrderWithItems({
+      userId: req.auth!.userId,
+      totalAed,
+      items: orderLines.map((line) => ({
+        productId: line.product.id,
+        quantity: line.quantity,
+        unitPriceAed: line.unitPrice
+      }))
     });
 
     const cancelPath =
@@ -247,10 +235,7 @@ shopRouter.post('/checkout', requireAuth, requireVerifiedEmail, validate({ body:
       ]
     });
 
-    await prisma.shopOrder.update({
-      where: { id: order.id },
-      data: { stripeSessionId: session.id }
-    });
+    await setShopOrderStripeSession(order.id, session.id);
 
     res.json({ data: { sessionId: session.id, url: session.url } });
   } catch (error) {
@@ -285,7 +270,7 @@ const productPatchSchema = productCreateSchema.partial();
 
 // Helper to get or verify merchant profile
 async function getMerchantProfile(userId: string) {
-  return prisma.merchantProfile.findUnique({ where: { userId } });
+  return findMerchantProfileByUserId(userId);
 }
 
 shopRouter.get('/merchant/profile', requireAuth, requireVerifiedEmail, async (req, res, next) => {
@@ -315,9 +300,7 @@ shopRouter.post('/merchant/profile', requireAuth, requireVerifiedEmail, validate
     if (existing) throw new ApiError(409, 'profile_exists', 'Merchant profile already exists.');
 
     const body = req.body as z.infer<typeof merchantProfileSchema>;
-    const profile = await prisma.merchantProfile.create({
-      data: { userId, ...body }
-    });
+    const profile = await createMerchantProfileForUser(userId, body);
 
     res.status(201).json({
       data: {
@@ -341,10 +324,7 @@ shopRouter.patch('/merchant/profile', requireAuth, requireVerifiedEmail, validat
     if (!existing) throw new ApiError(404, 'profile_not_found', 'Merchant profile not found.');
 
     const body = req.body as z.infer<typeof merchantProfilePatchSchema>;
-    const updated = await prisma.merchantProfile.update({
-      where: { userId },
-      data: body
-    });
+    const updated = await updateMerchantProfileForUser(userId, body);
 
     res.json({
       data: {
@@ -367,16 +347,11 @@ shopRouter.get('/merchant/products', requireAuth, requireVerifiedEmail, async (r
     if (!profile) throw new ApiError(404, 'profile_not_found', 'Merchant profile not found.');
 
     const pg = paginationSchema.parse(req.query);
-    const where = { merchantId: profile.id };
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (pg.page - 1) * pg.pageSize,
-        take: pg.pageSize
-      }),
-      prisma.product.count({ where })
-    ]);
+    const { items: products, total } = await listMerchantProducts({
+      merchantId: profile.id,
+      skip: (pg.page - 1) * pg.pageSize,
+      take: pg.pageSize
+    });
 
     res.json({
       data: products.map((p) => ({
@@ -410,18 +385,16 @@ shopRouter.post('/merchant/products', requireAuth, requireVerifiedEmail, validat
     if (!profile) throw new ApiError(404, 'profile_not_found', 'Create a merchant profile first.');
 
     const body = req.body as z.infer<typeof productCreateSchema>;
-    const product = await prisma.product.create({
-      data: {
-        merchantId: profile.id,
-        name: body.name,
-        description: body.description,
-        images: body.images,
-        priceAed: body.priceAed,
-        discountPercent: body.discountPercent,
-        packagingInfo: body.packagingInfo,
-        category: body.category,
-        status: body.status === 'active' ? ProductStatus.ACTIVE : ProductStatus.DRAFT
-      }
+    const product = await createMerchantProduct({
+      merchantId: profile.id,
+      name: body.name,
+      description: body.description,
+      images: body.images,
+      priceAed: body.priceAed,
+      discountPercent: body.discountPercent,
+      packagingInfo: body.packagingInfo,
+      category: body.category,
+      status: body.status === 'active' ? ProductStatus.ACTIVE : ProductStatus.DRAFT
     });
 
     res.status(201).json({
@@ -448,7 +421,7 @@ shopRouter.patch('/merchant/products/:id', requireAuth, requireVerifiedEmail, va
     if (!profile) throw new ApiError(404, 'profile_not_found', 'Merchant profile not found.');
 
     const { id } = req.params as z.infer<typeof idParamSchema>;
-    const product = await prisma.product.findFirst({ where: { id, merchantId: profile.id } });
+    const product = await findMerchantProductById(id, profile.id);
     if (!product) throw new ApiError(404, 'product_not_found', 'Product not found or not yours.');
 
     const body = req.body as z.infer<typeof productPatchSchema>;
@@ -457,10 +430,7 @@ shopRouter.patch('/merchant/products/:id', requireAuth, requireVerifiedEmail, va
       updateData.status = body.status === 'active' ? ProductStatus.ACTIVE : ProductStatus.DRAFT;
     }
 
-    const updated = await prisma.product.update({
-      where: { id },
-      data: updateData
-    });
+    const updated = await updateMerchantProductById(id, updateData);
 
     res.json({
       data: {
@@ -486,13 +456,10 @@ shopRouter.delete('/merchant/products/:id', requireAuth, requireVerifiedEmail, v
     if (!profile) throw new ApiError(404, 'profile_not_found', 'Merchant profile not found.');
 
     const { id } = req.params as z.infer<typeof idParamSchema>;
-    const product = await prisma.product.findFirst({ where: { id, merchantId: profile.id } });
+    const product = await findMerchantProductById(id, profile.id);
     if (!product) throw new ApiError(404, 'product_not_found', 'Product not found or not yours.');
 
-    await prisma.product.update({
-      where: { id },
-      data: { status: ProductStatus.INACTIVE }
-    });
+    await deactivateMerchantProductById(id);
 
     res.json({ message: 'Product deactivated.' });
   } catch (error) {

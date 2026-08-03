@@ -1,4 +1,4 @@
-import { RewardAction } from '@prisma/client';
+import { RewardAction } from '../domain/enums.js';
 
 export const REWARD_POINTS: Record<RewardAction, number> = {
   SIGNUP_WELCOME: 25,

@@ -1,8 +1,6 @@
-import { NotificationType, Prisma } from '@prisma/client';
-import type { PrismaClient } from '@prisma/client';
+import { NotificationType } from '../domain/enums.js';
+import { createNotificationRecord } from '../lib/notifications-store.js';
 import { sendPushToUser } from '../lib/push.js';
-
-type DbClient = PrismaClient | Prisma.TransactionClient;
 
 export interface NotificationInput {
   userId: string;
@@ -12,26 +10,22 @@ export interface NotificationInput {
   meta?: Record<string, unknown>;
 }
 
-export async function dispatchNotification(
-  db: DbClient,
-  input: NotificationInput
-): Promise<void> {
-  await db.notification.create({
-    data: {
-      userId: input.userId,
-      title: input.title,
-      body: input.body,
-      type: input.type,
-      meta: input.meta as Prisma.InputJsonValue | undefined
-    }
+export async function dispatchNotification(input: NotificationInput): Promise<void> {
+  await createNotificationRecord({
+    userId: input.userId,
+    title: input.title,
+    body: input.body,
+    type: input.type,
+    meta: input.meta
   });
 
   // Fire-and-forget push; only works when VAPID keys are configured
-  if ('$connect' in db) {
-    void sendPushToUser(db as PrismaClient, input.userId, {
-      title: input.title,
-      body: input.body,
-      data: input.meta
-    });
-  }
+  void sendPushToUser(input.userId, {
+    title: input.title,
+    body: input.body,
+    data: input.meta
+  });
 }
+
+/** @deprecated Use dispatchNotification */
+export const dispatchNotificationDefault = dispatchNotification;

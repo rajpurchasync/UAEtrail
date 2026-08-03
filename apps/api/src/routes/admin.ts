@@ -4,31 +4,73 @@ import {
   Difficulty,
   EventStatus,
   LocationStatus,
-  MembershipRole,
   NotificationType,
   OrganizerApplicationStatus,
-  RequestStatus,
+  ProductStatus,
   RewardAction,
   TenantStatus,
   TenantType,
   UserRole,
   UserStatus
-} from '@prisma/client';
+} from '../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { parseLocalDateTime } from '../lib/datetime.js';
 import { toLocationDto, buildEventDto } from '../lib/mappers.js';
-import { paginate, paginatedResponse, paginationSchema } from '../lib/pagination.js';
-import { prisma } from '../lib/prisma.js';
-import { slugify } from '../lib/slug.js';
+import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
+import { revokeRefreshTokensByUser } from '../lib/auth-tokens.js';
 import { adminUserTypeFilter, resolveAdminUserType } from '../lib/user-type.js';
+import {
+  countActiveEventsByLocationId,
+  countAdminMetrics,
+  createAdminLocation,
+  createAdminPublishedEvent,
+  deleteAdminLocation,
+  findAdminEventById,
+  findAdminLocationById,
+  findAdminLocationByIdForEventCreate,
+  findAdminProductById,
+  findAdminTenantById,
+  findAdminTenantDetailedById,
+  listAdminLocationsPaged,
+  listAdminModerationEventsPaged,
+  listAdminProductsPaged,
+  listAdminTenantsPaged,
+  listAuditLogsPaged,
+  listBroadcastNotificationAuditLogs,
+  listEventsForAdminRequests,
+  listEventsForAdminTrips,
+  listOwnerTenantTypes,
+  listTenantMembershipsForUser,
+  listUserOwnedTenantsBasic,
+  toggleAdminEventFeatured,
+  updateAdminEventStatus,
+  updateAdminLocation,
+  updateAdminProductStatus,
+  updateAdminTenantStatus
+} from '../lib/admin-store.js';
+import {
+  countEventParticipants,
+  countPendingEventRequests,
+  listUserEventParticipantsBasic,
+  listUserEventRequestsBasic
+} from '../lib/event-engagement-store.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { requireRole } from '../middleware/rbac.js';
 import { validate } from '../middleware/validate.js';
-import { dispatchNotification } from '../services/notifications.js';
-import { awardPoints } from '../services/rewards.js';
+import { countAuthUsers, findAuthUserById, listAuthUsers, updateAuthUserStatus } from '../lib/auth-users.js';
+import { createNotificationsMany } from '../lib/notifications-store.js';
+import {
+  approveOrganizerApplicationAndProvisionTenant,
+  countOrganizerApplications,
+  findOrganizerApplicationById,
+  listOrganizerApplicationsDetailed,
+  markOrganizerApplicationRejected
+} from '../lib/organizer-applications-store.js';
+import { dispatchNotificationDefault } from '../services/notifications.js';
+import { awardPointsDefault } from '../services/rewards.js';
 
 const locationCreateSchema = z.object({
   name: z.string().min(2),
@@ -75,16 +117,6 @@ const eventModerationSchema = z.object({
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
-const ensureUniqueTenantSlug = async (baseSlug: string): Promise<string> => {
-  let candidate = slugify(baseSlug);
-  let attempt = 1;
-  while (await prisma.tenant.findUnique({ where: { slug: candidate } })) {
-    candidate = `${baseSlug}-${attempt}`;
-    attempt += 1;
-  }
-  return candidate;
-};
-
 const toPrismaActivityType = (activityType: 'hiking' | 'camping'): ActivityType =>
   activityType === 'hiking' ? 'HIKING' : 'CAMPING';
 
@@ -115,10 +147,10 @@ adminRouter.use(requireAuth, requireVerifiedEmail, requireRole([UserRole.PLATFOR
 adminRouter.get('/locations', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
-    const [locations, total] = await Promise.all([
-      prisma.location.findMany({ orderBy: { createdAt: 'desc' }, ...paginate(pg) }),
-      prisma.location.count()
-    ]);
+    const { items: locations, total } = await listAdminLocationsPaged({
+      skip: (pg.page - 1) * pg.pageSize,
+      take: pg.pageSize
+    });
     res.json(paginatedResponse(locations.map((l) => toLocationDto(l, { admin: true })), total, pg));
   } catch (error) {
     next(error);
@@ -128,33 +160,31 @@ adminRouter.get('/locations', async (req, res, next) => {
 adminRouter.post('/locations', validate({ body: locationCreateSchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof locationCreateSchema>;
-    const created = await prisma.location.create({
-      data: {
-        name: body.name,
-        region: body.region,
-        activityType: toPrismaActivityType(body.activityType),
-        description: body.description,
-        difficulty: toPrismaDifficulty(body.difficulty),
-        season: body.season,
-        childFriendly: body.childFriendly,
-        maxGroupSize: body.maxGroupSize,
-        accessibility: toPrismaAccessibility(body.accessibility),
-        images: body.images,
-        featured: body.featured,
-        status: toPrismaLocationStatus(body.status) ?? LocationStatus.ACTIVE,
-        distance: body.distance,
-        duration: body.duration,
-        elevation: body.elevation,
-        campingType: body.campingType,
-        latitude: body.latitude,
-        longitude: body.longitude,
-        highlights: body.highlights ?? [],
-        surfaceType: body.surfaceType ?? [],
-        tags: body.tags ?? [],
-        parkingLink: body.parkingLink,
-        accessibleBy: body.accessibleBy ?? [],
-        countryCode: body.countryCode?.toUpperCase() ?? 'AE'
-      }
+    const created = await createAdminLocation({
+      name: body.name,
+      region: body.region,
+      activityType: toPrismaActivityType(body.activityType),
+      description: body.description,
+      difficulty: toPrismaDifficulty(body.difficulty),
+      season: body.season,
+      childFriendly: body.childFriendly,
+      maxGroupSize: body.maxGroupSize,
+      accessibility: toPrismaAccessibility(body.accessibility),
+      images: body.images,
+      featured: body.featured,
+      status: toPrismaLocationStatus(body.status) ?? LocationStatus.ACTIVE,
+      distance: body.distance,
+      duration: body.duration,
+      elevation: body.elevation,
+      campingType: body.campingType,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      highlights: body.highlights ?? [],
+      surfaceType: body.surfaceType ?? [],
+      tags: body.tags ?? [],
+      parkingLink: body.parkingLink,
+      accessibleBy: body.accessibleBy ?? [],
+      countryCode: body.countryCode?.toUpperCase() ?? 'AE'
     });
     await createAuditLog({
       actorId: req.auth!.userId,
@@ -173,7 +203,7 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const body = req.body as z.infer<typeof locationPatchSchema>;
 
-    const existing = await prisma.location.findUnique({ where: { id } });
+    const existing = await findAdminLocationById(id);
     if (!existing) {
       throw new ApiError(404, 'location_not_found', 'Location not found.');
     }
@@ -210,39 +240,36 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
       }
     }
 
-    const updated = await prisma.location.update({
-      where: { id },
-      data: {
-        name: body.name,
-        region: body.region,
-        countryCode: body.countryCode?.toUpperCase(),
-        activityType: body.activityType ? toPrismaActivityType(body.activityType) : undefined,
-        description: body.description,
-        difficulty: toPrismaDifficulty(body.difficulty),
-        season: body.season,
-        childFriendly: body.childFriendly,
-        maxGroupSize: body.maxGroupSize,
-        accessibility: toPrismaAccessibility(body.accessibility),
-        images: body.images,
-        featured: body.featured,
-        status: nextStatus,
-        distance: body.distance,
-        duration: body.duration,
-        elevation: body.elevation,
-        campingType: body.campingType,
-        latitude: body.latitude,
-        longitude: body.longitude,
-        highlights: body.highlights,
-        surfaceType: body.surfaceType,
-        tags: body.tags,
-        parkingLink: body.parkingLink,
-        accessibleBy: body.accessibleBy,
-        gpxKey: body.gpxKey,
-        guidePdfKey: body.guidePdfKey,
-        guideMarkdown: body.guideMarkdown,
-        guidePreview: body.guidePreview,
-        unlockPriceAed: body.unlockPriceAed
-      }
+    const updated = await updateAdminLocation(id, {
+      name: body.name,
+      region: body.region,
+      countryCode: body.countryCode?.toUpperCase(),
+      activityType: body.activityType ? toPrismaActivityType(body.activityType) : undefined,
+      description: body.description,
+      difficulty: toPrismaDifficulty(body.difficulty),
+      season: body.season,
+      childFriendly: body.childFriendly,
+      maxGroupSize: body.maxGroupSize,
+      accessibility: toPrismaAccessibility(body.accessibility),
+      images: body.images,
+      featured: body.featured,
+      status: nextStatus,
+      distance: body.distance,
+      duration: body.duration,
+      elevation: body.elevation,
+      campingType: body.campingType,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      highlights: body.highlights,
+      surfaceType: body.surfaceType,
+      tags: body.tags,
+      parkingLink: body.parkingLink,
+      accessibleBy: body.accessibleBy,
+      gpxKey: body.gpxKey,
+      guidePdfKey: body.guidePdfKey,
+      guideMarkdown: body.guideMarkdown,
+      guidePreview: body.guidePreview,
+      unlockPriceAed: body.unlockPriceAed
     });
 
     await createAuditLog({
@@ -253,14 +280,14 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
     });
 
     if (activating && updated.submittedById) {
-      await dispatchNotification(prisma, {
+      await dispatchNotificationDefault({
         userId: updated.submittedById,
         title: 'Location approved',
         body: `"${updated.name}" is now live. You can use it when creating trips.`,
         type: NotificationType.SYSTEM,
         meta: { locationId: updated.id, kind: 'location_approved' }
       });
-      void awardPoints(prisma, {
+      void awardPointsDefault({
         userId: updated.submittedById,
         action: RewardAction.LOCATION_PUBLISHED,
         referenceId: updated.id,
@@ -278,14 +305,11 @@ adminRouter.get('/organizer-applications', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
     const [applications, total] = await Promise.all([
-      prisma.organizerApplication.findMany({
-        orderBy: { createdAt: 'desc' },
-        ...paginate(pg),
-        include: {
-          applicant: { include: { profile: true } }
-        }
+      listOrganizerApplicationsDetailed({
+        skip: (pg.page - 1) * pg.pageSize,
+        take: pg.pageSize
       }),
-      prisma.organizerApplication.count()
+      countOrganizerApplications()
     ]);
 
     res.json(paginatedResponse(
@@ -320,7 +344,7 @@ adminRouter.patch(
       const { id } = req.params as z.infer<typeof idParamSchema>;
       const { status, reviewerNote } = req.body as z.infer<typeof applicationPatchSchema>;
 
-      const application = await prisma.organizerApplication.findUnique({ where: { id } });
+      const application = await findOrganizerApplicationById(id);
       if (!application) {
         throw new ApiError(404, 'application_not_found', 'Organizer application was not found.');
       }
@@ -329,71 +353,16 @@ adminRouter.patch(
       }
 
       if (status === 'approved') {
-        const tenantSlug = await ensureUniqueTenantSlug(application.requestedSlug);
-        await prisma.$transaction(async (tx) => {
-          const tenant = await tx.tenant.create({
-            data: {
-              name: application.requestedName,
-              slug: tenantSlug,
-              type: application.requestedType as TenantType,
-              status: TenantStatus.ACTIVE,
-              ownerId: application.applicantId
-            }
-          });
-
-          await tx.tenantMembership.create({
-            data: {
-              tenantId: tenant.id,
-              userId: application.applicantId,
-              role: MembershipRole.TENANT_OWNER
-            }
-          });
-
-          await tx.user.update({
-            where: { id: application.applicantId },
-            data: { role: UserRole.TENANT_OWNER }
-          });
-
-          const meta = (application.metadata as Record<string, string> | null) ?? {};
-          if (meta.hostDisplayName || meta.bio || meta.profilePhoto || meta.phone) {
-            await tx.profile.upsert({
-              where: { userId: application.applicantId },
-              update: {
-                ...(meta.hostDisplayName ? { displayName: meta.hostDisplayName } : {}),
-                ...(meta.bio ? { bio: meta.bio } : {}),
-                ...(meta.phone ? { phone: meta.phone } : {}),
-                ...(meta.profilePhoto ? { avatarUrl: meta.profilePhoto } : {})
-              },
-              create: {
-                userId: application.applicantId,
-                displayName: meta.hostDisplayName ?? application.requestedName,
-                bio: meta.bio ?? null,
-                phone: meta.phone ?? null,
-                avatarUrl: meta.profilePhoto ?? null
-              }
-            });
-          }
-
-          await tx.organizerApplication.update({
-            where: { id: application.id },
-            data: {
-              requestedTenantId: tenant.id,
-              status: OrganizerApplicationStatus.APPROVED,
-              reviewerId: req.auth!.userId,
-              reviewerNote,
-              reviewedAt: new Date()
-            }
-          });
+        await approveOrganizerApplicationAndProvisionTenant({
+          applicationId: application.id,
+          reviewerId: req.auth!.userId,
+          reviewerNote
         });
       } else {
-        await prisma.organizerApplication.update({
-          where: { id: application.id },
-          data: {
-            status: OrganizerApplicationStatus.REJECTED,
-            reviewerId: req.auth!.userId,
-            reviewerNote,
-            reviewedAt: new Date()
-          }
+        await markOrganizerApplicationRejected({
+          id: application.id,
+          reviewerId: req.auth!.userId,
+          reviewerNote
         });
       }
 
@@ -433,33 +402,29 @@ const adminEventCreateSchema = z.object({
 adminRouter.post('/events', validate({ body: adminEventCreateSchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof adminEventCreateSchema>;
-    const tenant = await prisma.tenant.findUnique({ where: { id: body.tenantId } });
+    const tenant = await findAdminTenantById(body.tenantId);
     if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
-    const location = await prisma.location.findUnique({ where: { id: body.locationId } });
+    const location = await findAdminLocationByIdForEventCreate(body.locationId);
     if (!location) throw new ApiError(404, 'location_not_found', 'Location not found.');
 
     const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
     const startAt = parseLocalDateTime(body.date, body.time, countryCode);
     const endAt = body.endDate && body.endTime ? parseLocalDateTime(body.endDate, body.endTime, countryCode) : undefined;
 
-    const event = await prisma.event.create({
-      data: {
-        tenantId: body.tenantId,
-        locationId: body.locationId,
-        createdById: req.auth!.userId,
-        title: body.title,
-        description: body.description,
-        startAt,
-        endAt,
-        meetingPoint: body.meetingPoint,
-        itinerary: body.itinerary,
-        requirements: body.requirements,
-        priceAed: body.price,
-        capacity: body.capacity,
-        images: body.images,
-        status: EventStatus.PUBLISHED
-      },
-      include: { location: true, tenant: true }
+    const event = await createAdminPublishedEvent({
+      tenantId: body.tenantId,
+      locationId: body.locationId,
+      createdById: req.auth!.userId,
+      title: body.title,
+      description: body.description,
+      startAt,
+      endAt,
+      meetingPoint: body.meetingPoint,
+      itinerary: body.itinerary,
+      requirements: body.requirements,
+      priceAed: body.price,
+      capacity: body.capacity,
+      images: body.images
     });
 
     await createAuditLog({
@@ -481,19 +446,10 @@ adminRouter.post('/events', validate({ body: adminEventCreateSchema }), async (r
 adminRouter.get('/events/moderation', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
-    const [events, total] = await Promise.all([
-      prisma.event.findMany({
-        orderBy: { startAt: 'asc' },
-        ...paginate(pg),
-        include: {
-          location: true,
-          tenant: true,
-          guide: { include: { profile: true } },
-          participants: { select: { id: true } }
-        }
-      }),
-      prisma.event.count()
-    ]);
+    const { items: events, total } = await listAdminModerationEventsPaged({
+      skip: (pg.page - 1) * pg.pageSize,
+      take: pg.pageSize
+    });
     res.json(paginatedResponse(
       events.map((event) => buildEventDto(event)),
       total,
@@ -511,16 +467,13 @@ adminRouter.patch(
     try {
       const { id } = req.params as z.infer<typeof idParamSchema>;
       const { action } = req.body as z.infer<typeof eventModerationSchema>;
-      const event = await prisma.event.findUnique({ where: { id } });
+      const event = await findAdminEventById(id);
       if (!event) {
         throw new ApiError(404, 'event_not_found', 'Event not found.');
       }
 
       const status = action === 'suspend' ? EventStatus.SUSPENDED : EventStatus.PUBLISHED;
-      await prisma.event.update({
-        where: { id: event.id },
-        data: { status }
-      });
+      await updateAdminEventStatus(event.id, status);
 
       await createAuditLog({
         actorId: req.auth!.userId,
@@ -545,15 +498,12 @@ adminRouter.patch(
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof idParamSchema>;
-      const event = await prisma.event.findUnique({ where: { id } });
+      const event = await findAdminEventById(id);
       if (!event) {
         throw new ApiError(404, 'event_not_found', 'Event not found.');
       }
 
-      const updated = await prisma.event.update({
-        where: { id: event.id },
-        data: { featured: !event.featured }
-      });
+      const updated = await toggleAdminEventFeatured(event.id, !event.featured);
 
       await createAuditLog({
         actorId: req.auth!.userId,
@@ -573,31 +523,27 @@ adminRouter.patch(
 adminRouter.get('/metrics', async (_req, res, next) => {
   try {
     const now = new Date();
-    const [tenantCount, eventCount, pendingApplications, pendingRequests, totalUsers, activeUsers, totalLocations, totalParticipants, totalOrganizers, activeTrips] = await Promise.all([
-      prisma.tenant.count({ where: { status: TenantStatus.ACTIVE } }),
-      prisma.event.count(),
-      prisma.organizerApplication.count({ where: { status: OrganizerApplicationStatus.PENDING } }),
-      prisma.eventRequest.count({ where: { status: RequestStatus.PENDING } }),
-      prisma.user.count(),
-      prisma.user.count({ where: { status: UserStatus.ACTIVE } }),
-      prisma.location.count(),
-      prisma.eventParticipant.count(),
-      prisma.user.count({ where: { role: { in: [UserRole.TENANT_OWNER, UserRole.PLATFORM_ADMIN] } } }),
-      prisma.event.count({ where: { status: EventStatus.PUBLISHED, startAt: { gte: now } } })
+    const [metrics, pendingRequests, totalUsers, activeUsers, totalParticipants, totalOrganizers] = await Promise.all([
+      countAdminMetrics(now),
+      countPendingEventRequests(),
+      countAuthUsers({}),
+      countAuthUsers({ status: 'ACTIVE' }),
+      countEventParticipants(),
+      countAuthUsers({ role: ['TENANT_OWNER', 'PLATFORM_ADMIN'] })
     ]);
 
     res.json({
       data: {
-        tenants: tenantCount,
-        events: eventCount,
-        pendingApplications,
+        tenants: metrics.tenantCount,
+        events: metrics.eventCount,
+        pendingApplications: metrics.pendingApplications,
         pendingRequests,
         totalUsers,
         activeUsers,
-        totalLocations,
+        totalLocations: metrics.totalLocations,
         totalParticipants,
         totalOrganizers,
-        activeTrips
+        activeTrips: metrics.activeTrips
       }
     });
   } catch (error) {
@@ -620,45 +566,96 @@ adminRouter.get('/users', validate({ query: userListQuerySchema }), async (req, 
   try {
     const { role, userType, status, search, page, pageSize } = req.query as unknown as z.infer<typeof userListQuerySchema>;
 
-    const where: Record<string, unknown> = {};
-    if (role) where.role = role.toUpperCase() as UserRole;
-    if (status) where.status = status.toUpperCase() as UserStatus;
-    if (userType) {
-      const typeFilter = adminUserTypeFilter(userType);
-      if (typeFilter) Object.assign(where, typeFilter);
-    }
-    if (search) {
-      where.OR = [
-        { email: { contains: search, mode: 'insensitive' } },
-        { profile: { displayName: { contains: search, mode: 'insensitive' } } }
-      ];
+    const typeFilter = userType ? adminUserTypeFilter(userType) : null;
+    const useMongoCommonPath = !typeFilter || userType === 'participant' || userType === 'platform_admin' || userType === 'organizer_staff';
+
+    if (useMongoCommonPath) {
+      const authRoleFilter = role ? (role.toUpperCase() as UserRole) : typeFilter?.role ? typeFilter.role : undefined;
+      const authStatusFilter = status ? (status.toUpperCase() as UserStatus) : undefined;
+      const [users, total] = await Promise.all([
+        listAuthUsers({
+          role: authRoleFilter as UserRole | UserRole[] | undefined,
+          status: authStatusFilter as 'ACTIVE' | 'SUSPENDED' | undefined,
+          search,
+          skip: (page - 1) * pageSize,
+          take: pageSize
+        }),
+        countAuthUsers({
+          role: authRoleFilter as UserRole | UserRole[] | undefined,
+          status: authStatusFilter as 'ACTIVE' | 'SUSPENDED' | undefined,
+          search
+        })
+      ]);
+
+      const ownedTenantMap = new Map<string, { type: TenantType }[]>();
+      const tenantOwnerIds = users.filter((u) => u.role === 'TENANT_OWNER').map((u) => u._id);
+      if (tenantOwnerIds.length > 0) {
+        const owners = await listOwnerTenantTypes(tenantOwnerIds);
+        owners.forEach((tenant) => {
+          const existing = ownedTenantMap.get(tenant.ownerId) ?? [];
+          existing.push({ type: tenant.type });
+          ownedTenantMap.set(tenant.ownerId, existing);
+        });
+      }
+
+      res.json({
+        data: users.map((u) => ({
+          id: u._id,
+          email: u.email,
+          role: u.role.toLowerCase(),
+          userType: resolveAdminUserType({ role: u.role, ownedTenants: ownedTenantMap.get(u._id) }),
+          status: u.status.toLowerCase(),
+          authProvider: u.authProvider.toLowerCase(),
+          displayName: u.profile.displayName ?? null,
+          avatarUrl: u.profile.avatarUrl ?? null,
+          createdAt: u.createdAt,
+          lastActiveAt: u.lastActiveAt
+        })),
+        total,
+        page,
+        pageSize
+      });
+      return;
     }
 
+    const authRoleFilter = role ? (role.toUpperCase() as UserRole) : typeFilter?.role ? typeFilter.role : undefined;
+    const authStatusFilter = status ? (status.toUpperCase() as UserStatus) : undefined;
     const [users, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        include: {
-          profile: true,
-          ownedTenants: { select: { type: true, name: true } },
-          memberships: { include: { tenant: { select: { type: true, name: true } } } }
-        },
-        orderBy: { createdAt: 'desc' },
+      listAuthUsers({
+        role: authRoleFilter as UserRole | UserRole[] | undefined,
+        status: authStatusFilter as 'ACTIVE' | 'SUSPENDED' | undefined,
+        search,
         skip: (page - 1) * pageSize,
         take: pageSize
       }),
-      prisma.user.count({ where })
+      countAuthUsers({
+        role: authRoleFilter as UserRole | UserRole[] | undefined,
+        status: authStatusFilter as 'ACTIVE' | 'SUSPENDED' | undefined,
+        search
+      })
     ]);
+
+    const ownedTenantMap = new Map<string, { type: TenantType }[]>();
+    const tenantOwnerIds = users.filter((u) => u.role === 'TENANT_OWNER').map((u) => u._id);
+    if (tenantOwnerIds.length > 0) {
+      const owners = await listOwnerTenantTypes(tenantOwnerIds);
+      owners.forEach((tenant) => {
+        const existing = ownedTenantMap.get(tenant.ownerId) ?? [];
+        existing.push({ type: tenant.type });
+        ownedTenantMap.set(tenant.ownerId, existing);
+      });
+    }
 
     res.json({
       data: users.map((u) => ({
-        id: u.id,
+        id: u._id,
         email: u.email,
         role: u.role.toLowerCase(),
-        userType: resolveAdminUserType(u),
+        userType: resolveAdminUserType({ role: u.role, ownedTenants: ownedTenantMap.get(u._id) }),
         status: u.status.toLowerCase(),
         authProvider: u.authProvider.toLowerCase(),
-        displayName: u.profile?.displayName ?? null,
-        avatarUrl: u.profile?.avatarUrl ?? null,
+        displayName: u.profile.displayName ?? null,
+        avatarUrl: u.profile.avatarUrl ?? null,
         createdAt: u.createdAt,
         lastActiveAt: u.lastActiveAt
       })),
@@ -675,35 +672,42 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
 
-    const user = await prisma.user.findUnique({
-      where: { id },
-      include: {
-        profile: true,
-        ownedTenants: { select: { id: true, name: true, type: true, status: true } },
-        memberships: { include: { tenant: true } },
-        requests: {
-          include: { event: { include: { location: true } } },
-          orderBy: { createdAt: 'desc' },
-          take: 20
-        },
-        participants: {
-          include: { event: { include: { location: true, tenant: true } } },
-          orderBy: { createdAt: 'desc' },
-          take: 20
-        }
-      }
-    });
+    const user = await findAuthUserById(id);
 
     if (!user) {
       throw new ApiError(404, 'user_not_found', 'User not found.');
     }
 
+    const [ownedTenants, memberships, requests, participants] = await Promise.all([
+      listUserOwnedTenantsBasic(id),
+      listTenantMembershipsForUser(id),
+      listUserEventRequestsBasic(id, 20),
+      listUserEventParticipantsBasic(id, 20)
+    ]);
+
+    const requestEventIds = [...new Set(requests.map((request) => request.eventId))];
+    const participantEventIds = [...new Set(participants.map((participant) => participant.eventId))];
+
+    const [requestEvents, participantEvents] = await Promise.all([
+      requestEventIds.length > 0
+        ? listEventsForAdminRequests(requestEventIds)
+        : Promise.resolve([]),
+      participantEventIds.length > 0
+        ? listEventsForAdminTrips(participantEventIds)
+        : Promise.resolve([])
+    ]);
+    const requestEventMap = new Map(requestEvents.map((event) => [event.id, event]));
+    const participantEventMap = new Map(participantEvents.map((event) => [event.id, event]));
+
     res.json({
       data: {
-        id: user.id,
+        id: user._id,
         email: user.email,
         role: user.role.toLowerCase(),
-        userType: resolveAdminUserType(user),
+        userType: resolveAdminUserType({
+          ...user,
+          ownedTenants
+        }),
         status: user.status.toLowerCase(),
         authProvider: user.authProvider.toLowerCase(),
         googleLinked: Boolean(user.googleId),
@@ -716,28 +720,52 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
           bio: user.profile.bio,
           avatarUrl: user.profile.avatarUrl
         } : null,
-        memberships: user.memberships.map((m) => ({
+        memberships: memberships.map((m: (typeof memberships)[number]) => ({
           tenantId: m.tenantId,
           tenantName: m.tenant.name,
           role: m.role.toLowerCase(),
           joinedAt: m.createdAt
         })),
-        requests: user.requests.map((r) => ({
-          id: r.id,
-          eventId: r.eventId,
-          eventTitle: r.event.title,
-          locationName: r.event.location.name,
-          status: r.status.toLowerCase(),
-          createdAt: r.createdAt
-        })),
-        trips: user.participants.map((p) => ({
-          eventId: p.eventId,
-          eventTitle: p.event.title,
-          locationName: p.event.location.name,
-          organizerName: p.event.tenant.name,
-          date: p.event.startAt.toISOString().slice(0, 10),
-          checkedInAt: p.checkedInAt
-        }))
+        requests: requests.reduce<Array<{
+          id: string;
+          eventId: string;
+          eventTitle: string | null;
+          locationName: string;
+          status: string;
+          createdAt: Date;
+        }>>((acc, r) => {
+          const event = requestEventMap.get(r.eventId);
+          if (!event) return acc;
+          acc.push({
+            id: r.id,
+            eventId: r.eventId,
+            eventTitle: event.title,
+            locationName: event.location.name,
+            status: r.status.toLowerCase(),
+            createdAt: r.createdAt
+          });
+          return acc;
+        }, []),
+        trips: participants.reduce<Array<{
+          eventId: string;
+          eventTitle: string | null;
+          locationName: string;
+          organizerName: string;
+          date: string;
+          checkedInAt: Date | null;
+        }>>((acc, p) => {
+          const event = participantEventMap.get(p.eventId);
+          if (!event) return acc;
+          acc.push({
+            eventId: p.eventId,
+            eventTitle: event.title,
+            locationName: event.location.name,
+            organizerName: event.tenant.name,
+            date: event.startAt.toISOString().slice(0, 10),
+            checkedInAt: p.checkedInAt
+          });
+          return acc;
+        }, [])
       }
     });
   } catch (error) {
@@ -754,22 +782,15 @@ adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: u
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const { status } = req.body as z.infer<typeof userStatusSchema>;
 
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await findAuthUserById(id);
     if (!user) throw new ApiError(404, 'user_not_found', 'User not found.');
     if (user.role === UserRole.PLATFORM_ADMIN) throw new ApiError(400, 'cannot_modify_admin', 'Cannot modify admin status.');
 
     const prismaStatus = status === 'active' ? UserStatus.ACTIVE : UserStatus.SUSPENDED;
-    await prisma.$transaction([
-      prisma.user.update({ where: { id }, data: { status: prismaStatus } }),
-      ...(status === 'suspended'
-        ? [
-            prisma.refreshToken.updateMany({
-              where: { userId: id, revokedAt: null },
-              data: { revokedAt: new Date() }
-            })
-          ]
-        : [])
-    ]);
+    await updateAuthUserStatus(id, prismaStatus);
+    if (status === 'suspended') {
+      await revokeRefreshTokensByUser(id);
+    }
 
     await createAuditLog({
       actorId: req.auth!.userId,
@@ -789,17 +810,10 @@ adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: u
 adminRouter.get('/tenants', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
-    const [tenants, total] = await Promise.all([
-      prisma.tenant.findMany({
-        orderBy: { createdAt: 'desc' },
-        ...paginate(pg),
-        include: {
-          owner: { include: { profile: true } },
-          _count: { select: { memberships: true, events: true } }
-        }
-      }),
-      prisma.tenant.count()
-    ]);
+    const { items: tenants, total } = await listAdminTenantsPaged({
+      skip: (pg.page - 1) * pg.pageSize,
+      take: pg.pageSize
+    });
 
     res.json(paginatedResponse(
       tenants.map((t) => ({
@@ -826,21 +840,7 @@ adminRouter.get('/tenants/:id', validate({ params: idParamSchema }), async (req,
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
 
-    const tenant = await prisma.tenant.findUnique({
-      where: { id },
-      include: {
-        owner: { include: { profile: true } },
-        memberships: { include: { user: { include: { profile: true } } } },
-        events: {
-          orderBy: { startAt: 'desc' },
-          include: {
-            location: true,
-            participants: { select: { id: true, checkedInAt: true } },
-            guide: { include: { profile: true } }
-          }
-        }
-      }
-    });
+    const tenant = await findAdminTenantDetailedById(id);
 
     if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
 
@@ -891,11 +891,11 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const { status } = req.body as z.infer<typeof tenantStatusSchema>;
 
-    const tenant = await prisma.tenant.findUnique({ where: { id } });
+    const tenant = await findAdminTenantById(id);
     if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
 
     const prismaStatus = status === 'active' ? TenantStatus.ACTIVE : TenantStatus.SUSPENDED;
-    await prisma.tenant.update({ where: { id }, data: { status: prismaStatus } });
+    await updateAdminTenantStatus(id, prismaStatus);
 
     await createAuditLog({
       actorId: req.auth!.userId,
@@ -916,17 +916,15 @@ adminRouter.delete('/locations/:id', validate({ params: idParamSchema }), async 
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
 
-    const location = await prisma.location.findUnique({ where: { id } });
+    const location = await findAdminLocationById(id);
     if (!location) throw new ApiError(404, 'location_not_found', 'Location not found.');
 
-    const activeEventCount = await prisma.event.count({
-      where: { locationId: id, status: { in: [EventStatus.PUBLISHED, EventStatus.DRAFT] } }
-    });
+    const activeEventCount = await countActiveEventsByLocationId(id);
     if (activeEventCount > 0) {
       throw new ApiError(400, 'location_has_events', `Cannot delete location: ${activeEventCount} active event(s) reference it.`);
     }
 
-    await prisma.location.delete({ where: { id } });
+    await deleteAdminLocation(id);
 
     await createAuditLog({
       actorId: req.auth!.userId,
@@ -954,20 +952,15 @@ adminRouter.get('/audit-logs', validate({ query: auditLogQuerySchema }), async (
   try {
     const { action, entityType, page, pageSize } = req.query as unknown as z.infer<typeof auditLogQuerySchema>;
 
-    const where: Record<string, unknown> = {};
+    const where: { action?: string | { contains: string }; entityType?: string } = {};
     if (action) where.action = { contains: action };
     if (entityType) where.entityType = entityType;
 
-    const [logs, total] = await Promise.all([
-      prisma.auditLog.findMany({
-        where,
-        include: { actor: { include: { profile: true } } },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize
-      }),
-      prisma.auditLog.count({ where })
-    ]);
+    const { items: logs, total } = await listAuditLogsPaged({
+      where,
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    });
 
     res.json({
       data: logs.map((l) => ({
@@ -1000,23 +993,24 @@ adminRouter.post('/notifications', validate({ body: sendNotificationSchema }), a
   try {
     const { title, body, targetRole } = req.body as z.infer<typeof sendNotificationSchema>;
 
-    const userWhere: Record<string, unknown> = { status: UserStatus.ACTIVE };
-    if (targetRole) userWhere.role = targetRole.toUpperCase() as UserRole;
-
-    const users = await prisma.user.findMany({ where: userWhere, select: { id: true } });
+    const users = await listAuthUsers({
+      status: 'ACTIVE',
+      role: targetRole ? (targetRole.toUpperCase() as UserRole) : undefined,
+      take: 10000
+    });
 
     if (users.length === 0) {
       throw new ApiError(400, 'no_recipients', 'No users match the target criteria.');
     }
 
-    await prisma.notification.createMany({
-      data: users.map((u) => ({
-        userId: u.id,
+    await createNotificationsMany(
+      users.map((u) => ({
+        userId: u._id,
         title,
         body,
         type: 'SYSTEM' as const
       }))
-    });
+    );
 
     await createAuditLog({
       actorId: req.auth!.userId,
@@ -1034,12 +1028,7 @@ adminRouter.post('/notifications', validate({ body: sendNotificationSchema }), a
 
 adminRouter.get('/notifications', async (req, res, next) => {
   try {
-    const logs = await prisma.auditLog.findMany({
-      where: { action: 'notification.broadcast' },
-      include: { actor: { include: { profile: true } } },
-      orderBy: { createdAt: 'desc' },
-      take: 20
-    });
+    const logs = await listBroadcastNotificationAuditLogs(20);
 
     res.json({
       data: logs.map((l) => {
@@ -1073,21 +1062,20 @@ adminRouter.get('/products', validate({ query: productListQuerySchema }), async 
   try {
     const { status, category, featured, page, pageSize } = req.query as unknown as z.infer<typeof productListQuerySchema>;
 
-    const where: Record<string, unknown> = {};
-    if (status) where.status = status.toUpperCase();
+    const where: {
+      status?: ProductStatus;
+      category?: string;
+      discountPercent?: { gt: number };
+    } = {};
+    if (status) where.status = status.toLowerCase() === 'active' ? ProductStatus.ACTIVE : ProductStatus.INACTIVE;
     if (category) where.category = category;
     if (featured === 'true') where.discountPercent = { gt: 0 };
 
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        include: { merchant: true },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize
-      }),
-      prisma.product.count({ where })
-    ]);
+    const { items: products, total } = await listAdminProductsPaged({
+      where,
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    });
 
     res.json({
       data: products.map((p) => ({
@@ -1121,11 +1109,11 @@ adminRouter.patch('/products/:id/status', validate({ params: idParamSchema, body
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const { status } = req.body as z.infer<typeof productStatusSchema>;
 
-    const product = await prisma.product.findUnique({ where: { id } });
+    const product = await findAdminProductById(id);
     if (!product) throw new ApiError(404, 'product_not_found', 'Product not found.');
 
-    const prismaStatus = status === 'active' ? 'ACTIVE' : 'INACTIVE';
-    await prisma.product.update({ where: { id }, data: { status: prismaStatus as import('@prisma/client').ProductStatus } });
+    const prismaStatus = status === 'active' ? ProductStatus.ACTIVE : ProductStatus.INACTIVE;
+    await updateAdminProductStatus(id, prismaStatus);
 
     await createAuditLog({
       actorId: req.auth!.userId,

@@ -1,4 +1,4 @@
-import { TenantType, UserRole } from '@prisma/client';
+import { TenantType, UserRole } from '../domain/enums.js';
 
 export type AdminUserType =
   | 'participant'

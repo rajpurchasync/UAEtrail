@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
-import { prisma } from '../src/lib/prisma.js';
+import { findAuthUserByEmail } from '../src/lib/auth-users.js';
+import { getMongoClient } from '../src/lib/mongo.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import {
   cleanupTestUsers,
@@ -28,26 +29,34 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await prisma.chatMessage.deleteMany({
-    where: {
-      OR: [
-        { sender: { email: { endsWith: '@test.local' } } },
-        { receiver: { email: { endsWith: '@test.local' } } }
-      ]
-    }
-  });
+  const testUsers = await getMongoClient()!
+    .db()
+    .collection('auth_users')
+    .find({ email: { $regex: /@test\.local$/ } }, { projection: { _id: 1 } })
+    .toArray();
+  const testUserIds = testUsers.map((user) => user._id as string);
+
+  if (testUserIds.length > 0) {
+    await getMongoClient()!
+      .db()
+      .collection('chat_messages')
+      .deleteMany({
+        $or: [{ senderId: { $in: testUserIds } }, { receiverId: { $in: testUserIds } }]
+      });
+  }
+
   await cleanupTestUsers();
 });
 
 describe('chat messaging policy', () => {
   it('blocks messages between users with no trip or thread relationship', async () => {
-    const receiver = await prisma.user.findUnique({ where: { email: visitorB.email } });
+    const receiver = await findAuthUserByEmail(visitorB.email);
     expect(receiver).toBeTruthy();
 
     const response = await request(app)
       .post('/api/v1/chat/messages')
       .set('Authorization', `Bearer ${visitorA.accessToken}`)
-      .send({ receiverId: receiver!.id, content: 'Hello stranger' });
+      .send({ receiverId: receiver!._id, content: 'Hello stranger' });
 
     expect(response.status).toBe(403);
     expect(response.body.error?.code).toBe('message_not_allowed');

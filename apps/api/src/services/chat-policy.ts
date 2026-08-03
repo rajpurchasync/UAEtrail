@@ -1,6 +1,13 @@
-import { MembershipRole, RequestStatus, EventStatus } from '@prisma/client';
+import { MembershipRole, EventStatus, RequestStatus } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
-import { prisma } from '../lib/prisma.js';
+import { countRecentMessagesBySender, hasThreadBetweenUsers } from '../lib/chat-data.js';
+import {
+  hasActiveJoinRequestLink,
+  hasHostToParticipantLink,
+  hasParticipantToHostLink,
+  hasSharedEventParticipation,
+  hasTripInquiryAccess
+} from '../lib/event-engagement-store.js';
 
 const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
   RequestStatus.PENDING,
@@ -19,9 +26,7 @@ const MESSAGES_PER_MINUTE = 30;
 
 export async function assertChatRateLimit(senderId: string): Promise<void> {
   const since = new Date(Date.now() - 60_000);
-  const recent = await prisma.chatMessage.count({
-    where: { senderId, createdAt: { gte: since } }
-  });
+  const recent = await countRecentMessagesBySender(senderId, since);
   if (recent >= MESSAGES_PER_MINUTE) {
     throw new ApiError(429, 'rate_limit_exceeded', 'Too many messages. Please slow down.');
   }
@@ -35,120 +40,35 @@ export async function assertCanMessageUser(
   receiverId: string,
   options?: { eventId?: string }
 ): Promise<void> {
-  const existingThread = await prisma.chatMessage.findFirst({
-    where: {
-      OR: [
-        { senderId, receiverId },
-        { senderId: receiverId, receiverId: senderId }
-      ]
-    },
-    select: { id: true }
-  });
+  const existingThread = await hasThreadBetweenUsers(senderId, receiverId);
   if (existingThread) return;
 
-  const sharedTrip = await prisma.eventParticipant.findFirst({
-    where: {
-      userId: senderId,
-      event: {
-        participants: { some: { userId: receiverId } }
-      }
-    },
-    select: { id: true }
-  });
+  const sharedTrip = await hasSharedEventParticipation(senderId, receiverId);
   if (sharedTrip) return;
 
-  const joinRequestLink = await prisma.eventRequest.findFirst({
-    where: {
-      status: { in: ACTIVE_REQUEST_STATUSES },
-      OR: [
-        {
-          userId: senderId,
-          event: {
-            OR: [
-              { guideId: receiverId },
-              { createdById: receiverId },
-              {
-                tenant: {
-                  memberships: {
-                    some: { userId: receiverId, role: { in: ORGANIZER_ROLES } }
-                  }
-                }
-              }
-            ]
-          }
-        },
-        {
-          userId: receiverId,
-          event: {
-            OR: [
-              { guideId: senderId },
-              { createdById: senderId },
-              {
-                tenant: {
-                  memberships: {
-                    some: { userId: senderId, role: { in: ORGANIZER_ROLES } }
-                  }
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    select: { id: true }
+  const joinRequestLink = await hasActiveJoinRequestLink({
+    senderId,
+    receiverId,
+    organizerRoles: ORGANIZER_ROLES,
+    activeStatuses: ACTIVE_REQUEST_STATUSES
   });
   if (joinRequestLink) return;
 
-  const participantToHost = await prisma.eventParticipant.findFirst({
-    where: {
-      userId: senderId,
-      event: {
-        OR: [
-          { guideId: receiverId },
-          { createdById: receiverId },
-          {
-            tenant: {
-              memberships: {
-                some: { userId: receiverId, role: { in: ORGANIZER_ROLES } }
-              }
-            }
-          }
-        ]
-      }
-    },
-    select: { id: true }
+  const participantToHost = await hasParticipantToHostLink({
+    participantUserId: senderId,
+    hostUserId: receiverId,
+    organizerRoles: ORGANIZER_ROLES
   });
   if (participantToHost) return;
 
-  const hostToParticipant = await prisma.eventParticipant.findFirst({
-    where: {
-      userId: receiverId,
-      event: {
-        OR: [{ guideId: senderId }, { createdById: senderId }]
-      }
-    },
-    select: { id: true }
-  });
+  const hostToParticipant = await hasHostToParticipantLink(senderId, receiverId);
   if (hostToParticipant) return;
 
   if (options?.eventId) {
-    const tripInquiry = await prisma.event.findFirst({
-      where: {
-        id: options.eventId,
-        status: EventStatus.PUBLISHED,
-        OR: [
-          { guideId: receiverId },
-          { createdById: receiverId },
-          {
-            tenant: {
-              memberships: {
-                some: { userId: receiverId, role: { in: ORGANIZER_ROLES } }
-              }
-            }
-          }
-        ]
-      },
-      select: { id: true }
+    const tripInquiry = await hasTripInquiryAccess({
+      eventId: options.eventId,
+      receiverId,
+      organizerRoles: ORGANIZER_ROLES
     });
     if (tripInquiry) return;
   }

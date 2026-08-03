@@ -7,14 +7,13 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] Copy `.env.production.example` → `.env` and fill all values
 - [ ] Run `npm run validate:env:prod` on the server (must pass with zero errors)
 - [ ] Generate JWT secrets (`openssl rand -hex 64` × 2)
-- [ ] Set strong `POSTGRES_PASSWORD` and MinIO credentials
+- [ ] Set `MONGODB_URI` (local `mongo` service or MongoDB Atlas) and MinIO credentials
 - [ ] Point domain DNS A record to VPS IP
 
 ## Docker deploy
 
 - [ ] `docker compose up -d --build`
-- [ ] `docker compose exec api npx prisma migrate deploy --schema apps/api/prisma/schema.prisma`
-- [ ] Optional seed with **custom** admin password only
+- [ ] `docker compose exec api npm --workspace @uaetrail/api run seed` (with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` in production)
 - [ ] `curl https://uaetrail.ae/health` returns OK
 
 ## HTTPS

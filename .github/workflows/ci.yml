@@ -10,22 +10,18 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: uaetrail_test
+      mongo:
+        image: mongo:7
         ports:
-          - 5432:5432
+          - 27017:27017
         options: >-
-          --health-cmd "pg_isready -U postgres -d uaetrail_test"
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok'"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/uaetrail_test?schema=public
+      MONGODB_URI: mongodb://localhost:27017/uaetrail_test
       JWT_ACCESS_SECRET: ci-test-access-secret-min-24-chars
       JWT_REFRESH_SECRET: ci-test-refresh-secret-min-24-chars
       NODE_ENV: test
@@ -40,12 +36,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Generate Prisma client
-        run: npm run prisma:generate
-
-      - name: Apply migrations
-        run: npm run prisma:deploy
 
       - name: Frontend typecheck
         run: npm run typecheck

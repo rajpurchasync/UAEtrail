@@ -1,5 +1,5 @@
-import { Prisma, RewardAction } from '@prisma/client';
-import type { PrismaClient } from '@prisma/client';
+import { MongoServerError } from 'mongodb';
+import { MembershipTier, RewardAction } from '../domain/enums.js';
 import {
   ACHIEVEMENT_BADGE_DEFINITIONS,
   BADGE_DEFINITIONS,
@@ -10,12 +10,19 @@ import {
   MEMBERSHIP_TIERS,
   REWARD_LABELS,
   REWARD_POINTS,
-  tierEnumToKey,
   tierKeyToEnum
 } from '../lib/rewards-config.js';
+import { findAuthUserById, findAuthUserByReferralCode } from '../lib/auth-users.js';
+import { getMongoClient } from '../lib/mongo.js';
 import { dispatchNotification } from './notifications.js';
-
-type DbClient = PrismaClient | Prisma.TransactionClient;
+import {
+  countRewardLedgerEntries,
+  createRewardLedgerEntry,
+  createUserBadge,
+  findUserBadges,
+  hasRewardLedgerEntry,
+  listUserRewardLedger
+} from '../lib/reward-ledger-store.js';
 
 export interface AwardPointsInput {
   userId: string;
@@ -26,35 +33,67 @@ export interface AwardPointsInput {
   notify?: boolean;
 }
 
-async function syncMembershipTier(db: DbClient, userId: string, points: number): Promise<string | null> {
+type AuthUserDoc = {
+  _id: string;
+  email: string;
+  referralCode: string;
+  profile?: {
+    displayName?: string | null;
+    avatarUrl?: string | null;
+    rewardPoints?: number;
+    membershipTier?: MembershipTier;
+  };
+};
+
+const usersCollection = () => getMongoClient()!.db().collection<AuthUserDoc>('auth_users');
+
+const isDuplicateKeyError = (error: unknown): boolean =>
+  error instanceof MongoServerError && error.code === 11000;
+
+async function incrementUserRewardPoints(userId: string, points: number): Promise<number> {
+  const result = await usersCollection().findOneAndUpdate(
+    { _id: userId },
+    {
+      $inc: { 'profile.rewardPoints': points },
+      $set: { updatedAt: new Date() }
+    },
+    { returnDocument: 'after' }
+  );
+
+  return result?.profile?.rewardPoints ?? points;
+}
+
+async function updateUserMembershipTier(userId: string, tier: MembershipTier): Promise<void> {
+  await usersCollection().updateOne(
+    { _id: userId },
+    { $set: { 'profile.membershipTier': tier, updatedAt: new Date() } }
+  );
+}
+
+async function setUserReferredBy(userId: string, referredById: string): Promise<void> {
+  await usersCollection().updateOne(
+    { _id: userId },
+    { $set: { referredById, updatedAt: new Date() } }
+  );
+}
+
+async function syncMembershipTier(userId: string, points: number): Promise<string | null> {
   const tierDef = getTierForPoints(points);
   const nextTierEnum = tierKeyToEnum(tierDef.key);
 
-  const profile = await db.profile.findUnique({
-    where: { userId },
-    select: { membershipTier: true }
-  });
-  const previousTier = profile?.membershipTier ?? 'FREE';
+  const user = await usersCollection().findOne({ _id: userId }, { projection: { profile: 1 } });
+  const previousTier = user?.profile?.membershipTier ?? MembershipTier.FREE;
 
   if (previousTier === nextTierEnum) return null;
 
-  await db.profile.update({
-    where: { userId },
-    data: { membershipTier: nextTierEnum }
-  });
+  await updateUserMembershipTier(userId, nextTierEnum);
 
   if (tierDef.badgeKey) {
-    try {
-      await db.userBadge.create({ data: { userId, badgeKey: tierDef.badgeKey } });
-    } catch (error) {
-      if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) {
-        throw error;
-      }
-    }
+    await createUserBadge({ userId, badgeKey: tierDef.badgeKey });
   }
 
-  if ('$connect' in db && tierDef.key !== 'free') {
-    void dispatchNotification(db as PrismaClient, {
+  if (tierDef.key !== 'free') {
+    void dispatchNotification({
       userId,
       title: `Upgraded to ${tierDef.name}! ${tierDef.emoji}`,
       body: `${tierDef.tagline} — share your badge with friends.`,
@@ -75,44 +114,26 @@ async function syncMembershipTier(db: DbClient, userId: string, points: number):
   return tierDef.key;
 }
 
-export async function awardPoints(db: DbClient, input: AwardPointsInput): Promise<{ awarded: boolean; points: number }> {
+export async function awardPoints(input: AwardPointsInput): Promise<{ awarded: boolean; points: number }> {
   const points = REWARD_POINTS[input.action];
   if (points <= 0) return { awarded: false, points: 0 };
 
-  let totalPoints = 0;
-
-  const writeLedger = async (tx: DbClient) => {
-    await tx.rewardLedger.create({
-      data: {
-        userId: input.userId,
-        action: input.action,
-        points,
-        referenceId: input.referenceId,
-        label: input.label ?? REWARD_LABELS[input.action],
-        meta: input.meta as Prisma.InputJsonValue | undefined
-      }
-    });
-
-    const profile = await tx.profile.upsert({
-      where: { userId: input.userId },
-      update: { rewardPoints: { increment: points } },
-      create: { userId: input.userId, rewardPoints: points },
-      select: { rewardPoints: true }
-    });
-    totalPoints = profile.rewardPoints;
-    await syncMembershipTier(tx, input.userId, totalPoints);
-  };
-
   try {
-    if ('$transaction' in db && typeof db.$transaction === 'function') {
-      await db.$transaction(async (tx) => writeLedger(tx));
-    } else {
-      await writeLedger(db);
-    }
+    await createRewardLedgerEntry({
+      userId: input.userId,
+      action: input.action,
+      points,
+      referenceId: input.referenceId,
+      label: input.label ?? REWARD_LABELS[input.action],
+      meta: input.meta
+    });
 
-    if (input.notify !== false && '$connect' in db) {
+    const totalPoints = await incrementUserRewardPoints(input.userId, points);
+    await syncMembershipTier(input.userId, totalPoints);
+
+    if (input.notify !== false) {
       const progressHint = buildPointsToNextTierMessage(totalPoints);
-      void dispatchNotification(db as PrismaClient, {
+      void dispatchNotification({
         userId: input.userId,
         title: `+${points} Trail Points`,
         body: progressHint ? `${input.label ?? REWARD_LABELS[input.action]} · ${progressHint}` : (input.label ?? REWARD_LABELS[input.action]),
@@ -126,69 +147,56 @@ export async function awardPoints(db: DbClient, input: AwardPointsInput): Promis
         }
       }).catch(() => undefined);
 
-      void evaluateAchievementBadges(db as PrismaClient, input.userId).catch(() => undefined);
+      void evaluateAchievementBadges(input.userId).catch(() => undefined);
     }
 
     return { awarded: true, points };
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (isDuplicateKeyError(error)) {
       return { awarded: false, points: 0 };
     }
     throw error;
   }
 }
 
-async function countLedger(db: DbClient, userId: string, action: RewardAction): Promise<number> {
-  return db.rewardLedger.count({ where: { userId, action } });
-}
-
-async function hasLedger(db: DbClient, userId: string, action: RewardAction): Promise<boolean> {
-  const entry = await db.rewardLedger.findFirst({
-    where: { userId, action },
-    select: { id: true }
-  });
-  return Boolean(entry);
-}
-
-export async function evaluateAchievementBadges(db: DbClient, userId: string): Promise<string[]> {
-  const earnedKeys = new Set(
-    (await db.userBadge.findMany({ where: { userId }, select: { badgeKey: true } })).map((b) => b.badgeKey)
-  );
+export async function evaluateAchievementBadges(userId: string): Promise<string[]> {
+  const badges = await findUserBadges(userId);
+  const earnedKeys = new Set(badges.map((b) => b.badgeKey));
 
   const checks: Array<{ key: string; shouldAward: () => Promise<boolean> }> = [
     {
       key: 'trail_mapper',
       shouldAward: async () =>
-        (await hasLedger(db, userId, RewardAction.LOCATION_SUBMITTED)) ||
-        (await hasLedger(db, userId, RewardAction.LOCATION_PUBLISHED))
+        (await hasRewardLedgerEntry(userId, RewardAction.LOCATION_SUBMITTED)) ||
+        (await hasRewardLedgerEntry(userId, RewardAction.LOCATION_PUBLISHED))
     },
     {
       key: 'community_voice',
-      shouldAward: async () => (await countLedger(db, userId, RewardAction.COMMUNITY_POST)) >= 5
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.COMMUNITY_POST)) >= 5
     },
     {
       key: 'helpful_hand',
-      shouldAward: async () => (await countLedger(db, userId, RewardAction.COMMUNITY_REPLY)) >= 10
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.COMMUNITY_REPLY)) >= 10
     },
     {
       key: 'trip_leader',
-      shouldAward: async () => hasLedger(db, userId, RewardAction.EVENT_PUBLISHED)
+      shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.EVENT_PUBLISHED)
     },
     {
       key: 'trusted_host',
-      shouldAward: async () => (await countLedger(db, userId, RewardAction.EVENT_HOSTED)) >= 5
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.EVENT_HOSTED)) >= 5
     },
     {
       key: 'reviewer',
-      shouldAward: async () => hasLedger(db, userId, RewardAction.REVIEW_WRITTEN)
+      shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.REVIEW_WRITTEN)
     },
     {
       key: 'ambassador',
-      shouldAward: async () => (await countLedger(db, userId, RewardAction.REFERRAL_BONUS_REFERRER)) >= 3
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.REFERRAL_BONUS_REFERRER)) >= 3
     },
     {
       key: 'adventurer',
-      shouldAward: async () => (await countLedger(db, userId, RewardAction.TRIP_ATTENDED)) >= 5
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.TRIP_ATTENDED)) >= 5
     }
   ];
 
@@ -198,23 +206,19 @@ export async function evaluateAchievementBadges(db: DbClient, userId: string): P
     if (earnedKeys.has(check.key)) continue;
     if (!(await check.shouldAward())) continue;
 
-    try {
-      await db.userBadge.create({ data: { userId, badgeKey: check.key } });
+    const created = await createUserBadge({ userId, badgeKey: check.key });
+    if (created) {
       newlyEarned.push(check.key);
 
       const badge = ACHIEVEMENT_BADGE_DEFINITIONS.find((b) => b.key === check.key);
-      if (badge && '$connect' in db) {
-        void dispatchNotification(db as PrismaClient, {
+      if (badge) {
+        void dispatchNotification({
           userId,
           title: `Badge unlocked: ${badge.name}`,
           body: badge.description,
           type: 'SYSTEM',
           meta: { kind: 'badge', badgeKey: check.key }
         }).catch(() => undefined);
-      }
-    } catch (error) {
-      if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) {
-        throw error;
       }
     }
   }
@@ -226,11 +230,10 @@ export async function evaluateAchievementBadges(db: DbClient, userId: string): P
 export const evaluateBadges = evaluateAchievementBadges;
 
 export async function processSignupRewards(
-  db: DbClient,
   userId: string,
   referralCode?: string | null
 ): Promise<void> {
-  await awardPoints(db, {
+  await awardPoints({
     userId,
     action: RewardAction.SIGNUP_WELCOME,
     referenceId: userId,
@@ -239,52 +242,33 @@ export async function processSignupRewards(
 
   if (!referralCode?.trim()) return;
 
-  const referrer = await db.user.findUnique({
-    where: { referralCode: referralCode.trim().toUpperCase() },
-    select: { id: true }
-  });
-  if (!referrer || referrer.id === userId) return;
+  const referrer = await findAuthUserByReferralCode(referralCode.trim().toUpperCase());
+  if (!referrer || referrer._id === userId) return;
 
-  await db.user.update({
-    where: { id: userId },
-    data: { referredById: referrer.id }
-  });
+  await setUserReferredBy(userId, referrer._id);
 
-  await awardPoints(db, {
-    userId: referrer.id,
+  await awardPoints({
+    userId: referrer._id,
     action: RewardAction.REFERRAL_BONUS_REFERRER,
     referenceId: userId,
     label: 'A friend joined with your invite link',
     notify: true
   });
 
-  await awardPoints(db, {
+  await awardPoints({
     userId,
     action: RewardAction.REFERRAL_BONUS_JOINER,
-    referenceId: referrer.id,
+    referenceId: referrer._id,
     label: 'Joined with a friend\'s invite',
     notify: true
   });
 }
 
-export async function getRewardSummary(db: DbClient, userId: string) {
+export async function getRewardSummary(userId: string) {
   const [user, ledger, badges] = await Promise.all([
-    db.user.findUnique({
-      where: { id: userId },
-      select: {
-        referralCode: true,
-        profile: { select: { rewardPoints: true, membershipTier: true } }
-      }
-    }),
-    db.rewardLedger.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: 30
-    }),
-    db.userBadge.findMany({
-      where: { userId },
-      orderBy: { earnedAt: 'asc' }
-    })
+    findAuthUserById(userId),
+    listUserRewardLedger(userId, 30),
+    findUserBadges(userId)
   ]);
 
   const points = user?.profile?.rewardPoints ?? 0;
@@ -307,9 +291,8 @@ export async function getRewardSummary(db: DbClient, userId: string) {
       }
     : null;
 
-  // Keep stored tier in sync if points were backfilled
-  if (user?.profile && tierKeyToEnum(tier.key) !== user.profile.membershipTier && '$connect' in db) {
-    void syncMembershipTier(db as PrismaClient, userId, points).catch(() => undefined);
+  if (user?.profile && tierKeyToEnum(tier.key) !== user.profile.membershipTier) {
+    void syncMembershipTier(userId, points).catch(() => undefined);
   }
 
   return {
@@ -380,24 +363,22 @@ export async function getRewardSummary(db: DbClient, userId: string) {
   };
 }
 
-export async function getLeaderboard(db: DbClient, limit = 10) {
-  const rows = await db.profile.findMany({
-    where: { rewardPoints: { gt: 0 } },
-    orderBy: { rewardPoints: 'desc' },
-    take: limit,
-    include: {
-      user: { select: { id: true, profile: { select: { displayName: true, avatarUrl: true } }, email: true } }
-    }
-  });
+export async function getLeaderboard(limit = 10) {
+  const rows = await usersCollection()
+    .find({ 'profile.rewardPoints': { $gt: 0 } })
+    .sort({ 'profile.rewardPoints': -1 })
+    .limit(limit)
+    .toArray();
 
   return rows.map((row, index) => {
-    const tier = getTierForPoints(row.rewardPoints);
+    const rewardPoints = row.profile?.rewardPoints ?? 0;
+    const tier = getTierForPoints(rewardPoints);
     return {
       rank: index + 1,
-      userId: row.userId,
-      displayName: row.user.profile?.displayName ?? row.user.email.split('@')[0],
-      avatarUrl: row.user.profile?.avatarUrl ?? null,
-      points: row.rewardPoints,
+      userId: row._id,
+      displayName: row.profile?.displayName ?? row.email.split('@')[0],
+      avatarUrl: row.profile?.avatarUrl ?? null,
+      points: rewardPoints,
       tier: tier.name,
       /** @deprecated use tier */
       level: tier.name
@@ -405,13 +386,17 @@ export async function getLeaderboard(db: DbClient, limit = 10) {
   });
 }
 
-export async function getRewardStats(db: DbClient) {
-  const [activeCount, proCount, goatCount, contributorsCount, pointsAwarded] = await Promise.all([
-    db.profile.count({ where: { membershipTier: 'ACTIVE' } }),
-    db.profile.count({ where: { membershipTier: 'PRO' } }),
-    db.profile.count({ where: { membershipTier: 'GOAT' } }),
-    db.profile.count({ where: { rewardPoints: { gt: 0 } } }),
-    db.rewardLedger.aggregate({ _sum: { points: true } })
+export async function getRewardStats() {
+  const rewardLedgerCollection = () => getMongoClient()!.db().collection('reward_ledgers');
+
+  const [activeCount, proCount, goatCount, contributorsCount, pointsAgg] = await Promise.all([
+    usersCollection().countDocuments({ 'profile.membershipTier': MembershipTier.ACTIVE }),
+    usersCollection().countDocuments({ 'profile.membershipTier': MembershipTier.PRO }),
+    usersCollection().countDocuments({ 'profile.membershipTier': MembershipTier.GOAT }),
+    usersCollection().countDocuments({ 'profile.rewardPoints': { $gt: 0 } }),
+    rewardLedgerCollection()
+      .aggregate<{ total: number }>([{ $group: { _id: null, total: { $sum: '$points' } } }])
+      .toArray()
   ]);
 
   return {
@@ -419,7 +404,7 @@ export async function getRewardStats(db: DbClient) {
     proCount,
     goatCount,
     contributorsCount,
-    totalPointsAwarded: pointsAwarded._sum.points ?? 0,
+    totalPointsAwarded: pointsAgg[0]?.total ?? 0,
     tierThresholds: MEMBERSHIP_TIERS.filter((t) => t.key !== 'free').map((t) => ({
       key: t.key,
       name: t.name,
@@ -428,3 +413,18 @@ export async function getRewardStats(db: DbClient) {
     }))
   };
 }
+
+/** @deprecated Use awardPoints */
+export const awardPointsDefault = awardPoints;
+
+/** @deprecated Use processSignupRewards */
+export const processSignupRewardsDefault = processSignupRewards;
+
+/** @deprecated Use getRewardSummary */
+export const getRewardSummaryDefault = getRewardSummary;
+
+/** @deprecated Use getLeaderboard */
+export const getLeaderboardDefault = getLeaderboard;
+
+/** @deprecated Use getRewardStats */
+export const getRewardStatsDefault = getRewardStats;

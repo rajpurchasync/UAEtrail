@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.js';
-import { prisma } from './lib/prisma.js';
+import { connectMongo, getMongoClient } from './lib/mongo.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { createRateLimiters } from './middleware/rate-limit.js';
 import { getGlobalLimiter } from './middleware/rate-limit-instances.js';
@@ -76,8 +76,9 @@ export const createApp = async (): Promise<Express> => {
 
   app.get('/health/ready', async (_req, res) => {
     try {
-      await prisma.$queryRaw`SELECT 1`;
-      res.json({ status: 'ready', service: 'uaetrail-api', timestamp: new Date().toISOString() });
+      await connectMongo();
+      await getMongoClient().db('admin').command({ ping: 1 });
+      res.json({ status: 'ready', service: 'uaetrail-api', database: 'mongodb', timestamp: new Date().toISOString() });
     } catch {
       res.status(503).json({ status: 'not_ready', service: 'uaetrail-api' });
     }

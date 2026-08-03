@@ -1,4 +1,3 @@
-import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
@@ -6,14 +5,11 @@ import type { Express } from 'express';
 
 const apiRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 
-let migrationsApplied = false;
-
 export const configureTestEnv = (): void => {
   dotenv.config({ path: path.join(apiRoot, '.env') });
   process.env.NODE_ENV = 'test';
   process.env.PORT = '4001';
-  process.env.DATABASE_URL =
-    process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/uaetrail';
+  process.env.MONGODB_URI = process.env.MONGODB_URI ?? 'mongodb://localhost:27017/uaetrail_test';
   process.env.JWT_ACCESS_SECRET =
     process.env.JWT_ACCESS_SECRET ?? 'test-access-secret-test-access-secret';
   process.env.JWT_REFRESH_SECRET =
@@ -23,20 +19,10 @@ export const configureTestEnv = (): void => {
   delete process.env.REDIS_URL;
 };
 
-export const applyTestMigrations = (): void => {
-  if (migrationsApplied) return;
-  configureTestEnv();
-  execSync('npx prisma migrate deploy', {
-    cwd: apiRoot,
-    stdio: 'pipe',
-    env: process.env as NodeJS.ProcessEnv
-  });
-  migrationsApplied = true;
-};
-
 export const bootstrapTestApp = async (): Promise<Express> => {
-  applyTestMigrations();
   configureTestEnv();
+  const { connectMongo } = await import('../../src/lib/mongo.js');
+  await connectMongo();
   const { registerRateLimiters } = await import('../../src/middleware/rate-limit-instances.js');
   const { createRateLimiters } = await import('../../src/middleware/rate-limit.js');
   const { bootstrapApp } = await import('../../src/app.js');

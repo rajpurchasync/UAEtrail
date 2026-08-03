@@ -1,8 +1,8 @@
 import { bootstrapApp } from './app.js';
 import { env, validateOptionalIntegrations } from './config/env.js';
 import { disconnectRedis } from './lib/redis.js';
-import { prisma } from './lib/prisma.js';
 import { getRedisClient } from './lib/redis.js';
+import { connectMongo, disconnectMongo } from './lib/mongo.js';
 import { initChatStreamPubSub, closeChatStreamPubSub } from './services/chat-stream.js';
 import { registerRateLimiters } from './middleware/rate-limit-instances.js';
 import { createRateLimiters } from './middleware/rate-limit.js';
@@ -14,6 +14,7 @@ const start = async () => {
   if (process.env.REDIS_URL) {
     await getRedisClient();
   }
+  await connectMongo();
   await initChatStreamPubSub();
   registerRateLimiters(await createRateLimiters());
   const app = await bootstrapApp();
@@ -25,7 +26,7 @@ const start = async () => {
   const shutdown = async () => {
     server.close();
     await closeChatStreamPubSub();
-    await prisma.$disconnect();
+    await disconnectMongo();
     await disconnectRedis();
     process.exit(0);
   };

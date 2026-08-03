@@ -7,7 +7,7 @@ Monorepo with three layers:
 | Layer | Path | Role |
 |-------|------|------|
 | Frontend | `src/` | React SPA (Vite), mobile-first IA |
-| API | `apps/api/` | Express + Prisma + PostgreSQL |
+| API | `apps/api/` | Express + MongoDB |
 | Shared contracts | `packages/shared-types/` | DTOs consumed by both sides |
 
 ## Backend (`apps/api`)
@@ -15,7 +15,7 @@ Monorepo with three layers:
 ```
 HTTP → routes/ (thin controllers)
      → services/ (domain logic: join-request, notifications, review-prompt)
-     → lib/ (infra: prisma, jwt, s3, push, stripe, datetime)
+     → lib/ (infra: mongo, jwt, s3, push, stripe, datetime)
      → domain/ (pure rules: capacity)
 ```
 
@@ -62,7 +62,8 @@ utils/          authRouting, push
 
 ## Deployment notes
 
-- Run `npm run prisma:deploy` before API start
+- Ensure `MONGODB_URI` is set and MongoDB is reachable before API start
+- Run `npm run seed` on first deploy (or set `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` in production)
 - Optional env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`
 - Frontend build: `npm run build` → serve via nginx (`nginx/default.conf`)
 

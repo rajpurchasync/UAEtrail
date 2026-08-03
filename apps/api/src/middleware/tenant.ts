@@ -1,7 +1,7 @@
-import { MembershipRole, UserRole } from '@prisma/client';
+import { MembershipRole, UserRole } from '../domain/enums.js';
 import { NextFunction, Request, Response } from 'express';
-import { prisma } from '../lib/prisma.js';
 import { ApiError } from '../lib/api-error.js';
+import { findTenantMembershipContext } from '../lib/tenant-access.js';
 
 const organizerRoles: UserRole[] = [UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN, UserRole.TENANT_GUIDE];
 
@@ -21,18 +21,7 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
       throw new ApiError(400, 'tenant_header_missing', 'x-tenant-id header is required.');
     }
 
-    const membership = await prisma.tenantMembership.findUnique({
-      where: {
-        tenantId_userId: {
-          tenantId,
-          userId: req.auth.userId
-        }
-      },
-      select: {
-        role: true,
-        tenant: { select: { status: true } }
-      }
-    });
+    const membership = await findTenantMembershipContext(tenantId, req.auth.userId);
 
     if (!membership) {
       throw new ApiError(403, 'forbidden', 'No tenant membership found.');

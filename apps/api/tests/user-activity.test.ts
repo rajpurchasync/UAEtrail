@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as authUsers from '../src/lib/auth-users.js';
 
 vi.mock('../src/lib/redis.js', () => ({
   getRedisClient: vi.fn(async () => null)
 }));
 
-const { prisma } = await import('../src/lib/prisma.js');
 const { resetLastActiveThrottleForTests, touchLastActive } = await import('../src/lib/user-activity.js');
 
 describe('touchLastActive', () => {
   beforeEach(() => {
     resetLastActiveThrottleForTests();
-    vi.spyOn(prisma.user, 'update').mockResolvedValue({} as never);
+    vi.spyOn(authUsers, 'updateAuthUserLastActive').mockResolvedValue();
   });
 
   afterEach(() => {
@@ -21,11 +21,8 @@ describe('touchLastActive', () => {
     await touchLastActive('user-1');
     await touchLastActive('user-1');
 
-    expect(prisma.user.update).toHaveBeenCalledTimes(1);
-    expect(prisma.user.update).toHaveBeenCalledWith({
-      where: { id: 'user-1' },
-      data: { lastActiveAt: expect.any(Date) }
-    });
+    expect(authUsers.updateAuthUserLastActive).toHaveBeenCalledTimes(1);
+    expect(authUsers.updateAuthUserLastActive).toHaveBeenCalledWith('user-1');
   });
 
   it('persists again after the throttle window elapses', async () => {
@@ -35,7 +32,7 @@ describe('touchLastActive', () => {
     await touchLastActive('user-2');
     await touchLastActive('user-2');
 
-    expect(prisma.user.update).toHaveBeenCalledTimes(2);
+    expect(authUsers.updateAuthUserLastActive).toHaveBeenCalledTimes(2);
     nowSpy.mockRestore();
   });
 });

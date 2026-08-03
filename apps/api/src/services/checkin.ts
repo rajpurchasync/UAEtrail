@@ -1,11 +1,11 @@
-import { EventStatus, Prisma, RewardAction } from '@prisma/client';
+import { EventStatus, RewardAction } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
-import { prisma } from '../lib/prisma.js';
+import { findLocationInMongo, findEventDocInMongo } from '../lib/entity-sync.js';
+import { findAuthUserById } from '../lib/auth-users.js';
+import { getMongoClient } from '../lib/mongo.js';
 import { promptPostEventReview } from './review-prompt.js';
 import { awardPoints } from './rewards.js';
 import { createAuditLog } from '../lib/audit.js';
-
-type DbClient = Prisma.TransactionClient | typeof prisma;
 
 const CHECKIN_EARLY_MS = 2 * 60 * 60 * 1000;
 const CHECKIN_LATE_MS = 12 * 60 * 60 * 1000;
@@ -46,23 +46,66 @@ export function buildParticipationDto(
   };
 }
 
-export async function performParticipantCheckIn(
-  db: DbClient,
-  opts: {
-    eventId: string;
-    participantId: string;
-    actorUserId: string;
-    source: 'self' | 'organizer';
-    tenantId?: string;
-  }
-) {
-  const participant = await db.eventParticipant.findFirst({
-    where: { id: opts.participantId, eventId: opts.eventId },
-    include: {
-      user: true,
-      event: { include: { location: true } }
+type CheckInParticipantDoc = {
+  _id: string;
+  eventId: string;
+  requestId: string;
+  userId: string;
+  approvedById: string;
+  checkedInAt: Date | null;
+  createdAt: Date;
+};
+
+const eventParticipantsCollection = () =>
+  getMongoClient()!.db().collection<CheckInParticipantDoc>('event_participants');
+
+const loadParticipantForCheckIn = async (eventId: string, participantId: string) => {
+  const participant = await eventParticipantsCollection().findOne({ _id: participantId, eventId });
+
+  if (!participant) return null;
+
+  const eventDoc = await findEventDocInMongo(eventId);
+  const location = eventDoc ? await findLocationInMongo(eventDoc.locationId) : null;
+  const user = await findAuthUserById(participant.userId);
+
+  if (!eventDoc || !location || !user) return null;
+
+  return {
+    id: participant._id,
+    eventId: participant.eventId,
+    requestId: participant.requestId,
+    userId: participant.userId,
+    approvedById: participant.approvedById,
+    checkedInAt: participant.checkedInAt,
+    createdAt: participant.createdAt,
+    user: { id: user._id, email: user.email },
+    event: {
+      id: eventDoc._id,
+      tenantId: eventDoc.tenantId,
+      locationId: eventDoc.locationId,
+      createdById: eventDoc.createdById,
+      guideId: eventDoc.guideId,
+      title: eventDoc.title,
+      status: eventDoc.status,
+      startAt: eventDoc.startAt,
+      endAt: eventDoc.endAt,
+      location: {
+        id: location.id,
+        name: location.name,
+        activityType: location.activityType
+      }
     }
-  });
+  };
+};
+
+export async function performParticipantCheckIn(opts: {
+  eventId: string;
+  participantId: string;
+  actorUserId: string;
+  source: 'self' | 'organizer';
+  tenantId?: string;
+}) {
+  const participant = await loadParticipantForCheckIn(opts.eventId, opts.participantId);
 
   if (!participant) {
     throw new ApiError(404, 'participant_not_found', 'Participant not found.');
@@ -103,12 +146,10 @@ export async function performParticipantCheckIn(
   }
 
   const checkedInAt = new Date();
-  await db.eventParticipant.update({
-    where: { id: participant.id },
-    data: { checkedInAt }
-  });
 
-  void awardPoints(prisma, {
+  await eventParticipantsCollection().updateOne({ _id: participant.id }, { $set: { checkedInAt } });
+
+  void awardPoints({
     userId: participant.userId,
     action: RewardAction.TRIP_ATTENDED,
     referenceId: `${event.id}:${participant.userId}`,
@@ -116,7 +157,7 @@ export async function performParticipantCheckIn(
   }).catch(() => undefined);
 
   const hostUserId = event.guideId ?? event.createdById;
-  void awardPoints(prisma, {
+  void awardPoints({
     userId: hostUserId,
     action: RewardAction.EVENT_HOSTED,
     referenceId: event.id,
@@ -132,7 +173,7 @@ export async function performParticipantCheckIn(
   });
 
   const activityType = event.location.activityType === 'HIKING' ? 'hiking' : 'camping';
-  await promptPostEventReview(prisma, {
+  await promptPostEventReview({
     userId: participant.userId,
     eventId: event.id,
     locationId: event.locationId,
@@ -142,3 +183,6 @@ export async function performParticipantCheckIn(
 
   return { checkedInAt, alreadyCheckedIn: false };
 }
+
+/** @deprecated Use performParticipantCheckIn */
+export const performParticipantCheckInDefault = performParticipantCheckIn;

@@ -1,4 +1,9 @@
-import { prisma } from '../lib/prisma.js';
+import { findAuthUserById } from '../lib/auth-users.js';
+import { listUserEventParticipantsBasic, listUserEventRequestsBasic } from '../lib/event-engagement-store.js';
+import { listUserFavorites } from '../lib/favorites-store.js';
+import { countPushSubscriptions } from '../lib/push-subscriptions.js';
+import { findUserBadges, findUserRewardLedgerExport } from '../lib/reward-ledger-store.js';
+import { listUserShopOrdersBasic } from '../lib/shop-store.js';
 
 export interface UserDataExport {
   exportedAt: string;
@@ -28,32 +33,26 @@ export interface UserDataExport {
 }
 
 export async function buildUserDataExport(userId: string): Promise<UserDataExport> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      profile: true,
-      favorites: { select: { id: true, locationId: true, eventId: true, createdAt: true } },
-      requests: { select: { id: true, eventId: true, status: true, createdAt: true }, orderBy: { createdAt: 'desc' }, take: 200 },
-      participants: {
-        select: { id: true, eventId: true, checkedInAt: true, createdAt: true },
-        orderBy: { createdAt: 'desc' },
-        take: 200
-      },
-      shopOrders: { select: { id: true, status: true, totalAed: true, createdAt: true }, orderBy: { createdAt: 'desc' }, take: 100 },
-      rewardLedger: { select: { action: true, points: true, label: true, createdAt: true }, orderBy: { createdAt: 'desc' }, take: 500 },
-      badges: { select: { badgeKey: true, earnedAt: true } },
-      _count: { select: { pushSubscriptions: true } }
-    }
-  });
+  const user = await findAuthUserById(userId);
 
   if (!user) {
     throw new Error('User not found');
   }
 
+  const [favorites, requests, participants, shopOrders, rewardLedger, badges, pushSubscriptionCount] = await Promise.all([
+    listUserFavorites(userId),
+    listUserEventRequestsBasic(userId, 200),
+    listUserEventParticipantsBasic(userId, 200),
+    listUserShopOrdersBasic(userId, 100),
+    findUserRewardLedgerExport(userId),
+    findUserBadges(userId),
+    countPushSubscriptions(userId)
+  ]);
+
   return {
     exportedAt: new Date().toISOString(),
     account: {
-      id: user.id,
+      id: user._id,
       email: user.email,
       role: user.role,
       authProvider: user.authProvider,
@@ -66,31 +65,31 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
           phone: user.profile.phone,
           bio: user.profile.bio,
           avatarUrl: user.profile.avatarUrl,
-          rewardPoints: user.profile.rewardPoints,
-          membershipTier: user.profile.membershipTier
+          rewardPoints: user.profile.rewardPoints ?? 0,
+          membershipTier: user.profile.membershipTier ?? 'FREE'
         }
       : null,
-    favorites: user.favorites,
-    tripRequests: user.requests.map((r) => ({
+    favorites,
+    tripRequests: requests.map((r: (typeof requests)[number]) => ({
       id: r.id,
       eventId: r.eventId,
       status: r.status,
       createdAt: r.createdAt
     })),
-    participations: user.participants.map((p) => ({
+    participations: participants.map((p: (typeof participants)[number]) => ({
       id: p.id,
       eventId: p.eventId,
       checkedInAt: p.checkedInAt,
       createdAt: p.createdAt
     })),
-    shopOrders: user.shopOrders,
-    rewardLedger: user.rewardLedger.map((e) => ({
+    shopOrders,
+    rewardLedger: rewardLedger.map((e: (typeof rewardLedger)[number]) => ({
       action: e.action,
       points: e.points,
       label: e.label,
       createdAt: e.createdAt
     })),
-    badges: user.badges,
-    pushSubscriptionCount: user._count.pushSubscriptions
+    badges,
+    pushSubscriptionCount
   };
 }

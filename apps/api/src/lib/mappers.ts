@@ -1,14 +1,13 @@
+import type { Event, Location } from '../domain/types.js';
 import {
   ActivityType,
-  Event,
   EventStatus,
-  Location,
   LocationStatus,
   MembershipRole,
   RequestStatus,
   TenantType,
   UserRole
-} from '@prisma/client';
+} from '../domain/enums.js';
 import { EventDTO, LocationDTO, MembershipRole as SharedMembershipRole, RequestStatus as SharedRequestStatus, TenantType as SharedTenantType, UserRole as SharedUserRole } from '@uaetrail/shared-types';
 
 import { formatEventLocal } from './datetime.js';

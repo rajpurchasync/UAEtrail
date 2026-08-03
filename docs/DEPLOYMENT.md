@@ -15,12 +15,12 @@ Internet
            │ /api/*
            ▼
 ┌──────────────────────────────┐
-│  api  (Express + Prisma)     │  :4000
+│  api  (Express + MongoDB)    │  :4000
 └──────┬───────────┬───────────┘
        │           │
        ▼           ▼
-   postgres      minio        redis (reserved)
-    :5432        :9000          :6379
+     mongo       minio        redis (reserved)
+    :27017       :9000          :6379
 ```
 
 ## Services
@@ -28,8 +28,8 @@ Internet
 | Container | Image | Purpose |
 |-----------|-------|---------|
 | `frontend` | nginx:1.25‑alpine | Serves the Vite SPA, reverse-proxies `/api/*` to the API |
-| `api` | node:20‑alpine (custom) | Express + Prisma backend |
-| `postgres` | postgres:16‑alpine | Primary database |
+| `api` | node:20‑alpine (custom) | Express + MongoDB backend |
+| `mongo` | mongo:7 | Primary database |
 | `minio` | minio/minio:latest | S3‑compatible media storage |
 | `redis` | redis:7‑alpine | Reserved for future caching / rate‑limiting |
 
@@ -42,6 +42,7 @@ All defined in `docker-compose.yml`.
 - Docker Engine ≥ 24 and Docker Compose v2
 - A domain name (for HTTPS)
 - SSH access to the VPS
+- MongoDB URI (use the bundled `mongo` service, or MongoDB Atlas)
 
 ---
 
@@ -62,7 +63,7 @@ Edit `.env` and fill in **all REQUIRED values**:
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 # Example .env values (DO NOT use these in production):
-POSTGRES_PASSWORD=YourStr0ngDbP@ss!
+MONGODB_URI=mongodb://mongo:27017/uaetrail
 JWT_ACCESS_SECRET=<64-byte-hex>
 JWT_REFRESH_SECRET=<64-byte-hex>
 S3_ACCESS_KEY_ID=minio-admin-user
@@ -70,6 +71,8 @@ S3_SECRET_ACCESS_KEY=minio-admin-s3cr3t!
 ```
 
 > **Note**: `docker-compose.yml` will refuse to start if required secrets are missing — this is intentional.
+
+For MongoDB Atlas, set `MONGODB_URI` to your Atlas connection string and remove the `mongo` service dependency from `docker-compose.yml` if you prefer a managed database.
 
 ---
 
@@ -80,24 +83,25 @@ docker compose up -d --build
 ```
 
 This builds both `api` and `frontend` images and starts all services. Health checks ensure services start in the correct order:
-- `postgres` must be ready before `api` starts
+- `mongo` must be ready before `api` starts
 - `minio` must be ready before `api` starts
 - `api` must pass `/health` before `frontend` starts
 
 ---
 
-## 3 — Run Migrations and Seed
+## 3 — Seed Initial Data
 
 ```bash
-# Apply all pending migrations (production-safe, no prompts)
-docker compose exec api npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
-
-# Seed initial data (admin user, sample locations, etc.)
-docker compose exec api npm --workspace @uaetrail/api run prisma:seed
+# Seed admin user and (in non-production) demo data
+docker compose exec api npm --workspace @uaetrail/api run seed
 ```
 
-> **First admin credentials** (from seed): `admin@uaetrails.app` / `Admin@12345`
+> **First admin credentials** (dev seed): `admin@uaetrails.app` / `Admin@12345`
 > **Change this password immediately** after first login.
+
+In production, set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env` before running seed. Demo data is skipped when `NODE_ENV=production`.
+
+> Do **not** run seed with default passwords in production unless you override them via `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`.
 
 ---
 
@@ -129,7 +133,7 @@ Set these in `.env` before going live:
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `POSTGRES_PASSWORD` | Yes | Database |
+| `MONGODB_URI` | Yes | Database connection string |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Yes | Auth tokens |
 | `APP_BASE_URL` | Yes | `https://uaetrail.ae` |
 | `APP_BASE_URLS` | Yes | Comma-separated allowed origins |
@@ -140,8 +144,6 @@ Set these in `.env` before going live:
 | `EMAIL_FROM` | Yes (prod) | Sender address |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Optional | Web push notifications |
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | If shop live | Payments |
-
-> Do **not** run `prisma:seed` with default passwords in production. Set `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` only for intentional first-time bootstrap.
 
 ### Option A: Certbot (Let's Encrypt)
 
@@ -191,24 +193,27 @@ git pull origin main
 
 # Rebuild and restart
 docker compose up -d --build
-
-# Apply any new migrations
-docker compose exec api npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
 ```
+
+No database migrations are required — schema is managed via MongoDB indexes created at API startup.
 
 ---
 
 ## Backup Strategy
 
-### PostgreSQL backup
+### MongoDB backup (local container)
 ```bash
-docker compose exec postgres pg_dump -U "$POSTGRES_USER" uaetrail > "uaetrail_backup_$(date +%F).sql"
+docker compose exec mongo mongodump --archive=/data/db/backup.archive --db uaetrail
+docker compose cp mongo:/data/db/backup.archive ./uaetrail_backup_$(date +%F).archive
 ```
 
-### PostgreSQL restore
+### MongoDB restore
 ```bash
-cat uaetrail_backup.sql | docker compose exec -T postgres psql -U "$POSTGRES_USER" uaetrail
+docker compose cp ./uaetrail_backup.archive mongo:/data/db/backup.archive
+docker compose exec mongo mongorestore --archive=/data/db/backup.archive --drop
 ```
+
+For MongoDB Atlas, use Atlas automated backups or `mongodump` against your Atlas URI.
 
 ### MinIO backup
 ```bash
@@ -231,8 +236,8 @@ docker compose logs -f frontend
 # Shell into API container
 docker compose exec api sh
 
-# Prisma Studio (dev only — do NOT expose in production)
-docker compose exec api npx prisma studio --schema apps/api/prisma/schema.prisma
+# MongoDB shell (dev/troubleshooting)
+docker compose exec mongo mongosh uaetrail
 
 # Stop everything
 docker compose down
@@ -250,7 +255,7 @@ docker compose down -v
 | frontend (HTTP) | 80 | 80 | `FRONTEND_PORT` |
 | frontend (HTTPS) | 443 | 443 | `FRONTEND_SSL_PORT` |
 | api | 4000 | 4000 | `API_PORT` |
-| postgres | 5432 | 5432 | `POSTGRES_PORT` |
+| mongo | 27017 | 27017 | `MONGO_PORT` |
 | minio API | 9000 | 9000 | `MINIO_API_PORT` |
 | minio console | 9001 | 9001 | `MINIO_CONSOLE_PORT` |
 | redis | 6379 | 6379 | `REDIS_PORT` |

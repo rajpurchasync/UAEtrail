@@ -1,5 +1,20 @@
-import { Prisma } from '@prisma/client';
-import { prisma } from './prisma.js';
+import { randomUUID } from 'crypto';
+import type { Collection } from 'mongodb';
+import { getMongoClient } from './mongo.js';
+
+type MongoAuditLogDoc = {
+  _id: string;
+  actorId: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  tenantId: string | null;
+  metadata: unknown;
+  createdAt: Date;
+};
+
+const auditLogsCollection = (): Collection<MongoAuditLogDoc> =>
+  getMongoClient()!.db().collection<MongoAuditLogDoc>('audit_logs');
 
 export const createAuditLog = async ({
   actorId,
@@ -14,16 +29,16 @@ export const createAuditLog = async ({
   entityType: string;
   entityId: string;
   tenantId?: string;
-  metadata?: Prisma.InputJsonValue;
+  metadata?: unknown;
 }): Promise<void> => {
-  await prisma.auditLog.create({
-    data: {
-      actorId,
-      action,
-      entityType,
-      entityId,
-      tenantId,
-      metadata
-    }
+  await auditLogsCollection().insertOne({
+    _id: randomUUID(),
+    actorId,
+    action,
+    entityType,
+    entityId,
+    tenantId: tenantId ?? null,
+    metadata: metadata ?? null,
+    createdAt: new Date()
   });
 };

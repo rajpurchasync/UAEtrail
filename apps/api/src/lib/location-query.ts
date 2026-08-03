@@ -1,5 +1,9 @@
-import { Location, LocationStatus, Prisma } from '@prisma/client';
-import { prisma } from './prisma.js';
+import type { Collection } from 'mongodb';
+import type { Location } from '../domain/types.js';
+import { LocationStatus } from '../domain/enums.js';
+import { getMongoClient } from './mongo.js';
+import { radiusKmToRadians, withLocationGeoFields } from './location-geo.js';
+import { withQueryTiming } from './query-timing.js';
 
 export interface LocationListFilters {
   activityType?: 'hiking' | 'camping';
@@ -12,85 +16,109 @@ export interface LocationListFilters {
   pageSize: number;
 }
 
-const haversineKm = (lat: number, lng: number) => Prisma.sql`
-  (6371 * acos(LEAST(1::double precision, GREATEST(-1::double precision,
-    cos(radians(${lat})) * cos(radians(latitude)) * cos(radians(longitude) - radians(${lng}))
-    + sin(radians(${lat})) * sin(radians(latitude))
-  ))))`;
+type MongoLocationDoc = Omit<Location, 'id'> & {
+  _id: string;
+  geo?: { type: 'Point'; coordinates: [number, number] };
+};
 
-const buildWhereConditions = (filters: LocationListFilters): Prisma.Sql[] => {
-  const conditions: Prisma.Sql[] = [
-    Prisma.sql`status = ${LocationStatus.ACTIVE}::"LocationStatus"`
-  ];
+const locationsCollection = (): Collection<MongoLocationDoc> =>
+  getMongoClient()!.db().collection<MongoLocationDoc>('locations');
 
+const mapMongoLocation = (item: MongoLocationDoc): Location => {
+  const { _id, geo: _geo, ...rest } = item;
+  return { id: _id, ...rest };
+};
+
+export const locationDocForMongo = (location: Location): MongoLocationDoc => {
+  const { id, ...rest } = location;
+  return withLocationGeoFields({ _id: id, ...rest }) as MongoLocationDoc;
+};
+
+export const syncLocationsToMongo = async (locations: Location[]): Promise<void> => {
+  if (locations.length === 0) return;
+  await Promise.all(
+    locations.map((location) =>
+      locationsCollection().updateOne(
+        { _id: location.id },
+        { $set: locationDocForMongo(location) },
+        { upsert: true }
+      )
+    )
+  );
+};
+
+const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown> => {
+  const query: Record<string, unknown> = {
+    status: LocationStatus.ACTIVE
+  };
   if (filters.activityType) {
-    const activity = filters.activityType === 'hiking' ? 'HIKING' : 'CAMPING';
-    conditions.push(Prisma.sql`"activityType" = ${activity}::"ActivityType"`);
+    query.activityType = filters.activityType === 'hiking' ? 'HIKING' : 'CAMPING';
   }
   if (filters.featured !== undefined) {
-    conditions.push(Prisma.sql`featured = ${filters.featured}`);
+    query.featured = filters.featured;
   }
   if (filters.countryCode) {
-    conditions.push(Prisma.sql`"countryCode" = ${filters.countryCode.toUpperCase()}`);
+    query.countryCode = filters.countryCode.toUpperCase();
   }
-  if (filters.lat != null && filters.lng != null) {
-    const radiusKm = filters.radius ?? 50;
-    conditions.push(Prisma.sql`latitude IS NOT NULL`);
-    conditions.push(Prisma.sql`longitude IS NOT NULL`);
-    conditions.push(Prisma.sql`${haversineKm(filters.lat, filters.lng)} <= ${radiusKm}`);
-  }
+  return query;
+};
 
-  return conditions;
+const listActiveLocationsFromMongoGeo = async (
+  filters: LocationListFilters,
+  offset: number
+): Promise<{ items: Location[]; total: number }> => {
+  const radiusKm = filters.radius ?? 50;
+  const query = {
+    ...buildMongoFilter(filters),
+    geo: {
+      $geoWithin: {
+        $centerSphere: [[filters.lng!, filters.lat!], radiusKmToRadians(radiusKm)]
+      }
+    }
+  };
+
+  const [items, total] = await Promise.all([
+    locationsCollection()
+      .find(query)
+      .sort({ featured: -1, createdAt: -1 })
+      .skip(offset)
+      .limit(filters.pageSize)
+      .toArray(),
+    locationsCollection().countDocuments(query)
+  ]);
+
+  return { items: items.map(mapMongoLocation), total };
+};
+
+const listActiveLocationsFromMongo = async (
+  filters: LocationListFilters,
+  offset: number
+): Promise<{ items: Location[]; total: number }> => {
+  const query = buildMongoFilter(filters);
+
+  const [items, total] = await Promise.all([
+    locationsCollection()
+      .find(query)
+      .sort({ featured: -1, createdAt: -1 })
+      .skip(offset)
+      .limit(filters.pageSize)
+      .toArray(),
+    locationsCollection().countDocuments(query)
+  ]);
+
+  return { items: items.map(mapMongoLocation), total };
 };
 
 export async function listActiveLocations(
   filters: LocationListFilters
 ): Promise<{ items: Location[]; total: number }> {
   const offset = (filters.page - 1) * filters.pageSize;
-  const whereClause = Prisma.join(buildWhereConditions(filters), ' AND ');
 
-  if (filters.lat != null && filters.lng != null) {
-    const countRows = await prisma.$queryRaw<[{ count: bigint }]>`
-      SELECT COUNT(*)::bigint AS count FROM "Location" WHERE ${whereClause}
-    `;
-    const total = Number(countRows[0]?.count ?? 0);
-
-    const idRows = await prisma.$queryRaw<{ id: string }[]>`
-      SELECT id FROM "Location"
-      WHERE ${whereClause}
-      ORDER BY featured DESC, "createdAt" DESC
-      LIMIT ${filters.pageSize} OFFSET ${offset}
-    `;
-
-    const ids = idRows.map((row) => row.id);
-    if (ids.length === 0) {
-      return { items: [], total };
+  return withQueryTiming('listActiveLocations', async () => {
+    if (filters.lat != null && filters.lng != null) {
+      return listActiveLocationsFromMongoGeo(filters, offset);
     }
 
-    const locations = await prisma.location.findMany({ where: { id: { in: ids } } });
-    const order = new Map(ids.map((id, index) => [id, index]));
-    locations.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
-    return { items: locations, total };
-  }
-
-  const where: Prisma.LocationWhereInput = {
-    status: LocationStatus.ACTIVE,
-    ...(filters.activityType
-      ? { activityType: filters.activityType === 'hiking' ? 'HIKING' : 'CAMPING' }
-      : {}),
-    ...(filters.featured !== undefined ? { featured: filters.featured } : {}),
-    ...(filters.countryCode ? { countryCode: filters.countryCode.toUpperCase() } : {})
-  };
-
-  const [items, total] = await Promise.all([
-    prisma.location.findMany({
-      where,
-      orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
-      skip: offset,
-      take: filters.pageSize
-    }),
-    prisma.location.count({ where })
-  ]);
-
-  return { items, total };
+    return listActiveLocationsFromMongo(filters, offset);
+  });
 }

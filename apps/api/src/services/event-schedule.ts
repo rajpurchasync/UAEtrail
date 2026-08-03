@@ -1,5 +1,4 @@
-import { NotificationType } from '@prisma/client';
-import type { PrismaClient } from '@prisma/client';
+import { NotificationType } from '../domain/enums.js';
 import { formatEventLocal } from '../lib/datetime.js';
 import { dispatchNotification } from './notifications.js';
 
@@ -19,17 +18,14 @@ export const formatScheduleLabel = (instant: Date, countryCode: string): string 
   return `${date} at ${time}`;
 };
 
-export async function notifyParticipantsOfScheduleChange(
-  db: PrismaClient,
-  params: {
-    eventId: string;
-    eventTitle: string;
-    participantUserIds: string[];
-    previousStartAt: Date;
-    newStartAt: Date;
-    countryCode: string;
-  }
-): Promise<void> {
+export async function notifyParticipantsOfScheduleChange(params: {
+  eventId: string;
+  eventTitle: string;
+  participantUserIds: string[];
+  previousStartAt: Date;
+  newStartAt: Date;
+  countryCode: string;
+}): Promise<void> {
   const { eventId, eventTitle, participantUserIds, previousStartAt, newStartAt, countryCode } = params;
   if (participantUserIds.length === 0) return;
 
@@ -40,7 +36,7 @@ export async function notifyParticipantsOfScheduleChange(
 
   await Promise.all(
     participantUserIds.map((userId) =>
-      dispatchNotification(db, {
+      dispatchNotification({
         userId,
         title,
         body,
@@ -50,3 +46,6 @@ export async function notifyParticipantsOfScheduleChange(
     )
   );
 }
+
+/** @deprecated Use notifyParticipantsOfScheduleChange */
+export const notifyParticipantsOfScheduleChangeDefault = notifyParticipantsOfScheduleChange;

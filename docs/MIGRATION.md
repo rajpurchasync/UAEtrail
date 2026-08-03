@@ -6,7 +6,7 @@ All required variables are documented in `.env.example` at the project root.
 Copy it to `.env` and fill in production values before starting Docker.
 
 ### Required backend variables
-- `DATABASE_URL` (auto-composed in docker-compose from `POSTGRES_*` vars)
+- `MONGODB_URI` (local MongoDB service in docker-compose or Atlas URI)
 - `JWT_ACCESS_SECRET`
 - `JWT_REFRESH_SECRET`
 - `APP_BASE_URL`
@@ -23,34 +23,42 @@ Copy it to `.env` and fill in production values before starting Docker.
 - `S3_BUCKET` (defaults to `uaetrail-assets`)
 - `S3_FORCE_PATH_STYLE` (defaults to `true` for MinIO)
 
-## Local Development — Migration Order
+## Local Development — Bootstrap Order
 
 1. `npm install`
-2. `npm run prisma:generate`
-3. `npm run prisma:migrate` (interactive dev migration)
-4. `npm run prisma:seed`
+2. Start MongoDB locally with `docker compose up mongo minio redis` or use Atlas
+3. Copy and configure env: `cp apps/api/.env.example apps/api/.env`
+4. `npm run seed`
 5. `npm run build:api`
 6. `npm run build`
 
-## Production (Docker) — Migration Order
+### Query timing (development)
 
-1. `cp .env.example .env` — fill in secrets
+Set `QUERY_TIMING=1` to log store queries slower than 25ms to stdout.
+
+## Production (Docker) — Bootstrap Order
+
+1. `cp .env.example .env` — fill in secrets (including `MONGODB_URI`)
 2. `docker compose up -d --build`
-3. `docker compose exec api npx prisma migrate deploy --schema apps/api/prisma/schema.prisma`
-4. `docker compose exec api npm --workspace @uaetrail/api run prisma:seed`
+3. Seed initial data (admin user, sample locations, etc.):
+   ```bash
+   docker compose exec api npm --workspace @uaetrail/api run seed
+   ```
 
-> Use `prisma migrate deploy` (not `prisma migrate dev`) in production.
-> It applies pending migrations without prompts and never resets data.
+> In production, set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env` before seeding.
+> The seed script skips demo data when `NODE_ENV=production`.
 
 ## First Admin Bootstrap
 
-Seed creates:
+In development, seed creates:
 - Email: `admin@uaetrails.app`
 - Password: `Admin@12345`
 
 **Change this password immediately** after first login.
 
+In production, only the admin account from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` is created.
+
 ## Public Pages
 
-All public pages (Home, Discovery, Calendar, TripDetail) now fetch from the API by default.
+All public pages (Home, Discovery, Calendar, TripDetail) fetch from the API by default.
 The previous `VITE_USE_API_*` feature flags have been removed — API-first is the only mode.

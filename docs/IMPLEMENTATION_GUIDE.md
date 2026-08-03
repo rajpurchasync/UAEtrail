@@ -2,7 +2,8 @@
 
 > **Version**: 1.0 (Frozen)  
 > **Date**: February 26, 2026  
-> **Stack**: React 18 + Vite · Express + Prisma + PostgreSQL · Tailwind CSS · S3/MinIO  
+> **Stack**: React 18 + Vite · Express + MongoDB · Tailwind CSS · S3/MinIO  
+> **Note**: This guide was written during initial development. The backend now uses MongoDB exclusively (Prisma/PostgreSQL removed).
 
 ---
 
@@ -90,8 +91,8 @@ UAE Trail is a community-driven hiking & camping platform for the UAE. Users bro
 │       │                                             │
 │  Middleware: auth → rbac → tenant → validate        │
 │       │                                             │
-│  Prisma ORM ──→ PostgreSQL (localhost:5432)          │
-│  S3 Client ───→ MinIO/S3 (localhost:9000)            │
+│  MongoDB (primary)                                     │
+│  S3 Client ───→ MinIO/S3 (localhost:9000)              │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -109,7 +110,9 @@ UAE Trail is a community-driven hiking & camping platform for the UAE. Users bro
 
 ### Phase 1: Schema Enhancements
 
-**File**: `apps/api/prisma/schema.prisma`
+> **Historical note**: Phase 1 originally used Prisma migrations. The schema now lives in MongoDB collections with indexes defined in `apps/api/src/lib/mongo-indexes.ts` and entity types in `apps/api/src/domain/types.ts`.
+
+**Original file**: `apps/api/prisma/schema.prisma` (removed)
 
 #### 1a. Add `checkedInAt` to EventParticipant
 ```prisma
@@ -200,7 +203,7 @@ model User {
 }
 ```
 
-**Run**: `npx prisma migrate dev --name phase1_schema`
+**Run**: indexes are applied automatically on API startup via `ensureMongoIndexes()`.
 
 ---
 
@@ -528,7 +531,7 @@ deleteMerchantProduct(id)          → DELETE /shop/merchant/products/:id
 
 ### Phase 12: Seed Data Updates
 
-**File**: `apps/api/prisma/seed.ts`
+**File**: `apps/api/scripts/seed.ts`
 
 - Sample merchant profile for visitor user
 - 3-5 sample products with images, prices, categories
@@ -555,11 +558,12 @@ deleteMerchantProduct(id)          → DELETE /shop/merchant/products/:id
 
 | File | Changes |
 |------|---------|
-| `apps/api/prisma/schema.prisma` | Add ChatMessage, MerchantProfile, Product; extend EventParticipant, Location, User |
+| `apps/api/src/domain/types.ts` | Entity type definitions |
+| `apps/api/src/lib/mongo-indexes.ts` | MongoDB index definitions |
 | `apps/api/src/routes/index.ts` | Register chat & shop routers |
 | `apps/api/src/routes/admin.ts` | User management + tenant oversight endpoints |
 | `apps/api/src/routes/organizer.ts` | Check-in + location submission + history endpoints |
-| `apps/api/prisma/seed.ts` | Merchant, products, chat, check-in seed data |
+| `apps/api/scripts/seed.ts` | Merchant, products, chat, check-in seed data |
 | `packages/shared-types/src/index.ts` | New DTOs |
 | `src/api/services.ts` | All new API methods |
 | `src/App.tsx` | New routes |
@@ -614,8 +618,7 @@ deleteMerchantProduct(id)          → DELETE /shop/merchant/products/:id
 ## 8. Verification Checklist
 
 ### Backend
-- [ ] `npx prisma migrate dev` succeeds
-- [ ] `npm run prisma:seed` completes without errors
+- [ ] `npm run seed` completes without errors
 - [ ] `npm run typecheck:api` — no TS errors
 - [ ] `npm run dev:api` — server starts on port 4000
 - [ ] `GET /health` returns `{ status: "ok" }`

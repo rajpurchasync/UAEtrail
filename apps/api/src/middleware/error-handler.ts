@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { Prisma } from '@prisma/client';
 import { ApiError } from '../lib/api-error.js';
+import { isDuplicateKeyError } from '../lib/mongo-errors.js';
 import { env } from '../config/env.js';
 
 export const notFoundHandler = (_req: Request, _res: Response, next: NextFunction): void => {
@@ -20,31 +20,11 @@ export const errorHandler = (error: unknown, req: Request, res: Response, _next:
     return;
   }
 
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    if (error.code === 'P2002') {
-      res.status(409).json({
-        error: {
-          code: 'conflict',
-          message: 'A record with these details already exists.',
-          traceId: req.traceId
-        }
-      });
-      return;
-    }
-    if (error.code === 'P2025') {
-      res.status(404).json({
-        error: {
-          code: 'not_found',
-          message: 'The requested record was not found.',
-          traceId: req.traceId
-        }
-      });
-      return;
-    }
-    res.status(400).json({
+  if (isDuplicateKeyError(error)) {
+    res.status(409).json({
       error: {
-        code: `prisma_${error.code}`,
-        message: 'Database request failed.',
+        code: 'conflict',
+        message: 'A record with these details already exists.',
         traceId: req.traceId
       }
     });

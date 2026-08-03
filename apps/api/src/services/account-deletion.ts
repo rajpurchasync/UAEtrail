@@ -1,7 +1,13 @@
-import { TenantStatus, UserRole, UserStatus } from '@prisma/client';
+import { TenantStatus, UserRole, UserStatus } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
+import { deleteAuthTokensByUser } from '../lib/auth-tokens.js';
+import { findAuthUserById, updateAuthUserCore } from '../lib/auth-users.js';
+import { deleteUserFavoritesByUser } from '../lib/favorites-store.js';
+import { deleteNotificationsByUser } from '../lib/notifications-store.js';
 import { verifyPassword } from '../lib/password.js';
-import { prisma } from '../lib/prisma.js';
+import { deletePushSubscriptionsByUser } from '../lib/push-subscriptions.js';
+import { getMongoClient } from '../lib/mongo.js';
+import { deleteLocationUnlocksByUser } from './location-premium.js';
 
 export interface AccountDeletionInfo {
   canDelete: boolean;
@@ -10,18 +16,17 @@ export interface AccountDeletionInfo {
 }
 
 export const getAccountDeletionInfo = async (userId: string): Promise<AccountDeletionInfo> => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      role: true,
-      passwordHash: true,
-      authProvider: true,
-      ownedTenants: {
-        where: { status: { in: [TenantStatus.ACTIVE, TenantStatus.PENDING] } },
-        select: { name: true }
-      }
-    }
-  });
+  const user = await findAuthUserById(userId);
+
+  const ownedTenants = await getMongoClient()!
+    .db()
+    .collection('tenants')
+    .find({
+      ownerId: userId,
+      status: { $in: [TenantStatus.ACTIVE, TenantStatus.PENDING] }
+    })
+    .project({ name: 1 })
+    .toArray();
 
   if (!user) {
     throw new ApiError(404, 'user_not_found', 'User not found.');
@@ -33,8 +38,8 @@ export const getAccountDeletionInfo = async (userId: string): Promise<AccountDel
     blockers.push('Platform admin accounts cannot be deleted in-app. Contact support.');
   }
 
-  if (user.ownedTenants.length > 0) {
-    const names = user.ownedTenants.map((t) => t.name).join(', ');
+  if (ownedTenants.length > 0) {
+    const names = ownedTenants.map((t) => t.name as string).join(', ');
     blockers.push(
       `You manage an active organization (${names}). Transfer or close it before deleting your account.`
     );
@@ -56,10 +61,7 @@ export const deleteUserAccount = async (
     throw new ApiError(409, 'deletion_blocked', info.blockers[0] ?? 'Account cannot be deleted.');
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { passwordHash: true }
-  });
+  const user = await findAuthUserById(userId);
 
   if (!user) {
     throw new ApiError(404, 'user_not_found', 'User not found.');
@@ -79,35 +81,22 @@ export const deleteUserAccount = async (
 
   const anonymizedEmail = `deleted+${userId}@deleted.uaetrail.internal`;
 
-  await prisma.$transaction(async (tx) => {
-    await tx.refreshToken.deleteMany({ where: { userId } });
-    await tx.pushSubscription.deleteMany({ where: { userId } });
-    await tx.notification.deleteMany({ where: { userId } });
-    await tx.emailVerificationToken.deleteMany({ where: { userId } });
-    await tx.passwordResetToken.deleteMany({ where: { userId } });
-
-    await tx.profile.upsert({
-      where: { userId },
-      update: {
-        displayName: 'Deleted user',
-        phone: null,
-        bio: null,
-        avatarUrl: null
-      },
-      create: {
-        userId,
-        displayName: 'Deleted user'
-      }
-    });
-
-    await tx.user.update({
-      where: { id: userId },
-      data: {
-        email: anonymizedEmail,
-        passwordHash: null,
-        googleId: null,
-        status: UserStatus.SUSPENDED
-      }
-    });
+  await deleteAuthTokensByUser(userId);
+  await deleteUserFavoritesByUser(userId);
+  await deleteLocationUnlocksByUser(userId);
+  await deletePushSubscriptionsByUser(userId);
+  await deleteNotificationsByUser(userId);
+  await updateAuthUserCore({
+    userId,
+    email: anonymizedEmail,
+    passwordHash: null,
+    googleId: null,
+    status: UserStatus.SUSPENDED,
+    profile: {
+      displayName: 'Deleted user',
+      phone: null,
+      bio: null,
+      avatarUrl: null
+    }
   });
 };

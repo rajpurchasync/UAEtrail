@@ -1,27 +1,56 @@
-import { ActivityType, Difficulty, LocationStatus, Prisma } from '@prisma/client';
+import { ActivityType, Difficulty, LocationStatus } from '../domain/enums.js';
 import type { LocationSubmitBody } from '../domain/location-submit.js';
 
-const toPrismaActivityType = (activityType: 'hiking' | 'camping'): ActivityType =>
+const toActivityType = (activityType: 'hiking' | 'camping'): ActivityType =>
   activityType === 'hiking' ? ActivityType.HIKING : ActivityType.CAMPING;
 
-const toPrismaDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {
+const toDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {
   if (!difficulty) return undefined;
   if (difficulty === 'easy') return Difficulty.EASY;
   if (difficulty === 'moderate') return Difficulty.MODERATE;
   return Difficulty.HARD;
 };
 
+export type LocationCreateData = {
+  name: string;
+  countryCode: string;
+  emirate?: string;
+  region: string;
+  activityType: ActivityType;
+  description: string;
+  difficulty?: Difficulty;
+  distance?: number;
+  duration?: number;
+  elevation?: number;
+  surfaceType: string[];
+  highlights: string[];
+  tags: string[];
+  accessibleBy: string[];
+  latitude?: number;
+  longitude?: number;
+  parkingLat?: number;
+  parkingLng?: number;
+  images: string[];
+  premiumImages: string[];
+  gpxKey: string | null;
+  guidePdfKey: string | null;
+  guideMarkdown: string | null;
+  season: string[];
+  status: LocationStatus;
+  submittedBy: { connect: { id: string } };
+};
+
 export const buildLocationCreateData = (
   body: LocationSubmitBody,
   submittedById: string
-): Prisma.LocationCreateInput => ({
+): LocationCreateData => ({
   name: body.name,
   countryCode: body.countryCode.toUpperCase(),
   emirate: body.emirate,
   region: body.region,
-  activityType: toPrismaActivityType(body.activityType),
+  activityType: toActivityType(body.activityType),
   description: body.description,
-  difficulty: toPrismaDifficulty(body.difficulty),
+  difficulty: toDifficulty(body.difficulty),
   distance: body.distance,
   duration: body.duration,
   elevation: body.elevation,

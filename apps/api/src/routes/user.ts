@@ -1,24 +1,24 @@
-import { ActivityType, EventStatus, LocationStatus, LocationUnlockSource, OrganizerApplicationStatus, RequestStatus, RewardAction, TenantStatus } from '@prisma/client';
+import { ActivityType, LocationUnlockSource, OrganizerApplicationStatus, RequestStatus, RewardAction } from '../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
 import { toLocationDto, buildEventDto, toParticipantPreviews } from '../lib/mappers.js';
-import { paginate, paginatedResponse, paginationSchema } from '../lib/pagination.js';
-import { prisma } from '../lib/prisma.js';
+import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { optionalAuth } from '../middleware/optional-auth.js';
 import { viewLimiter } from '../middleware/rate-limit-instances.js';
 import { validate } from '../middleware/validate.js';
 import { slugify } from '../lib/slug.js';
-import { createJoinOrWaitlistRequest, promoteNextWaitlisted } from '../services/join-request.js';
-import { buildParticipationDto, performParticipantCheckIn } from '../services/checkin.js';
+import { createJoinOrWaitlistRequestDefault } from '../services/join-request.js';
+import { buildParticipationDto, performParticipantCheckInDefault } from '../services/checkin.js';
 import { canWithdrawRequest, withdrawReasonSchema } from '../lib/withdraw-reasons.js';
 import { getVapidPublicKey } from '../lib/push.js';
 import { EARN_OPPORTUNITIES, MEMBERSHIP_TIERS, REWARD_POINTS } from '../lib/rewards-config.js';
-import { awardPoints, getLeaderboard, getRewardStats, getRewardSummary } from '../services/rewards.js';
+import { awardPointsDefault, getLeaderboardDefault, getRewardStatsDefault, getRewardSummaryDefault } from '../services/rewards.js';
 import { buildLocationCreateData } from '../services/location-submit.js';
 import { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { createAuditLog } from '../lib/audit.js';
+import { findAuthUserById, listAuthUsers, updateAuthUserProfile } from '../lib/auth-users.js';
 import {
   assertPremiumAccess,
   buildPremiumSummary,
@@ -33,20 +33,47 @@ import { getStripe, isStripeConfigured } from '../lib/stripe.js';
 import { clearRefreshCookie } from '../lib/auth-cookies.js';
 import { deleteUserAccount, getAccountDeletionInfo } from '../services/account-deletion.js';
 import { buildUserDataExport } from '../services/data-export.js';
+import {
+  createLocationRecord,
+  findActiveLocationById,
+  findEventForRequestViewById,
+  findEventTimingById,
+  findTenantByOwnerId,
+  findPublicTenantProfileBySlug,
+  findPublishedEventWithPreviewsById,
+  incrementActiveLocationViewCount,
+  listActiveTenantMembershipsByUser,
+  listEventsForRequestViews,
+  listEventsForTripViews,
+  listFeaturedPublishedEvents,
+  listPopularActiveLocations,
+  listPublishedEventsWithPreviews,
+  listPublishedUpcomingEventsByLocation,
+  listSubmittedLocationsByUser
+} from '../lib/events-store.js';
+import {
+  createOrganizerApplicationDetailed,
+  findLatestOrganizerApplicationByApplicant,
+  findLatestOrganizerApplicationWithApplicant,
+  findPendingOrganizerApplicationByApplicant,
+  updateOrganizerApplicationMetadata
+} from '../lib/organizer-applications-store.js';
+import {
+  cancelUserEventRequestAndPromoteWaitlist,
+  countUserEventParticipants,
+  countUserEventRequests,
+  findEventParticipantByEventAndUser,
+  findEventRequestByEventAndUser,
+  findEventRequestByIdForUser,
+  listUserEventParticipantsPaginated,
+  listUserEventRequestsPaginated,
+  updateEventRequestNote
+} from '../lib/event-engagement-store.js';
+import { removePushSubscription, upsertPushSubscription } from '../lib/push-subscriptions.js';
+import { listUserNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../lib/notifications-store.js';
 
 const eventIdParamSchema = z.object({ id: z.string().min(1) });
 const requestIdParamSchema = z.object({ id: z.string().min(1), requestId: z.string().min(1) });
-
-const eventWithParticipantPreviews = {
-  location: true,
-  tenant: true,
-  guide: { include: { profile: true } },
-  participants: {
-    include: {
-      user: { include: { profile: true } }
-    }
-  }
-} as const;
 
 const createRequestSchema = z.object({
   note: z.string().max(300).optional(),
@@ -101,16 +128,10 @@ userRouter.get('/locations', validate({ query: listFilterSchema }), async (req, 
   }
 });
 
-// ─── Popular Locations (by viewCount desc, fallback to latest) ──────────────
-
 userRouter.get('/locations/popular', async (req, res, next) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 6, 20);
-    const locations = await prisma.location.findMany({
-      where: { status: LocationStatus.ACTIVE },
-      orderBy: [{ viewCount: 'desc' }, { createdAt: 'desc' }],
-      take: limit
-    });
+    const locations = await listPopularActiveLocations(limit);
     res.json({ data: locations.map((l) => toLocationDto(l)) });
   } catch (error) {
     next(error);
@@ -120,22 +141,7 @@ userRouter.get('/locations/popular', async (req, res, next) => {
 userRouter.get('/locations/:id/events', validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const events = await prisma.event.findMany({
-      where: {
-        locationId: id,
-        status: EventStatus.PUBLISHED,
-        startAt: { gte: new Date() },
-        location: { status: LocationStatus.ACTIVE }
-      },
-      orderBy: { startAt: 'asc' },
-      take: 20,
-      include: {
-        location: true,
-        tenant: true,
-        guide: { include: { profile: true } },
-        participants: eventWithParticipantPreviews.participants
-      }
-    });
+    const events = await listPublishedUpcomingEventsByLocation(id, 20);
     res.json({ data: events.map((event) => buildEventDto(event)) });
   } catch (error) {
     next(error);
@@ -145,9 +151,7 @@ userRouter.get('/locations/:id/events', validate({ params: eventIdParamSchema })
 userRouter.get('/locations/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const location = await prisma.location.findFirst({
-      where: { id, status: LocationStatus.ACTIVE }
-    });
+    const location = await findActiveLocationById(id);
     if (!location) {
       throw new ApiError(404, 'location_not_found', 'Location not found.');
     }
@@ -166,9 +170,7 @@ userRouter.get('/locations/:id', optionalAuth, validate({ params: eventIdParamSc
 userRouter.get('/locations/:id/premium/guide', requireAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const location = await prisma.location.findFirst({
-      where: { id, status: LocationStatus.ACTIVE }
-    });
+    const location = await findActiveLocationById(id);
     if (!location) {
       throw new ApiError(404, 'location_not_found', 'Location not found.');
     }
@@ -194,9 +196,7 @@ userRouter.get('/locations/:id/premium/guide', requireAuth, validate({ params: e
 userRouter.get('/locations/:id/premium/map/download', requireAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const location = await prisma.location.findFirst({
-      where: { id, status: LocationStatus.ACTIVE }
-    });
+    const location = await findActiveLocationById(id);
     if (!location) {
       throw new ApiError(404, 'location_not_found', 'Location not found.');
     }
@@ -218,9 +218,7 @@ userRouter.get('/locations/:id/premium/map/download', requireAuth, validate({ pa
 userRouter.get('/locations/:id/premium/guide/pdf', requireAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const location = await prisma.location.findFirst({
-      where: { id, status: LocationStatus.ACTIVE }
-    });
+    const location = await findActiveLocationById(id);
     if (!location?.guidePdfKey) {
       throw new ApiError(404, 'guide_pdf_not_available', 'No PDF guide for this location.');
     }
@@ -242,9 +240,7 @@ const locationDetailPath = (location: { id: string; activityType: ActivityType }
 userRouter.post('/locations/:id/premium/checkout', requireAuth, requireVerifiedEmail, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const location = await prisma.location.findFirst({
-      where: { id, status: LocationStatus.ACTIVE }
-    });
+    const location = await findActiveLocationById(id);
     if (!location) {
       throw new ApiError(404, 'location_not_found', 'Location not found.');
     }
@@ -335,10 +331,7 @@ userRouter.post('/locations/:id/premium/unlock', requireAuth, requireVerifiedEma
 userRouter.post('/locations/:id/view', viewLimiter, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    await prisma.location.updateMany({
-      where: { id, status: LocationStatus.ACTIVE },
-      data: { viewCount: { increment: 1 } }
-    });
+    await incrementActiveLocationViewCount(id);
     res.json({ ok: true });
   } catch (error) {
     next(error);
@@ -361,10 +354,7 @@ const parseOrganizerDetails = (metadata: unknown) => {
 };
 
 const loadOrganizerDetails = async (userId: string) => {
-  const application = await prisma.organizerApplication.findFirst({
-    where: { applicantId: userId },
-    orderBy: { createdAt: 'desc' }
-  });
+  const application = await findLatestOrganizerApplicationByApplicant(userId);
   return parseOrganizerDetails(application?.metadata);
 };
 
@@ -373,32 +363,7 @@ const loadOrganizerDetails = async (userId: string) => {
 userRouter.get('/tenants/:slug', async (req, res, next) => {
   try {
     const { slug } = req.params;
-    const tenant = await prisma.tenant.findUnique({
-      where: { slug, status: TenantStatus.ACTIVE },
-      include: {
-        owner: { include: { profile: true } },
-        memberships: {
-          include: { user: { include: { profile: true } } }
-        },
-        events: {
-          where: {
-            status: EventStatus.PUBLISHED,
-            startAt: { gte: new Date() },
-            location: { status: LocationStatus.ACTIVE }
-          },
-          orderBy: { startAt: 'asc' },
-          take: 20,
-          include: {
-            location: true,
-            tenant: true,
-            guide: { include: { profile: true } },
-            participants: {
-              include: { user: { include: { profile: true } } }
-            }
-          }
-        }
-      }
-    });
+    const tenant = await findPublicTenantProfileBySlug(slug);
     if (!tenant) {
       throw new ApiError(404, 'tenant_not_found', 'Organizer not found.');
     }
@@ -432,17 +397,7 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
 userRouter.get('/events/featured', async (req, res, next) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 6, 20);
-    const events = await prisma.event.findMany({
-      where: {
-        status: EventStatus.PUBLISHED,
-        featured: true,
-        startAt: { gte: new Date() },
-        location: { status: LocationStatus.ACTIVE }
-      },
-      orderBy: { startAt: 'asc' },
-      take: limit,
-      include: eventWithParticipantPreviews
-    });
+    const events = await listFeaturedPublishedEvents(limit);
     res.json({
       data: events.map((event) => buildEventDto(event))
     });
@@ -454,19 +409,10 @@ userRouter.get('/events/featured', async (req, res, next) => {
 userRouter.get('/events', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
-    const where = {
-      status: EventStatus.PUBLISHED,
-      location: { status: LocationStatus.ACTIVE }
-    };
-    const [events, total] = await Promise.all([
-      prisma.event.findMany({
-        where,
-        orderBy: { startAt: 'asc' },
-        ...paginate(pg),
-        include: eventWithParticipantPreviews
-      }),
-      prisma.event.count({ where })
-    ]);
+    const { items: events, total } = await listPublishedEventsWithPreviews({
+      skip: (pg.page - 1) * pg.pageSize,
+      take: pg.pageSize
+    });
 
     res.json(paginatedResponse(
       events.map((event) => buildEventDto(event)),
@@ -481,25 +427,7 @@ userRouter.get('/events', async (req, res, next) => {
 userRouter.get('/events/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const event = await prisma.event.findFirst({
-      where: {
-        id,
-        status: EventStatus.PUBLISHED,
-        location: { status: LocationStatus.ACTIVE }
-      },
-      include: {
-        location: true,
-        tenant: true,
-        guide: { include: { profile: true } },
-        participants: {
-          include: {
-            user: {
-              include: { profile: true }
-            }
-          }
-        }
-      }
-    });
+    const event = await findPublishedEventWithPreviewsById(id);
 
     if (!event) {
       throw new ApiError(404, 'event_not_found', 'Event not found.');
@@ -512,9 +440,7 @@ userRouter.get('/events/:id', optionalAuth, validate({ params: eventIdParamSchem
       if (mine) {
         myParticipation = buildParticipationDto(event, mine);
       }
-      const requestRow = await prisma.eventRequest.findUnique({
-        where: { eventId_userId: { eventId: id, userId: req.auth.userId } }
-      });
+      const requestRow = await findEventRequestByEventAndUser(id, req.auth.userId);
       if (requestRow) {
         const status = requestRow.status.toLowerCase();
         myRequest = {
@@ -550,7 +476,7 @@ userRouter.post(
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
       const { note, selectedPackageIndex } = req.body as z.infer<typeof createRequestSchema>;
 
-      const { request, waitlisted } = await createJoinOrWaitlistRequest(prisma, {
+      const { request, waitlisted } = await createJoinOrWaitlistRequestDefault({
         eventId: id,
         userId: req.auth!.userId,
         note,
@@ -589,12 +515,7 @@ userRouter.patch(
     try {
       const { requestId } = req.params as z.infer<typeof requestIdParamSchema>;
       const { reason, message } = req.body as z.infer<typeof withdrawReasonSchema>;
-      const request = await prisma.eventRequest.findFirst({
-        where: {
-          id: requestId,
-          userId: req.auth!.userId
-        }
-      });
+      const request = await findEventRequestByIdForUser(requestId, req.auth!.userId);
       if (!request) {
         throw new ApiError(404, 'request_not_found', 'Request not found.');
       }
@@ -602,21 +523,11 @@ userRouter.patch(
         throw new ApiError(400, 'request_not_cancellable', 'This request cannot be cancelled.');
       }
 
-      const eventId = request.eventId;
-      await prisma.$transaction(async (tx) => {
-        await tx.eventRequest.update({
-          where: { id: request.id },
-          data: {
-            status: RequestStatus.CANCELLED,
-            cancelReason: reason,
-            cancelMessage: message?.trim() || null,
-            cancelledAt: new Date()
-          }
-        });
-        await tx.eventParticipant.deleteMany({
-          where: { requestId: request.id }
-        });
-        await promoteNextWaitlisted(tx, eventId);
+      await cancelUserEventRequestAndPromoteWaitlist({
+        requestId: request.id,
+        eventId: request.eventId,
+        cancelReason: reason,
+        cancelMessage: message?.trim() || null
       });
 
       res.json({ message: 'Request cancelled successfully.' });
@@ -635,22 +546,14 @@ userRouter.patch(
     try {
       const { requestId } = req.params as z.infer<typeof requestIdParamSchema>;
       const { note } = req.body as z.infer<typeof updateRequestNoteSchema>;
-      const request = await prisma.eventRequest.findFirst({
-        where: {
-          id: requestId,
-          userId: req.auth!.userId
-        }
-      });
+      const request = await findEventRequestByIdForUser(requestId, req.auth!.userId);
       if (!request) {
         throw new ApiError(404, 'request_not_found', 'Request not found.');
       }
       if (request.status !== RequestStatus.PENDING) {
         throw new ApiError(400, 'request_not_editable', 'Only pending requests can be updated.');
       }
-      const updated = await prisma.eventRequest.update({
-        where: { id: request.id },
-        data: { note }
-      });
+      const updated = await updateEventRequestNote(request.id, note);
       res.json({ data: { id: updated.id, note: updated.note } });
     } catch (error) {
       next(error);
@@ -700,25 +603,27 @@ userRouter.use(requireAuth, requireVerifiedEmail);
 userRouter.post('/events/:id/checkin', validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const participant = await prisma.eventParticipant.findFirst({
-      where: { eventId: id, userId: req.auth!.userId },
-      include: { event: true }
-    });
+    const participant = await findEventParticipantByEventAndUser(id, req.auth!.userId);
     if (!participant) {
       throw new ApiError(404, 'not_a_participant', 'You are not confirmed for this trip.');
     }
 
-    const result = await performParticipantCheckIn(prisma, {
+    const result = await performParticipantCheckInDefault({
       eventId: id,
       participantId: participant.id,
       actorUserId: req.auth!.userId,
       source: 'self'
     });
 
+    const eventTiming = await findEventTimingById(id);
+    if (!eventTiming) {
+      throw new ApiError(404, 'event_not_found', 'Event not found.');
+    }
+
     res.json({
       message: result.alreadyCheckedIn ? 'You are already checked in.' : 'Checked in successfully.',
       checkedInAt: result.checkedInAt.toISOString(),
-      participation: buildParticipationDto(participant.event, {
+      participation: buildParticipationDto(eventTiming, {
         id: participant.id,
         requestId: participant.requestId,
         checkedInAt: result.checkedInAt
@@ -772,27 +677,25 @@ const mapMeRequest = (request: {
   }
 });
 
-const meRequestInclude = {
-  event: {
-    include: {
-      location: true,
-      tenant: { include: { owner: true } },
-      guide: { include: { profile: true } }
-    }
-  }
-} as const;
-
 userRouter.get('/me/requests/:requestId', validate({ params: meRequestIdParamSchema }), async (req, res, next) => {
   try {
     const { requestId } = req.params as z.infer<typeof meRequestIdParamSchema>;
-    const request = await prisma.eventRequest.findFirst({
-      where: { id: requestId, userId: req.auth!.userId },
-      include: meRequestInclude
-    });
+    const request = await findEventRequestByIdForUser(requestId, req.auth!.userId);
     if (!request) {
       throw new ApiError(404, 'request_not_found', 'Request not found.');
     }
-    res.json({ data: mapMeRequest(request) });
+
+    const event = await findEventForRequestViewById(request.eventId);
+    if (!event) {
+      throw new ApiError(404, 'event_not_found', 'Event not found.');
+    }
+
+    res.json({
+      data: mapMeRequest({
+        ...request,
+        event
+      })
+    });
   } catch (error) {
     next(error);
   }
@@ -801,19 +704,28 @@ userRouter.get('/me/requests/:requestId', validate({ params: meRequestIdParamSch
 userRouter.get('/me/requests', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
-    const where = { userId: req.auth!.userId };
     const [requests, total] = await Promise.all([
-      prisma.eventRequest.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        ...paginate(pg),
-        include: meRequestInclude
+      listUserEventRequestsPaginated({
+        userId: req.auth!.userId,
+        skip: (pg.page - 1) * pg.pageSize,
+        take: pg.pageSize
       }),
-      prisma.eventRequest.count({ where })
+      countUserEventRequests(req.auth!.userId)
     ]);
 
+    const eventIds = [...new Set(requests.map((request) => request.eventId))];
+    const events = eventIds.length > 0 ? await listEventsForRequestViews(eventIds) : [];
+    const eventMap = new Map(events.map((event) => [event.id, event]));
+
+    const requestViews = requests.reduce<Array<ReturnType<typeof mapMeRequest>>>((acc, request) => {
+      const event = eventMap.get(request.eventId);
+      if (!event) return acc;
+      acc.push(mapMeRequest({ ...request, event }));
+      return acc;
+    }, []);
+
     res.json(paginatedResponse(
-      requests.map(mapMeRequest),
+      requestViews,
       total,
       pg
     ));
@@ -825,26 +737,31 @@ userRouter.get('/me/requests', async (req, res, next) => {
 userRouter.get('/me/trips', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
-    const where = { userId: req.auth!.userId };
     const [participantEntries, total] = await Promise.all([
-      prisma.eventParticipant.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        ...paginate(pg),
-        include: {
-          event: {
-            include: eventWithParticipantPreviews
-          }
-        }
+      listUserEventParticipantsPaginated({
+        userId: req.auth!.userId,
+        skip: (pg.page - 1) * pg.pageSize,
+        take: pg.pageSize
       }),
-      prisma.eventParticipant.count({ where })
+      countUserEventParticipants(req.auth!.userId)
     ]);
 
+    const eventIds = [...new Set(participantEntries.map((entry) => entry.eventId))];
+    const events = eventIds.length > 0 ? await listEventsForTripViews(eventIds) : [];
+    const eventMap = new Map(events.map((event) => [event.id, event]));
+
+    const tripViews = participantEntries.reduce<Array<ReturnType<typeof buildEventDto> & { participation: ReturnType<typeof buildParticipationDto> }>>((acc, entry) => {
+      const event = eventMap.get(entry.eventId);
+      if (!event) return acc;
+      acc.push({
+        ...buildEventDto(event),
+        participation: buildParticipationDto(event, entry)
+      });
+      return acc;
+    }, []);
+
     res.json(paginatedResponse(
-      participantEntries.map((entry) => ({
-        ...buildEventDto(entry.event),
-        participation: buildParticipationDto(entry.event, entry)
-      })),
+      tripViews,
       total,
       pg
     ));
@@ -855,16 +772,13 @@ userRouter.get('/me/trips', async (req, res, next) => {
 
 userRouter.get('/me/profile', async (req, res, next) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.auth!.userId },
-      include: { profile: true }
-    });
+    const user = await findAuthUserById(req.auth!.userId);
     if (!user) {
       throw new ApiError(404, 'user_not_found', 'User not found.');
     }
     res.json({
       data: {
-        id: user.id,
+        id: user._id,
         email: user.email,
         role: user.role.toLowerCase(),
         displayName: user.profile?.displayName,
@@ -881,20 +795,13 @@ userRouter.get('/me/profile', async (req, res, next) => {
 userRouter.patch('/me/profile', validate({ body: updateProfileSchema }), async (req, res, next) => {
   try {
     const data = req.body as z.infer<typeof updateProfileSchema>;
-    const profile = await prisma.profile.upsert({
-      where: { userId: req.auth!.userId },
-      update: data,
-      create: {
-        userId: req.auth!.userId,
-        ...data
-      }
-    });
+    await updateAuthUserProfile(req.auth!.userId, data);
     res.json({
       data: {
-        displayName: profile.displayName,
-        phone: profile.phone,
-        bio: profile.bio,
-        avatarUrl: profile.avatarUrl
+        displayName: data.displayName ?? null,
+        phone: data.phone ?? null,
+        bio: data.bio ?? null,
+        avatarUrl: data.avatarUrl ?? null
       }
     });
   } catch (error) {
@@ -905,16 +812,11 @@ userRouter.patch('/me/profile', validate({ body: updateProfileSchema }), async (
 userRouter.get('/me/notifications', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
-    const where = { userId: req.auth!.userId };
-    const [notifications, total, unreadCount] = await Promise.all([
-      prisma.notification.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        ...paginate(pg)
-      }),
-      prisma.notification.count({ where }),
-      prisma.notification.count({ where: { ...where, isRead: false } })
-    ]);
+    const { items: notifications, total, unreadCount } = await listUserNotifications({
+      userId: req.auth!.userId,
+      skip: (pg.page - 1) * pg.pageSize,
+      take: pg.pageSize
+    });
 
     res.json({
       ...paginatedResponse(
@@ -940,10 +842,7 @@ userRouter.get('/me/notifications', async (req, res, next) => {
 userRouter.patch('/me/notifications/:id/read', validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    await prisma.notification.updateMany({
-      where: { id, userId: req.auth!.userId, isRead: false },
-      data: { isRead: true }
-    });
+    await markNotificationAsRead({ id, userId: req.auth!.userId });
     res.json({ message: 'Notification marked as read.' });
   } catch (error) {
     next(error);
@@ -952,11 +851,8 @@ userRouter.patch('/me/notifications/:id/read', validate({ params: eventIdParamSc
 
 userRouter.patch('/me/notifications/read-all', async (req, res, next) => {
   try {
-    const result = await prisma.notification.updateMany({
-      where: { userId: req.auth!.userId, isRead: false },
-      data: { isRead: true }
-    });
-    res.json({ message: 'All notifications marked as read.', count: result.count });
+    const count = await markAllNotificationsAsRead(req.auth!.userId);
+    res.json({ message: 'All notifications marked as read.', count });
   } catch (error) {
     next(error);
   }
@@ -973,23 +869,11 @@ const pushSubscriptionSchema = z.object({
 userRouter.post('/me/push-subscriptions', validate({ body: pushSubscriptionSchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof pushSubscriptionSchema>;
-    const sub = await prisma.pushSubscription.upsert({
-      where: {
-        userId_endpoint: {
-          userId: req.auth!.userId,
-          endpoint: body.endpoint
-        }
-      },
-      create: {
-        userId: req.auth!.userId,
-        endpoint: body.endpoint,
-        p256dh: body.keys.p256dh,
-        auth: body.keys.auth
-      },
-      update: {
-        p256dh: body.keys.p256dh,
-        auth: body.keys.auth
-      }
+    const sub = await upsertPushSubscription({
+      userId: req.auth!.userId,
+      endpoint: body.endpoint,
+      p256dh: body.keys.p256dh,
+      auth: body.keys.auth
     });
     res.status(201).json({ data: { id: sub.id } });
   } catch (error) {
@@ -1000,9 +884,7 @@ userRouter.post('/me/push-subscriptions', validate({ body: pushSubscriptionSchem
 userRouter.delete('/me/push-subscriptions', validate({ body: z.object({ endpoint: z.string().url() }) }), async (req, res, next) => {
   try {
     const { endpoint } = req.body as { endpoint: string };
-    await prisma.pushSubscription.deleteMany({
-      where: { userId: req.auth!.userId, endpoint }
-    });
+    await removePushSubscription({ userId: req.auth!.userId, endpoint });
     res.json({ message: 'Push subscription removed.' });
   } catch (error) {
     next(error);
@@ -1011,18 +893,7 @@ userRouter.delete('/me/push-subscriptions', validate({ body: z.object({ endpoint
 
 userRouter.get('/me/tenants', async (req, res, next) => {
   try {
-    const memberships = await prisma.tenantMembership.findMany({
-      where: {
-        userId: req.auth!.userId,
-        tenant: {
-          status: TenantStatus.ACTIVE
-        }
-      },
-      include: {
-        tenant: true
-      },
-      orderBy: { createdAt: 'asc' }
-    });
+    const memberships = await listActiveTenantMembershipsByUser(req.auth!.userId);
 
     res.json({
       data: memberships.map((membership) => ({
@@ -1049,25 +920,13 @@ userRouter.get('/users/search', validate({ query: userSearchSchema }), async (re
     const { q } = req.query as z.infer<typeof userSearchSchema>;
     const currentUserId = req.auth!.userId;
 
-    const users = await prisma.user.findMany({
-      where: {
-        id: { not: currentUserId },
-        status: 'ACTIVE',
-        OR: [
-          { email: { contains: q, mode: 'insensitive' } },
-          { profile: { displayName: { contains: q, mode: 'insensitive' } } }
-        ]
-      },
-      include: { profile: true },
-      take: 10,
-      orderBy: { createdAt: 'desc' }
-    });
+    const users = (await listAuthUsers({ status: 'ACTIVE', search: q, take: 20 })).filter((u) => u._id !== currentUserId).slice(0, 10);
 
     res.json({
       data: users.map((u) => ({
-        id: u.id,
-        displayName: u.profile?.displayName ?? null,
-        avatarUrl: u.profile?.avatarUrl ?? null
+        id: u._id,
+        displayName: u.profile.displayName ?? null,
+        avatarUrl: u.profile.avatarUrl ?? null
       }))
     });
   } catch (error) {
@@ -1080,18 +939,15 @@ const userBriefParamSchema = z.object({ userId: z.string().min(1) });
 userRouter.get('/users/:userId/brief', validate({ params: userBriefParamSchema }), async (req, res, next) => {
   try {
     const { userId } = req.params as z.infer<typeof userBriefParamSchema>;
-    const user = await prisma.user.findFirst({
-      where: { id: userId, status: 'ACTIVE' },
-      include: { profile: true }
-    });
+    const user = await findAuthUserById(userId);
     if (!user) {
       throw new ApiError(404, 'user_not_found', 'User not found.');
     }
     res.json({
       data: {
-        id: user.id,
-        displayName: user.profile?.displayName ?? user.email.split('@')[0],
-        avatarUrl: user.profile?.avatarUrl ?? null
+        id: user._id,
+        displayName: user.profile.displayName ?? user.email.split('@')[0],
+        avatarUrl: user.profile.avatarUrl ?? null
       }
     });
   } catch (error) {
@@ -1134,32 +990,24 @@ userRouter.patch(
     try {
       const userId = req.auth!.userId;
       const body = req.body as z.infer<typeof organizerDetailsSchema>;
-      let application = await prisma.organizerApplication.findFirst({
-        where: { applicantId: userId },
-        orderBy: { createdAt: 'desc' }
-      });
+      let application = await findLatestOrganizerApplicationByApplicant(userId);
 
       if (application) {
         const current = (application.metadata as Record<string, unknown> | null) ?? {};
-        application = await prisma.organizerApplication.update({
-          where: { id: application.id },
-          data: { metadata: { ...current, ...body } }
-        });
+        application = await updateOrganizerApplicationMetadata(application.id, { ...current, ...body });
       } else {
-        const tenant = await prisma.tenant.findFirst({ where: { ownerId: userId } });
+        const tenant = await findTenantByOwnerId(userId);
         if (!tenant) {
           throw new ApiError(403, 'not_organizer', 'Only organizers can update public profile details.');
         }
-        application = await prisma.organizerApplication.create({
-          data: {
-            applicantId: userId,
-            requestedName: tenant.name,
-            requestedSlug: tenant.slug,
-            requestedType: tenant.type,
-            requestedTenantId: tenant.id,
-            status: OrganizerApplicationStatus.APPROVED,
-            metadata: body
-          }
+        application = await createOrganizerApplicationDetailed({
+          applicantId: userId,
+          requestedName: tenant.name,
+          requestedSlug: tenant.slug,
+          requestedType: tenant.type,
+          requestedTenantId: tenant.id,
+          status: OrganizerApplicationStatus.APPROVED,
+          metadata: body
         });
       }
 
@@ -1172,11 +1020,7 @@ userRouter.patch(
 
 userRouter.get('/me/organizer-application', requireAuth, async (req, res, next) => {
   try {
-    const application = await prisma.organizerApplication.findFirst({
-      where: { applicantId: req.auth!.userId },
-      orderBy: { createdAt: 'desc' },
-      include: { applicant: { include: { profile: true } } }
-    });
+    const application = await findLatestOrganizerApplicationWithApplicant(req.auth!.userId);
 
     if (!application) {
       return res.json({ data: null });
@@ -1208,50 +1052,36 @@ userRouter.post(
       const userId = req.auth!.userId;
 
       // Check for existing pending application
-      const existing = await prisma.organizerApplication.findFirst({
-        where: { applicantId: userId, status: OrganizerApplicationStatus.PENDING }
-      });
+      const existing = await findPendingOrganizerApplicationByApplicant(userId);
       if (existing) {
         throw new ApiError(409, 'application_exists', 'You already have a pending organizer application.');
       }
 
       const body = req.body as z.infer<typeof applicationSchema>;
 
-      await prisma.profile.upsert({
-        where: { userId },
-        update: {
-          displayName: body.hostDisplayName,
-          bio: body.bio,
-          phone: body.phone,
-          ...(body.profilePhoto ? { avatarUrl: body.profilePhoto } : {})
-        },
-        create: {
-          userId,
-          displayName: body.hostDisplayName,
-          bio: body.bio,
-          phone: body.phone,
-          avatarUrl: body.profilePhoto || undefined
-        }
+      await updateAuthUserProfile(userId, {
+        displayName: body.hostDisplayName,
+        bio: body.bio,
+        phone: body.phone,
+        ...(body.profilePhoto ? { avatarUrl: body.profilePhoto } : {})
       });
 
-      const application = await prisma.organizerApplication.create({
-        data: {
-          applicantId: userId,
-          requestedName: body.requestedName,
-          requestedSlug: slugify(body.requestedName),
-          requestedType: body.requestedType,
-          metadata: {
-            hostDisplayName: body.hostDisplayName,
-            bio: body.bio,
-            phone: body.phone,
-            nationality: body.nationality,
-            residence: body.residence,
-            experience: body.experience ?? '',
-            languages: body.languages ?? '',
-            certificates: body.certificates ?? '',
-            notableHikes: body.notableHikes ?? '',
-            profilePhoto: body.profilePhoto ?? '',
-          },
+      const application = await createOrganizerApplicationDetailed({
+        applicantId: userId,
+        requestedName: body.requestedName,
+        requestedSlug: slugify(body.requestedName),
+        requestedType: body.requestedType,
+        metadata: {
+          hostDisplayName: body.hostDisplayName,
+          bio: body.bio,
+          phone: body.phone,
+          nationality: body.nationality,
+          residence: body.residence,
+          experience: body.experience ?? '',
+          languages: body.languages ?? '',
+          certificates: body.certificates ?? '',
+          notableHikes: body.notableHikes ?? '',
+          profilePhoto: body.profilePhoto ?? '',
         },
       });
 
@@ -1277,10 +1107,7 @@ userRouter.post(
 
 userRouter.get('/me/locations', async (req, res, next) => {
   try {
-    const locations = await prisma.location.findMany({
-      where: { submittedById: req.auth!.userId },
-      orderBy: { createdAt: 'desc' }
-    });
+    const locations = await listSubmittedLocationsByUser(req.auth!.userId);
     res.json({ data: locations.map((l) => toLocationDto(l)) });
   } catch (error) {
     next(error);
@@ -1291,9 +1118,7 @@ userRouter.post('/me/locations', validate({ body: locationSubmitBodySchema }), a
   try {
     const body = req.body as z.infer<typeof locationSubmitBodySchema>;
 
-    const created = await prisma.location.create({
-      data: buildLocationCreateData(body, req.auth!.userId)
-    });
+    const created = await createLocationRecord(buildLocationCreateData(body, req.auth!.userId));
 
     await createAuditLog({
       actorId: req.auth!.userId,
@@ -1302,7 +1127,7 @@ userRouter.post('/me/locations', validate({ body: locationSubmitBodySchema }), a
       entityId: created.id
     });
 
-    void awardPoints(prisma, {
+    void awardPointsDefault({
       userId: req.auth!.userId,
       action: RewardAction.LOCATION_SUBMITTED,
       referenceId: created.id,
@@ -1344,7 +1169,7 @@ userRouter.get('/rewards/catalog', (_req, res) => {
 
 userRouter.get('/rewards/stats', async (_req, res, next) => {
   try {
-    const data = await getRewardStats(prisma);
+    const data = await getRewardStatsDefault();
     res.json({ data });
   } catch (error) {
     next(error);
@@ -1353,7 +1178,7 @@ userRouter.get('/rewards/stats', async (_req, res, next) => {
 
 userRouter.get('/rewards/leaderboard', async (_req, res, next) => {
   try {
-    const data = await getLeaderboard(prisma, 10);
+    const data = await getLeaderboardDefault(10);
     res.json({ data });
   } catch (error) {
     next(error);
@@ -1362,7 +1187,7 @@ userRouter.get('/rewards/leaderboard', async (_req, res, next) => {
 
 userRouter.get('/me/rewards', requireAuth, async (req, res, next) => {
   try {
-    const data = await getRewardSummary(prisma, req.auth!.userId);
+    const data = await getRewardSummaryDefault(req.auth!.userId);
     res.json({ data });
   } catch (error) {
     next(error);

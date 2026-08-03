@@ -5,12 +5,13 @@ import { dirname, join } from 'node:path';
 import { ApiError } from '../lib/api-error.js';
 import { createPresignedUpload, isS3Available, publicAssetUrl } from '../lib/s3.js';
 import { safePathUnder } from '../lib/safe-path.js';
-import { prisma } from '../lib/prisma.js';
 import { randomToken } from '../lib/hash.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { env } from '../config/env.js';
 import { assertPresignedUploadOwner, registerPresignedUpload } from '../lib/media-presign.js';
+import { createMediaAssetRecord } from '../lib/media-store.js';
+import { hasTenantMembership } from '../lib/tenant-access.js';
 
 /** Resolve absolute path for local uploads (relative to apps/api/) */
 const LOCAL_UPLOADS_DIR = join(process.cwd(), 'uploads');
@@ -92,14 +93,7 @@ mediaRouter.post('/presign-upload', validate({ body: presignSchema }), async (re
   try {
     const body = req.body as z.infer<typeof presignSchema>;
     if (body.tenantId) {
-      const membership = await prisma.tenantMembership.findUnique({
-        where: {
-          tenantId_userId: {
-            tenantId: body.tenantId,
-            userId: req.auth!.userId
-          }
-        }
-      });
+      const membership = await hasTenantMembership(body.tenantId, req.auth!.userId);
       if (!membership && req.auth!.role !== 'PLATFORM_ADMIN') {
         throw new ApiError(403, 'forbidden', 'No tenant permission for media upload.');
       }
@@ -141,30 +135,21 @@ mediaRouter.post('/commit', validate({ body: commitSchema }), async (req, res, n
       throw new ApiError(403, 'invalid_upload', 'Upload key is invalid or was issued to another user.');
     }
     if (body.tenantId) {
-      const membership = await prisma.tenantMembership.findUnique({
-        where: {
-          tenantId_userId: {
-            tenantId: body.tenantId,
-            userId: req.auth!.userId
-          }
-        }
-      });
+      const membership = await hasTenantMembership(body.tenantId, req.auth!.userId);
       if (!membership && req.auth!.role !== 'PLATFORM_ADMIN') {
         throw new ApiError(403, 'forbidden', 'No tenant permission for media commit.');
       }
     }
 
-    const saved = await prisma.mediaAsset.create({
-      data: {
-        key: body.key,
-        url: publicAssetUrl(body.key),
-        bucket: env.S3_BUCKET,
-        mimeType: body.mimeType,
-        size: body.size,
-        uploadedById: req.auth!.userId,
-        tenantId: body.tenantId,
-        kind: body.kind
-      }
+    const saved = await createMediaAssetRecord({
+      key: body.key,
+      url: publicAssetUrl(body.key),
+      bucket: env.S3_BUCKET,
+      mimeType: body.mimeType,
+      size: body.size,
+      uploadedById: req.auth!.userId,
+      tenantId: body.tenantId,
+      kind: body.kind
     });
 
     res.status(201).json({

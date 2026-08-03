@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { UserStatus } from '@prisma/client';
 import { verifyAccessToken } from '../lib/jwt.js';
-import { prisma } from '../lib/prisma.js';
+import { findAuthUserById } from '../lib/auth-users.js';
 
 /** Attach auth when a valid bearer token is present; otherwise continue anonymously. */
 export const optionalAuth = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
@@ -14,14 +13,11 @@ export const optionalAuth = async (req: Request, _res: Response, next: NextFunct
 
     const token = authHeader.split(' ')[1];
     const payload = verifyAccessToken(token);
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, email: true, role: true, status: true }
-    });
+    const user = await findAuthUserById(payload.sub);
 
-    if (user && user.status === UserStatus.ACTIVE) {
+    if (user && user.status === 'ACTIVE') {
       req.auth = {
-        userId: user.id,
+        userId: user._id,
         email: user.email,
         role: user.role
       };
