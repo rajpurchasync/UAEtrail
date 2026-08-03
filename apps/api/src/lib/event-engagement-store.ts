@@ -351,12 +351,18 @@ export const countUserEventParticipants = async (userId: string): Promise<number
   eventParticipantsCollection().countDocuments({ userId });
 
 export const hasSharedEventParticipation = async (firstUserId: string, secondUserId: string): Promise<boolean> => {
-  const firstUserEventIds = await eventParticipantsCollection().distinct('eventId', { userId: firstUserId });
-  if (firstUserEventIds.length === 0) return false;
+  const firstUserEvents = await eventParticipantsCollection()
+    .aggregate<{ _id: string }>([
+      { $match: { userId: firstUserId } },
+      { $group: { _id: '$eventId' } }
+    ])
+    .toArray();
+
+  if (firstUserEvents.length === 0) return false;
 
   const shared = await eventParticipantsCollection().findOne({
     userId: secondUserId,
-    eventId: { $in: firstUserEventIds }
+    eventId: { $in: firstUserEvents.map((row) => row._id) }
   });
   return Boolean(shared);
 };

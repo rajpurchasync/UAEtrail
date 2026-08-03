@@ -27,11 +27,21 @@ const mapMessage = (msg: MongoChatMessage): ChatMessage => ({
 });
 
 export const listConversationPartnerIds = async (userId: string): Promise<string[]> => {
-  const [sent, received] = await Promise.all([
-    chatMessagesCollection().distinct('receiverId', { senderId: userId }),
-    chatMessagesCollection().distinct('senderId', { receiverId: userId })
-  ]);
-  return [...new Set([...sent, ...received])];
+  const rows = await chatMessagesCollection()
+    .aggregate<{ _id: string }>([
+      { $match: { $or: [{ senderId: userId }, { receiverId: userId }] } },
+      {
+        $project: {
+          partnerId: {
+            $cond: [{ $eq: ['$senderId', userId] }, '$receiverId', '$senderId']
+          }
+        }
+      },
+      { $group: { _id: '$partnerId' } }
+    ])
+    .toArray();
+
+  return rows.map((row) => row._id);
 };
 
 export const getUnreadCountByPartner = async (userId: string, partnerIds: string[]): Promise<Map<string, number>> => {

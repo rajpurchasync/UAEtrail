@@ -1,13 +1,33 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
+import { ActivityType, Difficulty, LocationStatus } from '../src/domain/enums.js';
+import { createLocationRecord } from '../src/lib/events-store.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 
 let app: Express;
 let accessToken = '';
+let locationId = '';
 
 beforeAll(async () => {
   app = await bootstrapTestApp();
+
+  const location = await createLocationRecord({
+    name: 'Premium Test Trail',
+    region: 'Dubai',
+    activityType: ActivityType.HIKING,
+    description: 'Integration test location for premium unlock',
+    difficulty: Difficulty.EASY,
+    season: ['winter'],
+    images: ['https://example.com/img.jpg'],
+    highlights: [],
+    surfaceType: [],
+    tags: [],
+    accessibleBy: [],
+    status: LocationStatus.ACTIVE,
+    unlockPriceAed: 29
+  });
+  locationId = location.id;
 
   const email = `premium-test-${Date.now()}@example.com`;
   const register = await request(app)
@@ -16,7 +36,7 @@ beforeAll(async () => {
       email,
       password: 'TestPass1',
       displayName: 'Premium Test',
-      accountType: 'visitor',
+      accountType: 'visitor'
     });
 
   await request(app)
@@ -28,11 +48,6 @@ beforeAll(async () => {
 
 describe('premium unlock security', () => {
   it('rejects direct unlock without checkout', async () => {
-    const locations = await request(app).get('/api/v1/locations?pageSize=1');
-    expect(locations.status).toBe(200);
-    const locationId = locations.body.data?.[0]?.id;
-    expect(locationId).toBeTruthy();
-
     const response = await request(app)
       .post(`/api/v1/locations/${locationId}/premium/unlock`)
       .set('Authorization', `Bearer ${accessToken}`);
