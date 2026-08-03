@@ -1,4 +1,4 @@
-import { CreateBucketCommand, HeadBucketCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CreateBucketCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '../config/env.js';
 import { ApiError } from './api-error.js';
@@ -80,6 +80,30 @@ export const createPresignedUpload = async ({
   });
 
   return getSignedUrl(s3Client, command, { expiresIn: 3600 });
+};
+
+export type S3ObjectHead = {
+  contentLength: number;
+  contentType: string | undefined;
+};
+
+export const headS3Object = async (key: string): Promise<S3ObjectHead | null> => {
+  if (!s3Client || !s3Available) return null;
+
+  try {
+    const result = await s3Client.send(
+      new HeadObjectCommand({
+        Bucket: env.S3_BUCKET,
+        Key: key
+      })
+    );
+    return {
+      contentLength: result.ContentLength ?? 0,
+      contentType: result.ContentType
+    };
+  } catch {
+    return null;
+  }
 };
 
 export const publicAssetUrl = (key: string): string => {

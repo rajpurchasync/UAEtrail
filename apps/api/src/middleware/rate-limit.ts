@@ -6,6 +6,7 @@ export interface RateLimiters {
   globalLimiter: RateLimitRequestHandler;
   authLimiter: RateLimitRequestHandler;
   viewLimiter: RateLimitRequestHandler;
+  sensitiveDataLimiter: RateLimitRequestHandler;
 }
 
 const redisStore = (prefix: string) => {
@@ -60,6 +61,20 @@ export const createRateLimiters = async (): Promise<RateLimiters> => {
       keyGenerator: (req) => `${ipKeyGenerator(req.ip ?? 'unknown')}-${req.params?.id ?? 'unknown'}`,
       message: {
         error: { code: 'rate_limit_exceeded', message: 'Too many view requests. Please try again later.' }
+      }
+    }),
+    sensitiveDataLimiter: rateLimit({
+      windowMs: 60 * 60_000,
+      max: 5,
+      standardHeaders: true,
+      legacyHeaders: false,
+      store: store('sensitive'),
+      keyGenerator: (req) => req.auth?.userId ?? ipKeyGenerator(req.ip ?? 'unknown'),
+      message: {
+        error: {
+          code: 'rate_limit_exceeded',
+          message: 'Too many sensitive account requests. Please try again later.'
+        }
       }
     })
   };

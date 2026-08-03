@@ -6,7 +6,7 @@ import { toLocationDto, buildEventDto, toParticipantPreviews } from '../lib/mapp
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { optionalAuth } from '../middleware/optional-auth.js';
-import { viewLimiter } from '../middleware/rate-limit-instances.js';
+import { viewLimiter, sensitiveDataLimiter } from '../middleware/rate-limit-instances.js';
 import { validate } from '../middleware/validate.js';
 import { slugify } from '../lib/slug.js';
 import { createJoinOrWaitlistRequestDefault } from '../services/join-request.js';
@@ -575,7 +575,7 @@ userRouter.get('/me/account/deletion-info', requireAuth, async (req, res, next) 
   }
 });
 
-userRouter.get('/me/export', requireAuth, async (req, res, next) => {
+userRouter.get('/me/export', requireAuth, sensitiveDataLimiter, async (req, res, next) => {
   try {
     const data = await buildUserDataExport(req.auth!.userId);
     const filename = `uaetrail-export-${req.auth!.userId.slice(0, 8)}.json`;
@@ -587,7 +587,7 @@ userRouter.get('/me/export', requireAuth, async (req, res, next) => {
   }
 });
 
-userRouter.delete('/me/account', requireAuth, validate({ body: deleteAccountSchema }), async (req, res, next) => {
+userRouter.delete('/me/account', requireAuth, sensitiveDataLimiter, validate({ body: deleteAccountSchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof deleteAccountSchema>;
     await deleteUserAccount(req.auth!.userId, body);

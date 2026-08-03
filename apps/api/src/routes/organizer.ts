@@ -584,7 +584,7 @@ organizerRouter.post(
           role: role === MembershipRole.TENANT_ADMIN ? UserRole.TENANT_ADMIN : UserRole.TENANT_GUIDE,
           status: 'ACTIVE',
           authProvider: 'EMAIL',
-          emailVerifiedAt: new Date(),
+          emailVerifiedAt: null,
           lastActiveAt: null,
           googleId: null,
           profile: {
