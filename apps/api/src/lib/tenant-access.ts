@@ -42,9 +42,11 @@ export const findTenantMembershipContext = async (
 ): Promise<TenantMembershipContext | null> => {
   const row = await tenantMembershipsCollection().findOne({ tenantId, userId });
   if (!row) return null;
+  const tenant = await findTenantRecordById(tenantId);
+  if (!tenant) return null;
   return {
     role: row.role,
-    tenant: { status: row.tenant.status }
+    tenant: { status: tenant.status }
   };
 };
 
@@ -98,7 +100,8 @@ export const findCompanyGuideMembershipForUser = async (userId: string, tenantId
 
   for (const membership of memberships) {
     if (tenantIdToExclude && membership.tenantId === tenantIdToExclude) continue;
-    if (membership.tenant.status === TenantStatus.ACTIVE) {
+    const tenant = await findTenantRecordById(membership.tenantId);
+    if (tenant?.status === TenantStatus.ACTIVE) {
       return {
         id: membership._id,
         tenantId: membership.tenantId,
@@ -190,10 +193,7 @@ export const findTenantMembershipByUser = async (
 };
 
 export const listActiveTenantMembershipsByUser = async (userId: string) => {
-  const memberships = await tenantMembershipsCollection()
-    .find({ userId, 'tenant.status': TenantStatus.ACTIVE })
-    .sort({ createdAt: 1 })
-    .toArray();
+  const memberships = await tenantMembershipsCollection().find({ userId }).sort({ createdAt: 1 }).toArray();
 
   const tenantEntries = await Promise.all(
     memberships.map(async (membership) => [membership.tenantId, await findTenantRecordById(membership.tenantId)] as const)
@@ -202,7 +202,7 @@ export const listActiveTenantMembershipsByUser = async (userId: string) => {
 
   return memberships.flatMap((membership) => {
     const tenant = tenantMap.get(membership.tenantId);
-    if (!tenant) return [];
+    if (!tenant || tenant.status !== TenantStatus.ACTIVE) return [];
     return [
       {
         id: membership._id,
@@ -238,4 +238,14 @@ export const syncTenantMembershipByTenantAndUser = async (
   _userId: string
 ): Promise<void> => {
   // Mongo is the source of truth; no sync needed.
+};
+
+export const syncTenantMembershipStatusForTenant = async (
+  tenantId: string,
+  status: TenantStatusType
+): Promise<void> => {
+  await tenantMembershipsCollection().updateMany(
+    { tenantId },
+    { $set: { 'tenant.status': status } }
+  );
 };

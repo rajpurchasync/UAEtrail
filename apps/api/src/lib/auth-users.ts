@@ -25,8 +25,15 @@ export type AuthUserRecord = {
   updatedAt: Date;
 };
 
-const usersCollection = (): Collection<AuthUserRecord> =>
-  getMongoClient()!.db().collection<AuthUserRecord>('auth_users');
+type AuthUserMongoDoc = Omit<AuthUserRecord, 'googleId'> & { googleId?: string | null };
+
+const usersCollection = (): Collection<AuthUserMongoDoc> =>
+  getMongoClient()!.db().collection<AuthUserMongoDoc>('auth_users');
+
+const normalizeAuthUser = (doc: AuthUserMongoDoc): AuthUserRecord => ({
+  ...doc,
+  googleId: doc.googleId ?? null
+});
 
 const buildUserQuery = (input: {
   role?: AuthUserRecord['role'] | AuthUserRecord['role'][];
@@ -45,17 +52,25 @@ const buildUserQuery = (input: {
   return query;
 };
 
-export const findAuthUserByEmail = async (email: string): Promise<AuthUserRecord | null> =>
-  usersCollection().findOne({ email });
+export const findAuthUserByEmail = async (email: string): Promise<AuthUserRecord | null> => {
+  const row = await usersCollection().findOne({ email });
+  return row ? normalizeAuthUser(row) : null;
+};
 
-export const findAuthUserById = async (id: string): Promise<AuthUserRecord | null> =>
-  usersCollection().findOne({ _id: id });
+export const findAuthUserById = async (id: string): Promise<AuthUserRecord | null> => {
+  const row = await usersCollection().findOne({ _id: id });
+  return row ? normalizeAuthUser(row) : null;
+};
 
-export const findAuthUserByGoogleId = async (googleId: string): Promise<AuthUserRecord | null> =>
-  usersCollection().findOne({ googleId });
+export const findAuthUserByGoogleId = async (googleId: string): Promise<AuthUserRecord | null> => {
+  const row = await usersCollection().findOne({ googleId });
+  return row ? normalizeAuthUser(row) : null;
+};
 
-export const findAuthUserByReferralCode = async (referralCode: string): Promise<AuthUserRecord | null> =>
-  usersCollection().findOne({ referralCode });
+export const findAuthUserByReferralCode = async (referralCode: string): Promise<AuthUserRecord | null> => {
+  const row = await usersCollection().findOne({ referralCode });
+  return row ? normalizeAuthUser(row) : null;
+};
 
 export const listAuthUsers = async (input: {
   role?: AuthUserRecord['role'] | AuthUserRecord['role'][];
@@ -63,13 +78,15 @@ export const listAuthUsers = async (input: {
   search?: string;
   skip?: number;
   take?: number;
-}): Promise<AuthUserRecord[]> =>
-  usersCollection()
+}): Promise<AuthUserRecord[]> => {
+  const rows = await usersCollection()
     .find(buildUserQuery(input))
     .sort({ createdAt: -1 })
     .skip(input.skip ?? 0)
     .limit(input.take ?? 50)
     .toArray();
+  return rows.map(normalizeAuthUser);
+};
 
 export const countAuthUsers = async (input: {
   role?: AuthUserRecord['role'] | AuthUserRecord['role'][];
@@ -79,7 +96,8 @@ export const countAuthUsers = async (input: {
 
 export const findAuthUsersByIds = async (ids: string[]): Promise<AuthUserRecord[]> => {
   if (ids.length === 0) return [];
-  return usersCollection().find({ _id: { $in: ids } }).toArray();
+  const rows = await usersCollection().find({ _id: { $in: ids } }).toArray();
+  return rows.map(normalizeAuthUser);
 };
 
 export const getAuthUserMembershipTier = async (userId: string): Promise<MembershipTier> => {
@@ -105,11 +123,11 @@ export const createAuthUser = async (input: {
   const userId = input.id ?? new ObjectId().toHexString();
   const now = new Date();
 
-  await usersCollection().insertOne({
+  const doc: AuthUserRecord = {
     _id: userId,
     email: input.email,
     passwordHash: input.passwordHash,
-    ...(input.googleId != null ? { googleId: input.googleId } : {}),
+    googleId: input.googleId,
     authProvider: input.authProvider,
     role: input.role,
     status: input.status,
@@ -119,7 +137,14 @@ export const createAuthUser = async (input: {
     profile: input.profile,
     createdAt: now,
     updatedAt: now
-  });
+  };
+
+  if (input.googleId == null) {
+    const { googleId: _omit, ...withoutGoogleId } = doc;
+    await usersCollection().insertOne(withoutGoogleId);
+  } else {
+    await usersCollection().insertOne(doc);
+  }
 
   const created = await findAuthUserByEmail(input.email);
   if (!created) {
@@ -183,12 +208,14 @@ export const updateAuthUserGoogleLink = async (input: {
   if (input.emailVerifiedAt) setFields.emailVerifiedAt = input.emailVerifiedAt;
   if (input.lastActiveAt) setFields.lastActiveAt = input.lastActiveAt;
   if (input.profile) {
-    setFields.profile = {
-      displayName: input.profile.displayName ?? null,
-      phone: input.profile.phone ?? null,
-      bio: input.profile.bio ?? null,
-      avatarUrl: input.profile.avatarUrl ?? null
-    };
+    if (input.profile.displayName !== undefined) setFields['profile.displayName'] = input.profile.displayName;
+    if (input.profile.phone !== undefined) setFields['profile.phone'] = input.profile.phone;
+    if (input.profile.bio !== undefined) setFields['profile.bio'] = input.profile.bio;
+    if (input.profile.avatarUrl !== undefined) setFields['profile.avatarUrl'] = input.profile.avatarUrl;
+    if (input.profile.rewardPoints !== undefined) setFields['profile.rewardPoints'] = input.profile.rewardPoints;
+    if (input.profile.membershipTier !== undefined) {
+      setFields['profile.membershipTier'] = input.profile.membershipTier;
+    }
   }
   await usersCollection().updateOne({ _id: input.userId }, { $set: setFields });
 };
@@ -207,9 +234,11 @@ export const updateAuthUserCore = async (input: {
   profile?: Partial<AuthUserRecord['profile']>;
 }): Promise<void> => {
   const setFields: Record<string, unknown> = { updatedAt: new Date() };
+  const unsetFields: Record<string, 1> = {};
   if (input.email !== undefined) setFields.email = input.email;
   if (input.passwordHash !== undefined) setFields.passwordHash = input.passwordHash;
-  if (input.googleId !== undefined) setFields.googleId = input.googleId;
+  if (input.googleId === null) unsetFields.googleId = 1;
+  else if (input.googleId !== undefined) setFields.googleId = input.googleId;
   if (input.authProvider !== undefined) setFields.authProvider = input.authProvider;
   if (input.role !== undefined) setFields.role = input.role;
   if (input.status !== undefined) setFields.status = input.status;
@@ -217,13 +246,21 @@ export const updateAuthUserCore = async (input: {
   if (input.lastActiveAt !== undefined) setFields.lastActiveAt = input.lastActiveAt;
   if (input.referralCode !== undefined) setFields.referralCode = input.referralCode;
   if (input.profile) {
-    setFields.profile = {
-      displayName: input.profile.displayName ?? null,
-      phone: input.profile.phone ?? null,
-      bio: input.profile.bio ?? null,
-      avatarUrl: input.profile.avatarUrl ?? null
-    };
+    if (input.profile.displayName !== undefined) setFields['profile.displayName'] = input.profile.displayName;
+    if (input.profile.phone !== undefined) setFields['profile.phone'] = input.profile.phone;
+    if (input.profile.bio !== undefined) setFields['profile.bio'] = input.profile.bio;
+    if (input.profile.avatarUrl !== undefined) setFields['profile.avatarUrl'] = input.profile.avatarUrl;
+    if (input.profile.rewardPoints !== undefined) setFields['profile.rewardPoints'] = input.profile.rewardPoints;
+    if (input.profile.membershipTier !== undefined) {
+      setFields['profile.membershipTier'] = input.profile.membershipTier;
+    }
   }
 
-  await usersCollection().updateOne({ _id: input.userId }, { $set: setFields });
+  await usersCollection().updateOne(
+    { _id: input.userId },
+    {
+      $set: setFields,
+      ...(Object.keys(unsetFields).length > 0 ? { $unset: unsetFields } : {})
+    }
+  );
 };

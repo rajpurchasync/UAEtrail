@@ -10,8 +10,13 @@ import { ApiError } from './api-error.js';
 import { assertCapacityAvailable } from '../domain/capacity.js';
 import { findAuthUsersByIds } from './auth-users.js';
 import { newEntityId } from './entity-builders.js';
-import { findEventDocInMongo } from './entity-sync.js';
-import { findLocationInMongo } from './entity-sync.js';
+import {
+  findEventDocInMongo,
+  findLocationInMongo,
+  patchEventInMongo,
+  releaseEventParticipantSlot,
+  tryReserveEventParticipantSlot
+} from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { parseStoredPricePackages } from './trip-pricing.js';
 import { dispatchNotificationDefault } from '../services/notifications.js';
@@ -545,33 +550,46 @@ export const applyTenantEventRequestDecision = async (input: {
 
   if (input.decision === 'approved') {
     const eventDoc = await findEventDocInMongo(input.eventId);
-    const participantCount = await eventParticipantsCollection().countDocuments({ eventId: input.eventId });
     if (!eventDoc || eventDoc.status !== EventStatus.PUBLISHED) {
       throw new ApiError(400, 'event_not_publishable', 'Event must be published before approval.');
     }
-    assertCanApproveRequest(eventDoc.capacity, participantCount);
+
+    if (eventDoc.participantSlotsUsed === undefined) {
+      const participantCount = await eventParticipantsCollection().countDocuments({ eventId: input.eventId });
+      await patchEventInMongo(input.eventId, { participantSlotsUsed: participantCount });
+    }
+
+    const reserved = await tryReserveEventParticipantSlot(input.eventId, EventStatus.PUBLISHED);
+    if (!reserved) {
+      throw new ApiError(400, 'event_full', 'Event capacity has already been reached.');
+    }
 
     const participantId = newEntityId();
-    await patchEventRequestInMongo(input.requestId, {
-      status: RequestStatus.APPROVED,
-      organizerNote: input.organizerNote ?? null,
-      reviewedById: input.reviewerId,
-      reviewedAt
-    });
-    await eventParticipantsCollection().updateOne(
-      { _id: participantId },
-      {
-        $set: {
-          eventId: input.eventId,
-          requestId: input.requestId,
-          userId: input.userId,
-          approvedById: input.reviewerId,
-          checkedInAt: null,
-          createdAt: reviewedAt
-        }
-      },
-      { upsert: true }
-    );
+    try {
+      await patchEventRequestInMongo(input.requestId, {
+        status: RequestStatus.APPROVED,
+        organizerNote: input.organizerNote ?? null,
+        reviewedById: input.reviewerId,
+        reviewedAt
+      });
+      await eventParticipantsCollection().updateOne(
+        { _id: participantId },
+        {
+          $set: {
+            eventId: input.eventId,
+            requestId: input.requestId,
+            userId: input.userId,
+            approvedById: input.reviewerId,
+            checkedInAt: null,
+            createdAt: reviewedAt
+          }
+        },
+        { upsert: true }
+      );
+    } catch (error) {
+      await releaseEventParticipantSlot(input.eventId);
+      throw error;
+    }
     return;
   }
 
@@ -602,7 +620,10 @@ export const cancelUserEventRequestAndPromoteWaitlist = async (input: {
     cancelMessage: input.cancelMessage,
     cancelledAt
   });
-  await eventParticipantsCollection().deleteMany({ requestId: input.requestId });
+  const deleted = await eventParticipantsCollection().deleteMany({ requestId: input.requestId });
+  if (deleted.deletedCount > 0) {
+    await releaseEventParticipantSlot(input.eventId);
+  }
   await promoteNextWaitlisted(input.eventId);
 };
 

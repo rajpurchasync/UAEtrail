@@ -201,8 +201,7 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
 
     respondWithAuth(res, 201, { id: created._id, email: created.email, role: created.role }, tokens, {
       requiresEmailVerification: true,
-      verificationToken:
-        env.NODE_ENV === 'production' && isEmailConfigured() ? undefined : verificationToken
+      verificationToken: env.NODE_ENV === 'production' ? undefined : verificationToken
     });
   } catch (error) {
     next(error);
@@ -327,7 +326,7 @@ authRouter.post('/forgot-password', validate({ body: forgotSchema }), async (req
 
     res.json({
       message: 'If the account exists, a reset link was sent.',
-      resetToken: env.NODE_ENV === 'production' && isEmailConfigured() ? undefined : token
+      resetToken: env.NODE_ENV === 'production' ? undefined : token
     });
   } catch (error) {
     next(error);
@@ -378,8 +377,7 @@ authRouter.post('/resend-verification', validate({ body: resendVerificationSchem
 
     res.json({
       message: 'Verification email sent.',
-      verificationToken:
-        env.NODE_ENV === 'production' && isEmailConfigured() ? undefined : verificationToken
+      verificationToken: env.NODE_ENV === 'production' ? undefined : verificationToken
     });
   } catch (error) {
     next(error);

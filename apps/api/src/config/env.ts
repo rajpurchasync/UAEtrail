@@ -20,6 +20,7 @@ const envSchema = z.object({
   S3_ACCESS_KEY_ID: z.string().optional(),
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   S3_FORCE_PATH_STYLE: z.coerce.boolean().default(true),
+  S3_PUBLIC_URL: z.string().url().optional(),
   GOOGLE_CLIENT_ID: z.string().optional()
 });
 
@@ -32,11 +33,38 @@ if (!parsed.success) {
 
 export const env = parsed.data;
 
+const isEmailConfigured = (): boolean =>
+  Boolean(process.env.SMTP_URL || process.env.SENDGRID_API_KEY || process.env.SMTP_HOST);
+
+/** Fail fast when production is misconfigured. */
+export const validateProductionConfig = (): void => {
+  if (env.NODE_ENV !== 'production') return;
+
+  if (!isEmailConfigured()) {
+    throw new Error(
+      'Production requires email delivery — set SMTP_URL or SENDGRID_API_KEY (and EMAIL_FROM).'
+    );
+  }
+
+  if (process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_WEBHOOK_SECRET) {
+    throw new Error('STRIPE_SECRET_KEY is set but STRIPE_WEBHOOK_SECRET is missing.');
+  }
+
+  if (env.JWT_ACCESS_SECRET === env.JWT_REFRESH_SECRET) {
+    throw new Error('JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be different in production.');
+  }
+
+  if (!process.env.REDIS_URL) {
+    throw new Error('Production requires REDIS_URL for rate limits and SSE tickets.');
+  }
+};
+
 /** Warn at startup when payment features are partially configured. */
 export const validateOptionalIntegrations = (): void => {
+  validateProductionConfig();
   const hasStripeKey = Boolean(process.env.STRIPE_SECRET_KEY);
   const hasWebhookSecret = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
-  if (hasStripeKey && !hasWebhookSecret && env.NODE_ENV === 'production') {
+  if (hasStripeKey && !hasWebhookSecret) {
     console.warn('[config] STRIPE_SECRET_KEY is set but STRIPE_WEBHOOK_SECRET is missing — webhooks will fail.');
   }
   if (!hasStripeKey && hasWebhookSecret) {

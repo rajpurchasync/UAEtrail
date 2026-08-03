@@ -86,5 +86,6 @@ export const publicAssetUrl = (key: string): string => {
   if (!s3Available) {
     return `/api/v1/media/local/${key}`;
   }
-  return `${env.S3_ENDPOINT!.replace(/\/$/, '')}/${env.S3_BUCKET}/${key}`;
+  const base = (env.S3_PUBLIC_URL ?? env.S3_ENDPOINT)!.replace(/\/$/, '');
+  return `${base}/${env.S3_BUCKET}/${key}`;
 };

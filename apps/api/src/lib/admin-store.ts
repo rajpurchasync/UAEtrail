@@ -7,6 +7,7 @@ import { newEntityId, type MongoEventDoc } from './entity-builders.js';
 import { findLocationInMongo, writeEventDocToMongo, writeLocationToMongo } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { findTenantById, isTenantSlugTaken as isTenantSlugTakenInStore } from './tenant-store.js';
+import { syncTenantMembershipStatusForTenant } from './tenant-access.js';
 
 type MongoAuditLog = {
   _id: string;
@@ -636,6 +637,7 @@ export const updateAdminTenantStatus = async (id: string, status: TenantStatus) 
   if (!result) {
     throw new Error('Tenant not found.');
   }
+  await syncTenantMembershipStatusForTenant(id, status);
   return mapMongoTenant(result);
 };
 

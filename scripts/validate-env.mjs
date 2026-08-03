@@ -46,7 +46,7 @@ const errors = [];
 const warnings = [];
 
 const requiredAlways = [
-  ['POSTGRES_PASSWORD', () => minLen('POSTGRES_PASSWORD', 12), 'min 12 characters'],
+  ['MONGODB_URI', () => isSet('MONGODB_URI'), 'required — MongoDB connection string'],
   ['JWT_ACCESS_SECRET', () => minLen('JWT_ACCESS_SECRET', 24), 'min 24 characters'],
   ['JWT_REFRESH_SECRET', () => minLen('JWT_REFRESH_SECRET', 24), 'min 24 characters'],
   ['S3_ACCESS_KEY_ID', () => isSet('S3_ACCESS_KEY_ID'), 'required'],

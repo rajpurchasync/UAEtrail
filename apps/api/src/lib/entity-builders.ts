@@ -190,6 +190,7 @@ export type MongoEventDoc = {
   priceAed: number;
   pricePackages: unknown;
   capacity: number;
+  participantSlotsUsed?: number;
   status: EventStatus;
   featured: boolean;
   publishedAt: Date | null;
