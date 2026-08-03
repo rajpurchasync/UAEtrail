@@ -654,3 +654,12 @@ export const listEventParticipantsWithUsers = async (eventId: string) => {
     };
   });
 };
+
+export const purgeUserEventEngagement = async (userId: string): Promise<void> => {
+  const participants = await eventParticipantsCollection().find({ userId }).toArray();
+  for (const participant of participants) {
+    await releaseEventParticipantSlot(participant.eventId);
+  }
+  await eventParticipantsCollection().deleteMany({ userId });
+  await eventRequestsCollection().deleteMany({ userId });
+};

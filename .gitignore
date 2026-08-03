@@ -14,6 +14,7 @@ apps/api/dist
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # TLS certificates (never commit)
 nginx/certs/*.pem

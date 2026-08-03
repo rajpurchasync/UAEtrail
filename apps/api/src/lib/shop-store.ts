@@ -397,6 +397,10 @@ export const recordStripeWebhookEvent = async (eventId: string): Promise<void> =
   );
 };
 
+export const deleteMerchantProfileByUser = async (userId: string): Promise<void> => {
+  await merchantProfilesCollection().deleteMany({ userId });
+};
+
 export const listUserShopOrdersBasic = async (userId: string, take = 100) => {
   const rows = await shopOrdersCollection()
     .find({ userId })

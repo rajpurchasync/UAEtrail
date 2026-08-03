@@ -2,10 +2,15 @@ import { TenantStatus, UserRole, UserStatus } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
 import { deleteAuthTokensByUser } from '../lib/auth-tokens.js';
 import { findAuthUserById, updateAuthUserCore } from '../lib/auth-users.js';
+import { purgeUserChatMessages } from '../lib/chat-data.js';
 import { deleteUserFavoritesByUser } from '../lib/favorites-store.js';
+import { purgeUserEventEngagement } from '../lib/event-engagement-store.js';
 import { deleteNotificationsByUser } from '../lib/notifications-store.js';
 import { verifyPassword } from '../lib/password.js';
 import { deletePushSubscriptionsByUser } from '../lib/push-subscriptions.js';
+import { deleteMerchantProfileByUser } from '../lib/shop-store.js';
+import { purgeUserSocialContent } from '../lib/social-data.js';
+import { deleteTenantMembershipsByUser } from '../lib/tenant-access.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { deleteLocationUnlocksByUser } from './location-premium.js';
 
@@ -86,6 +91,11 @@ export const deleteUserAccount = async (
   await deleteLocationUnlocksByUser(userId);
   await deletePushSubscriptionsByUser(userId);
   await deleteNotificationsByUser(userId);
+  await purgeUserChatMessages(userId);
+  await purgeUserSocialContent(userId);
+  await purgeUserEventEngagement(userId);
+  await deleteTenantMembershipsByUser(userId);
+  await deleteMerchantProfileByUser(userId);
   await updateAuthUserCore({
     userId,
     email: anonymizedEmail,

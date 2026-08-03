@@ -22,15 +22,17 @@ export async function createSseTicket(userId: string): Promise<string> {
   return ticket;
 }
 
+/** Validate and consume a single-use SSE ticket. */
 export async function validateSseTicket(ticket: string): Promise<string | null> {
   const redis = await getRedisClient();
   if (redis) {
-    return redis.get(ticketKey(ticket));
+    const userId = await redis.getDel(ticketKey(ticket));
+    return userId;
   }
 
   const entry = memoryTickets.get(ticket);
+  memoryTickets.delete(ticket);
   if (!entry || entry.expiresAt < Date.now()) {
-    memoryTickets.delete(ticket);
     return null;
   }
   return entry.userId;

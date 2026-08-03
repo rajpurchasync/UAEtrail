@@ -1,4 +1,5 @@
 import { createClient, type RedisClientType } from 'redis';
+import { env } from '../config/env.js';
 
 let client: RedisClientType | null = null;
 let connecting: Promise<RedisClientType | null> | null = null;
@@ -16,10 +17,14 @@ export const getRedisClient = async (): Promise<RedisClientType | null> => {
         redis.on('error', (err) => console.warn('[redis]', err.message));
         await redis.connect();
         client = redis as RedisClientType;
-        console.log('[redis] Connected — rate limits use Redis store.');
+        console.log('[redis] Connected — rate limits and SSE tickets use Redis.');
         return client;
       } catch (err) {
-        console.warn('[redis] Unavailable — using in-memory rate limits.', err);
+        const message = err instanceof Error ? err.message : String(err);
+        if (env.NODE_ENV === 'production') {
+          throw new Error(`Redis connection failed in production: ${message}`);
+        }
+        console.warn('[redis] Unavailable — using in-memory fallbacks.', message);
         return null;
       } finally {
         connecting = null;

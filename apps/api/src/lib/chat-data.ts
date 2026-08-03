@@ -160,3 +160,11 @@ export const hasThreadBetweenUsers = async (firstUserId: string, secondUserId: s
   );
   return Boolean(existingThread);
 };
+
+/** Remove message content authored by a deleted user. */
+export const purgeUserChatMessages = async (userId: string): Promise<void> => {
+  await chatMessagesCollection().updateMany(
+    { senderId: userId },
+    { $set: { content: '[message removed]' } }
+  );
+};

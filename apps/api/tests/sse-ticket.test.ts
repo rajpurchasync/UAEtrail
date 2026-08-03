@@ -22,6 +22,12 @@ describe('sse ticket', () => {
     await expect(validateSseTicket(ticket)).resolves.toBe('user-abc');
   });
 
+  it('consumes tickets on first use', async () => {
+    const ticket = await createSseTicket('user-abc');
+    await expect(validateSseTicket(ticket)).resolves.toBe('user-abc');
+    await expect(validateSseTicket(ticket)).resolves.toBeNull();
+  });
+
   it('rejects unknown tickets', async () => {
     await expect(validateSseTicket('missing-ticket')).resolves.toBeNull();
   });

@@ -240,6 +240,10 @@ export const syncTenantMembershipByTenantAndUser = async (
   // Mongo is the source of truth; no sync needed.
 };
 
+export const deleteTenantMembershipsByUser = async (userId: string): Promise<void> => {
+  await tenantMembershipsCollection().deleteMany({ userId });
+};
+
 export const syncTenantMembershipStatusForTenant = async (
   tenantId: string,
   status: TenantStatusType

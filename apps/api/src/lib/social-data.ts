@@ -288,3 +288,20 @@ export const toggleSocialPostLike = async (input: {
   });
   return { liked: true };
 };
+
+/** Delete social content authored by a user. */
+export const purgeUserSocialContent = async (userId: string): Promise<void> => {
+  const posts = await postsCollection().find({ authorId: userId }, { projection: { _id: 1 } }).toArray();
+  const postIds = posts.map((post) => post._id);
+
+  await likesCollection().deleteMany({ userId });
+  await repliesCollection().deleteMany({ authorId: userId });
+
+  if (postIds.length > 0) {
+    await repliesCollection().deleteMany({ postId: { $in: postIds } });
+    await likesCollection().deleteMany({ postId: { $in: postIds } });
+    await postsCollection().deleteMany({ authorId: userId });
+  }
+
+  await reviewsCollection().deleteMany({ userId });
+};

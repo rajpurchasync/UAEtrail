@@ -41,6 +41,48 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection('organizer_applications').createIndexes([
       { key: { status: 1 } },
       { key: { applicantId: 1, createdAt: -1 } }
+    ]),
+    db.collection('event_requests').createIndexes([
+      { key: { eventId: 1, userId: 1 }, unique: true },
+      { key: { eventId: 1, status: 1, createdAt: 1 } },
+      { key: { userId: 1, createdAt: -1 } }
+    ]),
+    db.collection('event_participants').createIndexes([
+      { key: { eventId: 1, userId: 1 }, unique: true },
+      { key: { eventId: 1, createdAt: 1 } },
+      { key: { userId: 1 } },
+      { key: { requestId: 1 } }
+    ]),
+    db.collection('chat_messages').createIndexes([
+      { key: { senderId: 1, receiverId: 1, createdAt: -1 } },
+      { key: { receiverId: 1, readAt: 1 } }
+    ]),
+    db.collection('social_reviews').createIndexes([
+      { key: { targetType: 1, targetId: 1, createdAt: -1 } },
+      { key: { userId: 1, createdAt: -1 } }
+    ]),
+    db.collection('social_posts').createIndexes([
+      { key: { category: 1, createdAt: -1 } },
+      { key: { authorId: 1, createdAt: -1 } }
+    ]),
+    db.collection('social_post_replies').createIndexes([
+      { key: { postId: 1, createdAt: 1 } },
+      { key: { authorId: 1 } }
+    ]),
+    db.collection('social_post_likes').createIndexes([
+      { key: { postId: 1, userId: 1 }, unique: true },
+      { key: { userId: 1 } }
+    ]),
+    db.collection('shop_orders').createIndexes([
+      { key: { userId: 1, createdAt: -1 } },
+      { key: { status: 1, createdAt: -1 } },
+      { key: { stripeSessionId: 1 }, sparse: true }
+    ]),
+    db.collection('products').createIndexes([
+      { key: { merchantId: 1, status: 1, createdAt: -1 } }
+    ]),
+    db.collection('merchant_profiles').createIndexes([
+      { key: { userId: 1 }, unique: true, sparse: true }
     ])
   ]);
 };

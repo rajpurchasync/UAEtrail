@@ -67,6 +67,9 @@ if (production) {
   if (!isSet('SMTP_URL') && !isSet('SENDGRID_API_KEY')) {
     errors.push('SMTP_URL or SENDGRID_API_KEY — required for verification/reset emails');
   }
+  if (!isSet('REDIS_URL')) {
+    errors.push('REDIS_URL — required in production for rate limits and SSE tickets');
+  }
   if (!isSet('EMAIL_FROM')) {
     warnings.push('EMAIL_FROM — set a verified sender address');
   }
