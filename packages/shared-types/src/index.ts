@@ -1,5 +1,6 @@
 export type UserRole =
   | 'platform_admin'
+  | 'merchant_admin'
   | 'tenant_owner'
   | 'tenant_admin'
   | 'tenant_guide'
@@ -270,12 +271,16 @@ export interface ChatMessageDTO {
 
 export type ProductStatusType = 'draft' | 'active' | 'inactive';
 
+export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+
 export interface ProductDTO {
   id: string;
   name: string;
   description?: string;
   images: string[];
   priceAed: number;
+  stockQuantity: number;
+  lowStockThreshold: number;
   discountPercent?: number;
   memberDiscountPercent?: number;
   externalUrl?: string | null;
@@ -338,6 +343,19 @@ export interface FavoriteDTO {
   id: string;
   locationId?: string | null;
   eventId?: string | null;
+  productId?: string | null;
+  location?: { id: string; name: string; images: string[] } | null;
+  event?: { id: string; title: string; locationName: string | null } | null;
+  product?: {
+    id: string;
+    merchantId: string;
+    merchantName: string | null;
+    name: string;
+    images: string[];
+    priceAed: number;
+    discountPercent?: number | null;
+    category: string;
+  } | null;
   createdAt: string;
 }
 
@@ -348,6 +366,55 @@ export interface MerchantProfileDTO {
   logo?: string;
   contactEmail?: string;
   contactPhone?: string;
+}
+
+export interface ProductClick {
+  id: string;
+  productId: string;
+  timestamp: string;
+  userId: string;
+}
+
+export interface OrderLineItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  totalAed: number;
+  status: OrderStatus;
+  fulfillmentTrackingLink?: string | null;
+  timestamp: string;
+}
+
+export interface MerchantOrderLineItemDTO extends OrderLineItem {
+  orderId: string;
+  product: {
+    id: string;
+    name: string;
+    images: string[];
+    priceAed: number;
+    merchantId: string;
+    stockQuantity: number;
+    lowStockThreshold: number;
+  };
+}
+
+export type MerchantAnalyticsInterval = 'day' | 'month' | 'year';
+
+export interface MerchantAnalyticsPointDTO {
+  bucket: string;
+  salesAed: number;
+  clicks: number;
+  orderCount: number;
+  quantitySold: number;
+}
+
+export interface MerchantAnalyticsSeriesDTO {
+  merchantId?: string;
+  merchantIds: string[];
+  startDate: string;
+  endDate: string;
+  interval: MerchantAnalyticsInterval;
+  points: MerchantAnalyticsPointDTO[];
 }
 
 // ─── Admin DTOs ─────────────────────────────────────────────────────────────

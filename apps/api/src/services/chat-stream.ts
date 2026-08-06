@@ -4,6 +4,7 @@ import { getRedisClient } from '../lib/redis.js';
 
 const CHAT_REDIS_CHANNEL = 'chat:stream';
 const HEARTBEAT_MS = 25_000;
+const REDIS_SUBSCRIBE_TIMEOUT_MS = 8000;
 
 export type ChatStreamEvent =
   | { type: 'chat_message'; data: ChatMessageDTO }
@@ -85,10 +86,28 @@ export const initChatStreamPubSub = async (): Promise<void> => {
   }
 
   const subscriber = redis.duplicate();
-  await subscriber.connect();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const withTimeout = async <T>(promise: Promise<T>, label: string): Promise<T> => {
+    try {
+      return await Promise.race([
+        promise,
+        new Promise<T>((_, reject) => {
+          timer = setTimeout(() => {
+            reject(new Error(`${label} timed out after ${REDIS_SUBSCRIBE_TIMEOUT_MS}ms`));
+          }, REDIS_SUBSCRIBE_TIMEOUT_MS);
+        })
+      ]);
+    } finally {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    }
+  };
+
+  await withTimeout(subscriber.connect(), 'Redis subscriber connect');
   redisSubscriber = subscriber as typeof redis;
 
-  await subscriber.subscribe(CHAT_REDIS_CHANNEL, (message) => {
+  await withTimeout(subscriber.subscribe(CHAT_REDIS_CHANNEL, (message) => {
     try {
       const payload = JSON.parse(message) as { userId: string; event: ChatStreamEvent };
       if (payload.userId && payload.event) {
@@ -97,7 +116,7 @@ export const initChatStreamPubSub = async (): Promise<void> => {
     } catch {
       // ignore malformed pub/sub payloads
     }
-  });
+  }), 'Redis subscriber subscribe');
 
   pubSubReady = true;
 };

@@ -166,19 +166,19 @@
   }
 
   .consumer-hero-banner {
-    @apply relative h-[5.25rem] md:h-[5.75rem] rounded-2xl overflow-hidden;
+    @apply relative h-[6rem] md:h-[6.5rem] rounded-2xl overflow-hidden;
   }
 
   .consumer-hero-banner--editorial {
-    @apply h-[8.75rem] sm:h-[7.5rem] md:h-[8rem] rounded-b-2xl rounded-t-none sm:rounded-2xl;
+    @apply h-[9.5rem] sm:h-[8.25rem] md:h-[8.75rem] rounded-b-2xl rounded-t-none sm:rounded-2xl;
   }
 
   .consumer-hero-banner--mobile-chrome {
-    @apply h-[7.5rem] rounded-t-none rounded-b-2xl md:rounded-2xl md:h-[5.75rem];
+    @apply h-[9.5rem] rounded-t-none rounded-b-2xl md:rounded-2xl md:h-[7rem];
   }
 
   .consumer-hero-banner--editorial.consumer-hero-banner--mobile-chrome {
-    @apply h-[9.5rem] sm:h-[8.5rem] md:h-[8rem];
+    @apply h-[10.5rem] sm:h-[9.5rem] md:h-[9rem];
   }
 
   .consumer-hero-eyebrow {
@@ -186,7 +186,7 @@
   }
 
   .consumer-hero-title {
-    @apply text-lg sm:text-xl md:text-2xl font-bold text-white tracking-[-0.02em] leading-snug drop-shadow-md line-clamp-2;
+    @apply text-lg sm:text-xl md:text-2xl font-bold text-white tracking-[-0.02em] leading-snug drop-shadow-md line-clamp-2 mt-2 mb-0.5;
   }
 
   .app-fab {

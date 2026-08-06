@@ -89,7 +89,7 @@ export const Messages = () => {
   const loadMessages = useCallback(async (userId: string, silent = false) => {
     if (!silent) setLoadingMessages(true);
     try {
-      const res = await api.getMessages(userId, 1, 200);
+      const res = await api.getMessages(userId, 1, 100);
       setMessages(res.data.reverse());
       // Update unread count in conversations list
       setConversations((prev) =>

@@ -59,7 +59,7 @@ export const OrganizerOverview = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate('/signed-out', { replace: true });
   };
 
   const loading = participant.loading || organizer.loading;

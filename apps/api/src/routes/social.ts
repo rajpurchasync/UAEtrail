@@ -330,8 +330,12 @@ socialRouter.post('/posts/:id/like', requireAuth, requireVerifiedEmail, validate
 
 const favoriteCreateSchema = z.object({
   locationId: z.string().optional(),
-  eventId: z.string().optional()
-}).refine((d) => d.locationId || d.eventId, { message: 'locationId or eventId required' });
+  eventId: z.string().optional(),
+  productId: z.string().optional()
+}).refine(
+  (d) => [d.locationId, d.eventId, d.productId].filter(Boolean).length === 1,
+  { message: 'Exactly one of locationId, eventId, or productId is required.' }
+);
 
 socialRouter.get('/me/favorites', requireAuth, requireVerifiedEmail, async (req, res, next) => {
   try {
@@ -341,9 +345,22 @@ socialRouter.get('/me/favorites', requireAuth, requireVerifiedEmail, async (req,
         id: f.id,
         locationId: f.locationId,
         eventId: f.eventId,
+        productId: f.productId,
         createdAt: f.createdAt.toISOString(),
         location: f.location ? { id: f.location.id, name: f.location.name, images: f.location.images } : null,
-        event: f.event ? { id: f.event.id, title: f.event.title, locationName: f.event.locationName } : null
+        event: f.event ? { id: f.event.id, title: f.event.title, locationName: f.event.locationName } : null,
+        product: f.product
+          ? {
+              id: f.product.id,
+              merchantId: f.product.merchantId,
+              merchantName: f.product.merchantName,
+              name: f.product.name,
+              images: f.product.images,
+              priceAed: f.product.priceAed,
+              discountPercent: f.product.discountPercent,
+              category: f.product.category
+            }
+          : null
       }))
     });
   } catch (error) {
@@ -357,13 +374,15 @@ socialRouter.post('/me/favorites', requireAuth, requireVerifiedEmail, validate({
     const favorite = await createUserFavorite({
       userId: req.auth!.userId,
       locationId: body.locationId,
-      eventId: body.eventId
+      eventId: body.eventId,
+      productId: body.productId
     });
     res.status(201).json({
       data: {
         id: favorite.id,
         locationId: favorite.locationId,
         eventId: favorite.eventId,
+        productId: favorite.productId,
         createdAt: favorite.createdAt.toISOString()
       }
     });
@@ -386,10 +405,12 @@ socialRouter.get('/me/favorites/check', requireAuth, requireVerifiedEmail, async
   try {
     const locationId = req.query.locationId as string | undefined;
     const eventId = req.query.eventId as string | undefined;
+    const productId = req.query.productId as string | undefined;
     const favorite = await findUserFavorite({
       userId: req.auth!.userId,
       locationId,
-      eventId
+      eventId,
+      productId
     });
     res.json({ data: { saved: Boolean(favorite), favoriteId: favorite?.id ?? null } });
   } catch (error) {

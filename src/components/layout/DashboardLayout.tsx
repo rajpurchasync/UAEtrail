@@ -107,6 +107,11 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/signed-out', { replace: true });
+  };
+
   const unreadCountDisplay = unreadCount;
 
   return (
@@ -195,14 +200,14 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
             </button>
 
             <button
-              onClick={() => signOut()}
+              onClick={() => void handleSignOut()}
               className="hidden md:flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-xl bg-gray-900 text-white hover:bg-gray-700 transition-colors font-medium"
             >
               <LogOut className="w-3.5 h-3.5" />
               Sign Out
             </button>
             <button
-              onClick={() => signOut()}
+              onClick={() => void handleSignOut()}
               className="md:hidden p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
               title="Sign out"
             >

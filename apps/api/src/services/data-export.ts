@@ -23,7 +23,7 @@ export interface UserDataExport {
     rewardPoints: number;
     membershipTier: string;
   } | null;
-  favorites: Array<{ id: string; locationId: string | null; eventId: string | null; createdAt: Date }>;
+  favorites: Array<{ id: string; locationId: string | null; eventId: string | null; productId: string | null; createdAt: Date }>;
   tripRequests: Array<{ id: string; eventId: string; status: string; createdAt: Date }>;
   participations: Array<{ id: string; eventId: string; checkedInAt: Date | null; createdAt: Date }>;
   shopOrders: Array<{ id: string; status: string; totalAed: number; createdAt: Date }>;

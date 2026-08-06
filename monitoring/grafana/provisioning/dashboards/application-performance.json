@@ -1,0 +1,156 @@
+{
+  "annotations": { "list": [] },
+  "description": "Request throughput, latency and live application logs for debugging slow or failing requests.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [
+    { "asDropdown": true, "icon": "external link", "title": "UAE Trail dashboards", "type": "dashboards", "tags": ["uaetrail"], "targetBlank": false }
+  ],
+  "panels": [
+    {
+      "id": 100,
+      "type": "text",
+      "title": "",
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "## Application Performance (APM)\nTraffic distribution, slow endpoints and live error/fatal logs for the API."
+      }
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "Throughput & latency",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 3 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "type": "barchart",
+      "title": "Requests per second by website API route",
+      "description": "Traffic volume for UAETrail website API routes over the last 5 minutes.",
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_requests_total{route=~\"^/(events|locations|tenants)(/.*)?$\"}[5m])) by (route)",
+          "legendFormat": "{{route}}"
+        }
+      ],
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 4 },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } }
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Top 5 slowest website APIs (latency + calls)",
+      "description": "UAETrail website API routes ranked by avg response time, including call volume over the same 15m window.",
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(5, (sum by (method, route) (rate(http_request_duration_seconds_sum{route=~\"^/(events|locations|tenants)(/.*)?$\"}[15m])) / clamp_min(sum by (method, route) (rate(http_request_duration_seconds_count{route=~\"^/(events|locations|tenants)(/.*)?$\"}[15m])), 1)))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{method}} {{route}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (method, route) (increase(http_request_duration_seconds_count{route=~\"^/(events|locations|tenants)(/.*)?$\"}[15m])) and on (method, route) topk(5, (sum by (method, route) (rate(http_request_duration_seconds_sum{route=~\"^/(events|locations|tenants)(/.*)?$\"}[15m])) / clamp_min(sum by (method, route) (rate(http_request_duration_seconds_count{route=~\"^/(events|locations|tenants)(/.*)?$\"}[15m])), 1)))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{method}} {{route}}"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "route",
+            "mode": "inner"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "method": 0,
+              "route": 1,
+              "Value": 2,
+              "Value #A": 2,
+              "Value #B": 3
+            },
+            "renameByName": {
+              "Value": "avg_latency_s",
+              "Value #A": "avg_latency_s",
+              "Value #B": "calls_15m"
+            }
+          }
+        }
+      ],
+      "gridPos": { "h": 11, "w": 12, "x": 12, "y": 4 },
+      "fieldConfig": {
+        "defaults": { "unit": "none" },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "avg_latency_s" },
+            "properties": [
+              { "id": "unit", "value": "s" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "calls_15m" },
+            "properties": [
+              { "id": "unit", "value": "none" }
+            ]
+          }
+        ]
+      },
+      "options": { "showHeader": true, "sortBy": [{ "displayName": "avg_latency_s", "desc": true }] }
+    },
+    {
+      "id": 102,
+      "type": "row",
+      "title": "Logs",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 3,
+      "type": "logs",
+      "title": "Live error and fatal logs",
+      "description": "Structured application logs filtered to error/fatal level, newest first.",
+      "datasource": { "type": "loki", "uid": "loki-ds" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"webapp\"} | json | level=~\"error|fatal\""
+        }
+      ],
+      "options": {
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "enableLogDetails": true
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 17 }
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["uaetrail", "apm", "app"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "",
+  "title": "Application Performance (APM)",
+  "version": 2
+}

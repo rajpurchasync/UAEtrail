@@ -2,6 +2,7 @@ import { UserRole } from '@uaetrail/shared-types';
 
 export const defaultRouteByRole = (role: UserRole): string => {
   if (role === 'platform_admin') return '/admin/overview';
+  if (role === 'merchant_admin') return '/merchant/dashboard';
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/organizer/overview';
   return '/';
 };
@@ -9,6 +10,7 @@ export const defaultRouteByRole = (role: UserRole): string => {
 /** Mobile-first home for account access — no desktop dashboard for participants. */
 export const accountRouteByRole = (role: UserRole): string => {
   if (role === 'platform_admin') return '/admin/overview';
+  if (role === 'merchant_admin') return '/merchant/dashboard';
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/organizer/overview';
   return '/profile';
 };
@@ -70,6 +72,7 @@ export const messagesRouteForRole = (
   options?: { eventId?: string }
 ): string => {
   if (role === 'platform_admin') return '/admin/overview';
+  if (role === 'merchant_admin') return '/messages';
   const params = new URLSearchParams({ to: userId });
   if (options?.eventId) params.set('event', options.eventId);
   const query = params.toString();

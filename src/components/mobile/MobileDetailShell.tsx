@@ -2,6 +2,7 @@ import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ReactNode } from 'react';
 import { MobileMenuButton } from '../layout/MobileMenu';
+import { ProfileAvatarLink } from '../layout/ProfileAvatarLink';
 
 interface MobileDetailShellProps {
   backTo: string;
@@ -27,6 +28,7 @@ export const MobileDetailShell = ({ backTo, backLabel = 'Back', children, header
           <span className="text-[17px]">{backLabel}</span>
         </Link>
         <div className="flex items-center gap-2 shrink-0">
+          <ProfileAvatarLink />
           {headerAction}
           <MobileMenuButton />
         </div>

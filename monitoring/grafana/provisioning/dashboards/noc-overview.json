@@ -1,0 +1,157 @@
+{
+  "annotations": { "list": [] },
+  "description": "Network Operations Center view: the four numbers an on-call engineer checks first.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [
+    { "asDropdown": true, "icon": "external link", "title": "UAE Trail dashboards", "type": "dashboards", "tags": ["uaetrail"], "targetBlank": false }
+  ],
+  "panels": [
+    {
+      "id": 100,
+      "type": "text",
+      "title": "",
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "## NOC Overview\nAt-a-glance status for the whole platform. Every panel pairs its color with a visible number or label so status is never conveyed by color alone."
+      }
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "description": "Percentage of requests returning a 5xx server error over the last 5 minutes.",
+      "id": 1,
+      "type": "stat",
+      "title": "Global HTTP 5xx error rate",
+      "targets": [
+        { "refId": "A", "expr": "100 * sum(rate(http_requests_total{status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(http_requests_total[5m])), 1)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 10,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 3 }
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "description": "95th percentile API response time in milliseconds.",
+      "id": 2,
+      "type": "gauge",
+      "title": "API P95 latency",
+      "targets": [
+        { "refId": "A", "expr": "1000 * histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "max": 2000,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 350 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 3 }
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "description": "Whether Prometheus's last scrape of the API's /metrics endpoint succeeded.",
+      "id": 3,
+      "type": "stat",
+      "title": "API availability",
+      "targets": [{ "refId": "A", "expr": "max(up{job=\"api\"})" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "DOWN", "color": "red" },
+                "1": { "text": "UP", "color": "green" }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 3 }
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "description": "Total active client connections across MongoDB nodes.",
+      "id": 4,
+      "type": "stat",
+      "title": "Active MongoDB connections",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(mongodb_ss_connections{conn_type=\"current\"}) or sum(mongodb_connections{state=\"current\"}) or sum(mongodb_mongod_connections{state=\"current\"})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 3 }
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["uaetrail", "noc", "overview"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "",
+  "title": "NOC Overview",
+  "version": 2
+}

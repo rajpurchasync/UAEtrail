@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+.git
+.gitignore
+.vscode
+logs
+dist
+coverage
+*.log
+.devcontainer
+android
+ios
+.env
+.env.*
+!.env.example
+!*.example
+postgress_ca.pem

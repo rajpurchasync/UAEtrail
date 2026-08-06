@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Compass, Crown, Shield, Sparkles, Trophy } from 'lucide-react';
+import { Briefcase, Compass, Crown, Heart, Shield, Sparkles, Trophy } from 'lucide-react';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
@@ -46,6 +46,7 @@ export const Profile = () => {
   const [pushStatus, setPushStatus] = useState<string | null>(null);
   const [showEdit, setShowEdit] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [savedItemsCount, setSavedItemsCount] = useState(0);
   const [rewardPoints, setRewardPoints] = useState<number | null>(null);
   const [rewardTier, setRewardTier] = useState<{ key: string; name: string; emoji?: string } | null>(null);
   const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
@@ -53,6 +54,12 @@ export const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
+    api.getMeFavorites()
+      .then((res) => {
+        setSavedItemsCount(res.data.filter((item) => Boolean(item.locationId) || Boolean(item.productId)).length);
+      })
+      .catch(() => undefined);
+
     api.getMyRewards()
       .then((res) => {
         setRewardPoints(res.data.points);
@@ -94,7 +101,7 @@ export const Profile = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate('/signed-out', { replace: true });
   };
 
   const roleLabel = user!.role === 'visitor' ? 'Participant' : 'Explorer';
@@ -171,6 +178,13 @@ export const Profile = () => {
                   icon: <Trophy className="w-4 h-4" />,
                   label: 'Trail Points',
                   badge: rewardPoints ?? undefined,
+                  accent: 'emerald' as const,
+                },
+                {
+                  to: '/favorites',
+                  icon: <Heart className="w-4 h-4" />,
+                  label: 'Saved items',
+                  badge: savedItemsCount || undefined,
                   accent: 'emerald' as const,
                 },
                 {

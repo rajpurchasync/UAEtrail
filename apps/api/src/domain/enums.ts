@@ -5,6 +5,7 @@
 
 export const UserRole = {
   PLATFORM_ADMIN: 'PLATFORM_ADMIN',
+  MERCHANT_ADMIN: 'MERCHANT_ADMIN',
   TENANT_OWNER: 'TENANT_OWNER',
   TENANT_ADMIN: 'TENANT_ADMIN',
   TENANT_GUIDE: 'TENANT_GUIDE',
@@ -78,6 +79,9 @@ export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus];
 
 export const OrderStatus = {
   PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  SHIPPED: 'SHIPPED',
+  DELIVERED: 'DELIVERED',
   PAID: 'PAID',
   CANCELLED: 'CANCELLED',
   REFUNDED: 'REFUNDED'

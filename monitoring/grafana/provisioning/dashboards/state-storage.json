@@ -1,0 +1,202 @@
+{
+  "annotations": { "list": [] },
+  "description": "MongoDB and Redis health: cache efficiency, operation throughput, connection pressure, replication lag, and storage growth.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [
+    { "asDropdown": true, "icon": "external link", "title": "UAE Trail dashboards", "type": "dashboards", "tags": ["uaetrail"], "targetBlank": false }
+  ],
+  "panels": [
+    {
+      "id": 100,
+      "type": "text",
+      "title": "",
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "## State & Storage (MongoDB + Redis)\nData-layer health: cache efficiency, MongoDB traffic, replication, and storage growth."
+      }
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "Redis",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 3 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "type": "gauge",
+      "title": "Redis cache hit rate",
+      "description": "Share of reads served from cache rather than the origin store.",
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * sum(rate(redis_keyspace_hits_total[5m])) / clamp_min(sum(rate(redis_keyspace_hits_total[5m])) + sum(rate(redis_keyspace_misses_total[5m])), 1)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 4 }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Redis memory fragmentation",
+      "description": "Ratio of memory allocated by the OS to memory used by Redis. Values well above 1.0 indicate fragmentation; below 1.0 may indicate swapping.",
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "redis_mem_fragmentation_ratio",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 4 },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 102,
+      "type": "row",
+      "title": "MongoDB",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "MongoDB operation throughput",
+      "description": "Per-second MongoDB operation rates by type.",
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(type) (rate(mongodb_ss_opcounters{type=~\"insert|query|update|delete|command\"}[5m])) or sum by(type) (rate(mongodb_op_counters_total{type=~\"insert|query|update|delete|command\"}[5m]))",
+          "legendFormat": "{{type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ops", "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 13 }
+    },
+    {
+      "id": 4,
+      "type": "gauge",
+      "title": "MongoDB connection utilization",
+      "description": "Current connections as a percentage of currently known capacity signals.",
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * ((sum(mongodb_ss_connections{conn_type=\"current\"}) or sum(mongodb_connections{state=\"current\"}) or sum(mongodb_mongod_connections{state=\"current\"})) / clamp_min((sum(mongodb_ss_connections{conn_type=~\"current|available\"}) or sum(mongodb_connections{state=~\"current|available\"}) or sum(mongodb_mongod_connections{state=~\"current|available\"})), 1))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 70 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 13 }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "MongoDB replication lag",
+      "description": "Replication lag metrics when exposed by the MongoDB topology/exporter.",
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max({__name__=~\"mongodb_mongod_replset_member_replication_lag|mongodb_.*replication.*lag.*\"})",
+          "legendFormat": "replication lag"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 13 }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "MongoDB DB + collection sizes (MB)",
+      "description": "Single table combining database and collection size series for quick storage-growth checks.",
+      "datasource": { "type": "prometheus", "uid": "prometheus-ds" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(200, ({__name__=~\"mongodb_dbstats_(dataSize|storageSize|totalSize|data_size|storage_size)(_bytes)?\",database!=\"\"} / 1024 / 1024))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "db={{database}} {{__name__}}"
+        },
+        {
+          "refId": "B",
+          "expr": "topk(500, ({__name__=~\"mongodb_collstats_(size|storage_size|storageSize|totalSize)(_bytes)?\",database!=\"\",collection!=\"\"} / 1024 / 1024))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "db={{database}} coll={{collection}} {{__name__}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "decmbytes" },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": { "show": false, "reducer": ["sum"], "fields": "" }
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 23 }
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["uaetrail", "state", "storage"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "",
+  "title": "State and Storage (MongoDB + Redis)",
+  "version": 2
+}

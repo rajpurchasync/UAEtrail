@@ -22,6 +22,7 @@ const TripDetail = lazy(() => import('./pages/TripDetail').then((m) => ({ defaul
 const OperatorProfile = lazy(() => import('./pages/OperatorProfile').then((m) => ({ default: m.OperatorProfile })));
 const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
 const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
+const SignedOut = lazy(() => import('./pages/SignedOut').then((m) => ({ default: m.SignedOut })));
 const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 const AdminOverview = lazy(() => import('./pages/AdminOverview').then((m) => ({ default: m.AdminOverview })));
@@ -41,6 +42,7 @@ const OrganizerLocations = lazy(() => import('./pages/OrganizerLocations').then(
 const OrganizerHistory = lazy(() => import('./pages/OrganizerHistory').then((m) => ({ default: m.OrganizerHistory })));
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
+const Favorites = lazy(() => import('./pages/Favorites').then((m) => ({ default: m.Favorites })));
 const MerchantDashboard = lazy(() => import('./pages/MerchantDashboard').then((m) => ({ default: m.MerchantDashboard })));
 const Trips = lazy(() => import('./pages/Trips').then((m) => ({ default: m.Trips })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
@@ -130,9 +132,17 @@ function App() {
             }
           />
           <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+                <Favorites />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/notifications"
             element={
-              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <Notifications />
               </ProtectedRoute>
             }
@@ -151,6 +161,7 @@ function App() {
           <Route path="/community" element={<Community />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/signed-out" element={<SignedOut />} />
           <Route path="/sign-up" element={<AuthAliasRedirect to="/signup" />} />
           <Route path="/sign-in" element={<AuthAliasRedirect to="/signin" />} />
           <Route path="/terms" element={<Terms />} />
@@ -299,7 +310,7 @@ function App() {
           <Route
             path="/dashboard/overview"
             element={
-              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <DashboardRedirect />
               </ProtectedRoute>
             }
@@ -307,7 +318,7 @@ function App() {
           <Route
             path="/dashboard/requests"
             element={
-              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <DashboardRedirect />
               </ProtectedRoute>
             }
@@ -315,7 +326,7 @@ function App() {
           <Route
             path="/dashboard/trips"
             element={
-              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <DashboardRedirect />
               </ProtectedRoute>
             }
@@ -323,7 +334,7 @@ function App() {
           <Route
             path="/dashboard/messages"
             element={
-              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <DashboardRedirect />
               </ProtectedRoute>
             }
@@ -335,7 +346,7 @@ function App() {
           <Route
             path="/merchant/dashboard"
             element={
-              <ProtectedRoute roles={['visitor', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <MerchantDashboard />
               </ProtectedRoute>
             }

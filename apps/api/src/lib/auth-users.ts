@@ -8,7 +8,7 @@ export type AuthUserRecord = {
   passwordHash: string | null;
   googleId: string | null;
   authProvider: 'EMAIL' | 'GOOGLE';
-  role: 'PLATFORM_ADMIN' | 'TENANT_OWNER' | 'TENANT_ADMIN' | 'TENANT_GUIDE' | 'VISITOR';
+  role: 'PLATFORM_ADMIN' | 'MERCHANT_ADMIN' | 'TENANT_OWNER' | 'TENANT_ADMIN' | 'TENANT_GUIDE' | 'VISITOR';
   status: 'ACTIVE' | 'SUSPENDED';
   emailVerifiedAt: Date | null;
   lastActiveAt: Date | null;

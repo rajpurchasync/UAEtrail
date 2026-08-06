@@ -1,6 +1,7 @@
 services:
   mongo:
     image: mongo:7
+    profiles: ["local-mongo"]
     restart: unless-stopped
     command: ["mongod", "--bind_ip_all"]
     ports:
@@ -48,16 +49,14 @@ services:
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     depends_on:
-      mongo:
-        condition: service_healthy
       redis:
         condition: service_healthy
       minio:
         condition: service_healthy
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV:-development}
       PORT: 4000
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/uaetrail}
+      MONGODB_URI: ${MONGODB_URI:?Set MONGODB_URI in .env}
       REDIS_URL: redis://redis:6379
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?Set JWT_ACCESS_SECRET in .env}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Set JWT_REFRESH_SECRET in .env}
@@ -81,6 +80,8 @@ services:
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+    ports:
+      - "${API_PORT:-4000}:4000"
     expose:
       - "4000"
     healthcheck:
@@ -110,6 +111,84 @@ services:
       # Uncomment after copying ssl-server.conf.example → nginx/conf.d/ssl.conf
       # - ./nginx/conf.d/ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
 
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=90d
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - uaetrail_prometheus:/prometheus
+
+  loki:
+    image: grafana/loki:2.9.10
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki/local-config.yaml:/etc/loki/local-config.yaml:ro
+      - uaetrail_loki:/loki
+
+  promtail:
+    image: grafana/promtail:2.9.10
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    volumes:
+      - ./monitoring/promtail/config.yml:/etc/promtail/config.yml:ro
+      - ./logs:/var/log/webapp:ro
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - loki
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_DEFAULT_THEME: light
+    volumes:
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - uaetrail_grafana:/var/lib/grafana
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+    volumes:
+      - /:/host:ro
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    depends_on:
+      - redis
+
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.43
+    restart: unless-stopped
+    command:
+      - --mongodb.uri=${MONGODB_URI:?Set MONGODB_URI in .env}
+      - --collector.dbstats
+      - --collector.collstats
+      - --collector.topmetrics
+
 volumes:
   uaetrail_mongo:
   uaetrail_minio:
+  uaetrail_prometheus:
+  uaetrail_loki:
+  uaetrail_grafana:

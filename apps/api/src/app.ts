@@ -6,6 +6,8 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.js';
 import { connectMongo, getMongoClient } from './lib/mongo.js';
+import { logger, createRequestLogger, logError } from './lib/logger.js';
+import { apiErrorsTotal, httpRequestDurationSeconds, httpRequestsTotal, metricsContentType, metricsText } from './lib/metrics.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { createRateLimiters } from './middleware/rate-limit.js';
 import { getGlobalLimiter } from './middleware/rate-limit-instances.js';
@@ -17,6 +19,7 @@ import { stripeWebhookHandler } from './routes/stripe-webhook.js';
 
 export const createApp = async (): Promise<Express> => {
   const app = express();
+  const observabilityPaths = new Set(['/health', '/health/ready', '/metrics']);
   if (env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
   }
@@ -63,6 +66,32 @@ export const createApp = async (): Promise<Express> => {
   app.use(globalLimiter);
   app.use(requestTimeout());
   app.use(traceIdMiddleware);
+  app.use((req, res, next) => {
+    const requestLogger = createRequestLogger(req);
+    const start = Date.now();
+
+    res.on('finish', () => {
+      const durationMs = Date.now() - start;
+      const route = (req.route?.path || req.path || 'unknown').toString();
+      const statusCode = res.statusCode;
+
+      if (!observabilityPaths.has(route)) {
+        httpRequestsTotal.labels(req.method, route, String(statusCode)).inc();
+        httpRequestDurationSeconds.labels(req.method, route, String(statusCode)).observe(durationMs / 1000);
+      }
+
+      if (statusCode >= 500) {
+        requestLogger.error({ statusCode, durationMs }, 'request completed');
+      } else if (statusCode >= 400) {
+        requestLogger.warn({ statusCode, durationMs }, 'request completed');
+      } else {
+        requestLogger.info({ statusCode, durationMs }, 'request completed');
+      }
+    });
+
+    req.log = requestLogger;
+    next();
+  });
   app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
   app.post('/api/v1/shop/webhook/stripe', express.raw({ type: 'application/json' }), stripeWebhookHandler);
@@ -79,9 +108,23 @@ export const createApp = async (): Promise<Express> => {
       await connectMongo();
       await getMongoClient().db('admin').command({ ping: 1 });
       res.json({ status: 'ready', service: 'uaetrail-api', database: 'mongodb', timestamp: new Date().toISOString() });
-    } catch {
+    } catch (error) {
+      logError('health readiness check failed', error, { service: 'uaetrail-api' });
+      apiErrorsTotal.labels('readiness').inc();
       res.status(503).json({ status: 'not_ready', service: 'uaetrail-api' });
     }
+  });
+
+  app.get('/metrics', async (_req, res) => {
+    res.set('Content-Type', metricsContentType);
+    res.end(await metricsText());
+  });
+
+  app.post('/api/v1/logs/client-error', (req, res) => {
+    const payload = req.body;
+    logError('client-side error reported', payload, { route: '/api/v1/logs/client-error' });
+    apiErrorsTotal.labels('client_error').inc();
+    res.status(202).json({ status: 'accepted' });
   });
 
   if (env.NODE_ENV !== 'production') {

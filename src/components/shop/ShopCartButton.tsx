@@ -12,7 +12,7 @@ export const ShopCartButton = ({ onClick }: ShopCartButtonProps) => {
     <button
       type="button"
       onClick={onClick}
-      className="relative inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/90 text-emerald-700 ring-1 ring-emerald-200/80 shadow-sm"
+      className="relative z-20 inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/95 text-emerald-700 ring-1 ring-emerald-200/80 shadow-sm"
       aria-label={`Open cart${itemCount > 0 ? `, ${itemCount} items` : ''}`}
     >
       <ShoppingCart className="w-4 h-4" />

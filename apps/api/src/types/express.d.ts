@@ -13,6 +13,7 @@ declare global {
         tenantId: string;
         membershipRole: MembershipRole;
       };
+      log?: ReturnType<typeof import('../lib/logger.js').createRequestLogger>;
     }
   }
 }

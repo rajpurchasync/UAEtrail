@@ -10,13 +10,18 @@ import { resolveAuthRedirect } from '../utils/authRedirect';
 import { PageMeta } from '../components/seo/PageMeta';
 
 export const SignIn = () => {
-  const { signIn, signInWithGoogle, loading } = useAuth();
+  const { signIn, signInDemo, signInWithGoogle, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const isLocalDevHost =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const isTestMode = import.meta.env.MODE === 'test';
+  const showRoleQuickAccess = isLocalDevHost || isTestMode;
 
   const from = resolveAuthRedirect(
     (location.state as { from?: string } | null)?.from,
@@ -63,9 +68,21 @@ export const SignIn = () => {
 
   const demoAccounts = [
     { label: 'Admin', email: 'admin@uaetrails.app', password: 'Admin@12345' },
-    { label: 'Organizer', email: 'organizer@uaetrails.app', password: 'Organizer@12345' },
-    { label: 'Visitor', email: 'visitor@uaetrails.app', password: 'Visitor@12345' }
+    { label: 'Visitor', email: 'visitor@uaetrails.app', password: 'Visitor@12345' },
+    { label: 'Vendor', email: 'vendor@uaetrails.app', password: 'Vendor@12345' },
+    { label: 'Tour Operator', email: 'organizer@uaetrails.app', password: 'Organizer@12345' }
   ];
+
+  const quickLogin = async (account: (typeof demoAccounts)[number]) => {
+    setError(null);
+    setEmail(account.email);
+    setPassword(account.password);
+    try {
+      await completeAuth(await signInDemo(account.email));
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : 'Sign in failed');
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -167,23 +184,15 @@ export const SignIn = () => {
           </Link>
         </p>
 
-        {import.meta.env.DEV && (
+        {showRoleQuickAccess && (
           <div className="mt-5 pt-4 border-t">
-            <p className="text-xs font-medium text-gray-700 mb-2">Dev quick access</p>
+            <p className="text-xs font-medium text-gray-700 mb-2">Role quick access (local/test)</p>
             <div className="flex flex-wrap gap-2">
               {demoAccounts.map((account) => (
                 <button
                   key={account.label}
                   type="button"
-                  onClick={async () => {
-                    setEmail(account.email);
-                    setPassword(account.password);
-                    try {
-                      await completeAuth(await signIn(account.email, account.password));
-                    } catch (submissionError) {
-                      setError(submissionError instanceof Error ? submissionError.message : 'Sign in failed');
-                    }
-                  }}
+                  onClick={() => void quickLogin(account)}
                   className="px-2 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-60"
                   disabled={loading}
                 >

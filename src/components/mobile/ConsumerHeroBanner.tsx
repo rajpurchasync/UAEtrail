@@ -40,24 +40,32 @@ export const ConsumerHeroBanner = ({
     />
     {showMobileChrome && (
       <div
-        className={`absolute inset-x-0 top-0 z-10 px-4 pt-safe-plus-2 ${
+        className={`absolute inset-x-0 top-0 z-10 px-4 pt-safe-plus-3 ${
           chromeOnDesktop ? '' : 'md:hidden'
         }`}
       >
-        <MobileBrandBar tone="light" menuOnDesktop />
+        <MobileBrandBar tone="light" menuOnDesktop desktopAction={chromeOnDesktop ? action : undefined} />
       </div>
     )}
     {(title || eyebrow || action) && (
       <div
-        className={`absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 sm:p-5 ${
-          showMobileChrome ? 'pt-12' : ''
+        className={`absolute inset-x-0 bottom-0 px-4 pb-4 pt-16 sm:px-5 sm:pb-5 sm:pt-20 ${
+          showMobileChrome ? 'pt-28 sm:pt-32' : ''
         }`}
       >
-        <div className="min-w-0 flex-1">
+        <div className={`min-w-0 flex-1 ${action ? 'pr-20 sm:pr-24' : ''}`}>
           {eyebrow && <p className="consumer-hero-eyebrow">{eyebrow}</p>}
           {title && <h1 className="consumer-hero-title">{title}</h1>}
         </div>
-        {action && <div className="shrink-0 self-end pb-0.5">{action}</div>}
+        {action && (
+          <div
+            className={`absolute bottom-5 right-3 sm:bottom-8 sm:right-5 ${
+              chromeOnDesktop && showMobileChrome ? 'md:hidden' : 'md:bottom-7 md:right-10 lg:right-14'
+            }`}
+          >
+            {action}
+          </div>
+        )}
       </div>
     )}
   </div>

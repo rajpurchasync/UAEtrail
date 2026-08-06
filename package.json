@@ -11,6 +11,8 @@
     "dev": "vite",
     "dev:api": "npm --workspace @uaetrail/api run dev",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
+    "dev:fast": "node scripts/run-project.mjs --fast",
+    "deploy:stack": "node scripts/run-project.mjs --docker",
     "build": "vite build",
     "build:api": "npm --workspace @uaetrail/api run build",
     "lint": "eslint .",
@@ -40,6 +42,7 @@
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^7.12.0",
+    "recharts": "^2.15.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {

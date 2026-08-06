@@ -40,6 +40,13 @@ const getLandingLoadErrorMessage = (error: unknown): string => {
   return error.message;
 };
 
+const LANDING_LOAD_RETRY_DELAYS_MS = [1500, 3000, 5000, 8000];
+
+const isRetryableLandingError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) return false;
+  return error.message.includes('Failed to reach API') || /Request failed with status (5\d{2}|401|403)/i.test(error.message);
+};
+
 export const Home = () => {
   const [popularTrails, setPopularTrails] = useState<Trail[]>([]);
   const [popularCamps, setPopularCamps] = useState<CampingSpot[]>([]);
@@ -51,28 +58,67 @@ export const Home = () => {
   const [allTrips, setAllTrips] = useState<Trip[]>([]);
 
   useEffect(() => {
-    setLoadError(null);
-    Promise.all([
-      fetchPopularLocations()
-        .then(({ trails: t, camps: c }) => {
-          setPopularTrails(t);
-          setPopularCamps(c);
-        })
-        .catch(() => {
-          setPopularTrails([]);
-          setPopularCamps([]);
-        }),
-      fetchFeaturedEvents().then(setFeaturedTrips).catch(() => setFeaturedTrips([])),
-      fetchPublicMappedData()
-        .then(({ trails: t, camps: c, trips: tr }) => {
-          setAllTrails(t);
-          setAllCamps(c);
-          setAllTrips(tr);
-        })
-        .catch((err) => {
-          setLoadError(getLandingLoadErrorMessage(err));
-        })
-    ]);
+    let disposed = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const loadLandingData = async (attempt = 0): Promise<void> => {
+      if (disposed) return;
+
+      if (attempt === 0) {
+        setLoadError(null);
+      }
+
+      await Promise.all([
+        fetchPopularLocations()
+          .then(({ trails: t, camps: c }) => {
+            if (disposed) return;
+            setPopularTrails(t);
+            setPopularCamps(c);
+          })
+          .catch(() => {
+            if (disposed) return;
+            setPopularTrails([]);
+            setPopularCamps([]);
+          }),
+        fetchFeaturedEvents()
+          .then((trips) => {
+            if (disposed) return;
+            setFeaturedTrips(trips);
+          })
+          .catch(() => {
+            if (disposed) return;
+            setFeaturedTrips([]);
+          }),
+        fetchPublicMappedData()
+          .then(({ trails: t, camps: c, trips: tr }) => {
+            if (disposed) return;
+            setAllTrails(t);
+            setAllCamps(c);
+            setAllTrips(tr);
+            setLoadError(null);
+          })
+          .catch((err) => {
+            if (disposed) return;
+
+            setLoadError(getLandingLoadErrorMessage(err));
+            const nextDelay = LANDING_LOAD_RETRY_DELAYS_MS[attempt];
+            if (typeof nextDelay === 'number' && isRetryableLandingError(err)) {
+              retryTimer = setTimeout(() => {
+                void loadLandingData(attempt + 1);
+              }, nextDelay);
+            }
+          })
+      ]);
+    };
+
+    void loadLandingData();
+
+    return () => {
+      disposed = true;
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+      }
+    };
   }, []);
 
   // If no featured events from admin, show upcoming from all events

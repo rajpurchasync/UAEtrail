@@ -21,6 +21,9 @@ export const DashboardRedirect = () => {
   if (user.role === 'platform_admin') {
     return <Navigate to={`${adminDashboardRedirect(subpath)}${search}`} replace />;
   }
+  if (user.role === 'merchant_admin') {
+    return <Navigate to={`/merchant/dashboard${search}`} replace />;
+  }
   if (user.role === 'tenant_owner' || user.role === 'tenant_admin' || user.role === 'tenant_guide') {
     return <Navigate to={`${organizerDashboardRedirect(subpath)}${search}`} replace />;
   }

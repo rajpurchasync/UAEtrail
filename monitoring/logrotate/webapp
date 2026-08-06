@@ -1,0 +1,14 @@
+/var/log/webapp/*.log {
+  daily
+  rotate 90
+  missingok
+  notifempty
+  compress
+  delaycompress
+  copytruncate
+  dateext
+  dateformat -%Y%m%d
+  postrotate
+    find /var/log/webapp/ -name "*.log.*.gz" -mtime -7 -exec gunzip {} \;
+  endscript
+}

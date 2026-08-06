@@ -6,6 +6,7 @@ export interface AccessTokenPayload {
   email: string;
   role:
     | 'platform_admin'
+    | 'merchant_admin'
     | 'tenant_owner'
     | 'tenant_admin'
     | 'tenant_guide'

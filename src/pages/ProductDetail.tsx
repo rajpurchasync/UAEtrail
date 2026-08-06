@@ -10,6 +10,7 @@ import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { ProductPurchaseActions } from '../components/shop/ProductPurchaseActions';
 import { ShopCartButton } from '../components/shop/ShopCartButton';
 import { ShopCartSheet } from '../components/shop/ShopCartSheet';
+import { FavoriteButton } from '../components/ui/FavoriteButton';
 
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -115,6 +116,10 @@ export const ProductDetail = () => {
             >
               by {product.merchantName}
             </Link>
+
+            <div className="mt-3">
+              <FavoriteButton productId={product.id} />
+            </div>
 
             <div className="mt-6 flex items-baseline gap-3">
               <span className="text-3xl font-bold text-gray-900">AED {product.priceAed}</span>

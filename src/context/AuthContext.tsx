@@ -7,6 +7,7 @@ interface AuthContextValue {
   loading: boolean;
   initializing: boolean;
   signIn: (email: string, password: string) => Promise<AuthUser>;
+  signInDemo: (email: string) => Promise<AuthUser>;
   signInWithGoogle: (idToken: string, referralCode?: string) => Promise<AuthUser>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -104,6 +105,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const signInDemo = async (email: string): Promise<AuthUser> => {
+    setLoading(true);
+    try {
+      const response = await apiRequest<AuthResponse & { emailVerified?: boolean; demoLogin?: boolean }>('/auth/demo-login', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+      setStoredSession(response.tokens);
+      setStoredUser(response.user);
+      setUser(response.user);
+      return response.user;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const register = async ({
     email,
     password,
@@ -191,6 +208,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       initializing,
       signIn,
+      signInDemo,
       signInWithGoogle,
       signOut,
       refreshUser,

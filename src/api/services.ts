@@ -9,7 +9,11 @@ import {
   LocationDetailResponse,
   LocationGuideDTO,
   LocationPremiumSummaryDTO,
+  MerchantAnalyticsInterval,
+  MerchantAnalyticsSeriesDTO,
+  MerchantOrderLineItemDTO,
   MerchantProfileDTO,
+  OrderStatus,
   MyTripDTO,
   NotificationDTO,
   ParticipantDTO,
@@ -569,27 +573,31 @@ export const api = {
 
   getMerchantProfile: () =>
     apiRequest<{ data: MerchantProfileDTO }>('/shop/merchant/profile', { auth: true }),
+  getMerchantStores: () =>
+    apiRequest<{ data: MerchantProfileDTO[] }>('/shop/merchant/stores', { auth: true }),
+  getMerchantProfileById: (merchantId: string) =>
+    apiRequest<{ data: MerchantProfileDTO }>(`/shop/merchant/profile?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
   createMerchantProfile: (payload: { shopName: string; description?: string; logo?: string; contactEmail?: string; contactPhone?: string }) =>
     apiRequest<{ data: MerchantProfileDTO }>('/shop/merchant/profile', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
     }),
-  updateMerchantProfile: (payload: Partial<{ shopName: string; description?: string; logo?: string; contactEmail?: string; contactPhone?: string }>) =>
-    apiRequest<{ data: MerchantProfileDTO }>('/shop/merchant/profile', {
+  updateMerchantProfile: (merchantId: string, payload: Partial<{ shopName: string; description?: string; logo?: string; contactEmail?: string; contactPhone?: string }>) =>
+    apiRequest<{ data: MerchantProfileDTO }>(`/shop/merchant/profile?merchantId=${encodeURIComponent(merchantId)}`, {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(payload)
     }),
-  getMerchantProducts: () =>
-    apiRequest<{ data: (ProductDTO & { createdAt: string })[] }>('/shop/merchant/products', { auth: true }),
-  addMerchantProduct: (payload: { name: string; description?: string; images?: string[]; priceAed: number; discountPercent?: number; packagingInfo?: string; category: string; status?: 'draft' | 'active' }) =>
+  getMerchantProducts: (merchantId: string) =>
+    apiRequest<{ data: (ProductDTO & { createdAt: string })[] }>(`/shop/merchant/products?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
+  addMerchantProduct: (payload: { merchantId: string; name: string; description?: string; images?: string[]; priceAed: number; stockQuantity: number; lowStockThreshold: number; discountPercent?: number; packagingInfo?: string; category: string; status?: 'draft' | 'active' }) =>
     apiRequest<{ data: ProductDTO }>('/shop/merchant/products', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
     }),
-  updateMerchantProduct: (id: string, payload: Partial<{ name: string; description?: string; images?: string[]; priceAed: number; discountPercent?: number; packagingInfo?: string; category: string; status?: 'draft' | 'active' }>) =>
+  updateMerchantProduct: (id: string, payload: Partial<{ name: string; description?: string; images?: string[]; priceAed: number; stockQuantity: number; lowStockThreshold: number; discountPercent?: number; packagingInfo?: string; category: string; status?: 'draft' | 'active' }>) =>
     apiRequest<{ data: ProductDTO }>(`/shop/merchant/products/${id}`, {
       method: 'PATCH',
       auth: true,
@@ -599,6 +607,41 @@ export const api = {
     apiRequest(`/shop/merchant/products/${id}`, {
       method: 'DELETE',
       auth: true
+    }),
+  getMerchantAnalytics: (filters: { merchantId: string; startDate: string; endDate: string; interval: MerchantAnalyticsInterval }) => {
+    const params = new URLSearchParams({
+      merchantId: filters.merchantId,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      interval: filters.interval
+    });
+    return apiRequest<{ data: MerchantAnalyticsSeriesDTO }>(`/shop/merchant/analytics/sales?${params.toString()}`, {
+      auth: true
+    });
+  },
+  downloadMerchantAnalyticsReport: (filters: { merchantId: string; startDate: string; endDate: string; interval: MerchantAnalyticsInterval }) => {
+    const params = new URLSearchParams({
+      merchantId: filters.merchantId,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      interval: filters.interval
+    });
+    return downloadAuthenticatedFile(`/shop/merchant/analytics/export?${params.toString()}`);
+  },
+  getMerchantOrders: (filters: { merchantId: string; page?: number; pageSize?: number }) => {
+    const params = new URLSearchParams({ merchantId: filters.merchantId });
+    if (filters.page) params.set('page', String(filters.page));
+    if (filters.pageSize) params.set('pageSize', String(filters.pageSize));
+    return apiRequest<{ data: MerchantOrderLineItemDTO[]; meta: { total: number; page: number; pageSize: number; totalPages: number } }>(
+      `/shop/merchant/orders?${params.toString()}`,
+      { auth: true }
+    );
+  },
+  updateMerchantOrderStatus: (orderId: string, payload: { status: OrderStatus; fulfillmentTrackingLink?: string }) =>
+    apiRequest<{ data: MerchantOrderLineItemDTO }>(`/shop/merchant/orders/${orderId}/status`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload)
     }),
 
   // ─── Admin - Audit Logs ────────────────────────────────────────────────
@@ -773,16 +816,17 @@ export const api = {
   // ─── Favorites ─────────────────────────────────────────────────────────
 
   getMeFavorites: () => apiRequest<{ data: FavoriteDTO[] }>('/me/favorites', { auth: true }),
-  checkFavorite: (locationId?: string, eventId?: string) => {
+  checkFavorite: (locationId?: string, eventId?: string, productId?: string) => {
     const params = new URLSearchParams();
     if (locationId) params.set('locationId', locationId);
     if (eventId) params.set('eventId', eventId);
+    if (productId) params.set('productId', productId);
     return apiRequest<{ data: { saved: boolean; favoriteId: string | null } }>(
       `/me/favorites/check?${params.toString()}`,
       { auth: true }
     );
   },
-  addFavorite: (payload: { locationId?: string; eventId?: string }) =>
+  addFavorite: (payload: { locationId?: string; eventId?: string; productId?: string }) =>
     apiRequest<{ data: FavoriteDTO }>('/me/favorites', {
       method: 'POST',
       auth: true,

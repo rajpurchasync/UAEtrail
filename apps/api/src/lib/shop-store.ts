@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { OrderStatus, ProductStatus } from '../domain/enums.js';
-import type { MerchantProfile, Product, ShopOrder } from '../domain/types.js';
+import type { MerchantProfile, OrderLineItem, Product, ProductClick, ShopOrder } from '../domain/types.js';
 import type { Collection } from 'mongodb';
 import { getMongoClient } from './mongo.js';
 
@@ -26,7 +26,7 @@ type MongoShopOrder = {
 
 type MongoMerchantProfile = {
   _id: string;
-  userId: string;
+  adminIds: string[];
   shopName: string;
   description: string | null;
   logo: string | null;
@@ -43,6 +43,8 @@ type MongoProduct = {
   description: string | null;
   images: string[];
   priceAed: number;
+  stockQuantity: number;
+  lowStockThreshold: number;
   discountPercent: number | null;
   externalUrl: string | null;
   packagingInfo: string | null;
@@ -50,6 +52,21 @@ type MongoProduct = {
   status: ProductStatus;
   createdAt: Date;
   updatedAt: Date;
+};
+
+type MongoProductClick = Omit<ProductClick, 'id'> & {
+  _id: string;
+};
+
+type MongoOrderLineItem = {
+  _id: string;
+  orderId?: string;
+  productId: string;
+  quantity: number;
+  totalAed: number;
+  status?: OrderStatus;
+  fulfillmentTrackingLink?: string | null;
+  timestamp: Date;
 };
 
 type MerchantProfileUpdate = Partial<
@@ -70,6 +87,12 @@ const merchantProfilesCollection = (): Collection<MongoMerchantProfile> =>
 const productsCollection = (): Collection<MongoProduct> =>
   getMongoClient()!.db().collection<MongoProduct>('products');
 
+const productClicksCollection = (): Collection<MongoProductClick> =>
+  getMongoClient()!.db().collection<MongoProductClick>('product_clicks');
+
+const orderLineItemsCollection = (): Collection<MongoOrderLineItem> =>
+  getMongoClient()!.db().collection<MongoOrderLineItem>('order_line_items');
+
 const mapMongoProduct = (item: MongoProduct): Product => ({
   id: item._id,
   merchantId: item.merchantId,
@@ -77,6 +100,8 @@ const mapMongoProduct = (item: MongoProduct): Product => ({
   description: item.description,
   images: item.images,
   priceAed: item.priceAed,
+  stockQuantity: item.stockQuantity ?? 0,
+  lowStockThreshold: item.lowStockThreshold ?? 5,
   discountPercent: item.discountPercent,
   externalUrl: item.externalUrl,
   packagingInfo: item.packagingInfo,
@@ -86,9 +111,16 @@ const mapMongoProduct = (item: MongoProduct): Product => ({
   updatedAt: item.updatedAt
 });
 
+const normalizeOrderLineItemStatus = (status?: OrderStatus) => {
+  if (status === OrderStatus.PAID || status === OrderStatus.REFUNDED || !status) {
+    return OrderStatus.DELIVERED;
+  }
+  return status;
+};
+
 const mapMongoMerchantProfile = (merchant: MongoMerchantProfile): MerchantProfile => ({
   id: merchant._id,
-  userId: merchant.userId,
+  adminIds: merchant.adminIds,
   shopName: merchant.shopName,
   description: merchant.description,
   logo: merchant.logo,
@@ -97,6 +129,81 @@ const mapMongoMerchantProfile = (merchant: MongoMerchantProfile): MerchantProfil
   createdAt: merchant.createdAt,
   updatedAt: merchant.updatedAt
 });
+
+export type MerchantAnalyticsInterval = 'day' | 'month' | 'year';
+
+export type MerchantAnalyticsPoint = {
+  bucket: string;
+  salesAed: number;
+  clicks: number;
+  orderCount: number;
+  quantitySold: number;
+};
+
+const analyticsBucketFormats: Record<MerchantAnalyticsInterval, string> = {
+  day: '%Y-%m-%d',
+  month: '%Y-%m',
+  year: '%Y'
+};
+
+const buildAnalyticsBucketExpression = (interval: MerchantAnalyticsInterval) => ({
+  $dateToString: {
+    format: analyticsBucketFormats[interval],
+    date: '$timestamp',
+    timezone: 'UTC'
+  }
+});
+
+const truncateAnalyticsDate = (date: Date, interval: MerchantAnalyticsInterval) => {
+  if (interval === 'year') {
+    return new Date(Date.UTC(date.getUTCFullYear(), 0, 1, 0, 0, 0, 0));
+  }
+  if (interval === 'month') {
+    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0, 0));
+  }
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
+};
+
+const advanceAnalyticsDate = (date: Date, interval: MerchantAnalyticsInterval) => {
+  const next = new Date(date);
+  if (interval === 'year') {
+    next.setUTCFullYear(next.getUTCFullYear() + 1, 0, 1);
+    return next;
+  }
+  if (interval === 'month') {
+    next.setUTCMonth(next.getUTCMonth() + 1, 1);
+    return next;
+  }
+  next.setUTCDate(next.getUTCDate() + 1);
+  return next;
+};
+
+const formatAnalyticsBucket = (date: Date, interval: MerchantAnalyticsInterval) => {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  if (interval === 'year') return String(year);
+  if (interval === 'month') return `${year}-${month}`;
+  return `${year}-${month}-${day}`;
+};
+
+const buildEmptyAnalyticsPoints = (startDate: Date, endDate: Date, interval: MerchantAnalyticsInterval) => {
+  const points: MerchantAnalyticsPoint[] = [];
+  for (
+    let cursor = truncateAnalyticsDate(startDate, interval);
+    cursor <= endDate;
+    cursor = advanceAnalyticsDate(cursor, interval)
+  ) {
+    points.push({
+      bucket: formatAnalyticsBucket(cursor, interval),
+      salesAed: 0,
+      clicks: 0,
+      orderCount: 0,
+      quantitySold: 0
+    });
+  }
+  return points;
+};
 
 export const listPublicProducts = async (input: {
   category?: string;
@@ -131,6 +238,8 @@ export const listPublicProducts = async (input: {
           description: item.description,
           images: item.images,
           priceAed: item.priceAed,
+          stockQuantity: item.stockQuantity ?? 0,
+          lowStockThreshold: item.lowStockThreshold ?? 5,
           discountPercent: item.discountPercent,
           externalUrl: item.externalUrl,
           packagingInfo: item.packagingInfo,
@@ -189,7 +298,20 @@ export const listActiveProductsByIds = async (productIds: string[]) => {
 };
 
 export const findMerchantProfileByUserId = async (userId: string) => {
-  const merchant = await merchantProfilesCollection().findOne({ userId });
+  const merchant = await merchantProfilesCollection().findOne(
+    { adminIds: userId },
+    { sort: { createdAt: 1 } }
+  );
+  return merchant ? mapMongoMerchantProfile(merchant) : null;
+};
+
+export const listManagedMerchantProfiles = async (adminId: string) => {
+  const merchants = await merchantProfilesCollection().find({ adminIds: adminId }).sort({ createdAt: 1 }).toArray();
+  return merchants.map(mapMongoMerchantProfile);
+};
+
+export const findManagedMerchantProfileById = async (adminId: string, merchantId: string) => {
+  const merchant = await merchantProfilesCollection().findOne({ _id: merchantId, adminIds: adminId });
   return merchant ? mapMongoMerchantProfile(merchant) : null;
 };
 
@@ -206,7 +328,7 @@ export const createMerchantProfileForUser = async (
   const now = new Date();
   const doc: MongoMerchantProfile = {
     _id: randomUUID(),
-    userId,
+    adminIds: [userId],
     shopName: data.shopName,
     description: data.description ?? null,
     logo: data.logo ?? null,
@@ -220,9 +342,21 @@ export const createMerchantProfileForUser = async (
 };
 
 export const updateMerchantProfileForUser = async (userId: string, data: MerchantProfileUpdate) => {
+  const merchant = await findMerchantProfileByUserId(userId);
+  if (!merchant) {
+    throw new Error('Merchant profile not found.');
+  }
+  return updateManagedMerchantProfileById(userId, merchant.id, data);
+};
+
+export const updateManagedMerchantProfileById = async (
+  adminId: string,
+  merchantId: string,
+  data: MerchantProfileUpdate
+) => {
   const updatedAt = new Date();
   const result = await merchantProfilesCollection().findOneAndUpdate(
-    { userId },
+    { _id: merchantId, adminIds: adminId },
     { $set: { ...data, updatedAt } },
     { returnDocument: 'after' }
   );
@@ -255,6 +389,8 @@ export const createMerchantProduct = async (input: {
   description?: string;
   images: string[];
   priceAed: number;
+  stockQuantity?: number;
+  lowStockThreshold?: number;
   discountPercent?: number;
   packagingInfo?: string;
   category: string;
@@ -268,6 +404,8 @@ export const createMerchantProduct = async (input: {
     description: input.description ?? null,
     images: input.images,
     priceAed: input.priceAed,
+    stockQuantity: input.stockQuantity ?? 0,
+    lowStockThreshold: input.lowStockThreshold ?? 5,
     discountPercent: input.discountPercent ?? null,
     externalUrl: null,
     packagingInfo: input.packagingInfo ?? null,
@@ -280,8 +418,8 @@ export const createMerchantProduct = async (input: {
   return mapMongoProduct(doc);
 };
 
-export const findMerchantProductById = async (id: string, merchantId: string) => {
-  const item = await productsCollection().findOne({ _id: id, merchantId });
+export const findMerchantProductById = async (id: string, merchantId?: string) => {
+  const item = await productsCollection().findOne(merchantId ? { _id: id, merchantId } : { _id: id });
   return item ? mapMongoProduct(item) : null;
 };
 
@@ -365,14 +503,57 @@ export const findShopOrderById = async (id: string) => {
 };
 
 export const markShopOrderPaid = async (id: string) => {
-  const result = await shopOrdersCollection().findOneAndUpdate(
-    { _id: id },
-    { $set: { status: OrderStatus.PAID, updatedAt: new Date() } },
-    { returnDocument: 'after' }
-  );
+  const existing = await shopOrdersCollection().findOne({ _id: id });
+  if (!existing) {
+    throw new Error('Shop order not found.');
+  }
+
+  const isAlreadyPaid = existing.status === OrderStatus.PAID;
+  const paidAt = isAlreadyPaid ? existing.updatedAt : new Date();
+  const result =
+    isAlreadyPaid
+      ? existing
+      : await shopOrdersCollection().findOneAndUpdate(
+          { _id: id },
+          { $set: { status: OrderStatus.PAID, updatedAt: paidAt } },
+          { returnDocument: 'after' }
+        );
+
   if (!result) {
     throw new Error('Shop order not found.');
   }
+
+  if (!isAlreadyPaid && result.items.length > 0) {
+    await orderLineItemsCollection().bulkWrite(
+      result.items.map((item, index) => ({
+        updateOne: {
+          filter: { _id: `${result._id}:${index}` },
+          update: {
+            $setOnInsert: {
+              orderId: result._id,
+              productId: item.productId,
+              quantity: item.quantity,
+              totalAed: item.quantity * item.unitPriceAed,
+              status: OrderStatus.PENDING,
+              fulfillmentTrackingLink: null,
+              timestamp: paidAt
+            }
+          },
+          upsert: true
+        }
+      }))
+    );
+
+    await productsCollection().bulkWrite(
+      result.items.map((item) => ({
+        updateOne: {
+          filter: { _id: item.productId },
+          update: { $inc: { stockQuantity: -item.quantity }, $set: { updatedAt: paidAt } }
+        }
+      }))
+    );
+  }
+
   return {
     id: result._id,
     userId: result.userId,
@@ -398,7 +579,11 @@ export const recordStripeWebhookEvent = async (eventId: string): Promise<void> =
 };
 
 export const deleteMerchantProfileByUser = async (userId: string): Promise<void> => {
-  await merchantProfilesCollection().deleteMany({ userId });
+  await merchantProfilesCollection().updateMany(
+    { adminIds: userId },
+    { $pull: { adminIds: userId }, $set: { updatedAt: new Date() } }
+  );
+  await merchantProfilesCollection().deleteMany({ adminIds: { $size: 0 } });
 };
 
 export const listUserShopOrdersBasic = async (userId: string, take = 100) => {
@@ -414,4 +599,211 @@ export const listUserShopOrdersBasic = async (userId: string, take = 100) => {
     totalAed: row.totalAed,
     createdAt: row.createdAt
   }));
+};
+
+export const listMerchantOrderLineItems = async (input: {
+  adminId: string;
+  merchantId?: string;
+  skip: number;
+  take: number;
+}) => {
+  const managedProfiles = input.merchantId
+    ? await merchantProfilesCollection().find({ _id: input.merchantId, adminIds: input.adminId }).toArray()
+    : await merchantProfilesCollection().find({ adminIds: input.adminId }).toArray();
+
+  const merchantIds = managedProfiles.map((profile) => profile._id);
+  if (merchantIds.length === 0) {
+    return { items: [], total: 0 };
+  }
+
+  const products = await productsCollection().find({ merchantId: { $in: merchantIds } }).toArray();
+  if (products.length === 0) {
+    return { items: [], total: 0 };
+  }
+
+  const productIds = products.map((product) => product._id);
+  const productMap = new Map(products.map((product) => [product._id, product]));
+  const query = { productId: { $in: productIds } };
+
+  const [items, total] = await Promise.all([
+    orderLineItemsCollection().find(query).sort({ timestamp: -1 }).skip(input.skip).limit(input.take).toArray(),
+    orderLineItemsCollection().countDocuments(query)
+  ]);
+
+  return {
+    total,
+    items: items
+      .map((item) => {
+        const product = productMap.get(item.productId);
+        if (!product) return null;
+        return {
+          id: item._id,
+          orderId: item.orderId ?? item._id.split(':')[0] ?? item._id,
+          productId: item.productId,
+          quantity: item.quantity,
+          totalAed: item.totalAed,
+          status: normalizeOrderLineItemStatus(item.status),
+          fulfillmentTrackingLink: item.fulfillmentTrackingLink ?? null,
+          timestamp: item.timestamp,
+          product: {
+            id: product._id,
+            name: product.name,
+            images: product.images,
+            priceAed: product.priceAed,
+            merchantId: product.merchantId,
+            stockQuantity: product.stockQuantity ?? 0,
+            lowStockThreshold: product.lowStockThreshold ?? 5
+          }
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+  };
+};
+
+export const updateMerchantOrderLineItemStatus = async (input: {
+  adminId: string;
+  orderLineItemId: string;
+  status: OrderStatus;
+  fulfillmentTrackingLink?: string | null;
+}) => {
+  const existing = await orderLineItemsCollection().findOne({ _id: input.orderLineItemId });
+  if (!existing) {
+    throw new Error('Order line item not found.');
+  }
+
+  const product = await productsCollection().findOne({ _id: existing.productId });
+  if (!product) {
+    throw new Error('Product not found.');
+  }
+
+  const merchant = await merchantProfilesCollection().findOne({ _id: product.merchantId, adminIds: input.adminId });
+  if (!merchant) {
+    throw new Error('Merchant order access denied.');
+  }
+
+  const result = await orderLineItemsCollection().findOneAndUpdate(
+    { _id: input.orderLineItemId },
+    {
+      $set: {
+        status: input.status,
+        fulfillmentTrackingLink: input.fulfillmentTrackingLink ?? null,
+        timestamp: existing.timestamp
+      }
+    },
+    { returnDocument: 'after' }
+  );
+
+  if (!result) {
+    throw new Error('Order line item not found.');
+  }
+
+  return {
+    id: result._id,
+    orderId: result.orderId ?? result._id.split(':')[0] ?? result._id,
+    productId: result.productId,
+    quantity: result.quantity,
+    totalAed: result.totalAed,
+    status: normalizeOrderLineItemStatus(result.status),
+    fulfillmentTrackingLink: result.fulfillmentTrackingLink ?? null,
+    timestamp: result.timestamp,
+    product: {
+      id: product._id,
+      name: product.name,
+      images: product.images,
+      priceAed: product.priceAed,
+      merchantId: product.merchantId,
+      stockQuantity: product.stockQuantity ?? 0,
+      lowStockThreshold: product.lowStockThreshold ?? 5
+    }
+  };
+};
+
+export const getMerchantAnalytics = async (input: {
+  adminId: string;
+  merchantId?: string;
+  startDate: Date;
+  endDate: Date;
+  interval: MerchantAnalyticsInterval;
+}) => {
+  const managedProfiles = input.merchantId
+    ? await merchantProfilesCollection().find({ _id: input.merchantId, adminIds: input.adminId }).toArray()
+    : await merchantProfilesCollection().find({ adminIds: input.adminId }).toArray();
+
+  const merchantIds = managedProfiles.map((profile) => profile._id);
+  const points = buildEmptyAnalyticsPoints(input.startDate, input.endDate, input.interval);
+  if (merchantIds.length === 0) {
+    return { merchantIds, points };
+  }
+
+  const productIds = (
+    await productsCollection().find({ merchantId: { $in: merchantIds } }).project({ _id: 1 }).toArray()
+  ).map((product) => product._id);
+
+  if (productIds.length === 0) {
+    return { merchantIds, points };
+  }
+
+  const bucketExpression = buildAnalyticsBucketExpression(input.interval);
+  const rangeMatch = {
+    productId: { $in: productIds },
+    timestamp: { $gte: input.startDate, $lte: input.endDate }
+  };
+
+  const [salesRows, clickRows] = await Promise.all([
+    orderLineItemsCollection()
+      .aggregate<{
+        _id: string;
+        salesAed: number;
+        orderCount: number;
+        quantitySold: number;
+      }>([
+        { $match: rangeMatch },
+        {
+          $group: {
+            _id: bucketExpression,
+            salesAed: { $sum: '$totalAed' },
+            orderCount: { $sum: 1 },
+            quantitySold: { $sum: '$quantity' }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ])
+      .toArray(),
+    productClicksCollection()
+      .aggregate<{
+        _id: string;
+        clicks: number;
+      }>([
+        { $match: rangeMatch },
+        {
+          $group: {
+            _id: bucketExpression,
+            clicks: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ])
+      .toArray()
+  ]);
+
+  const pointMap = new Map(points.map((point) => [point.bucket, point]));
+
+  for (const row of salesRows) {
+    const point = pointMap.get(row._id);
+    if (!point) continue;
+    point.salesAed = row.salesAed;
+    point.orderCount = row.orderCount;
+    point.quantitySold = row.quantitySold;
+  }
+
+  for (const row of clickRows) {
+    const point = pointMap.get(row._id);
+    if (!point) continue;
+    point.clicks = row.clicks;
+  }
+
+  return {
+    merchantIds,
+    points: Array.from(pointMap.values())
+  };
 };

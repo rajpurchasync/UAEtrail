@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogIn, LogOut, Menu, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import { isConsumerChromeHidden, MOBILE_DRAWER_MENU } from '../../config/platform';
@@ -89,6 +89,7 @@ export const MobileMenuButton = ({ tone = 'default', className = '', showOnDeskt
 const MobileMenuPanel = () => {
   const { open, closeMenu } = useMobileMenu();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
   if (isConsumerChromeHidden(pathname)) return null;
@@ -192,9 +193,10 @@ const MobileMenuPanel = () => {
           {user ? (
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 closeMenu();
-                void signOut();
+                await signOut();
+                navigate('/signed-out', { replace: true });
               }}
               className={`w-full ${navItemClass(false)}`}
             >

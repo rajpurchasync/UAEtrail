@@ -9,7 +9,7 @@ export const MOBILE_NAV = [
   { to: '/trips', label: 'Trips', match: ['/trips', '/trip'] },
   { to: '/community', label: 'Community', match: ['/community'] },
   { to: '/shop', label: 'Shop', match: ['/shop', '/product', '/merchant'] },
-  { to: '/profile', label: 'Profile', match: ['/profile', '/my-requests', '/messages', '/notifications'] },
+  { to: '/profile', label: 'Profile', match: ['/profile', '/favorites', '/my-requests', '/messages', '/notifications'] },
 ] as const;
 
 /** Extra links shown in the mobile hamburger menu. */
@@ -23,7 +23,7 @@ export const MOBILE_DRAWER_MENU = [
   {
     label: 'My Profile',
     to: '/profile',
-    match: ['/profile', '/my-requests', '/messages', '/notifications'],
+    match: ['/profile', '/favorites', '/my-requests', '/messages', '/notifications'],
     profileLink: true,
   },
   { label: 'Trails & Spots', to: '/discovery', match: ['/discovery', '/trail', '/camp'] },

@@ -1,4 +1,4 @@
-# Deployment (Single VPS + Docker)
+# Deployment (Single VPS/RHEL + Docker)
 
 ## Architecture
 
@@ -15,12 +15,12 @@ Internet
            │ /api/*
            ▼
 ┌──────────────────────────────┐
-│  api  (Express + MongoDB)    │  :4000
+│  api  (Express + MongoDB)    │  :4000 internal only
 └──────┬───────────┬───────────┘
        │           │
        ▼           ▼
-     mongo       minio        redis (reserved)
-    :27017       :9000          :6379
+    Atlas       minio        redis
+  managed DB    :9000        :6379
 ```
 
 ## Services
@@ -29,9 +29,8 @@ Internet
 |-----------|-------|---------|
 | `frontend` | nginx:1.25‑alpine | Serves the Vite SPA, reverse-proxies `/api/*` to the API |
 | `api` | node:20‑alpine (custom) | Express + MongoDB backend |
-| `mongo` | mongo:7 | Primary database |
 | `minio` | minio/minio:latest | S3‑compatible media storage |
-| `redis` | redis:7‑alpine | Reserved for future caching / rate‑limiting |
+| `redis` | redis:7‑alpine | Rate limits and SSE tickets |
 
 All defined in `docker-compose.yml`.
 
@@ -40,9 +39,10 @@ All defined in `docker-compose.yml`.
 ## Prerequisites
 
 - Docker Engine ≥ 24 and Docker Compose v2
+- Node.js 20.19+ on the host (used by `run-project.sh` / `run-project-mac.sh` / `run-project.bat`)
 - A domain name (for HTTPS)
 - SSH access to the VPS
-- MongoDB URI (use the bundled `mongo` service, or MongoDB Atlas)
+- MongoDB Atlas URIs for test, staging, and production
 
 ---
 
@@ -52,8 +52,8 @@ All defined in `docker-compose.yml`.
 # Clone or copy the project to the server
 git clone <repo-url> uaetrail && cd uaetrail
 
-# Create .env from the template
-cp .env.example .env
+# Create .env from the production template
+cp .env.production.example .env
 ```
 
 Edit `.env` and fill in **all REQUIRED values**:
@@ -63,27 +63,36 @@ Edit `.env` and fill in **all REQUIRED values**:
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 # Example .env values (DO NOT use these in production):
-MONGODB_URI=mongodb://mongo:27017/uaetrail
+RUN_ENV=production
+MONGODB_URI_PROD=mongodb+srv://USER:PASSWORD@cluster.mongodb.net/uaetrail_prod?retryWrites=true&w=majority
 JWT_ACCESS_SECRET=<64-byte-hex>
 JWT_REFRESH_SECRET=<64-byte-hex>
 S3_ACCESS_KEY_ID=minio-admin-user
 S3_SECRET_ACCESS_KEY=minio-admin-s3cr3t!
+APP_BASE_URL=https://app.example.com
+APP_BASE_URLS=https://app.example.com,https://www.example.com
+API_BASE_URL=https://app.example.com
+VITE_SITE_ORIGIN=https://app.example.com
 ```
 
 > **Note**: `docker-compose.yml` will refuse to start if required secrets are missing — this is intentional.
 
-For MongoDB Atlas, set `MONGODB_URI` to your Atlas connection string and remove the `mongo` service dependency from `docker-compose.yml` if you prefer a managed database.
+Production startup resolves MongoDB automatically from `RUN_ENV`:
+- `RUN_ENV=test` (or `local`) uses `MONGODB_URI_TEST`
+- `RUN_ENV=staging` uses `MONGODB_URI_STAGING`
+- `RUN_ENV=production` uses `MONGODB_URI_PROD`
 
 ---
 
 ## 2 — Build and Start
 
 ```bash
-docker compose up -d --build
+./run-project.sh
 ```
 
-This builds both `api` and `frontend` images and starts all services. Health checks ensure services start in the correct order:
-- `mongo` must be ready before `api` starts
+This validates env selection, builds both images, starts the stack, and runs the seed step with retries. On Windows workstations, use `run-project.bat` instead. On macOS, use `./run-project-mac.sh`.
+
+Health checks ensure services start in the correct order:
 - `minio` must be ready before `api` starts
 - `api` must pass `/health` before `frontend` starts
 
@@ -93,7 +102,7 @@ This builds both `api` and `frontend` images and starts all services. Health che
 
 ```bash
 # Seed admin user and (in non-production) demo data
-docker compose exec api npm --workspace @uaetrail/api run seed
+docker compose exec -T api npm --workspace @uaetrail/api run seed
 ```
 
 > **First admin credentials** (dev seed): `admin@uaetrails.app` / `Admin@12345`
@@ -133,10 +142,12 @@ Set these in `.env` before going live:
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `MONGODB_URI` | Yes | Database connection string |
+| `RUN_ENV` | Yes | Set to `production` on the server |
+| `MONGODB_URI_PROD` | Yes | Production Atlas connection string |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Yes | Auth tokens |
 | `APP_BASE_URL` | Yes | `https://uaetrail.ae` |
 | `APP_BASE_URLS` | Yes | Comma-separated allowed origins |
+| `API_BASE_URL` | Yes | Public app origin used in OpenAPI docs, usually same as `APP_BASE_URL` |
 | `VITE_SITE_ORIGIN` | Yes | SEO / Open Graph (Docker build arg) |
 | `GOOGLE_CLIENT_ID` | Recommended | API Google token verification |
 | `VITE_GOOGLE_CLIENT_ID` | Recommended | Frontend Google button |
@@ -180,7 +191,7 @@ curl http://localhost/health
 curl -s http://localhost | head -5
 # → <!doctype html>...
 
-# API responds
+# API responds through the frontend proxy
 curl http://localhost/api/v1/locations
 ```
 
@@ -201,19 +212,7 @@ No database migrations are required — schema is managed via MongoDB indexes cr
 
 ## Backup Strategy
 
-### MongoDB backup (local container)
-```bash
-docker compose exec mongo mongodump --archive=/data/db/backup.archive --db uaetrail
-docker compose cp mongo:/data/db/backup.archive ./uaetrail_backup_$(date +%F).archive
-```
-
-### MongoDB restore
-```bash
-docker compose cp ./uaetrail_backup.archive mongo:/data/db/backup.archive
-docker compose exec mongo mongorestore --archive=/data/db/backup.archive --drop
-```
-
-For MongoDB Atlas, use Atlas automated backups or `mongodump` against your Atlas URI.
+MongoDB runs in Atlas for supported deployments. Use Atlas automated backups or `mongodump` against `MONGODB_URI_PROD`.
 
 ### MinIO backup
 ```bash

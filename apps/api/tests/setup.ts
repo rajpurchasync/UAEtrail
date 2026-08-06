@@ -1,6 +1,9 @@
 process.env.NODE_ENV = 'test';
 process.env.PORT = '4001';
-process.env.MONGODB_URI = process.env.MONGODB_URI ?? 'mongodb://localhost:27017/uaetrail_test';
+const testMongoUri =
+  process.env.MONGODB_URI_TEST;
+process.env.MONGODB_URI =
+  process.env.MONGODB_URI ?? testMongoUri ?? 'mongodb://127.0.0.1:27017/test';
 process.env.JWT_ACCESS_SECRET =
   process.env.JWT_ACCESS_SECRET ?? 'test-access-secret-test-access-secret';
 process.env.JWT_REFRESH_SECRET =

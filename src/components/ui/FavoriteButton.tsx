@@ -6,25 +6,26 @@ import { api } from '../../api/services';
 interface FavoriteButtonProps {
   locationId?: string;
   eventId?: string;
+  productId?: string;
   className?: string;
 }
 
-export const FavoriteButton = ({ locationId, eventId, className = '' }: FavoriteButtonProps) => {
+export const FavoriteButton = ({ locationId, eventId, productId, className = '' }: FavoriteButtonProps) => {
   const { user } = useAuth();
   const [saved, setSaved] = useState(false);
   const [favoriteId, setFavoriteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!user || (!locationId && !eventId)) return;
+    if (!user || (!locationId && !eventId && !productId)) return;
     api
-      .checkFavorite(locationId, eventId)
+      .checkFavorite(locationId, eventId, productId)
       .then((res) => {
         setSaved(res.data.saved);
         setFavoriteId(res.data.favoriteId);
       })
       .catch(() => undefined);
-  }, [user, locationId, eventId]);
+  }, [user, locationId, eventId, productId]);
 
   const toggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,7 +38,7 @@ export const FavoriteButton = ({ locationId, eventId, className = '' }: Favorite
         setSaved(false);
         setFavoriteId(null);
       } else {
-        const res = await api.addFavorite({ locationId, eventId });
+        const res = await api.addFavorite({ locationId, eventId, productId });
         setSaved(true);
         setFavoriteId(res.data.id);
       }
@@ -55,7 +56,7 @@ export const FavoriteButton = ({ locationId, eventId, className = '' }: Favorite
       type="button"
       onClick={toggle}
       disabled={loading}
-      aria-label={saved ? 'Remove from saved' : 'Save location'}
+      aria-label={saved ? 'Remove from saved' : 'Save item'}
       className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-sm border border-gray-100 active:scale-95 transition-all disabled:opacity-60 ${className}`}
     >
       <Heart

@@ -9,7 +9,7 @@ interface MobileBackButtonProps {
 
 /** Back control — uses browser history when available, else fallback route. */
 export const MobileBackButton = ({
-  fallbackTo = '/profile',
+  fallbackTo = '/',
   label = 'Back',
   className = '',
 }: MobileBackButtonProps) => {

@@ -1,5 +1,5 @@
 import { AuthProvider, UserRole, UserStatus } from '../domain/enums.js';
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
 import { clearRefreshCookie, REFRESH_COOKIE_NAME, setRefreshCookie } from '../lib/auth-cookies.js';
@@ -58,6 +58,10 @@ const loginSchema = z.object({
   password: z.string().min(1)
 });
 
+const demoLoginSchema = z.object({
+  email: z.string().email()
+});
+
 const tokenSchema = z.object({ token: z.string().min(20) });
 const refreshBodySchema = z.object({ refreshToken: z.string().min(20).optional() });
 const forgotSchema = z.object({ email: z.string().email() });
@@ -84,6 +88,63 @@ const googleAuthSchema = z.object({
 
 const mapAccountTypeToTenantType = (accountType: 'company' | 'guide'): 'COMPANY' | 'GUIDE_OWNED' =>
   accountType === 'company' ? 'COMPANY' : 'GUIDE_OWNED';
+
+const demoAccountEmails = new Set([
+  'admin@uaetrails.app',
+  'organizer@uaetrails.app',
+  'guide@uaetrails.app',
+  'visitor@uaetrails.app',
+  'vendor@uaetrails.app'
+]);
+
+const demoAccountDefaults: Record<string, { password: string; role: UserRole; displayName: string }> = {
+  'admin@uaetrails.app': {
+    password: 'Admin@12345',
+    role: UserRole.PLATFORM_ADMIN,
+    displayName: 'UAE Trails Admin'
+  },
+  'organizer@uaetrails.app': {
+    password: 'Organizer@12345',
+    role: UserRole.TENANT_OWNER,
+    displayName: 'Adventure Organizer'
+  },
+  'guide@uaetrails.app': {
+    password: 'Guide@12345',
+    role: UserRole.TENANT_GUIDE,
+    displayName: 'Trail Guide'
+  },
+  'visitor@uaetrails.app': {
+    password: 'Visitor@12345',
+    role: UserRole.VISITOR,
+    displayName: 'Visitor User'
+  },
+  'vendor@uaetrails.app': {
+    password: 'Vendor@12345',
+    role: UserRole.MERCHANT_ADMIN,
+    displayName: 'Vendor Admin'
+  }
+};
+
+const isDemoLoginAllowed = (req: Request): boolean => env.NODE_ENV === 'test' || isLocalRequest(req);
+
+const isLocalHost = (value: string): boolean => {
+  const host = value.split(',')[0]?.trim() ?? '';
+  if (!host) return false;
+  const normalized = host.split(':')[0]?.toLowerCase() ?? '';
+  return normalized === 'localhost' || normalized === '127.0.0.1';
+};
+
+const isLocalRequest = (req: Request): boolean => {
+  const forwardedHost = req.headers['x-forwarded-host'];
+  if (typeof forwardedHost === 'string' && isLocalHost(forwardedHost)) {
+    return true;
+  }
+  const host = req.headers.host;
+  if (typeof host === 'string' && isLocalHost(host)) {
+    return true;
+  }
+  return isLocalHost(req.hostname ?? '');
+};
 
 const buildAuthResponse = (user: { id: string; email: string; role: UserRole }, tokens: { accessToken: string }) => ({
   user: {
@@ -212,6 +273,12 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
 authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next) => {
   try {
     const { email, password } = req.body as z.infer<typeof loginSchema>;
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (demoAccountEmails.has(normalizedEmail) && !isDemoLoginAllowed(req)) {
+      throw new ApiError(403, 'demo_account_restricted', 'Demo accounts are available only on localhost or test environments.');
+    }
+
     const user = await findAuthUserByEmail(email);
     if (!user?.passwordHash) {
       throw new ApiError(401, 'oauth_account', 'This account uses Google sign-in.');
@@ -233,6 +300,71 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
 
     respondWithAuth(res, 200, { id: user._id, email: user.email, role: user.role }, tokens, {
       emailVerified: Boolean(user.emailVerifiedAt)
+    });
+
+    await updateAuthUserLastActive(user._id);
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.post('/demo-login', validate({ body: demoLoginSchema }), async (req, res, next) => {
+  try {
+    const { email } = req.body as z.infer<typeof demoLoginSchema>;
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!demoAccountEmails.has(normalizedEmail)) {
+      throw new ApiError(404, 'demo_account_not_found', 'Demo account is not available.');
+    }
+
+    if (!isDemoLoginAllowed(req)) {
+      throw new ApiError(403, 'demo_account_restricted', 'Demo accounts are available only on localhost or test environments.');
+    }
+
+    let user = await findAuthUserByEmail(normalizedEmail);
+    if (!user) {
+      const defaults = demoAccountDefaults[normalizedEmail];
+      if (!defaults) {
+        throw new ApiError(404, 'demo_account_not_found', 'Demo account is not available.');
+      }
+
+      const passwordHash = await hashPassword(defaults.password);
+      const referralCode = await createUniqueReferralCode();
+      user = await createAuthUser({
+        email: normalizedEmail,
+        passwordHash,
+        googleId: null,
+        authProvider: 'EMAIL',
+        role: defaults.role,
+        status: UserStatus.ACTIVE,
+        emailVerifiedAt: new Date(),
+        lastActiveAt: new Date(),
+        referralCode,
+        profile: {
+          displayName: defaults.displayName,
+          phone: null,
+          bio: null,
+          avatarUrl: null
+        }
+      });
+    }
+
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new ApiError(403, 'account_suspended', 'Account is suspended.');
+    }
+
+    const tokens = await createSession({
+      userId: user._id,
+      email: user.email,
+      role: user.role,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent']
+    });
+
+    respondWithAuth(res, 200, { id: user._id, email: user.email, role: user.role }, tokens, {
+      emailVerified: Boolean(user.emailVerifiedAt),
+      authProvider: user.authProvider.toLowerCase(),
+      demoLogin: true
     });
 
     await updateAuthUserLastActive(user._id);

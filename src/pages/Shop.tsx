@@ -14,6 +14,7 @@ import { ShopFeaturedMarquee } from '../components/shop/ShopFeaturedMarquee';
 import { ProductPurchaseActions } from '../components/shop/ProductPurchaseActions';
 import { ShopCartButton } from '../components/shop/ShopCartButton';
 import { ShopCartSheet } from '../components/shop/ShopCartSheet';
+import { FavoriteButton } from '../components/ui/FavoriteButton';
 import { useShopCart } from '../context/ShopCartContext';
 
 const SHOP_CHIP_CATEGORIES = [
@@ -370,8 +371,11 @@ export const Shop = () => {
                               No image
                             </div>
                           )}
+                          <div className="absolute top-2 right-2">
+                            <FavoriteButton productId={product.id} className="bg-white/95" />
+                          </div>
                           {product.discountPercent && product.discountPercent > 0 && (
-                            <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                            <span className="absolute top-2 right-14 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
                               -{product.discountPercent}%
                             </span>
                           )}

@@ -300,7 +300,7 @@ export interface ChatMessage {
 
 export interface MerchantProfile {
   id: string;
-  userId: string;
+  adminIds: string[];
   shopName: string;
   description: string | null;
   logo: string | null;
@@ -317,6 +317,8 @@ export interface Product {
   description: string | null;
   images: string[];
   priceAed: number;
+  stockQuantity: number;
+  lowStockThreshold: number;
   discountPercent: number | null;
   externalUrl: string | null;
   packagingInfo: string | null;
@@ -342,6 +344,23 @@ export interface ShopOrderItem {
   productId: string;
   quantity: number;
   unitPriceAed: number;
+}
+
+export interface ProductClick {
+  id: string;
+  productId: string;
+  timestamp: Date;
+  userId: string;
+}
+
+export interface OrderLineItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  totalAed: number;
+  status: OrderStatus;
+  fulfillmentTrackingLink: string | null;
+  timestamp: Date;
 }
 
 export interface PushSubscription {

@@ -12,28 +12,34 @@ Monorepo web platform for UAE hiking/camping with:
 npm install
 ```
 
-2. Configure backend env:
+2. Configure the root env with MongoDB Atlas and local secrets:
 ```bash
-cp apps/api/.env.example apps/api/.env
+cp .env.example .env
 ```
 
-3. Start local services:
+3. Start the full workspace stack:
 ```bash
-docker compose up -d mongo redis minio
+run-project.bat       # Windows cmd / PowerShell
+./run-project.sh      # Linux / RHEL
+./run-project-mac.sh  # macOS
 ```
 
-4. Seed the database:
-```bash
-npm run seed
-```
+Frontend runs on `http://localhost:5175`.
+API is available through the frontend proxy at `http://localhost:5175/api/v1`.
 
-5. Start frontend + API:
-```bash
-npm run dev:all
-```
+## Dependency Model
 
-Frontend runs on `http://localhost:5175`.  
-API runs on `http://localhost:4000`.
+The launch scripts are the source of truth for local runtime prerequisites. They check versions first, install what they can, and fail with a clear message when an OS-level dependency still needs manual action.
+
+| Platform | Auto-checked | Auto-installed or repaired | Version source |
+|----------|--------------|----------------------------|----------------|
+| Windows | Node.js >= 20.19.0, npm, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official ZIP download if below minimum; Docker Desktop via `winget`; Docker service start attempt | `run-project.bat` + `scripts/run-project-preflight.mjs` |
+| Linux / RHEL | Node.js >= 20.19.0, npm, Docker Engine >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker via `apt-get`, `dnf`, or `yum`; Docker service start attempt | `run-project.sh` + `scripts/run-project-preflight.mjs` |
+| macOS | Node.js >= 20.19.0, npm, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker Desktop via `brew install --cask docker`; Docker app launch attempt | `run-project-mac.sh` + `scripts/run-project-preflight.mjs` |
+
+The workspace dependencies are also handled automatically: if `node_modules` is missing, the preflight runs `npm install`.
+
+If a newer Node.js, Docker, or installer requirement is introduced later, update the launcher scripts and this table together so the README stays aligned with the actual bootstrap behavior.
 
 ## Mobile & store deployment
 
@@ -71,8 +77,8 @@ VITE_USE_API_CALENDAR=true
 VITE_USE_API_TRIP_DETAIL=true
 ```
 
-Postgres is no longer used — MongoDB is the only database. Ensure `MONGODB_URI` is set in `apps/api/.env` before starting the API.
+Postgres is no longer used. MongoDB Atlas is the only supported database path for project startup. Use `RUN_ENV=test|staging|production` with `MONGODB_URI_TEST` (test DB), `MONGODB_URI_STAGING` (uaetrail_staging DB), and `MONGODB_URI_PROD` (production DB) in the root `.env`.
 
 ## API Docs
-- Swagger UI: `http://localhost:4000/api/docs`
-- OpenAPI JSON: `http://localhost:4000/api/openapi.json`
+- Swagger UI: `http://localhost:5175/api/docs`
+- OpenAPI JSON: `http://localhost:5175/api/openapi.json`

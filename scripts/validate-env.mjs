@@ -41,12 +41,27 @@ const isSet = (key) => {
 };
 
 const minLen = (key, n) => isSet(key) && process.env[key].length >= n;
+const rawRunEnv = (process.env.RUN_ENV || (production ? 'production' : 'test')).toLowerCase();
+const runEnv = rawRunEnv === 'local' ? 'test' : rawRunEnv;
+const requiredMongoKey = runEnv === 'production'
+  ? 'MONGODB_URI_PROD'
+  : runEnv === 'staging'
+    ? 'MONGODB_URI_STAGING'
+    : 'MONGODB_URI_TEST';
 
 const errors = [];
 const warnings = [];
 
 const requiredAlways = [
-  ['MONGODB_URI', () => isSet('MONGODB_URI'), 'required — MongoDB connection string'],
+  [
+    'MONGODB_URI',
+    () => isSet(requiredMongoKey),
+    runEnv === 'production'
+      ? 'required — set MONGODB_URI_PROD'
+        : runEnv === 'staging'
+          ? 'required — set MONGODB_URI_STAGING'
+          : 'required — set MONGODB_URI_TEST'
+  ],
   ['JWT_ACCESS_SECRET', () => minLen('JWT_ACCESS_SECRET', 24), 'min 24 characters'],
   ['JWT_REFRESH_SECRET', () => minLen('JWT_REFRESH_SECRET', 24), 'min 24 characters'],
   ['S3_ACCESS_KEY_ID', () => isSet('S3_ACCESS_KEY_ID'), 'required'],
@@ -94,6 +109,9 @@ if (vapidPub !== vapidPriv) {
 
 console.log(production ? 'Production env validation' : 'Env validation');
 console.log('─'.repeat(40));
+if (isSet(requiredMongoKey)) {
+  console.log(`MongoDB source: ${requiredMongoKey}`);
+}
 
 if (errors.length === 0 && warnings.length === 0) {
   console.log('✓ All checks passed.');

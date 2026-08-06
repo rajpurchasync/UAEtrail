@@ -1,6 +1,16 @@
 import type { Db } from 'mongodb';
 
 export const ensureMongoIndexes = async (db: Db): Promise<void> => {
+  const userFavorites = db.collection('user_favorites');
+  const existingFavoriteIndexes = await userFavorites.indexes();
+  const legacyFavoriteIndexNames = new Set(['userId_1_locationId_1', 'userId_1_eventId_1', 'userId_1_productId_1']);
+
+  await Promise.all(
+    existingFavoriteIndexes
+      .filter((index) => legacyFavoriteIndexNames.has(index.name))
+      .map((index) => userFavorites.dropIndex(index.name))
+  );
+
   await Promise.all([
     db.collection('auth_users').createIndexes([
       { key: { email: 1 }, unique: true },
@@ -23,7 +33,27 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { geo: '2dsphere' } }
     ]),
     db.collection('notifications').createIndexes([{ key: { userId: 1, createdAt: -1 } }]),
-    db.collection('user_favorites').createIndexes([{ key: { userId: 1, createdAt: -1 } }]),
+    userFavorites.createIndexes([
+      { key: { userId: 1, createdAt: -1 } },
+      {
+        key: { userId: 1, locationId: 1 },
+        unique: true,
+        name: 'userId_locationId_unique',
+        partialFilterExpression: { locationId: { $type: 'string' } }
+      },
+      {
+        key: { userId: 1, eventId: 1 },
+        unique: true,
+        name: 'userId_eventId_unique',
+        partialFilterExpression: { eventId: { $type: 'string' } }
+      },
+      {
+        key: { userId: 1, productId: 1 },
+        unique: true,
+        name: 'userId_productId_unique',
+        partialFilterExpression: { productId: { $type: 'string' } }
+      }
+    ]),
     db.collection('reward_ledgers').createIndexes([{ key: { userId: 1, action: 1 } }]),
     db.collection('user_badges').createIndexes([{ key: { userId: 1 } }]),
     db.collection('events').createIndexes([
@@ -82,7 +112,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { merchantId: 1, status: 1, createdAt: -1 } }
     ]),
     db.collection('merchant_profiles').createIndexes([
-      { key: { userId: 1 }, unique: true, sparse: true }
+      { key: { adminIds: 1 } }
     ])
   ]);
 };

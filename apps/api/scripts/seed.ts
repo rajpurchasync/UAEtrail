@@ -40,7 +40,7 @@ import { createRewardLedgerEntry, createUserBadge } from '../src/lib/reward-ledg
 import { createSocialReview } from '../src/lib/social-data.js';
 import {
   createMerchantProfileForUser,
-  findMerchantProfileByUserId
+  findManagedMerchantProfileById
 } from '../src/lib/shop-store.js';
 import { upsertTenantMembership } from '../src/lib/tenant-access.js';
 import {
@@ -199,33 +199,41 @@ const upsertOrganizerApplication = async (input: {
 };
 
 const upsertMerchantProfile = async (
-  userId: string,
+  adminIds: string[],
   data: {
     shopName: string;
     description: string;
+    logo?: string;
     contactEmail: string;
     contactPhone: string;
   }
 ) => {
-  const existing = await findMerchantProfileByUserId(userId);
+  const existing = await db().collection('merchant_profiles').findOne({ shopName: data.shopName });
   if (existing) {
     const now = new Date();
     await db().collection('merchant_profiles').updateOne(
-      { userId },
+      { _id: existing._id },
       {
         $set: {
+          adminIds,
           shopName: data.shopName,
           description: data.description,
+          logo: data.logo ?? null,
           contactEmail: data.contactEmail,
           contactPhone: data.contactPhone,
           updatedAt: now
         }
       }
     );
-    return (await findMerchantProfileByUserId(userId))!;
+    return (await findManagedMerchantProfileById(adminIds[0]!, existing._id as string))!;
   }
 
-  return createMerchantProfileForUser(userId, data);
+  const created = await createMerchantProfileForUser(adminIds[0]!, data);
+  await db().collection('merchant_profiles').updateOne(
+    { _id: created.id },
+    { $set: { adminIds, logo: data.logo ?? null, updatedAt: new Date() } }
+  );
+  return (await findManagedMerchantProfileById(adminIds[0]!, created.id))!;
 };
 
 const upsertProduct = async (
@@ -263,6 +271,52 @@ const upsertProduct = async (
     },
     { upsert: true }
   );
+};
+
+const seedMerchantAnalytics = async (input: {
+  products: Array<{ id: string; priceAed: number }>;
+  userIds: string[];
+}) => {
+  await db().collection('product_clicks').deleteMany({ productId: { $in: input.products.map((product) => product.id) } });
+  await db().collection('order_line_items').deleteMany({ productId: { $in: input.products.map((product) => product.id) } });
+
+  const now = new Date();
+  const clickDocs: Array<{ _id: string; productId: string; timestamp: Date; userId: string }> = [];
+  const orderLineDocs: Array<{ _id: string; productId: string; quantity: number; totalAed: number; timestamp: Date }> = [];
+
+  for (let dayOffset = 0; dayOffset < 30; dayOffset += 1) {
+    const timestamp = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOffset, 12, 0, 0, 0));
+    for (const product of input.products) {
+      const clickCount = crypto.randomInt(3, 12);
+      for (let clickIndex = 0; clickIndex < clickCount; clickIndex += 1) {
+        clickDocs.push({
+          _id: crypto.randomUUID(),
+          productId: product.id,
+          timestamp: new Date(timestamp.getTime() + clickIndex * 60_000),
+          userId: input.userIds[crypto.randomInt(0, input.userIds.length)]!
+        });
+      }
+
+      const orderCount = crypto.randomInt(0, 4);
+      for (let orderIndex = 0; orderIndex < orderCount; orderIndex += 1) {
+        const quantity = crypto.randomInt(1, 4);
+        orderLineDocs.push({
+          _id: crypto.randomUUID(),
+          productId: product.id,
+          quantity,
+          totalAed: quantity * product.priceAed,
+          timestamp: new Date(timestamp.getTime() + orderIndex * 90_000)
+        });
+      }
+    }
+  }
+
+  if (clickDocs.length > 0) {
+    await db().collection('product_clicks').insertMany(clickDocs);
+  }
+  if (orderLineDocs.length > 0) {
+    await db().collection('order_line_items').insertMany(orderLineDocs);
+  }
 };
 
 const upsertReview = async (input: {
@@ -487,6 +541,13 @@ async function main() {
     password: credentials.visitor,
     role: UserRole.VISITOR,
     displayName: 'Visitor User'
+  });
+
+  const vendor = await upsertUser({
+    email: 'vendor@uaetrails.app',
+    password: 'Vendor@12345',
+    role: UserRole.MERCHANT_ADMIN,
+    displayName: 'Vendor Admin'
   });
 
   const pendingVisitor = await upsertUser({
@@ -987,15 +1048,26 @@ Share your live location and carry extra water in summer months.`
     { upsert: true }
   );
 
-  const merchantProfile = await upsertMerchantProfile(visitor._id, {
-    shopName: 'Desert Gear Co',
-    description: 'Quality hiking and camping gear for UAE adventures.',
-    contactEmail: 'shop@desertgear.ae',
-    contactPhone: '+971-50-1234567'
+  const nikeMerchantProfile = await upsertMerchantProfile([vendor._id], {
+    shopName: 'Nike UAE',
+    description: 'Performance footwear, hydration, and trail apparel for UAE runners.',
+    logo: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
+    contactEmail: 'nike-uae@uaetrails.app',
+    contactPhone: '+971-50-1100221'
+  });
+
+  const adidasMerchantProfile = await upsertMerchantProfile([vendor._id], {
+    shopName: 'Adidas GCC',
+    description: 'Trail gear and expedition essentials curated for Gulf conditions.',
+    logo: 'https://images.unsplash.com/photo-1514996937319-344454492b37?w=400',
+    contactEmail: 'adidas-gcc@uaetrails.app',
+    contactPhone: '+971-50-2200332'
   });
 
   const seedProducts = [
     {
+      id: 'seed-product-nike-trail-running-shoes',
+      merchantId: nikeMerchantProfile.id,
       name: 'Trail Running Shoes',
       description: 'Lightweight trail shoes with excellent grip for rocky terrain.',
       images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800'],
@@ -1005,6 +1077,8 @@ Share your live location and carry extra water in summer months.`
       status: ProductStatus.ACTIVE
     },
     {
+      id: 'seed-product-adidas-ultralight-tent-2p',
+      merchantId: adidasMerchantProfile.id,
       name: 'Ultralight Tent 2P',
       description: 'Two-person tent weighing only 1.5kg, perfect for desert camping.',
       images: ['https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800'],
@@ -1013,6 +1087,8 @@ Share your live location and carry extra water in summer months.`
       status: ProductStatus.ACTIVE
     },
     {
+      id: 'seed-product-nike-hydration-pack-3l',
+      merchantId: nikeMerchantProfile.id,
       name: 'Hydration Pack 3L',
       description: 'Hands-free hydration system with 3-liter reservoir.',
       images: ['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800'],
@@ -1023,6 +1099,8 @@ Share your live location and carry extra water in summer months.`
       status: ProductStatus.ACTIVE
     },
     {
+      id: 'seed-product-adidas-trekking-poles-pair',
+      merchantId: adidasMerchantProfile.id,
       name: 'Trekking Poles (Pair)',
       description: 'Carbon fiber trekking poles, adjustable 65-135cm.',
       images: ['https://images.unsplash.com/photo-1551632811-561732d1e306?w=800'],
@@ -1031,6 +1109,8 @@ Share your live location and carry extra water in summer months.`
       status: ProductStatus.ACTIVE
     },
     {
+      id: 'seed-product-nike-headlamp-pro-800lm',
+      merchantId: nikeMerchantProfile.id,
       name: 'Headlamp Pro 800lm',
       description: 'Rechargeable headlamp with 800 lumens, red light mode.',
       images: ['https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?w=800'],
@@ -1041,9 +1121,13 @@ Share your live location and carry extra water in summer months.`
   ];
 
   for (const product of seedProducts) {
-    const productId = `seed-product-${product.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
-    await upsertProduct(productId, merchantProfile.id, product);
+    await upsertProduct(product.id, product.merchantId, product);
   }
+
+  await seedMerchantAnalytics({
+    products: seedProducts.map((product) => ({ id: product.id, priceAed: product.priceAed })),
+    userIds: [vendor._id, visitor._id, guide._id, pendingVisitor._id]
+  });
 
   await upsertReview({
     userId: visitor._id,
@@ -1188,13 +1272,14 @@ Share your live location and carry extra water in summer months.`
   console.log(`Guide: guide@uaetrails.app / ${credentials.guide}`);
   console.log(`Guide2 (tenant owner): guide2@uaetrails.app / ${credentials.guide2}`);
   console.log(`Visitor: visitor@uaetrails.app / ${credentials.visitor}`);
+  console.log('Merchant Admin: vendor@uaetrails.app / Vendor@12345');
   console.log(`Pending Visitor: visitor2@uaetrails.app / ${credentials.pendingVisitor}`);
   console.log(`Suspended: suspended@uaetrails.app / ${credentials.suspended}`);
   console.log(`Tenant 1 (COMPANY): ${tenant.id} — ${tenant.slug}`);
   console.log(`Tenant 2 (GUIDE_OWNED): ${tenant2.id} — ${tenant2.slug}`);
   console.log(`Pending application: Hatta Hiking Club (by ${pendingVisitor.email})`);
   console.log(`Seeded by admin id: ${admin._id}`);
-  console.log(`Merchant profile: ${merchantProfile.shopName} (${seedProducts.length} products)`);
+  console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName} (${seedProducts.length} products)`);
   console.log(`Chat messages: ${chatMessages.length} seeded`);
 }
 

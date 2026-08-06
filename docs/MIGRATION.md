@@ -6,7 +6,10 @@ All required variables are documented in `.env.example` at the project root.
 Copy it to `.env` and fill in production values before starting Docker.
 
 ### Required backend variables
-- `MONGODB_URI` (local MongoDB service in docker-compose or Atlas URI)
+- `RUN_ENV` (`test`, `staging`, or `production`; `local` maps to `test`)
+- `MONGODB_URI_TEST` for test/local
+- `MONGODB_URI_STAGING` for staging
+- `MONGODB_URI_PROD` for production
 - `JWT_ACCESS_SECRET`
 - `JWT_REFRESH_SECRET`
 - `APP_BASE_URL`
@@ -26,11 +29,8 @@ Copy it to `.env` and fill in production values before starting Docker.
 ## Local Development — Bootstrap Order
 
 1. `npm install`
-2. Start MongoDB locally with `docker compose up mongo minio redis` or use Atlas
-3. Copy and configure env: `cp apps/api/.env.example apps/api/.env`
-4. `npm run seed`
-5. `npm run build:api`
-6. `npm run build`
+2. Copy and configure env: `cp .env.example .env`
+3. `run-project.bat` on Windows, `./run-project.sh` on Linux/RHEL, or `./run-project-mac.sh` on macOS
 
 ### Query timing (development)
 
@@ -38,11 +38,11 @@ Set `QUERY_TIMING=1` to log store queries slower than 25ms to stdout.
 
 ## Production (Docker) — Bootstrap Order
 
-1. `cp .env.example .env` — fill in secrets (including `MONGODB_URI`)
-2. `docker compose up -d --build`
+1. `cp .env.production.example .env` — fill in secrets, including `RUN_ENV=production` and `MONGODB_URI_PROD`
+2. `./run-project.sh`
 3. Seed initial data (admin user, sample locations, etc.):
    ```bash
-   docker compose exec api npm --workspace @uaetrail/api run seed
+   docker compose exec -T api npm --workspace @uaetrail/api run seed
    ```
 
 > In production, set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env` before seeding.
