@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveRuntimeEnv } from './resolve-runtime-env.mjs';
@@ -179,7 +180,29 @@ const main = async () => {
     delete env.MONGODB_URI_PROD;
   }
 
-  Object.assign(env, resolveRuntimeEnv({ baseEnv: env, envFilePath: path.join(rootDir, '.env') }));
+  const envFilePath = path.join(rootDir, '.env');
+  if (!existsSync(envFilePath)) {
+    throw new Error(
+      'No .env file found. Copy the example and fill in your values:\n' +
+      '  cp .env.example .env\n' +
+      'Then set MONGODB_URI_TEST to your MongoDB Atlas connection string.'
+    );
+  }
+
+  try {
+    Object.assign(env, resolveRuntimeEnv({ baseEnv: env, envFilePath }));
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes('Missing MongoDB URI')) {
+      throw new Error(
+        msg + '\n\n' +
+        'Set it in your .env file:\n' +
+        '  MONGODB_URI_TEST=mongodb+srv://USER:PASSWORD@cluster.mongodb.net/test?retryWrites=true&w=majority\n' +
+        'See .env.example for all required variables.'
+      );
+    }
+    throw error;
+  }
 
   if (mode === 'fast' && env.MONGODB_URI_SOURCE !== 'MONGODB_URI_TEST') {
     throw new Error(

@@ -7,8 +7,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
 
   await Promise.all(
     existingFavoriteIndexes
-      .filter((index) => legacyFavoriteIndexNames.has(index.name))
-      .map((index) => userFavorites.dropIndex(index.name))
+      .map((index) => index.name)
+      .filter((indexName): indexName is string => typeof indexName === 'string')
+      .filter((indexName) => legacyFavoriteIndexNames.has(indexName))
+      .map((indexName) => userFavorites.dropIndex(indexName))
   );
 
   await Promise.all([

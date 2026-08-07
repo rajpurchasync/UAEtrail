@@ -296,6 +296,14 @@ const main = () => {
   ensureMinimumVersion('Node.js', nodeVersion, minNodeVersion);
   console.log(`[preflight] Node.js ${nodeVersion} OK (minimum ${minNodeVersion}).`);
 
+  if (!existsSync(path.join(rootDir, '.env'))) {
+    throw new Error(
+      'No .env file found. Create one before starting the project:\n' +
+      '  cp .env.example .env\n' +
+      'Then set MONGODB_URI_TEST (and other required variables) inside it.'
+    );
+  }
+
   const npmVersion = readVersion('npm', ['--version'], 'npm', /(\d+\.\d+\.\d+)/);
   console.log(`[preflight] npm ${npmVersion} OK.`);
 

@@ -116,13 +116,33 @@ export const resolveRuntimeEnv = ({
 
 const currentFilePath = fileURLToPath(import.meta.url);
 if (process.argv[1] && path.resolve(process.argv[1]) === currentFilePath) {
+  const envFilePath = path.resolve(process.cwd(), '.env');
+  if (!existsSync(envFilePath)) {
+    console.error(
+      'No .env file found. Create one before starting the project:\n' +
+      '  cp .env.example .env\n' +
+      'Then set MONGODB_URI_TEST (and other required variables) inside it.'
+    );
+    process.exit(1);
+  }
+
   try {
-    const resolved = resolveRuntimeEnv();
+    const resolved = resolveRuntimeEnv({ envFilePath });
     for (const [key, value] of Object.entries(resolved)) {
       process.stdout.write(`${key}=${value}\n`);
     }
   } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes('Missing MongoDB URI')) {
+      console.error(
+        msg + '\n\n' +
+        'Set it in your .env file:\n' +
+        '  MONGODB_URI_TEST=mongodb+srv://USER:PASSWORD@cluster.mongodb.net/test?retryWrites=true&w=majority\n' +
+        'See .env.example for all required variables.'
+      );
+    } else {
+      console.error(msg);
+    }
     process.exit(1);
   }
 }

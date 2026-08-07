@@ -17,6 +17,11 @@ export const Dialog = ({ open, onClose, title, children, className = '' }: Dialo
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -32,7 +37,7 @@ export const Dialog = ({ open, onClose, title, children, className = '' }: Dialo
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !panel) return;
@@ -60,7 +65,7 @@ export const Dialog = ({ open, onClose, title, children, className = '' }: Dialo
       document.body.style.overflow = '';
       previousFocus.current?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
