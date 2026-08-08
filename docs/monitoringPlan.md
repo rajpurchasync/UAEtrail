@@ -34,6 +34,9 @@ Since this is a zero-cost, single-server deployment, all agents will be installe
 * [x] **Global Error Capturing:** Implemented in `apps/api/src/index.ts` with `pino.fatal()` and process termination.
 * [x] **Frontend Error Boundary:** Implemented in `src/components/ErrorBoundary.tsx`, posting stack traces to `/api/v1/logs/client-error`.
 * [x] **API Metrics Middleware:** Implemented in `apps/api/src/lib/metrics.ts` and exposed via `/metrics` route in `apps/api/src/app.ts`.
+* [x] **Query timing diagnostics for perf regressions:** `apps/api/src/lib/query-timing.ts` logs store calls slower than 25ms when `QUERY_TIMING=1`.
+
+Cross-platform performance/auth/access carry-forward: `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
 
 ## Phase 2 — Log Storage, Compression & Retention
 

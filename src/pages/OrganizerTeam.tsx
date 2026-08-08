@@ -7,6 +7,9 @@ import { TenantSwitcher } from '../components/ui';
 export const OrganizerTeam = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [members, setMembers] = useState<TeamMember[]>([]);
+  const [roleDrafts, setRoleDrafts] = useState<Record<string, 'tenant_admin' | 'tenant_guide'>>({});
+  const [savingMemberId, setSavingMemberId] = useState<string | null>(null);
+  const [busyActionMemberId, setBusyActionMemberId] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [role, setRole] = useState<'tenant_admin' | 'tenant_guide'>('tenant_guide');
@@ -17,6 +20,13 @@ export const OrganizerTeam = () => {
     try {
       const response = await api.getOrganizerTeam(activeTenantId);
       setMembers(response.data);
+      const drafts: Record<string, 'tenant_admin' | 'tenant_guide'> = {};
+      response.data.forEach((member) => {
+        if (member.role === 'tenant_admin' || member.role === 'tenant_guide') {
+          drafts[member.id] = member.role;
+        }
+      });
+      setRoleDrafts(drafts);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Failed to load team');
     }
@@ -38,6 +48,50 @@ export const OrganizerTeam = () => {
       await loadMembers(tenantId);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Failed to add member');
+    }
+  };
+
+  const updateMemberRole = async (memberId: string) => {
+    if (!tenantId) return;
+    const nextRole = roleDrafts[memberId];
+    if (!nextRole) return;
+    setError(null);
+    setSavingMemberId(memberId);
+    try {
+      await api.updateOrganizerTeamMemberRole(tenantId, memberId, nextRole);
+      await loadMembers(tenantId);
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : 'Failed to update member role');
+    } finally {
+      setSavingMemberId(null);
+    }
+  };
+
+  const toggleMemberStatus = async (memberId: string, nextActive: boolean) => {
+    if (!tenantId) return;
+    setError(null);
+    setBusyActionMemberId(memberId);
+    try {
+      await api.toggleOrganizerTeamMemberStatus(tenantId, memberId, nextActive);
+      await loadMembers(tenantId);
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : 'Failed to update member access');
+    } finally {
+      setBusyActionMemberId(null);
+    }
+  };
+
+  const removeMember = async (memberId: string) => {
+    if (!tenantId) return;
+    setError(null);
+    setBusyActionMemberId(memberId);
+    try {
+      await api.removeOrganizerTeamMember(tenantId, memberId);
+      await loadMembers(tenantId);
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : 'Failed to remove member');
+    } finally {
+      setBusyActionMemberId(null);
     }
   };
 
@@ -72,13 +126,14 @@ export const OrganizerTeam = () => {
           </form>
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
         </section>
-        <section className="bg-white border rounded-lg overflow-hidden">
+        <section className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left">Name</th>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Role</th>
+                <th className="px-4 py-3 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -86,7 +141,59 @@ export const OrganizerTeam = () => {
                 <tr key={member.id} className="border-t">
                   <td className="px-4 py-3">{member.displayName}</td>
                   <td className="px-4 py-3">{member.email}</td>
-                  <td className="px-4 py-3 capitalize">{member.role.replace('_', ' ')}</td>
+                  <td className="px-4 py-3">
+                    {member.role === 'tenant_owner' ? (
+                      <span className="capitalize">tenant owner</span>
+                    ) : (
+                      <select
+                        className="border rounded-md px-2 py-1.5 text-xs"
+                        value={roleDrafts[member.id] ?? 'tenant_guide'}
+                        onChange={(event) =>
+                          setRoleDrafts((current) => ({
+                            ...current,
+                            [member.id]: event.target.value as 'tenant_admin' | 'tenant_guide'
+                          }))
+                        }
+                      >
+                        <option value="tenant_guide">Guide</option>
+                        <option value="tenant_admin">Admin</option>
+                      </select>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {member.role === 'tenant_owner' ? (
+                        <span className="text-xs text-gray-400">Owner role is fixed</span>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            disabled={savingMemberId === member.id || (roleDrafts[member.id] ?? member.role) === member.role}
+                            onClick={() => void updateMemberRole(member.id)}
+                            className="px-2.5 py-1.5 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs disabled:opacity-50"
+                          >
+                            {savingMemberId === member.id ? 'Saving...' : 'Save role'}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={busyActionMemberId === member.id}
+                            onClick={() => void toggleMemberStatus(member.id, !(member.isActive ?? true))}
+                            className="px-2.5 py-1.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 text-xs disabled:opacity-50"
+                          >
+                            {busyActionMemberId === member.id ? 'Working...' : (member.isActive ?? true) ? 'Disable' : 'Enable'}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={busyActionMemberId === member.id}
+                            onClick={() => void removeMember(member.id)}
+                            className="px-2.5 py-1.5 rounded bg-rose-100 text-rose-800 hover:bg-rose-200 text-xs disabled:opacity-50"
+                          >
+                            Remove
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

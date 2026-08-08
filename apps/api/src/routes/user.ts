@@ -1,8 +1,8 @@
-import { ActivityType, LocationUnlockSource, OrganizerApplicationStatus, RequestStatus, RewardAction } from '../domain/enums.js';
+import { ActivityType, LocationUnlockSource, NotificationType, OrganizerApplicationStatus, RequestStatus, RewardAction, UserRole } from '../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
-import { toLocationDto, buildEventDto, toParticipantPreviews } from '../lib/mappers.js';
+import { toLocationDto, buildEventDto, toParticipantPreviews, toSharedRole } from '../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { optionalAuth } from '../middleware/optional-auth.js';
@@ -18,7 +18,7 @@ import { awardPointsDefault, getLeaderboardDefault, getRewardStatsDefault, getRe
 import { buildLocationCreateData } from '../services/location-submit.js';
 import { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { createAuditLog } from '../lib/audit.js';
-import { findAuthUserById, listAuthUsers, updateAuthUserProfile } from '../lib/auth-users.js';
+import { findAuthUserByEmail, findAuthUserById, listAuthUsers, updateAuthUserCore, updateAuthUserProfile } from '../lib/auth-users.js';
 import {
   assertPremiumAccess,
   buildPremiumSummary,
@@ -31,6 +31,7 @@ import { listActiveLocations } from '../lib/location-query.js';
 import { env } from '../config/env.js';
 import { getStripe, isStripeConfigured } from '../lib/stripe.js';
 import { clearRefreshCookie } from '../lib/auth-cookies.js';
+import { signAccessToken } from '../lib/jwt.js';
 import { deleteUserAccount, getAccountDeletionInfo } from '../services/account-deletion.js';
 import { buildUserDataExport } from '../services/data-export.js';
 import {
@@ -70,7 +71,22 @@ import {
   updateEventRequestNote
 } from '../lib/event-engagement-store.js';
 import { removePushSubscription, upsertPushSubscription } from '../lib/push-subscriptions.js';
-import { listUserNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../lib/notifications-store.js';
+import { createNotificationRecord, listUserNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../lib/notifications-store.js';
+import {
+  acceptGroupInviteByToken,
+  createGroupInvite,
+  createGroupWallMessage,
+  createKidGroupMember,
+  createSocialGroup,
+  findGroupById,
+  getGroupMembership,
+  listGroupInvites,
+  listGroupMembersDetailed,
+  listGroupsForUser,
+  listGroupWallMessages,
+  removeGroupMembership,
+  setGroupMembershipActiveState
+} from '../lib/social-groups-store.js';
 
 const eventIdParamSchema = z.object({ id: z.string().min(1) });
 const requestIdParamSchema = z.object({ id: z.string().min(1), requestId: z.string().min(1) });
@@ -80,15 +96,65 @@ const createRequestSchema = z.object({
   selectedPackageIndex: z.number().int().min(0).max(11).optional()
 });
 
+const mediaUrlSchema = z.string().min(1).refine(
+  (value) => value.startsWith('/') || /^https?:\/\//i.test(value),
+  { message: 'Invalid media URL' }
+);
+
 const updateProfileSchema = z.object({
   displayName: z.string().min(2).max(80).optional(),
   phone: z.string().max(30).optional(),
   bio: z.string().max(400).optional(),
   avatarUrl: z.preprocess(
     (value) => (value === '' || value === null ? undefined : value),
-    z.string().url().optional()
+    mediaUrlSchema.optional()
   )
 });
+
+const roleSwitchSchema = z.object({
+  target: z.enum(['visitor', 'original'])
+});
+
+const createGroupSchema = z.object({
+  type: z.enum(['family', 'friends']),
+  name: z.string().min(2).max(80),
+  slogan: z.string().max(120).optional(),
+  bannerUrl: mediaUrlSchema.optional(),
+  photoUrl: mediaUrlSchema.optional()
+});
+
+const groupIdParamSchema = z.object({ groupId: z.string().min(1) });
+const groupMembershipIdParamSchema = z.object({ groupId: z.string().min(1), membershipId: z.string().min(1) });
+
+const groupInviteSchema = z.object({
+  email: z.string().email(),
+  role: z.enum(['buddy', 'admin']).default('buddy')
+});
+
+const acceptInviteSchema = z.object({
+  token: z.string().min(20)
+});
+
+const createKidSchema = z.object({
+  displayName: z.string().min(2).max(80),
+  role: z.enum(['buddy', 'admin']).optional()
+});
+
+const groupMembershipPatchSchema = z.object({
+  isActive: z.boolean()
+});
+
+const createWallPostSchema = z.object({
+  body: z.string().min(1).max(600)
+});
+
+const SWITCHABLE_PRIVILEGED_ROLES: UserRole[] = [
+  UserRole.PLATFORM_ADMIN,
+  UserRole.MERCHANT_ADMIN,
+  UserRole.TENANT_OWNER,
+  UserRole.TENANT_ADMIN,
+  UserRole.TENANT_GUIDE
+];
 
 const listFilterSchema = z.object({
   activityType: z.enum(['hiking', 'camping']).optional(),
@@ -781,6 +847,7 @@ userRouter.get('/me/profile', async (req, res, next) => {
         id: user._id,
         email: user.email,
         role: user.role.toLowerCase(),
+        switchedFromRole: user.profile?.switchedFromRole?.toLowerCase() ?? null,
         displayName: user.profile?.displayName,
         phone: user.profile?.phone,
         bio: user.profile?.bio,
@@ -803,6 +870,64 @@ userRouter.patch('/me/profile', validate({ body: updateProfileSchema }), async (
         bio: data.bio ?? null,
         avatarUrl: data.avatarUrl ?? null
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/role/switch', validate({ body: roleSwitchSchema }), async (req, res, next) => {
+  try {
+    const { target } = req.body as z.infer<typeof roleSwitchSchema>;
+    const user = await findAuthUserById(req.auth!.userId);
+    if (!user) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
+    }
+
+    let nextRole = user.role;
+    let switchedFromRole = user.profile?.switchedFromRole ?? null;
+
+    if (target === 'visitor') {
+      if (user.role !== UserRole.VISITOR) {
+        if (!SWITCHABLE_PRIVILEGED_ROLES.includes(user.role)) {
+          throw new ApiError(403, 'forbidden', 'Your role cannot switch to visitor mode.');
+        }
+        switchedFromRole = user.role;
+        nextRole = UserRole.VISITOR;
+        await updateAuthUserCore({
+          userId: user._id,
+          role: UserRole.VISITOR,
+          profile: { switchedFromRole }
+        });
+      }
+    } else {
+      if (user.role !== UserRole.VISITOR) {
+        throw new ApiError(400, 'invalid_role_switch', 'You are already using your original role.');
+      }
+      if (!switchedFromRole || !SWITCHABLE_PRIVILEGED_ROLES.includes(switchedFromRole)) {
+        throw new ApiError(400, 'invalid_role_switch', 'No original role is available to restore.');
+      }
+      nextRole = switchedFromRole;
+      switchedFromRole = null;
+      await updateAuthUserCore({
+        userId: user._id,
+        role: nextRole,
+        profile: { switchedFromRole: null }
+      });
+    }
+
+    const accessToken = signAccessToken({
+      sub: user._id,
+      email: user.email,
+      role: toSharedRole(nextRole)
+    });
+
+    res.json({
+      data: {
+        role: nextRole.toLowerCase(),
+        switchedFromRole: switchedFromRole ? switchedFromRole.toLowerCase() : null
+      },
+      tokens: { accessToken }
     });
   } catch (error) {
     next(error);
@@ -853,6 +978,238 @@ userRouter.patch('/me/notifications/read-all', async (req, res, next) => {
   try {
     const count = await markAllNotificationsAsRead(req.auth!.userId);
     res.json({ message: 'All notifications marked as read.', count });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.get('/me/groups', async (req, res, next) => {
+  try {
+    const groups = await listGroupsForUser(req.auth!.userId);
+    res.json({ data: groups.map((group) => ({ ...group, createdAt: group.createdAt, updatedAt: group.updatedAt })) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/groups', validate({ body: createGroupSchema }), async (req, res, next) => {
+  try {
+    const body = req.body as z.infer<typeof createGroupSchema>;
+    const group = await createSocialGroup({
+      creatorUserId: req.auth!.userId,
+      type: body.type,
+      name: body.name,
+      slogan: body.slogan,
+      bannerUrl: body.bannerUrl,
+      photoUrl: body.photoUrl
+    });
+    res.status(201).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.get('/me/groups/:groupId', validate({ params: groupIdParamSchema }), async (req, res, next) => {
+  try {
+    const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
+    const membership = await getGroupMembership(groupId, req.auth!.userId);
+    if (!membership) {
+      throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
+    }
+
+    const group = await findGroupById(groupId);
+    if (!group) {
+      throw new ApiError(404, 'group_not_found', 'Group not found.');
+    }
+
+    const [members, invites] = await Promise.all([
+      listGroupMembersDetailed(groupId),
+      membership.role === 'admin' ? listGroupInvites(groupId) : Promise.resolve([])
+    ]);
+
+    res.json({
+      data: {
+        group,
+        membership,
+        members,
+        invites
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/groups/:groupId/invites', validate({ params: groupIdParamSchema, body: groupInviteSchema }), async (req, res, next) => {
+  try {
+    const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
+    const body = req.body as z.infer<typeof groupInviteSchema>;
+    const membership = await getGroupMembership(groupId, req.auth!.userId);
+    if (!membership || membership.role !== 'admin') {
+      throw new ApiError(403, 'forbidden', 'Only group admins can send invites.');
+    }
+
+    const invite = await createGroupInvite({
+      groupId,
+      invitedByUserId: req.auth!.userId,
+      email: body.email,
+      role: body.role
+    });
+
+    const invitedUser = await findAuthUserByEmail(body.email.trim().toLowerCase());
+    if (invitedUser) {
+      await createNotificationRecord({
+        userId: invitedUser._id,
+        title: 'Buddy request',
+        body: 'You were invited to join a group.',
+        type: NotificationType.SYSTEM,
+        meta: {
+          kind: 'buddy_request',
+          inviteToken: invite.token,
+          groupId,
+          path: '/groups'
+        }
+      }).catch(() => undefined);
+    }
+
+    const inviteLink = `${env.APP_BASE_URL}/signup?groupInvite=${encodeURIComponent(invite.token)}`;
+
+    res.status(201).json({ data: invite, inviteLink });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/group-invites/accept', validate({ body: acceptInviteSchema }), async (req, res, next) => {
+  try {
+    const body = req.body as z.infer<typeof acceptInviteSchema>;
+    const user = await findAuthUserById(req.auth!.userId);
+    if (!user) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
+    }
+
+    let accepted;
+    try {
+      accepted = await acceptGroupInviteByToken({
+        token: body.token,
+        userId: user._id,
+        email: user.email
+      });
+    } catch (error) {
+      throw new ApiError(400, 'invite_email_mismatch', error instanceof Error ? error.message : 'Invalid invite.');
+    }
+
+    if (!accepted) {
+      throw new ApiError(404, 'invite_not_found', 'Invite not found.');
+    }
+    if (accepted.status !== 'accepted') {
+      throw new ApiError(400, 'invite_not_active', 'Invite is no longer active.');
+    }
+
+    const group = await findGroupById(accepted.groupId);
+    if (group) {
+      await createNotificationRecord({
+        userId: group.adminUserId,
+        title: 'Invite accepted',
+        body: `${user.profile.displayName ?? user.email} joined ${group.name}.`,
+        type: NotificationType.SYSTEM,
+        meta: {
+          kind: 'buddy_request',
+          groupId: accepted.groupId,
+          path: '/groups'
+        }
+      }).catch(() => undefined);
+    }
+
+    res.json({ message: 'Invite accepted.', data: accepted });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.patch('/me/groups/:groupId/members/:membershipId', validate({ params: groupMembershipIdParamSchema, body: groupMembershipPatchSchema }), async (req, res, next) => {
+  try {
+    const { groupId, membershipId } = req.params as z.infer<typeof groupMembershipIdParamSchema>;
+    const body = req.body as z.infer<typeof groupMembershipPatchSchema>;
+    const membership = await getGroupMembership(groupId, req.auth!.userId);
+    if (!membership || membership.role !== 'admin') {
+      throw new ApiError(403, 'forbidden', 'Only group admins can change member access.');
+    }
+
+    const updated = await setGroupMembershipActiveState(membershipId, body.isActive);
+    res.json({ data: updated });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.delete('/me/groups/:groupId/members/:membershipId', validate({ params: groupMembershipIdParamSchema }), async (req, res, next) => {
+  try {
+    const { groupId, membershipId } = req.params as z.infer<typeof groupMembershipIdParamSchema>;
+    const membership = await getGroupMembership(groupId, req.auth!.userId);
+    if (!membership || membership.role !== 'admin') {
+      throw new ApiError(403, 'forbidden', 'Only group admins can remove members.');
+    }
+
+    const result = await removeGroupMembership(membershipId);
+    res.json({ data: result });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/groups/:groupId/kids', validate({ params: groupIdParamSchema, body: createKidSchema }), async (req, res, next) => {
+  try {
+    const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
+    const body = req.body as z.infer<typeof createKidSchema>;
+    const membership = await getGroupMembership(groupId, req.auth!.userId);
+    if (!membership || membership.role !== 'admin') {
+      throw new ApiError(403, 'forbidden', 'Only group admins can add kids.');
+    }
+
+    const kid = await createKidGroupMember({
+      groupId,
+      createdByUserId: req.auth!.userId,
+      displayName: body.displayName,
+      role: body.role
+    });
+
+    res.status(201).json({ data: kid });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.get('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema }), async (req, res, next) => {
+  try {
+    const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
+    const membership = await getGroupMembership(groupId, req.auth!.userId);
+    if (!membership) {
+      throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
+    }
+    const items = await listGroupWallMessages(groupId, 120);
+    res.json({ data: items });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema, body: createWallPostSchema }), async (req, res, next) => {
+  try {
+    const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
+    const body = req.body as z.infer<typeof createWallPostSchema>;
+    const membership = await getGroupMembership(groupId, req.auth!.userId);
+    if (!membership) {
+      throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
+    }
+
+    const message = await createGroupWallMessage({
+      groupId,
+      authorUserId: req.auth!.userId,
+      body: body.body
+    });
+
+    res.status(201).json({ data: message });
   } catch (error) {
     next(error);
   }

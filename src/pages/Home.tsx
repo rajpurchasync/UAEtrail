@@ -231,9 +231,13 @@ export const Home = () => {
                   to={accountRouteByRole(user.role)}
                   className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-medium"
                 >
-                  <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                    {getInitials(user.displayName, user.email)}
-                  </span>
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
+                  ) : (
+                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
+                      {getInitials(user.displayName, user.email)}
+                    </span>
+                  )}
                   {getFirstName(user.displayName, user.email)}
                 </Link>
               ) : (

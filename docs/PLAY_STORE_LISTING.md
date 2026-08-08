@@ -1,5 +1,7 @@
 # Google Play Store listing — UAE Trail
 
+Cross-platform auth/session/access baseline for release verification is persisted in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
+
 Use this copy when creating the Play Console listing. Adjust after final brand review.
 
 ## App name

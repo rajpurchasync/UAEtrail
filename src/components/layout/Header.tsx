@@ -67,9 +67,13 @@ export const Header = () => {
                 to={accountRouteByRole(user.role)}
                 className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium shadow-sm shadow-emerald-200"
               >
-                <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                  {getInitials(user.displayName, user.email)}
-                </span>
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="" className="w-11 h-11 rounded-full object-cover" />
+                ) : (
+                  <span className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
+                    {getInitials(user.displayName, user.email)}
+                  </span>
+                )}
                 {user.displayName?.split(' ')[0] || 'Account'}
               </Link>
             ) : (

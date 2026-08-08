@@ -1,5 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { buildLogicalBreadcrumbs } from '../../utils/logicalBreadcrumbs';
 
 interface MobileBackButtonProps {
   fallbackTo?: string;
@@ -7,31 +8,35 @@ interface MobileBackButtonProps {
   className?: string;
 }
 
-/** Back control — uses browser history when available, else fallback route. */
+/** Logical route breadcrumb navigation with clickable parent links. */
 export const MobileBackButton = ({
   fallbackTo = '/',
   label = 'Back',
   className = '',
 }: MobileBackButtonProps) => {
-  const navigate = useNavigate();
-
-  const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
-    navigate(fallbackTo);
-  };
+  const location = useLocation();
+  const journey = buildLogicalBreadcrumbs(location.pathname, location.search, {
+    fallbackTo,
+    fallbackLabel: label,
+  });
 
   return (
-    <button
-      type="button"
-      onClick={handleBack}
-      className={`inline-flex items-center gap-0.5 -ml-2 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60 min-h-[44px] ${className}`}
-      aria-label={label}
-    >
-      <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
-      <span className="text-[17px] font-medium">{label}</span>
-    </button>
+    <nav className={`flex items-center gap-1 text-sm overflow-x-auto whitespace-nowrap scrollbar-none py-1 ${className}`} aria-label="Page journey">
+      {journey.map((item, index) => {
+        const isLast = index === journey.length - 1;
+        return (
+          <div key={`${item.path}-${index}`} className="inline-flex items-center gap-1">
+            {isLast ? (
+              <span className="font-semibold text-emerald-700">{item.label}</span>
+            ) : (
+              <Link to={item.path} className="text-emerald-700/90 hover:text-emerald-800">
+                {item.label}
+              </Link>
+            )}
+            {!isLast && <ChevronLeft className="w-3.5 h-3.5 rotate-180 text-emerald-400" strokeWidth={2.25} />}
+          </div>
+        );
+      })}
+    </nav>
   );
 };

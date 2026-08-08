@@ -1,9 +1,11 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogIn, LogOut, Menu, X } from 'lucide-react';
+import { LogIn, LogOut, Menu, RefreshCw, User, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import { isConsumerChromeHidden, MOBILE_DRAWER_MENU } from '../../config/platform';
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../api/services';
+import { setStoredSession } from '../../api/client';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { getInitials } from '../../utils/userDisplay';
 
@@ -78,7 +80,7 @@ export const MobileMenuButton = ({ tone = 'default', className = '', showOnDeskt
     <button
       type="button"
       onClick={openMenu}
-      className={`${showOnDesktop ? '' : 'md:hidden'} min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
+      className={`${showOnDesktop ? '' : 'md:hidden'} h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
       aria-label="Open menu"
     >
       <Menu className="w-5 h-5" strokeWidth={2.25} />
@@ -90,9 +92,17 @@ const MobileMenuPanel = () => {
   const { open, closeMenu } = useMobileMenu();
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshUser } = useAuth();
 
-  if (isConsumerChromeHidden(pathname)) return null;
+  const isOrganizerRole =
+    user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
+  const isAdminRole = user?.role === 'platform_admin';
+  const isMerchantRole = user?.role === 'merchant_admin';
+  const isPrivilegedRole = isOrganizerRole || isAdminRole || isMerchantRole;
+  const canSwitchBack = user?.role === 'visitor' && Boolean(user?.switchedFromRole);
+
+  // only hide for admin/merchant/organizer shells — they use their own burger
+  if (isConsumerChromeHidden(pathname) && !isPrivilegedRole) return null;
 
   const profileDestination = user
     ? accountRouteByRole(user.role)
@@ -113,6 +123,145 @@ const MobileMenuPanel = () => {
     `flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors ${
       active ? 'bg-emerald-50 text-emerald-800' : 'text-gray-700 hover:bg-gray-50'
     }`;
+
+  const switchRole = async (target: 'visitor' | 'original') => {
+    closeMenu();
+    try {
+      const res = await api.switchMeRole(target);
+      setStoredSession(res.tokens);
+      await refreshUser();
+      navigate(target === 'visitor' ? '/' : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
+    } catch { /* noop */ }
+  };
+
+  if (isAdminRole || isMerchantRole) {
+    const roleLabel = isAdminRole ? 'Admin' : 'Merchant';
+    const profilePath = isAdminRole ? '/admin/overview' : '/merchant/dashboard';
+    return (
+      <div
+        className={`fixed inset-0 z-[70] transition-opacity duration-200 ${
+          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        aria-hidden={!open}
+      >
+        <button type="button" className="absolute inset-0 bg-black/40" aria-label="Close menu" onClick={closeMenu} />
+        <aside
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${roleLabel} menu`}
+          className={`absolute inset-y-0 right-0 w-[min(100vw-3rem,20rem)] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+            open ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3 px-4 pt-safe-plus-2 pb-4 border-b border-gray-100">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">{roleLabel}</p>
+              <p className="text-lg font-bold text-gray-900 truncate">{user?.displayName || 'Account'}</p>
+            </div>
+            <button type="button" onClick={closeMenu} className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100" aria-label="Close menu">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe space-y-1" aria-label={`${roleLabel} navigation`}>
+            <Link to={profilePath} onClick={closeMenu} className={navItemClass(pathname.startsWith(profilePath))}>
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
+              ) : (
+                <span className="w-9 h-9 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center">
+                  {getInitials(user?.displayName, user?.email)}
+                </span>
+              )}
+              <span className="font-semibold">{roleLabel} Dashboard</span>
+            </Link>
+            <button type="button" onClick={() => void switchRole('visitor')} className={`w-full ${navItemClass(false)}`}>
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
+                <RefreshCw className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
+              </span>
+              <span className="font-semibold">Switch to Visitor</span>
+            </button>
+            <button type="button" onClick={async () => { closeMenu(); await signOut(); navigate('/signed-out', { replace: true }); }} className={`w-full ${navItemClass(false)}`}>
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
+                <LogOut className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
+              </span>
+              <span className="font-semibold">Sign Out</span>
+            </button>
+          </nav>
+        </aside>
+      </div>
+    );
+  }
+
+  if (isOrganizerRole) {
+    return (
+      <div
+        className={`fixed inset-0 z-[70] transition-opacity duration-200 ${
+          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        aria-hidden={!open}
+      >
+        <button type="button" className="absolute inset-0 bg-black/40" aria-label="Close menu" onClick={closeMenu} />
+        <aside
+          role="dialog"
+          aria-modal="true"
+          aria-label="Organizer menu"
+          className={`absolute inset-y-0 right-0 w-[min(100vw-3rem,20rem)] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+            open ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3 px-4 pt-safe-plus-2 pb-4 border-b border-gray-100">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">Organizer</p>
+              <p className="text-lg font-bold text-gray-900 truncate">{user?.displayName || 'Account'}</p>
+            </div>
+            <button
+              type="button"
+              onClick={closeMenu}
+              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe space-y-1" aria-label="Organizer navigation">
+            <Link
+              to="/organizer/profile"
+              onClick={closeMenu}
+              className={navItemClass(pathname.startsWith('/organizer/profile'))}
+            >
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
+              ) : (
+                <span className="w-9 h-9 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center">
+                  {getInitials(user?.displayName, user?.email)}
+                </span>
+              )}
+              <span className="font-semibold">Organizer Profile</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => void switchRole('visitor')}
+              className={`w-full ${navItemClass(false)}`}
+            >
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
+                <RefreshCw className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
+              </span>
+              <span className="font-semibold">Switch to Visitor</span>
+            </button>
+            <button
+              type="button"
+              onClick={async () => { closeMenu(); await signOut(); navigate('/signed-out', { replace: true }); }}
+              className={`w-full ${navItemClass(false)}`}
+            >
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
+                <LogOut className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
+              </span>
+              <span className="font-semibold">Sign Out</span>
+            </button>
+          </nav>
+        </aside>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -189,6 +338,19 @@ const MobileMenuPanel = () => {
               </Link>
             );
           })}
+
+          {canSwitchBack && (
+            <button
+              type="button"
+              onClick={() => void switchRole('original')}
+              className={`w-full ${navItemClass(false)}`}
+            >
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50">
+                <RefreshCw className="w-5 h-5 text-emerald-600" strokeWidth={iconStroke.default} />
+              </span>
+              <span className="font-semibold text-emerald-700">Restore {user?.switchedFromRole?.replace(/_/g, ' ')}</span>
+            </button>
+          )}
 
           {user ? (
             <button

@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { api } from '../../api/services';
-import { getStoredSession } from '../../api/client';
+import { useRef, useState } from 'react';
+import { uploadMediaBlob } from '../../lib/mediaUpload';
+import { PhotoEditorDialog, type PhotoShape } from './PhotoEditorDialog';
 
 interface ImageUploadProps {
   images: string[];
@@ -10,6 +10,11 @@ interface ImageUploadProps {
   kind?: string;
   max?: number;
   label?: string;
+  outputWidth?: number;
+  outputHeight?: number;
+  allowOutputSizeChange?: boolean;
+  shapeOptions?: PhotoShape[];
+  defaultShape?: PhotoShape;
 }
 
 interface UploadingFile {
@@ -25,13 +30,22 @@ export const ImageUpload = ({
   tenantId,
   kind = 'image',
   max = 10,
-  label = 'Images'
+  label = 'Images',
+  outputWidth = 1600,
+  outputHeight = 1200,
+  allowOutputSizeChange = true,
+  shapeOptions = ['rectangle', 'circle'],
+  defaultShape = 'rectangle',
 }: ImageUploadProps) => {
   const [uploading, setUploading] = useState<UploadingFile[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [editorFile, setEditorFile] = useState<File | null>(null);
+  const [processing, setProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const queuedImagesRef = useRef<string[] | null>(null);
+  const queueRef = useRef<File[]>([]);
 
-  const handleFiles = async (files: FileList | null) => {
+  const startEditorQueue = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setError(null);
 
@@ -42,91 +56,40 @@ export const ImageUpload = ({
       return;
     }
 
-    const toUpload = Array.from(files).slice(0, replaceMode ? 1 : remaining);
-    const newUploading: UploadingFile[] = toUpload.map((f) => ({ name: f.name, progress: 'uploading' }));
-    setUploading((prev) => [...prev, ...newUploading]);
+    const toUpload = Array.from(files)
+      .filter((file) => file.type.startsWith('image/'))
+      .slice(0, replaceMode ? 1 : remaining);
 
-    const uploadOne = async (file: File): Promise<string | null> => {
-      try {
-        // 1. Get presigned URL
-        const presign = await api.presignUpload({
-          filename: file.name,
-          mimeType: file.type || 'application/octet-stream',
-          size: file.size,
-          keyPrefix,
-          tenantId,
-          kind
-        });
-
-        // 2. Upload to S3 or local dev endpoint
-        const uploadUrl = presign.data.uploadUrl.startsWith('/')
-          ? presign.data.uploadUrl
-          : presign.data.uploadUrl;
-        const isLocalUpload = uploadUrl.includes('/media/upload-local/');
-        const uploadHeaders: Record<string, string> = {
-          'Content-Type': file.type || 'application/octet-stream'
-        };
-        if (isLocalUpload) {
-          const session = getStoredSession();
-          if (session?.accessToken) {
-            uploadHeaders['Authorization'] = `Bearer ${session.accessToken}`;
-          }
-        }
-
-        const putRes = await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: uploadHeaders,
-          body: file
-        });
-        if (!putRes.ok) {
-          throw new Error(`Upload failed (${putRes.status})`);
-        }
-
-        // 3. Commit the upload
-        const committed = await api.commitUpload({
-          key: presign.data.key,
-          mimeType: file.type || 'application/octet-stream',
-          size: file.size,
-          tenantId,
-          kind
-        });
-
-        setUploading((prev) =>
-          prev.map((u) =>
-            u.name === file.name && u.progress === 'uploading'
-              ? { ...u, progress: 'done', url: committed.data.url }
-              : u
-          )
-        );
-        return committed.data.url;
-      } catch (err) {
-        setUploading((prev) =>
-          prev.map((u) =>
-            u.name === file.name && u.progress === 'uploading'
-              ? { ...u, progress: 'error' }
-              : u
-          )
-        );
-        setError(err instanceof Error ? err.message : `Failed to upload ${file.name}`);
-        return null;
-      }
-    };
-
-    // Upload all files in parallel
-    const results = await Promise.all(toUpload.map(uploadOne));
-    const newUrls = results.filter((url): url is string => url !== null);
-
-    if (newUrls.length > 0) {
-      onChange(replaceMode ? newUrls : [...images, ...newUrls]);
+    if (toUpload.length === 0) {
+      setError('Please choose image files only.');
+      return;
     }
 
-    // Clear finished uploads after a delay
-    setTimeout(() => {
-      setUploading((prev) => prev.filter((u) => u.progress === 'uploading'));
-    }, 2000);
-
-    // Reset file input
+    const newUploading: UploadingFile[] = toUpload.map((f) => ({ name: f.name, progress: 'uploading' }));
+    setUploading((prev) => [...prev, ...newUploading]);
+    queuedImagesRef.current = replaceMode ? [] : [...images];
+    setEditorFile(toUpload[0]);
+    queueRef.current = toUpload.slice(1);
     if (inputRef.current) inputRef.current.value = '';
+  };
+
+  const moveToNextFile = () => {
+    if (queueRef.current.length === 0) {
+      setEditorFile(null);
+      queuedImagesRef.current = null;
+      setTimeout(() => {
+        setUploading((items) => items.filter((u) => u.progress === 'uploading'));
+      }, 2000);
+      return;
+    }
+    const next = queueRef.current.shift() ?? null;
+    setEditorFile(next);
+  };
+
+  const cancelEditing = () => {
+    setEditorFile(null);
+    queueRef.current = [];
+    queuedImagesRef.current = null;
   };
 
   const removeImage = (index: number) => {
@@ -173,7 +136,7 @@ export const ImageUpload = ({
           onClick={() => inputRef.current?.click()}
           onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-emerald-400', 'bg-emerald-50/30'); }}
           onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-emerald-400', 'bg-emerald-50/30'); }}
-          onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-emerald-400', 'bg-emerald-50/30'); handleFiles(e.dataTransfer.files); }}
+          onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-emerald-400', 'bg-emerald-50/30'); startEditorQueue(e.dataTransfer.files); }}
         >
           <input
             ref={inputRef}
@@ -181,15 +144,15 @@ export const ImageUpload = ({
             accept="image/*"
             multiple={max > 1}
             className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
+            onChange={(e) => startEditorQueue(e.target.files)}
           />
           <p className="text-sm text-gray-500">
             <span className="text-emerald-600 font-medium">
               {max === 1 && images.length > 0 ? 'Click to change photo' : 'Click to upload'}
             </span>{' '}
-            or drag and drop
+            then crop/rotate before upload
           </p>
-          <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP up to 10 MB each</p>
+          <p className="text-xs text-gray-400 mt-1">Only the processed final image is stored</p>
         </div>
       )}
 
@@ -222,6 +185,55 @@ export const ImageUpload = ({
       )}
 
       {error && <p className="text-xs text-red-600">{error}</p>}
+
+      <PhotoEditorDialog
+        open={Boolean(editorFile)}
+        file={editorFile}
+        title="Edit photo"
+        onClose={cancelEditing}
+        applying={processing}
+        initialWidth={outputWidth}
+        initialHeight={outputHeight}
+        allowOutputSizeChange={allowOutputSizeChange}
+        shapeOptions={shapeOptions}
+        defaultShape={defaultShape}
+        onApply={async ({ blob }) => {
+          if (!editorFile) return;
+          setError(null);
+          setProcessing(true);
+          try {
+            const url = await uploadMediaBlob({
+              blob,
+              originalName: editorFile.name,
+              keyPrefix,
+              tenantId,
+              kind,
+            });
+            setUploading((prev) =>
+              prev.map((u) =>
+                u.name === editorFile.name && u.progress === 'uploading'
+                  ? { ...u, progress: 'done', url }
+                  : u
+              )
+            );
+            const nextImages = queuedImagesRef.current ? [...queuedImagesRef.current, url] : [...images, url];
+            queuedImagesRef.current = nextImages;
+            onChange(nextImages);
+            moveToNextFile();
+          } catch (err) {
+            setUploading((prev) =>
+              prev.map((u) =>
+                u.name === editorFile.name && u.progress === 'uploading'
+                  ? { ...u, progress: 'error' }
+                  : u
+              )
+            );
+            setError(err instanceof Error ? err.message : `Failed to upload ${editorFile.name}`);
+          } finally {
+            setProcessing(false);
+          }
+        }}
+      />
     </div>
   );
 };

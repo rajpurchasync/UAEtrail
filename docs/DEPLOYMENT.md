@@ -44,6 +44,16 @@ All defined in `docker-compose.yml`.
 - SSH access to the VPS
 - MongoDB Atlas URIs for test, staging, and production
 
+## performance_crossPlatform_bugfix Persisted Notes
+
+Reference: `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`
+
+Deployment-critical carry-forward:
+
+- Keep refresh token cookie flow enabled end-to-end (frontend requests must continue using `credentials: include`).
+- Ensure `APP_BASE_URL` and `APP_BASE_URLS` are correct for production origin(s), otherwise refresh and auth flows may fail cross-platform.
+- Do not regress frontend session persistence assumptions (`uaetrail_session` in localStorage).
+
 ---
 
 ## 1 — Prepare Environment

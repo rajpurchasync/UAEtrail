@@ -60,3 +60,16 @@ Phased fixes from the CTO review. **All planned remediation items complete.**
 | 4.3 | OpenAPI spec gated in production | Done |
 | 4.4 | Graceful Redis disconnect on shutdown | Done |
 | 4.5 | Reduce `lastActiveAt` write amplification | Done |
+
+---
+
+## Phase 5 — Cross-platform reliability + performance hardening (2026-08)
+
+| # | Item | Status |
+|---|------|--------|
+| 5.1 | Cookie-based refresh + localStorage auth session persistence baseline | Done |
+| 5.2 | Session-safe role switching with identity continuity (`/me/role/switch`) | Done |
+| 5.3 | Organizer team and social-group member access toggles (`isActive`) | Done |
+| 5.4 | Social content sanitization + batched post/reply/like read paths | Done |
+| 5.5 | Mongo index hardening for favorites/social query paths | Done |
+| 5.6 | Persisted handoff instructions for future agents/workspaces (`docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`) | Done |

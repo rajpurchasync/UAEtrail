@@ -20,6 +20,8 @@ interface ConsumerShellProps {
   flush?: boolean;
   maxWidth?: '4xl' | '7xl';
   back?: { fallbackTo?: string; label?: string };
+  showJourney?: boolean;
+  journey?: { fallbackTo?: string; label?: string };
 }
 
 const maxWidthClass = {
@@ -40,6 +42,8 @@ export const ConsumerShell = ({
   flush = false,
   maxWidth = '7xl',
   back,
+  showJourney = true,
+  journey,
 }: ConsumerShellProps) => {
   const layout: ConsumerLayout = layoutProp ?? (back ? 'stack' : 'tab');
   const barTitle = navTitle ?? title;
@@ -53,6 +57,8 @@ export const ConsumerShell = ({
   const hasStackSticky = layout === 'stack' && !banner;
   const hasStickyChrome = hasStackSticky || hasEditorialSticky || hasTabSticky;
   const bannerPad = layout === 'editorial' ? 'px-0 sm:px-6 lg:px-8' : 'px-0 md:px-4 lg:px-8';
+  const journeyFallbackTo = journey?.fallbackTo ?? back?.fallbackTo ?? '/';
+  const journeyLabel = journey?.label ?? back?.label ?? 'Back';
 
   return (
     <div className="min-h-screen consumer-bg md:bg-gray-50 overflow-x-clip max-w-full">
@@ -72,14 +78,14 @@ export const ConsumerShell = ({
         </div>
       )}
 
-      {banner && back && (
+      {banner && showJourney && (
         <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} pt-3 pb-1`}>
-          <MobileBackButton fallbackTo={back.fallbackTo ?? '/'} label={back.label ?? 'Back'} />
+          <MobileBackButton fallbackTo={journeyFallbackTo} label={journeyLabel} />
         </div>
       )}
 
       {banner && toolbar && (
-        <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} ${back ? 'pb-3' : 'pt-3 pb-3'} md:pb-4`}>
+        <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} ${showJourney ? 'pb-3' : 'pt-3 pb-3'} md:pb-4`}>
           {toolbar}
         </div>
       )}
@@ -91,10 +97,15 @@ export const ConsumerShell = ({
           }`}
         >
           <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad}`}>
+            {showJourney && !banner && (
+              <div className="pt-safe-plus-2 pb-1">
+                <MobileBackButton fallbackTo={journeyFallbackTo} label={journeyLabel} />
+              </div>
+            )}
             {layout === 'stack' && (
               <>
-                <div className="relative flex items-center min-h-[44px] pt-safe-plus-2 pb-2 md:pt-4">
-                  {back && (
+                <div className={`relative flex items-center min-h-[44px] pb-2 md:pt-4 ${showJourney && !banner ? 'pt-1' : 'pt-safe-plus-2'}`}>
+                  {back && !showJourney && (
                     <div className="absolute left-0 z-10 md:hidden">
                       <MobileBackButton fallbackTo={back.fallbackTo ?? '/'} label={back.label ?? 'Back'} />
                     </div>

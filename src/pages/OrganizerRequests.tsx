@@ -73,7 +73,7 @@ export const OrganizerRequests = () => {
           </select>
         </div>
 
-        <div className="bg-white border rounded-lg overflow-hidden">
+        <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>

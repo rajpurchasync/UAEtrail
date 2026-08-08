@@ -18,6 +18,7 @@ import {
   NotificationDTO,
   ParticipantDTO,
   PostDTO,
+  PostReplyDTO,
   ProductDTO,
   ReviewDTO,
   RewardCatalogDTO,
@@ -77,6 +78,7 @@ export interface TeamMember {
   email: string;
   displayName: string;
   role: string;
+  isActive?: boolean;
 }
 
 export interface EventRequestView {
@@ -112,10 +114,70 @@ export interface UserProfile {
   id?: string;
   email?: string;
   role?: string;
+  switchedFromRole?: string | null;
   displayName?: string;
   phone?: string;
   bio?: string;
   avatarUrl?: string;
+}
+
+export interface SocialGroupView {
+  id: string;
+  type: 'family' | 'friends';
+  name: string;
+  slogan?: string | null;
+  bannerUrl?: string | null;
+  photoUrl?: string | null;
+  adminUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SocialGroupMemberView {
+  id: string;
+  groupId: string;
+  userId?: string | null;
+  role: 'admin' | 'buddy';
+  memberType: 'adult' | 'kid';
+  displayName?: string | null;
+  invitedEmail?: string | null;
+  createdByUserId: string;
+  createdAt: string;
+  isActive?: boolean;
+  user?: {
+    id: string;
+    email: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+  } | null;
+}
+
+export interface SocialGroupInviteView {
+  id: string;
+  groupId: string;
+  invitedByUserId: string;
+  email: string;
+  role: 'admin' | 'buddy';
+  token: string;
+  status: 'pending' | 'accepted' | 'expired' | 'cancelled';
+  acceptedByUserId?: string | null;
+  acceptedAt?: string | null;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SocialGroupWallMessageView {
+  id: string;
+  groupId: string;
+  authorUserId: string;
+  body: string;
+  createdAt: string;
+  author?: {
+    id: string;
+    displayName: string;
+    avatarUrl?: string | null;
+  };
 }
 
 export interface AccountDeletionInfo {
@@ -297,18 +359,92 @@ export const api = {
       auth: true,
       body: JSON.stringify(payload)
     }),
-  changePassword: (payload: { currentPassword: string; newPassword: string }) =>
+  changePassword: (payload: { currentPassword: string; newPassword: string; otpToken?: string }) =>
     apiRequest<{ message: string }>('/auth/change-password', {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(payload)
     }),
+  requestChangePasswordOtp: () =>
+    apiRequest<{ message: string; otpToken?: string }>('/auth/change-password/request-otp', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify({})
+    }),
+  switchMeRole: (target: 'visitor' | 'original') =>
+    apiRequest<{ data: { role: string; switchedFromRole: string | null }; tokens: { accessToken: string } }>(
+      '/me/role/switch',
+      {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify({ target })
+      }
+    ),
   getMeNotifications: (page = 1) =>
     apiRequest<{ data: NotificationDTO[]; total: number; unreadCount: number }>(`/me/notifications?page=${page}&pageSize=50`, { auth: true }),
   markNotificationRead: (id: string) =>
     apiRequest(`/me/notifications/${id}/read`, { method: 'PATCH', auth: true }),
   markAllNotificationsRead: () =>
     apiRequest<{ count: number }>('/me/notifications/read-all', { method: 'PATCH', auth: true }),
+  getMeGroups: () => apiRequest<{ data: SocialGroupView[] }>('/me/groups', { auth: true }),
+  createMeGroup: (payload: {
+    type: 'family' | 'friends';
+    name: string;
+    slogan?: string;
+    bannerUrl?: string;
+    photoUrl?: string;
+  }) =>
+    apiRequest<{ data: SocialGroupView }>('/me/groups', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  getMeGroupDetail: (groupId: string) =>
+    apiRequest<{
+      data: {
+        group: SocialGroupView;
+        membership: SocialGroupMemberView;
+        members: SocialGroupMemberView[];
+        invites: SocialGroupInviteView[];
+      };
+    }>(`/me/groups/${groupId}`, { auth: true }),
+  createMeGroupInvite: (groupId: string, payload: { email: string; role: 'admin' | 'buddy' }) =>
+    apiRequest<{ data: SocialGroupInviteView; inviteLink: string }>(`/me/groups/${groupId}/invites`, {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  acceptMeGroupInvite: (token: string) =>
+    apiRequest<{ message: string }>(`/me/group-invites/accept`, {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify({ token })
+    }),
+  createMeGroupKid: (groupId: string, payload: { displayName: string; role?: 'admin' | 'buddy' }) =>
+    apiRequest<{ data: SocialGroupMemberView }>(`/me/groups/${groupId}/kids`, {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  updateMeGroupMemberStatus: (groupId: string, membershipId: string, isActive: boolean) =>
+    apiRequest<{ data: SocialGroupMemberView }>(`/me/groups/${groupId}/members/${membershipId}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ isActive })
+    }),
+  removeMeGroupMember: (groupId: string, membershipId: string) =>
+    apiRequest<{ data: { removed: boolean } }>(`/me/groups/${groupId}/members/${membershipId}`, {
+      method: 'DELETE',
+      auth: true
+    }),
+  getMeGroupWall: (groupId: string) =>
+    apiRequest<{ data: SocialGroupWallMessageView[] }>(`/me/groups/${groupId}/wall`, { auth: true }),
+  createMeGroupWallPost: (groupId: string, body: string) =>
+    apiRequest<{ data: SocialGroupWallMessageView }>(`/me/groups/${groupId}/wall`, {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify({ body })
+    }),
   getVapidPublicKey: () => apiRequest<{ data: { publicKey: string | null } }>('/push/vapid-public-key'),
   savePushSubscription: (payload: { endpoint: string; keys: { p256dh: string; auth: string } }) =>
     apiRequest('/me/push-subscriptions', {
@@ -416,6 +552,26 @@ export const api = {
       auth: true,
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify(payload)
+    }),
+  updateOrganizerTeamMemberRole: (tenantId: string, membershipId: string, role: 'tenant_admin' | 'tenant_guide') =>
+    apiRequest<{ data: { id: string; role: string } }>(`/organizer/team/${membershipId}`, {
+      method: 'PATCH',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId },
+      body: JSON.stringify({ role })
+    }),
+  toggleOrganizerTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
+    apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/organizer/team/${membershipId}`, {
+      method: 'PATCH',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId },
+      body: JSON.stringify({ isActive })
+    }),
+  removeOrganizerTeamMember: (tenantId: string, membershipId: string) =>
+    apiRequest(`/organizer/team/${membershipId}`, {
+      method: 'DELETE',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId }
     }),
 
   // ─── Admin - Users ──────────────────────────────────────────────────────
@@ -784,10 +940,11 @@ export const api = {
     if (filters?.page) params.set('page', String(filters.page));
     params.set('pageSize', '50');
     return apiRequest<{ data: PostDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
-      `/posts?${params.toString()}`
+      `/posts?${params.toString()}`,
+      { auth: Boolean(getStoredSession()) }
     );
   },
-  getPost: (id: string) => apiRequest<{ data: PostDTO }>(`/posts/${id}`),
+  getPost: (id: string) => apiRequest<{ data: PostDTO }>(`/posts/${id}`, { auth: Boolean(getStoredSession()) }),
   createPost: (payload: {
     category: string;
     title: string;
@@ -802,13 +959,23 @@ export const api = {
       body: JSON.stringify(payload)
     }),
   replyToPost: (postId: string, content: string) =>
-    apiRequest(`/posts/${postId}/replies`, {
+    apiRequest<{ data: PostReplyDTO }>(`/posts/${postId}/replies`, {
       method: 'POST',
       auth: true,
       body: JSON.stringify({ content })
     }),
   togglePostLike: (postId: string) =>
     apiRequest<{ data: { liked: boolean } }>(`/posts/${postId}/like`, {
+      method: 'POST',
+      auth: true
+    }),
+  toggleReplyLike: (postId: string, replyId: string) =>
+    apiRequest<{ data: { liked: boolean } }>(`/posts/${postId}/replies/${replyId}/like`, {
+      method: 'POST',
+      auth: true
+    }),
+  acceptPostReply: (postId: string, replyId: string) =>
+    apiRequest<{ data: PostDTO }>(`/posts/${postId}/replies/${replyId}/accept`, {
       method: 'POST',
       auth: true
     }),

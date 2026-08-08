@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Star } from 'lucide-react';
 import { api } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
+import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
 
 interface ReviewPrompt {
   id: string;
@@ -12,6 +14,7 @@ interface ReviewPrompt {
 
 export function ReviewPromptBanner() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [prompts, setPrompts] = useState<ReviewPrompt[]>([]);
 
   useEffect(() => {
@@ -43,6 +46,9 @@ export function ReviewPromptBanner() {
   const dismiss = async () => {
     await api.markNotificationRead(prompt.id).catch(() => {});
     setPrompts((prev) => prev.filter((p) => p.id !== prompt.id));
+    if (user?.id) {
+      void invalidateNotificationUnreadBadge(queryClient, user.id);
+    }
   };
 
   return (

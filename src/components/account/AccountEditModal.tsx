@@ -2,8 +2,8 @@ import { Bell, LogOut } from 'lucide-react';
 import { UserProfile } from '../../api/services';
 import { AppButton } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
-import { ImageUpload } from '../ui/ImageUpload';
 import { registerPushNotifications } from '../../utils/push';
+import { ProfilePhotoEditorField } from './ProfilePhotoEditorField';
 
 interface AccountEditModalProps {
   open: boolean;
@@ -35,13 +35,10 @@ export const AccountEditModal = ({
   return (
     <Dialog open={open} onClose={onClose} title="Edit profile">
       <form className="space-y-4" onSubmit={onSubmit}>
-        <ImageUpload
-          images={avatarImages}
-          onChange={(urls) => setProfile((p) => ({ ...p, avatarUrl: urls[0] ?? '' }))}
-          keyPrefix="avatars"
-          kind="avatar"
-          max={1}
-          label="Profile photo"
+        <ProfilePhotoEditorField
+          value={avatarImages[0]}
+          onChange={(url) => setProfile((p) => ({ ...p, avatarUrl: url }))}
+          disabled={saving}
         />
         <div>
           <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">

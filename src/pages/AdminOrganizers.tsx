@@ -124,7 +124,7 @@ export const AdminOrganizers = () => {
         )}
 
         {!loading && tab === 'applications' && (
-          <div className="bg-white border rounded-lg overflow-hidden">
+          <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
@@ -191,7 +191,7 @@ export const AdminOrganizers = () => {
                 </button>
               ))}
             </div>
-            <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
@@ -403,7 +403,7 @@ export const AdminOrganizers = () => {
               <div>
                 <p className="text-xs text-gray-500 uppercase font-medium mb-2">Members ({tenantDetail.members.length})</p>
                 {tenantDetail.members.length > 0 ? (
-                  <div className="border rounded-lg overflow-hidden">
+                  <div className="border rounded-lg overflow-x-auto desktop-scrollbar-x">
                     <table className="min-w-full text-sm">
                       <thead className="bg-gray-50">
                         <tr>
@@ -435,7 +435,7 @@ export const AdminOrganizers = () => {
               <div>
                 <p className="text-xs text-gray-500 uppercase font-medium mb-2">Events ({tenantDetail.events.length})</p>
                 {tenantDetail.events.length > 0 ? (
-                  <div className="border rounded-lg overflow-hidden">
+                  <div className="border rounded-lg overflow-x-auto desktop-scrollbar-x">
                     <table className="min-w-full text-sm">
                       <thead className="bg-gray-50">
                         <tr>

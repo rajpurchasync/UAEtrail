@@ -1,7 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
+import { UserRole } from '../src/domain/enums.js';
 import { REFRESH_COOKIE_NAME } from '../src/lib/auth-cookies.js';
+import { findAuthUserByEmail, updateAuthUserCore } from '../src/lib/auth-users.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 
 let app: Express;
@@ -86,6 +88,74 @@ describe('auth integration', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.data.email).toBe(email);
+  });
+
+  it('preserves the same account identity when switching roles', async () => {
+    const switchEmail = `role-switch-${Date.now()}@example.com`;
+    const switchPassword = 'RoleSwitch1';
+
+    const registerRes = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        email: switchEmail,
+        password: switchPassword,
+        displayName: 'Role Switch User',
+        accountType: 'visitor'
+      });
+
+    expect(registerRes.status).toBe(201);
+
+    const verifyRes = await request(app)
+      .post('/api/v1/auth/verify-email')
+      .send({ token: registerRes.body.verificationToken });
+    expect(verifyRes.status).toBe(200);
+
+    const createdUser = await findAuthUserByEmail(switchEmail);
+    expect(createdUser).toBeTruthy();
+
+    await updateAuthUserCore({ userId: createdUser!._id, role: UserRole.PLATFORM_ADMIN });
+
+    const loginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: switchEmail, password: switchPassword });
+
+    expect(loginRes.status).toBe(200);
+
+    const switchVisitorRes = await request(app)
+      .post('/api/v1/me/role/switch')
+      .set('Authorization', `Bearer ${loginRes.body.tokens.accessToken}`)
+      .send({ target: 'visitor' });
+
+    expect(switchVisitorRes.status).toBe(200);
+    expect(switchVisitorRes.body.data.role).toBe('visitor');
+    expect(switchVisitorRes.body.data.switchedFromRole).toBe('platform_admin');
+
+    const visitorProfileRes = await request(app)
+      .get('/api/v1/me/profile')
+      .set('Authorization', `Bearer ${switchVisitorRes.body.tokens.accessToken}`);
+
+    expect(visitorProfileRes.status).toBe(200);
+    expect(visitorProfileRes.body.data.id).toBe(createdUser!._id);
+    expect(visitorProfileRes.body.data.role).toBe('visitor');
+    expect(visitorProfileRes.body.data.switchedFromRole).toBe('platform_admin');
+
+    const restoreRes = await request(app)
+      .post('/api/v1/me/role/switch')
+      .set('Authorization', `Bearer ${switchVisitorRes.body.tokens.accessToken}`)
+      .send({ target: 'original' });
+
+    expect(restoreRes.status).toBe(200);
+    expect(restoreRes.body.data.role).toBe('platform_admin');
+    expect(restoreRes.body.data.switchedFromRole).toBeNull();
+
+    const restoredProfileRes = await request(app)
+      .get('/api/v1/me/profile')
+      .set('Authorization', `Bearer ${restoreRes.body.tokens.accessToken}`);
+
+    expect(restoredProfileRes.status).toBe(200);
+    expect(restoredProfileRes.body.data.id).toBe(createdUser!._id);
+    expect(restoredProfileRes.body.data.role).toBe('platform_admin');
+    expect(restoredProfileRes.body.data.switchedFromRole).toBeNull();
   });
 
   it('logs out and clears refresh cookie', async () => {

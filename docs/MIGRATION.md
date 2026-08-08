@@ -36,6 +36,16 @@ Copy it to `.env` and fill in production values before starting Docker.
 
 Set `QUERY_TIMING=1` to log store queries slower than 25ms to stdout.
 
+## 2026-08 Persisted Baseline
+
+Cross-platform performance/auth/access carry-forward is tracked in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
+
+Migration/infrastructure invariants from this workstream:
+
+- Preserve startup index provisioning for favorites/social collections (including partial unique favorites indexes).
+- Preserve cookie-refresh + bearer-access token model; avoid reverting to body refresh-token usage in production.
+- Preserve role-switch identity continuity (`/me/role/switch`) and `isActive` membership toggles for team/group records.
+
 ## Production (Docker) — Bootstrap Order
 
 1. `cp .env.production.example .env` — fill in secrets, including `RUN_ENV=production` and `MONGODB_URI_PROD`

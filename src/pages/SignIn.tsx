@@ -7,6 +7,11 @@ import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
 import { resolveAuthRedirect } from '../utils/authRedirect';
+import {
+  clearAuthReturnContext,
+  parseAuthReturnContextFromSearch,
+  saveAuthReturnContext
+} from '../utils/authReturnContext';
 import { PageMeta } from '../components/seo/PageMeta';
 
 export const SignIn = () => {
@@ -17,11 +22,21 @@ export const SignIn = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isPrivateLanHost =
+    /^192\.168\./.test(hostname) ||
+    /^10\./.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname);
   const isLocalDevHost =
-    typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    hostname === 'localhost' || hostname === '127.0.0.1';
+  const isDevMode = import.meta.env.DEV;
   const isTestMode = import.meta.env.MODE === 'test';
-  const showRoleQuickAccess = isLocalDevHost || isTestMode;
+  const runtimeEnv = String(import.meta.env.VITE_RUN_ENV ?? '').toLowerCase();
+  const isNonProdRuntime = runtimeEnv === 'test' || runtimeEnv === 'staging';
+  const showRoleQuickAccess =
+    (isDevMode && (isLocalDevHost || isPrivateLanHost)) ||
+    isTestMode ||
+    isNonProdRuntime;
 
   const from = resolveAuthRedirect(
     (location.state as { from?: string } | null)?.from,
@@ -40,11 +55,29 @@ export const SignIn = () => {
     navigate('/');
   };
 
+  const isFromValidForRole = (path: string, role: string): boolean => {
+    // non-visitor roles must always land on their hub unless returning to a role-specific path
+    const organizerRoles = ['tenant_owner', 'tenant_admin', 'tenant_guide'];
+    if (organizerRoles.includes(role)) return path.startsWith('/organizer');
+    if (role === 'platform_admin') return path.startsWith('/admin');
+    if (role === 'merchant_admin') return path.startsWith('/merchant');
+    return true;
+  };
+
   const completeAuth = async (signedInUser: Awaited<ReturnType<typeof signIn>>) => {
-    if (from && from !== '/' && from !== '/signin' && from !== '/signup') {
+    if (from && from !== '/' && from !== '/signin' && from !== '/signup' &&
+        isFromValidForRole(from, signedInUser.role)) {
+      const context = parseAuthReturnContextFromSearch(searchParams, from);
+      if (context) {
+        saveAuthReturnContext(context);
+      } else {
+        clearAuthReturnContext();
+      }
       navigate(from, { replace: true });
       return;
     }
+
+    clearAuthReturnContext();
 
     if (
       signedInUser.role === 'tenant_owner' ||
@@ -186,7 +219,7 @@ export const SignIn = () => {
 
         {showRoleQuickAccess && (
           <div className="mt-5 pt-4 border-t">
-            <p className="text-xs font-medium text-gray-700 mb-2">Role quick access (local/test)</p>
+            <p className="text-xs font-medium text-gray-700 mb-2">Role quick access (non-production)</p>
             <div className="flex flex-wrap gap-2">
               {demoAccounts.map((account) => (
                 <button

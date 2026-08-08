@@ -734,7 +734,7 @@ export const MerchantDashboard = () => {
                 </form>
               )}
 
-              <div className="bg-white border rounded-lg overflow-hidden">
+              <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
                 <table className="min-w-full text-sm">
                   <thead className="bg-gray-50">
                     <tr>
@@ -788,7 +788,7 @@ export const MerchantDashboard = () => {
             <h3 className="font-semibold text-gray-900">Order Fulfillment</h3>
             <p className="text-sm text-gray-500">Track status updates for orders belonging to the selected store.</p>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto desktop-scrollbar-x">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>

@@ -233,6 +233,7 @@ export interface AuthUser {
   role: UserRole;
   displayName?: string | null;
   avatarUrl?: string | null;
+  switchedFromRole?: string | null;
 }
 
 export interface AuthTokens {
@@ -315,6 +316,9 @@ export interface PostReplyDTO {
   authorAvatar?: string | null;
   authorMembershipTier?: MembershipTierDTO | null;
   content: string;
+  likedByMe: boolean;
+  likeCount: number;
+  isAccepted: boolean;
   createdAt: string;
 }
 
@@ -332,8 +336,10 @@ export interface PostDTO {
   authorName: string;
   authorAvatar?: string | null;
   authorMembershipTier?: MembershipTierDTO | null;
+  likedByMe: boolean;
   likeCount: number;
   replyCount: number;
+  acceptedReplyId?: string | null;
   replies: PostReplyDTO[];
   createdAt: string;
   updatedAt: string;

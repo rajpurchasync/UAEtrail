@@ -5,6 +5,8 @@
 > **Stack**: React 18 + Vite · Express + MongoDB · Tailwind CSS · S3/MinIO  
 > **Note**: This guide was written during initial development. The backend now uses MongoDB exclusively (Prisma/PostgreSQL removed).
 
+> **Addendum (2026-08)**: Cross-platform auth/session/access/performance carry-forward instructions are persisted in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
+
 ---
 
 ## 1. Platform Vision

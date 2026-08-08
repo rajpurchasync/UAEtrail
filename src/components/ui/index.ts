@@ -27,3 +27,5 @@ export { EmptyTripsBanner } from './EmptyTripsBanner';
 export { TripCheckInPanel } from './TripCheckInPanel';
 export { TripPricePackagesEditor } from './TripPricePackagesEditor';
 export { WithdrawRequestModal } from './WithdrawRequestModal';
+export { PhotoEditorDialog } from './PhotoEditorDialog';
+export type { PhotoShape } from './PhotoEditorDialog';

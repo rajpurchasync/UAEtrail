@@ -1,8 +1,9 @@
-import { ChevronLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { ReactNode } from 'react';
 import { MobileMenuButton } from '../layout/MobileMenu';
 import { ProfileAvatarLink } from '../layout/ProfileAvatarLink';
+import { NotificationBellPopover } from '../layout/NotificationBellPopover';
+import { ConsumerHeroBanner } from './ConsumerHeroBanner';
+import { MobileBackButton } from './MobileBackButton';
 
 interface MobileDetailShellProps {
   backTo: string;
@@ -10,25 +11,52 @@ interface MobileDetailShellProps {
   children: ReactNode;
   /** Optional right-side header action (e.g. cart button) */
   headerAction?: ReactNode;
+  /** Optional clickable hero banner above the sticky header. */
+  banner?: {
+    src: string;
+    alt?: string;
+    title?: string;
+    eyebrow?: string;
+    linkTo?: string;
+    desktopChromeOnly?: boolean;
+    desktopAction?: ReactNode;
+  };
   /** Optional fixed bottom action (e.g. join CTA) */
   footer?: ReactNode;
 }
 
 /** Mobile detail page with back navigation and optional sticky footer CTA. */
-export const MobileDetailShell = ({ backTo, backLabel = 'Back', children, headerAction, footer }: MobileDetailShellProps) => (
+export const MobileDetailShell = ({
+  backTo,
+  backLabel = 'Back',
+  children,
+  headerAction,
+  banner,
+  footer,
+}: MobileDetailShellProps) => (
   <div className={`min-h-screen consumer-bg md:bg-gray-50 ${footer ? 'pb-cta-safe md:pb-8' : ''}`}>
-    <div className="md:hidden sticky top-0 z-30 glass-header">
+    {banner && (
+      <ConsumerHeroBanner
+        src={banner.src}
+        alt={banner.alt}
+        title={banner.title}
+        eyebrow={banner.eyebrow}
+        backTo={backTo}
+        backLabel={backLabel}
+        linkTo={banner.linkTo ?? backTo}
+        linkAriaLabel={banner.linkTo ? backLabel : banner.title ?? banner.alt ?? backLabel}
+        showMobileChrome
+        desktopAction={banner.desktopAction}
+        desktopChromeOnly={banner.desktopChromeOnly}
+        className="animate-fade-up"
+      />
+    )}
+    <div className={`${banner ? 'md:hidden' : ''} sticky top-0 z-30 glass-header`}>
       <div className="max-w-6xl mx-auto px-4 pt-safe-plus-2 pb-2 flex items-center justify-between gap-2">
-        <Link
-          to={backTo}
-          className="inline-flex items-center gap-0.5 -ml-2 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
-          aria-label={backLabel}
-        >
-          <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
-          <span className="text-[17px]">{backLabel}</span>
-        </Link>
+        <MobileBackButton fallbackTo={backTo} label={backLabel} className="flex-1 min-w-0" />
         <div className="flex items-center gap-2 shrink-0">
           <ProfileAvatarLink />
+          <NotificationBellPopover />
           {headerAction}
           <MobileMenuButton />
         </div>

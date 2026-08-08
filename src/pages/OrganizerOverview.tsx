@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Calendar, Compass, Crown, MessageCircle, Plus } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Bell, Calendar, Compass, Crown, MessageCircle, Plus, ShieldCheck } from 'lucide-react';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { OrganizerShell } from '../components/organizer/OrganizerShell';
-import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { TenantSwitcher } from '../components/ui';
 import { GlassCard } from '../components/mobile/GlassCard';
 import {
@@ -17,9 +17,12 @@ import {
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useOrganizerHubData } from '../hooks/useOrganizerHubData';
 import { FEATURE_FLAGS } from '../config/platform';
+import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
+import { inferNotificationPath } from '../utils/notificationRouting';
 
 export const OrganizerOverview = () => {
   const { user, signOut, refreshUser } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const participant = useParticipantHubData();
   const organizer = useOrganizerHubData();
@@ -29,6 +32,7 @@ export const OrganizerOverview = () => {
   const [pushStatus, setPushStatus] = useState<string | null>(null);
   const [showEdit, setShowEdit] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showNotifPopover, setShowNotifPopover] = useState(false);
 
   const openEdit = useCallback(() => {
     setShowEdit(true);
@@ -71,15 +75,14 @@ export const OrganizerOverview = () => {
   return (
     <OrganizerShell
       title="Organizer"
-      action={
+      cta={
         <Link to="/organizer/events/new" className="app-cta-sm">
           <Plus className="w-4 h-4" />
           Create
         </Link>
       }
       headerExtra={
-        <div className="flex items-center justify-between gap-3">
-          <MobileBackButton fallbackTo="/" label="Explore" />
+        <div className="w-full flex items-center justify-start">
           <TenantSwitcher onChange={(value) => organizer.setTenantId(value)} />
         </div>
       }
@@ -116,7 +119,71 @@ export const OrganizerOverview = () => {
         expanded={showDetails}
         onToggle={() => setShowDetails((open) => !open)}
         onEdit={openEdit}
+        onAvatarClick={() => setShowNotifPopover((open) => !open)}
+        extra={
+          participant.unreadNotifications > 0 ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5">
+              <Bell className="w-3 h-3" />
+              {participant.unreadNotifications}
+            </span>
+          ) : null
+        }
       />
+
+      {showNotifPopover && (
+        <GlassCard padding className="mb-3 border border-emerald-100/80">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <p className="text-sm font-semibold text-neutral-900">Notifications</p>
+            {participant.unreadNotifications > 0 && (
+              <button
+                type="button"
+                onClick={async () => {
+                  await api.markAllNotificationsRead();
+                  setShowNotifPopover(false);
+                  await participant.reload();
+                  if (user?.id) {
+                    void invalidateNotificationUnreadBadge(queryClient, user.id);
+                  }
+                }}
+                className="text-xs font-semibold text-emerald-700"
+              >
+                Mark all read
+              </button>
+            )}
+          </div>
+          {participant.notifications.length === 0 ? (
+            <p className="text-xs text-neutral-600">No notifications yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {participant.notifications.map((notif) => (
+                <button
+                  key={notif.id}
+                  type="button"
+                  onClick={async () => {
+                    if (!notif.isRead) {
+                      await api.markNotificationRead(notif.id).catch(() => undefined);
+                      if (user?.id) {
+                        void invalidateNotificationUnreadBadge(queryClient, user.id);
+                      }
+                    }
+                    setShowNotifPopover(false);
+                    await participant.reload();
+                    navigate(inferNotificationPath(notif));
+                  }}
+                  className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors ${
+                    notif.isRead
+                      ? 'border-neutral-100 bg-white hover:bg-neutral-50'
+                      : 'border-emerald-100 bg-emerald-50/60 hover:bg-emerald-50'
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-neutral-900 line-clamp-1">{notif.title}</p>
+                  <p className="text-xs text-neutral-600 mt-0.5 line-clamp-2">{notif.body}</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </GlassCard>
+      )}
 
       <div className="space-y-3 animate-fade-up">
         {loading ? (
@@ -154,6 +221,12 @@ export const OrganizerOverview = () => {
                   icon: <Compass className="w-4 h-4" />,
                   label: 'Explore',
                   accent: 'neutral',
+                },
+                {
+                  to: '/organizer/security-privacy',
+                  icon: <ShieldCheck className="w-4 h-4" />,
+                  label: 'Security & privacy',
+                  accent: 'blue' as const,
                 },
                 ...(FEATURE_FLAGS.membershipEnabled
                   ? [

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 import { MembershipTierBadge } from '../ui/MembershipTierBadge';
 import { ReportContentButton } from './ReportContentDialog';
+import { buildSignInRedirect } from '../../utils/authReturnContext';
 
 interface ReviewSectionProps {
   targetType: 'location' | 'tenant';
@@ -24,6 +25,7 @@ export const ReviewSection = ({
 }: ReviewSectionProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -35,11 +37,15 @@ export const ReviewSection = ({
     accent === 'amber'
       ? 'bg-amber-600 hover:bg-amber-700'
       : 'bg-emerald-600 hover:bg-emerald-700';
+  const signInRedirect = buildSignInRedirect(location, {
+    focusSelector: '#reviews',
+    hash: '#reviews'
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      navigate('/signin', { state: { from: window.location.pathname + '#reviews' } });
+      navigate(signInRedirect.href, { state: { from: signInRedirect.from } });
       return;
     }
     if (comment.trim().length < 10) {
@@ -67,7 +73,7 @@ export const ReviewSection = ({
   };
 
   return (
-    <section id="reviews" className="scroll-mt-24">
+    <section id="reviews" className="scroll-mt-24" tabIndex={-1}>
       <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Reviews</h2>
 
       {user && !existingReview && !success && (
@@ -109,7 +115,7 @@ export const ReviewSection = ({
 
       {!user && (
         <p className="text-sm text-gray-600 mb-4">
-          <Link to="/signin" className="text-emerald-700 font-medium hover:underline">
+          <Link to={signInRedirect.href} state={{ from: signInRedirect.from }} className="text-emerald-700 font-medium hover:underline">
             Sign in
           </Link>{' '}
           to leave a review.

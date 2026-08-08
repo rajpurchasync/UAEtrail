@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/layout/Layout';
@@ -6,6 +6,9 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { DashboardRedirect } from './components/auth/DashboardRedirect';
 import { FEATURE_FLAGS } from './config/platform';
 import { NativeDeepLinkHandler } from './components/NativeDeepLinkHandler';
+import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
+import { useAuth } from './context/AuthContext';
+import { accountRouteByRole } from './utils/authRouting';
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
@@ -52,12 +55,16 @@ const JoinRequestDetail = lazy(() =>
 const Notifications = lazy(() =>
   import('./pages/Notifications').then((m) => ({ default: m.Notifications }))
 );
+const Groups = lazy(() => import('./pages/Groups').then((m) => ({ default: m.Groups })));
 const BecomeOrganizer = lazy(() =>
   import('./pages/BecomeOrganizer').then((m) => ({ default: m.BecomeOrganizer }))
 );
 const MyRewards = lazy(() => import('./pages/MyRewards').then((m) => ({ default: m.MyRewards })));
 const TrailPointsAbout = lazy(() =>
   import('./pages/TrailPointsAbout').then((m) => ({ default: m.TrailPointsAbout }))
+);
+const SecurityPrivacy = lazy(() =>
+  import('./pages/SecurityPrivacy').then((m) => ({ default: m.SecurityPrivacy }))
 );
 const Terms = lazy(() => import('./pages/Terms').then((m) => ({ default: m.Terms })));
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })));
@@ -75,20 +82,94 @@ const AuthAliasRedirect = ({ to }: { to: string }) => {
   return <Navigate to={`${to}${search}`} replace />;
 };
 
+/** Redirects non-visitor non-switched users to their role hub. */
+const ConsumerRoute = ({ children }: { children: JSX.Element }) => {
+  const { user, initializing } = useAuth();
+  if (initializing) return null;
+  if (user && user.role !== 'visitor' && !user.switchedFromRole) {
+    return <Navigate to={accountRouteByRole(user.role)} replace />;
+  }
+  return children;
+};
+
+const AuthReturnContextRestorer = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const context = loadAuthReturnContext();
+    if (!context) return;
+
+    const currentPath = `${location.pathname}${location.search}${location.hash}`;
+    if (currentPath !== context.from) {
+      return;
+    }
+
+    let rafId = 0;
+    let timeoutId = 0;
+    let cancelled = false;
+
+    const tryRestore = (attempt: number) => {
+      if (cancelled) return;
+
+      let targetElement: HTMLElement | null = null;
+      if (context.focusSelector) {
+        targetElement = document.querySelector<HTMLElement>(context.focusSelector);
+      }
+
+      if (!targetElement && location.hash.startsWith('#')) {
+        const hashTargetId = decodeURIComponent(location.hash.slice(1));
+        if (hashTargetId) {
+          targetElement = document.getElementById(hashTargetId);
+        }
+      }
+
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'auto', block: 'center' });
+        if (typeof targetElement.focus === 'function') {
+          targetElement.focus({ preventScroll: true });
+        }
+        clearAuthReturnContext();
+        return;
+      }
+
+      if (attempt >= 12) {
+        window.scrollTo({ top: context.scrollY, behavior: 'auto' });
+        clearAuthReturnContext();
+        return;
+      }
+
+      timeoutId = window.setTimeout(() => {
+        rafId = window.requestAnimationFrame(() => tryRestore(attempt + 1));
+      }, 120);
+    };
+
+    rafId = window.requestAnimationFrame(() => tryRestore(0));
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [location.hash, location.pathname, location.search]);
+
+  return null;
+};
+
 function App() {
   return (
     <ErrorBoundary>
       <Router>
         <NativeDeepLinkHandler />
+        <AuthReturnContextRestorer />
         <Layout>
         <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/discovery" element={<Discovery />} />
+          <Route path="/" element={<ConsumerRoute><Home /></ConsumerRoute>} />
+          <Route path="/discovery" element={<ConsumerRoute><Discovery /></ConsumerRoute>} />
           <Route path="/trail/:id" element={<TrailDetail />} />
           <Route path="/camp/:id" element={<CampDetail />} />
           <Route path="/calendar" element={<Navigate to="/trips" replace />} />
-          <Route path="/trips" element={<Trips />} />
+          <Route path="/trips" element={<ConsumerRoute><Trips /></ConsumerRoute>} />
           <Route
             path="/profile"
             element={
@@ -97,11 +178,11 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/trail-points" element={<TrailPointsAbout />} />
+          <Route path="/trail-points" element={<ConsumerRoute><TrailPointsAbout /></ConsumerRoute>} />
           <Route
             path="/my-rewards"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={['visitor']}>
                 <MyRewards />
               </ProtectedRoute>
             }
@@ -147,6 +228,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/groups"
+            element={
+              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+                <Groups />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/trip/:id" element={<TripDetail />} />
           <Route path="/operator/:id" element={<OperatorProfile />} />
           <Route path="/become-organizer" element={<BecomeOrganizer />} />
@@ -155,10 +244,10 @@ function App() {
             path="/membership"
             element={FEATURE_FLAGS.membershipEnabled ? <Membership /> : <Navigate to="/trail-points" replace />}
           />
-          <Route path="/shop" element={<Shop />} />
+          <Route path="/shop" element={<ConsumerRoute><Shop /></ConsumerRoute>} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/merchant/:id" element={<MerchantPublic />} />
-          <Route path="/community" element={<Community />} />
+          <Route path="/community" element={<ConsumerRoute><Community /></ConsumerRoute>} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signed-out" element={<SignedOut />} />
@@ -166,6 +255,14 @@ function App() {
           <Route path="/sign-in" element={<AuthAliasRedirect to="/signin" />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route
+            path="/security-privacy"
+            element={
+              <ProtectedRoute roles={['visitor']}>
+                <SecurityPrivacy />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/faq" element={<Faq />} />
           <Route path="/verify" element={<VerifyOTP />} />
           <Route path="/onboarding" element={<Navigate to="/" replace />} />
@@ -284,6 +381,14 @@ function App() {
             }
           />
           <Route
+            path="/organizer/security-privacy"
+            element={
+              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+                <SecurityPrivacy />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/organizer/locations"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
@@ -346,7 +451,7 @@ function App() {
           <Route
             path="/merchant/dashboard"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['merchant_admin']}>
                 <MerchantDashboard />
               </ProtectedRoute>
             }

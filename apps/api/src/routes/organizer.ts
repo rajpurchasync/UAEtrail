@@ -47,9 +47,11 @@ import {
 } from '../lib/event-engagement-store.js';
 import { createNotificationRecord, createNotificationsMany } from '../lib/notifications-store.js';
 import {
+  deleteTenantMembership,
   findCompanyGuideMembershipForUser,
   findTenantMembershipById,
   listTenantMembershipsWithUsers,
+  setTenantMembershipActiveState,
   updateTenantMembershipRole,
   upsertTenantMembership
 } from '../lib/tenant-access.js';
@@ -99,7 +101,8 @@ const teamCreateSchema = z.object({
 });
 
 const teamPatchSchema = z.object({
-  role: z.enum(['tenant_admin', 'tenant_guide'])
+  role: z.enum(['tenant_admin', 'tenant_guide']).optional(),
+  isActive: z.boolean().optional()
 });
 
 import { parseLocalDateTime } from '../lib/datetime.js';
@@ -548,7 +551,8 @@ organizerRouter.get('/team', async (req, res, next) => {
         email: member.user.email,
         displayName: member.user.profile?.displayName ?? member.user.email,
         role: member.role.toLowerCase(),
-        createdAt: member.createdAt
+        createdAt: member.createdAt,
+        isActive: member.isActive ?? true
       }))
     });
   } catch (error) {
@@ -651,7 +655,7 @@ organizerRouter.patch(
   async (req, res, next) => {
     try {
       const { membershipId } = req.params as z.infer<typeof membershipIdSchema>;
-      const { role } = req.body as z.infer<typeof teamPatchSchema>;
+      const { role, isActive } = req.body as z.infer<typeof teamPatchSchema>;
       const tenantId = req.tenantContext!.tenantId;
 
       const membership = await findTenantMembershipById(tenantId, membershipId);
@@ -659,16 +663,27 @@ organizerRouter.patch(
         throw new ApiError(404, 'membership_not_found', 'Team member not found.');
       }
 
-      const updated = await updateTenantMembershipRole(membership.id, membershipRoleToPrisma(role));
+      let updated: { id: string; role: MembershipRole; isActive: boolean } | null = null;
+      if (role) {
+        const updatedRoleMembership = await updateTenantMembershipRole(membership.id, membershipRoleToPrisma(role));
+        updated = {
+          id: updatedRoleMembership.id,
+          role: updatedRoleMembership.role,
+          isActive: (updatedRoleMembership as { isActive?: boolean }).isActive ?? true
+        };
+        await updateAuthUserCore({
+          userId: membership.userId,
+          role: role === 'tenant_admin' ? UserRole.TENANT_ADMIN : UserRole.TENANT_GUIDE
+        });
+      }
 
-      await updateAuthUserCore({
-        userId: membership.userId,
-        role: role === 'tenant_admin' ? UserRole.TENANT_ADMIN : UserRole.TENANT_GUIDE
-      });
+      if (isActive !== undefined) {
+        updated = await setTenantMembershipActiveState(membership.id, isActive);
+      }
 
       await createAuditLog({
         actorId: req.auth!.userId,
-        action: 'team.update_role',
+        action: isActive !== undefined ? 'team.update_status' : 'team.update_role',
         entityType: 'tenant_membership',
         entityId: membership.id,
         tenantId
@@ -676,10 +691,49 @@ organizerRouter.patch(
 
       res.json({
         data: {
-          id: updated.id,
-          role: updated.role.toLowerCase()
+          id: membership.id,
+          role: updated?.role?.toLowerCase() ?? membership.role.toLowerCase(),
+          isActive: updated?.isActive ?? (membership as { isActive?: boolean }).isActive ?? true
         }
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+organizerRouter.delete(
+  '/team/:membershipId',
+  requireMembershipRole([MembershipRole.TENANT_OWNER, MembershipRole.TENANT_ADMIN]),
+  validate({ params: membershipIdSchema }),
+  async (req, res, next) => {
+    try {
+      const { membershipId } = req.params as z.infer<typeof membershipIdSchema>;
+      const tenantId = req.tenantContext!.tenantId;
+
+      const membership = await findTenantMembershipById(tenantId, membershipId);
+      if (!membership) {
+        throw new ApiError(404, 'membership_not_found', 'Team member not found.');
+      }
+
+      if (membership.role === MembershipRole.TENANT_OWNER) {
+        throw new ApiError(400, 'owner_cannot_be_removed', 'The tenant owner cannot be removed.');
+      }
+
+      const removed = await deleteTenantMembership(membership.id);
+      if (!removed) {
+        throw new ApiError(500, 'membership_delete_failed', 'Failed to remove team member.');
+      }
+
+      await createAuditLog({
+        actorId: req.auth!.userId,
+        action: 'team.remove_member',
+        entityType: 'tenant_membership',
+        entityId: membership.id,
+        tenantId
+      });
+
+      res.json({ data: { removed: true } });
     } catch (error) {
       next(error);
     }

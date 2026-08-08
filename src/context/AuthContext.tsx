@@ -8,7 +8,7 @@ interface AuthContextValue {
   initializing: boolean;
   signIn: (email: string, password: string) => Promise<AuthUser>;
   signInDemo: (email: string) => Promise<AuthUser>;
-  signInWithGoogle: (idToken: string, referralCode?: string) => Promise<AuthUser>;
+  signInWithGoogle: (idToken: string, referralCode?: string, groupInviteToken?: string) => Promise<AuthUser>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
   register: (payload: {
@@ -18,6 +18,7 @@ interface AuthContextValue {
     accountType: 'visitor' | 'company' | 'guide';
     organizationName?: string;
     referralCode?: string;
+    groupInviteToken?: string;
   }) => Promise<{ verificationToken?: string }>;
 }
 
@@ -63,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return () => setSessionInvalidatedHandler(null);
     }
 
-    apiRequest<{ data: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string } }>('/me/profile', { auth: true })
+    apiRequest<{ data: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string; switchedFromRole?: string | null } }>('/me/profile', { auth: true })
       .then((res) => {
         const profile = res.data;
         const revalidatedUser: AuthUser = {
@@ -71,7 +72,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: profile.email,
           role: profile.role as AuthUser['role'],
           displayName: profile.displayName,
-          avatarUrl: profile.avatarUrl
+          avatarUrl: profile.avatarUrl,
+          switchedFromRole: profile.switchedFromRole ?? null,
         };
         setStoredUser(revalidatedUser);
         setUser(revalidatedUser);
@@ -89,6 +91,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => setSessionInvalidatedHandler(null);
   }, []);
 
+  const hydrateUserFromProfile = async (fallback: AuthUser): Promise<AuthUser> => {
+    try {
+      const res = await apiRequest<{ data: { displayName?: string; avatarUrl?: string; switchedFromRole?: string | null } }>('/me/profile', { auth: true });
+      const profile = res.data;
+      // Role comes from the login response (token), not the profile endpoint — avoids stale DB reads
+      return {
+        ...fallback,
+        displayName: profile.displayName,
+        avatarUrl: profile.avatarUrl,
+        switchedFromRole: profile.switchedFromRole ?? null,
+      };
+    } catch {
+      return fallback;
+    }
+  };
+
   const signIn = async (email: string, password: string): Promise<AuthUser> => {
     setLoading(true);
     try {
@@ -97,9 +115,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({ email, password })
       });
       setStoredSession(response.tokens);
-      setStoredUser(response.user);
-      setUser(response.user);
-      return response.user;
+      const hydrated = await hydrateUserFromProfile(response.user);
+      setStoredUser(hydrated);
+      setUser(hydrated);
+      return hydrated;
     } finally {
       setLoading(false);
     }
@@ -113,9 +132,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({ email })
       });
       setStoredSession(response.tokens);
-      setStoredUser(response.user);
-      setUser(response.user);
-      return response.user;
+      const hydrated = await hydrateUserFromProfile(response.user);
+      setStoredUser(hydrated);
+      setUser(hydrated);
+      return hydrated;
     } finally {
       setLoading(false);
     }
@@ -127,7 +147,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     displayName,
     accountType,
     organizationName,
-    referralCode
+    referralCode,
+    groupInviteToken
   }: {
     email: string;
     password: string;
@@ -135,6 +156,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     accountType: 'visitor' | 'company' | 'guide';
     organizationName?: string;
     referralCode?: string;
+    groupInviteToken?: string;
   }): Promise<{ verificationToken?: string }> => {
     setLoading(true);
     try {
@@ -146,29 +168,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           displayName,
           accountType,
           organizationName,
-          referralCode
+          referralCode,
+          groupInviteToken
         })
       });
       setStoredSession(response.tokens);
-      setStoredUser(response.user);
-      setUser(response.user);
+      const hydrated = await hydrateUserFromProfile(response.user);
+      setStoredUser(hydrated);
+      setUser(hydrated);
       return { verificationToken: response.verificationToken };
     } finally {
       setLoading(false);
     }
   };
 
-  const signInWithGoogle = async (idToken: string, referralCode?: string): Promise<AuthUser> => {
+  const signInWithGoogle = async (idToken: string, referralCode?: string, groupInviteToken?: string): Promise<AuthUser> => {
     setLoading(true);
     try {
       const response = await apiRequest<AuthResponse & { isNewUser?: boolean; emailVerified?: boolean }>('/auth/google', {
         method: 'POST',
-        body: JSON.stringify({ idToken, referralCode })
+        body: JSON.stringify({ idToken, referralCode, groupInviteToken })
       });
       setStoredSession(response.tokens);
-      setStoredUser(response.user);
-      setUser(response.user);
-      return response.user;
+      const hydrated = await hydrateUserFromProfile(response.user);
+      setStoredUser(hydrated);
+      setUser(hydrated);
+      return hydrated;
     } finally {
       setLoading(false);
     }
@@ -197,6 +222,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       role: profile.role as AuthUser['role'],
       displayName: profile.displayName,
       avatarUrl: profile.avatarUrl,
+      switchedFromRole: (profile as { switchedFromRole?: string | null }).switchedFromRole ?? null,
     };
     setStoredUser(next);
     setUser(next);

@@ -34,10 +34,12 @@ import {
   updateAuthUserEmailVerifiedAt,
   updateAuthUserGoogleLink,
   updateAuthUserPassword,
-  updateAuthUserLastActive
+  updateAuthUserLastActive,
+  updateAuthUserCore
 } from '../lib/auth-users.js';
 import { createOrganizerApplicationRecord } from '../lib/organizer-applications-store.js';
 import { processSignupRewardsDefault } from '../services/rewards.js';
+import { acceptGroupInviteByToken, acceptPendingGroupInvitesForEmail } from '../lib/social-groups-store.js';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -50,7 +52,8 @@ const registerSchema = z.object({
   displayName: z.string().min(2).max(80),
   accountType: z.enum(['visitor', 'company', 'guide']).default('visitor'),
   organizationName: z.string().min(2).max(120).optional(),
-  referralCode: z.string().min(4).max(12).optional()
+  referralCode: z.string().min(4).max(12).optional(),
+  groupInviteToken: z.string().min(20).optional()
 });
 
 const loginSchema = z.object({
@@ -77,13 +80,15 @@ const resetSchema = z.object({
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: resetSchema.shape.password
+  newPassword: resetSchema.shape.password,
+  otpToken: z.string().min(20).optional()
 });
 
 const resendVerificationSchema = z.object({ email: z.string().email() });
 const googleAuthSchema = z.object({
   idToken: z.string().min(20),
-  referralCode: z.string().min(4).max(12).optional()
+  referralCode: z.string().min(4).max(12).optional(),
+  groupInviteToken: z.string().min(20).optional()
 });
 
 const mapAccountTypeToTenantType = (accountType: 'company' | 'guide'): 'COMPANY' | 'GUIDE_OWNED' =>
@@ -181,6 +186,14 @@ const respondWithAuth = (
   res.status(status).json({ ...buildAuthResponse(user, tokens), ...extra });
 };
 
+// Role switch is session-only: restore the original role at every new login/refresh.
+const restoreRoleIfSwitched = async (user: { _id: string; role: UserRole; profile?: { switchedFromRole?: UserRole | null } }): Promise<UserRole> => {
+  const original = user.profile?.switchedFromRole;
+  if (!original) return user.role;
+  await updateAuthUserCore({ userId: user._id, role: original, profile: { switchedFromRole: null } });
+  return original;
+};
+
 const createSession = async ({
   userId,
   email,
@@ -207,7 +220,7 @@ export const authRouter = Router();
 
 authRouter.post('/register', validate({ body: registerSchema }), async (req, res, next) => {
   try {
-    const { email, password, displayName, accountType, organizationName, referralCode } = req.body as z.infer<typeof registerSchema>;
+    const { email, password, displayName, accountType, organizationName, referralCode, groupInviteToken } = req.body as z.infer<typeof registerSchema>;
     const existing = await findAuthUserByEmail(email);
     if (existing) {
       throw new ApiError(409, 'email_taken', 'Email is already registered.');
@@ -246,6 +259,13 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
     });
 
     void processSignupRewardsDefault(created._id, referralCode).catch(() => undefined);
+    if (groupInviteToken) {
+      void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
+        () => undefined
+      );
+    } else {
+      void acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }).catch(() => undefined);
+    }
 
     const tokens = await createSession({
       userId: created._id,
@@ -290,15 +310,16 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
       throw new ApiError(403, 'account_suspended', 'Account is suspended.');
     }
 
+    const sessionRole = await restoreRoleIfSwitched(user);
     const tokens = await createSession({
       userId: user._id,
       email: user.email,
-      role: user.role,
+      role: sessionRole,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent']
     });
 
-    respondWithAuth(res, 200, { id: user._id, email: user.email, role: user.role }, tokens, {
+    respondWithAuth(res, 200, { id: user._id, email: user.email, role: sessionRole }, tokens, {
       emailVerified: Boolean(user.emailVerifiedAt)
     });
 
@@ -353,15 +374,22 @@ authRouter.post('/demo-login', validate({ body: demoLoginSchema }), async (req, 
       throw new ApiError(403, 'account_suspended', 'Account is suspended.');
     }
 
+    // Demo accounts always use their canonical role — ignore any stale visitor-switch state
+    const defaults = demoAccountDefaults[normalizedEmail];
+    const canonicalRole = defaults?.role ?? user.role;
+    if (user.role !== canonicalRole || user.profile?.switchedFromRole) {
+      await updateAuthUserCore({ userId: user._id, role: canonicalRole, profile: { switchedFromRole: null } });
+    }
+
     const tokens = await createSession({
       userId: user._id,
       email: user.email,
-      role: user.role,
+      role: canonicalRole,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent']
     });
 
-    respondWithAuth(res, 200, { id: user._id, email: user.email, role: user.role }, tokens, {
+    respondWithAuth(res, 200, { id: user._id, email: user.email, role: canonicalRole }, tokens, {
       emailVerified: Boolean(user.emailVerifiedAt),
       authProvider: user.authProvider.toLowerCase(),
       demoLogin: true
@@ -390,15 +418,16 @@ authRouter.post('/refresh', validate({ body: refreshBodySchema }), async (req, r
 
     await revokeRefreshToken(refreshToken);
 
+    const sessionRole = await restoreRoleIfSwitched(user);
     const tokens = await createSession({
       userId: user._id,
       email: user.email,
-      role: user.role,
+      role: sessionRole,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent']
     });
 
-    respondWithAuth(res, 200, { id: user._id, email: user.email, role: user.role }, tokens);
+    respondWithAuth(res, 200, { id: user._id, email: user.email, role: sessionRole }, tokens);
   } catch (error) {
     next(error);
   }
@@ -519,7 +548,7 @@ authRouter.post('/resend-verification', validate({ body: resendVerificationSchem
 
 authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res, next) => {
   try {
-    const { idToken, referralCode } = req.body as z.infer<typeof googleAuthSchema>;
+    const { idToken, referralCode, groupInviteToken } = req.body as z.infer<typeof googleAuthSchema>;
     const profile = await verifyGoogleIdToken(idToken);
 
     const existingByGoogle = await findAuthUserByGoogleId(profile.googleId);
@@ -546,7 +575,8 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
         );
       }
 
-      user = { id: existing._id, email: existing.email, role: existing.role, status: existing.status };
+      const restoredRole = await restoreRoleIfSwitched(existing);
+      user = { id: existing._id, email: existing.email, role: restoredRole, status: existing.status };
 
       await updateAuthUserGoogleLink({
         userId: existing._id,
@@ -584,6 +614,13 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
       user = { id: created._id, email: created.email, role: created.role, status: created.status };
 
       void processSignupRewardsDefault(created._id, referralCode).catch(() => undefined);
+      if (groupInviteToken) {
+        void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
+          () => undefined
+        );
+      } else {
+        void acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }).catch(() => undefined);
+      }
     }
 
     const tokens = await createSession({
@@ -606,20 +643,68 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
 
 authRouter.patch('/change-password', requireAuth, validate({ body: changePasswordSchema }), async (req, res, next) => {
   try {
-    const { currentPassword, newPassword } = req.body as z.infer<typeof changePasswordSchema>;
+    const { currentPassword, newPassword, otpToken } = req.body as z.infer<typeof changePasswordSchema>;
     const user = await findAuthUserById(req.auth!.userId);
     if (!user?.passwordHash) {
       throw new ApiError(400, 'oauth_account', 'Google accounts cannot change password here.');
     }
+
+    let otpRecordId: string | null = null;
+    if (env.NODE_ENV === 'production') {
+      if (!otpToken) {
+        throw new ApiError(400, 'otp_required', 'OTP verification is required to change password.');
+      }
+      const otpRecord = await findPasswordResetToken(otpToken);
+      if (!otpRecord || otpRecord.userId !== user._id || otpRecord.usedAt || otpRecord.expiresAt < new Date()) {
+        throw new ApiError(400, 'invalid_token', 'OTP is invalid or expired.');
+      }
+      otpRecordId = otpRecord.id;
+    }
+
     if (!(await verifyPassword(currentPassword, user.passwordHash))) {
       throw new ApiError(401, 'invalid_password', 'Current password is incorrect.');
     }
 
     const passwordHash = await hashPassword(newPassword);
     await updateAuthUserPassword(user._id, passwordHash);
+    if (otpRecordId) {
+      await usePasswordResetToken(otpRecordId);
+    }
     await revokeRefreshTokensByUser(user._id);
 
     res.json({ message: 'Password changed successfully.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.post('/change-password/request-otp', requireAuth, async (req, res, next) => {
+  try {
+    const user = await findAuthUserById(req.auth!.userId);
+    if (!user) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
+    }
+    if (!user.passwordHash) {
+      throw new ApiError(400, 'oauth_account', 'Google accounts cannot change password here.');
+    }
+
+    const token = randomToken(24);
+    await createPasswordResetToken({
+      userId: user._id,
+      token,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000)
+    });
+
+    void sendPasswordResetEmail({
+      to: user.email,
+      name: user.profile.displayName ?? user.email,
+      token
+    }).catch(() => undefined);
+
+    res.json({
+      message: 'OTP sent to your email address.',
+      otpToken: env.NODE_ENV === 'production' ? undefined : token
+    });
   } catch (error) {
     next(error);
   }

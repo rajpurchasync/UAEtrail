@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ProductDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { SHOP_V1 } from '../config/platform';
+import { PAGE_BANNERS } from '../config/pageBanners';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { productSchema } from '../components/seo/schemas';
@@ -77,6 +78,15 @@ export const ProductDetail = () => {
       backTo="/shop"
       backLabel="Shop"
       headerAction={<ShopCartButton onClick={() => setCartOpen(true)} />}
+      banner={{
+        src: PAGE_BANNERS.shop,
+        alt: 'Camping tent under the stars',
+        title: product.name,
+        eyebrow: 'Shop',
+        linkTo: '/shop',
+        desktopChromeOnly: true,
+        desktopAction: <ShopCartButton onClick={() => setCartOpen(true)} />
+      }}
     >
       <PageMeta
         title={product.name}
@@ -88,9 +98,6 @@ export const ProductDetail = () => {
       <JsonLd data={productSchema(product)} id={`product-${product.id}`} />
       <div className="min-h-screen bg-gray-50 pb-nav-safe md:pb-8">
         <div className="max-w-5xl mx-auto px-4 py-6">
-          <div className="hidden md:flex justify-end mb-4">
-            <ShopCartButton onClick={() => setCartOpen(true)} />
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-3">
             <img

@@ -134,7 +134,7 @@ export const AdminSettings = () => {
         {/* Broadcast History */}
         <div>
           <h3 className="font-medium text-gray-900 mb-3">Recent Broadcasts</h3>
-          <div className="bg-white border rounded-lg overflow-hidden">
+          <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>

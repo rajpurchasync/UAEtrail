@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { SHOP_V1 } from '../../config/platform';
+import { PAGE_BANNERS } from '../../config/pageBanners';
 import { useShopCart } from '../../context/ShopCartContext';
 import { useShopCheckout } from '../../hooks/useShopCheckout';
 
@@ -35,22 +36,32 @@ export const ShopCartSheet = ({ open, onClose }: ShopCartSheetProps) => {
         aria-label="Close cart"
         onClick={onClose}
       />
-      <div className="relative w-full md:max-w-lg bg-white rounded-t-[20px] md:rounded-2xl shadow-xl max-h-[85vh] flex flex-col">
-        <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-100">
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 font-medium text-sm"
-            aria-label="Back to shop"
-          >
-            <ChevronLeft className="w-5 h-5" />
-            Back
-          </button>
-          <div className="flex-1 text-center -ml-12 pointer-events-none">
-            <h2 className="text-lg font-bold text-gray-900">Your cart</h2>
-            <p className="text-xs text-gray-500">{itemCount} item{itemCount === 1 ? '' : 's'}</p>
+      <div className="relative w-full md:max-w-lg bg-white rounded-t-[20px] md:rounded-2xl shadow-xl max-h-[85vh] flex flex-col overflow-hidden">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute left-3 top-3 z-20 inline-flex items-center gap-0.5 rounded-full bg-white/15 px-2.5 py-1 text-white text-sm font-medium backdrop-blur-sm"
+          aria-label="Close cart"
+        >
+          <ChevronLeft className="w-5 h-5" />
+          Back
+        </button>
+        <Link
+          to="/shop"
+          onClick={onClose}
+          className="relative block h-28 sm:h-32 md:h-36 overflow-hidden"
+          aria-label="Back to shop"
+        >
+          <img src={PAGE_BANNERS.shop} alt="Camping tent under the stars" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/80 via-emerald-950/45 to-emerald-900/20" aria-hidden />
+          <div className="absolute inset-0 p-4 pt-16 flex flex-col justify-end text-white">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-white/75">Shop</p>
+              <h2 className="text-xl font-bold">Your cart</h2>
+              <p className="text-sm text-white/85">{itemCount} item{itemCount === 1 ? '' : 's'}</p>
+            </div>
           </div>
-        </div>
+        </Link>
 
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {items.length === 0 ? (

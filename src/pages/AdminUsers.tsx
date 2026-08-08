@@ -148,7 +148,7 @@ export const AdminUsers = () => {
       {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
 
       {/* Table */}
-      <div className="bg-white border rounded-lg overflow-hidden">
+      <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>

@@ -60,6 +60,23 @@ utils/          authRouting, push
 - Auth: `Authorization: Bearer` + `x-tenant-id` for organizer routes
 - Dates: stored UTC; returned as local `date` + `time` per tenant `countryCode`
 
+## Cross-Platform Session + Access Addendum (2026-08)
+
+See `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md` for the persisted baseline from branch `performance_crossPlatform_bugfix`.
+
+Architecture-level invariants:
+
+- Refresh token transport is cookie-based (`httpOnly`) and access token refresh occurs via `POST /auth/refresh` with credentials.
+- Frontend session persistence is localStorage-based (`uaetrail_session`) and retries one authenticated request after refresh.
+- Role switch (`POST /me/role/switch`) changes session role without changing account identity.
+- Team/group access state is modeled with `isActive` flags, not only membership deletion.
+- Social post/reply/review text is sanitized before write.
+
+Performance carry-forward:
+
+- Mongo indexes for favorites and social collections are part of startup index provisioning and must remain compatible with existing names/partials.
+- Store-level batching for social list/detail reads should be preserved to avoid N+1 read regressions.
+
 ## Deployment notes
 
 - Ensure `MONGODB_URI` is set and MongoDB is reachable before API start

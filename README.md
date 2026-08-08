@@ -27,6 +27,22 @@ run-project.bat       # Windows cmd / PowerShell
 Frontend runs on `http://localhost:5175`.
 API is available through the frontend proxy at `http://localhost:5175/api/v1`.
 
+## Dev Run Convention
+
+When someone says "dev run", use the VS Code hot-reload workflow with cloud test MongoDB and no observability stack containers.
+
+- Run inside VS Code tasks/workspace (web + API with hot reload).
+- Use `RUN_ENV=test` with `MONGODB_URI_TEST` from root `.env`.
+- Do not start Grafana, Prometheus, Loki, or other monitoring containers unless explicitly requested.
+
+## performance_crossPlatform_bugfix Baseline
+
+Canonical persisted instructions for this workstream are in:
+
+- `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`
+
+Future agents/workspaces should treat that file as the source of truth for auth/session, access management, and social/performance guardrails introduced on the `performance_crossPlatform_bugfix` branch.
+
 ## Dependency Model
 
 The launch scripts are the source of truth for local runtime prerequisites. They check versions first, install what they can, and fail with a clear message when an OS-level dependency still needs manual action.
@@ -47,6 +63,7 @@ See **[docs/MOBILE_DEPLOYMENT_PLAN.md](docs/MOBILE_DEPLOYMENT_PLAN.md)** for the
 
 | Guide | Purpose |
 |-------|---------|
+| [DEV_RUN.md](docs/DEV_RUN.md) | VS Code hot-reload dev convention |
 | [PRE_DEPLOY_CHECKLIST.md](docs/PRE_DEPLOY_CHECKLIST.md) | Go-live on VPS |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker + HTTPS |
 | [ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md) | Play Store AAB |

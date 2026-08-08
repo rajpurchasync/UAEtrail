@@ -1,9 +1,6 @@
 import { ReactNode } from 'react';
 import { ConsumerShell } from '../mobile/ConsumerShell';
-import { MobileBackButton } from '../mobile/MobileBackButton';
 import { PAGE_BANNERS } from '../../config/pageBanners';
-import { MobileMenuButton } from './MobileMenu';
-import { ProfileAvatarLink } from './ProfileAvatarLink';
 
 interface MobileScreenProps {
   title: string;
@@ -27,16 +24,9 @@ export const MobileScreen = ({
     title={title}
     maxWidth="4xl"
     banner={{ src: PAGE_BANNERS.profile, alt: title }}
+    showJourney
+    journey={{ fallbackTo: backTo, label: backLabel }}
   >
-    {!hideHeader && (
-      <div className="mb-3 -mt-2 flex items-center justify-between gap-3">
-        <MobileBackButton fallbackTo={backTo} label={backLabel} />
-        <div className="flex items-center gap-2 shrink-0">
-          <ProfileAvatarLink />
-          <MobileMenuButton />
-        </div>
-      </div>
-    )}
     <div className={`flex-1 flex flex-col min-h-0 ${hideHeader ? 'pt-safe-plus-2' : ''}`}>{children}</div>
   </ConsumerShell>
 );

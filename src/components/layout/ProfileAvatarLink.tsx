@@ -24,14 +24,14 @@ export const ProfileAvatarLink = ({ tone = 'default', className = '' }: ProfileA
     <Link
       to={destination}
       state={user ? undefined : { from: pathname }}
-      className={`min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full transition-colors active:scale-95 overflow-hidden ${baseClass} ${className}`}
+      className={`relative h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${baseClass} ${className}`}
       aria-label={user ? 'Open profile' : 'Sign in'}
     >
       {user ? (
         user.avatarUrl ? (
-          <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+          <img src={user.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
         ) : (
-          <span className="h-full w-full flex items-center justify-center font-bold text-sm">
+          <span className="h-full w-full rounded-full flex items-center justify-center font-bold text-sm">
             {getInitials(user.displayName, user.email)}
           </span>
         )

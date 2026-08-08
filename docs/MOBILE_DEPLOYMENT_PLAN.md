@@ -14,6 +14,8 @@ See **[PRE_DEPLOY_CHECKLIST.md](PRE_DEPLOY_CHECKLIST.md)** for the go-live runbo
 | Android native | Yes | Yes |
 | iOS native | Yes | **No** (email-only, App Store 4.8) |
 
+Cross-platform reliability baseline for auth/session/access is persisted in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md` and should be treated as required during mobile releases.
+
 ---
 
 ## Phase 1 — Production web — **Repo complete**

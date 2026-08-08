@@ -6,14 +6,21 @@ import { validateSseTicket } from '../lib/sse-ticket.js';
 import { ApiError } from '../lib/api-error.js';
 
 const authenticateBearer = async (token: string) => {
-  const payload = verifyAccessToken(token);
-  const user = await findAuthUserById(payload.sub);
+  try {
+    const payload = verifyAccessToken(token);
+    const user = await findAuthUserById(payload.sub);
 
-  if (!user || user.status !== 'ACTIVE') {
-    throw new ApiError(401, 'unauthorized', 'User is not active.');
+    if (!user || user.status !== 'ACTIVE') {
+      throw new ApiError(401, 'unauthorized', 'User is not active.');
+    }
+
+    return user;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(401, 'unauthorized', 'Session expired. Please sign in again.');
   }
-
-  return user;
 };
 
 export const requireAuth = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {

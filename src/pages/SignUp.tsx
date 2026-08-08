@@ -12,6 +12,7 @@ export const SignUp = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const referralCode = searchParams.get('ref')?.trim().toUpperCase() ?? undefined;
+  const groupInviteToken = searchParams.get('groupInvite')?.trim() ?? undefined;
   const redirectTo = resolveAuthRedirect(null, searchParams.get('redirect'));
   const [formData, setFormData] = useState({
     displayName: '',
@@ -29,7 +30,7 @@ export const SignUp = () => {
       return;
     }
     try {
-      const user = await signInWithGoogle(idToken, referralCode);
+      const user = await signInWithGoogle(idToken, referralCode, groupInviteToken);
       navigate(redirectTo ?? defaultRouteByRole(user.role), { replace: true });
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : 'Google sign up failed');
@@ -55,6 +56,7 @@ export const SignUp = () => {
         displayName: formData.displayName,
         accountType: 'visitor',
         referralCode,
+        groupInviteToken,
       });
       // Navigate to OTP verification
       navigate('/verify', {
@@ -86,6 +88,12 @@ export const SignUp = () => {
           <div className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2.5 text-sm text-emerald-800">
             <Gift className="w-4 h-4 shrink-0" />
             <span>You&apos;ll earn <strong>25 bonus Trail Points</strong> with invite code <strong>{referralCode}</strong></span>
+          </div>
+        )}
+
+        {groupInviteToken && (
+          <div className="mb-4 rounded-xl bg-sky-50 border border-sky-100 px-3 py-2.5 text-sm text-sky-800">
+            You were invited to join a group. Create your account and you&apos;ll be added automatically.
           </div>
         )}
 

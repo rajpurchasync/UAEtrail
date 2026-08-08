@@ -1,5 +1,7 @@
 # Android release build (Google Play)
 
+Cross-platform auth/session/access baseline for this repo is persisted in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
+
 ## Prerequisites
 
 - Android Studio (latest stable)

@@ -1,5 +1,7 @@
 # Content moderation — UAE Trail
 
+Relevant social-content hardening baseline is persisted in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
+
 ## User reporting
 
 Users can report from:

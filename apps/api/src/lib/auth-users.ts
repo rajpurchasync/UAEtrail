@@ -18,6 +18,7 @@ export type AuthUserRecord = {
     phone: string | null;
     bio: string | null;
     avatarUrl: string | null;
+    switchedFromRole?: 'PLATFORM_ADMIN' | 'MERCHANT_ADMIN' | 'TENANT_OWNER' | 'TENANT_ADMIN' | 'TENANT_GUIDE' | null;
     rewardPoints?: number;
     membershipTier?: MembershipTier;
   };
@@ -212,6 +213,9 @@ export const updateAuthUserGoogleLink = async (input: {
     if (input.profile.phone !== undefined) setFields['profile.phone'] = input.profile.phone;
     if (input.profile.bio !== undefined) setFields['profile.bio'] = input.profile.bio;
     if (input.profile.avatarUrl !== undefined) setFields['profile.avatarUrl'] = input.profile.avatarUrl;
+    if (input.profile.switchedFromRole !== undefined) {
+      setFields['profile.switchedFromRole'] = input.profile.switchedFromRole;
+    }
     if (input.profile.rewardPoints !== undefined) setFields['profile.rewardPoints'] = input.profile.rewardPoints;
     if (input.profile.membershipTier !== undefined) {
       setFields['profile.membershipTier'] = input.profile.membershipTier;
@@ -250,6 +254,7 @@ export const updateAuthUserCore = async (input: {
     if (input.profile.phone !== undefined) setFields['profile.phone'] = input.profile.phone;
     if (input.profile.bio !== undefined) setFields['profile.bio'] = input.profile.bio;
     if (input.profile.avatarUrl !== undefined) setFields['profile.avatarUrl'] = input.profile.avatarUrl;
+    if (input.profile.switchedFromRole !== undefined) setFields['profile.switchedFromRole'] = input.profile.switchedFromRole;
     if (input.profile.rewardPoints !== undefined) setFields['profile.rewardPoints'] = input.profile.rewardPoints;
     if (input.profile.membershipTier !== undefined) {
       setFields['profile.membershipTier'] = input.profile.membershipTier;

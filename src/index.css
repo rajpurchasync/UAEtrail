@@ -177,6 +177,10 @@
     @apply h-[9.5rem] rounded-t-none rounded-b-2xl md:rounded-2xl md:h-[7rem];
   }
 
+  .consumer-hero-banner--desktop-chrome {
+    @apply h-[9.5rem] md:h-[11rem] lg:h-[12rem];
+  }
+
   .consumer-hero-banner--editorial.consumer-hero-banner--mobile-chrome {
     @apply h-[10.5rem] sm:h-[9.5rem] md:h-[9rem];
   }
@@ -344,6 +348,31 @@
 
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  .desktop-scrollbar-x {
+    scrollbar-gutter: stable both-edges;
+  }
+
+  @media (pointer: fine) {
+    .desktop-scrollbar-x::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    .desktop-scrollbar-x::-webkit-scrollbar-track {
+      background: #e5e7eb;
+      border-radius: 9999px;
+    }
+
+    .desktop-scrollbar-x::-webkit-scrollbar-thumb {
+      background: #9ca3af;
+      border-radius: 9999px;
+    }
+
+    .desktop-scrollbar-x {
+      scrollbar-width: thin;
+      scrollbar-color: #9ca3af #e5e7eb;
+    }
   }
 
   /* Rewards promo banner — subtle life without distraction */

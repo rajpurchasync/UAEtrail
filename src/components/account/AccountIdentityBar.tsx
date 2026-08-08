@@ -15,6 +15,7 @@ interface AccountIdentityBarProps {
   editLabel?: string;
   extra?: ReactNode;
   children?: ReactNode;
+  onAvatarClick?: () => void;
 }
 
 export const AccountIdentityBar = ({
@@ -30,21 +31,39 @@ export const AccountIdentityBar = ({
   editLabel = 'Edit profile',
   extra,
   children,
+  onAvatarClick,
 }: AccountIdentityBarProps) => (
   <GlassCard padding className="mb-3 !p-3 animate-fade-up">
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onToggle}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onToggle();
+        }
+      }}
       className="w-full flex items-center gap-3 text-left active:opacity-80"
       aria-expanded={expanded}
     >
-      {avatarUrl ? (
-        <img src={avatarUrl} alt="" className="w-11 h-11 rounded-full object-cover ring-2 ring-white/80 shrink-0" />
-      ) : (
-        <div className="w-11 h-11 rounded-full bg-emerald-600/12 flex items-center justify-center ring-2 ring-white/80 shrink-0">
-          <span className="text-sm font-bold text-emerald-700">{displayName.charAt(0).toUpperCase()}</span>
-        </div>
-      )}
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onAvatarClick?.();
+        }}
+        className="relative shrink-0"
+        aria-label="Open notifications"
+      >
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="w-11 h-11 rounded-full object-cover ring-2 ring-white/80" />
+        ) : (
+          <div className="w-11 h-11 rounded-full bg-emerald-600/12 flex items-center justify-center ring-2 ring-white/80">
+            <span className="text-sm font-bold text-emerald-700">{displayName.charAt(0).toUpperCase()}</span>
+          </div>
+        )}
+      </button>
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-[15px] font-semibold text-neutral-900 truncate">{displayName}</p>
@@ -58,7 +77,7 @@ export const AccountIdentityBar = ({
       <ChevronDown
         className={`w-4 h-4 text-neutral-400 shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
       />
-    </button>
+    </div>
 
     {expanded && (
       <div className="mt-3 pt-3 border-t border-neutral-100/80 space-y-2.5 animate-fade-in">

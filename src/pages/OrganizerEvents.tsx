@@ -204,7 +204,7 @@ export const OrganizerEvents = () => {
             </div>
 
             {/* Events Table */}
-            <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
@@ -291,7 +291,7 @@ export const OrganizerEvents = () => {
             </div>
 
             {/* Participants */}
-            <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
               {checkinLoading ? (
                 <p className="px-4 py-8 text-center text-gray-500">Loading participants...</p>
               ) : participants.length === 0 ? (

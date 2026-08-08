@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { MobileBrandBar } from '../layout/MobileBrandBar';
 
 interface ConsumerHeroBannerProps {
@@ -7,6 +8,11 @@ interface ConsumerHeroBannerProps {
   title?: string;
   eyebrow?: string;
   action?: ReactNode;
+  desktopAction?: ReactNode;
+  backTo?: string;
+  backLabel?: string;
+  linkTo?: string;
+  linkAriaLabel?: string;
   className?: string;
   /** Tab roots use a short strip; editorial / rewards pages use a taller hero. */
   size?: 'tab' | 'editorial';
@@ -14,6 +20,8 @@ interface ConsumerHeroBannerProps {
   showMobileChrome?: boolean;
   /** Keep logo + menu on the banner at desktop widths (e.g. Profile). */
   chromeOnDesktop?: boolean;
+  /** Render banner chrome only on desktop, leaving mobile to the sticky header. */
+  desktopChromeOnly?: boolean;
 }
 
 /** Compact image banner with page title overlaid on top. */
@@ -23,28 +31,52 @@ export const ConsumerHeroBanner = ({
   title,
   eyebrow,
   action,
+  desktopAction,
+  backTo,
+  backLabel,
+  linkTo,
+  linkAriaLabel,
   className = '',
   size = 'tab',
   showMobileChrome = false,
   chromeOnDesktop = false,
+  desktopChromeOnly = false,
 }: ConsumerHeroBannerProps) => (
   <div
     className={`consumer-hero-banner ${size === 'editorial' ? 'consumer-hero-banner--editorial' : ''} ${
       showMobileChrome ? 'consumer-hero-banner--mobile-chrome' : ''
-    } ${className}`}
+    } ${desktopChromeOnly ? 'consumer-hero-banner--desktop-chrome' : ''} ${className}`}
   >
-    <img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-    <div
-      className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-emerald-950/45 to-emerald-900/20"
-      aria-hidden
-    />
+    {linkTo ? (
+      <Link to={linkTo} aria-label={linkAriaLabel ?? title ?? alt} className="absolute inset-0 z-[1] block">
+        <img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-emerald-950/45 to-emerald-900/20"
+          aria-hidden
+        />
+      </Link>
+    ) : (
+      <>
+        <img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-emerald-950/45 to-emerald-900/20"
+          aria-hidden
+        />
+      </>
+    )}
     {showMobileChrome && (
       <div
         className={`absolute inset-x-0 top-0 z-10 px-4 pt-safe-plus-3 ${
-          chromeOnDesktop ? '' : 'md:hidden'
+          desktopChromeOnly ? 'hidden md:block' : chromeOnDesktop ? '' : 'md:hidden'
         }`}
       >
-        <MobileBrandBar tone="light" menuOnDesktop desktopAction={chromeOnDesktop ? action : undefined} />
+        <MobileBrandBar
+          tone="light"
+          backTo={backTo}
+          backLabel={backLabel}
+          menuOnDesktop
+          desktopAction={desktopAction ?? (chromeOnDesktop ? action : undefined)}
+        />
       </div>
     )}
     {(title || eyebrow || action) && (
@@ -54,8 +86,17 @@ export const ConsumerHeroBanner = ({
         }`}
       >
         <div className={`min-w-0 flex-1 ${action ? 'pr-20 sm:pr-24' : ''}`}>
-          {eyebrow && <p className="consumer-hero-eyebrow">{eyebrow}</p>}
-          {title && <h1 className="consumer-hero-title">{title}</h1>}
+          {linkTo ? (
+            <Link to={linkTo} aria-label={linkAriaLabel ?? title ?? alt} className="block">
+              {eyebrow && <p className="consumer-hero-eyebrow">{eyebrow}</p>}
+              {title && <h1 className="consumer-hero-title">{title}</h1>}
+            </Link>
+          ) : (
+            <>
+              {eyebrow && <p className="consumer-hero-eyebrow">{eyebrow}</p>}
+              {title && <h1 className="consumer-hero-title">{title}</h1>}
+            </>
+          )}
         </div>
         {action && (
           <div

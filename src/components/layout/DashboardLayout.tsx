@@ -2,8 +2,10 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api, UserProfile } from '../../api/services';
-import { NotificationDTO } from '@uaetrail/shared-types';
-import { Bell, LogOut, User, ChevronLeft, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import { MobileBackButton } from '../mobile/MobileBackButton';
+import { NotificationBellPopover } from './NotificationBellPopover';
+import { MobileMenuButton } from './MobileMenu';
 
 interface DashboardLayoutProps {
   title: string;
@@ -14,12 +16,7 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, user } = useAuth();
-
-  // Notifications
-  const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
-  const [showNotifs, setShowNotifs] = useState(false);
-  const [notifLoading, setNotifLoading] = useState(false);
+  const { user } = useAuth();
 
   // Profile
   const [showProfile, setShowProfile] = useState(false);
@@ -27,19 +24,10 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileSuccess, setProfileSuccess] = useState(false);
-  const [passwordFields, setPasswordFields] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  const loadNotifications = async () => {
-    setNotifLoading(true);
-    try {
-      const res = await api.getMeNotifications();
-      setNotifications(res.data);
-      setUnreadCount(res.unreadCount ?? res.data.filter((n) => !n.isRead).length);
-    } catch { /* silent */ }
-    finally { setNotifLoading(false); }
-  };
+  const [passwordOtpNotice, setPasswordOtpNotice] = useState<string | null>(null);
+  const [passwordFields, setPasswordFields] = useState({ currentPassword: '', newPassword: '', confirmPassword: '', otpToken: '' });
+  const [sendingPasswordOtp, setSendingPasswordOtp] = useState(false);
+  const requiresPasswordOtp = import.meta.env.PROD;
 
   const loadProfile = async () => {
     try {
@@ -51,29 +39,33 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
   const markAllRead = async () => {
     try {
       await api.markAllNotificationsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
     } catch { /* silent */ }
   };
-
-  const markOneRead = async (id: string) => {
-    try {
-      await api.markNotificationRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-      );
-      setUnreadCount((c) => Math.max(0, c - 1));
-    } catch { /* silent */ }
-  };
-
-  useEffect(() => { loadNotifications(); }, []);
 
   const openProfile = () => {
     loadProfile();
     setProfileError(null);
     setProfileSuccess(false);
-    setPasswordFields({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordOtpNotice(null);
+    setPasswordFields({ currentPassword: '', newPassword: '', confirmPassword: '', otpToken: '' });
     setShowProfile(true);
+  };
+
+  const handlePasswordOtpSend = async () => {
+    setProfileError(null);
+    setPasswordOtpNotice(null);
+    setSendingPasswordOtp(true);
+    try {
+      const res = await api.requestChangePasswordOtp();
+      if (res.otpToken) {
+        setPasswordFields((prev) => ({ ...prev, otpToken: res.otpToken }));
+      }
+      setPasswordOtpNotice('OTP sent to your email address.');
+    } catch (err) {
+      setProfileError(err instanceof Error ? err.message : 'Failed to send OTP');
+    } finally {
+      setSendingPasswordOtp(false);
+    }
   };
 
   const handleProfileSave = async (e: React.FormEvent) => {
@@ -81,13 +73,14 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
     setProfileSaving(true);
     setProfileError(null);
     setProfileSuccess(false);
+    setPasswordOtpNotice(null);
     try {
       await api.updateMeProfile({
         displayName: profile.displayName,
         phone: profile.phone
       });
 
-      const { currentPassword, newPassword, confirmPassword } = passwordFields;
+      const { currentPassword, newPassword, confirmPassword, otpToken } = passwordFields;
       if (currentPassword || newPassword || confirmPassword) {
         if (newPassword !== confirmPassword) {
           throw new Error('New passwords do not match.');
@@ -95,8 +88,15 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
         if (!currentPassword || !newPassword) {
           throw new Error('Enter current and new password to change it.');
         }
-        await api.changePassword({ currentPassword, newPassword });
-        setPasswordFields({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        if (requiresPasswordOtp && !otpToken.trim()) {
+          throw new Error('Enter the OTP sent to your email before changing password.');
+        }
+        await api.changePassword({
+          currentPassword,
+          newPassword,
+          ...(otpToken.trim() ? { otpToken: otpToken.trim() } : {})
+        });
+        setPasswordFields({ currentPassword: '', newPassword: '', confirmPassword: '', otpToken: '' });
       }
 
       setProfileSuccess(true);
@@ -107,12 +107,27 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/signed-out', { replace: true });
-  };
+  const breadcrumbFallbackTo =
+    location.pathname.startsWith('/admin')
+      ? '/admin/overview'
+      : location.pathname.startsWith('/merchant')
+        ? '/merchant/dashboard'
+        : location.pathname.startsWith('/organizer')
+          ? '/organizer/overview'
+          : '/';
 
-  const unreadCountDisplay = unreadCount;
+  const breadcrumbLabel =
+    location.pathname.startsWith('/admin')
+      ? 'Admin'
+      : location.pathname.startsWith('/merchant')
+        ? 'Merchant'
+        : location.pathname.startsWith('/organizer')
+          ? 'Organizer'
+          : 'Home';
+
+  const activeSection =
+    links.find((link) => location.pathname === link.to || location.pathname.startsWith(`${link.to}/`))?.label ??
+    title;
 
   return (
     <div className="min-h-screen bg-gray-50/80">
@@ -120,99 +135,19 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
       <header className="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <button
-              onClick={() => navigate('/')}
-              className="md:hidden p-1.5 -ml-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
             <div className="min-w-0">
               <h1 className="text-lg md:text-xl font-bold text-gray-900 truncate">{title}</h1>
               <p className="text-xs text-gray-500 truncate hidden md:block">{user?.email}</p>
+              <MobileBackButton
+                fallbackTo={breadcrumbFallbackTo}
+                label={breadcrumbLabel}
+                className="mt-0.5"
+              />
             </div>
           </div>
-          <div className="flex items-center gap-1.5 md:gap-3">
-            {/* Notification Bell */}
-            <div className="relative">
-              <button onClick={() => { setShowNotifs(!showNotifs); if (!showNotifs) loadNotifications(); }}
-                className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
-                title="Notifications">
-                <Bell className="w-5 h-5" />
-                {unreadCountDisplay > 0 && (
-                  <span className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full ring-2 ring-white">
-                    {unreadCountDisplay > 9 ? '9+' : unreadCountDisplay}
-                  </span>
-                )}
-              </button>
-
-              {/* Notifications Dropdown */}
-              {showNotifs && (
-                <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
-                  <div className="px-4 py-3 border-b flex items-center justify-between bg-gray-50/50">
-                    <p className="text-sm font-bold text-gray-900">Notifications</p>
-                    <div className="flex items-center gap-2">
-                      {unreadCountDisplay > 0 && (
-                        <button
-                          onClick={markAllRead}
-                          className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
-                        >
-                          Mark all read
-                        </button>
-                      )}
-                      <button onClick={() => setShowNotifs(false)} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
-                    {notifLoading ? (
-                      <div className="px-4 py-8 text-center">
-                        <div className="w-5 h-5 border-2 border-gray-200 border-t-emerald-500 rounded-full animate-spin mx-auto" />
-                      </div>
-                    ) : notifications.length === 0 ? (
-                      <div className="px-4 py-8 text-center">
-                        <Bell className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-                        <p className="text-sm text-gray-500">No notifications</p>
-                      </div>
-                    ) : notifications.map((n) => (
-                      <button
-                        key={n.id}
-                        type="button"
-                        onClick={() => { if (!n.isRead) markOneRead(n.id); }}
-                        className={`w-full text-left px-4 py-3 hover:bg-gray-50/50 transition-colors ${!n.isRead ? 'bg-emerald-50/30' : ''}`}
-                      >
-                        <p className="text-sm font-medium text-gray-900">{n.title}</p>
-                        <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{n.body}</p>
-                        <p className="text-xs text-gray-400 mt-1">{new Date(n.createdAt).toLocaleString()}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={openProfile}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
-              title="Profile"
-            >
-              <User className="w-5 h-5" />
-            </button>
-
-            <button
-              onClick={() => void handleSignOut()}
-              className="hidden md:flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-xl bg-gray-900 text-white hover:bg-gray-700 transition-colors font-medium"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Sign Out
-            </button>
-            <button
-              onClick={() => void handleSignOut()}
-              className="md:hidden p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-              title="Sign out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <NotificationBellPopover />
+            <MobileMenuButton showOnDesktop />
           </div>
         </div>
 
@@ -239,6 +174,18 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
         </div>
       </header>
 
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 md:pt-5">
+        <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 px-4 py-4 sm:px-6 sm:py-5 text-white">
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" aria-hidden />
+          <div className="absolute -left-12 -bottom-12 h-36 w-36 rounded-full bg-black/10 blur-2xl" aria-hidden />
+          <div className="relative">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Control center</p>
+            <h2 className="text-xl sm:text-2xl font-bold mt-1">{title}</h2>
+            <p className="text-sm text-white/90 mt-1">Current section: {activeSection}</p>
+          </div>
+        </div>
+      </section>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6 grid grid-cols-1 md:grid-cols-[200px_1fr] lg:grid-cols-[220px_1fr] gap-6">
         {/* Desktop sidebar */}
         <aside className="hidden md:block">
@@ -262,9 +209,6 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
         </aside>
         <main>{children}</main>
       </div>
-
-      {/* Click-outside for notifications */}
-      {showNotifs && <div className="fixed inset-0 z-30" onClick={() => setShowNotifs(false)} />}
 
       {/* Profile Modal */}
       {showProfile && (
@@ -298,6 +242,17 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
               <div className="pt-3 border-t border-gray-100">
                 <p className="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wider">Change Password</p>
                 <div className="space-y-3">
+                  {requiresPasswordOtp && (
+                    <>
+                      <button type="button" onClick={() => void handlePasswordOtpSend()} disabled={sendingPasswordOtp}
+                        className="w-full border border-emerald-200 bg-emerald-50 text-emerald-700 rounded-xl px-3.5 py-2.5 text-sm font-medium hover:bg-emerald-100 disabled:opacity-60 transition-all">
+                        {sendingPasswordOtp ? 'Sending OTP...' : 'Send OTP to Email'}
+                      </button>
+                      <input type="text" placeholder="OTP token" value={passwordFields.otpToken}
+                        onChange={(e) => setPasswordFields({ ...passwordFields, otpToken: e.target.value })}
+                        className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" />
+                    </>
+                  )}
                   <input type="password" placeholder="Current password" value={passwordFields.currentPassword}
                     onChange={(e) => setPasswordFields({ ...passwordFields, currentPassword: e.target.value })}
                     className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" />
@@ -311,6 +266,7 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
               </div>
 
               {profileError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{profileError}</p>}
+              {passwordOtpNotice && <p className="text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">{passwordOtpNotice}</p>}
               {profileSuccess && <p className="text-sm text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg">Profile updated successfully!</p>}
 
               <div className="flex gap-3 pt-2">

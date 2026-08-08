@@ -4,7 +4,6 @@ import {
   Calendar,
   Clock,
   Users,
-  MapPin,
   ChevronRight,
   CheckCircle2,
   Car
@@ -29,6 +28,42 @@ import {
   TripCheckInPanel,
   WithdrawRequestModal
 } from '../components/ui';
+
+const GoogleMapsIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden>
+    <path d="M12 2.2C8.2 2.2 5.1 5.3 5.1 9.1c0 4.8 6.9 12.7 6.9 12.7s6.9-7.9 6.9-12.7c0-3.8-3.1-6.9-6.9-6.9Z" fill="#EA4335" />
+    <path d="M12 2.2v19.6s6.9-7.9 6.9-12.7c0-3.8-3.1-6.9-6.9-6.9Z" fill="#FBBC05" />
+    <path d="M12 2.2C8.2 2.2 5.1 5.3 5.1 9.1c0 4.8 6.9 12.7 6.9 12.7V2.2Z" fill="#34A853" />
+    <circle cx="12" cy="9.1" r="3" fill="#4285F4" />
+  </svg>
+);
+
+const WazeIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden>
+    <path
+      d="M12.2 3.2c-4.4 0-8 3.4-8 7.6 0 2.3.9 4.1 2.5 5.5.3.2.3.7.1 1l-.7 1.3c-.2.3 0 .8.4.8h5.2c4.7 0 8.5-3.6 8.5-8.1 0-4.5-3.6-8.1-8-8.1Z"
+      fill="#ffffff"
+      stroke="#2F3A45"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle cx="9.4" cy="10" r="1" fill="#2F3A45" />
+    <circle cx="14" cy="10" r="1" fill="#2F3A45" />
+    <path d="M8.5 12.8c.9.9 2 1.3 3.1 1.3 1.2 0 2.2-.4 3.1-1.3" fill="none" stroke="#2F3A45" strokeWidth="1.3" strokeLinecap="round" />
+    <circle cx="8.4" cy="18.2" r="1.8" fill="#ffffff" stroke="#2F3A45" strokeWidth="1.5" />
+    <circle cx="14.7" cy="18.2" r="1.8" fill="#ffffff" stroke="#2F3A45" strokeWidth="1.5" />
+  </svg>
+);
+
+const buildGoogleDriveUrl = (lat: number, lng: number): string =>
+  `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+
+const buildGoogleMapsSearchUrl = (lat: number, lng: number): string =>
+  `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
+const buildWazeDriveUrl = (lat: number, lng: number): string =>
+  `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
 
 export const TripDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -149,8 +184,11 @@ export const TripDetail = () => {
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
   const organizerPath = organizerProfilePath(trip.tenantSlug);
   const isFull = trip.slotsAvailable <= 0;
-  const locationPath =
-    trip.activityType === 'hiking' ? `/trail/${trip.locationId}` : `/camp/${trip.locationId}`;
+  const accessLat = trip.meetingLat ?? trip.parkingLat ?? trip.location.latitude ?? null;
+  const accessLng = trip.meetingLng ?? trip.parkingLng ?? trip.location.longitude ?? null;
+  const hasAccessCoordinates = accessLat != null && accessLng != null;
+  const openInGoogleMapsUrl =
+    trip.location.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
 
   const dateRangeLabel = trip.endDate
     ? `${formatDate(trip.date)} – ${formatDate(trip.endDate)}`
@@ -402,24 +440,62 @@ export const TripDetail = () => {
               </div>
             )}
 
-            {trip.parkingPoint && (
-              <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
-                <Car className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">Parking</p>
-                  <p>{trip.parkingPoint}</p>
-                  <MeetingPointMap lat={trip.parkingLat} lng={trip.parkingLng} label={trip.parkingPoint} />
-                </div>
-              </div>
-            )}
-
-            {trip.meetingPoint && (trip.meetingDifferent || !trip.parkingPoint) && (
-              <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
-                <MapPin className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">Meeting point</p>
-                  <p>{trip.meetingPoint}</p>
-                  <MeetingPointMap lat={trip.meetingLat} lng={trip.meetingLng} label={trip.meetingPoint} />
+            {(trip.meetingPoint || trip.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
+              <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div className="flex items-start gap-3">
+                  <Car className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-gray-900">Access details</p>
+                    {(trip.meetingPoint || trip.parkingPoint) && (
+                      <div className="space-y-1 text-sm text-gray-700">
+                        {trip.meetingPoint && <p><span className="font-medium text-gray-900">Meeting point:</span> {trip.meetingPoint}</p>}
+                        {trip.parkingPoint && <p><span className="font-medium text-gray-900">Parking:</span> {trip.parkingPoint}</p>}
+                      </div>
+                    )}
+                    {hasAccessCoordinates && (
+                      <MeetingPointMap
+                        lat={accessLat}
+                        lng={accessLng}
+                        label={trip.meetingPoint ?? trip.parkingPoint ?? trip.locationName}
+                        hideExternalLink
+                      />
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {openInGoogleMapsUrl && (
+                        <a
+                          href={openInGoogleMapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100"
+                        >
+                          <GoogleMapsIcon className="h-4 w-4" />
+                          Open with Google Maps
+                        </a>
+                      )}
+                      {hasAccessCoordinates && (
+                        <>
+                          <a
+                            href={buildGoogleDriveUrl(accessLat, accessLng)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100"
+                          >
+                            <GoogleMapsIcon className="h-4 w-4" />
+                            Drive with Google Maps
+                          </a>
+                          <a
+                            href={buildWazeDriveUrl(accessLat, accessLng)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-100"
+                          >
+                            <WazeIcon className="h-4 w-4" />
+                            Drive with Waze
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -443,30 +519,6 @@ export const TripDetail = () => {
               </div>
             )}
 
-            {trip.location.parkingLink && !trip.parkingPoint && (
-              <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
-                <Car className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-gray-900">Parking</p>
-                  <a
-                    href={trip.location.parkingLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-emerald-700 hover:text-emerald-800 font-medium"
-                  >
-                    View parking on map →
-                  </a>
-                </div>
-              </div>
-            )}
-
-            <Link
-              to={locationPath}
-              className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-emerald-700 hover:text-emerald-800"
-            >
-              View location details
-              <ChevronRight className="w-4 h-4" />
-            </Link>
           </div>
 
           {trip.paymentTerms && isPaidTrip && (

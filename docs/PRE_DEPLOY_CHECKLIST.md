@@ -52,6 +52,10 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] Profile → Export data → Delete account (test user)
 - [ ] Report content on community post
 - [ ] Admin → Audit log → filter `content_report`
+- [ ] Sign-in survives refresh/reload (cookie refresh + bearer retry flow)
+- [ ] Role switch (`visitor` <-> `original`) preserves same account identity
+
+Reference persisted baseline: `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
 
 ---
 

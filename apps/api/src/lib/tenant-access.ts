@@ -19,6 +19,7 @@ type MongoTenantMembership = {
   userId: string;
   role: MembershipRole;
   createdAt: Date;
+  isActive?: boolean;
   tenant: {
     status: TenantStatusType;
   };
@@ -75,6 +76,7 @@ export const listTenantMembershipsWithUsers = async (tenantId: string) => {
       userId: membership.userId,
       role: membership.role,
       createdAt: membership.createdAt,
+      isActive: membership.isActive ?? true,
       user: {
         id: membership.userId,
         email: user?.email ?? '',
@@ -144,6 +146,7 @@ export const upsertTenantMembership = async (input: {
         tenantId: input.tenantId,
         userId: input.userId,
         role: input.role,
+        isActive: true,
         tenant: { status }
       },
       $setOnInsert: { _id: membershipId, createdAt }
@@ -216,6 +219,28 @@ export const listActiveTenantMembershipsByUser = async (userId: string) => {
   });
 };
 
+export const setTenantMembershipActiveState = async (membershipId: string, isActive: boolean) => {
+  const updated = await tenantMembershipsCollection().findOneAndUpdate(
+    { _id: membershipId },
+    { $set: { isActive } },
+    { returnDocument: 'after' }
+  );
+
+  if (!updated) {
+    throw new Error('Failed to update tenant membership.');
+  }
+
+  return {
+    id: updated._id,
+    tenantId: updated.tenantId,
+    userId: updated.userId,
+    role: updated.role,
+    createdAt: updated.createdAt,
+    isActive: updated.isActive ?? true,
+    tenant: { status: updated.tenant.status }
+  };
+};
+
 export const updateTenantMembershipRole = async (
   membershipId: string,
   role: MembershipRole
@@ -231,6 +256,11 @@ export const updateTenantMembershipRole = async (
   }
 
   return toMembershipRecord(updated);
+};
+
+export const deleteTenantMembership = async (membershipId: string): Promise<boolean> => {
+  const result = await tenantMembershipsCollection().deleteOne({ _id: membershipId });
+  return result.deletedCount > 0;
 };
 
 export const syncTenantMembershipByTenantAndUser = async (

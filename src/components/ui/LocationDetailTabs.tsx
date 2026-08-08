@@ -234,22 +234,20 @@ export const LocationDetailTabs = ({
             </div>
           )}
 
-          {hasCoordinates && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-neutral-900">Map</h3>
-              <MeetingPointMap lat={data.latitude} lng={data.longitude} label={data.name} />
-              <p className="text-xs text-neutral-400 font-mono">
-                {data.latitude.toFixed(5)}, {data.longitude.toFixed(5)}
-              </p>
-            </div>
-          )}
-
           {(data.parkingLink || hasCoordinates) && (
             <div className="glass rounded-xl p-4">
               <div className="flex items-start gap-3">
                 <Car className={`w-5 h-5 shrink-0 mt-0.5 ${accent === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`} />
                 <div className="space-y-3">
                   <p className="text-sm font-semibold text-neutral-900 mb-1">Parking & access</p>
+                  {hasCoordinates && (
+                    <div className="space-y-2">
+                      <MeetingPointMap lat={data.latitude} lng={data.longitude} label={data.name} hideExternalLink />
+                      <p className="text-xs text-neutral-400 font-mono">
+                        {data.latitude.toFixed(5)}, {data.longitude.toFixed(5)}
+                      </p>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {parkingMapsUrl && (
                       <a

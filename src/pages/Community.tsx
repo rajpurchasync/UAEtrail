@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, MessageSquare, ThumbsUp, Plus, X, Send, MapPin } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Search, MessageSquare, ThumbsUp, Plus, X, Send, MapPin, CheckCircle2 } from 'lucide-react';
 import { PostDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -15,10 +15,23 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
 import { TrailPointsPromoBanner } from '../components/rewards';
 import { ReportContentButton } from '../components/ui/ReportContentDialog';
+import { buildSignInRedirect } from '../utils/authReturnContext';
+
+const linkPattern = /(?:https?:\/\/|www\.)\S+|(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/\S*)?/gi;
+const phoneCandidatePattern = /\+?\d[\d\s().-]{6,}\d/g;
+
+const sanitizeUserGeneratedText = (value: string): string => {
+  const noLinks = value.replace(linkPattern, '[removed]');
+  return noLinks.replace(phoneCandidatePattern, (match) => {
+    const digitCount = match.replace(/\D/g, '').length;
+    return digitCount >= 7 ? '[removed]' : match;
+  });
+};
 
 export const Community = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [posts, setPosts] = useState<PostDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +43,11 @@ export const Community = () => {
   const [newPost, setNewPost] = useState({ title: '', content: '', category: 'questions', locationId: '', images: [] as string[] });
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const redirectToSignIn = (focusSelector?: string) => {
+    const { href, from } = buildSignInRedirect(location, { focusSelector });
+    navigate(href, { state: { from } });
+  };
 
   const loadPosts = async () => {
     setLoading(true);
@@ -71,10 +89,10 @@ export const Community = () => {
 
   const handleReply = async (postId: string) => {
     if (!user) {
-      navigate('/signin');
+      redirectToSignIn(`[data-post-id="${postId}"]`);
       return;
     }
-    const text = replyTexts[postId]?.trim() ?? '';
+    const text = sanitizeUserGeneratedText(replyTexts[postId] ?? '').trim();
     if (!text) return;
     setActionError(null);
     try {
@@ -89,22 +107,70 @@ export const Community = () => {
 
   const handleLike = async (postId: string) => {
     if (!user) {
-      navigate('/signin');
+      redirectToSignIn(`[data-post-id="${postId}"]`);
       return;
     }
     setActionError(null);
     try {
-      await api.togglePostLike(postId);
-      loadPosts();
+      const res = await api.togglePostLike(postId);
+      setPosts((prev) =>
+        prev.map((post) => {
+          if (post.id !== postId) return post;
+          const likedByMe = res.data.liked;
+          const likeCount = likedByMe ? post.likeCount + 1 : Math.max(0, post.likeCount - 1);
+          return { ...post, likedByMe, likeCount };
+        })
+      );
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Failed to like post');
+    }
+  };
+
+  const handleReplyLike = async (postId: string, replyId: string) => {
+    if (!user) {
+      redirectToSignIn(`[data-reply-id="${replyId}"]`);
+      return;
+    }
+    setActionError(null);
+    try {
+      const res = await api.toggleReplyLike(postId, replyId);
+      setPosts((prev) =>
+        prev.map((post) => {
+          if (post.id !== postId) return post;
+          return {
+            ...post,
+            replies: post.replies.map((reply) => {
+              if (reply.id !== replyId) return reply;
+              const likedByMe = res.data.liked;
+              const likeCount = likedByMe ? reply.likeCount + 1 : Math.max(0, reply.likeCount - 1);
+              return { ...reply, likedByMe, likeCount };
+            })
+          };
+        })
+      );
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to like comment');
+    }
+  };
+
+  const handleAcceptReply = async (postId: string, replyId: string) => {
+    if (!user) {
+      redirectToSignIn(`[data-reply-id="${replyId}"]`);
+      return;
+    }
+    setActionError(null);
+    try {
+      const res = await api.acceptPostReply(postId, replyId);
+      setPosts((prev) => prev.map((post) => (post.id === postId ? res.data : post)));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to accept comment');
     }
   };
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      navigate('/signin');
+      redirectToSignIn('[data-auth-focus="community-new-post"]');
       return;
     }
     setFormError(null);
@@ -112,7 +178,8 @@ export const Community = () => {
       setFormError('Title must be at least 5 characters.');
       return;
     }
-    if (newPost.content.trim().length < 10) {
+    const sanitizedContent = sanitizeUserGeneratedText(newPost.content).trim();
+    if (sanitizedContent.length < 10) {
       setFormError('Content must be at least 10 characters.');
       return;
     }
@@ -121,7 +188,7 @@ export const Community = () => {
       await api.createPost({
         category: newPost.category,
         title: newPost.title.trim(),
-        content: newPost.content.trim(),
+        content: sanitizedContent,
         locationId: newPost.locationId || undefined,
         images: newPost.images
       });
@@ -168,9 +235,10 @@ export const Community = () => {
       }
     >
       <FloatingActionButton
+        data-auth-focus="community-new-post"
         icon={<Plus className="w-6 h-6" strokeWidth={2.25} />}
         label="New post"
-        onClick={() => (user ? setShowNewPost(true) : navigate('/signin'))}
+        onClick={() => (user ? setShowNewPost(true) : redirectToSignIn('[data-auth-focus="community-new-post"]'))}
       />
       <div className="space-y-4 animate-fade-up pb-20 md:pb-4">
         <TrailPointsPromoBanner variant="community" />
@@ -188,7 +256,7 @@ export const Community = () => {
           </GlassCard>
         ) : (
           posts.map((post) => (
-            <GlassCard key={post.id} padding className="overflow-hidden">
+            <GlassCard key={post.id} padding className="overflow-hidden" data-post-id={post.id} tabIndex={-1}>
                 <div className="flex items-start gap-3">
                   {post.authorAvatar ? (
                     <img src={post.authorAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
@@ -231,7 +299,7 @@ export const Community = () => {
                   <button
                     type="button"
                     onClick={() => handleLike(post.id)}
-                    className="inline-flex items-center gap-1.5 min-h-[44px] px-3 text-sm text-neutral-500 active:text-emerald-600"
+                    className={`inline-flex items-center gap-1.5 min-h-[44px] px-3 text-sm ${post.likedByMe ? 'text-emerald-600' : 'text-neutral-500 active:text-emerald-600'}`}
                   >
                     <ThumbsUp className="w-4 h-4" />
                     {post.likeCount}
@@ -252,27 +320,69 @@ export const Community = () => {
                 {expandedPost === post.id && (
                   <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
                     {post.replies.map((reply) => (
-                      <div key={reply.id} className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
-                        <span className="font-medium text-gray-900 inline-flex items-center gap-1.5">
-                          {reply.authorName}
-                          {reply.authorMembershipTier && (
-                            <MembershipTierBadge
-                              tierKey={reply.authorMembershipTier.key}
-                              name={reply.authorMembershipTier.name}
-                              emoji={reply.authorMembershipTier.emoji}
-                            />
-                          )}
-                        </span>
-                        <span className="text-gray-600">{reply.content}</span>
-                        {user && reply.authorId !== user.id && (
-                          <ReportContentButton targetType="reply" targetId={reply.id} label="Report" />
-                        )}
+                      <div
+                        key={reply.id}
+                        data-reply-id={reply.id}
+                        className={`rounded-xl border px-3 py-2 text-sm ${reply.isAccepted ? 'border-emerald-200 bg-emerald-50/60' : 'border-gray-100 bg-white'}`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-medium text-gray-900 inline-flex items-center gap-1.5">
+                                {reply.authorName}
+                                {reply.authorMembershipTier && (
+                                  <MembershipTierBadge
+                                    tierKey={reply.authorMembershipTier.key}
+                                    name={reply.authorMembershipTier.name}
+                                    emoji={reply.authorMembershipTier.emoji}
+                                  />
+                                )}
+                              </span>
+                              {reply.isAccepted && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  Accepted
+                                </span>
+                              )}
+                            </div>
+                            <span className="block text-gray-600">{reply.content}</span>
+                          </div>
+                          <div className="flex flex-wrap items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleReplyLike(post.id, reply.id)}
+                              className={`inline-flex items-center gap-1.5 min-h-[36px] px-2.5 text-xs font-medium rounded-full border ${reply.likedByMe ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-white text-neutral-500 active:text-emerald-600'}`}
+                            >
+                              <ThumbsUp className="w-3.5 h-3.5" />
+                              {reply.likeCount}
+                            </button>
+                            {user && post.authorId === user.id && (
+                              <button
+                                type="button"
+                                onClick={() => handleAcceptReply(post.id, reply.id)}
+                                className={`inline-flex items-center gap-1.5 min-h-[36px] px-2.5 text-xs font-medium rounded-full border ${reply.isAccepted ? 'border-emerald-200 bg-emerald-100 text-emerald-800' : 'border-gray-200 bg-white text-neutral-500 active:text-emerald-600'}`}
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                {reply.isAccepted ? 'Accepted' : 'Accept'}
+                              </button>
+                            )}
+                            {user && reply.authorId !== user.id && (
+                              <ReportContentButton targetType="reply" targetId={reply.id} label="Report" />
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))}
                     <div className="flex gap-2">
                       <input
                         value={replyTexts[post.id] ?? ''}
                         onChange={(e) => setReplyTexts((prev) => ({ ...prev, [post.id]: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            void handleReply(post.id);
+                          }
+                        }}
                         placeholder="Write a reply..."
                         className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm"
                       />
@@ -320,6 +430,12 @@ export const Community = () => {
                 rows={4}
                 value={newPost.content}
                 onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
                 placeholder="Share your question, trip report, or tip..."
                 className="w-full border border-gray-200 rounded-xl px-3 py-2"
               />

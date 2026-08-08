@@ -35,12 +35,13 @@ export const getStoredSession = (): AuthSession | null => {
 };
 
 export const setStoredSession = (session: AuthSession | null): void => {
-  localStorage.removeItem(SESSION_STORAGE_KEY);
+  // Persist auth on web until explicit sign-out; keep cleanup for legacy sessionStorage.
+  sessionStorage.removeItem(SESSION_STORAGE_KEY);
   if (!session) {
-    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    localStorage.removeItem(SESSION_STORAGE_KEY);
     return;
   }
-  sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
 };
 
 // ─── Token Refresh Logic ─────────────────────────────────────────────────────
@@ -66,6 +67,9 @@ const attemptTokenRefresh = async (): Promise<AuthSession | null> => {
     setStoredSession(data.tokens);
     return data.tokens;
   } catch {
+    setStoredSession(null);
+    localStorage.removeItem(USER_STORAGE_KEY);
+    notifySessionInvalidated();
     return null;
   }
 };
@@ -116,12 +120,19 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
 
   if (response.status === 401 && init?.auth) {
     const newSession = await refreshAccessToken();
-    if (newSession) {
-      try {
-        response = await makeRequest(newSession.accessToken);
-      } catch {
-        throw new Error(`Failed to reach API at ${API_BASE_URL}.`);
-      }
+    if (!newSession) {
+      throw new Error('Session expired. Please sign in again.');
+    }
+    try {
+      response = await makeRequest(newSession.accessToken);
+    } catch {
+      throw new Error(`Failed to reach API at ${API_BASE_URL}.`);
+    }
+    if (response.status === 401) {
+      setStoredSession(null);
+      localStorage.removeItem(USER_STORAGE_KEY);
+      notifySessionInvalidated();
+      throw new Error('Session expired. Please sign in again.');
     }
   }
 
@@ -155,8 +166,15 @@ export const downloadAuthenticatedFile = async (path: string): Promise<{ blob: B
 
   if (response.status === 401) {
     const newSession = await refreshAccessToken();
-    if (newSession) {
-      response = await makeRequest(newSession.accessToken);
+    if (!newSession) {
+      throw new Error('Session expired. Please sign in again.');
+    }
+    response = await makeRequest(newSession.accessToken);
+    if (response.status === 401) {
+      setStoredSession(null);
+      localStorage.removeItem(USER_STORAGE_KEY);
+      notifySessionInvalidated();
+      throw new Error('Session expired. Please sign in again.');
     }
   }
 
