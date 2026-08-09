@@ -42,7 +42,7 @@ export const findTenantMembershipContext = async (
   userId: string
 ): Promise<TenantMembershipContext | null> => {
   const row = await tenantMembershipsCollection().findOne({ tenantId, userId });
-  if (!row) return null;
+  if (!row || row.isActive === false) return null;
   const tenant = await findTenantRecordById(tenantId);
   if (!tenant) return null;
   return {
@@ -54,9 +54,9 @@ export const findTenantMembershipContext = async (
 export const hasTenantMembership = async (tenantId: string, userId: string): Promise<boolean> => {
   const membership = await tenantMembershipsCollection().findOne(
     { tenantId, userId },
-    { projection: { _id: 1 } }
+    { projection: { _id: 1, isActive: 1 } }
   );
-  return Boolean(membership);
+  return Boolean(membership && membership.isActive !== false);
 };
 
 export const listTenantMembershipsWithUsers = async (tenantId: string) => {
@@ -103,7 +103,7 @@ export const findCompanyGuideMembershipForUser = async (userId: string, tenantId
   for (const membership of memberships) {
     if (tenantIdToExclude && membership.tenantId === tenantIdToExclude) continue;
     const tenant = await findTenantRecordById(membership.tenantId);
-    if (tenant?.status === TenantStatus.ACTIVE) {
+    if (tenant?.status === TenantStatus.ACTIVE && membership.isActive !== false) {
       return {
         id: membership._id,
         tenantId: membership.tenantId,
@@ -205,7 +205,7 @@ export const listActiveTenantMembershipsByUser = async (userId: string) => {
 
   return memberships.flatMap((membership) => {
     const tenant = tenantMap.get(membership.tenantId);
-    if (!tenant || tenant.status !== TenantStatus.ACTIVE) return [];
+    if (!tenant || tenant.status !== TenantStatus.ACTIVE || membership.isActive === false) return [];
     return [
       {
         id: membership._id,

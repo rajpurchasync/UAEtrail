@@ -65,6 +65,20 @@ describe('access management', () => {
     expect(listRes.status).toBe(200);
     const disabledMember = listRes.body.data.find((member: { id: string }) => member.id === membershipId);
     expect(disabledMember.isActive).toBe(false);
+
+    const blockedEventsRes = await request(app)
+      .get('/api/v1/organizer/events')
+      .set('Authorization', `Bearer ${teammate.accessToken}`)
+      .set('x-tenant-id', tenant.id);
+
+    expect(blockedEventsRes.status).toBe(403);
+
+    const tenantsRes = await request(app)
+      .get('/api/v1/me/tenants')
+      .set('Authorization', `Bearer ${teammate.accessToken}`);
+
+    expect(tenantsRes.status).toBe(200);
+    expect(tenantsRes.body.data.find((item: { tenantId: string }) => item.tenantId === tenant.id)).toBeUndefined();
   });
 
   it('disables and removes group memberships for family groups', async () => {
