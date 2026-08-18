@@ -489,6 +489,56 @@ const seedReward = async (
   }
 };
 
+const SEED_MARKER_EMAIL = 'admin@uaetrails.app';
+const SEED_MARKER_EVENT_ID = 'seed-event-jais';
+const SEED_MARKER_LOCATION_ID = 'jebel-jais-summit-trail';
+
+const isProductionEnv = (): boolean => process.env.NODE_ENV === 'production';
+
+const isSeedDataEnabled = (): boolean =>
+  String(process.env.SEED_DATA ?? '').trim().toLowerCase() === 'true';
+
+const hasExistingSeedData = async (): Promise<boolean> => {
+  const existingAdmin = await findAuthUserByEmail(SEED_MARKER_EMAIL);
+  if (existingAdmin) return true;
+
+  const existingEvent = await findEventDocInMongo(SEED_MARKER_EVENT_ID);
+  if (existingEvent) return true;
+
+  const existingLocation = await findLocationInMongo(SEED_MARKER_LOCATION_ID);
+  return Boolean(existingLocation);
+};
+
+const logSeedSkip = (reason: string): void => {
+  console.log(`[seed] Skipping seed: ${reason}`);
+};
+
+const shouldRunSeed = async (): Promise<boolean> => {
+  if (isProductionEnv()) {
+    logSeedSkip('production environment never seeds data');
+    return false;
+  }
+
+  const seedEnabled = isSeedDataEnabled();
+  const dataExists = await hasExistingSeedData();
+
+  if (dataExists && !seedEnabled) {
+    logSeedSkip('seed data already exists and SEED_DATA is not true');
+    return false;
+  }
+
+  if (!seedEnabled) {
+    logSeedSkip('SEED_DATA is not true');
+    return false;
+  }
+
+  if (dataExists) {
+    console.log('[seed] SEED_DATA=true — reseeding and overwriting existing demo data');
+  }
+
+  return true;
+};
+
 async function main() {
   const client = await connectMongo();
   if (!client) {
@@ -496,22 +546,7 @@ async function main() {
     process.exit(1);
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    const adminEmail = process.env.SEED_ADMIN_EMAIL;
-    const adminPassword = process.env.SEED_ADMIN_PASSWORD;
-    if (!adminEmail || !adminPassword) {
-      console.log(
-        '[seed] Skipping demo seed in production. Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD to create an admin user.'
-      );
-      return;
-    }
-    await upsertUser({
-      email: adminEmail,
-      password: adminPassword,
-      role: UserRole.PLATFORM_ADMIN,
-      displayName: 'Platform Admin'
-    });
-    console.log(`[seed] Production admin ensured: ${adminEmail}`);
+  if (!(await shouldRunSeed())) {
     return;
   }
 

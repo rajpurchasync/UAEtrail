@@ -81,6 +81,7 @@ services:
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      SEED_DATA: ${SEED_DATA:-}
       METRICS_TOKEN: ${METRICS_TOKEN:-}
     volumes:
       - ./logs:/var/log/webapp
