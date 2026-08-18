@@ -4,26 +4,41 @@ import express, { type Express } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
+import { z } from 'zod';
 import { env } from './config/env.js';
 import { connectMongo, getMongoClient } from './lib/mongo.js';
-import { logger, createRequestLogger, logError } from './lib/logger.js';
+import { createRequestLogger, logError } from './lib/logger.js';
 import { apiErrorsTotal, httpRequestDurationSeconds, httpRequestsTotal, metricsContentType, metricsText } from './lib/metrics.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
+import { requireMetricsAuth } from './middleware/metrics-auth.js';
 import { createRateLimiters } from './middleware/rate-limit.js';
-import { getGlobalLimiter } from './middleware/rate-limit-instances.js';
+import { getClientErrorLimiter, getGlobalLimiter } from './middleware/rate-limit-instances.js';
 import { requestTimeout } from './middleware/request-timeout.js';
 import { traceIdMiddleware } from './middleware/trace-id.js';
 import { openApiSpec } from './openapi.js';
 import { apiRouter } from './routes/index.js';
 import { stripeWebhookHandler } from './routes/stripe-webhook.js';
 
+const clientErrorBodySchema = z
+  .object({
+    message: z.string().max(2000).optional(),
+    stack: z.string().max(8000).optional(),
+    componentStack: z.string().max(8000).optional(),
+    url: z.string().max(2000).optional(),
+    userAgent: z.string().max(500).optional()
+  })
+  .strict();
 export const createApp = async (): Promise<Express> => {
   const app = express();
   const observabilityPaths = new Set(['/health', '/health/ready', '/metrics']);
   if (env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
   }
-  const globalLimiter = getGlobalLimiter() ?? (await createRateLimiters()).globalLimiter;
+  const registeredGlobal = getGlobalLimiter();
+  const registeredClient = getClientErrorLimiter();
+  const fallbackLimiters = registeredGlobal && registeredClient ? null : await createRateLimiters();
+  const globalLimiter = registeredGlobal ?? fallbackLimiters!.globalLimiter;
+  const clientErrorLimiter = registeredClient ?? fallbackLimiters!.clientErrorLimiter;
 
   const configuredOrigins = [
     env.APP_BASE_URL,
@@ -115,18 +130,24 @@ export const createApp = async (): Promise<Express> => {
     }
   });
 
-  app.get('/metrics', async (_req, res) => {
+  app.get('/metrics', requireMetricsAuth, async (_req, res) => {
     res.set('Content-Type', metricsContentType);
     res.end(await metricsText());
   });
 
-  app.post('/api/v1/logs/client-error', (req, res) => {
-    const payload = req.body;
-    logError('client-side error reported', payload, { route: '/api/v1/logs/client-error' });
+  app.post('/api/v1/logs/client-error', clientErrorLimiter, (req, res) => {
+    const parsed = clientErrorBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: { code: 'invalid_payload', message: 'Invalid client error payload.' }
+      });
+      return;
+    }
+
+    logError('client-side error reported', parsed.data, { route: '/api/v1/logs/client-error' });
     apiErrorsTotal.labels('client_error').inc();
     res.status(202).json({ status: 'accepted' });
   });
-
   if (env.NODE_ENV !== 'production') {
     app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
     app.get('/api/openapi.json', (_req, res) => res.json(openApiSpec));

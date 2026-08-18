@@ -41,7 +41,7 @@ interface MeetingPointMapProps {
 }
 
 /** Lightweight map preview + external maps link for meeting points. */
-export const MeetingPointMap = ({ lat, lng, label, hideExternalLink = false }: MeetingPointMapProps) => {
+export const MeetingPointMap = ({ lat, lng, hideExternalLink = false }: MeetingPointMapProps) => {
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {

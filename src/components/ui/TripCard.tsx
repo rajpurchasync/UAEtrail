@@ -2,14 +2,13 @@ import { type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Users, MapPin, ChevronRight } from 'lucide-react';
 import { Trip } from '../../types';
+import { ACTIVITY_TYPE_LABELS } from '../../config/activityTypes';
 import { tripPriceLabel } from '../../utils/tripPricing';
 import { organizerProfilePath } from '../../utils/organizerLinks';
 import { ShareButton } from './ShareButton';
 import { ParticipantPreview } from './ParticipantPreview';
 import { OrganizerMessageButton } from './OrganizerMessageButton';
 import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../../utils/hostLabels';
-import { useComposePreview } from '../../hooks/useComposePreview';
-import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface TripCardProps {
   trip: Trip;
@@ -19,15 +18,15 @@ interface TripCardProps {
 
 export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const openPreview = useComposePreview();
   const tripPath = `/trip/${trip.id}`;
 
   const locationImage =
     trip.images?.[0] ??
     (trip.activityType === 'camping'
       ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600'
-      : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600');
+      : trip.activityType === 'community_event'
+        ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=600'
+        : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600');
 
   const tripParticipants = trip.participantPreviews ?? [];
   const isFeatured = variant === 'featured';
@@ -45,32 +44,7 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
   const status = statusStyles[trip.status];
   const slotsPercent = Math.round(((trip.slotsTotal - trip.slotsAvailable) / trip.slotsTotal) * 100);
 
-  const goToTrip = () => {
-    if (isMobile) {
-      navigate(tripPath);
-      return;
-    }
-    openPreview({
-      path: tripPath,
-      title: trip.title || trip.locationName,
-      content: (
-        <div className="p-4 space-y-4">
-          <img src={locationImage} alt={trip.locationName} className="w-full aspect-video object-cover rounded-xl" />
-          <div className="flex flex-wrap gap-2 text-xs text-gray-600">
-            <span>{trip.date}</span>
-            <span>·</span>
-            <span>{trip.time}</span>
-            <span>·</span>
-            <span className="capitalize">{trip.activityType}</span>
-          </div>
-          <p className="text-sm text-gray-600">{trip.description}</p>
-          <Link to={tripPath} className="app-cta-sm w-full">
-            Open trip
-          </Link>
-        </div>
-      ),
-    });
-  };
+  const goToTrip = () => navigate(tripPath);
 
   const hostName = tripHostName(trip);
   const hostAvatar = tripHostAvatar(trip);
@@ -141,10 +115,14 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
       <div className="absolute top-3 right-3 flex flex-row flex-wrap items-center justify-end gap-1.5 max-w-[calc(100%-4rem)]">
         <span
           className={`px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-md shrink-0 ${
-            trip.activityType === 'hiking' ? 'bg-emerald-600/90 text-white' : 'bg-amber-500/90 text-white'
+            trip.activityType === 'hiking'
+              ? 'bg-emerald-600/90 text-white'
+              : trip.activityType === 'camping'
+                ? 'bg-amber-500/90 text-white'
+                : 'bg-violet-600/90 text-white'
           }`}
         >
-          {trip.activityType === 'hiking' ? 'Hiking' : 'Camping'}
+          {ACTIVITY_TYPE_LABELS[trip.activityType]}
         </span>
       </div>
       <div className="absolute bottom-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>

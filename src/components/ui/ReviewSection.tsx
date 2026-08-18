@@ -13,7 +13,7 @@ interface ReviewSectionProps {
   targetId: string;
   reviews: ReviewDTO[];
   onReviewSubmitted: (review: ReviewDTO) => void;
-  accent?: 'emerald' | 'amber';
+  accent?: 'emerald' | 'amber' | 'violet';
 }
 
 export const ReviewSection = ({
@@ -36,7 +36,9 @@ export const ReviewSection = ({
   const btnClass =
     accent === 'amber'
       ? 'bg-amber-600 hover:bg-amber-700'
-      : 'bg-emerald-600 hover:bg-emerald-700';
+      : accent === 'violet'
+        ? 'bg-violet-600 hover:bg-violet-700'
+        : 'bg-emerald-600 hover:bg-emerald-700';
   const signInRedirect = buildSignInRedirect(location, {
     focusSelector: '#reviews',
     hash: '#reviews'

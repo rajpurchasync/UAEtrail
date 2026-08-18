@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Plus } from 'lucide-react';
-import { EventDTO } from '@uaetrail/shared-types';
+import { EventDTO, withdrawReasonLabel } from '@uaetrail/shared-types';
 import { api, EventRequestView } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
 import { TenantSwitcher, ImageUpload, MapPinFields, parseCoord, LocationSelect, ShareButton, HostSelect, TripPricePackagesEditor } from '../../components/ui';
@@ -218,6 +218,8 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
   };
 
   const eventRequests = (eventId: string) => requests.filter((r) => r.event.id === eventId && r.status === 'pending');
+  const cancelledEventRequests = (eventId: string) =>
+    requests.filter((r) => r.event.id === eventId && r.status === 'cancelled' && r.cancelReason);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
@@ -248,6 +250,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
       <div className="space-y-3">
         {displayed.map((event) => {
           const pending = eventRequests(event.id);
+          const cancelled = cancelledEventRequests(event.id);
           const expanded = expandedRequests === event.id;
           return (
             <div key={event.id} className="bg-white border rounded-lg overflow-hidden">
@@ -364,8 +367,60 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
                           </div>
                         </div>
                       ))}
+                      {cancelled.length > 0 && (
+                        <div className="pt-2 border-t border-gray-200">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                            Recent cancellations
+                          </p>
+                          <div className="space-y-2">
+                            {cancelled.map((r) => (
+                              <div key={r.id} className="bg-white border border-red-100 rounded-lg px-3 py-2">
+                                <p className="text-sm font-medium text-gray-900">
+                                  {r.user?.displayName || r.user?.email}
+                                </p>
+                                <p className="text-xs text-red-700 mt-0.5">
+                                  {withdrawReasonLabel(r.cancelReason!)}
+                                </p>
+                                {r.cancelMessage && (
+                                  <p className="text-xs text-gray-600 mt-1 whitespace-pre-wrap">{r.cancelMessage}</p>
+                                )}
+                                {r.cancelledAt && (
+                                  <p className="text-[11px] text-gray-400 mt-1">
+                                    {new Date(r.cancelledAt).toLocaleString()}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
+                </div>
+              )}
+              {pending.length === 0 && cancelled.length > 0 && (
+                <div className="border-t px-4 py-3 bg-red-50/60">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-red-700 mb-2">
+                    Recent cancellations
+                  </p>
+                  <div className="space-y-2">
+                    {cancelled.map((r) => (
+                      <div key={r.id} className="bg-white border border-red-100 rounded-lg px-3 py-2">
+                        <p className="text-sm font-medium text-gray-900">
+                          {r.user?.displayName || r.user?.email}
+                        </p>
+                        <p className="text-xs text-red-700 mt-0.5">{withdrawReasonLabel(r.cancelReason!)}</p>
+                        {r.cancelMessage && (
+                          <p className="text-xs text-gray-600 mt-1 whitespace-pre-wrap">{r.cancelMessage}</p>
+                        )}
+                        {r.cancelledAt && (
+                          <p className="text-[11px] text-gray-400 mt-1">
+                            {new Date(r.cancelledAt).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

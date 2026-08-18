@@ -7,14 +7,15 @@ import { DashboardRedirect } from './components/auth/DashboardRedirect';
 import { FEATURE_FLAGS } from './config/platform';
 import { NativeDeepLinkHandler } from './components/NativeDeepLinkHandler';
 import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
-import { useAuth } from './context/AuthContext';
-import { accountRouteByRole } from './utils/authRouting';
+import { Home } from './pages/Home';
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
-const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const Discovery = lazy(() => import('./pages/Discovery').then((m) => ({ default: m.Discovery })));
 const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
 const CampDetail = lazy(() => import('./pages/CampDetail').then((m) => ({ default: m.CampDetail })));
+const CommunityEventDetail = lazy(() =>
+  import('./pages/CommunityEventDetail').then((m) => ({ default: m.CommunityEventDetail }))
+);
 
 const Membership = lazy(() => import('./pages/Membership').then((m) => ({ default: m.Membership })));
 const Shop = lazy(() => import('./pages/Shop').then((m) => ({ default: m.Shop })));
@@ -33,6 +34,7 @@ const AdminLocations = lazy(() => import('./pages/AdminLocations').then((m) => (
 const AdminOrganizers = lazy(() => import('./pages/AdminOrganizers').then((m) => ({ default: m.AdminOrganizers })));
 const AdminEvents = lazy(() => import('./pages/AdminEvents').then((m) => ({ default: m.AdminEvents })));
 const AdminUsers = lazy(() => import('./pages/AdminUsers').then((m) => ({ default: m.AdminUsers })));
+const AdminGroups = lazy(() => import('./pages/AdminGroups').then((m) => ({ default: m.AdminGroups })));
 const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog').then((m) => ({ default: m.AdminAuditLog })));
 const AdminSettings = lazy(() => import('./pages/AdminSettings').then((m) => ({ default: m.AdminSettings })));
 const AdminShop = lazy(() => import('./pages/AdminShop').then((m) => ({ default: m.AdminShop })));
@@ -82,15 +84,8 @@ const AuthAliasRedirect = ({ to }: { to: string }) => {
   return <Navigate to={`${to}${search}`} replace />;
 };
 
-/** Redirects non-visitor non-switched users to their role hub. */
-const ConsumerRoute = ({ children }: { children: JSX.Element }) => {
-  const { user, initializing } = useAuth();
-  if (initializing) return null;
-  if (user && user.role !== 'visitor' && !user.switchedFromRole) {
-    return <Navigate to={accountRouteByRole(user.role)} replace />;
-  }
-  return children;
-};
+/** @deprecated Consumer routes are open to all roles; staff can browse trips and discovery. */
+const ConsumerRoute = ({ children }: { children: JSX.Element }) => children;
 
 const AuthReturnContextRestorer = () => {
   const location = useLocation();
@@ -168,6 +163,7 @@ function App() {
           <Route path="/discovery" element={<ConsumerRoute><Discovery /></ConsumerRoute>} />
           <Route path="/trail/:id" element={<TrailDetail />} />
           <Route path="/camp/:id" element={<CampDetail />} />
+          <Route path="/community-event/:id" element={<CommunityEventDetail />} />
           <Route path="/calendar" element={<Navigate to="/trips" replace />} />
           <Route path="/trips" element={<ConsumerRoute><Trips /></ConsumerRoute>} />
           <Route
@@ -207,7 +203,7 @@ function App() {
           <Route
             path="/messages"
             element={
-              <ProtectedRoute roles={['visitor']}>
+              <ProtectedRoute roles={['visitor', 'merchant_admin']}>
                 <Messages />
               </ProtectedRoute>
             }
@@ -258,7 +254,7 @@ function App() {
           <Route
             path="/security-privacy"
             element={
-              <ProtectedRoute roles={['visitor']}>
+              <ProtectedRoute roles={['visitor', 'merchant_admin']}>
                 <SecurityPrivacy />
               </ProtectedRoute>
             }
@@ -305,6 +301,14 @@ function App() {
             element={
               <ProtectedRoute roles={['platform_admin']}>
                 <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/groups"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminGroups />
               </ProtectedRoute>
             }
           />

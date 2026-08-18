@@ -190,7 +190,7 @@
   }
 
   .consumer-hero-title {
-    @apply text-lg sm:text-xl md:text-2xl font-bold text-white tracking-[-0.02em] leading-snug drop-shadow-md line-clamp-2 mt-2 mb-0.5;
+    @apply text-lg sm:text-xl md:text-2xl font-bold text-white tracking-[-0.02em] leading-snug drop-shadow-md line-clamp-2;
   }
 
   .app-fab {

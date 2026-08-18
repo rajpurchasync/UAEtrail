@@ -2,6 +2,7 @@ export { Home } from './Home';
 export { Discovery } from './Discovery';
 export { TrailDetail } from './TrailDetail';
 export { CampDetail } from './CampDetail';
+export { CommunityEventDetail } from './CommunityEventDetail';
 
 export { Membership } from './Membership';
 export { Shop } from './Shop';
@@ -19,6 +20,7 @@ export { AdminLocations } from './AdminLocations';
 export { AdminOrganizers } from './AdminOrganizers';
 export { AdminEvents } from './AdminEvents';
 export { AdminUsers } from './AdminUsers';
+export { AdminGroups } from './AdminGroups';
 export { AdminAuditLog } from './AdminAuditLog';
 export { AdminSettings } from './AdminSettings';
 export { AdminShop } from './AdminShop';

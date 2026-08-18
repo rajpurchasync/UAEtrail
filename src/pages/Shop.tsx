@@ -112,6 +112,33 @@ export const Shop = () => {
     setShowFilters(false);
   };
 
+  if (FEATURE_FLAGS.shopComingSoon) {
+    return (
+      <>
+        <PageMeta
+          title="Outdoor gear shop"
+          description="Hiking and camping equipment for UAE adventures — apparel, tents, backpacks, and more."
+          path="/shop"
+        />
+        <ConsumerShell
+          layout="tab"
+          title="Shop"
+          banner={{ src: PAGE_BANNERS.shop, alt: 'Camping tent under the stars' }}
+        >
+          <div className="flex flex-col items-center justify-center py-16 md:py-24 px-6 text-center min-h-[40vh]">
+            <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700 mb-5">
+              Coming Soon
+            </span>
+            <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-3">Gear shop is on the way</h2>
+            <p className="text-sm md:text-base text-gray-600 max-w-md leading-relaxed">
+              Curated hiking and camping equipment for UAE adventures — apparel, tents, backpacks, and more.
+            </p>
+          </div>
+        </ConsumerShell>
+      </>
+    );
+  }
+
   return (
     <>
       <PageMeta

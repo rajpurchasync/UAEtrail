@@ -2,7 +2,15 @@ import type { Db } from 'mongodb';
 
 export const ensureMongoIndexes = async (db: Db): Promise<void> => {
   const userFavorites = db.collection('user_favorites');
-  const existingFavoriteIndexes = await userFavorites.indexes();
+  let existingFavoriteIndexes: Awaited<ReturnType<typeof userFavorites.indexes>> = [];
+  try {
+    existingFavoriteIndexes = await userFavorites.indexes();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/ns does not exist|NamespaceNotFound/i.test(message)) {
+      throw error;
+    }
+  }
   const legacyFavoriteIndexNames = new Set(['userId_1_locationId_1', 'userId_1_eventId_1', 'userId_1_productId_1']);
 
   await Promise.all(
@@ -119,6 +127,20 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     ]),
     db.collection('merchant_profiles').createIndexes([
       { key: { adminIds: 1 } }
+    ]),
+    db.collection('social_groups').createIndexes([{ key: { adminUserId: 1, createdAt: -1 } }]),
+    db.collection('social_group_members').createIndexes([
+      { key: { groupId: 1, userId: 1 }, unique: true, partialFilterExpression: { userId: { $type: 'string' } } },
+      { key: { userId: 1, createdAt: -1 } },
+      { key: { groupId: 1, createdAt: 1 } }
+    ]),
+    db.collection('social_group_invites').createIndexes([
+      { key: { groupId: 1, email: 1, status: 1 } },
+      { key: { token: 1 }, unique: true },
+      { key: { email: 1, status: 1 } }
+    ]),
+    db.collection('social_group_wall').createIndexes([
+      { key: { groupId: 1, createdAt: -1 } }
     ])
   ]);
 };

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { MobileBrandBar } from '../layout/MobileBrandBar';
+import { MobileBackButton } from './MobileBackButton';
 
 interface ConsumerHeroBannerProps {
   src: string;
@@ -22,9 +23,13 @@ interface ConsumerHeroBannerProps {
   chromeOnDesktop?: boolean;
   /** Render banner chrome only on desktop, leaving mobile to the sticky header. */
   desktopChromeOnly?: boolean;
+  /** Breadcrumb journey inside the banner (bottom-left). */
+  journeyFallbackTo?: string;
+  journeyLabel?: string;
+  showJourney?: boolean;
 }
 
-/** Compact image banner with page title overlaid on top. */
+/** Compact image banner with centered title and bottom breadcrumb. */
 export const ConsumerHeroBanner = ({
   src,
   alt = '',
@@ -41,6 +46,9 @@ export const ConsumerHeroBanner = ({
   showMobileChrome = false,
   chromeOnDesktop = false,
   desktopChromeOnly = false,
+  journeyFallbackTo,
+  journeyLabel,
+  showJourney = false,
 }: ConsumerHeroBannerProps) => (
   <div
     className={`consumer-hero-banner ${size === 'editorial' ? 'consumer-hero-banner--editorial' : ''} ${
@@ -64,6 +72,7 @@ export const ConsumerHeroBanner = ({
         />
       </>
     )}
+
     {showMobileChrome && (
       <div
         className={`absolute inset-x-0 top-0 z-10 px-4 pt-safe-plus-3 ${
@@ -79,34 +88,44 @@ export const ConsumerHeroBanner = ({
         />
       </div>
     )}
-    {(title || eyebrow || action) && (
+
+    {(title || eyebrow) && (
       <div
-        className={`absolute inset-x-0 bottom-0 px-4 pb-4 pt-16 sm:px-5 sm:pb-5 sm:pt-20 ${
-          showMobileChrome ? 'pt-28 sm:pt-32' : ''
-        }`}
+        className={`absolute inset-0 z-[2] flex flex-col items-center justify-center px-12 sm:px-16 md:px-20 pointer-events-none ${
+          showMobileChrome ? 'pt-10 sm:pt-12' : ''
+        } ${showJourney || action ? 'pb-10 sm:pb-11' : ''}`}
       >
-        <div className={`min-w-0 flex-1 ${action ? 'pr-20 sm:pr-24' : ''}`}>
-          {linkTo ? (
-            <Link to={linkTo} aria-label={linkAriaLabel ?? title ?? alt} className="block">
-              {eyebrow && <p className="consumer-hero-eyebrow">{eyebrow}</p>}
-              {title && <h1 className="consumer-hero-title">{title}</h1>}
-            </Link>
-          ) : (
-            <>
-              {eyebrow && <p className="consumer-hero-eyebrow">{eyebrow}</p>}
-              {title && <h1 className="consumer-hero-title">{title}</h1>}
-            </>
-          )}
-        </div>
-        {action && (
-          <div
-            className={`absolute bottom-5 right-3 sm:bottom-8 sm:right-5 ${
-              chromeOnDesktop && showMobileChrome ? 'md:hidden' : 'md:bottom-7 md:right-10 lg:right-14'
-            }`}
+        {linkTo ? (
+          <Link
+            to={linkTo}
+            aria-label={linkAriaLabel ?? title ?? alt}
+            className="block text-center pointer-events-auto max-w-full"
           >
-            {action}
+            {eyebrow && <p className="consumer-hero-eyebrow text-center">{eyebrow}</p>}
+            {title && <h1 className="consumer-hero-title text-center">{title}</h1>}
+          </Link>
+        ) : (
+          <div className="text-center max-w-full">
+            {eyebrow && <p className="consumer-hero-eyebrow text-center">{eyebrow}</p>}
+            {title && <h1 className="consumer-hero-title text-center">{title}</h1>}
           </div>
         )}
+      </div>
+    )}
+
+    {(showJourney || action) && (
+      <div className="absolute inset-x-0 bottom-0 z-[3] flex items-end justify-between gap-3 px-4 pb-3 sm:px-5 sm:pb-4">
+        {showJourney ? (
+          <MobileBackButton
+            tone="light"
+            fallbackTo={journeyFallbackTo ?? backTo ?? '/'}
+            label={journeyLabel ?? backLabel ?? 'Back'}
+            className="min-w-0 flex-1"
+          />
+        ) : (
+          <span aria-hidden />
+        )}
+        {action && <div className="shrink-0">{action}</div>}
       </div>
     )}
   </div>

@@ -82,6 +82,7 @@ export const OrganizerRequests = () => {
                 <th className="px-4 py-3 text-left">Note</th>
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Cancellation</th>
                 <th className="px-4 py-3 text-left">Actions</th>
               </tr>
             </thead>
@@ -108,21 +109,29 @@ export const OrganizerRequests = () => {
                   <td className="px-4 py-3 text-xs text-gray-500">{new Date(req.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3">{statusBadge(req.status)}</td>
                   <td className="px-4 py-3">
+                    {req.status === 'cancelled' && req.cancelReason ? (
+                      <div className="text-xs text-gray-700 max-w-[220px]">
+                        <p className="font-medium text-gray-900">{withdrawReasonLabel(req.cancelReason)}</p>
+                        {req.cancelMessage && (
+                          <p className="text-gray-600 mt-1 whitespace-pre-wrap">{req.cancelMessage}</p>
+                        )}
+                        {req.cancelledAt && (
+                          <p className="text-gray-400 mt-1">
+                            {new Date(req.cancelledAt).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
                     {req.status === 'pending' ? (
                       <div className="flex gap-2">
                         <button onClick={() => { setDecisionModal({ request: req, action: 'approved' }); setOrganizerNote(''); }}
                           className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Approve</button>
                         <button onClick={() => { setDecisionModal({ request: req, action: 'rejected' }); setOrganizerNote(''); }}
                           className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs">Reject</button>
-                      </div>
-                    ) : req.status === 'cancelled' && req.cancelReason ? (
-                      <div className="text-xs text-gray-600 max-w-[200px]">
-                        <p className="font-medium">{withdrawReasonLabel(req.cancelReason)}</p>
-                        {req.cancelMessage && (
-                          <p className="text-gray-500 truncate" title={req.cancelMessage}>
-                            {req.cancelMessage}
-                          </p>
-                        )}
                       </div>
                     ) : (
                       <>
@@ -135,7 +144,7 @@ export const OrganizerRequests = () => {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No requests found</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">No requests found</td></tr>
               )}
             </tbody>
           </table>

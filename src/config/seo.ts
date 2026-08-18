@@ -8,8 +8,11 @@ export const SITE_ORIGIN =
 export const SITE_DESCRIPTION =
   'Discover hiking trails, camping spots, and organized outdoor trips across the UAE and GCC with verified guides.';
 
-/** Self-hosted hero — hiking in the mountains (matches page topic; better than generic city skyline for SEO/OG) */
-export const HOME_HERO_IMAGE = '/traveler-hiking-mountains-while-having-his-essentials-backpack.jpg';
+/** Self-hosted hero — optimized WebP (~120KB) with JPEG fallback */
+export const HOME_HERO_IMAGE_WEBP = '/traveler-hiking-mountains-while-having-his-essentials-backpack.webp';
+export const HOME_HERO_IMAGE_JPEG = '/traveler-hiking-mountains-while-having-his-essentials-backpack-optimized.jpg';
+/** @deprecated Use HOME_HERO_IMAGE_WEBP — kept for OG tags until CDN serves WebP */
+export const HOME_HERO_IMAGE = HOME_HERO_IMAGE_JPEG;
 
 export const toAbsoluteUrl = (pathOrUrl?: string | null): string | undefined => {
   if (!pathOrUrl) return undefined;

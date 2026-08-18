@@ -1,12 +1,15 @@
 import { lazy, Suspense, useState, useMemo, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, Map, List, Plus } from 'lucide-react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, Map, List, Plus } from 'lucide-react';
 import { TrailCard } from '../components/ui/TrailCard';
 import { CampingCard } from '../components/ui/CampingCard';
+import { CommunityEventCard } from '../components/ui/CommunityEventCard';
 import { Dialog } from '../components/ui/Dialog';
 import { SubmitLocationForm } from '../components/ui/SubmitLocationForm';
 import { useAuth } from '../context/AuthContext';
 import type { LocationMapPin } from '../components/ui/LocationsMap';
+import type { ActivityType } from '../config/activityTypes';
+import { ACTIVITY_TYPE_LABELS, locationPathForActivity } from '../config/activityTypes';
 
 const LocationsMap = lazy(() =>
   import('../components/ui/LocationsMap').then((m) => ({ default: m.LocationsMap }))
@@ -15,27 +18,31 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { ListBrowseLayout } from '../components/layout/ListBrowseLayout';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
-import { FilterIconButton } from '../components/mobile/FilterIconButton';
 import { PAGE_BANNERS } from '../config/pageBanners';
-import { DifficultyLevel, CampingType, Accessibility, Trail, CampingSpot } from '../types';
+import { DifficultyLevel, CampingType, Accessibility, Trail, CampingSpot, CommunityEventSpot } from '../types';
 import { fetchApiLocations } from '../api/public';
 import { DEFAULT_COUNTRY, DISCOVERY_REGION_PILL_LABELS, getDiscoveryRegionPillOptions, getRegionsForCountry, getMapBounds } from '../config/regions';
 import { matchesLocationSearch, resolveRegionFilter } from '../utils/locationSearch';
 
-type LocationItem = { type: 'trail'; data: Trail } | { type: 'camp'; data: CampingSpot };
-type ActivityFilter = 'all' | 'hiking' | 'camping';
+type LocationItem =
+  | { type: 'trail'; data: Trail }
+  | { type: 'camp'; data: CampingSpot }
+  | { type: 'community_event'; data: CommunityEventSpot };
+type ActivityFilter = 'all' | ActivityType;
 
 export const Discovery = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { pathname, search } = useLocation();
   const { user } = useAuth();
+  const signInHref = `/signin?redirect=${encodeURIComponent(`${pathname}${search}`)}`;
   const [addLocationOpen, setAddLocationOpen] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
   const [trailSource, setTrailSource] = useState<Trail[]>([]);
   const [campSource, setCampSource] = useState<CampingSpot[]>([]);
+  const [communityEventSource, setCommunityEventSource] = useState<CommunityEventSpot[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
@@ -78,7 +85,7 @@ export const Discovery = () => {
       setFilters((prev) => ({ ...prev, regions: [] }));
     }
 
-    if (activity === 'hiking' || activity === 'camping') {
+    if (activity === 'hiking' || activity === 'camping' || activity === 'community_event') {
       setActivityFilter(activity);
     } else {
       setActivityFilter('all');
@@ -100,10 +107,12 @@ export const Discovery = () => {
       .then((response) => {
         setTrailSource(response.trails);
         setCampSource(response.camps);
+        setCommunityEventSource(response.communityEvents);
       })
       .catch((err) => {
         setTrailSource([]);
         setCampSource([]);
+        setCommunityEventSource([]);
         setLoadError(err instanceof Error ? err.message : 'Failed to load locations');
       })
       .finally(() => setLoading(false));
@@ -118,6 +127,7 @@ export const Discovery = () => {
     const locations: LocationItem[] = [];
     const showTrails = activityFilter === 'all' || activityFilter === 'hiking';
     const showCamps = activityFilter === 'all' || activityFilter === 'camping';
+    const showCommunityEvents = activityFilter === 'all' || activityFilter === 'community_event';
 
     if (showTrails) {
       const filteredTrails = trailSource.filter((trail) => {
@@ -163,8 +173,29 @@ export const Discovery = () => {
       locations.push(...filteredCamps.map((camp) => ({ type: 'camp' as const, data: camp })));
     }
 
+    if (showCommunityEvents) {
+      const filteredEvents = communityEventSource.filter((event) => {
+        if (!matchesLocationSearch(event, searchQuery)) {
+          return false;
+        }
+        if (filters.regions.length > 0 && !filters.regions.includes(event.region)) {
+          return false;
+        }
+        if (filters.difficulty.length > 0 && !filters.difficulty.includes(event.difficulty)) {
+          return false;
+        }
+        if (event.distance != null && (event.distance < filters.minDistance || event.distance > filters.maxDistance)) {
+          return false;
+        }
+        return true;
+      });
+      locations.push(
+        ...filteredEvents.map((event) => ({ type: 'community_event' as const, data: event }))
+      );
+    }
+
     return locations;
-  }, [activityFilter, searchQuery, filters, trailSource, campSource]);
+  }, [activityFilter, searchQuery, filters, trailSource, campSource, communityEventSource]);
 
   const mapPins = useMemo((): LocationMapPin[] => {
     return filteredLocations.flatMap((location) => {
@@ -176,8 +207,20 @@ export const Discovery = () => {
           name: item.name,
           latitude: item.latitude,
           longitude: item.longitude,
-          activityType: location.type === 'trail' ? 'hiking' : 'camping',
-          path: location.type === 'trail' ? `/trail/${item.id}` : `/camp/${item.id}`,
+          activityType:
+            location.type === 'trail'
+              ? 'hiking'
+              : location.type === 'camp'
+                ? 'camping'
+                : 'community_event',
+          path: locationPathForActivity(
+            location.type === 'trail'
+              ? 'hiking'
+              : location.type === 'camp'
+                ? 'camping'
+                : 'community_event',
+            item.id
+          ),
         },
       ];
     });
@@ -222,7 +265,7 @@ export const Discovery = () => {
   const activeFilterSummary = useMemo(() => {
     const parts: string[] = [];
     if (filters.regions.length > 0) parts.push(filters.regions.join(', '));
-    if (activityFilter !== 'all') parts.push(activityFilter);
+    if (activityFilter !== 'all') parts.push(ACTIVITY_TYPE_LABELS[activityFilter]);
     if (searchQuery.trim()) parts.push(`"${searchQuery.trim()}"`);
     if (filters.difficulty.length > 0) parts.push(filters.difficulty.join(', '));
     return parts;
@@ -286,26 +329,13 @@ export const Discovery = () => {
               {submitSuccess}
             </p>
           )}
-          <FilterChips
-            className="mb-3"
-            options={regionPillOptions}
-            value={activeRegionPill}
-            onChange={selectRegionPill}
-          />
-          <div className="flex gap-2 mb-3 min-w-0">
-            <div className="flex-1 relative min-w-0">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search trails & camps"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="glass-search w-full min-w-0"
-              />
-            </div>
-            <FilterIconButton onClick={() => setShowFilters(!showFilters)} aria-label="Filters" className="shrink-0">
-              <SlidersHorizontal className="w-4 h-4" />
-            </FilterIconButton>
+          <div className="flex items-center gap-2 mb-3 min-w-0">
+            <FilterChips
+              className="min-w-0 flex-1"
+              options={regionPillOptions}
+              value={activeRegionPill}
+              onChange={selectRegionPill}
+            />
             <button
               type="button"
               onClick={openAddLocation}
@@ -316,17 +346,28 @@ export const Discovery = () => {
               <span className="hidden md:inline text-sm font-medium">Add location</span>
             </button>
           </div>
-          <div className="flex gap-2 items-center min-w-0">
+          <div className="flex gap-2 items-center min-w-0 mb-3">
             <FilterChips
-              className="min-w-0 flex-1"
+              className="min-w-0 shrink"
               options={[
                 { key: 'all', label: 'All' },
                 { key: 'hiking', label: 'Hiking' },
                 { key: 'camping', label: 'Camping' },
+                { key: 'community_event', label: 'Community Event' },
               ]}
               value={activityFilter}
               onChange={(key) => setActivityFilter(key as ActivityFilter)}
             />
+            <div className="flex-1 relative min-w-0 max-w-xs ml-auto">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search trails & spots"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="glass-search w-full min-w-0"
+              />
+            </div>
             <div className="app-segmented shrink-0">
               <button
                 type="button"
@@ -362,42 +403,17 @@ export const Discovery = () => {
       <div className="py-2 md:py-4">
         <ListBrowseLayout
           sidebar={
-            <aside
-              className={`lg:block lg:w-64 shrink-0 ${
-                showFilters
-                  ? 'fixed inset-0 z-50 lg:static lg:inset-auto bg-black/40 lg:bg-transparent'
-                  : 'hidden lg:block'
-              }`}
-              onClick={() => showFilters && setShowFilters(false)}
-              role="presentation"
-            >
-            <div
-              className={`bg-white p-6 lg:rounded-ios-lg lg:shadow-ios-sm lg:sticky lg:top-32 ${
-                showFilters
-                  ? 'absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-[20px] pb-nav-safe lg:static lg:max-h-none lg:pb-6 lg:rounded-ios-lg'
-                  : ''
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-4 lg:mb-4">
+            <aside className="hidden lg:block lg:w-64 shrink-0">
+            <div className="bg-white p-6 lg:rounded-ios-lg lg:shadow-ios-sm lg:sticky lg:top-32">
+              <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold text-neutral-900">Filters</h2>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="text-sm text-emerald-600 font-medium min-h-[44px] px-2"
-                  >
-                    Clear all
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowFilters(false)}
-                    className="lg:hidden min-h-[44px] min-w-[44px] text-neutral-500"
-                    aria-label="Close filters"
-                  >
-                    ✕
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="text-sm text-emerald-600 font-medium min-h-[44px] px-2"
+                >
+                  Clear all
+                </button>
               </div>
 
               <div className="mb-6">
@@ -419,7 +435,7 @@ export const Discovery = () => {
                 </div>
               </div>
 
-              {(activityFilter === 'all' || activityFilter === 'hiking') && (
+              {(activityFilter === 'all' || activityFilter === 'hiking' || activityFilter === 'community_event') && (
                 <>
                   <div className="mb-6">
                     <h3 className="font-medium text-gray-900 mb-3">
@@ -555,7 +571,7 @@ export const Discovery = () => {
                     Active filters: {activeFilterSummary.join(' · ')}
                   </p>
                 )}
-                {!loadError && trailSource.length + campSource.length === 0 && (
+                {!loadError && trailSource.length + campSource.length + communityEventSource.length === 0 && (
                   <p className="text-sm text-gray-500 mb-4">
                     No locations are loaded yet. Run the API seed if this is a fresh install.
                   </p>
@@ -569,6 +585,19 @@ export const Discovery = () => {
                 </button>
               </div>
             ) : viewMode === 'map' ? (
+              !user ? (
+                <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 px-6 py-16 text-center" style={{ minHeight: 420 }}>
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+                    <Map className="h-7 w-7" strokeWidth={2} aria-hidden />
+                  </div>
+                  <p className="text-sm text-neutral-600 leading-relaxed max-w-sm mx-auto">
+                    <Link to={signInHref} className="font-bold text-emerald-600 hover:text-emerald-700">
+                      Sign in
+                    </Link>{' '}
+                    to view this and explore all other wonderful places
+                  </p>
+                </div>
+              ) : (
               <Suspense
                 fallback={
                   <div
@@ -579,13 +608,16 @@ export const Discovery = () => {
               >
                 <LocationsMap pins={mapPins} bounds={mapBounds} minHeight={420} />
               </Suspense>
+              )
             ) : (
               <div className="browse-card-grid">
                 {filteredLocations.map((location, index) =>
                   location.type === 'trail' ? (
                     <TrailCard key={`trail-${location.data.id}-${index}`} trail={location.data} />
-                  ) : (
+                  ) : location.type === 'camp' ? (
                     <CampingCard key={`camp-${location.data.id}-${index}`} camp={location.data} />
+                  ) : (
+                    <CommunityEventCard key={`event-${location.data.id}-${index}`} event={location.data} />
                   )
                 )}
               </div>
@@ -595,7 +627,13 @@ export const Discovery = () => {
 
       <Dialog open={addLocationOpen} onClose={() => setAddLocationOpen(false)} title="Suggest a location">
         <SubmitLocationForm
-          defaultActivityType={activityFilter === 'camping' ? 'camping' : 'hiking'}
+          defaultActivityType={
+            activityFilter === 'camping'
+              ? 'camping'
+              : activityFilter === 'community_event'
+                ? 'community_event'
+                : 'hiking'
+          }
           onSubmitted={(loc) => {
             setAddLocationOpen(false);
             setSubmitSuccess(`"${loc.name}" submitted for admin review. You'll see it on Trails & Spots once published.`);

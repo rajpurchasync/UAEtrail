@@ -5,8 +5,8 @@ import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { registerVerifiedVisitor } from './helpers/fixtures.js';
 import { createTenantRecord } from '../src/lib/tenant-store.js';
 import { upsertTenantMembership } from '../src/lib/tenant-access.js';
-import { MembershipRole, TenantStatus, TenantType } from '../src/domain/enums.js';
-import { findAuthUserByEmail } from '../src/lib/auth-users.js';
+import { MembershipRole, TenantStatus, TenantType, UserRole } from '../src/domain/enums.js';
+import { findAuthUserByEmail, updateAuthUserCore } from '../src/lib/auth-users.js';
 
 let app: Express;
 
@@ -39,9 +39,16 @@ describe('access management', () => {
       role: MembershipRole.TENANT_OWNER
     });
 
+    await updateAuthUserCore({ userId: ownerUser._id, role: UserRole.TENANT_OWNER });
+    const ownerLogin = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: owner.email, password: owner.password });
+    expect(ownerLogin.status).toBe(200);
+    const ownerToken = ownerLogin.body.tokens.accessToken as string;
+
     const addRes = await request(app)
       .post('/api/v1/organizer/team')
-      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .set('Authorization', `Bearer ${ownerToken}`)
       .set('x-tenant-id', tenant.id)
       .send({ email: teammate.email, role: 'tenant_guide' });
 
@@ -50,7 +57,7 @@ describe('access management', () => {
 
     const disableRes = await request(app)
       .patch(`/api/v1/organizer/team/${membershipId}`)
-      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .set('Authorization', `Bearer ${ownerToken}`)
       .set('x-tenant-id', tenant.id)
       .send({ isActive: false });
 
@@ -59,7 +66,7 @@ describe('access management', () => {
 
     const listRes = await request(app)
       .get('/api/v1/organizer/team')
-      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .set('Authorization', `Bearer ${ownerToken}`)
       .set('x-tenant-id', tenant.id);
 
     expect(listRes.status).toBe(200);

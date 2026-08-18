@@ -61,6 +61,7 @@ const adminCrumbs = (pathname: string): LogicalBreadcrumb[] => {
   if (pathname === '/admin/overview') return [base];
   if (pathname === '/admin/users') return [base, { label: 'Users', path: '' }];
   if (pathname === '/admin/events') return [base, { label: 'Events', path: '' }];
+  if (pathname === '/admin/groups') return [base, { label: 'Groups', path: '' }];
   if (pathname === '/admin/locations') return [base, { label: 'Locations', path: '' }];
   if (pathname === '/admin/organizers') return [base, { label: 'Organizer Applications', path: '' }];
   if (pathname === '/admin/audit-log') return [base, { label: 'Audit Log', path: '' }];
@@ -93,7 +94,7 @@ const accountCrumbs = (pathname: string): LogicalBreadcrumb[] | null => {
     ];
   }
   if (pathname === '/messages') return [{ label: 'Profile', path: '/profile' }, { label: 'Messages', path: '' }];
-  if (pathname === '/groups') return [{ label: 'Profile', path: '/profile' }, { label: 'Family & Friends', path: '' }];
+  if (pathname === '/groups') return [{ label: 'Profile', path: '/profile' }, { label: 'My Groups', path: '' }];
   if (pathname === '/my-rewards') return [{ label: 'Profile', path: '/profile' }, { label: 'Trail Points', path: '' }];
   if (pathname === '/security-privacy') {
     return [{ label: 'Profile', path: '/profile' }, { label: 'Security & Privacy', path: '' }];

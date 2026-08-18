@@ -36,7 +36,7 @@ export const AdminOverview = () => {
   const metricCards = [
     { label: 'Total Locations', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', icon: '📍' },
     { label: 'Total Users', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥' },
-    { label: 'Total Organizers', value: metrics?.totalOrganizers ?? '-', color: 'bg-purple-50 text-purple-700', icon: '🏢' },
+    { label: 'Total Groups', value: metrics?.totalGroups ?? '-', color: 'bg-indigo-50 text-indigo-700', icon: '👨‍👩‍👧‍👦', link: '/admin/groups' },
     { label: 'Active Trips', value: metrics?.activeTrips ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾' }
   ];
 
@@ -70,15 +70,24 @@ export const AdminOverview = () => {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        {metricCards.map((card) => (
-          <div key={card.label} className={`rounded-xl p-5 ${card.color}`}>
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium opacity-80">{card.label}</p>
-              <span className="text-xl">{card.icon}</span>
+        {metricCards.map((card) => {
+          const content = (
+            <div className={`rounded-xl p-5 ${card.color} ${card.link ? 'hover:opacity-95 transition-opacity' : ''}`}>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium opacity-80">{card.label}</p>
+                <span className="text-xl">{card.icon}</span>
+              </div>
+              <p className="text-3xl font-bold mt-2">{card.value}</p>
             </div>
-            <p className="text-3xl font-bold mt-2">{card.value}</p>
-          </div>
-        ))}
+          );
+          return card.link ? (
+            <Link key={card.label} to={card.link}>
+              {content}
+            </Link>
+          ) : (
+            <div key={card.label}>{content}</div>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

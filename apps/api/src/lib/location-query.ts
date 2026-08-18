@@ -6,7 +6,7 @@ import { radiusKmToRadians, withLocationGeoFields } from './location-geo.js';
 import { withQueryTiming } from './query-timing.js';
 
 export interface LocationListFilters {
-  activityType?: 'hiking' | 'camping';
+  activityType?: 'hiking' | 'camping' | 'community_event';
   featured?: boolean;
   countryCode?: string;
   lat?: number;
@@ -52,7 +52,12 @@ const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown>
     status: LocationStatus.ACTIVE
   };
   if (filters.activityType) {
-    query.activityType = filters.activityType === 'hiking' ? 'HIKING' : 'CAMPING';
+    query.activityType =
+      filters.activityType === 'hiking'
+        ? 'HIKING'
+        : filters.activityType === 'camping'
+          ? 'CAMPING'
+          : 'COMMUNITY_EVENT';
   }
   if (filters.featured !== undefined) {
     query.featured = filters.featured;

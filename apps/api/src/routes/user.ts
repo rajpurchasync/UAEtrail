@@ -78,6 +78,7 @@ import {
   createGroupWallMessage,
   createKidGroupMember,
   createSocialGroup,
+  deleteSocialGroup,
   findGroupById,
   getGroupMembership,
   listGroupInvites,
@@ -157,7 +158,7 @@ const SWITCHABLE_PRIVILEGED_ROLES: UserRole[] = [
 ];
 
 const listFilterSchema = z.object({
-  activityType: z.enum(['hiking', 'camping']).optional(),
+  activityType: z.enum(['hiking', 'camping', 'community_event']).optional(),
   featured: z.coerce.boolean().optional(),
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
@@ -300,8 +301,11 @@ userRouter.get('/locations/:id/premium/guide/pdf', requireAuth, validate({ param
   }
 });
 
-const locationDetailPath = (location: { id: string; activityType: ActivityType }) =>
-  location.activityType === ActivityType.CAMPING ? `/camp/${location.id}` : `/trail/${location.id}`;
+const locationDetailPath = (location: { id: string; activityType: ActivityType }) => {
+  if (location.activityType === ActivityType.CAMPING) return `/camp/${location.id}`;
+  if (location.activityType === ActivityType.COMMUNITY_EVENT) return `/community-event/${location.id}`;
+  return `/trail/${location.id}`;
+};
 
 userRouter.post('/locations/:id/premium/checkout', requireAuth, requireVerifiedEmail, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
@@ -1009,6 +1013,24 @@ userRouter.post('/me/groups', validate({ body: createGroupSchema }), async (req,
   }
 });
 
+userRouter.delete('/me/groups/:groupId', validate({ params: groupIdParamSchema }), async (req, res, next) => {
+  try {
+    const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
+    const group = await findGroupById(groupId);
+    if (!group) {
+      throw new ApiError(404, 'group_not_found', 'Group not found.');
+    }
+    if (group.adminUserId !== req.auth!.userId) {
+      throw new ApiError(403, 'forbidden', 'Only the group creator can delete this group.');
+    }
+
+    await deleteSocialGroup(groupId);
+    res.json({ message: 'Group permanently deleted.', data: { deleted: true } });
+  } catch (error) {
+    next(error);
+  }
+});
+
 userRouter.get('/me/groups/:groupId', validate({ params: groupIdParamSchema }), async (req, res, next) => {
   try {
     const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
@@ -1067,7 +1089,7 @@ userRouter.post('/me/groups/:groupId/invites', validate({ params: groupIdParamSc
           kind: 'buddy_request',
           inviteToken: invite.token,
           groupId,
-          path: '/groups'
+          path: `/groups?invite=${encodeURIComponent(invite.token)}`
         }
       }).catch(() => undefined);
     }

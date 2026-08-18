@@ -7,6 +7,10 @@ Monorepo web platform for UAE hiking/camping with:
 
 ## Quick Start
 
+### Team / shared cloud database (recommended)
+
+Everyone uses the **same MongoDB Atlas** database so seed data, users, and trips are shared.
+
 1. Install dependencies:
 ```bash
 npm install
@@ -23,6 +27,7 @@ run-project.bat       # Windows cmd / PowerShell
 ./run-project.sh      # Linux / RHEL
 ./run-project-mac.sh  # macOS
 ```
+Use database name **`uaetrail`** (same as production for now).
 
 Frontend runs on `http://localhost:5175`.
 API is available through the frontend proxy at `http://localhost:5175/api/v1`.
@@ -64,6 +69,7 @@ See **[docs/MOBILE_DEPLOYMENT_PLAN.md](docs/MOBILE_DEPLOYMENT_PLAN.md)** for the
 | Guide | Purpose |
 |-------|---------|
 | [DEV_RUN.md](docs/DEV_RUN.md) | VS Code hot-reload dev convention |
+| [RELEASE_READINESS.md](docs/RELEASE_READINESS.md) | QA gates, UAT scripts, go/no-go |
 | [PRE_DEPLOY_CHECKLIST.md](docs/PRE_DEPLOY_CHECKLIST.md) | Go-live on VPS |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker + HTTPS |
 | [ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md) | Play Store AAB |
@@ -78,7 +84,9 @@ npm run cap:sync
 npm run cap:android
 ```
 
-## Seed Accounts
+## Seed Accounts (shared Atlas `uaetrail` DB)
+
+After `npm run seed`, the team can log in with:
 - Admin: `admin@uaetrails.app` / `Admin@12345`
 - Organizer: `organizer@uaetrails.app` / `Organizer@12345`
 - Guide: `guide@uaetrails.app` / `Guide@12345`

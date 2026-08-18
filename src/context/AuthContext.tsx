@@ -20,6 +20,7 @@ interface AuthContextValue {
     referralCode?: string;
     groupInviteToken?: string;
   }) => Promise<{ verificationToken?: string }>;
+  verifyEmail: (token: string) => Promise<AuthUser>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -52,6 +53,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSessionInvalidatedHandler(() => {
       setStoredUser(null);
       setUser(null);
+      const path = window.location.pathname;
+      if (!path.startsWith('/signin') && !path.startsWith('/signup') && !path.startsWith('/verify')) {
+        window.location.assign('/signin?session=expired');
+      }
     });
 
     const session = getStoredSession();
@@ -107,6 +112,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const applyAuthResponse = async (response: AuthResponse): Promise<AuthUser> => {
+    setStoredSession(response.tokens);
+    const hydrated = await hydrateUserFromProfile(response.user);
+    setStoredUser(hydrated);
+    setUser(hydrated);
+    return hydrated;
+  };
+
   const signIn = async (email: string, password: string): Promise<AuthUser> => {
     setLoading(true);
     try {
@@ -114,11 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         method: 'POST',
         body: JSON.stringify({ email, password })
       });
-      setStoredSession(response.tokens);
-      const hydrated = await hydrateUserFromProfile(response.user);
-      setStoredUser(hydrated);
-      setUser(hydrated);
-      return hydrated;
+      return await applyAuthResponse(response);
     } finally {
       setLoading(false);
     }
@@ -131,11 +140,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         method: 'POST',
         body: JSON.stringify({ email })
       });
-      setStoredSession(response.tokens);
-      const hydrated = await hydrateUserFromProfile(response.user);
-      setStoredUser(hydrated);
-      setUser(hydrated);
-      return hydrated;
+      return await applyAuthResponse(response);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyEmail = async (token: string): Promise<AuthUser> => {
+    setLoading(true);
+    try {
+      const response = await apiRequest<AuthResponse & { message?: string; emailVerified?: boolean }>(
+        '/auth/verify-email',
+        {
+          method: 'POST',
+          body: JSON.stringify({ token })
+        }
+      );
+      return await applyAuthResponse(response);
     } finally {
       setLoading(false);
     }
@@ -239,6 +260,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       signOut,
       refreshUser,
       register,
+      verifyEmail,
     }),
     [user, loading, initializing]
   );

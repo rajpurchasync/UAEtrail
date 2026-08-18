@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Car, MapPin, Mountain, TrendingUp, Clock } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Car, MapPin, Mountain, TrendingUp, Clock, Map } from 'lucide-react';
 import { ActivityType, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { MeetingPointMap } from './MeetingPointMap';
-import { LocationPremiumPanel } from './LocationPremiumPanel';
 import { capitalize } from '../../utils';
+import { useAuth } from '../../context/AuthContext';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden>
@@ -65,7 +66,7 @@ export interface LocationDetailData {
 
 interface LocationDetailTabsProps {
   data: LocationDetailData;
-  accent?: 'emerald' | 'amber';
+  accent?: 'emerald' | 'amber' | 'violet';
   locationId?: string;
   premium?: LocationPremiumSummaryDTO | null;
   onPremiumChange?: (premium: LocationPremiumSummaryDTO) => void;
@@ -82,21 +83,31 @@ const accentStyles = {
     chip: 'bg-amber-100 text-amber-800',
     link: 'text-amber-700 hover:text-amber-800',
   },
+  violet: {
+    active: 'border-violet-600 text-violet-600',
+    chip: 'bg-violet-100 text-violet-800',
+    link: 'text-violet-700 hover:text-violet-800',
+  },
 };
 
 export const LocationDetailTabs = ({
   data,
   accent = 'emerald',
-  locationId,
-  premium,
-  onPremiumChange,
+  locationId: _locationId,
+  premium: _premium,
+  onPremiumChange: _onPremiumChange,
 }: LocationDetailTabsProps) => {
   const [activeTab, setActiveTab] = useState<LocationTab>('overview');
+  const { user } = useAuth();
+  const { pathname } = useLocation();
   const styles = accentStyles[accent];
-  const isHiking = data.activityType === 'hiking';
-  const showGuideTab = Boolean(locationId && premium?.hasPremium);
-  const hasCoordinates = data.latitude != null && data.longitude != null;
-  const parkingMapsUrl = data.parkingLink ?? (hasCoordinates ? buildGoogleMapsSearchUrl(data.latitude, data.longitude) : null);
+  const showTrailStats = data.activityType === 'hiking' || data.activityType === 'community_event';
+  const isCamping = data.activityType === 'camping';
+  const signInHref = `/signin?redirect=${encodeURIComponent(pathname)}`;
+  const lat = data.latitude;
+  const lng = data.longitude;
+  const hasCoordinates = lat != null && lng != null;
+  const parkingMapsUrl = data.parkingLink ?? (hasCoordinates ? buildGoogleMapsSearchUrl(lat, lng) : null);
 
   const tabClass = (tab: LocationTab) =>
     `py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
@@ -105,8 +116,8 @@ export const LocationDetailTabs = ({
 
   const hasOverviewContent =
     Boolean(data.description?.trim()) ||
-    (isHiking && (data.distance || data.duration || data.elevation)) ||
-    (!isHiking && data.accessibility) ||
+    (showTrailStats && (data.distance || data.duration || data.elevation)) ||
+    (isCamping && data.accessibility) ||
     (data.surfaceType && data.surfaceType.length > 0) ||
     (data.highlights && data.highlights.length > 0) ||
     Boolean(data.difficulty);
@@ -128,11 +139,12 @@ export const LocationDetailTabs = ({
           <button type="button" onClick={() => setActiveTab('location')} className={tabClass('location')}>
             Location & map
           </button>
-          {showGuideTab && (
-            <button type="button" onClick={() => setActiveTab('guide')} className={tabClass('guide')}>
-              Guided information
-            </button>
-          )}
+          <button type="button" onClick={() => setActiveTab('guide')} className={tabClass('guide')}>
+            Guided information
+            <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+              Coming SOON
+            </span>
+          </button>
         </nav>
       </div>
 
@@ -145,7 +157,7 @@ export const LocationDetailTabs = ({
             </div>
           )}
 
-          {isHiking ? (
+          {showTrailStats ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {data.distance != null && data.distance > 0 && (
                 <div className="glass rounded-xl p-4">
@@ -227,109 +239,129 @@ export const LocationDetailTabs = ({
 
       {activeTab === 'location' && (
         <div className="py-6 mt-4 space-y-4">
-          {data.region && (
-            <div className="flex items-center gap-2 text-neutral-700">
-              <MapPin className={`w-5 h-5 shrink-0 ${accent === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`} />
-              <span className="font-medium">{data.region}</span>
+          {!user ? (
+            <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 px-6 py-12 text-center">
+              <div
+                className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${
+                  accent === 'emerald' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                }`}
+              >
+                <Map className="h-7 w-7" strokeWidth={2} aria-hidden />
+              </div>
+              <p className="text-sm text-neutral-600 leading-relaxed max-w-sm mx-auto">
+                <Link to={signInHref} className="font-bold text-emerald-600 hover:text-emerald-700">
+                  Sign in
+                </Link>{' '}
+                to view this and explore all other wonderful places
+              </p>
             </div>
-          )}
+          ) : (
+            <>
+              {data.region && (
+                <div className="flex items-center gap-2 text-neutral-700">
+                  <MapPin className={`w-5 h-5 shrink-0 ${accent === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`} />
+                  <span className="font-medium">{data.region}</span>
+                </div>
+              )}
 
-          {(data.parkingLink || hasCoordinates) && (
-            <div className="glass rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <Car className={`w-5 h-5 shrink-0 mt-0.5 ${accent === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`} />
-                <div className="space-y-3">
-                  <p className="text-sm font-semibold text-neutral-900 mb-1">Parking & access</p>
-                  {hasCoordinates && (
-                    <div className="space-y-2">
-                      <MeetingPointMap lat={data.latitude} lng={data.longitude} label={data.name} hideExternalLink />
-                      <p className="text-xs text-neutral-400 font-mono">
-                        {data.latitude.toFixed(5)}, {data.longitude.toFixed(5)}
-                      </p>
+              {(data.parkingLink || hasCoordinates) && (
+                <div className="glass rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <Car className={`w-5 h-5 shrink-0 mt-0.5 ${accent === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`} />
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-neutral-900 mb-1">Parking & access</p>
+                      {hasCoordinates && (
+                        <div className="space-y-2">
+                          <MeetingPointMap lat={lat} lng={lng} label={data.name} hideExternalLink />
+                          <p className="text-xs text-neutral-400 font-mono">
+                            {lat!.toFixed(5)}, {lng!.toFixed(5)}
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {parkingMapsUrl && (
+                          <a
+                            href={parkingMapsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+                          >
+                            <GoogleMapsIcon className="h-4 w-4" />
+                            Open in Google Maps
+                          </a>
+                        )}
+                        {hasCoordinates && (
+                          <>
+                            <a
+                              href={buildGoogleDriveUrl(lat!, lng!)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+                            >
+                              <GoogleMapsIcon className="h-4 w-4" />
+                              Drive with Google Maps
+                            </a>
+                            <a
+                              href={buildWazeDriveUrl(lat!, lng!)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-100"
+                            >
+                              <WazeIcon className="h-4 w-4" />
+                              Drive with Waze
+                            </a>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {parkingMapsUrl && (
-                      <a
-                        href={parkingMapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
-                      >
-                        <GoogleMapsIcon className="h-4 w-4" />
-                        Open in Google Maps
-                      </a>
-                    )}
-                    {hasCoordinates && (
-                      <>
-                        <a
-                          href={buildGoogleDriveUrl(data.latitude, data.longitude)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
-                        >
-                          <GoogleMapsIcon className="h-4 w-4" />
-                          Drive with Google Maps
-                        </a>
-                        <a
-                          href={buildWazeDriveUrl(data.latitude, data.longitude)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-100"
-                        >
-                          <WazeIcon className="h-4 w-4" />
-                          Drive with Waze
-                        </a>
-                      </>
-                    )}
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {data.accessibleBy && data.accessibleBy.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-neutral-900 mb-2">Getting there</h3>
-              <div className="flex flex-wrap gap-2">
-                {data.accessibleBy.map((item) => (
-                  <span key={item} className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${styles.chip}`}>
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+              {data.accessibleBy && data.accessibleBy.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-2">Getting there</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {data.accessibleBy.map((item) => (
+                      <span key={item} className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${styles.chip}`}>
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {data.tags && data.tags.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-neutral-900 mb-2">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {data.tags.map((tag) => (
-                  <span key={tag} className="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 text-xs font-medium">
-                    {capitalize(tag)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+              {data.tags && data.tags.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-2">Tags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {data.tags.map((tag) => (
+                      <span key={tag} className="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 text-xs font-medium">
+                        {capitalize(tag)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {!hasLocationContent && (
-            <p className="text-sm text-neutral-500 text-center py-4">Location details will be added soon.</p>
+              {!hasLocationContent && (
+                <p className="text-sm text-neutral-500 text-center py-4">Location details will be added soon.</p>
+              )}
+            </>
           )}
         </div>
       )}
 
-      {activeTab === 'guide' && showGuideTab && locationId && (
-        <LocationPremiumPanel
-          locationId={locationId}
-          locationName={data.name}
-          activityType={data.activityType}
-          premium={premium ?? null}
-          onPremiumChange={onPremiumChange}
-          accent={accent}
-          variant="embedded"
-        />
+      {activeTab === 'guide' && (
+        <div className="py-6 mt-4">
+          <div className="rounded-2xl border border-amber-100 bg-amber-50/60 px-6 py-10 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700 mb-2">Coming SOON</p>
+            <h3 className="text-base font-semibold text-neutral-900">Guided information</h3>
+            <p className="text-sm text-neutral-600 mt-2 max-w-md mx-auto leading-relaxed">
+              GPX routes, trail guides, camp setup notes, and guide-on-call are on the way for {data.name}.
+            </p>
+          </div>
+        </div>
       )}
     </>
   );

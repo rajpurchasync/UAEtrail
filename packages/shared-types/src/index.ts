@@ -9,7 +9,7 @@ export type UserRole =
 export type TenantType = 'company' | 'guide_owned';
 export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
 
-export type ActivityType = 'hiking' | 'camping';
+export type ActivityType = 'hiking' | 'camping' | 'community_event';
 export type LocationStatus = 'draft' | 'active' | 'inactive';
 export type EventStatus = 'draft' | 'published' | 'cancelled' | 'suspended';
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | 'waitlisted';

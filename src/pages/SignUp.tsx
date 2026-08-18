@@ -1,19 +1,25 @@
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Mail, Mountain, Gift } from 'lucide-react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronLeft, Mail, Mountain, Gift, X } from 'lucide-react';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
+import { PasswordRequirements } from '../components/auth/PasswordRequirements';
 import { useAuth } from '../context/AuthContext';
 import { defaultRouteByRole } from '../utils/authRouting';
 import { resolveAuthRedirect } from '../utils/authRedirect';
+import { getPasswordValidationError } from '../utils/passwordPolicy';
 import { PageMeta } from '../components/seo/PageMeta';
 
 export const SignUp = () => {
   const { register, signInWithGoogle, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const referralCode = searchParams.get('ref')?.trim().toUpperCase() ?? undefined;
   const groupInviteToken = searchParams.get('groupInvite')?.trim() ?? undefined;
-  const redirectTo = resolveAuthRedirect(null, searchParams.get('redirect'));
+  const redirectTo = resolveAuthRedirect(
+    (location.state as { from?: string } | null)?.from,
+    searchParams.get('redirect')
+  );
   const [formData, setFormData] = useState({
     displayName: '',
     email: '',
@@ -22,6 +28,18 @@ export const SignUp = () => {
   });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleBack = () => {
+    if (redirectTo && redirectTo !== '/signin' && redirectTo !== '/signup') {
+      navigate(redirectTo);
+      return;
+    }
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate('/');
+  };
 
   const handleGoogleSignUp = async (idToken: string) => {
     setError(null);
@@ -44,6 +62,13 @@ export const SignUp = () => {
       setError('Please agree to the Terms and Conditions and Privacy Policy.');
       return;
     }
+
+    const passwordError = getPasswordValidationError(formData.password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match.');
       return;
@@ -58,7 +83,6 @@ export const SignUp = () => {
         referralCode,
         groupInviteToken,
       });
-      // Navigate to OTP verification
       navigate('/verify', {
         state: {
           email: formData.email,
@@ -71,10 +95,33 @@ export const SignUp = () => {
     }
   };
 
+  const signInHref = redirectTo
+    ? `/signin?redirect=${encodeURIComponent(redirectTo)}`
+    : '/signin';
+
   return (
-    <div className="min-h-screen bg-ios-bg flex items-center justify-center py-12 px-6 safe-area-top safe-area-bottom">
+    <div className="min-h-screen bg-ios-bg flex flex-col py-8 px-6 safe-area-top safe-area-bottom">
       <PageMeta title="Create account" noIndex />
-      <div className="max-w-md w-full bg-white rounded-[20px] shadow-ios p-8">
+      <div className="max-w-md w-full mx-auto mb-4 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
+        >
+          <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
+          <span className="text-[17px] font-medium">Back</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleBack}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:opacity-60"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5" strokeWidth={2.25} />
+        </button>
+      </div>
+
+      <div className="max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-8 flex-1">
         <Link to="/" className="flex items-center justify-center gap-2 mb-6">
           <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-[10px] flex items-center justify-center">
             <Mountain className="w-5 h-5 text-white" />
@@ -87,7 +134,10 @@ export const SignUp = () => {
         {referralCode && (
           <div className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2.5 text-sm text-emerald-800">
             <Gift className="w-4 h-4 shrink-0" />
-            <span>You&apos;ll earn <strong>25 bonus Trail Points</strong> with invite code <strong>{referralCode}</strong></span>
+            <span>
+              You&apos;ll earn <strong>25 bonus Trail Points</strong> with invite code{' '}
+              <strong>{referralCode}</strong>
+            </span>
           </div>
         )}
 
@@ -104,7 +154,6 @@ export const SignUp = () => {
           disabled={loading}
         />
 
-        {/* Email form */}
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">Full Name</label>
@@ -114,6 +163,8 @@ export const SignUp = () => {
               value={formData.displayName}
               onChange={(e) => setFormData((c) => ({ ...c, displayName: e.target.value }))}
               required
+              minLength={2}
+              maxLength={80}
             />
           </div>
           <div>
@@ -130,32 +181,37 @@ export const SignUp = () => {
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Password</label>
-              <input
-                type="password"
-                className="ios-input text-[17px]"
-                placeholder="Min 8 characters"
-                value={formData.password}
-                onChange={(e) => setFormData((c) => ({ ...c, password: e.target.value }))}
-                required
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Confirm</label>
-              <input
-                type="password"
-                className="ios-input text-[17px]"
-                placeholder="Re-enter password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData((c) => ({ ...c, confirmPassword: e.target.value }))}
-                required
-              />
-            </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Password</label>
+            <input
+              type="password"
+              className="ios-input text-[17px]"
+              placeholder="Create a password"
+              value={formData.password}
+              onChange={(e) => setFormData((c) => ({ ...c, password: e.target.value }))}
+              required
+              minLength={8}
+              autoComplete="new-password"
+            />
+            <PasswordRequirements password={formData.password} className="mt-2" />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Confirm password</label>
+            <input
+              type="password"
+              className="ios-input text-[17px]"
+              placeholder="Re-enter password"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData((c) => ({ ...c, confirmPassword: e.target.value }))}
+              required
+              minLength={8}
+              autoComplete="new-password"
+            />
+            {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+              <p className="text-xs text-red-600 mt-1">Passwords do not match.</p>
+            )}
           </div>
 
-          {/* Terms checkbox */}
           <label className="flex items-start gap-2 mt-2">
             <input
               type="checkbox"
@@ -165,29 +221,27 @@ export const SignUp = () => {
             />
             <span className="text-xs text-gray-600 leading-relaxed">
               By signing up, I agree to UAE Trail{' '}
-              <Link to="/terms" className="text-emerald-700 hover:underline">Terms and Conditions</Link>{' '}
+              <Link to="/terms" className="text-emerald-700 hover:underline">
+                Terms and Conditions
+              </Link>{' '}
               and{' '}
-              <Link to="/privacy" className="text-emerald-700 hover:underline">Privacy Policy</Link>.
+              <Link to="/privacy" className="text-emerald-700 hover:underline">
+                Privacy Policy
+              </Link>
+              .
             </span>
           </label>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="ios-btn w-full bg-emerald-600 text-white"
-          >
+          <button type="submit" disabled={loading} className="ios-btn w-full bg-emerald-600 text-white">
             {loading ? 'Creating account...' : 'Sign Up'}
           </button>
         </form>
 
         <p className="text-sm text-gray-500 mt-5 text-center">
           Already have an account?{' '}
-          <Link
-            to={redirectTo ? `/signin?redirect=${encodeURIComponent(redirectTo)}` : '/signin'}
-            className="text-emerald-700 hover:text-emerald-900 font-medium"
-          >
+          <Link to={signInHref} className="text-emerald-700 hover:text-emerald-900 font-medium">
             Log in
           </Link>
         </p>

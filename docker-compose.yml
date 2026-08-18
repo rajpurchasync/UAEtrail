@@ -54,10 +54,11 @@ services:
       minio:
         condition: service_healthy
     environment:
-      NODE_ENV: ${NODE_ENV:-development}
+      NODE_ENV: ${NODE_ENV:-production}
       PORT: 4000
       MONGODB_URI: ${MONGODB_URI:?Set MONGODB_URI in .env}
       REDIS_URL: redis://redis:6379
+      LOG_FILE_PATH: /var/log/webapp/api.log
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?Set JWT_ACCESS_SECRET in .env}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Set JWT_REFRESH_SECRET in .env}
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost}
@@ -80,6 +81,9 @@ services:
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+    volumes:
+      - ./logs:/var/log/webapp
     ports:
       - "${API_PORT:-4000}:4000"
     expose:
@@ -120,7 +124,7 @@ services:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=90d
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - uaetrail_prometheus:/prometheus
@@ -130,7 +134,7 @@ services:
     restart: unless-stopped
     command: -config.file=/etc/loki/local-config.yaml
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     volumes:
       - ./monitoring/loki/local-config.yaml:/etc/loki/local-config.yaml:ro
       - uaetrail_loki:/loki
@@ -152,10 +156,10 @@ services:
       - prometheus
       - loki
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-please-set-grafana-password}
       GF_USERS_DEFAULT_THEME: light
     volumes:
       - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro

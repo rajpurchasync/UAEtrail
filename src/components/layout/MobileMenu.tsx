@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogIn, LogOut, Menu, RefreshCw, User, X } from 'lucide-react';
+import { LogIn, LogOut, Menu, RefreshCw, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import { isConsumerChromeHidden, MOBILE_DRAWER_MENU } from '../../config/platform';
 import { useAuth } from '../../context/AuthContext';
@@ -8,6 +8,7 @@ import { api } from '../../api/services';
 import { setStoredSession } from '../../api/client';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { getInitials } from '../../utils/userDisplay';
+import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 
 type MobileMenuTone = 'default' | 'light';
 
@@ -55,7 +56,7 @@ export const MobileMenuProvider = ({ children }: MobileMenuProviderProps) => {
   );
 };
 
-const useMobileMenu = () => {
+export const useMobileMenu = () => {
   const context = useContext(MobileMenuContext);
   if (!context) {
     throw new Error('useMobileMenu must be used within MobileMenuProvider');
@@ -71,19 +72,29 @@ interface MobileMenuButtonProps {
 
 export const MobileMenuButton = ({ tone = 'default', className = '', showOnDesktop = false }: MobileMenuButtonProps) => {
   const { openMenu } = useMobileMenu();
+  const unreadCount = useNotificationUnreadCount();
   const toneClass =
     tone === 'light'
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
       : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
 
+  const badgeRing = tone === 'light' ? 'ring-white' : 'ring-emerald-50';
+
   return (
     <button
       type="button"
       onClick={openMenu}
-      className={`${showOnDesktop ? '' : 'md:hidden'} h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
-      aria-label="Open menu"
+      className={`${showOnDesktop ? '' : 'md:hidden'} relative h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
+      aria-label={unreadCount > 0 ? `Open menu, ${unreadCount} unread notifications` : 'Open menu'}
     >
       <Menu className="w-5 h-5" strokeWidth={2.25} />
+      {unreadCount > 0 && (
+        <span
+          className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ${badgeRing}`}
+        >
+          {unreadCount > 99 ? '99+' : unreadCount}
+        </span>
+      )}
     </button>
   );
 };
@@ -93,6 +104,7 @@ const MobileMenuPanel = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, signOut, refreshUser } = useAuth();
+  const unreadNotifications = useNotificationUnreadCount();
 
   const isOrganizerRole =
     user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
@@ -335,6 +347,11 @@ const MobileMenuPanel = () => {
                   </span>
                 )}
                 <span className="font-semibold">{item.label}</span>
+                {item.label === 'Notifications' && unreadNotifications > 0 && (
+                  <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center">
+                    {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                  </span>
+                )}
               </Link>
             );
           })}

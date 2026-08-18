@@ -18,6 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../api/services';
 import { RewardStatsDTO } from '@uaetrail/shared-types';
 import { MEMBERSHIP_TIERS, EARN_WAYS } from '../constants/membershipTiers';
+import { FEATURE_FLAGS } from '../config/platform';
 import { MobileBrandBar } from '../components/layout/MobileBrandBar';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -151,8 +152,8 @@ export const TrailPointsAbout = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/55 to-[#eef6f3]" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-safe-plus-2 pb-8 sm:pb-10 lg:pb-16 lg:pt-8">
-          <div className="mb-4">
-            <MobileBrandBar tone="light" menuOnDesktop />
+          <div className="mb-4 md:hidden">
+            <MobileBrandBar tone="light" />
           </div>
 
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-end">
@@ -313,13 +314,15 @@ export const TrailPointsAbout = () => {
             })}
           </CarouselGrid>
           <div className="mt-5 text-center">
-            <Link
-              to="/membership"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-800"
-            >
-              See membership perks
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            {FEATURE_FLAGS.membershipEnabled && (
+              <Link
+                to="/membership"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+              >
+                See membership perks
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
           </div>
         </section>
 

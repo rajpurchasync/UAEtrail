@@ -17,6 +17,7 @@ import {
 import { ActivityType, LocationPremiumSummaryDTO, LocationGuideDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
+import { FEATURE_FLAGS } from '../../config/platform';
 
 interface LocationPremiumPanelProps {
   locationId: string;
@@ -287,18 +288,20 @@ export const LocationPremiumPanel = ({
       )}
 
       {accessStep === 'choose' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Link
-            to="/membership"
-            className="group flex flex-col gap-2 p-4 rounded-xl bg-white border border-gray-200 hover:border-amber-300 hover:shadow-sm transition-all text-left"
-          >
-            <span className="flex items-center gap-2 font-bold text-gray-900 text-sm">
-              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-              Upgrade membership
-            </span>
-            <span className="text-xs text-gray-500 leading-relaxed">{copy.membershipDetail}</span>
-            <span className={`text-xs font-semibold mt-auto ${accentText}`}>See plans →</span>
-          </Link>
+        <div className={`grid grid-cols-1 ${FEATURE_FLAGS.membershipEnabled ? 'sm:grid-cols-2' : ''} gap-3`}>
+          {FEATURE_FLAGS.membershipEnabled && (
+            <Link
+              to="/membership"
+              className="group flex flex-col gap-2 p-4 rounded-xl bg-white border border-gray-200 hover:border-amber-300 hover:shadow-sm transition-all text-left"
+            >
+              <span className="flex items-center gap-2 font-bold text-gray-900 text-sm">
+                <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                Upgrade membership
+              </span>
+              <span className="text-xs text-gray-500 leading-relaxed">{copy.membershipDetail}</span>
+              <span className={`text-xs font-semibold mt-auto ${accentText}`}>See plans →</span>
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => setAccessStep('payg')}

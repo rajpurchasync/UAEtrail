@@ -72,20 +72,16 @@ export const ConsumerShell = ({
             action={layout === 'tab' ? action : undefined}
             size={layout === 'editorial' ? 'editorial' : 'tab'}
             showMobileChrome
-            chromeOnDesktop
+            showJourney={showJourney}
+            journeyFallbackTo={journeyFallbackTo}
+            journeyLabel={journeyLabel}
             className="animate-fade-up"
           />
         </div>
       )}
 
-      {banner && showJourney && (
-        <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} pt-3 pb-1`}>
-          <MobileBackButton fallbackTo={journeyFallbackTo} label={journeyLabel} />
-        </div>
-      )}
-
       {banner && toolbar && (
-        <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} ${showJourney ? 'pb-3' : 'pt-3 pb-3'} md:pb-4`}>
+        <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} pt-3 pb-3 md:pb-4`}>
           {toolbar}
         </div>
       )}

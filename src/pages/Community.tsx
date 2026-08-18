@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, MessageSquare, ThumbsUp, Plus, X, Send, MapPin, CheckCircle2 } from 'lucide-react';
+import { Search, MessageSquare, ThumbsUp, Plus, X, Send, MapPin, CheckCircle2, Users } from 'lucide-react';
 import { PostDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -202,6 +202,19 @@ export const Community = () => {
     }
   };
 
+  const handleOpenCreateGroup = () => {
+    const groupsCreatePath = '/groups?create=1&from=community';
+    if (!user) {
+      const params = new URLSearchParams({
+        redirect: groupsCreatePath,
+        focus: '[data-auth-focus="community-create-group"]',
+      });
+      navigate(`/signin?${params.toString()}`, { state: { from: groupsCreatePath } });
+      return;
+    }
+    navigate(groupsCreatePath);
+  };
+
   const categoryTabs = [
     { key: 'all', label: 'All' },
     ...COMMUNITY_CATEGORIES.map((cat) => ({ key: cat.id, label: cat.label })),
@@ -242,6 +255,41 @@ export const Community = () => {
       />
       <div className="space-y-4 animate-fade-up pb-20 md:pb-4">
         <TrailPointsPromoBanner variant="community" />
+        <GlassCard
+          padding
+          className="flex flex-col sm:flex-row sm:items-center gap-4"
+          data-auth-focus="community-create-group"
+        >
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="w-11 h-11 rounded-xl bg-blue-500/12 flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-neutral-900">Trail with your crew</p>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Create a private group, invite family or friends, and chat together on trips.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleOpenCreateGroup}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+            >
+              <Plus className="w-4 h-4" />
+              Create group
+            </button>
+            {user && (
+              <Link
+                to="/groups?from=community"
+                className="inline-flex items-center justify-center rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+              >
+                My groups
+              </Link>
+            )}
+          </div>
+        </GlassCard>
         {actionError && (
           <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{actionError}</p>
         )}

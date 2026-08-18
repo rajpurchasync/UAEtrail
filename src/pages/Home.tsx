@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mountain, Star, MapPin, ChevronRight, Tent, Compass, Calendar } from 'lucide-react';
-import { TrailCard, CampingCard, TripCard, EmptyTripsBanner } from '../components/ui';
-import { DEFAULT_OG_IMAGE, HOME_HERO_IMAGE } from '../config/seo';
+import { Mountain, Star, ChevronRight, Tent, Compass, Calendar, MapPin } from 'lucide-react';
+import { TrailCard } from '../components/ui/TrailCard';
+import { CampingCard } from '../components/ui/CampingCard';
+import { TripCard } from '../components/ui/TripCard';
+import { EmptyTripsBanner } from '../components/ui/EmptyTripsBanner';
+import { DEFAULT_OG_IMAGE, HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { FaqPreview } from '../components/seo/FaqPreview';
 import { websiteSchema } from '../components/seo/schemas';
 import { HOME_FAQ_PREVIEW } from '../content/platformFaqs';
 import { CampingSpot, Trail, Trip } from '../types';
-import { fetchPopularLocations, fetchFeaturedEvents, fetchPublicMappedData } from '../api/public';
+import { fetchHomeLandingData, fetchHomeRegionLocations } from '../api/public';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole } from '../utils/authRouting';
@@ -40,13 +43,6 @@ const getLandingLoadErrorMessage = (error: unknown): string => {
   return error.message;
 };
 
-const LANDING_LOAD_RETRY_DELAYS_MS = [1500, 3000, 5000, 8000];
-
-const isRetryableLandingError = (error: unknown): boolean => {
-  if (!(error instanceof Error)) return false;
-  return error.message.includes('Failed to reach API') || /Request failed with status (5\d{2}|401|403)/i.test(error.message);
-};
-
 export const Home = () => {
   const [popularTrails, setPopularTrails] = useState<Trail[]>([]);
   const [popularCamps, setPopularCamps] = useState<CampingSpot[]>([]);
@@ -59,69 +55,36 @@ export const Home = () => {
 
   useEffect(() => {
     let disposed = false;
-    let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const loadLandingData = async (attempt = 0): Promise<void> => {
-      if (disposed) return;
-
-      if (attempt === 0) {
+    void fetchHomeLandingData()
+      .then((data) => {
+        if (disposed) return;
+        setPopularTrails(data.popularTrails);
+        setPopularCamps(data.popularCamps);
+        setFeaturedTrips(data.featuredTrips);
+        setAllTrips(data.allTrips);
         setLoadError(null);
-      }
+      })
+      .catch((err) => {
+        if (disposed) return;
+        setLoadError(getLandingLoadErrorMessage(err));
+      });
 
-      await Promise.all([
-        fetchPopularLocations()
-          .then(({ trails: t, camps: c }) => {
-            if (disposed) return;
-            setPopularTrails(t);
-            setPopularCamps(c);
-          })
-          .catch(() => {
-            if (disposed) return;
-            setPopularTrails([]);
-            setPopularCamps([]);
-          }),
-        fetchFeaturedEvents()
-          .then((trips) => {
-            if (disposed) return;
-            setFeaturedTrips(trips);
-          })
-          .catch(() => {
-            if (disposed) return;
-            setFeaturedTrips([]);
-          }),
-        fetchPublicMappedData()
-          .then(({ trails: t, camps: c, trips: tr }) => {
-            if (disposed) return;
-            setAllTrails(t);
-            setAllCamps(c);
-            setAllTrips(tr);
-            setLoadError(null);
-          })
-          .catch((err) => {
-            if (disposed) return;
-
-            setLoadError(getLandingLoadErrorMessage(err));
-            const nextDelay = LANDING_LOAD_RETRY_DELAYS_MS[attempt];
-            if (typeof nextDelay === 'number' && isRetryableLandingError(err)) {
-              retryTimer = setTimeout(() => {
-                void loadLandingData(attempt + 1);
-              }, nextDelay);
-            }
-          })
-      ]);
-    };
-
-    void loadLandingData();
+    void fetchHomeRegionLocations()
+      .then((data) => {
+        if (disposed) return;
+        setAllTrails(data.trails);
+        setAllCamps(data.camps);
+      })
+      .catch(() => {
+        // Region counts are optional — hero and carousels still render
+      });
 
     return () => {
       disposed = true;
-      if (retryTimer) {
-        clearTimeout(retryTimer);
-      }
     };
   }, []);
 
-  // If no featured events from admin, show upcoming from all events
   const upcomingTrips = useMemo(
     () =>
       allTrips
@@ -133,7 +96,6 @@ export const Home = () => {
 
   const displayedTrips = featuredTrips.length > 0 ? featuredTrips : upcomingTrips;
 
-  // Track a location view when user clicks
   const trackView = (locationId: string) => {
     api.trackLocationView(locationId).catch(() => { /* silent */ });
   };
@@ -184,17 +146,22 @@ export const Home = () => {
         </div>
       )}
       {/* ──── Hero ──── */}
-      <section
-        className="relative h-[42vh] min-h-[300px] sm:h-[50vh] md:h-[70vh] md:max-h-[600px] bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${HOME_HERO_IMAGE})`
-        }}
-      >
+      <section className="relative h-[42vh] min-h-[300px] sm:h-[50vh] md:h-[70vh] md:max-h-[600px] overflow-hidden">
+        <picture className="absolute inset-0">
+          <source srcSet={HOME_HERO_IMAGE_WEBP} type="image/webp" />
+          <img
+            src={HOME_HERO_IMAGE_JPEG}
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            className="w-full h-full object-cover object-center"
+          />
+        </picture>
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
 
-        <div className="relative h-full flex flex-col">
-          {/* Hero header / nav */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-safe-plus-2 md:pt-4">
+        <div className="relative h-full">
+          {/* Hero header / nav — overlay so headline centers in full image height */}
+          <div className="absolute inset-x-0 top-0 z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-safe-plus-2 md:pt-4">
             <div className="md:hidden">
               <MobileBrandBar tone="light" />
             </div>
@@ -215,6 +182,7 @@ export const Home = () => {
                   { to: '/shop', label: 'Shop' },
                   { to: '/community', label: 'Community' },
                   ...(MEMBERSHIP_NAV_LINK ? [MEMBERSHIP_NAV_LINK] : []),
+                  { to: '/faq', label: 'Help' },
                 ].map((link) => (
                   <Link
                     key={link.to}
@@ -229,7 +197,7 @@ export const Home = () => {
               {user ? (
                 <Link
                   to={accountRouteByRole(user.role)}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-medium"
+                  className="relative flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-medium"
                 >
                   {user.avatarUrl ? (
                     <img src={user.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
@@ -251,29 +219,31 @@ export const Home = () => {
             </div>
           </div>
 
-          {/* Hero content */}
-          <div className="flex-1 flex items-center justify-center pb-4 md:pb-0">
-            <div className="text-white w-full max-w-3xl text-center px-5 sm:px-6 md:px-12">
-              <h1 className="text-[1.625rem] leading-[1.2] sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-2.5 md:mb-4 tracking-tight text-balance">
-                Your pocket guide for Hiking &amp; Camping in the UAE
+          {/* Hero content — vertically centered in full hero */}
+          <div className="relative z-[1] flex h-full min-h-[300px] items-center justify-center px-5 sm:px-6 md:px-12 pb-6 md:pb-8">
+            <div className="text-white w-full max-w-4xl text-center">
+              <h1 className="text-[1.75rem] leading-[1.12] sm:text-4xl md:text-5xl lg:text-6xl font-semibold mb-3 md:mb-4 tracking-tight">
+                <span className="block sm:whitespace-nowrap">Experience Hiking &amp;</span>
+                <span className="block sm:whitespace-nowrap">Camping in the UAE</span>
               </h1>
-              <p className="text-sm sm:text-lg md:text-xl text-white/90 mb-5 md:mb-8 max-w-[22rem] sm:max-w-2xl mx-auto leading-relaxed text-balance">
-                Hike, camp, host trips, and connect with the outdoor community, all in one place.
+              <p className="text-sm sm:text-lg md:text-xl text-white/90 mb-5 md:mb-8 max-w-[22rem] sm:max-w-2xl mx-auto leading-relaxed text-balance font-normal">
+                Discover spots, join a trip, host an event or build community.{' '}
+                <span className="text-white/80">Join real community, real people and a real experience.</span>
               </p>
               <div className="flex flex-row flex-wrap justify-center gap-2.5 md:gap-3">
                 <Link
-                  to="/discovery"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 md:min-h-0 md:px-10 md:py-3.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all font-semibold shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 text-sm md:text-base"
+                  to="/trips"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 md:min-h-0 md:px-10 md:py-3.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all font-medium shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 text-sm md:text-base"
                 >
-                  <MapPin className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
-                  Trails &amp; Spots
+                  <Calendar className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                  Join a trip
                 </Link>
                 <Link
-                  to="/trips"
+                  to="/discovery"
                   className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 md:min-h-0 md:px-10 md:py-3.5 bg-white/15 backdrop-blur-sm text-white rounded-full hover:bg-white/25 transition-all font-medium border border-white/20 text-sm md:text-base"
                 >
-                  <Calendar className="w-4 h-4 shrink-0" />
-                  Upcoming Trips
+                  <MapPin className="w-4 h-4 shrink-0" />
+                  View locations
                 </Link>
               </div>
             </div>
@@ -309,6 +279,7 @@ export const Home = () => {
                   src={region.image}
                   alt={region.imageAlt}
                   loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -437,6 +408,8 @@ export const Home = () => {
                   <img
                     src={testimonial.avatar}
                     alt={testimonial.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100"
                   />
                   <div>

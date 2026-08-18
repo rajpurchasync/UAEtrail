@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { apiRequest } from '../api/client';
+import { useAuth } from '../context/AuthContext';
+import { defaultRouteByRole } from '../utils/authRouting';
 import { PageMeta } from '../components/seo/PageMeta';
 
 export const VerifyOTP = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { verifyEmail } = useAuth();
   const [searchParams] = useSearchParams();
   const state = location.state as {
     email?: string;
@@ -42,20 +45,10 @@ export const VerifyOTP = () => {
     setError(null);
     try {
       if (mode === 'email') {
-        await apiRequest('/auth/verify-email', {
-          method: 'POST',
-          body: JSON.stringify({ token })
-        });
+        const user = await verifyEmail(token);
         setSuccess(true);
-        const redirectTo = state?.redirectTo;
-        setTimeout(
-          () =>
-            navigate('/signin', {
-              replace: true,
-              state: redirectTo ? { from: redirectTo } : undefined
-            }),
-          1200
-        );
+        const redirectTo = state?.redirectTo ?? defaultRouteByRole(user.role);
+        setTimeout(() => navigate(redirectTo, { replace: true }), 800);
       } else {
         navigate('/forgot-password', {
           state: { email, resetToken: token, step: 'reset' },
@@ -123,7 +116,7 @@ export const VerifyOTP = () => {
         </h1>
         <p className="text-sm text-gray-500 mb-6">
           {success
-            ? 'Your email has been verified successfully.'
+            ? 'Your email has been verified. Taking you in…'
             : `We sent a link to ${email}. Open it on this device or paste the link below.`}
         </p>
 
@@ -175,7 +168,7 @@ export const VerifyOTP = () => {
         )}
 
         {success && (
-          <div className="text-emerald-600 text-sm font-medium">Email verified — redirecting to sign in…</div>
+          <div className="text-emerald-600 text-sm font-medium">Email verified — opening your account…</div>
         )}
       </div>
     </div>

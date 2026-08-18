@@ -21,7 +21,7 @@ jobs:
           --health-retries 10
 
     env:
-      MONGODB_URI: mongodb+srv://uaetrail:uaetrail%40365@cluster0.ymapl3i.mongodb.net/?appName=Cluster0
+      TEST_MONGODB_URI: mongodb://127.0.0.1:27017/uaetrail_test
       JWT_ACCESS_SECRET: ci-test-access-secret-min-24-chars
       JWT_REFRESH_SECRET: ci-test-refresh-secret-min-24-chars
       NODE_ENV: test
@@ -36,6 +36,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Validate env example
+        run: npm run validate:env -- --file .env.production.example
 
       - name: Frontend typecheck
         run: npm run typecheck

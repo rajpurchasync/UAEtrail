@@ -17,6 +17,21 @@ const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-frie
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../config/regions';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
 
+const isTrailLike = (type?: LocationDTO['activityType']) =>
+  type === 'hiking' || type === 'community_event';
+
+const activityTypeLabel = (type: LocationDTO['activityType']) => {
+  if (type === 'hiking') return '🥾 Hiking';
+  if (type === 'community_event') return '🏃 Community Event';
+  return '⛺ Camping';
+};
+
+const activityTypeBadgeClass = (type: LocationDTO['activityType']) => {
+  if (type === 'hiking') return 'bg-emerald-50 text-emerald-700';
+  if (type === 'community_event') return 'bg-violet-50 text-violet-700';
+  return 'bg-amber-50 text-amber-700';
+};
+
 const emptyForm: Partial<LocationDTO> = {
   name: '', region: '', activityType: 'hiking', description: '', difficulty: 'moderate',
   season: ['winter'], childFriendly: false, maxGroupSize: 20, accessibility: 'car-accessible',
@@ -37,7 +52,7 @@ export const AdminLocations = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [highlightInput, setHighlightInput] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'hiking' | 'camping'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'hiking' | 'camping' | 'community_event'>('all');
   const [search, setSearch] = useState('');
   const [confirmAction, setConfirmAction] = useState<{ type: 'status' | 'delete' | 'publish'; loc: LocationDTO } | null>(null);
   const [previewLoc, setPreviewLoc] = useState<LocationDTO | null>(null);
@@ -75,7 +90,7 @@ export const AdminLocations = () => {
 
   const closeModal = () => { setModalOpen(false); setEditingId(null); setError(null); };
 
-  const selectType = (type: 'hiking' | 'camping') => {
+  const selectType = (type: 'hiking' | 'camping' | 'community_event') => {
     setForm({ ...emptyForm, activityType: type });
     setFormStep(1);
   };
@@ -91,7 +106,7 @@ export const AdminLocations = () => {
         highlights: highlightInput.split(',').map((s) => s.trim()).filter(Boolean),
         season: form.season?.length ? form.season : ['winter'],
         ...(form.activityType === 'camping' ? { distance: undefined, duration: undefined, elevation: undefined } : {}),
-        ...(form.activityType === 'hiking' ? { campingType: undefined } : {})
+        ...(form.activityType === 'hiking' || form.activityType === 'community_event' ? { campingType: undefined } : {})
       };
       if (editingId) {
         await api.updateAdminLocation(editingId, payload);
@@ -107,7 +122,8 @@ export const AdminLocations = () => {
   };
 
   const canApprove = (loc: Partial<LocationDTO>) => {
-    const hikingOk = loc.activityType !== 'hiking' || Boolean(loc.difficulty);
+    const hikingOk =
+      (loc.activityType !== 'hiking' && loc.activityType !== 'community_event') || Boolean(loc.difficulty);
     const parkingOk = Boolean(loc.parkingLink) || (loc.latitude != null && loc.longitude != null);
     return hikingOk && parkingOk;
   };
@@ -152,6 +168,7 @@ export const AdminLocations = () => {
 
   const hikingCount = locations.filter((l) => l.activityType === 'hiking').length;
   const campingCount = locations.filter((l) => l.activityType === 'camping').length;
+  const communityEventCount = locations.filter((l) => l.activityType === 'community_event').length;
   const pendingCount = locations.filter((l) => l.status === 'draft').length;
   const regionOptions = getRegionsForCountry((form.countryCode as CountryCode) ?? DEFAULT_COUNTRY);
 
@@ -199,6 +216,10 @@ export const AdminLocations = () => {
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'camping' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
               ⛺ Camping ({campingCount})
             </button>
+            <button onClick={() => setActiveTab('community_event')}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'community_event' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+              🏃 Community ({communityEventCount})
+            </button>
           </div>
           <div className="flex items-center gap-3">
             <input type="text" placeholder="Search name or region..." value={search} onChange={(e) => setSearch(e.target.value)}
@@ -239,7 +260,7 @@ export const AdminLocations = () => {
                         <img src={loc.images[0]} alt="" className="w-10 h-10 rounded-lg object-cover" />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 text-lg">
-                          {loc.activityType === 'hiking' ? '🥾' : '⛺'}
+                          {loc.activityType === 'hiking' ? '🥾' : loc.activityType === 'community_event' ? '🏃' : '⛺'}
                         </div>
                       )}
                       <span className="font-medium text-gray-900">{loc.name}</span>
@@ -247,9 +268,9 @@ export const AdminLocations = () => {
                   </td>
                   <td className="px-4 py-3 text-gray-700">{loc.region}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      loc.activityType === 'hiking' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                    }`}>{loc.activityType === 'hiking' ? '🥾 Hiking' : '⛺ Camping'}</span>
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${activityTypeBadgeClass(loc.activityType)}`}>
+                      {activityTypeLabel(loc.activityType)}
+                    </span>
                   </td>
                   <td className="px-4 py-3">{statusBadge(loc.status)}</td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -288,15 +309,15 @@ export const AdminLocations = () => {
                 <button onClick={() => setPreviewLoc(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <span className={`px-2 py-0.5 rounded text-xs font-medium ${previewLoc.activityType === 'hiking' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
-                  {previewLoc.activityType === 'hiking' ? '🥾 Hiking' : '⛺ Camping'}
+                <span className={`px-2 py-0.5 rounded text-xs font-medium ${activityTypeBadgeClass(previewLoc.activityType)}`}>
+                  {activityTypeLabel(previewLoc.activityType)}
                 </span>
                 {statusBadge(previewLoc.status)}
                 {previewLoc.difficulty && <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 capitalize">{previewLoc.difficulty}</span>}
               </div>
               <p className="text-sm text-gray-500">{previewLoc.region}</p>
               <p className="text-sm text-gray-700 whitespace-pre-line">{previewLoc.description}</p>
-              {previewLoc.activityType === 'hiking' && (
+              {isTrailLike(previewLoc.activityType) && (
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   {previewLoc.distance != null && <div className="bg-gray-50 rounded-lg p-2 text-center"><p className="text-xs text-gray-500">Distance</p><p className="font-medium">{previewLoc.distance} km</p></div>}
                   {previewLoc.elevation != null && <div className="bg-gray-50 rounded-lg p-2 text-center"><p className="text-xs text-gray-500">Elevation</p><p className="font-medium">{previewLoc.elevation}m</p></div>}
@@ -358,7 +379,15 @@ export const AdminLocations = () => {
           <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
               <h2 className="text-lg font-semibold text-gray-900">
-                {editingId ? 'Edit Location' : formStep === 0 ? 'Select Activity Type' : form.activityType === 'hiking' ? '🥾 Add Hiking Trail' : '⛺ Add Camping Location'}
+                {editingId
+                  ? 'Edit Location'
+                  : formStep === 0
+                    ? 'Select Activity Type'
+                    : form.activityType === 'hiking'
+                      ? '🥾 Add Hiking Trail'
+                      : form.activityType === 'community_event'
+                        ? '🏃 Add Community Event'
+                        : '⛺ Add Camping Location'}
               </h2>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
@@ -367,7 +396,7 @@ export const AdminLocations = () => {
             {formStep === 0 && !editingId && (
               <div className="p-8">
                 <p className="text-sm text-gray-600 mb-6 text-center">Choose what type of location you want to add</p>
-                <div className="grid grid-cols-2 gap-6 max-w-lg mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
                   <button onClick={() => selectType('hiking')}
                     className="border-2 border-gray-200 hover:border-emerald-400 rounded-xl p-8 text-center transition-all hover:shadow-md group">
                     <div className="text-5xl mb-3">🥾</div>
@@ -379,6 +408,12 @@ export const AdminLocations = () => {
                     <div className="text-5xl mb-3">⛺</div>
                     <h3 className="text-lg font-semibold text-gray-900 group-hover:text-amber-700">Camping Location</h3>
                     <p className="text-xs text-gray-500 mt-1">Campsites, outdoor stays</p>
+                  </button>
+                  <button onClick={() => selectType('community_event')}
+                    className="border-2 border-gray-200 hover:border-violet-400 rounded-xl p-8 text-center transition-all hover:shadow-md group">
+                    <div className="text-5xl mb-3">🏃</div>
+                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-violet-700">Community Event</h3>
+                    <p className="text-xs text-gray-500 mt-1">Trail runs, triathlons, races</p>
                   </button>
                 </div>
               </div>
@@ -396,16 +431,22 @@ export const AdminLocations = () => {
                 {/* Section 1: Basic Info */}
                 <fieldset className="space-y-4">
                   <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">
-                    {form.activityType === 'hiking' ? '1. Trail Information' : '1. Location Information'}
+                    {isTrailLike(form.activityType) ? '1. Trail Information' : '1. Location Information'}
                   </legend>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {form.activityType === 'hiking' ? 'Trail Title' : 'Location Title'} *
+                        {isTrailLike(form.activityType) ? 'Trail Title' : 'Location Title'} *
                       </label>
                       <input type="text" required value={form.name ?? ''} onChange={(e) => setForm({ ...form, name: e.target.value })}
                         className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                        placeholder={form.activityType === 'hiking' ? 'e.g. Jebel Jais Summit Trail' : 'e.g. Al Qudra Desert Camp'} />
+                        placeholder={
+                          form.activityType === 'community_event'
+                            ? 'e.g. RAK Trail Run Course'
+                            : isTrailLike(form.activityType)
+                              ? 'e.g. Jebel Jais Summit Trail'
+                              : 'e.g. Al Qudra Desert Camp'
+                        } />
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1 block">Country</label>
@@ -429,7 +470,7 @@ export const AdminLocations = () => {
                     </div>
                   </div>
 
-                  {form.activityType === 'hiking' && (
+                  {isTrailLike(form.activityType) && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm font-medium text-gray-700 mb-1 block">Length in KM *</label>
@@ -446,12 +487,18 @@ export const AdminLocations = () => {
 
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      {form.activityType === 'hiking' ? 'About the Trail' : 'About the Location'} *
+                      {isTrailLike(form.activityType) ? 'About the Trail' : 'About the Location'} *
                     </label>
                     <textarea required value={form.description ?? ''} onChange={(e) => setForm({ ...form, description: e.target.value })}
                       className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       rows={5} maxLength={3000}
-                      placeholder={form.activityType === 'hiking' ? 'Describe the trail, terrain, highlights...' : 'Describe the camping location, amenities, surroundings...'} />
+                      placeholder={
+                        form.activityType === 'community_event'
+                          ? 'Describe the event course, terrain, race format...'
+                          : isTrailLike(form.activityType)
+                            ? 'Describe the trail, terrain, highlights...'
+                            : 'Describe the camping location, amenities, surroundings...'
+                      } />
                     <p className="text-xs text-gray-400 mt-1">{(form.description?.length ?? 0)}/3000 characters (approx. 500 words)</p>
                   </div>
                 </fieldset>
@@ -462,12 +509,12 @@ export const AdminLocations = () => {
 
                   <ChipSelect
                     label="Surface Type"
-                    options={form.activityType === 'hiking' ? HIKING_SURFACES : CAMPING_SURFACES}
+                    options={isTrailLike(form.activityType) ? HIKING_SURFACES : CAMPING_SURFACES}
                     selected={form.surfaceType ?? []}
                     onChange={(item) => toggleArrayItem('surfaceType', item)}
                   />
 
-                  {form.activityType === 'hiking' && (
+                  {isTrailLike(form.activityType) && (
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-2 block">Suitable for *</label>
                       <div className="flex gap-3">
@@ -541,7 +588,7 @@ export const AdminLocations = () => {
                   </div>
                   <ChipSelect
                     label="Accessible by"
-                    options={form.activityType === 'hiking' ? HIKING_ACCESSIBLE : CAMPING_ACCESSIBLE}
+                    options={isTrailLike(form.activityType) ? HIKING_ACCESSIBLE : CAMPING_ACCESSIBLE}
                     selected={form.accessibleBy ?? []}
                     onChange={(item) => toggleArrayItem('accessibleBy', item)}
                   />

@@ -3,22 +3,13 @@ import { Mountain } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { MEMBERSHIP_NAV_LINK } from '../../config/platform';
-import { MobileMenuButton } from './MobileMenu';
-
-const getInitials = (name?: string | null, email?: string | null) => {
-  if (name) {
-    const parts = name.trim().split(/\s+/);
-    return parts.length > 1
-      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-      : parts[0][0].toUpperCase();
-  }
-  return email?.[0]?.toUpperCase() ?? '?';
-};
+import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
+import { getInitials } from '../../utils/userDisplay';
 
 export const Header = () => {
   const { user } = useAuth();
   const { pathname } = useLocation();
-
+  const unreadCount = useNotificationUnreadCount();
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/discovery', label: 'Trails and Spots' },
@@ -65,16 +56,21 @@ export const Header = () => {
             {user ? (
               <Link
                 to={accountRouteByRole(user.role)}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium shadow-sm shadow-emerald-200"
+                className="hidden md:flex relative items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium shadow-sm shadow-emerald-200"
               >
                 {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt="" className="w-11 h-11 rounded-full object-cover" />
+                  <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
-                  <span className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
+                  <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
                     {getInitials(user.displayName, user.email)}
                   </span>
                 )}
                 {user.displayName?.split(' ')[0] || 'Account'}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </Link>
             ) : (
               <Link
@@ -84,7 +80,6 @@ export const Header = () => {
                 Sign In
               </Link>
             )}
-            <MobileMenuButton />
           </div>
         </div>
       </div>

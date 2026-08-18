@@ -70,6 +70,7 @@ export interface AdminMetrics {
   totalParticipants: number;
   totalOrganizers: number;
   activeTrips: number;
+  totalGroups: number;
 }
 
 export interface TeamMember {
@@ -180,6 +181,37 @@ export interface SocialGroupWallMessageView {
   };
 }
 
+export interface AdminSocialGroupListItem extends SocialGroupView {
+  memberCount: number;
+  adultMemberCount: number;
+  admin: {
+    id: string;
+    email: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+  } | null;
+}
+
+export interface AdminSocialGroupInviteView extends Omit<SocialGroupInviteView, 'token'> {}
+
+export interface AdminSocialGroupDetail {
+  group: SocialGroupView;
+  admin: {
+    id: string;
+    email: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+  } | null;
+  members: SocialGroupMemberView[];
+  invites: AdminSocialGroupInviteView[];
+  stats: {
+    memberCount: number;
+    adultCount: number;
+    kidCount: number;
+    pendingInvites: number;
+  };
+}
+
 export interface AccountDeletionInfo {
   canDelete: boolean;
   blockers: string[];
@@ -267,6 +299,12 @@ export const api = {
     }
 
     return { data: all };
+  },
+  /** Single-page location fetch — use on Home instead of paginating all locations. */
+  getLocationsPage: (page = 1, pageSize = 100, countryCode?: string) => {
+    const params = new URLSearchParams({ pageSize: String(pageSize), page: String(page) });
+    if (countryCode) params.set('countryCode', countryCode);
+    return apiRequest<{ data: LocationDTO[]; meta?: { total: number } }>(`/locations?${params.toString()}`);
   },
   getPublicLocationDetail: (id: string) => apiRequest<LocationDetailResponse>(`/locations/${id}`, { auth: true }),
   getLocationGuide: (id: string) =>
@@ -398,6 +436,11 @@ export const api = {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
+    }),
+  deleteMeGroup: (groupId: string) =>
+    apiRequest<{ message: string; data: { deleted: boolean } }>(`/me/groups/${groupId}`, {
+      method: 'DELETE',
+      auth: true
     }),
   getMeGroupDetail: (groupId: string) =>
     apiRequest<{
@@ -598,6 +641,23 @@ export const api = {
       auth: true,
       body: JSON.stringify({ status })
     }),
+
+  // ─── Admin - Groups ─────────────────────────────────────────────────────
+
+  getAdminGroups: (filters?: { search?: string; type?: 'family' | 'friends'; page?: number; pageSize?: number }) => {
+    const params = new URLSearchParams();
+    if (filters?.search) params.set('search', filters.search);
+    if (filters?.type) params.set('type', filters.type);
+    if (filters?.page) params.set('page', String(filters.page));
+    if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
+    const qs = params.toString();
+    return apiRequest<{
+      data: AdminSocialGroupListItem[];
+      meta: { page: number; pageSize: number; total: number; totalPages: number };
+    }>(`/admin/groups${qs ? `?${qs}` : ''}`, { auth: true });
+  },
+  getAdminGroupDetail: (id: string) =>
+    apiRequest<{ data: AdminSocialGroupDetail }>(`/admin/groups/${id}`, { auth: true }),
 
   // ─── Admin - Tenants ────────────────────────────────────────────────────
 

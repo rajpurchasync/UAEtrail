@@ -8,6 +8,8 @@ interface MobileScreenProps {
   backLabel?: string;
   /** Hide the top nav strip (e.g. full-height chat thread). */
   hideHeader?: boolean;
+  /** Page hero banner (off for nested views like group detail). */
+  showBanner?: boolean;
   children: ReactNode;
 }
 
@@ -17,13 +19,14 @@ export const MobileScreen = ({
   backTo = '/profile',
   backLabel = 'Back',
   hideHeader = false,
+  showBanner = true,
   children,
 }: MobileScreenProps) => (
   <ConsumerShell
     layout="tab"
     title={title}
     maxWidth="4xl"
-    banner={{ src: PAGE_BANNERS.profile, alt: title }}
+    banner={showBanner ? { src: PAGE_BANNERS.profile, alt: title } : undefined}
     showJourney
     journey={{ fallbackTo: backTo, label: backLabel }}
   >

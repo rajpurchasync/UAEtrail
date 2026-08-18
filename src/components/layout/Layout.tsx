@@ -4,6 +4,7 @@ import { ComposeRailProvider } from '../../context/ComposeRailContext';
 import { isConsumerChromeHidden } from '../../config/platform';
 import { Footer } from './Footer';
 import { ComposeRail } from './ComposeRail';
+import { Header } from './Header';
 import { MobileMenuProvider } from './MobileMenu';
 
 interface LayoutProps {
@@ -38,6 +39,11 @@ export const Layout = ({ children }: LayoutProps) => {
     <ComposeRailProvider>
       <MobileMenuProvider>
         <div className="min-h-screen flex flex-col consumer-bg md:bg-gray-50 overflow-x-clip max-w-full">
+          {showConsumerChrome && location.pathname !== '/' && (
+            <div className="hidden md:block shrink-0">
+              <Header />
+            </div>
+          )}
           {useDesktopShell ? (
             <div className="flex flex-1 min-h-0 w-full md:flex-row">
               <div className="flex flex-1 min-w-0 flex-col min-h-0">

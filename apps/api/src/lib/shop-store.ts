@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { OrderStatus, ProductStatus } from '../domain/enums.js';
-import type { MerchantProfile, OrderLineItem, Product, ProductClick, ShopOrder } from '../domain/types.js';
+import type { MerchantProfile, Product, ProductClick, ShopOrder } from '../domain/types.js';
 import type { Collection } from 'mongodb';
 import { getMongoClient } from './mongo.js';
 

@@ -147,7 +147,7 @@ const startDockerStack = async (env) => {
   console.log(`App:        ${frontendUrl}`);
   console.log(`API:        ${frontendUrl}/api/v1`);
   console.log(`API Docs:   ${frontendUrl}/api/docs`);
-  console.log('Grafana:    http://localhost:3000  (admin/admin)');
+  console.log('Grafana:    http://localhost:3000  (set GRAFANA_ADMIN_PASSWORD in .env)');
   console.log('Prometheus: http://localhost:9090');
   console.log('MinIO:      http://localhost:9001');
 };
@@ -208,6 +208,16 @@ const main = async () => {
     throw new Error(
       `Fast dev mode requires cloud test MongoDB. Selected ${env.MONGODB_URI_SOURCE}; set MONGODB_URI_TEST.`
     );
+  }
+
+  console.log('[3/5] Validating environment...');
+  const validateExit = await runCommand(
+    'node',
+    ['scripts/validate-env.mjs', '--file', envFilePath, ...(mode === 'docker' ? ['--production'] : [])],
+    env
+  );
+  if (validateExit !== 0) {
+    process.exit(validateExit);
   }
 
   if (mode === 'fast') {

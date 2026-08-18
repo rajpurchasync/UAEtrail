@@ -13,6 +13,8 @@ import {
   LOCATION_TAG_OPTIONS,
   SUITABLE_FOR_OPTIONS,
 } from '../../constants/locationForm';
+import type { ActivityType } from '../../config/activityTypes';
+import { ACTIVITY_TYPE_LABELS } from '../../config/activityTypes';
 
 type WizardStep = 'search' | 'overview' | 'conditions' | 'location' | 'premium';
 
@@ -29,7 +31,7 @@ export interface SubmitLocationPayload {
   countryCode: string;
   emirate?: string;
   region: string;
-  activityType: 'hiking' | 'camping';
+  activityType: ActivityType;
   description: string;
   difficulty?: 'easy' | 'moderate' | 'hard';
   distance?: number;
@@ -52,7 +54,7 @@ export interface SubmitLocationPayload {
 
 interface SubmitLocationFormProps {
   tenantId?: string;
-  defaultActivityType?: 'hiking' | 'camping';
+  defaultActivityType?: ActivityType;
   onSubmitted?: (location: LocationDTO) => void;
   onCancel?: () => void;
   compact?: boolean;
@@ -62,7 +64,7 @@ const emptyForm = {
   name: '',
   emirate: '',
   region: '',
-  activityType: 'hiking' as 'hiking' | 'camping',
+  activityType: 'hiking' as ActivityType,
   description: '',
   difficulty: 'moderate' as 'easy' | 'moderate' | 'hard',
   distance: '',
@@ -309,7 +311,7 @@ export const SubmitLocationForm = ({
       {step === 'overview' && (
         <div className="space-y-4">
           <p className="text-sm font-medium text-emerald-800 bg-emerald-50 rounded-lg px-3 py-2">
-            Hiking location — overview
+            {ACTIVITY_TYPE_LABELS[form.activityType]} location — overview
           </p>
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1 block">Title *</label>

@@ -22,8 +22,8 @@ export const toSharedTenantType = (type: TenantType): SharedTenantType => enumMa
 export const toSharedRequestStatus = (status: RequestStatus): SharedRequestStatus =>
   enumMap<SharedRequestStatus>(status);
 
-const mapActivity = (activityType: ActivityType): 'hiking' | 'camping' =>
-  enumMap<'hiking' | 'camping'>(activityType);
+const mapActivity = (activityType: ActivityType): 'hiking' | 'camping' | 'community_event' =>
+  enumMap<'hiking' | 'camping' | 'community_event'>(activityType);
 
 const mapLocationStatus = (status: LocationStatus): 'draft' | 'active' | 'inactive' =>
   enumMap<'draft' | 'active' | 'inactive'>(status);

@@ -26,7 +26,8 @@ import {
   ParticipantPreview,
   OrganizerMessageButton,
   TripCheckInPanel,
-  WithdrawRequestModal
+  WithdrawRequestModal,
+  JoinRequestModal
 } from '../components/ui';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
@@ -73,8 +74,7 @@ export const TripDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [joining, setJoining] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
   const [participation, setParticipation] = useState<TripParticipationDTO | null | undefined>(undefined);
   const [myRequest, setMyRequest] = useState<MyTripRequestDTO | null | undefined>(undefined);
   const [withdrawing, setWithdrawing] = useState(false);
@@ -105,45 +105,27 @@ export const TripDetail = () => {
 
   const pricePackages = trip?.pricePackages?.filter((p) => p.label.trim()) ?? [];
   const hasMultiplePackages = pricePackages.length > 1;
-  const selectedPackage = hasMultiplePackages ? pricePackages[selectedPackageIndex] : pricePackages[0];
   const isPaidTrip = trip ? tripHasPaidPricing(trip) : false;
 
-  const requiresTerms = Boolean(trip && isPaidTrip && trip.paymentTerms);
-  const canJoin =
-    !requiresTerms || termsAccepted;
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
-  const canSubmitJoin = canJoin && packageSelected;
 
-  const handleJoin = async () => {
+  const openJoinModal = () => {
     if (!id || !trip) return;
     if (!user) {
       navigate('/signin', { state: { from: `/trip/${id}` } });
       return;
     }
-    if (!canSubmitJoin) {
-      setError(hasMultiplePackages && !packageSelected ? 'Please select a package option.' : 'Please accept the payment terms to continue.');
+    if (!packageSelected) {
+      setError('Please select a package option.');
       return;
     }
-    setJoining(true);
     setError(null);
-    setMessage(null);
-    try {
-      const res = await api.createJoinRequest(
-        id,
-        undefined,
-        hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined
-      );
-      if (res.data.waitlisted || res.data.status === 'waitlisted') {
-        setMessage('Added to waitlist. We will notify you when a spot opens.');
-      } else {
-        setMessage('Request submitted. Track status in My Requests.');
-      }
-      loadTrip();
-    } catch (joinError) {
-      setError(joinError instanceof Error ? joinError.message : 'Failed to submit request');
-    } finally {
-      setJoining(false);
-    }
+    setShowJoinModal(true);
+  };
+
+  const handleJoinSuccess = (successMessage: string) => {
+    setMessage(successMessage);
+    loadTrip();
   };
 
   if (loading) {
@@ -194,7 +176,7 @@ export const TripDetail = () => {
     ? `${formatDate(trip.date)} – ${formatDate(trip.endDate)}`
     : formatDate(trip.date);
 
-  const joinLabel = joining ? 'Submitting…' : isFull ? 'Join Waitlist' : 'Request to Join';
+  const joinLabel = isFull ? 'Join Waitlist' : 'Request to Join';
   const isConfirmed = Boolean(participation);
   const hasActiveRequest = Boolean(myRequest?.canWithdraw);
   const requestStatus = myRequest?.status;
@@ -256,29 +238,12 @@ export const TripDetail = () => {
     </div>
   ) : null;
 
-  const termsBlock = requiresTerms && !isConfirmed ? (
-    <label className="flex items-start gap-2 text-left text-sm text-gray-700 mb-3 cursor-pointer">
-      <input
-        type="checkbox"
-        checked={termsAccepted}
-        onChange={(e) => setTermsAccepted(e.target.checked)}
-        className="mt-0.5 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-      />
-      <span>
-        I agree to the{' '}
-        <span className="font-medium text-gray-900">payment terms</span>
-        {selectedPackage ? ` for ${formatPackagePrice(selectedPackage)}` : isPaidTrip ? ` (${tripPriceLabel(trip)})` : ''}.
-      </span>
-    </label>
-  ) : null;
-
   const joinButton = checkInFooter ?? (
     <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-      {termsBlock}
       <button
         type="button"
-        onClick={handleJoin}
-        disabled={joining || !canSubmitJoin || hasActiveRequest}
+        onClick={openJoinModal}
+        disabled={hasActiveRequest}
         className={`w-full ios-btn shadow-lg disabled:opacity-60 ${
           isFull ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
         }`}
@@ -306,22 +271,29 @@ export const TripDetail = () => {
       {withdrawButton}
     </>
   ) : (
-    <>
-      {termsBlock}
-      <button
-        onClick={handleJoin}
-        disabled={joining || !canSubmitJoin}
-        className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
-          isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
-        }`}
-      >
-        {joinLabel}
-      </button>
-    </>
+    <button
+      onClick={openJoinModal}
+      disabled={!packageSelected}
+      className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
+        isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
+      }`}
+    >
+      {joinLabel}
+    </button>
   );
 
   return (
-    <MobileDetailShell backTo="/trips" backLabel="Trips" footer={joinButton}>
+    <MobileDetailShell
+      backTo="/trips"
+      backLabel="Trips"
+      footer={joinButton}
+      banner={{
+        src: heroImage,
+        alt: trip.title || trip.locationName,
+        title: trip.title || trip.locationName,
+        eyebrow: trip.activityType === 'hiking' ? 'Hiking trip' : 'Camping trip',
+      }}
+    >
       <PageMeta
         title={trip.title || trip.locationName}
         description={trip.description?.slice(0, 160) ?? `Join this ${trip.activityType} trip in the UAE on UAE Trail`}
@@ -330,33 +302,6 @@ export const TripDetail = () => {
         imageAlt={trip.title || trip.locationName}
       />
       <JsonLd data={tripEventSchema(trip)} id={`trip-${trip.id}`} />
-      <div className="relative h-56 sm:h-72 md:h-80 overflow-hidden">
-        <img src={heroImage} alt={trip.locationName} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        <div className="absolute top-4 right-4">
-          <ShareButton
-            title={trip.title || trip.locationName}
-            text={`${dateRangeLabel} · Join this ${trip.activityType} trip on UAE Trails`}
-            path={`/trip/${trip.id}`}
-            compact
-          />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 max-w-6xl mx-auto">
-          <span
-            className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold mb-2 ${
-              trip.activityType === 'hiking' ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'
-            }`}
-          >
-            {trip.activityType === 'hiking' ? 'Hiking' : 'Camping'}
-          </span>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">{trip.title || trip.locationName}</h1>
-          <p className="text-white/90 mt-1 text-sm md:text-base">
-            {dateRangeLabel} · {trip.time}
-            {trip.endTime ? ` – ${trip.endTime}` : ''}
-          </p>
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
@@ -669,6 +614,14 @@ export const TripDetail = () => {
         variant={isConfirmed ? 'trip' : 'request'}
         submitting={withdrawing}
         onConfirm={handleWithdraw}
+      />
+      <JoinRequestModal
+        open={showJoinModal}
+        onClose={() => setShowJoinModal(false)}
+        trip={trip}
+        isFull={isFull}
+        selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
+        onSuccess={handleJoinSuccess}
       />
     </MobileDetailShell>
   );

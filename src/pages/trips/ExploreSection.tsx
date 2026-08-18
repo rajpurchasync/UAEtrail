@@ -3,12 +3,13 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import { fetchApiTrips } from '../../api/public';
 import { Trip } from '../../types';
 import { TripCard, EmptyTripsBanner } from '../../components/ui';
+import { ACTIVITY_TYPE_LABELS } from '../../config/activityTypes';
 import { FilterIconButton } from '../../components/mobile/FilterIconButton';
 import { ListBrowseLayout } from '../../components/layout/ListBrowseLayout';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 
-type TripFilterPill = 'hiking' | 'camping' | 'free' | 'paid';
-const TRIP_FILTER_PILLS: TripFilterPill[] = ['hiking', 'camping', 'free', 'paid'];
+type TripFilterPill = 'hiking' | 'camping' | 'community_event' | 'free' | 'paid';
+const TRIP_FILTER_PILLS: TripFilterPill[] = ['hiking', 'camping', 'community_event', 'free', 'paid'];
 
 export const ExploreSection = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,6 +66,7 @@ export const ExploreSection = () => {
         if (timeFilter === 'past' && d >= today) return false;
         if (trip.activityType === 'hiking' && !filterPills.has('hiking')) return false;
         if (trip.activityType === 'camping' && !filterPills.has('camping')) return false;
+        if (trip.activityType === 'community_event' && !filterPills.has('community_event')) return false;
         const isFree = trip.price === 0;
         if (isFree && !filterPills.has('free')) return false;
         if (!isFree && !filterPills.has('paid')) return false;
@@ -94,8 +96,9 @@ export const ExploreSection = () => {
   };
 
   const filterOptionLabel: Record<TripFilterPill, string> = {
-    hiking: 'Hiking',
-    camping: 'Camping',
+    hiking: ACTIVITY_TYPE_LABELS.hiking,
+    camping: ACTIVITY_TYPE_LABELS.camping,
+    community_event: ACTIVITY_TYPE_LABELS.community_event,
     free: 'Free',
     paid: 'Paid',
   };
@@ -135,7 +138,7 @@ export const ExploreSection = () => {
           Activity
         </h3>
         <div className="space-y-1.5">
-          {(['hiking', 'camping'] as const).map((pill) => (
+          {(['hiking', 'camping', 'community_event'] as const).map((pill) => (
             <label key={pill} className="flex items-center min-h-[36px] cursor-pointer">
               <input
                 type="checkbox"

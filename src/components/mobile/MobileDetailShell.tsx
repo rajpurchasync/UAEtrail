@@ -1,7 +1,5 @@
 import { ReactNode } from 'react';
 import { MobileMenuButton } from '../layout/MobileMenu';
-import { ProfileAvatarLink } from '../layout/ProfileAvatarLink';
-import { NotificationBellPopover } from '../layout/NotificationBellPopover';
 import { ConsumerHeroBanner } from './ConsumerHeroBanner';
 import { MobileBackButton } from './MobileBackButton';
 
@@ -46,22 +44,26 @@ export const MobileDetailShell = ({
         linkTo={banner.linkTo ?? backTo}
         linkAriaLabel={banner.linkTo ? backLabel : banner.title ?? banner.alt ?? backLabel}
         showMobileChrome
+        showJourney
+        journeyFallbackTo={backTo}
+        journeyLabel={backLabel}
+        action={headerAction ?? banner.desktopAction}
         desktopAction={banner.desktopAction}
         desktopChromeOnly={banner.desktopChromeOnly}
         className="animate-fade-up"
       />
     )}
-    <div className={`${banner ? 'md:hidden' : ''} sticky top-0 z-30 glass-header`}>
-      <div className="max-w-6xl mx-auto px-4 pt-safe-plus-2 pb-2 flex items-center justify-between gap-2">
-        <MobileBackButton fallbackTo={backTo} label={backLabel} className="flex-1 min-w-0" />
-        <div className="flex items-center gap-2 shrink-0">
-          <ProfileAvatarLink />
-          <NotificationBellPopover />
-          {headerAction}
-          <MobileMenuButton />
+    {!banner && (
+      <div className="md:hidden sticky top-0 z-30 glass-header">
+        <div className="max-w-6xl mx-auto px-4 pt-safe-plus-2 pb-2 flex items-center justify-between gap-2">
+          <MobileBackButton fallbackTo={backTo} label={backLabel} className="flex-1 min-w-0" />
+          <div className="flex items-center gap-2 shrink-0">
+            {headerAction}
+            <MobileMenuButton />
+          </div>
         </div>
       </div>
-    </div>
+    )}
     {children}
     {footer && (
       <div className="md:hidden fixed inset-x-0 bottom-0 z-40 px-4 pb-safe">{footer}</div>

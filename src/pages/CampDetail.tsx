@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Car, ChevronRight } from 'lucide-react';
 import { ReviewDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
-import { TripCard, BookingModal, ShareButton, Breadcrumb, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
+import { TripCard, BookingModal, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { campSchema } from '../components/seo/schemas';
@@ -66,7 +66,15 @@ export const CampDetail = () => {
   }
 
   return (
-    <MobileDetailShell backTo="/" backLabel="Explore">
+    <MobileDetailShell
+      backTo="/discovery"
+      backLabel="Trails & Spots"
+      banner={{
+        src: camp.images[0],
+        alt: camp.name,
+        title: camp.name,
+      }}
+    >
     <div className="min-h-screen bg-ios-bg md:bg-gray-50">
       <PageMeta
         title={camp.name}
@@ -78,14 +86,7 @@ export const CampDetail = () => {
       <JsonLd data={campSchema(camp)} id={`camp-${camp.id}`} />
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between mb-4 hidden md:flex">
-            <Breadcrumb
-              items={[
-                { label: 'Camping', to: '/discovery?activity=camping' },
-                { label: camp.region, to: `/discovery?activity=camping` },
-                { label: camp.name }
-              ]}
-            />
+          <div className="flex items-center justify-end mb-4 hidden md:flex">
             <ShareButton
               title={camp.name}
               text={`${camp.region} · camping spot on UAE Trails`}

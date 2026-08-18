@@ -2,8 +2,6 @@ import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Mountain } from 'lucide-react';
 import { MobileMenuButton } from './MobileMenu';
-import { ProfileAvatarLink } from './ProfileAvatarLink';
-import { NotificationBellPopover } from './NotificationBellPopover';
 
 interface MobileBrandBarProps {
   tone?: 'light' | 'default';
@@ -56,8 +54,6 @@ export const MobileBrandBar = ({
     </div>
     <div className="flex shrink-0 items-center gap-2 sm:gap-3">
       {desktopAction && <div className="hidden md:flex items-center">{desktopAction}</div>}
-      <ProfileAvatarLink tone={tone} />
-      <NotificationBellPopover tone={tone} />
       <MobileMenuButton tone={tone} showOnDesktop={menuOnDesktop} />
     </div>
   </div>

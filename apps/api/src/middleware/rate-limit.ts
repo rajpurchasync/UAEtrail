@@ -7,6 +7,7 @@ export interface RateLimiters {
   authLimiter: RateLimitRequestHandler;
   viewLimiter: RateLimitRequestHandler;
   sensitiveDataLimiter: RateLimitRequestHandler;
+  clientErrorLimiter: RateLimitRequestHandler;
 }
 
 const redisStore = (prefix: string) => {
@@ -75,6 +76,16 @@ export const createRateLimiters = async (): Promise<RateLimiters> => {
           code: 'rate_limit_exceeded',
           message: 'Too many sensitive account requests. Please try again later.'
         }
+      }
+    }),
+    clientErrorLimiter: rateLimit({
+      windowMs: 60_000,
+      max: 30,
+      standardHeaders: true,
+      legacyHeaders: false,
+      store: store('client-error'),
+      message: {
+        error: { code: 'rate_limit_exceeded', message: 'Too many error reports. Please try again later.' }
       }
     })
   };

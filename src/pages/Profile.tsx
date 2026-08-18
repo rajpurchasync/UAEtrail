@@ -10,12 +10,11 @@ import { PAGE_BANNERS } from '../config/pageBanners';
 import { GlassCard } from '../components/mobile/GlassCard';
 import {
   AccountActivityPreview,
+  AccountGroupsPreview,
   AccountEditModal,
   AccountIdentityBar,
   AccountLinkList,
   AccountSignOutButton,
-  AccountDeleteSection,
-  AccountDataExportSection,
   AccountStatGrid,
   buildParticipantStats,
 } from '../components/account';
@@ -23,7 +22,7 @@ import { FEATURE_FLAGS } from '../config/platform';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
 import { ProfileTrailPointsChip, TrailPointsPathSheet } from '../components/rewards';
-import { NotificationDTO, RewardSummaryDTO } from '@uaetrail/shared-types';
+import { RewardSummaryDTO } from '@uaetrail/shared-types';
 import { accountRouteByRole } from '../utils/authRouting';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
 import { inferNotificationPath } from '../utils/notificationRouting';
@@ -36,6 +35,7 @@ export const Profile = () => {
     profile,
     setProfile,
     conversations,
+    groups,
     pendingRequests,
     upcomingTripsCount,
     upcomingTrip,
@@ -269,6 +269,8 @@ export const Profile = () => {
               conversations={conversations}
             />
 
+            <AccountGroupsPreview groups={groups} loading={loading} />
+
             <AccountLinkList
               items={[
                 {
@@ -288,7 +290,8 @@ export const Profile = () => {
                 {
                   to: '/groups',
                   icon: <Users className="w-4 h-4" />,
-                  label: 'Family & friends groups',
+                  label: 'My Groups',
+                  badge: groups.length || undefined,
                   accent: 'blue' as const,
                 },
                 {
@@ -370,9 +373,6 @@ export const Profile = () => {
       </div>
 
       <AccountSignOutButton onSignOut={handleSignOut} />
-
-      <AccountDataExportSection />
-      <AccountDeleteSection onDeleted={handleSignOut} />
 
       {rewardSummary && (
         <TrailPointsPathSheet

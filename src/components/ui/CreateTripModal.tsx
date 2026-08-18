@@ -14,7 +14,8 @@ import {
   TripPricePackage,
 } from '../../utils/tripPricing';
 
-type ActivityType = 'hiking' | 'camping';
+import type { ActivityType } from '../../config/activityTypes';
+import { ACTIVITY_TYPE_LABELS } from '../../config/activityTypes';
 type PricingType = 'free' | 'paid';
 type WizardStep = 1 | 2 | 3 | 4;
 
@@ -257,7 +258,7 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">Activity type</label>
               <div className="flex gap-2">
-                {(['hiking', 'camping'] as ActivityType[]).map((type) => (
+                {(['hiking', 'camping', 'community_event'] as ActivityType[]).map((type) => (
                   <button
                     key={type}
                     type="button"
@@ -268,7 +269,7 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    {type === 'hiking' ? 'Hike' : 'Camp'}
+                    {ACTIVITY_TYPE_LABELS[type]}
                   </button>
                 ))}
               </div>
@@ -326,14 +327,15 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Requirements</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Instructions for participants</label>
               <textarea
                 value={form.instructions}
                 onChange={(e) => setForm({ ...form, instructions: e.target.value })}
                 className="w-full border rounded-xl px-3 py-2.5 text-sm"
-                rows={2}
-                placeholder="What to bring, fitness level, etc."
+                rows={3}
+                placeholder={'One instruction per line, e.g.\nBring 2L water\nArrive 15 minutes early\nNo dogs allowed'}
               />
+              <p className="text-xs text-gray-400 mt-1">Shown when someone requests to join — they must agree before submitting.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

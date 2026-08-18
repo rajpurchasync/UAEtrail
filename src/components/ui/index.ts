@@ -1,8 +1,10 @@
 export { TrailCard } from './TrailCard';
 export { CampingCard } from './CampingCard';
+export { CommunityEventCard } from './CommunityEventCard';
 export { TripCard } from './TripCard';
 export { GearCard } from './GearCard';
 export { BookingModal } from './BookingModal';
+export { JoinRequestModal } from './JoinRequestModal';
 export { FilterPanel } from './FilterPanel';
 export { ShareButton } from './ShareButton';
 export { ParticipantPreview } from './ParticipantPreview';

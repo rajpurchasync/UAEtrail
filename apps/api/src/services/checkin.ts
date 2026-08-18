@@ -172,7 +172,12 @@ export async function performParticipantCheckIn(opts: {
     tenantId: event.tenantId
   });
 
-  const activityType = event.location.activityType === 'HIKING' ? 'hiking' : 'camping';
+  const activityType =
+    event.location.activityType === 'HIKING'
+      ? 'hiking'
+      : event.location.activityType === 'CAMPING'
+        ? 'camping'
+        : 'community_event';
   await promptPostEventReview({
     userId: participant.userId,
     eventId: event.id,

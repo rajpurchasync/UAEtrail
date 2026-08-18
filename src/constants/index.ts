@@ -35,6 +35,7 @@ export const ADMIN_LINKS = [
   { to: '/admin/users', label: 'Users' },
   { to: '/admin/organizers', label: 'Organizers' },
   { to: '/admin/events', label: 'Events' },
+  { to: '/admin/groups', label: 'Groups' },
   { to: '/admin/shop', label: 'Shop' },
   { to: '/admin/audit-log', label: 'Audit Log' },
   { to: '/admin/settings', label: 'Broadcast' }

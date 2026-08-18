@@ -23,9 +23,10 @@ export const MOBILE_DRAWER_MENU = [
   {
     label: 'My Profile',
     to: '/profile',
-    match: ['/profile', '/favorites', '/my-requests', '/messages', '/notifications'],
+    match: ['/profile', '/favorites', '/my-requests', '/messages'],
     profileLink: true,
   },
+  { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
   { label: 'Trails & Spots', to: '/discovery', match: ['/discovery', '/trail', '/camp'] },
   { label: 'Upcoming Trips', to: '/trips', match: ['/trips', '/trip'] },
   { label: 'Gears Shop', to: '/shop', match: ['/shop', '/product', '/merchant'] },
@@ -55,6 +56,8 @@ export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number]['id'];
 export const FEATURE_FLAGS = {
   /** Premium subscription checkout — keep false until launch. */
   membershipEnabled: false,
+  /** Gear shop catalog — show Coming Soon until merchants are live. */
+  shopComingSoon: true,
 } as const;
 
 export const MEMBERSHIP_NAV_LINK = FEATURE_FLAGS.membershipEnabled

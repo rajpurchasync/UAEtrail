@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, TrendingUp, Clock, Mountain, Baby, ChevronRight } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
-import { TripCard, ShareButton, Breadcrumb, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
+import { TripCard, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
 import { LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -67,7 +67,15 @@ export const TrailDetail = () => {
   }
 
   return (
-    <MobileDetailShell backTo="/" backLabel="Explore">
+    <MobileDetailShell
+      backTo="/discovery"
+      backLabel="Trails & Spots"
+      banner={{
+        src: trail.images[0],
+        alt: trail.name,
+        title: trail.name,
+      }}
+    >
     <div className="min-h-screen bg-ios-bg md:bg-gray-50">
       <PageMeta
         title={trail.name}
@@ -79,14 +87,7 @@ export const TrailDetail = () => {
       <JsonLd data={trailSchema(trail)} id={`trail-${trail.id}`} />
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between mb-4 hidden md:flex">
-            <Breadcrumb
-              items={[
-                { label: 'Hiking', to: '/discovery?activity=hiking' },
-                { label: trail.region, to: `/discovery?activity=hiking` },
-                { label: trail.name }
-              ]}
-            />
+          <div className="flex items-center justify-end mb-4 hidden md:flex">
             <ShareButton
               title={trail.name}
               text={`${trail.region} · ${trail.distance} km trail on UAE Trails`}

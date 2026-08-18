@@ -34,7 +34,8 @@ export type LocationStatus = (typeof LocationStatus)[keyof typeof LocationStatus
 
 export const ActivityType = {
   HIKING: 'HIKING',
-  CAMPING: 'CAMPING'
+  CAMPING: 'CAMPING',
+  COMMUNITY_EVENT: 'COMMUNITY_EVENT'
 } as const;
 export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType];
 

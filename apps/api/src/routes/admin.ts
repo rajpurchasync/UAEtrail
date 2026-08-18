@@ -71,11 +71,16 @@ import {
 } from '../lib/organizer-applications-store.js';
 import { dispatchNotificationDefault } from '../services/notifications.js';
 import { awardPointsDefault } from '../services/rewards.js';
+import {
+  countSocialGroups,
+  getSocialGroupAdminDetail,
+  listAllSocialGroupsAdmin
+} from '../lib/social-groups-store.js';
 
 const locationCreateSchema = z.object({
   name: z.string().min(2),
   region: z.string().min(2),
-  activityType: z.enum(['hiking', 'camping']),
+  activityType: z.enum(['hiking', 'camping', 'community_event']),
   description: z.string().min(20),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
   season: z.array(z.string()).min(1),
@@ -117,8 +122,11 @@ const eventModerationSchema = z.object({
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
-const toPrismaActivityType = (activityType: 'hiking' | 'camping'): ActivityType =>
-  activityType === 'hiking' ? 'HIKING' : 'CAMPING';
+const toPrismaActivityType = (activityType: 'hiking' | 'camping' | 'community_event'): ActivityType => {
+  if (activityType === 'hiking') return ActivityType.HIKING;
+  if (activityType === 'camping') return ActivityType.CAMPING;
+  return ActivityType.COMMUNITY_EVENT;
+};
 
 const toPrismaDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {
   if (!difficulty) return undefined;
@@ -224,11 +232,14 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
       const latitude = body.latitude !== undefined ? body.latitude : existing.latitude;
       const longitude = body.longitude !== undefined ? body.longitude : existing.longitude;
 
-      if (activityType === ActivityType.HIKING && !difficulty) {
+      if (
+        (activityType === ActivityType.HIKING || activityType === ActivityType.COMMUNITY_EVENT) &&
+        !difficulty
+      ) {
         throw new ApiError(
           400,
           'difficulty_required',
-          'Hiking locations require a difficulty level before approval.'
+          'Trail and community event locations require a difficulty level before approval.'
         );
       }
       if (!parkingLink && (latitude == null || longitude == null)) {
@@ -523,13 +534,14 @@ adminRouter.patch(
 adminRouter.get('/metrics', async (_req, res, next) => {
   try {
     const now = new Date();
-    const [metrics, pendingRequests, totalUsers, activeUsers, totalParticipants, totalOrganizers] = await Promise.all([
+    const [metrics, pendingRequests, totalUsers, activeUsers, totalParticipants, totalOrganizers, totalGroups] = await Promise.all([
       countAdminMetrics(now),
       countPendingEventRequests(),
       countAuthUsers({}),
       countAuthUsers({ status: 'ACTIVE' }),
       countEventParticipants(),
-      countAuthUsers({ role: ['TENANT_OWNER', 'PLATFORM_ADMIN'] })
+      countAuthUsers({ role: ['TENANT_OWNER', 'PLATFORM_ADMIN'] }),
+      countSocialGroups()
     ]);
 
     res.json({
@@ -543,7 +555,8 @@ adminRouter.get('/metrics', async (_req, res, next) => {
         totalLocations: metrics.totalLocations,
         totalParticipants,
         totalOrganizers,
-        activeTrips: metrics.activeTrips
+        activeTrips: metrics.activeTrips,
+        totalGroups
       }
     });
   } catch (error) {
@@ -1123,6 +1136,76 @@ adminRouter.patch('/products/:id/status', validate({ params: idParamSchema, body
     });
 
     res.json({ message: `Product ${status === 'active' ? 'approved' : 'suspended'}.` });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Social Groups ───────────────────────────────────────────────────────────
+
+const groupListQuerySchema = paginationSchema.extend({
+  search: z.string().optional(),
+  type: z.enum(['family', 'friends']).optional()
+});
+
+adminRouter.get('/groups', validate({ query: groupListQuerySchema }), async (req, res, next) => {
+  try {
+    const query = req.query as unknown as z.infer<typeof groupListQuerySchema>;
+    const pg = paginationSchema.parse({ page: query.page, pageSize: query.pageSize });
+    const { skip, take } = { skip: (pg.page - 1) * pg.pageSize, take: pg.pageSize };
+    const { data, total } = await listAllSocialGroupsAdmin({
+      skip,
+      take,
+      search: query.search,
+      type: query.type
+    });
+
+    res.json(
+      paginatedResponse(
+        data.map((group) => ({
+          ...group,
+          createdAt: group.createdAt.toISOString(),
+          updatedAt: group.updatedAt.toISOString()
+        })),
+        total,
+        pg
+      )
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get('/groups/:id', validate({ params: idParamSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+    const detail = await getSocialGroupAdminDetail(id);
+    if (!detail) {
+      throw new ApiError(404, 'group_not_found', 'Group not found.');
+    }
+
+    res.json({
+      data: {
+        group: {
+          ...detail.group,
+          createdAt: detail.group.createdAt.toISOString(),
+          updatedAt: detail.group.updatedAt.toISOString()
+        },
+        admin: detail.admin,
+        members: detail.members.map((member) => ({
+          ...member,
+          createdAt: member.createdAt.toISOString()
+        })),
+        invites: detail.invites.map((invite) => ({
+          ...invite,
+          acceptedAt: invite.acceptedAt?.toISOString() ?? null,
+          expiresAt: invite.expiresAt.toISOString(),
+          createdAt: invite.createdAt.toISOString(),
+          updatedAt: invite.updatedAt.toISOString()
+        })),
+        stats: detail.stats
+      }
+    });
   } catch (error) {
     next(error);
   }

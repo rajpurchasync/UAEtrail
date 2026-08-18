@@ -1,19 +1,20 @@
 import { useCallback, useMemo, type SetStateAction } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { EventDTO, ChatConversationDTO } from '@uaetrail/shared-types';
-import { api, EventRequestView, UserProfile } from '../api/services';
+import { api, EventRequestView, UserProfile, SocialGroupView } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { isUpcomingTrip, todayStart, upcomingTripsTotal } from '../utils/tripDates';
 
 const participantHubKey = (userId: string) => ['participant-hub', userId] as const;
 
 async function fetchParticipantHub() {
-  const [profileRes, tripsRes, requestsRes, notifRes, convRes] = await Promise.all([
+  const [profileRes, tripsRes, requestsRes, notifRes, convRes, groupsRes] = await Promise.all([
     api.getMeProfile(),
     api.getMeTrips().catch(() => ({ data: [] as EventDTO[] })),
     api.getMeRequests().catch(() => ({ data: [] as EventRequestView[] })),
     api.getMeNotifications(1).catch(() => ({ data: [], unreadCount: 0, total: 0 })),
     api.getConversations().catch(() => ({ data: [] as ChatConversationDTO[] })),
+    api.getMeGroups().catch(() => ({ data: [] as SocialGroupView[] })),
   ]);
 
   return {
@@ -23,6 +24,7 @@ async function fetchParticipantHub() {
     notifications: notifRes.data?.slice(0, 3) ?? [],
     unreadNotifications: notifRes.unreadCount ?? 0,
     conversations: convRes.data?.slice(0, 4) ?? [],
+    groups: groupsRes.data ?? [],
   };
 }
 
@@ -42,6 +44,7 @@ export const useParticipantHubData = () => {
   const conversations = data?.conversations ?? [];
   const notifications = data?.notifications ?? [];
   const unreadNotifications = data?.unreadNotifications ?? 0;
+  const groups = data?.groups ?? [];
 
   const setProfile = useCallback(
     (updater: SetStateAction<UserProfile>) => {
@@ -100,6 +103,7 @@ export const useParticipantHubData = () => {
     upcomingTripsCount,
     upcomingTrip,
     unreadMessages,
+    groups,
     loading: isLoading,
     error: error instanceof Error ? error.message : error ? 'Failed to load account data' : null,
     reload,

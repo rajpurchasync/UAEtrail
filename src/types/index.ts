@@ -1,4 +1,4 @@
-export type ActivityType = 'hiking' | 'camping';
+export type ActivityType = 'hiking' | 'camping' | 'community_event';
 export type DifficultyLevel = 'easy' | 'moderate' | 'hard';
 export type CampingType = 'self-guided' | 'operator-led';
 export type Accessibility = 'car-accessible' | 'remote';
@@ -37,6 +37,26 @@ export interface CampingSpot {
   maxGroupSize: number;
   accessibility: Accessibility;
   difficulty?: DifficultyLevel;
+  description: string;
+  images: string[];
+  featured: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  parkingLink?: string;
+  highlights?: string[];
+  surfaceType?: string[];
+  tags?: string[];
+  accessibleBy?: string[];
+}
+
+export interface CommunityEventSpot {
+  id: string;
+  name: string;
+  region: UAERegion;
+  difficulty: DifficultyLevel;
+  distance?: number;
+  duration?: number;
+  season: Season[];
   description: string;
   images: string[];
   featured: boolean;

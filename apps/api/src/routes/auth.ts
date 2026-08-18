@@ -458,7 +458,24 @@ authRouter.post('/verify-email', validate({ body: tokenSchema }), async (req, re
     await useEmailVerificationToken(record.id);
     await updateAuthUserEmailVerifiedAt(record.userId, new Date());
 
-    res.json({ message: 'Email verified successfully.' });
+    const user = await findAuthUserById(record.userId);
+    if (!user || user.status !== UserStatus.ACTIVE) {
+      throw new ApiError(400, 'invalid_token', 'Verification token is invalid or expired.');
+    }
+
+    const sessionRole = await restoreRoleIfSwitched(user);
+    const tokens = await createSession({
+      userId: user._id,
+      email: user.email,
+      role: sessionRole,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent']
+    });
+
+    respondWithAuth(res, 200, { id: user._id, email: user.email, role: sessionRole }, tokens, {
+      message: 'Email verified successfully.',
+      emailVerified: true
+    });
   } catch (error) {
     next(error);
   }

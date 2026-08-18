@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, MapPin, Plus, Search } from 'lucide-react';
 import { LocationDTO } from '@uaetrail/shared-types';
+import type { ActivityType } from '../../config/activityTypes';
 import { api } from '../../api/services';
 import { SubmitLocationForm } from './SubmitLocationForm';
 
@@ -8,7 +9,7 @@ interface LocationSelectProps {
   value: string;
   onChange: (locationId: string) => void;
   tenantId?: string;
-  activityType?: 'hiking' | 'camping';
+  activityType?: ActivityType;
   required?: boolean;
   className?: string;
 }

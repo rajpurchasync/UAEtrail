@@ -38,12 +38,13 @@ describe('auth integration', () => {
       .post('/api/v1/auth/verify-email')
       .send({ token: response.body.verificationToken });
     expect(verifyRes.status).toBe(200);
+    expect(verifyRes.body.tokens.accessToken).toBeTruthy();
 
     const cookies = response.headers['set-cookie'];
     const cookieHeader = Array.isArray(cookies) ? cookies.join('; ') : cookies ?? '';
     expect(cookieHeader).toContain(REFRESH_COOKIE_NAME);
 
-    accessToken = response.body.tokens.accessToken;
+    accessToken = verifyRes.body.tokens.accessToken;
     refreshCookie = cookieHeader.split(';')[0];
   });
 
