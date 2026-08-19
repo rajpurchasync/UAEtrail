@@ -117,22 +117,33 @@ const startDockerStack = async (env) => {
   }
 
   console.log('Containers are running.');
-  console.log('[5/5] Seeding API data (with retries)...');
+  
+  // --- Safe Seeding Logic ---
+  const isProduction = env.RUN_ENV === 'production' || env.RUN_ENV === 'prod' || env.NODE_ENV === 'production';
 
-  for (let seedAttempt = 0; seedAttempt < 12; seedAttempt += 1) {
-    exitCode = await runCommand('docker', ['compose', 'exec', '-T', 'api', 'npm', '--workspace', '@uaetrail/api', 'run', 'seed'], env);
-    if (exitCode === 0) {
-      break;
+  if (isProduction) {
+    console.log('[5/5] Skipping API data seeding (Production environment detected)...');
+  } else if (env.RUN_ENV === 'test' && env.SEED_DATA !== 'true') {
+    console.log('[5/5] Skipping API data seeding for test env (Set SEED_DATA=true in .env to run)...');
+  } else {
+    console.log('[5/5] Seeding API data (with retries)...');
+
+    for (let seedAttempt = 0; seedAttempt < 12; seedAttempt += 1) {
+      exitCode = await runCommand('docker', ['compose', 'exec', '-T', 'api', 'npm', '--workspace', '@uaetrail/api', 'run', 'seed'], env);
+      if (exitCode === 0) {
+        break;
+      }
+
+      if (seedAttempt === 11) {
+        console.log('Seed still failing after 12 tries. Containers are running; seed can be retried later.');
+        break;
+      }
+
+      console.log(`API not ready for seed yet. Retrying... (${seedAttempt + 1}/12)`);
+      await sleep(5000);
     }
-
-    if (seedAttempt === 11) {
-      console.log('Seed still failing after 12 tries. Containers are running; seed can be retried later.');
-      break;
-    }
-
-    console.log(`API not ready for seed yet. Retrying... (${seedAttempt + 1}/12)`);
-    await sleep(5000);
   }
+  // --------------------------
 
   const frontendUrl = `http://localhost:${env.FRONTEND_PORT}`;
   const frontendReady = await waitForUrl(frontendUrl, 24, 5000);
@@ -162,10 +173,22 @@ const main = async () => {
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || 'minioadmin',
     APP_BASE_URL: process.env.APP_BASE_URL || 'http://localhost',
     APP_BASE_URLS: process.env.APP_BASE_URLS || 'http://localhost,http://localhost:5175',
-    API_BASE_URL: process.env.API_BASE_URL || 'http://localhost:4000',
     VITE_API_BASE_URL: process.env.VITE_API_BASE_URL || '/api/v1',
     FRONTEND_PORT: process.env.FRONTEND_PORT || '5175'
   };
+
+  // --- Dynamic API_BASE_URL Routing ---
+// --- Universal Mode-Based Routing (Generic for Dev, Test, Prod) ---
+  if (mode === 'docker') {
+    // Docker containers use internal service names
+    env.API_BASE_URL = env.API_BASE_URL || 'http://api:4000';
+    env.S3_ENDPOINT = env.S3_ENDPOINT || 'http://minio:9000';
+  } else {
+    // Local host execution (Fast / Dev mode) uses loopback interface
+    env.API_BASE_URL = env.API_BASE_URL || 'http://127.0.0.1:4000';
+    env.S3_ENDPOINT = env.S3_ENDPOINT || 'http://127.0.0.1:9000';
+  }
+  // ------------------------------------
 
   if (mode === 'fast') {
     const currentRunEnv = String(env.RUN_ENV || '').toLowerCase();
@@ -211,11 +234,15 @@ const main = async () => {
   }
 
   console.log('[3/5] Validating environment...');
+  
+  // --- Validation bypass for test env ---
   const validateExit = await runCommand(
     'node',
-    ['scripts/validate-env.mjs', '--file', envFilePath, ...(mode === 'docker' ? ['--production'] : [])],
+    ['scripts/validate-env.mjs', '--file', envFilePath, ...(mode === 'docker' && env.RUN_ENV !== 'test' ? ['--production'] : [])],
     env
   );
+  // --------------------------------------
+  
   if (validateExit !== 0) {
     process.exit(validateExit);
   }

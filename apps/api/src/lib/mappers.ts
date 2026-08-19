@@ -13,7 +13,8 @@ import { EventDTO, LocationDTO, MembershipRole as SharedMembershipRole, RequestS
 import { formatEventLocal } from './datetime.js';
 import { parseStoredPricePackages } from './trip-pricing.js';
 
-const enumMap = <T extends string>(value: string): T => value.toLowerCase() as T;
+const enumMap = <T extends string>(value: string | null | undefined): T => 
+  (value ? value.toLowerCase() : (value as any)) as T;
 
 export const toSharedRole = (role: UserRole): SharedUserRole => enumMap<SharedUserRole>(role);
 export const toSharedMembershipRole = (role: MembershipRole): SharedMembershipRole =>
