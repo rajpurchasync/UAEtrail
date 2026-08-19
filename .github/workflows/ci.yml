@@ -64,6 +64,7 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
     env:
+      MONGODB_URI: mongodb://127.0.0.1:27017/uaetrail_ci
       S3_ACCESS_KEY_ID: ci-test-key
       S3_SECRET_ACCESS_KEY: ci-test-secret-min8
       JWT_ACCESS_SECRET: ci-test-access-secret-min-24-chars
