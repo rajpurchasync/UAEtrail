@@ -192,7 +192,7 @@ export interface AdminSocialGroupListItem extends SocialGroupView {
   } | null;
 }
 
-export interface AdminSocialGroupInviteView extends Omit<SocialGroupInviteView, 'token'> {}
+export type AdminSocialGroupInviteView = Omit<SocialGroupInviteView, 'token'>;
 
 export interface AdminSocialGroupDetail {
   group: SocialGroupView;
