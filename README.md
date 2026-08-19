@@ -29,6 +29,19 @@ run-project.bat       # Windows cmd / PowerShell
 ```
 Use database name **`uaetrail`** (same as production for now).
 
+### Seed behavior (launcher + seed script)
+
+Launchers and `npm run seed` share the same rules:
+
+- **Production** (`NODE_ENV=production`) never seeds data.
+- **Existing seed marker data** (demo admin, seed event, or seed location) is preserved unless you explicitly opt in to reseed.
+- To seed on first run or intentionally reseed in dev/test, set one of:
+  - `SEED_DATA=true`
+  - `FORCE_SEED=1`
+  - `RUN_PROJECT_FORCE_SEED=1`
+
+Without one of those flags, restarts skip seeding so existing records are not overwritten.
+
 Frontend runs on `http://localhost:5175`.
 API is available through the frontend proxy at `http://localhost:5175/api/v1`.
 
@@ -86,7 +99,7 @@ npm run cap:android
 
 ## Seed Accounts (shared Atlas `uaetrail` DB)
 
-After `npm run seed`, the team can log in with:
+After seeding with `SEED_DATA=true` (or `FORCE_SEED=1`), the team can log in with:
 - Admin: `admin@uaetrails.app` / `Admin@12345`
 - Organizer: `organizer@uaetrails.app` / `Organizer@12345`
 - Guide: `guide@uaetrails.app` / `Guide@12345`

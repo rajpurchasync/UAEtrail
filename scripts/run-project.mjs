@@ -8,6 +8,16 @@ const rootDir = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const isTruthyEnv = (value) => {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes';
+};
+
+const isSeedDataRequested = (env) =>
+  isTruthyEnv(env.SEED_DATA) ||
+  isTruthyEnv(env.RUN_PROJECT_FORCE_SEED) ||
+  isTruthyEnv(env.FORCE_SEED);
+
 const resolveCommand = (command) => {
   if (process.platform === 'win32' && command === 'npm') {
     return 'npm.cmd';
@@ -123,8 +133,10 @@ const startDockerStack = async (env) => {
 
   if (isProduction) {
     console.log('[5/5] Skipping API data seeding (Production environment detected)...');
-  } else if (env.RUN_ENV === 'test' && env.SEED_DATA !== 'true') {
-    console.log('[5/5] Skipping API data seeding for test env (Set SEED_DATA=true in .env to run)...');
+  } else if (!isSeedDataRequested(env)) {
+    console.log(
+      '[5/5] Skipping API data seeding (set SEED_DATA=true, FORCE_SEED=1, or RUN_PROJECT_FORCE_SEED=1 to seed)...'
+    );
   } else {
     console.log('[5/5] Seeding API data (with retries)...');
 

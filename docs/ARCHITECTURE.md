@@ -80,7 +80,7 @@ Performance carry-forward:
 ## Deployment notes
 
 - Ensure `MONGODB_URI` is set and MongoDB is reachable before API start
-- Run `npm run seed` on first deploy (or set `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` in production)
+- Demo seed only when `SEED_DATA=true` (or `FORCE_SEED=1` / `RUN_PROJECT_FORCE_SEED=1`); never in production
 - Optional env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`
 - Frontend build: `npm run build` → serve via nginx (`nginx/default.conf`)
 

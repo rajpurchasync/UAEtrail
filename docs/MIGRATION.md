@@ -32,6 +32,11 @@ Copy it to `.env` and fill in production values before starting Docker.
 2. Copy and configure env: `cp .env.example .env`
 3. `run-project.bat` on Windows, `./run-project.sh` on Linux/RHEL, or `./run-project-mac.sh` on macOS
 
+Launcher seed behavior:
+- Skips seeding unless `SEED_DATA=true` (or `FORCE_SEED=1` / `RUN_PROJECT_FORCE_SEED=1`).
+- Never seeds in production.
+- When marker data already exists, seed is skipped unless one of the flags above is set.
+
 ### Query timing (development)
 
 Set `QUERY_TIMING=1` to log store queries slower than 25ms to stdout.
@@ -50,23 +55,23 @@ Migration/infrastructure invariants from this workstream:
 
 1. `cp .env.production.example .env` — fill in secrets, including `RUN_ENV=production` and `MONGODB_URI_PROD`
 2. `./run-project.sh`
-3. Seed initial data (admin user, sample locations, etc.):
-   ```bash
-   docker compose exec -T api npm --workspace @uaetrail/api run seed
-   ```
-
-> In production, set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env` before seeding.
-> The seed script skips demo data when `NODE_ENV=production`.
+3. Do **not** run demo seed in production (`NODE_ENV=production` blocks it). Provision the first admin through your controlled onboarding process.
 
 ## First Admin Bootstrap
 
-In development, seed creates:
+In development/test, seed with explicit opt-in:
+
+```bash
+SEED_DATA=true npm run seed
+```
+
+This creates:
 - Email: `admin@uaetrails.app`
 - Password: `Admin@12345`
 
 **Change this password immediately** after first login.
 
-In production, only the admin account from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` is created.
+In production, demo seed is disabled. Create admin accounts through your operational process.
 
 ## Public Pages
 

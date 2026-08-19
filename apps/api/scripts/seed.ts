@@ -495,8 +495,17 @@ const SEED_MARKER_LOCATION_ID = 'jebel-jais-summit-trail';
 
 const isProductionEnv = (): boolean => process.env.NODE_ENV === 'production';
 
-const isSeedDataEnabled = (): boolean =>
-  String(process.env.SEED_DATA ?? '').trim().toLowerCase() === 'true';
+const isSeedDataEnabled = (): boolean => {
+  const values = [
+    process.env.SEED_DATA,
+    process.env.RUN_PROJECT_FORCE_SEED,
+    process.env.FORCE_SEED
+  ];
+  return values.some((value) => {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    return normalized === 'true' || normalized === '1' || normalized === 'yes';
+  });
+};
 
 const hasExistingSeedData = async (): Promise<boolean> => {
   const existingAdmin = await findAuthUserByEmail(SEED_MARKER_EMAIL);

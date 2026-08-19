@@ -13,7 +13,8 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 ## Docker deploy
 
 - [ ] `./run-project.sh`
-- [ ] `docker compose exec api npm --workspace @uaetrail/api run seed` (with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` in production)
+- [ ] Do **not** run demo seed in production
+- [ ] First-time dev/staging only (if needed): `SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed`
 - [ ] `curl https://uaetrail.ae/health` returns OK
 
 ## HTTPS

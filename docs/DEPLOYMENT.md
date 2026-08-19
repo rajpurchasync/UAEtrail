@@ -100,7 +100,7 @@ Production startup resolves MongoDB automatically from `RUN_ENV`:
 ./run-project.sh
 ```
 
-This validates env selection, builds both images, starts the stack, and runs the seed step with retries. On Windows workstations, use `run-project.bat` instead. On macOS, use `./run-project-mac.sh`.
+This validates env selection, builds both images, and starts the stack. Demo seeding runs only when `SEED_DATA=true` (or `FORCE_SEED=1` / `RUN_PROJECT_FORCE_SEED=1`) and never in production. On Windows workstations, use `run-project.bat` instead. On macOS, use `./run-project-mac.sh`.
 
 Health checks ensure services start in the correct order:
 - `minio` must be ready before `api` starts
@@ -110,17 +110,21 @@ Health checks ensure services start in the correct order:
 
 ## 3 — Seed Initial Data
 
+Demo seeding is **disabled by default** to avoid overwriting existing data on restart.
+
 ```bash
-# Seed admin user and (in non-production) demo data
-docker compose exec -T api npm --workspace @uaetrail/api run seed
+# First-time dev/test seed (or intentional reseed)
+SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed
 ```
+
+Aliases: `FORCE_SEED=1` or `RUN_PROJECT_FORCE_SEED=1`.
 
 > **First admin credentials** (dev seed): `admin@uaetrails.app` / `Admin@12345`
 > **Change this password immediately** after first login.
 
-In production, set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env` before running seed. Demo data is skipped when `NODE_ENV=production`.
+**Production:** the seed script never runs demo data when `NODE_ENV=production`. Create admin users through your normal signup/admin provisioning flow instead.
 
-> Do **not** run seed with default passwords in production unless you override them via `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`.
+> Running seed without `SEED_DATA=true` skips when marker data already exists. With `SEED_DATA=true`, existing demo records may be updated/overwritten.
 
 ---
 
