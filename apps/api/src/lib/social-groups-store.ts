@@ -48,12 +48,32 @@ export type GroupInviteRecord = {
   updatedAt: Date;
 };
 
+export const GROUP_WALL_REACTION_KINDS = [
+  'like',
+  'dislike',
+  'happy',
+  'heart',
+  'laugh',
+  'mountain',
+  'camping',
+  'car'
+] as const;
+
+export type GroupWallReactionKind = (typeof GROUP_WALL_REACTION_KINDS)[number];
+
+export type GroupWallReactionSummary = {
+  kind: GroupWallReactionKind;
+  count: number;
+  reactedByMe: boolean;
+};
+
 export type GroupWallMessageRecord = {
   id: string;
   groupId: string;
   authorUserId: string;
   body: string;
   createdAt: Date;
+  reactions?: GroupWallReactionSummary[];
 };
 
 type MongoGroup = {
@@ -104,6 +124,15 @@ type MongoGroupWallMessage = {
   createdAt: Date;
 };
 
+type MongoGroupWallReaction = {
+  _id: string;
+  groupId: string;
+  messageId: string;
+  userId: string;
+  kind: GroupWallReactionKind;
+  createdAt: Date;
+};
+
 const groupsCollection = (): Collection<MongoGroup> =>
   getMongoClient()!.db().collection<MongoGroup>('social_groups');
 
@@ -115,6 +144,9 @@ const invitesCollection = (): Collection<MongoGroupInvite> =>
 
 const wallCollection = (): Collection<MongoGroupWallMessage> =>
   getMongoClient()!.db().collection<MongoGroupWallMessage>('social_group_wall');
+
+const wallReactionsCollection = (): Collection<MongoGroupWallReaction> =>
+  getMongoClient()!.db().collection<MongoGroupWallReaction>('social_group_wall_reactions');
 
 const mapGroup = (row: MongoGroup): GroupRecord => ({
   id: row._id,
@@ -258,6 +290,27 @@ export const getGroupMembership = async (
   return row ? mapMember(row) : null;
 };
 
+/** True when both adults currently share at least one social group. */
+export const usersShareActiveGroup = async (userA: string, userB: string): Promise<boolean> => {
+  if (!userA || !userB) return false;
+  if (userA === userB) return true;
+
+  const groupIds = await membersCollection().distinct('groupId', {
+    userId: userA,
+    memberType: 'adult',
+    isActive: { $ne: false }
+  });
+  if (groupIds.length === 0) return false;
+
+  const shared = await membersCollection().findOne({
+    userId: userB,
+    groupId: { $in: groupIds },
+    memberType: 'adult',
+    isActive: { $ne: false }
+  });
+  return Boolean(shared);
+};
+
 export const createGroupInvite = async (input: {
   groupId: string;
   invitedByUserId: string;
@@ -335,6 +388,8 @@ const upsertAdultMembership = async (input: {
   if (existing) {
     if (existing.role !== input.role) {
       await membersCollection().updateOne({ _id: existing._id }, { $set: { role: input.role } });
+      const updated = await membersCollection().findOne({ _id: existing._id });
+      return mapMember(updated ?? existing);
     }
     return mapMember(existing);
   }
@@ -419,10 +474,59 @@ export const acceptPendingGroupInvitesForEmail = async (input: {
   return acceptedCount;
 };
 
+export const findGroupMemberById = async (
+  groupId: string,
+  membershipId: string
+): Promise<GroupMemberRecord | null> => {
+  const row = await membersCollection().findOne({ _id: membershipId, groupId });
+  return row ? mapMember(row) : null;
+};
+
 export const setGroupMembershipActiveState = async (membershipId: string, isActive: boolean) => {
   const updated = await membersCollection().findOneAndUpdate(
     { _id: membershipId },
     { $set: { isActive } },
+    { returnDocument: 'after' }
+  );
+
+  if (!updated) {
+    throw new Error('Group membership not found.');
+  }
+
+  return mapMember(updated);
+};
+
+export const updateGroupMemberRole = async (input: {
+  groupId: string;
+  membershipId: string;
+  role: GroupRole;
+  ownerUserId: string;
+}): Promise<GroupMemberRecord> => {
+  const group = await findGroupById(input.groupId);
+  if (!group) {
+    throw new Error('Group not found.');
+  }
+  if (group.adminUserId !== input.ownerUserId) {
+    throw new Error('Only the group owner can change member roles.');
+  }
+
+  const member = await findGroupMemberById(input.groupId, input.membershipId);
+  if (!member) {
+    throw new Error('Group membership not found.');
+  }
+  if (member.memberType !== 'adult') {
+    throw new Error('Only adult members can have their role changed.');
+  }
+  if (member.userId === input.ownerUserId) {
+    throw new Error('You cannot change your own role.');
+  }
+  if (member.userId === group.adminUserId && input.role !== 'admin') {
+    throw new Error('The group owner must remain an admin.');
+  }
+
+  const updated = await membersCollection().findOneAndUpdate(
+    { _id: input.membershipId, groupId: input.groupId },
+    { $set: { role: input.role } },
     { returnDocument: 'after' }
   );
 
@@ -460,11 +564,36 @@ export const createKidGroupMember = async (input: {
   return mapMember(doc);
 };
 
-export const listGroupWallMessages = async (groupId: string, limit = 100) => {
+export const listGroupWallMessages = async (groupId: string, limit = 100, viewerUserId?: string) => {
   const rows = await wallCollection().find({ groupId }).sort({ createdAt: -1 }).limit(limit).toArray();
   const messages = rows.map(mapWall).reverse();
   const users = await findAuthUsersByIds(messages.map((m) => m.authorUserId));
   const userMap = new Map(users.map((u) => [u._id, u]));
+
+  const messageIds = messages.map((message) => message.id);
+  const reactionRows =
+    messageIds.length === 0
+      ? []
+      : await wallReactionsCollection().find({ groupId, messageId: { $in: messageIds } }).toArray();
+
+  const reactionsByMessage = new Map<string, GroupWallReactionSummary[]>();
+  for (const reaction of reactionRows) {
+    const existing = reactionsByMessage.get(reaction.messageId) ?? [];
+    const summary = existing.find((item) => item.kind === reaction.kind);
+    if (summary) {
+      summary.count += 1;
+      if (viewerUserId && reaction.userId === viewerUserId) {
+        summary.reactedByMe = true;
+      }
+    } else {
+      existing.push({
+        kind: reaction.kind,
+        count: 1,
+        reactedByMe: Boolean(viewerUserId && reaction.userId === viewerUserId)
+      });
+    }
+    reactionsByMessage.set(reaction.messageId, existing);
+  }
 
   return messages.map((message) => {
     const user = userMap.get(message.authorUserId);
@@ -474,7 +603,8 @@ export const listGroupWallMessages = async (groupId: string, limit = 100) => {
         id: message.authorUserId,
         displayName: user?.profile.displayName ?? user?.email.split('@')[0] ?? 'Member',
         avatarUrl: user?.profile.avatarUrl ?? null
-      }
+      },
+      reactions: reactionsByMessage.get(message.id) ?? []
     };
   });
 };
@@ -492,7 +622,58 @@ export const createGroupWallMessage = async (input: {
     createdAt: new Date()
   };
   await wallCollection().insertOne(doc);
-  return mapWall(doc);
+  return { ...mapWall(doc), reactions: [] };
+};
+
+export const toggleGroupWallReaction = async (input: {
+  groupId: string;
+  messageId: string;
+  userId: string;
+  kind: GroupWallReactionKind;
+}): Promise<{ reactions: GroupWallReactionSummary[] }> => {
+  const message = await wallCollection().findOne({ _id: input.messageId, groupId: input.groupId });
+  if (!message) {
+    throw new Error('Message not found.');
+  }
+
+  const existing = await wallReactionsCollection().findOne({
+    messageId: input.messageId,
+    userId: input.userId,
+    kind: input.kind
+  });
+
+  if (existing) {
+    await wallReactionsCollection().deleteOne({ _id: existing._id });
+  } else {
+    await wallReactionsCollection().insertOne({
+      _id: newEntityId(),
+      groupId: input.groupId,
+      messageId: input.messageId,
+      userId: input.userId,
+      kind: input.kind,
+      createdAt: new Date()
+    });
+  }
+
+  const reactionRows = await wallReactionsCollection().find({ messageId: input.messageId }).toArray();
+  const reactions: GroupWallReactionSummary[] = [];
+  for (const reaction of reactionRows) {
+    const summary = reactions.find((item) => item.kind === reaction.kind);
+    if (summary) {
+      summary.count += 1;
+      if (reaction.userId === input.userId) {
+        summary.reactedByMe = true;
+      }
+    } else {
+      reactions.push({
+        kind: reaction.kind,
+        count: 1,
+        reactedByMe: reaction.userId === input.userId
+      });
+    }
+  }
+
+  return { reactions };
 };
 
 export const countSocialGroups = async (): Promise<number> => groupsCollection().countDocuments();
@@ -599,6 +780,7 @@ export const deleteSocialGroup = async (groupId: string): Promise<{ deleted: boo
     membersCollection().deleteMany({ groupId }),
     invitesCollection().deleteMany({ groupId }),
     wallCollection().deleteMany({ groupId }),
+    wallReactionsCollection().deleteMany({ groupId }),
     groupsCollection().deleteOne({ _id: groupId })
   ]);
 

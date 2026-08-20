@@ -141,6 +141,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     ]),
     db.collection('social_group_wall').createIndexes([
       { key: { groupId: 1, createdAt: -1 } }
+    ]),
+    db.collection('social_group_wall_reactions').createIndexes([
+      { key: { messageId: 1, userId: 1, kind: 1 }, unique: true },
+      { key: { groupId: 1, messageId: 1 } }
     ])
   ]);
 };

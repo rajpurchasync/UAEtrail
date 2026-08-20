@@ -6,8 +6,10 @@ import { ACTIVITY_TYPE_LABELS } from '../../config/activityTypes';
 import { tripPriceLabel } from '../../utils/tripPricing';
 import { organizerProfilePath } from '../../utils/organizerLinks';
 import { ShareButton } from './ShareButton';
+import { EnvironmentImage } from './EnvironmentImage';
 import { ParticipantPreview } from './ParticipantPreview';
 import { OrganizerMessageButton } from './OrganizerMessageButton';
+import { SecureAvatar } from './SecureAvatar';
 import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../../utils/hostLabels';
 
 interface TripCardProps {
@@ -59,13 +61,11 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
           onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-2.5 min-w-0 flex-1 group/organizer hover:bg-white/30 -mx-1 px-1 rounded-lg transition-colors"
         >
-          {hostAvatar ? (
-            <img src={hostAvatar} alt={hostName} className="w-8 h-8 rounded-full object-cover ring-2 ring-white" />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold">
-              {hostName.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <SecureAvatar
+            src={hostAvatar}
+            name={hostName}
+            className="w-8 h-8 text-xs ring-2 ring-white shrink-0"
+          />
           <div className="min-w-0 flex-1">
             <p className="text-xs text-neutral-500">Hosted by</p>
             <p className="text-sm font-semibold text-neutral-900 truncate group-hover/organizer:text-emerald-700">
@@ -79,13 +79,11 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
         </Link>
       ) : (
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          {hostAvatar ? (
-            <img src={hostAvatar} alt={hostName} className="w-8 h-8 rounded-full object-cover ring-2 ring-white" />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold">
-              {hostName.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <SecureAvatar
+            src={hostAvatar}
+            name={hostName}
+            className="w-8 h-8 text-xs ring-2 ring-white shrink-0"
+          />
           <div className="min-w-0">
             <p className="text-xs text-neutral-500">Hosted by</p>
             <p className="text-sm font-semibold text-neutral-900 truncate">{hostName}</p>
@@ -106,7 +104,7 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
 
   const imageBlock = (
     <div className="relative aspect-[16/9] overflow-hidden">
-      <img src={locationImage} alt={trip.locationName} className="w-full h-full object-cover" />
+      <EnvironmentImage src={locationImage} alt={trip.locationName} className="w-full h-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
       <div className="absolute top-3 left-3 glass rounded-xl px-2.5 py-1.5 text-center shadow-sm min-w-[48px]">
         <p className="text-xs font-bold text-emerald-600 leading-none">{monthShort}</p>

@@ -4,6 +4,8 @@ import { TenantListDTO } from '@uaetrail/shared-types';
 import { api, OrganizerApplication, TenantDetail } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
+import { SecureAvatar } from '../components/ui/SecureAvatar';
+import { formatPhoneDisplay } from '../utils/phone';
 
 type Tab = 'applications' | 'tenants';
 type TenantFilter = 'all' | 'active' | 'suspended';
@@ -91,6 +93,19 @@ export const AdminOrganizers = () => {
 
   const pendingCount = applications.filter((a) => a.status === 'pending').length;
 
+  const formatApplicantPhone = (app: OrganizerApplication): string | null => {
+    const meta = app.metadata;
+    if (!meta) return null;
+    if (meta.phoneE164) return meta.phoneE164;
+    if (meta.phoneCountryCode && meta.phone) {
+      return formatPhoneDisplay(meta.phoneCountryCode, meta.phone);
+    }
+    return meta.phone ?? null;
+  };
+
+  const hostDisplayName = (app: OrganizerApplication): string =>
+    app.metadata?.hostDisplayName?.trim() || app.applicantName;
+
   const metaField = (label: string, value?: string | null) => {
     if (!value?.trim()) return null;
     return (
@@ -140,7 +155,7 @@ export const AdminOrganizers = () => {
                 {applications.map((app) => (
                   <tr key={app.id} className="border-t hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900">{app.applicantName}</p>
+                      <p className="font-medium text-gray-900">{hostDisplayName(app)}</p>
                       <p className="text-xs text-gray-500">{app.applicantEmail}</p>
                     </td>
                     <td className="px-4 py-3 font-medium">{app.requestedName}</td>
@@ -300,15 +315,28 @@ export const AdminOrganizers = () => {
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4 flex gap-4">
-                {applicationDetail.metadata?.profilePhoto && (
-                  <img src={applicationDetail.metadata.profilePhoto} alt="" className="w-16 h-16 rounded-full object-cover border" />
+                {applicationDetail.metadata?.profilePhoto ? (
+                  <SecureAvatar
+                    src={applicationDetail.metadata.profilePhoto}
+                    name={hostDisplayName(applicationDetail)}
+                    className="w-16 h-16 text-lg border shrink-0"
+                  />
+                ) : (
+                  <SecureAvatar
+                    name={hostDisplayName(applicationDetail)}
+                    className="w-16 h-16 text-lg border shrink-0"
+                  />
                 )}
-                <div>
-                  <p className="font-medium text-gray-900">{applicationDetail.applicantName}</p>
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-900">{hostDisplayName(applicationDetail)}</p>
                   <p className="text-sm text-gray-500">{applicationDetail.applicantEmail}</p>
-                  {applicationDetail.metadata?.phone && <p className="text-sm text-gray-600 mt-1">{applicationDetail.metadata.phone}</p>}
+                  {formatApplicantPhone(applicationDetail) && (
+                    <p className="text-sm text-gray-600 mt-1">{formatApplicantPhone(applicationDetail)}</p>
+                  )}
                 </div>
               </div>
+
+              {metaField('Display name', applicationDetail.metadata?.hostDisplayName)}
 
               {metaField('Bio', applicationDetail.metadata?.bio)}
               {metaField('Experience', applicationDetail.metadata?.experience)}
@@ -390,9 +418,10 @@ export const AdminOrganizers = () => {
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-xs text-gray-500 uppercase font-medium mb-2">Owner</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-700">
-                    {(tenantDetail.owner.displayName || tenantDetail.owner.email).charAt(0).toUpperCase()}
-                  </div>
+                  <SecureAvatar
+                    name={tenantDetail.owner.displayName || tenantDetail.owner.email}
+                    className="w-10 h-10 text-sm"
+                  />
                   <div>
                     <p className="font-medium text-gray-900">{tenantDetail.owner.displayName || 'No name'}</p>
                     <p className="text-xs text-gray-500">{tenantDetail.owner.email}</p>

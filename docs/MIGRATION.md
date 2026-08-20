@@ -23,7 +23,9 @@ Copy it to `.env` and fill in production values before starting Docker.
 ### Optional media variables
 - `S3_ENDPOINT` (defaults to `http://minio:9000` in Docker)
 - `S3_REGION` (defaults to `us-east-1`)
-- `S3_BUCKET` (defaults to `uaetrail-assets`)
+- `S3_BUCKET` (legacy default `uaetrail-assets`)
+- `S3_PUBLIC_BUCKET` (defaults to `uaetrail-public`)
+- `S3_PRIVATE_BUCKET` (defaults to `uaetrail-private`; used for `avatar`, `waiver`, `private_photo`)
 - `S3_FORCE_PATH_STYLE` (defaults to `true` for MinIO)
 
 ## Local Development — Bootstrap Order

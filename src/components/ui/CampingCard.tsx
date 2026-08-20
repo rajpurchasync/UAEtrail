@@ -3,6 +3,7 @@ import { MapPin, Car } from 'lucide-react';
 import { CampingSpot } from '../../types';
 import { FavoriteButton } from './FavoriteButton';
 import { ShareButton } from './ShareButton';
+import { EnvironmentImage } from './EnvironmentImage';
 
 interface CampingCardProps {
   camp: CampingSpot;
@@ -12,7 +13,7 @@ export const CampingCard = ({ camp }: CampingCardProps) => {
   const campPath = `/camp/${camp.id}`;
   const imageBlock = (
     <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
-      <img src={camp.images[0]} alt={camp.name} className="w-full h-full object-cover" />
+      <EnvironmentImage src={camp.images[0]} alt={camp.name} className="w-full h-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
       <FavoriteButton locationId={camp.id} className="absolute top-3 right-3" />
       {camp.accessibility === 'car-accessible' && (

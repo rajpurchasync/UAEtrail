@@ -77,7 +77,56 @@ export const createApp = async (): Promise<Express> => {
       maxAge: 86400
     })
   );
-  app.use(helmet());
+  app.use(
+    helmet(
+      env.NODE_ENV === 'production'
+        ? undefined
+        : {
+            contentSecurityPolicy: {
+              directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com'],
+                styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+                fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+                imgSrc: [
+                  "'self'",
+                  'data:',
+                  'blob:',
+                  'https:',
+                  'http://localhost:9000',
+                  'http://127.0.0.1:9000',
+                  'http://*:9000'
+                ],
+                connectSrc: [
+                  "'self'",
+                  'https://accounts.google.com',
+                  'https://*.stripe.com',
+                  'wss:',
+                  'ws:',
+                  'http://localhost:5175',
+                  'http://*:5175',
+                  'http://localhost:9000',
+                  'http://127.0.0.1:9000',
+                  'http://*:9000'
+                ],
+                frameSrc: [
+                  'https://accounts.google.com',
+                  'https://js.stripe.com',
+                  'https://hooks.stripe.com',
+                  'https://www.openstreetmap.org',
+                  'https://openstreetmap.org',
+                  'http://localhost:3000',
+                  'http://*:3000',
+                  'http://localhost:9090',
+                  'http://*:9090'
+                ],
+                workerSrc: ["'self'"],
+                manifestSrc: ["'self'"]
+              }
+            }
+          }
+    )
+  );
   app.use(globalLimiter);
   app.use(requestTimeout());
   app.use(traceIdMiddleware);

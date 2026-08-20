@@ -2,6 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http://localhost:9000 http://127.0.0.1:9000 http://*:9000; connect-src 'self' https://accounts.google.com https://*.stripe.com wss: ws: http://localhost:5175 http://*:5175 http://localhost:9000 http://127.0.0.1:9000 http://*:9000; frame-src https://accounts.google.com https://js.stripe.com https://hooks.stripe.com https://www.openstreetmap.org https://openstreetmap.org http://localhost:3000 http://*:3000 http://localhost:9090 http://*:9090; worker-src 'self'; manifest-src 'self';"
+    />
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />

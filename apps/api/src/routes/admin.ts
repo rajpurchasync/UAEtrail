@@ -70,6 +70,7 @@ import {
   markOrganizerApplicationRejected
 } from '../lib/organizer-applications-store.js';
 import { dispatchNotificationDefault } from '../services/notifications.js';
+import { notifyUserAdminAction } from '../services/admin-notifications.js';
 import { awardPointsDefault } from '../services/rewards.js';
 import {
   countSocialGroups,
@@ -220,6 +221,8 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
     const activating =
       nextStatus === LocationStatus.ACTIVE &&
       (existing.status === LocationStatus.DRAFT || existing.status === LocationStatus.INACTIVE);
+    const deactivating =
+      nextStatus === LocationStatus.INACTIVE && existing.status === LocationStatus.ACTIVE;
 
     if (activating) {
       const activityType = body.activityType
@@ -306,6 +309,15 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
       }).catch(() => undefined);
     }
 
+    if (deactivating && updated.submittedById) {
+      await notifyUserAdminAction({
+        userId: updated.submittedById,
+        title: 'Location not approved',
+        body: `"${updated.name}" was not approved for listing. Contact support if you have questions.`,
+        meta: { locationId: updated.id, kind: 'location_rejected', path: '/discovery' }
+      });
+    }
+
     res.json({ data: toLocationDto(updated, { admin: true }) });
   } catch (error) {
     next(error);
@@ -369,11 +381,35 @@ adminRouter.patch(
           reviewerId: req.auth!.userId,
           reviewerNote
         });
+        await notifyUserAdminAction({
+          userId: application.applicantId,
+          title: 'Host application approved',
+          body: reviewerNote
+            ? `You can now post events. Note from reviewer: ${reviewerNote}`
+            : 'Your host profile was approved. You can now post events and welcome participants.',
+          meta: {
+            kind: 'organizer_application_approved',
+            applicationId: application.id,
+            path: '/organizer/overview'
+          }
+        });
       } else {
         await markOrganizerApplicationRejected({
           id: application.id,
           reviewerId: req.auth!.userId,
           reviewerNote
+        });
+        await notifyUserAdminAction({
+          userId: application.applicantId,
+          title: 'Host application not approved',
+          body: reviewerNote
+            ? reviewerNote
+            : 'Your host application was not approved at this time. You can update your profile and apply again.',
+          meta: {
+            kind: 'organizer_application_rejected',
+            applicationId: application.id,
+            path: '/become-host'
+          }
         });
       }
 
@@ -812,6 +848,19 @@ adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: u
       entityId: id
     });
 
+    await notifyUserAdminAction({
+      userId: id,
+      title: status === 'active' ? 'Account reactivated' : 'Account suspended',
+      body:
+        status === 'active'
+          ? 'Your account access has been restored.'
+          : 'Your account has been suspended by an administrator. Contact support if you believe this is a mistake.',
+      meta: {
+        kind: status === 'active' ? 'user_reactivated' : 'user_suspended',
+        path: '/profile'
+      }
+    });
+
     res.json({ message: `User ${status === 'active' ? 'activated' : 'suspended'}.` });
   } catch (error) {
     next(error);
@@ -915,6 +964,20 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
       action: `tenant.${status === 'active' ? 'activate' : 'suspend'}`,
       entityType: 'tenant',
       entityId: id
+    });
+
+    await notifyUserAdminAction({
+      userId: tenant.ownerId,
+      title: status === 'active' ? 'Host account reopened' : 'Host account suspended',
+      body:
+        status === 'active'
+          ? `Your host profile "${tenant.name}" is active again. You can create and manage events.`
+          : `Your host profile "${tenant.name}" has been suspended. Contact support for details.`,
+      meta: {
+        kind: status === 'active' ? 'host_reopened' : 'host_suspended',
+        tenantId: id,
+        path: status === 'active' ? '/organizer/overview' : '/become-host'
+      }
     });
 
     res.json({ message: `Tenant ${status === 'active' ? 'activated' : 'suspended'}.` });

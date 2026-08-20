@@ -27,7 +27,8 @@ import {
   OrganizerMessageButton,
   TripCheckInPanel,
   WithdrawRequestModal,
-  JoinRequestModal
+  JoinRequestModal,
+  SecureAvatar
 } from '../components/ui';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
@@ -536,17 +537,11 @@ export const TripDetail = () => {
               <div className="flex items-center gap-2">
                 {organizerPath ? (
                   <Link to={organizerPath} className="flex items-center gap-3 group flex-1 min-w-0">
-                    {tripHostAvatar(trip) ? (
-                      <img
-                        src={tripHostAvatar(trip)}
-                        alt={tripHostName(trip)}
-                        className="w-11 h-11 rounded-full object-cover ring-2 ring-emerald-50"
-                      />
-                    ) : (
-                      <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
-                        {tripHostName(trip).charAt(0)}
-                      </div>
-                    )}
+                    <SecureAvatar
+                      src={tripHostAvatar(trip)}
+                      name={tripHostName(trip)}
+                      className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-gray-900 group-hover:text-emerald-700 truncate">
                         {tripHostName(trip)}
@@ -560,17 +555,11 @@ export const TripDetail = () => {
                   </Link>
                 ) : (
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {tripHostAvatar(trip) ? (
-                      <img
-                        src={tripHostAvatar(trip)}
-                        alt={tripHostName(trip)}
-                        className="w-11 h-11 rounded-full object-cover ring-2 ring-emerald-50"
-                      />
-                    ) : (
-                      <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
-                        {tripHostName(trip).charAt(0)}
-                      </div>
-                    )}
+                    <SecureAvatar
+                      src={tripHostAvatar(trip)}
+                      name={tripHostName(trip)}
+                      className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-gray-900 truncate">{tripHostName(trip)}</p>
                       {showTenantBrand(trip) && trip.tenantName && (

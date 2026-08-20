@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/services';
 import { setStoredSession } from '../../api/client';
 import { accountRouteByRole } from '../../utils/authRouting';
-import { getInitials } from '../../utils/userDisplay';
+import { SecureAvatar } from '../ui/SecureAvatar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 
 type MobileMenuTone = 'default' | 'light';
@@ -176,13 +176,11 @@ const MobileMenuPanel = () => {
           </div>
           <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe space-y-1" aria-label={`${roleLabel} navigation`}>
             <Link to={profilePath} onClick={closeMenu} className={navItemClass(pathname.startsWith(profilePath))}>
-              {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
-              ) : (
-                <span className="w-9 h-9 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center">
-                  {getInitials(user?.displayName, user?.email)}
-                </span>
-              )}
+              <SecureAvatar
+                src={user?.avatarUrl}
+                name={user?.displayName || user?.email || 'Account'}
+                className="w-9 h-9 text-sm"
+              />
               <span className="font-semibold">{roleLabel} Dashboard</span>
             </Link>
             <button type="button" onClick={() => void switchRole('visitor')} className={`w-full ${navItemClass(false)}`}>
@@ -240,13 +238,11 @@ const MobileMenuPanel = () => {
               onClick={closeMenu}
               className={navItemClass(pathname.startsWith('/organizer/profile'))}
             >
-              {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
-              ) : (
-                <span className="w-9 h-9 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center">
-                  {getInitials(user?.displayName, user?.email)}
-                </span>
-              )}
+              <SecureAvatar
+                src={user?.avatarUrl}
+                name={user?.displayName || user?.email || 'Account'}
+                className="w-9 h-9 text-sm"
+              />
               <span className="font-semibold">Organizer Profile</span>
             </Link>
             <button
@@ -327,13 +323,11 @@ const MobileMenuPanel = () => {
                 aria-current={active ? 'page' : undefined}
               >
                 {showAvatar ? (
-                  user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
-                  ) : (
-                    <span className="w-9 h-9 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center">
-                      {getInitials(user.displayName, user.email)}
-                    </span>
-                  )
+                  <SecureAvatar
+                    src={user.avatarUrl}
+                    name={user.displayName || user.email || 'Account'}
+                    className="w-9 h-9 text-sm"
+                  />
                 ) : (
                   <span
                     className={`w-9 h-9 rounded-xl flex items-center justify-center ${

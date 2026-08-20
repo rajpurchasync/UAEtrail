@@ -17,6 +17,8 @@ const envSchema = z.object({
   S3_ENDPOINT: z.string().optional(),
   S3_REGION: z.string().default('us-east-1'),
   S3_BUCKET: z.string().default('uaetrail-assets'),
+  S3_PUBLIC_BUCKET: z.string().default('uaetrail-public'),
+  S3_PRIVATE_BUCKET: z.string().default('uaetrail-private'),
   S3_ACCESS_KEY_ID: z.string().optional(),
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   S3_FORCE_PATH_STYLE: z.coerce.boolean().default(true),

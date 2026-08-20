@@ -1,5 +1,6 @@
 import { api } from '../api/services';
 import { getStoredSession } from '../api/client';
+import { formatEnvironmentUrl } from '../utils/formatEnvironmentUrl';
 
 interface UploadMediaBlobInput {
   blob: Blob;
@@ -44,7 +45,7 @@ export const uploadMediaBlob = async ({
     kind,
   });
 
-  const uploadUrl = presign.data.uploadUrl;
+  const uploadUrl = formatEnvironmentUrl(presign.data.uploadUrl);
   const headers: Record<string, string> = { 'Content-Type': mimeType };
   if (uploadUrl.includes('/media/upload-local/')) {
     const session = getStoredSession();
@@ -70,5 +71,5 @@ export const uploadMediaBlob = async ({
     kind,
   });
 
-  return committed.data.url;
+  return formatEnvironmentUrl(committed.data.url);
 };

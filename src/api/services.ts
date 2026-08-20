@@ -47,7 +47,9 @@ export interface OrganizerApplication {
   metadata?: {
     hostDisplayName?: string;
     bio?: string;
+    phoneCountryCode?: string;
     phone?: string;
+    phoneE164?: string;
     nationality?: string;
     residence?: string;
     experience?: string;
@@ -120,6 +122,7 @@ export interface UserProfile {
   phone?: string;
   bio?: string;
   avatarUrl?: string;
+  profileVisibility?: 'public' | 'group_members' | 'private';
 }
 
 export interface SocialGroupView {
@@ -168,6 +171,12 @@ export interface SocialGroupInviteView {
   updatedAt: string;
 }
 
+export interface SocialGroupWallReactionView {
+  kind: 'like' | 'dislike' | 'happy' | 'heart' | 'laugh' | 'mountain' | 'camping' | 'car';
+  count: number;
+  reactedByMe: boolean;
+}
+
 export interface SocialGroupWallMessageView {
   id: string;
   groupId: string;
@@ -179,6 +188,7 @@ export interface SocialGroupWallMessageView {
     displayName: string;
     avatarUrl?: string | null;
   };
+  reactions?: SocialGroupWallReactionView[];
 }
 
 export interface AdminSocialGroupListItem extends SocialGroupView {
@@ -475,6 +485,12 @@ export const api = {
       auth: true,
       body: JSON.stringify({ isActive })
     }),
+  updateMeGroupMemberRole: (groupId: string, membershipId: string, role: 'buddy' | 'admin') =>
+    apiRequest<{ data: SocialGroupMemberView }>(`/me/groups/${groupId}/members/${membershipId}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ role })
+    }),
   removeMeGroupMember: (groupId: string, membershipId: string) =>
     apiRequest<{ data: { removed: boolean } }>(`/me/groups/${groupId}/members/${membershipId}`, {
       method: 'DELETE',
@@ -488,6 +504,19 @@ export const api = {
       auth: true,
       body: JSON.stringify({ body })
     }),
+  toggleMeGroupWallReaction: (
+    groupId: string,
+    messageId: string,
+    kind: SocialGroupWallReactionView['kind']
+  ) =>
+    apiRequest<{ data: { reactions: SocialGroupWallReactionView[] } }>(
+      `/me/groups/${groupId}/wall/${messageId}/reactions`,
+      {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify({ kind })
+      }
+    ),
   getVapidPublicKey: () => apiRequest<{ data: { publicKey: string | null } }>('/push/vapid-public-key'),
   savePushSubscription: (payload: { endpoint: string; keys: { p256dh: string; auth: string } }) =>
     apiRequest('/me/push-subscriptions', {
@@ -940,6 +969,12 @@ export const api = {
       auth: true,
       body: JSON.stringify(payload)
     }),
+
+  resolveMedia: (key: string) =>
+    apiRequest<{ data: { url: string; expiresAt: string; key: string } }>(
+      `/media/resolve?key=${encodeURIComponent(key)}`,
+      { auth: true }
+    ),
 
   // ─── Organizer – Event Edit & Cancel ────────────────────────────────────
 

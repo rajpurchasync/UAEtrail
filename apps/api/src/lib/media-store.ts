@@ -58,6 +58,11 @@ export const createMediaAssetRecord = async (input: {
   return mapMediaAsset(doc);
 };
 
+export const findMediaAssetByKey = async (key: string): Promise<MediaAsset | null> => {
+  const doc = await mediaAssetsCollection().findOne({ key });
+  return doc ? mapMediaAsset(doc) : null;
+};
+
 export const createLocalMediaAssetRecord = async (input: {
   key: string;
   url: string;

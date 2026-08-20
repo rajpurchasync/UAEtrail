@@ -3,7 +3,7 @@ import { EventDTO, LocationDTO, ParticipantDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 import { OrganizerShell } from '../components/organizer/OrganizerShell';
-import { TenantSwitcher, ImageUpload, ShareButton } from '../components/ui';
+import { TenantSwitcher, ImageUpload, ShareButton, SecureAvatar } from '../components/ui';
 
 const emptyForm = {
   locationId: '',
@@ -312,13 +312,11 @@ export const OrganizerEvents = () => {
                       <tr key={p.id} className={`border-t ${p.checkedInAt ? 'bg-green-50' : ''}`}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            {p.avatarUrl ? (
-                              <img src={p.avatarUrl} alt="" className="w-8 h-8 rounded-full" />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
-                                {p.displayName?.charAt(0)?.toUpperCase() ?? '?'}
-                              </div>
-                            )}
+                            <SecureAvatar
+                              src={p.avatarUrl}
+                              name={p.displayName || p.email || 'Participant'}
+                              className="w-8 h-8 text-xs"
+                            />
                             <div>
                               <p className="font-medium text-gray-900">{p.displayName}</p>
                               {p.phone && <p className="text-xs text-gray-500">{p.phone}</p>}

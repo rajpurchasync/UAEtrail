@@ -333,7 +333,7 @@ export const approveOrganizerApplicationAndProvisionTenant = async (input: {
     profile: {
       ...(meta.hostDisplayName ? { displayName: meta.hostDisplayName } : {}),
       ...(meta.bio ? { bio: meta.bio } : {}),
-      ...(meta.phone ? { phone: meta.phone } : {}),
+      ...(meta.phoneE164 || meta.phone ? { phone: meta.phoneE164 || meta.phone } : {}),
       ...(meta.profilePhoto ? { avatarUrl: meta.profilePhoto } : {})
     }
   });

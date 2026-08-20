@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { uploadMediaBlob } from '../../lib/mediaUpload';
+import { formatEnvironmentUrl } from '../../utils/formatEnvironmentUrl';
 import { PhotoEditorDialog, type PhotoShape } from './PhotoEditorDialog';
 
 interface ImageUploadProps {
@@ -109,7 +110,7 @@ export const ImageUpload = ({
           {images.map((url, i) => (
             <div key={i} className="relative group">
               <img
-                src={url}
+                src={formatEnvironmentUrl(url)}
                 alt={`Upload ${i + 1}`}
                 className="w-20 h-16 object-cover rounded border"
                 onError={(e) => {

@@ -19,9 +19,16 @@ import {
   SocialGroupView,
   SocialGroupWallMessageView,
 } from '../api/services';
+import {
+  GROUP_WALL_REACTION_EMOJI,
+  GROUP_WALL_REACTION_KINDS,
+  GROUP_WALL_REACTION_LABEL,
+  GroupWallReactionKind,
+} from '../constants/groupReactions';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { Dialog } from '../components/ui/Dialog';
+import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
 
 type GroupType = 'family' | 'friends';
@@ -71,6 +78,8 @@ export const Groups = () => {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [memberActionId, setMemberActionId] = useState<string | null>(null);
+  const [reactionPickerMessageId, setReactionPickerMessageId] = useState<string | null>(null);
+  const [reactionBusyMessageId, setReactionBusyMessageId] = useState<string | null>(null);
   const [acceptingInvite, setAcceptingInvite] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -203,6 +212,105 @@ export const Groups = () => {
     }
   };
 
+  const changeMemberRole = async (memberId: string, role: 'buddy' | 'admin') => {
+    if (!detail?.group.id) return;
+    setMemberActionId(memberId);
+    setError(null);
+    try {
+      await api.updateMeGroupMemberRole(detail.group.id, memberId, role);
+      await loadDetail(detail.group.id);
+      setSuccess(role === 'admin' ? 'Member promoted to admin.' : 'Admin changed to member.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update member role');
+    } finally {
+      setMemberActionId(null);
+    }
+  };
+
+  const toggleWallReaction = async (messageId: string, kind: GroupWallReactionKind) => {
+    if (!detail?.group.id) return;
+    setReactionBusyMessageId(messageId);
+    setError(null);
+    try {
+      const res = await api.toggleMeGroupWallReaction(detail.group.id, messageId, kind);
+      setWall((current) =>
+        current.map((message) =>
+          message.id === messageId ? { ...message, reactions: res.data.reactions } : message
+        )
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update reaction');
+    } finally {
+      setReactionBusyMessageId(null);
+    }
+  };
+
+  const memberRoleLabel = (member: SocialGroupMemberView) => {
+    if (member.userId === detail?.group.adminUserId) return 'Owner';
+    return member.role === 'admin' ? 'Admin' : 'Member';
+  };
+
+  const renderMessageReactions = (message: SocialGroupWallMessageView) => {
+    const reactions = message.reactions ?? [];
+    const activeKinds = new Set(reactions.map((reaction) => reaction.kind));
+
+    return (
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {reactions.map((reaction) => (
+          <button
+            key={`${message.id}-${reaction.kind}`}
+            type="button"
+            disabled={reactionBusyMessageId === message.id}
+            onClick={() => void toggleWallReaction(message.id, reaction.kind)}
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border transition-colors ${
+              reaction.reactedByMe
+                ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                : 'border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
+            }`}
+            title={GROUP_WALL_REACTION_LABEL[reaction.kind]}
+          >
+            <span>{GROUP_WALL_REACTION_EMOJI[reaction.kind]}</span>
+            <span className="font-medium">{reaction.count}</span>
+          </button>
+        ))}
+        <div className="relative">
+          <button
+            type="button"
+            disabled={reactionBusyMessageId === message.id}
+            onClick={() =>
+              setReactionPickerMessageId((current) => (current === message.id ? null : message.id))
+            }
+            className="inline-flex items-center rounded-full border border-dashed border-neutral-300 px-2 py-0.5 text-xs text-neutral-500 hover:bg-neutral-50"
+            aria-label="Add reaction"
+          >
+            +
+          </button>
+          {reactionPickerMessageId === message.id && (
+            <div className="absolute left-0 bottom-full mb-1 z-10 flex flex-wrap gap-1 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg max-w-[220px]">
+              {GROUP_WALL_REACTION_KINDS.map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  disabled={reactionBusyMessageId === message.id}
+                  onClick={() => {
+                    void toggleWallReaction(message.id, kind);
+                    setReactionPickerMessageId(null);
+                  }}
+                  className={`h-8 w-8 rounded-lg text-base hover:bg-neutral-100 ${
+                    activeKinds.has(kind) ? 'bg-emerald-50' : ''
+                  }`}
+                  title={GROUP_WALL_REACTION_LABEL[kind]}
+                >
+                  {GROUP_WALL_REACTION_EMOJI[kind]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const handleCreateGroup = async () => {
     setSaving(true);
     setError(null);
@@ -279,7 +387,7 @@ export const Groups = () => {
             <h2 className="text-base font-bold text-neutral-900 truncate">{detail.group.name}</h2>
             <p className="text-sm text-neutral-600 mt-0.5">
               {typeLabel[detail.group.type]} · {detail.members.length} member{detail.members.length === 1 ? '' : 's'} ·{' '}
-              <span className="capitalize">{detail.membership.role}</span>
+              {memberRoleLabel(detail.membership)}
             </p>
             {detail.group.slogan && (
               <p className="text-sm text-neutral-500 mt-1">{detail.group.slogan}</p>
@@ -326,6 +434,7 @@ export const Groups = () => {
                   </span>
                 </p>
                 <p className="text-sm text-neutral-800 mt-1 whitespace-pre-wrap leading-relaxed">{message.body}</p>
+                {renderMessageReactions(message)}
               </div>
             ))
           )}
@@ -370,21 +479,41 @@ export const Groups = () => {
             {adultMembers.map((member) => (
               <div key={member.id} className="rounded-xl border border-neutral-100 px-3 py-2.5 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold shrink-0">
-                    {(member.user?.displayName || member.user?.email || 'M').charAt(0).toUpperCase()}
-                  </div>
+                  <SecureAvatar
+                    src={member.user?.avatarUrl}
+                    name={member.user?.displayName || member.user?.email || 'Adult member'}
+                    className="w-9 h-9 text-sm shrink-0"
+                  />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-neutral-900 truncate">
                       {member.user?.displayName || member.user?.email || 'Adult member'}
                     </p>
-                    <p className="text-xs text-neutral-500 capitalize">
-                      {member.role}
+                    <p className="text-xs text-neutral-500">
+                      {memberRoleLabel(member)}
                       {member.isActive === false ? ' · Disabled' : ''}
                     </p>
                   </div>
                 </div>
-                {isAdmin && member.id !== detail.membership.id && (
-                  <div className="flex gap-1.5 shrink-0">
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  {isCreator &&
+                    member.memberType === 'adult' &&
+                    member.id !== detail.membership.id &&
+                    member.userId !== detail.group.adminUserId && (
+                      <select
+                        value={member.role}
+                        disabled={memberActionId === member.id}
+                        onChange={(e) =>
+                          void changeMemberRole(member.id, e.target.value as 'buddy' | 'admin')
+                        }
+                        className="text-[11px] rounded-lg border border-neutral-200 bg-white px-2 py-1 text-neutral-700"
+                        aria-label={`Change role for ${member.user?.displayName || 'member'}`}
+                      >
+                        <option value="buddy">Member</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    )}
+                  {isAdmin && member.id !== detail.membership.id && (
+                    <div className="flex gap-1.5">
                     <button
                       type="button"
                       onClick={() => void toggleMemberAccess(member.id, !(member.isActive ?? true))}
@@ -401,8 +530,9 @@ export const Groups = () => {
                     >
                       Remove
                     </button>
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

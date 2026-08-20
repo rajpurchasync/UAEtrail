@@ -1,4 +1,5 @@
 import { ApiError } from '@uaetrail/shared-types';
+import { formatEnvironmentUrl, rewriteEnvironmentUrls } from '../utils/formatEnvironmentUrl';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
 
@@ -102,7 +103,7 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
       }
     }
 
-    return fetch(`${API_BASE_URL}${path}`, {
+    return fetch(formatEnvironmentUrl(`${API_BASE_URL}${path}`), {
       ...init,
       credentials: 'include',
       headers
@@ -139,14 +140,17 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: ApiError } | null;
     const message = body?.error?.message ?? `Request failed with status ${response.status}`;
-    throw new Error(message);
+    const error = new Error(message) as Error & { status: number; code?: string };
+    error.status = response.status;
+    error.code = body?.error?.code;
+    throw error;
   }
 
   if (response.status === 204) {
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  return rewriteEnvironmentUrls(await response.json()) as T;
 };
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
@@ -159,7 +163,7 @@ export const downloadAuthenticatedFile = async (path: string): Promise<{ blob: B
     if (accessToken) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
-    return fetch(`${API_BASE}${path}`, { credentials: 'include', headers });
+    return fetch(formatEnvironmentUrl(`${API_BASE}${path}`), { credentials: 'include', headers });
   };
 
   let response = await makeRequest();

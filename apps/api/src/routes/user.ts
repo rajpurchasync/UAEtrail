@@ -19,6 +19,8 @@ import { buildLocationCreateData } from '../services/location-submit.js';
 import { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { createAuditLog } from '../lib/audit.js';
 import { findAuthUserByEmail, findAuthUserById, listAuthUsers, updateAuthUserCore, updateAuthUserProfile } from '../lib/auth-users.js';
+import { formatE164Phone, isValidE164Phone, isValidNationalPhone } from '../lib/phone.js';
+import { notifyPlatformAdmins } from '../services/admin-notifications.js';
 import {
   assertPremiumAccess,
   buildPremiumSummary,
@@ -80,13 +82,17 @@ import {
   createSocialGroup,
   deleteSocialGroup,
   findGroupById,
+  findGroupMemberById,
   getGroupMembership,
+  GROUP_WALL_REACTION_KINDS,
   listGroupInvites,
   listGroupMembersDetailed,
   listGroupsForUser,
   listGroupWallMessages,
   removeGroupMembership,
-  setGroupMembershipActiveState
+  setGroupMembershipActiveState,
+  toggleGroupWallReaction,
+  updateGroupMemberRole
 } from '../lib/social-groups-store.js';
 
 const eventIdParamSchema = z.object({ id: z.string().min(1) });
@@ -109,7 +115,8 @@ const updateProfileSchema = z.object({
   avatarUrl: z.preprocess(
     (value) => (value === '' || value === null ? undefined : value),
     mediaUrlSchema.optional()
-  )
+  ),
+  profileVisibility: z.enum(['public', 'group_members', 'private']).optional()
 });
 
 const roleSwitchSchema = z.object({
@@ -126,6 +133,7 @@ const createGroupSchema = z.object({
 
 const groupIdParamSchema = z.object({ groupId: z.string().min(1) });
 const groupMembershipIdParamSchema = z.object({ groupId: z.string().min(1), membershipId: z.string().min(1) });
+const groupWallMessageIdParamSchema = z.object({ groupId: z.string().min(1), messageId: z.string().min(1) });
 
 const groupInviteSchema = z.object({
   email: z.string().email(),
@@ -141,8 +149,17 @@ const createKidSchema = z.object({
   role: z.enum(['buddy', 'admin']).optional()
 });
 
-const groupMembershipPatchSchema = z.object({
-  isActive: z.boolean()
+const groupMembershipPatchSchema = z
+  .object({
+    isActive: z.boolean().optional(),
+    role: z.enum(['buddy', 'admin']).optional()
+  })
+  .refine((body) => body.isActive !== undefined || body.role !== undefined, {
+    message: 'Provide isActive and/or role.'
+  });
+
+const groupWallReactionSchema = z.object({
+  kind: z.enum(GROUP_WALL_REACTION_KINDS)
 });
 
 const createWallPostSchema = z.object({
@@ -855,7 +872,8 @@ userRouter.get('/me/profile', async (req, res, next) => {
         displayName: user.profile?.displayName,
         phone: user.profile?.phone,
         bio: user.profile?.bio,
-        avatarUrl: user.profile?.avatarUrl
+        avatarUrl: user.profile?.avatarUrl,
+        profileVisibility: user.profile?.profileVisibility ?? 'public'
       }
     });
   } catch (error) {
@@ -872,7 +890,8 @@ userRouter.patch('/me/profile', validate({ body: updateProfileSchema }), async (
         displayName: data.displayName ?? null,
         phone: data.phone ?? null,
         bio: data.bio ?? null,
-        avatarUrl: data.avatarUrl ?? null
+        avatarUrl: data.avatarUrl ?? null,
+        profileVisibility: data.profileVisibility ?? null
       }
     });
   } catch (error) {
@@ -1154,11 +1173,41 @@ userRouter.patch('/me/groups/:groupId/members/:membershipId', validate({ params:
     const { groupId, membershipId } = req.params as z.infer<typeof groupMembershipIdParamSchema>;
     const body = req.body as z.infer<typeof groupMembershipPatchSchema>;
     const membership = await getGroupMembership(groupId, req.auth!.userId);
-    if (!membership || membership.role !== 'admin') {
-      throw new ApiError(403, 'forbidden', 'Only group admins can change member access.');
+    if (!membership) {
+      throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
     }
 
-    const updated = await setGroupMembershipActiveState(membershipId, body.isActive);
+    const target = await findGroupMemberById(groupId, membershipId);
+    if (!target) {
+      throw new ApiError(404, 'member_not_found', 'Group member not found.');
+    }
+
+    let updated = target;
+
+    if (body.isActive !== undefined) {
+      if (membership.role !== 'admin') {
+        throw new ApiError(403, 'forbidden', 'Only group admins can change member access.');
+      }
+      updated = await setGroupMembershipActiveState(membershipId, body.isActive);
+    }
+
+    if (body.role !== undefined) {
+      try {
+        updated = await updateGroupMemberRole({
+          groupId,
+          membershipId,
+          role: body.role,
+          ownerUserId: req.auth!.userId
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Could not update member role.';
+        if (message.includes('group owner')) {
+          throw new ApiError(403, 'forbidden', message);
+        }
+        throw new ApiError(400, 'invalid_role_change', message);
+      }
+    }
+
     res.json({ data: updated });
   } catch (error) {
     next(error);
@@ -1209,12 +1258,42 @@ userRouter.get('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema
     if (!membership) {
       throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
     }
-    const items = await listGroupWallMessages(groupId, 120);
+    const items = await listGroupWallMessages(groupId, 120, req.auth!.userId);
     res.json({ data: items });
   } catch (error) {
     next(error);
   }
 });
+
+userRouter.post(
+  '/me/groups/:groupId/wall/:messageId/reactions',
+  validate({ params: groupWallMessageIdParamSchema, body: groupWallReactionSchema }),
+  async (req, res, next) => {
+    try {
+      const { groupId, messageId } = req.params as z.infer<typeof groupWallMessageIdParamSchema>;
+      const body = req.body as z.infer<typeof groupWallReactionSchema>;
+      const membership = await getGroupMembership(groupId, req.auth!.userId);
+      if (!membership) {
+        throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
+      }
+
+      try {
+        const result = await toggleGroupWallReaction({
+          groupId,
+          messageId,
+          userId: req.auth!.userId,
+          kind: body.kind
+        });
+        res.json({ data: result });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Could not update reaction.';
+        throw new ApiError(404, 'message_not_found', message);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 userRouter.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema, body: createWallPostSchema }), async (req, res, next) => {
   try {
@@ -1336,20 +1415,39 @@ userRouter.get('/users/:userId/brief', validate({ params: userBriefParamSchema }
 
 // ─── Organizer Application (user-facing) ───────────────────────────────────
 
-const applicationSchema = z.object({
-  requestedName: z.string().min(2).max(120),
-  requestedType: z.enum(['GUIDE_OWNED', 'COMPANY']),
-  hostDisplayName: z.string().min(2).max(80),
-  bio: z.string().min(20).max(400),
-  phone: z.string().min(5).max(30),
-  nationality: z.string().min(2).max(80),
-  residence: z.string().min(2).max(80),
-  experience: z.string().max(50).optional(),
-  languages: z.string().max(300).optional(),
-  certificates: z.string().max(1000).optional(),
-  notableHikes: z.string().max(1000).optional(),
-  profilePhoto: z.string().url().optional().or(z.literal('')),
-});
+const applicationSchema = z
+  .object({
+    requestedName: z.string().min(2).max(120),
+    requestedType: z.enum(['GUIDE_OWNED', 'COMPANY']),
+    hostDisplayName: z.string().min(2).max(80),
+    bio: z.string().min(20).max(400),
+    phoneCountryCode: z.string().regex(/^\+\d{1,4}$/),
+    phone: z.string().min(4).max(20),
+    nationality: z.string().min(2).max(80),
+    residence: z.string().min(2).max(80),
+    experience: z.string().min(1).max(50),
+    languages: z.string().min(1).max(300),
+    certificates: z.string().max(1000).optional(),
+    notableHikes: z.string().max(1000).optional(),
+    profilePhoto: z.string().url().optional().or(z.literal('')),
+  })
+  .superRefine((body, ctx) => {
+    if (!isValidNationalPhone(body.phone)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Enter a valid mobile number.',
+        path: ['phone']
+      });
+    }
+    const e164 = formatE164Phone(body.phoneCountryCode, body.phone);
+    if (!isValidE164Phone(e164)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Enter a valid mobile number with country code.',
+        path: ['phone']
+      });
+    }
+  });
 
 const organizerDetailsSchema = z.object({
   experience: z.string().max(50).optional(),
@@ -1413,6 +1511,8 @@ userRouter.get('/me/organizer-application', requireAuth, async (req, res, next) 
         requestedName: application.requestedName,
         requestedType: application.requestedType,
         status: application.status,
+        reviewerNote: application.reviewerNote,
+        reviewedAt: application.reviewedAt?.toISOString() ?? null,
         metadata: application.metadata,
         createdAt: application.createdAt.toISOString(),
       }
@@ -1437,11 +1537,12 @@ userRouter.post(
       }
 
       const body = req.body as z.infer<typeof applicationSchema>;
+      const phoneE164 = formatE164Phone(body.phoneCountryCode, body.phone);
 
       await updateAuthUserProfile(userId, {
         displayName: body.hostDisplayName,
         bio: body.bio,
-        phone: body.phone,
+        phone: phoneE164,
         ...(body.profilePhoto ? { avatarUrl: body.profilePhoto } : {})
       });
 
@@ -1453,15 +1554,27 @@ userRouter.post(
         metadata: {
           hostDisplayName: body.hostDisplayName,
           bio: body.bio,
+          phoneCountryCode: body.phoneCountryCode,
           phone: body.phone,
+          phoneE164,
           nationality: body.nationality,
           residence: body.residence,
-          experience: body.experience ?? '',
-          languages: body.languages ?? '',
+          experience: body.experience,
+          languages: body.languages,
           certificates: body.certificates ?? '',
           notableHikes: body.notableHikes ?? '',
           profilePhoto: body.profilePhoto ?? '',
         },
+      });
+
+      void notifyPlatformAdmins({
+        title: 'New host application',
+        body: `${body.hostDisplayName} applied to host as ${body.requestedType === 'COMPANY' ? 'a business' : 'an individual'}.`,
+        meta: {
+          kind: 'organizer_application_submitted',
+          applicationId: application.id,
+          path: '/admin/organizers'
+        }
       });
 
       res.status(201).json({

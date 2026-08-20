@@ -424,6 +424,23 @@ export const hasHostToParticipantLink = async (hostUserId: string, participantUs
   return false;
 };
 
+/** True when both users are co-participants or one hosts an event the other joined. */
+export const usersShareEvent = async (userA: string, userB: string): Promise<boolean> => {
+  if (!userA || !userB) return false;
+  if (userA === userB) return true;
+
+  const eventIds = await eventParticipantsCollection().distinct('eventId', { userId: userA });
+  if (eventIds.length > 0) {
+    const shared = await eventParticipantsCollection().findOne({
+      userId: userB,
+      eventId: { $in: eventIds }
+    });
+    if (shared) return true;
+  }
+
+  return (await hasHostToParticipantLink(userA, userB)) || (await hasHostToParticipantLink(userB, userA));
+};
+
 export const hasTripInquiryAccess = async (input: {
   eventId: string;
   receiverId: string;

@@ -18,6 +18,7 @@ export type AuthUserRecord = {
     phone: string | null;
     bio: string | null;
     avatarUrl: string | null;
+    profileVisibility?: 'public' | 'group_members' | 'private';
     switchedFromRole?: 'PLATFORM_ADMIN' | 'MERCHANT_ADMIN' | 'TENANT_OWNER' | 'TENANT_ADMIN' | 'TENANT_GUIDE' | null;
     rewardPoints?: number;
     membershipTier?: MembershipTier;
@@ -158,18 +159,15 @@ export const updateAuthUserProfile = async (
   userId: string,
   patch: Partial<AuthUserRecord['profile']>
 ): Promise<void> => {
-  await usersCollection().updateOne(
-    { _id: userId },
-    {
-      $set: {
-        'profile.displayName': patch.displayName ?? null,
-        'profile.phone': patch.phone ?? null,
-        'profile.bio': patch.bio ?? null,
-        'profile.avatarUrl': patch.avatarUrl ?? null,
-        updatedAt: new Date()
-      }
-    }
-  );
+  const setFields: Record<string, unknown> = { updatedAt: new Date() };
+  if (patch.displayName !== undefined) setFields['profile.displayName'] = patch.displayName ?? null;
+  if (patch.phone !== undefined) setFields['profile.phone'] = patch.phone ?? null;
+  if (patch.bio !== undefined) setFields['profile.bio'] = patch.bio ?? null;
+  if (patch.avatarUrl !== undefined) setFields['profile.avatarUrl'] = patch.avatarUrl ?? null;
+  if (patch.profileVisibility !== undefined) {
+    setFields['profile.profileVisibility'] = patch.profileVisibility;
+  }
+  await usersCollection().updateOne({ _id: userId }, { $set: setFields });
 };
 
 export const updateAuthUserLastActive = async (userId: string): Promise<void> => {
@@ -213,6 +211,9 @@ export const updateAuthUserGoogleLink = async (input: {
     if (input.profile.phone !== undefined) setFields['profile.phone'] = input.profile.phone;
     if (input.profile.bio !== undefined) setFields['profile.bio'] = input.profile.bio;
     if (input.profile.avatarUrl !== undefined) setFields['profile.avatarUrl'] = input.profile.avatarUrl;
+    if (input.profile.profileVisibility !== undefined) {
+      setFields['profile.profileVisibility'] = input.profile.profileVisibility;
+    }
     if (input.profile.switchedFromRole !== undefined) {
       setFields['profile.switchedFromRole'] = input.profile.switchedFromRole;
     }
@@ -254,6 +255,9 @@ export const updateAuthUserCore = async (input: {
     if (input.profile.phone !== undefined) setFields['profile.phone'] = input.profile.phone;
     if (input.profile.bio !== undefined) setFields['profile.bio'] = input.profile.bio;
     if (input.profile.avatarUrl !== undefined) setFields['profile.avatarUrl'] = input.profile.avatarUrl;
+    if (input.profile.profileVisibility !== undefined) {
+      setFields['profile.profileVisibility'] = input.profile.profileVisibility;
+    }
     if (input.profile.switchedFromRole !== undefined) setFields['profile.switchedFromRole'] = input.profile.switchedFromRole;
     if (input.profile.rewardPoints !== undefined) setFields['profile.rewardPoints'] = input.profile.rewardPoints;
     if (input.profile.membershipTier !== undefined) {

@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { MobileBrandBar } from '../layout/MobileBrandBar';
 import { MobileBackButton } from './MobileBackButton';
+import { EnvironmentImage } from '../ui/EnvironmentImage';
 
 interface ConsumerHeroBannerProps {
   src: string;
@@ -57,7 +58,7 @@ export const ConsumerHeroBanner = ({
   >
     {linkTo ? (
       <Link to={linkTo} aria-label={linkAriaLabel ?? title ?? alt} className="absolute inset-0 z-[1] block">
-        <img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <EnvironmentImage src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         <div
           className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-emerald-950/45 to-emerald-900/20"
           aria-hidden
@@ -65,7 +66,7 @@ export const ConsumerHeroBanner = ({
       </Link>
     ) : (
       <>
-        <img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <EnvironmentImage src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         <div
           className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-emerald-950/45 to-emerald-900/20"
           aria-hidden

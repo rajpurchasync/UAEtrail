@@ -23,6 +23,9 @@ import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { PAGE_BANNERS } from '../config/pageBanners';
 import { PageMeta } from '../components/seo/PageMeta';
+import { DEFAULT_PHONE_DIAL, PHONE_COUNTRIES } from '../constants/phoneCountries';
+import { formatE164Phone, isValidNationalPhone } from '../utils/phone';
+import { PhoneInput } from '../components/ui/PhoneInput';
 import { ImageUpload } from '../components/ui/ImageUpload';
 import { COUNTRIES } from '../constants';
 
@@ -92,6 +95,7 @@ const emptyForm = {
   hostDisplayName: '',
   bio: '',
   profilePhoto: '',
+  phoneCountryCode: DEFAULT_PHONE_DIAL,
   phone: '',
   nationality: '',
   residence: '',
@@ -100,6 +104,18 @@ const emptyForm = {
   certificates: '',
   notableHikes: '',
   organizationName: '',
+};
+
+const splitStoredPhone = (value?: string | null): { dial: string; national: string } => {
+  if (!value?.trim()) return { dial: DEFAULT_PHONE_DIAL, national: '' };
+  const trimmed = value.trim();
+  const match = [...PHONE_COUNTRIES]
+    .sort((a, b) => b.dial.length - a.dial.length)
+    .find((country) => trimmed.startsWith(country.dial));
+  if (match) {
+    return { dial: match.dial, national: trimmed.slice(match.dial.length).trim() };
+  }
+  return { dial: DEFAULT_PHONE_DIAL, national: trimmed.replace(/^\+/, '') };
 };
 
 /** Become a host — individual or business. Route: /become-host (alias /become-organizer). */
@@ -116,6 +132,7 @@ export const BecomeOrganizer = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [rejectionNote, setRejectionNote] = useState<string | null>(null);
 
   useEffect(() => {
     if (isHost) {
@@ -133,20 +150,57 @@ export const BecomeOrganizer = () => {
           const status = res.data.status.toLowerCase();
           if (status === 'pending') setAppStatus('pending');
           else if (status === 'approved') setAppStatus('approved');
-          else if (status === 'rejected') setAppStatus('rejected');
+          else if (status === 'rejected') {
+            setAppStatus('rejected');
+            setRejectionNote(res.data.reviewerNote ?? null);
+          }
           else setAppStatus('none');
         } else {
           setAppStatus('none');
+          setRejectionNote(null);
         }
       })
       .catch(() => setAppStatus('none'));
   }, [isHost, navigate, user]);
 
-  const openForm = () => {
-    setForm({
+  const openForm = async () => {
+    let nextForm = {
       ...emptyForm,
       hostDisplayName: user?.displayName ?? '',
-    });
+    };
+
+    try {
+      const [profileRes, appRes] = await Promise.all([
+        api.getMeProfile(),
+        api.getMyOrganizerApplication(),
+      ]);
+      const profile = profileRes.data;
+      const appMeta = appRes.data?.metadata;
+      const storedPhone = splitStoredPhone(profile.phone ?? appMeta?.phoneE164 ?? appMeta?.phone);
+
+      nextForm = {
+        ...nextForm,
+        hostDisplayName: profile.displayName ?? nextForm.hostDisplayName,
+        bio: appMeta?.bio ?? profile.bio ?? '',
+        phoneCountryCode: appMeta?.phoneCountryCode ?? storedPhone.dial,
+        phone: appMeta?.phone ?? storedPhone.national,
+        nationality: appMeta?.nationality ?? '',
+        residence: appMeta?.residence ?? '',
+        experience: appMeta?.experience ?? '',
+        languages: appMeta?.languages ?? '',
+        certificates: appMeta?.certificates ?? '',
+        notableHikes: appMeta?.notableHikes ?? '',
+        profilePhoto: appMeta?.profilePhoto ?? profile.avatarUrl ?? '',
+        organizationName:
+          appRes.data?.requestedType?.toLowerCase() === 'company' ? appRes.data.requestedName : '',
+        hostType:
+          appRes.data?.requestedType?.toLowerCase() === 'company' ? ('business' as const) : ('individual' as const),
+      };
+    } catch {
+      // Prefill is best-effort; the form still opens with account defaults.
+    }
+
+    setForm(nextForm);
     setShowFormModal(true);
   };
 
@@ -176,11 +230,19 @@ export const BecomeOrganizer = () => {
       setSubmitError('Business name is required.');
       return;
     }
+    if (!form.hostDisplayName.trim()) {
+      setSubmitError('Display name is required.');
+      return;
+    }
+    if (!isValidNationalPhone(form.phone)) {
+      setSubmitError('Enter a valid mobile number.');
+      return;
+    }
 
     const requestedName =
       form.hostType === 'business'
         ? form.organizationName.trim()
-        : form.hostDisplayName.trim() || `${user.displayName ?? 'My'} Adventures`;
+        : form.hostDisplayName.trim();
 
     setSubmitting(true);
     setSubmitError(null);
@@ -190,7 +252,8 @@ export const BecomeOrganizer = () => {
         requestedType: form.hostType === 'business' ? 'COMPANY' : 'GUIDE_OWNED',
         hostDisplayName: form.hostDisplayName.trim(),
         bio: form.bio.trim(),
-        phone: form.phone,
+        phoneCountryCode: form.phoneCountryCode,
+        phone: form.phone.trim(),
         nationality: form.nationality,
         residence: form.residence,
         experience: form.experience,
@@ -200,6 +263,7 @@ export const BecomeOrganizer = () => {
         profilePhoto: form.profilePhoto,
       });
       setSubmitSuccess(true);
+      setRejectionNote(null);
       setAppStatus('pending');
       setShowFormModal(false);
     } catch (err) {
@@ -370,11 +434,13 @@ export const BecomeOrganizer = () => {
             )}
 
             {user && appStatus === 'rejected' && !submitSuccess && (
-              <GlassCard padding className="text-center">
+              <GlassCard padding className="text-center border-red-100">
                 <XCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-neutral-900 mb-2">Let&apos;s try again</h2>
-                <p className="text-sm text-neutral-600 mb-4">
-                  Update your host profile and re-apply — we&apos;d love to have you in the community.
+                <h2 className="text-lg font-bold text-neutral-900 mb-2">Application not approved</h2>
+                <p className="text-sm text-neutral-600 mb-3 leading-relaxed">
+                  {rejectionNote
+                    ? rejectionNote
+                    : 'Update your host profile and apply again — we would love to have you in the community.'}
                 </p>
                 <button
                   type="button"
@@ -464,6 +530,12 @@ export const BecomeOrganizer = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Account email</p>
+                    <p className="text-sm font-medium text-gray-900">{user.email}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Linked from your sign-in profile</p>
+                  </div>
+
                   {form.hostType === 'business' && (
                     <div>
                       <label className="text-xs font-medium text-gray-700 mb-1 block">
@@ -481,7 +553,7 @@ export const BecomeOrganizer = () => {
                   )}
 
                   <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Your name (as host) *</label>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Your name (display name) *</label>
                     <input
                       type="text"
                       required
@@ -521,15 +593,18 @@ export const BecomeOrganizer = () => {
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Phone *</label>
-                    <input
-                      type="tel"
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Mobile number *</label>
+                    <PhoneInput
+                      dialCode={form.phoneCountryCode}
+                      nationalNumber={form.phone}
+                      onDialCodeChange={(phoneCountryCode) => setForm({ ...form, phoneCountryCode })}
+                      onNationalNumberChange={(phone) => setForm({ ...form, phone })}
                       required
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      className="w-full border rounded-xl px-3 py-2.5 text-sm"
-                      placeholder="+971 50 123 4567"
+                      disabled={submitting}
                     />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Saved as {formatE164Phone(form.phoneCountryCode, form.phone) || 'your full international number'}.
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">

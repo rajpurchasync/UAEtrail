@@ -44,6 +44,24 @@ export const inferNotificationPath = (notif: NotificationDTO): string => {
   if (kind === 'location_approved') {
     return '/discovery';
   }
+  if (kind === 'organizer_application_submitted') {
+    return '/admin/organizers';
+  }
+  if (kind === 'organizer_application_approved') {
+    return '/organizer/overview';
+  }
+  if (kind === 'organizer_application_rejected') {
+    return '/become-host';
+  }
+  if (kind === 'host_suspended' || kind === 'host_reopened') {
+    return kind === 'host_suspended' ? '/become-host' : '/organizer/overview';
+  }
+  if (kind === 'user_suspended' || kind === 'user_reactivated') {
+    return '/profile';
+  }
+  if (kind === 'location_rejected') {
+    return '/discovery';
+  }
 
   if (notif.type === 'event') return '/trips?tab=mine';
   if (notif.type === 'request_update') return '/my-requests';

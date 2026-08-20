@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { MEMBERSHIP_NAV_LINK } from '../../config/platform';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
-import { getInitials } from '../../utils/userDisplay';
+import { SecureAvatar } from '../ui/SecureAvatar';
 
 export const Header = () => {
   const { user } = useAuth();
@@ -58,13 +58,11 @@ export const Header = () => {
                 to={accountRouteByRole(user.role)}
                 className="hidden md:flex relative items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium shadow-sm shadow-emerald-200"
               >
-                {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
-                    {getInitials(user.displayName, user.email)}
-                  </span>
-                )}
+                <SecureAvatar
+                  src={user.avatarUrl}
+                  name={user.displayName || user.email || 'Account'}
+                  className="w-8 h-8 text-sm"
+                />
                 {user.displayName?.split(' ')[0] || 'Account'}
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">

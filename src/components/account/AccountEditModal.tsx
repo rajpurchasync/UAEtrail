@@ -37,6 +37,7 @@ export const AccountEditModal = ({
       <form className="space-y-4" onSubmit={onSubmit}>
         <ProfilePhotoEditorField
           value={avatarImages[0]}
+          name={profile.displayName || email || 'Profile'}
           onChange={(url) => setProfile((p) => ({ ...p, avatarUrl: url }))}
           disabled={saving}
         />

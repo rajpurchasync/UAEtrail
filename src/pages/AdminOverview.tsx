@@ -34,9 +34,9 @@ export const AdminOverview = () => {
   useEffect(() => { loadData(); }, []);
 
   const metricCards = [
+    { label: 'Pending Host Apps', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-800', icon: '📝', link: '/admin/organizers' },
     { label: 'Total Locations', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', icon: '📍' },
     { label: 'Total Users', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥' },
-    { label: 'Total Groups', value: metrics?.totalGroups ?? '-', color: 'bg-indigo-50 text-indigo-700', icon: '👨‍👩‍👧‍👦', link: '/admin/groups' },
     { label: 'Active Trips', value: metrics?.activeTrips ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾' }
   ];
 
@@ -123,13 +123,13 @@ export const AdminOverview = () => {
           </div>
           <div className="divide-y">
             {recentApps.map((a) => (
-              <div key={a.id} className="px-4 py-3 flex items-center justify-between">
+              <Link key={a.id} to="/admin/organizers" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{a.applicantName}</p>
+                  <p className="text-sm font-medium text-gray-900">{a.metadata?.hostDisplayName || a.applicantName}</p>
                   <p className="text-xs text-gray-500">{a.requestedName} ({a.requestedType})</p>
                 </div>
                 <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">Pending</span>
-              </div>
+              </Link>
             ))}
             {recentApps.length === 0 && <p className="px-4 py-6 text-sm text-gray-500 text-center">No pending applications</p>}
           </div>

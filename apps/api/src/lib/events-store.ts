@@ -216,7 +216,7 @@ export const listTenantEventHistoryWithParticipation = async (input: {
 export const listPopularActiveLocations = async (limit: number) => {
   const items = await locationsCollection()
     .find({ status: LocationStatus.ACTIVE })
-    .sort({ viewCount: -1, createdAt: -1 })
+    .sort({ featured: -1, viewCount: -1, createdAt: -1 })
     .limit(limit)
     .toArray();
   return items.map(mapMongoLocation);

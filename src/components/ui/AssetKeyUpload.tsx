@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Upload, Loader2, FileText } from 'lucide-react';
 import { api } from '../../api/services';
 import { getStoredSession } from '../../api/client';
+import { formatEnvironmentUrl } from '../../utils/formatEnvironmentUrl';
 
 interface AssetKeyUploadProps {
   label: string;
@@ -37,9 +38,7 @@ export const AssetKeyUpload = ({
         kind,
       });
 
-      const uploadUrl = presign.data.uploadUrl.startsWith('/')
-        ? presign.data.uploadUrl
-        : presign.data.uploadUrl;
+      const uploadUrl = formatEnvironmentUrl(presign.data.uploadUrl);
       const isLocalUpload = uploadUrl.includes('/media/upload-local/');
       const headers: Record<string, string> = {
         'Content-Type': file.type || 'application/octet-stream',

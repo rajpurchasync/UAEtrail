@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { accountRouteByRole } from '../../utils/authRouting';
-import { getInitials } from '../../utils/userDisplay';
+import { SecureAvatar } from '../ui/SecureAvatar';
 
 interface ProfileAvatarLinkProps {
   tone?: 'default' | 'light';
@@ -28,13 +28,11 @@ export const ProfileAvatarLink = ({ tone = 'default', className = '' }: ProfileA
       aria-label={user ? 'Open profile' : 'Sign in'}
     >
       {user ? (
-        user.avatarUrl ? (
-          <img src={user.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
-        ) : (
-          <span className="h-full w-full rounded-full flex items-center justify-center font-bold text-sm">
-            {getInitials(user.displayName, user.email)}
-          </span>
-        )
+        <SecureAvatar
+          src={user.avatarUrl}
+          name={user.displayName || user.email || 'Account'}
+          className="h-full w-full text-sm"
+        />
       ) : (
         <User className="w-5 h-5" strokeWidth={2.2} />
       )}

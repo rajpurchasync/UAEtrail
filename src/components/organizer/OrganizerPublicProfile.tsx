@@ -19,6 +19,7 @@ import { api, OrganizerDetails, TenantProfile } from '../../api/services';
 import { mapEventToTrip } from '../../api/public';
 import { TripCard } from '../ui/TripCard';
 import { ReviewSection } from '../ui/ReviewSection';
+import { SecureAvatar } from '../ui/SecureAvatar';
 import { PageMeta } from '../seo/PageMeta';
 import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
@@ -180,17 +181,11 @@ export const OrganizerPublicProfile = ({
           )}
 
           <div className="flex flex-col sm:flex-row items-start gap-5">
-            {tenant.ownerAvatar ? (
-              <img
-                src={tenant.ownerAvatar}
-                alt={tenant.ownerName}
-                className="w-24 h-24 rounded-2xl object-cover ring-4 ring-white/20"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-2xl bg-emerald-600 flex items-center justify-center text-3xl font-bold ring-4 ring-white/20">
-                {tenant.ownerName.charAt(0)}
-              </div>
-            )}
+            <SecureAvatar
+              src={tenant.ownerAvatar}
+              name={tenant.ownerName}
+              className="w-24 h-24 text-3xl"
+            />
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl md:text-3xl font-bold">{tenant.name}</h1>
@@ -399,13 +394,11 @@ export const OrganizerPublicProfile = ({
             <div className="flex flex-wrap gap-3">
               {tenant.team.map((member, i) => (
                 <div key={i} className="flex items-center gap-2 bg-white rounded-xl border px-3 py-2">
-                  {member.avatarUrl ? (
-                    <img src={member.avatarUrl} alt="" className="w-8 h-8 rounded-full" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700">
-                      {member.displayName.charAt(0)}
-                    </div>
-                  )}
+                  <SecureAvatar
+                    src={member.avatarUrl}
+                    name={member.displayName}
+                    className="w-8 h-8 text-xs"
+                  />
                   <div>
                     <p className="text-sm font-medium text-gray-900">{member.displayName}</p>
                     <p className="text-xs text-gray-500 capitalize">{member.role.replace('_', ' ')}</p>

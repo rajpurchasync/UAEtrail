@@ -1,6 +1,7 @@
 import { ChevronDown, Pencil } from 'lucide-react';
 import { ReactNode } from 'react';
 import { GlassCard } from '../mobile/GlassCard';
+import { SecureAvatar } from '../ui/SecureAvatar';
 
 interface AccountIdentityBarProps {
   displayName: string;
@@ -56,13 +57,11 @@ export const AccountIdentityBar = ({
         className="relative shrink-0"
         aria-label="Open notifications"
       >
-        {avatarUrl ? (
-          <img src={avatarUrl} alt="" className="w-11 h-11 rounded-full object-cover ring-2 ring-white/80" />
-        ) : (
-          <div className="w-11 h-11 rounded-full bg-emerald-600/12 flex items-center justify-center ring-2 ring-white/80">
-            <span className="text-sm font-bold text-emerald-700">{displayName.charAt(0).toUpperCase()}</span>
-          </div>
-        )}
+        <SecureAvatar
+          src={avatarUrl}
+          name={displayName}
+          className="w-11 h-11 text-sm ring-2 ring-white/80"
+        />
       </button>
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2">

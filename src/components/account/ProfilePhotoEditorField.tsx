@@ -2,14 +2,21 @@ import { useRef, useState } from 'react';
 import { Upload, X } from 'lucide-react';
 import { uploadMediaBlob } from '../../lib/mediaUpload';
 import { PhotoEditorDialog } from '../ui/PhotoEditorDialog';
+import { SecureAvatar } from '../ui/SecureAvatar';
 
 interface ProfilePhotoEditorFieldProps {
   value?: string;
+  name?: string;
   onChange: (url: string) => void;
   disabled?: boolean;
 }
 
-export const ProfilePhotoEditorField = ({ value, onChange, disabled = false }: ProfilePhotoEditorFieldProps) => {
+export const ProfilePhotoEditorField = ({
+  value,
+  name = 'Profile',
+  onChange,
+  disabled = false,
+}: ProfilePhotoEditorFieldProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -32,7 +39,7 @@ export const ProfilePhotoEditorField = ({ value, onChange, disabled = false }: P
       <div className="flex items-center gap-3">
         <div className="h-16 w-16 shrink-0 rounded-full overflow-hidden ring-1 ring-black/10 bg-gray-100">
           {value ? (
-            <img src={value} alt="Profile" className="h-full w-full object-cover" />
+            <SecureAvatar src={value} name={name} className="h-full w-full text-lg" />
           ) : (
             <div className="h-full w-full flex items-center justify-center text-[10px] font-semibold text-gray-400">
               No photo
