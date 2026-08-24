@@ -25,6 +25,8 @@ export const AdminGroups = () => {
   const [error, setError] = useState<string | null>(null);
   const [detail, setDetail] = useState<AdminSocialGroupDetail | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState<AdminSocialGroupListItem | null>(null);
+  const [suspendComment, setSuspendComment] = useState('');
   const pageSize = 20;
 
   const loadGroups = async () => {
@@ -69,6 +71,42 @@ export const AdminGroups = () => {
 
   const formatDate = (value: string) => new Date(value).toLocaleString();
 
+  const statusBadge = (status?: string) => {
+    const isActive = (status ?? 'active') === 'active';
+    return (
+      <span className={`px-2 py-0.5 rounded text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        {status ?? 'active'}
+      </span>
+    );
+  };
+
+  const executeToggleGroupStatus = async () => {
+    if (!confirmTarget) return;
+    const newStatus = (confirmTarget.status ?? 'active') === 'active' ? 'suspended' : 'active';
+    if (newStatus === 'suspended' && !suspendComment.trim()) {
+      setError('A comment is required when suspending a group.');
+      return;
+    }
+    try {
+      await api.updateAdminGroupStatus(
+        confirmTarget.id,
+        newStatus,
+        newStatus === 'suspended' ? suspendComment.trim() : undefined
+      );
+      setConfirmTarget(null);
+      setSuspendComment('');
+      if (detail?.group.id === confirmTarget.id) {
+        setDetail({
+          ...detail,
+          group: { ...detail.group, status: newStatus }
+        });
+      }
+      await loadGroups();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update group status');
+    }
+  };
+
   return (
     <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
       <div className="flex flex-wrap gap-3 mb-4">
@@ -112,6 +150,7 @@ export const AdminGroups = () => {
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Creator</th>
                 <th className="px-4 py-3 font-medium">Members</th>
+                <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Created</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
@@ -119,7 +158,7 @@ export const AdminGroups = () => {
             <tbody className="divide-y divide-gray-100">
               {groups.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-10 text-center text-gray-500">
                     No groups found.
                   </td>
                 </tr>
@@ -140,15 +179,29 @@ export const AdminGroups = () => {
                       <div className="text-xs text-gray-500">{group.admin?.email || group.adminUserId}</div>
                     </td>
                     <td className="px-4 py-3 text-gray-700">{group.memberCount}</td>
+                    <td className="px-4 py-3">{statusBadge(group.status)}</td>
                     <td className="px-4 py-3 text-gray-600">{formatDate(group.createdAt)}</td>
                     <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        onClick={() => void openDetail(group.id)}
-                        className="text-emerald-600 hover:text-emerald-700 font-medium"
-                      >
-                        View
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void openDetail(group.id)}
+                          className="text-emerald-600 hover:text-emerald-700 font-medium"
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setConfirmTarget(group); setSuspendComment(''); }}
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            (group.status ?? 'active') === 'active'
+                              ? 'bg-red-100 text-red-800 hover:bg-red-200'
+                              : 'bg-green-100 text-green-800 hover:bg-green-200'
+                          }`}
+                        >
+                          {(group.status ?? 'active') === 'active' ? 'Suspend' : 'Activate'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -192,15 +245,37 @@ export const AdminGroups = () => {
           >
             <div className="flex justify-between items-start gap-4 mb-5">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">{detail.group.name}</h2>
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-xl font-semibold text-gray-900">{detail.group.name}</h2>
+                  {statusBadge(detail.group.status)}
+                </div>
                 <p className="text-sm text-gray-500 mt-1">
                   {typeLabel[detail.group.type]} group · Created {formatDate(detail.group.createdAt)}
                 </p>
                 {detail.group.slogan && <p className="text-sm text-gray-600 mt-2">{detail.group.slogan}</p>}
               </div>
-              <button type="button" onClick={() => setDetailOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl">
-                &times;
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmTarget({
+                      ...detail.group,
+                      memberCount: detail.stats.memberCount,
+                      adultMemberCount: detail.stats.adultCount,
+                      admin: detail.admin
+                    });
+                    setSuspendComment('');
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium text-white ${
+                    (detail.group.status ?? 'active') === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'
+                  }`}
+                >
+                  {(detail.group.status ?? 'active') === 'active' ? 'Suspend' : 'Activate'}
+                </button>
+                <button type="button" onClick={() => setDetailOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl">
+                  &times;
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -283,6 +358,42 @@ export const AdminGroups = () => {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" onClick={() => setConfirmTarget(null)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {(confirmTarget.status ?? 'active') === 'active' ? 'Suspend Group?' : 'Activate Group?'}
+            </h3>
+            <p className="text-sm text-gray-600 mb-1">
+              {(confirmTarget.status ?? 'active') === 'active'
+                ? 'Members will lose access to this group until it is reactivated.'
+                : 'This will restore access to the group for all members.'}
+            </p>
+            <p className="text-sm font-medium text-gray-900 mb-4">{confirmTarget.name}</p>
+            {(confirmTarget.status ?? 'active') === 'active' && (
+              <div className="mb-4">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Reason for suspension *</label>
+                <textarea
+                  value={suspendComment}
+                  onChange={(e) => setSuspendComment(e.target.value)}
+                  placeholder="Explain why this group is being suspended..."
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                  rows={3}
+                  maxLength={500}
+                />
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={() => setConfirmTarget(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button type="button" onClick={() => void executeToggleGroupStatus()}
+                className={`px-4 py-2 rounded-md text-sm text-white ${(confirmTarget.status ?? 'active') === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                {(confirmTarget.status ?? 'active') === 'active' ? 'Suspend' : 'Activate'}
+              </button>
             </div>
           </div>
         </div>

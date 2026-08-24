@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { KeyRound, ShieldCheck, Smartphone, Eye, Lock, Download, Trash2 } from 'lucide-react';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,6 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 
 export const SecurityPrivacy = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
 
@@ -67,7 +66,6 @@ export const SecurityPrivacy = () => {
 
   const handleDeleted = async () => {
     await signOut();
-    navigate('/signed-out', { replace: true });
   };
 
   return (

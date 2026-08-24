@@ -1,5 +1,5 @@
 import type { Collection } from 'mongodb';
-import { TenantStatus, type TenantType } from '../domain/enums.js';
+import { TenantStatus, TenantType } from '../domain/enums.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
 import { slugify } from './slug.js';
@@ -90,6 +90,13 @@ export const findTenantById = async (tenantId: string): Promise<TenantRecord | n
 export const findTenantByOwnerId = async (ownerId: string): Promise<TenantRecord | null> => {
   const doc = await tenantsCollection().findOne({ ownerId });
   return doc ? mapMongoTenant(doc) : null;
+};
+
+export const listCompanyTenantOwnerIds = async (): Promise<string[]> => {
+  const docs = await tenantsCollection()
+    .find({ type: TenantType.COMPANY }, { projection: { ownerId: 1 } })
+    .toArray();
+  return docs.map((doc) => doc.ownerId);
 };
 
 export const findTenantBySlug = async (slug: string): Promise<TenantRecord | null> => {

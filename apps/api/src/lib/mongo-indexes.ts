@@ -32,6 +32,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { userId: 1 } }
     ]),
     db.collection('auth_email_verification_tokens').createIndexes([{ key: { token: 1 } }]),
+    db.collection('auth_email_change_tokens').createIndexes([
+      { key: { userId: 1, usedAt: 1 } },
+      { key: { newEmail: 1, usedAt: 1 } }
+    ]),
     db.collection('auth_password_reset_tokens').createIndexes([{ key: { token: 1 } }]),
     db.collection('tenant_memberships').createIndexes([
       { key: { tenantId: 1, userId: 1 }, unique: true },

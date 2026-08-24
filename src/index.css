@@ -319,7 +319,13 @@
   }
 
   .pb-safe {
-    padding-bottom: var(--safe-bottom);
+    padding-bottom: max(0.5rem, var(--safe-bottom));
+  }
+
+  .font-emoji {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
+    font-style: normal;
+    line-height: 1;
   }
 
   .bottom-nav-offset {

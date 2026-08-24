@@ -78,6 +78,7 @@ export const Profile = () => {
       .catch(() => undefined);
   }, [user]);
 
+  const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
   const isOrganizer =
     user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
 
@@ -86,16 +87,20 @@ export const Profile = () => {
     setShowDetails(false);
   }, []);
 
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const save = async (payload: {
+    displayName: string;
+    bio?: string;
+    phone?: string;
+    avatarUrl?: string;
+  }) => {
     setMessage(null);
     setSaving(true);
     try {
       await api.updateMeProfile({
-        displayName: profile.displayName,
-        phone: profile.phone,
-        bio: profile.bio,
-        ...(profile.avatarUrl ? { avatarUrl: profile.avatarUrl } : {}),
+        displayName: payload.displayName,
+        phone: payload.phone,
+        bio: payload.bio,
+        ...(payload.avatarUrl ? { avatarUrl: payload.avatarUrl } : {}),
       });
       await refreshUser();
       setMessage('Profile saved.');
@@ -110,7 +115,6 @@ export const Profile = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/signed-out', { replace: true });
   };
 
   const roleLabel = user!.role === 'visitor' ? 'Participant' : 'Explorer';
@@ -156,7 +160,7 @@ export const Profile = () => {
       title="Profile"
       banner={{ src: PAGE_BANNERS.profile, alt: 'Mountain peaks at dawn' }}
       action={
-        rewardSummary ? (
+        rewardSummary && trailPointsEligible ? (
           <ProfileTrailPointsChip summary={rewardSummary} onClick={() => setShowPointsPath(true)} />
         ) : undefined
       }
@@ -182,9 +186,9 @@ export const Profile = () => {
         onEdit={openEdit}
         onAvatarClick={() => setShowNotifPopover((open) => !open)}
         extra={
-          rewardTier && rewardTier.key !== 'free' ? (
+          trailPointsEligible && rewardTier && rewardTier.key !== 'free' ? (
             <MembershipTierBadge tierKey={rewardTier.key} name={rewardTier.name} size="md" />
-          ) : rewardPoints != null ? (
+          ) : trailPointsEligible && rewardPoints != null ? (
             <span className="text-xs font-semibold text-gray-500">{rewardPoints.toLocaleString()} pts</span>
           ) : null
         }
@@ -273,13 +277,15 @@ export const Profile = () => {
 
             <AccountLinkList
               items={[
-                {
-                  to: '/my-rewards',
-                  icon: <Trophy className="w-4 h-4" />,
-                  label: 'Trail Points',
-                  badge: rewardPoints ?? undefined,
-                  accent: 'emerald' as const,
-                },
+                ...(trailPointsEligible
+                  ? [{
+                      to: '/my-rewards',
+                      icon: <Trophy className="w-4 h-4" />,
+                      label: 'Trail Points',
+                      badge: rewardPoints ?? undefined,
+                      accent: 'emerald' as const,
+                    }]
+                  : []),
                 {
                   to: '/notifications',
                   icon: <Bell className="w-4 h-4" />,
@@ -374,7 +380,7 @@ export const Profile = () => {
 
       <AccountSignOutButton onSignOut={handleSignOut} />
 
-      {rewardSummary && (
+      {rewardSummary && trailPointsEligible && (
         <TrailPointsPathSheet
           open={showPointsPath}
           onClose={() => setShowPointsPath(false)}
@@ -392,7 +398,8 @@ export const Profile = () => {
         message={message}
         pushStatus={pushStatus}
         setPushStatus={setPushStatus}
-        onSubmit={save}
+        onSave={save}
+        onEmailChanged={refreshUser}
       />
     </ConsumerShell>
   );

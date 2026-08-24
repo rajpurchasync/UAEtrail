@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { EventDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
+import type { ActivityType } from '../config/activityTypes';
 import { api } from '../api/services';
 import { DashboardLayout } from '../components/layout';
-import { ImageUpload } from '../components/ui';
+import { ImageUpload, ActivityTypeSelect, LocationSelect } from '../components/ui';
 import { ADMIN_LINKS } from '../constants';
 
 type Tab = 'active' | 'past';
 
 const emptyForm = {
+  activityType: 'hiking' as ActivityType,
   tenantId: '',
   locationId: '',
   title: '',
@@ -32,6 +34,7 @@ export const AdminEvents = () => {
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<{ event: EventDTO; action: 'suspend' | 'unsuspend' } | null>(null);
+  const [suspendComment, setSuspendComment] = useState('');
 
   // Create event state
   const [modalOpen, setModalOpen] = useState(false);
@@ -62,9 +65,18 @@ export const AdminEvents = () => {
 
   const executeModerate = async () => {
     if (!confirmTarget) return;
+    if (confirmTarget.action === 'suspend' && !suspendComment.trim()) {
+      setError('A comment is required when suspending an event.');
+      return;
+    }
     try {
-      await api.moderateEvent(confirmTarget.event.id, confirmTarget.action);
+      await api.moderateEvent(
+        confirmTarget.event.id,
+        confirmTarget.action,
+        confirmTarget.action === 'suspend' ? suspendComment.trim() : undefined
+      );
       setConfirmTarget(null);
+      setSuspendComment('');
       await loadEvents();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update event');
@@ -85,6 +97,11 @@ export const AdminEvents = () => {
       (e.title ?? '').toLowerCase().includes(q)
     );
   });
+
+  const filteredLocations = useMemo(
+    () => locations.filter((loc) => loc.activityType === form.activityType),
+    [locations, form.activityType]
+  );
 
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +164,7 @@ export const AdminEvents = () => {
               className="border rounded-lg px-3 py-1.5 text-sm w-56" />
             <button onClick={() => { setForm(emptyForm); setModalOpen(true); }}
               className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
-              + Create Event
+              + Add Event
             </button>
           </div>
         </div>
@@ -207,10 +224,10 @@ export const AdminEvents = () => {
                         )}
                         {/* Moderation */}
                         {event.status === 'suspended' ? (
-                          <button onClick={() => setConfirmTarget({ event, action: 'unsuspend' })}
+                          <button onClick={() => { setConfirmTarget({ event, action: 'unsuspend' }); setSuspendComment(''); }}
                             className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Unsuspend</button>
                         ) : event.status !== 'cancelled' ? (
-                          <button onClick={() => setConfirmTarget({ event, action: 'suspend' })}
+                          <button onClick={() => { setConfirmTarget({ event, action: 'suspend' }); setSuspendComment(''); }}
                             className="px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs">Suspend</button>
                         ) : null}
                       </div>
@@ -268,15 +285,26 @@ export const AdminEvents = () => {
         <p className="text-xs text-gray-500">Showing {filtered.length} of {displayed.length} {tab} events</p>
       </div>
 
-      {/* Create Event Modal */}
+      {/* Add Event Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setModalOpen(false)}>
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-lg font-semibold text-gray-900">Create New Event</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Add Event</h2>
               <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
             <form onSubmit={handleCreateEvent} className="p-6 space-y-4">
+              <ActivityTypeSelect
+                value={form.activityType}
+                onChange={(activityType) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    activityType,
+                    locationId: prev.activityType === activityType ? prev.locationId : '',
+                  }))
+                }
+              />
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Organizer *</label>
@@ -290,13 +318,13 @@ export const AdminEvents = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Location *</label>
-                  <select required value={form.locationId} onChange={(e) => setForm({ ...form, locationId: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm">
-                    <option value="">Select location...</option>
-                    {locations.map((loc) => (
-                      <option key={loc.id} value={loc.id}>{loc.name} ({loc.region} - {loc.activityType})</option>
-                    ))}
-                  </select>
+                  <LocationSelect
+                    value={form.locationId}
+                    onChange={(locationId) => setForm({ ...form, locationId })}
+                    activityType={form.activityType}
+                    locations={filteredLocations}
+                    allowAddNew={false}
+                  />
                 </div>
               </div>
 
@@ -366,6 +394,7 @@ export const AdminEvents = () => {
                   max={6}
                   keyPrefix="events"
                   kind="event-image"
+                  preset="event"
                 />
               </div>
 
@@ -395,6 +424,19 @@ export const AdminEvents = () => {
                 : 'This will restore the event and make it visible to the public again.'}
             </p>
             <p className="text-sm font-medium text-gray-900 mb-4">{confirmTarget.event.title || confirmTarget.event.locationName}</p>
+            {confirmTarget.action === 'suspend' && (
+              <div className="mb-4">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Reason for suspension *</label>
+                <textarea
+                  value={suspendComment}
+                  onChange={(e) => setSuspendComment(e.target.value)}
+                  placeholder="Explain why this event is being suspended..."
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                  rows={3}
+                  maxLength={500}
+                />
+              </div>
+            )}
             <div className="flex gap-3 justify-end">
               <button onClick={() => setConfirmTarget(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
               <button onClick={executeModerate}

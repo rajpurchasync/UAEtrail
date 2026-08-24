@@ -1,15 +1,10 @@
 import type { Express } from 'express';
+import { configureTestMongoUri } from './test-db.js';
 
 export const configureTestEnv = (): void => {
   process.env.NODE_ENV = 'test';
   process.env.PORT = '4001';
-  // Never use production Atlas from apps/api/.env during tests
-  const testMongoUri = process.env.MONGODB_URI_TEST;
-  process.env.MONGODB_URI =
-    process.env.TEST_MONGODB_URI ??
-    process.env.MONGODB_URI ??
-    testMongoUri ??
-    'mongodb://127.0.0.1:27017/uaetrail_test';
+  configureTestMongoUri();
   process.env.JWT_ACCESS_SECRET =
     process.env.JWT_ACCESS_SECRET ?? 'test-access-secret-test-access-secret';
   process.env.JWT_REFRESH_SECRET =

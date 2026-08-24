@@ -189,6 +189,16 @@ export const cleanupTestUsers = async (): Promise<void> => {
   await db().collection('auth_users').deleteMany({ _id: { $in: testUserIds } });
 };
 
+import { peekTestVerificationOtp } from '../../src/lib/email.js';
+
+export const getVerificationOtp = (email: string): string => {
+  const otp = peekTestVerificationOtp(email);
+  if (!otp) {
+    throw new Error(`No verification OTP captured for ${email}`);
+  }
+  return otp;
+};
+
 export const registerVerifiedVisitor = async (
   app: import('express').Express,
   suffix: string
@@ -212,7 +222,7 @@ export const registerVerifiedVisitor = async (
 
   const verifyRes = await request(app)
     .post('/api/v1/auth/verify-email')
-    .send({ token: registerRes.body.verificationToken });
+    .send({ email, otp: getVerificationOtp(email) });
 
   if (verifyRes.status !== 200) {
     throw new Error(`Failed to verify test visitor: ${verifyRes.status}`);
@@ -221,6 +231,6 @@ export const registerVerifiedVisitor = async (
   return {
     email,
     password,
-    accessToken: registerRes.body.tokens.accessToken as string
+    accessToken: verifyRes.body.tokens.accessToken as string
   };
 };

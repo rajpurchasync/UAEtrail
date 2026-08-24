@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Calendar, Car, ChevronLeft, ChevronRight, Eye, MapPin, Users } from 'lucide-react';
 import { LocationSelect } from './LocationSelect';
+import { ActivityTypeSelect } from './ActivityTypeSelect';
 import { MapPinFields, parseCoord } from './MeetingPointMap';
 import { HostSelect } from './HostSelect';
 import { Dialog } from './Dialog';
@@ -15,7 +16,6 @@ import {
 } from '../../utils/tripPricing';
 
 import type { ActivityType } from '../../config/activityTypes';
-import { ACTIVITY_TYPE_LABELS } from '../../config/activityTypes';
 type PricingType = 'free' | 'paid';
 type WizardStep = 1 | 2 | 3 | 4;
 
@@ -255,25 +255,10 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
         {/* ─── Step 1: Summary ─── */}
         {step === 1 && (
           <>
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Activity type</label>
-              <div className="flex gap-2">
-                {(['hiking', 'camping', 'community_event'] as ActivityType[]).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setForm({ ...form, activityType: type, locationId: '' })}
-                    className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                      form.activityType === type
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {ACTIVITY_TYPE_LABELS[type]}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ActivityTypeSelect
+              value={form.activityType}
+              onChange={(activityType) => setForm({ ...form, activityType, locationId: '' })}
+            />
 
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Location *</label>

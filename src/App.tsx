@@ -28,6 +28,7 @@ const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.Sig
 const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
 const SignedOut = lazy(() => import('./pages/SignedOut').then((m) => ({ default: m.SignedOut })));
 const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
+const WelcomeSignup = lazy(() => import('./pages/WelcomeSignup').then((m) => ({ default: m.WelcomeSignup })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 const AdminOverview = lazy(() => import('./pages/AdminOverview').then((m) => ({ default: m.AdminOverview })));
 const AdminLocations = lazy(() => import('./pages/AdminLocations').then((m) => ({ default: m.AdminLocations })));
@@ -261,6 +262,14 @@ function App() {
           />
           <Route path="/faq" element={<Faq />} />
           <Route path="/verify" element={<VerifyOTP />} />
+          <Route
+            path="/welcome"
+            element={
+              <ProtectedRoute roles={['visitor', 'merchant_admin']}>
+                <WelcomeSignup />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/onboarding" element={<Navigate to="/" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/login" element={<SignIn />} />

@@ -32,7 +32,7 @@ export const ORGANIZER_DASHBOARD_LINKS = [
 export const ADMIN_LINKS = [
   { to: '/admin/overview', label: 'Overview' },
   { to: '/admin/locations', label: 'Locations' },
-  { to: '/admin/users', label: 'Users' },
+  { to: '/admin/users', label: 'User Management' },
   { to: '/admin/organizers', label: 'Organizers' },
   { to: '/admin/events', label: 'Events' },
   { to: '/admin/groups', label: 'Groups' },

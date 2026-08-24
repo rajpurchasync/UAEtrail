@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, Mail, Lock, Mountain } from 'lucide-react';
+import { ChevronLeft, Mail, Lock, Mountain, X } from 'lucide-react';
 import { api } from '../api/services';
 import { setActiveTenantId } from '../api/tenant';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
 import { resolveAuthRedirect } from '../utils/authRedirect';
+import { isPendingEmailVerification } from '../utils/authVerification';
 import {
   clearAuthReturnContext,
   parseAuthReturnContextFromSearch,
@@ -64,7 +65,29 @@ export const SignIn = () => {
     return true;
   };
 
+  const redirectToVerify = (pending: {
+    email: string;
+    expiresAt?: string;
+    expiresInSeconds?: number;
+    message?: string;
+  }) => {
+    navigate('/verify', {
+      replace: true,
+      state: {
+        email: pending.email,
+        expiresAt: pending.expiresAt,
+        expiresInSeconds: pending.expiresInSeconds,
+        redirectTo: from,
+        notice: pending.message
+      }
+    });
+  };
+
   const completeAuth = async (signedInUser: Awaited<ReturnType<typeof signIn>>) => {
+    if (isPendingEmailVerification(signedInUser)) {
+      redirectToVerify(signedInUser);
+      return;
+    }
     if (from && from !== '/' && from !== '/signin' && from !== '/signup' &&
         isFromValidForRole(from, signedInUser.role)) {
       const context = parseAuthReturnContextFromSearch(searchParams, from);
@@ -136,28 +159,40 @@ export const SignIn = () => {
     }
   };
 
+  const fieldClass = 'ios-input text-[17px] border border-neutral-300 bg-white';
+
   return (
-    <div className="min-h-screen consumer-bg flex flex-col p-6 safe-area-top safe-area-bottom">
+    <div className="min-h-screen bg-ios-bg flex flex-col py-8 px-6 safe-area-top safe-area-bottom">
       <PageMeta title="Sign in" noIndex />
-      <div className="max-w-md w-full mx-auto mb-4">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
-        >
-          <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
-          <span className="text-[17px] font-medium">Back</span>
-        </button>
-      </div>
-      <div className="max-w-md w-full mx-auto glass-card shadow-glass-lg p-8 flex-1 flex flex-col justify-center animate-fade-up">
-        <Link to="/" className="flex items-center justify-center gap-2 mb-6">
+
+      <div className="max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-6 sm:p-8 flex-1">
+        <div className="flex items-center justify-between mb-2">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
+          >
+            <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
+            <span className="text-[17px] font-medium">Back</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:opacity-60"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" strokeWidth={2.25} />
+          </button>
+        </div>
+
+        <Link to="/" className="flex items-center justify-center gap-2 mb-5 -mt-1">
           <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-[10px] flex items-center justify-center">
             <Mountain className="w-5 h-5 text-white" />
           </div>
           <span className="text-lg font-bold text-neutral-900 tracking-tight">UAE Trail</span>
         </Link>
-        <h1 className="text-[28px] font-bold text-neutral-900 mb-1 tracking-tight">Welcome back</h1>
-        <p className="text-[15px] text-neutral-500 mb-6">Log in to your UAE Trail account</p>
+        <h1 className="text-[28px] font-bold text-neutral-900 mb-1 tracking-tight text-center">Welcome</h1>
+        <p className="text-[15px] text-neutral-500 mb-6 text-center">Log in to your UAE Trail account</p>
 
         <GoogleAuthSection
           onSuccess={handleGoogleSignIn}
@@ -170,9 +205,9 @@ export const SignIn = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-neutral-500 pointer-events-none" />
               <input
-                className="ios-input pl-10 text-[17px]"
+                className={`${fieldClass} pl-11`}
                 type="email"
                 placeholder="you@example.com"
                 value={email}
@@ -189,9 +224,9 @@ export const SignIn = () => {
               </Link>
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-neutral-500 pointer-events-none" />
               <input
-                className="ios-input pl-10 text-[17px]"
+                className={`${fieldClass} pl-11`}
                 type="password"
                 placeholder="Enter your password"
                 value={password}

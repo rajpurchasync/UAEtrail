@@ -189,7 +189,7 @@ const MobileMenuPanel = () => {
               </span>
               <span className="font-semibold">Switch to Visitor</span>
             </button>
-            <button type="button" onClick={async () => { closeMenu(); await signOut(); navigate('/signed-out', { replace: true }); }} className={`w-full ${navItemClass(false)}`}>
+            <button type="button" onClick={async () => { closeMenu(); await signOut(); }} className={`w-full ${navItemClass(false)}`}>
               <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
                 <LogOut className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
               </span>
@@ -257,7 +257,7 @@ const MobileMenuPanel = () => {
             </button>
             <button
               type="button"
-              onClick={async () => { closeMenu(); await signOut(); navigate('/signed-out', { replace: true }); }}
+              onClick={async () => { closeMenu(); await signOut(); }}
               className={`w-full ${navItemClass(false)}`}
             >
               <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
@@ -369,7 +369,6 @@ const MobileMenuPanel = () => {
               onClick={async () => {
                 closeMenu();
                 await signOut();
-                navigate('/signed-out', { replace: true });
               }}
               className={`w-full ${navItemClass(false)}`}
             >

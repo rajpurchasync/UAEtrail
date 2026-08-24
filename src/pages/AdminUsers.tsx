@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AdminUserType } from '@uaetrail/shared-types';
 import { api } from '../api/services';
+import { AdminUserDetail, AdminUserDetailPanel } from '../components/admin/AdminUserDetailPanel';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../constants/userTypes';
@@ -18,23 +19,6 @@ interface UserRow {
   lastActiveAt?: string | null;
 }
 
-interface UserDetail {
-  id: string;
-  email: string;
-  role: string;
-  userType?: AdminUserType;
-  status: string;
-  authProvider?: string;
-  googleLinked?: boolean;
-  createdAt: string;
-  lastActiveAt?: string | null;
-  emailVerifiedAt?: string | null;
-  profile?: { displayName?: string; phone?: string; bio?: string; avatarUrl?: string };
-  requests?: Array<{ id: string; eventTitle: string; status: string; createdAt: string }>;
-  trips?: Array<{ eventId: string; eventTitle: string; date: string; checkedInAt?: string | null }>;
-  memberships?: Array<{ tenantName: string; role: string }>;
-}
-
 export const AdminUsers = () => {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -45,9 +29,11 @@ export const AdminUsers = () => {
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
+  const [selectedUser, setSelectedUser] = useState<AdminUserDetail | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<UserRow | null>(null);
+  const [suspendComment, setSuspendComment] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -80,19 +66,31 @@ export const AdminUsers = () => {
   const executeToggleStatus = async () => {
     if (!confirmTarget) return;
     const newStatus = confirmTarget.status === 'active' ? 'suspended' : 'active';
+    if (newStatus === 'suspended' && !suspendComment.trim()) {
+      setError('A comment is required when suspending an account.');
+      return;
+    }
+    setActionLoading(true);
     try {
-      await api.updateAdminUserStatus(confirmTarget.id, newStatus as 'active' | 'suspended');
+      await api.updateAdminUserStatus(
+        confirmTarget.id,
+        newStatus,
+        newStatus === 'suspended' ? suspendComment.trim() : undefined
+      );
       setConfirmTarget(null);
+      setSuspendComment('');
       await loadUsers();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to update user status');
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const openDetail = async (id: string) => {
     try {
       const res = await api.getAdminUserDetail(id);
-      setSelectedUser(res.data as unknown as UserDetail);
+      setSelectedUser(res.data as unknown as AdminUserDetail);
       setDetailOpen(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load user details');
@@ -115,7 +113,6 @@ export const AdminUsers = () => {
 
   return (
     <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
-      {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-4">
         <form onSubmit={handleSearch} className="flex gap-2">
           <input type="text" placeholder="Search email or name..." value={search} onChange={(e) => setSearch(e.target.value)}
@@ -125,10 +122,10 @@ export const AdminUsers = () => {
         <select value={userTypeFilter} onChange={(e) => { setUserTypeFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
           <option value="">All User Types</option>
           <option value="participant">Participant</option>
-          <option value="business_organizer">Business Organizer</option>
-          <option value="guide_organizer">Guide Organizer</option>
-          <option value="organizer_staff">Organizer Staff</option>
-          <option value="platform_admin">Platform Admin</option>
+          <option value="guide_organizer">Individual Host</option>
+          <option value="business_organizer">Organizer</option>
+          <option value="organizer_staff">Host Staff</option>
+          <option value="platform_admin">Admin</option>
         </select>
         <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
           <option value="">All Roles (legacy)</option>
@@ -147,7 +144,6 @@ export const AdminUsers = () => {
 
       {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
 
-      {/* Table */}
       <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
@@ -194,7 +190,7 @@ export const AdminUsers = () => {
                   <div className="flex gap-2">
                     <button onClick={() => openDetail(u.id)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">View</button>
                     {u.role !== 'platform_admin' && (
-                      <button onClick={() => setConfirmTarget(u)}
+                      <button onClick={() => { setConfirmTarget(u); setSuspendComment(''); }}
                         className={`px-2 py-1 rounded text-xs ${u.status === 'active' ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}>
                         {u.status === 'active' ? 'Suspend' : 'Activate'}
                       </button>
@@ -207,7 +203,6 @@ export const AdminUsers = () => {
         </table>
       </div>
 
-      {/* Pagination */}
       {total > 20 && (
         <div className="flex justify-between items-center mt-4">
           <p className="text-sm text-gray-600">Showing {(page - 1) * 20 + 1}-{Math.min(page * 20, total)} of {total}</p>
@@ -218,7 +213,6 @@ export const AdminUsers = () => {
         </div>
       )}
 
-      {/* Status Toggle Confirmation Modal */}
       {confirmTarget && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmTarget(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
@@ -231,119 +225,39 @@ export const AdminUsers = () => {
                 : 'This will restore the user\'s access to the platform.'}
             </p>
             <p className="text-sm font-medium text-gray-900 mb-4">{confirmTarget.displayName || confirmTarget.email}</p>
+            {confirmTarget.status === 'active' && (
+              <div className="mb-4">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Reason for suspension *</label>
+                <textarea
+                  value={suspendComment}
+                  onChange={(e) => setSuspendComment(e.target.value)}
+                  placeholder="Explain why this account is being suspended..."
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                  rows={3}
+                  maxLength={500}
+                />
+              </div>
+            )}
             <div className="flex gap-3 justify-end">
               <button onClick={() => setConfirmTarget(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={executeToggleStatus}
-                className={`px-4 py-2 rounded-md text-sm text-white ${confirmTarget.status === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
-                {confirmTarget.status === 'active' ? 'Suspend' : 'Activate'}
+              <button onClick={executeToggleStatus} disabled={actionLoading}
+                className={`px-4 py-2 rounded-md text-sm text-white disabled:opacity-60 ${confirmTarget.status === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                {actionLoading ? 'Saving...' : confirmTarget.status === 'active' ? 'Suspend' : 'Activate'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Detail Modal */}
       {detailOpen && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setDetailOpen(false)}>
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-3">
-                {selectedUser.profile?.avatarUrl ? (
-                  <img src={selectedUser.profile.avatarUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">
-                    {(selectedUser.profile?.displayName || selectedUser.email).charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">{selectedUser.profile?.displayName || selectedUser.email}</h2>
-                  <p className="text-sm text-gray-500">{selectedUser.email}</p>
-                </div>
-              </div>
-              <button onClick={() => setDetailOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex gap-3 items-center flex-wrap">
-                {typeBadge(selectedUser.userType)}
-                {statusBadge(selectedUser.status)}
-                {selectedUser.authProvider && (
-                  <span className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700 capitalize">
-                    via {selectedUser.authProvider}
-                  </span>
-                )}
-                <span className="text-xs text-gray-500">Joined {new Date(selectedUser.createdAt).toLocaleDateString()}</span>
-                {selectedUser.lastActiveAt && (
-                  <span className="text-xs text-gray-500">Last active {new Date(selectedUser.lastActiveAt).toLocaleString()}</span>
-                )}
-              </div>
-
-              {selectedUser.profile?.bio && (
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-medium mb-1">Bio</p>
-                  <p className="text-sm text-gray-700">{selectedUser.profile.bio}</p>
-                </div>
-              )}
-
-              {selectedUser.profile?.phone && (
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-medium mb-1">Phone</p>
-                  <p className="text-sm text-gray-700">{selectedUser.profile.phone}</p>
-                </div>
-              )}
-
-              {selectedUser.memberships && selectedUser.memberships.length > 0 && (
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-medium mb-1">Tenant Memberships</p>
-                  <ul className="text-sm text-gray-700 space-y-1">
-                    {selectedUser.memberships.map((m, i) => (
-                      <li key={i} className="flex justify-between">
-                        <span>{m.tenantName}</span>
-                        <span className="text-xs capitalize text-gray-600">{m.role.replace(/_/g, ' ')}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {selectedUser.requests && selectedUser.requests.length > 0 && (
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-medium mb-1">Recent Requests ({selectedUser.requests.length})</p>
-                  <ul className="text-sm text-gray-700 space-y-1">
-                    {selectedUser.requests.slice(0, 5).map((r) => (
-                      <li key={r.id} className="flex justify-between">
-                        <span>{r.eventTitle}</span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded ${
-                          r.status === 'approved' ? 'bg-green-100 text-green-700' :
-                          r.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                          r.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>{r.status}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {selectedUser.trips && selectedUser.trips.length > 0 && (
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-medium mb-1">Trips ({selectedUser.trips.length})</p>
-                  <ul className="text-sm text-gray-700 space-y-1">
-                    {selectedUser.trips.slice(0, 5).map((t) => (
-                      <li key={t.eventId} className="flex justify-between items-center">
-                        <span>{t.eventTitle}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">{t.date}</span>
-                          {t.checkedInAt && <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">✓ Checked in</span>}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <AdminUserDetailPanel
+          user={selectedUser}
+          onClose={() => setDetailOpen(false)}
+          onOpenUser={(userId) => {
+            setDetailOpen(false);
+            void openDetail(userId);
+          }}
+        />
       )}
     </DashboardLayout>
   );

@@ -1,12 +1,16 @@
 import { AuthResponse, AuthUser } from '@uaetrail/shared-types';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { apiRequest, getStoredSession, setStoredSession, setSessionInvalidatedHandler, USER_STORAGE_KEY } from '../api/client';
+import {
+  PendingEmailVerification,
+  RegisterPendingVerification
+} from '../utils/authVerification';
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   initializing: boolean;
-  signIn: (email: string, password: string) => Promise<AuthUser>;
+  signIn: (email: string, password: string) => Promise<AuthUser | PendingEmailVerification>;
   signInDemo: (email: string) => Promise<AuthUser>;
   signInWithGoogle: (idToken: string, referralCode?: string, groupInviteToken?: string) => Promise<AuthUser>;
   signOut: () => Promise<void>;
@@ -19,8 +23,8 @@ interface AuthContextValue {
     organizationName?: string;
     referralCode?: string;
     groupInviteToken?: string;
-  }) => Promise<{ verificationToken?: string }>;
-  verifyEmail: (token: string) => Promise<AuthUser>;
+  }) => Promise<RegisterPendingVerification>;
+  verifyEmail: (email: string, otp: string) => Promise<AuthUser>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -120,14 +124,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return hydrated;
   };
 
-  const signIn = async (email: string, password: string): Promise<AuthUser> => {
+  const signIn = async (email: string, password: string): Promise<AuthUser | PendingEmailVerification> => {
     setLoading(true);
     try {
-      const response = await apiRequest<AuthResponse & { emailVerified?: boolean }>('/auth/login', {
+      const response = await apiRequest<{
+          emailVerified?: boolean;
+          requiresEmailVerification?: boolean;
+          email?: string;
+          expiresAt?: string;
+          expiresInSeconds?: number;
+          message?: string;
+        } & Partial<AuthResponse>
+      >('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password })
       });
-      return await applyAuthResponse(response);
+
+      if (response.requiresEmailVerification) {
+        return {
+          requiresEmailVerification: true,
+          email: response.email ?? email,
+          expiresAt: response.expiresAt,
+          expiresInSeconds: response.expiresInSeconds,
+          message: response.message
+        };
+      }
+
+      if (!response.user || !response.tokens) {
+        throw new Error('Sign in failed. Please try again.');
+      }
+
+      return await applyAuthResponse(response as AuthResponse);
     } finally {
       setLoading(false);
     }
@@ -146,14 +173,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const verifyEmail = async (token: string): Promise<AuthUser> => {
+  const verifyEmail = async (email: string, otp: string): Promise<AuthUser> => {
     setLoading(true);
     try {
       const response = await apiRequest<AuthResponse & { message?: string; emailVerified?: boolean }>(
         '/auth/verify-email',
         {
           method: 'POST',
-          body: JSON.stringify({ token })
+          body: JSON.stringify({ email, otp })
         }
       );
       return await applyAuthResponse(response);
@@ -178,10 +205,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     organizationName?: string;
     referralCode?: string;
     groupInviteToken?: string;
-  }): Promise<{ verificationToken?: string }> => {
+  }): Promise<RegisterPendingVerification> => {
     setLoading(true);
     try {
-      const response = await apiRequest<AuthResponse & { verificationToken?: string }>('/auth/register', {
+      const response = await apiRequest<{
+        email: string;
+        expiresAt?: string;
+        expiresInSeconds?: number;
+        message?: string;
+      }>('/auth/register', {
         method: 'POST',
         body: JSON.stringify({
           email,
@@ -193,11 +225,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           groupInviteToken
         })
       });
-      setStoredSession(response.tokens);
-      const hydrated = await hydrateUserFromProfile(response.user);
-      setStoredUser(hydrated);
-      setUser(hydrated);
-      return { verificationToken: response.verificationToken };
+
+      return {
+        email: response.email,
+        expiresAt: response.expiresAt,
+        expiresInSeconds: response.expiresInSeconds,
+        message: response.message
+      };
     } finally {
       setLoading(false);
     }
@@ -228,6 +262,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setStoredSession(null);
     setStoredUser(null);
     setUser(null);
+    if (window.location.pathname !== '/') {
+      window.location.replace('/');
+    }
   };
 
   const refreshUser = async (): Promise<void> => {

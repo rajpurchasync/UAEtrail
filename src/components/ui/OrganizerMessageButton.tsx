@@ -1,4 +1,4 @@
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { messagesRouteForRole } from '../../utils/authRouting';
@@ -35,26 +35,40 @@ export const OrganizerMessageButton = ({
   if (user?.id === organizerUserId) return null;
 
   const messageOptions = eventId ? { eventId } : undefined;
-  const messagePath = user
-    ? messagesRouteForRole(user.role, organizerUserId, messageOptions)
-    : messagesRouteForRole('visitor', organizerUserId, messageOptions);
+  const messagePath = messagesRouteForRole(user?.role ?? 'visitor', organizerUserId, messageOptions);
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleGuestClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!user) {
-      navigate('/signin', { state: { from: messagePath } });
-      return;
-    }
+    navigate('/signin', { state: { from: messagePath } });
+  };
+
+  const handleMessageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     navigate(messagePath);
   };
+
+  if (!user) {
+    return (
+      <button
+        type="button"
+        onClick={handleGuestClick}
+        aria-label="Sign in to message host"
+        title="Sign in to message host"
+        className={`inline-flex items-center justify-center rounded-full text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 transition-colors shrink-0 ${sizeClasses[size]} ${className}`}
+      >
+        <LogIn className={iconSizes[size]} />
+      </button>
+    );
+  }
 
   return (
     <button
       type="button"
-      onClick={handleClick}
-      aria-label={user ? 'Message organizer' : 'Sign in to message organizer'}
-      title={user ? 'Message organizer' : 'Sign in to message'}
+      onClick={handleMessageClick}
+      aria-label="Message host"
+      title="Message host"
       className={`inline-flex items-center justify-center rounded-full text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 transition-colors shrink-0 ${sizeClasses[size]} ${className}`}
     >
       <MessageSquare className={iconSizes[size]} />

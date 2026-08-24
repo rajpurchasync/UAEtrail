@@ -4,6 +4,7 @@ import type { Express } from 'express';
 import { ActivityType, Difficulty, LocationStatus } from '../src/domain/enums.js';
 import { createLocationRecord } from '../src/lib/events-store.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
+import { getVerificationOtp } from './helpers/fixtures.js';
 
 let app: Express;
 let accessToken = '';
@@ -39,11 +40,11 @@ beforeAll(async () => {
       accountType: 'visitor'
     });
 
-  await request(app)
+  const verifyRes = await request(app)
     .post('/api/v1/auth/verify-email')
-    .send({ token: register.body.verificationToken });
+    .send({ email, otp: getVerificationOtp(email) });
 
-  accessToken = register.body.tokens.accessToken;
+  accessToken = verifyRes.body.tokens.accessToken;
 });
 
 describe('premium unlock security', () => {

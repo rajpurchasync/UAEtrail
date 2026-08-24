@@ -133,6 +133,7 @@ export interface SocialGroupView {
   bannerUrl?: string | null;
   photoUrl?: string | null;
   adminUserId: string;
+  status?: 'active' | 'suspended';
   createdAt: string;
   updatedAt: string;
 }
@@ -384,6 +385,18 @@ export const api = {
       auth: true,
       body: JSON.stringify(payload)
     }),
+  requestEmailChange: (newEmail: string) =>
+    apiRequest<{ message: string; email: string; expiresInSeconds: number }>('/me/email/change/request', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify({ newEmail })
+    }),
+  confirmEmailChange: (newEmail: string, otp: string) =>
+    apiRequest<{ message: string; data: { email: string } }>('/me/email/change/confirm', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify({ newEmail, otp })
+    }),
   getAccountDeletionInfo: () =>
     apiRequest<{ data: AccountDeletionInfo }>('/me/account/deletion-info', { auth: true }),
   deleteAccount: (payload: { password?: string; confirmPhrase?: 'DELETE' }) =>
@@ -566,11 +579,13 @@ export const api = {
       body: JSON.stringify({ status, reviewerNote })
     }),
   getAdminEvents: () => apiRequest<{ data: EventDTO[] }>('/admin/events/moderation', { auth: true }),
-  moderateEvent: (id: string, action: 'suspend' | 'unsuspend') =>
+  getAdminEventDetail: (id: string) =>
+    apiRequest<{ data: EventDTO }>(`/admin/events/${id}`, { auth: true }),
+  moderateEvent: (id: string, action: 'suspend' | 'unsuspend', comment?: string) =>
     apiRequest(`/admin/events/moderation/${id}`, {
       method: 'PATCH',
       auth: true,
-      body: JSON.stringify({ action })
+      body: JSON.stringify({ action, comment })
     }),
   createAdminEvent: (payload: Record<string, unknown>) =>
     apiRequest<{ data: EventDTO }>('/admin/events', {
@@ -664,11 +679,11 @@ export const api = {
   },
   getAdminUserDetail: (id: string) =>
     apiRequest<{ data: Record<string, unknown> }>(`/admin/users/${id}`, { auth: true }),
-  updateAdminUserStatus: (id: string, status: 'active' | 'suspended') =>
+  updateAdminUserStatus: (id: string, status: 'active' | 'suspended', comment?: string) =>
     apiRequest(`/admin/users/${id}/status`, {
       method: 'PATCH',
       auth: true,
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status, comment })
     }),
 
   // ─── Admin - Groups ─────────────────────────────────────────────────────
@@ -687,6 +702,12 @@ export const api = {
   },
   getAdminGroupDetail: (id: string) =>
     apiRequest<{ data: AdminSocialGroupDetail }>(`/admin/groups/${id}`, { auth: true }),
+  updateAdminGroupStatus: (id: string, status: 'active' | 'suspended', comment?: string) =>
+    apiRequest(`/admin/groups/${id}/status`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ status, comment })
+    }),
 
   // ─── Admin - Tenants ────────────────────────────────────────────────────
 
@@ -694,11 +715,11 @@ export const api = {
     apiRequest<{ data: TenantListDTO[] }>('/admin/tenants', { auth: true }),
   getAdminTenantDetail: (id: string) =>
     apiRequest<{ data: TenantDetail }>(`/admin/tenants/${id}`, { auth: true }),
-  updateAdminTenantStatus: (id: string, status: 'active' | 'suspended') =>
+  updateAdminTenantStatus: (id: string, status: 'active' | 'suspended', comment?: string) =>
     apiRequest(`/admin/tenants/${id}/status`, {
       method: 'PATCH',
       auth: true,
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status, comment })
     }),
 
   // ─── Organizer - Check-in ──────────────────────────────────────────────

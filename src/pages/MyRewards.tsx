@@ -105,7 +105,15 @@ export const MyRewards = () => {
         </GlassCard>
       )}
 
-      {summary && !loading && (
+      {!loading && summary?.trailPointsEligible === false && (
+        <GlassCard padding className="mb-3">
+          <p className="text-sm text-gray-700">
+            Trail Points are for participants and host staff. Business organizer accounts manage events on the platform but do not earn personal Trail Points.
+          </p>
+        </GlassCard>
+      )}
+
+      {summary && summary.trailPointsEligible !== false && !loading && (
         <div className="space-y-4 animate-fade-up pb-2">
           <GlassCard padding className="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white border-0">
             <div className="flex items-start justify-between gap-3">

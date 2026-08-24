@@ -1,7 +1,7 @@
 import type { ImgHTMLAttributes } from 'react';
-import { formatEnvironmentUrl } from '../../utils/formatEnvironmentUrl';
+import { formatMediaUrl } from '../../utils/formatMediaUrl';
 
-/** <img> that rewrites Docker-internal MinIO/Grafana/Prometheus hosts for the browser. */
+/** <img> that resolves stored media URLs for browser display. */
 export const EnvironmentImage = ({ src, ...props }: ImgHTMLAttributes<HTMLImageElement>) => (
-  <img {...props} src={src ? formatEnvironmentUrl(src) : src} />
+  <img {...props} src={src ? formatMediaUrl(src) : src} />
 );

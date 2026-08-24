@@ -8,6 +8,7 @@ import { initChatStreamPubSub, closeChatStreamPubSub } from './services/chat-str
 import { registerRateLimiters } from './middleware/rate-limit-instances.js';
 import { createRateLimiters } from './middleware/rate-limit.js';
 import { probeS3 } from './lib/s3.js';
+import { resolveEmailConfig } from './lib/email-config.js';
 
 const STARTUP_RETRY_DELAY_MS = 5000;
 
@@ -26,6 +27,15 @@ process.on('unhandledRejection', (reason) => {
 
 const start = async () => {
   validateOptionalIntegrations();
+  const emailConfig = resolveEmailConfig();
+  if (emailConfig.configured) {
+    logger.info({ runEnv: emailConfig.runEnv, from: emailConfig.emailFrom }, 'email delivery configured');
+  } else if (env.NODE_ENV !== 'production') {
+    logger.warn(
+      { runEnv: emailConfig.runEnv },
+      'email not configured — verification links are logged to the console in development'
+    );
+  }
   await probeS3();
   if (process.env.REDIS_URL) {
     await getRedisClient();

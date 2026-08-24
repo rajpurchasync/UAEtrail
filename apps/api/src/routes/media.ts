@@ -1,3 +1,4 @@
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { Router, raw } from 'express';
 import { z } from 'zod';
 import { mkdir, stat, writeFile } from 'node:fs/promises';
@@ -10,6 +11,7 @@ import {
   isS3Available,
   PRESIGN_GET_TTL_SECONDS,
   publicAssetUrl,
+  s3Client,
   storageBucketForKind
 } from '../lib/s3.js';
 import { safePathUnder } from '../lib/safe-path.js';
@@ -150,21 +152,63 @@ const extraKnownBuckets = (): string[] => [env.S3_PUBLIC_BUCKET, env.S3_PRIVATE_
 
 export const mediaRouter = Router();
 
+const servePublicMedia = async (key: string, res: import('express').Response): Promise<boolean> => {
+  const parsed = parseMediaKey(key);
+  const kind = parsed?.kind ?? 'general';
+  if (isPrivateMediaKind(kind)) {
+    res.status(403).json({ error: { code: 'forbidden', message: 'This media is not public.' } });
+    return true;
+  }
+
+  const bucket = storageBucketForKind(kind);
+  const localPath = safePathUnder(LOCAL_UPLOADS_DIR, key);
+  if (localPath) {
+    try {
+      const fileStat = await stat(localPath);
+      if (fileStat.isFile()) {
+        const ext = key.split('.').pop()?.toLowerCase();
+        const contentType =
+          ext === 'webp' ? 'image/webp' :
+          ext === 'png' ? 'image/png' :
+          ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
+          ext === 'gif' ? 'image/gif' :
+          'application/octet-stream';
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.sendFile(localPath);
+        return true;
+      }
+    } catch {
+      /* fall through to S3 */
+    }
+  }
+
+  if (isS3Available() && s3Client) {
+    try {
+      const response = await s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+      if (!response.Body) return false;
+      const bytes = await response.Body.transformToByteArray();
+      res.setHeader('Content-Type', response.ContentType ?? 'application/octet-stream');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.send(Buffer.from(bytes));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+};
+
 if (isLocalMediaDevMode()) {
   /* ─── Serve local uploads when S3 is not configured (dev only) ─────────── */
-  mediaRouter.get('/local/*', (req, res) => {
-  const filePath = (req.params as unknown as Record<string, string>)[0] ?? req.path.replace('/local/', '');
-  const absolute = safePathUnder(LOCAL_UPLOADS_DIR, filePath);
-  if (!absolute) {
-    res.status(400).json({ error: { code: 'invalid_path', message: 'Invalid file path.' } });
-    return;
-  }
-  res.sendFile(absolute, (err) => {
-    if (err) {
+  mediaRouter.get(/^\/local\/(.+)$/, async (req, res) => {
+    const filePath = req.params[0];
+    const served = await servePublicMedia(filePath, res);
+    if (!served && !res.headersSent) {
       res.status(404).json({ error: { code: 'not_found', message: 'File not found.' } });
     }
   });
-});
 
 /* ─── Local PUT upload endpoint (dev fallback when no S3) ───────────────── */
 mediaRouter.put(
@@ -188,6 +232,19 @@ mediaRouter.put(
     }
   });
 }
+
+/* ─── Public media proxy (local disk or S3/MinIO) ───────────────────────── */
+mediaRouter.get(/^\/public\/(.+)$/, async (req, res) => {
+  const key = req.params[0];
+  if (!key) {
+    res.status(400).json({ error: { code: 'invalid_path', message: 'Invalid file path.' } });
+    return;
+  }
+  const served = await servePublicMedia(key, res);
+  if (!served && !res.headersSent) {
+    res.status(404).json({ error: { code: 'not_found', message: 'File not found.' } });
+  }
+});
 
 mediaRouter.get('/resolve', optionalAuth, validate({ query: resolveQuerySchema }), async (req, res, next) => {
   try {
@@ -256,7 +313,7 @@ mediaRouter.get('/resolve', optionalAuth, validate({ query: resolveQuerySchema }
 
     res.json({
       data: {
-        url: `/api/v1/media/local/${key}`,
+        url: `/api/v1/media/public/${key}`,
         expiresAt: expiresAt.toISOString(),
         key
       }

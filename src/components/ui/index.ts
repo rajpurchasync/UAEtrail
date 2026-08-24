@@ -12,6 +12,7 @@ export { OrganizerMessageButton } from './OrganizerMessageButton';
 export { LocationDetailTabs, toLocationDetailData } from './LocationDetailTabs';
 export { SubmitLocationForm } from './SubmitLocationForm';
 export { LocationSelect } from './LocationSelect';
+export { ActivityTypeSelect } from './ActivityTypeSelect';
 export { Breadcrumb } from './Breadcrumb';
 export { TenantSwitcher } from './TenantSwitcher';
 export { MapPinPicker } from './MapPinPicker';

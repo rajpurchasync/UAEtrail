@@ -534,6 +534,8 @@ export interface RewardStatsDTO {
 }
 
 export interface RewardSummaryDTO {
+  /** False for business organizer accounts — they do not participate in Trail Points. */
+  trailPointsEligible?: boolean;
   points: number;
   membershipTier: MembershipTierDTO;
   nextTier: (Pick<MembershipTierDTO, 'key' | 'name' | 'minPoints' | 'emoji'> & { pointsRemaining: number }) | null;

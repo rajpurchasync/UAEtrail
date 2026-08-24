@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
+import { getVerificationOtp } from './helpers/fixtures.js';
 
 let app: Express;
 
@@ -27,12 +28,13 @@ describe('account deletion', () => {
 
     expect(response.status).toBe(201);
 
-    await request(app)
+    const verifyRes = await request(app)
       .post('/api/v1/auth/verify-email')
-      .send({ token: response.body.verificationToken });
+      .send({ email, otp: getVerificationOtp(email) });
 
-    accessToken = response.body.tokens.accessToken;
-    const cookies = response.headers['set-cookie'];
+    expect(verifyRes.status).toBe(200);
+    accessToken = verifyRes.body.tokens.accessToken;
+    const cookies = verifyRes.headers['set-cookie'];
     const cookieHeader = Array.isArray(cookies) ? cookies.join('; ') : cookies ?? '';
     refreshCookie = cookieHeader.split(';')[0];
   });
@@ -83,11 +85,11 @@ describe('data export', () => {
         accountType: 'visitor'
       });
 
-    await request(app)
+    const verifyRes = await request(app)
       .post('/api/v1/auth/verify-email')
-      .send({ token: registerRes.body.verificationToken });
+      .send({ email, otp: getVerificationOtp(email) });
 
-    const token = registerRes.body.tokens.accessToken;
+    const token = verifyRes.body.tokens.accessToken;
 
     const response = await request(app)
       .get('/api/v1/me/export')
@@ -117,11 +119,11 @@ describe('content reports', () => {
         accountType: 'visitor'
       });
 
-    await request(app)
+    const verifyRes = await request(app)
       .post('/api/v1/auth/verify-email')
-      .send({ token: registerRes.body.verificationToken });
+      .send({ email, otp: getVerificationOtp(email) });
 
-    accessToken = registerRes.body.tokens.accessToken;
+    accessToken = verifyRes.body.tokens.accessToken;
 
     const response = await request(app)
       .post('/api/v1/reports')

@@ -589,6 +589,7 @@ export const BecomeOrganizer = () => {
                       kind="avatar"
                       max={1}
                       label=""
+                      preset="profile"
                     />
                   </div>
 

@@ -3,7 +3,7 @@ import { Request, Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
 import { clearRefreshCookie, REFRESH_COOKIE_NAME, setRefreshCookie } from '../lib/auth-cookies.js';
-import { randomToken } from '../lib/hash.js';
+import { randomToken, generateEmailOtp } from '../lib/hash.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
 import { toSharedRole } from '../lib/mappers.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
@@ -15,11 +15,15 @@ import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email.js';
 import { verifyGoogleIdToken } from '../lib/google-auth.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
 import {
+  EMAIL_VERIFICATION_OTP_TTL_MS,
+  EMAIL_VERIFICATION_OTP_TTL_SECONDS
+} from '../lib/auth-constants.js';
+import {
   createEmailVerificationToken,
   createPasswordResetToken,
   createRefreshToken,
   findActiveRefreshToken,
-  findEmailVerificationToken,
+  findEmailVerificationTokenForUser,
   findPasswordResetToken,
   revokeRefreshToken,
   revokeRefreshTokensByUser,
@@ -34,6 +38,7 @@ import {
   updateAuthUserEmailVerifiedAt,
   updateAuthUserGoogleLink,
   updateAuthUserPassword,
+  updateAuthUserProfile,
   updateAuthUserLastActive,
   updateAuthUserCore
 } from '../lib/auth-users.js';
@@ -66,6 +71,10 @@ const demoLoginSchema = z.object({
 });
 
 const tokenSchema = z.object({ token: z.string().min(20) });
+const verifyEmailSchema = z.object({
+  email: z.string().email(),
+  otp: z.string().regex(/^\d{6}$/, 'Enter the 6-digit verification code.')
+});
 const refreshBodySchema = z.object({ refreshToken: z.string().min(20).optional() });
 const forgotSchema = z.object({ email: z.string().email() });
 const resetSchema = z.object({
@@ -93,6 +102,44 @@ const googleAuthSchema = z.object({
 
 const mapAccountTypeToTenantType = (accountType: 'company' | 'guide'): 'COMPANY' | 'GUIDE_OWNED' =>
   accountType === 'company' ? 'COMPANY' : 'GUIDE_OWNED';
+
+const issueEmailVerificationOtp = async (input: {
+  userId: string;
+  email: string;
+  displayName: string;
+}) => {
+  const otp = generateEmailOtp();
+  const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_OTP_TTL_MS);
+
+  await createEmailVerificationToken({
+    userId: input.userId,
+    token: otp,
+    expiresAt
+  });
+
+  try {
+    const sent = await sendVerificationEmail({
+      to: input.email,
+      name: input.displayName,
+      otp
+    });
+    if (!sent) {
+      throw new Error('Email transport is not configured.');
+    }
+  } catch (error) {
+    console.error('[auth] Failed to send verification email', {
+      email: input.email,
+      error: error instanceof Error ? error.message : String(error)
+    });
+    throw new ApiError(503, 'email_delivery_failed', 'Could not send verification email. Please try again.');
+  }
+
+  return {
+    otp,
+    expiresAt,
+    expiresInSeconds: EMAIL_VERIFICATION_OTP_TTL_SECONDS
+  };
+};
 
 const demoAccountEmails = new Set([
   'admin@uaetrails.app',
@@ -186,6 +233,26 @@ const respondWithAuth = (
   res.status(status).json({ ...buildAuthResponse(user, tokens), ...extra });
 };
 
+const respondWithPendingVerification = (
+  res: import('express').Response,
+  status: number,
+  input: {
+    email: string;
+    expiresAt: Date;
+    expiresInSeconds: number;
+    message?: string;
+  }
+): void => {
+  clearRefreshCookie(res);
+  res.status(status).json({
+    message: input.message ?? 'Check your email for a verification code.',
+    email: input.email,
+    requiresEmailVerification: true,
+    expiresAt: input.expiresAt.toISOString(),
+    expiresInSeconds: input.expiresInSeconds
+  });
+};
+
 // Role switch is session-only: restore the original role at every new login/refresh.
 const restoreRoleIfSwitched = async (user: { _id: string; role: UserRole; profile?: { switchedFromRole?: UserRole | null } }): Promise<UserRole> => {
   const original = user.profile?.switchedFromRole;
@@ -222,12 +289,38 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
   try {
     const { email, password, displayName, accountType, organizationName, referralCode, groupInviteToken } = req.body as z.infer<typeof registerSchema>;
     const existing = await findAuthUserByEmail(email);
-    if (existing) {
+
+    if (existing?.emailVerifiedAt) {
       throw new ApiError(409, 'email_taken', 'Email is already registered.');
     }
 
+    if (existing && !existing.emailVerifiedAt) {
+      if (!existing.passwordHash || !(await verifyPassword(password, existing.passwordHash))) {
+        throw new ApiError(
+          409,
+          'email_pending_verification',
+          'This email has a pending account. Sign in with your password to finish verification.'
+        );
+      }
+
+      await updateAuthUserProfile(existing._id, { displayName });
+      const verification = await issueEmailVerificationOtp({
+        userId: existing._id,
+        email: existing.email,
+        displayName
+      });
+
+      respondWithPendingVerification(res, 200, {
+        email: existing.email,
+        expiresAt: verification.expiresAt,
+        expiresInSeconds: verification.expiresInSeconds,
+        otp: verification.otp,
+        message: 'Verification code resent. Enter the code to finish creating your account.'
+      });
+      return;
+    }
+
     const passwordHash = await hashPassword(password);
-    const verificationToken = randomToken(24);
     const userReferralCode = await createUniqueReferralCode();
 
     const created = await createAuthUser({
@@ -252,10 +345,10 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       });
     }
 
-    await createEmailVerificationToken({
+    const verification = await issueEmailVerificationOtp({
       userId: created._id,
-      token: verificationToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      email: created.email,
+      displayName
     });
 
     void processSignupRewardsDefault(created._id, referralCode).catch(() => undefined);
@@ -267,23 +360,12 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       void acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }).catch(() => undefined);
     }
 
-    const tokens = await createSession({
-      userId: created._id,
+    respondWithPendingVerification(res, 201, {
       email: created.email,
-      role: created.role,
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent']
-    });
-
-    void sendVerificationEmail({
-      to: created.email,
-      name: displayName,
-      token: verificationToken
-    }).catch(() => undefined);
-
-    respondWithAuth(res, 201, { id: created._id, email: created.email, role: created.role }, tokens, {
-      requiresEmailVerification: true,
-      verificationToken: env.NODE_ENV === 'production' ? undefined : verificationToken
+      expiresAt: verification.expiresAt,
+      expiresInSeconds: verification.expiresInSeconds,
+      otp: verification.otp,
+      message: 'Account created. Verify your email to finish registration.'
     });
   } catch (error) {
     next(error);
@@ -310,6 +392,23 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
       throw new ApiError(403, 'account_suspended', 'Account is suspended.');
     }
 
+    if (!user.emailVerifiedAt) {
+      const verification = await issueEmailVerificationOtp({
+        userId: user._id,
+        email: user.email,
+        displayName: user.profile.displayName ?? user.email
+      });
+
+      respondWithPendingVerification(res, 200, {
+        email: user.email,
+        expiresAt: verification.expiresAt,
+        expiresInSeconds: verification.expiresInSeconds,
+        otp: verification.otp,
+        message: 'Verify your email to finish registration.'
+      });
+      return;
+    }
+
     const sessionRole = await restoreRoleIfSwitched(user);
     const tokens = await createSession({
       userId: user._id,
@@ -320,7 +419,7 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
     });
 
     respondWithAuth(res, 200, { id: user._id, email: user.email, role: sessionRole }, tokens, {
-      emailVerified: Boolean(user.emailVerifiedAt)
+      emailVerified: true
     });
 
     await updateAuthUserLastActive(user._id);
@@ -416,6 +515,11 @@ authRouter.post('/refresh', validate({ body: refreshBodySchema }), async (req, r
       throw new ApiError(401, 'invalid_refresh_token', 'Refresh token is invalid.');
     }
 
+    if (!user.emailVerifiedAt) {
+      clearRefreshCookie(res);
+      throw new ApiError(403, 'email_verification_required', 'Email verification is required.');
+    }
+
     await revokeRefreshToken(refreshToken);
 
     const sessionRole = await restoreRoleIfSwitched(user);
@@ -446,33 +550,37 @@ authRouter.post('/logout', validate({ body: refreshBodySchema }), async (req, re
   }
 });
 
-authRouter.post('/verify-email', validate({ body: tokenSchema }), async (req, res, next) => {
+authRouter.post('/verify-email', validate({ body: verifyEmailSchema }), async (req, res, next) => {
   try {
-    const { token } = req.body as z.infer<typeof tokenSchema>;
-    const record = await findEmailVerificationToken(token);
+    const { email, otp } = req.body as z.infer<typeof verifyEmailSchema>;
+    const user = await findAuthUserByEmail(email);
+    if (!user || user.status !== UserStatus.ACTIVE) {
+      throw new ApiError(400, 'invalid_token', 'Verification code is invalid or expired.');
+    }
 
-    if (!record || record.usedAt || record.expiresAt < new Date()) {
-      throw new ApiError(400, 'invalid_token', 'Verification token is invalid or expired.');
+    const record = await findEmailVerificationTokenForUser(user._id, otp);
+    if (!record) {
+      throw new ApiError(400, 'invalid_token', 'Verification code is invalid or expired.');
     }
 
     await useEmailVerificationToken(record.id);
-    await updateAuthUserEmailVerifiedAt(record.userId, new Date());
+    await updateAuthUserEmailVerifiedAt(user._id, new Date());
 
-    const user = await findAuthUserById(record.userId);
-    if (!user || user.status !== UserStatus.ACTIVE) {
-      throw new ApiError(400, 'invalid_token', 'Verification token is invalid or expired.');
+    const verifiedUser = await findAuthUserById(user._id);
+    if (!verifiedUser || verifiedUser.status !== UserStatus.ACTIVE) {
+      throw new ApiError(400, 'invalid_token', 'Verification code is invalid or expired.');
     }
 
-    const sessionRole = await restoreRoleIfSwitched(user);
+    const sessionRole = await restoreRoleIfSwitched(verifiedUser);
     const tokens = await createSession({
-      userId: user._id,
-      email: user.email,
+      userId: verifiedUser._id,
+      email: verifiedUser.email,
       role: sessionRole,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent']
     });
 
-    respondWithAuth(res, 200, { id: user._id, email: user.email, role: sessionRole }, tokens, {
+    respondWithAuth(res, 200, { id: verifiedUser._id, email: verifiedUser.email, role: sessionRole }, tokens, {
       message: 'Email verified successfully.',
       emailVerified: true
     });
@@ -541,22 +649,16 @@ authRouter.post('/resend-verification', validate({ body: resendVerificationSchem
       return;
     }
 
-    const verificationToken = randomToken(24);
-    await createEmailVerificationToken({
+    const verification = await issueEmailVerificationOtp({
       userId: user._id,
-      token: verificationToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      email: user.email,
+      displayName: user.profile.displayName ?? user.email
     });
-
-    void sendVerificationEmail({
-      to: user.email,
-      name: user.profile.displayName ?? user.email,
-      token: verificationToken
-    }).catch(() => undefined);
 
     res.json({
       message: 'Verification email sent.',
-      verificationToken: env.NODE_ENV === 'production' ? undefined : verificationToken
+      expiresAt: verification.expiresAt.toISOString(),
+      expiresInSeconds: verification.expiresInSeconds
     });
   } catch (error) {
     next(error);

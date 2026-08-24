@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { EventDTO, LocationDTO, ParticipantDTO } from '@uaetrail/shared-types';
+import { EventDTO, ParticipantDTO } from '@uaetrail/shared-types';
+import type { ActivityType } from '../config/activityTypes';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 import { OrganizerShell } from '../components/organizer/OrganizerShell';
-import { TenantSwitcher, ImageUpload, ShareButton, SecureAvatar } from '../components/ui';
+import { TenantSwitcher, ImageUpload, ShareButton, SecureAvatar, ActivityTypeSelect, LocationSelect } from '../components/ui';
 
 const emptyForm = {
+  activityType: 'hiking' as ActivityType,
   locationId: '',
   title: '',
   description: '',
@@ -24,7 +26,6 @@ type ViewMode = 'list' | 'checkin';
 export const OrganizerEvents = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [events, setEvents] = useState<EventDTO[]>([]);
-  const [locations, setLocations] = useState<LocationDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [modalOpen, setModalOpen] = useState(false);
@@ -49,16 +50,8 @@ export const OrganizerEvents = () => {
     }
   };
 
-  const loadLocations = async () => {
-    try {
-      const res = await api.getPublicLocations();
-      setLocations(res.data);
-    } catch { /* non-critical */ }
-  };
-
   useEffect(() => {
     loadEvents(tenantId);
-    loadLocations();
   }, [tenantId]);
 
   const openCreate = () => {
@@ -70,6 +63,7 @@ export const OrganizerEvents = () => {
   const openEdit = (event: EventDTO) => {
     setEditingId(event.id);
     setForm({
+      activityType: (event.activityType as ActivityType) ?? 'hiking',
       locationId: event.locationId,
       title: event.title ?? '',
       description: event.description ?? '',
@@ -199,7 +193,7 @@ export const OrganizerEvents = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Events</h2>
               <button onClick={openCreate} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium" disabled={!tenantId}>
-                + Create Event
+                + Add Event
               </button>
             </div>
 
@@ -353,20 +347,30 @@ export const OrganizerEvents = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Event' : 'Create New Event'}</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Event' : 'Add Event'}</h2>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
+              <ActivityTypeSelect
+                value={form.activityType}
+                onChange={(activityType) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    activityType,
+                    locationId: prev.activityType === activityType ? prev.locationId : '',
+                  }))
+                }
+              />
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Location *</label>
-                  <select required value={form.locationId} onChange={(e) => setForm({ ...form, locationId: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm">
-                    <option value="">Select location...</option>
-                    {locations.map((loc) => (
-                      <option key={loc.id} value={loc.id}>{loc.name} ({loc.region} - {loc.activityType})</option>
-                    ))}
-                  </select>
+                  <LocationSelect
+                    value={form.locationId}
+                    onChange={(locationId) => setForm({ ...form, locationId })}
+                    tenantId={tenantId}
+                    activityType={form.activityType}
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Title *</label>
@@ -436,6 +440,7 @@ export const OrganizerEvents = () => {
                   keyPrefix="events"
                   tenantId={tenantId}
                   kind="event-image"
+                  preset="event"
                 />
               </div>
 

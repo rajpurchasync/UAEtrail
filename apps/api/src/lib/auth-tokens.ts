@@ -117,8 +117,98 @@ export const findEmailVerificationToken = async (token: string): Promise<{
     : null;
 };
 
+export const findEmailVerificationTokenForUser = async (
+  userId: string,
+  token: string
+): Promise<{
+  id: string;
+  userId: string;
+  expiresAt: Date;
+  usedAt: Date | null;
+} | null> => {
+  const tokenHash = hashToken(token);
+  const record = await verificationTokensCollection().findOne({
+    userId,
+    token: tokenHash,
+    usedAt: null,
+    expiresAt: { $gt: new Date() }
+  });
+  return record
+    ? { id: record._id, userId: record.userId, expiresAt: record.expiresAt, usedAt: record.usedAt }
+    : null;
+};
+
 export const useEmailVerificationToken = async (id: string): Promise<void> => {
   await verificationTokensCollection().updateOne({ _id: id }, { $set: { usedAt: new Date() } });
+};
+
+type MongoEmailChangeToken = {
+  _id: string;
+  userId: string;
+  newEmail: string;
+  token: string;
+  expiresAt: Date;
+  usedAt: Date | null;
+  createdAt: Date;
+};
+
+const emailChangeTokensCollection = (): Collection<MongoEmailChangeToken> =>
+  getMongoClient()!.db().collection<MongoEmailChangeToken>('auth_email_change_tokens');
+
+export const createEmailChangeToken = async (input: {
+  userId: string;
+  newEmail: string;
+  token: string;
+  expiresAt: Date;
+}): Promise<void> => {
+  const token = hashToken(input.token);
+  await emailChangeTokensCollection().updateMany(
+    { userId: input.userId, usedAt: null },
+    { $set: { usedAt: new Date() } }
+  );
+  await emailChangeTokensCollection().insertOne({
+    _id: randomUUID(),
+    userId: input.userId,
+    newEmail: input.newEmail.trim().toLowerCase(),
+    token,
+    expiresAt: input.expiresAt,
+    usedAt: null,
+    createdAt: new Date()
+  });
+};
+
+export const findEmailChangeTokenForUser = async (
+  userId: string,
+  newEmail: string,
+  token: string
+): Promise<{
+  id: string;
+  userId: string;
+  newEmail: string;
+  expiresAt: Date;
+  usedAt: Date | null;
+} | null> => {
+  const tokenHash = hashToken(token);
+  const record = await emailChangeTokensCollection().findOne({
+    userId,
+    newEmail: newEmail.trim().toLowerCase(),
+    token: tokenHash,
+    usedAt: null,
+    expiresAt: { $gt: new Date() }
+  });
+  return record
+    ? {
+        id: record._id,
+        userId: record.userId,
+        newEmail: record.newEmail,
+        expiresAt: record.expiresAt,
+        usedAt: record.usedAt
+      }
+    : null;
+};
+
+export const useEmailChangeToken = async (id: string): Promise<void> => {
+  await emailChangeTokensCollection().updateOne({ _id: id }, { $set: { usedAt: new Date() } });
 };
 
 export const createPasswordResetToken = async (input: {
@@ -158,6 +248,7 @@ export const deleteAuthTokensByUser = async (userId: string): Promise<void> => {
   await Promise.all([
     refreshTokensCollection().deleteMany({ userId }),
     verificationTokensCollection().deleteMany({ userId }),
+    emailChangeTokensCollection().deleteMany({ userId }),
     resetTokensCollection().deleteMany({ userId })
   ]);
 };

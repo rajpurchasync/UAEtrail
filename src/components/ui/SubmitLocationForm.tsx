@@ -376,6 +376,7 @@ export const SubmitLocationForm = ({
               keyPrefix="locations"
               tenantId={tenantId}
               kind="location-image"
+              preset="location"
             />
           </div>
         </div>
@@ -528,6 +529,7 @@ export const SubmitLocationForm = ({
             keyPrefix="locations"
             tenantId={tenantId}
             kind="location-premium-image"
+            preset="location"
           />
         </div>
       )}

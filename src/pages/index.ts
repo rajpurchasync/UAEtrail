@@ -14,6 +14,7 @@ export { OperatorProfile } from './OperatorProfile';
 export { SignUp } from './SignUp';
 export { SignIn } from './SignIn';
 export { VerifyOTP } from './VerifyOTP';
+export { WelcomeSignup } from './WelcomeSignup';
 export { ForgotPassword } from './ForgotPassword';
 export { AdminOverview } from './AdminOverview';
 export { AdminLocations } from './AdminLocations';

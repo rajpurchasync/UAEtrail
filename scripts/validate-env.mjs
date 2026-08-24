@@ -9,6 +9,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { isEmailConfiguredFromEnv } from './lib/resolve-email-env.mjs';
 
 const args = process.argv.slice(2);
 const production = args.includes('--production');
@@ -49,8 +50,18 @@ const requiredMongoKey = runEnv === 'production'
     ? 'MONGODB_URI_STAGING'
     : 'MONGODB_URI_TEST';
 
+const getEnv = (key) => process.env[key] ?? '';
+
+const emailConfigured = () => isEmailConfiguredFromEnv(getEnv, runEnv);
+
 const errors = [];
 const warnings = [];
+
+if (runEnv === 'staging' && !emailConfigured()) {
+  errors.push(
+    'Email — set SMTP_GMAIL_APP_PASSWORD (Gmail App Password for uaetrail@gmail.com) or SMTP_URL_STAGING / SENDGRID_API_KEY'
+  );
+}
 
 const requiredAlways = [
   [
@@ -79,14 +90,14 @@ if (production) {
   if (!isSet('VITE_SITE_ORIGIN') || !process.env.VITE_SITE_ORIGIN.startsWith('https://')) {
     warnings.push('VITE_SITE_ORIGIN — should be https:// for production builds');
   }
-  if (!isSet('SMTP_URL') && !isSet('SENDGRID_API_KEY')) {
-    errors.push('SMTP_URL or SENDGRID_API_KEY — required for verification/reset emails');
+  if (!emailConfigured()) {
+    errors.push('SMTP_URL_PROD, SENDGRID_API_KEY, or SMTP_HOST — required for verification/reset emails');
   }
   if (!isSet('REDIS_URL')) {
     errors.push('REDIS_URL — required in production for rate limits and SSE tickets');
   }
-  if (!isSet('EMAIL_FROM')) {
-    warnings.push('EMAIL_FROM — set a verified sender address');
+  if (!isSet('EMAIL_FROM') && !isSet('EMAIL_FROM_PROD')) {
+    warnings.push('EMAIL_FROM_PROD — set a verified production sender address');
   }
   const googleApi = isSet('GOOGLE_CLIENT_ID');
   const googleVite = isSet('VITE_GOOGLE_CLIENT_ID');

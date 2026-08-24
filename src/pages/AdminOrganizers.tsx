@@ -22,6 +22,7 @@ export const AdminOrganizers = () => {
   const [applicationDetail, setApplicationDetail] = useState<OrganizerApplication | null>(null);
   const [tenantDetail, setTenantDetail] = useState<TenantDetail | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<TenantListDTO | null>(null);
+  const [suspendComment, setSuspendComment] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -59,9 +60,18 @@ export const AdminOrganizers = () => {
     const target = tenant ?? confirmTarget;
     if (!target) return;
     const newStatus = target.status === 'active' ? 'suspended' : 'active';
+    if (newStatus === 'suspended' && !suspendComment.trim()) {
+      setError('A comment is required when suspending a host.');
+      return;
+    }
     try {
-      await api.updateAdminTenantStatus(target.id, newStatus as 'active' | 'suspended');
+      await api.updateAdminTenantStatus(
+        target.id,
+        newStatus as 'active' | 'suspended',
+        newStatus === 'suspended' ? suspendComment.trim() : undefined
+      );
       setConfirmTarget(null);
+      setSuspendComment('');
       if (tenantDetail?.id === target.id) {
         setTenantDetail({ ...tenantDetail, status: newStatus });
       }
@@ -236,7 +246,7 @@ export const AdminOrganizers = () => {
                           <button onClick={() => openTenantDetail(t.id)}
                             className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">View</button>
                           {t.status !== 'pending' && (
-                            <button onClick={() => setConfirmTarget(t)}
+                            <button onClick={() => { setConfirmTarget(t); setSuspendComment(''); }}
                               className={`px-2 py-1 rounded text-xs ${t.status === 'active' ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}>
                               {t.status === 'active' ? 'Suspend' : 'Reopen'}
                             </button>
@@ -267,6 +277,19 @@ export const AdminOrganizers = () => {
                 : 'This will restore the host\'s ability to operate on the platform.'}
             </p>
             <p className="text-sm font-medium text-gray-900 mb-4">{confirmTarget.name}</p>
+            {confirmTarget.status === 'active' && (
+              <div className="mb-4">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Reason for suspension *</label>
+                <textarea
+                  value={suspendComment}
+                  onChange={(e) => setSuspendComment(e.target.value)}
+                  placeholder="Explain why this host is being suspended..."
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                  rows={3}
+                  maxLength={500}
+                />
+              </div>
+            )}
             <div className="flex gap-3 justify-end">
               <button onClick={() => setConfirmTarget(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
               <button onClick={() => executeToggleTenantStatus()}
@@ -404,7 +427,21 @@ export const AdminOrganizers = () => {
                   </Link>
                   {tenantDetail.status !== 'pending' && (
                     <button
-                      onClick={() => executeToggleTenantStatus(tenantDetail)}
+                      onClick={() => {
+                        setConfirmTarget({
+                          id: tenantDetail.id,
+                          name: tenantDetail.name,
+                          slug: tenantDetail.slug,
+                          type: tenantDetail.type,
+                          status: tenantDetail.status,
+                          ownerName: tenantDetail.owner.displayName ?? tenantDetail.owner.email,
+                          ownerEmail: tenantDetail.owner.email,
+                          memberCount: tenantDetail.members.length,
+                          eventCount: tenantDetail.events.length,
+                          createdAt: tenantDetail.createdAt
+                        });
+                        setSuspendComment('');
+                      }}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium text-white ${
                         tenantDetail.status === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'
                       }`}

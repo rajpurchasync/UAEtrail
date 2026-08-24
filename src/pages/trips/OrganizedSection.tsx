@@ -4,10 +4,11 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { EventDTO, withdrawReasonLabel } from '@uaetrail/shared-types';
 import { api, EventRequestView } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
-import { TenantSwitcher, ImageUpload, MapPinFields, parseCoord, LocationSelect, ShareButton, HostSelect, TripPricePackagesEditor } from '../../components/ui';
+import { TenantSwitcher, ImageUpload, MapPinFields, parseCoord, LocationSelect, ShareButton, HostSelect, TripPricePackagesEditor, ActivityTypeSelect } from '../../components/ui';
 import { derivePriceAed, tripHasPaidPricing } from '../../utils/tripPricing';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { daysUntil, isUpcomingTrip } from '../../utils/tripDates';
+import type { ActivityType } from '../../config/activityTypes';
 import { emptyForm } from './shared';
 
 export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
@@ -69,6 +70,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
           : [];
     setEditingId(event.id);
     setForm({
+      activityType: (event.activityType as ActivityType) ?? 'hiking',
       locationId: event.locationId,
       title: event.title ?? '',
       description: event.description ?? '',
@@ -234,7 +236,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
           disabled={!tenantId}
         >
           <Plus className="w-3.5 h-3.5" />
-          Create
+          Add Event
         </button>
         <AppSegmented
           segments={[
@@ -434,7 +436,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
             </p>
             {subTab === 'upcoming' && tenantId && (
               <button onClick={openCreate} className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                + Create your first event
+                + Add your first event
               </button>
             )}
           </div>
@@ -449,12 +451,23 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Event' : 'Create New Event'}</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Event' : 'Add Event'}</h2>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">
                 &times;
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
+              <ActivityTypeSelect
+                value={form.activityType}
+                onChange={(activityType) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    activityType,
+                    locationId: prev.activityType === activityType ? prev.locationId : '',
+                  }))
+                }
+              />
+
               <HostSelect
                 tenantId={tenantId}
                 value={form.hostUserId}
@@ -468,7 +481,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
                     value={form.locationId}
                     onChange={(locationId) => setForm({ ...form, locationId })}
                     tenantId={tenantId}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    activityType={form.activityType}
                   />
                 </div>
                 <div>
@@ -657,6 +670,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
                   keyPrefix="events"
                   tenantId={tenantId}
                   kind="event-image"
+                  preset="event"
                 />
               </div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, MessageSquare, ThumbsUp, Plus, X, Send, MapPin, CheckCircle2, Users } from 'lucide-react';
+import { Search, MessageSquare, ThumbsUp, Plus, X, MapPin, CheckCircle2, Users } from 'lucide-react';
 import { PostDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,8 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
 import { TrailPointsPromoBanner } from '../components/rewards';
 import { ReportContentButton } from '../components/ui/ReportContentDialog';
+import { ChatComposeBar } from '../components/ui/ChatComposeBar';
+import { EmojiPickerButton } from '../components/ui/EmojiPickerButton';
 import { buildSignInRedirect } from '../utils/authReturnContext';
 
 const linkPattern = /(?:https?:\/\/|www\.)\S+|(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/\S*)?/gi;
@@ -421,26 +423,13 @@ export const Community = () => {
                         </div>
                       </div>
                     ))}
-                    <div className="flex gap-2">
-                      <input
-                        value={replyTexts[post.id] ?? ''}
-                        onChange={(e) => setReplyTexts((prev) => ({ ...prev, [post.id]: e.target.value }))}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            void handleReply(post.id);
-                          }
-                        }}
-                        placeholder="Write a reply..."
-                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm"
-                      />
-                      <button
-                        onClick={() => handleReply(post.id)}
-                        className="p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700"
-                      >
-                        <Send className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <ChatComposeBar
+                      value={replyTexts[post.id] ?? ''}
+                      onChange={(value) => setReplyTexts((prev) => ({ ...prev, [post.id]: value }))}
+                      onSend={() => handleReply(post.id)}
+                      placeholder="Write a reply..."
+                      className="!border-0 !px-0 !pt-0"
+                    />
                   </div>
                 )}
             </GlassCard>
@@ -473,20 +462,25 @@ export const Community = () => {
                 placeholder="Title"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2"
               />
-              <textarea
-                required
-                rows={4}
-                value={newPost.content}
-                onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    e.currentTarget.form?.requestSubmit();
-                  }
-                }}
-                placeholder="Share your question, trip report, or tip..."
-                className="w-full border border-gray-200 rounded-xl px-3 py-2"
-              />
+              <div className="flex gap-2 items-end">
+                <textarea
+                  required
+                  rows={4}
+                  value={newPost.content}
+                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      e.currentTarget.form?.requestSubmit();
+                    }
+                  }}
+                  placeholder="Share your question, trip report, or tip..."
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 font-emoji"
+                />
+                <EmojiPickerButton
+                  onPick={(emoji) => setNewPost((prev) => ({ ...prev, content: `${prev.content}${emoji}` }))}
+                />
+              </div>
               <input
                 value={newPost.locationId}
                 onChange={(e) => setNewPost({ ...newPost, locationId: e.target.value })}
@@ -501,6 +495,7 @@ export const Community = () => {
                   kind="community"
                   max={6}
                   label="Photos"
+                  preset="rectangle"
                 />
               )}
               <p className="text-xs text-gray-500">

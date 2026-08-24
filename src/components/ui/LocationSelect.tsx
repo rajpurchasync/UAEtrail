@@ -10,6 +10,8 @@ interface LocationSelectProps {
   onChange: (locationId: string) => void;
   tenantId?: string;
   activityType?: ActivityType;
+  locations?: LocationDTO[];
+  allowAddNew?: boolean;
   required?: boolean;
   className?: string;
 }
@@ -19,17 +21,24 @@ export const LocationSelect = ({
   onChange,
   tenantId,
   activityType,
+  locations: locationsOverride,
+  allowAddNew = true,
   required = true,
 }: LocationSelectProps) => {
-  const [activeLocations, setActiveLocations] = useState<LocationDTO[]>([]);
+  const [activeLocations, setActiveLocations] = useState<LocationDTO[]>(locationsOverride ?? []);
   const [pendingLocations, setPendingLocations] = useState<LocationDTO[]>([]);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [showAddNew, setShowAddNew] = useState(false);
+  const [addNewOpen, setAddNewOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const loadLocations = async () => {
+    if (locationsOverride) {
+      setActiveLocations(locationsOverride);
+      setPendingLocations([]);
+      return;
+    }
     try {
       const [publicRes, pendingRes] = await Promise.all([
         api.getPublicLocations(),
@@ -44,7 +53,7 @@ export const LocationSelect = ({
 
   useEffect(() => {
     void loadLocations();
-  }, [tenantId]);
+  }, [tenantId, locationsOverride]);
 
   useEffect(() => {
     if (!open) return;
@@ -117,11 +126,11 @@ export const LocationSelect = ({
                 autoFocus
               />
             </div>
-            {tenantId ? (
+            {allowAddNew && tenantId ? (
               <button
                 type="button"
                 onClick={() => {
-                  setShowAddNew(true);
+                  setAddNewOpen(true);
                   setOpen(false);
                 }}
                 className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
@@ -129,11 +138,11 @@ export const LocationSelect = ({
                 <Plus className="w-4 h-4" />
                 Add new location
               </button>
-            ) : (
+            ) : allowAddNew && !tenantId ? (
               <p className="text-xs text-amber-800 bg-amber-50 rounded-lg px-2 py-1.5">
                 Select your organization to add a new location.
               </p>
-            )}
+            ) : null}
           </div>
 
           <ul className="max-h-52 overflow-y-auto py-1">
@@ -180,10 +189,10 @@ export const LocationSelect = ({
 
       {notice && <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2 mt-2">{notice}</p>}
 
-      {showAddNew && tenantId && (
+      {addNewOpen && tenantId && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4"
-          onClick={() => setShowAddNew(false)}
+          onClick={() => setAddNewOpen(false)}
         >
           <div
             className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5"
@@ -194,9 +203,9 @@ export const LocationSelect = ({
               tenantId={tenantId}
               defaultActivityType={activityType ?? 'hiking'}
               compact
-              onCancel={() => setShowAddNew(false)}
+              onCancel={() => setAddNewOpen(false)}
               onSubmitted={(loc) => {
-                setShowAddNew(false);
+                setAddNewOpen(false);
                 onChange(loc.id);
                 setNotice(
                   `"${loc.name}" added — you can use it now while our team reviews the listing.`

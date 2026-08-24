@@ -723,6 +723,7 @@ export const MerchantDashboard = () => {
                       max={6}
                       keyPrefix="products"
                       kind="product-image"
+                      preset="rectangle"
                     />
                   </div>
                   <div className="flex gap-2">

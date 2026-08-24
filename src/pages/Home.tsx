@@ -383,13 +383,6 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* ──── FAQ preview ──── */}
-      <section className="py-10 md:py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FaqPreview items={HOME_FAQ_PREVIEW} />
-        </div>
-      </section>
-
       {/* ──── Testimonials ──── */}
       <section className="py-10 md:py-16 bg-gray-50/80 mobile-snap-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
@@ -425,6 +418,13 @@ export const Home = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ──── FAQ preview ──── */}
+      <section className="py-10 md:py-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FaqPreview items={HOME_FAQ_PREVIEW} />
         </div>
       </section>
 

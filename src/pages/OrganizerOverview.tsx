@@ -39,16 +39,20 @@ export const OrganizerOverview = () => {
     setShowDetails(false);
   }, []);
 
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const save = async (payload: {
+    displayName: string;
+    bio?: string;
+    phone?: string;
+    avatarUrl?: string;
+  }) => {
     setMessage(null);
     setSaving(true);
     try {
       await api.updateMeProfile({
-        displayName: participant.profile.displayName,
-        phone: participant.profile.phone,
-        bio: participant.profile.bio,
-        avatarUrl: participant.profile.avatarUrl,
+        displayName: payload.displayName,
+        phone: payload.phone,
+        bio: payload.bio,
+        avatarUrl: payload.avatarUrl,
       });
       await refreshUser();
       setMessage('Profile saved.');
@@ -63,7 +67,6 @@ export const OrganizerOverview = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/signed-out', { replace: true });
   };
 
   const loading = participant.loading || organizer.loading;
@@ -256,7 +259,8 @@ export const OrganizerOverview = () => {
         message={message}
         pushStatus={pushStatus}
         setPushStatus={setPushStatus}
-        onSubmit={save}
+        onSave={save}
+        onEmailChanged={refreshUser}
       />
     </OrganizerShell>
   );

@@ -29,6 +29,7 @@ import {
   createAdminPublishedEvent,
   deleteAdminLocation,
   findAdminEventById,
+  findAdminEventDetailedById,
   findAdminLocationById,
   findAdminLocationByIdForEventCreate,
   findAdminProductById,
@@ -42,6 +43,7 @@ import {
   listBroadcastNotificationAuditLogs,
   listEventsForAdminRequests,
   listEventsForAdminTrips,
+  listUserHostedEventsBasic,
   listOwnerTenantTypes,
   listTenantMembershipsForUser,
   listUserOwnedTenantsBasic,
@@ -71,11 +73,13 @@ import {
 } from '../lib/organizer-applications-store.js';
 import { dispatchNotificationDefault } from '../services/notifications.js';
 import { notifyUserAdminAction } from '../services/admin-notifications.js';
-import { awardPointsDefault } from '../services/rewards.js';
+import { awardPointsDefault, getRewardSummaryDefault, getUserLeaderboardRank } from '../services/rewards.js';
 import {
   countSocialGroups,
   getSocialGroupAdminDetail,
-  listAllSocialGroupsAdmin
+  listAllSocialGroupsAdmin,
+  listUserGroupsWithMembership,
+  updateGroupStatus
 } from '../lib/social-groups-store.js';
 
 const locationCreateSchema = z.object({
@@ -117,9 +121,27 @@ const applicationPatchSchema = z.object({
   reviewerNote: z.string().max(300).optional()
 });
 
-const eventModerationSchema = z.object({
-  action: z.enum(['suspend', 'unsuspend'])
+const suspendCommentSchema = z.object({
+  comment: z.string().trim().max(500).optional()
 });
+
+const requireSuspendComment = (
+  data: { comment?: string },
+  isSuspend: boolean,
+  ctx: z.RefinementCtx
+) => {
+  if (isSuspend && (!data.comment || data.comment.trim().length === 0)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Comment is required when suspending.',
+      path: ['comment']
+    });
+  }
+};
+
+const eventModerationSchema = suspendCommentSchema.extend({
+  action: z.enum(['suspend', 'unsuspend'])
+}).superRefine((data, ctx) => requireSuspendComment(data, data.action === 'suspend', ctx));
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -507,13 +529,26 @@ adminRouter.get('/events/moderation', async (req, res, next) => {
   }
 });
 
+adminRouter.get('/events/:id', validate({ params: idParamSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+    const event = await findAdminEventDetailedById(id);
+    if (!event) {
+      throw new ApiError(404, 'event_not_found', 'Event not found.');
+    }
+    res.json({ data: buildEventDto(event) });
+  } catch (error) {
+    next(error);
+  }
+});
+
 adminRouter.patch(
   '/events/moderation/:id',
   validate({ params: idParamSchema, body: eventModerationSchema }),
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof idParamSchema>;
-      const { action } = req.body as z.infer<typeof eventModerationSchema>;
+      const { action, comment } = req.body as z.infer<typeof eventModerationSchema>;
       const event = await findAdminEventById(id);
       if (!event) {
         throw new ApiError(404, 'event_not_found', 'Event not found.');
@@ -527,8 +562,20 @@ adminRouter.patch(
         action: `event.${action}`,
         entityType: 'event',
         entityId: event.id,
-        tenantId: event.tenantId
+        tenantId: event.tenantId,
+        metadata: comment ? { comment } : undefined
       });
+
+      if (action === 'suspend' && event.createdById) {
+        await notifyUserAdminAction({
+          userId: event.createdById,
+          title: 'Event suspended',
+          body: comment
+            ? `Your event "${event.title}" has been suspended. Reason: ${comment}`
+            : `Your event "${event.title}" has been suspended by an administrator.`,
+          meta: { kind: 'event_suspended', eventId: event.id, path: '/organizer/events' }
+        });
+      }
 
       res.json({ message: `Event ${action}ed successfully.` });
     } catch (error) {
@@ -727,11 +774,15 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
       throw new ApiError(404, 'user_not_found', 'User not found.');
     }
 
-    const [ownedTenants, memberships, requests, participants] = await Promise.all([
+    const [ownedTenants, memberships, requests, participants, groups, hostedEvents, rewardSummary, leaderboardRank] = await Promise.all([
       listUserOwnedTenantsBasic(id),
       listTenantMembershipsForUser(id),
       listUserEventRequestsBasic(id, 20),
-      listUserEventParticipantsBasic(id, 20)
+      listUserEventParticipantsBasic(id, 20),
+      listUserGroupsWithMembership(id),
+      listUserHostedEventsBasic(id, 20),
+      getRewardSummaryDefault(id),
+      getUserLeaderboardRank(id)
     ]);
 
     const requestEventIds = [...new Set(requests.map((request) => request.eventId))];
@@ -772,9 +823,33 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
         memberships: memberships.map((m: (typeof memberships)[number]) => ({
           tenantId: m.tenantId,
           tenantName: m.tenant.name,
+          tenantSlug: m.tenant.slug,
           role: m.role.toLowerCase(),
           joinedAt: m.createdAt
         })),
+        ownedTenants: ownedTenants.map((tenant) => ({
+          id: tenant.id,
+          name: tenant.name,
+          slug: tenant.slug,
+          type: tenant.type.toLowerCase(),
+          status: tenant.status.toLowerCase()
+        })),
+        groups: groups.map((group) => ({
+          id: group.id,
+          name: group.name,
+          type: group.type,
+          role: group.role,
+          status: group.status,
+          isCreator: group.role === 'admin',
+          joinedAt: group.joinedAt
+        })),
+        hostedEvents,
+        rewards: rewardSummary.trailPointsEligible === false ? null : {
+          points: rewardSummary.points,
+          membershipTier: rewardSummary.membershipTier,
+          leaderboardRank,
+          badgeCount: [...rewardSummary.tierBadges, ...rewardSummary.badges].filter((badge) => badge.earned).length
+        },
         requests: requests.reduce<Array<{
           id: string;
           eventId: string;
@@ -822,14 +897,14 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
   }
 });
 
-const userStatusSchema = z.object({
+const userStatusSchema = suspendCommentSchema.extend({
   status: z.enum(['active', 'suspended'])
-});
+}).superRefine((data, ctx) => requireSuspendComment(data, data.status === 'suspended', ctx));
 
 adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: userStatusSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
-    const { status } = req.body as z.infer<typeof userStatusSchema>;
+    const { status, comment } = req.body as z.infer<typeof userStatusSchema>;
 
     const user = await findAuthUserById(id);
     if (!user) throw new ApiError(404, 'user_not_found', 'User not found.');
@@ -845,7 +920,8 @@ adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: u
       actorId: req.auth!.userId,
       action: `user.${status === 'active' ? 'activate' : 'suspend'}`,
       entityType: 'user',
-      entityId: id
+      entityId: id,
+      metadata: comment ? { comment } : undefined
     });
 
     await notifyUserAdminAction({
@@ -854,7 +930,9 @@ adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: u
       body:
         status === 'active'
           ? 'Your account access has been restored.'
-          : 'Your account has been suspended by an administrator. Contact support if you believe this is a mistake.',
+          : comment
+            ? `Your account has been suspended. Reason: ${comment}`
+            : 'Your account has been suspended by an administrator. Contact support if you believe this is a mistake.',
       meta: {
         kind: status === 'active' ? 'user_reactivated' : 'user_suspended',
         path: '/profile'
@@ -944,14 +1022,14 @@ adminRouter.get('/tenants/:id', validate({ params: idParamSchema }), async (req,
   }
 });
 
-const tenantStatusSchema = z.object({
+const tenantStatusSchema = suspendCommentSchema.extend({
   status: z.enum(['active', 'suspended'])
-});
+}).superRefine((data, ctx) => requireSuspendComment(data, data.status === 'suspended', ctx));
 
 adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body: tenantStatusSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
-    const { status } = req.body as z.infer<typeof tenantStatusSchema>;
+    const { status, comment } = req.body as z.infer<typeof tenantStatusSchema>;
 
     const tenant = await findAdminTenantById(id);
     if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
@@ -963,7 +1041,8 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
       actorId: req.auth!.userId,
       action: `tenant.${status === 'active' ? 'activate' : 'suspend'}`,
       entityType: 'tenant',
-      entityId: id
+      entityId: id,
+      metadata: comment ? { comment } : undefined
     });
 
     await notifyUserAdminAction({
@@ -972,7 +1051,9 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
       body:
         status === 'active'
           ? `Your host profile "${tenant.name}" is active again. You can create and manage events.`
-          : `Your host profile "${tenant.name}" has been suspended. Contact support for details.`,
+          : comment
+            ? `Your host profile "${tenant.name}" has been suspended. Reason: ${comment}`
+            : `Your host profile "${tenant.name}" has been suspended. Contact support for details.`,
       meta: {
         kind: status === 'active' ? 'host_reopened' : 'host_suspended',
         tenantId: id,
@@ -981,6 +1062,53 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
     });
 
     res.json({ message: `Tenant ${status === 'active' ? 'activated' : 'suspended'}.` });
+  } catch (error) {
+    next(error);
+  }
+});
+
+const groupStatusSchema = suspendCommentSchema.extend({
+  status: z.enum(['active', 'suspended'])
+}).superRefine((data, ctx) => requireSuspendComment(data, data.status === 'suspended', ctx));
+
+adminRouter.patch('/groups/:id/status', validate({ params: idParamSchema, body: groupStatusSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+    const { status, comment } = req.body as z.infer<typeof groupStatusSchema>;
+
+    const detail = await getSocialGroupAdminDetail(id);
+    if (!detail) {
+      throw new ApiError(404, 'group_not_found', 'Group not found.');
+    }
+
+    const updated = await updateGroupStatus(id, status);
+    if (!updated) {
+      throw new ApiError(404, 'group_not_found', 'Group not found.');
+    }
+
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: `group.${status === 'active' ? 'activate' : 'suspend'}`,
+      entityType: 'group',
+      entityId: id,
+      metadata: comment ? { comment } : undefined
+    });
+
+    if (detail.admin) {
+      await notifyUserAdminAction({
+        userId: detail.admin.id,
+        title: status === 'active' ? 'Group reactivated' : 'Group suspended',
+        body:
+          status === 'active'
+            ? `Your group "${detail.group.name}" is active again.`
+            : comment
+              ? `Your group "${detail.group.name}" has been suspended. Reason: ${comment}`
+              : `Your group "${detail.group.name}" has been suspended by an administrator.`,
+        meta: { kind: status === 'active' ? 'group_reactivated' : 'group_suspended', groupId: id, path: '/groups' }
+      });
+    }
+
+    res.json({ message: `Group ${status === 'active' ? 'activated' : 'suspended'}.` });
   } catch (error) {
     next(error);
   }

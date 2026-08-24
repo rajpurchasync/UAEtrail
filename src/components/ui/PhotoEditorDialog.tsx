@@ -18,12 +18,9 @@ interface PhotoEditorDialogProps {
   onClose: () => void;
   onApply: (result: PhotoEditorResult) => Promise<void> | void;
   applying?: boolean;
-  initialWidth?: number;
-  initialHeight?: number;
-  allowOutputSizeChange?: boolean;
-  defaultShape?: PhotoShape;
-  shapeOptions?: PhotoShape[];
-  outputShape?: PhotoShape | 'match';
+  shape: PhotoShape;
+  outputWidth?: number;
+  outputHeight?: number;
 }
 
 interface Point {
@@ -140,32 +137,20 @@ export const PhotoEditorDialog = ({
   onClose,
   onApply,
   applying = false,
-  initialWidth = 1200,
-  initialHeight = 900,
-  allowOutputSizeChange = true,
-  defaultShape = 'rectangle',
-  shapeOptions = ['rectangle', 'circle'],
-  outputShape = 'match',
+  shape,
+  outputWidth: outputWidthProp,
+  outputHeight: outputHeightProp,
 }: PhotoEditorDialogProps) => {
+  const outputWidth = outputWidthProp ?? (shape === 'circle' ? 512 : 1600);
+  const outputHeight = outputHeightProp ?? (shape === 'circle' ? 512 : 1200);
+
   const [error, setError] = useState<string | null>(null);
   const [src, setSrc] = useState<string | null>(null);
   const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [rotationDeg, setRotationDeg] = useState(0);
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
-  const [shape, setShape] = useState<PhotoShape>(defaultShape);
-  const [outputWidth, setOutputWidth] = useState(initialWidth);
-  const [outputHeight, setOutputHeight] = useState(initialHeight);
   const dragState = useRef<{ active: boolean; x: number; y: number } | null>(null);
-
-  useEffect(() => {
-    setShape(defaultShape);
-  }, [defaultShape]);
-
-  useEffect(() => {
-    setOutputWidth(initialWidth);
-    setOutputHeight(initialHeight);
-  }, [initialWidth, initialHeight]);
 
   useEffect(() => {
     if (!open || !file) return;
@@ -255,27 +240,10 @@ export const PhotoEditorDialog = ({
     dragState.current = null;
   };
 
-  const setSafeWidth = (next: number) => {
-    const width = clamp(Math.round(next), 64, 4096);
-    setOutputWidth(width);
-    if (shape === 'circle') {
-      setOutputHeight(width);
-    }
-  };
-
-  const setSafeHeight = (next: number) => {
-    const height = clamp(Math.round(next), 64, 4096);
-    setOutputHeight(height);
-    if (shape === 'circle') {
-      setOutputWidth(height);
-    }
-  };
-
   const apply = async () => {
     if (!src || !imageSize) return;
     setError(null);
     try {
-      const finalShape = outputShape === 'match' ? shape : outputShape;
       const blob = await exportEditedPhoto({
         src,
         imageWidth: imageSize.width,
@@ -287,9 +255,9 @@ export const PhotoEditorDialog = ({
         zoom,
         rotationDeg,
         offset,
-        shape: finalShape,
+        shape,
       });
-      await onApply({ blob, width: outputWidth, height: outputHeight, shape: finalShape });
+      await onApply({ blob, width: outputWidth, height: outputHeight, shape });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process image.');
     }
@@ -298,64 +266,6 @@ export const PhotoEditorDialog = ({
   return (
     <Dialog open={open} onClose={onClose} title={title} className="max-w-2xl">
       <div className="space-y-4">
-        {shapeOptions.length > 1 && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Shape</p>
-            <div className="inline-flex rounded-xl border border-gray-200 p-1 bg-white">
-              {shapeOptions.map((option) => {
-                const active = shape === option;
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => {
-                      setShape(option);
-                      if (option === 'circle') {
-                        const side = Math.min(outputWidth, outputHeight);
-                        setOutputWidth(side);
-                        setOutputHeight(side);
-                      }
-                    }}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
-                      active ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {option === 'circle' ? 'Circle' : 'Rectangle'}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {allowOutputSizeChange && (
-          <div className="grid grid-cols-2 gap-3">
-            <label className="text-sm text-gray-700">
-              Width (px)
-              <input
-                type="number"
-                min={64}
-                max={4096}
-                value={outputWidth}
-                onChange={(e) => setSafeWidth(Number(e.target.value || outputWidth))}
-                className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
-              />
-            </label>
-            <label className="text-sm text-gray-700">
-              Height (px)
-              <input
-                type="number"
-                min={64}
-                max={4096}
-                value={outputHeight}
-                disabled={shape === 'circle'}
-                onChange={(e) => setSafeHeight(Number(e.target.value || outputHeight))}
-                className="mt-1 w-full border rounded-lg px-3 py-2 text-sm disabled:bg-gray-100"
-              />
-            </label>
-          </div>
-        )}
-
         <div
           className={`relative mx-auto overflow-hidden bg-black/70 touch-none select-none cursor-grab active:cursor-grabbing ring-1 ring-black/20 ${
             shape === 'circle' ? 'rounded-full' : 'rounded-xl'
@@ -380,7 +290,11 @@ export const PhotoEditorDialog = ({
           )}
         </div>
 
-        <p className="text-xs text-gray-600 text-center">Drag to reposition. Zoom and rotate before applying.</p>
+        <p className="text-xs text-gray-600 text-center">
+          {shape === 'circle'
+            ? 'Drag to reposition your profile photo. Zoom or rotate if needed.'
+            : 'Drag to reposition. Zoom and rotate before applying.'}
+        </p>
 
         <div className="space-y-2">
           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Zoom</label>

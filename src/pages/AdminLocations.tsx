@@ -574,6 +574,7 @@ export const AdminLocations = () => {
                       max={8}
                       keyPrefix="locations"
                       kind="location-image"
+                      preset="location"
                     />
                   </div>
                 </fieldset>

@@ -8,6 +8,8 @@ export type GroupRole = 'admin' | 'buddy';
 export type GroupMemberType = 'adult' | 'kid';
 export type GroupInviteStatus = 'pending' | 'accepted' | 'expired' | 'cancelled';
 
+export type GroupStatus = 'active' | 'suspended';
+
 export type GroupRecord = {
   id: string;
   type: GroupType;
@@ -16,6 +18,7 @@ export type GroupRecord = {
   bannerUrl: string | null;
   photoUrl: string | null;
   adminUserId: string;
+  status: GroupStatus;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -84,6 +87,7 @@ type MongoGroup = {
   bannerUrl: string | null;
   photoUrl: string | null;
   adminUserId: string;
+  status?: GroupStatus;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -156,6 +160,7 @@ const mapGroup = (row: MongoGroup): GroupRecord => ({
   bannerUrl: row.bannerUrl,
   photoUrl: row.photoUrl,
   adminUserId: row.adminUserId,
+  status: row.status ?? 'active',
   createdAt: row.createdAt,
   updatedAt: row.updatedAt
 });
@@ -221,6 +226,7 @@ export const createSocialGroup = async (input: {
     bannerUrl: input.bannerUrl?.trim() || null,
     photoUrl: input.photoUrl?.trim() || null,
     adminUserId: input.creatorUserId,
+    status: 'active',
     createdAt: now,
     updatedAt: now
   };
@@ -258,6 +264,44 @@ export const listGroupsForUser = async (userId: string): Promise<GroupRecord[]> 
     .map((id) => byId.get(id))
     .filter((row): row is MongoGroup => Boolean(row))
     .map(mapGroup);
+};
+
+export const listUserGroupsWithMembership = async (userId: string) => {
+  const memberships = await membersCollection()
+    .find({ userId, memberType: 'adult', isActive: { $ne: false } })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  if (memberships.length === 0) return [];
+
+  const groupIds = [...new Set(memberships.map((membership) => membership.groupId))];
+  const groups = await groupsCollection().find({ _id: { $in: groupIds } }).toArray();
+  const groupMap = new Map(groups.map((group) => [group._id, group]));
+
+  return memberships.flatMap((membership) => {
+    const group = groupMap.get(membership.groupId);
+    if (!group) return [];
+    return [{
+      id: group._id,
+      name: group.name,
+      type: group.type,
+      role: membership.role,
+      status: group.status ?? 'active',
+      joinedAt: membership.createdAt
+    }];
+  });
+};
+
+export const updateGroupStatus = async (
+  groupId: string,
+  status: GroupStatus
+): Promise<GroupRecord | null> => {
+  const result = await groupsCollection().findOneAndUpdate(
+    { _id: groupId },
+    { $set: { status, updatedAt: new Date() } },
+    { returnDocument: 'after' }
+  );
+  return result ? mapGroup(result) : null;
 };
 
 export const listGroupMembersDetailed = async (groupId: string) => {

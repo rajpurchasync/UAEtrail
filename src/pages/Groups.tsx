@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import {
   Users,
   Baby,
-  Send,
   Mail,
   Copy,
   Plus,
@@ -12,6 +11,7 @@ import {
   Trash2,
   AlertTriangle,
 } from 'lucide-react';
+import { ChatComposeBar } from '../components/ui/ChatComposeBar';
 import {
   api,
   SocialGroupInviteView,
@@ -82,7 +82,9 @@ export const Groups = () => {
   const [reactionBusyMessageId, setReactionBusyMessageId] = useState<string | null>(null);
   const [acceptingInvite, setAcceptingInvite] = useState(false);
 
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const prevWallCountRef = useRef(0);
+  const skipWallScrollRef = useRef(true);
   const processedInviteRef = useRef<string | null>(null);
   const inviteToken = searchParams.get('invite');
   const fromCommunity = searchParams.get('from') === 'community';
@@ -168,7 +170,24 @@ export const Groups = () => {
   }, [inviteToken]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    skipWallScrollRef.current = true;
+    prevWallCountRef.current = 0;
+  }, [selectedGroupId]);
+
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    if (skipWallScrollRef.current) {
+      skipWallScrollRef.current = false;
+      prevWallCountRef.current = wall.length;
+      return;
+    }
+
+    if (wall.length > prevWallCountRef.current) {
+      container.scrollTop = container.scrollHeight;
+      prevWallCountRef.current = wall.length;
+    }
   }, [wall]);
 
   const isAdmin = detail?.membership.role === 'admin';
@@ -269,7 +288,7 @@ export const Groups = () => {
             }`}
             title={GROUP_WALL_REACTION_LABEL[reaction.kind]}
           >
-            <span>{GROUP_WALL_REACTION_EMOJI[reaction.kind]}</span>
+            <span className="font-emoji text-sm">{GROUP_WALL_REACTION_EMOJI[reaction.kind]}</span>
             <span className="font-medium">{reaction.count}</span>
           </button>
         ))}
@@ -296,7 +315,7 @@ export const Groups = () => {
                     void toggleWallReaction(message.id, kind);
                     setReactionPickerMessageId(null);
                   }}
-                  className={`h-8 w-8 rounded-lg text-base hover:bg-neutral-100 ${
+                  className={`h-8 w-8 rounded-lg text-base font-emoji hover:bg-neutral-100 ${
                     activeKinds.has(kind) ? 'bg-emerald-50' : ''
                   }`}
                   title={GROUP_WALL_REACTION_LABEL[kind]}
@@ -407,7 +426,7 @@ export const Groups = () => {
     if (!detail) return null;
 
     return (
-      <GlassCard padding className="!p-0 overflow-hidden">
+      <GlassCard padding className="!p-0 overflow-hidden flex flex-col max-h-[min(560px,70vh)]">
         <div className="px-4 py-3 border-b border-neutral-100 bg-neutral-50/50">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-emerald-600" />
@@ -415,7 +434,7 @@ export const Groups = () => {
           </div>
           <p className="text-xs text-neutral-500 mt-1">Everyone in this group can read and post messages.</p>
         </div>
-        <div className="space-y-2 max-h-[min(420px,50vh)] overflow-y-auto p-4 bg-neutral-50">
+        <div ref={chatContainerRef} className="space-y-2 flex-1 min-h-0 overflow-y-auto p-4 bg-neutral-50">
           {wall.length === 0 ? (
             <div className="text-center py-10">
               <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-3">
@@ -433,37 +452,20 @@ export const Groups = () => {
                     {new Date(message.createdAt).toLocaleString()}
                   </span>
                 </p>
-                <p className="text-sm text-neutral-800 mt-1 whitespace-pre-wrap leading-relaxed">{message.body}</p>
+                <p className="text-sm text-neutral-800 mt-1 whitespace-pre-wrap leading-relaxed font-emoji">{message.body}</p>
                 {renderMessageReactions(message)}
               </div>
             ))
           )}
-          <div ref={chatEndRef} />
         </div>
-        <div className="p-4 border-t border-neutral-100 bg-white">
-          <div className="flex gap-2">
-            <input
-              value={wallMessage}
-              onChange={(e) => setWallMessage(e.target.value)}
-              placeholder="Write a message…"
-              className="ios-input text-[14px] flex-1"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && wallMessage.trim() && !saving) {
-                  e.preventDefault();
-                  void sendWallMessage();
-                }
-              }}
-            />
-            <button
-              type="button"
-              disabled={saving || !wallMessage.trim()}
-              onClick={() => void sendWallMessage()}
-              className="ios-btn bg-emerald-600 text-white shrink-0"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+        <ChatComposeBar
+          value={wallMessage}
+          onChange={setWallMessage}
+          onSend={sendWallMessage}
+          sending={saving}
+          placeholder="Write a message…"
+          className="!px-4"
+        />
       </GlassCard>
     );
   };

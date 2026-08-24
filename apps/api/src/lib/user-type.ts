@@ -1,4 +1,6 @@
 import { TenantType, UserRole } from '../domain/enums.js';
+import { findAuthUserById } from './auth-users.js';
+import { findTenantByOwnerId } from './tenant-store.js';
 
 export type AdminUserType =
   | 'participant'
@@ -9,10 +11,10 @@ export type AdminUserType =
 
 export const ADMIN_USER_TYPE_LABELS: Record<AdminUserType, string> = {
   participant: 'Participant',
-  business_organizer: 'Business Organizer',
-  guide_organizer: 'Guide Organizer',
-  organizer_staff: 'Organizer Staff',
-  platform_admin: 'Platform Admin'
+  business_organizer: 'Organizer',
+  guide_organizer: 'Individual Host',
+  organizer_staff: 'Host Staff',
+  platform_admin: 'Admin'
 };
 
 type UserTypeInput = {
@@ -31,6 +33,17 @@ export const resolveAdminUserType = (user: UserTypeInput): AdminUserType => {
     return 'organizer_staff';
   }
   return 'participant';
+};
+
+/** Business (company) tenant owners do not participate in Trail Points. */
+export const isBusinessOrganizer = (user: UserTypeInput): boolean =>
+  resolveAdminUserType(user) === 'business_organizer';
+
+export const isBusinessOrganizerById = async (userId: string): Promise<boolean> => {
+  const user = await findAuthUserById(userId);
+  if (!user || user.role !== UserRole.TENANT_OWNER) return false;
+  const tenant = await findTenantByOwnerId(userId);
+  return tenant?.type === TenantType.COMPANY;
 };
 
 export const adminUserTypeFilter = (userType: string): Record<string, unknown> | null => {

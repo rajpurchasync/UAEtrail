@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Upload, X } from 'lucide-react';
+import { IMAGE_UPLOAD_PRESETS } from '../../constants/imageUploadPresets';
 import { uploadMediaBlob } from '../../lib/mediaUpload';
 import { PhotoEditorDialog } from '../ui/PhotoEditorDialog';
 import { SecureAvatar } from '../ui/SecureAvatar';
@@ -33,7 +34,6 @@ export const ProfilePhotoEditorField = ({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium text-gray-700">Profile photo</label>
-        <span className="text-xs text-gray-400">Final: processed upload only</span>
       </div>
 
       <div className="flex items-center gap-3">
@@ -87,12 +87,9 @@ export const ProfilePhotoEditorField = ({
         title="Edit profile photo"
         onClose={() => setEditorFile(null)}
         applying={uploading}
-        initialWidth={512}
-        initialHeight={512}
-        allowOutputSizeChange={false}
-        defaultShape="circle"
-        shapeOptions={['circle']}
-        outputShape="rectangle"
+        shape={IMAGE_UPLOAD_PRESETS.profile.shape}
+        outputWidth={IMAGE_UPLOAD_PRESETS.profile.outputWidth}
+        outputHeight={IMAGE_UPLOAD_PRESETS.profile.outputHeight}
         onApply={async ({ blob }) => {
           if (!editorFile) return;
           setError(null);

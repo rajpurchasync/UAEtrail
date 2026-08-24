@@ -5,6 +5,7 @@ import { UserRole } from '../src/domain/enums.js';
 import { REFRESH_COOKIE_NAME } from '../src/lib/auth-cookies.js';
 import { findAuthUserByEmail, updateAuthUserCore } from '../src/lib/auth-users.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
+import { getVerificationOtp } from './helpers/fixtures.js';
 
 let app: Express;
 
@@ -18,7 +19,7 @@ describe('auth integration', () => {
   let accessToken = '';
   let refreshCookie = '';
 
-  it('registers a new user and sets refresh cookie', async () => {
+  it('registers a new user and requires email verification before session', async () => {
     const response = await request(app)
       .post('/api/v1/auth/register')
       .send({
@@ -29,23 +30,57 @@ describe('auth integration', () => {
       });
 
     expect(response.status).toBe(201);
-    expect(response.body.user.email).toBe(email);
-    expect(response.body.tokens.accessToken).toBeTruthy();
-    expect(response.body.tokens.refreshToken).toBeUndefined();
-    expect(response.body.verificationToken).toBeTruthy();
-
-    const verifyRes = await request(app)
-      .post('/api/v1/auth/verify-email')
-      .send({ token: response.body.verificationToken });
-    expect(verifyRes.status).toBe(200);
-    expect(verifyRes.body.tokens.accessToken).toBeTruthy();
+    expect(response.body.email).toBe(email);
+    expect(response.body.requiresEmailVerification).toBe(true);
+    expect(response.body.tokens).toBeUndefined();
+    expect(response.body.verificationOtp).toBeUndefined();
 
     const cookies = response.headers['set-cookie'];
     const cookieHeader = Array.isArray(cookies) ? cookies.join('; ') : cookies ?? '';
-    expect(cookieHeader).toContain(REFRESH_COOKIE_NAME);
+    const hasActiveRefreshCookie =
+      cookieHeader.includes(`${REFRESH_COOKIE_NAME}=`) &&
+      !cookieHeader.includes('Expires=Thu, 01 Jan 1970');
+    expect(hasActiveRefreshCookie).toBe(false);
+
+    const verifyRes = await request(app)
+      .post('/api/v1/auth/verify-email')
+      .send({ email, otp: getVerificationOtp(email) });
+    expect(verifyRes.status).toBe(200);
+    expect(verifyRes.body.tokens.accessToken).toBeTruthy();
+
+    const verifyCookies = verifyRes.headers['set-cookie'];
+    const verifyCookieHeader = Array.isArray(verifyCookies) ? verifyCookies.join('; ') : verifyCookies ?? '';
+    expect(verifyCookieHeader).toContain(REFRESH_COOKIE_NAME);
 
     accessToken = verifyRes.body.tokens.accessToken;
-    refreshCookie = cookieHeader.split(';')[0];
+    refreshCookie = verifyCookieHeader.split(';')[0];
+  });
+
+  it('blocks login until email is verified and resends a verification code', async () => {
+    const pendingEmail = `pending-${Date.now()}@example.com`;
+    const pendingPassword = 'TestPass1';
+
+    const registerRes = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        email: pendingEmail,
+        password: pendingPassword,
+        displayName: 'Pending User',
+        accountType: 'visitor'
+      });
+
+    expect(registerRes.status).toBe(201);
+    expect(registerRes.body.tokens).toBeUndefined();
+
+    const loginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: pendingEmail, password: pendingPassword });
+
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body.requiresEmailVerification).toBe(true);
+    expect(loginRes.body.email).toBe(pendingEmail);
+    expect(loginRes.body.tokens).toBeUndefined();
+    expect(loginRes.body.verificationOtp).toBeUndefined();
   });
 
   it('logs in and returns access token with refresh cookie', async () => {
@@ -108,7 +143,7 @@ describe('auth integration', () => {
 
     const verifyRes = await request(app)
       .post('/api/v1/auth/verify-email')
-      .send({ token: registerRes.body.verificationToken });
+      .send({ email: switchEmail, otp: getVerificationOtp(switchEmail) });
     expect(verifyRes.status).toBe(200);
 
     const createdUser = await findAuthUserByEmail(switchEmail);

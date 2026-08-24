@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 import { env } from '../config/env.js';
+import { isEmailConfigured, resolveEmailConfig } from './email-config.js';
 
 export type EmailTemplate =
   | 'request_approved'
@@ -15,31 +17,52 @@ interface EmailPayload {
   html?: string;
 }
 
-export const isEmailConfigured = (): boolean =>
-  Boolean(process.env.SMTP_URL || process.env.SENDGRID_API_KEY || process.env.SMTP_HOST);
+export { isEmailConfigured };
 
-const createTransport = () => {
-  if (process.env.SMTP_URL) {
-    return nodemailer.createTransport(process.env.SMTP_URL);
+const testVerificationOtps = new Map<string, string>();
+
+/** Test-only: read the last verification OTP captured for an email address. */
+export const peekTestVerificationOtp = (email: string): string | undefined =>
+  process.env.NODE_ENV === 'test' ? testVerificationOtps.get(email.trim().toLowerCase()) : undefined;
+
+export const clearTestVerificationOtps = (): void => {
+  testVerificationOtps.clear();
+};
+
+const createTransport = (): Transporter | null => {
+  const config = resolveEmailConfig();
+
+  if (config.smtpUrl) {
+    return nodemailer.createTransport(config.smtpUrl);
   }
-  if (process.env.SENDGRID_API_KEY) {
+  if (config.sendgridApiKey) {
     return nodemailer.createTransport({
       host: 'smtp.sendgrid.net',
       port: 587,
       auth: {
         user: 'apikey',
-        pass: process.env.SENDGRID_API_KEY
+        pass: config.sendgridApiKey
       }
     });
   }
-  if (process.env.SMTP_HOST) {
+  if (config.smtpHost) {
+    if (config.smtpHost === 'smtp.gmail.com' && config.smtpUser && config.smtpPass) {
+      return nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: config.smtpUser,
+          pass: config.smtpPass
+        }
+      });
+    }
+
     return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT ?? 587),
-      secure: process.env.SMTP_SECURE === 'true',
+      host: config.smtpHost,
+      port: config.smtpPort,
+      secure: config.smtpSecure,
       auth:
-        process.env.SMTP_USER && process.env.SMTP_PASS
-          ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+        config.smtpUser && config.smtpPass
+          ? { user: config.smtpUser, pass: config.smtpPass }
           : undefined
     });
   }
@@ -48,15 +71,17 @@ const createTransport = () => {
 
 export const sendRawEmail = async (payload: EmailPayload): Promise<boolean> => {
   const transport = createTransport();
+  const { emailFrom } = resolveEmailConfig();
+
   if (!transport) {
     if (env.NODE_ENV !== 'production') {
-      console.info('[email:dev]', payload);
+      console.info('[email:dev]', { from: emailFrom, ...payload });
     }
     return false;
   }
 
   await transport.sendMail({
-    from: process.env.EMAIL_FROM ?? 'UAE Trail <noreply@uaetrail.ae>',
+    from: emailFrom,
     to: payload.to,
     subject: payload.subject,
     text: payload.body,
@@ -95,7 +120,7 @@ function getTemplateBody(template: EmailTemplate): string {
     case 'event_cancelled':
       return 'Hi {{name}}, {{eventTitle}} on {{eventDate}} has been cancelled by the organizer.';
     case 'email_verification':
-      return 'Hi {{name}}, verify your email to start joining trips on UAE Trail:\n\n{{verifyUrl}}\n\nThis link expires in 24 hours.';
+      return 'Hi {{name}}, your UAE Trail verification code is:\n\n{{otp}}\n\nThis code expires in 60 seconds. If it expires, request a new code from the app.';
     case 'password_reset':
       return 'Hi {{name}}, reset your password using this link:\n\n{{resetUrl}}\n\nThis link expires in 1 hour. If you did not request this, ignore this email.';
     default:
@@ -106,13 +131,19 @@ function getTemplateBody(template: EmailTemplate): string {
 export const sendVerificationEmail = async (opts: {
   to: string;
   name: string;
-  token: string;
-}): Promise<void> => {
-  const verifyUrl = `${env.APP_BASE_URL}/verify?token=${encodeURIComponent(opts.token)}&email=${encodeURIComponent(opts.to)}`;
-  await sendTransactionalEmail('email_verification', opts.to, {
-    name: opts.name,
-    verifyUrl
-  });
+  otp: string;
+}): Promise<boolean> => {
+  if (process.env.NODE_ENV === 'test') {
+    testVerificationOtps.set(opts.to.trim().toLowerCase(), opts.otp);
+    return true;
+  }
+
+  const subject = templateSubjects.email_verification;
+  const body = getTemplateBody('email_verification')
+    .replace(/{{name}}/g, opts.name)
+    .replace(/{{otp}}/g, opts.otp);
+
+  return sendRawEmail({ to: opts.to, subject, body });
 };
 
 export const sendPasswordResetEmail = async (opts: {

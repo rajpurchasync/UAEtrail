@@ -13,6 +13,8 @@ import {
   tierKeyToEnum
 } from '../lib/rewards-config.js';
 import { findAuthUserById, findAuthUserByReferralCode } from '../lib/auth-users.js';
+import { listCompanyTenantOwnerIds } from '../lib/tenant-store.js';
+import { isBusinessOrganizerById } from '../lib/user-type.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { dispatchNotification } from './notifications.js';
 import {
@@ -117,6 +119,9 @@ async function syncMembershipTier(userId: string, points: number): Promise<strin
 export async function awardPoints(input: AwardPointsInput): Promise<{ awarded: boolean; points: number }> {
   const points = REWARD_POINTS[input.action];
   if (points <= 0) return { awarded: false, points: 0 };
+  if (await isBusinessOrganizerById(input.userId)) {
+    return { awarded: false, points: 0 };
+  }
 
   try {
     await createRewardLedgerEntry({
@@ -265,8 +270,37 @@ export async function processSignupRewards(
 }
 
 export async function getRewardSummary(userId: string) {
-  const [user, ledger, badges] = await Promise.all([
-    findAuthUserById(userId),
+  const user = await findAuthUserById(userId);
+  const freeTier = getTierForPoints(0);
+
+  if (await isBusinessOrganizerById(userId)) {
+    return {
+      trailPointsEligible: false,
+      points: 0,
+      membershipTier: {
+        key: freeTier.key,
+        name: freeTier.name,
+        minPoints: freeTier.minPoints,
+        emoji: freeTier.emoji,
+        tagline: freeTier.tagline,
+        benefits: freeTier.benefits
+      },
+      nextTier: null,
+      level: {
+        key: freeTier.key,
+        name: freeTier.name,
+        minPoints: freeTier.minPoints
+      },
+      nextLevel: null,
+      referralCode: user?.referralCode ?? '',
+      pathToNextTier: null,
+      tierBadges: [],
+      badges: [],
+      recentActivity: []
+    };
+  }
+
+  const [ledger, badges] = await Promise.all([
     listUserRewardLedger(userId, 30),
     findUserBadges(userId)
   ]);
@@ -296,6 +330,7 @@ export async function getRewardSummary(userId: string) {
   }
 
   return {
+    trailPointsEligible: true,
     points,
     membershipTier: {
       key: tier.key,
@@ -363,9 +398,28 @@ export async function getRewardSummary(userId: string) {
   };
 }
 
+export async function getUserLeaderboardRank(userId: string): Promise<number | null> {
+  if (await isBusinessOrganizerById(userId)) return null;
+
+  const user = await findAuthUserById(userId);
+  const points = user?.profile?.rewardPoints ?? 0;
+  if (points <= 0) return null;
+
+  const excludedOwnerIds = await listCompanyTenantOwnerIds();
+  const higherCount = await usersCollection().countDocuments({
+    'profile.rewardPoints': { $gt: points },
+    _id: { $nin: excludedOwnerIds }
+  });
+  return higherCount + 1;
+}
+
 export async function getLeaderboard(limit = 10) {
+  const excludedOwnerIds = await listCompanyTenantOwnerIds();
   const rows = await usersCollection()
-    .find({ 'profile.rewardPoints': { $gt: 0 } })
+    .find({
+      'profile.rewardPoints': { $gt: 0 },
+      _id: { $nin: excludedOwnerIds }
+    })
     .sort({ 'profile.rewardPoints': -1 })
     .limit(limit)
     .toArray();

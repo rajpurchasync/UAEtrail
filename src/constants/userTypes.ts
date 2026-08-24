@@ -2,10 +2,10 @@ import { AdminUserType } from '@uaetrail/shared-types';
 
 export const USER_TYPE_LABELS: Record<AdminUserType, string> = {
   participant: 'Participant',
-  business_organizer: 'Business Organizer',
-  guide_organizer: 'Guide Organizer',
-  organizer_staff: 'Organizer Staff',
-  platform_admin: 'Platform Admin'
+  business_organizer: 'Organizer',
+  guide_organizer: 'Individual Host',
+  organizer_staff: 'Host Staff',
+  platform_admin: 'Admin'
 };
 
 export const USER_TYPE_BADGE: Record<AdminUserType, string> = {

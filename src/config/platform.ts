@@ -107,6 +107,7 @@ export const CONSUMER_CHROME_HIDDEN_EXACT = [
   '/signin',
   '/signup',
   '/verify',
+  '/welcome',
   '/onboarding',
   '/forgot-password'
 ] as const;

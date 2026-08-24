@@ -403,6 +403,13 @@ export const findAdminEventById = async (id: string) => {
   return doc ? mapMongoEvent(doc) : null;
 };
 
+export const findAdminEventDetailedById = async (id: string) => {
+  const doc = await eventsCollection().findOne({ _id: id });
+  if (!doc) return null;
+  const [event] = await loadEventsWithRelations([doc]);
+  return event ?? null;
+};
+
 export const updateAdminEventStatus = async (id: string, status: EventStatus) => {
   const result = await eventsCollection().findOneAndUpdate(
     { _id: id },
@@ -448,11 +455,12 @@ export const listOwnerTenantTypes = async (ownerIds: string[]) => {
 
 export const listUserOwnedTenantsBasic = async (ownerId: string) => {
   const docs = await tenantsCollection()
-    .find({ ownerId }, { projection: { name: 1, type: 1, status: 1 } })
+    .find({ ownerId }, { projection: { name: 1, slug: 1, type: 1, status: 1 } })
     .toArray();
   return docs.map((doc) => ({
     id: doc._id,
     name: doc.name,
+    slug: doc.slug,
     type: doc.type,
     status: doc.status
   }));
@@ -505,6 +513,49 @@ export const listEventsForAdminTrips = async (eventIds: string[]) => {
     location: locationMap.get(doc.locationId)!,
     tenant: tenantMap.get(doc.tenantId)!
   }));
+};
+
+export const listUserHostedEventsBasic = async (userId: string, limit = 20) => {
+  const [ownedTenants, memberships] = await Promise.all([
+    tenantsCollection().find({ ownerId: userId }, { projection: { _id: 1 } }).toArray(),
+    tenantMembershipsCollection()
+      .find({ userId, role: { $in: ['TENANT_OWNER', 'TENANT_ADMIN', 'TENANT_GUIDE'] } }, { projection: { tenantId: 1 } })
+      .toArray()
+  ]);
+
+  const ownedTenantIds = new Set(ownedTenants.map((doc) => doc._id));
+  const tenantIds = [...new Set([...ownedTenantIds, ...memberships.map((m) => m.tenantId)])];
+
+  const orClauses: Record<string, unknown>[] = [{ guideId: userId }];
+  if (tenantIds.length > 0) {
+    orClauses.push({ tenantId: { $in: tenantIds } });
+  }
+
+  const docs = await eventsCollection()
+    .find({ $or: orClauses })
+    .sort({ startAt: -1 })
+    .limit(limit)
+    .toArray();
+
+  const [locationMap, tenantMap] = await Promise.all([
+    loadLocationsByIds([...new Set(docs.map((doc) => doc.locationId))]),
+    loadTenantsByIds([...new Set(docs.map((doc) => doc.tenantId))])
+  ]);
+
+  return docs.map((doc) => {
+    const tenant = tenantMap.get(doc.tenantId);
+    const isOwner = ownedTenantIds.has(doc.tenantId);
+    return {
+      eventId: doc._id,
+      tenantId: doc.tenantId,
+      title: doc.title,
+      status: doc.status.toLowerCase(),
+      date: doc.startAt.toISOString().slice(0, 10),
+      locationName: locationMap.get(doc.locationId)?.name ?? '',
+      organizerName: tenant?.name ?? '',
+      role: doc.guideId === userId ? 'guide' : isOwner ? 'owner' : 'staff'
+    };
+  });
 };
 
 export const listAdminTenantsPaged = async (input: { skip: number; take: number }) => {

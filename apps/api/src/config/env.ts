@@ -1,10 +1,16 @@
 import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
+import { isEmailConfigured } from '../lib/email-config.js';
 
+const configDir = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(configDir, '../../../../.env') });
 dotenv.config();
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  RUN_ENV: z.enum(['test', 'staging', 'production', 'local']).optional(),
   PORT: z.coerce.number().default(4000),
   MONGODB_URI: z.string().min(1),
   JWT_ACCESS_SECRET: z.string().min(24),
@@ -35,16 +41,13 @@ if (!parsed.success) {
 
 export const env = parsed.data;
 
-const isEmailConfigured = (): boolean =>
-  Boolean(process.env.SMTP_URL || process.env.SENDGRID_API_KEY || process.env.SMTP_HOST);
-
 /** Fail fast when production is misconfigured. */
 export const validateProductionConfig = (): void => {
   if (env.NODE_ENV !== 'production') return;
 
   if (!isEmailConfigured()) {
     throw new Error(
-      'Production requires email delivery — set SMTP_URL or SENDGRID_API_KEY (and EMAIL_FROM).'
+      'Production requires email delivery — set SMTP_URL_PROD, SENDGRID_API_KEY, or SMTP_HOST for production.'
     );
   }
 

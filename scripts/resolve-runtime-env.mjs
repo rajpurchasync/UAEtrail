@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveEmailEnv } from './lib/resolve-email-env.mjs';
 
 export const parseEnvFile = (filePath) => {
   const parsed = {};
@@ -106,11 +107,22 @@ export const resolveRuntimeEnv = ({
 
   validateMongoUri(selectedUri);
 
+  const emailEnv = resolveEmailEnv({ getEnv, runEnv: normalizedRunEnv });
+
   return {
     RUN_ENV: rawRunEnv,
     NODE_ENV: nodeEnv,
     MONGODB_URI_SOURCE: selectedKey,
-    MONGODB_URI: selectedUri
+    MONGODB_URI: selectedUri,
+    EMAIL_FROM: emailEnv.EMAIL_FROM,
+    SMTP_URL: emailEnv.SMTP_URL,
+    SENDGRID_API_KEY: emailEnv.SENDGRID_API_KEY,
+    SMTP_HOST: emailEnv.SMTP_HOST,
+    SMTP_PORT: emailEnv.SMTP_PORT,
+    SMTP_SECURE: emailEnv.SMTP_SECURE,
+    SMTP_USER: emailEnv.SMTP_USER,
+    SMTP_PASS: emailEnv.SMTP_PASS,
+    EMAIL_CONFIGURED: String(emailEnv.EMAIL_CONFIGURED)
   };
 };
 

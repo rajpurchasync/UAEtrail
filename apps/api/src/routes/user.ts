@@ -19,6 +19,14 @@ import { buildLocationCreateData } from '../services/location-submit.js';
 import { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { createAuditLog } from '../lib/audit.js';
 import { findAuthUserByEmail, findAuthUserById, listAuthUsers, updateAuthUserCore, updateAuthUserProfile } from '../lib/auth-users.js';
+import { EMAIL_VERIFICATION_OTP_TTL_MS, EMAIL_VERIFICATION_OTP_TTL_SECONDS } from '../lib/auth-constants.js';
+import {
+  createEmailChangeToken,
+  findEmailChangeTokenForUser,
+  useEmailChangeToken
+} from '../lib/auth-tokens.js';
+import { generateEmailOtp } from '../lib/hash.js';
+import { sendVerificationEmail } from '../lib/email.js';
 import { formatE164Phone, isValidE164Phone, isValidNationalPhone } from '../lib/phone.js';
 import { notifyPlatformAdmins } from '../services/admin-notifications.js';
 import {
@@ -110,13 +118,28 @@ const mediaUrlSchema = z.string().min(1).refine(
 
 const updateProfileSchema = z.object({
   displayName: z.string().min(2).max(80).optional(),
-  phone: z.string().max(30).optional(),
-  bio: z.string().max(400).optional(),
+  phone: z.preprocess(
+    (value) => (value === '' || value === null ? undefined : value),
+    z.string().max(30).optional()
+  ),
+  bio: z.preprocess(
+    (value) => (value === '' || value === null ? undefined : value),
+    z.string().max(400).optional()
+  ),
   avatarUrl: z.preprocess(
     (value) => (value === '' || value === null ? undefined : value),
     mediaUrlSchema.optional()
   ),
   profileVisibility: z.enum(['public', 'group_members', 'private']).optional()
+});
+
+const requestEmailChangeSchema = z.object({
+  newEmail: z.string().email()
+});
+
+const confirmEmailChangeSchema = z.object({
+  newEmail: z.string().email(),
+  otp: z.string().regex(/^\d{6}$/, 'Enter the 6-digit verification code.')
 });
 
 const roleSwitchSchema = z.object({
@@ -884,7 +907,14 @@ userRouter.get('/me/profile', async (req, res, next) => {
 userRouter.patch('/me/profile', validate({ body: updateProfileSchema }), async (req, res, next) => {
   try {
     const data = req.body as z.infer<typeof updateProfileSchema>;
-    await updateAuthUserProfile(req.auth!.userId, data);
+    if (data.phone && !isValidE164Phone(data.phone)) {
+      throw new ApiError(400, 'invalid_phone', 'Enter a valid phone number.');
+    }
+    await updateAuthUserProfile(req.auth!.userId, {
+      ...data,
+      phone: data.phone ?? null,
+      bio: data.bio ?? null
+    });
     res.json({
       data: {
         displayName: data.displayName ?? null,
@@ -893,6 +923,86 @@ userRouter.patch('/me/profile', validate({ body: updateProfileSchema }), async (
         avatarUrl: data.avatarUrl ?? null,
         profileVisibility: data.profileVisibility ?? null
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/email/change/request', validate({ body: requestEmailChangeSchema }), async (req, res, next) => {
+  try {
+    const { newEmail } = req.body as z.infer<typeof requestEmailChangeSchema>;
+    const normalizedEmail = newEmail.trim().toLowerCase();
+    const user = await findAuthUserById(req.auth!.userId);
+    if (!user) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
+    }
+    if (normalizedEmail === user.email.toLowerCase()) {
+      throw new ApiError(400, 'same_email', 'That is already your email address.');
+    }
+    const existing = await findAuthUserByEmail(normalizedEmail);
+    if (existing && existing._id !== user._id) {
+      throw new ApiError(409, 'email_in_use', 'That email address is already registered.');
+    }
+
+    const otp = generateEmailOtp();
+    const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_OTP_TTL_MS);
+    await createEmailChangeToken({
+      userId: user._id,
+      newEmail: normalizedEmail,
+      token: otp,
+      expiresAt
+    });
+
+    const sent = await sendVerificationEmail({
+      to: normalizedEmail,
+      name: user.profile.displayName ?? user.email,
+      otp
+    });
+    if (!sent) {
+      throw new ApiError(503, 'email_delivery_failed', 'Could not send verification email. Please try again.');
+    }
+
+    res.json({
+      message: 'Verification code sent to your new email address.',
+      email: normalizedEmail,
+      expiresAt: expiresAt.toISOString(),
+      expiresInSeconds: EMAIL_VERIFICATION_OTP_TTL_SECONDS
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/email/change/confirm', validate({ body: confirmEmailChangeSchema }), async (req, res, next) => {
+  try {
+    const { newEmail, otp } = req.body as z.infer<typeof confirmEmailChangeSchema>;
+    const normalizedEmail = newEmail.trim().toLowerCase();
+    const user = await findAuthUserById(req.auth!.userId);
+    if (!user) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
+    }
+
+    const record = await findEmailChangeTokenForUser(user._id, normalizedEmail, otp);
+    if (!record) {
+      throw new ApiError(400, 'invalid_otp', 'Invalid or expired verification code.');
+    }
+
+    const existing = await findAuthUserByEmail(normalizedEmail);
+    if (existing && existing._id !== user._id) {
+      throw new ApiError(409, 'email_in_use', 'That email address is already registered.');
+    }
+
+    await updateAuthUserCore({
+      userId: user._id,
+      email: normalizedEmail,
+      emailVerifiedAt: new Date()
+    });
+    await useEmailChangeToken(record.id);
+
+    res.json({
+      message: 'Email address updated.',
+      data: { email: normalizedEmail }
     });
   } catch (error) {
     next(error);

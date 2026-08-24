@@ -1,6 +1,7 @@
 import { api } from '../api/services';
 import { getStoredSession } from '../api/client';
 import { formatEnvironmentUrl } from '../utils/formatEnvironmentUrl';
+import { formatMediaUrl } from '../utils/formatMediaUrl';
 
 interface UploadMediaBlobInput {
   blob: Blob;
@@ -71,5 +72,5 @@ export const uploadMediaBlob = async ({
     kind,
   });
 
-  return formatEnvironmentUrl(committed.data.url);
+  return formatMediaUrl(formatEnvironmentUrl(committed.data.url));
 };
