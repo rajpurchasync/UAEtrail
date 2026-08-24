@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { ArrowLeft, Flag, Loader2, MessageSquare, Plus, Search, Send, X } from 'lucide-react';
+import { ArrowLeft, Flag, Loader2, MessageSquare, Plus, Search, X } from 'lucide-react';
 import { ChatMessageDTO, ChatConversationDTO } from '@uaetrail/shared-types';
 import { ChatComposeBar } from '../ui/ChatComposeBar';
 

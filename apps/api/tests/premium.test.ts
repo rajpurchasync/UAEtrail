@@ -31,7 +31,7 @@ beforeAll(async () => {
   locationId = location.id;
 
   const email = `premium-test-${Date.now()}@example.com`;
-  const register = await request(app)
+  await request(app)
     .post('/api/v1/auth/register')
     .send({
       email,

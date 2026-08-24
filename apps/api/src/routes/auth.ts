@@ -70,7 +70,6 @@ const demoLoginSchema = z.object({
   email: z.string().email()
 });
 
-const tokenSchema = z.object({ token: z.string().min(20) });
 const verifyEmailSchema = z.object({
   email: z.string().email(),
   otp: z.string().regex(/^\d{6}$/, 'Enter the 6-digit verification code.')
@@ -314,7 +313,6 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
         email: existing.email,
         expiresAt: verification.expiresAt,
         expiresInSeconds: verification.expiresInSeconds,
-        otp: verification.otp,
         message: 'Verification code resent. Enter the code to finish creating your account.'
       });
       return;
@@ -364,7 +362,6 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       email: created.email,
       expiresAt: verification.expiresAt,
       expiresInSeconds: verification.expiresInSeconds,
-      otp: verification.otp,
       message: 'Account created. Verify your email to finish registration.'
     });
   } catch (error) {
@@ -403,7 +400,6 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
         email: user.email,
         expiresAt: verification.expiresAt,
         expiresInSeconds: verification.expiresInSeconds,
-        otp: verification.otp,
         message: 'Verify your email to finish registration.'
       });
       return;

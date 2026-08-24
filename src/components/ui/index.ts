@@ -13,6 +13,7 @@ export { LocationDetailTabs, toLocationDetailData } from './LocationDetailTabs';
 export { SubmitLocationForm } from './SubmitLocationForm';
 export { LocationSelect } from './LocationSelect';
 export { ActivityTypeSelect } from './ActivityTypeSelect';
+export { TimePicker } from './TimePicker';
 export { Breadcrumb } from './Breadcrumb';
 export { TenantSwitcher } from './TenantSwitcher';
 export { MapPinPicker } from './MapPinPicker';

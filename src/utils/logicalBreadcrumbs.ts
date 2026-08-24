@@ -59,7 +59,7 @@ const adminCrumbs = (pathname: string): LogicalBreadcrumb[] => {
   const base = { label: 'Admin Console', path: '/admin/overview' };
 
   if (pathname === '/admin/overview') return [base];
-  if (pathname === '/admin/users') return [base, { label: 'Users', path: '' }];
+  if (pathname === '/admin/users') return [base, { label: 'User Management', path: '' }];
   if (pathname === '/admin/events') return [base, { label: 'Events', path: '' }];
   if (pathname === '/admin/groups') return [base, { label: 'Groups', path: '' }];
   if (pathname === '/admin/locations') return [base, { label: 'Locations', path: '' }];

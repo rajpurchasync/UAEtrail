@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
@@ -6,6 +6,7 @@ import { api } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 import { MembershipTierBadge } from '../ui/MembershipTierBadge';
 import { ReportContentButton } from './ReportContentDialog';
+import { EmojiPickerButton } from './EmojiPickerButton';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 
 interface ReviewSectionProps {
@@ -31,6 +32,24 @@ export const ReviewSection = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const commentRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertEmoji = (emoji: string) => {
+    const el = commentRef.current;
+    if (!el) {
+      setComment((current) => current + emoji);
+      return;
+    }
+    const start = el.selectionStart ?? comment.length;
+    const end = el.selectionEnd ?? comment.length;
+    const next = `${comment.slice(0, start)}${emoji}${comment.slice(end)}`;
+    setComment(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + emoji.length;
+      el.setSelectionRange(pos, pos);
+    });
+  };
 
   const existingReview = user ? reviews.find((r) => r.userId === user.id) : undefined;
   const btnClass =
@@ -96,13 +115,17 @@ export const ReviewSection = ({
               </button>
             ))}
           </div>
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows={3}
-            placeholder="What did you like? Any tips for others? (min 10 characters)"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
-          />
+          <div className="flex gap-2 items-end">
+            <textarea
+              ref={commentRef}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={3}
+              placeholder="What did you like? Any tips for others? (min 10 characters)"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 font-emoji"
+            />
+            <EmojiPickerButton onPick={insertEmoji} disabled={submitting} />
+          </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <p className="text-xs text-emerald-700">Earn +25 Trail Points for your review.</p>
           <button

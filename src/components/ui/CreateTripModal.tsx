@@ -4,6 +4,7 @@ import { LocationSelect } from './LocationSelect';
 import { ActivityTypeSelect } from './ActivityTypeSelect';
 import { MapPinFields, parseCoord } from './MeetingPointMap';
 import { HostSelect } from './HostSelect';
+import { TimePicker } from './TimePicker';
 import { Dialog } from './Dialog';
 import { TripPricePackagesEditor } from './TripPricePackagesEditor';
 import { api } from '../../api/services';
@@ -335,11 +336,9 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Start time *</label>
-                <input
-                  type="time"
+                <TimePicker
                   value={form.time}
-                  onChange={(e) => setForm({ ...form, time: e.target.value })}
-                  className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                  onChange={(time) => setForm({ ...form, time })}
                 />
               </div>
             </div>
@@ -356,11 +355,9 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">End time</label>
-                <input
-                  type="time"
+                <TimePicker
                   value={form.endTime}
-                  onChange={(e) => setForm({ ...form, endTime: e.target.value })}
-                  className="w-full border rounded-xl px-3 py-2.5 text-sm"
+                  onChange={(endTime) => setForm({ ...form, endTime })}
                 />
               </div>
             </div>

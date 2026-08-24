@@ -26,6 +26,7 @@ import {
   RewardStatsDTO,
   RewardSummaryDTO,
   TenantListDTO,
+  TenantType,
   TripParticipationDTO,
   UserListDTO,
   WithdrawReason
@@ -258,8 +259,8 @@ export interface TenantDetail {
   id: string;
   name: string;
   slug: string;
-  type: string;
-  status: string;
+  type: TenantType;
+  status: TenantListDTO['status'];
   owner: { id: string; email: string; displayName: string | null };
   createdAt: string;
   members: Array<{ userId: string; email: string; displayName: string | null; role: string; joinedAt: string }>;

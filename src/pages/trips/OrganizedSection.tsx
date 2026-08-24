@@ -4,7 +4,7 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { EventDTO, withdrawReasonLabel } from '@uaetrail/shared-types';
 import { api, EventRequestView } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
-import { TenantSwitcher, ImageUpload, MapPinFields, parseCoord, LocationSelect, ShareButton, HostSelect, TripPricePackagesEditor, ActivityTypeSelect } from '../../components/ui';
+import { TenantSwitcher, ImageUpload, MapPinFields, parseCoord, LocationSelect, ShareButton, HostSelect, TripPricePackagesEditor, ActivityTypeSelect, TimePicker } from '../../components/ui';
 import { derivePriceAed, tripHasPaidPricing } from '../../utils/tripPricing';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { daysUntil, isUpcomingTrip } from '../../utils/tripDates';
@@ -510,12 +510,10 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Time *</label>
-                  <input
-                    type="time"
+                  <TimePicker
                     required
                     value={form.time}
-                    onChange={(e) => setForm({ ...form, time: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    onChange={(time) => setForm({ ...form, time })}
                   />
                 </div>
               </div>
@@ -532,11 +530,9 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">End time</label>
-                  <input
-                    type="time"
+                  <TimePicker
                     value={form.endTime}
-                    onChange={(e) => setForm({ ...form, endTime: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    onChange={(endTime) => setForm({ ...form, endTime })}
                   />
                 </div>
               </div>

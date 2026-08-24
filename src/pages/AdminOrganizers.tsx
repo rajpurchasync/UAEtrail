@@ -435,10 +435,8 @@ export const AdminOrganizers = () => {
                           type: tenantDetail.type,
                           status: tenantDetail.status,
                           ownerName: tenantDetail.owner.displayName ?? tenantDetail.owner.email,
-                          ownerEmail: tenantDetail.owner.email,
                           memberCount: tenantDetail.members.length,
                           eventCount: tenantDetail.events.length,
-                          createdAt: tenantDetail.createdAt
                         });
                         setSuspendComment('');
                       }}

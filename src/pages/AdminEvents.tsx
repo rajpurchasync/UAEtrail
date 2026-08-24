@@ -3,7 +3,7 @@ import { EventDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../config/activityTypes';
 import { api } from '../api/services';
 import { DashboardLayout } from '../components/layout';
-import { ImageUpload, ActivityTypeSelect, LocationSelect } from '../components/ui';
+import { ImageUpload, ActivityTypeSelect, LocationSelect, TimePicker } from '../components/ui';
 import { ADMIN_LINKS } from '../constants';
 
 type Tab = 'active' | 'past';
@@ -342,8 +342,11 @@ export const AdminEvents = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Time *</label>
-                  <input type="time" required value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" />
+                  <TimePicker
+                    required
+                    value={form.time}
+                    onChange={(time) => setForm({ ...form, time })}
+                  />
                 </div>
               </div>
 

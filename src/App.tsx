@@ -26,7 +26,6 @@ const TripDetail = lazy(() => import('./pages/TripDetail').then((m) => ({ defaul
 const OperatorProfile = lazy(() => import('./pages/OperatorProfile').then((m) => ({ default: m.OperatorProfile })));
 const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
 const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
-const SignedOut = lazy(() => import('./pages/SignedOut').then((m) => ({ default: m.SignedOut })));
 const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
 const WelcomeSignup = lazy(() => import('./pages/WelcomeSignup').then((m) => ({ default: m.WelcomeSignup })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
@@ -247,7 +246,7 @@ function App() {
           <Route path="/community" element={<ConsumerRoute><Community /></ConsumerRoute>} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
-          <Route path="/signed-out" element={<SignedOut />} />
+          <Route path="/signed-out" element={<Navigate to="/" replace />} />
           <Route path="/sign-up" element={<AuthAliasRedirect to="/signup" />} />
           <Route path="/sign-in" element={<AuthAliasRedirect to="/signin" />} />
           <Route path="/terms" element={<Terms />} />

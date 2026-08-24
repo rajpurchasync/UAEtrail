@@ -112,7 +112,7 @@ export const AdminUsers = () => {
   };
 
   return (
-    <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
+    <DashboardLayout title="User Management" links={ADMIN_LINKS}>
       <div className="flex flex-wrap gap-3 mb-4">
         <form onSubmit={handleSearch} className="flex gap-2">
           <input type="text" placeholder="Search email or name..." value={search} onChange={(e) => setSearch(e.target.value)}

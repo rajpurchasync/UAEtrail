@@ -48,7 +48,7 @@ export const resolveEmailConfig = (): ResolvedEmailConfig => {
   const suffix = envSuffix(runEnv);
   const isNonProd = runEnv === 'test' || runEnv === 'staging';
 
-  let smtpUrl = firstSet(['SMTP_URL', `SMTP_URL_${suffix}`]);
+  const smtpUrl = firstSet(['SMTP_URL', `SMTP_URL_${suffix}`]);
   const sendgridApiKey = firstSet(['SENDGRID_API_KEY', `SENDGRID_API_KEY_${suffix}`]);
 
   let smtpHost = firstSet(['SMTP_HOST', `SMTP_HOST_${suffix}`]);

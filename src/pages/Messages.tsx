@@ -13,11 +13,11 @@ import { ReportContentDialog } from '../components/ui/ReportContentDialog';
 import { ConversationListPanel, MessageThreadPanel, NewChatModal } from '../components/messages/MessagePanels';
 
 const userLinks = [
-  { to: '/dashboard/overview', label: 'Overview' },
-  { to: '/dashboard/requests', label: 'My Requests' },
-  { to: '/dashboard/trips', label: 'My Trips' },
-  { to: '/dashboard/messages', label: 'Messages' },
-  { to: '/dashboard/profile', label: 'Profile' },
+  { to: '/profile', label: 'Profile' },
+  { to: '/my-requests', label: 'My Requests' },
+  { to: '/trips?tab=mine', label: 'My Trips' },
+  { to: '/messages', label: 'Messages' },
+  { to: '/notifications', label: 'Notifications' },
 ];
 
 interface SearchUser {

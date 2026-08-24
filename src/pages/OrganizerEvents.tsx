@@ -4,7 +4,7 @@ import type { ActivityType } from '../config/activityTypes';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 import { OrganizerShell } from '../components/organizer/OrganizerShell';
-import { TenantSwitcher, ImageUpload, ShareButton, SecureAvatar, ActivityTypeSelect, LocationSelect } from '../components/ui';
+import { TenantSwitcher, ImageUpload, ShareButton, SecureAvatar, ActivityTypeSelect, LocationSelect, TimePicker } from '../components/ui';
 
 const emptyForm = {
   activityType: 'hiking' as ActivityType,
@@ -387,8 +387,11 @@ export const OrganizerEvents = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Time *</label>
-                  <input type="time" required value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" />
+                  <TimePicker
+                    required
+                    value={form.time}
+                    onChange={(time) => setForm({ ...form, time })}
+                  />
                 </div>
               </div>
 

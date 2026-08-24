@@ -76,7 +76,7 @@ describe('data export', () => {
     const email = `export-test-${Date.now()}@example.com`;
     const password = 'TestPass1';
 
-    const registerRes = await request(app)
+    await request(app)
       .post('/api/v1/auth/register')
       .send({
         email,
@@ -110,7 +110,7 @@ describe('content reports', () => {
   let accessToken = '';
 
   it('accepts a content report from an authenticated user', async () => {
-    const registerRes = await request(app)
+    await request(app)
       .post('/api/v1/auth/register')
       .send({
         email,
