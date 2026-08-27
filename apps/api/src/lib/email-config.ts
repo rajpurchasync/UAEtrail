@@ -1,7 +1,7 @@
 export type AppRunEnv = 'test' | 'staging' | 'production';
 
 export const NONPROD_EMAIL_FROM = 'UAE Trail <uaetrail@gmail.com>';
-export const PROD_EMAIL_FROM_DEFAULT = 'UAE Trail <noreply@uaetrail.ae>';
+export const PROD_EMAIL_FROM_DEFAULT = 'UAE Trail <noreply@uaetrail.com>';
 export const GMAIL_USER_DEFAULT = 'uaetrail@gmail.com';
 
 const GMAIL_SMTP_HOST = 'smtp.gmail.com';

@@ -30,8 +30,8 @@ Reports are stored as **audit logs** with `action: content_report`.
 
 ## Store compliance
 
-- Privacy policy: https://uaetrail.ae/privacy
-- Contact: support@uaetrail.ae / privacy@uaetrail.ae
+- Privacy policy: https://uaetrail.com/privacy
+- Contact: support@uaetrail.com / privacy@uaetrail.com
 - Account deletion: Profile → Delete account
 
 ## Escalation

@@ -26,7 +26,7 @@ export async function sendPushToUser(
 
   const wp = await getWebPush();
   wp.setVapidDetails(
-    process.env.VAPID_SUBJECT ?? 'mailto:support@uaetrail.ae',
+    process.env.VAPID_SUBJECT ?? 'mailto:support@uaetrail.com',
     process.env.VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!
   );

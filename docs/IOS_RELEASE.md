@@ -39,9 +39,9 @@ Web and Android continue to offer Google + email.
 
 ## 4 — Universal Links
 
-1. Enable **Associated Domains** capability: `applinks:uaetrail.ae`
+1. Enable **Associated Domains** capability: `applinks:uaetrail.com`
 2. Update `public/.well-known/apple-app-site-association` — replace `TEAM_ID` with your Apple Team ID
-3. Deploy site over HTTPS; verify file is served at `https://uaetrail.ae/.well-known/apple-app-site-association`
+3. Deploy site over HTTPS; verify file is served at `https://uaetrail.com/.well-known/apple-app-site-association`
 
 ## 5 — App Privacy (App Store Connect)
 
@@ -57,7 +57,7 @@ Declare data consistent with `Privacy.tsx`:
 1. Product → Archive → Distribute → App Store Connect
 2. Internal TestFlight for team
 3. Submit for review with:
-   - Privacy policy URL: `https://uaetrail.ae/privacy`
+   - Privacy policy URL: `https://uaetrail.com/privacy`
    - Account deletion: in-app Profile flow
    - Demo account credentials for reviewer (email/password test user)
 

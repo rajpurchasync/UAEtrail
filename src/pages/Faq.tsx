@@ -42,7 +42,7 @@ export const Faq = () => (
 
         <p className="text-sm text-gray-500 mb-8 mt-4">
           Still stuck?{' '}
-          <a href="mailto:support@uaetrail.ae" className="text-emerald-700 font-medium hover:underline">
+          <a href="mailto:support@uaetrail.com" className="text-emerald-700 font-medium hover:underline">
             Email support
           </a>{' '}
           or browse{' '}

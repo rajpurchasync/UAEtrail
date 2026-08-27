@@ -3,7 +3,7 @@
 export const SITE_NAME = 'UAE Trail';
 
 export const SITE_ORIGIN =
-  import.meta.env.VITE_SITE_ORIGIN?.replace(/\/$/, '') ?? 'https://uaetrail.ae';
+  import.meta.env.VITE_SITE_ORIGIN?.replace(/\/$/, '') ?? 'https://uaetrail.com';
 
 export const SITE_DESCRIPTION =
   'Discover hiking trails, camping spots, and organized outdoor trips across the UAE and GCC with verified guides.';

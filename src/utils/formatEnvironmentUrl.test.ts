@@ -21,8 +21,8 @@ describe('formatEnvironmentUrl', () => {
     expect(formatEnvironmentUrl('https://uaetrail-assets.s3.amazonaws.com/photo.jpg', 'localhost')).toBe(
       'https://uaetrail-assets.s3.amazonaws.com/photo.jpg'
     );
-    expect(formatEnvironmentUrl('https://grafana.uaetrail.ae/d/ops', 'localhost')).toBe(
-      'https://grafana.uaetrail.ae/d/ops'
+    expect(formatEnvironmentUrl('https://grafana.uaetrail.com/d/ops', 'localhost')).toBe(
+      'https://grafana.uaetrail.com/d/ops'
     );
   });
 

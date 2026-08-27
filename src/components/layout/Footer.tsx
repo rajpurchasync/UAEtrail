@@ -95,7 +95,7 @@ export const Footer = () => {
                   </Link>
                 </li>
                 <li>
-                  <a href="mailto:support@uaetrail.ae" className={footerLinkClass}>
+                  <a href="mailto:support@uaetrail.com" className={footerLinkClass}>
                     Contact
                   </a>
                 </li>

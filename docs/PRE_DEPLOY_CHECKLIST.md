@@ -15,7 +15,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] `./run-project.sh`
 - [ ] Do **not** run demo seed in production
 - [ ] First-time dev/staging only (if needed): `SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed`
-- [ ] `curl https://uaetrail.ae/health` returns OK
+- [ ] `curl https://uaetrail.com/health` returns OK
 
 ## HTTPS
 
@@ -27,7 +27,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 
 ## OAuth & email (external — you do next)
 
-- [ ] Google Cloud Console: Web OAuth client for `https://uaetrail.ae`
+- [ ] Google Cloud Console: Web OAuth client for `https://uaetrail.com`
 - [ ] Set `GOOGLE_CLIENT_ID` + `VITE_GOOGLE_CLIENT_ID`, rebuild frontend
 - [ ] SMTP or SendGrid configured; test signup email
 - [ ] Optional: `npx web-push generate-vapid-keys` → `.env`

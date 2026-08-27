@@ -13,4 +13,4 @@ Disallow: /my-requests
 Disallow: /my-rewards
 Disallow: /profile
 
-Sitemap: https://uaetrail.ae/sitemap.xml
+Sitemap: https://uaetrail.com/sitemap.xml

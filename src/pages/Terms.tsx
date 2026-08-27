@@ -47,8 +47,8 @@ export const Terms = () => (
           <h2 className="text-lg font-semibold text-gray-900">Contact</h2>
           <p>
             Questions about these terms? Email{' '}
-            <a href="mailto:support@uaetrail.ae" className="text-emerald-700 hover:underline">
-              support@uaetrail.ae
+            <a href="mailto:support@uaetrail.com" className="text-emerald-700 hover:underline">
+              support@uaetrail.com
             </a>
             .
           </p>

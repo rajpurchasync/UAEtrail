@@ -38,9 +38,9 @@ Account required for trips, messaging, and purchases. Email sign-in supported; G
 
 | Field | Value |
 |-------|--------|
-| Email | support@uaetrail.ae |
-| Website | https://uaetrail.ae |
-| Privacy policy | https://uaetrail.ae/privacy |
+| Email | support@uaetrail.com |
+| Website | https://uaetrail.com |
+| Privacy policy | https://uaetrail.com/privacy |
 
 ## Data safety (summary — complete full form in Console)
 
@@ -52,7 +52,7 @@ Account required for trips, messaging, and purchases. Email sign-in supported; G
 | Purchase history | Yes | Shop checkout | Stripe only |
 | Device push token | Optional | Notifications | No |
 
-**Account deletion:** In-app at Profile, or https://uaetrail.ae/profile
+**Account deletion:** In-app at Profile, or https://uaetrail.com/profile
 
 ## Content rating
 

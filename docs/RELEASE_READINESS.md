@@ -203,7 +203,7 @@ Give each tester: account, device, script, pass/fail column, severity key (P0–
 - [ ] Stripe webhook signature verified; test mode keys never in prod
 - [ ] MinIO/S3 credentials rotated; buckets not world-writable
 - [ ] Auth/OTP endpoints rate-limited (helmet + global limiter already in API — verify behavior under abuse)
-- [ ] CORS / cookie settings correct for `https://uaetrail.ae`
+- [ ] CORS / cookie settings correct for `https://uaetrail.com`
 
 ### Performance & resilience
 
@@ -280,7 +280,7 @@ Only allowed for non-blocking or explicitly soft gates. Copy into the release ti
 
 Run immediately on production (non-destructive where possible). Prefer a dedicated smoke account, not personal admin.
 
-- [ ] `curl https://uaetrail.ae/health` (or documented health URL) OK
+- [ ] `curl https://uaetrail.com/health` (or documented health URL) OK
 - [ ] Sign up → verify email → sign in (**J1**)
 - [ ] Google sign-in web (**J3**)
 - [ ] Join trip happy path (**J6**) — use a throwaway trip if needed
@@ -312,7 +312,7 @@ Full VPS steps remain in [PRE_DEPLOY_CHECKLIST.md](PRE_DEPLOY_CHECKLIST.md).
 | Eng (FE / mobile) | | | |
 | Product / ops (UAT) | | | |
 
-**Release candidate:** git SHA _______________ · staging URL _______________ · prod URL `https://uaetrail.ae`
+**Release candidate:** git SHA _______________ · staging URL _______________ · prod URL `https://uaetrail.com`
 
 ---
 

@@ -116,12 +116,12 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How do I contact UAE Trail support?',
         answer:
-          'Email support@uaetrail.ae for account, trip, or safety questions. For privacy-related requests, contact privacy@uaetrail.ae.'
+          'Email support@uaetrail.com for account, trip, or safety questions. For privacy-related requests, contact privacy@uaetrail.com.'
       },
       {
         question: 'How do I delete my account or update my profile?',
         answer:
-          'Sign in and open Profile to update your display name, photo, and preferences. To delete your account, scroll to Delete account at the bottom of Profile. For other data requests, email privacy@uaetrail.ae.'
+          'Sign in and open Profile to update your display name, photo, and preferences. To delete your account, scroll to Delete account at the bottom of Profile. For other data requests, email privacy@uaetrail.com.'
       }
     ]
   }

@@ -43,16 +43,16 @@ export const Privacy = () => (
           <p>
             You may update your profile, disable notifications, export your data, or delete your account from Profile settings.
             For other data requests, email{' '}
-            <a href="mailto:privacy@uaetrail.ae" className="text-emerald-700 hover:underline">
-              privacy@uaetrail.ae
+            <a href="mailto:privacy@uaetrail.com" className="text-emerald-700 hover:underline">
+              privacy@uaetrail.com
             </a>
             .
           </p>
           <h2 className="text-lg font-semibold text-gray-900">Contact</h2>
           <p>
             Privacy questions? Email{' '}
-            <a href="mailto:privacy@uaetrail.ae" className="text-emerald-700 hover:underline">
-              privacy@uaetrail.ae
+            <a href="mailto:privacy@uaetrail.com" className="text-emerald-700 hover:underline">
+              privacy@uaetrail.com
             </a>
             .
           </p>

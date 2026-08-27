@@ -134,9 +134,9 @@ Aliases: `FORCE_SEED=1` or `RUN_PROJECT_FORCE_SEED=1`.
 
 ```bash
 # 1. Obtain certs (Let's Encrypt or your CA)
-sudo certbot certonly --standalone -d uaetrail.ae -d www.uaetrail.ae
-cp /etc/letsencrypt/live/uaetrail.ae/fullchain.pem nginx/certs/
-cp /etc/letsencrypt/live/uaetrail.ae/privkey.pem nginx/certs/
+sudo certbot certonly --standalone -d uaetrail.com -d www.uaetrail.com
+cp /etc/letsencrypt/live/uaetrail.com/fullchain.pem nginx/certs/
+cp /etc/letsencrypt/live/uaetrail.com/privkey.pem nginx/certs/
 
 # 2. Enable HTTPS server block
 cp nginx/ssl-server.conf.example nginx/conf.d/ssl.conf
@@ -159,7 +159,7 @@ Set these in `.env` before going live:
 | `RUN_ENV` | Yes | Set to `production` on the server |
 | `MONGODB_URI_PROD` | Yes | Production Atlas connection string |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Yes | Auth tokens |
-| `APP_BASE_URL` | Yes | `https://uaetrail.ae` |
+| `APP_BASE_URL` | Yes | `https://uaetrail.com` |
 | `APP_BASE_URLS` | Yes | Comma-separated allowed origins |
 | `API_BASE_URL` | Yes | Public app origin used in OpenAPI docs, usually same as `APP_BASE_URL` |
 | `VITE_SITE_ORIGIN` | Yes | SEO / Open Graph (Docker build arg) |

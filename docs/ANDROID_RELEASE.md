@@ -52,8 +52,8 @@ Output: `android/app/build/outputs/bundle/release/app-release.aab`
 | Item | Value |
 |------|-------|
 | Package name | `ae.uaetrail.app` |
-| Privacy policy | `https://uaetrail.ae/privacy` |
-| Account deletion | `https://uaetrail.ae/profile` (in-app flow) |
+| Privacy policy | `https://uaetrail.com/privacy` |
+| Account deletion | `https://uaetrail.com/profile` (in-app flow) |
 | Data safety form | Declare account, messages, purchases |
 | Content rating | Complete IARC questionnaire |
 | Target API | Match `targetSdkVersion` in `android/variables.gradle` |
