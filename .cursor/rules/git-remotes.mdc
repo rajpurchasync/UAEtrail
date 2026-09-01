@@ -1,0 +1,28 @@
+---
+description: Canonical git remote and mirror push policy for UAE Trails
+alwaysApply: true
+---
+
+# Git remotes
+
+## Canonical repo
+
+- **Primary remote:** `origin` → `https://github.com/uaetrail/main.git`
+- **Default branch:** `main`
+- **Always push commits and PRs to `origin` (`uaetrail/main`).**
+
+## Mirror (only when asked)
+
+- **Mirror remote:** `purchasync` → `https://github.com/rajpurchasync/UAEtrail.git`
+- Push to `purchasync` **only when the user explicitly requests** mirroring to purchasync/UAEtrail.
+- Do not push to `purchasync` after ordinary commits unless asked.
+
+## Commands
+
+```bash
+# Normal push (default)
+git push origin main
+
+# Mirror (user-requested only)
+git push purchasync main
+```
