@@ -387,7 +387,7 @@ export const listAdminModerationEventsPaged = async (input: { skip: number; take
   const [eventDocs, total] = await Promise.all([
     eventsCollection()
       .find({})
-      .sort({ startAt: 1 })
+      .sort({ startAt: -1 })
       .skip(input.skip)
       .limit(input.take)
       .toArray(),

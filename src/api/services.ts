@@ -1130,5 +1130,6 @@ export const api = {
 
   getMyRewards: () => apiRequest<{ data: RewardSummaryDTO }>('/me/rewards', { auth: true }),
 
-  getRewardsLeaderboard: () => apiRequest<{ data: RewardLeaderboardEntryDTO[] }>('/rewards/leaderboard'),
+  getRewardsLeaderboard: () =>
+    apiRequest<{ data: RewardLeaderboardEntryDTO[] }>('/rewards/leaderboard', { auth: true }),
 };

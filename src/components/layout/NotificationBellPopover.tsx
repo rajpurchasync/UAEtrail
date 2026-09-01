@@ -5,22 +5,28 @@ import { NotificationDTO } from '@uaetrail/shared-types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
+import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
 import { inferNotificationPath } from '../../utils/notificationRouting';
 
 interface NotificationBellPopoverProps {
   tone?: 'default' | 'light';
   className?: string;
+  viewAllPath?: string;
+  preferAdminRoutes?: boolean;
 }
 
 export const NotificationBellPopover = ({
   tone = 'default',
   className = '',
+  viewAllPath = '/notifications',
+  preferAdminRoutes = false,
 }: NotificationBellPopoverProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const badgeUnreadCount = useNotificationUnreadCount();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
@@ -74,7 +80,7 @@ export const NotificationBellPopover = ({
     }
 
     setOpen(false);
-    navigate(inferNotificationPath(notif));
+    navigate(inferNotificationPath(notif, { preferAdminRoutes }));
   };
 
   useEffect(() => {
@@ -127,9 +133,9 @@ export const NotificationBellPopover = ({
         aria-label={user ? 'Open notifications' : 'Sign in to view notifications'}
       >
         <Bell className="w-5 h-5" strokeWidth={2.25} />
-        {user && unreadCount > 0 && (
+        {user && badgeUnreadCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {badgeUnreadCount > 99 ? '99+' : badgeUnreadCount}
           </span>
         )}
       </button>
@@ -190,7 +196,7 @@ export const NotificationBellPopover = ({
             type="button"
             onClick={() => {
               setOpen(false);
-              navigate('/notifications');
+              navigate(viewAllPath);
             }}
             className="w-full text-left px-4 py-2.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50/60 border-t border-gray-100"
           >

@@ -23,7 +23,7 @@ export const AdminOverview = () => {
     ])
       .then(([metricsRes, eventsRes, appsRes, auditRes]) => {
         setMetrics(metricsRes.data);
-        setRecentEvents(eventsRes.data.slice(0, 5));
+        setRecentEvents([...eventsRes.data].sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0, 5));
         setRecentApps(appsRes.data.filter((a) => a.status === 'pending').slice(0, 5));
         setAuditLogs(auditRes.data.slice(0, 10));
       })

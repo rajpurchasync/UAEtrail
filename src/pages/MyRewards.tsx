@@ -36,7 +36,7 @@ const EARN_ICONS: Record<string, typeof MapPin> = {
 
 /** Logged-in Trail Points wallet & badges. */
 export const MyRewards = () => {
-  const { user } = useAuth();
+  const { user, initializing } = useAuth();
   const [summary, setSummary] = useState<RewardSummaryDTO | null>(null);
   const [leaderboard, setLeaderboard] = useState<RewardLeaderboardEntryDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +44,7 @@ export const MyRewards = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    if (initializing) return;
     if (!user) {
       setLoading(false);
       return;
@@ -56,7 +57,7 @@ export const MyRewards = () => {
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load rewards'))
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user, initializing]);
 
   const inviteLink = useMemo(() => {
     if (!summary?.referralCode) return '';

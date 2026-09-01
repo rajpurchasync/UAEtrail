@@ -708,6 +708,51 @@ userRouter.delete('/me/account', requireAuth, sensitiveDataLimiter, validate({ b
   }
 });
 
+// ─── Trail Points / Rewards (public) ────────────────────────────────────────
+
+userRouter.get('/rewards/catalog', (_req, res) => {
+  res.json({
+    data: {
+      currencyName: 'Trail Points',
+      membershipTiers: MEMBERSHIP_TIERS.map(({ key, name, minPoints, emoji, tagline, benefits }) => ({
+        key,
+        name,
+        minPoints,
+        emoji,
+        tagline,
+        benefits
+      })),
+      /** @deprecated use membershipTiers */
+      levels: MEMBERSHIP_TIERS.map(({ key, name, minPoints }) => ({ key, name, minPoints })),
+      earnOpportunities: EARN_OPPORTUNITIES.map((item) => ({
+        action: item.action,
+        title: item.title,
+        description: item.description,
+        points: item.points
+      })),
+      pointValues: REWARD_POINTS
+    }
+  });
+});
+
+userRouter.get('/rewards/stats', async (_req, res, next) => {
+  try {
+    const data = await getRewardStatsDefault();
+    res.json({ data });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.get('/rewards/leaderboard', async (_req, res, next) => {
+  try {
+    const data = await getLeaderboardDefault(10);
+    res.json({ data });
+  } catch (error) {
+    next(error);
+  }
+});
+
 userRouter.use(requireAuth, requireVerifiedEmail);
 
 userRouter.post('/events/:id/checkin', validate({ params: eventIdParamSchema }), async (req, res, next) => {
@@ -1742,52 +1787,9 @@ userRouter.post('/me/locations', validate({ body: locationSubmitBodySchema }), a
   }
 });
 
-// ─── Trail Points / Rewards ─────────────────────────────────────────────────
+// ─── Trail Points / Rewards (authenticated) ─────────────────────────────────
 
-userRouter.get('/rewards/catalog', (_req, res) => {
-  res.json({
-    data: {
-      currencyName: 'Trail Points',
-      membershipTiers: MEMBERSHIP_TIERS.map(({ key, name, minPoints, emoji, tagline, benefits }) => ({
-        key,
-        name,
-        minPoints,
-        emoji,
-        tagline,
-        benefits
-      })),
-      /** @deprecated use membershipTiers */
-      levels: MEMBERSHIP_TIERS.map(({ key, name, minPoints }) => ({ key, name, minPoints })),
-      earnOpportunities: EARN_OPPORTUNITIES.map((item) => ({
-        action: item.action,
-        title: item.title,
-        description: item.description,
-        points: item.points
-      })),
-      pointValues: REWARD_POINTS
-    }
-  });
-});
-
-userRouter.get('/rewards/stats', async (_req, res, next) => {
-  try {
-    const data = await getRewardStatsDefault();
-    res.json({ data });
-  } catch (error) {
-    next(error);
-  }
-});
-
-userRouter.get('/rewards/leaderboard', async (_req, res, next) => {
-  try {
-    const data = await getLeaderboardDefault(10);
-    res.json({ data });
-  } catch (error) {
-    next(error);
-  }
-});
-
-userRouter.get('/me/rewards', requireAuth, async (req, res, next) => {
+userRouter.get('/me/rewards', async (req, res, next) => {
   try {
     const data = await getRewardSummaryDefault(req.auth!.userId);
     res.json({ data });

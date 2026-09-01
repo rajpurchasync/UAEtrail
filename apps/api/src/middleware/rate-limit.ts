@@ -22,11 +22,12 @@ const redisStore = (prefix: string) => {
 };
 
 export const createRateLimiters = async (): Promise<RateLimiters> => {
+  let redisAvailable = false;
   if (isRedisConfigured()) {
-    await getRedisClient();
+    redisAvailable = Boolean(await getRedisClient());
   }
 
-  const store = (prefix: string) => (isRedisConfigured() ? redisStore(prefix) : undefined);
+  const store = (prefix: string) => (redisAvailable ? redisStore(prefix) : undefined);
 
   return {
     globalLimiter: rateLimit({

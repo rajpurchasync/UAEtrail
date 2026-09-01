@@ -84,8 +84,10 @@ export const AdminEvents = () => {
   };
 
   const now = new Date().toISOString().slice(0, 10);
-  const activeEvents = events.filter((e) => e.date >= now && e.status !== 'cancelled');
-  const pastEvents = events.filter((e) => e.date < now || e.status === 'cancelled');
+  const sortByLatestDate = (a: EventDTO, b: EventDTO) =>
+    b.date.localeCompare(a.date) || b.time.localeCompare(a.time);
+  const activeEvents = events.filter((e) => e.date >= now && e.status !== 'cancelled').sort(sortByLatestDate);
+  const pastEvents = events.filter((e) => e.date < now || e.status === 'cancelled').sort(sortByLatestDate);
   const displayed = tab === 'active' ? activeEvents : pastEvents;
 
   const filtered = displayed.filter((e) => {

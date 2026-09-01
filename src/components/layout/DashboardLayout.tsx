@@ -3,7 +3,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { MobileBackButton } from '../mobile/MobileBackButton';
-import { MobileMenuButton } from './MobileMenu';interface DashboardLayoutProps {
+import { MobileMenuButton } from './MobileMenu';
+import { NotificationBellPopover } from './NotificationBellPopover';
+
+interface DashboardLayoutProps {
   title: string;
   links: Array<{ to: string; label: string }>;
   children: ReactNode;
@@ -52,7 +55,11 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
               />
             </div>
           </div>
-          {!isAdminDashboard && (
+          {isAdminDashboard ? (
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <NotificationBellPopover viewAllPath="/admin/notifications" preferAdminRoutes />
+            </div>
+          ) : (
             <div className="flex items-center gap-1.5 md:gap-2">
               <MobileMenuButton showOnDesktop />
             </div>

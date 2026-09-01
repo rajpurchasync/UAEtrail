@@ -67,6 +67,7 @@ const adminCrumbs = (pathname: string): LogicalBreadcrumb[] => {
   if (pathname === '/admin/audit-log') return [base, { label: 'Audit Log', path: '' }];
   if (pathname === '/admin/settings') return [base, { label: 'Settings', path: '' }];
   if (pathname === '/admin/shop') return [base, { label: 'Shop Moderation', path: '' }];
+  if (pathname === '/admin/notifications') return [base, { label: 'Notifications', path: '' }];
 
   return [base, { label: prettifySegment(pathname.replace('/admin/', '')), path: '' }];
 };

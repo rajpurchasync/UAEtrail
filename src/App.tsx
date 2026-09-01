@@ -38,6 +38,9 @@ const AdminGroups = lazy(() => import('./pages/AdminGroups').then((m) => ({ defa
 const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog').then((m) => ({ default: m.AdminAuditLog })));
 const AdminSettings = lazy(() => import('./pages/AdminSettings').then((m) => ({ default: m.AdminSettings })));
 const AdminShop = lazy(() => import('./pages/AdminShop').then((m) => ({ default: m.AdminShop })));
+const AdminNotifications = lazy(() =>
+  import('./pages/AdminNotifications').then((m) => ({ default: m.AdminNotifications }))
+);
 const OrganizerOverview = lazy(() => import('./pages/OrganizerOverview').then((m) => ({ default: m.OrganizerOverview })));
 const OrganizerEvents = lazy(() => import('./pages/OrganizerEvents').then((m) => ({ default: m.OrganizerEvents })));
 const OrganizerRequests = lazy(() => import('./pages/OrganizerRequests').then((m) => ({ default: m.OrganizerRequests })));
@@ -325,6 +328,14 @@ function App() {
             element={
               <ProtectedRoute roles={['platform_admin']}>
                 <AdminAuditLog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/notifications"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminNotifications />
               </ProtectedRoute>
             }
           />
