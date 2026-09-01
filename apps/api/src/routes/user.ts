@@ -519,9 +519,12 @@ userRouter.get('/events/featured', async (req, res, next) => {
 userRouter.get('/events', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
+    const whenRaw = typeof req.query.when === 'string' ? req.query.when : 'upcoming';
+    const when = whenRaw === 'past' || whenRaw === 'all' ? whenRaw : 'upcoming';
     const { items: events, total } = await listPublishedEventsWithPreviews({
       skip: (pg.page - 1) * pg.pageSize,
-      take: pg.pageSize
+      take: pg.pageSize,
+      when
     });
 
     res.json(paginatedResponse(

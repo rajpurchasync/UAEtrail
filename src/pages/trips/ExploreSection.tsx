@@ -3,7 +3,7 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import { fetchApiTrips } from '../../api/public';
 import { Trip } from '../../types';
 import { TripCard, EmptyTripsBanner } from '../../components/ui';
-import { ACTIVITY_TYPE_LABELS } from '../../config/activityTypes';
+import { ACTIVITY_TYPE_GROUP_LABELS } from '../../config/activityTypes';
 import { FilterIconButton } from '../../components/mobile/FilterIconButton';
 import { ListBrowseLayout } from '../../components/layout/ListBrowseLayout';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
@@ -37,33 +37,22 @@ export const ExploreSection = () => {
   useEffect(() => {
     setLoading(true);
     setLoadError(null);
-    fetchApiTrips()
+    fetchApiTrips(timeFilter)
       .then((items) => setTripSource(items))
       .catch((err) => {
         setTripSource([]);
-        setLoadError(err instanceof Error ? err.message : 'Failed to load trips');
+        setLoadError(err instanceof Error ? err.message : 'Failed to load activities');
       })
       .finally(() => setLoading(false));
-  }, []);
-
-  const upcomingTripsAll = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return tripSource.filter((trip) => new Date(trip.date) >= today);
-  }, [tripSource]);
+  }, [timeFilter]);
 
   const showOffSeasonBanner =
-    !loading && timeFilter === 'upcoming' && upcomingTripsAll.length === 0;
+    !loading && timeFilter === 'upcoming' && tripSource.length === 0;
 
   const filteredTrips = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     return tripSource
       .filter((trip) => {
         const d = new Date(trip.date);
-        if (timeFilter === 'upcoming' && d < today) return false;
-        if (timeFilter === 'past' && d >= today) return false;
         if (trip.activityType === 'hiking' && !filterPills.has('hiking')) return false;
         if (trip.activityType === 'camping' && !filterPills.has('camping')) return false;
         if (trip.activityType === 'community_event' && !filterPills.has('community_event')) return false;
@@ -96,9 +85,9 @@ export const ExploreSection = () => {
   };
 
   const filterOptionLabel: Record<TripFilterPill, string> = {
-    hiking: ACTIVITY_TYPE_LABELS.hiking,
-    camping: ACTIVITY_TYPE_LABELS.camping,
-    community_event: ACTIVITY_TYPE_LABELS.community_event,
+    hiking: ACTIVITY_TYPE_GROUP_LABELS.hiking,
+    camping: ACTIVITY_TYPE_GROUP_LABELS.camping,
+    community_event: ACTIVITY_TYPE_GROUP_LABELS.community_event,
     free: 'Free',
     paid: 'Paid',
   };
@@ -218,7 +207,7 @@ export const ExploreSection = () => {
   return (
     <>
       <p className="text-sm text-neutral-500 mb-3">
-        Organized trips you can browse and join.
+        Scheduled activities you can join — hiking, camping, and community events hosted by verified organizers.
       </p>
       <div className="flex items-center gap-2 mb-4">
         <AppSegmented
@@ -281,8 +270,8 @@ export const ExploreSection = () => {
               </p>
             )}
             <div className="mb-3 text-sm text-gray-600">
-              {loading && <span className="mr-2">Loading events...</span>}
-              {filteredTrips.length} {filteredTrips.length === 1 ? 'trip' : 'trips'} found
+              {loading && <span className="mr-2">Loading activities...</span>}
+              {filteredTrips.length} {filteredTrips.length === 1 ? 'activity' : 'activities'} found
             </div>
             {showOffSeasonBanner ? (
               <EmptyTripsBanner />
@@ -290,8 +279,8 @@ export const ExploreSection = () => {
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <p className="text-gray-600 mb-3 text-sm">
                   {timeFilter === 'past'
-                    ? 'No past trips matching your filters.'
-                    : 'No upcoming trips matching your filters.'}
+                    ? 'No past activities matching your filters.'
+                    : 'No upcoming activities matching your filters.'}
                 </p>
                 <button
                   onClick={clearFilters}

@@ -197,8 +197,10 @@ const loadEventsWithRelations = async (eventDocs: MongoEventDoc[]) => {
   ]);
 
   const guideIds = [...new Set(eventDocs.map((doc) => doc.guideId).filter((guideId): guideId is string => Boolean(guideId)))];
-  const guideUsers = await findAuthUsersByIds(guideIds);
-  const guideMap = new Map(guideUsers.map((user) => [user._id, user]));
+  const createdByIds = [...new Set(eventDocs.map((doc) => doc.createdById))];
+  const userIds = [...new Set([...guideIds, ...createdByIds])];
+  const users = await findAuthUsersByIds(userIds);
+  const userMap = new Map(users.map((user) => [user._id, user]));
   const participantsByEvent = new Map<string, Array<{ id: string }>>();
   for (const participant of participantDocs) {
     const existing = participantsByEvent.get(participant.eventId) ?? [];
@@ -207,7 +209,8 @@ const loadEventsWithRelations = async (eventDocs: MongoEventDoc[]) => {
   }
 
   return eventDocs.map((eventDoc) => {
-    const guide = eventDoc.guideId ? guideMap.get(eventDoc.guideId) : null;
+    const guide = eventDoc.guideId ? userMap.get(eventDoc.guideId) : null;
+    const createdBy = userMap.get(eventDoc.createdById) ?? null;
     const tenant = tenantMap.get(eventDoc.tenantId);
     const location = locationMap.get(eventDoc.locationId);
     if (!tenant || !location) {
@@ -231,6 +234,9 @@ const loadEventsWithRelations = async (eventDocs: MongoEventDoc[]) => {
               bio: guide.profile.bio
             }
           }
+        : null,
+      createdBy: createdBy
+        ? { profile: { displayName: createdBy.profile.displayName } }
         : null,
       participants: participantsByEvent.get(eventDoc._id) ?? []
     };

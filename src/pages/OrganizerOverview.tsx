@@ -81,7 +81,7 @@ export const OrganizerOverview = () => {
       cta={
         <Link to="/organizer/events/new" className="app-cta-sm">
           <Plus className="w-4 h-4" />
-          Create
+          Add activity
         </Link>
       }
       headerExtra={

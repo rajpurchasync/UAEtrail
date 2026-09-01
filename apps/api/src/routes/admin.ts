@@ -13,6 +13,7 @@ import {
   UserRole,
   UserStatus
 } from '../domain/enums.js';
+import { assertLocationMatchesActivityType } from '../domain/activity-type.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { createAuditLog } from '../lib/audit.js';
@@ -452,6 +453,7 @@ adminRouter.patch(
 // ─── Admin Event Creation ───────────────────────────────────────────────────
 
 const adminEventCreateSchema = z.object({
+  activityType: z.enum(['hiking', 'camping', 'community_event']),
   tenantId: z.string().min(1),
   locationId: z.string().min(1),
   title: z.string().min(4).max(120),
@@ -475,6 +477,7 @@ adminRouter.post('/events', validate({ body: adminEventCreateSchema }), async (r
     if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
     const location = await findAdminLocationByIdForEventCreate(body.locationId);
     if (!location) throw new ApiError(404, 'location_not_found', 'Location not found.');
+    assertLocationMatchesActivityType(location.activityType, body.activityType);
 
     const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
     const startAt = parseLocalDateTime(body.date, body.time, countryCode);

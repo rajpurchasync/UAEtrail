@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Calendar, Car, ChevronLeft, ChevronRight, Eye, MapPin, Users } from 'lucide-react';
-import { LocationSelect } from './LocationSelect';
-import { ActivityTypeSelect } from './ActivityTypeSelect';
-import { MapPinFields, parseCoord } from './MeetingPointMap';
+import { ActivityIdentityFields } from './ActivityIdentityFields';
+import { VenueSelect } from './VenueSelect';
 import { HostSelect } from './HostSelect';
+import { MapPinFields, parseCoord } from './MeetingPointMap';
 import { TimePicker } from './TimePicker';
 import { Dialog } from './Dialog';
 import { TripPricePackagesEditor } from './TripPricePackagesEditor';
@@ -16,7 +16,7 @@ import {
   TripPricePackage,
 } from '../../utils/tripPricing';
 
-import type { ActivityType } from '../../config/activityTypes';
+import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../../config/activityTypes';
 type PricingType = 'free' | 'paid';
 type WizardStep = 1 | 2 | 3 | 4;
 
@@ -116,6 +116,7 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
     const price = form.pricing === 'free' ? 0 : derivePriceAed(pricePackages, form.price);
 
     return {
+      activityType: form.activityType,
       locationId: form.locationId,
       title: form.title,
       description: form.description,
@@ -150,8 +151,9 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
 
   const validateStep = (s: WizardStep): string | null => {
     if (s === 1) {
-      if (!form.locationId) return 'Select a location or add a new one.';
-      if (!form.title.trim()) return 'Trip title is required.';
+      if (!form.title.trim()) return 'Activity name is required.';
+      if (!form.locationId) return 'Select a venue.';
+      if (!form.hostUserId) return 'Select a host for this activity.';
       if (form.description.trim().length < 20) return 'Description must be at least 20 characters.';
       if (!form.date || !form.time) return 'Start date and time are required.';
       if (!form.hostUserId && tenantId) {
@@ -231,10 +233,10 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
     [form.pricePackages]
   );
 
-  const stepTitle = STEPS.find((s) => s.id === step)?.label ?? 'Create event';
+  const stepTitle = STEPS.find((s) => s.id === step)?.label ?? 'Create activity';
 
   return (
-    <Dialog open={open} onClose={onClose} title={`Create event — ${stepTitle}`} className="max-w-lg">
+    <Dialog open={open} onClose={onClose} title={`Create activity — ${stepTitle}`} className="max-w-lg">
       {/* Step indicator */}
       <div className="flex items-center gap-1 mb-5 -mt-1">
         {STEPS.map((s, i) => (
@@ -256,38 +258,32 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
         {/* ─── Step 1: Summary ─── */}
         {step === 1 && (
           <>
-            <ActivityTypeSelect
-              value={form.activityType}
-              onChange={(activityType) => setForm({ ...form, activityType, locationId: '' })}
+            <ActivityIdentityFields
+              title={form.title}
+              onTitleChange={(title) => setForm((prev) => ({ ...prev, title }))}
+              activityType={form.activityType}
+              onActivityTypeChange={(activityType) =>
+                setForm((prev) => ({
+                  ...prev,
+                  activityType,
+                  locationId: prev.activityType === activityType ? prev.locationId : '',
+                }))
+              }
             />
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Location *</label>
-              <LocationSelect
-                value={form.locationId}
-                onChange={(locationId) => setForm({ ...form, locationId })}
-                tenantId={tenantId}
-                activityType={form.activityType}
-              />
-            </div>
+            <VenueSelect
+              value={form.locationId}
+              onChange={(locationId) => setForm((prev) => ({ ...prev, locationId }))}
+              activityType={form.activityType}
+              tenantId={tenantId ?? undefined}
+            />
 
             <HostSelect
-              tenantId={tenantId}
+              tenantId={tenantId ?? ''}
               value={form.hostUserId}
-              onChange={(hostUserId) => setForm({ ...form, hostUserId })}
+              onChange={(hostUserId) => setForm((prev) => ({ ...prev, hostUserId }))}
               required
             />
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Event title *</label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full border rounded-xl px-3 py-2.5 text-sm"
-                placeholder="e.g. Weekend Jebel Jais Hike"
-              />
-            </div>
 
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Description *</label>
@@ -565,7 +561,7 @@ export const CreateTripModal = ({ open, onClose, onCreated }: CreateTripModalPro
               <p className="font-semibold text-gray-900">{form.title || '—'}</p>
               <p className="text-sm text-gray-600 mt-1 line-clamp-3">{form.description || '—'}</p>
               <p className="text-xs text-gray-500 mt-2">
-                {locationName || '—'} · {form.activityType} · {form.capacity} spots
+                Venue: {locationName || '—'} · {ACTIVITY_TYPE_LABELS[form.activityType]} · {form.capacity} spots
               </p>
               <p className="text-xs text-gray-500">
                 {form.date} {form.time}

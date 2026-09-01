@@ -12,7 +12,7 @@ export const ActivityTypeSelect = ({
   value,
   onChange,
   disabled = false,
-  label = 'Activity type',
+  label = 'Activity Type',
   required = true,
 }: ActivityTypeSelectProps) => (
   <div>

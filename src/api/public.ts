@@ -13,6 +13,7 @@ export const mapEventToTrip = (event: EventDTO): Trip => ({
   id: event.id,
   locationId: event.locationId,
   locationName: event.locationName,
+  region: event.region,
   activityType: event.activityType,
   title: event.title,
   description: event.description,
@@ -168,8 +169,8 @@ export const fetchPublicMappedData = async (): Promise<{
   return { trails, camps, communityEvents, trips };
 };
 
-export const fetchApiTrips = async (): Promise<Trip[]> => {
-  const events = await api.getPublicEvents();
+export const fetchApiTrips = async (when: 'upcoming' | 'past' = 'upcoming'): Promise<Trip[]> => {
+  const events = await api.getPublicEvents({ when, pageSize: 100 });
   return events.data.map(mapEventToTrip);
 };
 

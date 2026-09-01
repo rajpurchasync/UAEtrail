@@ -244,8 +244,11 @@ export const findPublicTenantProfileBySlug = async (slug: string) =>
 export const listFeaturedPublishedEvents = async (take: number) =>
   listFeaturedPublishedEventsFromMongo(take);
 
-export const listPublishedEventsWithPreviews = async (input: { skip: number; take: number }) =>
-  listPublishedEventsWithPreviewsFromMongo(input);
+export const listPublishedEventsWithPreviews = async (input: {
+  skip: number;
+  take: number;
+  when?: 'upcoming' | 'past' | 'all';
+}) => listPublishedEventsWithPreviewsFromMongo(input);
 
 export const findPublishedEventWithPreviewsById = async (eventId: string) =>
   findPublishedEventWithPreviewsFromMongo(eventId);

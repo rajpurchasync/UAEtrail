@@ -3,8 +3,13 @@ import { EventDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../config/activityTypes';
 import { api } from '../api/services';
 import { DashboardLayout } from '../components/layout';
-import { ImageUpload, ActivityTypeSelect, LocationSelect, TimePicker } from '../components/ui';
+import { ImageUpload, ActivityIdentityFields, VenueSelect, TimePicker } from '../components/ui';
 import { ADMIN_LINKS } from '../constants';
+import {
+  activityTypeBadgeClass,
+  formatActivityType,
+  resolveEventOwnerLabel,
+} from '../utils/activityIdentity';
 
 type Tab = 'active' | 'past';
 
@@ -154,11 +159,11 @@ export const AdminEvents = () => {
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             <button onClick={() => setTab('active')}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${tab === 'active' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}>
-              Active Events ({activeEvents.length})
+              Active Activities ({activeEvents.length})
             </button>
             <button onClick={() => setTab('past')}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${tab === 'past' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}>
-              Past Events ({pastEvents.length})
+              Past Activities ({pastEvents.length})
             </button>
           </div>
           <div className="flex items-center gap-3">
@@ -166,7 +171,7 @@ export const AdminEvents = () => {
               className="border rounded-lg px-3 py-1.5 text-sm w-56" />
             <button onClick={() => { setForm(emptyForm); setModalOpen(true); }}
               className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
-              + Add Event
+              + Add Activity
             </button>
           </div>
         </div>
@@ -178,9 +183,11 @@ export const AdminEvents = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left">Event</th>
+                <th className="px-4 py-3 text-left">Activity</th>
+                <th className="px-4 py-3 text-left">Activity Type</th>
+                <th className="px-4 py-3 text-left">Owner</th>
+                <th className="px-4 py-3 text-left">Venue</th>
                 <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-left">Organizer</th>
                 <th className="px-4 py-3 text-center">Capacity</th>
                 <th className="px-4 py-3 text-center">Price</th>
                 <th className="px-4 py-3 text-left">Status</th>
@@ -189,25 +196,32 @@ export const AdminEvents = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500">
                   <div className="inline-block w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2" />Loading...
                 </td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500">
                   {tab === 'active' ? 'No active events' : 'No past events'}
                 </td></tr>
               ) : filtered.map((event) => (
                 <>
                   <tr key={event.id} className="border-t hover:bg-gray-50 cursor-pointer" onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900">{event.title || event.locationName}</p>
-                      <p className="text-xs text-gray-500">{event.locationName} &middot; <span className="capitalize">{event.activityType}</span></p>
+                      <p className="font-medium text-gray-900">{event.title || '—'}</p>
                     </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${activityTypeBadgeClass(event.activityType)}`}
+                      >
+                        {formatActivityType(event.activityType)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{resolveEventOwnerLabel(event)}</td>
+                    <td className="px-4 py-3">{event.locationName}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <p className="text-gray-900">{event.date}</p>
                       <p className="text-xs text-gray-500">{event.time}</p>
                     </td>
-                    <td className="px-4 py-3">{event.hostName ?? event.organizerName ?? '—'}</td>
                     <td className="px-4 py-3 text-center">
                       <span className="text-gray-900">{event.slotsTotal - event.slotsAvailable}</span>
                       <span className="text-gray-400">/{event.slotsTotal}</span>
@@ -237,7 +251,7 @@ export const AdminEvents = () => {
                   </tr>
                   {expandedId === event.id && (
                     <tr key={`${event.id}-detail`} className="bg-gray-50">
-                      <td colSpan={7} className="px-6 py-4">
+                      <td colSpan={9} className="px-6 py-4">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           {event.description && (
                             <div className="col-span-2">
@@ -292,13 +306,15 @@ export const AdminEvents = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setModalOpen(false)}>
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-lg font-semibold text-gray-900">Add Event</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Add Activity</h2>
               <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
             <form onSubmit={handleCreateEvent} className="p-6 space-y-4">
-              <ActivityTypeSelect
-                value={form.activityType}
-                onChange={(activityType) =>
+              <ActivityIdentityFields
+                title={form.title}
+                onTitleChange={(title) => setForm((prev) => ({ ...prev, title }))}
+                activityType={form.activityType}
+                onActivityTypeChange={(activityType) =>
                   setForm((prev) => ({
                     ...prev,
                     activityType,
@@ -307,33 +323,29 @@ export const AdminEvents = () => {
                 }
               />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Organizer *</label>
-                  <select required value={form.tenantId} onChange={(e) => setForm({ ...form, tenantId: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm">
-                    <option value="">Select organizer...</option>
-                    {tenants.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Location *</label>
-                  <LocationSelect
-                    value={form.locationId}
-                    onChange={(locationId) => setForm({ ...form, locationId })}
-                    activityType={form.activityType}
-                    locations={filteredLocations}
-                    allowAddNew={false}
-                  />
-                </div>
-              </div>
+              <VenueSelect
+                value={form.locationId}
+                onChange={(locationId) => setForm((prev) => ({ ...prev, locationId }))}
+                activityType={form.activityType}
+                locations={filteredLocations}
+              />
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Title *</label>
-                <input type="text" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="e.g. Weekend Jebel Jais Hike" />
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Organizer *</label>
+                <select
+                  required
+                  value={form.tenantId}
+                  onChange={(e) => setForm({ ...form, tenantId: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                >
+                  <option value="">Select organizer…</option>
+                  {tenants.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Organization publishing this activity.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

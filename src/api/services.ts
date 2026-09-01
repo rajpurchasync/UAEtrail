@@ -341,7 +341,12 @@ export const api = {
   getPopularLocations: (limit = 6) => apiRequest<{ data: LocationDTO[] }>(`/locations/popular?limit=${limit}`),
   trackLocationView: (id: string) => apiRequest('/locations/' + id + '/view', { method: 'POST' }),
   getTenantProfile: (slug: string) => apiRequest<{ data: TenantProfile }>(`/tenants/${slug}`),
-  getPublicEvents: () => apiRequest<{ data: EventDTO[] }>('/events?pageSize=100'),
+  getPublicEvents: (opts?: { when?: 'upcoming' | 'past' | 'all'; pageSize?: number }) => {
+    const params = new URLSearchParams();
+    params.set('pageSize', String(opts?.pageSize ?? 100));
+    if (opts?.when) params.set('when', opts.when);
+    return apiRequest<{ data: EventDTO[] }>(`/events?${params.toString()}`);
+  },
   getFeaturedEvents: (limit = 6) => apiRequest<{ data: EventDTO[] }>(`/events/featured?limit=${limit}`),
   getPublicEventDetail: (id: string) =>
     apiRequest<{ data: EventDetail }>(`/events/${id}`, { auth: Boolean(getStoredSession()) }),

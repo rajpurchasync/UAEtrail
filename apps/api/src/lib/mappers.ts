@@ -48,6 +48,7 @@ type EventWithRelations = Event & {
   location: Location;
   tenant: { slug: string; name: string; countryCode?: string; ownerId: string };
   guide?: { profile?: { displayName?: string | null; avatarUrl?: string | null; bio?: string | null } | null } | null;
+  createdBy?: { profile?: { displayName?: string | null } | null } | null;
   participants?: Array<{ id: string } | ParticipantWithUser>;
 };
 
@@ -59,10 +60,12 @@ export const buildEventDto = (event: EventWithRelations): EventDTO => {
   const hostName = event.guide?.profile?.displayName ?? 'Host';
   const hostAvatar = event.guide?.profile?.avatarUrl ?? null;
   const tenantName = event.tenant.name;
+  const createdByName = event.createdBy?.profile?.displayName ?? undefined;
   return toEventDto({
     event,
     locationName: event.location.name,
     activityType: event.location.activityType,
+    region: event.location.region,
     slotsAvailable: Math.max(
       event.capacity - (event.participants?.length ?? 0),
       0
@@ -73,6 +76,8 @@ export const buildEventDto = (event: EventWithRelations): EventDTO => {
     hostBio: event.guide?.profile?.bio ?? null,
     tenantName,
     guideId: event.guideId ?? undefined,
+    createdById: event.createdById,
+    createdByName,
     tenantSlug: event.tenant.slug,
     participantPreviews: participantsWithUser.length > 0 ? toParticipantPreviews(participantsWithUser) : undefined,
     countryCode: event.location.countryCode ?? event.tenant.countryCode ?? 'AE'
@@ -130,6 +135,7 @@ export const toEventDto = ({
   event,
   locationName,
   activityType,
+  region,
   slotsAvailable,
   hostName,
   hostUserId,
@@ -137,6 +143,8 @@ export const toEventDto = ({
   hostBio,
   tenantName,
   guideId,
+  createdById,
+  createdByName,
   tenantSlug,
   participantPreviews,
   countryCode = 'AE'
@@ -144,6 +152,7 @@ export const toEventDto = ({
   event: Event;
   locationName: string;
   activityType: ActivityType;
+  region?: string;
   slotsAvailable: number;
   hostName: string;
   hostUserId: string;
@@ -151,6 +160,8 @@ export const toEventDto = ({
   hostBio?: string | null;
   tenantName: string;
   guideId?: string;
+  createdById?: string;
+  createdByName?: string;
   tenantSlug: string;
   participantPreviews?: Array<{ id: string; name: string; avatar?: string | null }>;
   countryCode?: string;
@@ -163,6 +174,7 @@ export const toEventDto = ({
   tenantSlug,
   locationId: event.locationId,
   locationName,
+  region,
   activityType: mapActivity(activityType),
   title: event.title,
   description: event.description,
@@ -196,6 +208,8 @@ export const toEventDto = ({
   hostBio: hostBio ?? undefined,
   tenantName,
   guideId: guideId ?? null,
+  createdById,
+  createdByName,
   organizerName: hostName,
   organizerAvatar: hostAvatar ?? undefined,
   organizerUserId: hostUserId,

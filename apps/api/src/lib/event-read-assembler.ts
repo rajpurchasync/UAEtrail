@@ -26,6 +26,7 @@ export type EventWithPublicRelations = Event & {
   location: Location;
   tenant: Pick<TenantRecord, 'id' | 'slug' | 'name' | 'countryCode' | 'ownerId'>;
   guide: { profile: { displayName: string | null; avatarUrl: string | null; bio: string | null } | null };
+  createdBy: { profile: { displayName: string | null } | null };
   participants: Array<
     EventParticipant & {
       user: { email: string; profile?: { displayName?: string | null; avatarUrl?: string | null } | null };
@@ -155,6 +156,7 @@ export const assembleEventsWithPublicRelations = async (
   const userIds = new Set<string>();
   for (const doc of filteredDocs) {
     if (doc.guideId) userIds.add(doc.guideId);
+    userIds.add(doc.createdById);
   }
   for (const participant of participantDocs) {
     userIds.add(participant.userId);
@@ -191,22 +193,34 @@ export const assembleEventsWithPublicRelations = async (
           ownerId: tenant.ownerId
         },
         guide: doc.guideId ? toGuidePreview(userMap.get(doc.guideId)) : { profile: null },
+        createdBy: (() => {
+          const creator = userMap.get(doc.createdById);
+          return creator ? { profile: { displayName: creator.profile.displayName } } : { profile: null };
+        })(),
         participants
       }
     ];
   });
 };
 
-const filterPublishedUpcomingDocs = async (docs: MongoEventDoc[]): Promise<MongoEventDoc[]> => {
+const filterPublishedDocs = async (
+  docs: MongoEventDoc[],
+  when: 'upcoming' | 'past' | 'all'
+): Promise<MongoEventDoc[]> => {
   const activeLocations = await loadActiveLocations(docs.map((doc) => doc.locationId));
   const now = new Date();
-  return docs.filter(
-    (doc) =>
-      doc.status === EventStatus.PUBLISHED &&
-      doc.startAt >= now &&
-      activeLocations.has(doc.locationId)
-  );
+  return docs.filter((doc) => {
+    if (doc.status !== EventStatus.PUBLISHED) return false;
+    if (!activeLocations.has(doc.locationId)) return false;
+    if (when === 'upcoming' && doc.startAt < now) return false;
+    if (when === 'past' && doc.startAt >= now) return false;
+    return true;
+  });
 };
+
+/** @deprecated Use filterPublishedDocs */
+const filterPublishedUpcomingDocs = async (docs: MongoEventDoc[]): Promise<MongoEventDoc[]> =>
+  filterPublishedDocs(docs, 'upcoming');
 
 export const listFeaturedPublishedEventsFromMongo = async (take: number): Promise<EventWithPublicRelations[]> => {
   const docs = await eventsCollection()
@@ -226,13 +240,15 @@ export const listFeaturedPublishedEventsFromMongo = async (take: number): Promis
 export const listPublishedEventsWithPreviewsFromMongo = async (input: {
   skip: number;
   take: number;
+  when?: 'upcoming' | 'past' | 'all';
 }): Promise<{ items: EventWithPublicRelations[]; total: number }> => {
+  const when = input.when ?? 'upcoming';
   const docs = await eventsCollection()
     .find({ status: EventStatus.PUBLISHED })
-    .sort({ startAt: 1 })
+    .sort({ startAt: when === 'past' ? -1 : 1 })
     .toArray();
 
-  const filtered = await filterPublishedUpcomingDocs(docs);
+  const filtered = await filterPublishedDocs(docs, when);
   const items = await assembleEventsWithPublicRelations(filtered.slice(input.skip, input.skip + input.take));
   return { items, total: filtered.length };
 };
@@ -274,6 +290,7 @@ export type EventWithTenantRelations = Event & {
   location: Location;
   tenant: TenantRecord;
   guide: { profile: { displayName: string | null; avatarUrl: string | null; bio: string | null } | null } | null;
+  createdBy: { profile: { displayName: string | null } | null } | null;
   participants: Array<{ id: string; userId: string; checkedInAt?: Date | null }>;
 };
 
@@ -327,20 +344,27 @@ export const assembleTenantEventsWithRelations = async (
   }
 
   const guideIds = docs.map((doc) => doc.guideId).filter((id): id is string => Boolean(id));
-  const guideUsers = await findAuthUsersByIds(guideIds);
-  const guideMap = new Map(guideUsers.map((user) => [user._id, user]));
+  const createdByIds = docs.map((doc) => doc.createdById);
+  const userIds = [...new Set([...guideIds, ...createdByIds])];
+  const users = await findAuthUsersByIds(userIds);
+  const userMap = new Map(users.map((user) => [user._id, user]));
 
   return docs.flatMap((doc) => {
     const location = locationMap.get(doc.locationId);
     const tenant = tenantMap.get(doc.tenantId);
     if (!location || !tenant) return [];
 
+    const createdByUser = userMap.get(doc.createdById);
+
     return [
       {
         ...mongoEventToEvent(doc),
         location,
         tenant,
-        guide: doc.guideId ? toGuidePreview(guideMap.get(doc.guideId)) : { profile: null },
+        guide: doc.guideId ? toGuidePreview(userMap.get(doc.guideId)) : { profile: null },
+        createdBy: createdByUser
+          ? { profile: { displayName: createdByUser.profile.displayName } }
+          : { profile: null },
         participants: (participantsByEvent.get(doc._id) ?? []).map((participant) => ({
           id: participant._id,
           userId: participant.userId,

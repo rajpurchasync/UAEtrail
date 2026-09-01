@@ -4,6 +4,7 @@ import { api, AdminMetrics, OrganizerApplication, AuditLogEntry } from '../api/s
 import { DashboardLayout } from '../components/layout';
 import { EventDTO } from '@uaetrail/shared-types';
 import { ADMIN_LINKS } from '../constants';
+import { resolveEventOwnerLabel, formatActivityType } from '../utils/activityIdentity';
 
 export const AdminOverview = () => {
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
@@ -94,15 +95,18 @@ export const AdminOverview = () => {
         {/* Recent Events */}
         <div className="bg-white border rounded-lg">
           <div className="px-4 py-3 border-b flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Recent Events</h3>
+            <h3 className="font-semibold text-gray-900">Recent Activities</h3>
             <Link to="/admin/events" className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
           </div>
           <div className="divide-y">
             {recentEvents.map((e) => (
               <div key={e.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{e.locationName}</p>
-                  <p className="text-xs text-gray-500">{e.organizerName} · {e.date}</p>
+                  <p className="text-sm font-medium text-gray-900">{e.title || '—'}</p>
+                  <p className="text-xs text-gray-500">
+                    {formatActivityType(e.activityType)} · {e.locationName} · {resolveEventOwnerLabel(e)}
+                  </p>
+                  <p className="text-xs text-gray-400">{e.date}</p>
                 </div>
                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                   e.status === 'published' ? 'bg-green-100 text-green-800' :
@@ -111,7 +115,7 @@ export const AdminOverview = () => {
                 }`}>{e.status}</span>
               </div>
             ))}
-            {recentEvents.length === 0 && <p className="px-4 py-6 text-sm text-gray-500 text-center">No events yet</p>}
+            {recentEvents.length === 0 && <p className="px-4 py-6 text-sm text-gray-500 text-center">No activities yet</p>}
           </div>
         </div>
 

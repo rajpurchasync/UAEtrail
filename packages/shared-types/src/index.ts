@@ -115,6 +115,7 @@ export interface EventDTO {
   tenantSlug: string;
   locationId: string;
   locationName: string;
+  region?: string;
   activityType: ActivityType;
   title: string;
   description: string;
@@ -154,6 +155,9 @@ export interface EventDTO {
   organizerAvatar?: string;
   organizerUserId?: string;
   guideId?: string | null;
+  /** User who created this activity */
+  createdById?: string;
+  createdByName?: string;
   featured?: boolean;
   participantPreviews?: ParticipantPreviewDTO[];
   countryCode?: string;

@@ -41,16 +41,16 @@ const organizerCrumbs = (pathname: string): LogicalBreadcrumb[] => {
 
   if (pathname === '/organizer/overview') return [base];
   if (pathname === '/organizer/profile') return [base, { label: 'Profile', path: '' }];
-  if (pathname === '/organizer/events') return [base, { label: 'Events', path: '' }];
+  if (pathname === '/organizer/events') return [base, { label: 'Activities', path: '' }];
   if (pathname === '/organizer/events/new') {
-    return [base, { label: 'Events', path: '/organizer/events' }, { label: 'Create', path: '' }];
+    return [base, { label: 'Activities', path: '/organizer/events' }, { label: 'Add activity', path: '' }];
   }
   if (pathname === '/organizer/requests') return [base, { label: 'Requests', path: '' }];
   if (pathname === '/organizer/messages') return [base, { label: 'Messages', path: '' }];
   if (pathname === '/organizer/team') return [base, { label: 'Team', path: '' }];
   if (pathname === '/organizer/security-privacy') return [base, { label: 'Security & Privacy', path: '' }];
   if (pathname === '/organizer/history') return [base, { label: 'History', path: '' }];
-  if (pathname === '/organizer/locations') return [base, { label: 'Locations', path: '' }];
+  if (pathname === '/organizer/locations') return [base, { label: 'Venues', path: '' }];
 
   return [base, { label: prettifySegment(pathname.replace('/organizer/', '')), path: '' }];
 };
@@ -60,7 +60,7 @@ const adminCrumbs = (pathname: string): LogicalBreadcrumb[] => {
 
   if (pathname === '/admin/overview') return [base];
   if (pathname === '/admin/users') return [base, { label: 'User Management', path: '' }];
-  if (pathname === '/admin/events') return [base, { label: 'Events', path: '' }];
+  if (pathname === '/admin/events') return [base, { label: 'Activities', path: '' }];
   if (pathname === '/admin/groups') return [base, { label: 'Groups', path: '' }];
   if (pathname === '/admin/locations') return [base, { label: 'Locations', path: '' }];
   if (pathname === '/admin/organizers') return [base, { label: 'Organizer Applications', path: '' }];

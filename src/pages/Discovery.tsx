@@ -340,10 +340,10 @@ export const Discovery = () => {
               type="button"
               onClick={openAddLocation}
               className="inline-flex shrink-0 items-center justify-center h-9 w-9 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 md:w-auto md:px-3 md:gap-1.5"
-              aria-label="Add location"
+              aria-label="Suggest a venue"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden md:inline text-sm font-medium">Add location</span>
+              <span className="hidden md:inline text-sm font-medium">Suggest a venue</span>
             </button>
           </div>
           <div className="flex gap-2 items-center min-w-0 mb-3">
@@ -625,7 +625,11 @@ export const Discovery = () => {
         </ListBrowseLayout>
       </div>
 
-      <Dialog open={addLocationOpen} onClose={() => setAddLocationOpen(false)} title="Suggest a location">
+      <Dialog open={addLocationOpen} onClose={() => setAddLocationOpen(false)} title="Suggest a venue">
+        <p className="text-sm text-gray-600 mb-4">
+          Add a trail, camp, or spot to Discovery. This is not scheduling an activity — hosts schedule activities separately
+          after a venue is approved.
+        </p>
         <SubmitLocationForm
           defaultActivityType={
             activityFilter === 'camping'

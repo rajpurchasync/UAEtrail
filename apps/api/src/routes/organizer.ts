@@ -15,6 +15,10 @@ import { awardPointsDefault } from '../services/rewards.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
 import { performParticipantCheckInDefault } from '../services/checkin.js';
 import { buildLocationCreateData } from '../services/location-submit.js';
+import {
+  assertLocationMatchesActivityType,
+  sharedActivityTypeSchema
+} from '../domain/activity-type.js';
 import { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { createPasswordResetToken } from '../lib/auth-tokens.js';
 import { createAuthUser, findAuthUserByEmail, updateAuthUserCore } from '../lib/auth-users.js';
@@ -60,6 +64,7 @@ const idParamSchema = z.object({ id: z.string().min(1) });
 const membershipIdSchema = z.object({ membershipId: z.string().min(1) });
 
 const eventCreateSchema = z.object({
+  activityType: sharedActivityTypeSchema,
   locationId: z.string().min(1),
   title: z.string().min(4).max(120),
   description: z.string().min(20),
@@ -166,12 +171,8 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
     const tenantId = req.tenantContext!.tenantId;
     const body = req.body as z.infer<typeof eventCreateSchema>;
 
-    const location = body.locationId
-      ? await assertEventLocation(body.locationId, req.auth!.userId)
-      : null;
-    if (!location) {
-      throw new ApiError(400, 'invalid_location', 'Location is required.');
-    }
+    const location = await assertEventLocation(body.locationId, req.auth!.userId);
+    assertLocationMatchesActivityType(location.activityType, body.activityType);
 
     const tenant = await findTenantById(tenantId);
     if (!tenant) {
@@ -270,8 +271,13 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
       }
     }
 
-    if (body.locationId) {
-      await assertEventLocation(body.locationId, req.auth!.userId);
+    if (body.locationId && body.activityType) {
+      const location = await assertEventLocation(body.locationId, req.auth!.userId);
+      assertLocationMatchesActivityType(location.activityType, body.activityType);
+    } else if (body.locationId) {
+      throw new ApiError(400, 'activity_type_required', 'Activity type is required when changing location.');
+    } else if (body.activityType) {
+      assertLocationMatchesActivityType(existing.location.activityType, body.activityType);
     }
 
     const tenantMeta = await findTenantCountryCode(tenantId);

@@ -19,7 +19,7 @@ export const buildOrganizerStats = ({
   upcomingEventsCount,
   pastEventsCount,
 }: Omit<OrganizerHubSectionsProps, 'upcomingEvents'>): AccountStat[] => [
-  { label: 'Events', value: eventsCount, to: '/organizer/events' },
+  { label: 'Activities', value: eventsCount, to: '/organizer/events' },
   {
     label: 'Pending',
     value: pendingJoinRequests,
@@ -58,7 +58,7 @@ export const OrganizerHubSections = ({
 
       {previewEvents.length > 0 && (
         <section>
-          <AccountSectionHeader title="Up next" actionTo="/organizer/events" actionLabel="All events" />
+          <AccountSectionHeader title="Up next" actionTo="/organizer/events" actionLabel="All activities" />
           <div className="space-y-2">
             {previewEvents.map((evt) => (
               <Link
@@ -68,10 +68,10 @@ export const OrganizerHubSections = ({
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-neutral-900 truncate">
-                    {evt.title || evt.locationName}
+                    {evt.title || '—'}
                   </p>
-                  <p className="text-xs text-neutral-500 mt-0.5">
-                    {new Date(evt.date).toLocaleDateString(undefined, {
+                  <p className="text-xs text-neutral-500 mt-0.5 truncate">
+                    {evt.locationName} · {new Date(evt.date).toLocaleDateString(undefined, {
                       weekday: 'short',
                       month: 'short',
                       day: 'numeric',
@@ -106,7 +106,7 @@ export const OrganizerHubSections = ({
           {
             to: '/organizer/events/new',
             icon: <Plus className="w-4 h-4" />,
-            label: 'Create event',
+            label: 'Add activity',
           },
           {
             to: '/organizer/requests',
@@ -118,7 +118,7 @@ export const OrganizerHubSections = ({
           {
             to: '/organizer/locations',
             icon: <MapPin className="w-4 h-4" />,
-            label: 'Locations',
+            label: 'Submit a venue',
             accent: 'blue',
           },
           {

@@ -4,8 +4,9 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { EventDTO, withdrawReasonLabel } from '@uaetrail/shared-types';
 import { api, EventRequestView } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
-import { TenantSwitcher, ImageUpload, MapPinFields, parseCoord, LocationSelect, ShareButton, HostSelect, TripPricePackagesEditor, ActivityTypeSelect, TimePicker } from '../../components/ui';
+import { TenantSwitcher, ImageUpload, MapPinFields, parseCoord, ShareButton, TripPricePackagesEditor, ActivityIdentityFields, VenueSelect, HostSelect, TimePicker } from '../../components/ui';
 import { derivePriceAed, tripHasPaidPricing } from '../../utils/tripPricing';
+import { activityTypeBadgeClass, formatActivityType, resolveEventOwnerLabel } from '../../utils/activityIdentity';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { daysUntil, isUpcomingTrip } from '../../utils/tripDates';
 import type { ActivityType } from '../../config/activityTypes';
@@ -22,6 +23,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [ownerName, setOwnerName] = useState<string | undefined>();
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState<EventDTO | null>(null);
@@ -57,6 +59,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
 
   const openCreate = () => {
     setEditingId(null);
+    setOwnerName(undefined);
     setForm(emptyForm);
     setModalOpen(true);
   };
@@ -69,6 +72,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
           ? [{ label: 'Standard', amount: event.price, currency: 'AED' as const }]
           : [];
     setEditingId(event.id);
+    setOwnerName(event.createdByName);
     setForm({
       activityType: (event.activityType as ActivityType) ?? 'hiking',
       locationId: event.locationId,
@@ -126,6 +130,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
       }
 
       const payload: Record<string, unknown> = {
+        activityType: form.activityType,
         locationId: form.locationId,
         title: form.title,
         description: form.description,
@@ -236,7 +241,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
           disabled={!tenantId}
         >
           <Plus className="w-3.5 h-3.5" />
-          Add Event
+          Add Activity
         </button>
         <AppSegmented
           segments={[
@@ -259,20 +264,21 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
               <div className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{event.title || event.locationName}</h3>
-                    {event.title && <p className="text-xs text-gray-500">{event.locationName}</p>}
+                    <h3 className="font-semibold text-gray-900">{event.title || '—'}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Venue: {event.locationName}</p>
                     <p className="text-sm text-gray-600 mt-1">
                       {event.date} at {event.time}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Owner: {resolveEventOwnerLabel(event)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {statusBadge(event.status)}
                     <span
-                      className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        event.activityType === 'hiking' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                      }`}
+                      className={`text-xs px-2 py-1 rounded-full font-medium ${activityTypeBadgeClass(event.activityType)}`}
                     >
-                      {event.activityType}
+                      {formatActivityType(event.activityType)}
                     </span>
                   </div>
                 </div>
@@ -451,51 +457,39 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Event' : 'Add Event'}</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Activity' : 'Add Activity'}</h2>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">
                 &times;
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
-              <ActivityTypeSelect
-                value={form.activityType}
-                onChange={(activityType) =>
+              <ActivityIdentityFields
+                title={form.title}
+                onTitleChange={(title) => setForm((prev) => ({ ...prev, title }))}
+                activityType={form.activityType}
+                onActivityTypeChange={(activityType) =>
                   setForm((prev) => ({
                     ...prev,
                     activityType,
                     locationId: prev.activityType === activityType ? prev.locationId : '',
                   }))
                 }
+                ownerName={ownerName}
+              />
+
+              <VenueSelect
+                value={form.locationId}
+                onChange={(locationId) => setForm((prev) => ({ ...prev, locationId }))}
+                activityType={form.activityType}
+                tenantId={tenantId}
               />
 
               <HostSelect
                 tenantId={tenantId}
                 value={form.hostUserId}
-                onChange={(hostUserId) => setForm({ ...form, hostUserId })}
+                onChange={(hostUserId) => setForm((prev) => ({ ...prev, hostUserId }))}
                 required
               />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Location *</label>
-                  <LocationSelect
-                    value={form.locationId}
-                    onChange={(locationId) => setForm({ ...form, locationId })}
-                    tenantId={tenantId}
-                    activityType={form.activityType}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
-                    placeholder="e.g. Weekend Jebel Jais Hike"
-                  />
-                </div>
-              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
