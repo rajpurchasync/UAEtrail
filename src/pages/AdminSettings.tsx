@@ -96,7 +96,7 @@ export const AdminSettings = () => {
               <select value={targetRole} onChange={(e) => setTargetRole(e.target.value)}
                 className="w-full border rounded-lg px-3 py-2 text-sm">
                 <option value="all">All Active Users</option>
-                <option value="visitor">Visitors Only</option>
+                <option value="participant">Participants Only</option>
                 <option value="tenant_owner">Tenant Owners Only</option>
                 <option value="tenant_admin">Tenant Admins Only</option>
                 <option value="tenant_guide">Guides Only</option>

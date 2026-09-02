@@ -11,7 +11,7 @@ export type AdminUserType =
 
 export const ADMIN_USER_TYPE_LABELS: Record<AdminUserType, string> = {
   participant: 'Participant',
-  business_organizer: 'Organizer',
+  business_organizer: 'Business Host',
   guide_organizer: 'Individual Host',
   organizer_staff: 'Host Staff',
   platform_admin: 'Admin'
@@ -49,7 +49,7 @@ export const isBusinessOrganizerById = async (userId: string): Promise<boolean> 
 export const adminUserTypeFilter = (userType: string): Record<string, unknown> | null => {
   switch (userType) {
     case 'participant':
-      return { role: UserRole.VISITOR };
+      return { role: UserRole.PARTICIPANT };
     case 'platform_admin':
       return { role: UserRole.PLATFORM_ADMIN };
     case 'organizer_staff':

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TenantListDTO } from '@uaetrail/shared-types';
-import { api, OrganizerApplication, TenantDetail } from '../api/services';
+import { api, HostApplication, TenantDetail } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
@@ -13,13 +13,13 @@ type TenantFilter = 'all' | 'active' | 'suspended';
 export const AdminOrganizers = () => {
   const [tab, setTab] = useState<Tab>('applications');
   const [tenantFilter, setTenantFilter] = useState<TenantFilter>('all');
-  const [applications, setApplications] = useState<OrganizerApplication[]>([]);
+  const [applications, setApplications] = useState<HostApplication[]>([]);
   const [tenants, setTenants] = useState<TenantListDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [noteModal, setNoteModal] = useState<{ id: string; action: 'approved' | 'rejected' } | null>(null);
   const [reviewNote, setReviewNote] = useState('');
-  const [applicationDetail, setApplicationDetail] = useState<OrganizerApplication | null>(null);
+  const [applicationDetail, setApplicationDetail] = useState<HostApplication | null>(null);
   const [tenantDetail, setTenantDetail] = useState<TenantDetail | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<TenantListDTO | null>(null);
   const [suspendComment, setSuspendComment] = useState('');
@@ -103,7 +103,7 @@ export const AdminOrganizers = () => {
 
   const pendingCount = applications.filter((a) => a.status === 'pending').length;
 
-  const formatApplicantPhone = (app: OrganizerApplication): string | null => {
+  const formatApplicantPhone = (app: HostApplication): string | null => {
     const meta = app.metadata;
     if (!meta) return null;
     if (meta.phoneE164) return meta.phoneE164;
@@ -113,7 +113,7 @@ export const AdminOrganizers = () => {
     return meta.phone ?? null;
   };
 
-  const hostDisplayName = (app: OrganizerApplication): string =>
+  const hostDisplayName = (app: HostApplication): string =>
     app.metadata?.hostDisplayName?.trim() || app.applicantName;
 
   const metaField = (label: string, value?: string | null) => {
@@ -436,7 +436,7 @@ export const AdminOrganizers = () => {
                           status: tenantDetail.status,
                           ownerName: tenantDetail.owner.displayName ?? tenantDetail.owner.email,
                           memberCount: tenantDetail.members.length,
-                          activityCount: tenantDetail.events.length,
+                          activityCount: tenantDetail.activities.length,
                         });
                         setSuspendComment('');
                       }}
@@ -497,8 +497,8 @@ export const AdminOrganizers = () => {
               </div>
 
               <div>
-                <p className="text-xs text-gray-500 uppercase font-medium mb-2">Events ({tenantDetail.events.length})</p>
-                {tenantDetail.events.length > 0 ? (
+                <p className="text-xs text-gray-500 uppercase font-medium mb-2">Activities ({tenantDetail.activities.length})</p>
+                {tenantDetail.activities.length > 0 ? (
                   <div className="border rounded-lg overflow-x-auto desktop-scrollbar-x">
                     <table className="min-w-full text-sm">
                       <thead className="bg-gray-50">
@@ -511,7 +511,7 @@ export const AdminOrganizers = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {tenantDetail.events.map((ev) => (
+                        {tenantDetail.activities.map((ev) => (
                           <tr key={ev.id} className="border-t">
                             <td className="px-3 py-2 text-sm font-medium">{ev.title}</td>
                             <td className="px-3 py-2 text-xs text-gray-500">{ev.locationName}</td>

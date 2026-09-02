@@ -10,7 +10,7 @@ export interface AccessTokenPayload {
     | 'tenant_owner'
     | 'tenant_admin'
     | 'tenant_guide'
-    | 'visitor';
+    | 'participant';
 }
 
 export const signAccessToken = (payload: AccessTokenPayload): string =>

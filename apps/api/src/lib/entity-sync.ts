@@ -4,7 +4,7 @@ import type { ActivityStatus } from '../domain/enums.js';
 import { ActivityStatus as ActivityStatusEnum } from '../domain/enums.js';
 import { getMongoClient } from './mongo.js';
 import { locationDocForMongo } from './location-query.js';
-import type { MongoEventDoc } from './entity-builders.js';
+import type { MongoActivityDoc } from './entity-builders.js';
 
 type MongoLocationDoc = Omit<Location, 'id'> & {
   _id: string;
@@ -14,8 +14,8 @@ type MongoLocationDoc = Omit<Location, 'id'> & {
 const locationsCollection = (): Collection<MongoLocationDoc> =>
   getMongoClient()!.db().collection<MongoLocationDoc>('locations');
 
-const eventsCollection = (): Collection<MongoEventDoc> =>
-  getMongoClient()!.db().collection<MongoEventDoc>('activities');
+const activitiesCollection = (): Collection<MongoActivityDoc> =>
+  getMongoClient()!.db().collection<MongoActivityDoc>('activities');
 
 export const writeLocationToMongo = async (location: Location): Promise<void> => {
   await locationsCollection().updateOne(
@@ -25,29 +25,29 @@ export const writeLocationToMongo = async (location: Location): Promise<void> =>
   );
 };
 
-export const writeEventDocToMongo = async (doc: MongoEventDoc): Promise<void> => {
-  await eventsCollection().updateOne({ _id: doc._id }, { $set: doc }, { upsert: true });
+export const writeActivityDocToMongo = async (doc: MongoActivityDoc): Promise<void> => {
+  await activitiesCollection().updateOne({ _id: doc._id }, { $set: doc }, { upsert: true });
 };
 
-export const patchEventInMongo = async (
+export const patchActivityInMongo = async (
   activityId: string,
-  patch: Partial<Omit<MongoEventDoc, '_id'>>
+  patch: Partial<Omit<MongoActivityDoc, '_id'>>
 ): Promise<void> => {
-  await eventsCollection().updateOne(
+  await activitiesCollection().updateOne(
     { _id: activityId },
     { $set: { ...patch, updatedAt: new Date() } }
   );
 };
 
-export const findEventDocInMongo = async (activityId: string): Promise<MongoEventDoc | null> =>
-  eventsCollection().findOne({ _id: activityId });
+export const findActivityDocInMongo = async (activityId: string): Promise<MongoActivityDoc | null> =>
+  activitiesCollection().findOne({ _id: activityId });
 
 /** Atomically reserve one participant slot when capacity allows. */
-export const tryReserveEventParticipantSlot = async (
+export const tryReserveActivityParticipantSlot = async (
   activityId: string,
   status: ActivityStatus = ActivityStatusEnum.PUBLISHED
 ): Promise<boolean> => {
-  const result = await eventsCollection().findOneAndUpdate(
+  const result = await activitiesCollection().findOneAndUpdate(
     {
       _id: activityId,
       status,
@@ -67,8 +67,8 @@ export const tryReserveEventParticipantSlot = async (
 };
 
 /** Release a reserved participant slot (e.g. when a participant is removed). */
-export const releaseEventParticipantSlot = async (activityId: string): Promise<void> => {
-  await eventsCollection().updateOne(
+export const releaseActivityParticipantSlot = async (activityId: string): Promise<void> => {
+  await activitiesCollection().updateOne(
     { _id: activityId, participantSlotsUsed: { $gt: 0 } },
     { $inc: { participantSlotsUsed: -1 }, $set: { updatedAt: new Date() } }
   );
@@ -81,12 +81,12 @@ export const findLocationInMongo = async (locationId: string): Promise<Location 
   return { id: _id, ...rest };
 };
 
-export const mapMongoEventToPublishResult = (doc: MongoEventDoc) => ({
+export const mapMongoActivityToPublishResult = (doc: MongoActivityDoc) => ({
   id: doc._id,
   tenantId: doc.tenantId,
   locationId: doc.locationId,
   createdById: doc.createdById,
-  guideId: doc.guideId,
+  hostId: doc.hostId,
   title: doc.title,
   startAt: doc.startAt,
   endAt: doc.endAt,

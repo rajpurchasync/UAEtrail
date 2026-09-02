@@ -33,7 +33,7 @@ import {
 } from '@uaetrail/shared-types';
 import { apiRequest, downloadAuthenticatedFile, getStoredSession } from './client';
 
-export interface OrganizerApplication {
+export interface HostApplication {
   id: string;
   applicantId?: string;
   applicantEmail: string;
@@ -64,14 +64,14 @@ export interface OrganizerApplication {
 
 export interface AdminMetrics {
   tenants: number;
-  events: number;
+  activities: number;
   pendingApplications: number;
   pendingRequests: number;
   totalUsers: number;
   activeUsers: number;
   totalLocations: number;
   totalParticipants: number;
-  totalOrganizers: number;
+  totalHosts: number;
   activeTrips: number;
   totalGroups: number;
 }
@@ -234,8 +234,6 @@ export type ContentReportTargetType = 'user' | 'message' | 'post' | 'review' | '
 export type ContentReportReason = 'spam' | 'harassment' | 'inappropriate' | 'scam' | 'other';
 
 export type ActivityDetail = ActivityDetailDTO;
-/** @deprecated Use ActivityDetail */
-export type EventDetail = ActivityDetailDTO;
 
 export interface TenantMembershipView {
   tenantId: string;
@@ -266,7 +264,7 @@ export interface TenantDetail {
   owner: { id: string; email: string; displayName: string | null };
   createdAt: string;
   members: Array<{ userId: string; email: string; displayName: string | null; role: string; joinedAt: string }>;
-  events: Array<{ id: string; title: string; locationName: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number; guideName: string | null }>;
+  activities: Array<{ id: string; title: string; locationName: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number; guideName: string | null }>;
 }
 
 export interface OrganizerDetails {
@@ -290,7 +288,7 @@ export interface TenantProfile {
   organizerDetails?: OrganizerDetails;
   memberCount: number;
   team: { role: string; displayName: string; avatarUrl: string | null }[];
-  events: ActivityDTO[];
+  activities: ActivityDTO[];
 }
 
 export const api = {
@@ -441,7 +439,7 @@ export const api = {
       auth: true,
       body: JSON.stringify({})
     }),
-  switchMeRole: (target: 'visitor' | 'original') =>
+  switchMeRole: (target: 'participant' | 'original') =>
     apiRequest<{ data: { role: string; switchedFromRole: string | null }; tokens: { accessToken: string } }>(
       '/me/role/switch',
       {
@@ -580,9 +578,9 @@ export const api = {
       body: JSON.stringify(payload)
     }),
   getAdminApplications: () =>
-    apiRequest<{ data: OrganizerApplication[] }>('/admin/organizer-applications', { auth: true }),
+    apiRequest<{ data: HostApplication[] }>('/admin/host-applications', { auth: true }),
   reviewAdminApplication: (id: string, status: 'approved' | 'rejected', reviewerNote?: string) =>
-    apiRequest(`/admin/organizer-applications/${id}`, {
+    apiRequest(`/admin/host-applications/${id}`, {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify({ status, reviewerNote })
@@ -632,46 +630,53 @@ export const api = {
       headers: { 'x-tenant-id': tenantId }
     }),
 
+  cancelHostActivity: (tenantId: string, activityId: string) =>
+    apiRequest(`/host/activities/${activityId}`, {
+      method: 'DELETE',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId }
+    }),
+
   getOrganizerRequests: (tenantId: string) =>
-    apiRequest<{ data: ActivityRequestView[] }>('/organizer/requests?pageSize=100', {
+    apiRequest<{ data: ActivityRequestView[] }>('/host/requests?pageSize=100', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
   decideOrganizerRequest: (tenantId: string, requestId: string, status: 'approved' | 'rejected', organizerNote?: string) =>
-    apiRequest(`/organizer/requests/${requestId}`, {
+    apiRequest(`/host/requests/${requestId}`, {
       method: 'PATCH',
       auth: true,
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify({ status, organizerNote })
     }),
   getOrganizerTeam: (tenantId: string) =>
-    apiRequest<{ data: TeamMember[] }>('/organizer/team', {
+    apiRequest<{ data: TeamMember[] }>('/host/team', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
   createOrganizerTeamMember: (tenantId: string, payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }) =>
-    apiRequest<{ data: TeamMember }>('/organizer/team', {
+    apiRequest<{ data: TeamMember }>('/host/team', {
       method: 'POST',
       auth: true,
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify(payload)
     }),
   updateOrganizerTeamMemberRole: (tenantId: string, membershipId: string, role: 'tenant_admin' | 'tenant_guide') =>
-    apiRequest<{ data: { id: string; role: string } }>(`/organizer/team/${membershipId}`, {
+    apiRequest<{ data: { id: string; role: string } }>(`/host/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify({ role })
     }),
   toggleOrganizerTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
-    apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/organizer/team/${membershipId}`, {
+    apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/host/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify({ isActive })
     }),
   removeOrganizerTeamMember: (tenantId: string, membershipId: string) =>
-    apiRequest(`/organizer/team/${membershipId}`, {
+    apiRequest(`/host/team/${membershipId}`, {
       method: 'DELETE',
       auth: true,
       headers: { 'x-tenant-id': tenantId }
@@ -741,13 +746,7 @@ export const api = {
   // ─── Organizer - Check-in ──────────────────────────────────────────────
 
   getActivityParticipants: (tenantId: string, activityId: string) =>
-    apiRequest<{ data: { activityId: string; eventTitle: string; capacity: number; participants: ParticipantDTO[] } }>(
-      `/host/activities/${activityId}/participants`,
-      { auth: true, headers: { 'x-tenant-id': tenantId } }
-    ),
-  /** @deprecated Use getActivityParticipants */
-  getEventParticipants: (tenantId: string, activityId: string) =>
-    apiRequest<{ data: { activityId: string; eventTitle: string; capacity: number; participants: ParticipantDTO[] } }>(
+    apiRequest<{ data: { activityId: string; activityTitle: string; capacity: number; participants: ParticipantDTO[] } }>(
       `/host/activities/${activityId}/participants`,
       { auth: true, headers: { 'x-tenant-id': tenantId } }
     ),
@@ -767,7 +766,7 @@ export const api = {
   // ─── Organizer - Location Submission ────────────────────────────────────
 
   submitLocation: (tenantId: string, payload: Partial<LocationDTO>) =>
-    apiRequest<{ data: LocationDTO }>('/organizer/locations', {
+    apiRequest<{ data: LocationDTO }>('/host/locations', {
       method: 'POST',
       auth: true,
       headers: { 'x-tenant-id': tenantId },
@@ -785,14 +784,14 @@ export const api = {
     apiRequest<{ data: LocationDTO[] }>('/me/locations', { auth: true }),
 
   getOrganizerSubmittedLocations: (tenantId: string) =>
-    apiRequest<{ data: LocationDTO[] }>('/organizer/locations', {
+    apiRequest<{ data: LocationDTO[] }>('/host/locations', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
 
-  // ─── Organizer - Event History ──────────────────────────────────────────
+  // ─── Organizer - Activity History ───────────────────────────────────────
 
-  getEventHistory: (tenantId: string) =>
+  getActivityHistory: (tenantId: string) =>
     apiRequest<{ data: Array<{ id: string; title: string; locationName: string; activityType: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number }> }>(
       '/host/activities/history',
       { auth: true, headers: { 'x-tenant-id': tenantId } }
@@ -1019,37 +1018,20 @@ export const api = {
       { auth: true }
     ),
 
-  // ─── Organizer – Event Edit & Cancel ────────────────────────────────────
+  // ─── Host application (user-facing) ─────────────────────────────────────
 
-  updateOrganizerEvent: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
-    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}`, {
-      method: 'PATCH',
-      auth: true,
-      headers: { 'x-tenant-id': tenantId },
-      body: JSON.stringify(payload)
-    }),
-
-  cancelOrganizerEvent: (tenantId: string, activityId: string) =>
-    apiRequest(`/host/activities/${activityId}`, {
-      method: 'DELETE',
-      auth: true,
-      headers: { 'x-tenant-id': tenantId }
-    }),
-
-  // ─── Organizer Application (user-facing) ─────────────────────────────────
-
-  submitOrganizerApplication: (data: Record<string, unknown>) =>
-    apiRequest<{ data: OrganizerApplication }>('/me/organizer-application', {
+  submitHostApplication: (data: Record<string, unknown>) =>
+    apiRequest<{ data: HostApplication }>('/me/host-application', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(data)
     }),
 
-  getMyOrganizerApplication: () =>
-    apiRequest<{ data: OrganizerApplication | null }>('/me/organizer-application', { auth: true }),
+  getMyHostApplication: () =>
+    apiRequest<{ data: HostApplication | null }>('/me/host-application', { auth: true }),
 
   updateOrganizerDetails: (data: OrganizerDetails) =>
-    apiRequest<{ data: OrganizerDetails }>('/me/organizer-details', {
+    apiRequest<{ data: OrganizerDetails }>('/me/host-details', {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(data),

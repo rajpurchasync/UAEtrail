@@ -41,7 +41,7 @@ export const OrganizerProfile = () => {
     setSwitchMessage(null);
     setSwitchingRole(true);
     try {
-      const res = await api.switchMeRole('visitor');
+      const res = await api.switchMeRole('participant');
       setStoredSession(res.tokens);
       await refreshUser();
       navigate(accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
@@ -61,7 +61,7 @@ export const OrganizerProfile = () => {
   }
 
   if (!user) {
-    return <Navigate to="/signin" replace state={{ from: '/organizer/profile' }} />;
+    return <Navigate to="/signin" replace state={{ from: '/host/profile' }} />;
   }
 
   return (
@@ -80,7 +80,7 @@ export const OrganizerProfile = () => {
           <div>
             <p className="text-sm font-semibold text-neutral-900">Role mode</p>
             <p className="text-xs text-neutral-600 mt-1">
-              Switch to visitor mode to browse and book trips as a participant.
+              Switch to participant mode to browse and book trips.
             </p>
           </div>
           <button
@@ -89,7 +89,7 @@ export const OrganizerProfile = () => {
             onClick={() => void switchToVisitorMode()}
             className="ios-btn bg-emerald-600 text-white min-h-[40px] px-3"
           >
-            {switchingRole ? 'Switching...' : 'Switch to visitor'}
+            {switchingRole ? 'Switching...' : 'Switch to participant'}
           </button>
         </div>
         {switchMessage && <p className="text-xs text-red-600 mt-2">{switchMessage}</p>}

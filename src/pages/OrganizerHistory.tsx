@@ -27,7 +27,7 @@ export const OrganizerHistory = () => {
       setLoading(false);
       return;
     }
-    api.getEventHistory(tenantId)
+    api.getActivityHistory(tenantId)
       .then((res) => setEvents(res.data))
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load history'))
       .finally(() => setLoading(false));
@@ -53,7 +53,7 @@ export const OrganizerHistory = () => {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left">Event</th>
+              <th className="px-4 py-3 text-left">Activity</th>
               <th className="px-4 py-3 text-left">Location</th>
               <th className="px-4 py-3 text-left">Date</th>
               <th className="px-4 py-3 text-left">Status</th>

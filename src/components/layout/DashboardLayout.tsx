@@ -26,8 +26,8 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
       ? '/admin/overview'
       : location.pathname.startsWith('/merchant')
         ? '/merchant/dashboard'
-        : location.pathname.startsWith('/organizer')
-          ? '/organizer/overview'
+        : location.pathname.startsWith('/host') || location.pathname.startsWith('/organizer')
+          ? '/host/overview'
           : '/';
 
   const breadcrumbLabel =
@@ -35,8 +35,8 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
       ? 'Admin'
       : location.pathname.startsWith('/merchant')
         ? 'Merchant'
-        : location.pathname.startsWith('/organizer')
-          ? 'Organizer'
+        : location.pathname.startsWith('/host') || location.pathname.startsWith('/organizer')
+          ? 'Host'
           : 'Home';
 
   return (

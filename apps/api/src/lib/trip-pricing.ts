@@ -27,7 +27,7 @@ export const derivePriceAed = (packages: TripPricePackage[], fallback = 0): numb
 export const eventHasPaidPricing = (priceAed: number, packages: TripPricePackage[]): boolean =>
   priceAed > 0 || packages.some((p) => p.amount > 0);
 
-export const normalizeEventPricing = (input: {
+export const normalizeActivityPricing = (input: {
   price?: number;
   pricePackages?: TripPricePackage[];
   pricingMode?: 'free' | 'shared' | 'paid';

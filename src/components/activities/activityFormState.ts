@@ -176,7 +176,7 @@ export const activityToForm = (activity: ActivityDTO): ActivityFormState => {
     carPoolSeats: activity.carPoolSeats ?? 0,
     carPoolDetails: activity.carPoolDetails ?? '',
     images: activity.images?.slice(0, 1) ?? [],
-    hostUserId: activity.guideId ?? activity.hostUserId ?? '',
+    hostUserId: activity.hostId ?? activity.hostUserId ?? '',
   };
 };
 
@@ -258,7 +258,7 @@ export const buildHostActivityPayload = (form: ActivityFormState): Record<string
       form.carPoolEnabled && form.carPoolDetails.trim() ? form.carPoolDetails.trim() : undefined,
     requirements: buildRequirementsFromForm(form),
     images: form.images.slice(0, 1),
-    guideId: form.hostUserId || undefined,
+    hostId: form.hostUserId || undefined,
     pricingMode: form.pricingMode,
   };
 };

@@ -37,7 +37,7 @@ beforeAll(async () => {
       email,
       password: 'TestPass1',
       displayName: 'Premium Test',
-      accountType: 'visitor'
+      accountType: 'participant'
     });
 
   const verifyRes = await request(app)

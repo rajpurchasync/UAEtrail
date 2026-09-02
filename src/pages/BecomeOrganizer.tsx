@@ -136,7 +136,7 @@ export const BecomeOrganizer = () => {
 
   useEffect(() => {
     if (isHost) {
-      navigate('/organizer/overview', { replace: true });
+      navigate('/host/overview', { replace: true });
       return;
     }
     if (!user) {
@@ -144,7 +144,7 @@ export const BecomeOrganizer = () => {
       return;
     }
     api
-      .getMyOrganizerApplication()
+      .getMyHostApplication()
       .then((res) => {
         if (res.data) {
           const status = res.data.status.toLowerCase();
@@ -172,7 +172,7 @@ export const BecomeOrganizer = () => {
     try {
       const [profileRes, appRes] = await Promise.all([
         api.getMeProfile(),
-        api.getMyOrganizerApplication(),
+        api.getMyHostApplication(),
       ]);
       const profile = profileRes.data;
       const appMeta = appRes.data?.metadata;
@@ -247,7 +247,7 @@ export const BecomeOrganizer = () => {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await api.submitOrganizerApplication({
+      await api.submitHostApplication({
         requestedName,
         requestedType: form.hostType === 'business' ? 'COMPANY' : 'GUIDE_OWNED',
         hostDisplayName: form.hostDisplayName.trim(),
@@ -425,7 +425,7 @@ export const BecomeOrganizer = () => {
                 <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
                 <h2 className="text-lg font-bold text-neutral-900 mb-2">You&apos;re approved — let&apos;s go!</h2>
                 <Link
-                  to="/organizer/overview"
+                  to="/host/overview"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold"
                 >
                   Post your next event <ArrowRight className="w-4 h-4" />

@@ -79,7 +79,7 @@ export const SignUp = () => {
         email: formData.email,
         password: formData.password,
         displayName: formData.displayName,
-        accountType: 'visitor',
+        accountType: 'participant',
         referralCode,
         groupInviteToken,
       });

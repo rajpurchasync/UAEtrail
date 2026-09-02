@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import type { Collection } from 'mongodb';
-import type { Event, Location } from '../domain/types.js';
+import type { Activity, Location } from '../domain/types.js';
 import { getMongoClient } from './mongo.js';
 
 type MongoFavorite = {
@@ -13,7 +13,7 @@ type MongoFavorite = {
 };
 
 type MongoLocationDoc = Omit<Location, 'id'> & { _id: string };
-type MongoEventDoc = Omit<Event, 'id'> & { _id: string; locationId: string };
+type MongoActivityDoc = Omit<Activity, 'id'> & { _id: string; locationId: string };
 type MongoProductDoc = {
   _id: string;
   merchantId: string;
@@ -61,8 +61,8 @@ const favoritesCollection = (): Collection<MongoFavorite> =>
 const locationsCollection = (): Collection<MongoLocationDoc> =>
   getMongoClient()!.db().collection<MongoLocationDoc>('locations');
 
-const activitiesCollection = (): Collection<MongoEventDoc> =>
-  getMongoClient()!.db().collection<MongoEventDoc>('activities');
+const activitiesCollection = (): Collection<MongoActivityDoc> =>
+  getMongoClient()!.db().collection<MongoActivityDoc>('activities');
 
 const productsCollection = (): Collection<MongoProductDoc> =>
   getMongoClient()!.db().collection<MongoProductDoc>('products');

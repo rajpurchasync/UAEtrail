@@ -1,4 +1,4 @@
-import { ActivityType, LocationUnlockSource, NotificationType, OrganizerApplicationStatus, RequestStatus, RewardAction, UserRole } from '../domain/enums.js';
+import { ActivityType, LocationUnlockSource, NotificationType, HostApplicationStatus, RequestStatus, RewardAction, UserRole } from '../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { registerActivityRoute } from '../lib/activity-routes.js';
@@ -48,38 +48,38 @@ import { buildUserDataExport } from '../services/data-export.js';
 import {
   createLocationRecord,
   findActiveLocationById,
-  findEventForRequestViewById,
-  findEventTimingById,
+  findActivityForRequestViewById,
+  findActivityTimingById,
   findTenantByOwnerId,
   findPublicTenantProfileBySlug,
-  findPublishedEventWithPreviewsById,
+  findPublishedActivityWithPreviewsById,
   incrementActiveLocationViewCount,
   listActiveTenantMembershipsByUser,
-  listEventsForRequestViews,
-  listEventsForTripViews,
-  listFeaturedPublishedEvents,
+  listActivitiesForRequestViews,
+  listActivitiesForTripViews,
+  listFeaturedPublishedActivities,
   listPopularActiveLocations,
-  listPublishedEventsWithPreviews,
-  listPublishedUpcomingEventsByLocation,
+  listPublishedActivitiesWithPreviews,
+  listPublishedUpcomingActivitiesByLocation,
   listSubmittedLocationsByUser
 } from '../lib/activities-store.js';
 import {
-  createOrganizerApplicationDetailed,
-  findLatestOrganizerApplicationByApplicant,
-  findLatestOrganizerApplicationWithApplicant,
-  findPendingOrganizerApplicationByApplicant,
-  updateOrganizerApplicationMetadata
-} from '../lib/organizer-applications-store.js';
+  createHostApplicationDetailed,
+  findLatestHostApplicationByApplicant,
+  findLatestHostApplicationWithApplicant,
+  findPendingHostApplicationByApplicant,
+  updateHostApplicationMetadata
+} from '../lib/host-applications-store.js';
 import {
-  cancelUserEventRequestAndPromoteWaitlist,
-  countUserEventParticipants,
-  countUserEventRequests,
-  findEventParticipantByEventAndUser,
-  findEventRequestByEventAndUser,
-  findEventRequestByIdForUser,
-  listUserEventParticipantsPaginated,
-  listUserEventRequestsPaginated,
-  updateEventRequestNote
+  cancelUserActivityRequestAndPromoteWaitlist,
+  countUserActivityParticipants,
+  countUserActivityRequests,
+  findActivityParticipantByEventAndUser,
+  findActivityRequestByEventAndUser,
+  findActivityRequestByIdForUser,
+  listUserActivityParticipantsPaginated,
+  listUserActivityRequestsPaginated,
+  updateActivityRequestNote
 } from '../lib/activity-engagement-store.js';
 import { removePushSubscription, upsertPushSubscription } from '../lib/push-subscriptions.js';
 import { createNotificationRecord, listUserNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../lib/notifications-store.js';
@@ -144,7 +144,7 @@ const confirmEmailChangeSchema = z.object({
 });
 
 const roleSwitchSchema = z.object({
-  target: z.enum(['visitor', 'original'])
+  target: z.enum(['participant', 'original'])
 });
 
 const createGroupSchema = z.object({
@@ -249,7 +249,7 @@ userRouter.get('/locations/popular', async (req, res, next) => {
 const listLocationActivitiesHandler: import('express').RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const events = await listPublishedUpcomingEventsByLocation(id, 20);
+    const events = await listPublishedUpcomingActivitiesByLocation(id, 20);
     res.json({ data: events.map((event) => buildActivityDto(event)) });
   } catch (error) {
     next(error);
@@ -467,7 +467,7 @@ const parseOrganizerDetails = (metadata: unknown) => {
 };
 
 const loadOrganizerDetails = async (userId: string) => {
-  const application = await findLatestOrganizerApplicationByApplicant(userId);
+  const application = await findLatestHostApplicationByApplicant(userId);
   return parseOrganizerDetails(application?.metadata);
 };
 
@@ -499,7 +499,7 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
           displayName: m.user.profile?.displayName ?? m.user.email,
           avatarUrl: m.user.profile?.avatarUrl ?? null
         })),
-        events: tenant.events.map((event) => buildActivityDto(event))
+        activities: tenant.activities.map((activity) => buildActivityDto(activity))
       }
     });
   } catch (error) {
@@ -510,7 +510,7 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
 registerActivityRoute(userRouter, 'get', '/featured', async (req, res, next) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 6, 20);
-    const events = await listFeaturedPublishedEvents(limit);
+    const events = await listFeaturedPublishedActivities(limit);
     res.json({
       data: events.map((event) => buildActivityDto(event))
     });
@@ -524,7 +524,7 @@ registerActivityRoute(userRouter, 'get', '', async (req, res, next) => {
     const pg = paginationSchema.parse(req.query);
     const whenRaw = typeof req.query.when === 'string' ? req.query.when : 'upcoming';
     const when = whenRaw === 'past' || whenRaw === 'all' ? whenRaw : 'upcoming';
-    const { items: events, total } = await listPublishedEventsWithPreviews({
+    const { items: events, total } = await listPublishedActivitiesWithPreviews({
       skip: (pg.page - 1) * pg.pageSize,
       take: pg.pageSize,
       when
@@ -543,10 +543,10 @@ registerActivityRoute(userRouter, 'get', '', async (req, res, next) => {
 registerActivityRoute(userRouter, 'get', '/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const event = await findPublishedEventWithPreviewsById(id);
+    const event = await findPublishedActivityWithPreviewsById(id);
 
     if (!event) {
-      throw new ApiError(404, 'event_not_found', 'Event not found.');
+      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
 
     let myParticipation = null;
@@ -556,7 +556,7 @@ registerActivityRoute(userRouter, 'get', '/:id', optionalAuth, validate({ params
       if (mine) {
         myParticipation = buildParticipationDto(event, mine);
       }
-      const requestRow = await findEventRequestByEventAndUser(id, req.auth.userId);
+      const requestRow = await findActivityRequestByEventAndUser(id, req.auth.userId);
       if (requestRow) {
         const status = requestRow.status.toLowerCase();
         myRequest = {
@@ -570,7 +570,7 @@ registerActivityRoute(userRouter, 'get', '/:id', optionalAuth, validate({ params
     res.json({
       data: {
         ...buildActivityDto(event),
-        organizerId: event.guideId ?? event.tenant.ownerId,
+        organizerId: event.hostId ?? event.tenant.ownerId,
         participants: toParticipantPreviews(event.participants),
         location: toLocationDto(event.location),
         myParticipation,
@@ -635,7 +635,7 @@ registerActivityRoute(
     try {
       const { requestId } = req.params as z.infer<typeof requestIdParamSchema>;
       const { reason, message } = req.body as z.infer<typeof withdrawReasonSchema>;
-      const request = await findEventRequestByIdForUser(requestId, req.auth!.userId);
+      const request = await findActivityRequestByIdForUser(requestId, req.auth!.userId);
       if (!request) {
         throw new ApiError(404, 'request_not_found', 'Request not found.');
       }
@@ -643,7 +643,7 @@ registerActivityRoute(
         throw new ApiError(400, 'request_not_cancellable', 'This request cannot be cancelled.');
       }
 
-      await cancelUserEventRequestAndPromoteWaitlist({
+      await cancelUserActivityRequestAndPromoteWaitlist({
         requestId: request.id,
         activityId: request.activityId,
         cancelReason: reason,
@@ -668,14 +668,14 @@ registerActivityRoute(
     try {
       const { requestId } = req.params as z.infer<typeof requestIdParamSchema>;
       const { note } = req.body as z.infer<typeof updateRequestNoteSchema>;
-      const request = await findEventRequestByIdForUser(requestId, req.auth!.userId);
+      const request = await findActivityRequestByIdForUser(requestId, req.auth!.userId);
       if (!request) {
         throw new ApiError(404, 'request_not_found', 'Request not found.');
       }
       if (request.status !== RequestStatus.PENDING) {
         throw new ApiError(400, 'request_not_editable', 'Only pending requests can be updated.');
       }
-      const updated = await updateEventRequestNote(request.id, note);
+      const updated = await updateActivityRequestNote(request.id, note);
       res.json({ data: { id: updated.id, note: updated.note } });
     } catch (error) {
       next(error);
@@ -770,7 +770,7 @@ userRouter.use(requireAuth, requireVerifiedEmail);
 registerActivityRoute(userRouter, 'post', '/:id/checkin', validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const participant = await findEventParticipantByEventAndUser(id, req.auth!.userId);
+    const participant = await findActivityParticipantByEventAndUser(id, req.auth!.userId);
     if (!participant) {
       throw new ApiError(404, 'not_a_participant', 'You are not confirmed for this trip.');
     }
@@ -782,9 +782,9 @@ registerActivityRoute(userRouter, 'post', '/:id/checkin', validate({ params: eve
       source: 'self'
     });
 
-    const eventTiming = await findEventTimingById(id);
+    const eventTiming = await findActivityTimingById(id);
     if (!eventTiming) {
-      throw new ApiError(404, 'event_not_found', 'Event not found.');
+      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
 
     res.json({
@@ -816,7 +816,7 @@ const mapMeRequest = (request: {
     id: string;
     title: string | null;
     startAt: Date;
-    guideId: string | null;
+    hostId: string | null;
     location: { name: string };
     tenant: { name: string; slug: string; ownerId: string };
     guide: { profile: { displayName: string | null } | null } | null;
@@ -839,7 +839,7 @@ const mapMeRequest = (request: {
     organizerName: request.activity.guide?.profile?.displayName ?? 'Host',
     hostName: request.activity.guide?.profile?.displayName ?? 'Host',
     tenantName: request.activity.tenant.name,
-    organizerUserId: request.activity.guideId ?? request.activity.tenant.ownerId,
+    organizerUserId: request.activity.hostId ?? request.activity.tenant.ownerId,
     tenantSlug: request.activity.tenant.slug
   }
 });
@@ -847,12 +847,12 @@ const mapMeRequest = (request: {
 userRouter.get('/me/requests/:requestId', validate({ params: meRequestIdParamSchema }), async (req, res, next) => {
   try {
     const { requestId } = req.params as z.infer<typeof meRequestIdParamSchema>;
-    const request = await findEventRequestByIdForUser(requestId, req.auth!.userId);
+    const request = await findActivityRequestByIdForUser(requestId, req.auth!.userId);
     if (!request) {
       throw new ApiError(404, 'request_not_found', 'Request not found.');
     }
 
-    const activity = await findEventForRequestViewById(request.activityId);
+    const activity = await findActivityForRequestViewById(request.activityId);
     if (!activity) {
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
@@ -872,16 +872,16 @@ userRouter.get('/me/requests', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
     const [requests, total] = await Promise.all([
-      listUserEventRequestsPaginated({
+      listUserActivityRequestsPaginated({
         userId: req.auth!.userId,
         skip: (pg.page - 1) * pg.pageSize,
         take: pg.pageSize
       }),
-      countUserEventRequests(req.auth!.userId)
+      countUserActivityRequests(req.auth!.userId)
     ]);
 
     const activityIds = [...new Set(requests.map((request) => request.activityId))];
-    const activities = activityIds.length > 0 ? await listEventsForRequestViews(activityIds) : [];
+    const activities = activityIds.length > 0 ? await listActivitiesForRequestViews(activityIds) : [];
     const activityMap = new Map(activities.map((activity) => [activity.id, activity]));
 
     const requestViews = requests.reduce<Array<ReturnType<typeof mapMeRequest>>>((acc, request) => {
@@ -905,16 +905,16 @@ userRouter.get('/me/trips', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
     const [participantEntries, total] = await Promise.all([
-      listUserEventParticipantsPaginated({
+      listUserActivityParticipantsPaginated({
         userId: req.auth!.userId,
         skip: (pg.page - 1) * pg.pageSize,
         take: pg.pageSize
       }),
-      countUserEventParticipants(req.auth!.userId)
+      countUserActivityParticipants(req.auth!.userId)
     ]);
 
     const eventIds = [...new Set(participantEntries.map((entry) => entry.activityId))];
-    const events = eventIds.length > 0 ? await listEventsForTripViews(eventIds) : [];
+    const events = eventIds.length > 0 ? await listActivitiesForTripViews(eventIds) : [];
     const eventMap = new Map(events.map((event) => [event.id, event]));
 
     const tripViews = participantEntries.reduce<Array<ReturnType<typeof buildActivityDto> & { participation: ReturnType<typeof buildParticipationDto> }>>((acc, entry) => {
@@ -1077,21 +1077,21 @@ userRouter.post('/me/role/switch', validate({ body: roleSwitchSchema }), async (
     let nextRole = user.role;
     let switchedFromRole = user.profile?.switchedFromRole ?? null;
 
-    if (target === 'visitor') {
-      if (user.role !== UserRole.VISITOR) {
+    if (target === 'participant') {
+      if (user.role !== UserRole.PARTICIPANT) {
         if (!SWITCHABLE_PRIVILEGED_ROLES.includes(user.role)) {
-          throw new ApiError(403, 'forbidden', 'Your role cannot switch to visitor mode.');
+          throw new ApiError(403, 'forbidden', 'Your role cannot switch to participant mode.');
         }
         switchedFromRole = user.role;
-        nextRole = UserRole.VISITOR;
+        nextRole = UserRole.PARTICIPANT;
         await updateAuthUserCore({
           userId: user._id,
-          role: UserRole.VISITOR,
+          role: UserRole.PARTICIPANT,
           profile: { switchedFromRole }
         });
       }
     } else {
-      if (user.role !== UserRole.VISITOR) {
+      if (user.role !== UserRole.PARTICIPANT) {
         throw new ApiError(400, 'invalid_role_switch', 'You are already using your original role.');
       }
       if (!switchedFromRole || !SWITCHABLE_PRIVILEGED_ROLES.includes(switchedFromRole)) {
@@ -1626,7 +1626,7 @@ const organizerDetailsSchema = z.object({
 });
 
 userRouter.patch(
-  '/me/organizer-details',
+  '/me/host-details',
   requireAuth,
   requireVerifiedEmail,
   validate({ body: organizerDetailsSchema }),
@@ -1634,23 +1634,23 @@ userRouter.patch(
     try {
       const userId = req.auth!.userId;
       const body = req.body as z.infer<typeof organizerDetailsSchema>;
-      let application = await findLatestOrganizerApplicationByApplicant(userId);
+      let application = await findLatestHostApplicationByApplicant(userId);
 
       if (application) {
         const current = (application.metadata as Record<string, unknown> | null) ?? {};
-        application = await updateOrganizerApplicationMetadata(application.id, { ...current, ...body });
+        application = await updateHostApplicationMetadata(application.id, { ...current, ...body });
       } else {
         const tenant = await findTenantByOwnerId(userId);
         if (!tenant) {
           throw new ApiError(403, 'not_organizer', 'Only organizers can update public profile details.');
         }
-        application = await createOrganizerApplicationDetailed({
+        application = await createHostApplicationDetailed({
           applicantId: userId,
           requestedName: tenant.name,
           requestedSlug: tenant.slug,
           requestedType: tenant.type,
           requestedTenantId: tenant.id,
-          status: OrganizerApplicationStatus.APPROVED,
+          status: HostApplicationStatus.APPROVED,
           metadata: body
         });
       }
@@ -1662,9 +1662,9 @@ userRouter.patch(
   }
 );
 
-userRouter.get('/me/organizer-application', requireAuth, async (req, res, next) => {
+userRouter.get('/me/host-application', requireAuth, async (req, res, next) => {
   try {
-    const application = await findLatestOrganizerApplicationWithApplicant(req.auth!.userId);
+    const application = await findLatestHostApplicationWithApplicant(req.auth!.userId);
 
     if (!application) {
       return res.json({ data: null });
@@ -1690,7 +1690,7 @@ userRouter.get('/me/organizer-application', requireAuth, async (req, res, next) 
 });
 
 userRouter.post(
-  '/me/organizer-application',
+  '/me/host-application',
   requireAuth,
   validate({ body: applicationSchema }),
   async (req, res, next) => {
@@ -1698,7 +1698,7 @@ userRouter.post(
       const userId = req.auth!.userId;
 
       // Check for existing pending application
-      const existing = await findPendingOrganizerApplicationByApplicant(userId);
+      const existing = await findPendingHostApplicationByApplicant(userId);
       if (existing) {
         throw new ApiError(409, 'application_exists', 'You already have a pending organizer application.');
       }
@@ -1713,7 +1713,7 @@ userRouter.post(
         ...(body.profilePhoto ? { avatarUrl: body.profilePhoto } : {})
       });
 
-      const application = await createOrganizerApplicationDetailed({
+      const application = await createHostApplicationDetailed({
         applicantId: userId,
         requestedName: body.requestedName,
         requestedSlug: slugify(body.requestedName),
@@ -1738,9 +1738,9 @@ userRouter.post(
         title: 'New host application',
         body: `${body.hostDisplayName} applied to host as ${body.requestedType === 'COMPANY' ? 'a business' : 'an individual'}.`,
         meta: {
-          kind: 'organizer_application_submitted',
+          kind: 'host_application_submitted',
           applicationId: application.id,
-          path: '/admin/organizers'
+          path: '/admin/hosts'
         }
       });
 

@@ -1,24 +1,25 @@
 import type { Collection } from 'mongodb';
 import {
+  HostApplicationStatus,
   MembershipRole,
-  OrganizerApplicationStatus,
   TenantStatus,
   UserRole,
   type TenantType
 } from '../domain/enums.js';
 import { findAuthUserById, findAuthUsersByIds, updateAuthUserCore } from './auth-users.js';
+import { COLLECTIONS } from './collections.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
 import { writeTenantToMongo, ensureUniqueTenantSlug } from './tenant-store.js';
 
-export type OrganizerApplicationRecord = {
+export type HostApplicationRecord = {
   id: string;
   applicantId: string;
   requestedTenantId: string | null;
   requestedName: string;
   requestedSlug: string;
   requestedType: TenantType;
-  status: OrganizerApplicationStatus;
+  status: HostApplicationStatus;
   reviewerId: string | null;
   reviewerNote: string | null;
   reviewedAt: Date | null;
@@ -27,20 +28,20 @@ export type OrganizerApplicationRecord = {
   updatedAt: Date;
 };
 
-export type OrganizerApplicationWithApplicant = OrganizerApplicationRecord & {
+export type HostApplicationWithApplicant = HostApplicationRecord & {
   applicant: {
     email: string;
     profile: { displayName: string | null };
   };
 };
 
-type MongoOrganizerApplication = {
+type MongoHostApplication = {
   _id: string;
   applicantId: string;
   requestedName: string;
   requestedSlug: string;
   requestedType: TenantType;
-  status: OrganizerApplicationStatus;
+  status: HostApplicationStatus;
   reviewerId: string | null;
   reviewerNote: string | null;
   requestedTenantId: string | null;
@@ -50,10 +51,10 @@ type MongoOrganizerApplication = {
   reviewedAt: Date | null;
 };
 
-const organizerApplicationsCollection = (): Collection<MongoOrganizerApplication> =>
-  getMongoClient()!.db().collection<MongoOrganizerApplication>('organizer_applications');
+const hostApplicationsCollection = (): Collection<MongoHostApplication> =>
+  getMongoClient()!.db().collection<MongoHostApplication>(COLLECTIONS.HOST_APPLICATIONS);
 
-const mapMongoApplication = (doc: MongoOrganizerApplication): OrganizerApplicationRecord => ({
+const mapMongoApplication = (doc: MongoHostApplication): HostApplicationRecord => ({
   id: doc._id,
   applicantId: doc.applicantId,
   requestedTenantId: doc.requestedTenantId,
@@ -69,7 +70,7 @@ const mapMongoApplication = (doc: MongoOrganizerApplication): OrganizerApplicati
   updatedAt: doc.updatedAt
 });
 
-const toMongoDoc = (row: OrganizerApplicationRecord): MongoOrganizerApplication => ({
+const toMongoDoc = (row: HostApplicationRecord): MongoHostApplication => ({
   _id: row.id,
   applicantId: row.applicantId,
   requestedName: row.requestedName,
@@ -85,37 +86,37 @@ const toMongoDoc = (row: OrganizerApplicationRecord): MongoOrganizerApplication 
   reviewedAt: row.reviewedAt
 });
 
-const writeOrganizerApplicationToMongo = async (row: OrganizerApplicationRecord): Promise<void> => {
-  await organizerApplicationsCollection().updateOne(
+const writeHostApplicationToMongo = async (row: HostApplicationRecord): Promise<void> => {
+  await hostApplicationsCollection().updateOne(
     { _id: row.id },
     { $set: toMongoDoc(row) },
     { upsert: true }
   );
 };
 
-const patchOrganizerApplicationInMongo = async (
+const patchHostApplicationInMongo = async (
   id: string,
-  patch: Partial<Omit<MongoOrganizerApplication, '_id'>>
+  patch: Partial<Omit<MongoHostApplication, '_id'>>
 ): Promise<void> => {
-  await organizerApplicationsCollection().updateOne(
+  await hostApplicationsCollection().updateOne(
     { _id: id },
     { $set: { ...patch, updatedAt: new Date() } }
   );
 };
 
-const buildOrganizerApplicationRecord = (input: {
+const buildHostApplicationRecord = (input: {
   id: string;
   applicantId: string;
   requestedName: string;
   requestedSlug: string;
   requestedType: TenantType;
-  status?: OrganizerApplicationStatus;
+  status?: HostApplicationStatus;
   requestedTenantId?: string | null;
   metadata?: unknown;
   reviewerId?: string | null;
   reviewerNote?: string | null;
   reviewedAt?: Date | null;
-}): OrganizerApplicationRecord => {
+}): HostApplicationRecord => {
   const now = new Date();
   return {
     id: input.id,
@@ -123,7 +124,7 @@ const buildOrganizerApplicationRecord = (input: {
     requestedName: input.requestedName,
     requestedSlug: input.requestedSlug,
     requestedType: input.requestedType,
-    status: input.status ?? OrganizerApplicationStatus.PENDING,
+    status: input.status ?? HostApplicationStatus.PENDING,
     requestedTenantId: input.requestedTenantId ?? null,
     metadata: input.metadata ?? null,
     reviewerId: input.reviewerId ?? null,
@@ -135,8 +136,8 @@ const buildOrganizerApplicationRecord = (input: {
 };
 
 const attachApplicant = async (
-  application: OrganizerApplicationRecord
-): Promise<OrganizerApplicationWithApplicant | null> => {
+  application: HostApplicationRecord
+): Promise<HostApplicationWithApplicant | null> => {
   const applicant = await findAuthUserById(application.applicantId);
   if (!applicant) return null;
   return {
@@ -148,15 +149,15 @@ const attachApplicant = async (
   };
 };
 
-const findOrganizerApplicationInMongo = async (id: string): Promise<OrganizerApplicationRecord | null> => {
-  const doc = await organizerApplicationsCollection().findOne({ _id: id });
+const findHostApplicationInMongo = async (id: string): Promise<HostApplicationRecord | null> => {
+  const doc = await hostApplicationsCollection().findOne({ _id: id });
   return doc ? mapMongoApplication(doc) : null;
 };
 
-const findLatestOrganizerApplicationInMongo = async (
+const findLatestHostApplicationInMongo = async (
   applicantId: string
-): Promise<OrganizerApplicationRecord | null> => {
-  const doc = await organizerApplicationsCollection()
+): Promise<HostApplicationRecord | null> => {
+  const doc = await hostApplicationsCollection()
     .find({ applicantId })
     .sort({ createdAt: -1 })
     .limit(1)
@@ -164,33 +165,33 @@ const findLatestOrganizerApplicationInMongo = async (
   return doc ? mapMongoApplication(doc) : null;
 };
 
-const findPendingOrganizerApplicationInMongo = async (
+const findPendingHostApplicationInMongo = async (
   applicantId: string
-): Promise<OrganizerApplicationRecord | null> => {
-  const doc = await organizerApplicationsCollection().findOne({
+): Promise<HostApplicationRecord | null> => {
+  const doc = await hostApplicationsCollection().findOne({
     applicantId,
-    status: OrganizerApplicationStatus.PENDING
+    status: HostApplicationStatus.PENDING
   });
   return doc ? mapMongoApplication(doc) : null;
 };
 
-export const createOrganizerApplicationRecord = async (input: {
+export const createHostApplicationRecord = async (input: {
   applicantId: string;
   requestedName: string;
   requestedSlug: string;
   requestedType: TenantType;
-}): Promise<OrganizerApplicationRecord> => {
+}): Promise<HostApplicationRecord> => {
   const applicationId = newEntityId();
-  const row = buildOrganizerApplicationRecord({ ...input, id: applicationId });
-  await writeOrganizerApplicationToMongo(row);
+  const row = buildHostApplicationRecord({ ...input, id: applicationId });
+  await writeHostApplicationToMongo(row);
   return row;
 };
 
-export const listOrganizerApplicationsDetailed = async (input: {
+export const listHostApplicationsDetailed = async (input: {
   skip: number;
   take: number;
-}): Promise<OrganizerApplicationWithApplicant[]> => {
-  const docs = await organizerApplicationsCollection()
+}): Promise<HostApplicationWithApplicant[]> => {
+  const docs = await hostApplicationsCollection()
     .find({})
     .sort({ createdAt: -1 })
     .skip(input.skip)
@@ -216,57 +217,57 @@ export const listOrganizerApplicationsDetailed = async (input: {
   });
 };
 
-export const countOrganizerApplications = async (): Promise<number> => {
-  return organizerApplicationsCollection().countDocuments({});
+export const countHostApplications = async (): Promise<number> => {
+  return hostApplicationsCollection().countDocuments({});
 };
 
-export const findOrganizerApplicationById = async (id: string): Promise<OrganizerApplicationRecord | null> => {
-  return findOrganizerApplicationInMongo(id);
+export const findHostApplicationById = async (id: string): Promise<HostApplicationRecord | null> => {
+  return findHostApplicationInMongo(id);
 };
 
-export const findLatestOrganizerApplicationByApplicant = async (
+export const findLatestHostApplicationByApplicant = async (
   applicantId: string
-): Promise<OrganizerApplicationRecord | null> => {
-  return findLatestOrganizerApplicationInMongo(applicantId);
+): Promise<HostApplicationRecord | null> => {
+  return findLatestHostApplicationInMongo(applicantId);
 };
 
-export const findLatestOrganizerApplicationWithApplicant = async (
+export const findLatestHostApplicationWithApplicant = async (
   applicantId: string
-): Promise<OrganizerApplicationWithApplicant | null> => {
-  const mongoRow = await findLatestOrganizerApplicationInMongo(applicantId);
+): Promise<HostApplicationWithApplicant | null> => {
+  const mongoRow = await findLatestHostApplicationInMongo(applicantId);
   if (!mongoRow) return null;
   return attachApplicant(mongoRow);
 };
 
-export const findPendingOrganizerApplicationByApplicant = async (
+export const findPendingHostApplicationByApplicant = async (
   applicantId: string
-): Promise<OrganizerApplicationRecord | null> => {
-  return findPendingOrganizerApplicationInMongo(applicantId);
+): Promise<HostApplicationRecord | null> => {
+  return findPendingHostApplicationInMongo(applicantId);
 };
 
-export const updateOrganizerApplicationMetadata = async (
+export const updateHostApplicationMetadata = async (
   id: string,
   metadata: unknown
-): Promise<OrganizerApplicationRecord> => {
-  await patchOrganizerApplicationInMongo(id, { metadata });
-  const mongoRow = await findOrganizerApplicationInMongo(id);
+): Promise<HostApplicationRecord> => {
+  await patchHostApplicationInMongo(id, { metadata });
+  const mongoRow = await findHostApplicationInMongo(id);
   if (!mongoRow) {
-    throw new Error('Failed to update organizer application metadata.');
+    throw new Error('Failed to update host application metadata.');
   }
   return { ...mongoRow, metadata };
 };
 
-export const createOrganizerApplicationDetailed = async (input: {
+export const createHostApplicationDetailed = async (input: {
   applicantId: string;
   requestedName: string;
   requestedSlug: string;
   requestedType: TenantType;
-  status?: OrganizerApplicationStatus;
+  status?: HostApplicationStatus;
   requestedTenantId?: string | null;
   metadata?: unknown;
-}): Promise<OrganizerApplicationRecord> => {
+}): Promise<HostApplicationRecord> => {
   const applicationId = newEntityId();
-  const row = buildOrganizerApplicationRecord({
+  const row = buildHostApplicationRecord({
     id: applicationId,
     applicantId: input.applicantId,
     requestedName: input.requestedName,
@@ -276,16 +277,16 @@ export const createOrganizerApplicationDetailed = async (input: {
     requestedTenantId: input.requestedTenantId,
     metadata: input.metadata
   });
-  await writeOrganizerApplicationToMongo(row);
+  await writeHostApplicationToMongo(row);
   return row;
 };
 
-export const approveOrganizerApplicationAndProvisionTenant = async (input: {
+export const approveHostApplicationAndProvisionTenant = async (input: {
   applicationId: string;
   reviewerId: string;
   reviewerNote?: string;
 }) => {
-  const application = await findOrganizerApplicationInMongo(input.applicationId);
+  const application = await findHostApplicationInMongo(input.applicationId);
   if (!application) {
     return null;
   }
@@ -338,9 +339,9 @@ export const approveOrganizerApplicationAndProvisionTenant = async (input: {
     }
   });
 
-  await patchOrganizerApplicationInMongo(applicationId, {
+  await patchHostApplicationInMongo(applicationId, {
     requestedTenantId: tenantId,
-    status: OrganizerApplicationStatus.APPROVED,
+    status: HostApplicationStatus.APPROVED,
     reviewerId: input.reviewerId,
     reviewerNote: input.reviewerNote ?? null,
     reviewedAt
@@ -349,57 +350,57 @@ export const approveOrganizerApplicationAndProvisionTenant = async (input: {
   return { applicationId, tenantId };
 };
 
-export const markOrganizerApplicationApproved = async (input: {
+export const markHostApplicationApproved = async (input: {
   id: string;
   tenantId: string;
   reviewerId: string;
   reviewerNote?: string;
-}): Promise<OrganizerApplicationRecord> => {
+}): Promise<HostApplicationRecord> => {
   const reviewedAt = new Date();
-  await patchOrganizerApplicationInMongo(input.id, {
+  await patchHostApplicationInMongo(input.id, {
     requestedTenantId: input.tenantId,
-    status: OrganizerApplicationStatus.APPROVED,
+    status: HostApplicationStatus.APPROVED,
     reviewerId: input.reviewerId,
     reviewerNote: input.reviewerNote ?? null,
     reviewedAt
   });
 
-  const mongoRow = await findOrganizerApplicationInMongo(input.id);
+  const mongoRow = await findHostApplicationInMongo(input.id);
   if (!mongoRow) {
-    throw new Error('Failed to approve organizer application.');
+    throw new Error('Failed to approve host application.');
   }
 
   return {
     ...mongoRow,
     requestedTenantId: input.tenantId,
-    status: OrganizerApplicationStatus.APPROVED,
+    status: HostApplicationStatus.APPROVED,
     reviewerId: input.reviewerId,
     reviewerNote: input.reviewerNote ?? null,
     reviewedAt
   };
 };
 
-export const markOrganizerApplicationRejected = async (input: {
+export const markHostApplicationRejected = async (input: {
   id: string;
   reviewerId: string;
   reviewerNote?: string;
-}): Promise<OrganizerApplicationRecord> => {
+}): Promise<HostApplicationRecord> => {
   const reviewedAt = new Date();
-  await patchOrganizerApplicationInMongo(input.id, {
-    status: OrganizerApplicationStatus.REJECTED,
+  await patchHostApplicationInMongo(input.id, {
+    status: HostApplicationStatus.REJECTED,
     reviewerId: input.reviewerId,
     reviewerNote: input.reviewerNote ?? null,
     reviewedAt
   });
 
-  const mongoRow = await findOrganizerApplicationInMongo(input.id);
+  const mongoRow = await findHostApplicationInMongo(input.id);
   if (!mongoRow) {
-    throw new Error('Failed to reject organizer application.');
+    throw new Error('Failed to reject host application.');
   }
 
   return {
     ...mongoRow,
-    status: OrganizerApplicationStatus.REJECTED,
+    status: HostApplicationStatus.REJECTED,
     reviewerId: input.reviewerId,
     reviewerNote: input.reviewerNote ?? null,
     reviewedAt

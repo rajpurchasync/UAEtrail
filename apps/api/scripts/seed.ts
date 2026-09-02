@@ -10,7 +10,7 @@ import {
   MembershipRole,
   MembershipTier,
   NotificationType,
-  OrganizerApplicationStatus,
+  HostApplicationStatus,
   PostCategory,
   ProductStatus,
   RequestStatus,
@@ -29,12 +29,12 @@ import {
   type AuthUserRecord
 } from '../src/lib/auth-users.js';
 import {
-  buildEventFromCreateInput,
+  buildActivityFromCreateInput,
   buildLocationFromCreateInput,
-  type EventCreateInput,
+  type ActivityCreateInput,
   type LocationCreateInput
 } from '../src/lib/entity-builders.js';
-import { findEventDocInMongo, findLocationInMongo, writeEventDocToMongo, writeLocationToMongo } from '../src/lib/entity-sync.js';
+import { findActivityDocInMongo, findLocationInMongo, writeActivityDocToMongo, writeLocationToMongo } from '../src/lib/entity-sync.js';
 import { getMongoClient, connectMongo, disconnectMongo } from '../src/lib/mongo.js';
 import { createRewardLedgerEntry, createUserBadge } from '../src/lib/reward-ledger-store.js';
 import { createSocialReview } from '../src/lib/social-data.js';
@@ -155,28 +155,28 @@ const upsertLocation = async (id: string, data: LocationCreateInput) => {
   return location;
 };
 
-const upsertEvent = async (id: string, data: EventCreateInput) => {
-  const doc = buildEventFromCreateInput(data, id);
-  const existing = await findEventDocInMongo(id);
+const upsertEvent = async (id: string, data: ActivityCreateInput) => {
+  const doc = buildActivityFromCreateInput(data, id);
+  const existing = await findActivityDocInMongo(id);
   if (existing) {
     doc.createdAt = existing.createdAt;
   }
-  await writeEventDocToMongo(doc);
+  await writeActivityDocToMongo(doc);
   return doc;
 };
 
-const upsertOrganizerApplication = async (input: {
+const upsertHostApplication = async (input: {
   id: string;
   applicantId: string;
   requestedTenantId?: string | null;
   requestedName: string;
   requestedSlug: string;
   requestedType: TenantRecord['type'];
-  status?: OrganizerApplicationStatus;
+  status?: HostApplicationStatus;
   metadata?: unknown;
 }) => {
   const now = new Date();
-  await db().collection('organizer_applications').updateOne(
+  await db().collection('host_applications').updateOne(
     { _id: input.id },
     {
       $set: {
@@ -185,7 +185,7 @@ const upsertOrganizerApplication = async (input: {
         requestedName: input.requestedName,
         requestedSlug: input.requestedSlug,
         requestedType: input.requestedType,
-        status: input.status ?? OrganizerApplicationStatus.PENDING,
+        status: input.status ?? HostApplicationStatus.PENDING,
         metadata: input.metadata ?? null,
         reviewerId: null,
         reviewerNote: null,
@@ -511,7 +511,7 @@ const hasExistingSeedData = async (): Promise<boolean> => {
   const existingAdmin = await findAuthUserByEmail(SEED_MARKER_EMAIL);
   if (existingAdmin) return true;
 
-  const existingEvent = await findEventDocInMongo(SEED_MARKER_EVENT_ID);
+  const existingEvent = await findActivityDocInMongo(SEED_MARKER_EVENT_ID);
   if (existingEvent) return true;
 
   const existingLocation = await findLocationInMongo(SEED_MARKER_LOCATION_ID);
@@ -583,7 +583,7 @@ async function main() {
   const visitor = await upsertUser({
     email: 'visitor@uaetrails.app',
     password: credentials.visitor,
-    role: UserRole.VISITOR,
+    role: UserRole.PARTICIPANT,
     displayName: 'Visitor User'
   });
 
@@ -597,7 +597,7 @@ async function main() {
   const pendingVisitor = await upsertUser({
     email: 'visitor2@uaetrails.app',
     password: credentials.pendingVisitor,
-    role: UserRole.VISITOR,
+    role: UserRole.PARTICIPANT,
     displayName: 'Pending Visitor'
   });
 
@@ -615,7 +615,7 @@ async function main() {
       passwordHash: suspendedHash,
       googleId: null,
       authProvider: AuthProvider.EMAIL,
-      role: UserRole.VISITOR,
+      role: UserRole.PARTICIPANT,
       status: UserStatus.SUSPENDED,
       emailVerifiedAt: new Date(),
       referralCode: 'SUSP01',
@@ -657,14 +657,14 @@ async function main() {
     bio: 'UAE-based adventure company specializing in guided hiking and camping across the Emirates. Safety-first trips with small groups and experienced local guides.'
   });
 
-  await upsertOrganizerApplication({
+  await upsertHostApplication({
     id: 'seed-app-uae-adventure',
     applicantId: organizer._id,
     requestedTenantId: tenant.id,
     requestedName: tenant.name,
     requestedSlug: tenant.slug,
     requestedType: TenantType.COMPANY,
-    status: OrganizerApplicationStatus.APPROVED,
+    status: HostApplicationStatus.APPROVED,
     metadata: {
       phone: '+971 50 123 4567',
       nationality: 'UAE',
@@ -697,13 +697,13 @@ async function main() {
     role: MembershipRole.TENANT_OWNER
   });
 
-  await upsertOrganizerApplication({
+  await upsertHostApplication({
     id: 'seed-app-pending',
     applicantId: pendingVisitor._id,
     requestedName: 'Hatta Hiking Club',
     requestedSlug: 'hatta-hiking-club',
     requestedType: TenantType.COMPANY,
-    status: OrganizerApplicationStatus.PENDING
+    status: HostApplicationStatus.PENDING
   });
 
   const seedLocations: Array<{ id: string; data: LocationCreateInput }> = [

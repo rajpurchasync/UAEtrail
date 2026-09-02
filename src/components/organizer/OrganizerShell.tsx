@@ -60,7 +60,7 @@ export const OrganizerShell = ({ title, children, cta, headerExtra }: OrganizerS
           <OrganizerRatingChip
             rating={avgRating}
             reviewCount={reviewCount}
-            onClick={() => navigate('/organizer/profile')}
+            onClick={() => navigate('/host/profile')}
           />
         ) : undefined
       }

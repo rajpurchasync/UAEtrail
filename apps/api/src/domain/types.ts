@@ -15,7 +15,7 @@ import type {
   MembershipTier,
   NotificationType,
   OrderStatus,
-  OrganizerApplicationStatus,
+  HostApplicationStatus,
   PostCategory,
   ProductStatus,
   RequestStatus,
@@ -92,14 +92,14 @@ export interface TenantMembership {
   createdAt: Date;
 }
 
-export interface OrganizerApplication {
+export interface HostApplication {
   id: string;
   applicantId: string;
   requestedTenantId: string | null;
   requestedName: string;
   requestedSlug: string;
   requestedType: TenantType;
-  status: OrganizerApplicationStatus;
+  status: HostApplicationStatus;
   reviewerId: string | null;
   reviewerNote: string | null;
   reviewedAt: Date | null;
@@ -157,12 +157,12 @@ export interface LocationUnlock {
   createdAt: Date;
 }
 
-export interface Event {
+export interface Activity {
   id: string;
   tenantId: string;
   locationId: string;
   createdById: string;
-  guideId: string | null;
+  hostId: string | null;
   title: string;
   description: string;
   startAt: Date;
@@ -197,7 +197,7 @@ export interface Event {
   updatedAt: Date;
 }
 
-export interface EventRequest {
+export interface ActivityRequest {
   id: string;
   activityId: string;
   userId: string;
@@ -214,7 +214,7 @@ export interface EventRequest {
   updatedAt: Date;
 }
 
-export interface EventParticipant {
+export interface ActivityParticipant {
   id: string;
   activityId: string;
   userId: string;

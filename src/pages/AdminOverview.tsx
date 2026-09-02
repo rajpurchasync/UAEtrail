@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, AdminMetrics, OrganizerApplication, AuditLogEntry } from '../api/services';
+import { api, AdminMetrics, HostApplication, AuditLogEntry } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { ActivityDTO } from '@uaetrail/shared-types';
 import { ADMIN_LINKS } from '../constants';
@@ -9,7 +9,7 @@ import { resolveActivityOwnerLabel, formatActivityType } from '../utils/activity
 export const AdminOverview = () => {
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [recentEvents, setRecentEvents] = useState<ActivityDTO[]>([]);
-  const [recentApps, setRecentApps] = useState<OrganizerApplication[]>([]);
+  const [recentApps, setRecentApps] = useState<HostApplication[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export const AdminOverview = () => {
   useEffect(() => { loadData(); }, []);
 
   const metricCards = [
-    { label: 'Pending Host Apps', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-800', icon: '📝', link: '/admin/organizers' },
+    { label: 'Pending Host Apps', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-800', icon: '📝', link: '/admin/hosts' },
     { label: 'Total Locations', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', icon: '📍' },
     { label: 'Total Users', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥', link: '/admin/users' },
     { label: 'Active Trips', value: metrics?.activeTrips ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾' }
@@ -123,11 +123,11 @@ export const AdminOverview = () => {
         <div className="bg-white border rounded-lg">
           <div className="px-4 py-3 border-b flex items-center justify-between">
             <h3 className="font-semibold text-gray-900">Pending Applications</h3>
-            <Link to="/admin/organizers" className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
+            <Link to="/admin/hosts" className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
           </div>
           <div className="divide-y">
             {recentApps.map((a) => (
-              <Link key={a.id} to="/admin/organizers" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+              <Link key={a.id} to="/admin/hosts" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
                 <div>
                   <p className="text-sm font-medium text-gray-900">{a.metadata?.hostDisplayName || a.applicantName}</p>
                   <p className="text-xs text-gray-500">{a.requestedName} ({a.requestedType})</p>

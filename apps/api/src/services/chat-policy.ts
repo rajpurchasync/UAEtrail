@@ -5,7 +5,7 @@ import {
   hasActiveJoinRequestLink,
   hasHostToParticipantLink,
   hasParticipantToHostLink,
-  hasSharedEventParticipation,
+  hasSharedActivityParticipation,
   hasTripInquiryAccess
 } from '../lib/activity-engagement-store.js';
 
@@ -43,7 +43,7 @@ export async function assertCanMessageUser(
   const existingThread = await hasThreadBetweenUsers(senderId, receiverId);
   if (existingThread) return;
 
-  const sharedTrip = await hasSharedEventParticipation(senderId, receiverId);
+  const sharedTrip = await hasSharedActivityParticipation(senderId, receiverId);
   if (sharedTrip) return;
 
   const joinRequestLink = await hasActiveJoinRequestLink({

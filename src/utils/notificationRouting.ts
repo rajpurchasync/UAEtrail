@@ -47,17 +47,17 @@ export const inferNotificationPath = (
   if (kind === 'location_approved') {
     return '/discovery';
   }
-  if (kind === 'organizer_application_submitted') {
-    return '/admin/organizers';
+  if (kind === 'host_application_submitted' || kind === 'organizer_application_submitted') {
+    return '/admin/hosts';
   }
-  if (kind === 'organizer_application_approved') {
-    return '/organizer/overview';
+  if (kind === 'host_application_approved' || kind === 'organizer_application_approved') {
+    return '/host/overview';
   }
-  if (kind === 'organizer_application_rejected') {
+  if (kind === 'host_application_rejected' || kind === 'organizer_application_rejected') {
     return '/become-host';
   }
   if (kind === 'host_suspended' || kind === 'host_reopened') {
-    return kind === 'host_suspended' ? '/become-host' : '/organizer/overview';
+    return kind === 'host_suspended' ? '/become-host' : '/host/overview';
   }
   if (kind === 'user_suspended' || kind === 'user_reactivated') {
     return '/profile';
@@ -67,8 +67,12 @@ export const inferNotificationPath = (
   }
 
   if (options?.preferAdminRoutes) {
-    if (kind === 'organizer_application_submitted' || toStringValue(meta?.applicationId)) {
-      return '/admin/organizers';
+    if (
+      kind === 'host_application_submitted' ||
+      kind === 'organizer_application_submitted' ||
+      toStringValue(meta?.applicationId)
+    ) {
+      return '/admin/hosts';
     }
     if (toStringValue(meta?.userId)) return '/admin/users';
     if (toStringValue(meta?.groupId)) return '/admin/groups';
@@ -77,24 +81,13 @@ export const inferNotificationPath = (
     if (toStringValue(meta?.productId)) return '/admin/shop';
 
     const adminText = `${notif.title} ${notif.body}`.toLowerCase();
-    if (adminText.includes('application') || adminText.includes('host')) return '/admin/organizers';
-    if (adminText.includes('location')) return '/admin/locations';
+    if (adminText.includes('application') || adminText.includes('host')) return '/admin/hosts';
+    if (adminText.includes('user')) return '/admin/users';
     if (adminText.includes('group')) return '/admin/groups';
-    if (adminText.includes('event') || adminText.includes('trip')) return '/admin/activities';
-    if (adminText.includes('user') || adminText.includes('account')) return '/admin/users';
-    if (adminText.includes('shop') || adminText.includes('product')) return '/admin/shop';
-
-    return '/admin/notifications';
+    if (adminText.includes('activity') || adminText.includes('trip')) return '/admin/activities';
+    if (adminText.includes('location')) return '/admin/locations';
+    if (adminText.includes('product') || adminText.includes('shop')) return '/admin/shop';
   }
 
-  if (notif.type === 'activity') return '/activities?tab=mine';
-  if (notif.type === 'request_update') return '/my-requests';
-
-  const text = `${notif.title} ${notif.body}`.toLowerCase();
-  if (text.includes('message')) return '/messages';
-  if (text.includes('reminder') || text.includes('trip')) return '/activities?tab=mine';
-  if (text.includes('buddy') || text.includes('group')) return '/groups';
-  if (text.includes('comment') || text.includes('like')) return '/community';
-
-  return '/notifications';
+  return '/profile';
 };

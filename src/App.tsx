@@ -10,6 +10,12 @@ import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authRetur
 import { ActivityFormSessionProvider } from './context/ActivityFormSessionContext';
 import { Home } from './pages/Home';
 
+const LegacyHostPathRedirect = () => {
+  const { pathname, search, hash } = useLocation();
+  const next = pathname.replace(/^\/organizer/, '/host');
+  return <Navigate to={`${next}${search}${hash}`} replace />;
+};
+
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 const Discovery = lazy(() => import('./pages/Discovery').then((m) => ({ default: m.Discovery })));
 const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
@@ -180,7 +186,7 @@ function App() {
           <Route
             path="/profile"
             element={
-              <ProtectedRoute roles={['visitor']}>
+              <ProtectedRoute roles={['participant']}>
                 <Profile />
               </ProtectedRoute>
             }
@@ -189,7 +195,7 @@ function App() {
           <Route
             path="/my-rewards"
             element={
-              <ProtectedRoute roles={['visitor']}>
+              <ProtectedRoute roles={['participant']}>
                 <MyRewards />
               </ProtectedRoute>
             }
@@ -198,7 +204,7 @@ function App() {
           <Route
             path="/my-requests"
             element={
-              <ProtectedRoute roles={['visitor']}>
+              <ProtectedRoute roles={['participant']}>
                 <UserRequests />
               </ProtectedRoute>
             }
@@ -206,7 +212,7 @@ function App() {
           <Route
             path="/my-requests/:requestId"
             element={
-              <ProtectedRoute roles={['visitor']}>
+              <ProtectedRoute roles={['participant']}>
                 <JoinRequestDetail />
               </ProtectedRoute>
             }
@@ -214,7 +220,7 @@ function App() {
           <Route
             path="/messages"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin']}>
                 <Messages />
               </ProtectedRoute>
             }
@@ -222,7 +228,7 @@ function App() {
           <Route
             path="/favorites"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <Favorites />
               </ProtectedRoute>
             }
@@ -230,7 +236,7 @@ function App() {
           <Route
             path="/notifications"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <Notifications />
               </ProtectedRoute>
             }
@@ -238,7 +244,7 @@ function App() {
           <Route
             path="/groups"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <Groups />
               </ProtectedRoute>
             }
@@ -265,7 +271,7 @@ function App() {
           <Route
             path="/security-privacy"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin']}>
                 <SecurityPrivacy />
               </ProtectedRoute>
             }
@@ -275,7 +281,7 @@ function App() {
           <Route
             path="/welcome"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin']}>
                 <WelcomeSignup />
               </ProtectedRoute>
             }
@@ -301,6 +307,10 @@ function App() {
           />
           <Route
             path="/admin/organizers"
+            element={<Navigate to="/admin/hosts" replace />}
+          />
+          <Route
+            path="/admin/hosts"
             element={
               <ProtectedRoute roles={['platform_admin']}>
                 <AdminOrganizers />
@@ -364,7 +374,7 @@ function App() {
             }
           />
           <Route
-            path="/organizer/overview"
+            path="/host/overview"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OrganizerOverview />
@@ -372,7 +382,7 @@ function App() {
             }
           />
           <Route
-            path="/organizer/activities"
+            path="/host/activities"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OrganizerActivities />
@@ -380,7 +390,7 @@ function App() {
             }
           />
           <Route
-            path="/organizer/activities/new"
+            path="/host/activities/new"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OrganizerActivities />
@@ -388,7 +398,7 @@ function App() {
             }
           />
           <Route
-            path="/organizer/requests"
+            path="/host/requests"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OrganizerRequests />
@@ -396,7 +406,7 @@ function App() {
             }
           />
           <Route
-            path="/organizer/team"
+            path="/host/team"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OrganizerTeam />
@@ -404,7 +414,7 @@ function App() {
             }
           />
           <Route
-            path="/organizer/profile"
+            path="/host/profile"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OrganizerProfile />
@@ -412,7 +422,7 @@ function App() {
             }
           />
           <Route
-            path="/organizer/security-privacy"
+            path="/host/security-privacy"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <SecurityPrivacy />
@@ -420,7 +430,7 @@ function App() {
             }
           />
           <Route
-            path="/organizer/locations"
+            path="/host/locations"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OrganizerLocations />
@@ -428,7 +438,7 @@ function App() {
             }
           />
           <Route
-            path="/organizer/history"
+            path="/host/history"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OrganizerHistory />
@@ -436,17 +446,18 @@ function App() {
             }
           />
           <Route
-            path="/organizer/messages"
+            path="/host/messages"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <Messages />
               </ProtectedRoute>
             }
           />
+          <Route path="/organizer/*" element={<LegacyHostPathRedirect />} />
           <Route
             path="/dashboard/overview"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <DashboardRedirect />
               </ProtectedRoute>
             }
@@ -454,7 +465,7 @@ function App() {
           <Route
             path="/dashboard/requests"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <DashboardRedirect />
               </ProtectedRoute>
             }
@@ -462,7 +473,7 @@ function App() {
           <Route
             path="/dashboard/trips"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <DashboardRedirect />
               </ProtectedRoute>
             }
@@ -470,7 +481,7 @@ function App() {
           <Route
             path="/dashboard/messages"
             element={
-              <ProtectedRoute roles={['visitor', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <DashboardRedirect />
               </ProtectedRoute>
             }

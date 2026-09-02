@@ -6,64 +6,64 @@ import { AccountSectionHeader } from './AccountSectionHeader';
 import { AccountStat, AccountStatGrid } from './AccountStatGrid';
 
 interface OrganizerHubSectionsProps {
-  eventsCount: number;
+  activitiesCount: number;
   pendingJoinRequests: number;
-  upcomingEventsCount: number;
-  pastEventsCount: number;
-  upcomingEvents: ActivityDTO[];
+  upcomingActivitiesCount: number;
+  pastActivitiesCount: number;
+  upcomingActivities: ActivityDTO[];
 }
 
 export const buildOrganizerStats = ({
-  eventsCount,
+  activitiesCount,
   pendingJoinRequests,
-  upcomingEventsCount,
-  pastEventsCount,
-}: Omit<OrganizerHubSectionsProps, 'upcomingEvents'>): AccountStat[] => [
-  { label: 'Activities', value: eventsCount, to: '/organizer/activities' },
+  upcomingActivitiesCount,
+  pastActivitiesCount,
+}: Omit<OrganizerHubSectionsProps, 'upcomingActivities'>): AccountStat[] => [
+  { label: 'Activities', value: activitiesCount, to: '/host/activities' },
   {
     label: 'Pending',
     value: pendingJoinRequests,
-    to: '/organizer/requests',
+    to: '/host/requests',
     highlight: pendingJoinRequests > 0,
     tone: 'amber',
   },
   {
     label: 'Upcoming',
-    value: upcomingEventsCount,
-    to: '/organizer/activities',
-    highlight: upcomingEventsCount > 0,
+    value: upcomingActivitiesCount,
+    to: '/host/activities',
+    highlight: upcomingActivitiesCount > 0,
   },
-  { label: 'History', value: pastEventsCount, to: '/organizer/history' },
+  { label: 'History', value: pastActivitiesCount, to: '/host/history' },
 ];
 
 export const OrganizerHubSections = ({
-  eventsCount,
+  activitiesCount,
   pendingJoinRequests,
-  upcomingEventsCount,
-  pastEventsCount,
-  upcomingEvents,
+  upcomingActivitiesCount,
+  pastActivitiesCount,
+  upcomingActivities,
 }: OrganizerHubSectionsProps) => {
   const stats = buildOrganizerStats({
-    eventsCount,
+    activitiesCount,
     pendingJoinRequests,
-    upcomingEventsCount,
-    pastEventsCount,
+    upcomingActivitiesCount,
+    pastActivitiesCount,
   });
 
-  const previewEvents = upcomingEvents.slice(0, 2);
+  const previewActivities = upcomingActivities.slice(0, 2);
 
   return (
     <>
       <AccountStatGrid stats={stats} />
 
-      {previewEvents.length > 0 && (
+      {previewActivities.length > 0 && (
         <section>
-          <AccountSectionHeader title="Up next" actionTo="/organizer/activities" actionLabel="All activities" />
+          <AccountSectionHeader title="Up next" actionTo="/host/activities" actionLabel="All activities" />
           <div className="space-y-2">
-            {previewEvents.map((evt) => (
+            {previewActivities.map((evt) => (
               <Link
                 key={evt.id}
-                to="/organizer/activities"
+                to="/host/activities"
                 className="glass-card-interactive flex items-center gap-3 p-3.5"
               >
                 <div className="flex-1 min-w-0">
@@ -98,31 +98,31 @@ export const OrganizerHubSections = ({
       <AccountLinkList
         items={[
           {
-            to: '/organizer/profile',
+            to: '/host/profile',
             icon: <UserCircle className="w-4 h-4" />,
             label: 'Organizer profile',
             accent: 'emerald',
           },
           {
-            to: '/organizer/activities/new',
+            to: '/host/activities/new',
             icon: <Plus className="w-4 h-4" />,
             label: 'Add activity',
           },
           {
-            to: '/organizer/requests',
+            to: '/host/requests',
             icon: <Users className="w-4 h-4" />,
             label: 'Join requests',
             badge: pendingJoinRequests || undefined,
             accent: 'amber',
           },
           {
-            to: '/organizer/locations',
+            to: '/host/locations',
             icon: <MapPin className="w-4 h-4" />,
             label: 'Submit a venue',
             accent: 'blue',
           },
           {
-            to: '/organizer/team',
+            to: '/host/team',
             icon: <UsersRound className="w-4 h-4" />,
             label: 'Manage team',
           },

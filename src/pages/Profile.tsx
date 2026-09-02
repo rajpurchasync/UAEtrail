@@ -117,8 +117,8 @@ export const Profile = () => {
     await signOut();
   };
 
-  const roleLabel = user!.role === 'visitor' ? 'Participant' : 'Explorer';
-  const messagesPath = isOrganizer ? '/organizer/messages' : '/messages';
+  const roleLabel = user!.role === 'participant' ? 'Participant' : 'Explorer';
+  const messagesPath = isOrganizer ? '/host/messages' : '/messages';
   const displayName = profile.displayName || user!.displayName || 'Explorer';
   const canSwitchToVisitor =
     user!.role === 'platform_admin' ||
@@ -126,9 +126,9 @@ export const Profile = () => {
     user!.role === 'tenant_owner' ||
     user!.role === 'tenant_admin' ||
     user!.role === 'tenant_guide';
-  const canSwitchBack = user!.role === 'visitor' && Boolean(profile.switchedFromRole);
+  const canSwitchBack = user!.role === 'participant' && Boolean(profile.switchedFromRole);
 
-  const switchRole = async (target: 'visitor' | 'original') => {
+  const switchRole = async (target: 'participant' | 'original') => {
     setMessage(null);
     setRoleSwitching(true);
     try {
@@ -137,7 +137,7 @@ export const Profile = () => {
       await refreshUser();
       await reload();
       const nextPath = accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]);
-      setMessage(target === 'visitor' ? 'Switched to visitor mode.' : 'Restored your original role.');
+      setMessage(target === 'participant' ? 'Switched to participant mode.' : 'Restored your original role.');
       navigate(nextPath, { replace: true });
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Failed to switch role');
@@ -332,7 +332,7 @@ export const Profile = () => {
                   : []),
                 isOrganizer
                   ? {
-                      to: '/organizer/overview',
+                      to: '/host/overview',
                       icon: <Briefcase className="w-4 h-4" />,
                       label: 'Organizer console',
                     }
@@ -359,17 +359,17 @@ export const Profile = () => {
                     <p className="text-sm font-semibold text-gray-900">Role mode</p>
                     <p className="text-xs text-gray-600 mt-1">
                       {canSwitchBack
-                        ? `You are browsing as visitor. Restore ${profile.switchedFromRole?.replace('_', ' ')} mode anytime.`
-                        : 'Switch to visitor mode to book trips and shop as a participant.'}
+                        ? `You are browsing as a participant. Restore ${profile.switchedFromRole?.replace('_', ' ')} mode anytime.`
+                        : 'Switch to participant mode to book trips and shop as a participant.'}
                     </p>
                   </div>
                   <button
                     type="button"
                     disabled={roleSwitching}
-                    onClick={() => void switchRole(canSwitchBack ? 'original' : 'visitor')}
+                    onClick={() => void switchRole(canSwitchBack ? 'original' : 'participant')}
                     className="ios-btn bg-emerald-600 text-white min-h-[40px] px-3"
                   >
-                    {roleSwitching ? 'Switching…' : canSwitchBack ? 'Restore role' : 'Switch to visitor'}
+                    {roleSwitching ? 'Switching…' : canSwitchBack ? 'Restore role' : 'Switch to participant'}
                   </button>
                 </div>
               </GlassCard>

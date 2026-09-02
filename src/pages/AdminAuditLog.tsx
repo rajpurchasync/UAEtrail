@@ -85,7 +85,7 @@ export const AdminAuditLog = () => {
               <option value="">All Entities</option>
               <option value="user">User</option>
               <option value="tenant">Tenant</option>
-              <option value="event">Event</option>
+              <option value="activity">Activity</option>
               <option value="location">Location</option>
               <option value="application">Application</option>
               <option value="product">Product</option>

@@ -18,7 +18,7 @@ export const parseLocalDateTime = (date: string, time: string, countryCode = 'AE
 };
 
 /** Format stored UTC instant as local date/time for API responses. */
-export const formatEventLocal = (
+export const formatActivityLocal = (
   instant: Date,
   countryCode = 'AE'
 ): { date: string; time: string } => {

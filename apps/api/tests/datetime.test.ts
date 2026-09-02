@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseLocalDateTime, formatEventLocal } from '../src/lib/datetime.js';
+import { parseLocalDateTime, formatActivityLocal } from '../src/lib/datetime.js';
 
 describe('GCC timezone parsing', () => {
   it('parses UAE local time to UTC (+04:00)', () => {
@@ -19,7 +19,7 @@ describe('GCC timezone parsing', () => {
 
   it('formats UTC instant back to local date/time for Oman', () => {
     const instant = new Date('2026-07-04T18:00:00.000Z');
-    const local = formatEventLocal(instant, 'OM');
+    const local = formatActivityLocal(instant, 'OM');
     expect(local.date).toBe('2026-07-04');
     expect(local.time).toBe('22:00');
   });

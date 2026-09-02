@@ -1,5 +1,5 @@
 import { findAuthUserById } from '../lib/auth-users.js';
-import { listUserEventParticipantsBasic, listUserEventRequestsBasic } from '../lib/activity-engagement-store.js';
+import { listUserActivityParticipantsBasic, listUserActivityRequestsBasic } from '../lib/activity-engagement-store.js';
 import { listUserFavorites } from '../lib/favorites-store.js';
 import { countPushSubscriptions } from '../lib/push-subscriptions.js';
 import { findUserBadges, findUserRewardLedgerExport } from '../lib/reward-ledger-store.js';
@@ -41,8 +41,8 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
 
   const [favorites, requests, participants, shopOrders, rewardLedger, badges, pushSubscriptionCount] = await Promise.all([
     listUserFavorites(userId),
-    listUserEventRequestsBasic(userId, 200),
-    listUserEventParticipantsBasic(userId, 200),
+    listUserActivityRequestsBasic(userId, 200),
+    listUserActivityParticipantsBasic(userId, 200),
     listUserShopOrdersBasic(userId, 100),
     findUserRewardLedgerExport(userId),
     findUserBadges(userId),

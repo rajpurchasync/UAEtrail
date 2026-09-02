@@ -23,14 +23,14 @@ export interface AdminUserDetail {
   requests?: Array<{
     id: string;
     activityId: string;
-    eventTitle: string;
+    activityTitle: string;
     locationName?: string;
     status: string;
     createdAt: string;
   }>;
   trips?: Array<{
     activityId: string;
-    eventTitle: string;
+    activityTitle: string;
     locationName?: string;
     organizerName?: string;
     date: string;
@@ -53,7 +53,7 @@ export interface AdminUserDetail {
     isCreator?: boolean;
     joinedAt: string;
   }>;
-  hostedEvents?: Array<{
+  hostedActivities?: Array<{
     activityId: string;
     tenantId?: string;
     title: string;
@@ -75,7 +75,7 @@ type Tab = 'overview' | 'organizations' | 'groups' | 'hosted' | 'participated' |
 type DrillDown =
   | { type: 'tenant'; id: string }
   | { type: 'group'; id: string }
-  | { type: 'event'; id: string };
+  | { type: 'activity'; id: string };
 
 const statusBadge = (status: string) => {
   const isActive = status === 'active' || status === 'published' || status === 'approved';
@@ -214,19 +214,19 @@ const TenantDrillDown = ({
         </div>
       </Section>
 
-      <Section title={`Events (${tenant.events.length})`}>
-        {tenant.events.length === 0 ? (
-          <p className="text-sm text-gray-500">No events yet.</p>
+      <Section title={`Activities (${tenant.activities.length})`}>
+        {tenant.activities.length === 0 ? (
+          <p className="text-sm text-gray-500">No activities yet.</p>
         ) : (
           <div className="space-y-2 max-h-56 overflow-y-auto">
-            {tenant.events.map((event) => (
-              <div key={event.id} className="rounded-lg border border-gray-100 px-3 py-2 text-sm">
+            {tenant.activities.map((activity) => (
+              <div key={activity.id} className="rounded-lg border border-gray-100 px-3 py-2 text-sm">
                 <div className="flex justify-between gap-2">
-                  <p className="font-medium text-gray-900">{event.title}</p>
-                  {statusBadge(event.status)}
+                  <p className="font-medium text-gray-900">{activity.title}</p>
+                  {statusBadge(activity.status)}
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {event.locationName} · {new Date(event.startAt).toLocaleDateString()} · {event.participantCount}/{event.capacity} joined
+                  {activity.locationName} · {new Date(activity.startAt).toLocaleDateString()} · {activity.participantCount}/{activity.capacity} joined
                 </p>
               </div>
             ))}
@@ -303,58 +303,58 @@ const GroupDrillDown = ({ detail, loading }: { detail: AdminSocialGroupDetail | 
   );
 };
 
-const EventDrillDown = ({ event, loading }: { event: ActivityDTO | null; loading: boolean }) => {
-  if (loading) return <p className="text-sm text-gray-500 py-8 text-center">Loading event…</p>;
-  if (!event) return <p className="text-sm text-gray-500 py-8 text-center">Event not found.</p>;
+const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null; loading: boolean }) => {
+  if (loading) return <p className="text-sm text-gray-500 py-8 text-center">Loading activity…</p>;
+  if (!activity) return <p className="text-sm text-gray-500 py-8 text-center">Activity not found.</p>;
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
-        {statusBadge(event.status)}
-        <span className="text-xs text-gray-500">{event.date} {event.time}</span>
-        <span className="text-xs text-gray-500 capitalize">{event.activityType}</span>
+        {statusBadge(activity.status)}
+        <span className="text-xs text-gray-500">{activity.date} {activity.time}</span>
+        <span className="text-xs text-gray-500 capitalize">{activity.activityType}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div>
           <p className="text-xs text-gray-500 uppercase">Location</p>
-          <p className="font-medium text-gray-900">{event.locationName}</p>
+          <p className="font-medium text-gray-900">{activity.locationName}</p>
         </div>
         <div>
           <p className="text-xs text-gray-500 uppercase">Organizer</p>
-          <p className="font-medium text-gray-900">{event.organizerName ?? event.hostName ?? '—'}</p>
+          <p className="font-medium text-gray-900">{activity.organizerName ?? activity.hostName ?? '—'}</p>
         </div>
         <div>
           <p className="text-xs text-gray-500 uppercase">Capacity</p>
-          <p className="font-medium text-gray-900">{event.slotsTotal - event.slotsAvailable}/{event.slotsTotal}</p>
+          <p className="font-medium text-gray-900">{activity.slotsTotal - activity.slotsAvailable}/{activity.slotsTotal}</p>
         </div>
         <div>
           <p className="text-xs text-gray-500 uppercase">Price</p>
-          <p className="font-medium text-gray-900">{event.price > 0 ? `AED ${event.price}` : 'Free'}</p>
+          <p className="font-medium text-gray-900">{activity.price > 0 ? `AED ${activity.price}` : 'Free'}</p>
         </div>
       </div>
 
-      {event.description && (
+      {activity.description && (
         <Section title="Description">
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{event.description}</p>
+          <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.description}</p>
         </Section>
       )}
 
-      {event.meetingPoint && (
+      {activity.meetingPoint && (
         <Section title="Meeting point">
-          <p className="text-sm text-gray-700">{event.meetingPoint}</p>
+          <p className="text-sm text-gray-700">{activity.meetingPoint}</p>
         </Section>
       )}
 
-      {event.itinerary && event.itinerary.length > 0 && (
+      {activity.itinerary && activity.itinerary.length > 0 && (
         <Section title="Itinerary">
           <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
-            {event.itinerary.map((step, i) => <li key={i}>{step}</li>)}
+            {activity.itinerary.map((step, i) => <li key={i}>{step}</li>)}
           </ul>
         </Section>
       )}
 
-      <Link to={`/trip/${event.id}`} target="_blank" className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800">
+      <Link to={`/trip/${activity.id}`} target="_blank" className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800">
         View public trip page ↗
       </Link>
     </div>
@@ -374,7 +374,7 @@ export const AdminUserDetailPanel = ({
   const [drillDown, setDrillDown] = useState<DrillDown | null>(null);
   const [tenantDetail, setTenantDetail] = useState<TenantDetail | null>(null);
   const [groupDetail, setGroupDetail] = useState<AdminSocialGroupDetail | null>(null);
-  const [eventDetail, setEventDetail] = useState<ActivityDTO | null>(null);
+  const [activityDetail, setActivityDetail] = useState<ActivityDTO | null>(null);
   const [drillLoading, setDrillLoading] = useState(false);
   const [drillError, setDrillError] = useState<string | null>(null);
 
@@ -385,7 +385,7 @@ export const AdminUserDetailPanel = ({
     { key: 'overview', label: 'Profile' },
     { key: 'organizations', label: 'Organizations', count: (user.ownedTenants?.length ?? 0) + (user.memberships?.length ?? 0) },
     { key: 'groups', label: 'Groups', count: user.groups?.length },
-    { key: 'hosted', label: 'Hosted', count: user.hostedEvents?.length },
+    { key: 'hosted', label: 'Hosted', count: user.hostedActivities?.length },
     { key: 'participated', label: 'Joined', count: user.trips?.length },
     { key: 'requests', label: 'Requests', count: user.requests?.length }
   ];
@@ -394,7 +394,7 @@ export const AdminUserDetailPanel = ({
     if (!drillDown) {
       setTenantDetail(null);
       setGroupDetail(null);
-      setEventDetail(null);
+      setActivityDetail(null);
       setDrillError(null);
       return;
     }
@@ -412,7 +412,7 @@ export const AdminUserDetailPanel = ({
           setGroupDetail(res.data);
         } else {
           const res = await api.getAdminActivityDetail(drillDown.id);
-          setEventDetail(res.data);
+          setActivityDetail(res.data);
         }
       } catch (err) {
         setDrillError(err instanceof Error ? err.message : 'Failed to load details');
@@ -428,7 +428,7 @@ export const AdminUserDetailPanel = ({
     ? tenantDetail?.name ?? 'Host profile'
     : drillDown?.type === 'group'
       ? groupDetail?.group.name ?? 'Group'
-      : eventDetail?.title ?? eventDetail?.locationName ?? 'Event';
+      : activityDetail?.title ?? activityDetail?.locationName ?? 'Activity';
 
   return (
     <>
@@ -543,9 +543,9 @@ export const AdminUserDetailPanel = ({
                         {user.groups!.length} group{user.groups!.length > 1 ? 's' : ''}
                       </button>
                     )}
-                    {(user.hostedEvents?.length ?? 0) > 0 && (
+                    {(user.hostedActivities?.length ?? 0) > 0 && (
                       <button type="button" onClick={() => setTab('hosted')} className="px-3 py-1.5 rounded-lg bg-orange-50 text-orange-800 text-sm font-medium">
-                        {user.hostedEvents!.length} hosted event{user.hostedEvents!.length > 1 ? 's' : ''}
+                        {user.hostedActivities!.length} hosted activit{user.hostedActivities!.length > 1 ? 'ies' : 'y'}
                       </button>
                     )}
                     {(user.trips?.length ?? 0) > 0 && (
@@ -642,23 +642,23 @@ export const AdminUserDetailPanel = ({
             )}
 
             {tab === 'hosted' && (
-              <Section title={`Hosted events (${user.hostedEvents?.length ?? 0})`}>
-                {user.hostedEvents?.length ? (
+              <Section title={`Hosted activities (${user.hostedActivities?.length ?? 0})`}>
+                {user.hostedActivities?.length ? (
                   <div className="space-y-2">
-                    {user.hostedEvents.map((event) => (
+                    {user.hostedActivities.map((activity) => (
                       <ClickableCard
-                        key={event.activityId}
-                        title={event.title}
-                        subtitle={[event.locationName, event.organizerName, event.date].filter(Boolean).join(' · ')}
-                        meta={<span className="text-xs capitalize text-gray-500">{event.role}</span>}
-                        status={statusBadge(event.status)}
-                        onView={() => setDrillDown({ type: 'event', id: event.activityId })}
-                        href={`/trip/${event.activityId}`}
+                        key={activity.activityId}
+                        title={activity.title}
+                        subtitle={[activity.locationName, activity.organizerName, activity.date].filter(Boolean).join(' · ')}
+                        meta={<span className="text-xs capitalize text-gray-500">{activity.role}</span>}
+                        status={statusBadge(activity.status)}
+                        onView={() => setDrillDown({ type: 'activity', id: activity.activityId })}
+                        href={`/trip/${activity.activityId}`}
                       />
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No hosted events.</p>
+                  <p className="text-sm text-gray-500">No hosted activities.</p>
                 )}
               </Section>
             )}
@@ -670,10 +670,10 @@ export const AdminUserDetailPanel = ({
                     {user.trips.map((trip) => (
                       <ClickableCard
                         key={trip.activityId}
-                        title={trip.eventTitle ?? 'Untitled event'}
+                        title={trip.activityTitle ?? 'Untitled activity'}
                         subtitle={[trip.locationName, trip.organizerName, trip.date].filter(Boolean).join(' · ')}
                         meta={trip.checkedInAt ? <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Checked in</span> : undefined}
-                        onView={() => setDrillDown({ type: 'event', id: trip.activityId })}
+                        onView={() => setDrillDown({ type: 'activity', id: trip.activityId })}
                         href={`/trip/${trip.activityId}`}
                       />
                     ))}
@@ -685,22 +685,22 @@ export const AdminUserDetailPanel = ({
             )}
 
             {tab === 'requests' && (
-              <Section title={`Event requests (${user.requests?.length ?? 0})`}>
+              <Section title={`Activity requests (${user.requests?.length ?? 0})`}>
                 {user.requests?.length ? (
                   <div className="space-y-2">
                     {user.requests.map((request) => (
                       <ClickableCard
                         key={request.id}
-                        title={request.eventTitle}
+                        title={request.activityTitle}
                         subtitle={[request.locationName, new Date(request.createdAt).toLocaleDateString()].filter(Boolean).join(' · ')}
                         status={statusBadge(request.status)}
-                        onView={() => setDrillDown({ type: 'event', id: request.activityId })}
+                        onView={() => setDrillDown({ type: 'activity', id: request.activityId })}
                         href={`/trip/${request.activityId}`}
                       />
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No event requests.</p>
+                  <p className="text-sm text-gray-500">No activity requests.</p>
                 )}
               </Section>
             )}
@@ -721,7 +721,7 @@ export const AdminUserDetailPanel = ({
                 <TenantDrillDown tenant={tenantDetail} loading={drillLoading} onOpenUser={onOpenUser} />
               )}
               {drillDown.type === 'group' && <GroupDrillDown detail={groupDetail} loading={drillLoading} />}
-              {drillDown.type === 'event' && <EventDrillDown event={eventDetail} loading={drillLoading} />}
+              {drillDown.type === 'activity' && <ActivityDrillDown activity={activityDetail} loading={drillLoading} />}
             </div>
           </div>
         </div>

@@ -1,10 +1,11 @@
 import type { Collection } from 'mongodb';
-import type { Event, Location, Product, Tenant, TenantMembership } from '../domain/types.js';
+import { COLLECTIONS } from './collections.js';
+import type { Activity, Location, Product, Tenant, TenantMembership } from '../domain/types.js';
 import { ActivityStatus, ProductStatus, TenantStatus } from '../domain/enums.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import { createLocationRecord } from './activities-store.js';
-import { newEntityId, type MongoEventDoc } from './entity-builders.js';
-import { findLocationInMongo, writeEventDocToMongo, writeLocationToMongo } from './entity-sync.js';
+import { newEntityId, type MongoActivityDoc } from './entity-builders.js';
+import { findLocationInMongo, writeActivityDocToMongo, writeLocationToMongo } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { findTenantById, isTenantSlugTaken as isTenantSlugTakenInStore } from './tenant-store.js';
 import { syncTenantMembershipStatusForTenant } from './tenant-access.js';
@@ -40,7 +41,7 @@ type MongoTenantMembershipDoc = Omit<TenantMembership, 'id'> & {
   tenant?: Tenant;
 };
 
-type MongoEventParticipantDoc = {
+type MongoActivityParticipantDoc = {
   _id: string;
   activityId: string;
   checkedInAt: Date | null;
@@ -73,8 +74,8 @@ type AdminTenantDetailed = Tenant & {
       };
     }
   >;
-  events: Array<
-    Event & {
+  activities: Array<
+    Activity & {
       location: Location;
       participants: Array<{ id: string; checkedInAt: Date | null }>;
       guide: { profile: { displayName: string | null } | null } | null;
@@ -88,14 +89,14 @@ const auditLogsCollection = (): Collection<MongoAuditLog> =>
 const tenantsCollection = (): Collection<MongoTenantDoc> =>
   getMongoClient()!.db().collection<MongoTenantDoc>('tenants');
 
-const eventsCollection = (): Collection<MongoEventDoc> =>
-  getMongoClient()!.db().collection<MongoEventDoc>('activities');
+const activitiesCollection = (): Collection<MongoActivityDoc> =>
+  getMongoClient()!.db().collection<MongoActivityDoc>('activities');
 
 const locationsCollection = (): Collection<MongoAdminLocationDoc> =>
   getMongoClient()!.db().collection<MongoAdminLocationDoc>('locations');
 
 const organizerApplicationsCollection = (): Collection<MongoAdminMetricDoc> =>
-  getMongoClient()!.db().collection<MongoAdminMetricDoc>('organizer_applications');
+  getMongoClient()!.db().collection<MongoAdminMetricDoc>(COLLECTIONS.HOST_APPLICATIONS);
 
 const productsCollection = (): Collection<MongoProductDoc> =>
   getMongoClient()!.db().collection<MongoProductDoc>('products');
@@ -106,8 +107,8 @@ const merchantProfilesCollection = (): Collection<MongoMerchantProfileDoc> =>
 const tenantMembershipsCollection = (): Collection<MongoTenantMembershipDoc> =>
   getMongoClient()!.db().collection<MongoTenantMembershipDoc>('tenant_memberships');
 
-const eventParticipantsCollection = (): Collection<MongoEventParticipantDoc> =>
-  getMongoClient()!.db().collection<MongoEventParticipantDoc>('activity_participants');
+const activityParticipantsCollection = (): Collection<MongoActivityParticipantDoc> =>
+  getMongoClient()!.db().collection<MongoActivityParticipantDoc>('activity_participants');
 
 const mapMongoLocation = (doc: MongoAdminLocationDoc): Location => {
   const { _id, ...rest } = doc;
@@ -119,12 +120,12 @@ const mapMongoTenant = (doc: MongoTenantDoc): Tenant => {
   return { id: _id, ...rest };
 };
 
-const mapMongoEvent = (doc: MongoEventDoc): Event => ({
+const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
   id: doc._id,
   tenantId: doc.tenantId,
   locationId: doc.locationId,
   createdById: doc.createdById,
-  guideId: doc.guideId,
+  hostId: doc.hostId,
   title: doc.title,
   description: doc.description,
   startAt: doc.startAt,
@@ -190,31 +191,31 @@ const toMongoProductQuery = (where: ProductAdminFilter): Record<string, unknown>
   return query;
 };
 
-const loadEventsWithRelations = async (eventDocs: MongoEventDoc[]) => {
+const loadEventsWithRelations = async (eventDocs: MongoActivityDoc[]) => {
   if (eventDocs.length === 0) return [];
 
   const [locationMap, tenantMap, participantDocs] = await Promise.all([
     loadLocationsByIds([...new Set(eventDocs.map((doc) => doc.locationId))]),
     loadTenantsByIds([...new Set(eventDocs.map((doc) => doc.tenantId))]),
-    eventParticipantsCollection()
+    activityParticipantsCollection()
       .find({ activityId: { $in: eventDocs.map((doc) => doc._id) } }, { projection: { activityId: 1 } })
       .toArray()
   ]);
 
-  const guideIds = [...new Set(eventDocs.map((doc) => doc.guideId).filter((guideId): guideId is string => Boolean(guideId)))];
+  const hostIds = [...new Set(eventDocs.map((doc) => doc.hostId).filter((hostId): hostId is string => Boolean(hostId)))];
   const createdByIds = [...new Set(eventDocs.map((doc) => doc.createdById))];
-  const userIds = [...new Set([...guideIds, ...createdByIds])];
+  const userIds = [...new Set([...hostIds, ...createdByIds])];
   const users = await findAuthUsersByIds(userIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
-  const participantsByEvent = new Map<string, Array<{ id: string }>>();
+  const participantsByActivity = new Map<string, Array<{ id: string }>>();
   for (const participant of participantDocs) {
-    const existing = participantsByEvent.get(participant.activityId) ?? [];
+    const existing = participantsByActivity.get(participant.activityId) ?? [];
     existing.push({ id: participant._id });
-    participantsByEvent.set(participant.activityId, existing);
+    participantsByActivity.set(participant.activityId, existing);
   }
 
   return eventDocs.map((eventDoc) => {
-    const guide = eventDoc.guideId ? userMap.get(eventDoc.guideId) : null;
+    const guide = eventDoc.hostId ? userMap.get(eventDoc.hostId) : null;
     const createdBy = userMap.get(eventDoc.createdById) ?? null;
     const tenant = tenantMap.get(eventDoc.tenantId);
     const location = locationMap.get(eventDoc.locationId);
@@ -223,7 +224,7 @@ const loadEventsWithRelations = async (eventDocs: MongoEventDoc[]) => {
     }
 
     return {
-      ...mapMongoEvent(eventDoc),
+      ...mapMongoActivity(eventDoc),
       location,
       tenant: {
         slug: tenant.slug,
@@ -243,7 +244,7 @@ const loadEventsWithRelations = async (eventDocs: MongoEventDoc[]) => {
       createdBy: createdBy
         ? { profile: { displayName: createdBy.profile.displayName } }
         : null,
-      participants: participantsByEvent.get(eventDoc._id) ?? []
+      participants: participantsByActivity.get(eventDoc._id) ?? []
     };
   });
 };
@@ -312,7 +313,7 @@ export const deleteAdminLocation = async (id: string) => {
 };
 
 export const countActiveEventsByLocationId = async (locationId: string) => {
-  return eventsCollection().countDocuments({
+  return activitiesCollection().countDocuments({
     locationId,
     status: { $in: [ActivityStatus.PUBLISHED, ActivityStatus.DRAFT] }
   });
@@ -324,7 +325,7 @@ export const findAdminTenantById = async (id: string) => {
 
 export const findAdminLocationByIdForEventCreate = findAdminLocationById;
 
-export const createAdminPublishedEvent = async (input: {
+export const createAdminPublishedActivity = async (input: {
   tenantId: string;
   locationId: string;
   createdById: string;
@@ -341,12 +342,12 @@ export const createAdminPublishedEvent = async (input: {
 }) => {
   const now = new Date();
   const activityId = newEntityId();
-  const doc: MongoEventDoc = {
+  const doc: MongoActivityDoc = {
     _id: activityId,
     tenantId: input.tenantId,
     locationId: input.locationId,
     createdById: input.createdById,
-    guideId: null,
+    hostId: null,
     title: input.title,
     description: input.description,
     startAt: input.startAt,
@@ -381,7 +382,7 @@ export const createAdminPublishedEvent = async (input: {
     updatedAt: now
   };
 
-  await writeEventDocToMongo(doc);
+  await writeActivityDocToMongo(doc);
 
   const [location, tenant] = await Promise.all([
     findLocationInMongo(input.locationId),
@@ -393,7 +394,7 @@ export const createAdminPublishedEvent = async (input: {
   }
 
   return {
-    ...mapMongoEvent(doc),
+    ...mapMongoActivity(doc),
     location,
     tenant
   };
@@ -401,13 +402,13 @@ export const createAdminPublishedEvent = async (input: {
 
 export const listAdminModerationEventsPaged = async (input: { skip: number; take: number }) => {
   const [eventDocs, total] = await Promise.all([
-    eventsCollection()
+    activitiesCollection()
       .find({})
       .sort({ startAt: -1 })
       .skip(input.skip)
       .limit(input.take)
       .toArray(),
-    eventsCollection().countDocuments({})
+    activitiesCollection().countDocuments({})
   ]);
 
   const items = await loadEventsWithRelations(eventDocs);
@@ -415,48 +416,48 @@ export const listAdminModerationEventsPaged = async (input: { skip: number; take
 };
 
 export const findAdminEventById = async (id: string) => {
-  const doc = await eventsCollection().findOne({ _id: id });
-  return doc ? mapMongoEvent(doc) : null;
+  const doc = await activitiesCollection().findOne({ _id: id });
+  return doc ? mapMongoActivity(doc) : null;
 };
 
-export const findAdminEventDetailedById = async (id: string) => {
-  const doc = await eventsCollection().findOne({ _id: id });
+export const findAdminActivityDetailedById = async (id: string) => {
+  const doc = await activitiesCollection().findOne({ _id: id });
   if (!doc) return null;
   const [event] = await loadEventsWithRelations([doc]);
   return event ?? null;
 };
 
 export const updateAdminActivityStatus = async (id: string, status: ActivityStatus) => {
-  const result = await eventsCollection().findOneAndUpdate(
+  const result = await activitiesCollection().findOneAndUpdate(
     { _id: id },
     { $set: { status, updatedAt: new Date() } },
     { returnDocument: 'after' }
   );
   if (!result) {
-    throw new Error('Event not found.');
+    throw new Error('Activity not found.');
   }
-  return mapMongoEvent(result);
+  return mapMongoActivity(result);
 };
 
 export const toggleAdminEventFeatured = async (id: string, featured: boolean) => {
-  const result = await eventsCollection().findOneAndUpdate(
+  const result = await activitiesCollection().findOneAndUpdate(
     { _id: id },
     { $set: { featured, updatedAt: new Date() } },
     { returnDocument: 'after' }
   );
   if (!result) {
-    throw new Error('Event not found.');
+    throw new Error('Activity not found.');
   }
-  return mapMongoEvent(result);
+  return mapMongoActivity(result);
 };
 
 export const countAdminMetrics = async (now: Date) => {
   const [tenantCount, activityCount, pendingApplications, totalLocations, activeTrips] = await Promise.all([
     tenantsCollection().countDocuments({ status: TenantStatus.ACTIVE }),
-    eventsCollection().countDocuments({}),
+    activitiesCollection().countDocuments({}),
     organizerApplicationsCollection().countDocuments({ status: 'PENDING' }),
     locationsCollection().countDocuments({}),
-    eventsCollection().countDocuments({ status: ActivityStatus.PUBLISHED, startAt: { $gte: now } })
+    activitiesCollection().countDocuments({ status: ActivityStatus.PUBLISHED, startAt: { $gte: now } })
   ]);
 
   return { tenantCount, activityCount, pendingApplications, totalLocations, activeTrips };
@@ -503,35 +504,35 @@ export const listTenantMembershipsForUser = async (userId: string) => {
   });
 };
 
-export const listEventsForAdminRequests = async (eventIds: string[]) => {
+export const listActivitiesForAdminRequests = async (eventIds: string[]) => {
   if (eventIds.length === 0) return [];
 
-  const docs = await eventsCollection().find({ _id: { $in: eventIds } }).toArray();
+  const docs = await activitiesCollection().find({ _id: { $in: eventIds } }).toArray();
   const locationMap = await loadLocationsByIds([...new Set(docs.map((doc) => doc.locationId))]);
 
   return docs.map((doc) => ({
-    ...mapMongoEvent(doc),
+    ...mapMongoActivity(doc),
     location: locationMap.get(doc.locationId)!
   }));
 };
 
-export const listEventsForAdminTrips = async (eventIds: string[]) => {
+export const listActivitiesForAdminTrips = async (eventIds: string[]) => {
   if (eventIds.length === 0) return [];
 
-  const docs = await eventsCollection().find({ _id: { $in: eventIds } }).toArray();
+  const docs = await activitiesCollection().find({ _id: { $in: eventIds } }).toArray();
   const [locationMap, tenantMap] = await Promise.all([
     loadLocationsByIds([...new Set(docs.map((doc) => doc.locationId))]),
     loadTenantsByIds([...new Set(docs.map((doc) => doc.tenantId))])
   ]);
 
   return docs.map((doc) => ({
-    ...mapMongoEvent(doc),
+    ...mapMongoActivity(doc),
     location: locationMap.get(doc.locationId)!,
     tenant: tenantMap.get(doc.tenantId)!
   }));
 };
 
-export const listUserHostedEventsBasic = async (userId: string, limit = 20) => {
+export const listUserHostedActivitiesBasic = async (userId: string, limit = 20) => {
   const [ownedTenants, memberships] = await Promise.all([
     tenantsCollection().find({ ownerId: userId }, { projection: { _id: 1 } }).toArray(),
     tenantMembershipsCollection()
@@ -542,12 +543,12 @@ export const listUserHostedEventsBasic = async (userId: string, limit = 20) => {
   const ownedTenantIds = new Set(ownedTenants.map((doc) => doc._id));
   const tenantIds = [...new Set([...ownedTenantIds, ...memberships.map((m) => m.tenantId)])];
 
-  const orClauses: Record<string, unknown>[] = [{ guideId: userId }];
+  const orClauses: Record<string, unknown>[] = [{ hostId: userId }];
   if (tenantIds.length > 0) {
     orClauses.push({ tenantId: { $in: tenantIds } });
   }
 
-  const docs = await eventsCollection()
+  const docs = await activitiesCollection()
     .find({ $or: orClauses })
     .sort({ startAt: -1 })
     .limit(limit)
@@ -569,7 +570,7 @@ export const listUserHostedEventsBasic = async (userId: string, limit = 20) => {
       date: doc.startAt.toISOString().slice(0, 10),
       locationName: locationMap.get(doc.locationId)?.name ?? '',
       organizerName: tenant?.name ?? '',
-      role: doc.guideId === userId ? 'guide' : isOwner ? 'owner' : 'staff'
+      role: doc.hostId === userId ? 'guide' : isOwner ? 'owner' : 'staff'
     };
   });
 };
@@ -596,7 +597,7 @@ export const listAdminTenantsPaged = async (input: { skip: number; take: number 
         { $group: { _id: '$tenantId', count: { $sum: 1 } } }
       ])
       .toArray(),
-    eventsCollection()
+    activitiesCollection()
       .aggregate<{ _id: string; count: number }>([
         { $match: { tenantId: { $in: tenantIds } } },
         { $group: { _id: '$tenantId', count: { $sum: 1 } } }
@@ -619,7 +620,7 @@ export const listAdminTenantsPaged = async (input: { skip: number; take: number 
         },
         _count: {
           memberships: membershipCountMap.get(tenant.id) ?? 0,
-          events: eventCountMap.get(tenant.id) ?? 0
+          activities: eventCountMap.get(tenant.id) ?? 0
         }
       };
     }),
@@ -635,29 +636,29 @@ export const findAdminTenantDetailedById = async (id: string): Promise<AdminTena
   const [owner, memberships, eventDocs] = await Promise.all([
     findAuthUserById(tenant.ownerId),
     tenantMembershipsCollection().find({ tenantId: id }).toArray(),
-    eventsCollection().find({ tenantId: id }).sort({ startAt: -1 }).toArray()
+    activitiesCollection().find({ tenantId: id }).sort({ startAt: -1 }).toArray()
   ]);
 
   if (!owner) return null;
 
   const memberUserIds = memberships.map((membership) => membership.userId);
-  const guideIds = [...new Set(eventDocs.map((event) => event.guideId).filter((guideId): guideId is string => Boolean(guideId)))];
+  const hostIds = [...new Set(eventDocs.map((event) => event.hostId).filter((hostId): hostId is string => Boolean(hostId)))];
   const [memberUsers, guideUsers, locationMap, participantDocs] = await Promise.all([
     findAuthUsersByIds(memberUserIds),
-    findAuthUsersByIds(guideIds),
+    findAuthUsersByIds(hostIds),
     loadLocationsByIds([...new Set(eventDocs.map((event) => event.locationId))]),
-    eventParticipantsCollection()
+    activityParticipantsCollection()
       .find({ activityId: { $in: eventDocs.map((event) => event._id) } }, { projection: { activityId: 1, checkedInAt: 1 } })
       .toArray()
   ]);
 
   const memberUserMap = new Map(memberUsers.map((user) => [user._id, user]));
   const guideUserMap = new Map(guideUsers.map((user) => [user._id, user]));
-  const participantsByEvent = new Map<string, Array<{ id: string; checkedInAt: Date | null }>>();
+  const participantsByActivity = new Map<string, Array<{ id: string; checkedInAt: Date | null }>>();
   for (const participant of participantDocs) {
-    const existing = participantsByEvent.get(participant.activityId) ?? [];
+    const existing = participantsByActivity.get(participant.activityId) ?? [];
     existing.push({ id: participant._id, checkedInAt: participant.checkedInAt });
-    participantsByEvent.set(participant.activityId, existing);
+    participantsByActivity.set(participant.activityId, existing);
   }
 
   return {
@@ -681,12 +682,12 @@ export const findAdminTenantDetailedById = async (id: string): Promise<AdminTena
         }
       };
     }),
-    events: eventDocs.map((eventDoc) => {
-      const guide = eventDoc.guideId ? guideUserMap.get(eventDoc.guideId) : null;
+    activities: eventDocs.map((eventDoc) => {
+      const guide = eventDoc.hostId ? guideUserMap.get(eventDoc.hostId) : null;
       return {
-        ...mapMongoEvent(eventDoc),
+        ...mapMongoActivity(eventDoc),
         location: locationMap.get(eventDoc.locationId)!,
-        participants: participantsByEvent.get(eventDoc._id) ?? [],
+        participants: participantsByActivity.get(eventDoc._id) ?? [],
         guide: guide
           ? { profile: { displayName: guide.profile.displayName } }
           : null

@@ -88,7 +88,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { ownerId: 1 } },
       { key: { status: 1 } }
     ]),
-    db.collection('organizer_applications').createIndexes([
+    db.collection(COLLECTIONS.HOST_APPLICATIONS).createIndexes([
       { key: { status: 1 } },
       { key: { applicantId: 1, createdAt: -1 } }
     ]),

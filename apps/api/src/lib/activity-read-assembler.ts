@@ -1,13 +1,13 @@
 import type { Collection } from 'mongodb';
-import type { Event, EventParticipant, Location } from '../domain/types.js';
+import type { Activity, ActivityParticipant, Location } from '../domain/types.js';
 import { ActivityStatus, LocationStatus } from '../domain/enums.js';
 import { findAuthUsersByIds, type AuthUserRecord } from './auth-users.js';
-import type { MongoEventDoc } from './entity-builders.js';
+import type { MongoActivityDoc } from './entity-builders.js';
 import { findLocationInMongo } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { findTenantById, findTenantBySlug, type TenantRecord } from './tenant-store.js';
 
-type MongoEventParticipant = {
+type MongoActivityParticipant = {
   _id: string;
   activityId: string;
   requestId: string;
@@ -22,38 +22,38 @@ type MongoLocationDoc = Omit<Location, 'id'> & {
   geo?: unknown;
 };
 
-export type EventWithPublicRelations = Event & {
+export type ActivityWithPublicRelations = Activity & {
   location: Location;
   tenant: Pick<TenantRecord, 'id' | 'slug' | 'name' | 'countryCode' | 'ownerId'>;
   guide: { profile: { displayName: string | null; avatarUrl: string | null; bio: string | null } | null };
   createdBy: { profile: { displayName: string | null } | null };
   participants: Array<
-    EventParticipant & {
+    ActivityParticipant & {
       user: { email: string; profile?: { displayName?: string | null; avatarUrl?: string | null } | null };
     }
   >;
 };
 
-const eventsCollection = (): Collection<MongoEventDoc> =>
-  getMongoClient()!.db().collection<MongoEventDoc>('activities');
+const activitiesCollection = (): Collection<MongoActivityDoc> =>
+  getMongoClient()!.db().collection<MongoActivityDoc>('activities');
 
 const locationsCollection = (): Collection<MongoLocationDoc> =>
   getMongoClient()!.db().collection<MongoLocationDoc>('locations');
 
-const eventParticipantsCollection = (): Collection<MongoEventParticipant> =>
-  getMongoClient()!.db().collection<MongoEventParticipant>('activity_participants');
+const activityParticipantsCollection = (): Collection<MongoActivityParticipant> =>
+  getMongoClient()!.db().collection<MongoActivityParticipant>('activity_participants');
 
 const mapMongoLocation = (doc: MongoLocationDoc): Location => {
   const { _id, geo: _geo, ...rest } = doc;
   return { id: _id, ...rest };
 };
 
-const mongoEventToEvent = (doc: MongoEventDoc): Event => ({
+const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
   id: doc._id,
   tenantId: doc.tenantId,
   locationId: doc.locationId,
   createdById: doc.createdById,
-  guideId: doc.guideId,
+  hostId: doc.hostId,
   title: doc.title,
   description: doc.description,
   startAt: doc.startAt,
@@ -135,8 +135,8 @@ const loadActiveLocations = async (locationIds: string[]): Promise<Map<string, L
 };
 
 export const assembleEventsWithPublicRelations = async (
-  docs: MongoEventDoc[]
-): Promise<EventWithPublicRelations[]> => {
+  docs: MongoActivityDoc[]
+): Promise<ActivityWithPublicRelations[]> => {
   if (docs.length === 0) return [];
 
   const locationMap = await loadActiveLocations(docs.map((doc) => doc.locationId));
@@ -150,17 +150,17 @@ export const assembleEventsWithPublicRelations = async (
   const tenantMap = new Map(tenantEntries.filter((entry): entry is [string, TenantRecord] => Boolean(entry[1])));
 
   const eventIds = filteredDocs.map((doc) => doc._id);
-  const participantDocs = await eventParticipantsCollection().find({ activityId: { $in: eventIds } }).toArray();
-  const participantsByEvent = new Map<string, MongoEventParticipant[]>();
+  const participantDocs = await activityParticipantsCollection().find({ activityId: { $in: eventIds } }).toArray();
+  const participantsByActivity = new Map<string, MongoActivityParticipant[]>();
   for (const participant of participantDocs) {
-    const list = participantsByEvent.get(participant.activityId) ?? [];
+    const list = participantsByActivity.get(participant.activityId) ?? [];
     list.push(participant);
-    participantsByEvent.set(participant.activityId, list);
+    participantsByActivity.set(participant.activityId, list);
   }
 
   const userIds = new Set<string>();
   for (const doc of filteredDocs) {
-    if (doc.guideId) userIds.add(doc.guideId);
+    if (doc.hostId) userIds.add(doc.hostId);
     userIds.add(doc.createdById);
   }
   for (const participant of participantDocs) {
@@ -175,7 +175,7 @@ export const assembleEventsWithPublicRelations = async (
     const tenant = tenantMap.get(doc.tenantId);
     if (!location || !tenant) return [];
 
-    const participants = (participantsByEvent.get(doc._id) ?? []).map((participant) => ({
+    const participants = (participantsByActivity.get(doc._id) ?? []).map((participant) => ({
       id: participant._id,
       activityId: participant.activityId,
       requestId: participant.requestId,
@@ -197,7 +197,7 @@ export const assembleEventsWithPublicRelations = async (
           countryCode: tenant.countryCode,
           ownerId: tenant.ownerId
         },
-        guide: doc.guideId ? toGuidePreview(userMap.get(doc.guideId)) : { profile: null },
+        guide: doc.hostId ? toGuidePreview(userMap.get(doc.hostId)) : { profile: null },
         createdBy: (() => {
           const creator = userMap.get(doc.createdById);
           return creator ? { profile: { displayName: creator.profile.displayName } } : { profile: null };
@@ -209,9 +209,9 @@ export const assembleEventsWithPublicRelations = async (
 };
 
 const filterPublishedDocs = async (
-  docs: MongoEventDoc[],
+  docs: MongoActivityDoc[],
   when: 'upcoming' | 'past' | 'all'
-): Promise<MongoEventDoc[]> => {
+): Promise<MongoActivityDoc[]> => {
   const activeLocations = await loadActiveLocations(docs.map((doc) => doc.locationId));
   const now = new Date();
   return docs.filter((doc) => {
@@ -224,11 +224,11 @@ const filterPublishedDocs = async (
 };
 
 /** @deprecated Use filterPublishedDocs */
-const filterPublishedUpcomingDocs = async (docs: MongoEventDoc[]): Promise<MongoEventDoc[]> =>
+const filterPublishedUpcomingDocs = async (docs: MongoActivityDoc[]): Promise<MongoActivityDoc[]> =>
   filterPublishedDocs(docs, 'upcoming');
 
-export const listFeaturedPublishedEventsFromMongo = async (take: number): Promise<EventWithPublicRelations[]> => {
-  const docs = await eventsCollection()
+export const listFeaturedPublishedActivitiesFromMongo = async (take: number): Promise<ActivityWithPublicRelations[]> => {
+  const docs = await activitiesCollection()
     .find({
       status: ActivityStatus.PUBLISHED,
       featured: true,
@@ -242,13 +242,13 @@ export const listFeaturedPublishedEventsFromMongo = async (take: number): Promis
   return assembleEventsWithPublicRelations(filtered.slice(0, take));
 };
 
-export const listPublishedEventsWithPreviewsFromMongo = async (input: {
+export const listPublishedActivitiesWithPreviewsFromMongo = async (input: {
   skip: number;
   take: number;
   when?: 'upcoming' | 'past' | 'all';
-}): Promise<{ items: EventWithPublicRelations[]; total: number }> => {
+}): Promise<{ items: ActivityWithPublicRelations[]; total: number }> => {
   const when = input.when ?? 'upcoming';
-  const docs = await eventsCollection()
+  const docs = await activitiesCollection()
     .find({ status: ActivityStatus.PUBLISHED })
     .sort({ startAt: when === 'past' ? -1 : 1 })
     .toArray();
@@ -258,21 +258,21 @@ export const listPublishedEventsWithPreviewsFromMongo = async (input: {
   return { items, total: filtered.length };
 };
 
-export const findPublishedEventWithPreviewsFromMongo = async (
+export const findPublishedActivityWithPreviewsFromMongo = async (
   activityId: string
-): Promise<EventWithPublicRelations | null> => {
-  const doc = await eventsCollection().findOne({ _id: activityId, status: ActivityStatus.PUBLISHED });
+): Promise<ActivityWithPublicRelations | null> => {
+  const doc = await activitiesCollection().findOne({ _id: activityId, status: ActivityStatus.PUBLISHED });
   if (!doc) return null;
 
   const [event] = await assembleEventsWithPublicRelations([doc]);
   return event ?? null;
 };
 
-export const listPublishedUpcomingEventsByLocationFromMongo = async (
+export const listPublishedUpcomingActivitiesByLocationFromMongo = async (
   locationId: string,
   take: number
-): Promise<EventWithPublicRelations[]> => {
-  const docs = await eventsCollection()
+): Promise<ActivityWithPublicRelations[]> => {
+  const docs = await activitiesCollection()
     .find({
       locationId,
       status: ActivityStatus.PUBLISHED,
@@ -286,12 +286,12 @@ export const listPublishedUpcomingEventsByLocationFromMongo = async (
 };
 
 export const countPublishedEventsInMongo = async (): Promise<number> => {
-  const docs = await eventsCollection().find({ status: ActivityStatus.PUBLISHED }).toArray();
+  const docs = await activitiesCollection().find({ status: ActivityStatus.PUBLISHED }).toArray();
   const filtered = await filterPublishedUpcomingDocs(docs);
   return filtered.length;
 };
 
-export type EventWithTenantRelations = Event & {
+export type ActivityWithTenantRelations = Activity & {
   location: Location;
   tenant: TenantRecord;
   guide: { profile: { displayName: string | null; avatarUrl: string | null; bio: string | null } | null } | null;
@@ -328,8 +328,8 @@ const loadLocationsByIds = async (
 };
 
 export const assembleTenantEventsWithRelations = async (
-  docs: MongoEventDoc[]
-): Promise<EventWithTenantRelations[]> => {
+  docs: MongoActivityDoc[]
+): Promise<ActivityWithTenantRelations[]> => {
   if (docs.length === 0) return [];
 
   const locationMap = await loadLocationsByIds(docs.map((doc) => doc.locationId));
@@ -340,17 +340,17 @@ export const assembleTenantEventsWithRelations = async (
   const tenantMap = new Map(tenantEntries.filter((entry): entry is [string, TenantRecord] => Boolean(entry[1])));
 
   const eventIds = docs.map((doc) => doc._id);
-  const participantDocs = await eventParticipantsCollection().find({ activityId: { $in: eventIds } }).toArray();
-  const participantsByEvent = new Map<string, MongoEventParticipant[]>();
+  const participantDocs = await activityParticipantsCollection().find({ activityId: { $in: eventIds } }).toArray();
+  const participantsByActivity = new Map<string, MongoActivityParticipant[]>();
   for (const participant of participantDocs) {
-    const list = participantsByEvent.get(participant.activityId) ?? [];
+    const list = participantsByActivity.get(participant.activityId) ?? [];
     list.push(participant);
-    participantsByEvent.set(participant.activityId, list);
+    participantsByActivity.set(participant.activityId, list);
   }
 
-  const guideIds = docs.map((doc) => doc.guideId).filter((id): id is string => Boolean(id));
+  const hostIds = docs.map((doc) => doc.hostId).filter((id): id is string => Boolean(id));
   const createdByIds = docs.map((doc) => doc.createdById);
-  const userIds = [...new Set([...guideIds, ...createdByIds])];
+  const userIds = [...new Set([...hostIds, ...createdByIds])];
   const users = await findAuthUsersByIds(userIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
 
@@ -366,11 +366,11 @@ export const assembleTenantEventsWithRelations = async (
         ...mongoEventToEvent(doc),
         location,
         tenant,
-        guide: doc.guideId ? toGuidePreview(userMap.get(doc.guideId)) : { profile: null },
+        guide: doc.hostId ? toGuidePreview(userMap.get(doc.hostId)) : { profile: null },
         createdBy: createdByUser
           ? { profile: { displayName: createdByUser.profile.displayName } }
           : { profile: null },
-        participants: (participantsByEvent.get(doc._id) ?? []).map((participant) => ({
+        participants: (participantsByActivity.get(doc._id) ?? []).map((participant) => ({
           id: participant._id,
           userId: participant.userId,
           checkedInAt: participant.checkedInAt
@@ -380,26 +380,26 @@ export const assembleTenantEventsWithRelations = async (
   });
 };
 
-export const listTenantEventsFromMongo = async (input: {
+export const listTenantActivitiesFromMongo = async (input: {
   tenantId: string;
   skip: number;
   take: number;
   sortDirection?: 1 | -1;
   status?: ActivityStatus;
   startBefore?: Date;
-}): Promise<{ items: EventWithTenantRelations[]; total: number }> => {
+}): Promise<{ items: ActivityWithTenantRelations[]; total: number }> => {
   const filter: Record<string, unknown> = { tenantId: input.tenantId };
   if (input.status) filter.status = input.status;
   if (input.startBefore) filter.startAt = { $lt: input.startBefore };
 
   const [docs, total] = await Promise.all([
-    eventsCollection()
+    activitiesCollection()
       .find(filter)
       .sort({ startAt: input.sortDirection ?? 1 })
       .skip(input.skip)
       .limit(input.take)
       .toArray(),
-    eventsCollection().countDocuments(filter)
+    activitiesCollection().countDocuments(filter)
   ]);
 
   if (total === 0) return { items: [], total: 0 };
@@ -407,25 +407,25 @@ export const listTenantEventsFromMongo = async (input: {
   return { items, total };
 };
 
-export const findTenantEventFromMongo = async (
+export const findTenantActivityFromMongo = async (
   activityId: string,
   tenantId: string
-): Promise<EventWithTenantRelations | null> => {
-  const doc = await eventsCollection().findOne({ _id: activityId, tenantId });
+): Promise<ActivityWithTenantRelations | null> => {
+  const doc = await activitiesCollection().findOne({ _id: activityId, tenantId });
   if (!doc) return null;
 
   const [event] = await assembleTenantEventsWithRelations([doc]);
   return event ?? null;
 };
 
-export const findTenantEventDocFromMongo = async (
+export const findTenantActivityDocFromMongo = async (
   activityId: string,
   tenantId: string
-): Promise<MongoEventDoc | null> => eventsCollection().findOne({ _id: activityId, tenantId });
+): Promise<MongoActivityDoc | null> => activitiesCollection().findOne({ _id: activityId, tenantId });
 
-export const listEventsByIdsFromMongo = async (eventIds: string[]): Promise<EventWithPublicRelations[]> => {
+export const listActivitiesByIdsFromMongo = async (eventIds: string[]): Promise<ActivityWithPublicRelations[]> => {
   if (eventIds.length === 0) return [];
-  const docs = await eventsCollection().find({ _id: { $in: eventIds } }).toArray();
+  const docs = await activitiesCollection().find({ _id: { $in: eventIds } }).toArray();
   return assembleEventsWithPublicRelations(docs);
 };
 
@@ -435,7 +435,7 @@ export type PublicTenantProfile = TenantRecord & {
     role: string;
     user: { email: string; profile?: { displayName?: string | null; avatarUrl?: string | null } | null };
   }>;
-  events: EventWithPublicRelations[];
+  activities: ActivityWithPublicRelations[];
 };
 
 export const findPublicTenantProfileBySlugFromMongo = async (
@@ -458,7 +458,7 @@ export const findPublicTenantProfileBySlugFromMongo = async (
   const memberUsers = await findAuthUsersByIds(memberUserIds);
   const memberUserMap = new Map(memberUsers.map((user) => [user._id, user]));
 
-  const eventDocs = await eventsCollection()
+  const eventDocs = await activitiesCollection()
     .find({
       tenantId: tenant.id,
       status: ActivityStatus.PUBLISHED,
@@ -468,7 +468,7 @@ export const findPublicTenantProfileBySlugFromMongo = async (
     .limit(20)
     .toArray();
 
-  const events = await assembleEventsWithPublicRelations(eventDocs);
+  const activities = await assembleEventsWithPublicRelations(eventDocs);
 
   return {
     ...tenant,
@@ -477,6 +477,6 @@ export const findPublicTenantProfileBySlugFromMongo = async (
       role: doc.role as string,
       user: toParticipantUser(memberUserMap.get(doc.userId as string))
     })),
-    events
+    activities
   };
 };

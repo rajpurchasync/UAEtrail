@@ -81,7 +81,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
   const cancelEvent = async () => {
     if (!tenantId || !confirmCancel) return;
     try {
-      await api.cancelOrganizerEvent(tenantId, confirmCancel.id);
+      await api.cancelHostActivity(tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await loadEvents(tenantId);
     } catch (err) {
@@ -126,7 +126,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
   };
 
   const eventRequests = (activityId: string) => requests.filter((r) => r.activity.id === activityId && r.status === 'pending');
-  const cancelledEventRequests = (activityId: string) =>
+  const cancelledActivityRequests = (activityId: string) =>
     requests.filter((r) => r.activity.id === activityId && r.status === 'cancelled' && r.cancelReason);
 
   return (
@@ -158,7 +158,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
       <div className="space-y-3">
         {displayed.map((event) => {
           const pending = eventRequests(event.id);
-          const cancelled = cancelledEventRequests(event.id);
+          const cancelled = cancelledActivityRequests(event.id);
           const expanded = expandedRequests === event.id;
           const pricingBadge = tripPricingBadge(event);
           return (
@@ -357,7 +357,7 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
       {confirmCancel && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmCancel(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Cancel Event?</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Cancel Activity?</h3>
             <p className="text-sm text-gray-600 mb-1">
               This will cancel the event and notify all registered participants. This action cannot be undone.
             </p>
@@ -369,13 +369,13 @@ export const OrganizedSection = ({ refreshKey = 0 }: { refreshKey?: number }) =>
                 onClick={() => setConfirmCancel(null)}
                 className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50"
               >
-                Keep Event
+                Keep Activity
               </button>
               <button
                 onClick={cancelEvent}
                 className="px-4 py-2 rounded-md text-sm text-white bg-red-600 hover:bg-red-700"
               >
-                Cancel Event
+                Cancel Activity
               </button>
             </div>
           </div>

@@ -78,7 +78,7 @@ export const OrganizerRequests = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left">Requester</th>
-                <th className="px-4 py-3 text-left">Event</th>
+                <th className="px-4 py-3 text-left">Activity</th>
                 <th className="px-4 py-3 text-left">Note</th>
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-left">Status</th>

@@ -24,29 +24,29 @@ import { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { createPasswordResetToken } from '../lib/auth-tokens.js';
 import { createAuthUser, findAuthUserByEmail, updateAuthUserCore } from '../lib/auth-users.js';
 import {
-  cancelEventById,
-  createEventDetailed,
+  cancelActivityById,
+  createActivityDetailed,
   createLocationRecord,
-  findTenantEventBasic,
+  findTenantActivityBasic,
   findTenantById,
   findTenantCountryCode,
-  findTenantEventById,
-  findTenantEventForEdit,
-  findTenantEventWithParticipants,
+  findTenantActivityById,
+  findTenantActivityForEdit,
+  findTenantActivityWithParticipants,
   listSubmittedLocationsByUser,
-  listTenantEventHistoryWithParticipation,
-  listTenantEventsDetailed,
-  publishEventById,
-  updateEventDetailed
+  listTenantActivityHistoryWithParticipation,
+  listTenantActivitiesDetailed,
+  publishActivityById,
+  updateActivityDetailed
 } from '../lib/activities-store.js';
 import {
-  applyTenantEventRequestDecision,
-  clearEventParticipantCheckIn,
-  countTenantEventRequests,
-  findEventParticipantByIdAndEvent,
-  findTenantEventRequestForDecision,
-  listEventParticipantsWithUsers,
-  listTenantEventRequestsDetailed
+  applyTenantActivityRequestDecision,
+  clearActivityParticipantCheckIn,
+  countTenantActivityRequests,
+  findActivityParticipantByIdAndActivity,
+  findTenantActivityRequestForDecision,
+  listActivityParticipantsWithUsers,
+  listTenantActivityRequestsDetailed
 } from '../lib/activity-engagement-store.js';
 import { createNotificationRecord, createNotificationsMany } from '../lib/notifications-store.js';
 import {
@@ -93,7 +93,7 @@ const eventCreateSchema = z.object({
   pricePackages: tripPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
   images: z.array(z.string()).default([]),
-  guideId: z.string().optional(),
+  hostId: z.string().optional(),
   pricingMode: z.enum(['free', 'shared', 'paid']).optional()
 });
 
@@ -116,12 +116,12 @@ const teamPatchSchema = z.object({
 
 import { parseLocalDateTime } from '../lib/datetime.js';
 import {
-  normalizeEventPricing,
+  normalizeActivityPricing,
   parseStoredPricePackages,
   tripPricePackagesSchema
 } from '../lib/trip-pricing.js';
 import {
-  notifyParticipantsOfScheduleChangeDefault,
+  notifyParticipantsOfScheduleChange,
   scheduleInstantChanged
 } from '../services/activity-schedule.js';
 import {
@@ -135,6 +135,7 @@ const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): Membersh
   role === 'tenant_admin' ? MembershipRole.TENANT_ADMIN : MembershipRole.TENANT_GUIDE;
 
 export const organizerRouter = Router();
+export const hostRouter = organizerRouter;
 
 organizerRouter.use(requireAuth, requireVerifiedEmail, requireTenantContext);
 
@@ -144,7 +145,7 @@ tenantActivitiesRouter.get('/', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const pg = paginationSchema.parse(req.query);
-    const { items: events, total } = await listTenantEventsDetailed({
+    const { items: events, total } = await listTenantActivitiesDetailed({
       tenantId,
       skip: (pg.page - 1) * pg.pageSize,
       take: pg.pageSize,
@@ -175,22 +176,22 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
       throw new ApiError(404, 'tenant_not_found', 'Host organization not found.');
     }
 
-    const hostId = body.guideId ?? req.auth!.userId;
+    const hostId = body.hostId ?? req.auth!.userId;
     await assertActivityHost(tenantId, hostId, tenant, { platformAdmin });
 
     const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
-    const pricing = normalizeEventPricing({
+    const pricing = normalizeActivityPricing({
       price: body.price,
       pricePackages: body.pricePackages,
       pricingMode: body.pricingMode,
     });
     assertActivityPricingAllowed(tenant.type, body.pricingMode, pricing);
 
-    const created = await createEventDetailed({
+    const created = await createActivityDetailed({
       tenant: { connect: { id: tenantId } },
       location: { connect: { id: body.locationId } },
       createdBy: { connect: { id: req.auth!.userId } },
-      guide: { connect: { id: hostId } },
+      host: { connect: { id: hostId } },
       title: body.title,
       description: body.description,
       startAt: parseLocalDateTime(body.date, body.time, countryCode),
@@ -223,7 +224,7 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
 
     await createAuditLog({
       actorId: req.auth!.userId,
-      action: 'event.create',
+      action: 'activity.create',
       entityType: 'activity',
       entityId: created.id,
       tenantId
@@ -244,7 +245,7 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const body = req.body as z.infer<typeof eventPatchSchema>;
 
-    const existing = await findTenantEventForEdit(id, tenantId);
+    const existing = await findTenantActivityForEdit(id, tenantId);
     if (!existing) {
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
@@ -255,8 +256,8 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
       throw new ApiError(400, 'capacity_too_low', `Capacity cannot be less than current participants (${existing.participants.length}).`);
     }
 
-    if (body.guideId) {
-      await assertActivityHostPatch(tenantId, body.guideId, { platformAdmin });
+    if (body.hostId) {
+      await assertActivityHostPatch(tenantId, body.hostId, { platformAdmin });
     }
 
     if (body.locationId && body.activityType) {
@@ -279,7 +280,7 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
 
     const pricing =
       body.price !== undefined || body.pricePackages !== undefined
-        ? normalizeEventPricing({
+        ? normalizeActivityPricing({
             price: body.price ?? existing.priceAed,
             pricePackages: body.pricePackages ?? parseStoredPricePackages(existing.pricePackages),
             pricingMode: body.pricingMode ?? existing.pricingMode ?? undefined,
@@ -293,7 +294,7 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
       }
     }
 
-    const updated = await updateEventDetailed(id, {
+    const updated = await updateActivityDetailed(id, {
       location: body.locationId ? { connect: { id: body.locationId } } : undefined,
       title: body.title,
       description: body.description,
@@ -329,12 +330,12 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
           : {}),
       ...(body.pricingMode !== undefined ? { pricingMode: body.pricingMode } : {}),
       capacity: body.capacity,
-      guide: body.guideId ? { connect: { id: body.guideId } } : body.guideId === null ? { disconnect: true } : undefined
+      host: body.hostId ? { connect: { id: body.hostId } } : body.hostId === null ? { disconnect: true } : undefined
     });
 
     await createAuditLog({
       actorId: req.auth!.userId,
-      action: 'event.update',
+      action: 'activity.update',
       entityType: 'activity',
       entityId: id,
       tenantId
@@ -346,9 +347,9 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
       nextStartAt &&
       existing.participants.length > 0
     ) {
-      await notifyParticipantsOfScheduleChangeDefault({
+      await notifyParticipantsOfScheduleChange({
         activityId: existing.id,
-        eventTitle: updated.title,
+        activityTitle: updated.title,
         participantUserIds: existing.participants.map((p) => p.userId),
         previousStartAt: existing.startAt,
         newStartAt: nextStartAt,
@@ -368,19 +369,19 @@ tenantActivitiesRouter.delete('/:id', validate({ params: idParamSchema }), async
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
-    const event = await findTenantEventWithParticipants(id, tenantId);
+    const event = await findTenantActivityWithParticipants(id, tenantId);
     if (!event) {
-      throw new ApiError(404, 'event_not_found', 'Event not found.');
+      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
-    await cancelEventById(event.id);
+    await cancelActivityById(event.id);
 
     // Notify all participants about the cancellation
     if (event.participants.length > 0) {
       await createNotificationsMany(
         event.participants.map((p) => ({
           userId: p.userId,
-          title: 'Event Cancelled',
-          body: `The event "${event.title}" has been cancelled by the organizer.`,
+          title: 'Activity Cancelled',
+          body: `The activity "${event.title}" has been cancelled by the organizer.`,
           type: NotificationType.ACTIVITY,
           meta: { activityId: event.id }
         }))
@@ -389,7 +390,7 @@ tenantActivitiesRouter.delete('/:id', validate({ params: idParamSchema }), async
 
     await createAuditLog({
       actorId: req.auth!.userId,
-      action: 'event.cancel',
+      action: 'activity.cancel',
       entityType: 'activity',
       entityId: event.id,
       tenantId
@@ -404,22 +405,22 @@ tenantActivitiesRouter.post('/:id/publish', validate({ params: idParamSchema }),
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
-    const event = await findTenantEventById(id, tenantId);
+    const event = await findTenantActivityById(id, tenantId);
     if (!event) {
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
     if (event.status !== ActivityStatus.DRAFT) {
       throw new ApiError(400, 'activity_not_draft', 'Only draft activities can be published.');
     }
-    const updated = await publishEventById(event.id);
+    const updated = await publishActivityById(event.id);
     await createAuditLog({
       actorId: req.auth!.userId,
-      action: 'event.publish',
+      action: 'activity.publish',
       entityType: 'activity',
       entityId: event.id,
       tenantId
     });
-    const hostUserId = updated.guideId ?? updated.createdById;
+    const hostUserId = updated.hostId ?? updated.createdById;
     void awardPointsDefault({
       userId: hostUserId,
       action: RewardAction.ACTIVITY_PUBLISHED,
@@ -437,12 +438,12 @@ organizerRouter.get('/requests', async (req, res, next) => {
     const tenantId = req.tenantContext!.tenantId;
     const pg = paginationSchema.parse(req.query);
     const [requests, total] = await Promise.all([
-      listTenantEventRequestsDetailed({
+      listTenantActivityRequestsDetailed({
         tenantId,
         skip: (pg.page - 1) * pg.pageSize,
         take: pg.pageSize
       }),
-      countTenantEventRequests(tenantId)
+      countTenantActivityRequests(tenantId)
     ]);
     res.json(paginatedResponse(
       requests.map((request) => ({
@@ -480,7 +481,7 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const { status, organizerNote } = req.body as z.infer<typeof requestDecisionSchema>;
 
-    const request = await findTenantEventRequestForDecision(id, tenantId);
+    const request = await findTenantActivityRequestForDecision(id, tenantId);
 
     if (!request) {
       throw new ApiError(404, 'request_not_found', 'Join request not found.');
@@ -490,7 +491,7 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
     }
 
     if (status === 'approved') {
-      await applyTenantEventRequestDecision({
+      await applyTenantActivityRequestDecision({
         requestId: request.id,
         activityId: request.activityId,
         userId: request.userId,
@@ -507,7 +508,7 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
         meta: { activityId: request.activityId, requestId: request.id }
       });
     } else {
-      await applyTenantEventRequestDecision({
+      await applyTenantActivityRequestDecision({
         requestId: request.id,
         activityId: request.activityId,
         userId: request.userId,
@@ -534,12 +535,12 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
     });
 
     const userName = request.user.profile?.displayName ?? request.user.email.split('@')[0];
-    const eventDate = request.activity.startAt.toISOString().slice(0, 10);
+    const activityDate = request.activity.startAt.toISOString().slice(0, 10);
     notifyRequestDecision({
       to: request.user.email,
       userName,
-      eventTitle: request.activity.title,
-      eventDate,
+      activityTitle: request.activity.title,
+      activityDate,
       approved: status === 'approved',
       note: organizerNote
     }).catch(() => undefined);
@@ -763,16 +764,16 @@ tenantActivitiesRouter.get('/:id/participants', validate({ params: idParamSchema
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
 
-    const event = await findTenantEventBasic(id, tenantId);
-    if (!event) throw new ApiError(404, 'event_not_found', 'Event not found.');
+    const activity = await findTenantActivityBasic(id, tenantId);
+    if (!activity) throw new ApiError(404, 'activity_not_found', 'Activity not found.');
 
-    const participants = await listEventParticipantsWithUsers(id);
+    const participants = await listActivityParticipantsWithUsers(id);
 
     res.json({
       data: {
         activityId: id,
-        eventTitle: event.title,
-        capacity: event.capacity,
+        activityTitle: activity.title,
+        capacity: activity.capacity,
         participants: participants.map((p) => ({
           id: p.id,
           userId: p.userId,
@@ -817,13 +818,13 @@ tenantActivitiesRouter.delete('/:id/participants/:participantId/checkin', valida
     const tenantId = req.tenantContext!.tenantId;
     const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
 
-    const event = await findTenantEventById(id, tenantId);
-    if (!event) throw new ApiError(404, 'event_not_found', 'Event not found.');
+    const activity = await findTenantActivityById(id, tenantId);
+    if (!activity) throw new ApiError(404, 'activity_not_found', 'Activity not found.');
 
-    const participant = await findEventParticipantByIdAndEvent(participantId, id);
+    const participant = await findActivityParticipantByIdAndActivity(participantId, id);
     if (!participant) throw new ApiError(404, 'participant_not_found', 'Participant not found.');
 
-    await clearEventParticipantCheckIn(participantId);
+    await clearActivityParticipantCheckIn(participantId);
 
     await createAuditLog({
       actorId: req.auth!.userId,
@@ -877,13 +878,13 @@ organizerRouter.post('/locations', validate({ body: locationSubmitBodySchema }),
   }
 });
 
-// ─── Event History ──────────────────────────────────────────────────────────
+// ─── Activity History ──────────────────────────────────────────────────────────
 
 tenantActivitiesRouter.get('/history', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const pg = paginationSchema.parse(req.query);
-    const { items: events, total } = await listTenantEventHistoryWithParticipation({
+    const { items: events, total } = await listTenantActivityHistoryWithParticipation({
       tenantId,
       skip: (pg.page - 1) * pg.pageSize,
       take: pg.pageSize

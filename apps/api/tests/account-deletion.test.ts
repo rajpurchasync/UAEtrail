@@ -23,7 +23,7 @@ describe('account deletion', () => {
         email,
         password,
         displayName: 'Delete Test User',
-        accountType: 'visitor'
+        accountType: 'participant'
       });
 
     expect(response.status).toBe(201);
@@ -82,7 +82,7 @@ describe('data export', () => {
         email,
         password,
         displayName: 'Export Test User',
-        accountType: 'visitor'
+        accountType: 'participant'
       });
 
     const verifyRes = await request(app)
@@ -116,7 +116,7 @@ describe('content reports', () => {
         email,
         password,
         displayName: 'Report Test User',
-        accountType: 'visitor'
+        accountType: 'participant'
       });
 
     const verifyRes = await request(app)

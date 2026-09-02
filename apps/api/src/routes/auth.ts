@@ -42,7 +42,7 @@ import {
   updateAuthUserLastActive,
   updateAuthUserCore
 } from '../lib/auth-users.js';
-import { createOrganizerApplicationRecord } from '../lib/organizer-applications-store.js';
+import { createHostApplicationRecord } from '../lib/host-applications-store.js';
 import { processSignupRewardsDefault } from '../services/rewards.js';
 import { acceptGroupInviteByToken, acceptPendingGroupInvitesForEmail } from '../lib/social-groups-store.js';
 
@@ -55,7 +55,7 @@ const registerSchema = z.object({
     .regex(/[a-z]/, 'Must include at least one lowercase letter')
     .regex(/[0-9]/, 'Must include at least one number'),
   displayName: z.string().min(2).max(80),
-  accountType: z.enum(['visitor', 'company', 'guide']).default('visitor'),
+  accountType: z.enum(['participant', 'company', 'guide']).default('participant'),
   organizationName: z.string().min(2).max(120).optional(),
   referralCode: z.string().min(4).max(12).optional(),
   groupInviteToken: z.string().min(20).optional()
@@ -166,7 +166,7 @@ const demoAccountDefaults: Record<string, { password: string; role: UserRole; di
   },
   'visitor@uaetrails.app': {
     password: 'Visitor@12345',
-    role: UserRole.VISITOR,
+    role: UserRole.PARTICIPANT,
     displayName: 'Visitor User'
   },
   'vendor@uaetrails.app': {
@@ -326,7 +326,7 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       passwordHash,
       googleId: null,
       authProvider: 'EMAIL',
-      role: 'VISITOR',
+      role: 'PARTICIPANT',
       status: 'ACTIVE',
       emailVerifiedAt: null,
       lastActiveAt: null,
@@ -334,8 +334,8 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       profile: { displayName, phone: null, bio: null, avatarUrl: null }
     });
 
-    if (accountType !== 'visitor') {
-      await createOrganizerApplicationRecord({
+    if (accountType !== 'participant') {
+      await createHostApplicationRecord({
         applicantId: created._id,
         requestedName: organizationName ?? `${displayName} Adventures`,
         requestedSlug: slugify(organizationName ?? `${displayName}-adventures`),
@@ -713,7 +713,7 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
         passwordHash: null,
         googleId: profile.googleId,
         authProvider: 'GOOGLE',
-        role: 'VISITOR',
+        role: 'PARTICIPANT',
         status: 'ACTIVE',
         emailVerifiedAt: new Date(),
         lastActiveAt: new Date(),

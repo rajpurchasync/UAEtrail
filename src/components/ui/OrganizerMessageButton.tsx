@@ -35,7 +35,7 @@ export const OrganizerMessageButton = ({
   if (user?.id === organizerUserId) return null;
 
   const messageOptions = activityId ? { activityId } : undefined;
-  const messagePath = messagesRouteForRole(user?.role ?? 'visitor', organizerUserId, messageOptions);
+  const messagePath = messagesRouteForRole(user?.role ?? 'participant', organizerUserId, messageOptions);
 
   const handleGuestClick = (e: React.MouseEvent) => {
     e.stopPropagation();

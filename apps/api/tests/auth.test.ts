@@ -26,7 +26,7 @@ describe('auth integration', () => {
         email,
         password,
         displayName: 'Auth Test User',
-        accountType: 'visitor'
+        accountType: 'participant'
       });
 
     expect(response.status).toBe(201);
@@ -66,7 +66,7 @@ describe('auth integration', () => {
         email: pendingEmail,
         password: pendingPassword,
         displayName: 'Pending User',
-        accountType: 'visitor'
+        accountType: 'participant'
       });
 
     expect(registerRes.status).toBe(201);
@@ -136,7 +136,7 @@ describe('auth integration', () => {
         email: switchEmail,
         password: switchPassword,
         displayName: 'Role Switch User',
-        accountType: 'visitor'
+        accountType: 'participant'
       });
 
     expect(registerRes.status).toBe(201);
@@ -160,10 +160,10 @@ describe('auth integration', () => {
     const switchVisitorRes = await request(app)
       .post('/api/v1/me/role/switch')
       .set('Authorization', `Bearer ${loginRes.body.tokens.accessToken}`)
-      .send({ target: 'visitor' });
+      .send({ target: 'participant' });
 
     expect(switchVisitorRes.status).toBe(200);
-    expect(switchVisitorRes.body.data.role).toBe('visitor');
+    expect(switchVisitorRes.body.data.role).toBe('participant');
     expect(switchVisitorRes.body.data.switchedFromRole).toBe('platform_admin');
 
     const visitorProfileRes = await request(app)
@@ -172,7 +172,7 @@ describe('auth integration', () => {
 
     expect(visitorProfileRes.status).toBe(200);
     expect(visitorProfileRes.body.data.id).toBe(createdUser!._id);
-    expect(visitorProfileRes.body.data.role).toBe('visitor');
+    expect(visitorProfileRes.body.data.role).toBe('participant');
     expect(visitorProfileRes.body.data.switchedFromRole).toBe('platform_admin');
 
     const restoreRes = await request(app)

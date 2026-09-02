@@ -1,6 +1,7 @@
+import { Router } from 'express';
 import { OrderStatus, ProductStatus } from '../domain/enums.js';
 import ExcelJS from 'exceljs';
-import { Router } from 'express';
+import { UserRole } from '../domain/enums.js';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
 import { getStripe, isStripeConfigured } from '../lib/stripe.js';
@@ -394,6 +395,9 @@ shopRouter.get('/merchant/profile', requireAuth, requireVerifiedEmail, validate(
 
 shopRouter.post('/merchant/profile', requireAuth, requireVerifiedEmail, validate({ body: merchantProfileSchema }), async (req, res, next) => {
   try {
+    if (req.auth!.role !== UserRole.MERCHANT_ADMIN && req.auth!.role !== UserRole.PLATFORM_ADMIN) {
+      throw new ApiError(403, 'forbidden', 'Merchant accounts are provisioned by a platform administrator.');
+    }
     const userId = req.auth!.userId;
     const body = req.body as z.infer<typeof merchantProfileSchema>;
     const profile = await createMerchantProfileForUser(userId, body);

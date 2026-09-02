@@ -81,7 +81,7 @@ export const OrganizerActivities = () => {
   const cancelEvent = async () => {
     if (!tenantId || !confirmCancel) return;
     try {
-      await api.cancelOrganizerEvent(tenantId, confirmCancel.id);
+      await api.cancelHostActivity(tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await loadEvents(tenantId);
     } catch (err) {
@@ -98,7 +98,7 @@ export const OrganizerActivities = () => {
     setCheckinLoading(true);
     setViewMode('checkin');
     try {
-      const res = await api.getEventParticipants(tenantId, event.id);
+      const res = await api.getActivityParticipants(tenantId, event.id);
       setParticipants(res.data.participants ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load participants');
@@ -117,7 +117,7 @@ export const OrganizerActivities = () => {
         await api.checkinParticipant(tenantId, checkinActivityId, participant.id);
       }
       // Refresh participants
-      const res = await api.getEventParticipants(tenantId, checkinActivityId);
+      const res = await api.getActivityParticipants(tenantId, checkinActivityId);
       setParticipants(res.data.participants ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update check-in');

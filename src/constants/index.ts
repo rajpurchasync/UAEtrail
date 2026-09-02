@@ -18,20 +18,20 @@ export const STATUS_COLORS = {
 
 /** Frontend page routes for scheduled activities (not API paths). */
 export const PUBLIC_ACTIVITIES_PATH = '/activities';
-export const ORGANIZER_ACTIVITIES_PATH = '/organizer/activities';
-export const ORGANIZER_ACTIVITIES_NEW_PATH = '/organizer/activities/new';
+export const ORGANIZER_ACTIVITIES_PATH = '/host/activities';
+export const ORGANIZER_ACTIVITIES_NEW_PATH = '/host/activities/new';
 export const ADMIN_ACTIVITIES_PATH = '/admin/activities';
 
 /** Desktop organizer dashboard sidebar — Team is separate from public profile. */
 export const ORGANIZER_DASHBOARD_LINKS = [
-  { to: '/organizer/overview', label: 'Overview' },
-  { to: '/organizer/profile', label: 'Public Profile' },
+  { to: '/host/overview', label: 'Overview' },
+  { to: '/host/profile', label: 'Public Profile' },
   { to: ORGANIZER_ACTIVITIES_PATH, label: 'Activities' },
-  { to: '/organizer/requests', label: 'Join Requests' },
-  { to: '/organizer/team', label: 'Team' },
-  { to: '/organizer/locations', label: 'Venues' },
-  { to: '/organizer/messages', label: 'Messages' },
-  { to: '/organizer/history', label: 'History' },
+  { to: '/host/requests', label: 'Join Requests' },
+  { to: '/host/team', label: 'Team' },
+  { to: '/host/locations', label: 'Venues' },
+  { to: '/host/messages', label: 'Messages' },
+  { to: '/host/history', label: 'History' },
   { to: '/my-rewards', label: 'Trail Points' },
 ];
 
@@ -39,7 +39,7 @@ export const ADMIN_LINKS = [
   { to: '/admin/overview', label: 'Overview' },
   { to: '/admin/locations', label: 'Locations' },
   { to: '/admin/users', label: 'User Management' },
-  { to: '/admin/organizers', label: 'Organizers' },
+  { to: '/admin/hosts', label: 'Hosts' },
   { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },
   { to: '/admin/groups', label: 'Groups' },
   { to: '/admin/shop', label: 'Shop' },

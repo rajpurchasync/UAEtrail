@@ -59,7 +59,7 @@ export const SignIn = () => {
   const isFromValidForRole = (path: string, role: string): boolean => {
     // non-visitor roles must always land on their hub unless returning to a role-specific path
     const organizerRoles = ['tenant_owner', 'tenant_admin', 'tenant_guide'];
-    if (organizerRoles.includes(role)) return path.startsWith('/organizer');
+    if (organizerRoles.includes(role)) return path.startsWith('/host') || path.startsWith('/organizer');
     if (role === 'platform_admin') return path.startsWith('/admin');
     if (role === 'merchant_admin') return path.startsWith('/merchant');
     return true;
@@ -115,7 +115,7 @@ export const SignIn = () => {
     }
 
     navigate(
-      signedInUser.role === 'visitor'
+      signedInUser.role === 'participant'
         ? defaultRouteByRole(signedInUser.role)
         : accountRouteByRole(signedInUser.role),
       { replace: true }

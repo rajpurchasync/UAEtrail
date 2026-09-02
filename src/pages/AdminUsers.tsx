@@ -123,7 +123,7 @@ export const AdminUsers = () => {
           <option value="">All User Types</option>
           <option value="participant">Participant</option>
           <option value="guide_organizer">Individual Host</option>
-          <option value="business_organizer">Organizer</option>
+          <option value="business_organizer">Business Host</option>
           <option value="organizer_staff">Host Staff</option>
           <option value="platform_admin">Admin</option>
         </select>
@@ -133,7 +133,7 @@ export const AdminUsers = () => {
           <option value="tenant_owner">Tenant Owner</option>
           <option value="tenant_admin">Tenant Admin</option>
           <option value="tenant_guide">Guide</option>
-          <option value="visitor">Visitor</option>
+          <option value="participant">Participants Only</option>
         </select>
         <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
           <option value="">All Status</option>

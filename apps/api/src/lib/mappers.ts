@@ -1,4 +1,4 @@
-import type { Event, Location } from '../domain/types.js';
+import type { Activity, Location } from '../domain/types.js';
 import {
   ActivityType,
   ActivityStatus,
@@ -10,7 +10,7 @@ import {
 } from '../domain/enums.js';
 import { ActivityDTO, LocationDTO, MembershipRole as SharedMembershipRole, RequestStatus as SharedRequestStatus, TenantType as SharedTenantType, UserRole as SharedUserRole } from '@uaetrail/shared-types';
 
-import { formatEventLocal } from './datetime.js';
+import { formatActivityLocal } from './datetime.js';
 import { parseStoredPricePackages } from './trip-pricing.js';
 
 const enumMap = <T extends string>(value: string | null | undefined): T =>
@@ -44,7 +44,7 @@ export const toParticipantPreviews = (participants: ParticipantWithUser[]) =>
     avatar: p.user.profile?.avatarUrl ?? null
   }));
 
-type EventWithRelations = Event & {
+type ActivityWithRelations = Activity & {
   location: Location;
   tenant: { slug: string; name: string; countryCode?: string; ownerId: string };
   guide?: { profile?: { displayName?: string | null; avatarUrl?: string | null; bio?: string | null } | null } | null;
@@ -52,11 +52,11 @@ type EventWithRelations = Event & {
   participants?: Array<{ id: string } | ParticipantWithUser>;
 };
 
-export const buildActivityDto = (event: EventWithRelations): ActivityDTO => {
+export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => {
   const participantsWithUser = (event.participants ?? []).filter(
     (p): p is ParticipantWithUser => 'user' in p && Boolean(p.user)
   );
-  const hostUserId = event.guideId ?? event.tenant.ownerId;
+  const hostUserId = event.hostId ?? event.tenant.ownerId;
   const hostName = event.guide?.profile?.displayName ?? 'Host';
   const hostAvatar = event.guide?.profile?.avatarUrl ?? null;
   const tenantName = event.tenant.name;
@@ -75,7 +75,7 @@ export const buildActivityDto = (event: EventWithRelations): ActivityDTO => {
     hostAvatar,
     hostBio: event.guide?.profile?.bio ?? null,
     tenantName,
-    guideId: event.guideId ?? undefined,
+    hostId: event.hostId ?? undefined,
     createdById: event.createdById,
     createdByName,
     tenantSlug: event.tenant.slug,
@@ -142,14 +142,14 @@ export const toEventDto = ({
   hostAvatar,
   hostBio,
   tenantName,
-  guideId,
+  hostId,
   createdById,
   createdByName,
   tenantSlug,
   participantPreviews,
   countryCode = 'AE'
 }: {
-  event: Event;
+  event : Activity;
   locationName: string;
   activityType: ActivityType;
   region?: string;
@@ -159,15 +159,15 @@ export const toEventDto = ({
   hostAvatar?: string | null;
   hostBio?: string | null;
   tenantName: string;
-  guideId?: string;
+  hostId?: string;
   createdById?: string;
   createdByName?: string;
   tenantSlug: string;
   participantPreviews?: Array<{ id: string; name: string; avatar?: string | null }>;
   countryCode?: string;
 }): ActivityDTO => {
-  const local = formatEventLocal(event.startAt, countryCode);
-  const endLocal = event.endAt ? formatEventLocal(event.endAt, countryCode) : null;
+  const local = formatActivityLocal(event.startAt, countryCode);
+  const endLocal = event.endAt ? formatActivityLocal(event.endAt, countryCode) : null;
   return {
   id: event.id,
   tenantId: event.tenantId,
@@ -212,7 +212,7 @@ export const toEventDto = ({
   hostAvatar: hostAvatar ?? undefined,
   hostBio: hostBio ?? undefined,
   tenantName,
-  guideId: guideId ?? null,
+  hostId: hostId ?? null,
   createdById,
   createdByName,
   organizerName: hostName,

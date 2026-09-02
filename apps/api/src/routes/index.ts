@@ -4,7 +4,7 @@ import { adminRouter } from './admin.js';
 import { authRouter } from './auth.js';
 import { chatRouter } from './chat.js';
 import { mediaRouter } from './media.js';
-import { organizerRouter } from './organizer.js';
+import { hostRouter } from './organizer.js';
 import { shopRouter } from './shop.js';
 import { socialRouter } from './social.js';
 import { reportsRouter } from './reports.js';
@@ -14,8 +14,9 @@ export const apiRouter = Router();
 
 apiRouter.use('/auth', authLimiter, authRouter);
 apiRouter.use('/admin', adminRouter);
-apiRouter.use('/organizer', organizerRouter);
-apiRouter.use('/host', organizerRouter);
+apiRouter.use('/host', hostRouter);
+/** @deprecated Use `/host` — kept for older clients. */
+apiRouter.use('/organizer', hostRouter);
 apiRouter.use('/chat', chatRouter);
 apiRouter.use('/shop', shopRouter);
 apiRouter.use('/media', mediaRouter);

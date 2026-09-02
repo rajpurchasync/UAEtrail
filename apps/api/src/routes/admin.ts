@@ -5,7 +5,7 @@ import {
   ActivityStatus,
   LocationStatus,
   NotificationType,
-  OrganizerApplicationStatus,
+  HostApplicationStatus,
   ProductStatus,
   RewardAction,
   TenantStatus,
@@ -26,10 +26,10 @@ import {
   countActiveEventsByLocationId,
   countAdminMetrics,
   createAdminLocation,
-  createAdminPublishedEvent,
+  createAdminPublishedActivity,
   deleteAdminLocation,
   findAdminEventById,
-  findAdminEventDetailedById,
+  findAdminActivityDetailedById,
   findAdminLocationById,
   findAdminProductById,
   findAdminTenantById,
@@ -40,9 +40,9 @@ import {
   listAdminTenantsPaged,
   listAuditLogsPaged,
   listBroadcastNotificationAuditLogs,
-  listEventsForAdminRequests,
-  listEventsForAdminTrips,
-  listUserHostedEventsBasic,
+  listActivitiesForAdminRequests,
+  listActivitiesForAdminTrips,
+  listUserHostedActivitiesBasic,
   listOwnerTenantTypes,
   listTenantMembershipsForUser,
   listUserOwnedTenantsBasic,
@@ -53,10 +53,10 @@ import {
   updateAdminTenantStatus
 } from '../lib/admin-store.js';
 import {
-  countEventParticipants,
-  countPendingEventRequests,
-  listUserEventParticipantsBasic,
-  listUserEventRequestsBasic
+  countActivityParticipants,
+  countPendingActivityRequests,
+  listUserActivityParticipantsBasic,
+  listUserActivityRequestsBasic
 } from '../lib/activity-engagement-store.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { requireRole } from '../middleware/rbac.js';
@@ -64,12 +64,12 @@ import { validate } from '../middleware/validate.js';
 import { countAuthUsers, findAuthUserById, listAuthUsers, updateAuthUserStatus } from '../lib/auth-users.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
 import {
-  approveOrganizerApplicationAndProvisionTenant,
-  countOrganizerApplications,
-  findOrganizerApplicationById,
-  listOrganizerApplicationsDetailed,
-  markOrganizerApplicationRejected
-} from '../lib/organizer-applications-store.js';
+  approveHostApplicationAndProvisionTenant,
+  countHostApplications,
+  findHostApplicationById,
+  listHostApplicationsDetailed,
+  markHostApplicationRejected
+} from '../lib/host-applications-store.js';
 import { dispatchNotificationDefault } from '../services/notifications.js';
 import { notifyUserAdminAction } from '../services/admin-notifications.js';
 import { awardPointsDefault, getRewardSummaryDefault, getUserLeaderboardRank } from '../services/rewards.js';
@@ -345,15 +345,15 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
   }
 });
 
-adminRouter.get('/organizer-applications', async (req, res, next) => {
+adminRouter.get('/host-applications', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
     const [applications, total] = await Promise.all([
-      listOrganizerApplicationsDetailed({
+      listHostApplicationsDetailed({
         skip: (pg.page - 1) * pg.pageSize,
         take: pg.pageSize
       }),
-      countOrganizerApplications()
+      countHostApplications()
     ]);
 
     res.json(paginatedResponse(
@@ -381,23 +381,23 @@ adminRouter.get('/organizer-applications', async (req, res, next) => {
 });
 
 adminRouter.patch(
-  '/organizer-applications/:id',
+  '/host-applications/:id',
   validate({ params: idParamSchema, body: applicationPatchSchema }),
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof idParamSchema>;
       const { status, reviewerNote } = req.body as z.infer<typeof applicationPatchSchema>;
 
-      const application = await findOrganizerApplicationById(id);
+      const application = await findHostApplicationById(id);
       if (!application) {
-        throw new ApiError(404, 'application_not_found', 'Organizer application was not found.');
+        throw new ApiError(404, 'application_not_found', 'Host application was not found.');
       }
-      if (application.status !== OrganizerApplicationStatus.PENDING) {
+      if (application.status !== HostApplicationStatus.PENDING) {
         throw new ApiError(400, 'application_finalized', 'Application is already finalized.');
       }
 
       if (status === 'approved') {
-        await approveOrganizerApplicationAndProvisionTenant({
+        await approveHostApplicationAndProvisionTenant({
           applicationId: application.id,
           reviewerId: req.auth!.userId,
           reviewerNote
@@ -406,16 +406,16 @@ adminRouter.patch(
           userId: application.applicantId,
           title: 'Host application approved',
           body: reviewerNote
-            ? `You can now post events. Note from reviewer: ${reviewerNote}`
-            : 'Your host profile was approved. You can now post events and welcome participants.',
+            ? `You can now post activities. Note from reviewer: ${reviewerNote}`
+            : 'Your host profile was approved. You can now post activities and welcome participants.',
           meta: {
-            kind: 'organizer_application_approved',
+            kind: 'host_application_approved',
             applicationId: application.id,
-            path: '/organizer/overview'
+            path: '/host/overview'
           }
         });
       } else {
-        await markOrganizerApplicationRejected({
+        await markHostApplicationRejected({
           id: application.id,
           reviewerId: req.auth!.userId,
           reviewerNote
@@ -427,7 +427,7 @@ adminRouter.patch(
             ? reviewerNote
             : 'Your host application was not approved at this time. You can update your profile and apply again.',
           meta: {
-            kind: 'organizer_application_rejected',
+            kind: 'host_application_rejected',
             applicationId: application.id,
             path: '/become-host'
           }
@@ -436,8 +436,8 @@ adminRouter.patch(
 
       await createAuditLog({
         actorId: req.auth!.userId,
-        action: `organizer_application.${status}`,
-        entityType: 'organizer_application',
+        action: `host_application.${status}`,
+        entityType: 'host_application',
         entityId: id
       });
 
@@ -472,7 +472,7 @@ adminActivitiesRouter.get('/moderation', async (req, res, next) => {
 adminActivitiesRouter.get('/:id', validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
-    const event = await findAdminEventDetailedById(id);
+    const event = await findAdminActivityDetailedById(id);
     if (!event) {
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
@@ -513,7 +513,7 @@ adminActivitiesRouter.patch(
           body: comment
             ? `Your activity "${event.title}" has been suspended. Reason: ${comment}`
             : `Your activity "${event.title}" has been suspended by an administrator.`,
-          meta: { kind: 'activity_suspended', activityId: event.id, path: '/organizer/activities' }
+          meta: { kind: 'activity_suspended', activityId: event.id, path: '/host/activities' }
         });
       }
 
@@ -524,7 +524,7 @@ adminActivitiesRouter.patch(
   }
 );
 
-// ─── Toggle Featured Event ──────────────────────────────────────────────────
+// ─── Toggle Featured Activity ──────────────────────────────────────────────────
 
 adminActivitiesRouter.patch(
   '/:id/featured',
@@ -541,7 +541,7 @@ adminActivitiesRouter.patch(
 
       await createAuditLog({
         actorId: req.auth!.userId,
-        action: updated.featured ? 'event.feature' : 'event.unfeature',
+        action: updated.featured ? 'activity.feature' : 'activity.unfeature',
         entityType: 'activity',
         entityId: event.id,
         tenantId: event.tenantId
@@ -559,27 +559,27 @@ mountActivityRoutes(adminRouter, adminActivitiesRouter);
 adminRouter.get('/metrics', async (_req, res, next) => {
   try {
     const now = new Date();
-    const [metrics, pendingRequests, totalUsers, activeUsers, totalParticipants, totalOrganizers, totalGroups] = await Promise.all([
+    const [metrics, pendingRequests, totalUsers, activeUsers, totalParticipants, totalHosts, totalGroups] = await Promise.all([
       countAdminMetrics(now),
-      countPendingEventRequests(),
+      countPendingActivityRequests(),
       countAuthUsers({}),
       countAuthUsers({ status: 'ACTIVE' }),
-      countEventParticipants(),
-      countAuthUsers({ role: ['TENANT_OWNER', 'PLATFORM_ADMIN'] }),
+      countActivityParticipants(),
+      countAuthUsers({ role: UserRole.TENANT_OWNER }),
       countSocialGroups()
     ]);
 
     res.json({
       data: {
         tenants: metrics.tenantCount,
-        events: metrics.activityCount,
+        activities: metrics.activityCount,
         pendingApplications: metrics.pendingApplications,
         pendingRequests,
         totalUsers,
         activeUsers,
         totalLocations: metrics.totalLocations,
         totalParticipants,
-        totalOrganizers,
+        totalHosts,
         activeTrips: metrics.activeTrips,
         totalGroups
       }
@@ -716,13 +716,13 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
       throw new ApiError(404, 'user_not_found', 'User not found.');
     }
 
-    const [ownedTenants, memberships, requests, participants, groups, hostedEvents, rewardSummary, leaderboardRank] = await Promise.all([
+    const [ownedTenants, memberships, requests, participants, groups, hostedActivities, rewardSummary, leaderboardRank] = await Promise.all([
       listUserOwnedTenantsBasic(id),
       listTenantMembershipsForUser(id),
-      listUserEventRequestsBasic(id, 20),
-      listUserEventParticipantsBasic(id, 20),
+      listUserActivityRequestsBasic(id, 20),
+      listUserActivityParticipantsBasic(id, 20),
       listUserGroupsWithMembership(id),
-      listUserHostedEventsBasic(id, 20),
+      listUserHostedActivitiesBasic(id, 20),
       getRewardSummaryDefault(id),
       getUserLeaderboardRank(id)
     ]);
@@ -732,10 +732,10 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
 
     const [requestEvents, participantEvents] = await Promise.all([
       requestEventIds.length > 0
-        ? listEventsForAdminRequests(requestEventIds)
+        ? listActivitiesForAdminRequests(requestEventIds)
         : Promise.resolve([]),
       participantEventIds.length > 0
-        ? listEventsForAdminTrips(participantEventIds)
+        ? listActivitiesForAdminTrips(participantEventIds)
         : Promise.resolve([])
     ]);
     const requestEventMap = new Map(requestEvents.map((event) => [event.id, event]));
@@ -785,7 +785,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
           isCreator: group.role === 'admin',
           joinedAt: group.joinedAt
         })),
-        hostedEvents,
+        hostedActivities,
         rewards: rewardSummary.trailPointsEligible === false ? null : {
           points: rewardSummary.points,
           membershipTier: rewardSummary.membershipTier,
@@ -795,7 +795,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
         requests: requests.reduce<Array<{
           id: string;
           activityId: string;
-          eventTitle: string | null;
+          activityTitle: string | null;
           locationName: string;
           status: string;
           createdAt: Date;
@@ -805,7 +805,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
           acc.push({
             id: r.id,
             activityId: r.activityId,
-            eventTitle: event.title,
+            activityTitle: event.title,
             locationName: event.location.name,
             status: r.status.toLowerCase(),
             createdAt: r.createdAt
@@ -814,7 +814,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
         }, []),
         trips: participants.reduce<Array<{
           activityId: string;
-          eventTitle: string | null;
+          activityTitle: string | null;
           locationName: string;
           organizerName: string;
           date: string;
@@ -824,7 +824,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
           if (!event) return acc;
           acc.push({
             activityId: p.activityId,
-            eventTitle: event.title,
+            activityTitle: event.title,
             locationName: event.location.name,
             organizerName: event.tenant.name,
             date: event.startAt.toISOString().slice(0, 10),
@@ -907,7 +907,7 @@ adminRouter.get('/tenants', async (req, res, next) => {
         ownerName: t.owner.profile?.displayName ?? t.owner.email,
         ownerEmail: t.owner.email,
         memberCount: t._count.memberships,
-        activityCount: t._count.events,
+        activityCount: t._count.activities,
         createdAt: t.createdAt
       })),
       total,
@@ -946,7 +946,7 @@ adminRouter.get('/tenants/:id', validate({ params: idParamSchema }), async (req,
           role: m.role.toLowerCase(),
           joinedAt: m.createdAt
         })),
-        events: tenant.events.map((e) => ({
+        activities: tenant.activities.map((e) => ({
           id: e.id,
           title: e.title,
           locationName: e.location.name,
@@ -999,7 +999,7 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
       meta: {
         kind: status === 'active' ? 'host_reopened' : 'host_suspended',
         tenantId: id,
-        path: status === 'active' ? '/organizer/overview' : '/become-host'
+        path: status === 'active' ? '/host/overview' : '/become-host'
       }
     });
 

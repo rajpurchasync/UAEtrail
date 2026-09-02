@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { Event, Location } from '../domain/types.js';
+import type { Activity, Location } from '../domain/types.js';
 import {
   ActivityType,
   Difficulty,
@@ -49,11 +49,11 @@ export type LocationCreateInput = {
   submittedBy?: RelationConnect;
 };
 
-export type EventCreateInput = {
+export type ActivityCreateInput = {
   tenant?: RelationConnect;
   location?: RelationConnect;
   createdBy?: RelationConnect;
-  guide?: RelationConnect;
+  host?: RelationConnect;
   title: string;
   description?: string;
   startAt: Date;
@@ -86,7 +86,7 @@ export type EventCreateInput = {
   publishedAt?: Date | null;
 };
 
-export type EventUpdateInput = {
+export type ActivityUpdateInput = {
   title?: string;
   description?: string;
   startAt?: Date;
@@ -117,7 +117,7 @@ export type EventUpdateInput = {
   status?: ActivityStatus | string;
   featured?: boolean;
   publishedAt?: Date | null;
-  guide?: RelationConnect;
+  host?: RelationConnect;
   location?: RelationConnect;
 };
 
@@ -172,12 +172,12 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
   };
 };
 
-export type MongoEventDoc = {
+export type MongoActivityDoc = {
   _id: string;
   tenantId: string;
   locationId: string;
   createdById: string;
-  guideId: string | null;
+  hostId: string | null;
   title: string;
   description: string;
   startAt: Date;
@@ -213,12 +213,12 @@ export type MongoEventDoc = {
   updatedAt: Date;
 };
 
-export const eventRowToMongoDoc = (event: Event): MongoEventDoc => ({
+export const activityRowToMongoDoc = (event : Activity): MongoActivityDoc => ({
   _id: event.id,
   tenantId: event.tenantId,
   locationId: event.locationId,
   createdById: event.createdById,
-  guideId: event.guideId,
+  hostId: event.hostId,
   title: event.title,
   description: event.description,
   startAt: event.startAt,
@@ -253,14 +253,14 @@ export const eventRowToMongoDoc = (event: Event): MongoEventDoc => ({
   updatedAt: event.updatedAt
 });
 
-export const buildEventFromCreateInput = (data: EventCreateInput, id: string): MongoEventDoc => {
+export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: string): MongoActivityDoc => {
   const now = new Date();
   return {
     _id: id,
     tenantId: extractConnectedId(data.tenant)!,
     locationId: extractConnectedId(data.location)!,
     createdById: extractConnectedId(data.createdBy)!,
-    guideId: extractConnectedId(data.guide),
+    hostId: extractConnectedId(data.host),
     title: data.title,
     description: data.description ?? '',
     startAt: data.startAt,

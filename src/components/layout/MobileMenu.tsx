@@ -111,7 +111,7 @@ const MobileMenuPanel = () => {
   const isAdminRole = user?.role === 'platform_admin';
   const isMerchantRole = user?.role === 'merchant_admin';
   const isPrivilegedRole = isOrganizerRole || isAdminRole || isMerchantRole;
-  const canSwitchBack = user?.role === 'visitor' && Boolean(user?.switchedFromRole);
+  const canSwitchBack = user?.role === 'participant' && Boolean(user?.switchedFromRole);
 
   // only hide for admin/merchant/organizer shells — they use their own burger
   if (isConsumerChromeHidden(pathname) && !isPrivilegedRole) return null;
@@ -136,13 +136,13 @@ const MobileMenuPanel = () => {
       active ? 'bg-emerald-50 text-emerald-800' : 'text-gray-700 hover:bg-gray-50'
     }`;
 
-  const switchRole = async (target: 'visitor' | 'original') => {
+  const switchRole = async (target: 'participant' | 'original') => {
     closeMenu();
     try {
       const res = await api.switchMeRole(target);
       setStoredSession(res.tokens);
       await refreshUser();
-      navigate(target === 'visitor' ? '/' : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
+      navigate(target === 'participant' ? '/' : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
     } catch { /* noop */ }
   };
 
@@ -183,7 +183,7 @@ const MobileMenuPanel = () => {
               />
               <span className="font-semibold">{roleLabel} Dashboard</span>
             </Link>
-            <button type="button" onClick={() => void switchRole('visitor')} className={`w-full ${navItemClass(false)}`}>
+            <button type="button" onClick={() => void switchRole('participant')} className={`w-full ${navItemClass(false)}`}>
               <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
                 <RefreshCw className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
               </span>
@@ -234,9 +234,9 @@ const MobileMenuPanel = () => {
           </div>
           <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe space-y-1" aria-label="Organizer navigation">
             <Link
-              to="/organizer/profile"
+              to="/host/profile"
               onClick={closeMenu}
-              className={navItemClass(pathname.startsWith('/organizer/profile'))}
+              className={navItemClass(pathname.startsWith('/host/profile'))}
             >
               <SecureAvatar
                 src={user?.avatarUrl}
@@ -247,7 +247,7 @@ const MobileMenuPanel = () => {
             </Link>
             <button
               type="button"
-              onClick={() => void switchRole('visitor')}
+              onClick={() => void switchRole('participant')}
               className={`w-full ${navItemClass(false)}`}
             >
               <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">

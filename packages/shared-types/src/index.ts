@@ -4,7 +4,7 @@ export type UserRole =
   | 'tenant_owner'
   | 'tenant_admin'
   | 'tenant_guide'
-  | 'visitor';
+  | 'participant';
 
 export type TenantType = 'company' | 'guide_owned';
 export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
@@ -159,7 +159,7 @@ export interface ActivityDTO {
   organizerName?: string;
   organizerAvatar?: string;
   organizerUserId?: string;
-  guideId?: string | null;
+  hostId?: string | null;
   /** User who created this activity */
   createdById?: string;
   createdByName?: string;

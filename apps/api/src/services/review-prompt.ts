@@ -3,7 +3,7 @@ import { getMongoClient } from '../lib/mongo.js';
 import { dispatchNotification } from './notifications.js';
 
 /** Prompt checked-in participant to review the trip location (once). */
-export async function promptPostEventReview(opts: {
+export async function promptPostActivityReview(opts: {
   userId: string;
   activityId: string;
   locationId: string;

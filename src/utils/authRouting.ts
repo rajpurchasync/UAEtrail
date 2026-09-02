@@ -3,7 +3,7 @@ import { UserRole } from '@uaetrail/shared-types';
 export const defaultRouteByRole = (role: UserRole): string => {
   if (role === 'platform_admin') return '/admin/overview';
   if (role === 'merchant_admin') return '/merchant/dashboard';
-  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/organizer/overview';
+  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/host/overview';
   return '/';
 };
 
@@ -11,13 +11,13 @@ export const defaultRouteByRole = (role: UserRole): string => {
 export const accountRouteByRole = (role: UserRole): string => {
   if (role === 'platform_admin') return '/admin/overview';
   if (role === 'merchant_admin') return '/merchant/dashboard';
-  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/organizer/overview';
+  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/host/overview';
   return '/profile';
 };
 
-export const isParticipantRole = (role: UserRole): boolean => role === 'visitor';
+export const isParticipantRole = (role: UserRole): boolean => role === 'participant';
 
-export const visitorDashboardRedirect = (subpath: string): string => {
+export const participantDashboardRedirect = (subpath: string): string => {
   switch (subpath) {
     case 'overview':
       return '/profile';
@@ -37,16 +37,16 @@ export const visitorDashboardRedirect = (subpath: string): string => {
 export const organizerDashboardRedirect = (subpath: string): string => {
   switch (subpath) {
     case 'messages':
-      return '/organizer/messages';
+      return '/host/messages';
     case 'requests':
-      return '/organizer/requests';
+      return '/host/requests';
     case 'trips':
     case 'activities':
-      return '/organizer/activities';
+      return '/host/activities';
     case 'profile':
-      return '/organizer/profile';
+      return '/host/profile';
     default:
-      return '/organizer/overview';
+      return '/host/overview';
   }
 };
 
@@ -77,7 +77,7 @@ export const messagesRouteForRole = (
   if (options?.activityId) params.set('activity', options.activityId);
   const query = params.toString();
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    return `/organizer/messages?${query}`;
+    return `/host/messages?${query}`;
   }
   return `/messages?${query}`;
 };

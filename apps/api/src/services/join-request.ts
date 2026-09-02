@@ -2,6 +2,6 @@ export {
   assertCanApproveRequest,
   createJoinOrWaitlistRequest,
   createJoinOrWaitlistRequestDefault,
-  isEventFull,
+  isActivityFull,
   promoteNextWaitlisted
 } from '../lib/activity-engagement-store.js';

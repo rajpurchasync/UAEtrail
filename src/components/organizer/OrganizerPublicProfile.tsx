@@ -66,7 +66,7 @@ export const OrganizerPublicProfile = ({
       .getTenantProfile(slug)
       .then(async (tenantRes) => {
         setTenant(tenantRes.data);
-        setTrips(tenantRes.data.events.map(mapActivityToTrip));
+        setTrips(tenantRes.data.activities.map(mapActivityToTrip));
         setEditBio(tenantRes.data.ownerBio ?? '');
         setEditDetails(tenantRes.data.organizerDetails ?? {});
         const reviewsRes = await api.getReviews('tenant', tenantRes.data.id).catch(() => ({ data: [] }));
@@ -159,7 +159,7 @@ export const OrganizerPublicProfile = ({
       <div className="bg-gradient-to-br from-emerald-800 to-teal-900 text-white rounded-b-2xl md:rounded-none">
         <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
           <Link
-            to={isOwner ? '/organizer/overview' : backTo}
+            to={isOwner ? '/host/overview' : backTo}
             className="inline-flex items-center gap-1 text-emerald-200 hover:text-white text-sm mb-4"
           >
             <ArrowLeft className="w-4 h-4" /> {isOwner ? 'Organizer hub' : backLabel}
@@ -407,7 +407,7 @@ export const OrganizerPublicProfile = ({
               ))}
             </div>
             {isOwner && (
-              <Link to="/organizer/team" className="inline-block text-sm font-semibold text-emerald-700 mt-3 hover:underline">
+              <Link to="/host/team" className="inline-block text-sm font-semibold text-emerald-700 mt-3 hover:underline">
                 Manage team →
               </Link>
             )}
@@ -431,7 +431,7 @@ export const OrganizerPublicProfile = ({
             </div>
           )}
           {isOwner && (
-            <Link to="/organizer/activities" className="inline-block text-sm font-semibold text-emerald-700 mt-3 hover:underline">
+            <Link to="/host/activities" className="inline-block text-sm font-semibold text-emerald-700 mt-3 hover:underline">
               Manage events →
             </Link>
           )}

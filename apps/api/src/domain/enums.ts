@@ -9,7 +9,7 @@ export const UserRole = {
   TENANT_OWNER: 'TENANT_OWNER',
   TENANT_ADMIN: 'TENANT_ADMIN',
   TENANT_GUIDE: 'TENANT_GUIDE',
-  VISITOR: 'VISITOR'
+  PARTICIPANT: 'PARTICIPANT'
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
@@ -125,12 +125,12 @@ export const RewardAction = {
 } as const;
 export type RewardAction = (typeof RewardAction)[keyof typeof RewardAction];
 
-export const OrganizerApplicationStatus = {
+export const HostApplicationStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED'
 } as const;
-export type OrganizerApplicationStatus = (typeof OrganizerApplicationStatus)[keyof typeof OrganizerApplicationStatus];
+export type HostApplicationStatus = (typeof HostApplicationStatus)[keyof typeof HostApplicationStatus];
 
 export const Difficulty = {
   EASY: 'EASY',

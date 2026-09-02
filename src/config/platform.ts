@@ -101,6 +101,7 @@ export const PLATFORM_DEFAULT_COUNTRY = 'AE';
 /** Routes where bottom nav, footer padding, and mobile chrome are hidden. */
 export const CONSUMER_CHROME_HIDDEN_PREFIXES = [
   '/admin',
+  '/host',
   '/organizer',
   '/dashboard',
   '/merchant'

@@ -269,7 +269,7 @@ export const AdminActivities = () => {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmTarget(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {confirmTarget.action === 'suspend' ? 'Suspend Event?' : 'Unsuspend Event?'}
+              {confirmTarget.action === 'suspend' ? 'Suspend Activity?' : 'Unsuspend Activity?'}
             </h3>
             <p className="text-sm text-gray-600 mb-1">
               {confirmTarget.action === 'suspend'

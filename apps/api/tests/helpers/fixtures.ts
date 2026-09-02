@@ -13,7 +13,7 @@ import {
 import bcrypt from 'bcryptjs';
 import { createAuthUser } from '../../src/lib/auth-users.js';
 import { newEntityId } from '../../src/lib/entity-builders.js';
-import { createEventDetailed, createLocationRecord } from '../../src/lib/activities-store.js';
+import { createActivityDetailed, createLocationRecord } from '../../src/lib/activities-store.js';
 import { getMongoClient } from '../../src/lib/mongo.js';
 import { generateReferralCode } from '../../src/lib/referral-code.js';
 import { createTenantRecord } from '../../src/lib/tenant-store.js';
@@ -72,7 +72,7 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
   });
 
   const startAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const event = await createEventDetailed({
+  const event = await createActivityDetailed({
     tenant: { connect: { id: tenant.id } },
     location: { connect: { id: location.id } },
     createdBy: { connect: { id: organizer._id } },
@@ -107,7 +107,7 @@ export const createFullEventFixture = async (suffix: string): Promise<PublishedE
     passwordHash: await bcrypt.hash('TestPass1', 10),
     googleId: null,
     authProvider: 'EMAIL',
-    role: UserRole.VISITOR,
+    role: UserRole.PARTICIPANT,
     status: UserStatus.ACTIVE,
     emailVerifiedAt: new Date(),
     referralCode: generateReferralCode(),
@@ -213,7 +213,7 @@ export const registerVerifiedVisitor = async (
       email,
       password,
       displayName: 'Join Test Visitor',
-      accountType: 'visitor'
+      accountType: 'participant'
     });
 
   if (registerRes.status !== 201) {

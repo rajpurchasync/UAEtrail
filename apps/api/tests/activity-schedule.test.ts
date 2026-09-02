@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatEventLocal } from '../src/lib/datetime.js';
+import { formatActivityLocal } from '../src/lib/datetime.js';
 import { scheduleInstantChanged } from '../src/services/activity-schedule.js';
 
 describe('scheduleInstantChanged', () => {
@@ -17,8 +17,8 @@ describe('scheduleInstantChanged', () => {
   it('returns true when local time changes on same day', () => {
     const previous = new Date('2026-07-01T02:30:00.000Z');
     const next = new Date('2026-07-01T04:30:00.000Z');
-    const prevLocal = formatEventLocal(previous, 'AE');
-    const nextLocal = formatEventLocal(next, 'AE');
+    const prevLocal = formatActivityLocal(previous, 'AE');
+    const nextLocal = formatActivityLocal(next, 'AE');
     expect(prevLocal.time).not.toBe(nextLocal.time);
     expect(scheduleInstantChanged(previous, next, 'AE')).toBe(true);
   });

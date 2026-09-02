@@ -96,7 +96,7 @@ export const HikingActivityFormModal = ({
   const canPickHostOrganization = isPlatformAdmin(user?.role);
   const hostTenantId = canPickHostOrganization ? form.tenantId : resolvedTenantId;
   const isBusinessOrg = isBusinessHostOrg(tenantType);
-  const venueAddHref = '/organizer/locations';
+  const venueAddHref = '/host/locations';
 
   const persistDraft = () => {
     if (!onSessionChange) return;
@@ -392,7 +392,7 @@ export const HikingActivityFormModal = ({
     const payload = {
       ...payloadForSave(),
       activityType: 'hiking',
-      guideId: form.hostUserId || user?.id || undefined,
+      hostId: form.hostUserId || user?.id || undefined,
     };
 
     if (existingId) {

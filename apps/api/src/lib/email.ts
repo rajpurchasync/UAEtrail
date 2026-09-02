@@ -6,7 +6,7 @@ import { isEmailConfigured, resolveEmailConfig } from './email-config.js';
 export type EmailTemplate =
   | 'request_approved'
   | 'request_rejected'
-  | 'event_cancelled'
+  | 'activity_cancelled'
   | 'email_verification'
   | 'password_reset';
 
@@ -93,7 +93,7 @@ export const sendRawEmail = async (payload: EmailPayload): Promise<boolean> => {
 const templateSubjects: Record<EmailTemplate, string> = {
   request_approved: 'Your trip request was approved',
   request_rejected: 'Update on your trip request',
-  event_cancelled: 'A trip you joined was cancelled',
+  activity_cancelled: 'A trip you joined was cancelled',
   email_verification: 'Verify your UAE Trail account',
   password_reset: 'Reset your UAE Trail password'
 };
@@ -114,11 +114,11 @@ export const sendTransactionalEmail = async (
 function getTemplateBody(template: EmailTemplate): string {
   switch (template) {
     case 'request_approved':
-      return 'Hi {{name}}, your request to join {{eventTitle}} on {{eventDate}} was approved. See you on the trail!';
+      return 'Hi {{name}}, your request to join {{activityTitle}} on {{activityDate}} was approved. See you on the trail!';
     case 'request_rejected':
-      return 'Hi {{name}}, your request to join {{eventTitle}} was not approved. {{note}}';
-    case 'event_cancelled':
-      return 'Hi {{name}}, {{eventTitle}} on {{eventDate}} has been cancelled by the organizer.';
+      return 'Hi {{name}}, your request to join {{activityTitle}} was not approved. {{note}}';
+    case 'activity_cancelled':
+      return 'Hi {{name}}, {{activityTitle}} on {{activityDate}} has been cancelled by the organizer.';
     case 'email_verification':
       return 'Hi {{name}}, your UAE Trail verification code is:\n\n{{otp}}\n\nThis code expires in 60 seconds. If it expires, request a new code from the app.';
     case 'password_reset':
@@ -161,8 +161,8 @@ export const sendPasswordResetEmail = async (opts: {
 export const notifyRequestDecision = async (opts: {
   to: string;
   userName: string;
-  eventTitle: string;
-  eventDate: string;
+  activityTitle: string;
+  activityDate: string;
   approved: boolean;
   note?: string;
 }) => {
@@ -171,22 +171,22 @@ export const notifyRequestDecision = async (opts: {
     opts.to,
     {
       name: opts.userName,
-      eventTitle: opts.eventTitle,
-      eventDate: opts.eventDate,
+      activityTitle: opts.activityTitle,
+      activityDate: opts.activityDate,
       note: opts.note ?? ''
     }
   );
 };
 
-export const notifyEventCancelled = async (opts: {
+export const notifyActivityCancelled = async (opts: {
   to: string;
   userName: string;
-  eventTitle: string;
-  eventDate: string;
+  activityTitle: string;
+  activityDate: string;
 }) => {
-  await sendTransactionalEmail('event_cancelled', opts.to, {
+  await sendTransactionalEmail('activity_cancelled', opts.to, {
     name: opts.userName,
-    eventTitle: opts.eventTitle,
-    eventDate: opts.eventDate
+    activityTitle: opts.activityTitle,
+    activityDate: opts.activityDate
   });
 };

@@ -71,7 +71,7 @@ export const OrganizerOverview = () => {
 
   const loading = participant.loading || organizer.loading;
   const error = participant.error ?? organizer.error;
-  const messagesPath = '/organizer/messages';
+  const messagesPath = '/host/messages';
 
   const displayName = participant.profile.displayName || user!.displayName || 'Organizer';
 
@@ -79,7 +79,7 @@ export const OrganizerOverview = () => {
     <OrganizerShell
       title="Organizer"
       cta={
-        <Link to="/organizer/activities/new" className="app-cta-sm">
+        <Link to="/host/activities/new" className="app-cta-sm">
           <Plus className="w-4 h-4" />
           Add activity
         </Link>
@@ -196,11 +196,11 @@ export const OrganizerOverview = () => {
         ) : (
           <>
             <OrganizerHubSections
-              eventsCount={organizer.events.length}
+              activitiesCount={organizer.activities.length}
               pendingJoinRequests={organizer.pendingJoinRequests}
-              upcomingEventsCount={organizer.upcomingEventsCount}
-              pastEventsCount={organizer.pastEventsCount}
-              upcomingEvents={organizer.upcomingEvents}
+              upcomingActivitiesCount={organizer.upcomingActivitiesCount}
+              pastActivitiesCount={organizer.pastActivitiesCount}
+              upcomingActivities={organizer.upcomingActivities}
             />
 
             <AccountLinkList
@@ -226,7 +226,7 @@ export const OrganizerOverview = () => {
                   accent: 'neutral',
                 },
                 {
-                  to: '/organizer/security-privacy',
+                  to: '/host/security-privacy',
                   icon: <ShieldCheck className="w-4 h-4" />,
                   label: 'Security & privacy',
                   accent: 'blue' as const,

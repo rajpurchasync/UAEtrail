@@ -34,7 +34,7 @@ export const Messages = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const isConsumerMessages = location.pathname === '/messages';
-  const isOrganizerMessages = location.pathname === '/organizer/messages';
+  const isOrganizerMessages = location.pathname === '/host/messages';
   const useMobileShell = isConsumerMessages || (isOrganizerMessages && isMobile);
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
@@ -351,7 +351,7 @@ export const Messages = () => {
     return (
       <MobileScreen
         title="Messages"
-        backTo={isOrganizer ? '/organizer/overview' : '/profile'}
+        backTo={isOrganizer ? '/host/overview' : '/profile'}
         hideHeader={inThread}
         showBanner={!inThread}
       >

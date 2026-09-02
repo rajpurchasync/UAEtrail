@@ -1,22 +1,22 @@
 import { ActivityStatus, RewardAction } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
-import { findLocationInMongo, findEventDocInMongo } from '../lib/entity-sync.js';
+import { findLocationInMongo, findActivityDocInMongo } from '../lib/entity-sync.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import { getMongoClient } from '../lib/mongo.js';
-import { promptPostEventReview } from './review-prompt.js';
+import { promptPostActivityReview } from './review-prompt.js';
 import { awardPoints } from './rewards.js';
 import { createAuditLog } from '../lib/audit.js';
 
 const CHECKIN_EARLY_MS = 2 * 60 * 60 * 1000;
 const CHECKIN_LATE_MS = 12 * 60 * 60 * 1000;
 
-type EventTiming = { startAt: Date; endAt: Date | null; status: ActivityStatus };
+type ActivityTiming = { startAt: Date; endAt: Date | null; status: ActivityStatus };
 
-export function getCheckInWindow(event: EventTiming) {
-  const opensAt = new Date(event.startAt.getTime() - CHECKIN_EARLY_MS);
-  const closesAt = event.endAt
-    ? new Date(event.endAt.getTime() + CHECKIN_LATE_MS)
-    : new Date(event.startAt.getTime() + CHECKIN_LATE_MS);
+export function getCheckInWindow(activity: ActivityTiming) {
+  const opensAt = new Date(activity.startAt.getTime() - CHECKIN_EARLY_MS);
+  const closesAt = activity.endAt
+    ? new Date(activity.endAt.getTime() + CHECKIN_LATE_MS)
+    : new Date(activity.startAt.getTime() + CHECKIN_LATE_MS);
   const now = new Date();
 
   return {
@@ -29,10 +29,10 @@ export function getCheckInWindow(event: EventTiming) {
 }
 
 export function buildParticipationDto(
-  event: EventTiming,
+  activity: ActivityTiming,
   participant: { id: string; requestId: string; checkedInAt: Date | null }
 ) {
-  const window = getCheckInWindow(event);
+  const window = getCheckInWindow(activity);
   const checkedIn = Boolean(participant.checkedInAt);
 
   return {
@@ -40,7 +40,7 @@ export function buildParticipationDto(
     requestId: participant.requestId,
     status: 'confirmed' as const,
     checkedInAt: participant.checkedInAt?.toISOString() ?? null,
-    canCheckIn: !checkedIn && event.status === ActivityStatus.PUBLISHED && window.isOpen,
+    canCheckIn: !checkedIn && activity.status === ActivityStatus.PUBLISHED && window.isOpen,
     checkInOpensAt: window.opensAt.toISOString(),
     checkInClosesAt: window.closesAt.toISOString()
   };
@@ -64,7 +64,7 @@ const loadParticipantForCheckIn = async (activityId: string, participantId: stri
 
   if (!participant) return null;
 
-  const eventDoc = await findEventDocInMongo(activityId);
+  const eventDoc = await findActivityDocInMongo(activityId);
   const location = eventDoc ? await findLocationInMongo(eventDoc.locationId) : null;
   const user = await findAuthUserById(participant.userId);
 
@@ -84,7 +84,7 @@ const loadParticipantForCheckIn = async (activityId: string, participantId: stri
       tenantId: eventDoc.tenantId,
       locationId: eventDoc.locationId,
       createdById: eventDoc.createdById,
-      guideId: eventDoc.guideId,
+      hostId: eventDoc.hostId,
       title: eventDoc.title,
       status: eventDoc.status,
       startAt: eventDoc.startAt,
@@ -156,7 +156,7 @@ export async function performParticipantCheckIn(opts: {
     label: `Attended: ${activity.title}`
   }).catch(() => undefined);
 
-  const hostUserId = activity.guideId ?? activity.createdById;
+  const hostUserId = activity.hostId ?? activity.createdById;
   void awardPoints({
     userId: hostUserId,
     action: RewardAction.ACTIVITY_HOSTED,
@@ -178,7 +178,7 @@ export async function performParticipantCheckIn(opts: {
       : activity.location.activityType === 'CAMPING'
         ? 'camping'
         : 'community_activity';
-  await promptPostEventReview({
+  await promptPostActivityReview({
     userId: participant.userId,
     activityId: activity.id,
     locationId: activity.locationId,

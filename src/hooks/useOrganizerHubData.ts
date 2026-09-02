@@ -6,12 +6,12 @@ import { getActiveTenantId } from '../api/tenant';
 const organizerHubKey = (tenantId: string) => ['organizer-hub', tenantId] as const;
 
 async function fetchOrganizerHub(tenantId: string) {
-  const [eventsResponse, requestsResponse] = await Promise.all([
+  const [activitiesResponse, requestsResponse] = await Promise.all([
     api.listHostActivities(tenantId),
     api.getOrganizerRequests(tenantId),
   ]);
   return {
-    events: eventsResponse.data,
+    activities: activitiesResponse.data,
     pendingJoinRequests: requestsResponse.data.filter((request) => request.status === 'pending').length,
   };
 }
@@ -26,35 +26,35 @@ export const useOrganizerHubData = () => {
     enabled: Boolean(tenantId),
   });
 
-  const events = data?.events ?? [];
+  const activities = data?.activities ?? [];
 
   const draftCount = useMemo(
-    () => events.filter((item) => item.status === 'draft').length,
-    [events]
+    () => activities.filter((item) => item.status === 'draft').length,
+    [activities]
   );
 
   const publishedCount = useMemo(
-    () => events.filter((item) => item.status === 'published').length,
-    [events]
+    () => activities.filter((item) => item.status === 'published').length,
+    [activities]
   );
 
-  const upcomingEventsCount = useMemo(() => {
+  const upcomingActivitiesCount = useMemo(() => {
     const today = new Date(new Date().toDateString());
-    return events.filter((e) => new Date(e.date) >= today).length;
-  }, [events]);
+    return activities.filter((e) => new Date(e.date) >= today).length;
+  }, [activities]);
 
-  const pastEventsCount = useMemo(() => {
+  const pastActivitiesCount = useMemo(() => {
     const today = new Date(new Date().toDateString());
-    return events.filter((e) => new Date(e.date) < today).length;
-  }, [events]);
+    return activities.filter((e) => new Date(e.date) < today).length;
+  }, [activities]);
 
-  const upcomingEvents = useMemo(
+  const upcomingActivities = useMemo(
     () =>
-      events
+      activities
         .filter((e) => new Date(e.date) >= new Date())
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 3),
-    [events]
+    [activities]
   );
 
   const reload = useCallback(async () => {
@@ -67,13 +67,13 @@ export const useOrganizerHubData = () => {
   return {
     tenantId,
     setTenantId,
-    events,
+    activities,
     pendingJoinRequests: data?.pendingJoinRequests ?? 0,
     publishedCount,
     draftCount,
-    upcomingEventsCount,
-    pastEventsCount,
-    upcomingEvents,
+    upcomingActivitiesCount,
+    pastActivitiesCount,
+    upcomingActivities,
     loading: isLoading,
     error: error instanceof Error ? error.message : error ? 'Failed to load organizer data' : null,
     reload,

@@ -6,10 +6,10 @@ describe('jwt helpers', () => {
     const token = signAccessToken({
       sub: 'user-1',
       email: 'user@example.com',
-      role: 'visitor'
+      role: 'participant'
     });
     const payload = verifyAccessToken(token);
     expect(payload.sub).toBe('user-1');
-    expect(payload.role).toBe('visitor');
+    expect(payload.role).toBe('participant');
   });
 });

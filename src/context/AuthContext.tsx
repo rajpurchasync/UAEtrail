@@ -19,7 +19,7 @@ interface AuthContextValue {
     email: string;
     password: string;
     displayName: string;
-    accountType: 'visitor' | 'company' | 'guide';
+    accountType: 'participant' | 'company' | 'guide';
     organizationName?: string;
     referralCode?: string;
     groupInviteToken?: string;
@@ -201,7 +201,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email: string;
     password: string;
     displayName: string;
-    accountType: 'visitor' | 'company' | 'guide';
+    accountType: 'participant' | 'company' | 'guide';
     organizationName?: string;
     referralCode?: string;
     groupInviteToken?: string;

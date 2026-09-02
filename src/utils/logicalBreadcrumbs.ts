@@ -37,22 +37,22 @@ const tripsTabLabel = (search: string): string | null => {
 };
 
 const organizerCrumbs = (pathname: string): LogicalBreadcrumb[] => {
-  const base = { label: 'Organizer', path: '/organizer/overview' };
+  const base = { label: 'Host', path: '/host/overview' };
 
-  if (pathname === '/organizer/overview') return [base];
-  if (pathname === '/organizer/profile') return [base, { label: 'Profile', path: '' }];
-  if (pathname === '/organizer/activities') return [base, { label: 'Activities', path: '' }];
-  if (pathname === '/organizer/activities/new') {
-    return [base, { label: 'Activities', path: '/organizer/activities' }, { label: 'Add activity', path: '' }];
+  if (pathname === '/host/overview') return [base];
+  if (pathname === '/host/profile') return [base, { label: 'Profile', path: '' }];
+  if (pathname === '/host/activities') return [base, { label: 'Activities', path: '' }];
+  if (pathname === '/host/activities/new') {
+    return [base, { label: 'Activities', path: '/host/activities' }, { label: 'Add activity', path: '' }];
   }
-  if (pathname === '/organizer/requests') return [base, { label: 'Requests', path: '' }];
-  if (pathname === '/organizer/messages') return [base, { label: 'Messages', path: '' }];
-  if (pathname === '/organizer/team') return [base, { label: 'Team', path: '' }];
-  if (pathname === '/organizer/security-privacy') return [base, { label: 'Security & Privacy', path: '' }];
-  if (pathname === '/organizer/history') return [base, { label: 'History', path: '' }];
-  if (pathname === '/organizer/locations') return [base, { label: 'Venues', path: '' }];
+  if (pathname === '/host/requests') return [base, { label: 'Requests', path: '' }];
+  if (pathname === '/host/messages') return [base, { label: 'Messages', path: '' }];
+  if (pathname === '/host/team') return [base, { label: 'Team', path: '' }];
+  if (pathname === '/host/security-privacy') return [base, { label: 'Security & Privacy', path: '' }];
+  if (pathname === '/host/history') return [base, { label: 'History', path: '' }];
+  if (pathname === '/host/locations') return [base, { label: 'Venues', path: '' }];
 
-  return [base, { label: prettifySegment(pathname.replace('/organizer/', '')), path: '' }];
+  return [base, { label: prettifySegment(pathname.replace('/host/', '')), path: '' }];
 };
 
 const adminCrumbs = (pathname: string): LogicalBreadcrumb[] => {
@@ -63,7 +63,9 @@ const adminCrumbs = (pathname: string): LogicalBreadcrumb[] => {
   if (pathname === '/admin/activities') return [base, { label: 'Activities', path: '' }];
   if (pathname === '/admin/groups') return [base, { label: 'Groups', path: '' }];
   if (pathname === '/admin/locations') return [base, { label: 'Locations', path: '' }];
-  if (pathname === '/admin/organizers') return [base, { label: 'Organizer Applications', path: '' }];
+  if (pathname === '/admin/hosts' || pathname === '/admin/organizers') {
+    return [base, { label: 'Host Applications', path: '' }];
+  }
   if (pathname === '/admin/audit-log') return [base, { label: 'Audit Log', path: '' }];
   if (pathname === '/admin/settings') return [base, { label: 'Settings', path: '' }];
   if (pathname === '/admin/shop') return [base, { label: 'Shop Moderation', path: '' }];
@@ -165,8 +167,9 @@ export const buildLogicalBreadcrumbs = (
 ): LogicalBreadcrumb[] => {
   if (pathname === '/') return [{ label: 'Home', path: '' }];
 
-  if (pathname.startsWith('/organizer')) {
-    return withHome(organizerCrumbs(pathname));
+  if (pathname.startsWith('/host') || pathname.startsWith('/organizer')) {
+    const normalized = pathname.replace(/^\/organizer/, '/host');
+    return withHome(organizerCrumbs(normalized));
   }
 
   if (pathname.startsWith('/admin')) {

@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   adminDashboardRedirect,
   organizerDashboardRedirect,
-  visitorDashboardRedirect
+  participantDashboardRedirect
 } from '../../utils/authRouting';
 
 /** Sends participants to mobile routes; staff keep their consoles. */
@@ -15,8 +15,8 @@ export const DashboardRedirect = () => {
 
   if (!user) return <Navigate to="/signin" replace state={{ from: location.pathname + search }} />;
 
-  if (user.role === 'visitor') {
-    return <Navigate to={`${visitorDashboardRedirect(subpath)}${search}`} replace />;
+  if (user.role === 'participant') {
+    return <Navigate to={`${participantDashboardRedirect(subpath)}${search}`} replace />;
   }
   if (user.role === 'platform_admin') {
     return <Navigate to={`${adminDashboardRedirect(subpath)}${search}`} replace />;

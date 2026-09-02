@@ -76,7 +76,7 @@ export const buildActivityDetailPreview = (
     hostUserId: saved.hostUserId ?? form.hostUserId ?? user?.id,
     hostAvatar: saved.hostAvatar ?? user?.avatarUrl ?? undefined,
     tenantName: tenantName ?? saved.tenantName,
-    guideId: form.hostUserId || saved.guideId,
+    hostId: form.hostUserId || saved.hostId,
     participants: [],
     location: venue ?? fallbackLocation(form.locationId || saved.locationId, venueName),
     myParticipation: null,
