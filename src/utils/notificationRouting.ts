@@ -27,9 +27,9 @@ export const inferNotificationPath = (
     return `/my-requests/${requestId}`;
   }
 
-  const eventId = toStringValue(meta?.eventId);
-  if (eventId) {
-    return `/trip/${eventId}`;
+  const activityId = toStringValue(meta?.activityId);
+  if (activityId) {
+    return `/trip/${activityId}`;
   }
 
   const senderId = toStringValue(meta?.senderId);
@@ -72,7 +72,7 @@ export const inferNotificationPath = (
     }
     if (toStringValue(meta?.userId)) return '/admin/users';
     if (toStringValue(meta?.groupId)) return '/admin/groups';
-    if (toStringValue(meta?.eventId)) return '/admin/events';
+    if (toStringValue(meta?.activityId)) return '/admin/activities';
     if (toStringValue(meta?.locationId)) return '/admin/locations';
     if (toStringValue(meta?.productId)) return '/admin/shop';
 
@@ -80,19 +80,19 @@ export const inferNotificationPath = (
     if (adminText.includes('application') || adminText.includes('host')) return '/admin/organizers';
     if (adminText.includes('location')) return '/admin/locations';
     if (adminText.includes('group')) return '/admin/groups';
-    if (adminText.includes('event') || adminText.includes('trip')) return '/admin/events';
+    if (adminText.includes('event') || adminText.includes('trip')) return '/admin/activities';
     if (adminText.includes('user') || adminText.includes('account')) return '/admin/users';
     if (adminText.includes('shop') || adminText.includes('product')) return '/admin/shop';
 
     return '/admin/notifications';
   }
 
-  if (notif.type === 'event') return '/trips?tab=mine';
+  if (notif.type === 'activity') return '/activities?tab=mine';
   if (notif.type === 'request_update') return '/my-requests';
 
   const text = `${notif.title} ${notif.body}`.toLowerCase();
   if (text.includes('message')) return '/messages';
-  if (text.includes('reminder') || text.includes('trip')) return '/trips?tab=mine';
+  if (text.includes('reminder') || text.includes('trip')) return '/activities?tab=mine';
   if (text.includes('buddy') || text.includes('group')) return '/groups';
   if (text.includes('comment') || text.includes('like')) return '/community';
 

@@ -239,7 +239,7 @@ export const AdminOrganizers = () => {
                       <td className="px-4 py-3 capitalize">{t.type.replace(/_/g, ' ')}</td>
                       <td className="px-4 py-3">{t.ownerName}</td>
                       <td className="px-4 py-3 text-center">{t.memberCount}</td>
-                      <td className="px-4 py-3 text-center">{t.eventCount}</td>
+                      <td className="px-4 py-3 text-center">{t.activityCount}</td>
                       <td className="px-4 py-3">{statusBadge(t.status)}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
@@ -436,7 +436,7 @@ export const AdminOrganizers = () => {
                           status: tenantDetail.status,
                           ownerName: tenantDetail.owner.displayName ?? tenantDetail.owner.email,
                           memberCount: tenantDetail.members.length,
-                          eventCount: tenantDetail.events.length,
+                          activityCount: tenantDetail.events.length,
                         });
                         setSuspendComment('');
                       }}

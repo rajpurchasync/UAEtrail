@@ -6,8 +6,8 @@ export const REWARD_POINTS: Record<RewardAction, number> = {
   REFERRAL_BONUS_JOINER: 25,
   LOCATION_SUBMITTED: 15,
   LOCATION_PUBLISHED: 100,
-  EVENT_PUBLISHED: 50,
-  EVENT_HOSTED: 75,
+  ACTIVITY_PUBLISHED: 50,
+  ACTIVITY_HOSTED: 75,
   TRIP_ATTENDED: 30,
   COMMUNITY_POST: 20,
   COMMUNITY_REPLY: 5,
@@ -20,8 +20,8 @@ export const REWARD_LABELS: Record<RewardAction, string> = {
   REFERRAL_BONUS_JOINER: 'Joined with a friend\'s invite',
   LOCATION_SUBMITTED: 'Location submitted',
   LOCATION_PUBLISHED: 'Location approved & published',
-  EVENT_PUBLISHED: 'Trip published',
-  EVENT_HOSTED: 'Trip hosted successfully',
+  ACTIVITY_PUBLISHED: 'Trip published',
+  ACTIVITY_HOSTED: 'Trip hosted successfully',
   TRIP_ATTENDED: 'Trip attended',
   COMMUNITY_POST: 'Community post',
   COMMUNITY_REPLY: 'Community reply',
@@ -127,7 +127,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [...TIER_BADGE_DEFINITIONS, 
 
 export const EARN_OPPORTUNITIES = [
   { action: 'LOCATION_SUBMITTED' as const, title: 'Add a location', description: 'Share a trail or camp spot with the community', points: REWARD_POINTS.LOCATION_SUBMITTED + REWARD_POINTS.LOCATION_PUBLISHED },
-  { action: 'EVENT_PUBLISHED' as const, title: 'Host a trip', description: 'Publish and lead organized hikes or camps', points: REWARD_POINTS.EVENT_PUBLISHED + REWARD_POINTS.EVENT_HOSTED },
+  { action: 'ACTIVITY_PUBLISHED' as const, title: 'Host a trip', description: 'Publish and lead organized hikes or camps', points: REWARD_POINTS.ACTIVITY_PUBLISHED + REWARD_POINTS.ACTIVITY_HOSTED },
   { action: 'TRIP_ATTENDED' as const, title: 'Join a trip', description: 'Get checked in when you attend an organized event', points: REWARD_POINTS.TRIP_ATTENDED },
   { action: 'COMMUNITY_POST' as const, title: 'Community posts', description: 'Ask questions, share trip reports, tips & photos', points: REWARD_POINTS.COMMUNITY_POST },
   { action: 'COMMUNITY_REPLY' as const, title: 'Help others', description: 'Reply to posts and support fellow explorers', points: REWARD_POINTS.COMMUNITY_REPLY },
@@ -142,7 +142,7 @@ export const EARN_PATH_SUGGESTIONS = [
   { title: 'Community post', points: REWARD_POINTS.COMMUNITY_POST, path: '/community', note: 'Trip report, tip, or question' },
   { title: 'Write a review', points: REWARD_POINTS.REVIEW_WRITTEN, path: '/discovery', note: 'After a trail or camp visit' },
   { title: 'Reply in community', points: REWARD_POINTS.COMMUNITY_REPLY, path: '/community', note: 'Help fellow explorers' },
-  { title: 'Host a trip', points: REWARD_POINTS.EVENT_PUBLISHED, path: '/become-host', note: 'Become a host first' }
+  { title: 'Host a trip', points: REWARD_POINTS.ACTIVITY_PUBLISHED, path: '/become-host', note: 'Become a host first' }
 ];
 
 export const getTierForPoints = (points: number): MembershipTierDefinition => {

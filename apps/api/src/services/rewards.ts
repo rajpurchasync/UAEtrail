@@ -185,11 +185,11 @@ export async function evaluateAchievementBadges(userId: string): Promise<string[
     },
     {
       key: 'trip_leader',
-      shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.EVENT_PUBLISHED)
+      shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.ACTIVITY_PUBLISHED)
     },
     {
       key: 'trusted_host',
-      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.EVENT_HOSTED)) >= 5
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.ACTIVITY_HOSTED)) >= 5
     },
     {
       key: 'reviewer',

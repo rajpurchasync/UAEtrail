@@ -1,4 +1,4 @@
-import { EventStatus, RewardAction } from '../domain/enums.js';
+import { ActivityStatus, RewardAction } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
 import { findLocationInMongo, findEventDocInMongo } from '../lib/entity-sync.js';
 import { findAuthUserById } from '../lib/auth-users.js';
@@ -10,7 +10,7 @@ import { createAuditLog } from '../lib/audit.js';
 const CHECKIN_EARLY_MS = 2 * 60 * 60 * 1000;
 const CHECKIN_LATE_MS = 12 * 60 * 60 * 1000;
 
-type EventTiming = { startAt: Date; endAt: Date | null; status: EventStatus };
+type EventTiming = { startAt: Date; endAt: Date | null; status: ActivityStatus };
 
 export function getCheckInWindow(event: EventTiming) {
   const opensAt = new Date(event.startAt.getTime() - CHECKIN_EARLY_MS);
@@ -40,7 +40,7 @@ export function buildParticipationDto(
     requestId: participant.requestId,
     status: 'confirmed' as const,
     checkedInAt: participant.checkedInAt?.toISOString() ?? null,
-    canCheckIn: !checkedIn && event.status === EventStatus.PUBLISHED && window.isOpen,
+    canCheckIn: !checkedIn && event.status === ActivityStatus.PUBLISHED && window.isOpen,
     checkInOpensAt: window.opensAt.toISOString(),
     checkInClosesAt: window.closesAt.toISOString()
   };
@@ -48,7 +48,7 @@ export function buildParticipationDto(
 
 type CheckInParticipantDoc = {
   _id: string;
-  eventId: string;
+  activityId: string;
   requestId: string;
   userId: string;
   approvedById: string;
@@ -56,15 +56,15 @@ type CheckInParticipantDoc = {
   createdAt: Date;
 };
 
-const eventParticipantsCollection = () =>
-  getMongoClient()!.db().collection<CheckInParticipantDoc>('event_participants');
+const activityParticipantsCollection = () =>
+  getMongoClient()!.db().collection<CheckInParticipantDoc>('activity_participants');
 
-const loadParticipantForCheckIn = async (eventId: string, participantId: string) => {
-  const participant = await eventParticipantsCollection().findOne({ _id: participantId, eventId });
+const loadParticipantForCheckIn = async (activityId: string, participantId: string) => {
+  const participant = await activityParticipantsCollection().findOne({ _id: participantId, activityId });
 
   if (!participant) return null;
 
-  const eventDoc = await findEventDocInMongo(eventId);
+  const eventDoc = await findEventDocInMongo(activityId);
   const location = eventDoc ? await findLocationInMongo(eventDoc.locationId) : null;
   const user = await findAuthUserById(participant.userId);
 
@@ -72,14 +72,14 @@ const loadParticipantForCheckIn = async (eventId: string, participantId: string)
 
   return {
     id: participant._id,
-    eventId: participant.eventId,
+    activityId: participant.activityId,
     requestId: participant.requestId,
     userId: participant.userId,
     approvedById: participant.approvedById,
     checkedInAt: participant.checkedInAt,
     createdAt: participant.createdAt,
     user: { id: user._id, email: user.email },
-    event: {
+    activity: {
       id: eventDoc._id,
       tenantId: eventDoc.tenantId,
       locationId: eventDoc.locationId,
@@ -99,13 +99,13 @@ const loadParticipantForCheckIn = async (eventId: string, participantId: string)
 };
 
 export async function performParticipantCheckIn(opts: {
-  eventId: string;
+  activityId: string;
   participantId: string;
   actorUserId: string;
   source: 'self' | 'organizer';
   tenantId?: string;
 }) {
-  const participant = await loadParticipantForCheckIn(opts.eventId, opts.participantId);
+  const participant = await loadParticipantForCheckIn(opts.activityId, opts.participantId);
 
   if (!participant) {
     throw new ApiError(404, 'participant_not_found', 'Participant not found.');
@@ -115,14 +115,14 @@ export async function performParticipantCheckIn(opts: {
     throw new ApiError(403, 'forbidden', 'You can only check yourself in to this trip.');
   }
 
-  if (opts.tenantId && participant.event.tenantId !== opts.tenantId) {
-    throw new ApiError(404, 'event_not_found', 'Event not found.');
+  if (opts.tenantId && participant.activity.tenantId !== opts.tenantId) {
+    throw new ApiError(404, 'activity_not_found', 'Activity not found.');
   }
 
-  const event = participant.event;
+  const activity = participant.activity;
 
-  if (event.status !== EventStatus.PUBLISHED) {
-    throw new ApiError(400, 'event_not_checkinable', 'This trip is not open for check-in.');
+  if (activity.status !== ActivityStatus.PUBLISHED) {
+    throw new ApiError(400, 'activity_not_checkinable', 'This trip is not open for check-in.');
   }
 
   if (participant.checkedInAt) {
@@ -133,7 +133,7 @@ export async function performParticipantCheckIn(opts: {
   }
 
   if (opts.source === 'self') {
-    const window = getCheckInWindow(event);
+    const window = getCheckInWindow(activity);
     if (!window.isOpen) {
       throw new ApiError(
         400,
@@ -147,42 +147,42 @@ export async function performParticipantCheckIn(opts: {
 
   const checkedInAt = new Date();
 
-  await eventParticipantsCollection().updateOne({ _id: participant.id }, { $set: { checkedInAt } });
+  await activityParticipantsCollection().updateOne({ _id: participant.id }, { $set: { checkedInAt } });
 
   void awardPoints({
     userId: participant.userId,
     action: RewardAction.TRIP_ATTENDED,
-    referenceId: `${event.id}:${participant.userId}`,
-    label: `Attended: ${event.title}`
+    referenceId: `${activity.id}:${participant.userId}`,
+    label: `Attended: ${activity.title}`
   }).catch(() => undefined);
 
-  const hostUserId = event.guideId ?? event.createdById;
+  const hostUserId = activity.guideId ?? activity.createdById;
   void awardPoints({
     userId: hostUserId,
-    action: RewardAction.EVENT_HOSTED,
-    referenceId: event.id,
-    label: `Hosted trip: ${event.title}`
+    action: RewardAction.ACTIVITY_HOSTED,
+    referenceId: activity.id,
+    label: `Hosted trip: ${activity.title}`
   }).catch(() => undefined);
 
   await createAuditLog({
     actorId: opts.actorUserId,
     action: opts.source === 'self' ? 'participant.self_checkin' : 'participant.checkin',
-    entityType: 'event_participant',
+    entityType: 'activity_participant',
     entityId: participant.id,
-    tenantId: event.tenantId
+    tenantId: activity.tenantId
   });
 
   const activityType =
-    event.location.activityType === 'HIKING'
+    activity.location.activityType === 'HIKING'
       ? 'hiking'
-      : event.location.activityType === 'CAMPING'
+      : activity.location.activityType === 'CAMPING'
         ? 'camping'
-        : 'community_event';
+        : 'community_activity';
   await promptPostEventReview({
     userId: participant.userId,
-    eventId: event.id,
-    locationId: event.locationId,
-    locationName: event.location.name,
+    activityId: activity.id,
+    locationId: activity.locationId,
+    locationName: activity.location.name,
     activityType
   });
 

@@ -1,6 +1,6 @@
 import type { Collection } from 'mongodb';
 import type { Location } from '../domain/types.js';
-import { EventStatus, LocationStatus } from '../domain/enums.js';
+import { ActivityStatus, LocationStatus } from '../domain/enums.js';
 import {
   buildEventFromCreateInput,
   buildLocationFromCreateInput,
@@ -20,7 +20,7 @@ import {
   listPublishedUpcomingEventsByLocationFromMongo,
   listTenantEventsFromMongo,
   type EventWithTenantRelations
-} from './event-read-assembler.js';
+} from './activity-read-assembler.js';
 import {
   findEventDocInMongo,
   findLocationInMongo,
@@ -51,7 +51,7 @@ const locationsCollection = (): Collection<MongoLocationDoc> =>
   getMongoClient()!.db().collection<MongoLocationDoc>('locations');
 
 const eventsCollection = (): Collection<MongoEventDoc> =>
-  getMongoClient()!.db().collection<MongoEventDoc>('events');
+  getMongoClient()!.db().collection<MongoEventDoc>('activities');
 
 const mapMongoLocation = (doc: MongoLocationDoc): Location => {
   const { _id, ...rest } = doc;
@@ -65,7 +65,7 @@ export const listTenantEventsDetailed = async (input: {
   skip: number;
   take: number;
   orderBy?: { startAt?: 'asc' | 'desc' };
-  whereExtra?: { status?: EventStatus };
+  whereExtra?: { status?: ActivityStatus };
 }) => {
   const sortDirection = input.orderBy?.startAt === 'desc' ? -1 : 1;
   return listTenantEventsFromMongo({
@@ -78,29 +78,29 @@ export const listTenantEventsDetailed = async (input: {
 };
 
 export const createEventDetailed = async (data: EventCreateInput): Promise<EventWithTenantRelations> => {
-  const eventId = newEntityId();
-  const mongoDoc = buildEventFromCreateInput(data, eventId);
+  const activityId = newEntityId();
+  const mongoDoc = buildEventFromCreateInput(data, activityId);
   await writeEventDocToMongo(mongoDoc);
 
-  const created = await findTenantEventFromMongo(eventId, mongoDoc.tenantId);
+  const created = await findTenantEventFromMongo(activityId, mongoDoc.tenantId);
   if (!created) {
     throw new Error('Failed to persist event record.');
   }
   return created;
 };
 
-export const findTenantEventForEdit = async (eventId: string, tenantId: string) =>
-  findTenantEventFromMongo(eventId, tenantId);
+export const findTenantEventForEdit = async (activityId: string, tenantId: string) =>
+  findTenantEventFromMongo(activityId, tenantId);
 
 export const updateEventDetailed = async (
-  eventId: string,
+  activityId: string,
   data: EventUpdateInput
 ): Promise<EventWithTenantRelations> => {
   const patch: Partial<MongoEventDoc> = { updatedAt: new Date() };
   if (data.title !== undefined) patch.title = data.title;
   if (data.startAt !== undefined) patch.startAt = data.startAt;
   if (data.endAt !== undefined) patch.endAt = data.endAt;
-  if (data.status !== undefined) patch.status = data.status as EventStatus;
+  if (data.status !== undefined) patch.status = data.status as ActivityStatus;
   if (data.capacity !== undefined) patch.capacity = data.capacity;
   if (data.priceAed !== undefined) patch.priceAed = data.priceAed;
   if (data.featured !== undefined) patch.featured = data.featured;
@@ -108,6 +108,9 @@ export const updateEventDetailed = async (
   if (data.meetingPoint !== undefined) patch.meetingPoint = data.meetingPoint;
   if (data.meetingLat !== undefined) patch.meetingLat = data.meetingLat;
   if (data.meetingLng !== undefined) patch.meetingLng = data.meetingLng;
+  if (data.startPoint !== undefined) patch.startPoint = data.startPoint;
+  if (data.startLat !== undefined) patch.startLat = data.startLat;
+  if (data.startLng !== undefined) patch.startLng = data.startLng;
   if (data.parkingPoint !== undefined) patch.parkingPoint = data.parkingPoint;
   if (data.parkingLat !== undefined) patch.parkingLat = data.parkingLat;
   if (data.parkingLng !== undefined) patch.parkingLng = data.parkingLng;
@@ -115,8 +118,10 @@ export const updateEventDetailed = async (
   if (data.carPoolEnabled !== undefined) patch.carPoolEnabled = data.carPoolEnabled;
   if (data.carPoolFree !== undefined) patch.carPoolFree = data.carPoolFree;
   if (data.carPoolPriceAed !== undefined) patch.carPoolPriceAed = data.carPoolPriceAed;
+  if (data.carPoolSeats !== undefined) patch.carPoolSeats = data.carPoolSeats;
   if (data.carPoolDetails !== undefined) patch.carPoolDetails = data.carPoolDetails;
   if (data.paymentTerms !== undefined) patch.paymentTerms = data.paymentTerms;
+  if (data.pricingMode !== undefined) patch.pricingMode = data.pricingMode;
   if (data.itinerary !== undefined) patch.itinerary = data.itinerary;
   if (data.requirements !== undefined) patch.requirements = data.requirements;
   if (data.images !== undefined) patch.images = data.images;
@@ -128,49 +133,49 @@ export const updateEventDetailed = async (
   }
   if (data.location?.connect?.id !== undefined) patch.locationId = data.location.connect.id;
 
-  await patchEventInMongo(eventId, patch);
+  await patchEventInMongo(activityId, patch);
 
-  const existing = await findEventDocInMongo(eventId);
+  const existing = await findEventDocInMongo(activityId);
   if (!existing) {
     throw new Error('Failed to update event record.');
   }
 
-  const updated = await findTenantEventFromMongo(eventId, existing.tenantId);
+  const updated = await findTenantEventFromMongo(activityId, existing.tenantId);
   if (!updated) {
     throw new Error('Failed to update event record.');
   }
   return updated;
 };
 
-export const findTenantEventWithParticipants = async (eventId: string, tenantId: string) =>
-  findTenantEventFromMongo(eventId, tenantId);
+export const findTenantEventWithParticipants = async (activityId: string, tenantId: string) =>
+  findTenantEventFromMongo(activityId, tenantId);
 
-export const findTenantEventById = async (eventId: string, tenantId: string) =>
-  findTenantEventFromMongo(eventId, tenantId);
+export const findTenantEventById = async (activityId: string, tenantId: string) =>
+  findTenantEventFromMongo(activityId, tenantId);
 
-export const findTenantEventBasic = async (eventId: string, tenantId: string) => {
-  const doc = await findTenantEventDocFromMongo(eventId, tenantId);
+export const findTenantEventBasic = async (activityId: string, tenantId: string) => {
+  const doc = await findTenantEventDocFromMongo(activityId, tenantId);
   if (!doc) return null;
   return { id: doc._id, title: doc.title, capacity: doc.capacity };
 };
 
-export const cancelEventById = async (eventId: string) => {
-  await patchEventInMongo(eventId, { status: EventStatus.CANCELLED });
-  const mongoDoc = await findEventDocInMongo(eventId);
+export const cancelEventById = async (activityId: string) => {
+  await patchEventInMongo(activityId, { status: ActivityStatus.CANCELLED });
+  const mongoDoc = await findEventDocInMongo(activityId);
   if (!mongoDoc) {
     throw new Error('Failed to cancel event.');
   }
-  return mapMongoEventToPublishResult({ ...mongoDoc, status: EventStatus.CANCELLED });
+  return mapMongoEventToPublishResult({ ...mongoDoc, status: ActivityStatus.CANCELLED });
 };
 
-export const publishEventById = async (eventId: string) => {
+export const publishEventById = async (activityId: string) => {
   const publishedAt = new Date();
-  await patchEventInMongo(eventId, { status: EventStatus.PUBLISHED, publishedAt });
-  const mongoDoc = await findEventDocInMongo(eventId);
+  await patchEventInMongo(activityId, { status: ActivityStatus.PUBLISHED, publishedAt });
+  const mongoDoc = await findEventDocInMongo(activityId);
   if (!mongoDoc) {
     throw new Error('Failed to publish event.');
   }
-  return mapMongoEventToPublishResult({ ...mongoDoc, status: EventStatus.PUBLISHED, publishedAt });
+  return mapMongoEventToPublishResult({ ...mongoDoc, status: ActivityStatus.PUBLISHED, publishedAt });
 };
 
 export const listSubmittedLocationsByUser = async (userId: string) => {
@@ -250,11 +255,11 @@ export const listPublishedEventsWithPreviews = async (input: {
   when?: 'upcoming' | 'past' | 'all';
 }) => listPublishedEventsWithPreviewsFromMongo(input);
 
-export const findPublishedEventWithPreviewsById = async (eventId: string) =>
-  findPublishedEventWithPreviewsFromMongo(eventId);
+export const findPublishedEventWithPreviewsById = async (activityId: string) =>
+  findPublishedEventWithPreviewsFromMongo(activityId);
 
-export const findEventTimingById = async (eventId: string) => {
-  const item = await eventsCollection().findOne({ _id: eventId });
+export const findEventTimingById = async (activityId: string) => {
+  const item = await eventsCollection().findOne({ _id: activityId });
   if (!item) return null;
   return {
     startAt: item.startAt,
@@ -269,7 +274,7 @@ export const listEventsForRequestViews = async (eventIds: string[]) =>
 export const listEventsForTripViews = async (eventIds: string[]) =>
   listEventsByIdsFromMongo(eventIds);
 
-export const findEventForRequestViewById = async (eventId: string) => {
-  const [event] = await listEventsByIdsFromMongo([eventId]);
+export const findEventForRequestViewById = async (activityId: string) => {
+  const [event] = await listEventsByIdsFromMongo([activityId]);
   return event ?? null;
 };

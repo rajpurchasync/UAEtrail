@@ -19,14 +19,14 @@ export const formatScheduleLabel = (instant: Date, countryCode: string): string 
 };
 
 export async function notifyParticipantsOfScheduleChange(params: {
-  eventId: string;
+  activityId: string;
   eventTitle: string;
   participantUserIds: string[];
   previousStartAt: Date;
   newStartAt: Date;
   countryCode: string;
 }): Promise<void> {
-  const { eventId, eventTitle, participantUserIds, previousStartAt, newStartAt, countryCode } = params;
+  const { activityId, eventTitle, participantUserIds, previousStartAt, newStartAt, countryCode } = params;
   if (participantUserIds.length === 0) return;
 
   const was = formatScheduleLabel(previousStartAt, countryCode);
@@ -40,8 +40,8 @@ export async function notifyParticipantsOfScheduleChange(params: {
         userId,
         title,
         body,
-        type: NotificationType.EVENT,
-        meta: { eventId, kind: 'schedule_change', previousStartAt: previousStartAt.toISOString(), newStartAt: newStartAt.toISOString() }
+        type: NotificationType.ACTIVITY,
+        meta: { activityId, kind: 'schedule_change', previousStartAt: previousStartAt.toISOString(), newStartAt: newStartAt.toISOString() }
       })
     )
   );

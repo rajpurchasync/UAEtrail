@@ -1,10 +1,11 @@
-import { EventStatus, LocationStatus, MembershipRole, NotificationType, RequestStatus, RewardAction, TenantType, UserRole } from '../domain/enums.js';
+import { ActivityStatus, MembershipRole, NotificationType, RequestStatus, RewardAction, TenantType, UserRole } from '../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
+import { mountActivityRoutes } from '../lib/activity-routes.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { randomToken } from '../lib/hash.js';
-import { toLocationDto, buildEventDto } from '../lib/mappers.js';
+import { toLocationDto, buildActivityDto } from '../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { hashPassword } from '../lib/password.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
@@ -27,19 +28,17 @@ import {
   createEventDetailed,
   createLocationRecord,
   findTenantEventBasic,
-  findLocationById,
   findTenantById,
   findTenantCountryCode,
   findTenantEventById,
   findTenantEventForEdit,
   findTenantEventWithParticipants,
-  findTenantMembershipByUser,
   listSubmittedLocationsByUser,
   listTenantEventHistoryWithParticipation,
   listTenantEventsDetailed,
   publishEventById,
   updateEventDetailed
-} from '../lib/events-store.js';
+} from '../lib/activities-store.js';
 import {
   applyTenantEventRequestDecision,
   clearEventParticipantCheckIn,
@@ -48,7 +47,7 @@ import {
   findTenantEventRequestForDecision,
   listEventParticipantsWithUsers,
   listTenantEventRequestsDetailed
-} from '../lib/event-engagement-store.js';
+} from '../lib/activity-engagement-store.js';
 import { createNotificationRecord, createNotificationsMany } from '../lib/notifications-store.js';
 import {
   deleteTenantMembership,
@@ -75,6 +74,9 @@ const eventCreateSchema = z.object({
   meetingPoint: z.string().max(200).optional(),
   meetingLat: z.number().min(-90).max(90).optional(),
   meetingLng: z.number().min(-180).max(180).optional(),
+  startPoint: z.string().max(500).optional(),
+  startLat: z.number().min(-90).max(90).optional(),
+  startLng: z.number().min(-180).max(180).optional(),
   parkingPoint: z.string().max(200).optional(),
   parkingLat: z.number().min(-90).max(90).optional(),
   parkingLng: z.number().min(-180).max(180).optional(),
@@ -82,6 +84,7 @@ const eventCreateSchema = z.object({
   carPoolEnabled: z.boolean().optional(),
   carPoolFree: z.boolean().optional(),
   carPoolPriceAed: z.number().int().min(0).optional(),
+  carPoolSeats: z.number().int().min(1).optional(),
   carPoolDetails: z.string().max(1000).optional(),
   paymentTerms: z.string().max(1000).optional(),
   itinerary: z.array(z.string()).default([]),
@@ -90,7 +93,8 @@ const eventCreateSchema = z.object({
   pricePackages: tripPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
   images: z.array(z.string()).default([]),
-  guideId: z.string().optional()
+  guideId: z.string().optional(),
+  pricingMode: z.enum(['free', 'shared', 'paid']).optional()
 });
 
 const eventPatchSchema = eventCreateSchema.partial();
@@ -119,33 +123,24 @@ import {
 import {
   notifyParticipantsOfScheduleChangeDefault,
   scheduleInstantChanged
-} from '../services/event-schedule.js';
+} from '../services/activity-schedule.js';
+import {
+  assertActivityHost,
+  assertActivityHostPatch,
+  resolveActivityLocation
+} from '../services/host-activity.js';
+import { assertActivityPricingAllowed } from '../domain/activity-pricing.js';
 
 const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): MembershipRole =>
   role === 'tenant_admin' ? MembershipRole.TENANT_ADMIN : MembershipRole.TENANT_GUIDE;
-
-const assertEventLocation = async (locationId: string, userId: string) => {
-  const location = await findLocationById(locationId);
-  if (!location) {
-    throw new ApiError(400, 'invalid_location', 'Location not found.');
-  }
-  const ownDraft =
-    location.status === LocationStatus.DRAFT && location.submittedById === userId;
-  if (location.status !== LocationStatus.ACTIVE && !ownDraft) {
-    throw new ApiError(
-      400,
-      'invalid_location',
-      'Location must be active, or a draft you submitted while it is under review.'
-    );
-  }
-  return location;
-};
 
 export const organizerRouter = Router();
 
 organizerRouter.use(requireAuth, requireVerifiedEmail, requireTenantContext);
 
-organizerRouter.get('/events', async (req, res, next) => {
+const tenantActivitiesRouter = Router();
+
+tenantActivitiesRouter.get('/', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const pg = paginationSchema.parse(req.query);
@@ -157,7 +152,7 @@ organizerRouter.get('/events', async (req, res, next) => {
     });
 
     res.json(paginatedResponse(
-      events.map((event) => buildEventDto(event)),
+      events.map((event) => buildActivityDto(event)),
       total,
       pg
     ));
@@ -166,34 +161,30 @@ organizerRouter.get('/events', async (req, res, next) => {
   }
 });
 
-organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (req, res, next) => {
+tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
+    const platformAdmin = Boolean(req.tenantContext!.actingAsPlatformAdmin);
     const body = req.body as z.infer<typeof eventCreateSchema>;
 
-    const location = await assertEventLocation(body.locationId, req.auth!.userId);
+    const location = await resolveActivityLocation(body.locationId, req.auth!.userId, { platformAdmin });
     assertLocationMatchesActivityType(location.activityType, body.activityType);
 
     const tenant = await findTenantById(tenantId);
     if (!tenant) {
-      throw new ApiError(404, 'tenant_not_found', 'Organization not found.');
+      throw new ApiError(404, 'tenant_not_found', 'Host organization not found.');
     }
 
     const hostId = body.guideId ?? req.auth!.userId;
-    if (tenant.type === TenantType.COMPANY && !body.guideId) {
-      throw new ApiError(400, 'host_required', 'Select a host who will run this event.');
-    }
-
-    const hostMembership = await findTenantMembershipByUser(tenantId, hostId);
-    if (!hostMembership) {
-      throw new ApiError(400, 'invalid_host', 'Host must be a member of this organization.');
-    }
+    await assertActivityHost(tenantId, hostId, tenant, { platformAdmin });
 
     const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
     const pricing = normalizeEventPricing({
       price: body.price,
-      pricePackages: body.pricePackages
+      pricePackages: body.pricePackages,
+      pricingMode: body.pricingMode,
     });
+    assertActivityPricingAllowed(tenant.type, body.pricingMode, pricing);
 
     const created = await createEventDetailed({
       tenant: { connect: { id: tenantId } },
@@ -207,6 +198,9 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
       meetingPoint: body.meetingPoint,
       meetingLat: body.meetingLat,
       meetingLng: body.meetingLng,
+      startPoint: body.startPoint,
+      startLat: body.startLat,
+      startLng: body.startLng,
       parkingPoint: body.parkingPoint,
       parkingLat: body.parkingLat,
       parkingLng: body.parkingLng,
@@ -215,6 +209,7 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
       carPoolFree: body.carPoolEnabled ? (body.carPoolFree ?? true) : null,
       carPoolPriceAed:
         body.carPoolEnabled && body.carPoolFree === false ? body.carPoolPriceAed ?? 0 : null,
+      carPoolSeats: body.carPoolEnabled ? body.carPoolSeats ?? null : null,
       carPoolDetails: body.carPoolEnabled ? body.carPoolDetails : null,
       paymentTerms: body.paymentTerms,
       itinerary: body.itinerary,
@@ -222,57 +217,50 @@ organizerRouter.post('/events', validate({ body: eventCreateSchema }), async (re
       images: body.images,
       priceAed: pricing.priceAed,
       pricePackages: pricing.pricePackages,
+      pricingMode: pricing.pricingMode,
       capacity: body.capacity
     });
 
     await createAuditLog({
       actorId: req.auth!.userId,
       action: 'event.create',
-      entityType: 'event',
+      entityType: 'activity',
       entityId: created.id,
       tenantId
     });
 
     res.status(201).json({
-      data: buildEventDto(created)
+      data: buildActivityDto(created)
     });
   } catch (error) {
     next(error);
   }
 });
 
-organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eventPatchSchema }), async (req, res, next) => {
+tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eventPatchSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
+    const platformAdmin = Boolean(req.tenantContext!.actingAsPlatformAdmin);
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const body = req.body as z.infer<typeof eventPatchSchema>;
 
     const existing = await findTenantEventForEdit(id, tenantId);
     if (!existing) {
-      throw new ApiError(404, 'event_not_found', 'Event not found.');
+      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
-    if (existing.status === EventStatus.CANCELLED || existing.status === EventStatus.SUSPENDED) {
-      throw new ApiError(400, 'event_not_editable', `Cannot edit an event that is ${existing.status.toLowerCase()}.`);
+    if (existing.status === ActivityStatus.CANCELLED || existing.status === ActivityStatus.SUSPENDED) {
+      throw new ApiError(400, 'activity_not_editable', `Cannot edit an activity that is ${existing.status.toLowerCase()}.`);
     }
     if (body.capacity !== undefined && body.capacity < existing.participants.length) {
       throw new ApiError(400, 'capacity_too_low', `Capacity cannot be less than current participants (${existing.participants.length}).`);
     }
 
-    if (body.guideId !== undefined) {
-      const tenant = await findTenantById(tenantId);
-      if (tenant?.type === TenantType.COMPANY && !body.guideId) {
-        throw new ApiError(400, 'host_required', 'Select a host who will run this event.');
-      }
-      if (body.guideId) {
-        const hostMembership = await findTenantMembershipByUser(tenantId, body.guideId);
-        if (!hostMembership) {
-          throw new ApiError(400, 'invalid_host', 'Host must be a member of this organization.');
-        }
-      }
+    if (body.guideId) {
+      await assertActivityHostPatch(tenantId, body.guideId, { platformAdmin });
     }
 
     if (body.locationId && body.activityType) {
-      const location = await assertEventLocation(body.locationId, req.auth!.userId);
+      const location = await resolveActivityLocation(body.locationId, req.auth!.userId, { platformAdmin });
       assertLocationMatchesActivityType(location.activityType, body.activityType);
     } else if (body.locationId) {
       throw new ApiError(400, 'activity_type_required', 'Activity type is required when changing location.');
@@ -293,9 +281,17 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
       body.price !== undefined || body.pricePackages !== undefined
         ? normalizeEventPricing({
             price: body.price ?? existing.priceAed,
-            pricePackages: body.pricePackages ?? parseStoredPricePackages(existing.pricePackages)
+            pricePackages: body.pricePackages ?? parseStoredPricePackages(existing.pricePackages),
+            pricingMode: body.pricingMode ?? existing.pricingMode ?? undefined,
           })
         : null;
+
+    if (pricing) {
+      const tenant = await findTenantById(tenantId);
+      if (tenant) {
+        assertActivityPricingAllowed(tenant.type, body.pricingMode, pricing);
+      }
+    }
 
     const updated = await updateEventDetailed(id, {
       location: body.locationId ? { connect: { id: body.locationId } } : undefined,
@@ -306,6 +302,9 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
       meetingPoint: body.meetingPoint,
       meetingLat: body.meetingLat,
       meetingLng: body.meetingLng,
+      startPoint: body.startPoint,
+      startLat: body.startLat,
+      startLng: body.startLng,
       parkingPoint: body.parkingPoint,
       parkingLat: body.parkingLat,
       parkingLng: body.parkingLng,
@@ -313,16 +312,22 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
       carPoolEnabled: body.carPoolEnabled,
       carPoolFree: body.carPoolFree,
       carPoolPriceAed: body.carPoolPriceAed,
+      carPoolSeats: body.carPoolSeats,
       carPoolDetails: body.carPoolDetails,
       paymentTerms: body.paymentTerms,
       itinerary: body.itinerary,
       requirements: body.requirements,
       images: body.images,
       ...(pricing
-        ? { priceAed: pricing.priceAed, pricePackages: pricing.pricePackages }
+        ? {
+            priceAed: pricing.priceAed,
+            pricePackages: pricing.pricePackages,
+            pricingMode: pricing.pricingMode,
+          }
         : body.price !== undefined
           ? { priceAed: body.price }
           : {}),
+      ...(body.pricingMode !== undefined ? { pricingMode: body.pricingMode } : {}),
       capacity: body.capacity,
       guide: body.guideId ? { connect: { id: body.guideId } } : body.guideId === null ? { disconnect: true } : undefined
     });
@@ -330,19 +335,19 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
     await createAuditLog({
       actorId: req.auth!.userId,
       action: 'event.update',
-      entityType: 'event',
+      entityType: 'activity',
       entityId: id,
       tenantId
     });
 
     if (
       startChanged &&
-      existing.status === EventStatus.PUBLISHED &&
+      existing.status === ActivityStatus.PUBLISHED &&
       nextStartAt &&
       existing.participants.length > 0
     ) {
       await notifyParticipantsOfScheduleChangeDefault({
-        eventId: existing.id,
+        activityId: existing.id,
         eventTitle: updated.title,
         participantUserIds: existing.participants.map((p) => p.userId),
         previousStartAt: existing.startAt,
@@ -352,14 +357,14 @@ organizerRouter.patch('/events/:id', validate({ params: idParamSchema, body: eve
     }
 
     res.json({
-      data: buildEventDto(updated)
+      data: buildActivityDto(updated)
     });
   } catch (error) {
     next(error);
   }
 });
 
-organizerRouter.delete('/events/:id', validate({ params: idParamSchema }), async (req, res, next) => {
+tenantActivitiesRouter.delete('/:id', validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
@@ -376,8 +381,8 @@ organizerRouter.delete('/events/:id', validate({ params: idParamSchema }), async
           userId: p.userId,
           title: 'Event Cancelled',
           body: `The event "${event.title}" has been cancelled by the organizer.`,
-          type: NotificationType.EVENT,
-          meta: { eventId: event.id }
+          type: NotificationType.ACTIVITY,
+          meta: { activityId: event.id }
         }))
       );
     }
@@ -385,7 +390,7 @@ organizerRouter.delete('/events/:id', validate({ params: idParamSchema }), async
     await createAuditLog({
       actorId: req.auth!.userId,
       action: 'event.cancel',
-      entityType: 'event',
+      entityType: 'activity',
       entityId: event.id,
       tenantId
     });
@@ -395,33 +400,33 @@ organizerRouter.delete('/events/:id', validate({ params: idParamSchema }), async
   }
 });
 
-organizerRouter.post('/events/:id/publish', validate({ params: idParamSchema }), async (req, res, next) => {
+tenantActivitiesRouter.post('/:id/publish', validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const event = await findTenantEventById(id, tenantId);
     if (!event) {
-      throw new ApiError(404, 'event_not_found', 'Event not found.');
+      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
-    if (event.status !== EventStatus.DRAFT) {
-      throw new ApiError(400, 'event_not_draft', 'Only draft events can be published.');
+    if (event.status !== ActivityStatus.DRAFT) {
+      throw new ApiError(400, 'activity_not_draft', 'Only draft activities can be published.');
     }
     const updated = await publishEventById(event.id);
     await createAuditLog({
       actorId: req.auth!.userId,
       action: 'event.publish',
-      entityType: 'event',
+      entityType: 'activity',
       entityId: event.id,
       tenantId
     });
     const hostUserId = updated.guideId ?? updated.createdById;
     void awardPointsDefault({
       userId: hostUserId,
-      action: RewardAction.EVENT_PUBLISHED,
+      action: RewardAction.ACTIVITY_PUBLISHED,
       referenceId: updated.id,
       label: `Published trip: ${updated.title}`
     }).catch(() => undefined);
-    res.json({ message: 'Event published.', eventId: updated.id });
+    res.json({ message: 'Activity published.', activityId: updated.id });
   } catch (error) {
     next(error);
   }
@@ -455,10 +460,10 @@ organizerRouter.get('/requests', async (req, res, next) => {
           displayName: request.user.profile?.displayName ?? request.user.email
         },
         event: {
-          id: request.event.id,
-          title: request.event.title,
-          locationName: request.event.location.name,
-          startAt: request.event.startAt
+          id: request.activity.id,
+          title: request.activity.title,
+          locationName: request.activity.location.name,
+          startAt: request.activity.startAt
         }
       })),
       total,
@@ -487,7 +492,7 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
     if (status === 'approved') {
       await applyTenantEventRequestDecision({
         requestId: request.id,
-        eventId: request.eventId,
+        activityId: request.activityId,
         userId: request.userId,
         reviewerId: req.auth!.userId,
         decision: 'approved',
@@ -499,12 +504,12 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
         title: 'Join request approved',
         body: 'Your request was approved. You are now confirmed for the event.',
         type: NotificationType.REQUEST_UPDATE,
-        meta: { eventId: request.eventId, requestId: request.id }
+        meta: { activityId: request.activityId, requestId: request.id }
       });
     } else {
       await applyTenantEventRequestDecision({
         requestId: request.id,
-        eventId: request.eventId,
+        activityId: request.activityId,
         userId: request.userId,
         reviewerId: req.auth!.userId,
         decision: 'rejected',
@@ -516,24 +521,24 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
         title: 'Join request rejected',
         body: organizerNote ?? 'Your request could not be approved at this time.',
         type: NotificationType.REQUEST_UPDATE,
-        meta: { eventId: request.eventId, requestId: request.id }
+        meta: { activityId: request.activityId, requestId: request.id }
       });
     }
 
     await createAuditLog({
       actorId: req.auth!.userId,
       action: `request.${status}`,
-      entityType: 'event_request',
+      entityType: 'activity_request',
       entityId: request.id,
       tenantId
     });
 
     const userName = request.user.profile?.displayName ?? request.user.email.split('@')[0];
-    const eventDate = request.event.startAt.toISOString().slice(0, 10);
+    const eventDate = request.activity.startAt.toISOString().slice(0, 10);
     notifyRequestDecision({
       to: request.user.email,
       userName,
-      eventTitle: request.event.title,
+      eventTitle: request.activity.title,
       eventDate,
       approved: status === 'approved',
       note: organizerNote
@@ -753,7 +758,7 @@ const participantIdSchema = z.object({
   participantId: z.string().min(1)
 });
 
-organizerRouter.get('/events/:id/participants', validate({ params: idParamSchema }), async (req, res, next) => {
+tenantActivitiesRouter.get('/:id/participants', validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
@@ -765,7 +770,7 @@ organizerRouter.get('/events/:id/participants', validate({ params: idParamSchema
 
     res.json({
       data: {
-        eventId: id,
+        activityId: id,
         eventTitle: event.title,
         capacity: event.capacity,
         participants: participants.map((p) => ({
@@ -785,13 +790,13 @@ organizerRouter.get('/events/:id/participants', validate({ params: idParamSchema
   }
 });
 
-organizerRouter.post('/events/:id/participants/:participantId/checkin', validate({ params: participantIdSchema }), async (req, res, next) => {
+tenantActivitiesRouter.post('/:id/participants/:participantId/checkin', validate({ params: participantIdSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
 
     const result = await performParticipantCheckInDefault({
-      eventId: id,
+      activityId: id,
       participantId,
       actorUserId: req.auth!.userId,
       source: 'organizer',
@@ -807,7 +812,7 @@ organizerRouter.post('/events/:id/participants/:participantId/checkin', validate
   }
 });
 
-organizerRouter.delete('/events/:id/participants/:participantId/checkin', validate({ params: participantIdSchema }), async (req, res, next) => {
+tenantActivitiesRouter.delete('/:id/participants/:participantId/checkin', validate({ params: participantIdSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
@@ -823,7 +828,7 @@ organizerRouter.delete('/events/:id/participants/:participantId/checkin', valida
     await createAuditLog({
       actorId: req.auth!.userId,
       action: 'participant.undo_checkin',
-      entityType: 'event_participant',
+      entityType: 'activity_participant',
       entityId: participantId,
       tenantId
     });
@@ -874,7 +879,7 @@ organizerRouter.post('/locations', validate({ body: locationSubmitBodySchema }),
 
 // ─── Event History ──────────────────────────────────────────────────────────
 
-organizerRouter.get('/events/history', async (req, res, next) => {
+tenantActivitiesRouter.get('/history', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const pg = paginationSchema.parse(req.query);
@@ -903,3 +908,5 @@ organizerRouter.get('/events/history', async (req, res, next) => {
     next(error);
   }
 });
+
+mountActivityRoutes(organizerRouter, tenantActivitiesRouter);

@@ -16,11 +16,17 @@ export const STATUS_COLORS = {
   full: 'bg-gray-400'
 };
 
+/** Frontend page routes for scheduled activities (not API paths). */
+export const PUBLIC_ACTIVITIES_PATH = '/activities';
+export const ORGANIZER_ACTIVITIES_PATH = '/organizer/activities';
+export const ORGANIZER_ACTIVITIES_NEW_PATH = '/organizer/activities/new';
+export const ADMIN_ACTIVITIES_PATH = '/admin/activities';
+
 /** Desktop organizer dashboard sidebar — Team is separate from public profile. */
 export const ORGANIZER_DASHBOARD_LINKS = [
   { to: '/organizer/overview', label: 'Overview' },
   { to: '/organizer/profile', label: 'Public Profile' },
-  { to: '/organizer/events', label: 'Activities' },
+  { to: ORGANIZER_ACTIVITIES_PATH, label: 'Activities' },
   { to: '/organizer/requests', label: 'Join Requests' },
   { to: '/organizer/team', label: 'Team' },
   { to: '/organizer/locations', label: 'Venues' },
@@ -34,7 +40,7 @@ export const ADMIN_LINKS = [
   { to: '/admin/locations', label: 'Locations' },
   { to: '/admin/users', label: 'User Management' },
   { to: '/admin/organizers', label: 'Organizers' },
-  { to: '/admin/events', label: 'Activities' },
+  { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },
   { to: '/admin/groups', label: 'Groups' },
   { to: '/admin/shop', label: 'Shop' },
   { to: '/admin/audit-log', label: 'Audit Log' },

@@ -15,7 +15,7 @@ import { ConversationListPanel, MessageThreadPanel, NewChatModal } from '../comp
 const userLinks = [
   { to: '/profile', label: 'Profile' },
   { to: '/my-requests', label: 'My Requests' },
-  { to: '/trips?tab=mine', label: 'My Trips' },
+  { to: '/activities?tab=mine', label: 'My Activities' },
   { to: '/messages', label: 'Messages' },
   { to: '/notifications', label: 'Notifications' },
 ];
@@ -39,7 +39,7 @@ export const Messages = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('to'));
-  const [contextEventId, setContextEventId] = useState<string | null>(searchParams.get('event'));
+  const [contextActivityId, setContextActivityId] = useState<string | null>(searchParams.get('activity'));
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -99,17 +99,17 @@ export const Messages = () => {
       void loadMessages(selectedUserId);
       setSearchParams((prev) => {
         prev.set('to', selectedUserId);
-        if (contextEventId) prev.set('event', contextEventId);
-        else prev.delete('event');
+        if (contextActivityId) prev.set('activity', contextActivityId);
+        else prev.delete('activity');
         return prev;
       });
     }
-  }, [selectedUserId, contextEventId, loadMessages, setSearchParams]);
+  }, [selectedUserId, contextActivityId, loadMessages, setSearchParams]);
 
   useEffect(() => {
     const toUser = searchParams.get('to');
-    const eventId = searchParams.get('event');
-    setContextEventId(eventId);
+    const activityId = searchParams.get('activity');
+    setContextActivityId(activityId);
 
     if (toUser) {
       if (toUser !== selectedUserId) setSelectedUserId(toUser);
@@ -211,7 +211,7 @@ export const Messages = () => {
       const res = await api.sendMessage({
         receiverId: selectedUserId,
         content: newMessage.trim(),
-        ...(contextEventId ? { eventId: contextEventId } : {}),
+        ...(contextActivityId ? { activityId: contextActivityId } : {}),
       });
       setNewMessage('');
       setMessages((prev) => [...prev, res.data]);
@@ -257,7 +257,7 @@ export const Messages = () => {
   const backToList = () => {
     setMobileShowThread(false);
     setSelectedUserId(null);
-    setContextEventId(null);
+    setContextActivityId(null);
     setSearchParams({});
   };
 

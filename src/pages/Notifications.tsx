@@ -49,7 +49,7 @@ const inferSection = (notif: NotificationDTO): NotificationSection => {
   }
   if (kind.includes('message') || text.includes('message')) return 'Messages';
   if (kind.includes('reminder') || text.includes('reminder')) return 'Reminders';
-  if (notif.type === 'event' || text.includes('trip') || text.includes('request update')) return 'Trip updates';
+  if (notif.type === 'activity' || text.includes('trip') || text.includes('request update')) return 'Trip updates';
   return 'Other';
 };
 

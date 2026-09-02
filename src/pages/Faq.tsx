@@ -99,10 +99,10 @@ export const Faq = () => (
               Explore trails
             </Link>
             <Link
-              to="/trips"
+              to="/activities"
               className="inline-flex justify-center px-5 py-2.5 border border-gray-200 text-gray-800 text-sm font-semibold rounded-xl hover:bg-gray-50"
             >
-              View trips
+              View activities
             </Link>
           </div>
         </div>

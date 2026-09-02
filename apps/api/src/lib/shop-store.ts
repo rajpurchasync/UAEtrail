@@ -565,14 +565,14 @@ export const markShopOrderPaid = async (id: string) => {
   } satisfies ShopOrder;
 };
 
-export const hasProcessedStripeWebhookEvent = async (eventId: string): Promise<boolean> => {
-  const mongoEvent = await stripeWebhookEventsCollection().findOne({ _id: eventId });
+export const hasProcessedStripeWebhookEvent = async (activityId: string): Promise<boolean> => {
+  const mongoEvent = await stripeWebhookEventsCollection().findOne({ _id: activityId });
   return Boolean(mongoEvent);
 };
 
-export const recordStripeWebhookEvent = async (eventId: string): Promise<void> => {
+export const recordStripeWebhookEvent = async (activityId: string): Promise<void> => {
   await stripeWebhookEventsCollection().updateOne(
-    { _id: eventId },
+    { _id: activityId },
     { $set: { createdAt: new Date() } },
     { upsert: true }
   );

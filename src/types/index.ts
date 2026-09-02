@@ -1,4 +1,4 @@
-export type ActivityType = 'hiking' | 'camping' | 'community_event';
+export type ActivityType = 'hiking' | 'camping' | 'community_activity';
 export type DifficultyLevel = 'easy' | 'moderate' | 'hard';
 export type CampingType = 'self-guided' | 'operator-led';
 export type Accessibility = 'car-accessible' | 'remote';
@@ -49,7 +49,7 @@ export interface CampingSpot {
   accessibleBy?: string[];
 }
 
-export interface CommunityEventSpot {
+export interface CommunityActivitySpot {
   id: string;
   name: string;
   region: UAERegion;
@@ -109,6 +109,7 @@ export interface Trip {
   images?: string[];
   price: number;
   pricePackages?: Array<{ label: string; amount: number; currency: string }>;
+  pricingMode?: 'free' | 'shared' | 'paid' | null;
   slotsAvailable: number;
   slotsTotal: number;
   status: TripStatus;

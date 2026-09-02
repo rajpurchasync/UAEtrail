@@ -1,6 +1,6 @@
 import type { PhotoShape } from '../components/ui/PhotoEditorDialog';
 
-export type ImageUploadPreset = 'event' | 'location' | 'rectangle' | 'profile';
+export type ImageUploadPreset = 'activity' | 'location' | 'rectangle' | 'profile';
 
 export interface ImageUploadPresetConfig {
   skipEditor: boolean;
@@ -11,7 +11,7 @@ export interface ImageUploadPresetConfig {
 
 /** Standard image handling across the app — no per-upload shape/size controls. */
 export const IMAGE_UPLOAD_PRESETS: Record<ImageUploadPreset, ImageUploadPresetConfig> = {
-  event: {
+  activity: {
     skipEditor: true,
     shape: 'rectangle',
     outputWidth: 1600,

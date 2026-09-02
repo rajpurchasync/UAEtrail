@@ -3,7 +3,7 @@ import type { Event, Location } from '../domain/types.js';
 import {
   ActivityType,
   Difficulty,
-  EventStatus,
+  ActivityStatus,
   LocationStatus,
   type Accessibility
 } from '../domain/enums.js';
@@ -61,6 +61,9 @@ export type EventCreateInput = {
   meetingPoint?: string | null;
   meetingLat?: number | null;
   meetingLng?: number | null;
+  startPoint?: string | null;
+  startLat?: number | null;
+  startLng?: number | null;
   parkingPoint?: string | null;
   parkingLat?: number | null;
   parkingLng?: number | null;
@@ -68,15 +71,17 @@ export type EventCreateInput = {
   carPoolEnabled?: boolean;
   carPoolFree?: boolean | null;
   carPoolPriceAed?: number | null;
+  carPoolSeats?: number | null;
   carPoolDetails?: string | null;
   paymentTerms?: string | null;
+  pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[];
   requirements?: string[];
   images?: string[];
   priceAed?: number;
   pricePackages?: unknown;
   capacity: number;
-  status?: EventStatus | string;
+  status?: ActivityStatus | string;
   featured?: boolean;
   publishedAt?: Date | null;
 };
@@ -89,6 +94,9 @@ export type EventUpdateInput = {
   meetingPoint?: string | null;
   meetingLat?: number | null;
   meetingLng?: number | null;
+  startPoint?: string | null;
+  startLat?: number | null;
+  startLng?: number | null;
   parkingPoint?: string | null;
   parkingLat?: number | null;
   parkingLng?: number | null;
@@ -96,15 +104,17 @@ export type EventUpdateInput = {
   carPoolEnabled?: boolean;
   carPoolFree?: boolean | null;
   carPoolPriceAed?: number | null;
+  carPoolSeats?: number | null;
   carPoolDetails?: string | null;
   paymentTerms?: string | null;
+  pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[];
   requirements?: string[];
   images?: string[];
   priceAed?: number;
   pricePackages?: unknown;
   capacity?: number;
-  status?: EventStatus | string;
+  status?: ActivityStatus | string;
   featured?: boolean;
   publishedAt?: Date | null;
   guide?: RelationConnect;
@@ -175,6 +185,9 @@ export type MongoEventDoc = {
   meetingPoint: string | null;
   meetingLat: number | null;
   meetingLng: number | null;
+  startPoint: string | null;
+  startLat: number | null;
+  startLng: number | null;
   parkingPoint: string | null;
   parkingLat: number | null;
   parkingLng: number | null;
@@ -182,8 +195,10 @@ export type MongoEventDoc = {
   carPoolEnabled: boolean;
   carPoolFree: boolean | null;
   carPoolPriceAed: number | null;
+  carPoolSeats: number | null;
   carPoolDetails: string | null;
   paymentTerms: string | null;
+  pricingMode: 'free' | 'shared' | 'paid' | null;
   itinerary: string[];
   requirements: string[];
   images: string[];
@@ -191,7 +206,7 @@ export type MongoEventDoc = {
   pricePackages: unknown;
   capacity: number;
   participantSlotsUsed?: number;
-  status: EventStatus;
+  status: ActivityStatus;
   featured: boolean;
   publishedAt: Date | null;
   createdAt: Date;
@@ -211,6 +226,9 @@ export const eventRowToMongoDoc = (event: Event): MongoEventDoc => ({
   meetingPoint: event.meetingPoint,
   meetingLat: event.meetingLat,
   meetingLng: event.meetingLng,
+  startPoint: event.startPoint,
+  startLat: event.startLat,
+  startLng: event.startLng,
   parkingPoint: event.parkingPoint,
   parkingLat: event.parkingLat,
   parkingLng: event.parkingLng,
@@ -218,8 +236,10 @@ export const eventRowToMongoDoc = (event: Event): MongoEventDoc => ({
   carPoolEnabled: event.carPoolEnabled,
   carPoolFree: event.carPoolFree,
   carPoolPriceAed: event.carPoolPriceAed,
+  carPoolSeats: event.carPoolSeats ?? null,
   carPoolDetails: event.carPoolDetails,
   paymentTerms: event.paymentTerms,
+  pricingMode: event.pricingMode ?? null,
   itinerary: event.itinerary,
   requirements: event.requirements,
   images: event.images,
@@ -248,6 +268,9 @@ export const buildEventFromCreateInput = (data: EventCreateInput, id: string): M
     meetingPoint: data.meetingPoint ?? null,
     meetingLat: data.meetingLat ?? null,
     meetingLng: data.meetingLng ?? null,
+    startPoint: data.startPoint ?? null,
+    startLat: data.startLat ?? null,
+    startLng: data.startLng ?? null,
     parkingPoint: data.parkingPoint ?? null,
     parkingLat: data.parkingLat ?? null,
     parkingLng: data.parkingLng ?? null,
@@ -255,15 +278,17 @@ export const buildEventFromCreateInput = (data: EventCreateInput, id: string): M
     carPoolEnabled: data.carPoolEnabled ?? false,
     carPoolFree: data.carPoolFree ?? null,
     carPoolPriceAed: data.carPoolPriceAed ?? null,
+    carPoolSeats: data.carPoolSeats ?? null,
     carPoolDetails: data.carPoolDetails ?? null,
     paymentTerms: data.paymentTerms ?? null,
+    pricingMode: data.pricingMode ?? null,
     itinerary: asStringArray(data.itinerary),
     requirements: asStringArray(data.requirements),
     images: asStringArray(data.images),
     priceAed: data.priceAed ?? 0,
     pricePackages: data.pricePackages ?? [],
     capacity: data.capacity,
-    status: (data.status as EventStatus) ?? EventStatus.DRAFT,
+    status: (data.status as ActivityStatus) ?? ActivityStatus.DRAFT,
     featured: data.featured ?? false,
     publishedAt: data.publishedAt ?? null,
     createdAt: now,

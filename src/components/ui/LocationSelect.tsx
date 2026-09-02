@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ChevronDown, MapPin, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ChevronDown, MapPin, Plus, Search } from 'lucide-react';
 import { LocationDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
 import { api } from '../../api/services';
@@ -15,6 +16,11 @@ interface LocationSelectProps {
   placeholder?: string;
   /** Shown when the list is empty — use to point users to the add-venue flow. */
   emptyHelp?: ReactNode;
+  /** Always-visible link to create a new venue. */
+  addNewHref?: string;
+  addNewLabel?: string;
+  /** When set, runs before navigating to add a venue (e.g. persist form draft). */
+  onAddNew?: () => void;
 }
 
 /** Pick an existing venue from the catalog. Use VenueSelect in activity forms. */
@@ -27,6 +33,9 @@ export const LocationSelect = ({
   required = true,
   placeholder = 'Select venue…',
   emptyHelp,
+  addNewHref,
+  addNewLabel = 'Add location',
+  onAddNew,
 }: LocationSelectProps) => {
   const [activeLocations, setActiveLocations] = useState<LocationDTO[]>(locationsOverride ?? []);
   const [pendingLocations, setPendingLocations] = useState<LocationDTO[]>([]);
@@ -94,7 +103,7 @@ export const LocationSelect = ({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-2 border rounded-xl px-3 py-2.5 text-sm text-left bg-white border-gray-200"
+        className="w-full flex items-center justify-between gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-left bg-white"
       >
         <span className={selected ? 'text-gray-900 truncate' : 'text-gray-400'}>
           {selected ? `${selected.name} (${selected.region})` : placeholder}
@@ -170,6 +179,33 @@ export const LocationSelect = ({
               </li>
             ))}
           </ul>
+
+          {addNewHref && (
+            <div className="border-t border-gray-100 p-2 bg-gray-50">
+              {onAddNew ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    onAddNew();
+                  }}
+                  className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg"
+                >
+                  <Plus className="w-4 h-4" />
+                  {addNewLabel}
+                </button>
+              ) : (
+                <Link
+                  to={addNewHref}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg"
+                >
+                  <Plus className="w-4 h-4" />
+                  {addNewLabel}
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

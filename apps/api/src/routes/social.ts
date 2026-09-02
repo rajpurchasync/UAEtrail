@@ -59,7 +59,7 @@ const mapPost = (post: {
   content: string;
   images: string[];
   locationId: string | null;
-  eventId: string | null;
+  activityId: string | null;
   authorId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -88,7 +88,7 @@ const mapPost = (post: {
   images: post.images,
   locationId: post.locationId,
   locationName: post.location?.name ?? null,
-  eventId: post.eventId,
+  activityId: post.activityId,
   authorId: post.authorId,
   ...buildAuthorView(authorMap.get(post.authorId), tierMap.get(post.authorId) ?? null),
   likedByMe: post.likedByMe ?? false,
@@ -221,7 +221,7 @@ const postCreateSchema = z.object({
   content: z.string().min(10).max(5000),
   images: z.array(z.string()).max(6).default([]),
   locationId: z.string().optional(),
-  eventId: z.string().optional()
+  activityId: z.string().optional()
 });
 
 const replyCreateSchema = z.object({
@@ -288,7 +288,7 @@ socialRouter.post('/posts', requireAuth, requireVerifiedEmail, validate({ body: 
       content: sanitizedContent,
       images: body.images,
       locationId: body.locationId,
-      eventId: body.eventId,
+      activityId: body.activityId,
       authorId: req.auth!.userId
     });
     void awardPointsDefault({
@@ -399,11 +399,11 @@ socialRouter.post('/posts/:id/replies/:replyId/accept', requireAuth, requireVeri
 
 const favoriteCreateSchema = z.object({
   locationId: z.string().optional(),
-  eventId: z.string().optional(),
+  activityId: z.string().optional(),
   productId: z.string().optional()
 }).refine(
-  (d) => [d.locationId, d.eventId, d.productId].filter(Boolean).length === 1,
-  { message: 'Exactly one of locationId, eventId, or productId is required.' }
+  (d) => [d.locationId, d.activityId, d.productId].filter(Boolean).length === 1,
+  { message: 'Exactly one of locationId, activityId, or productId is required.' }
 );
 
 socialRouter.get('/me/favorites', requireAuth, requireVerifiedEmail, async (req, res, next) => {
@@ -413,11 +413,11 @@ socialRouter.get('/me/favorites', requireAuth, requireVerifiedEmail, async (req,
       data: favorites.map((f) => ({
         id: f.id,
         locationId: f.locationId,
-        eventId: f.eventId,
+        activityId: f.activityId,
         productId: f.productId,
         createdAt: f.createdAt.toISOString(),
         location: f.location ? { id: f.location.id, name: f.location.name, images: f.location.images } : null,
-        event: f.event ? { id: f.event.id, title: f.event.title, locationName: f.event.locationName } : null,
+        activity: f.activity ? { id: f.activity.id, title: f.activity.title, locationName: f.activity.locationName } : null,
         product: f.product
           ? {
               id: f.product.id,
@@ -443,14 +443,14 @@ socialRouter.post('/me/favorites', requireAuth, requireVerifiedEmail, validate({
     const favorite = await createUserFavorite({
       userId: req.auth!.userId,
       locationId: body.locationId,
-      eventId: body.eventId,
+      activityId: body.activityId,
       productId: body.productId
     });
     res.status(201).json({
       data: {
         id: favorite.id,
         locationId: favorite.locationId,
-        eventId: favorite.eventId,
+        activityId: favorite.activityId,
         productId: favorite.productId,
         createdAt: favorite.createdAt.toISOString()
       }
@@ -473,12 +473,12 @@ socialRouter.delete('/me/favorites/:id', requireAuth, requireVerifiedEmail, vali
 socialRouter.get('/me/favorites/check', requireAuth, requireVerifiedEmail, async (req, res, next) => {
   try {
     const locationId = req.query.locationId as string | undefined;
-    const eventId = req.query.eventId as string | undefined;
+    const activityId = req.query.activityId as string | undefined;
     const productId = req.query.productId as string | undefined;
     const favorite = await findUserFavorite({
       userId: req.auth!.userId,
       locationId,
-      eventId,
+      activityId,
       productId
     });
     res.json({ data: { saved: Boolean(favorite), favoriteId: favorite?.id ?? null } });

@@ -4,7 +4,7 @@ import { deleteAuthTokensByUser } from '../lib/auth-tokens.js';
 import { findAuthUserById, updateAuthUserCore } from '../lib/auth-users.js';
 import { purgeUserChatMessages } from '../lib/chat-data.js';
 import { deleteUserFavoritesByUser } from '../lib/favorites-store.js';
-import { purgeUserEventEngagement } from '../lib/event-engagement-store.js';
+import { purgeUserActivityEngagement } from '../lib/activity-engagement-store.js';
 import { deleteNotificationsByUser } from '../lib/notifications-store.js';
 import { verifyPassword } from '../lib/password.js';
 import { deletePushSubscriptionsByUser } from '../lib/push-subscriptions.js';
@@ -93,7 +93,7 @@ export const deleteUserAccount = async (
   await deleteNotificationsByUser(userId);
   await purgeUserChatMessages(userId);
   await purgeUserSocialContent(userId);
-  await purgeUserEventEngagement(userId);
+  await purgeUserActivityEngagement(userId);
   await deleteTenantMembershipsByUser(userId);
   await deleteMerchantProfileByUser(userId);
   await updateAuthUserCore({

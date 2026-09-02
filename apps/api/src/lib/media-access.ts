@@ -9,7 +9,7 @@ const KIND_FROM_SEGMENT: Record<string, string> = {
   waivers: 'waiver',
   'private-photos': 'private_photo',
   uploads: 'general',
-  events: 'event',
+  activities: 'activity',
   locations: 'location',
   shop: 'shop',
   guides: 'guide'
@@ -37,7 +37,7 @@ export type MediaAccessInput = {
   visibility: ProfileVisibility;
   viewerUserId: string | null;
   ownerUserId: string | null;
-  sharesGroupOrEvent: boolean;
+  sharesGroupOrActivity: boolean;
   isPlatformAdmin: boolean;
 };
 
@@ -58,7 +58,7 @@ export const canAccessMedia = (input: MediaAccessInput): boolean => {
     case 'private':
       return false;
     case 'group_members':
-      return Boolean(input.viewerUserId) && input.sharesGroupOrEvent;
+      return Boolean(input.viewerUserId) && input.sharesGroupOrActivity;
     default:
       return false;
   }

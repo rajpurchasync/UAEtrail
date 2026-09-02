@@ -1,4 +1,5 @@
 import type { Db } from 'mongodb';
+import { COLLECTIONS } from './collections.js';
 
 export const ensureMongoIndexes = async (db: Db): Promise<void> => {
   const userFavorites = db.collection('user_favorites');
@@ -11,7 +12,12 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       throw error;
     }
   }
-  const legacyFavoriteIndexNames = new Set(['userId_1_locationId_1', 'userId_1_eventId_1', 'userId_1_productId_1']);
+  const legacyFavoriteIndexNames = new Set([
+    'userId_1_locationId_1',
+    'userId_1_eventId_1',
+    'userId_1_activityId_1',
+    'userId_1_productId_1',
+  ]);
 
   await Promise.all(
     existingFavoriteIndexes
@@ -56,10 +62,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
         partialFilterExpression: { locationId: { $type: 'string' } }
       },
       {
-        key: { userId: 1, eventId: 1 },
+        key: { userId: 1, activityId: 1 },
         unique: true,
-        name: 'userId_eventId_unique',
-        partialFilterExpression: { eventId: { $type: 'string' } }
+        name: 'userId_activityId_unique',
+        partialFilterExpression: { activityId: { $type: 'string' } }
       },
       {
         key: { userId: 1, productId: 1 },
@@ -70,7 +76,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     ]),
     db.collection('reward_ledgers').createIndexes([{ key: { userId: 1, action: 1 } }]),
     db.collection('user_badges').createIndexes([{ key: { userId: 1 } }]),
-    db.collection('events').createIndexes([
+    db.collection(COLLECTIONS.ACTIVITIES).createIndexes([
       { key: { tenantId: 1, startAt: 1 } },
       { key: { status: 1, startAt: 1 } },
       { key: { locationId: 1 } },
@@ -86,14 +92,14 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { status: 1 } },
       { key: { applicantId: 1, createdAt: -1 } }
     ]),
-    db.collection('event_requests').createIndexes([
-      { key: { eventId: 1, userId: 1 }, unique: true },
-      { key: { eventId: 1, status: 1, createdAt: 1 } },
+    db.collection(COLLECTIONS.ACTIVITY_REQUESTS).createIndexes([
+      { key: { activityId: 1, userId: 1 }, unique: true },
+      { key: { activityId: 1, status: 1, createdAt: 1 } },
       { key: { userId: 1, createdAt: -1 } }
     ]),
-    db.collection('event_participants').createIndexes([
-      { key: { eventId: 1, userId: 1 }, unique: true },
-      { key: { eventId: 1, createdAt: 1 } },
+    db.collection(COLLECTIONS.ACTIVITY_PARTICIPANTS).createIndexes([
+      { key: { activityId: 1, userId: 1 }, unique: true },
+      { key: { activityId: 1, createdAt: 1 } },
       { key: { userId: 1 } },
       { key: { requestId: 1 } }
     ]),

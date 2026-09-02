@@ -10,7 +10,7 @@ import { trailSchema } from '../components/seo/schemas';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { getDifficultyColor, capitalize } from '../utils';
 import { Trail, Trip } from '../types';
-import { fetchApiLocationDetail, mapEventToTrip } from '../api/public';
+import { fetchApiLocationDetail, mapActivityToTrip } from '../api/public';
 import { api } from '../api/services';
 
 export const TrailDetail = () => {
@@ -28,13 +28,13 @@ export const TrailDetail = () => {
     setLoading(true);
     Promise.all([
       fetchApiLocationDetail(id),
-      api.getLocationEvents(id).catch(() => ({ data: [] })),
+      api.getLocationActivities(id).catch(() => ({ data: [] })),
       api.getReviews('location', id).catch(() => ({ data: [] }))
     ])
       .then(([locResult, eventsRes, reviewsRes]) => {
         setTrail(locResult.trail ?? null);
         setPremium(locResult.premium ?? null);
-        setTrailTrips(eventsRes.data.map(mapEventToTrip));
+        setTrailTrips(eventsRes.data.map(mapActivityToTrip));
         setTrailReviews(reviewsRes.data);
       })
       .catch(() => setTrail(null))
@@ -213,7 +213,7 @@ export const TrailDetail = () => {
               <p className="text-gray-600 mt-1">Join organized hikes at this trail</p>
             </div>
             <Link
-              to="/trips"
+              to="/activities"
               className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
               View all trips
@@ -224,7 +224,7 @@ export const TrailDetail = () => {
           {trailTrips.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <p className="text-gray-600">No upcoming trips scheduled for this trail yet.</p>
-              <Link to="/trips" className="text-emerald-600 hover:text-emerald-700 mt-2 inline-block">
+              <Link to="/activities" className="text-emerald-600 hover:text-emerald-700 mt-2 inline-block">
                 Check all upcoming trips
               </Link>
             </div>

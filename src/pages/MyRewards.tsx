@@ -26,7 +26,7 @@ import { PAGE_BANNERS } from '../config/pageBanners';
 
 const EARN_ICONS: Record<string, typeof MapPin> = {
   LOCATION_SUBMITTED: MapPin,
-  EVENT_PUBLISHED: Mountain,
+  ACTIVITY_PUBLISHED: Mountain,
   TRIP_ATTENDED: Users,
   COMMUNITY_POST: MessageCircle,
   COMMUNITY_REPLY: MessageCircle,

@@ -8,7 +8,7 @@ import { JsonLd } from '../components/seo/JsonLd';
 import { campSchema } from '../components/seo/schemas';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { CampingSpot, Trip } from '../types';
-import { fetchApiLocationDetail, mapEventToTrip } from '../api/public';
+import { fetchApiLocationDetail, mapActivityToTrip } from '../api/public';
 import { api } from '../api/services';
 
 export const CampDetail = () => {
@@ -27,13 +27,13 @@ export const CampDetail = () => {
     setLoading(true);
     Promise.all([
       fetchApiLocationDetail(id),
-      api.getLocationEvents(id).catch(() => ({ data: [] })),
+      api.getLocationActivities(id).catch(() => ({ data: [] })),
       api.getReviews('location', id).catch(() => ({ data: [] }))
     ])
       .then(([locResult, eventsRes, reviewsRes]) => {
         setCamp(locResult.camp ?? null);
         setPremium(locResult.premium ?? null);
-        setCampTrips(eventsRes.data.map(mapEventToTrip));
+        setCampTrips(eventsRes.data.map(mapActivityToTrip));
         setCampReviews(reviewsRes.data);
       })
       .catch(() => setCamp(null))
@@ -177,7 +177,7 @@ export const CampDetail = () => {
               <p className="text-gray-600 mt-1">Join organized camping at this location</p>
             </div>
             <Link
-              to="/trips"
+              to="/activities"
               className="text-amber-600 hover:text-amber-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
               View all trips
@@ -188,7 +188,7 @@ export const CampDetail = () => {
           {campTrips.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <p className="text-gray-600">No upcoming trips scheduled for this location yet.</p>
-              <Link to="/trips" className="text-amber-600 hover:text-amber-700 mt-2 inline-block">
+              <Link to="/activities" className="text-amber-600 hover:text-amber-700 mt-2 inline-block">
                 Check all upcoming trips
               </Link>
             </div>

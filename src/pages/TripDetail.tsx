@@ -8,10 +8,10 @@ import {
   CheckCircle2,
   Car
 } from 'lucide-react';
-import { EventDetailDTO, MyTripRequestDTO, TripParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
+import { ActivityDetailDTO, MyTripRequestDTO, TripParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { formatDate } from '../utils';
-import { formatPackagePrice, tripHasPaidPricing, tripPriceLabel } from '../utils/tripPricing';
+import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../utils/tripPricing';
 import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../utils/hostLabels';
 import { useAuth } from '../context/AuthContext';
 import { organizerProfilePath } from '../utils/organizerLinks';
@@ -71,7 +71,7 @@ export const TripDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [trip, setTrip] = useState<EventDetailDTO | null>(null);
+  const [trip, setTrip] = useState<ActivityDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -88,7 +88,7 @@ export const TripDetail = () => {
     setParticipation(undefined);
     setMyRequest(undefined);
     api
-      .getPublicEventDetail(id)
+      .getPublicActivityDetail(id)
       .then((res) => {
         setTrip(res.data);
         setParticipation(res.data.myParticipation ?? null);
@@ -106,7 +106,8 @@ export const TripDetail = () => {
 
   const pricePackages = trip?.pricePackages?.filter((p) => p.label.trim()) ?? [];
   const hasMultiplePackages = pricePackages.length > 1;
-  const isPaidTrip = trip ? tripHasPaidPricing(trip) : false;
+  const pricingMode = trip ? inferTripPricingMode(trip) : 'free';
+  const pricingBadge = trip ? tripPricingBadge(trip) : null;
 
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
 
@@ -147,7 +148,7 @@ export const TripDetail = () => {
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center px-4">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Trip Not Found</h1>
-            <Link to="/trips" className="text-emerald-600 hover:text-emerald-700 font-medium">
+            <Link to="/activities" className="text-emerald-600 hover:text-emerald-700 font-medium">
               View all trips
             </Link>
           </div>
@@ -167,8 +168,8 @@ export const TripDetail = () => {
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
   const organizerPath = organizerProfilePath(trip.tenantSlug);
   const isFull = trip.slotsAvailable <= 0;
-  const accessLat = trip.meetingLat ?? trip.parkingLat ?? trip.location.latitude ?? null;
-  const accessLng = trip.meetingLng ?? trip.parkingLng ?? trip.location.longitude ?? null;
+  const accessLat = trip.startLat ?? trip.meetingLat ?? trip.parkingLat ?? trip.location.latitude ?? null;
+  const accessLng = trip.startLng ?? trip.meetingLng ?? trip.parkingLng ?? trip.location.longitude ?? null;
   const hasAccessCoordinates = accessLat != null && accessLng != null;
   const openInGoogleMapsUrl =
     trip.location.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
@@ -182,7 +183,7 @@ export const TripDetail = () => {
   const hasActiveRequest = Boolean(myRequest?.canWithdraw);
   const requestStatus = myRequest?.status;
 
-  const handleCheckIn = async (eventId: string) => api.checkInToTrip(eventId);
+  const handleCheckIn = async (activityId: string) => api.checkInToTrip(activityId);
 
   const handleWithdraw = async (payload: { reason: WithdrawReason; message?: string }) => {
     if (!trip || !myRequest) return;
@@ -225,7 +226,7 @@ export const TripDetail = () => {
   const checkInFooter = participation ? (
     <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
       <TripCheckInPanel
-        eventId={trip!.id}
+        activityId={trip!.id}
         participation={participation}
         onCheckIn={handleCheckIn}
         onUpdated={setParticipation}
@@ -258,7 +259,7 @@ export const TripDetail = () => {
     participation && (
       <>
         <TripCheckInPanel
-          eventId={trip.id}
+          activityId={trip.id}
           participation={participation}
           onCheckIn={handleCheckIn}
           onUpdated={setParticipation}
@@ -285,7 +286,7 @@ export const TripDetail = () => {
 
   return (
     <MobileDetailShell
-      backTo="/trips"
+      backTo="/activities"
       backLabel="Trips"
       footer={joinButton}
       banner={{
@@ -338,8 +339,17 @@ export const TripDetail = () => {
                 </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-500 mb-1">Price</p>
-                <p className="text-sm font-semibold text-gray-900">{trip ? tripPriceLabel(trip) : ''}</p>
+                <p className="text-xs text-gray-500 mb-1">Pricing</p>
+                {trip && pricingBadge && (
+                  <>
+                    <p className={`text-sm font-semibold inline-flex px-2 py-0.5 rounded-lg ${pricingBadge.bg} ${pricingBadge.text}`}>
+                      {tripPricingModeLabel(trip)}
+                    </p>
+                    {pricingMode !== 'free' && (
+                      <p className="text-sm font-semibold text-gray-900 mt-1">{tripPriceLabel(trip)}</p>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
@@ -386,14 +396,15 @@ export const TripDetail = () => {
               </div>
             )}
 
-            {(trip.meetingPoint || trip.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
+            {(trip.startPoint || trip.meetingPoint || trip.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
               <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-start gap-3">
                   <Car className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
                   <div className="space-y-3">
                     <p className="text-sm font-semibold text-gray-900">Access details</p>
-                    {(trip.meetingPoint || trip.parkingPoint) && (
+                    {(trip.startPoint || trip.meetingPoint || trip.parkingPoint) && (
                       <div className="space-y-1 text-sm text-gray-700">
+                        {trip.startPoint && <p><span className="font-medium text-gray-900">Hike start point:</span> {trip.startPoint}</p>}
                         {trip.meetingPoint && <p><span className="font-medium text-gray-900">Meeting point:</span> {trip.meetingPoint}</p>}
                         {trip.parkingPoint && <p><span className="font-medium text-gray-900">Parking:</span> {trip.parkingPoint}</p>}
                       </div>
@@ -452,6 +463,9 @@ export const TripDetail = () => {
                 <div>
                   <p className="font-medium text-gray-900">Car pool</p>
                   <p>
+                    {trip.carPoolSeats != null && trip.carPoolSeats > 0
+                      ? `${trip.carPoolSeats} seat${trip.carPoolSeats === 1 ? '' : 's'} available · `
+                      : ''}
                     {trip.carPoolFree
                       ? 'Free shared ride'
                       : trip.carPoolPriceAed != null
@@ -467,7 +481,15 @@ export const TripDetail = () => {
 
           </div>
 
-          {trip.paymentTerms && isPaidTrip && (
+          {trip.paymentTerms && pricingMode === 'shared' && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-1">Cost Shared</h2>
+              <p className="text-sm text-gray-500 mb-3">Why this cost is shared among participants</p>
+              <p className="text-gray-700 text-sm whitespace-pre-wrap">{trip.paymentTerms}</p>
+            </div>
+          )}
+
+          {trip.paymentTerms && pricingMode === 'paid' && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Payment terms</h2>
               <p className="text-gray-700 text-sm whitespace-pre-wrap">{trip.paymentTerms}</p>
@@ -570,7 +592,7 @@ export const TripDetail = () => {
                 )}
                 <OrganizerMessageButton
                   organizerUserId={tripHostUserId(trip)}
-                  eventId={trip.id}
+                  activityId={trip.id}
                   size="md"
                 />
               </div>

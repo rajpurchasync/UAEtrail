@@ -1,17 +1,17 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, TrendingUp } from 'lucide-react';
-import { CommunityEventSpot } from '../../types';
+import { CommunityActivitySpot } from '../../types';
 import { getDifficultyColor, capitalize } from '../../utils';
 import { FavoriteButton } from './FavoriteButton';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
 
-interface CommunityEventCardProps {
-  event: CommunityEventSpot;
+interface CommunityActivityCardProps {
+  event: CommunityActivitySpot;
 }
 
-export const CommunityEventCard = ({ event }: CommunityEventCardProps) => {
-  const eventPath = `/community-event/${event.id}`;
+export const CommunityActivityCard = ({ event }: CommunityActivityCardProps) => {
+  const eventPath = `/community-activity/${event.id}`;
   const imageBlock = (
     <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
       <EnvironmentImage src={event.images[0]} alt={event.name} className="w-full h-full object-cover" />

@@ -1,8 +1,9 @@
 import { ActivityType, LocationUnlockSource, NotificationType, OrganizerApplicationStatus, RequestStatus, RewardAction, UserRole } from '../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
+import { registerActivityRoute } from '../lib/activity-routes.js';
 import { ApiError } from '../lib/api-error.js';
-import { toLocationDto, buildEventDto, toParticipantPreviews, toSharedRole } from '../lib/mappers.js';
+import { toLocationDto, buildActivityDto, toParticipantPreviews, toSharedRole } from '../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { optionalAuth } from '../middleware/optional-auth.js';
@@ -61,7 +62,7 @@ import {
   listPublishedEventsWithPreviews,
   listPublishedUpcomingEventsByLocation,
   listSubmittedLocationsByUser
-} from '../lib/events-store.js';
+} from '../lib/activities-store.js';
 import {
   createOrganizerApplicationDetailed,
   findLatestOrganizerApplicationByApplicant,
@@ -79,7 +80,7 @@ import {
   listUserEventParticipantsPaginated,
   listUserEventRequestsPaginated,
   updateEventRequestNote
-} from '../lib/event-engagement-store.js';
+} from '../lib/activity-engagement-store.js';
 import { removePushSubscription, upsertPushSubscription } from '../lib/push-subscriptions.js';
 import { createNotificationRecord, listUserNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../lib/notifications-store.js';
 import {
@@ -198,7 +199,7 @@ const SWITCHABLE_PRIVILEGED_ROLES: UserRole[] = [
 ];
 
 const listFilterSchema = z.object({
-  activityType: z.enum(['hiking', 'camping', 'community_event']).optional(),
+  activityType: z.enum(['hiking', 'camping', 'COMMUNITY_ACTIVITY']).optional(),
   featured: z.coerce.boolean().optional(),
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
@@ -245,15 +246,17 @@ userRouter.get('/locations/popular', async (req, res, next) => {
   }
 });
 
-userRouter.get('/locations/:id/events', validate({ params: eventIdParamSchema }), async (req, res, next) => {
+const listLocationActivitiesHandler: import('express').RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
     const events = await listPublishedUpcomingEventsByLocation(id, 20);
-    res.json({ data: events.map((event) => buildEventDto(event)) });
+    res.json({ data: events.map((event) => buildActivityDto(event)) });
   } catch (error) {
     next(error);
   }
-});
+};
+
+userRouter.get('/locations/:id/activities', validate({ params: eventIdParamSchema }), listLocationActivitiesHandler);
 
 userRouter.get('/locations/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
@@ -343,7 +346,7 @@ userRouter.get('/locations/:id/premium/guide/pdf', requireAuth, validate({ param
 
 const locationDetailPath = (location: { id: string; activityType: ActivityType }) => {
   if (location.activityType === ActivityType.CAMPING) return `/camp/${location.id}`;
-  if (location.activityType === ActivityType.COMMUNITY_EVENT) return `/community-event/${location.id}`;
+  if (location.activityType === ActivityType.COMMUNITY_ACTIVITY) return `/community-activity/${location.id}`;
   return `/trail/${location.id}`;
 };
 
@@ -496,7 +499,7 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
           displayName: m.user.profile?.displayName ?? m.user.email,
           avatarUrl: m.user.profile?.avatarUrl ?? null
         })),
-        events: tenant.events.map((event) => buildEventDto(event))
+        events: tenant.events.map((event) => buildActivityDto(event))
       }
     });
   } catch (error) {
@@ -504,19 +507,19 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
   }
 });
 
-userRouter.get('/events/featured', async (req, res, next) => {
+registerActivityRoute(userRouter, 'get', '/featured', async (req, res, next) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 6, 20);
     const events = await listFeaturedPublishedEvents(limit);
     res.json({
-      data: events.map((event) => buildEventDto(event))
+      data: events.map((event) => buildActivityDto(event))
     });
   } catch (error) {
     next(error);
   }
 });
 
-userRouter.get('/events', async (req, res, next) => {
+registerActivityRoute(userRouter, 'get', '', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
     const whenRaw = typeof req.query.when === 'string' ? req.query.when : 'upcoming';
@@ -528,7 +531,7 @@ userRouter.get('/events', async (req, res, next) => {
     });
 
     res.json(paginatedResponse(
-      events.map((event) => buildEventDto(event)),
+      events.map((event) => buildActivityDto(event)),
       total,
       pg
     ));
@@ -537,7 +540,7 @@ userRouter.get('/events', async (req, res, next) => {
   }
 });
 
-userRouter.get('/events/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
+registerActivityRoute(userRouter, 'get', '/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
     const event = await findPublishedEventWithPreviewsById(id);
@@ -566,7 +569,7 @@ userRouter.get('/events/:id', optionalAuth, validate({ params: eventIdParamSchem
 
     res.json({
       data: {
-        ...buildEventDto(event),
+        ...buildActivityDto(event),
         organizerId: event.guideId ?? event.tenant.ownerId,
         participants: toParticipantPreviews(event.participants),
         location: toLocationDto(event.location),
@@ -579,8 +582,10 @@ userRouter.get('/events/:id', optionalAuth, validate({ params: eventIdParamSchem
   }
 });
 
-userRouter.post(
-  '/events/:id/requests',
+registerActivityRoute(
+  userRouter,
+  'post',
+  '/:id/requests',
   requireAuth,
   requireVerifiedEmail,
   validate({ params: eventIdParamSchema, body: createRequestSchema }),
@@ -590,7 +595,7 @@ userRouter.post(
       const { note, selectedPackageIndex } = req.body as z.infer<typeof createRequestSchema>;
 
       const { request, waitlisted } = await createJoinOrWaitlistRequestDefault({
-        eventId: id,
+        activityId: id,
         userId: req.auth!.userId,
         note,
         selectedPackageIndex
@@ -599,7 +604,7 @@ userRouter.post(
       res.status(201).json({
         data: {
           id: request.id,
-          eventId: request.eventId,
+          activityId: request.activityId,
           userId: request.userId,
           status: request.status.toLowerCase(),
           waitlisted,
@@ -619,8 +624,10 @@ const updateRequestNoteSchema = z.object({
   note: z.string().max(500)
 });
 
-userRouter.patch(
-  '/events/:id/requests/:requestId/cancel',
+registerActivityRoute(
+  userRouter,
+  'patch',
+  '/:id/requests/:requestId/cancel',
   requireAuth,
   requireVerifiedEmail,
   validate({ params: requestIdParamSchema, body: withdrawReasonSchema }),
@@ -638,7 +645,7 @@ userRouter.patch(
 
       await cancelUserEventRequestAndPromoteWaitlist({
         requestId: request.id,
-        eventId: request.eventId,
+        activityId: request.activityId,
         cancelReason: reason,
         cancelMessage: message?.trim() || null
       });
@@ -650,8 +657,10 @@ userRouter.patch(
   }
 );
 
-userRouter.patch(
-  '/events/:id/requests/:requestId',
+registerActivityRoute(
+  userRouter,
+  'patch',
+  '/:id/requests/:requestId',
   requireAuth,
   requireVerifiedEmail,
   validate({ params: requestIdParamSchema, body: updateRequestNoteSchema }),
@@ -758,7 +767,7 @@ userRouter.get('/rewards/leaderboard', async (_req, res, next) => {
 
 userRouter.use(requireAuth, requireVerifiedEmail);
 
-userRouter.post('/events/:id/checkin', validate({ params: eventIdParamSchema }), async (req, res, next) => {
+registerActivityRoute(userRouter, 'post', '/:id/checkin', validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
     const participant = await findEventParticipantByEventAndUser(id, req.auth!.userId);
@@ -767,7 +776,7 @@ userRouter.post('/events/:id/checkin', validate({ params: eventIdParamSchema }),
     }
 
     const result = await performParticipantCheckInDefault({
-      eventId: id,
+      activityId: id,
       participantId: participant.id,
       actorUserId: req.auth!.userId,
       source: 'self'
@@ -803,7 +812,7 @@ const mapMeRequest = (request: {
   cancelMessage: string | null;
   cancelledAt: Date | null;
   createdAt: Date;
-  event: {
+  activity: {
     id: string;
     title: string | null;
     startAt: Date;
@@ -821,17 +830,17 @@ const mapMeRequest = (request: {
   cancelMessage: request.cancelMessage,
   cancelledAt: request.cancelledAt?.toISOString() ?? null,
   createdAt: request.createdAt,
-  event: {
-    id: request.event.id,
-    title: request.event.title,
-    locationName: request.event.location.name,
-    date: request.event.startAt.toISOString().slice(0, 10),
-    time: request.event.startAt.toISOString().slice(11, 16),
-    organizerName: request.event.guide?.profile?.displayName ?? 'Host',
-    hostName: request.event.guide?.profile?.displayName ?? 'Host',
-    tenantName: request.event.tenant.name,
-    organizerUserId: request.event.guideId ?? request.event.tenant.ownerId,
-    tenantSlug: request.event.tenant.slug
+  activity: {
+    id: request.activity.id,
+    title: request.activity.title,
+    locationName: request.activity.location.name,
+    date: request.activity.startAt.toISOString().slice(0, 10),
+    time: request.activity.startAt.toISOString().slice(11, 16),
+    organizerName: request.activity.guide?.profile?.displayName ?? 'Host',
+    hostName: request.activity.guide?.profile?.displayName ?? 'Host',
+    tenantName: request.activity.tenant.name,
+    organizerUserId: request.activity.guideId ?? request.activity.tenant.ownerId,
+    tenantSlug: request.activity.tenant.slug
   }
 });
 
@@ -843,15 +852,15 @@ userRouter.get('/me/requests/:requestId', validate({ params: meRequestIdParamSch
       throw new ApiError(404, 'request_not_found', 'Request not found.');
     }
 
-    const event = await findEventForRequestViewById(request.eventId);
-    if (!event) {
-      throw new ApiError(404, 'event_not_found', 'Event not found.');
+    const activity = await findEventForRequestViewById(request.activityId);
+    if (!activity) {
+      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
 
     res.json({
       data: mapMeRequest({
         ...request,
-        event
+        activity
       })
     });
   } catch (error) {
@@ -871,14 +880,14 @@ userRouter.get('/me/requests', async (req, res, next) => {
       countUserEventRequests(req.auth!.userId)
     ]);
 
-    const eventIds = [...new Set(requests.map((request) => request.eventId))];
-    const events = eventIds.length > 0 ? await listEventsForRequestViews(eventIds) : [];
-    const eventMap = new Map(events.map((event) => [event.id, event]));
+    const activityIds = [...new Set(requests.map((request) => request.activityId))];
+    const activities = activityIds.length > 0 ? await listEventsForRequestViews(activityIds) : [];
+    const activityMap = new Map(activities.map((activity) => [activity.id, activity]));
 
     const requestViews = requests.reduce<Array<ReturnType<typeof mapMeRequest>>>((acc, request) => {
-      const event = eventMap.get(request.eventId);
-      if (!event) return acc;
-      acc.push(mapMeRequest({ ...request, event }));
+      const activity = activityMap.get(request.activityId);
+      if (!activity) return acc;
+      acc.push(mapMeRequest({ ...request, activity }));
       return acc;
     }, []);
 
@@ -904,15 +913,15 @@ userRouter.get('/me/trips', async (req, res, next) => {
       countUserEventParticipants(req.auth!.userId)
     ]);
 
-    const eventIds = [...new Set(participantEntries.map((entry) => entry.eventId))];
+    const eventIds = [...new Set(participantEntries.map((entry) => entry.activityId))];
     const events = eventIds.length > 0 ? await listEventsForTripViews(eventIds) : [];
     const eventMap = new Map(events.map((event) => [event.id, event]));
 
-    const tripViews = participantEntries.reduce<Array<ReturnType<typeof buildEventDto> & { participation: ReturnType<typeof buildParticipationDto> }>>((acc, entry) => {
-      const event = eventMap.get(entry.eventId);
+    const tripViews = participantEntries.reduce<Array<ReturnType<typeof buildActivityDto> & { participation: ReturnType<typeof buildParticipationDto> }>>((acc, entry) => {
+      const event = eventMap.get(entry.activityId);
       if (!event) return acc;
       acc.push({
-        ...buildEventDto(event),
+        ...buildActivityDto(event),
         participation: buildParticipationDto(event, entry)
       });
       return acc;

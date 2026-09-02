@@ -2,6 +2,7 @@ import { MongoClient, ServerApiVersion } from 'mongodb';
 import dns from 'node:dns';
 import { env } from '../config/env.js';
 import { ensureMongoIndexes } from './mongo-indexes.js';
+import { runMongoMigrations } from './mongo-migrations.js';
 
 let client: MongoClient | null = null;
 let connecting: Promise<MongoClient | null> | null = null;
@@ -48,7 +49,9 @@ export const connectMongo = async (): Promise<MongoClient> => {
             (async () => {
               await mongoClient.connect();
               await mongoClient.db('admin').command({ ping: 1 });
-              await ensureMongoIndexes(mongoClient.db());
+              const db = mongoClient.db();
+              await runMongoMigrations(db);
+              await ensureMongoIndexes(db);
             })(),
             watchdog
           ]);

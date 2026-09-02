@@ -22,7 +22,7 @@ export const EmptyTripsBanner = () => {
       <div className="mt-6 flex justify-center">
         {isOrganizer ? (
           <Link
-            to="/trips?tab=organized"
+            to="/activities?tab=organized"
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />

@@ -5,10 +5,10 @@ import { dispatchNotification } from './notifications.js';
 /** Prompt checked-in participant to review the trip location (once). */
 export async function promptPostEventReview(opts: {
   userId: string;
-  eventId: string;
+  activityId: string;
   locationId: string;
   locationName: string;
-  activityType: 'hiking' | 'camping' | 'community_event';
+  activityType: 'hiking' | 'camping' | 'community_activity';
 }): Promise<void> {
   const mongo = getMongoClient();
   if (mongo) {
@@ -25,7 +25,7 @@ export async function promptPostEventReview(opts: {
       ? `/trail/${opts.locationId}`
       : opts.activityType === 'camping'
         ? `/camp/${opts.locationId}`
-        : `/community-event/${opts.locationId}`;
+        : `/community-activity/${opts.locationId}`;
 
   await dispatchNotification({
     userId: opts.userId,
@@ -33,7 +33,7 @@ export async function promptPostEventReview(opts: {
     body: `Share your experience at ${opts.locationName} to help fellow hikers.`,
     type: NotificationType.REVIEW_PROMPT,
     meta: {
-      eventId: opts.eventId,
+      activityId: opts.activityId,
       locationId: opts.locationId,
       reviewPath,
       activityType: opts.activityType

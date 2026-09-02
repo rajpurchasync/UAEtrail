@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, EventRequestView } from '../api/services';
+import { api, ActivityRequestView } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 import { OrganizerShell } from '../components/organizer/OrganizerShell';
 import { TenantSwitcher } from '../components/ui';
@@ -7,9 +7,9 @@ import { withdrawReasonLabel } from '@uaetrail/shared-types';
 
 export const OrganizerRequests = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
-  const [requests, setRequests] = useState<EventRequestView[]>([]);
+  const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [decisionModal, setDecisionModal] = useState<{ request: EventRequestView; action: 'approved' | 'rejected' } | null>(null);
+  const [decisionModal, setDecisionModal] = useState<{ request: ActivityRequestView; action: 'approved' | 'rejected' } | null>(null);
   const [organizerNote, setOrganizerNote] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -94,9 +94,9 @@ export const OrganizerRequests = () => {
                     <p className="text-xs text-gray-500">{req.user?.email ?? ''}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{req.event.title || req.event.locationName}</p>
+                    <p className="font-medium text-gray-900">{req.activity.title || req.activity.locationName}</p>
                     <p className="text-xs text-gray-500">
-                      {req.event.date || req.event.startAt ? new Date(req.event.startAt || req.event.date || '').toLocaleDateString() : ''}
+                      {req.activity.date || req.activity.startAt ? new Date(req.activity.startAt || req.activity.date || '').toLocaleDateString() : ''}
                     </p>
                   </td>
                   <td className="px-4 py-3">

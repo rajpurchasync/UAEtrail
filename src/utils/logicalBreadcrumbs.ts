@@ -31,7 +31,7 @@ const discoverSuffix = (search: string): LogicalBreadcrumb[] => {
 const tripsTabLabel = (search: string): string | null => {
   const tab = new URLSearchParams(search).get('tab');
   if (!tab) return null;
-  if (tab === 'mine') return 'My Trips';
+  if (tab === 'mine') return 'My Activities';
   // "organized" may be rejected to explore for non-organizer roles, so keep it generic.
   return null;
 };
@@ -41,9 +41,9 @@ const organizerCrumbs = (pathname: string): LogicalBreadcrumb[] => {
 
   if (pathname === '/organizer/overview') return [base];
   if (pathname === '/organizer/profile') return [base, { label: 'Profile', path: '' }];
-  if (pathname === '/organizer/events') return [base, { label: 'Activities', path: '' }];
-  if (pathname === '/organizer/events/new') {
-    return [base, { label: 'Activities', path: '/organizer/events' }, { label: 'Add activity', path: '' }];
+  if (pathname === '/organizer/activities') return [base, { label: 'Activities', path: '' }];
+  if (pathname === '/organizer/activities/new') {
+    return [base, { label: 'Activities', path: '/organizer/activities' }, { label: 'Add activity', path: '' }];
   }
   if (pathname === '/organizer/requests') return [base, { label: 'Requests', path: '' }];
   if (pathname === '/organizer/messages') return [base, { label: 'Messages', path: '' }];
@@ -60,7 +60,7 @@ const adminCrumbs = (pathname: string): LogicalBreadcrumb[] => {
 
   if (pathname === '/admin/overview') return [base];
   if (pathname === '/admin/users') return [base, { label: 'User Management', path: '' }];
-  if (pathname === '/admin/events') return [base, { label: 'Activities', path: '' }];
+  if (pathname === '/admin/activities') return [base, { label: 'Activities', path: '' }];
   if (pathname === '/admin/groups') return [base, { label: 'Groups', path: '' }];
   if (pathname === '/admin/locations') return [base, { label: 'Locations', path: '' }];
   if (pathname === '/admin/organizers') return [base, { label: 'Organizer Applications', path: '' }];
@@ -119,12 +119,12 @@ const discoveryCrumbs = (pathname: string, search: string): LogicalBreadcrumb[] 
 };
 
 const tripCrumbs = (pathname: string, search: string): LogicalBreadcrumb[] | null => {
-  if (pathname === '/trips') {
+  if (pathname === '/activities' || pathname === '/trips') {
     const tabLabel = tripsTabLabel(search);
-    if (!tabLabel) return [{ label: 'Trips', path: '' }];
-    return [{ label: 'Trips', path: '/trips' }, { label: tabLabel, path: '' }];
+    if (!tabLabel) return [{ label: 'Activities', path: '' }];
+    return [{ label: 'Activities', path: '/activities' }, { label: tabLabel, path: '' }];
   }
-  if (pathname.startsWith('/trip/')) return [{ label: 'Trips', path: '/trips' }, { label: 'Trip Details', path: '' }];
+  if (pathname.startsWith('/trip/')) return [{ label: 'Activities', path: '/activities' }, { label: 'Activity Details', path: '' }];
   return null;
 };
 
@@ -144,7 +144,7 @@ const supportCrumbs = (pathname: string): LogicalBreadcrumb[] | null => {
 };
 
 const publicDetailCrumbs = (pathname: string): LogicalBreadcrumb[] | null => {
-  if (pathname.startsWith('/operator/')) return [{ label: 'Trips', path: '/trips' }, { label: 'Organizer Profile', path: '' }];
+  if (pathname.startsWith('/operator/')) return [{ label: 'Activities', path: '/activities' }, { label: 'Organizer Profile', path: '' }];
   return null;
 };
 

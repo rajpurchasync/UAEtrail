@@ -19,11 +19,13 @@ export const NAV_ICONS = {
 
 export const MOBILE_NAV_ICON_MAP: Record<
   | 'Explore'
+  | 'Activities'
   | 'Trips'
   | 'Community'
   | 'Shop'
   | 'Profile'
   | 'Trails & Spots'
+  | 'Upcoming Activities'
   | 'Upcoming Trips'
   | 'Gears Shop'
   | 'My Profile'
@@ -31,6 +33,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   LucideIcon
 > = {
   Explore: NAV_ICONS.explore,
+  Activities: NAV_ICONS.trips,
   Trips: NAV_ICONS.trips,
   Community: NAV_ICONS.community,
   Shop: NAV_ICONS.shop,
@@ -38,6 +41,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   'My Profile': NAV_ICONS.profile,
   Notifications: Bell,
   'Trails & Spots': Map,
+  'Upcoming Activities': NAV_ICONS.trips,
   'Upcoming Trips': NAV_ICONS.trips,
   'Gears Shop': NAV_ICONS.shop,
 };

@@ -17,9 +17,9 @@ export const buildParticipantStats = ({
   messagesPath,
 }: ParticipantStatsInput): AccountStat[] => [
   {
-    label: 'Trips',
+    label: 'Activities',
     value: upcomingTripsCount,
-    to: '/trips?tab=mine',
+    to: '/activities?tab=mine',
     highlight: upcomingTripsCount > 0,
   },
   {

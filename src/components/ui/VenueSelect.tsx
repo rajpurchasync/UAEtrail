@@ -1,7 +1,8 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { LocationDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
-import { LocationSelect } from './LocationSelect';
+import { api } from '../../api/services';
 
 interface VenueSelectProps {
   value: string;
@@ -15,53 +16,111 @@ interface VenueSelectProps {
 const addVenueHref = (tenantId?: string) =>
   tenantId ? '/organizer/locations' : '/discovery';
 
-/**
- * Pick where a scheduled activity takes place.
- * Adding a new venue is a separate flow (Discovery or Organizer → Venues).
- */
+const fieldClass =
+  'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent';
+
+/** Pick where a scheduled activity takes place. */
 export const VenueSelect = ({
   value,
   onChange,
   activityType,
   tenantId,
-  locations,
+  locations: locationsOverride,
   required = true,
 }: VenueSelectProps) => {
+  const [activeLocations, setActiveLocations] = useState<LocationDTO[]>(locationsOverride ?? []);
+  const [pendingLocations, setPendingLocations] = useState<LocationDTO[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (locationsOverride) {
+      setActiveLocations(locationsOverride);
+      setPendingLocations([]);
+      return;
+    }
+
+    let disposed = false;
+    setLoading(true);
+
+    void Promise.all([
+      api.getPublicLocations(),
+      tenantId ? api.getOrganizerSubmittedLocations(tenantId) : Promise.resolve({ data: [] as LocationDTO[] }),
+    ])
+      .then(([publicRes, pendingRes]) => {
+        if (disposed) return;
+        setActiveLocations(publicRes.data);
+        setPendingLocations(pendingRes.data.filter((l) => l.status === 'draft'));
+      })
+      .catch(() => {
+        if (!disposed) {
+          setActiveLocations([]);
+          setPendingLocations([]);
+        }
+      })
+      .finally(() => {
+        if (!disposed) setLoading(false);
+      });
+
+    return () => {
+      disposed = true;
+    };
+  }, [tenantId, locationsOverride]);
+
+  const matchType = (location: LocationDTO) =>
+    !activityType || location.activityType === activityType;
+
+  const active = useMemo(
+    () =>
+      activeLocations
+        .filter(matchType)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [activeLocations, activityType]
+  );
+
+  const pending = useMemo(
+    () =>
+      pendingLocations
+        .filter(matchType)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [pendingLocations, activityType]
+  );
+
+  const listEmpty = !loading && active.length === 0 && pending.length === 0;
   const venueLink = addVenueHref(tenantId);
 
   return (
-    <div className="rounded-xl border border-dashed border-gray-200 bg-white p-4 space-y-2">
-      <div>
-        <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Venue{required ? ' *' : ''}
-        </label>
-        <p className="text-xs text-gray-500 mb-2">
-          The trail, camp, or spot where this activity happens — not the activity itself.
+    <div>
+      <label className="text-sm font-medium text-gray-700 mb-1 block">
+        Venue{required ? ' *' : ''}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        disabled={loading}
+        className={fieldClass}
+      >
+        <option value="">{loading ? 'Loading venues…' : 'Select venue…'}</option>
+        {active.map((location) => (
+          <option key={location.id} value={location.id}>
+            {location.name} ({location.region})
+          </option>
+        ))}
+        {pending.map((location) => (
+          <option key={location.id} value={location.id}>
+            {location.name} — pending review
+          </option>
+        ))}
+      </select>
+      {listEmpty && (
+        <p className="text-xs text-gray-500 mt-1">
+          No venues yet.{' '}
+          <Link to={venueLink} className="text-emerald-700 font-medium hover:underline">
+            Add a venue
+          </Link>{' '}
+          first, then schedule your activity.
         </p>
-        <LocationSelect
-          value={value}
-          onChange={onChange}
-          activityType={activityType}
-          tenantId={tenantId}
-          locations={locations}
-          required={required}
-          emptyHelp={
-            <p className="text-xs text-gray-600">
-              <Link to={venueLink} className="text-emerald-700 font-semibold hover:underline">
-                Add a venue first
-              </Link>
-              , then come back to schedule your activity.
-            </p>
-          }
-        />
-      </div>
-      <p className="text-xs text-gray-500 border-t border-gray-100 pt-2">
-        <span className="font-medium text-gray-700">Different flow:</span> submitting a venue (Discovery or{' '}
-        <Link to="/organizer/locations" className="text-emerald-700 hover:underline">
-          Organizer → Venues
-        </Link>
-        ) is separate from creating an activity.
-      </p>
+      )}
     </div>
   );
 };

@@ -7,7 +7,7 @@ import {
   hasParticipantToHostLink,
   hasSharedEventParticipation,
   hasTripInquiryAccess
-} from '../lib/event-engagement-store.js';
+} from '../lib/activity-engagement-store.js';
 
 const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
   RequestStatus.PENDING,
@@ -38,7 +38,7 @@ export async function assertChatRateLimit(senderId: string): Promise<void> {
 export async function assertCanMessageUser(
   senderId: string,
   receiverId: string,
-  options?: { eventId?: string }
+  options?: { activityId?: string }
 ): Promise<void> {
   const existingThread = await hasThreadBetweenUsers(senderId, receiverId);
   if (existingThread) return;
@@ -64,9 +64,9 @@ export async function assertCanMessageUser(
   const hostToParticipant = await hasHostToParticipantLink(senderId, receiverId);
   if (hostToParticipant) return;
 
-  if (options?.eventId) {
+  if (options?.activityId) {
     const tripInquiry = await hasTripInquiryAccess({
-      eventId: options.eventId,
+      activityId: options.activityId,
       receiverId,
       organizerRoles: ORGANIZER_ROLES
     });

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Users, MapPin, ChevronRight } from 'lucide-react';
 import { Trip } from '../../types';
 import { ACTIVITY_TYPE_LABELS } from '../../config/activityTypes';
-import { tripPriceLabel } from '../../utils/tripPricing';
+import { tripPricingBadge } from '../../utils/tripPricing';
 import { organizerProfilePath } from '../../utils/organizerLinks';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
@@ -26,7 +26,7 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
     trip.images?.[0] ??
     (trip.activityType === 'camping'
       ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600'
-      : trip.activityType === 'community_event'
+      : trip.activityType === 'community_activity'
         ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=600'
         : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600');
 
@@ -37,13 +37,8 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
   const monthShort = tripDate.toLocaleString('en', { month: 'short' }).toUpperCase();
   const dayNum = tripDate.getDate();
 
-  const statusStyles: Record<Trip['status'], { bg: string; text: string; label: string }> = {
-    free: { bg: 'bg-emerald-500/15', text: 'text-emerald-700', label: 'Free' },
-    paid: { bg: 'bg-blue-500/15', text: 'text-blue-700', label: tripPriceLabel(trip) },
-    full: { bg: 'bg-neutral-500/10', text: 'text-neutral-500', label: 'Full' },
-  };
-
-  const status = statusStyles[trip.status];
+  const pricingBadge = tripPricingBadge(trip);
+  const isFull = trip.status === 'full' || trip.slotsAvailable <= 0;
   const slotsPercent = Math.round(((trip.slotsTotal - trip.slotsAvailable) / trip.slotsTotal) * 100);
 
   const goToTrip = () => navigate(tripPath);
@@ -96,7 +91,7 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
       {!isFeatured && (
         <OrganizerMessageButton
           organizerUserId={hostUserId}
-          eventId={trip.id}
+          activityId={trip.id}
         />
       )}
     </div>
@@ -143,9 +138,14 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
     <div className="p-4 space-y-3">
       {!isFeatured && (
         <div className="flex items-start justify-between gap-3">
-          <span className={`px-2.5 py-1 rounded-xl text-xs font-bold ${status.bg} ${status.text}`}>
-            {status.label}
+          <span className={`px-2.5 py-1 rounded-xl text-xs font-bold ${pricingBadge.bg} ${pricingBadge.text}`}>
+            {pricingBadge.label}
           </span>
+          {isFull && (
+            <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-neutral-500/10 text-neutral-500">
+              Full
+            </span>
+          )}
         </div>
       )}
 

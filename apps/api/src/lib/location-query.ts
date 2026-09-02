@@ -6,7 +6,7 @@ import { radiusKmToRadians, withLocationGeoFields } from './location-geo.js';
 import { withQueryTiming } from './query-timing.js';
 
 export interface LocationListFilters {
-  activityType?: 'hiking' | 'camping' | 'community_event';
+  activityType?: 'hiking' | 'camping' | 'COMMUNITY_ACTIVITY';
   featured?: boolean;
   countryCode?: string;
   lat?: number;
@@ -57,7 +57,7 @@ const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown>
         ? 'HIKING'
         : filters.activityType === 'camping'
           ? 'CAMPING'
-          : 'COMMUNITY_EVENT';
+          : 'COMMUNITY_ACTIVITY';
   }
   if (filters.featured !== undefined) {
     query.featured = filters.featured;

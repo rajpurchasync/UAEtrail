@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, AdminMetrics, OrganizerApplication, AuditLogEntry } from '../api/services';
 import { DashboardLayout } from '../components/layout';
-import { EventDTO } from '@uaetrail/shared-types';
+import { ActivityDTO } from '@uaetrail/shared-types';
 import { ADMIN_LINKS } from '../constants';
-import { resolveEventOwnerLabel, formatActivityType } from '../utils/activityIdentity';
+import { resolveActivityOwnerLabel, formatActivityType } from '../utils/activityIdentity';
 
 export const AdminOverview = () => {
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
-  const [recentEvents, setRecentEvents] = useState<EventDTO[]>([]);
+  const [recentEvents, setRecentEvents] = useState<ActivityDTO[]>([]);
   const [recentApps, setRecentApps] = useState<OrganizerApplication[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ export const AdminOverview = () => {
     setLoading(true);
     Promise.all([
       api.getAdminMetrics(),
-      api.getAdminEvents(),
+      api.getAdminActivities(),
       api.getAdminApplications(),
       api.getAdminAuditLogs({ pageSize: 10 }).catch(() => ({ data: [] as AuditLogEntry[] }))
     ])
@@ -96,7 +96,7 @@ export const AdminOverview = () => {
         <div className="bg-white border rounded-lg">
           <div className="px-4 py-3 border-b flex items-center justify-between">
             <h3 className="font-semibold text-gray-900">Recent Activities</h3>
-            <Link to="/admin/events" className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
+            <Link to="/admin/activities" className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
           </div>
           <div className="divide-y">
             {recentEvents.map((e) => (
@@ -104,7 +104,7 @@ export const AdminOverview = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-900">{e.title || '—'}</p>
                   <p className="text-xs text-gray-500">
-                    {formatActivityType(e.activityType)} · {e.locationName} · {resolveEventOwnerLabel(e)}
+                    {formatActivityType(e.activityType)} · {e.locationName} · {resolveActivityOwnerLabel(e)}
                   </p>
                   <p className="text-xs text-gray-400">{e.date}</p>
                 </div>

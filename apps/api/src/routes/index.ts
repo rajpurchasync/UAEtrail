@@ -15,6 +15,7 @@ export const apiRouter = Router();
 apiRouter.use('/auth', authLimiter, authRouter);
 apiRouter.use('/admin', adminRouter);
 apiRouter.use('/organizer', organizerRouter);
+apiRouter.use('/host', organizerRouter);
 apiRouter.use('/chat', chatRouter);
 apiRouter.use('/shop', shopRouter);
 apiRouter.use('/media', mediaRouter);

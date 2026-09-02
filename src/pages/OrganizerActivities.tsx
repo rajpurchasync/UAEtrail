@@ -1,58 +1,41 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { EventDTO, ParticipantDTO } from '@uaetrail/shared-types';
-import type { ActivityType } from '../config/activityTypes';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import { ActivityDTO, ParticipantDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
+import { parseActivityTypeParam } from '../components/activities';
+import { useActivityFormSession } from '../context/ActivityFormSessionContext';
 import { OrganizerShell } from '../components/organizer/OrganizerShell';
-import { TenantSwitcher, ImageUpload, ShareButton, SecureAvatar, ActivityIdentityFields, VenueSelect, HostSelect, TimePicker } from '../components/ui';
+import { TenantSwitcher, ShareButton, SecureAvatar } from '../components/ui';
+import { ORGANIZER_ACTIVITIES_NEW_PATH } from '../constants';
 import {
   activityTypeBadgeClass,
   formatActivityType,
-  resolveEventOwnerLabel,
+  resolveActivityOwnerLabel,
 } from '../utils/activityIdentity';
-
-const emptyForm = {
-  activityType: 'hiking' as ActivityType,
-  locationId: '',
-  title: '',
-  description: '',
-  date: '',
-  time: '',
-  capacity: 10,
-  price: 0,
-  meetingPoint: '',
-  itinerary: '',
-  requirements: '',
-  images: [] as string[],
-  hostUserId: '',
-};
 
 type ViewMode = 'list' | 'checkin';
 
-export const OrganizerEvents = () => {
+export const OrganizerActivities = () => {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [tenantId, setTenantId] = useState(getActiveTenantId());
-  const [events, setEvents] = useState<EventDTO[]>([]);
+  const [events, setEvents] = useState<ActivityDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [ownerName, setOwnerName] = useState<string | undefined>();
-  const [saving, setSaving] = useState(false);
-  const [confirmCancel, setConfirmCancel] = useState<EventDTO | null>(null);
+  const { openCreate, openEdit, setOnSaved } = useActivityFormSession();
+  const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
 
   // Check-in state
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [checkinEventId, setCheckinEventId] = useState<string | null>(null);
-  const [checkinEventTitle, setCheckinEventTitle] = useState('');
+  const [checkinActivityId, setCheckinActivityId] = useState<string | null>(null);
+  const [checkinActivityTitle, setCheckinActivityTitle] = useState('');
   const [participants, setParticipants] = useState<ParticipantDTO[]>([]);
   const [checkinLoading, setCheckinLoading] = useState(false);
 
   const loadEvents = async (tid: string) => {
     if (!tid) return;
     try {
-      const res = await api.getOrganizerEvents(tid);
+      const res = await api.listHostActivities(tid);
       setEvents(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load events');
@@ -63,80 +46,32 @@ export const OrganizerEvents = () => {
     loadEvents(tenantId);
   }, [tenantId]);
 
-  const openCreate = () => {
-    setEditingId(null);
-    setOwnerName(undefined);
-    setForm(emptyForm);
-    setModalOpen(true);
+  const openCreateActivity = () => {
+    openCreate({ tenantId });
   };
 
   useEffect(() => {
-    if (location.pathname === '/organizer/events/new') {
-      openCreate();
+    setOnSaved(() => () => void loadEvents(tenantId));
+    return () => setOnSaved(null);
+  }, [tenantId, setOnSaved]);
+
+  useEffect(() => {
+    if (location.pathname === ORGANIZER_ACTIVITIES_NEW_PATH) {
+      openCreate({
+        tenantId,
+        initialActivityType: parseActivityTypeParam(searchParams.get('type')),
+      });
     }
-  }, [location.pathname]);
+  }, [location.pathname, searchParams, tenantId, openCreate]);
 
-  const openEdit = (event: EventDTO) => {
-    setEditingId(event.id);
-    setOwnerName(event.createdByName);
-    setForm({
-      activityType: (event.activityType as ActivityType) ?? 'hiking',
-      locationId: event.locationId,
-      title: event.title ?? '',
-      description: event.description ?? '',
-      date: event.date,
-      time: event.time,
-      capacity: event.slotsTotal,
-      price: event.price,
-      meetingPoint: event.meetingPoint ?? '',
-      itinerary: (event.itinerary ?? []).join('\n'),
-      requirements: (event.requirements ?? []).join('\n'),
-      images: event.images ?? [],
-      hostUserId: event.guideId ?? event.hostUserId ?? '',
-    });
-    setModalOpen(true);
+  const openEditActivity = (event: ActivityDTO) => {
+    openEdit(event, { tenantId });
   };
 
-  const closeModal = () => {
-    setModalOpen(false);
-    setError(null);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tenantId) { setError('Select organization first'); return; }
-    setSaving(true);
-    setError(null);
-    try {
-      const { hostUserId, ...rest } = form;
-      const payload: Record<string, unknown> = {
-        ...rest,
-        guideId: hostUserId || undefined,
-        itinerary: form.itinerary ? form.itinerary.split('\n').filter(Boolean) : [],
-        requirements: form.requirements ? form.requirements.split('\n').filter(Boolean) : [],
-        meetingPoint: form.meetingPoint || undefined,
-        images: form.images
-      };
-      if (editingId) {
-        await api.updateOrganizerEvent(tenantId, editingId, payload);
-      } else {
-        await api.createOrganizerEvent(tenantId, payload);
-      }
-      closeModal();
-      setForm(emptyForm);
-      setEditingId(null);
-      await loadEvents(tenantId);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create event');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const publish = async (eventId: string) => {
+  const publish = async (activityId: string) => {
     if (!tenantId) return;
     try {
-      await api.publishOrganizerEvent(tenantId, eventId);
+      await api.publishHostActivity(tenantId, activityId);
       await loadEvents(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish event');
@@ -156,10 +91,10 @@ export const OrganizerEvents = () => {
   };
 
   // Check-in functions
-  const openCheckin = async (event: EventDTO) => {
+  const openCheckin = async (event: ActivityDTO) => {
     if (!tenantId) return;
-    setCheckinEventId(event.id);
-    setCheckinEventTitle(event.locationName);
+    setCheckinActivityId(event.id);
+    setCheckinActivityTitle(event.locationName);
     setCheckinLoading(true);
     setViewMode('checkin');
     try {
@@ -174,15 +109,15 @@ export const OrganizerEvents = () => {
   };
 
   const toggleCheckin = async (participant: ParticipantDTO) => {
-    if (!tenantId || !checkinEventId) return;
+    if (!tenantId || !checkinActivityId) return;
     try {
       if (participant.checkedInAt) {
-        await api.undoCheckin(tenantId, checkinEventId, participant.id);
+        await api.undoCheckin(tenantId, checkinActivityId, participant.id);
       } else {
-        await api.checkinParticipant(tenantId, checkinEventId, participant.id);
+        await api.checkinParticipant(tenantId, checkinActivityId, participant.id);
       }
       // Refresh participants
-      const res = await api.getEventParticipants(tenantId, checkinEventId);
+      const res = await api.getEventParticipants(tenantId, checkinActivityId);
       setParticipants(res.data.participants ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update check-in');
@@ -212,7 +147,7 @@ export const OrganizerEvents = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Activities</h2>
-              <button onClick={openCreate} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium" disabled={!tenantId}>
+              <button onClick={openCreateActivity} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium" disabled={!tenantId}>
                 + Add Activity
               </button>
             </div>
@@ -246,7 +181,7 @@ export const OrganizerEvents = () => {
                           {formatActivityType(event.activityType)}
                         </span>
                       </td>
-                      <td className="px-4 py-3">{resolveEventOwnerLabel(event)}</td>
+                      <td className="px-4 py-3">{resolveActivityOwnerLabel(event)}</td>
                       <td className="px-4 py-3">{event.locationName}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <p>{event.date}</p>
@@ -262,7 +197,7 @@ export const OrganizerEvents = () => {
                         <div className="flex gap-2">
                           {event.status === 'draft' && (
                             <>
-                              <button onClick={() => openEdit(event)}
+                              <button onClick={() => openEditActivity(event)}
                                 className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
                               <button onClick={() => publish(event.id)}
                                 className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Publish</button>
@@ -270,7 +205,7 @@ export const OrganizerEvents = () => {
                           )}
                           {event.status === 'published' && (
                             <>
-                              <button onClick={() => openEdit(event)}
+                              <button onClick={() => openEditActivity(event)}
                                 className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
                               <button onClick={() => openCheckin(event)}
                                 className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Check-in</button>
@@ -290,7 +225,7 @@ export const OrganizerEvents = () => {
                     </tr>
                   ))}
                   {events.length === 0 && (
-                    <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No events yet. Create your first event!</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No activities yet. Create your first activity!</td></tr>
                   )}
                 </tbody>
               </table>
@@ -301,7 +236,7 @@ export const OrganizerEvents = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <button onClick={() => setViewMode('list')} className="text-sm text-gray-600 hover:text-gray-900">← Back to Events</button>
-              <h2 className="text-lg font-semibold text-gray-900">Check-in: {checkinEventTitle}</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Check-in: {checkinActivityTitle}</h2>
             </div>
 
             {/* Progress */}
@@ -372,124 +307,6 @@ export const OrganizerEvents = () => {
           </div>
         )}
       </div>
-
-      {/* Create / Edit Event Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Activity' : 'Add Activity'}</h2>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-            </div>
-            <form onSubmit={handleSave} className="p-6 space-y-4">
-              <ActivityIdentityFields
-                title={form.title}
-                onTitleChange={(title) => setForm((prev) => ({ ...prev, title }))}
-                activityType={form.activityType}
-                onActivityTypeChange={(activityType) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    activityType,
-                    locationId: prev.activityType === activityType ? prev.locationId : '',
-                  }))
-                }
-                ownerName={ownerName}
-              />
-
-              <VenueSelect
-                value={form.locationId}
-                onChange={(locationId) => setForm((prev) => ({ ...prev, locationId }))}
-                activityType={form.activityType}
-                tenantId={tenantId}
-              />
-
-              <HostSelect
-                tenantId={tenantId}
-                value={form.hostUserId}
-                onChange={(hostUserId) => setForm((prev) => ({ ...prev, hostUserId }))}
-                required
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Date *</label>
-                  <input type="date" required value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Time *</label>
-                  <TimePicker
-                    required
-                    value={form.time}
-                    onChange={(time) => setForm({ ...form, time })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Capacity *</label>
-                  <input type="number" required min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Price (AED)</label>
-                  <input type="number" min={0} value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="0 for free" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Description *</label>
-                <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" rows={3} placeholder="Describe the event, what to expect..." />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Meeting Point</label>
-                <input type="text" value={form.meetingPoint} onChange={(e) => setForm({ ...form, meetingPoint: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="e.g. RAK Gateway parking lot" />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Itinerary (one step per line)</label>
-                <textarea value={form.itinerary} onChange={(e) => setForm({ ...form, itinerary: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" rows={3}
-                  placeholder="6:00 AM - Meet at parking\n6:30 AM - Start hike\n10:00 AM - Summit" />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Requirements (one per line)</label>
-                <textarea value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" rows={3}
-                  placeholder="Hiking boots required\nBring 2L water minimum\nModerate fitness level" />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Event Images</label>
-                <ImageUpload
-                  images={form.images}
-                  onChange={(urls) => setForm((prev) => ({ ...prev, images: urls }))}
-                  max={6}
-                  keyPrefix="events"
-                  tenantId={tenantId}
-                  kind="event-image"
-                  preset="event"
-                />
-              </div>
-
-              {error && <p className="text-sm text-red-600">{error}</p>}
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={closeModal} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Cancel</button>
-                <button type="submit" disabled={saving} className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-60">
-                  {saving ? 'Saving...' : editingId ? 'Update Event' : 'Save as Draft'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Cancel Event Confirmation Modal */}
       {confirmCancel && (

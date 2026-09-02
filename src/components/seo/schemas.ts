@@ -1,4 +1,4 @@
-import { EventDetailDTO, ProductDTO, ReviewDTO } from '@uaetrail/shared-types';
+import { ActivityDetailDTO, ProductDTO, ReviewDTO } from '@uaetrail/shared-types';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
 import { CampingSpot, Trail } from '../../types';
 import type { TenantProfile } from '../../api/services';
@@ -68,7 +68,7 @@ export const campSchema = (camp: CampingSpot) => ({
   ]
 });
 
-export const tripEventSchema = (trip: EventDetailDTO) => ({
+export const tripEventSchema = (trip: ActivityDetailDTO) => ({
   '@context': 'https://schema.org',
   '@type': 'Event',
   name: trip.title || trip.locationName,
@@ -78,7 +78,7 @@ export const tripEventSchema = (trip: EventDetailDTO) => ({
   startDate: `${trip.date}T${trip.time}:00+04:00`,
   endDate: trip.endDate ? `${trip.endDate}T${trip.endTime ?? trip.time}:00+04:00` : undefined,
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-  eventStatus: 'https://schema.org/EventScheduled',
+  ActivityStatus: 'https://schema.org/EventScheduled',
   location: {
     '@type': 'Place',
     name: trip.locationName,

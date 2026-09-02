@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { Search, Map, List, Plus } from 'lucide-react';
 import { TrailCard } from '../components/ui/TrailCard';
 import { CampingCard } from '../components/ui/CampingCard';
-import { CommunityEventCard } from '../components/ui/CommunityEventCard';
+import { CommunityActivityCard } from '../components/ui/CommunityActivityCard';
 import { Dialog } from '../components/ui/Dialog';
 import { SubmitLocationForm } from '../components/ui/SubmitLocationForm';
 import { useAuth } from '../context/AuthContext';
@@ -19,7 +19,7 @@ import { ListBrowseLayout } from '../components/layout/ListBrowseLayout';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { PAGE_BANNERS } from '../config/pageBanners';
-import { DifficultyLevel, CampingType, Accessibility, Trail, CampingSpot, CommunityEventSpot } from '../types';
+import { DifficultyLevel, CampingType, Accessibility, Trail, CampingSpot, CommunityActivitySpot } from '../types';
 import { fetchApiLocations } from '../api/public';
 import { DEFAULT_COUNTRY, DISCOVERY_REGION_PILL_LABELS, getDiscoveryRegionPillOptions, getRegionsForCountry, getMapBounds } from '../config/regions';
 import { matchesLocationSearch, resolveRegionFilter } from '../utils/locationSearch';
@@ -27,7 +27,7 @@ import { matchesLocationSearch, resolveRegionFilter } from '../utils/locationSea
 type LocationItem =
   | { type: 'trail'; data: Trail }
   | { type: 'camp'; data: CampingSpot }
-  | { type: 'community_event'; data: CommunityEventSpot };
+  | { type: 'community_activity'; data: CommunityActivitySpot };
 type ActivityFilter = 'all' | ActivityType;
 
 export const Discovery = () => {
@@ -42,7 +42,7 @@ export const Discovery = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [trailSource, setTrailSource] = useState<Trail[]>([]);
   const [campSource, setCampSource] = useState<CampingSpot[]>([]);
-  const [communityEventSource, setCommunityEventSource] = useState<CommunityEventSpot[]>([]);
+  const [communityActivitiesource, setcommunityActivitiesource] = useState<CommunityActivitySpot[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
@@ -85,7 +85,7 @@ export const Discovery = () => {
       setFilters((prev) => ({ ...prev, regions: [] }));
     }
 
-    if (activity === 'hiking' || activity === 'camping' || activity === 'community_event') {
+    if (activity === 'hiking' || activity === 'camping' || activity === 'community_activity') {
       setActivityFilter(activity);
     } else {
       setActivityFilter('all');
@@ -107,12 +107,12 @@ export const Discovery = () => {
       .then((response) => {
         setTrailSource(response.trails);
         setCampSource(response.camps);
-        setCommunityEventSource(response.communityEvents);
+        setcommunityActivitiesource(response.communityActivities);
       })
       .catch((err) => {
         setTrailSource([]);
         setCampSource([]);
-        setCommunityEventSource([]);
+        setcommunityActivitiesource([]);
         setLoadError(err instanceof Error ? err.message : 'Failed to load locations');
       })
       .finally(() => setLoading(false));
@@ -127,7 +127,7 @@ export const Discovery = () => {
     const locations: LocationItem[] = [];
     const showTrails = activityFilter === 'all' || activityFilter === 'hiking';
     const showCamps = activityFilter === 'all' || activityFilter === 'camping';
-    const showCommunityEvents = activityFilter === 'all' || activityFilter === 'community_event';
+    const showcommunityActivities = activityFilter === 'all' || activityFilter === 'community_activity';
 
     if (showTrails) {
       const filteredTrails = trailSource.filter((trail) => {
@@ -173,8 +173,8 @@ export const Discovery = () => {
       locations.push(...filteredCamps.map((camp) => ({ type: 'camp' as const, data: camp })));
     }
 
-    if (showCommunityEvents) {
-      const filteredEvents = communityEventSource.filter((event) => {
+    if (showcommunityActivities) {
+      const filteredEvents = communityActivitiesource.filter((event) => {
         if (!matchesLocationSearch(event, searchQuery)) {
           return false;
         }
@@ -190,12 +190,12 @@ export const Discovery = () => {
         return true;
       });
       locations.push(
-        ...filteredEvents.map((event) => ({ type: 'community_event' as const, data: event }))
+        ...filteredEvents.map((event) => ({ type: 'community_activity' as const, data: event }))
       );
     }
 
     return locations;
-  }, [activityFilter, searchQuery, filters, trailSource, campSource, communityEventSource]);
+  }, [activityFilter, searchQuery, filters, trailSource, campSource, communityActivitiesource]);
 
   const mapPins = useMemo((): LocationMapPin[] => {
     return filteredLocations.flatMap((location) => {
@@ -212,13 +212,13 @@ export const Discovery = () => {
               ? 'hiking'
               : location.type === 'camp'
                 ? 'camping'
-                : 'community_event',
+                : 'community_activity',
           path: locationPathForActivity(
             location.type === 'trail'
               ? 'hiking'
               : location.type === 'camp'
                 ? 'camping'
-                : 'community_event',
+                : 'community_activity',
             item.id
           ),
         },
@@ -353,7 +353,7 @@ export const Discovery = () => {
                 { key: 'all', label: 'All' },
                 { key: 'hiking', label: 'Hiking' },
                 { key: 'camping', label: 'Camping' },
-                { key: 'community_event', label: 'Community Event' },
+                { key: 'community_activity', label: 'Community Event' },
               ]}
               value={activityFilter}
               onChange={(key) => setActivityFilter(key as ActivityFilter)}
@@ -435,7 +435,7 @@ export const Discovery = () => {
                 </div>
               </div>
 
-              {(activityFilter === 'all' || activityFilter === 'hiking' || activityFilter === 'community_event') && (
+              {(activityFilter === 'all' || activityFilter === 'hiking' || activityFilter === 'community_activity') && (
                 <>
                   <div className="mb-6">
                     <h3 className="font-medium text-gray-900 mb-3">
@@ -571,7 +571,7 @@ export const Discovery = () => {
                     Active filters: {activeFilterSummary.join(' · ')}
                   </p>
                 )}
-                {!loadError && trailSource.length + campSource.length + communityEventSource.length === 0 && (
+                {!loadError && trailSource.length + campSource.length + communityActivitiesource.length === 0 && (
                   <p className="text-sm text-gray-500 mb-4">
                     No locations are loaded yet. Run the API seed if this is a fresh install.
                   </p>
@@ -617,7 +617,7 @@ export const Discovery = () => {
                   ) : location.type === 'camp' ? (
                     <CampingCard key={`camp-${location.data.id}-${index}`} camp={location.data} />
                   ) : (
-                    <CommunityEventCard key={`event-${location.data.id}-${index}`} event={location.data} />
+                    <CommunityActivityCard key={`event-${location.data.id}-${index}`} event={location.data} />
                   )
                 )}
               </div>
@@ -634,8 +634,8 @@ export const Discovery = () => {
           defaultActivityType={
             activityFilter === 'camping'
               ? 'camping'
-              : activityFilter === 'community_event'
-                ? 'community_event'
+              : activityFilter === 'community_activity'
+                ? 'community_activity'
                 : 'hiking'
           }
           onSubmitted={(loc) => {

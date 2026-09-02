@@ -58,7 +58,7 @@ async function main() {
   let visToken;
   let tenantId;
   let locationId;
-  let eventId;
+  let activityId;
   let tenantSlug;
 
   try {
@@ -114,15 +114,15 @@ async function main() {
   images: []
 };
 
-  const created = await req('/organizer/events', {
+  const created = await req('/host/activities', {
     method: 'POST',
     token: orgToken,
     tenantId,
     body: createPayload
   });
   if (created.status === 201 || created.status === 200) {
-    eventId = created.json?.data?.id;
-    log('Create event (draft)', true, eventId);
+    activityId = created.json?.data?.id;
+    log('Create event (draft)', true, activityId);
     log('  → title', !!createPayload.title);
     log('  → itinerary', createPayload.itinerary.length > 0);
     log('  → instructions/requirements', createPayload.requirements.length > 0);
@@ -139,14 +139,14 @@ async function main() {
     return printSummary();
   }
 
-  const published = await req(`/organizer/events/${eventId}/publish`, {
+  const published = await req(`/host/activities/${activityId}/publish`, {
     method: 'POST',
     token: orgToken,
     tenantId
   });
   log('Publish event', published.status === 200, published.status === 200 ? '' : JSON.stringify(published.json));
 
-  const publicDetail = await req(`/events/${eventId}`);
+  const publicDetail = await req(`/activities/${activityId}`);
   if (publicDetail.status === 200) {
     const d = publicDetail.json.data;
     log('User: public trip detail', true, d.title);
@@ -165,7 +165,7 @@ async function main() {
   }
 
   if (visToken) {
-    const join = await req(`/events/${eventId}/requests`, {
+    const join = await req(`/activities/${activityId}/requests`, {
       method: 'POST',
       token: visToken,
       body: { note: 'Smoke test join request — can I bring a friend?' }
@@ -185,7 +185,7 @@ async function main() {
   log('User: meeting point map (UI)', true, 'OSM embed when lat/lng set — verify manually');
   log('Organizer: postpone via edit date (API)', true, 'PATCH date notifies participants');
 
-  const edited = await req(`/organizer/events/${eventId}`, {
+  const edited = await req(`/host/activities/${activityId}`, {
     method: 'PATCH',
     token: orgToken,
     tenantId,
@@ -197,14 +197,14 @@ async function main() {
   });
   log('Organizer: edit event', edited.status === 200, edited.status === 200 ? 'title/capacity/price updated' : JSON.stringify(edited.json));
 
-  const cancelled = await req(`/organizer/events/${eventId}`, {
+  const cancelled = await req(`/host/activities/${activityId}`, {
     method: 'DELETE',
     token: orgToken,
     tenantId
   });
   log('Organizer: cancel/remove event', cancelled.status === 204, cancelled.status === 204 ? 'cancelled' : `${cancelled.status}`);
 
-  const afterCancel = await req(`/events/${eventId}`);
+  const afterCancel = await req(`/activities/${activityId}`);
   log('User: cancelled trip hidden/unavailable', afterCancel.status !== 200 || afterCancel.json?.data?.status === 'cancelled', afterCancel.json?.data?.status ?? afterCancel.status);
 
   printSummary();

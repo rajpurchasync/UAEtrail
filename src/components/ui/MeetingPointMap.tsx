@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import L from 'leaflet';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { MAP_CONFIG } from '../../config/platform';
 import { MapLocationPicker } from './MapLocationPicker';
 import { parseCoord } from '../../utils/coords';
 
@@ -61,13 +62,11 @@ export const MeetingPointMap = ({ lat, lng, hideExternalLink = false }: MeetingP
             zoom={13}
             scrollWheelZoom={false}
             dragging
+            attributionControl={false}
             className="z-0 h-full w-full"
             style={{ height: '100%', width: '100%' }}
           >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+            <TileLayer url={MAP_CONFIG.tileUrl} />
             <MapResize />
             <Marker position={[lat, lng]} icon={previewIcon} />
           </MapContainer>

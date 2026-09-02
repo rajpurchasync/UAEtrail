@@ -1,15 +1,15 @@
-import { EventDTO, LocationDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
+import { ActivityDTO, LocationDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { api } from './services';
-import { CampingSpot, Trail, Trip, CommunityEventSpot } from '../types';
+import { CampingSpot, Trail, Trip, CommunityActivitySpot } from '../types';
 import { tripHasPaidPricing } from '../utils/tripPricing';
 
-const mapTripStatus = (event: EventDTO): Trip['status'] => {
+const mapTripStatus = (event: ActivityDTO): Trip['status'] => {
   if (event.slotsAvailable <= 0) return 'full';
   if (tripHasPaidPricing(event)) return 'paid';
   return 'free';
 };
 
-export const mapEventToTrip = (event: EventDTO): Trip => ({
+export const mapActivityToTrip = (event: ActivityDTO): Trip => ({
   id: event.id,
   locationId: event.locationId,
   locationName: event.locationName,
@@ -31,6 +31,7 @@ export const mapEventToTrip = (event: EventDTO): Trip => ({
   images: event.images,
   price: event.price,
   pricePackages: event.pricePackages,
+  pricingMode: event.pricingMode ?? undefined,
   slotsAvailable: event.slotsAvailable,
   slotsTotal: event.slotsTotal,
   status: mapTripStatus(event),
@@ -40,7 +41,6 @@ export const mapEventToTrip = (event: EventDTO): Trip => ({
   itinerary: event.itinerary ?? undefined,
   requirements: event.requirements ?? undefined
 });
-
 const mapLocationFields = (location: LocationDTO) => ({
   parkingLink: location.parkingLink,
   highlights: location.highlights,
@@ -84,14 +84,14 @@ const mapLocationToCamp = (location: LocationDTO): CampingSpot => ({
   ...mapLocationFields(location),
 });
 
-const mapLocationToCommunityEvent = (location: LocationDTO): CommunityEventSpot => ({
+const mapLocationTocommunityActivity = (location: LocationDTO): CommunityActivitySpot => ({
   id: location.id,
   name: location.name,
-  region: location.region as CommunityEventSpot['region'],
+  region: location.region as CommunityActivitySpot['region'],
   difficulty: location.difficulty ?? 'moderate',
   distance: location.distance,
   duration: location.duration,
-  season: (location.season as CommunityEventSpot['season']) ?? ['winter'],
+  season: (location.season as CommunityActivitySpot['season']) ?? ['winter'],
   description: location.description,
   images: location.images,
   featured: location.featured,
@@ -103,19 +103,19 @@ const mapLocationToCommunityEvent = (location: LocationDTO): CommunityEventSpot 
 export const fetchPopularLocations = async (): Promise<{
   trails: Trail[];
   camps: CampingSpot[];
-  communityEvents: CommunityEventSpot[];
+  communityActivities: CommunityActivitySpot[];
 }> => {
   const res = await api.getPopularLocations(6);
   return {
     trails: res.data.filter((l) => l.activityType === 'hiking').map(mapLocationToTrail),
     camps: res.data.filter((l) => l.activityType === 'camping').map(mapLocationToCamp),
-    communityEvents: res.data.filter((l) => l.activityType === 'community_event').map(mapLocationToCommunityEvent),
+    communityActivities: res.data.filter((l) => l.activityType === 'community_activity').map(mapLocationTocommunityActivity),
   };
 };
 
 export const fetchFeaturedEvents = async (): Promise<Trip[]> => {
-  const res = await api.getFeaturedEvents(6);
-  return res.data.map(mapEventToTrip);
+  const res = await api.getFeaturedActivities(6);
+  return res.data.map(mapActivityToTrip);
 };
 
 /** Fast home payload: 3 parallel requests, no location pagination loop. */
@@ -127,15 +127,15 @@ export const fetchHomeLandingData = async (): Promise<{
 }> => {
   const [popularRes, featuredRes, eventsRes] = await Promise.all([
     api.getPopularLocations(6),
-    api.getFeaturedEvents(6),
-    api.getPublicEvents()
+    api.getFeaturedActivities(6),
+    api.getPublicActivities()
   ]);
 
   return {
     popularTrails: popularRes.data.filter((l) => l.activityType === 'hiking').map(mapLocationToTrail),
     popularCamps: popularRes.data.filter((l) => l.activityType === 'camping').map(mapLocationToCamp),
-    featuredTrips: featuredRes.data.map(mapEventToTrip),
-    allTrips: eventsRes.data.map(mapEventToTrip)
+    featuredTrips: featuredRes.data.map(mapActivityToTrip),
+    allTrips: eventsRes.data.map(mapActivityToTrip)
   };
 };
 
@@ -143,54 +143,54 @@ export const fetchHomeLandingData = async (): Promise<{
 export const fetchHomeRegionLocations = async (): Promise<{
   trails: Trail[];
   camps: CampingSpot[];
-  communityEvents: CommunityEventSpot[];
+  communityActivities: CommunityActivitySpot[];
 }> => {
   const res = await api.getLocationsPage(1, 100);
   return {
     trails: res.data.filter((item) => item.activityType === 'hiking').map(mapLocationToTrail),
     camps: res.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp),
-    communityEvents: res.data.filter((item) => item.activityType === 'community_event').map(mapLocationToCommunityEvent),
+    communityActivities: res.data.filter((item) => item.activityType === 'community_activity').map(mapLocationTocommunityActivity),
   };
 };
 
 export const fetchPublicMappedData = async (): Promise<{
   trails: Trail[];
   camps: CampingSpot[];
-  communityEvents: CommunityEventSpot[];
+  communityActivities: CommunityActivitySpot[];
   trips: Trip[];
 }> => {
-  const [locationsResponse, eventsResponse] = await Promise.all([api.getPublicLocations(), api.getPublicEvents()]);
+  const [locationsResponse, eventsResponse] = await Promise.all([api.getPublicLocations(), api.getPublicActivities()]);
   const trails = locationsResponse.data.filter((item) => item.activityType === 'hiking').map(mapLocationToTrail);
   const camps = locationsResponse.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp);
-  const communityEvents = locationsResponse.data
-    .filter((item) => item.activityType === 'community_event')
-    .map(mapLocationToCommunityEvent);
-  const trips = eventsResponse.data.map(mapEventToTrip);
-  return { trails, camps, communityEvents, trips };
+  const communityActivities = locationsResponse.data
+    .filter((item) => item.activityType === 'community_activity')
+    .map(mapLocationTocommunityActivity);
+  const trips = eventsResponse.data.map(mapActivityToTrip);
+  return { trails, camps, communityActivities, trips };
 };
 
 export const fetchApiTrips = async (when: 'upcoming' | 'past' = 'upcoming'): Promise<Trip[]> => {
-  const events = await api.getPublicEvents({ when, pageSize: 100 });
-  return events.data.map(mapEventToTrip);
+  const events = await api.getPublicActivities({ when, pageSize: 100 });
+  return events.data.map(mapActivityToTrip);
 };
 
 export const fetchApiLocations = async (countryCode?: string): Promise<{
   trails: Trail[];
   camps: CampingSpot[];
-  communityEvents: CommunityEventSpot[];
+  communityActivities: CommunityActivitySpot[];
 }> => {
   const locations = await api.getPublicLocations(countryCode);
   return {
     trails: locations.data.filter((item) => item.activityType === 'hiking').map(mapLocationToTrail),
     camps: locations.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp),
-    communityEvents: locations.data
-      .filter((item) => item.activityType === 'community_event')
-      .map(mapLocationToCommunityEvent),
+    communityActivities: locations.data
+      .filter((item) => item.activityType === 'community_activity')
+      .map(mapLocationTocommunityActivity),
   };
 };
 
 export const fetchApiTripDetail = async (id: string) => {
-  const response = await api.getPublicEventDetail(id);
+  const response = await api.getPublicActivityDetail(id);
   return response.data;
 };
 
@@ -199,7 +199,7 @@ export const fetchApiLocationDetail = async (
 ): Promise<{
   trail?: Trail;
   camp?: CampingSpot;
-  communityEvent?: CommunityEventSpot;
+  communityActivity?: CommunityActivitySpot;
   premium: LocationPremiumSummaryDTO | null;
 }> => {
   const response = await api.getPublicLocationDetail(id);
@@ -210,5 +210,5 @@ export const fetchApiLocationDetail = async (
   if (loc.activityType === 'camping') {
     return { camp: mapLocationToCamp(loc), premium: response.premium };
   }
-  return { communityEvent: mapLocationToCommunityEvent(loc), premium: response.premium };
+  return { communityActivity: mapLocationTocommunityActivity(loc), premium: response.premium };
 };

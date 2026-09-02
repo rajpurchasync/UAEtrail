@@ -119,13 +119,11 @@ export const MapLocationPicker = ({
           center={defaultCenter}
           zoom={zoom}
           scrollWheelZoom
+          attributionControl={false}
           className="z-0 h-full w-full"
           style={{ height: minHeight, minHeight }}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <TileLayer url={MAP_CONFIG.tileUrl} />
           <MapResize />
           <MapCenterSync center={defaultCenter} zoom={zoom} />
           <MapClickPin onPick={setPin} />

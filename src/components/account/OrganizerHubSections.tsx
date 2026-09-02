@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Plus, UserCircle, Users, UsersRound } from 'lucide-react';
-import { EventDTO } from '@uaetrail/shared-types';
+import { ActivityDTO } from '@uaetrail/shared-types';
 import { AccountLinkList } from './AccountLinkList';
 import { AccountSectionHeader } from './AccountSectionHeader';
 import { AccountStat, AccountStatGrid } from './AccountStatGrid';
@@ -10,7 +10,7 @@ interface OrganizerHubSectionsProps {
   pendingJoinRequests: number;
   upcomingEventsCount: number;
   pastEventsCount: number;
-  upcomingEvents: EventDTO[];
+  upcomingEvents: ActivityDTO[];
 }
 
 export const buildOrganizerStats = ({
@@ -19,7 +19,7 @@ export const buildOrganizerStats = ({
   upcomingEventsCount,
   pastEventsCount,
 }: Omit<OrganizerHubSectionsProps, 'upcomingEvents'>): AccountStat[] => [
-  { label: 'Activities', value: eventsCount, to: '/organizer/events' },
+  { label: 'Activities', value: eventsCount, to: '/organizer/activities' },
   {
     label: 'Pending',
     value: pendingJoinRequests,
@@ -30,7 +30,7 @@ export const buildOrganizerStats = ({
   {
     label: 'Upcoming',
     value: upcomingEventsCount,
-    to: '/organizer/events',
+    to: '/organizer/activities',
     highlight: upcomingEventsCount > 0,
   },
   { label: 'History', value: pastEventsCount, to: '/organizer/history' },
@@ -58,12 +58,12 @@ export const OrganizerHubSections = ({
 
       {previewEvents.length > 0 && (
         <section>
-          <AccountSectionHeader title="Up next" actionTo="/organizer/events" actionLabel="All activities" />
+          <AccountSectionHeader title="Up next" actionTo="/organizer/activities" actionLabel="All activities" />
           <div className="space-y-2">
             {previewEvents.map((evt) => (
               <Link
                 key={evt.id}
-                to="/organizer/events"
+                to="/organizer/activities"
                 className="glass-card-interactive flex items-center gap-3 p-3.5"
               >
                 <div className="flex-1 min-w-0">
@@ -104,7 +104,7 @@ export const OrganizerHubSections = ({
             accent: 'emerald',
           },
           {
-            to: '/organizer/events/new',
+            to: '/organizer/activities/new',
             icon: <Plus className="w-4 h-4" />,
             label: 'Add activity',
           },

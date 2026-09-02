@@ -8,7 +8,7 @@ type MongoChatMessage = {
   senderId: string;
   receiverId: string;
   content: string;
-  eventId: string | null;
+  activityId: string | null;
   readAt: Date | null;
   createdAt: Date;
 };
@@ -21,7 +21,7 @@ const mapMessage = (msg: MongoChatMessage): ChatMessage => ({
   senderId: msg.senderId,
   receiverId: msg.receiverId,
   content: msg.content,
-  eventId: msg.eventId,
+  activityId: msg.activityId,
   readAt: msg.readAt,
   createdAt: msg.createdAt
 });
@@ -139,14 +139,14 @@ export const createChatMessageRecord = async (input: {
   senderId: string;
   receiverId: string;
   content: string;
-  eventId?: string | null;
+  activityId?: string | null;
 }): Promise<ChatMessage> => {
   const doc: MongoChatMessage = {
     _id: randomUUID(),
     senderId: input.senderId,
     receiverId: input.receiverId,
     content: input.content,
-    eventId: input.eventId ?? null,
+    activityId: input.activityId ?? null,
     readAt: null,
     createdAt: new Date()
   };

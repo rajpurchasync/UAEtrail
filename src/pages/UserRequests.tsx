@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, EventRequestView } from '../api/services';
+import { api, ActivityRequestView } from '../api/services';
 import { MobileScreen } from '../components/layout/MobileScreen';
 
 const statusBadge = (status: string) => {
@@ -14,7 +14,7 @@ const statusBadge = (status: string) => {
 };
 
 export const UserRequests = () => {
-  const [requests, setRequests] = useState<EventRequestView[]>([]);
+  const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,9 +73,9 @@ export const UserRequests = () => {
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="min-w-0">
                   <p className="font-semibold text-neutral-900 truncate">
-                    {request.event.title || request.event.locationName}
+                    {request.activity.title || request.activity.locationName}
                   </p>
-                  <p className="text-sm text-neutral-500">{request.event.locationName}</p>
+                  <p className="text-sm text-neutral-500">{request.activity.locationName}</p>
                 </div>
                 <span
                   className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${statusBadge(request.status)}`}
@@ -85,9 +85,9 @@ export const UserRequests = () => {
               </div>
               <div className="text-sm text-neutral-600 space-y-1">
                 <p>
-                  {request.event.date} · {request.event.time}
+                  {request.activity.date} · {request.activity.time}
                 </p>
-                {request.event.organizerName && <p>Organizer: {request.event.organizerName}</p>}
+                {request.activity.organizerName && <p>Organizer: {request.activity.organizerName}</p>}
                 {request.note && <p className="text-neutral-500 line-clamp-2">{request.note}</p>}
               </div>
             </Link>

@@ -54,8 +54,8 @@ export const Footer = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/trips" className={footerLinkClass}>
-                    Trips
+                  <Link to="/activities" className={footerLinkClass}>
+                    Activities
                   </Link>
                 </li>
                 <li>

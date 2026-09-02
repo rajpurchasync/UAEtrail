@@ -3,10 +3,10 @@
  * Reference: UAE Trail Platform Audit & Strategy plan.
  */
 
-/** Primary mobile navigation tabs: Explore | Trips | Community | Shop | Profile */
+/** Primary mobile navigation tabs: Explore | Activities | Community | Shop | Profile */
 export const MOBILE_NAV = [
   { to: '/', label: 'Explore', match: ['/'] },
-  { to: '/trips', label: 'Trips', match: ['/trips', '/trip'] },
+  { to: '/activities', label: 'Activities', match: ['/activities', '/trips', '/trip'] },
   { to: '/community', label: 'Community', match: ['/community'] },
   { to: '/shop', label: 'Shop', match: ['/shop', '/product', '/merchant'] },
   { to: '/profile', label: 'Profile', match: ['/profile', '/favorites', '/my-requests', '/messages', '/notifications'] },
@@ -28,7 +28,7 @@ export const MOBILE_DRAWER_MENU = [
   },
   { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
   { label: 'Trails & Spots', to: '/discovery', match: ['/discovery', '/trail', '/camp'] },
-  { label: 'Upcoming Trips', to: '/trips', match: ['/trips', '/trip'] },
+  { label: 'Upcoming Activities', to: '/activities', match: ['/activities', '/trips', '/trip'] },
   { label: 'Gears Shop', to: '/shop', match: ['/shop', '/product', '/merchant'] },
   { label: 'Community', to: '/community', match: ['/community'] },
 ] as const;
@@ -87,9 +87,12 @@ export const PARTICIPANT_PRIVACY = {
 
 /** Map provider for Discovery (Phase 2). */
 export const MAP_CONFIG = {
-  provider: 'openstreetmap' as const,
+  provider: 'carto' as const,
   defaultCenter: { lat: 24.4539, lng: 54.3773 },
   defaultZoom: 8,
+  /** English-label raster tiles (OpenStreetMap — no API key). */
+  tileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  tileAttribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 };
 
 /** Default platform country — see src/config/regions.ts for GCC catalog. */

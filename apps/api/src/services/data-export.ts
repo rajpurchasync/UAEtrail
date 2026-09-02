@@ -1,5 +1,5 @@
 import { findAuthUserById } from '../lib/auth-users.js';
-import { listUserEventParticipantsBasic, listUserEventRequestsBasic } from '../lib/event-engagement-store.js';
+import { listUserEventParticipantsBasic, listUserEventRequestsBasic } from '../lib/activity-engagement-store.js';
 import { listUserFavorites } from '../lib/favorites-store.js';
 import { countPushSubscriptions } from '../lib/push-subscriptions.js';
 import { findUserBadges, findUserRewardLedgerExport } from '../lib/reward-ledger-store.js';
@@ -23,9 +23,9 @@ export interface UserDataExport {
     rewardPoints: number;
     membershipTier: string;
   } | null;
-  favorites: Array<{ id: string; locationId: string | null; eventId: string | null; productId: string | null; createdAt: Date }>;
-  tripRequests: Array<{ id: string; eventId: string; status: string; createdAt: Date }>;
-  participations: Array<{ id: string; eventId: string; checkedInAt: Date | null; createdAt: Date }>;
+  favorites: Array<{ id: string; locationId: string | null; activityId: string | null; productId: string | null; createdAt: Date }>;
+  tripRequests: Array<{ id: string; activityId: string; status: string; createdAt: Date }>;
+  participations: Array<{ id: string; activityId: string; checkedInAt: Date | null; createdAt: Date }>;
   shopOrders: Array<{ id: string; status: string; totalAed: number; createdAt: Date }>;
   rewardLedger: Array<{ action: string; points: number; label: string | null; createdAt: Date }>;
   badges: Array<{ badgeKey: string; earnedAt: Date }>;
@@ -72,13 +72,13 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
     favorites,
     tripRequests: requests.map((r: (typeof requests)[number]) => ({
       id: r.id,
-      eventId: r.eventId,
+      activityId: r.activityId,
       status: r.status,
       createdAt: r.createdAt
     })),
     participations: participants.map((p: (typeof participants)[number]) => ({
       id: p.id,
-      eventId: p.eventId,
+      activityId: p.activityId,
       checkedInAt: p.checkedInAt,
       createdAt: p.createdAt
     })),

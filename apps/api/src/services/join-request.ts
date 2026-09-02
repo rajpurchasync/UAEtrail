@@ -4,4 +4,4 @@ export {
   createJoinOrWaitlistRequestDefault,
   isEventFull,
   promoteNextWaitlisted
-} from '../lib/event-engagement-store.js';
+} from '../lib/activity-engagement-store.js';

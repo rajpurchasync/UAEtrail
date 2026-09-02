@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import {
   formatTime24,
   HOUR_OPTIONS,
   MINUTE_OPTIONS,
   parseTime24,
   PERIOD_OPTIONS,
+  snapMinuteToQuarter,
   type TimePeriod,
 } from '../../utils/timePicker';
 
@@ -16,102 +17,69 @@ interface TimePickerProps {
   id?: string;
 }
 
-const ITEM_HEIGHT = 40;
+const selectClass =
+  'flex-1 min-w-0 h-11 bg-transparent text-center text-base font-medium text-gray-900 focus:outline-none focus:text-emerald-700 touch-manipulation cursor-pointer';
 
-const ScrollColumn = <T extends string | number>({
-  options,
-  selected,
-  onSelect,
-  formatOption,
-}: {
-  options: readonly T[];
-  selected: T;
-  onSelect: (value: T) => void;
-  formatOption?: (value: T) => string;
-}) => {
-  const listRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const list = listRef.current;
-    if (!list) return;
-    const index = options.indexOf(selected);
-    if (index >= 0) {
-      list.scrollTop = index * ITEM_HEIGHT;
-    }
-  }, [options, selected]);
-
-  const handleScroll = () => {
-    const list = listRef.current;
-    if (!list) return;
-    const index = Math.round(list.scrollTop / ITEM_HEIGHT);
-    const next = options[Math.min(Math.max(index, 0), options.length - 1)];
-    if (next !== undefined && next !== selected) {
-      onSelect(next);
-    }
-  };
-
-  return (
-    <div className="relative h-[120px] flex-1 min-w-0">
-      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 rounded-lg border border-emerald-200 bg-emerald-50/40" />
-      <div
-        ref={listRef}
-        onScroll={handleScroll}
-        className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
-        style={{ scrollPaddingTop: ITEM_HEIGHT, scrollPaddingBottom: ITEM_HEIGHT }}
-      >
-        <div style={{ height: ITEM_HEIGHT }} aria-hidden />
-        {options.map((option) => {
-          const label = formatOption ? formatOption(option) : String(option);
-          const isSelected = option === selected;
-          return (
-            <button
-              key={String(option)}
-              type="button"
-              onClick={() => onSelect(option)}
-              className={`w-full h-10 snap-center text-sm font-medium transition-colors ${
-                isSelected ? 'text-emerald-700' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-        <div style={{ height: ITEM_HEIGHT }} aria-hidden />
-      </div>
-    </div>
-  );
-};
-
+/** Compact single-row time picker — hour, minute (15 min steps), AM/PM. */
 export const TimePicker = ({ value, onChange, required, className = '', id }: TimePickerProps) => {
   const parts = parseTime24(value || '09:00');
+  const minute = snapMinuteToQuarter(parts.minute);
+
+  useEffect(() => {
+    if (!value) return;
+    const parsed = parseTime24(value);
+    const snapped = snapMinuteToQuarter(parsed.minute);
+    const normalized = formatTime24({ ...parsed, minute: snapped });
+    if (normalized !== value) onChange(normalized);
+  }, [value, onChange]);
 
   const update = (patch: Partial<typeof parts>) => {
-    onChange(formatTime24({ ...parts, ...patch }));
+    onChange(formatTime24({ ...parts, minute, ...patch }));
   };
 
   return (
     <div
       id={id}
-      className={`flex items-stretch gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1 ${className}`}
+      className={`flex items-center gap-0.5 rounded-lg border border-gray-200 bg-white px-1 min-h-[44px] ${className}`}
       aria-required={required}
     >
-      <ScrollColumn
-        options={HOUR_OPTIONS}
-        selected={parts.hour}
-        onSelect={(hour) => update({ hour })}
-      />
-      <span className="self-center text-gray-400 font-semibold">:</span>
-      <ScrollColumn
-        options={MINUTE_OPTIONS}
-        selected={parts.minute}
-        onSelect={(minute) => update({ minute })}
-        formatOption={(minute) => String(minute).padStart(2, '0')}
-      />
-      <ScrollColumn
-        options={PERIOD_OPTIONS}
-        selected={parts.period}
-        onSelect={(period) => update({ period: period as TimePeriod })}
-      />
+      <select
+        value={parts.hour}
+        onChange={(e) => update({ hour: Number(e.target.value) })}
+        className={selectClass}
+        aria-label="Hour"
+      >
+        {HOUR_OPTIONS.map((hour) => (
+          <option key={hour} value={hour}>
+            {hour}
+          </option>
+        ))}
+      </select>
+      <span className="text-gray-400 font-semibold shrink-0">:</span>
+      <select
+        value={minute}
+        onChange={(e) => update({ minute: Number(e.target.value) })}
+        className={selectClass}
+        aria-label="Minute"
+      >
+        {MINUTE_OPTIONS.map((m) => (
+          <option key={m} value={m}>
+            {String(m).padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+      <select
+        value={parts.period}
+        onChange={(e) => update({ period: e.target.value as TimePeriod })}
+        className={`${selectClass} max-w-[4.5rem]`}
+        aria-label="AM or PM"
+      >
+        {PERIOD_OPTIONS.map((period) => (
+          <option key={period} value={period}>
+            {period}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };

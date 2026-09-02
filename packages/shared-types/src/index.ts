@@ -9,9 +9,9 @@ export type UserRole =
 export type TenantType = 'company' | 'guide_owned';
 export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
 
-export type ActivityType = 'hiking' | 'camping' | 'community_event';
+export type ActivityType = 'hiking' | 'camping' | 'community_activity';
 export type LocationStatus = 'draft' | 'active' | 'inactive';
-export type EventStatus = 'draft' | 'published' | 'cancelled' | 'suspended';
+export type ActivityStatus = 'draft' | 'published' | 'cancelled' | 'suspended';
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | 'waitlisted';
 
 export interface ApiError {
@@ -103,13 +103,13 @@ export interface ParticipantPreviewDTO {
   avatar?: string | null;
 }
 
-export interface EventPricePackageDTO {
+export interface ActivityPricePackageDTO {
   label: string;
   amount: number;
   currency: string;
 }
 
-export interface EventDTO {
+export interface ActivityDTO {
   id: string;
   tenantId: string;
   tenantSlug: string;
@@ -124,13 +124,16 @@ export interface EventDTO {
   endDate?: string | null;
   endTime?: string | null;
   price: number;
-  pricePackages?: EventPricePackageDTO[];
+  pricePackages?: ActivityPricePackageDTO[];
   slotsTotal: number;
   slotsAvailable: number;
-  status: EventStatus;
+  status: ActivityStatus;
   meetingPoint?: string | null;
   meetingLat?: number | null;
   meetingLng?: number | null;
+  startPoint?: string | null;
+  startLat?: number | null;
+  startLng?: number | null;
   parkingPoint?: string | null;
   parkingLat?: number | null;
   parkingLng?: number | null;
@@ -138,17 +141,19 @@ export interface EventDTO {
   carPoolEnabled?: boolean;
   carPoolFree?: boolean | null;
   carPoolPriceAed?: number | null;
+  carPoolSeats?: number | null;
   carPoolDetails?: string | null;
   paymentTerms?: string | null;
+  pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[] | null;
   requirements?: string[] | null;
   images?: string[];
-  /** Person responsible for hosting this trip on the ground */
+  /** Person responsible for hosting this activity on the ground */
   hostName?: string;
   hostUserId?: string;
   hostAvatar?: string;
   hostBio?: string | null;
-  /** Organization or guide brand running the trip */
+  /** Organization or guide brand running the activity */
   tenantName?: string;
   /** @deprecated Use hostName — kept for compatibility */
   organizerName?: string;
@@ -163,7 +168,8 @@ export interface EventDTO {
   countryCode?: string;
 }
 
-export interface EventDetailDTO extends EventDTO {
+
+export interface ActivityDetailDTO extends ActivityDTO {
   organizerId?: string;
   participants: ParticipantPreviewDTO[];
   location: LocationDTO;
@@ -187,13 +193,13 @@ export interface MyTripRequestDTO {
   canWithdraw: boolean;
 }
 
-export interface MyTripDTO extends EventDTO {
+export interface MyTripDTO extends ActivityDTO {
   participation: TripParticipationDTO;
 }
 
 export interface JoinRequestDTO {
   id: string;
-  eventId: string;
+  activityId: string;
   userId: string;
   status: RequestStatus;
   waitlisted?: boolean;
@@ -225,7 +231,7 @@ export interface NotificationDTO {
   id: string;
   title: string;
   body: string;
-  type: 'request_update' | 'system' | 'event' | 'review_prompt';
+  type: 'request_update' | 'system' | 'activity' | 'review_prompt';
   isRead: boolean;
   meta?: Record<string, unknown> | null;
   createdAt: string;
@@ -267,7 +273,7 @@ export interface ChatMessageDTO {
   senderId: string;
   receiverId: string;
   content: string;
-  eventId?: string;
+  activityId?: string;
   readAt?: string;
   createdAt: string;
 }
@@ -335,7 +341,7 @@ export interface PostDTO {
   images: string[];
   locationId?: string | null;
   locationName?: string | null;
-  eventId?: string | null;
+  activityId?: string | null;
   authorId: string;
   authorName: string;
   authorAvatar?: string | null;
@@ -352,7 +358,7 @@ export interface PostDTO {
 export interface FavoriteDTO {
   id: string;
   locationId?: string | null;
-  eventId?: string | null;
+  activityId?: string | null;
   productId?: string | null;
   location?: { id: string; name: string; images: string[] } | null;
   event?: { id: string; title: string; locationName: string | null } | null;
@@ -461,7 +467,7 @@ export interface TenantListDTO {
   status: 'pending' | 'active' | 'suspended';
   ownerName: string;
   memberCount: number;
-  eventCount: number;
+  activityCount: number;
 }
 
 // ─── Participant DTO ────────────────────────────────────────────────────────

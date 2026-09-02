@@ -7,6 +7,6 @@ export const OperatorProfile = () => {
   if (!id) return null;
 
   return (
-    <OrganizerPublicProfile slug={id} mode="public" backTo="/trips" backLabel="Back to trips" />
+    <OrganizerPublicProfile slug={id} mode="public" backTo="/activities" backLabel="Back to activities" />
   );
 };

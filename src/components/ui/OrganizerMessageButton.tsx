@@ -6,7 +6,7 @@ import { messagesRouteForRole } from '../../utils/authRouting';
 interface OrganizerMessageButtonProps {
   organizerUserId?: string | null;
   /** Trip/event context — enables inquiry messages before a join request exists. */
-  eventId?: string | null;
+  activityId?: string | null;
   size?: 'sm' | 'md';
   className?: string;
 }
@@ -24,7 +24,7 @@ const iconSizes = {
 /** Message organizer — guests are sent to sign-in first. */
 export const OrganizerMessageButton = ({
   organizerUserId,
-  eventId,
+  activityId,
   size = 'sm',
   className = '',
 }: OrganizerMessageButtonProps) => {
@@ -34,7 +34,7 @@ export const OrganizerMessageButton = ({
   if (!organizerUserId) return null;
   if (user?.id === organizerUserId) return null;
 
-  const messageOptions = eventId ? { eventId } : undefined;
+  const messageOptions = activityId ? { activityId } : undefined;
   const messagePath = messagesRouteForRole(user?.role ?? 'visitor', organizerUserId, messageOptions);
 
   const handleGuestClick = (e: React.MouseEvent) => {

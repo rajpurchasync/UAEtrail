@@ -3,7 +3,7 @@ import { publicAssetUrl } from '../src/lib/s3.js';
 
 describe('publicAssetUrl', () => {
   it('returns API proxy URL for public event images', () => {
-    const key = 'tenants/t1/events/123-photo.jpg';
+    const key = 'tenants/t1/activities/123-photo.jpg';
     expect(publicAssetUrl(key, 'event')).toBe(`/api/v1/media/public/${key}`);
   });
 

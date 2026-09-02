@@ -5,27 +5,27 @@ import { api } from '../../api/services';
 
 interface FavoriteButtonProps {
   locationId?: string;
-  eventId?: string;
+  activityId?: string;
   productId?: string;
   className?: string;
 }
 
-export const FavoriteButton = ({ locationId, eventId, productId, className = '' }: FavoriteButtonProps) => {
+export const FavoriteButton = ({ locationId, activityId, productId, className = '' }: FavoriteButtonProps) => {
   const { user } = useAuth();
   const [saved, setSaved] = useState(false);
   const [favoriteId, setFavoriteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!user || (!locationId && !eventId && !productId)) return;
+    if (!user || (!locationId && !activityId && !productId)) return;
     api
-      .checkFavorite(locationId, eventId, productId)
+      .checkFavorite(locationId, activityId, productId)
       .then((res) => {
         setSaved(res.data.saved);
         setFavoriteId(res.data.favoriteId);
       })
       .catch(() => undefined);
-  }, [user, locationId, eventId, productId]);
+  }, [user, locationId, activityId, productId]);
 
   const toggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,7 +38,7 @@ export const FavoriteButton = ({ locationId, eventId, productId, className = '' 
         setSaved(false);
         setFavoriteId(null);
       } else {
-        const res = await api.addFavorite({ locationId, eventId, productId });
+        const res = await api.addFavorite({ locationId, activityId, productId });
         setSaved(true);
         setFavoriteId(res.data.id);
       }

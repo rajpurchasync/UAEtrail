@@ -25,7 +25,7 @@ import { createMediaAssetRecord, findMediaAssetByKey } from '../lib/media-store.
 import { hasTenantMembership } from '../lib/tenant-access.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import { usersShareActiveGroup } from '../lib/social-groups-store.js';
-import { usersShareEvent } from '../lib/event-engagement-store.js';
+import { usersShareActivity } from '../lib/activity-engagement-store.js';
 import {
   canAccessMedia,
   extractStorageKey,
@@ -39,12 +39,12 @@ const LOCAL_UPLOADS_DIR = join(process.cwd(), 'uploads');
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 
-type MediaKind = 'general' | 'avatar' | 'event' | 'location' | 'shop' | 'guide' | 'waiver' | 'private_photo';
+type MediaKind = 'general' | 'avatar' | 'activity' | 'location' | 'shop' | 'guide' | 'waiver' | 'private_photo';
 
 const KIND_PREFIX: Record<MediaKind, string> = {
   general: 'uploads',
   avatar: 'avatars',
-  event: 'events',
+  activity: 'activities',
   location: 'locations',
   shop: 'shop',
   guide: 'guides',
@@ -75,7 +75,7 @@ const resolveMediaKind = (input: {
   const fromPrefix: Record<string, MediaKind> = {
     uploads: 'general',
     avatars: 'avatar',
-    events: 'event',
+    activities: 'activity',
     locations: 'location',
     products: 'shop',
     shop: 'shop',
@@ -268,16 +268,16 @@ mediaRouter.get('/resolve', optionalAuth, validate({ query: resolveQuerySchema }
     const viewerUserId = req.auth?.userId ?? null;
     const isPlatformAdmin = req.auth?.role === 'PLATFORM_ADMIN';
 
-    let sharesGroupOrEvent = false;
+    let sharesGroupOrActivity = false;
     if (
       viewerUserId &&
       ownerUserId &&
       viewerUserId !== ownerUserId &&
       visibility === 'group_members'
     ) {
-      sharesGroupOrEvent =
+      sharesGroupOrActivity =
         (await usersShareActiveGroup(viewerUserId, ownerUserId)) ||
-        (await usersShareEvent(viewerUserId, ownerUserId));
+        (await usersShareActivity(viewerUserId, ownerUserId));
     }
 
     const allowed = canAccessMedia({
@@ -285,7 +285,7 @@ mediaRouter.get('/resolve', optionalAuth, validate({ query: resolveQuerySchema }
       visibility,
       viewerUserId,
       ownerUserId,
-      sharesGroupOrEvent,
+      sharesGroupOrActivity,
       isPlatformAdmin
     });
     if (!allowed) {

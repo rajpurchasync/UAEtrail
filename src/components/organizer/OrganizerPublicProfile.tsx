@@ -16,7 +16,7 @@ import {
 import { ReviewDTO } from '@uaetrail/shared-types';
 import { NAV_ICONS } from '../../config/navIcons';
 import { api, OrganizerDetails, TenantProfile } from '../../api/services';
-import { mapEventToTrip } from '../../api/public';
+import { mapActivityToTrip } from '../../api/public';
 import { TripCard } from '../ui/TripCard';
 import { ReviewSection } from '../ui/ReviewSection';
 import { SecureAvatar } from '../ui/SecureAvatar';
@@ -40,14 +40,14 @@ interface OrganizerPublicProfileProps {
 export const OrganizerPublicProfile = ({
   slug,
   mode = 'public',
-  backTo = '/trips',
+  backTo = '/activities',
   backLabel = 'Back to trips',
 }: OrganizerPublicProfileProps) => {
   const { user } = useAuth();
   const isOwner = mode === 'owner';
 
   const [tenant, setTenant] = useState<TenantProfile | null>(null);
-  const [trips, setTrips] = useState<ReturnType<typeof mapEventToTrip>[]>([]);
+  const [trips, setTrips] = useState<ReturnType<typeof mapActivityToTrip>[]>([]);
   const [reviews, setReviews] = useState<ReviewDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +66,7 @@ export const OrganizerPublicProfile = ({
       .getTenantProfile(slug)
       .then(async (tenantRes) => {
         setTenant(tenantRes.data);
-        setTrips(tenantRes.data.events.map(mapEventToTrip));
+        setTrips(tenantRes.data.events.map(mapActivityToTrip));
         setEditBio(tenantRes.data.ownerBio ?? '');
         setEditDetails(tenantRes.data.organizerDetails ?? {});
         const reviewsRes = await api.getReviews('tenant', tenantRes.data.id).catch(() => ({ data: [] }));
@@ -431,7 +431,7 @@ export const OrganizerPublicProfile = ({
             </div>
           )}
           {isOwner && (
-            <Link to="/organizer/events" className="inline-block text-sm font-semibold text-emerald-700 mt-3 hover:underline">
+            <Link to="/organizer/activities" className="inline-block text-sm font-semibold text-emerald-700 mt-3 hover:underline">
               Manage events →
             </Link>
           )}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatEventLocal } from '../src/lib/datetime.js';
-import { scheduleInstantChanged } from '../src/services/event-schedule.js';
+import { scheduleInstantChanged } from '../src/services/activity-schedule.js';
 
 describe('scheduleInstantChanged', () => {
   it('returns false when start instant is unchanged in local time', () => {

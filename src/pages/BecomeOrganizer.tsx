@@ -305,7 +305,7 @@ export const BecomeOrganizer = () => {
         eyebrow="Join the community"
         title="Become a host"
         banner={{ src: PAGE_BANNERS.community, alt: 'Group of friends hiking together' }}
-        back={{ fallbackTo: user ? '/profile' : '/trips', label: user ? 'Profile' : 'Trips' }}
+        back={{ fallbackTo: user ? '/profile' : '/activities', label: user ? 'Profile' : 'Activities' }}
         toolbar={
           <div className="space-y-3">
             <p className="text-sm text-neutral-700 leading-relaxed">

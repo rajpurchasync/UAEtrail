@@ -12,6 +12,8 @@ declare global {
       tenantContext?: {
         tenantId: string;
         membershipRole: MembershipRole;
+        /** Platform admin acting on behalf of a host organization via x-tenant-id */
+        actingAsPlatformAdmin?: boolean;
       };
       log?: ReturnType<typeof import('../lib/logger.js').createRequestLogger>;
     }

@@ -8,7 +8,7 @@ import type {
   ActivityType,
   AuthProvider,
   Difficulty,
-  EventStatus,
+  ActivityStatus,
   LocationStatus,
   LocationUnlockSource,
   MembershipRole,
@@ -170,6 +170,9 @@ export interface Event {
   meetingPoint: string | null;
   meetingLat: number | null;
   meetingLng: number | null;
+  startPoint: string | null;
+  startLat: number | null;
+  startLng: number | null;
   parkingPoint: string | null;
   parkingLat: number | null;
   parkingLng: number | null;
@@ -177,15 +180,17 @@ export interface Event {
   carPoolEnabled: boolean;
   carPoolFree: boolean | null;
   carPoolPriceAed: number | null;
+  carPoolSeats: number | null;
   carPoolDetails: string | null;
   paymentTerms: string | null;
+  pricingMode: 'free' | 'shared' | 'paid' | null;
   itinerary: string[];
   requirements: string[];
   images: string[];
   priceAed: number;
   pricePackages: unknown;
   capacity: number;
-  status: EventStatus;
+  status: ActivityStatus;
   featured: boolean;
   publishedAt: Date | null;
   createdAt: Date;
@@ -194,7 +199,7 @@ export interface Event {
 
 export interface EventRequest {
   id: string;
-  eventId: string;
+  activityId: string;
   userId: string;
   status: RequestStatus;
   note: string | null;
@@ -211,7 +216,7 @@ export interface EventRequest {
 
 export interface EventParticipant {
   id: string;
-  eventId: string;
+  activityId: string;
   userId: string;
   requestId: string;
   approvedById: string;
@@ -292,7 +297,7 @@ export interface ChatMessage {
   id: string;
   senderId: string;
   receiverId: string;
-  eventId: string | null;
+  activityId: string | null;
   content: string;
   readAt: Date | null;
   createdAt: Date;
@@ -376,7 +381,7 @@ export interface UserFavorite {
   id: string;
   userId: string;
   locationId: string | null;
-  eventId: string | null;
+  activityId: string | null;
   createdAt: Date;
 }
 
@@ -398,7 +403,7 @@ export interface Post {
   content: string;
   images: string[];
   locationId: string | null;
-  eventId: string | null;
+  activityId: string | null;
   authorId: string;
   createdAt: Date;
   updatedAt: Date;

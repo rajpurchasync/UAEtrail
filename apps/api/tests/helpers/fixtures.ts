@@ -1,7 +1,7 @@
 import {
   ActivityType,
   Difficulty,
-  EventStatus,
+  ActivityStatus,
   LocationStatus,
   MembershipRole,
   RequestStatus,
@@ -13,7 +13,7 @@ import {
 import bcrypt from 'bcryptjs';
 import { createAuthUser } from '../../src/lib/auth-users.js';
 import { newEntityId } from '../../src/lib/entity-builders.js';
-import { createEventDetailed, createLocationRecord } from '../../src/lib/events-store.js';
+import { createEventDetailed, createLocationRecord } from '../../src/lib/activities-store.js';
 import { getMongoClient } from '../../src/lib/mongo.js';
 import { generateReferralCode } from '../../src/lib/referral-code.js';
 import { createTenantRecord } from '../../src/lib/tenant-store.js';
@@ -23,7 +23,7 @@ export interface PublishedEventFixture {
   organizerId: string;
   tenantId: string;
   locationId: string;
-  eventId: string;
+  activityId: string;
 }
 
 const db = () => getMongoClient()!.db();
@@ -84,7 +84,7 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
     itinerary: [],
     requirements: [],
     capacity: 5,
-    status: EventStatus.PUBLISHED,
+    status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     priceAed: 0
   });
@@ -93,14 +93,14 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
     organizerId: organizer._id,
     tenantId: tenant.id,
     locationId: location.id,
-    eventId: event.id
+    activityId: event.id
   };
 };
 
 export const createFullEventFixture = async (suffix: string): Promise<PublishedEventFixture> => {
   const fixture = await createPublishedEventFixture(`${suffix}-full`);
 
-  await db().collection('events').updateOne({ _id: fixture.eventId }, { $set: { capacity: 1 } });
+  await db().collection('activities').updateOne({ _id: fixture.activityId }, { $set: { capacity: 1 } });
 
   const filler = await createAuthUser({
     email: `filler-${suffix}@test.local`,
@@ -116,18 +116,18 @@ export const createFullEventFixture = async (suffix: string): Promise<PublishedE
 
   const requestId = newEntityId();
   const now = new Date();
-  await db().collection('event_requests').insertOne({
+  await db().collection('activity_requests').insertOne({
     _id: requestId,
-    eventId: fixture.eventId,
+    activityId: fixture.activityId,
     userId: filler._id,
     status: RequestStatus.APPROVED,
     createdAt: now,
     updatedAt: now
   });
 
-  await db().collection('event_participants').insertOne({
+  await db().collection('activity_participants').insertOne({
     _id: newEntityId(),
-    eventId: fixture.eventId,
+    activityId: fixture.activityId,
     userId: filler._id,
     requestId,
     approvedById: fixture.organizerId,
@@ -138,9 +138,9 @@ export const createFullEventFixture = async (suffix: string): Promise<PublishedE
 };
 
 export const cleanupEventFixture = async (fixture: PublishedEventFixture): Promise<void> => {
-  await db().collection('event_participants').deleteMany({ eventId: fixture.eventId });
-  await db().collection('event_requests').deleteMany({ eventId: fixture.eventId });
-  await db().collection('events').deleteMany({ _id: fixture.eventId });
+  await db().collection('activity_participants').deleteMany({ activityId: fixture.activityId });
+  await db().collection('activity_requests').deleteMany({ activityId: fixture.activityId });
+  await db().collection('activities').deleteMany({ _id: fixture.activityId });
   await db().collection('locations').deleteMany({ _id: fixture.locationId });
   await db().collection('tenant_memberships').deleteMany({ tenantId: fixture.tenantId });
   await db().collection('tenants').deleteMany({ _id: fixture.tenantId });
@@ -163,16 +163,16 @@ export const cleanupTestUsers = async (): Promise<void> => {
 
   if (testTenantIds.length > 0) {
     const testEvents = await db()
-      .collection('events')
+      .collection('activities')
       .find({ tenantId: { $in: testTenantIds } }, { projection: { _id: 1, locationId: 1 } })
       .toArray();
     const testEventIds = testEvents.map((event) => event._id as string);
     const testLocationIds = [...new Set(testEvents.map((event) => event.locationId as string))];
 
     if (testEventIds.length > 0) {
-      await db().collection('event_participants').deleteMany({ eventId: { $in: testEventIds } });
-      await db().collection('event_requests').deleteMany({ eventId: { $in: testEventIds } });
-      await db().collection('events').deleteMany({ _id: { $in: testEventIds } });
+      await db().collection('activity_participants').deleteMany({ activityId: { $in: testEventIds } });
+      await db().collection('activity_requests').deleteMany({ activityId: { $in: testEventIds } });
+      await db().collection('activities').deleteMany({ _id: { $in: testEventIds } });
     }
 
     if (testLocationIds.length > 0) {
@@ -183,7 +183,7 @@ export const cleanupTestUsers = async (): Promise<void> => {
     await db().collection('tenants').deleteMany({ _id: { $in: testTenantIds } });
   }
 
-  await db().collection('event_requests').deleteMany({ userId: { $in: testUserIds } });
+  await db().collection('activity_requests').deleteMany({ userId: { $in: testUserIds } });
   await db().collection('refresh_tokens').deleteMany({ userId: { $in: testUserIds } });
   await db().collection('email_verification_tokens').deleteMany({ userId: { $in: testUserIds } });
   await db().collection('auth_users').deleteMany({ _id: { $in: testUserIds } });

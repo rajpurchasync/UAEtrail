@@ -78,7 +78,7 @@ export const EARN_WAYS = [
     description: 'Book a community trip — your host confirms attendance and points hit your wallet.',
     pointsLabel: '+30',
     ctaLabel: 'Browse trips',
-    ctaPath: '/trips',
+    ctaPath: '/activities',
   },
   {
     title: 'Community post',

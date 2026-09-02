@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { ActivityType, Difficulty, LocationStatus } from '../src/domain/enums.js';
-import { createLocationRecord } from '../src/lib/events-store.js';
+import { createLocationRecord } from '../src/lib/activities-store.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { getVerificationOtp } from './helpers/fixtures.js';
 

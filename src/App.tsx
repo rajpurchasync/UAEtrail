@@ -7,14 +7,15 @@ import { DashboardRedirect } from './components/auth/DashboardRedirect';
 import { FEATURE_FLAGS } from './config/platform';
 import { NativeDeepLinkHandler } from './components/NativeDeepLinkHandler';
 import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
+import { ActivityFormSessionProvider } from './context/ActivityFormSessionContext';
 import { Home } from './pages/Home';
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 const Discovery = lazy(() => import('./pages/Discovery').then((m) => ({ default: m.Discovery })));
 const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
 const CampDetail = lazy(() => import('./pages/CampDetail').then((m) => ({ default: m.CampDetail })));
-const CommunityEventDetail = lazy(() =>
-  import('./pages/CommunityEventDetail').then((m) => ({ default: m.CommunityEventDetail }))
+const CommunityActivityDetail = lazy(() =>
+  import('./pages/CommunityActivityDetail').then((m) => ({ default: m.CommunityActivityDetail }))
 );
 
 const Membership = lazy(() => import('./pages/Membership').then((m) => ({ default: m.Membership })));
@@ -32,7 +33,7 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => (
 const AdminOverview = lazy(() => import('./pages/AdminOverview').then((m) => ({ default: m.AdminOverview })));
 const AdminLocations = lazy(() => import('./pages/AdminLocations').then((m) => ({ default: m.AdminLocations })));
 const AdminOrganizers = lazy(() => import('./pages/AdminOrganizers').then((m) => ({ default: m.AdminOrganizers })));
-const AdminEvents = lazy(() => import('./pages/AdminEvents').then((m) => ({ default: m.AdminEvents })));
+const AdminActivities = lazy(() => import('./pages/AdminActivities').then((m) => ({ default: m.AdminActivities })));
 const AdminUsers = lazy(() => import('./pages/AdminUsers').then((m) => ({ default: m.AdminUsers })));
 const AdminGroups = lazy(() => import('./pages/AdminGroups').then((m) => ({ default: m.AdminGroups })));
 const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog').then((m) => ({ default: m.AdminAuditLog })));
@@ -42,7 +43,7 @@ const AdminNotifications = lazy(() =>
   import('./pages/AdminNotifications').then((m) => ({ default: m.AdminNotifications }))
 );
 const OrganizerOverview = lazy(() => import('./pages/OrganizerOverview').then((m) => ({ default: m.OrganizerOverview })));
-const OrganizerEvents = lazy(() => import('./pages/OrganizerEvents').then((m) => ({ default: m.OrganizerEvents })));
+const OrganizerActivities = lazy(() => import('./pages/OrganizerActivities').then((m) => ({ default: m.OrganizerActivities })));
 const OrganizerRequests = lazy(() => import('./pages/OrganizerRequests').then((m) => ({ default: m.OrganizerRequests })));
 const OrganizerTeam = lazy(() => import('./pages/OrganizerTeam').then((m) => ({ default: m.OrganizerTeam })));
 const OrganizerProfile = lazy(() => import('./pages/OrganizerProfile').then((m) => ({ default: m.OrganizerProfile })));
@@ -52,7 +53,7 @@ const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ de
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
 const Favorites = lazy(() => import('./pages/Favorites').then((m) => ({ default: m.Favorites })));
 const MerchantDashboard = lazy(() => import('./pages/MerchantDashboard').then((m) => ({ default: m.MerchantDashboard })));
-const Trips = lazy(() => import('./pages/Trips').then((m) => ({ default: m.Trips })));
+const Trips = lazy(() => import('./pages/Trips').then((m) => ({ default: m.Activities })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const JoinRequestDetail = lazy(() =>
   import('./pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
@@ -153,10 +154,16 @@ const AuthReturnContextRestorer = () => {
   return null;
 };
 
+const LegacyTripsRedirect = () => {
+  const { search } = useLocation();
+  return <Navigate to={`/activities${search}`} replace />;
+};
+
 function App() {
   return (
     <ErrorBoundary>
       <Router>
+        <ActivityFormSessionProvider>
         <NativeDeepLinkHandler />
         <AuthReturnContextRestorer />
         <Layout>
@@ -166,9 +173,10 @@ function App() {
           <Route path="/discovery" element={<ConsumerRoute><Discovery /></ConsumerRoute>} />
           <Route path="/trail/:id" element={<TrailDetail />} />
           <Route path="/camp/:id" element={<CampDetail />} />
-          <Route path="/community-event/:id" element={<CommunityEventDetail />} />
-          <Route path="/calendar" element={<Navigate to="/trips" replace />} />
-          <Route path="/trips" element={<ConsumerRoute><Trips /></ConsumerRoute>} />
+          <Route path="/community-activity/:id" element={<CommunityActivityDetail />} />
+          <Route path="/calendar" element={<Navigate to="/activities" replace />} />
+          <Route path="/activities" element={<ConsumerRoute><Trips /></ConsumerRoute>} />
+          <Route path="/trips" element={<LegacyTripsRedirect />} />
           <Route
             path="/profile"
             element={
@@ -300,10 +308,10 @@ function App() {
             }
           />
           <Route
-            path="/admin/events"
+            path="/admin/activities"
             element={
               <ProtectedRoute roles={['platform_admin']}>
-                <AdminEvents />
+                <AdminActivities />
               </ProtectedRoute>
             }
           />
@@ -364,18 +372,18 @@ function App() {
             }
           />
           <Route
-            path="/organizer/events"
+            path="/organizer/activities"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerEvents />
+                <OrganizerActivities />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/organizer/events/new"
+            path="/organizer/activities/new"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerEvents />
+                <OrganizerActivities />
               </ProtectedRoute>
             }
           />
@@ -483,6 +491,7 @@ function App() {
         </Routes>
         </Suspense>
       </Layout>
+        </ActivityFormSessionProvider>
     </Router>
     </ErrorBoundary>
   );

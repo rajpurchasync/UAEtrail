@@ -1,6 +1,6 @@
 import type { Collection } from 'mongodb';
 import {
-  EventStatus,
+  ActivityStatus,
   NotificationType,
   RequestStatus,
   type MembershipRole
@@ -32,7 +32,7 @@ export function assertCanApproveRequest(capacity: number, participantCount: numb
 
 type MongoEventRequest = {
   _id: string;
-  eventId: string;
+  activityId: string;
   userId: string;
   status: RequestStatus;
   note: string | null;
@@ -49,7 +49,7 @@ type MongoEventRequest = {
 
 type MongoEventParticipant = {
   _id: string;
-  eventId: string;
+  activityId: string;
   requestId: string;
   userId: string;
   approvedById: string;
@@ -58,10 +58,10 @@ type MongoEventParticipant = {
 };
 
 const eventRequestsCollection = (): Collection<MongoEventRequest> =>
-  getMongoClient()!.db().collection<MongoEventRequest>('event_requests');
+  getMongoClient()!.db().collection<MongoEventRequest>('activity_requests');
 
 const eventParticipantsCollection = (): Collection<MongoEventParticipant> =>
-  getMongoClient()!.db().collection<MongoEventParticipant>('event_participants');
+  getMongoClient()!.db().collection<MongoEventParticipant>('activity_participants');
 
 type TenantEventSummary = {
   _id: string;
@@ -72,11 +72,11 @@ type TenantEventSummary = {
 };
 
 const eventsCollection = (): Collection<TenantEventSummary> =>
-  getMongoClient()!.db().collection<TenantEventSummary>('events');
+  getMongoClient()!.db().collection<TenantEventSummary>('activities');
 
 const toEventRequestRecord = (doc: MongoEventRequest): EventRequest => ({
   id: doc._id,
-  eventId: doc.eventId,
+  activityId: doc.activityId,
   userId: doc.userId,
   status: doc.status,
   note: doc.note,
@@ -93,7 +93,7 @@ const toEventRequestRecord = (doc: MongoEventRequest): EventRequest => ({
 
 const toEventParticipantRecord = (doc: MongoEventParticipant): EventParticipant => ({
   id: doc._id,
-  eventId: doc.eventId,
+  activityId: doc.activityId,
   requestId: doc.requestId,
   userId: doc.userId,
   approvedById: doc.approvedById,
@@ -118,11 +118,11 @@ const patchEventParticipantInMongo = async (
   await eventParticipantsCollection().updateOne({ _id: id }, { $set: patch });
 };
 
-const loadPublishedEventForJoin = async (eventId: string) => {
-  const doc = await findEventDocInMongo(eventId);
-  if (!doc || doc.status !== EventStatus.PUBLISHED) return null;
+const loadPublishedEventForJoin = async (activityId: string) => {
+  const doc = await findEventDocInMongo(activityId);
+  if (!doc || doc.status !== ActivityStatus.PUBLISHED) return null;
 
-  const participantCount = await eventParticipantsCollection().countDocuments({ eventId });
+  const participantCount = await eventParticipantsCollection().countDocuments({ activityId });
   return {
     id: doc._id,
     capacity: doc.capacity,
@@ -148,12 +148,12 @@ const isEventHost = async (
 };
 
 export async function createJoinOrWaitlistRequest(opts: {
-  eventId: string;
+  activityId: string;
   userId: string;
   note?: string;
   selectedPackageIndex?: number;
 }) {
-  const event = await loadPublishedEventForJoin(opts.eventId);
+  const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
     throw new ApiError(404, 'event_not_found', 'Event not found.');
   }
@@ -168,7 +168,7 @@ export async function createJoinOrWaitlistRequest(opts: {
     }
   }
 
-  const existing = await findEventRequestByEventAndUser(opts.eventId, opts.userId);
+  const existing = await findEventRequestByEventAndUser(opts.activityId, opts.userId);
 
   if (existing && ACTIVE_STATUSES.includes(existing.status)) {
     throw new ApiError(409, 'request_exists', 'You already have an active request for this event.');
@@ -183,7 +183,7 @@ export async function createJoinOrWaitlistRequest(opts: {
     { _id: requestId },
     {
       $set: {
-        eventId: opts.eventId,
+        activityId: opts.activityId,
         userId: opts.userId,
         status,
         note: opts.note ?? existing?.note ?? null,
@@ -213,7 +213,7 @@ export async function createJoinOrWaitlistRequest(opts: {
 }
 
 export async function createJoinOrWaitlistRequestDefault(opts: {
-  eventId: string;
+  activityId: string;
   userId: string;
   note?: string;
   selectedPackageIndex?: number;
@@ -222,17 +222,17 @@ export async function createJoinOrWaitlistRequestDefault(opts: {
 }
 
 /** Promote oldest waitlisted request to pending when a slot opens. */
-export async function promoteNextWaitlisted(eventId: string): Promise<boolean> {
-  const eventDoc = await findEventDocInMongo(eventId);
+export async function promoteNextWaitlisted(activityId: string): Promise<boolean> {
+  const eventDoc = await findEventDocInMongo(activityId);
   if (!eventDoc) return false;
 
-  const participantCount = await eventParticipantsCollection().countDocuments({ eventId });
+  const participantCount = await eventParticipantsCollection().countDocuments({ activityId });
   if (isEventFull(eventDoc.capacity, participantCount)) {
     return false;
   }
 
   const next = await eventRequestsCollection().findOne(
-    { eventId, status: RequestStatus.WAITLISTED },
+    { activityId, status: RequestStatus.WAITLISTED },
     { sort: { createdAt: 1 } }
   );
   if (!next) return false;
@@ -244,17 +244,17 @@ export async function promoteNextWaitlisted(eventId: string): Promise<boolean> {
     title: 'A spot opened up!',
     body: 'Your waitlisted trip now has availability. Your request is pending organizer approval.',
     type: NotificationType.REQUEST_UPDATE,
-    meta: { eventId, requestId: next._id, fromWaitlist: true }
+    meta: { activityId, requestId: next._id, fromWaitlist: true }
   });
 
   return true;
 }
 
 export const findEventRequestByEventAndUser = async (
-  eventId: string,
+  activityId: string,
   userId: string
 ): Promise<EventRequest | null> => {
-  const row = await eventRequestsCollection().findOne({ eventId, userId });
+  const row = await eventRequestsCollection().findOne({ activityId, userId });
   return row ? toEventRequestRecord(row) : null;
 };
 
@@ -302,18 +302,18 @@ export const countUserEventRequests = async (userId: string): Promise<number> =>
   eventRequestsCollection().countDocuments({ userId });
 
 export const findEventParticipantByEventAndUser = async (
-  eventId: string,
+  activityId: string,
   userId: string
 ): Promise<EventParticipant | null> => {
-  const row = await eventParticipantsCollection().findOne({ eventId, userId });
+  const row = await eventParticipantsCollection().findOne({ activityId, userId });
   return row ? toEventParticipantRecord(row) : null;
 };
 
 export const findEventParticipantByIdAndEvent = async (
   id: string,
-  eventId: string
+  activityId: string
 ): Promise<EventParticipant | null> => {
-  const row = await eventParticipantsCollection().findOne({ _id: id, eventId });
+  const row = await eventParticipantsCollection().findOne({ _id: id, activityId });
   return row ? toEventParticipantRecord(row) : null;
 };
 
@@ -354,7 +354,7 @@ export const hasSharedEventParticipation = async (firstUserId: string, secondUse
   const firstUserEvents = await eventParticipantsCollection()
     .aggregate<{ _id: string }>([
       { $match: { userId: firstUserId } },
-      { $group: { _id: '$eventId' } }
+      { $group: { _id: '$activityId' } }
     ])
     .toArray();
 
@@ -362,7 +362,7 @@ export const hasSharedEventParticipation = async (firstUserId: string, secondUse
 
   const shared = await eventParticipantsCollection().findOne({
     userId: secondUserId,
-    eventId: { $in: firstUserEvents.map((row) => row._id) }
+    activityId: { $in: firstUserEvents.map((row) => row._id) }
   });
   return Boolean(shared);
 };
@@ -381,7 +381,7 @@ export const hasActiveJoinRequestLink = async (input: {
     .toArray();
 
   for (const request of requests) {
-    const event = await findEventDocInMongo(request.eventId);
+    const event = await findEventDocInMongo(request.activityId);
     if (!event) continue;
 
     const requestUserId = request.userId;
@@ -403,7 +403,7 @@ export const hasParticipantToHostLink = async (input: {
 }): Promise<boolean> => {
   const participants = await eventParticipantsCollection().find({ userId: input.participantUserId }).toArray();
   for (const participant of participants) {
-    const event = await findEventDocInMongo(participant.eventId);
+    const event = await findEventDocInMongo(participant.activityId);
     if (!event) continue;
     if (await isEventHost(event, input.hostUserId, input.organizerRoles)) {
       return true;
@@ -415,7 +415,7 @@ export const hasParticipantToHostLink = async (input: {
 export const hasHostToParticipantLink = async (hostUserId: string, participantUserId: string): Promise<boolean> => {
   const participants = await eventParticipantsCollection().find({ userId: participantUserId }).toArray();
   for (const participant of participants) {
-    const event = await findEventDocInMongo(participant.eventId);
+    const event = await findEventDocInMongo(participant.activityId);
     if (!event) continue;
     if (event.guideId === hostUserId || event.createdById === hostUserId) {
       return true;
@@ -425,15 +425,15 @@ export const hasHostToParticipantLink = async (hostUserId: string, participantUs
 };
 
 /** True when both users are co-participants or one hosts an event the other joined. */
-export const usersShareEvent = async (userA: string, userB: string): Promise<boolean> => {
+export const usersShareActivity = async (userA: string, userB: string): Promise<boolean> => {
   if (!userA || !userB) return false;
   if (userA === userB) return true;
 
-  const eventIds = await eventParticipantsCollection().distinct('eventId', { userId: userA });
+  const eventIds = await eventParticipantsCollection().distinct('activityId', { userId: userA });
   if (eventIds.length > 0) {
     const shared = await eventParticipantsCollection().findOne({
       userId: userB,
-      eventId: { $in: eventIds }
+      activityId: { $in: eventIds }
     });
     if (shared) return true;
   }
@@ -442,12 +442,12 @@ export const usersShareEvent = async (userA: string, userB: string): Promise<boo
 };
 
 export const hasTripInquiryAccess = async (input: {
-  eventId: string;
+  activityId: string;
   receiverId: string;
   organizerRoles: MembershipRole[];
 }): Promise<boolean> => {
-  const event = await findEventDocInMongo(input.eventId);
-  if (!event || event.status !== EventStatus.PUBLISHED) return false;
+  const event = await findEventDocInMongo(input.activityId);
+  if (!event || event.status !== ActivityStatus.PUBLISHED) return false;
   return isEventHost(event, input.receiverId, input.organizerRoles);
 };
 
@@ -489,7 +489,7 @@ export const listTenantEventRequestsDetailed = async (input: {
   );
 
   const requests = await eventRequestsCollection()
-    .find({ eventId: { $in: eventIds } })
+    .find({ activityId: { $in: eventIds } })
     .sort({ createdAt: -1 })
     .skip(input.skip)
     .limit(input.take)
@@ -499,7 +499,7 @@ export const listTenantEventRequestsDetailed = async (input: {
   const userMap = new Map(users.map((user) => [user._id, user]));
 
   return requests.map((request) => {
-    const event = eventMap.get(request.eventId)!;
+    const event = eventMap.get(request.activityId)!;
     const location = locationMap.get(event.locationId);
     const user = userMap.get(request.userId);
     return {
@@ -513,7 +513,7 @@ export const listTenantEventRequestsDetailed = async (input: {
             }
           : null
       },
-      event: {
+      activity: {
         id: event.id,
         title: event.title,
         startAt: event.startAt,
@@ -527,18 +527,18 @@ export const countTenantEventRequests = async (tenantId: string): Promise<number
   const tenantEvents = await eventsCollection().find({ tenantId }, { projection: { _id: 1 } }).toArray();
   const eventIds = tenantEvents.map((event) => event._id);
   if (eventIds.length === 0) return 0;
-  return eventRequestsCollection().countDocuments({ eventId: { $in: eventIds } });
+  return eventRequestsCollection().countDocuments({ activityId: { $in: eventIds } });
 };
 
 export const findTenantEventRequestForDecision = async (id: string, tenantId: string) => {
   const request = await eventRequestsCollection().findOne({ _id: id });
   if (!request) return null;
 
-  const eventDoc = await findEventDocInMongo(request.eventId);
+  const eventDoc = await findEventDocInMongo(request.activityId);
   if (!eventDoc || eventDoc.tenantId !== tenantId) return null;
 
   const [user] = await findAuthUsersByIds([request.userId]);
-  const participants = await eventParticipantsCollection().find({ eventId: request.eventId }).toArray();
+  const participants = await eventParticipantsCollection().find({ activityId: request.activityId }).toArray();
   const location = await findLocationInMongo(eventDoc.locationId);
 
   return {
@@ -548,9 +548,8 @@ export const findTenantEventRequestForDecision = async (id: string, tenantId: st
       email: user?.email ?? '',
       profile: user ? { displayName: user.profile.displayName } : null
     },
-    event: {
+    activity: {
       id: eventDoc._id,
-      eventId: eventDoc._id,
       title: eventDoc.title,
       startAt: eventDoc.startAt,
       capacity: eventDoc.capacity,
@@ -563,7 +562,7 @@ export const findTenantEventRequestForDecision = async (id: string, tenantId: st
 
 export const applyTenantEventRequestDecision = async (input: {
   requestId: string;
-  eventId: string;
+  activityId: string;
   userId: string;
   reviewerId: string;
   decision: 'approved' | 'rejected';
@@ -572,17 +571,17 @@ export const applyTenantEventRequestDecision = async (input: {
   const reviewedAt = new Date();
 
   if (input.decision === 'approved') {
-    const eventDoc = await findEventDocInMongo(input.eventId);
-    if (!eventDoc || eventDoc.status !== EventStatus.PUBLISHED) {
+    const eventDoc = await findEventDocInMongo(input.activityId);
+    if (!eventDoc || eventDoc.status !== ActivityStatus.PUBLISHED) {
       throw new ApiError(400, 'event_not_publishable', 'Event must be published before approval.');
     }
 
     if (eventDoc.participantSlotsUsed === undefined) {
-      const participantCount = await eventParticipantsCollection().countDocuments({ eventId: input.eventId });
-      await patchEventInMongo(input.eventId, { participantSlotsUsed: participantCount });
+      const participantCount = await eventParticipantsCollection().countDocuments({ activityId: input.activityId });
+      await patchEventInMongo(input.activityId, { participantSlotsUsed: participantCount });
     }
 
-    const reserved = await tryReserveEventParticipantSlot(input.eventId, EventStatus.PUBLISHED);
+    const reserved = await tryReserveEventParticipantSlot(input.activityId, ActivityStatus.PUBLISHED);
     if (!reserved) {
       throw new ApiError(400, 'event_full', 'Event capacity has already been reached.');
     }
@@ -599,7 +598,7 @@ export const applyTenantEventRequestDecision = async (input: {
         { _id: participantId },
         {
           $set: {
-            eventId: input.eventId,
+            activityId: input.activityId,
             requestId: input.requestId,
             userId: input.userId,
             approvedById: input.reviewerId,
@@ -610,7 +609,7 @@ export const applyTenantEventRequestDecision = async (input: {
         { upsert: true }
       );
     } catch (error) {
-      await releaseEventParticipantSlot(input.eventId);
+      await releaseEventParticipantSlot(input.activityId);
       throw error;
     }
     return;
@@ -631,7 +630,7 @@ export const applyTenantEventRequestDecision = async (input: {
 
 export const cancelUserEventRequestAndPromoteWaitlist = async (input: {
   requestId: string;
-  eventId: string;
+  activityId: string;
   cancelReason: string;
   cancelMessage: string | null;
 }) => {
@@ -645,14 +644,14 @@ export const cancelUserEventRequestAndPromoteWaitlist = async (input: {
   });
   const deleted = await eventParticipantsCollection().deleteMany({ requestId: input.requestId });
   if (deleted.deletedCount > 0) {
-    await releaseEventParticipantSlot(input.eventId);
+    await releaseEventParticipantSlot(input.activityId);
   }
-  await promoteNextWaitlisted(input.eventId);
+  await promoteNextWaitlisted(input.activityId);
 };
 
-export const listEventParticipantsWithUsers = async (eventId: string) => {
+export const listEventParticipantsWithUsers = async (activityId: string) => {
   const participants = await eventParticipantsCollection()
-    .find({ eventId })
+    .find({ activityId })
     .sort({ createdAt: 1 })
     .toArray();
 
@@ -678,10 +677,10 @@ export const listEventParticipantsWithUsers = async (eventId: string) => {
   });
 };
 
-export const purgeUserEventEngagement = async (userId: string): Promise<void> => {
+export const purgeUserActivityEngagement = async (userId: string): Promise<void> => {
   const participants = await eventParticipantsCollection().find({ userId }).toArray();
   for (const participant of participants) {
-    await releaseEventParticipantSlot(participant.eventId);
+    await releaseEventParticipantSlot(participant.activityId);
   }
   await eventParticipantsCollection().deleteMany({ userId });
   await eventRequestsCollection().deleteMany({ userId });

@@ -7,7 +7,7 @@ const organizerHubKey = (tenantId: string) => ['organizer-hub', tenantId] as con
 
 async function fetchOrganizerHub(tenantId: string) {
   const [eventsResponse, requestsResponse] = await Promise.all([
-    api.getOrganizerEvents(tenantId),
+    api.listHostActivities(tenantId),
     api.getOrganizerRequests(tenantId),
   ]);
   return {

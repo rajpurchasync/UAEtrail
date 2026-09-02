@@ -27,5 +27,12 @@ export const formatTime24 = ({ hour, minute, period }: Time12Parts): string => {
 };
 
 export const HOUR_OPTIONS = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
-export const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, index) => index);
+export const MINUTE_OPTIONS = [0, 15, 30, 45] as const;
+
+export const snapMinuteToQuarter = (minute: number): (typeof MINUTE_OPTIONS)[number] => {
+  const snapped = Math.round(minute / 15) * 15;
+  if (snapped >= 60) return 0;
+  return snapped as (typeof MINUTE_OPTIONS)[number];
+};
+
 export const PERIOD_OPTIONS: TimePeriod[] = ['AM', 'PM'];

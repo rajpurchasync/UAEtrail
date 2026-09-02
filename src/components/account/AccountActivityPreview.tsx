@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Calendar, ChevronRight } from 'lucide-react';
-import { EventDTO, ChatConversationDTO } from '@uaetrail/shared-types';
-import { EventRequestView } from '../../api/services';
+import { ActivityDTO, ChatConversationDTO } from '@uaetrail/shared-types';
+import { ActivityRequestView } from '../../api/services';
 import { AccountSectionHeader } from './AccountSectionHeader';
 
 const requestStatusStyle: Record<string, string> = {
@@ -18,8 +18,8 @@ const formatTripDate = (dateStr?: string) => {
 
 interface AccountActivityPreviewProps {
   messagesPath: string;
-  upcomingTrip?: EventDTO;
-  pendingRequests: EventRequestView[];
+  upcomingTrip?: ActivityDTO;
+  pendingRequests: ActivityRequestView[];
   conversations: ChatConversationDTO[];
 }
 
@@ -66,7 +66,7 @@ export const AccountActivityPreview = ({
           >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-neutral-900 truncate">
-                {req.event.title || req.event.locationName}
+                {req.activity.title || req.activity.locationName}
               </p>
               <p className="text-xs text-neutral-500">Awaiting response</p>
             </div>

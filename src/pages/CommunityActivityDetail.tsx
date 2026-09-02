@@ -6,13 +6,13 @@ import { TripCard, ShareButton, LocationDetailTabs, toLocationDetailData, Review
 import { PageMeta } from '../components/seo/PageMeta';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { getDifficultyColor, capitalize } from '../utils';
-import { CommunityEventSpot, Trip } from '../types';
-import { fetchApiLocationDetail, mapEventToTrip } from '../api/public';
+import { CommunityActivitySpot, Trip } from '../types';
+import { fetchApiLocationDetail, mapActivityToTrip } from '../api/public';
 import { api } from '../api/services';
 
-export const CommunityEventDetail = () => {
+export const CommunityActivityDetail = () => {
   const { id } = useParams();
-  const [event, setEvent] = useState<CommunityEventSpot | null>(null);
+  const [event, setEvent] = useState<CommunityActivitySpot | null>(null);
   const [loading, setLoading] = useState(true);
   const [eventTrips, setEventTrips] = useState<Trip[]>([]);
   const [eventReviews, setEventReviews] = useState<ReviewDTO[]>([]);
@@ -25,13 +25,13 @@ export const CommunityEventDetail = () => {
     setLoading(true);
     Promise.all([
       fetchApiLocationDetail(id),
-      api.getLocationEvents(id).catch(() => ({ data: [] })),
+      api.getLocationActivities(id).catch(() => ({ data: [] })),
       api.getReviews('location', id).catch(() => ({ data: [] })),
     ])
       .then(([locResult, eventsRes, reviewsRes]) => {
-        setEvent(locResult.communityEvent ?? null);
+        setEvent(locResult.communityActivity ?? null);
         setPremium(locResult.premium ?? null);
-        setEventTrips(eventsRes.data.map(mapEventToTrip));
+        setEventTrips(eventsRes.data.map(mapActivityToTrip));
         setEventReviews(reviewsRes.data);
       })
       .catch(() => setEvent(null))
@@ -41,7 +41,7 @@ export const CommunityEventDetail = () => {
   if (loading) {
     return (
       <>
-        <PageMeta title="Loading event" path={id ? `/community-event/${id}` : undefined} />
+        <PageMeta title="Loading event" path={id ? `/community-activity/${id}` : undefined} />
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-600" />
         </div>
@@ -52,7 +52,7 @@ export const CommunityEventDetail = () => {
   if (!event) {
     return (
       <>
-        <PageMeta title="Event not found" noIndex path={id ? `/community-event/${id}` : undefined} />
+        <PageMeta title="Event not found" noIndex path={id ? `/community-activity/${id}` : undefined} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900">Community event not found</h1>
           <Link to="/discovery" className="text-violet-600 hover:text-violet-700 mt-4 inline-block">
@@ -77,7 +77,7 @@ export const CommunityEventDetail = () => {
         <PageMeta
           title={event.name}
           description={event.description?.slice(0, 160) ?? `Community event at ${event.name} — ${event.region}, UAE`}
-          path={`/community-event/${event.id}`}
+          path={`/community-activity/${event.id}`}
           image={event.images?.[0]}
           imageAlt={`${event.name} community event`}
         />
@@ -87,7 +87,7 @@ export const CommunityEventDetail = () => {
               <ShareButton
                 title={event.name}
                 text={`${event.region} · community event on UAE Trails`}
-                path={`/community-event/${event.id}`}
+                path={`/community-activity/${event.id}`}
               />
             </div>
 
@@ -103,7 +103,7 @@ export const CommunityEventDetail = () => {
                     <ShareButton
                       title={event.name}
                       text={`${event.region} · community event on UAE Trails`}
-                      path={`/community-event/${event.id}`}
+                      path={`/community-activity/${event.id}`}
                       compact
                     />
                   </div>
@@ -182,7 +182,7 @@ export const CommunityEventDetail = () => {
             </div>
 
             <LocationDetailTabs
-              data={toLocationDetailData(event, 'community_event')}
+              data={toLocationDetailData(event, 'community_activity')}
               accent="violet"
               locationId={event.id}
               premium={premium}
@@ -199,7 +199,7 @@ export const CommunityEventDetail = () => {
                 <p className="text-gray-600 mt-1">Join trail runs, triathlons, and community races</p>
               </div>
               <Link
-                to="/trips"
+                to="/activities"
                 className="text-violet-600 hover:text-violet-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
               >
                 View all trips
@@ -210,7 +210,7 @@ export const CommunityEventDetail = () => {
             {eventTrips.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-8 text-center">
                 <p className="text-gray-600">No upcoming events scheduled at this location yet.</p>
-                <Link to="/trips" className="text-violet-600 hover:text-violet-700 mt-2 inline-block">
+                <Link to="/activities" className="text-violet-600 hover:text-violet-700 mt-2 inline-block">
                   Check all upcoming trips
                 </Link>
               </div>

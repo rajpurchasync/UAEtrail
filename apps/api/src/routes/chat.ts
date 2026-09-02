@@ -27,7 +27,7 @@ const toChatMessageDto = (message: ChatMessage): ChatMessageDTO => ({
   senderId: message.senderId,
   receiverId: message.receiverId,
   content: message.content,
-  eventId: message.eventId ?? undefined,
+  activityId: message.activityId ?? undefined,
   readAt: message.readAt?.toISOString() ?? undefined,
   createdAt: message.createdAt.toISOString()
 });
@@ -138,20 +138,20 @@ chatRouter.get('/messages/:userId', validate({ params: messageThreadSchema, quer
 const sendMessageSchema = z.object({
   receiverId: z.string().min(1),
   content: z.string().min(1).max(2000),
-  eventId: z.string().optional()
+  activityId: z.string().optional()
 });
 
 chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, res, next) => {
   try {
     const senderId = req.auth!.userId;
-    const { receiverId, content, eventId } = req.body as z.infer<typeof sendMessageSchema>;
+    const { receiverId, content, activityId } = req.body as z.infer<typeof sendMessageSchema>;
 
     if (senderId === receiverId) {
       return res.status(400).json({ error: { code: 'self_message', message: 'Cannot message yourself.' } });
     }
 
     await assertChatRateLimit(senderId);
-    await assertCanMessageUser(senderId, receiverId, { eventId });
+    await assertCanMessageUser(senderId, receiverId, { activityId });
 
     // Verify receiver exists
     const receiver = await findAuthUserById(receiverId);
@@ -163,7 +163,7 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
       senderId,
       receiverId,
       content,
-      eventId: eventId ?? null
+      activityId: activityId ?? null
     });
 
     const sender = await findAuthUserById(senderId);

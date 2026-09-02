@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trip } from '../../types';
-import { EventDetailDTO } from '@uaetrail/shared-types';
+import { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { formatDate, formatPrice } from '../../utils';
 import { formatPackagePrice, tripHasPaidPricing } from '../../utils/tripPricing';
 import { tripHostName, showTenantBrand } from '../../utils/hostLabels';
@@ -31,7 +31,7 @@ type JoinableTrip = Pick<
 interface JoinRequestModalProps {
   open: boolean;
   onClose: () => void;
-  trip: JoinableTrip | EventDetailDTO;
+  trip: JoinableTrip | ActivityDetailDTO;
   isFull?: boolean;
   selectedPackageIndex?: number;
   onSuccess?: (message: string) => void;

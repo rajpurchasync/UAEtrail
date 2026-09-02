@@ -1,14 +1,14 @@
 import type { Event, Location } from '../domain/types.js';
 import {
   ActivityType,
-  EventStatus,
+  ActivityStatus,
   LocationStatus,
   MembershipRole,
   RequestStatus,
   TenantType,
   UserRole
 } from '../domain/enums.js';
-import { EventDTO, LocationDTO, MembershipRole as SharedMembershipRole, RequestStatus as SharedRequestStatus, TenantType as SharedTenantType, UserRole as SharedUserRole } from '@uaetrail/shared-types';
+import { ActivityDTO, LocationDTO, MembershipRole as SharedMembershipRole, RequestStatus as SharedRequestStatus, TenantType as SharedTenantType, UserRole as SharedUserRole } from '@uaetrail/shared-types';
 
 import { formatEventLocal } from './datetime.js';
 import { parseStoredPricePackages } from './trip-pricing.js';
@@ -23,13 +23,13 @@ export const toSharedTenantType = (type: TenantType): SharedTenantType => enumMa
 export const toSharedRequestStatus = (status: RequestStatus): SharedRequestStatus =>
   enumMap<SharedRequestStatus>(status);
 
-const mapActivity = (activityType: ActivityType): 'hiking' | 'camping' | 'community_event' =>
-  enumMap<'hiking' | 'camping' | 'community_event'>(activityType);
+const mapActivity = (activityType: ActivityType): 'hiking' | 'camping' | 'community_activity' =>
+  enumMap<'hiking' | 'camping' | 'community_activity'>(activityType);
 
 const mapLocationStatus = (status: LocationStatus): 'draft' | 'active' | 'inactive' =>
   enumMap<'draft' | 'active' | 'inactive'>(status);
 
-const mapEventStatus = (status: EventStatus): 'draft' | 'published' | 'cancelled' | 'suspended' =>
+const mapActivityStatus = (status: ActivityStatus): 'draft' | 'published' | 'cancelled' | 'suspended' =>
   enumMap<'draft' | 'published' | 'cancelled' | 'suspended'>(status);
 
 type ParticipantWithUser = {
@@ -52,7 +52,7 @@ type EventWithRelations = Event & {
   participants?: Array<{ id: string } | ParticipantWithUser>;
 };
 
-export const buildEventDto = (event: EventWithRelations): EventDTO => {
+export const buildActivityDto = (event: EventWithRelations): ActivityDTO => {
   const participantsWithUser = (event.participants ?? []).filter(
     (p): p is ParticipantWithUser => 'user' in p && Boolean(p.user)
   );
@@ -165,7 +165,7 @@ export const toEventDto = ({
   tenantSlug: string;
   participantPreviews?: Array<{ id: string; name: string; avatar?: string | null }>;
   countryCode?: string;
-}): EventDTO => {
+}): ActivityDTO => {
   const local = formatEventLocal(event.startAt, countryCode);
   const endLocal = event.endAt ? formatEventLocal(event.endAt, countryCode) : null;
   return {
@@ -186,10 +186,13 @@ export const toEventDto = ({
   pricePackages: parseStoredPricePackages(event.pricePackages),
   slotsTotal: event.capacity,
   slotsAvailable,
-  status: mapEventStatus(event.status),
+  status: mapActivityStatus(event.status),
   meetingPoint: event.meetingPoint,
   meetingLat: event.meetingLat,
   meetingLng: event.meetingLng,
+  startPoint: event.startPoint,
+  startLat: event.startLat,
+  startLng: event.startLng,
   parkingPoint: event.parkingPoint,
   parkingLat: event.parkingLat,
   parkingLng: event.parkingLng,
@@ -197,8 +200,10 @@ export const toEventDto = ({
   carPoolEnabled: event.carPoolEnabled,
   carPoolFree: event.carPoolFree,
   carPoolPriceAed: event.carPoolPriceAed,
+  carPoolSeats: event.carPoolSeats ?? null,
   carPoolDetails: event.carPoolDetails,
   paymentTerms: event.paymentTerms,
+  pricingMode: event.pricingMode ?? null,
   itinerary: event.itinerary,
   requirements: event.requirements,
   images: event.images ?? [],

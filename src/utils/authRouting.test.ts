@@ -42,7 +42,7 @@ describe('auth routing by role', () => {
   it('maps visitor dashboard aliases', () => {
     expect(visitorDashboardRedirect('overview')).toBe('/profile');
     expect(visitorDashboardRedirect('requests')).toBe('/my-requests');
-    expect(visitorDashboardRedirect('trips')).toBe('/trips?tab=mine');
+    expect(visitorDashboardRedirect('trips')).toBe('/activities?tab=mine');
     expect(visitorDashboardRedirect('messages')).toBe('/messages');
     expect(visitorDashboardRedirect('profile')).toBe('/profile');
     expect(visitorDashboardRedirect('unknown')).toBe('/profile');
@@ -51,15 +51,15 @@ describe('auth routing by role', () => {
   it('maps organizer dashboard aliases', () => {
     expect(organizerDashboardRedirect('messages')).toBe('/organizer/messages');
     expect(organizerDashboardRedirect('requests')).toBe('/organizer/requests');
-    expect(organizerDashboardRedirect('trips')).toBe('/organizer/events');
-    expect(organizerDashboardRedirect('events')).toBe('/organizer/events');
+    expect(organizerDashboardRedirect('trips')).toBe('/organizer/activities');
+    expect(organizerDashboardRedirect('events')).toBe('/organizer/activities');
     expect(organizerDashboardRedirect('profile')).toBe('/organizer/profile');
     expect(organizerDashboardRedirect('unknown')).toBe('/organizer/overview');
   });
 
   it('maps admin dashboard aliases', () => {
     expect(adminDashboardRedirect('users')).toBe('/admin/users');
-    expect(adminDashboardRedirect('events')).toBe('/admin/events');
+    expect(adminDashboardRedirect('events')).toBe('/admin/activities');
     expect(adminDashboardRedirect('locations')).toBe('/admin/locations');
     expect(adminDashboardRedirect('settings')).toBe('/admin/settings');
     expect(adminDashboardRedirect('unknown')).toBe('/admin/overview');

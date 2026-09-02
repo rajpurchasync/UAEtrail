@@ -1,8 +1,8 @@
 import {
   ChatConversationDTO,
   ChatMessageDTO,
-  EventDTO,
-  EventDetailDTO,
+  ActivityDTO,
+  ActivityDetailDTO,
   FavoriteDTO,
   JoinRequestDTO,
   LocationDTO,
@@ -85,7 +85,7 @@ export interface TeamMember {
   isActive?: boolean;
 }
 
-export interface EventRequestView {
+export interface ActivityRequestView {
   id: string;
   status: string;
   note?: string;
@@ -99,7 +99,7 @@ export interface EventRequestView {
     email: string;
     displayName: string;
   };
-  event: {
+  activity: {
     id: string;
     title: string;
     locationName: string;
@@ -233,7 +233,9 @@ export interface AccountDeletionInfo {
 export type ContentReportTargetType = 'user' | 'message' | 'post' | 'review' | 'reply';
 export type ContentReportReason = 'spam' | 'harassment' | 'inappropriate' | 'scam' | 'other';
 
-export type EventDetail = EventDetailDTO;
+export type ActivityDetail = ActivityDetailDTO;
+/** @deprecated Use ActivityDetail */
+export type EventDetail = ActivityDetailDTO;
 
 export interface TenantMembershipView {
   tenantId: string;
@@ -288,7 +290,7 @@ export interface TenantProfile {
   organizerDetails?: OrganizerDetails;
   memberCount: number;
   team: { role: string; displayName: string; avatarUrl: string | null }[];
-  events: EventDTO[];
+  events: ActivityDTO[];
 }
 
 export const api = {
@@ -336,27 +338,28 @@ export const api = {
     }),
   downloadLocationRouteMap: (id: string) => downloadAuthenticatedFile(`/locations/${id}/premium/map/download`),
   downloadLocationGuidePdf: (id: string) => downloadAuthenticatedFile(`/locations/${id}/premium/guide/pdf`),
-  getLocationEvents: (locationId: string) =>
-    apiRequest<{ data: EventDTO[] }>(`/locations/${locationId}/events`),
+  getLocationActivities: (locationId: string) =>
+    apiRequest<{ data: ActivityDTO[] }>(`/locations/${locationId}/activities`),
   getPopularLocations: (limit = 6) => apiRequest<{ data: LocationDTO[] }>(`/locations/popular?limit=${limit}`),
   trackLocationView: (id: string) => apiRequest('/locations/' + id + '/view', { method: 'POST' }),
   getTenantProfile: (slug: string) => apiRequest<{ data: TenantProfile }>(`/tenants/${slug}`),
-  getPublicEvents: (opts?: { when?: 'upcoming' | 'past' | 'all'; pageSize?: number }) => {
+  getPublicActivities: (opts?: { when?: 'upcoming' | 'past' | 'all'; pageSize?: number }) => {
     const params = new URLSearchParams();
     params.set('pageSize', String(opts?.pageSize ?? 100));
     if (opts?.when) params.set('when', opts.when);
-    return apiRequest<{ data: EventDTO[] }>(`/events?${params.toString()}`);
+    return apiRequest<{ data: ActivityDTO[] }>(`/activities?${params.toString()}`);
   },
-  getFeaturedEvents: (limit = 6) => apiRequest<{ data: EventDTO[] }>(`/events/featured?limit=${limit}`),
-  getPublicEventDetail: (id: string) =>
-    apiRequest<{ data: EventDetail }>(`/events/${id}`, { auth: Boolean(getStoredSession()) }),
-  checkInToTrip: (eventId: string) =>
+  getFeaturedActivities: (limit = 6) =>
+    apiRequest<{ data: ActivityDTO[] }>(`/activities/featured?limit=${limit}`),
+  getPublicActivityDetail: (id: string) =>
+    apiRequest<{ data: ActivityDetail }>(`/activities/${id}`, { auth: Boolean(getStoredSession()) }),
+  checkInToTrip: (activityId: string) =>
     apiRequest<{ message: string; checkedInAt: string; participation: TripParticipationDTO }>(
-      `/events/${eventId}/checkin`,
+      `/activities/${activityId}/checkin`,
       { method: 'POST', auth: true }
     ).then((res) => res.participation),
-  createJoinRequest: (eventId: string, note?: string, selectedPackageIndex?: number) =>
-    apiRequest<{ data: JoinRequestDTO }>(`/events/${eventId}/requests`, {
+  createJoinRequest: (activityId: string, note?: string, selectedPackageIndex?: number) =>
+    apiRequest<{ data: JoinRequestDTO }>(`/activities/${activityId}/requests`, {
       method: 'POST',
       auth: true,
       body: JSON.stringify({
@@ -365,24 +368,24 @@ export const api = {
       })
     }),
   cancelJoinRequest: (
-    eventId: string,
+    activityId: string,
     requestId: string,
     payload: { reason: WithdrawReason; message?: string }
   ) =>
-    apiRequest(`/events/${eventId}/requests/${requestId}/cancel`, {
+    apiRequest(`/activities/${activityId}/requests/${requestId}/cancel`, {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(payload)
     }),
-  updateJoinRequestNote: (eventId: string, requestId: string, note: string) =>
-    apiRequest<{ data: { id: string; note: string } }>(`/events/${eventId}/requests/${requestId}`, {
+  updateJoinRequestNote: (activityId: string, requestId: string, note: string) =>
+    apiRequest<{ data: { id: string; note: string } }>(`/activities/${activityId}/requests/${requestId}`, {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify({ note }),
     }),
-  getMeRequests: () => apiRequest<{ data: EventRequestView[] }>('/me/requests?pageSize=100', { auth: true }),
+  getMeRequests: () => apiRequest<{ data: ActivityRequestView[] }>('/me/requests?pageSize=100', { auth: true }),
   getMeRequest: (requestId: string) =>
-    apiRequest<{ data: EventRequestView }>(`/me/requests/${requestId}`, { auth: true }),
+    apiRequest<{ data: ActivityRequestView }>(`/me/requests/${requestId}`, { auth: true }),
   getMeTrips: () => apiRequest<{ data: MyTripDTO[] }>('/me/trips', { auth: true }),
   getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
   updateMeProfile: (payload: UserProfile) =>
@@ -584,46 +587,53 @@ export const api = {
       auth: true,
       body: JSON.stringify({ status, reviewerNote })
     }),
-  getAdminEvents: () => apiRequest<{ data: EventDTO[] }>('/admin/events/moderation', { auth: true }),
-  getAdminEventDetail: (id: string) =>
-    apiRequest<{ data: EventDTO }>(`/admin/events/${id}`, { auth: true }),
-  moderateEvent: (id: string, action: 'suspend' | 'unsuspend', comment?: string) =>
-    apiRequest(`/admin/events/moderation/${id}`, {
+  getAdminActivities: () => apiRequest<{ data: ActivityDTO[] }>('/admin/activities/moderation', { auth: true }),
+  getAdminActivityDetail: (id: string) =>
+    apiRequest<{ data: ActivityDTO }>(`/admin/activities/${id}`, { auth: true }),
+  moderateActivity: (id: string, action: 'suspend' | 'unsuspend', comment?: string) =>
+    apiRequest(`/admin/activities/moderation/${id}`, {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify({ action, comment })
     }),
-  createAdminEvent: (payload: Record<string, unknown>) =>
-    apiRequest<{ data: EventDTO }>('/admin/events', {
-      method: 'POST',
-      auth: true,
-      body: JSON.stringify(payload)
-    }),
-  toggleEventFeatured: (id: string) =>
-    apiRequest<{ message: string; featured: boolean }>(`/admin/events/${id}/featured`, {
+  toggleActivityFeatured: (id: string) =>
+    apiRequest<{ message: string; featured: boolean }>(`/admin/activities/${id}/featured`, {
       method: 'PATCH',
       auth: true
     }),
-  getOrganizerEvents: (tenantId: string) =>
-    apiRequest<{ data: EventDTO[] }>('/organizer/events?pageSize=100', {
+  // ─── Host activities (organizer + platform admin via x-tenant-id) ───────
+
+  listHostActivities: (tenantId: string) =>
+    apiRequest<{ data: ActivityDTO[] }>('/host/activities?pageSize=100', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
-  createOrganizerEvent: (tenantId: string, payload: Record<string, unknown>) =>
-    apiRequest<{ data: EventDTO }>('/organizer/events', {
+
+  createHostActivity: (tenantId: string, payload: Record<string, unknown>) =>
+    apiRequest<{ data: ActivityDTO }>('/host/activities', {
       method: 'POST',
       auth: true,
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify(payload)
     }),
-  publishOrganizerEvent: (tenantId: string, eventId: string) =>
-    apiRequest(`/organizer/events/${eventId}/publish`, {
+
+  updateHostActivity: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
+    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}`, {
+      method: 'PATCH',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId },
+      body: JSON.stringify(payload)
+    }),
+
+  publishHostActivity: (tenantId: string, activityId: string) =>
+    apiRequest(`/host/activities/${activityId}/publish`, {
       method: 'POST',
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
+
   getOrganizerRequests: (tenantId: string) =>
-    apiRequest<{ data: EventRequestView[] }>('/organizer/requests?pageSize=100', {
+    apiRequest<{ data: ActivityRequestView[] }>('/organizer/requests?pageSize=100', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
@@ -730,19 +740,25 @@ export const api = {
 
   // ─── Organizer - Check-in ──────────────────────────────────────────────
 
-  getEventParticipants: (tenantId: string, eventId: string) =>
-    apiRequest<{ data: { eventId: string; eventTitle: string; capacity: number; participants: ParticipantDTO[] } }>(
-      `/organizer/events/${eventId}/participants`,
+  getActivityParticipants: (tenantId: string, activityId: string) =>
+    apiRequest<{ data: { activityId: string; eventTitle: string; capacity: number; participants: ParticipantDTO[] } }>(
+      `/host/activities/${activityId}/participants`,
       { auth: true, headers: { 'x-tenant-id': tenantId } }
     ),
-  checkinParticipant: (tenantId: string, eventId: string, participantId: string) =>
-    apiRequest(`/organizer/events/${eventId}/participants/${participantId}/checkin`, {
+  /** @deprecated Use getActivityParticipants */
+  getEventParticipants: (tenantId: string, activityId: string) =>
+    apiRequest<{ data: { activityId: string; eventTitle: string; capacity: number; participants: ParticipantDTO[] } }>(
+      `/host/activities/${activityId}/participants`,
+      { auth: true, headers: { 'x-tenant-id': tenantId } }
+    ),
+  checkinParticipant: (tenantId: string, activityId: string, participantId: string) =>
+    apiRequest(`/host/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'POST',
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
-  undoCheckin: (tenantId: string, eventId: string, participantId: string) =>
-    apiRequest(`/organizer/events/${eventId}/participants/${participantId}/checkin`, {
+  undoCheckin: (tenantId: string, activityId: string, participantId: string) =>
+    apiRequest(`/host/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'DELETE',
       auth: true,
       headers: { 'x-tenant-id': tenantId }
@@ -778,7 +794,7 @@ export const api = {
 
   getEventHistory: (tenantId: string) =>
     apiRequest<{ data: Array<{ id: string; title: string; locationName: string; activityType: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number }> }>(
-      '/organizer/events/history',
+      '/host/activities/history',
       { auth: true, headers: { 'x-tenant-id': tenantId } }
     ),
 
@@ -801,7 +817,7 @@ export const api = {
       { auth: true }
     );
   },
-  sendMessage: (payload: { receiverId: string; content: string; eventId?: string }) =>
+  sendMessage: (payload: { receiverId: string; content: string; activityId?: string }) =>
     apiRequest<{ data: ChatMessageDTO }>('/chat/messages', {
       method: 'POST',
       auth: true,
@@ -1005,16 +1021,16 @@ export const api = {
 
   // ─── Organizer – Event Edit & Cancel ────────────────────────────────────
 
-  updateOrganizerEvent: (tenantId: string, eventId: string, payload: Record<string, unknown>) =>
-    apiRequest<{ data: EventDTO }>(`/organizer/events/${eventId}`, {
+  updateOrganizerEvent: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
+    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}`, {
       method: 'PATCH',
       auth: true,
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify(payload)
     }),
 
-  cancelOrganizerEvent: (tenantId: string, eventId: string) =>
-    apiRequest(`/organizer/events/${eventId}`, {
+  cancelOrganizerEvent: (tenantId: string, activityId: string) =>
+    apiRequest(`/host/activities/${activityId}`, {
       method: 'DELETE',
       auth: true,
       headers: { 'x-tenant-id': tenantId }
@@ -1073,7 +1089,7 @@ export const api = {
     content: string;
     images?: string[];
     locationId?: string;
-    eventId?: string;
+    activityId?: string;
   }) =>
     apiRequest<{ data: PostDTO }>('/posts', {
       method: 'POST',
@@ -1105,17 +1121,17 @@ export const api = {
   // ─── Favorites ─────────────────────────────────────────────────────────
 
   getMeFavorites: () => apiRequest<{ data: FavoriteDTO[] }>('/me/favorites', { auth: true }),
-  checkFavorite: (locationId?: string, eventId?: string, productId?: string) => {
+  checkFavorite: (locationId?: string, activityId?: string, productId?: string) => {
     const params = new URLSearchParams();
     if (locationId) params.set('locationId', locationId);
-    if (eventId) params.set('eventId', eventId);
+    if (activityId) params.set('activityId', activityId);
     if (productId) params.set('productId', productId);
     return apiRequest<{ data: { saved: boolean; favoriteId: string | null } }>(
       `/me/favorites/check?${params.toString()}`,
       { auth: true }
     );
   },
-  addFavorite: (payload: { locationId?: string; eventId?: string; productId?: string }) =>
+  addFavorite: (payload: { locationId?: string; activityId?: string; productId?: string }) =>
     apiRequest<{ data: FavoriteDTO }>('/me/favorites', {
       method: 'POST',
       auth: true,

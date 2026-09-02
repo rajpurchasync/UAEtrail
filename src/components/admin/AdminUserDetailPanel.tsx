@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AdminUserType, EventDTO } from '@uaetrail/shared-types';
+import { AdminUserType, ActivityDTO } from '@uaetrail/shared-types';
 import {
   AdminSocialGroupDetail,
   api,
@@ -22,14 +22,14 @@ export interface AdminUserDetail {
   profile?: { displayName?: string; phone?: string; bio?: string; avatarUrl?: string };
   requests?: Array<{
     id: string;
-    eventId: string;
+    activityId: string;
     eventTitle: string;
     locationName?: string;
     status: string;
     createdAt: string;
   }>;
   trips?: Array<{
-    eventId: string;
+    activityId: string;
     eventTitle: string;
     locationName?: string;
     organizerName?: string;
@@ -54,7 +54,7 @@ export interface AdminUserDetail {
     joinedAt: string;
   }>;
   hostedEvents?: Array<{
-    eventId: string;
+    activityId: string;
     tenantId?: string;
     title: string;
     status: string;
@@ -303,7 +303,7 @@ const GroupDrillDown = ({ detail, loading }: { detail: AdminSocialGroupDetail | 
   );
 };
 
-const EventDrillDown = ({ event, loading }: { event: EventDTO | null; loading: boolean }) => {
+const EventDrillDown = ({ event, loading }: { event: ActivityDTO | null; loading: boolean }) => {
   if (loading) return <p className="text-sm text-gray-500 py-8 text-center">Loading event…</p>;
   if (!event) return <p className="text-sm text-gray-500 py-8 text-center">Event not found.</p>;
 
@@ -374,7 +374,7 @@ export const AdminUserDetailPanel = ({
   const [drillDown, setDrillDown] = useState<DrillDown | null>(null);
   const [tenantDetail, setTenantDetail] = useState<TenantDetail | null>(null);
   const [groupDetail, setGroupDetail] = useState<AdminSocialGroupDetail | null>(null);
-  const [eventDetail, setEventDetail] = useState<EventDTO | null>(null);
+  const [eventDetail, setEventDetail] = useState<ActivityDTO | null>(null);
   const [drillLoading, setDrillLoading] = useState(false);
   const [drillError, setDrillError] = useState<string | null>(null);
 
@@ -411,7 +411,7 @@ export const AdminUserDetailPanel = ({
           const res = await api.getAdminGroupDetail(drillDown.id);
           setGroupDetail(res.data);
         } else {
-          const res = await api.getAdminEventDetail(drillDown.id);
+          const res = await api.getAdminActivityDetail(drillDown.id);
           setEventDetail(res.data);
         }
       } catch (err) {
@@ -647,13 +647,13 @@ export const AdminUserDetailPanel = ({
                   <div className="space-y-2">
                     {user.hostedEvents.map((event) => (
                       <ClickableCard
-                        key={event.eventId}
+                        key={event.activityId}
                         title={event.title}
                         subtitle={[event.locationName, event.organizerName, event.date].filter(Boolean).join(' · ')}
                         meta={<span className="text-xs capitalize text-gray-500">{event.role}</span>}
                         status={statusBadge(event.status)}
-                        onView={() => setDrillDown({ type: 'event', id: event.eventId })}
-                        href={`/trip/${event.eventId}`}
+                        onView={() => setDrillDown({ type: 'event', id: event.activityId })}
+                        href={`/trip/${event.activityId}`}
                       />
                     ))}
                   </div>
@@ -669,12 +669,12 @@ export const AdminUserDetailPanel = ({
                   <div className="space-y-2">
                     {user.trips.map((trip) => (
                       <ClickableCard
-                        key={trip.eventId}
+                        key={trip.activityId}
                         title={trip.eventTitle ?? 'Untitled event'}
                         subtitle={[trip.locationName, trip.organizerName, trip.date].filter(Boolean).join(' · ')}
                         meta={trip.checkedInAt ? <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Checked in</span> : undefined}
-                        onView={() => setDrillDown({ type: 'event', id: trip.eventId })}
-                        href={`/trip/${trip.eventId}`}
+                        onView={() => setDrillDown({ type: 'event', id: trip.activityId })}
+                        href={`/trip/${trip.activityId}`}
                       />
                     ))}
                   </div>
@@ -694,8 +694,8 @@ export const AdminUserDetailPanel = ({
                         title={request.eventTitle}
                         subtitle={[request.locationName, new Date(request.createdAt).toLocaleDateString()].filter(Boolean).join(' · ')}
                         status={statusBadge(request.status)}
-                        onView={() => setDrillDown({ type: 'event', id: request.eventId })}
-                        href={`/trip/${request.eventId}`}
+                        onView={() => setDrillDown({ type: 'event', id: request.activityId })}
+                        href={`/trip/${request.activityId}`}
                       />
                     ))}
                   </div>

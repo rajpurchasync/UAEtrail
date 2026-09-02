@@ -4,9 +4,9 @@ import { TripParticipationDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
 
 interface TripCheckInPanelProps {
-  eventId: string;
+  activityId: string;
   participation: TripParticipationDTO;
-  onCheckIn: (eventId: string) => Promise<TripParticipationDTO>;
+  onCheckIn: (activityId: string) => Promise<TripParticipationDTO>;
   onUpdated?: (participation: TripParticipationDTO) => void;
   compact?: boolean;
 }
@@ -23,7 +23,7 @@ const formatCheckInTime = (iso: string) => {
 };
 
 export const TripCheckInPanel = ({
-  eventId,
+  activityId,
   participation,
   onCheckIn,
   onUpdated,
@@ -41,7 +41,7 @@ export const TripCheckInPanel = ({
     setLoading(true);
     setError(null);
     try {
-      const updated = await onCheckIn(eventId);
+      const updated = await onCheckIn(activityId);
       setLocal(updated);
       onUpdated?.(updated);
     } catch (err) {

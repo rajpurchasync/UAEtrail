@@ -35,7 +35,7 @@ describe('canAccessMedia', () => {
           visibility,
           viewerUserId: owner,
           ownerUserId: owner,
-          sharesGroupOrEvent: false,
+          sharesGroupOrActivity: false,
           isPlatformAdmin: false
         })
       ).toBe(true);
@@ -45,7 +45,7 @@ describe('canAccessMedia', () => {
           visibility,
           viewerUserId: viewer,
           ownerUserId: owner,
-          sharesGroupOrEvent: false,
+          sharesGroupOrActivity: false,
           isPlatformAdmin: true
         })
       ).toBe(true);
@@ -55,11 +55,11 @@ describe('canAccessMedia', () => {
   it('allows anyone to read public-bucket objects', () => {
     expect(
       canAccessMedia({
-        kind: 'event',
+        kind: 'activity',
         visibility: 'private',
         viewerUserId: null,
         ownerUserId: owner,
-        sharesGroupOrEvent: false,
+        sharesGroupOrActivity: false,
         isPlatformAdmin: false
       })
     ).toBe(true);
@@ -72,7 +72,7 @@ describe('canAccessMedia', () => {
         visibility: 'public',
         viewerUserId: null,
         ownerUserId: owner,
-        sharesGroupOrEvent: false,
+        sharesGroupOrActivity: false,
         isPlatformAdmin: false
       })
     ).toBe(true);
@@ -85,7 +85,7 @@ describe('canAccessMedia', () => {
         visibility: 'group_members',
         viewerUserId: viewer,
         ownerUserId: owner,
-        sharesGroupOrEvent: false,
+        sharesGroupOrActivity: false,
         isPlatformAdmin: false
       })
     ).toBe(false);
@@ -95,7 +95,7 @@ describe('canAccessMedia', () => {
         visibility: 'group_members',
         viewerUserId: viewer,
         ownerUserId: owner,
-        sharesGroupOrEvent: true,
+        sharesGroupOrActivity: true,
         isPlatformAdmin: false
       })
     ).toBe(true);
@@ -105,7 +105,7 @@ describe('canAccessMedia', () => {
         visibility: 'group_members',
         viewerUserId: null,
         ownerUserId: owner,
-        sharesGroupOrEvent: true,
+        sharesGroupOrActivity: true,
         isPlatformAdmin: false
       })
     ).toBe(false);
@@ -118,7 +118,7 @@ describe('canAccessMedia', () => {
         visibility: 'private',
         viewerUserId: viewer,
         ownerUserId: owner,
-        sharesGroupOrEvent: true,
+        sharesGroupOrActivity: true,
         isPlatformAdmin: false
       })
     ).toBe(false);

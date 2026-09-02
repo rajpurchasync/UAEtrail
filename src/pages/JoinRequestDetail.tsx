@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Calendar, MapPin, MessageCircle } from 'lucide-react';
 import { WithdrawReason, withdrawReasonLabel } from '@uaetrail/shared-types';
-import { api, EventRequestView } from '../api/services';
+import { api, ActivityRequestView } from '../api/services';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
@@ -19,7 +19,7 @@ const statusBadge: Record<string, string> = {
 export const JoinRequestDetail = () => {
   const { requestId } = useParams<{ requestId: string }>();
   const navigate = useNavigate();
-  const [request, setRequest] = useState<EventRequestView | null>(null);
+  const [request, setRequest] = useState<ActivityRequestView | null>(null);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,7 +46,7 @@ export const JoinRequestDetail = () => {
     setError(null);
     setMessage(null);
     try {
-      await api.updateJoinRequestNote(request.event.id, request.id, note.trim());
+      await api.updateJoinRequestNote(request.activity.id, request.id, note.trim());
       setMessage('Your message to the organizer was updated.');
       setRequest((r) => (r ? { ...r, note: note.trim() } : r));
     } catch (err) {
@@ -61,7 +61,7 @@ export const JoinRequestDetail = () => {
     setSaving(true);
     setError(null);
     try {
-      await api.cancelJoinRequest(request.event.id, request.id, payload);
+      await api.cancelJoinRequest(request.activity.id, request.id, payload);
       navigate('/my-requests', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to cancel request');
@@ -72,11 +72,11 @@ export const JoinRequestDetail = () => {
   };
 
   const askOrganizer = () => {
-    if (!request?.event.organizerUserId) {
+    if (!request?.activity.organizerUserId) {
       setError('Organizer contact is not available for this trip.');
       return;
     }
-    navigate(`/messages?to=${request.event.organizerUserId}`);
+    navigate(`/messages?to=${request.activity.organizerUserId}`);
   };
 
   if (loading) {
@@ -115,9 +115,9 @@ export const JoinRequestDetail = () => {
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="text-lg font-bold text-neutral-900">
-              {request.event.title || request.event.locationName}
+              {request.activity.title || request.activity.locationName}
             </h2>
-            <p className="text-sm text-neutral-500">{request.event.locationName}</p>
+            <p className="text-sm text-neutral-500">{request.activity.locationName}</p>
           </div>
           <span
             className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize shrink-0 ${
@@ -130,14 +130,14 @@ export const JoinRequestDetail = () => {
         <div className="flex items-center gap-2 text-sm text-neutral-600">
           <Calendar className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>
-            {request.event.date} · {request.event.time}
+            {request.activity.date} · {request.activity.time}
           </span>
         </div>
-        {request.event.organizerName && (
-          <p className="text-sm text-neutral-600">Organizer: {request.event.organizerName}</p>
+        {request.activity.organizerName && (
+          <p className="text-sm text-neutral-600">Organizer: {request.activity.organizerName}</p>
         )}
         <Link
-          to={`/trip/${request.event.id}`}
+          to={`/trip/${request.activity.id}`}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600"
         >
           <MapPin className="w-4 h-4" />
@@ -208,8 +208,8 @@ export const JoinRequestDetail = () => {
       <WithdrawRequestModal
         open={showWithdraw}
         onClose={() => setShowWithdraw(false)}
-        tripTitle={request.event.title || request.event.locationName}
-        tripDate={request.event.date}
+        tripTitle={request.activity.title || request.activity.locationName}
+        tripDate={request.activity.date}
         variant={withdrawVariant}
         submitting={saving}
         onConfirm={handleWithdraw}

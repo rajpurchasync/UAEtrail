@@ -22,12 +22,30 @@ import { TrailPointsPromoBanner } from '../components/rewards';
 import { MEMBERSHIP_NAV_LINK } from '../config/platform';
 import { EXPLORE_UAE_REGIONS, type ExploreRegionIcon } from '../config/exploreUaeRegions';
 import { MobileBrandBar } from '../components/layout/MobileBrandBar';
+import { FilterChips } from '../components/mobile/FilterChips';
+import {
+  ACTIVITY_TYPE_GROUP_LABELS,
+  ACTIVITY_TYPES,
+  activitiesBrowsePath,
+  type ActivityType,
+} from '../config/activityTypes';
+import { PUBLIC_ACTIVITIES_PATH } from '../constants';
 
 const EXPLORE_REGION_ICONS: Record<ExploreRegionIcon, typeof Mountain> = {
   mountain: Mountain,
   tent: Tent,
   compass: Compass
 };
+
+type HomeActivityFilter = 'all' | ActivityType;
+
+const HOME_ACTIVITY_FILTERS: { key: HomeActivityFilter; label: string }[] = [
+  { key: 'all', label: 'All' },
+  ...ACTIVITY_TYPES.map((type) => ({
+    key: type,
+    label: ACTIVITY_TYPE_GROUP_LABELS[type],
+  })),
+];
 
 const getLandingLoadErrorMessage = (error: unknown): string => {
   if (!(error instanceof Error)) {
@@ -53,6 +71,7 @@ export const Home = () => {
   const [allTrails, setAllTrails] = useState<Trail[]>([]);
   const [allCamps, setAllCamps] = useState<CampingSpot[]>([]);
   const [allTrips, setAllTrips] = useState<Trip[]>([]);
+  const [activityFilter, setActivityFilter] = useState<HomeActivityFilter>('all');
 
   useEffect(() => {
     let disposed = false;
@@ -95,7 +114,11 @@ export const Home = () => {
     [allTrips]
   );
 
-  const displayedTrips = featuredTrips.length > 0 ? featuredTrips : upcomingTrips;
+  const displayedTrips = useMemo(() => {
+    const base = featuredTrips.length > 0 ? featuredTrips : upcomingTrips;
+    if (activityFilter === 'all') return base;
+    return base.filter((trip) => trip.activityType === activityFilter);
+  }, [featuredTrips, upcomingTrips, activityFilter]);
 
   const trackView = (locationId: string) => {
     api.trackLocationView(locationId).catch(() => { /* silent */ });
@@ -179,7 +202,7 @@ export const Home = () => {
                 {[
                   { to: '/', label: 'Home' },
                   { to: '/discovery', label: 'Trails & Spots' },
-                  { to: '/trips', label: 'Trips' },
+                  { to: '/activities', label: 'Activities' },
                   { to: '/shop', label: 'Shop' },
                   { to: '/community', label: 'Community' },
                   ...(MEMBERSHIP_NAV_LINK ? [MEMBERSHIP_NAV_LINK] : []),
@@ -231,11 +254,11 @@ export const Home = () => {
               </p>
               <div className="flex flex-row flex-wrap justify-center gap-2.5 md:gap-3">
                 <Link
-                  to="/trips"
+                  to={PUBLIC_ACTIVITIES_PATH}
                   className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 md:min-h-0 md:px-10 md:py-3.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all font-medium shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 text-sm md:text-base"
                 >
                   <Calendar className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
-                  Join a trip
+                  Browse activities
                 </Link>
                 <Link
                   to="/discovery"
@@ -298,26 +321,34 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* ──── Upcoming Trips (swipe) ──── */}
+      {/* ──── Upcoming Activities (swipe) ──── */}
       <section className="py-8 md:py-12 mobile-snap-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
           <div className="flex justify-between items-end mb-5 gap-3">
             <div className="min-w-0">
               <h2 className="text-xl md:text-3xl font-bold text-gray-900">
-                {featuredTrips.length > 0 ? 'Featured Events' : 'Organized Trips'}
+                {featuredTrips.length > 0 ? 'Featured Activities' : 'Upcoming Activities'}
               </h2>
               <p className="text-sm text-gray-500 mt-1 hidden md:block">
-                {featuredTrips.length > 0 ? 'Handpicked adventures selected for you' : 'Join organized hiking and camping adventures'}
+                {featuredTrips.length > 0
+                  ? 'Handpicked adventures selected for you'
+                  : 'Join organized hiking trips, camping outings, and outdoor events'}
               </p>
             </div>
             <Link
-              to="/trips"
+              to={activityFilter === 'all' ? PUBLIC_ACTIVITIES_PATH : activitiesBrowsePath(activityFilter)}
               className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
-              All trips
+              All activities
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
+          <FilterChips
+            className="mb-5"
+            options={HOME_ACTIVITY_FILTERS}
+            value={activityFilter}
+            onChange={setActivityFilter}
+          />
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {displayedTrips.map((trip) => (
               <div key={trip.id} className="mobile-snap-rail__item">
@@ -326,7 +357,22 @@ export const Home = () => {
             ))}
             {displayedTrips.length === 0 && (
               <div className="col-span-full min-w-full">
-                <EmptyTripsBanner />
+                {activityFilter !== 'all' ? (
+                  <div className="rounded-[22px] glass-card px-6 py-10 text-center shadow-glass">
+                    <p className="text-sm text-gray-600">
+                      No {ACTIVITY_TYPE_GROUP_LABELS[activityFilter].toLowerCase()} activities on the calendar right now.
+                    </p>
+                    <Link
+                      to={activitiesBrowsePath(activityFilter)}
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700 mt-3"
+                    >
+                      Browse all {ACTIVITY_TYPE_GROUP_LABELS[activityFilter].toLowerCase()} activities
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                ) : (
+                  <EmptyTripsBanner />
+                )}
               </div>
             )}
           </div>

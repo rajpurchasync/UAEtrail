@@ -79,7 +79,7 @@ export const OrganizerOverview = () => {
     <OrganizerShell
       title="Organizer"
       cta={
-        <Link to="/organizer/events/new" className="app-cta-sm">
+        <Link to="/organizer/activities/new" className="app-cta-sm">
           <Plus className="w-4 h-4" />
           Add activity
         </Link>
@@ -206,7 +206,7 @@ export const OrganizerOverview = () => {
             <AccountLinkList
               items={[
                 {
-                  to: '/trips?tab=mine',
+                  to: '/activities?tab=mine',
                   icon: <Calendar className="w-4 h-4" />,
                   label: 'My trips as participant',
                   badge: participant.upcomingTripsCount || undefined,

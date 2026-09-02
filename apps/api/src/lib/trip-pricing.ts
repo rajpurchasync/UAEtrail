@@ -30,16 +30,39 @@ export const eventHasPaidPricing = (priceAed: number, packages: TripPricePackage
 export const normalizeEventPricing = (input: {
   price?: number;
   pricePackages?: TripPricePackage[];
-}): { priceAed: number; pricePackages: TripPricePackage[] } => {
-  const packages =
-    input.pricePackages && input.pricePackages.length > 0
-      ? input.pricePackages.filter((p) => p.label.trim())
-      : input.price !== undefined && input.price > 0
-        ? [{ label: 'Standard', amount: input.price, currency: 'AED' as const }]
+  pricingMode?: 'free' | 'shared' | 'paid';
+}): { priceAed: number; pricePackages: TripPricePackage[]; pricingMode: 'free' | 'shared' | 'paid' } => {
+  const trimmedPackages = input.pricePackages?.filter((p) => p.label.trim()) ?? [];
+  const pricingMode =
+    input.pricingMode ??
+    (trimmedPackages.some((p) => p.amount > 0)
+      ? 'paid'
+      : (input.price ?? 0) > 0
+        ? 'shared'
+        : 'free');
+
+  if (pricingMode === 'free') {
+    return { priceAed: 0, pricePackages: [], pricingMode: 'free' };
+  }
+
+  if (pricingMode === 'shared') {
+    return {
+      priceAed: Math.max(0, input.price ?? 0),
+      pricePackages: [],
+      pricingMode: 'shared',
+    };
+  }
+
+  const pricePackages =
+    trimmedPackages.length > 0
+      ? trimmedPackages
+      : (input.price ?? 0) > 0
+        ? [{ label: 'Standard', amount: input.price!, currency: 'AED' as const }]
         : [];
 
   return {
-    pricePackages: packages,
-    priceAed: derivePriceAed(packages, input.price ?? 0)
+    pricePackages,
+    priceAed: derivePriceAed(pricePackages, input.price ?? 0),
+    pricingMode: 'paid',
   };
 };

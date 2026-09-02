@@ -50,12 +50,12 @@ describe('join request flow integration', () => {
     const token = login.body.tokens.accessToken as string;
 
     const joinRes = await request(app)
-      .post(`/api/v1/events/${openFixture.eventId}/requests`)
+      .post(`/api/v1/activities/${openFixture.activityId}/requests`)
       .set('Authorization', `Bearer ${token}`)
       .send({ note: 'Integration test request' });
 
     expect(joinRes.status).toBe(201);
-    expect(joinRes.body.data.eventId).toBe(openFixture.eventId);
+    expect(joinRes.body.data.activityId).toBe(openFixture.activityId);
     expect(joinRes.body.data.status).toBe('pending');
     expect(joinRes.body.data.waitlisted).toBe(false);
   });
@@ -71,19 +71,19 @@ describe('join request flow integration', () => {
     const token = login.body.tokens.accessToken as string;
 
     const joinRes = await request(app)
-      .post(`/api/v1/events/${fullFixture.eventId}/requests`)
+      .post(`/api/v1/activities/${fullFixture.activityId}/requests`)
       .set('Authorization', `Bearer ${token}`)
       .send({ note: 'Waitlist integration test' });
 
     expect(joinRes.status).toBe(201);
-    expect(joinRes.body.data.eventId).toBe(fullFixture.eventId);
+    expect(joinRes.body.data.activityId).toBe(fullFixture.activityId);
     expect(joinRes.body.data.status).toBe('waitlisted');
     expect(joinRes.body.data.waitlisted).toBe(true);
   });
 
   it('lists published events including the test fixture', async () => {
-    const response = await request(app).get('/api/v1/events');
+    const response = await request(app).get('/api/v1/activities');
     expect(response.status).toBe(200);
-    expect(response.body.data.some((event: { id: string }) => event.id === openFixture.eventId)).toBe(true);
+    expect(response.body.data.some((event: { id: string }) => event.id === openFixture.activityId)).toBe(true);
   });
 });

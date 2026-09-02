@@ -5,7 +5,7 @@ import {
   ActivityType,
   AuthProvider,
   Difficulty,
-  EventStatus,
+  ActivityStatus,
   LocationStatus,
   MembershipRole,
   MembershipTier,
@@ -362,7 +362,7 @@ const upsertPost = async (input: {
         content: input.content,
         images: input.images,
         locationId: input.locationId ?? null,
-        eventId: null,
+        activityId: null,
         authorId: input.authorId,
         updatedAt: now
       },
@@ -422,13 +422,13 @@ const upsertNotification = async (input: {
   });
 };
 
-const seedParticipant = async (eventId: string, userId: string, reviewerId: string) => {
+const seedParticipant = async (activityId: string, userId: string, reviewerId: string) => {
   const now = new Date();
-  const existingRequest = await db().collection('event_requests').findOne({ eventId, userId });
+  const existingRequest = await db().collection('activity_requests').findOne({ activityId, userId });
   const requestId = existingRequest?._id ?? crypto.randomUUID();
 
-  await db().collection('event_requests').updateOne(
-    { eventId, userId },
+  await db().collection('activity_requests').updateOne(
+    { activityId, userId },
     {
       $set: {
         status: RequestStatus.APPROVED,
@@ -450,14 +450,14 @@ const seedParticipant = async (eventId: string, userId: string, reviewerId: stri
     { upsert: true }
   );
 
-  const existingParticipant = await db().collection('event_participants').findOne({ requestId });
+  const existingParticipant = await db().collection('activity_participants').findOne({ requestId });
   const participantId = existingParticipant?._id ?? crypto.randomUUID();
 
-  await db().collection('event_participants').updateOne(
+  await db().collection('activity_participants').updateOne(
     { requestId },
     {
       $set: {
-        eventId,
+        activityId,
         userId,
         approvedById: reviewerId
       },
@@ -959,7 +959,7 @@ Share your live location and carry extra water in summer months.`
     meetingLng: 56.1422,
     priceAed: 120,
     capacity: 15,
-    status: EventStatus.PUBLISHED,
+    status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     itinerary: ['Meet at 6:00 AM', 'Summit climb', 'Return by noon'],
     requirements: ['Water 2L', 'Hiking shoes', 'Cap and sunscreen']
@@ -981,7 +981,7 @@ Share your live location and carry extra water in summer months.`
     meetingLng: 55.8521,
     priceAed: 200,
     capacity: 12,
-    status: EventStatus.PUBLISHED,
+    status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     itinerary: [
       'Arrive by 4 PM',
@@ -1012,7 +1012,7 @@ Share your live location and carry extra water in summer months.`
     priceAed: 0,
     capacity: 20,
     featured: true,
-    status: EventStatus.PUBLISHED,
+    status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     itinerary: ['Meet at 7:00 AM', 'Loop trail through the wadi', 'Return by 11:00 AM'],
     requirements: ['Water 1.5L', 'Trail shoes', 'Sun protection']
@@ -1036,7 +1036,7 @@ Share your live location and carry extra water in summer months.`
     priceAed: 0,
     capacity: 25,
     featured: true,
-    status: EventStatus.PUBLISHED,
+    status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     itinerary: [
       'Arrive by 3 PM',
@@ -1049,12 +1049,12 @@ Share your live location and carry extra water in summer months.`
 
   await seedParticipant(event._id, visitor._id, organizer._id);
 
-  const approvedRequest = await db().collection('event_requests').findOne({
-    eventId: event._id,
+  const approvedRequest = await db().collection('activity_requests').findOne({
+    activityId: event._id,
     userId: visitor._id
   });
   if (approvedRequest) {
-    await db().collection('event_requests').updateOne(
+    await db().collection('activity_requests').updateOne(
       { _id: approvedRequest._id },
       {
         $set: {
@@ -1069,8 +1069,8 @@ Share your live location and carry extra water in summer months.`
   await seedParticipant(event._id, admin._id, organizer._id);
 
   const pendingNow = new Date();
-  await db().collection('event_requests').updateOne(
-    { eventId: event._id, userId: pendingVisitor._id },
+  await db().collection('activity_requests').updateOne(
+    { activityId: event._id, userId: pendingVisitor._id },
     {
       $set: {
         status: RequestStatus.PENDING,
@@ -1232,7 +1232,7 @@ Share your live location and carry extra water in summer months.`
     title: 'Join request approved',
     body: 'Your request to join a trip was approved. Check My Trips for details.',
     type: NotificationType.REQUEST_UPDATE,
-    meta: { eventId: event._id }
+    meta: { activityId: event._id }
   });
 
   const chatMessages = [
@@ -1240,26 +1240,26 @@ Share your live location and carry extra water in summer months.`
       senderId: visitor._id,
       receiverId: organizer._id,
       content: 'Hi! I signed up for the Jebel Jais hike. What should I bring?',
-      eventId: event._id
+      activityId: event._id
     },
     {
       senderId: organizer._id,
       receiverId: visitor._id,
       content:
         'Great to have you! Bring at least 2L of water, hiking shoes, and sun protection. We start early!',
-      eventId: event._id
+      activityId: event._id
     },
     {
       senderId: visitor._id,
       receiverId: organizer._id,
       content: 'Perfect, thanks! Should I bring my own headlamp?',
-      eventId: event._id
+      activityId: event._id
     },
     {
       senderId: organizer._id,
       receiverId: visitor._id,
       content: 'Yes, a headlamp is recommended since we start before sunrise. See you there!',
-      eventId: event._id
+      activityId: event._id
     }
   ];
 
@@ -1279,18 +1279,18 @@ Share your live location and carry extra water in summer months.`
       senderId: msg.senderId,
       receiverId: msg.receiverId,
       content: msg.content,
-      eventId: msg.eventId,
+      activityId: msg.activityId,
       createdAt,
       readAt: i < chatMessages.length - 1 ? createdAt : null
     });
   }
 
-  const participant = await db().collection('event_participants').findOne({
-    eventId: event._id,
+  const participant = await db().collection('activity_participants').findOne({
+    activityId: event._id,
     userId: visitor._id
   });
   if (participant) {
-    await db().collection('event_participants').updateOne(
+    await db().collection('activity_participants').updateOne(
       { _id: participant._id },
       { $set: { checkedInAt: new Date() } }
     );
@@ -1299,8 +1299,8 @@ Share your live location and carry extra water in summer months.`
   await seedReward(visitor._id, RewardAction.SIGNUP_WELCOME, 25, visitor._id, 'Welcome bonus');
   await seedReward(visitor._id, RewardAction.TRIP_ATTENDED, 30, `${event._id}:${visitor._id}`, 'Attended a trip');
   await seedReward(visitor._id, RewardAction.COMMUNITY_POST, 20, 'seed-post-1', 'Community post');
-  await seedReward(organizer._id, RewardAction.EVENT_PUBLISHED, 50, event._id, 'Published a trip');
-  await seedReward(organizer._id, RewardAction.EVENT_HOSTED, 75, event._id, 'Hosted a trip');
+  await seedReward(organizer._id, RewardAction.ACTIVITY_PUBLISHED, 50, event._id, 'Published a trip');
+  await seedReward(organizer._id, RewardAction.ACTIVITY_HOSTED, 75, event._id, 'Hosted a trip');
 
   await db().collection('auth_users').updateOne(
     { _id: organizer._id },

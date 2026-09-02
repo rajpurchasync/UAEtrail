@@ -14,7 +14,7 @@ let app: Express;
 let visitorA: { email: string; accessToken: string };
 let visitorB: { email: string; accessToken: string };
 let organizerId = '';
-let eventId = '';
+let activityId = '';
 
 beforeAll(async () => {
   app = await bootstrapTestApp();
@@ -25,7 +25,7 @@ beforeAll(async () => {
 
   const fixture = await createPublishedEventFixture(suffix);
   organizerId = fixture.organizerId;
-  eventId = fixture.eventId;
+  activityId = fixture.activityId;
 });
 
 afterAll(async () => {
@@ -64,7 +64,7 @@ describe('chat messaging policy', () => {
 
   it('allows messaging an organizer after a join request is submitted', async () => {
     const joinRes = await request(app)
-      .post(`/api/v1/events/${eventId}/requests`)
+      .post(`/api/v1/activities/${activityId}/requests`)
       .set('Authorization', `Bearer ${visitorB.accessToken}`)
       .send({ note: 'Would love to join' });
 
@@ -73,20 +73,20 @@ describe('chat messaging policy', () => {
     const response = await request(app)
       .post('/api/v1/chat/messages')
       .set('Authorization', `Bearer ${visitorB.accessToken}`)
-      .send({ receiverId: organizerId, content: 'Hi organizer', eventId });
+      .send({ receiverId: organizerId, content: 'Hi organizer', activityId });
 
     expect(response.status).toBe(201);
     expect(response.body.data?.content).toBe('Hi organizer');
   });
 
-  it('allows trip inquiry messages when eventId matches a published trip host', async () => {
+  it('allows trip inquiry messages when activityId matches a published trip host', async () => {
     const response = await request(app)
       .post('/api/v1/chat/messages')
       .set('Authorization', `Bearer ${visitorA.accessToken}`)
       .send({
         receiverId: organizerId,
         content: 'Is this trip beginner friendly?',
-        eventId
+        activityId
       });
 
     expect(response.status).toBe(201);

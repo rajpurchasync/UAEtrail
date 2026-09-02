@@ -1,10 +1,10 @@
 import { ActivityType, Difficulty, LocationStatus } from '../domain/enums.js';
 import type { LocationSubmitBody } from '../domain/location-submit.js';
 
-const toActivityType = (activityType: 'hiking' | 'camping' | 'community_event'): ActivityType => {
+const toActivityType = (activityType: 'hiking' | 'camping' | 'COMMUNITY_ACTIVITY'): ActivityType => {
   if (activityType === 'hiking') return ActivityType.HIKING;
   if (activityType === 'camping') return ActivityType.CAMPING;
-  return ActivityType.COMMUNITY_EVENT;
+  return ActivityType.COMMUNITY_ACTIVITY;
 };
 
 const toDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {

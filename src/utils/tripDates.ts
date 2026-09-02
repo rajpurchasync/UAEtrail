@@ -1,31 +1,31 @@
-import { EventDTO } from '@uaetrail/shared-types';
-import { EventRequestView } from '../api/services';
+import { ActivityDTO } from '@uaetrail/shared-types';
+import { ActivityRequestView } from '../api/services';
 
 export const todayStart = () => new Date(new Date().toDateString());
 
 export const isUpcomingDate = (dateStr?: string) =>
   Boolean(dateStr && new Date(dateStr) >= todayStart());
 
-export const isUpcomingTrip = (trip: EventDTO) => isUpcomingDate(trip.date);
+export const isUpcomingTrip = (trip: ActivityDTO) => isUpcomingDate(trip.date);
 
-export const getRequestEventDate = (request: EventRequestView) =>
-  request.event.date ?? request.event.startAt?.slice(0, 10) ?? '';
+export const getRequestEventDate = (request: ActivityRequestView) =>
+  request.activity.date ?? request.activity.startAt?.slice(0, 10) ?? '';
 
-export const isUpcomingRequest = (request: EventRequestView) =>
+export const isUpcomingRequest = (request: ActivityRequestView) =>
   isUpcomingDate(getRequestEventDate(request));
 
 /** Pending join requests for future events not already confirmed as trips. */
 export const pendingUpcomingRequests = (
-  trips: EventDTO[],
-  requests: EventRequestView[]
-): EventRequestView[] => {
+  trips: ActivityDTO[],
+  requests: ActivityRequestView[]
+): ActivityRequestView[] => {
   const confirmedIds = new Set(trips.map((t) => t.id));
   return requests.filter(
-    (r) => r.status === 'pending' && isUpcomingRequest(r) && !confirmedIds.has(r.event.id)
+    (r) => r.status === 'pending' && isUpcomingRequest(r) && !confirmedIds.has(r.activity.id)
   );
 };
 
-export const upcomingTripsTotal = (trips: EventDTO[], requests: EventRequestView[]) => {
+export const upcomingTripsTotal = (trips: ActivityDTO[], requests: ActivityRequestView[]) => {
   const upcomingConfirmed = trips.filter(isUpcomingTrip).length;
   return upcomingConfirmed + pendingUpcomingRequests(trips, requests).length;
 };

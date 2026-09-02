@@ -59,7 +59,7 @@ export const HostSelect = ({ tenantId, value, onChange, required, className = ''
         ))}
       </select>
       <p className="text-xs text-neutral-500 mt-1">
-        Every trip needs a named host — the person participants can contact and who is responsible on site.
+        Every activity needs a named host — the person participants can contact and who is responsible on site.
       </p>
     </div>
   );

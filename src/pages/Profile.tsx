@@ -308,7 +308,7 @@ export const Profile = () => {
                   accent: 'emerald' as const,
                 },
                 {
-                  to: '/trips?tab=mine&sub=past',
+                  to: '/activities?tab=mine&sub=past',
                   icon: <Compass className="w-4 h-4" />,
                   label: 'Past trips',
                   badge: pastTripsCount || undefined,

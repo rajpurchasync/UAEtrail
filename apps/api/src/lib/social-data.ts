@@ -39,7 +39,7 @@ export type SocialPost = {
   content: string;
   images: string[];
   locationId: string | null;
-  eventId: string | null;
+  activityId: string | null;
   authorId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -67,7 +67,7 @@ type MongoPost = {
   content: string;
   images: string[];
   locationId: string | null;
-  eventId: string | null;
+  activityId: string | null;
   authorId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -173,7 +173,7 @@ const buildPostsWithStats = async (
       content: post.content,
       images: post.images,
       locationId: post.locationId,
-      eventId: post.eventId,
+      activityId: post.activityId,
       authorId: post.authorId,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
@@ -266,7 +266,7 @@ export const createSocialPost = async (input: {
   content: string;
   images: string[];
   locationId?: string;
-  eventId?: string;
+  activityId?: string;
   authorId: string;
 }): Promise<SocialPost> => {
   const now = new Date();
@@ -277,7 +277,7 @@ export const createSocialPost = async (input: {
     content: input.content,
     images: input.images,
     locationId: input.locationId ?? null,
-    eventId: input.eventId ?? null,
+    activityId: input.activityId ?? null,
     authorId: input.authorId,
     createdAt: now,
     updatedAt: now,
@@ -291,7 +291,7 @@ export const createSocialPost = async (input: {
     content: post.content,
     images: post.images,
     locationId: post.locationId,
-    eventId: post.eventId,
+    activityId: post.activityId,
     authorId: post.authorId,
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,

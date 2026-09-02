@@ -24,7 +24,7 @@ export const visitorDashboardRedirect = (subpath: string): string => {
     case 'requests':
       return '/my-requests';
     case 'trips':
-      return '/trips?tab=mine';
+      return '/activities?tab=mine';
     case 'messages':
       return '/messages';
     case 'profile':
@@ -42,7 +42,8 @@ export const organizerDashboardRedirect = (subpath: string): string => {
       return '/organizer/requests';
     case 'trips':
     case 'events':
-      return '/organizer/events';
+    case 'activities':
+      return '/organizer/activities';
     case 'profile':
       return '/organizer/profile';
     default:
@@ -55,7 +56,8 @@ export const adminDashboardRedirect = (subpath: string): string => {
     case 'users':
       return '/admin/users';
     case 'events':
-      return '/admin/events';
+    case 'activities':
+      return '/admin/activities';
     case 'locations':
       return '/admin/locations';
     case 'settings':
@@ -69,12 +71,12 @@ export const adminDashboardRedirect = (subpath: string): string => {
 export const messagesRouteForRole = (
   role: UserRole,
   userId: string,
-  options?: { eventId?: string }
+  options?: { activityId?: string }
 ): string => {
   if (role === 'platform_admin') return '/admin/overview';
   if (role === 'merchant_admin') return '/messages';
   const params = new URLSearchParams({ to: userId });
-  if (options?.eventId) params.set('event', options.eventId);
+  if (options?.activityId) params.set('event', options.activityId);
   const query = params.toString();
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
     return `/organizer/messages?${query}`;

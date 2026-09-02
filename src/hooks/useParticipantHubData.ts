@@ -1,7 +1,7 @@
 import { useCallback, useMemo, type SetStateAction } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { EventDTO, ChatConversationDTO } from '@uaetrail/shared-types';
-import { api, EventRequestView, UserProfile, SocialGroupView } from '../api/services';
+import { ActivityDTO, ChatConversationDTO } from '@uaetrail/shared-types';
+import { api, ActivityRequestView, UserProfile, SocialGroupView } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { isUpcomingTrip, todayStart, upcomingTripsTotal } from '../utils/tripDates';
 
@@ -10,8 +10,8 @@ const participantHubKey = (userId: string) => ['participant-hub', userId] as con
 async function fetchParticipantHub() {
   const [profileRes, tripsRes, requestsRes, notifRes, convRes, groupsRes] = await Promise.all([
     api.getMeProfile(),
-    api.getMeTrips().catch(() => ({ data: [] as EventDTO[] })),
-    api.getMeRequests().catch(() => ({ data: [] as EventRequestView[] })),
+    api.getMeTrips().catch(() => ({ data: [] as ActivityDTO[] })),
+    api.getMeRequests().catch(() => ({ data: [] as ActivityRequestView[] })),
     api.getMeNotifications(1).catch(() => ({ data: [], unreadCount: 0, total: 0 })),
     api.getConversations().catch(() => ({ data: [] as ChatConversationDTO[] })),
     api.getMeGroups().catch(() => ({ data: [] as SocialGroupView[] })),

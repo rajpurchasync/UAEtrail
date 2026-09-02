@@ -78,7 +78,7 @@ export const WelcomeSignup = () => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/trips', { replace: true })}
+                onClick={() => navigate('/activities', { replace: true })}
                 className="w-full flex items-center gap-3 rounded-2xl border border-neutral-100 bg-neutral-50 px-4 py-3.5 text-left hover:bg-neutral-100 transition-colors"
               >
                 <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-emerald-600">

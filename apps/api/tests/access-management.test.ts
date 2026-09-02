@@ -74,7 +74,7 @@ describe('access management', () => {
     expect(disabledMember.isActive).toBe(false);
 
     const blockedEventsRes = await request(app)
-      .get('/api/v1/organizer/events')
+      .get('/api/v1/host/activities')
       .set('Authorization', `Bearer ${teammate.accessToken}`)
       .set('x-tenant-id', tenant.id);
 

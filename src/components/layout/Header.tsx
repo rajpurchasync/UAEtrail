@@ -13,7 +13,7 @@ export const Header = () => {
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/discovery', label: 'Trails and Spots' },
-    { to: '/trips', label: 'Trips' },
+    { to: '/activities', label: 'Activities' },
     { to: '/shop', label: 'Shop' },
     { to: '/community', label: 'Community' },
     ...(MEMBERSHIP_NAV_LINK ? [MEMBERSHIP_NAV_LINK] : []),

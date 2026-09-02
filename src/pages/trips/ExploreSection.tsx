@@ -1,19 +1,52 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { fetchApiTrips } from '../../api/public';
 import { Trip } from '../../types';
 import { TripCard, EmptyTripsBanner } from '../../components/ui';
-import { ACTIVITY_TYPE_GROUP_LABELS } from '../../config/activityTypes';
+import {
+  ACTIVITY_TYPE_GROUP_LABELS,
+  ACTIVITY_TYPES,
+  parseActivityTypeParam,
+  type ActivityType,
+} from '../../config/activityTypes';
+import { FilterChips } from '../../components/mobile/FilterChips';
 import { FilterIconButton } from '../../components/mobile/FilterIconButton';
 import { ListBrowseLayout } from '../../components/layout/ListBrowseLayout';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 
-type TripFilterPill = 'hiking' | 'camping' | 'community_event' | 'free' | 'paid';
-const TRIP_FILTER_PILLS: TripFilterPill[] = ['hiking', 'camping', 'community_event', 'free', 'paid'];
+type TripFilterPill = 'hiking' | 'camping' | 'community_activity' | 'free' | 'paid';
+type ActivityBrowseFilter = 'all' | ActivityType;
+
+const TRIP_FILTER_PILLS: TripFilterPill[] = ['hiking', 'camping', 'community_activity', 'free', 'paid'];
+
+const activityFilterOptions = [
+  { key: 'all' as const, label: 'All' },
+  ...ACTIVITY_TYPES.map((type) => ({
+    key: type,
+    label: ACTIVITY_TYPE_GROUP_LABELS[type],
+  })),
+];
+
+const pillsForActivityFilter = (filter: ActivityBrowseFilter): Set<TripFilterPill> => {
+  const pills = new Set<TripFilterPill>(['free', 'paid']);
+  if (filter === 'all') {
+    ACTIVITY_TYPES.forEach((type) => pills.add(type));
+  } else {
+    pills.add(filter);
+  }
+  return pills;
+};
 
 export const ExploreSection = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activityFilter =
+    parseActivityTypeParam(searchParams.get('activity')) ?? ('all' as ActivityBrowseFilter);
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterPills, setFilterPills] = useState<Set<TripFilterPill>>(() => new Set(TRIP_FILTER_PILLS));
+  const [filterPills, setFilterPills] = useState<Set<TripFilterPill>>(() =>
+    pillsForActivityFilter(activityFilter)
+  );
   const [timeFilter, setTimeFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [showFilters, setShowFilters] = useState(false);
   const [tripSource, setTripSource] = useState<Trip[]>([]);
@@ -24,6 +57,17 @@ export const ExploreSection = () => {
     startDate: '',
     endDate: '',
   });
+
+  useEffect(() => {
+    setFilterPills(pillsForActivityFilter(activityFilter));
+  }, [activityFilter]);
+
+  const setActivityFilter = (filter: ActivityBrowseFilter) => {
+    const next = new URLSearchParams(searchParams);
+    if (filter === 'all') next.delete('activity');
+    else next.set('activity', filter);
+    setSearchParams(next, { replace: true });
+  };
 
   useEffect(() => {
     if (!showFilters) return;
@@ -55,7 +99,7 @@ export const ExploreSection = () => {
         const d = new Date(trip.date);
         if (trip.activityType === 'hiking' && !filterPills.has('hiking')) return false;
         if (trip.activityType === 'camping' && !filterPills.has('camping')) return false;
-        if (trip.activityType === 'community_event' && !filterPills.has('community_event')) return false;
+        if (trip.activityType === 'community_activity' && !filterPills.has('community_activity')) return false;
         const isFree = trip.price === 0;
         if (isFree && !filterPills.has('free')) return false;
         if (!isFree && !filterPills.has('paid')) return false;
@@ -87,7 +131,7 @@ export const ExploreSection = () => {
   const filterOptionLabel: Record<TripFilterPill, string> = {
     hiking: ACTIVITY_TYPE_GROUP_LABELS.hiking,
     camping: ACTIVITY_TYPE_GROUP_LABELS.camping,
-    community_event: ACTIVITY_TYPE_GROUP_LABELS.community_event,
+    community_activity: ACTIVITY_TYPE_GROUP_LABELS.community_activity,
     free: 'Free',
     paid: 'Paid',
   };
@@ -101,13 +145,14 @@ export const ExploreSection = () => {
   const clearFilters = () => {
     setFilters({ regions: [], startDate: '', endDate: '' });
     setSearchQuery('');
-    setFilterPills(new Set(TRIP_FILTER_PILLS));
+    setActivityFilter('all');
   };
 
   const activeFilterCount =
     filters.regions.length +
     (filters.startDate ? 1 : 0) +
     (filters.endDate ? 1 : 0) +
+    (activityFilter !== 'all' ? 1 : 0) +
     (TRIP_FILTER_PILLS.length - filterPills.size);
 
   const filterPanel = (
@@ -127,7 +172,7 @@ export const ExploreSection = () => {
           Activity
         </h3>
         <div className="space-y-1.5">
-          {(['hiking', 'camping', 'community_event'] as const).map((pill) => (
+          {(['hiking', 'camping', 'community_activity'] as const).map((pill) => (
             <label key={pill} className="flex items-center min-h-[36px] cursor-pointer">
               <input
                 type="checkbox"
@@ -209,6 +254,12 @@ export const ExploreSection = () => {
       <p className="text-sm text-neutral-500 mb-3">
         Scheduled activities you can join — hiking, camping, and community events hosted by verified organizers.
       </p>
+      <FilterChips
+        className="mb-4"
+        options={activityFilterOptions}
+        value={activityFilter}
+        onChange={setActivityFilter}
+      />
       <div className="flex items-center gap-2 mb-4">
         <AppSegmented
           className="shrink-0"

@@ -35,17 +35,17 @@ export type LocationStatus = (typeof LocationStatus)[keyof typeof LocationStatus
 export const ActivityType = {
   HIKING: 'HIKING',
   CAMPING: 'CAMPING',
-  COMMUNITY_EVENT: 'COMMUNITY_EVENT'
+  COMMUNITY_ACTIVITY: 'COMMUNITY_ACTIVITY'
 } as const;
 export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType];
 
-export const EventStatus = {
+export const ActivityStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED',
   CANCELLED: 'CANCELLED',
   SUSPENDED: 'SUSPENDED'
 } as const;
-export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus];
+export type ActivityStatus = (typeof ActivityStatus)[keyof typeof ActivityStatus];
 
 export const RequestStatus = {
   PENDING: 'PENDING',
@@ -92,7 +92,7 @@ export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 export const NotificationType = {
   REQUEST_UPDATE: 'REQUEST_UPDATE',
   SYSTEM: 'SYSTEM',
-  EVENT: 'EVENT',
+  ACTIVITY: 'ACTIVITY',
   REVIEW_PROMPT: 'REVIEW_PROMPT'
 } as const;
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
@@ -116,8 +116,8 @@ export const RewardAction = {
   REFERRAL_BONUS_JOINER: 'REFERRAL_BONUS_JOINER',
   LOCATION_SUBMITTED: 'LOCATION_SUBMITTED',
   LOCATION_PUBLISHED: 'LOCATION_PUBLISHED',
-  EVENT_PUBLISHED: 'EVENT_PUBLISHED',
-  EVENT_HOSTED: 'EVENT_HOSTED',
+  ACTIVITY_PUBLISHED: 'ACTIVITY_PUBLISHED',
+  ACTIVITY_HOSTED: 'ACTIVITY_HOSTED',
   TRIP_ATTENDED: 'TRIP_ATTENDED',
   COMMUNITY_POST: 'COMMUNITY_POST',
   COMMUNITY_REPLY: 'COMMUNITY_REPLY',

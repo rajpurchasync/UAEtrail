@@ -2,7 +2,7 @@ import {
   Accessibility,
   ActivityType,
   Difficulty,
-  EventStatus,
+  ActivityStatus,
   LocationStatus,
   NotificationType,
   OrganizerApplicationStatus,
@@ -13,13 +13,12 @@ import {
   UserRole,
   UserStatus
 } from '../domain/enums.js';
-import { assertLocationMatchesActivityType } from '../domain/activity-type.js';
 import { Router } from 'express';
 import { z } from 'zod';
+import { mountActivityRoutes } from '../lib/activity-routes.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
-import { parseLocalDateTime } from '../lib/datetime.js';
-import { toLocationDto, buildEventDto } from '../lib/mappers.js';
+import { toLocationDto, buildActivityDto } from '../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { revokeRefreshTokensByUser } from '../lib/auth-tokens.js';
 import { adminUserTypeFilter, resolveAdminUserType } from '../lib/user-type.js';
@@ -32,7 +31,6 @@ import {
   findAdminEventById,
   findAdminEventDetailedById,
   findAdminLocationById,
-  findAdminLocationByIdForEventCreate,
   findAdminProductById,
   findAdminTenantById,
   findAdminTenantDetailedById,
@@ -49,7 +47,7 @@ import {
   listTenantMembershipsForUser,
   listUserOwnedTenantsBasic,
   toggleAdminEventFeatured,
-  updateAdminEventStatus,
+  updateAdminActivityStatus,
   updateAdminLocation,
   updateAdminProductStatus,
   updateAdminTenantStatus
@@ -59,7 +57,7 @@ import {
   countPendingEventRequests,
   listUserEventParticipantsBasic,
   listUserEventRequestsBasic
-} from '../lib/event-engagement-store.js';
+} from '../lib/activity-engagement-store.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { requireRole } from '../middleware/rbac.js';
 import { validate } from '../middleware/validate.js';
@@ -86,7 +84,7 @@ import {
 const locationCreateSchema = z.object({
   name: z.string().min(2),
   region: z.string().min(2),
-  activityType: z.enum(['hiking', 'camping', 'community_event']),
+  activityType: z.enum(['hiking', 'camping', 'COMMUNITY_ACTIVITY']),
   description: z.string().min(20),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
   season: z.array(z.string()).min(1),
@@ -146,10 +144,10 @@ const eventModerationSchema = suspendCommentSchema.extend({
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
-const toPrismaActivityType = (activityType: 'hiking' | 'camping' | 'community_event'): ActivityType => {
+const toPrismaActivityType = (activityType: 'hiking' | 'camping' | 'COMMUNITY_ACTIVITY'): ActivityType => {
   if (activityType === 'hiking') return ActivityType.HIKING;
   if (activityType === 'camping') return ActivityType.CAMPING;
-  return ActivityType.COMMUNITY_EVENT;
+  return ActivityType.COMMUNITY_ACTIVITY;
 };
 
 const toPrismaDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {
@@ -259,7 +257,7 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
       const longitude = body.longitude !== undefined ? body.longitude : existing.longitude;
 
       if (
-        (activityType === ActivityType.HIKING || activityType === ActivityType.COMMUNITY_EVENT) &&
+        (activityType === ActivityType.HIKING || activityType === ActivityType.COMMUNITY_ACTIVITY) &&
         !difficulty
       ) {
         throw new ApiError(
@@ -450,72 +448,11 @@ adminRouter.patch(
   }
 );
 
-// ─── Admin Event Creation ───────────────────────────────────────────────────
+// Activity creation for platform admins uses POST/PATCH /host/activities with x-tenant-id.
 
-const adminEventCreateSchema = z.object({
-  activityType: z.enum(['hiking', 'camping', 'community_event']),
-  tenantId: z.string().min(1),
-  locationId: z.string().min(1),
-  title: z.string().min(4).max(120),
-  description: z.string().min(20),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  time: z.string().regex(/^\d{2}:\d{2}$/),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-  meetingPoint: z.string().max(200).optional(),
-  itinerary: z.array(z.string()).default([]),
-  requirements: z.array(z.string()).default([]),
-  price: z.number().int().min(0).default(0),
-  capacity: z.number().int().positive(),
-  images: z.array(z.string().url()).default([])
-});
+const adminActivitiesRouter = Router();
 
-adminRouter.post('/events', validate({ body: adminEventCreateSchema }), async (req, res, next) => {
-  try {
-    const body = req.body as z.infer<typeof adminEventCreateSchema>;
-    const tenant = await findAdminTenantById(body.tenantId);
-    if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
-    const location = await findAdminLocationByIdForEventCreate(body.locationId);
-    if (!location) throw new ApiError(404, 'location_not_found', 'Location not found.');
-    assertLocationMatchesActivityType(location.activityType, body.activityType);
-
-    const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
-    const startAt = parseLocalDateTime(body.date, body.time, countryCode);
-    const endAt = body.endDate && body.endTime ? parseLocalDateTime(body.endDate, body.endTime, countryCode) : undefined;
-
-    const event = await createAdminPublishedEvent({
-      tenantId: body.tenantId,
-      locationId: body.locationId,
-      createdById: req.auth!.userId,
-      title: body.title,
-      description: body.description,
-      startAt,
-      endAt,
-      meetingPoint: body.meetingPoint,
-      itinerary: body.itinerary,
-      requirements: body.requirements,
-      priceAed: body.price,
-      capacity: body.capacity,
-      images: body.images
-    });
-
-    await createAuditLog({
-      actorId: req.auth!.userId,
-      action: 'event.admin_create',
-      entityType: 'event',
-      entityId: event.id,
-      tenantId: event.tenantId
-    });
-
-    res.status(201).json({
-      data: buildEventDto({ ...event, participants: [] })
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-adminRouter.get('/events/moderation', async (req, res, next) => {
+adminActivitiesRouter.get('/moderation', async (req, res, next) => {
   try {
     const pg = paginationSchema.parse(req.query);
     const { items: events, total } = await listAdminModerationEventsPaged({
@@ -523,7 +460,7 @@ adminRouter.get('/events/moderation', async (req, res, next) => {
       take: pg.pageSize
     });
     res.json(paginatedResponse(
-      events.map((event) => buildEventDto(event)),
+      events.map((event) => buildActivityDto(event)),
       total,
       pg
     ));
@@ -532,21 +469,21 @@ adminRouter.get('/events/moderation', async (req, res, next) => {
   }
 });
 
-adminRouter.get('/events/:id', validate({ params: idParamSchema }), async (req, res, next) => {
+adminActivitiesRouter.get('/:id', validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const event = await findAdminEventDetailedById(id);
     if (!event) {
-      throw new ApiError(404, 'event_not_found', 'Event not found.');
+      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
-    res.json({ data: buildEventDto(event) });
+    res.json({ data: buildActivityDto(event) });
   } catch (error) {
     next(error);
   }
 });
 
-adminRouter.patch(
-  '/events/moderation/:id',
+adminActivitiesRouter.patch(
+  '/moderation/:id',
   validate({ params: idParamSchema, body: eventModerationSchema }),
   async (req, res, next) => {
     try {
@@ -554,16 +491,16 @@ adminRouter.patch(
       const { action, comment } = req.body as z.infer<typeof eventModerationSchema>;
       const event = await findAdminEventById(id);
       if (!event) {
-        throw new ApiError(404, 'event_not_found', 'Event not found.');
+        throw new ApiError(404, 'activity_not_found', 'Activity not found.');
       }
 
-      const status = action === 'suspend' ? EventStatus.SUSPENDED : EventStatus.PUBLISHED;
-      await updateAdminEventStatus(event.id, status);
+      const status = action === 'suspend' ? ActivityStatus.SUSPENDED : ActivityStatus.PUBLISHED;
+      await updateAdminActivityStatus(event.id, status);
 
       await createAuditLog({
         actorId: req.auth!.userId,
         action: `event.${action}`,
-        entityType: 'event',
+        entityType: 'activity',
         entityId: event.id,
         tenantId: event.tenantId,
         metadata: comment ? { comment } : undefined
@@ -572,15 +509,15 @@ adminRouter.patch(
       if (action === 'suspend' && event.createdById) {
         await notifyUserAdminAction({
           userId: event.createdById,
-          title: 'Event suspended',
+          title: 'Activity suspended',
           body: comment
-            ? `Your event "${event.title}" has been suspended. Reason: ${comment}`
-            : `Your event "${event.title}" has been suspended by an administrator.`,
-          meta: { kind: 'event_suspended', eventId: event.id, path: '/organizer/events' }
+            ? `Your activity "${event.title}" has been suspended. Reason: ${comment}`
+            : `Your activity "${event.title}" has been suspended by an administrator.`,
+          meta: { kind: 'activity_suspended', activityId: event.id, path: '/organizer/activities' }
         });
       }
 
-      res.json({ message: `Event ${action}ed successfully.` });
+      res.json({ message: `Activity ${action}ed successfully.` });
     } catch (error) {
       next(error);
     }
@@ -589,15 +526,15 @@ adminRouter.patch(
 
 // ─── Toggle Featured Event ──────────────────────────────────────────────────
 
-adminRouter.patch(
-  '/events/:id/featured',
+adminActivitiesRouter.patch(
+  '/:id/featured',
   validate({ params: idParamSchema }),
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof idParamSchema>;
       const event = await findAdminEventById(id);
       if (!event) {
-        throw new ApiError(404, 'event_not_found', 'Event not found.');
+        throw new ApiError(404, 'activity_not_found', 'Activity not found.');
       }
 
       const updated = await toggleAdminEventFeatured(event.id, !event.featured);
@@ -605,17 +542,19 @@ adminRouter.patch(
       await createAuditLog({
         actorId: req.auth!.userId,
         action: updated.featured ? 'event.feature' : 'event.unfeature',
-        entityType: 'event',
+        entityType: 'activity',
         entityId: event.id,
         tenantId: event.tenantId
       });
 
-      res.json({ message: `Event ${updated.featured ? 'featured' : 'unfeatured'} successfully.`, featured: updated.featured });
+      res.json({ message: `Activity ${updated.featured ? 'featured' : 'unfeatured'} successfully.`, featured: updated.featured });
     } catch (error) {
       next(error);
     }
   }
 );
+
+mountActivityRoutes(adminRouter, adminActivitiesRouter);
 
 adminRouter.get('/metrics', async (_req, res, next) => {
   try {
@@ -633,7 +572,7 @@ adminRouter.get('/metrics', async (_req, res, next) => {
     res.json({
       data: {
         tenants: metrics.tenantCount,
-        events: metrics.eventCount,
+        events: metrics.activityCount,
         pendingApplications: metrics.pendingApplications,
         pendingRequests,
         totalUsers,
@@ -788,8 +727,8 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
       getUserLeaderboardRank(id)
     ]);
 
-    const requestEventIds = [...new Set(requests.map((request) => request.eventId))];
-    const participantEventIds = [...new Set(participants.map((participant) => participant.eventId))];
+    const requestEventIds = [...new Set(requests.map((request) => request.activityId))];
+    const participantEventIds = [...new Set(participants.map((participant) => participant.activityId))];
 
     const [requestEvents, participantEvents] = await Promise.all([
       requestEventIds.length > 0
@@ -855,17 +794,17 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
         },
         requests: requests.reduce<Array<{
           id: string;
-          eventId: string;
+          activityId: string;
           eventTitle: string | null;
           locationName: string;
           status: string;
           createdAt: Date;
         }>>((acc, r) => {
-          const event = requestEventMap.get(r.eventId);
+          const event = requestEventMap.get(r.activityId);
           if (!event) return acc;
           acc.push({
             id: r.id,
-            eventId: r.eventId,
+            activityId: r.activityId,
             eventTitle: event.title,
             locationName: event.location.name,
             status: r.status.toLowerCase(),
@@ -874,17 +813,17 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
           return acc;
         }, []),
         trips: participants.reduce<Array<{
-          eventId: string;
+          activityId: string;
           eventTitle: string | null;
           locationName: string;
           organizerName: string;
           date: string;
           checkedInAt: Date | null;
         }>>((acc, p) => {
-          const event = participantEventMap.get(p.eventId);
+          const event = participantEventMap.get(p.activityId);
           if (!event) return acc;
           acc.push({
-            eventId: p.eventId,
+            activityId: p.activityId,
             eventTitle: event.title,
             locationName: event.location.name,
             organizerName: event.tenant.name,
@@ -968,7 +907,7 @@ adminRouter.get('/tenants', async (req, res, next) => {
         ownerName: t.owner.profile?.displayName ?? t.owner.email,
         ownerEmail: t.owner.email,
         memberCount: t._count.memberships,
-        eventCount: t._count.events,
+        activityCount: t._count.events,
         createdAt: t.createdAt
       })),
       total,

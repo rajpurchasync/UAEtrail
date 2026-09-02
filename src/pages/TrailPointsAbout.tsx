@@ -62,7 +62,7 @@ const QUICK_WINS = [
     title: 'Join a trip',
     hook: 'Show up, check in, earn +30',
     points: '+30',
-    path: '/trips',
+    path: '/activities',
     label: 'Find a trip',
   },
   {

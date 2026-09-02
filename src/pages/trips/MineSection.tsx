@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { EventDTO } from '@uaetrail/shared-types';
-import { api, EventRequestView } from '../../api/services';
+import { ActivityDTO } from '@uaetrail/shared-types';
+import { api, ActivityRequestView } from '../../api/services';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { ShareButton, OrganizerMessageButton } from '../../components/ui';
 import { organizerProfilePath } from '../../utils/organizerLinks';
@@ -10,8 +10,8 @@ import { showTenantBrand, tripHostName } from '../../utils/hostLabels';
 
 export const MineSection = ({ onExplore }: { onExplore: () => void }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [trips, setTrips] = useState<EventDTO[]>([]);
-  const [requests, setRequests] = useState<EventRequestView[]>([]);
+  const [trips, setTrips] = useState<ActivityDTO[]>([]);
+  const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const subTab = searchParams.get('sub') === 'past' ? 'past' : 'upcoming';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,8 +43,8 @@ export const MineSection = ({ onExplore }: { onExplore: () => void }) => {
   );
 
   type UpcomingRow =
-    | { kind: 'confirmed'; date: string; trip: EventDTO }
-    | { kind: 'requested'; date: string; request: EventRequestView };
+    | { kind: 'confirmed'; date: string; trip: ActivityDTO }
+    | { kind: 'requested'; date: string; request: ActivityRequestView };
 
   const upcomingRows = useMemo<UpcomingRow[]>(() => {
     const rows: UpcomingRow[] = [
@@ -121,7 +121,7 @@ export const MineSection = ({ onExplore }: { onExplore: () => void }) => {
   );
 };
 
-const JoinedTripCard = ({ trip, variant }: { trip: EventDTO; variant: 'confirmed' | 'past' }) => {
+const JoinedTripCard = ({ trip, variant }: { trip: ActivityDTO; variant: 'confirmed' | 'past' }) => {
   const upcoming = isUpcomingTrip(trip);
   return (
     <Link to={`/trip/${trip.id}`} className="glass-card-interactive block p-4">
@@ -176,7 +176,7 @@ const JoinedTripCard = ({ trip, variant }: { trip: EventDTO; variant: 'confirmed
             )}
             <OrganizerMessageButton
               organizerUserId={trip.hostUserId ?? trip.organizerUserId}
-              eventId={trip.id}
+              activityId={trip.id}
             />
           </div>
         )}
@@ -199,29 +199,29 @@ const JoinedTripCard = ({ trip, variant }: { trip: EventDTO; variant: 'confirmed
   );
 };
 
-const JoinedRequestCard = ({ request }: { request: EventRequestView }) => {
+const JoinedRequestCard = ({ request }: { request: ActivityRequestView }) => {
   const date = getRequestEventDate(request);
   return (
     <Link to={`/my-requests/${request.id}`} className="glass-card-interactive block p-4 ring-1 ring-amber-200/60">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="font-semibold text-neutral-900 truncate">
-            {request.event.title || request.event.locationName}
+            {request.activity.title || request.activity.locationName}
           </h3>
-          {request.event.title && (
-            <p className="text-xs text-neutral-500 truncate">{request.event.locationName}</p>
+          {request.activity.title && (
+            <p className="text-xs text-neutral-500 truncate">{request.activity.locationName}</p>
           )}
           <p className="text-sm text-neutral-600 mt-1">
             {date || 'Date TBC'}
-            {request.event.time ? ` · ${request.event.time}` : ''}
+            {request.activity.time ? ` · ${request.activity.time}` : ''}
           </p>
         </div>
         {date && (
           <div className="flex flex-col items-end gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
             <ShareButton
-              title={request.event.title || request.event.locationName}
+              title={request.activity.title || request.activity.locationName}
               text={`${date} · trip on UAE Trails`}
-              path={`/trip/${request.event.id}`}
+              path={`/trip/${request.activity.id}`}
               iconOnly
               light
             />
@@ -229,24 +229,24 @@ const JoinedRequestCard = ({ request }: { request: EventRequestView }) => {
           </div>
         )}
       </div>
-      {(request.event.hostName ?? request.event.organizerName) && (
+      {(request.activity.hostName ?? request.activity.organizerName) && (
         <div className="flex items-center gap-2 mt-3">
-          {organizerProfilePath(request.event.tenantSlug) ? (
+          {organizerProfilePath(request.activity.tenantSlug) ? (
             <Link
-              to={organizerProfilePath(request.event.tenantSlug)!}
+              to={organizerProfilePath(request.activity.tenantSlug)!}
               className="text-xs text-neutral-500 hover:text-emerald-700 transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
-              Hosted by {request.event.hostName ?? request.event.organizerName}
+              Hosted by {request.activity.hostName ?? request.activity.organizerName}
             </Link>
           ) : (
             <p className="text-xs text-neutral-500">
-              Hosted by {request.event.hostName ?? request.event.organizerName}
+              Hosted by {request.activity.hostName ?? request.activity.organizerName}
             </p>
           )}
           <OrganizerMessageButton
-            organizerUserId={request.event.organizerUserId}
-            eventId={request.event.id}
+            organizerUserId={request.activity.organizerUserId}
+            activityId={request.activity.id}
           />
         </div>
       )}

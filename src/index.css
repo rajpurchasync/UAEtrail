@@ -450,4 +450,8 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .leaflet-control-attribution {
+    display: none !important;
+  }
 }
