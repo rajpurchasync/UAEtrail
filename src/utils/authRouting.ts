@@ -41,7 +41,6 @@ export const organizerDashboardRedirect = (subpath: string): string => {
     case 'requests':
       return '/organizer/requests';
     case 'trips':
-    case 'events':
     case 'activities':
       return '/organizer/activities';
     case 'profile':
@@ -55,7 +54,6 @@ export const adminDashboardRedirect = (subpath: string): string => {
   switch (subpath) {
     case 'users':
       return '/admin/users';
-    case 'events':
     case 'activities':
       return '/admin/activities';
     case 'locations':
@@ -76,7 +74,7 @@ export const messagesRouteForRole = (
   if (role === 'platform_admin') return '/admin/overview';
   if (role === 'merchant_admin') return '/messages';
   const params = new URLSearchParams({ to: userId });
-  if (options?.activityId) params.set('event', options.activityId);
+  if (options?.activityId) params.set('activity', options.activityId);
   const query = params.toString();
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
     return `/organizer/messages?${query}`;

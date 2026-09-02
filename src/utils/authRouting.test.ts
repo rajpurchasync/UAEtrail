@@ -52,14 +52,14 @@ describe('auth routing by role', () => {
     expect(organizerDashboardRedirect('messages')).toBe('/organizer/messages');
     expect(organizerDashboardRedirect('requests')).toBe('/organizer/requests');
     expect(organizerDashboardRedirect('trips')).toBe('/organizer/activities');
-    expect(organizerDashboardRedirect('events')).toBe('/organizer/activities');
+    expect(organizerDashboardRedirect('activities')).toBe('/organizer/activities');
     expect(organizerDashboardRedirect('profile')).toBe('/organizer/profile');
     expect(organizerDashboardRedirect('unknown')).toBe('/organizer/overview');
   });
 
   it('maps admin dashboard aliases', () => {
     expect(adminDashboardRedirect('users')).toBe('/admin/users');
-    expect(adminDashboardRedirect('events')).toBe('/admin/activities');
+    expect(adminDashboardRedirect('activities')).toBe('/admin/activities');
     expect(adminDashboardRedirect('locations')).toBe('/admin/locations');
     expect(adminDashboardRedirect('settings')).toBe('/admin/settings');
     expect(adminDashboardRedirect('unknown')).toBe('/admin/overview');
