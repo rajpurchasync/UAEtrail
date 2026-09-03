@@ -384,6 +384,8 @@ export const api = {
   getMeRequests: () => apiRequest<{ data: ActivityRequestView[] }>('/me/requests?pageSize=100', { auth: true }),
   getMeRequest: (requestId: string) =>
     apiRequest<{ data: ActivityRequestView }>(`/me/requests/${requestId}`, { auth: true }),
+  getMeActivities: () => apiRequest<{ data: MyTripDTO[] }>('/me/activities', { auth: true }),
+  /** @deprecated Use getMeActivities */
   getMeTrips: () => apiRequest<{ data: MyTripDTO[] }>('/me/trips', { auth: true }),
   getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
   updateMeProfile: (payload: UserProfile) =>

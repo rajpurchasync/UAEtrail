@@ -26,7 +26,7 @@ export const MineSection = ({ onExplore }: { onExplore: () => void }) => {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([api.getMeTrips(), api.getMeRequests()])
+    Promise.all([api.getMeActivities(), api.getMeRequests()])
       .then(([tripsRes, requestsRes]) => {
         setTrips(tripsRes.data);
         setRequests(requestsRes.data);

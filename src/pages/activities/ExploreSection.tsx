@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal } from 'lucide-react';
-import { fetchApiTrips } from '../../api/public';
+import { fetchApiActivities } from '../../api/public';
 import { Trip } from '../../types';
 import { ActivityCard, EmptyActivitiesBanner } from '../../components/ui';
 import {
@@ -81,7 +81,7 @@ export const ExploreSection = () => {
   useEffect(() => {
     setLoading(true);
     setLoadError(null);
-    fetchApiTrips(timeFilter)
+    fetchApiActivities(timeFilter)
       .then((items) => setTripSource(items))
       .catch((err) => {
         setTripSource([]);

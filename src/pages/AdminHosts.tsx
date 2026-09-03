@@ -10,7 +10,7 @@ import { formatPhoneDisplay } from '../utils/phone';
 type Tab = 'applications' | 'tenants';
 type TenantFilter = 'all' | 'active' | 'suspended';
 
-export const AdminOrganizers = () => {
+export const AdminHosts = () => {
   const [tab, setTab] = useState<Tab>('applications');
   const [tenantFilter, setTenantFilter] = useState<TenantFilter>('all');
   const [applications, setApplications] = useState<HostApplication[]>([]);
@@ -538,3 +538,6 @@ export const AdminOrganizers = () => {
     </DashboardLayout>
   );
 };
+
+/** @deprecated Use AdminHosts */
+export const AdminOrganizers = AdminHosts;

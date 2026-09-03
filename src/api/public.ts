@@ -169,10 +169,13 @@ export const fetchPublicMappedData = async (): Promise<{
   return { trails, camps, communityActivities, trips };
 };
 
-export const fetchApiTrips = async (when: 'upcoming' | 'past' = 'upcoming'): Promise<Trip[]> => {
+export const fetchApiActivities = async (when: 'upcoming' | 'past' = 'upcoming'): Promise<Trip[]> => {
   const events = await api.getPublicActivities({ when, pageSize: 100 });
   return events.data.map(mapActivityToTrip);
 };
+
+/** @deprecated Use fetchApiActivities */
+export const fetchApiTrips = fetchApiActivities;
 
 export const fetchApiLocations = async (countryCode?: string): Promise<{
   trails: Trail[];
@@ -189,10 +192,13 @@ export const fetchApiLocations = async (countryCode?: string): Promise<{
   };
 };
 
-export const fetchApiTripDetail = async (id: string) => {
+export const fetchApiActivityDetail = async (id: string) => {
   const response = await api.getPublicActivityDetail(id);
   return response.data;
 };
+
+/** @deprecated Use fetchApiActivityDetail */
+export const fetchApiTripDetail = fetchApiActivityDetail;
 
 export const fetchApiLocationDetail = async (
   id: string

@@ -18,7 +18,7 @@ export { WelcomeSignup } from './WelcomeSignup';
 export { ForgotPassword } from './ForgotPassword';
 export { AdminOverview } from './AdminOverview';
 export { AdminLocations } from './AdminLocations';
-export { AdminOrganizers } from './AdminOrganizers';
+export { AdminHosts, AdminOrganizers } from './AdminHosts';
 export { AdminActivities } from './AdminActivities';
 export { AdminUsers } from './AdminUsers';
 export { AdminGroups } from './AdminGroups';

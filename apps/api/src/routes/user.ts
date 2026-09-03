@@ -1,5 +1,5 @@
 import { ActivityType, LocationUnlockSource, NotificationType, HostApplicationStatus, RequestStatus, RewardAction, UserRole } from '../domain/enums.js';
-import { Router } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { registerActivityRoute } from '../lib/activity-routes.js';
 import { ApiError } from '../lib/api-error.js';
@@ -901,7 +901,7 @@ userRouter.get('/me/requests', async (req, res, next) => {
   }
 });
 
-userRouter.get('/me/trips', async (req, res, next) => {
+const listMyActivitiesHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const pg = paginationSchema.parse(req.query);
     const [participantEntries, total] = await Promise.all([
@@ -917,7 +917,7 @@ userRouter.get('/me/trips', async (req, res, next) => {
     const events = eventIds.length > 0 ? await listActivitiesForTripViews(eventIds) : [];
     const eventMap = new Map(events.map((event) => [event.id, event]));
 
-    const tripViews = participantEntries.reduce<Array<ReturnType<typeof buildActivityDto> & { participation: ReturnType<typeof buildParticipationDto> }>>((acc, entry) => {
+    const activityViews = participantEntries.reduce<Array<ReturnType<typeof buildActivityDto> & { participation: ReturnType<typeof buildParticipationDto> }>>((acc, entry) => {
       const event = eventMap.get(entry.activityId);
       if (!event) return acc;
       acc.push({
@@ -928,14 +928,18 @@ userRouter.get('/me/trips', async (req, res, next) => {
     }, []);
 
     res.json(paginatedResponse(
-      tripViews,
+      activityViews,
       total,
       pg
     ));
   } catch (error) {
     next(error);
   }
-});
+};
+
+userRouter.get('/me/activities', listMyActivitiesHandler);
+/** @deprecated Use GET /me/activities */
+userRouter.get('/me/trips', listMyActivitiesHandler);
 
 userRouter.get('/me/profile', async (req, res, next) => {
   try {

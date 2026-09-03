@@ -10,7 +10,7 @@ const participantHubKey = (userId: string) => ['participant-hub', userId] as con
 async function fetchParticipantHub() {
   const [profileRes, tripsRes, requestsRes, notifRes, convRes, groupsRes] = await Promise.all([
     api.getMeProfile(),
-    api.getMeTrips().catch(() => ({ data: [] as ActivityDTO[] })),
+    api.getMeActivities().catch(() => ({ data: [] as ActivityDTO[] })),
     api.getMeRequests().catch(() => ({ data: [] as ActivityRequestView[] })),
     api.getMeNotifications(1).catch(() => ({ data: [], unreadCount: 0, total: 0 })),
     api.getConversations().catch(() => ({ data: [] as ChatConversationDTO[] })),

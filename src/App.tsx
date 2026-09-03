@@ -38,7 +38,7 @@ const WelcomeSignup = lazy(() => import('./pages/WelcomeSignup').then((m) => ({ 
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 const AdminOverview = lazy(() => import('./pages/AdminOverview').then((m) => ({ default: m.AdminOverview })));
 const AdminLocations = lazy(() => import('./pages/AdminLocations').then((m) => ({ default: m.AdminLocations })));
-const AdminOrganizers = lazy(() => import('./pages/AdminOrganizers').then((m) => ({ default: m.AdminOrganizers })));
+const AdminHosts = lazy(() => import('./pages/AdminHosts').then((m) => ({ default: m.AdminHosts })));
 const AdminActivities = lazy(() => import('./pages/AdminActivities').then((m) => ({ default: m.AdminActivities })));
 const AdminUsers = lazy(() => import('./pages/AdminUsers').then((m) => ({ default: m.AdminUsers })));
 const AdminGroups = lazy(() => import('./pages/AdminGroups').then((m) => ({ default: m.AdminGroups })));
@@ -317,7 +317,7 @@ function App() {
             path="/admin/hosts"
             element={
               <ProtectedRoute roles={['platform_admin']}>
-                <AdminOrganizers />
+                <AdminHosts />
               </ProtectedRoute>
             }
           />

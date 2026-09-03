@@ -2,7 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   adminDashboardRedirect,
-  organizerDashboardRedirect,
+  hostDashboardRedirect,
   participantDashboardRedirect
 } from '../../utils/authRouting';
 
@@ -25,7 +25,7 @@ export const DashboardRedirect = () => {
     return <Navigate to={`/merchant/dashboard${search}`} replace />;
   }
   if (user.role === 'tenant_owner' || user.role === 'tenant_admin' || user.role === 'tenant_guide') {
-    return <Navigate to={`${organizerDashboardRedirect(subpath)}${search}`} replace />;
+    return <Navigate to={`${hostDashboardRedirect(subpath)}${search}`} replace />;
   }
 
   return <Navigate to={`/profile${search}`} replace />;
