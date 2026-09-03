@@ -2,22 +2,22 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, TrendingUp, Clock, Mountain, Baby, ChevronRight } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
-import { TripCard, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
+import { ActivityCard, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
 import { LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { trailSchema } from '../components/seo/schemas';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { getDifficultyColor, capitalize } from '../utils';
-import { Trail, Trip } from '../types';
-import { fetchApiLocationDetail, mapActivityToTrip } from '../api/public';
+import { Trail, ActivityListing } from '../types';
+import { fetchApiLocationDetail, mapActivityToListing } from '../api/public';
 import { api } from '../api/services';
 
 export const TrailDetail = () => {
   const { id } = useParams();
   const [trail, setTrail] = useState<Trail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [trailTrips, setTrailTrips] = useState<Trip[]>([]);
+  const [trailActivities, setTrailActivities] = useState<ActivityListing[]>([]);
   const [trailReviews, setTrailReviews] = useState<ReviewDTO[]>([]);
   const [premium, setPremium] = useState<LocationPremiumSummaryDTO | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -34,7 +34,7 @@ export const TrailDetail = () => {
       .then(([locResult, eventsRes, reviewsRes]) => {
         setTrail(locResult.trail ?? null);
         setPremium(locResult.premium ?? null);
-        setTrailTrips(eventsRes.data.map(mapActivityToTrip));
+        setTrailActivities(eventsRes.data.map(mapActivityToListing));
         setTrailReviews(reviewsRes.data);
       })
       .catch(() => setTrail(null))
@@ -221,7 +221,7 @@ export const TrailDetail = () => {
             </Link>
           </div>
 
-          {trailTrips.length === 0 ? (
+          {trailActivities.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <p className="text-gray-600">No upcoming trips scheduled for this trail yet.</p>
               <Link to="/activities" className="text-emerald-600 hover:text-emerald-700 mt-2 inline-block">
@@ -230,8 +230,8 @@ export const TrailDetail = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trailTrips.map((trip) => (
-                <TripCard key={trip.id} trip={trip} />
+              {trailActivities.map((activity) => (
+                <ActivityCard key={activity.id} activity={activity} />
               ))}
             </div>
           )}

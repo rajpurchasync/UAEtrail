@@ -10,7 +10,7 @@ export const HostRequests = () => {
   const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [decisionModal, setDecisionModal] = useState<{ request: ActivityRequestView; action: 'approved' | 'rejected' } | null>(null);
-  const [organizerNote, setOrganizerNote] = useState('');
+  const [hostNote, setHostNote] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
   const loadRequests = async (activeTenantId: string) => {
@@ -30,9 +30,9 @@ export const HostRequests = () => {
   const submitDecision = async () => {
     if (!tenantId || !decisionModal) return;
     try {
-      await api.decideHostRequest(tenantId, decisionModal.request.id, decisionModal.action, organizerNote || undefined);
+      await api.decideHostRequest(tenantId, decisionModal.request.id, decisionModal.action, hostNote || undefined);
       setDecisionModal(null);
-      setOrganizerNote('');
+      setHostNote('');
       await loadRequests(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process request');
@@ -128,9 +128,9 @@ export const HostRequests = () => {
                   <td className="px-4 py-3">
                     {req.status === 'pending' ? (
                       <div className="flex gap-2">
-                        <button onClick={() => { setDecisionModal({ request: req, action: 'approved' }); setOrganizerNote(''); }}
+                        <button onClick={() => { setDecisionModal({ request: req, action: 'approved' }); setHostNote(''); }}
                           className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Approve</button>
-                        <button onClick={() => { setDecisionModal({ request: req, action: 'rejected' }); setOrganizerNote(''); }}
+                        <button onClick={() => { setDecisionModal({ request: req, action: 'rejected' }); setHostNote(''); }}
                           className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs">Reject</button>
                       </div>
                     ) : (
@@ -172,7 +172,7 @@ export const HostRequests = () => {
             </div>
 
             <label className="text-sm font-medium text-gray-700 mb-1 block">Response note (optional)</label>
-            <textarea value={organizerNote} onChange={(e) => setOrganizerNote(e.target.value)}
+            <textarea value={hostNote} onChange={(e) => setHostNote(e.target.value)}
               placeholder={decisionModal.action === 'approved' ? 'e.g. Welcome! Please bring hiking boots and water.' : 'e.g. Sorry, this event is already at capacity.'}
               className="w-full border rounded-lg px-3 py-2 text-sm mb-4" rows={3} />
 

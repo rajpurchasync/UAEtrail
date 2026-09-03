@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { fetchApiActivities } from '../../api/public';
-import { Trip } from '../../types';
+import { ActivityListing } from '../../types';
 import { ActivityCard, EmptyActivitiesBanner } from '../../components/ui';
 import {
   ACTIVITY_TYPE_GROUP_LABELS,
@@ -49,7 +49,7 @@ export const ExploreSection = () => {
   );
   const [timeFilter, setTimeFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [showFilters, setShowFilters] = useState(false);
-  const [tripSource, setTripSource] = useState<Trip[]>([]);
+  const [activitySource, setActivitySource] = useState<ActivityListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
@@ -82,29 +82,29 @@ export const ExploreSection = () => {
     setLoading(true);
     setLoadError(null);
     fetchApiActivities(timeFilter)
-      .then((items) => setTripSource(items))
+      .then((items) => setActivitySource(items))
       .catch((err) => {
-        setTripSource([]);
+        setActivitySource([]);
         setLoadError(err instanceof Error ? err.message : 'Failed to load activities');
       })
       .finally(() => setLoading(false));
   }, [timeFilter]);
 
   const showOffSeasonBanner =
-    !loading && timeFilter === 'upcoming' && tripSource.length === 0;
+    !loading && timeFilter === 'upcoming' && activitySource.length === 0;
 
-  const filteredTrips = useMemo(() => {
-    return tripSource
-      .filter((trip) => {
-        const d = new Date(trip.date);
-        if (trip.activityType === 'hiking' && !filterPills.has('hiking')) return false;
-        if (trip.activityType === 'camping' && !filterPills.has('camping')) return false;
-        if (trip.activityType === 'community_activity' && !filterPills.has('community_activity')) return false;
-        const isFree = trip.price === 0;
+  const filteredActivities = useMemo(() => {
+    return activitySource
+      .filter((activity) => {
+        const d = new Date(activity.date);
+        if (activity.activityType === 'hiking' && !filterPills.has('hiking')) return false;
+        if (activity.activityType === 'camping' && !filterPills.has('camping')) return false;
+        if (activity.activityType === 'community_activity' && !filterPills.has('community_activity')) return false;
+        const isFree = activity.price === 0;
         if (isFree && !filterPills.has('free')) return false;
         if (!isFree && !filterPills.has('paid')) return false;
-        if (searchQuery && !trip.locationName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-        if (filters.regions.length > 0 && !filters.regions.includes(trip.region ?? '')) return false;
+        if (searchQuery && !activity.locationName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+        if (filters.regions.length > 0 && !filters.regions.includes(activity.region ?? '')) return false;
         if (filters.startDate && d < new Date(filters.startDate)) return false;
         if (filters.endDate && d > new Date(filters.endDate)) return false;
         return true;
@@ -114,7 +114,7 @@ export const ExploreSection = () => {
           ? new Date(a.date).getTime() - new Date(b.date).getTime()
           : new Date(b.date).getTime() - new Date(a.date).getTime()
       );
-  }, [filterPills, searchQuery, filters, tripSource, timeFilter]);
+  }, [filterPills, searchQuery, filters, activitySource, timeFilter]);
 
   const toggleFilterPill = (pill: TripFilterPill) => {
     setFilterPills((prev) => {
@@ -322,11 +322,11 @@ export const ExploreSection = () => {
             )}
             <div className="mb-3 text-sm text-gray-600">
               {loading && <span className="mr-2">Loading activities...</span>}
-              {filteredTrips.length} {filteredTrips.length === 1 ? 'activity' : 'activities'} found
+              {filteredActivities.length} {filteredActivities.length === 1 ? 'activity' : 'activities'} found
             </div>
             {showOffSeasonBanner ? (
               <EmptyActivitiesBanner />
-            ) : filteredTrips.length === 0 ? (
+            ) : filteredActivities.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <p className="text-gray-600 mb-3 text-sm">
                   {timeFilter === 'past'
@@ -342,8 +342,8 @@ export const ExploreSection = () => {
               </div>
             ) : (
               <div className="browse-card-grid">
-                {filteredTrips.map((trip) => (
-                  <ActivityCard key={trip.id} trip={trip} />
+                {filteredActivities.map((activity) => (
+                  <ActivityCard key={activity.id} activity={activity} />
                 ))}
               </div>
             )}

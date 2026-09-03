@@ -177,7 +177,14 @@ export interface ActivityDetailDTO extends ActivityDTO {
   myRequest?: MyTripRequestDTO | null;
 }
 
-export interface TripParticipationDTO {
+export interface MyActivityDTO extends ActivityDTO {
+  participation: ActivityParticipationDTO;
+}
+
+/** @deprecated Use MyActivityDTO */
+export type MyTripDTO = MyActivityDTO;
+
+export interface ActivityParticipationDTO {
   participantId: string;
   requestId: string;
   status: 'confirmed';
@@ -187,15 +194,17 @@ export interface TripParticipationDTO {
   checkInClosesAt?: string;
 }
 
-export interface MyTripRequestDTO {
+/** @deprecated Use ActivityParticipationDTO */
+export type TripParticipationDTO = ActivityParticipationDTO;
+
+export interface MyActivityRequestDTO {
   id: string;
   status: RequestStatus;
   canWithdraw: boolean;
 }
 
-export interface MyTripDTO extends ActivityDTO {
-  participation: TripParticipationDTO;
-}
+/** @deprecated Use MyActivityRequestDTO */
+export type MyTripRequestDTO = MyActivityRequestDTO;
 
 export interface JoinRequestDTO {
   id: string;
@@ -439,10 +448,16 @@ export type UserStatusType = 'active' | 'suspended';
 
 export type AdminUserType =
   | 'participant'
+  | 'business_host'
+  | 'guide_host'
+  | 'host_staff'
+  | 'platform_admin'
+  /** @deprecated Use business_host */
   | 'business_organizer'
+  /** @deprecated Use guide_host */
   | 'guide_organizer'
-  | 'organizer_staff'
-  | 'platform_admin';
+  /** @deprecated Use host_staff */
+  | 'organizer_staff';
 
 export type AuthProviderType = 'email' | 'google';
 

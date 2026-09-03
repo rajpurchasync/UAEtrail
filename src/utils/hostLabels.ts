@@ -1,22 +1,40 @@
-/** Display name for the person responsible for running a trip on the ground. */
-export const tripHostName = (trip: {
+type HostIdentity = {
   hostName?: string;
   organizerName?: string;
-}) => trip.hostName ?? trip.organizerName ?? 'Host';
+};
 
-export const tripHostUserId = (trip: {
+type HostUserIdentity = {
   hostUserId?: string;
   organizerUserId?: string;
-}) => trip.hostUserId ?? trip.organizerUserId;
+};
 
-export const tripHostAvatar = (trip: {
+type HostAvatarIdentity = {
   hostAvatar?: string;
   organizerAvatar?: string;
-}) => trip.hostAvatar ?? trip.organizerAvatar;
+};
+
+/** Display name for the person responsible for running an activity on the ground. */
+export const activityHostName = (activity: HostIdentity) =>
+  activity.hostName ?? activity.organizerName ?? 'Host';
+
+/** @deprecated Use activityHostName */
+export const tripHostName = activityHostName;
+
+export const activityHostUserId = (activity: HostUserIdentity) =>
+  activity.hostUserId ?? activity.organizerUserId;
+
+/** @deprecated Use activityHostUserId */
+export const tripHostUserId = activityHostUserId;
+
+export const activityHostAvatar = (activity: HostAvatarIdentity) =>
+  activity.hostAvatar ?? activity.organizerAvatar;
+
+/** @deprecated Use activityHostAvatar */
+export const tripHostAvatar = activityHostAvatar;
 
 /** Organization brand — shown when different from the individual host (e.g. companies). */
-export const showTenantBrand = (trip: { tenantName?: string; hostName?: string; organizerName?: string }) => {
-  const host = tripHostName(trip);
-  const org = trip.tenantName?.trim();
+export const showTenantBrand = (activity: { tenantName?: string; hostName?: string; organizerName?: string }) => {
+  const host = activityHostName(activity);
+  const org = activity.tenantName?.trim();
   return Boolean(org && org !== host);
 };

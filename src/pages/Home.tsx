@@ -10,7 +10,7 @@ import { JsonLd } from '../components/seo/JsonLd';
 import { FaqPreview } from '../components/seo/FaqPreview';
 import { websiteSchema } from '../components/seo/schemas';
 import { HOME_FAQ_PREVIEW } from '../content/platformFaqs';
-import { CampingSpot, Trail, Trip } from '../types';
+import { CampingSpot, Trail, ActivityListing } from '../types';
 import { fetchHomeLandingData, fetchHomeRegionLocations } from '../api/public';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -64,12 +64,12 @@ const getLandingLoadErrorMessage = (error: unknown): string => {
 export const Home = () => {
   const [popularTrails, setPopularTrails] = useState<Trail[]>([]);
   const [popularCamps, setPopularCamps] = useState<CampingSpot[]>([]);
-  const [featuredTrips, setFeaturedTrips] = useState<Trip[]>([]);
+  const [featuredActivities, setFeaturedActivities] = useState<ActivityListing[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const { user } = useAuth();
   const [allTrails, setAllTrails] = useState<Trail[]>([]);
   const [allCamps, setAllCamps] = useState<CampingSpot[]>([]);
-  const [allTrips, setAllTrips] = useState<Trip[]>([]);
+  const [allActivities, setAllActivities] = useState<ActivityListing[]>([]);
   const [activityFilter, setActivityFilter] = useState<HomeActivityFilter>('all');
 
   useEffect(() => {
@@ -80,8 +80,8 @@ export const Home = () => {
         if (disposed) return;
         setPopularTrails(data.popularTrails);
         setPopularCamps(data.popularCamps);
-        setFeaturedTrips(data.featuredTrips);
-        setAllTrips(data.allTrips);
+        setFeaturedActivities(data.featuredActivities);
+        setAllActivities(data.allActivities);
         setLoadError(null);
       })
       .catch((err) => {
@@ -104,20 +104,20 @@ export const Home = () => {
     };
   }, []);
 
-  const upcomingTrips = useMemo(
+  const upcomingActivities = useMemo(
     () =>
-      allTrips
+      allActivities
         .filter((item) => new Date(item.date) >= new Date())
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 6),
-    [allTrips]
+    [allActivities]
   );
 
-  const displayedTrips = useMemo(() => {
-    const base = featuredTrips.length > 0 ? featuredTrips : upcomingTrips;
+  const displayedActivities = useMemo(() => {
+    const base = featuredActivities.length > 0 ? featuredActivities : upcomingActivities;
     if (activityFilter === 'all') return base;
-    return base.filter((trip) => trip.activityType === activityFilter);
-  }, [featuredTrips, upcomingTrips, activityFilter]);
+    return base.filter((activity) => activity.activityType === activityFilter);
+  }, [featuredActivities, upcomingActivities, activityFilter]);
 
   const trackView = (locationId: string) => {
     api.trackLocationView(locationId).catch(() => { /* silent */ });
@@ -326,10 +326,10 @@ export const Home = () => {
           <div className="flex justify-between items-end mb-5 gap-3">
             <div className="min-w-0">
               <h2 className="text-xl md:text-3xl font-bold text-gray-900">
-                {featuredTrips.length > 0 ? 'Featured Activities' : 'Upcoming Activities'}
+                {featuredActivities.length > 0 ? 'Featured Activities' : 'Upcoming Activities'}
               </h2>
               <p className="text-sm text-gray-500 mt-1 hidden md:block">
-                {featuredTrips.length > 0
+                {featuredActivities.length > 0
                   ? 'Handpicked adventures selected for you'
                   : 'Join organized hiking trips, camping outings, and outdoor events'}
               </p>
@@ -349,12 +349,12 @@ export const Home = () => {
             onChange={setActivityFilter}
           />
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            {displayedTrips.map((trip) => (
-              <div key={trip.id} className="mobile-snap-rail__item">
-                <ActivityCard trip={trip} variant="featured" />
+            {displayedActivities.map((activity) => (
+              <div key={activity.id} className="mobile-snap-rail__item">
+                <ActivityCard activity={activity} variant="featured" />
               </div>
             ))}
-            {displayedTrips.length === 0 && (
+            {displayedActivities.length === 0 && (
               <div className="col-span-full min-w-full">
                 {activityFilter !== 'all' ? (
                   <div className="rounded-[22px] glass-card px-6 py-10 text-center shadow-glass">

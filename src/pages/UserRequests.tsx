@@ -87,7 +87,9 @@ export const UserRequests = () => {
                 <p>
                   {request.activity.date} · {request.activity.time}
                 </p>
-                {request.activity.organizerName && <p>Organizer: {request.activity.organizerName}</p>}
+                {(request.activity.hostName ?? request.activity.organizerName) && (
+                  <p>Host: {request.activity.hostName ?? request.activity.organizerName}</p>
+                )}
                 {request.note && <p className="text-neutral-500 line-clamp-2">{request.note}</p>}
               </div>
             </Link>

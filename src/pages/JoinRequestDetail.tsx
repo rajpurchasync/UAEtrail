@@ -133,8 +133,8 @@ export const JoinRequestDetail = () => {
             {request.activity.date} · {request.activity.time}
           </span>
         </div>
-        {request.activity.organizerName && (
-          <p className="text-sm text-neutral-600">Organizer: {request.activity.organizerName}</p>
+        {(request.activity.hostName ?? request.activity.organizerName) && (
+          <p className="text-sm text-neutral-600">Host: {request.activity.hostName ?? request.activity.organizerName}</p>
         )}
         <Link
           to={`/activity/${request.activity.id}`}

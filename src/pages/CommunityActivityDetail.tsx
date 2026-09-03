@@ -2,19 +2,19 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, TrendingUp, Clock, ChevronRight } from 'lucide-react';
 import { ReviewDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
-import { TripCard, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
+import { ActivityCard, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
 import { PageMeta } from '../components/seo/PageMeta';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { getDifficultyColor, capitalize } from '../utils';
-import { CommunityActivitySpot, Trip } from '../types';
-import { fetchApiLocationDetail, mapActivityToTrip } from '../api/public';
+import { CommunityActivitySpot, ActivityListing } from '../types';
+import { fetchApiLocationDetail, mapActivityToListing } from '../api/public';
 import { api } from '../api/services';
 
 export const CommunityActivityDetail = () => {
   const { id } = useParams();
   const [event, setEvent] = useState<CommunityActivitySpot | null>(null);
   const [loading, setLoading] = useState(true);
-  const [eventTrips, setEventTrips] = useState<Trip[]>([]);
+  const [locationActivities, setLocationActivities] = useState<ActivityListing[]>([]);
   const [eventReviews, setEventReviews] = useState<ReviewDTO[]>([]);
   const [premium, setPremium] = useState<LocationPremiumSummaryDTO | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -31,7 +31,7 @@ export const CommunityActivityDetail = () => {
       .then(([locResult, eventsRes, reviewsRes]) => {
         setEvent(locResult.communityActivity ?? null);
         setPremium(locResult.premium ?? null);
-        setEventTrips(eventsRes.data.map(mapActivityToTrip));
+        setLocationActivities(eventsRes.data.map(mapActivityToListing));
         setEventReviews(reviewsRes.data);
       })
       .catch(() => setEvent(null))
@@ -207,7 +207,7 @@ export const CommunityActivityDetail = () => {
               </Link>
             </div>
 
-            {eventTrips.length === 0 ? (
+            {locationActivities.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-8 text-center">
                 <p className="text-gray-600">No upcoming events scheduled at this location yet.</p>
                 <Link to="/activities" className="text-violet-600 hover:text-violet-700 mt-2 inline-block">
@@ -216,8 +216,8 @@ export const CommunityActivityDetail = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {eventTrips.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} />
+                {locationActivities.map((activity) => (
+                  <ActivityCard key={activity.id} activity={activity} />
                 ))}
               </div>
             )}

@@ -2,24 +2,24 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Car, ChevronRight } from 'lucide-react';
 import { ReviewDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
-import { TripCard, BookingModal, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
+import { ActivityCard, BookingModal, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { campSchema } from '../components/seo/schemas';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
-import { CampingSpot, Trip } from '../types';
-import { fetchApiLocationDetail, mapActivityToTrip } from '../api/public';
+import { CampingSpot, ActivityListing } from '../types';
+import { fetchApiLocationDetail, mapActivityToListing } from '../api/public';
 import { api } from '../api/services';
 
 export const CampDetail = () => {
   const { id } = useParams();
   const [camp, setCamp] = useState<CampingSpot | null>(null);
   const [loading, setLoading] = useState(true);
-  const [campTrips, setCampTrips] = useState<Trip[]>([]);
+  const [campActivities, setCampActivities] = useState<ActivityListing[]>([]);
   const [campReviews, setCampReviews] = useState<ReviewDTO[]>([]);
   const [premium, setPremium] = useState<LocationPremiumSummaryDTO | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [bookingTrip, setBookingTrip] = useState<Trip | null>(null);
+  const [bookingActivity, setBookingActivity] = useState<ActivityListing | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -33,7 +33,7 @@ export const CampDetail = () => {
       .then(([locResult, eventsRes, reviewsRes]) => {
         setCamp(locResult.camp ?? null);
         setPremium(locResult.premium ?? null);
-        setCampTrips(eventsRes.data.map(mapActivityToTrip));
+        setCampActivities(eventsRes.data.map(mapActivityToListing));
         setCampReviews(reviewsRes.data);
       })
       .catch(() => setCamp(null))
@@ -185,7 +185,7 @@ export const CampDetail = () => {
             </Link>
           </div>
 
-          {campTrips.length === 0 ? (
+          {campActivities.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <p className="text-gray-600">No upcoming trips scheduled for this location yet.</p>
               <Link to="/activities" className="text-amber-600 hover:text-amber-700 mt-2 inline-block">
@@ -194,8 +194,8 @@ export const CampDetail = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {campTrips.map((trip) => (
-                <TripCard key={trip.id} trip={trip} />
+              {campActivities.map((activity) => (
+                <ActivityCard key={activity.id} activity={activity} />
               ))}
             </div>
           )}
@@ -210,8 +210,8 @@ export const CampDetail = () => {
         />
       </div>
 
-      {bookingTrip && (
-        <BookingModal trip={bookingTrip} onClose={() => setBookingTrip(null)} />
+      {bookingActivity && (
+        <BookingModal activity={bookingActivity} trip={bookingActivity} onClose={() => setBookingActivity(null)} />
       )}
     </div>
     </MobileDetailShell>

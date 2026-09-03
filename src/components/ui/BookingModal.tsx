@@ -1,12 +1,15 @@
-import { Trip } from '../../types';
+import { ActivityListing } from '../../types';
 import { JoinRequestModal } from './JoinRequestModal';
 
 interface BookingModalProps {
-  trip: Trip;
+  activity?: ActivityListing;
+  /** @deprecated Use activity */
+  trip?: ActivityListing;
   onClose: () => void;
 }
 
-/** @deprecated Use JoinRequestModal directly — kept for CampDetail trip cards */
-export const BookingModal = ({ trip, onClose }: BookingModalProps) => (
-  <JoinRequestModal open trip={trip} onClose={onClose} isFull={trip.slotsAvailable <= 0} />
-);
+/** @deprecated Use JoinRequestModal directly — kept for CampDetail activity cards */
+export const BookingModal = ({ activity, trip, onClose }: BookingModalProps) => {
+  const item = activity ?? trip!;
+  return <JoinRequestModal open activity={item} trip={item} onClose={onClose} isFull={item.slotsAvailable <= 0} />;
+};

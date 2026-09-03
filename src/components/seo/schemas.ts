@@ -2,6 +2,7 @@ import { ActivityDetailDTO, ProductDTO, ReviewDTO } from '@uaetrail/shared-types
 import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
 import { CampingSpot, Trail } from '../../types';
 import type { TenantProfile } from '../../api/services';
+import { activityHostName } from '../../utils/hostLabels';
 
 const absImage = (url?: string | null) => toAbsoluteUrl(url) ?? undefined;
 
@@ -86,7 +87,7 @@ export const tripEventSchema = (trip: ActivityDetailDTO) => ({
   },
   organizer: {
     '@type': 'Organization',
-    name: trip.organizerName,
+    name: activityHostName(trip),
     url: trip.tenantSlug ? `${SITE_ORIGIN}/operator/${trip.tenantSlug}` : undefined
   },
   offers: {

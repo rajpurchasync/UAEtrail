@@ -14,7 +14,7 @@ import {
   MerchantOrderLineItemDTO,
   MerchantProfileDTO,
   OrderStatus,
-  MyTripDTO,
+  MyActivityDTO,
   NotificationDTO,
   ParticipantDTO,
   PostDTO,
@@ -267,7 +267,7 @@ export interface TenantDetail {
   activities: Array<{ id: string; title: string; locationName: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number; guideName: string | null }>;
 }
 
-export interface OrganizerDetails {
+export interface HostDetails {
   experience?: string;
   languages?: string;
   certificates?: string;
@@ -275,6 +275,9 @@ export interface OrganizerDetails {
   nationality?: string;
   residence?: string;
 }
+
+/** @deprecated Use HostDetails */
+export type OrganizerDetails = HostDetails;
 
 export interface TenantProfile {
   id: string;
@@ -285,7 +288,8 @@ export interface TenantProfile {
   ownerName: string;
   ownerAvatar: string | null;
   ownerBio: string | null;
-  organizerDetails?: OrganizerDetails;
+  organizerDetails?: HostDetails;
+  hostDetails?: HostDetails;
   memberCount: number;
   team: { role: string; displayName: string; avatarUrl: string | null }[];
   activities: ActivityDTO[];
@@ -384,9 +388,9 @@ export const api = {
   getMeRequests: () => apiRequest<{ data: ActivityRequestView[] }>('/me/requests?pageSize=100', { auth: true }),
   getMeRequest: (requestId: string) =>
     apiRequest<{ data: ActivityRequestView }>(`/me/requests/${requestId}`, { auth: true }),
-  getMeActivities: () => apiRequest<{ data: MyTripDTO[] }>('/me/activities', { auth: true }),
+  getMeActivities: () => apiRequest<{ data: MyActivityDTO[] }>('/me/activities', { auth: true }),
   /** @deprecated Use getMeActivities */
-  getMeTrips: () => apiRequest<{ data: MyTripDTO[] }>('/me/trips', { auth: true }),
+  getMeTrips: () => apiRequest<{ data: MyActivityDTO[] }>('/me/trips', { auth: true }),
   getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
   updateMeProfile: (payload: UserProfile) =>
     apiRequest<{ data: UserProfile }>('/me/profile', {
@@ -1090,8 +1094,15 @@ export const api = {
   getMyHostApplication: () =>
     apiRequest<{ data: HostApplication | null }>('/me/host-application', { auth: true }),
 
-  updateOrganizerDetails: (data: OrganizerDetails) =>
-    apiRequest<{ data: OrganizerDetails }>('/me/host-details', {
+  updateHostDetails: (data: HostDetails) =>
+    apiRequest<{ data: HostDetails }>('/me/host-details', {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(data),
+    }),
+  /** @deprecated Use updateHostDetails */
+  updateOrganizerDetails: (data: HostDetails) =>
+    apiRequest<{ data: HostDetails }>('/me/host-details', {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(data),

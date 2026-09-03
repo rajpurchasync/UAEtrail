@@ -6,7 +6,7 @@ import {
   api,
   TenantDetail
 } from '../../api/services';
-import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../../constants/userTypes';
+import { USER_TYPE_BADGE, USER_TYPE_LABELS, isBusinessHostUserType } from '../../constants/userTypes';
 
 export interface AdminUserDetail {
   id: string;
@@ -321,8 +321,8 @@ const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null
           <p className="font-medium text-gray-900">{activity.locationName}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-500 uppercase">Organizer</p>
-          <p className="font-medium text-gray-900">{activity.organizerName ?? activity.hostName ?? '—'}</p>
+          <p className="text-xs text-gray-500 uppercase">Host</p>
+          <p className="font-medium text-gray-900">{activity.hostName ?? activity.organizerName ?? '—'}</p>
         </div>
         <div>
           <p className="text-xs text-gray-500 uppercase">Capacity</p>
@@ -497,7 +497,7 @@ export const AdminUserDetailPanel = ({
                   </div>
                 </div>
 
-                {user.userType === 'business_organizer' && !user.rewards && (
+                {isBusinessHostUserType(user.userType) && !user.rewards && (
                   <p className="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
                     Business organizers do not participate in Trail Points.
                   </p>

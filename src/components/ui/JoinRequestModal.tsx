@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trip } from '../../types';
+import { ActivityListing } from '../../types';
 import { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { formatDate, formatPrice } from '../../utils';
 import { formatPackagePrice, tripHasPaidPricing } from '../../utils/tripPricing';
-import { tripHostName, showTenantBrand } from '../../utils/hostLabels';
+import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
 import { api } from '../../api/services';
 import { Dialog } from './Dialog';
 
-type JoinableTrip = Pick<
-  Trip,
+type JoinableActivity = Pick<
+  ActivityListing,
   | 'id'
   | 'locationName'
   | 'title'
@@ -23,7 +23,6 @@ type JoinableTrip = Pick<
   | 'pricePackages'
   | 'tenantName'
   | 'hostName'
-  | 'organizerName'
 > & {
   paymentTerms?: string | null;
 };
@@ -31,7 +30,9 @@ type JoinableTrip = Pick<
 interface JoinRequestModalProps {
   open: boolean;
   onClose: () => void;
-  trip: JoinableTrip | ActivityDetailDTO;
+  activity?: JoinableActivity | ActivityDetailDTO;
+  /** @deprecated Use activity */
+  trip?: JoinableActivity | ActivityDetailDTO;
   isFull?: boolean;
   selectedPackageIndex?: number;
   onSuccess?: (message: string) => void;
@@ -40,11 +41,13 @@ interface JoinRequestModalProps {
 export const JoinRequestModal = ({
   open,
   onClose,
+  activity: activityProp,
   trip,
-  isFull = trip.slotsAvailable <= 0,
+  isFull,
   selectedPackageIndex,
   onSuccess,
 }: JoinRequestModalProps) => {
+  const activity = activityProp ?? trip!;
   const navigate = useNavigate();
   const [note, setNote] = useState('');
   const [agreed, setAgreed] = useState(false);
@@ -52,13 +55,14 @@ export const JoinRequestModal = ({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const instructions = trip.requirements?.filter((item) => item.trim()) ?? [];
+  const instructions = activity.requirements?.filter((item) => item.trim()) ?? [];
   const hasInstructions = instructions.length > 0;
-  const isPaidTrip = tripHasPaidPricing(trip);
-  const hasPaymentTerms = Boolean(isPaidTrip && trip.paymentTerms?.trim());
+  const isPaidTrip = tripHasPaidPricing(activity);
+  const full = isFull ?? activity.slotsAvailable <= 0;
+  const hasPaymentTerms = Boolean(isPaidTrip && activity.paymentTerms?.trim());
   const needsAgreement = hasInstructions || hasPaymentTerms;
 
-  const pricePackages = trip.pricePackages?.filter((p) => p.label.trim()) ?? [];
+  const pricePackages = activity.pricePackages?.filter((p) => p.label.trim()) ?? [];
   const selectedPackage =
     selectedPackageIndex != null && selectedPackageIndex >= 0
       ? pricePackages[selectedPackageIndex]
@@ -71,7 +75,7 @@ export const JoinRequestModal = ({
     setSubmitting(false);
     setSubmitted(false);
     setError(null);
-  }, [open, trip.id]);
+  }, [open, activity.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +88,7 @@ export const JoinRequestModal = ({
     setError(null);
     try {
       const res = await api.createJoinRequest(
-        trip.id,
+        activity.id,
         note.trim() || undefined,
         selectedPackageIndex != null && selectedPackageIndex >= 0 ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined
       );
@@ -105,23 +109,23 @@ export const JoinRequestModal = ({
     }
   };
 
-  const hostName = tripHostName(trip);
-  const submitLabel = submitting ? 'Submitting…' : isFull ? 'Join Waitlist' : 'Submit Join Request';
+  const hostName = activityHostName(activity);
+  const submitLabel = submitting ? 'Submitting…' : full ? 'Join Waitlist' : 'Submit Join Request';
 
   return (
-    <Dialog open={open} onClose={onClose} title={isFull ? 'Join Waitlist' : 'Request to Join'} className="max-w-md">
+    <Dialog open={open} onClose={onClose} title={full ? 'Join Waitlist' : 'Request to Join'} className="max-w-md">
       {!submitted ? (
         <>
           <div className="p-4 -mx-2 mb-4 bg-gray-50 border border-gray-100 rounded-xl">
-            <h3 className="font-semibold text-gray-900">{trip.title || trip.locationName}</h3>
+            <h3 className="font-semibold text-gray-900">{activity.title || activity.locationName}</h3>
             <p className="text-sm text-gray-600">
-              {formatDate(trip.date)} at {trip.time}
+              {formatDate(activity.date)} at {activity.time}
             </p>
             <div className="flex items-center gap-3 mt-2">
-              <p className="text-sm font-semibold text-emerald-600">{formatPrice(trip.price)}</p>
+              <p className="text-sm font-semibold text-emerald-600">{formatPrice(activity.price)}</p>
               <span className="text-xs text-gray-500">•</span>
               <p className="text-sm text-gray-600">
-                {trip.slotsAvailable} / {trip.slotsTotal} slots available
+                {activity.slotsAvailable} / {activity.slotsTotal} slots available
               </p>
             </div>
             {selectedPackage && pricePackages.length > 1 && (
@@ -130,7 +134,7 @@ export const JoinRequestModal = ({
             {hostName && (
               <p className="text-xs text-gray-500 mt-1">
                 Hosted by {hostName}
-                {showTenantBrand(trip) && trip.tenantName ? ` · ${trip.tenantName}` : ''}
+                {showTenantBrand(activity) && activity.tenantName ? ` · ${activity.tenantName}` : ''}
               </p>
             )}
           </div>
@@ -150,14 +154,14 @@ export const JoinRequestModal = ({
             {hasPaymentTerms && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <p className="text-sm font-semibold text-blue-900 mb-2">Payment terms</p>
-                <p className="text-sm text-blue-800 whitespace-pre-wrap">{trip.paymentTerms}</p>
+                <p className="text-sm text-blue-800 whitespace-pre-wrap">{activity.paymentTerms}</p>
               </div>
             )}
 
-            {trip.meetingPoint && (
+            {activity.meetingPoint && (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                 <p className="text-xs font-medium text-gray-700 mb-1">Meeting point</p>
-                <p className="text-sm text-gray-600">{trip.meetingPoint}</p>
+                <p className="text-sm text-gray-600">{activity.meetingPoint}</p>
               </div>
             )}
 

@@ -1,15 +1,15 @@
 import { ActivityDTO, LocationDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { api } from './services';
-import { CampingSpot, Trail, Trip, CommunityActivitySpot } from '../types';
+import { CampingSpot, Trail, ActivityListing, CommunityActivitySpot } from '../types';
 import { tripHasPaidPricing } from '../utils/tripPricing';
 
-const mapTripStatus = (event: ActivityDTO): Trip['status'] => {
+const mapListingStatus = (event: ActivityDTO): ActivityListing['status'] => {
   if (event.slotsAvailable <= 0) return 'full';
   if (tripHasPaidPricing(event)) return 'paid';
   return 'free';
 };
 
-export const mapActivityToTrip = (event: ActivityDTO): Trip => ({
+export const mapActivityToListing = (event: ActivityDTO): ActivityListing => ({
   id: event.id,
   locationId: event.locationId,
   locationName: event.locationName,
@@ -25,22 +25,22 @@ export const mapActivityToTrip = (event: ActivityDTO): Trip => ({
   hostName: event.hostName ?? event.organizerName,
   hostUserId: event.hostUserId ?? event.organizerUserId,
   hostAvatar: event.hostAvatar ?? event.organizerAvatar ?? undefined,
-  organizerName: event.hostName ?? event.organizerName,
-  organizerAvatar: event.hostAvatar ?? event.organizerAvatar ?? undefined,
-  organizerUserId: event.hostUserId ?? event.organizerUserId,
   images: event.images,
   price: event.price,
   pricePackages: event.pricePackages,
   pricingMode: event.pricingMode ?? undefined,
   slotsAvailable: event.slotsAvailable,
   slotsTotal: event.slotsTotal,
-  status: mapTripStatus(event),
+  status: mapListingStatus(event),
   participantIds: event.participantPreviews?.map((p) => p.id) ?? [],
   participantPreviews: event.participantPreviews,
   meetingPoint: event.meetingPoint ?? undefined,
   itinerary: event.itinerary ?? undefined,
   requirements: event.requirements ?? undefined
 });
+
+/** @deprecated Use mapActivityToListing */
+export const mapActivityToTrip = mapActivityToListing;
 const mapLocationFields = (location: LocationDTO) => ({
   parkingLink: location.parkingLink,
   highlights: location.highlights,
@@ -113,17 +113,17 @@ export const fetchPopularLocations = async (): Promise<{
   };
 };
 
-export const fetchFeaturedEvents = async (): Promise<Trip[]> => {
+export const fetchFeaturedEvents = async (): Promise<ActivityListing[]> => {
   const res = await api.getFeaturedActivities(6);
-  return res.data.map(mapActivityToTrip);
+  return res.data.map(mapActivityToListing);
 };
 
 /** Fast home payload: 3 parallel requests, no location pagination loop. */
 export const fetchHomeLandingData = async (): Promise<{
   popularTrails: Trail[];
   popularCamps: CampingSpot[];
-  featuredTrips: Trip[];
-  allTrips: Trip[];
+  featuredActivities: ActivityListing[];
+  allActivities: ActivityListing[];
 }> => {
   const [popularRes, featuredRes, eventsRes] = await Promise.all([
     api.getPopularLocations(6),
@@ -134,8 +134,8 @@ export const fetchHomeLandingData = async (): Promise<{
   return {
     popularTrails: popularRes.data.filter((l) => l.activityType === 'hiking').map(mapLocationToTrail),
     popularCamps: popularRes.data.filter((l) => l.activityType === 'camping').map(mapLocationToCamp),
-    featuredTrips: featuredRes.data.map(mapActivityToTrip),
-    allTrips: eventsRes.data.map(mapActivityToTrip)
+    featuredActivities: featuredRes.data.map(mapActivityToListing),
+    allActivities: eventsRes.data.map(mapActivityToListing)
   };
 };
 
@@ -157,7 +157,7 @@ export const fetchPublicMappedData = async (): Promise<{
   trails: Trail[];
   camps: CampingSpot[];
   communityActivities: CommunityActivitySpot[];
-  trips: Trip[];
+  activities: ActivityListing[];
 }> => {
   const [locationsResponse, eventsResponse] = await Promise.all([api.getPublicLocations(), api.getPublicActivities()]);
   const trails = locationsResponse.data.filter((item) => item.activityType === 'hiking').map(mapLocationToTrail);
@@ -165,13 +165,13 @@ export const fetchPublicMappedData = async (): Promise<{
   const communityActivities = locationsResponse.data
     .filter((item) => item.activityType === 'community_activity')
     .map(mapLocationTocommunityActivity);
-  const trips = eventsResponse.data.map(mapActivityToTrip);
-  return { trails, camps, communityActivities, trips };
+  const activities = eventsResponse.data.map(mapActivityToListing);
+  return { trails, camps, communityActivities, activities };
 };
 
-export const fetchApiActivities = async (when: 'upcoming' | 'past' = 'upcoming'): Promise<Trip[]> => {
+export const fetchApiActivities = async (when: 'upcoming' | 'past' = 'upcoming'): Promise<ActivityListing[]> => {
   const events = await api.getPublicActivities({ when, pageSize: 100 });
-  return events.data.map(mapActivityToTrip);
+  return events.data.map(mapActivityToListing);
 };
 
 /** @deprecated Use fetchApiActivities */

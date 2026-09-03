@@ -605,7 +605,7 @@ adminRouter.get('/users', validate({ query: userListQuerySchema }), async (req, 
     const { role, userType, status, search, page, pageSize } = req.query as unknown as z.infer<typeof userListQuerySchema>;
 
     const typeFilter = userType ? adminUserTypeFilter(userType) : null;
-    const useMongoCommonPath = !typeFilter || userType === 'participant' || userType === 'platform_admin' || userType === 'organizer_staff';
+    const useMongoCommonPath = !typeFilter || userType === 'participant' || userType === 'platform_admin' || userType === 'host_staff' || userType === 'organizer_staff';
 
     if (useMongoCommonPath) {
       const authRoleFilter = role ? (role.toUpperCase() as UserRole) : typeFilter?.role ? typeFilter.role : undefined;

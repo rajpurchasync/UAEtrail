@@ -122,9 +122,9 @@ export const AdminUsers = () => {
         <select value={userTypeFilter} onChange={(e) => { setUserTypeFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
           <option value="">All User Types</option>
           <option value="participant">Participant</option>
-          <option value="guide_organizer">Individual Host</option>
-          <option value="business_organizer">Business Host</option>
-          <option value="organizer_staff">Host Staff</option>
+          <option value="guide_host">Individual Host</option>
+          <option value="business_host">Business Host</option>
+          <option value="host_staff">Host Staff</option>
           <option value="platform_admin">Admin</option>
         </select>
         <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">

@@ -15,8 +15,8 @@ import {
 } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
 import { NAV_ICONS } from '../../config/navIcons';
-import { api, OrganizerDetails, TenantProfile } from '../../api/services';
-import { mapActivityToTrip } from '../../api/public';
+import { api, HostDetails, TenantProfile } from '../../api/services';
+import { mapActivityToListing } from '../../api/public';
 import { ActivityCard } from '../ui/ActivityCard';
 import { ReviewSection } from '../ui/ReviewSection';
 import { SecureAvatar } from '../ui/SecureAvatar';
@@ -47,7 +47,7 @@ export const HostPublicProfile = ({
   const isOwner = mode === 'owner';
 
   const [tenant, setTenant] = useState<TenantProfile | null>(null);
-  const [trips, setTrips] = useState<ReturnType<typeof mapActivityToTrip>[]>([]);
+  const [activities, setActivities] = useState<ReturnType<typeof mapActivityToListing>[]>([]);
   const [reviews, setReviews] = useState<ReviewDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +57,7 @@ export const HostPublicProfile = ({
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editBio, setEditBio] = useState('');
-  const [editDetails, setEditDetails] = useState<OrganizerDetails>({});
+  const [editDetails, setEditDetails] = useState<HostDetails>({});
 
   const loadProfile = () => {
     setLoading(true);
@@ -66,7 +66,7 @@ export const HostPublicProfile = ({
       .getTenantProfile(slug)
       .then(async (tenantRes) => {
         setTenant(tenantRes.data);
-        setTrips(tenantRes.data.activities.map(mapActivityToTrip));
+        setActivities(tenantRes.data.activities.map(mapActivityToListing));
         setEditBio(tenantRes.data.ownerBio ?? '');
         setEditDetails(tenantRes.data.organizerDetails ?? {});
         const reviewsRes = await api.getReviews('tenant', tenantRes.data.id).catch(() => ({ data: [] }));
@@ -88,7 +88,7 @@ export const HostPublicProfile = ({
     setSaveError(null);
     try {
       await api.updateMeProfile({ bio: editBio.trim() || undefined });
-      await api.updateOrganizerDetails(editDetails);
+      await api.updateHostDetails(editDetails);
       setSaveMessage('Public profile updated.');
       setEditing(false);
       loadProfile();
@@ -200,7 +200,7 @@ export const HostPublicProfile = ({
                   <Users className="w-4 h-4" /> {tenant.memberCount} team
                 </span>
                 <span className="flex items-center gap-1">
-                  <NAV_ICONS.trips className="w-4 h-4" strokeWidth={2} /> {trips.length} upcoming
+                  <NAV_ICONS.trips className="w-4 h-4" strokeWidth={2} /> {activities.length} upcoming
                 </span>
                 {avgRating && (
                   <span className="flex items-center gap-1">
@@ -417,16 +417,16 @@ export const HostPublicProfile = ({
         <section>
           <div className="flex items-center gap-2 mb-4">
             <Mountain className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-lg font-bold text-gray-900">Trips hosted</h2>
+            <h2 className="text-lg font-bold text-gray-900">Activities hosted</h2>
           </div>
-          {trips.length === 0 ? (
+          {activities.length === 0 ? (
             <div className="bg-white rounded-xl border p-8 text-center text-gray-600">
-              No upcoming trips scheduled.
+              No upcoming activities scheduled.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {trips.map((trip) => (
-                <ActivityCard key={trip.id} trip={trip} />
+              {activities.map((activity) => (
+                <ActivityCard key={activity.id} activity={activity} />
               ))}
             </div>
           )}

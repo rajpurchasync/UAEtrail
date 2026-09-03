@@ -3,7 +3,9 @@ export type DifficultyLevel = 'easy' | 'moderate' | 'hard';
 export type CampingType = 'self-guided' | 'operator-led';
 export type Accessibility = 'car-accessible' | 'remote';
 export type Season = 'winter' | 'summer' | 'year-round';
-export type TripStatus = 'free' | 'paid' | 'full';
+export type ActivityListingStatus = 'free' | 'paid' | 'full';
+/** @deprecated Use ActivityListingStatus */
+export type TripStatus = ActivityListingStatus;
 export type UAERegion = 'Dubai' | 'RAK' | 'Fujairah' | 'Abu Dhabi' | 'Al Ain' | 'Sharjah';
 
 export interface Trail {
@@ -86,7 +88,7 @@ export interface Participant {
   avatar: string;
 }
 
-export interface Trip {
+export interface ActivityListing {
   id: string;
   locationId: string;
   locationName: string;
@@ -102,17 +104,13 @@ export interface Trip {
   hostName?: string;
   hostUserId?: string;
   hostAvatar?: string;
-  /** @deprecated use hostName */
-  organizerName?: string;
-  organizerAvatar?: string;
-  organizerUserId?: string;
   images?: string[];
   price: number;
   pricePackages?: Array<{ label: string; amount: number; currency: string }>;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   slotsAvailable: number;
   slotsTotal: number;
-  status: TripStatus;
+  status: ActivityListingStatus;
   participantIds: string[];
   participantPreviews?: Array<{ id: string; name: string; avatar?: string | null }>;
   meetingPoint?: string;
@@ -120,6 +118,9 @@ export interface Trip {
   requirements?: string[];
   carpoolAvailable?: boolean;
 }
+
+/** @deprecated Use ActivityListing */
+export type Trip = ActivityListing;
 
 export interface GearItem {
   id: string;
