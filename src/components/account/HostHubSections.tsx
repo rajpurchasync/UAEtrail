@@ -5,7 +5,7 @@ import { AccountLinkList } from './AccountLinkList';
 import { AccountSectionHeader } from './AccountSectionHeader';
 import { AccountStat, AccountStatGrid } from './AccountStatGrid';
 
-interface OrganizerHubSectionsProps {
+interface HostHubSectionsProps {
   activitiesCount: number;
   pendingJoinRequests: number;
   upcomingActivitiesCount: number;
@@ -13,12 +13,12 @@ interface OrganizerHubSectionsProps {
   upcomingActivities: ActivityDTO[];
 }
 
-export const buildOrganizerStats = ({
+export const buildHostStats = ({
   activitiesCount,
   pendingJoinRequests,
   upcomingActivitiesCount,
   pastActivitiesCount,
-}: Omit<OrganizerHubSectionsProps, 'upcomingActivities'>): AccountStat[] => [
+}: Omit<HostHubSectionsProps, 'upcomingActivities'>): AccountStat[] => [
   { label: 'Activities', value: activitiesCount, to: '/host/activities' },
   {
     label: 'Pending',
@@ -36,14 +36,14 @@ export const buildOrganizerStats = ({
   { label: 'History', value: pastActivitiesCount, to: '/host/history' },
 ];
 
-export const OrganizerHubSections = ({
+export const HostHubSections = ({
   activitiesCount,
   pendingJoinRequests,
   upcomingActivitiesCount,
   pastActivitiesCount,
   upcomingActivities,
-}: OrganizerHubSectionsProps) => {
-  const stats = buildOrganizerStats({
+}: HostHubSectionsProps) => {
+  const stats = buildHostStats({
     activitiesCount,
     pendingJoinRequests,
     upcomingActivitiesCount,
@@ -100,7 +100,7 @@ export const OrganizerHubSections = ({
           {
             to: '/host/profile',
             icon: <UserCircle className="w-4 h-4" />,
-            label: 'Organizer profile',
+            label: 'Public host profile',
             accent: 'emerald',
           },
           {
@@ -131,3 +131,9 @@ export const OrganizerHubSections = ({
     </>
   );
 };
+
+/** @deprecated Use buildHostStats */
+export const buildOrganizerStats = buildHostStats;
+
+/** @deprecated Use HostHubSections */
+export const OrganizerHubSections = HostHubSections;

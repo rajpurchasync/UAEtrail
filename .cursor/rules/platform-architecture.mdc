@@ -1,0 +1,13 @@
+# Platform layers
+
+| Layer | Routes | What |
+|-------|--------|------|
+| **Public** | `/activities` (explore), discovery, detail pages | Browse published activities |
+| **Participant** | `/profile`, `/activities?tab=mine` | User dashboard — trips joined, requests |
+| **Host** | `/host/*` | Host activities, team, venues (eligible participants) |
+| **Admin** | `/admin/*` | Approvals, users, moderation |
+
+- One entity: **Activity** (`draft` / `published` / `cancelled` / `suspended`).
+- Page file: `Activities.tsx` at route `ACTIVITIES_PATH` (`/activities`).
+- Do not add hosting UI on the public activities page — use `/host/activities`.
+- Avoid legacy names: Trips page, OrganizerActivitiesPath, Event.

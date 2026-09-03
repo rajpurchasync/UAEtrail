@@ -26,6 +26,7 @@ import {
   findLocationInMongo,
   mapMongoActivityToPublishResult,
   patchActivityInMongo,
+  deleteActivityDocInMongo,
   writeActivityDocToMongo,
   writeLocationToMongo
 } from './entity-sync.js';
@@ -166,6 +167,69 @@ export const cancelActivityById = async (activityId: string) => {
     throw new Error('Failed to cancel event.');
   }
   return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.CANCELLED });
+};
+
+export const deleteDraftActivityById = async (activityId: string, tenantId: string) => {
+  const doc = await findActivityDocInMongo(activityId);
+  if (!doc || doc.tenantId !== tenantId) {
+    return false;
+  }
+  if (doc.status !== ActivityStatus.DRAFT) {
+    return false;
+  }
+  return deleteActivityDocInMongo(activityId);
+};
+
+export const duplicateTenantActivity = async (
+  activityId: string,
+  tenantId: string,
+  createdById: string
+): Promise<ActivityWithTenantRelations> => {
+  const source = await findTenantActivityFromMongo(activityId, tenantId);
+  if (!source) {
+    throw new Error('Activity not found.');
+  }
+
+  const copyTitle = `${source.title} (Copy)`.slice(0, 120);
+  const hostId = source.hostId ?? source.createdById ?? createdById;
+
+  const created = await createActivityDetailed({
+    tenant: { connect: { id: tenantId } },
+    location: { connect: { id: source.locationId } },
+    createdBy: { connect: { id: createdById } },
+    host: { connect: { id: hostId } },
+    title: copyTitle,
+    description: source.description,
+    startAt: source.startAt,
+    endAt: source.endAt ?? undefined,
+    meetingPoint: source.meetingPoint ?? undefined,
+    meetingLat: source.meetingLat ?? undefined,
+    meetingLng: source.meetingLng ?? undefined,
+    startPoint: source.startPoint ?? undefined,
+    startLat: source.startLat ?? undefined,
+    startLng: source.startLng ?? undefined,
+    parkingPoint: source.parkingPoint ?? undefined,
+    parkingLat: source.parkingLat ?? undefined,
+    parkingLng: source.parkingLng ?? undefined,
+    meetingDifferent: source.meetingDifferent ?? false,
+    carPoolEnabled: source.carPoolEnabled ?? false,
+    carPoolFree: source.carPoolEnabled ? (source.carPoolFree ?? true) : null,
+    carPoolPriceAed:
+      source.carPoolEnabled && source.carPoolFree === false ? source.carPoolPriceAed ?? 0 : null,
+    carPoolSeats: source.carPoolEnabled ? source.carPoolSeats ?? null : null,
+    carPoolDetails: source.carPoolEnabled ? source.carPoolDetails ?? undefined : undefined,
+    paymentTerms: source.paymentTerms ?? undefined,
+    itinerary: source.itinerary ?? [],
+    requirements: source.requirements ?? [],
+    images: source.images ?? [],
+    priceAed: source.priceAed,
+    pricePackages: source.pricePackages ?? [],
+    pricingMode: source.pricingMode ?? undefined,
+    capacity: source.capacity,
+    status: ActivityStatus.DRAFT
+  });
+
+  return created;
 };
 
 export const publishActivityById = async (activityId: string) => {

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { api, TeamMember } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
-import { OrganizerShell } from '../components/organizer/OrganizerShell';
+import { HostShell } from '../components/host/HostShell';
 import { TenantSwitcher } from '../components/ui';
 
-export const OrganizerTeam = () => {
+export const HostTeam = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [roleDrafts, setRoleDrafts] = useState<Record<string, 'tenant_admin' | 'tenant_guide'>>({});
@@ -18,7 +18,7 @@ export const OrganizerTeam = () => {
   const loadMembers = async (activeTenantId: string) => {
     if (!activeTenantId) return;
     try {
-      const response = await api.getOrganizerTeam(activeTenantId);
+      const response = await api.getHostTeam(activeTenantId);
       setMembers(response.data);
       const drafts: Record<string, 'tenant_admin' | 'tenant_guide'> = {};
       response.data.forEach((member) => {
@@ -41,7 +41,7 @@ export const OrganizerTeam = () => {
     if (!tenantId) return;
     setError(null);
     try {
-      await api.createOrganizerTeamMember(tenantId, { email, displayName, role });
+      await api.createHostTeamMember(tenantId, { email, displayName, role });
       setEmail('');
       setDisplayName('');
       setRole('tenant_guide');
@@ -58,7 +58,7 @@ export const OrganizerTeam = () => {
     setError(null);
     setSavingMemberId(memberId);
     try {
-      await api.updateOrganizerTeamMemberRole(tenantId, memberId, nextRole);
+      await api.updateHostTeamMemberRole(tenantId, memberId, nextRole);
       await loadMembers(tenantId);
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Failed to update member role');
@@ -72,7 +72,7 @@ export const OrganizerTeam = () => {
     setError(null);
     setBusyActionMemberId(memberId);
     try {
-      await api.toggleOrganizerTeamMemberStatus(tenantId, memberId, nextActive);
+      await api.toggleHostTeamMemberStatus(tenantId, memberId, nextActive);
       await loadMembers(tenantId);
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Failed to update member access');
@@ -86,7 +86,7 @@ export const OrganizerTeam = () => {
     setError(null);
     setBusyActionMemberId(memberId);
     try {
-      await api.removeOrganizerTeamMember(tenantId, memberId);
+      await api.removeHostTeamMember(tenantId, memberId);
       await loadMembers(tenantId);
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Failed to remove member');
@@ -96,7 +96,7 @@ export const OrganizerTeam = () => {
   };
 
   return (
-    <OrganizerShell title="Team">
+    <HostShell title="Team">
       <div className="space-y-4">
         <p className="text-sm text-gray-600">
           Add guides and admins who help run events. Your public profile lists team members separately.
@@ -200,6 +200,6 @@ export const OrganizerTeam = () => {
           </table>
         </section>
       </div>
-    </OrganizerShell>
+    </HostShell>
   );
 };

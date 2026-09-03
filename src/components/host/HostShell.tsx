@@ -4,35 +4,32 @@ import { api } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { FilterChips } from '../mobile/FilterChips';
-import { ORGANIZER_DASHBOARD_LINKS } from '../../constants';
+import { HOST_DASHBOARD_LINKS } from '../../constants';
 import { PAGE_BANNERS } from '../../config/pageBanners';
-import { OrganizerRatingChip } from './OrganizerRatingChip';
+import { HostRatingChip } from './HostRatingChip';
 
-interface OrganizerShellProps {
+interface HostShellProps {
   title: string;
   children: ReactNode;
-  /** CTA button placed alongside the section nav (e.g. "Create" link). */
   cta?: ReactNode;
-  /** Rendered above section nav (e.g. tenant switcher). */
   headerExtra?: ReactNode;
 }
 
-/** Unified organizer console chrome — banner with profile/bell/menu chrome + section nav. */
-export const OrganizerShell = ({ title, children, cta, headerExtra }: OrganizerShellProps) => {
+export const HostShell = ({ title, children, cta, headerExtra }: HostShellProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
 
-  const navOptions = ORGANIZER_DASHBOARD_LINKS.map((link) => ({
+  const navOptions = HOST_DASHBOARD_LINKS.map((link) => ({
     key: link.to,
     label: link.label,
   }));
 
   const activePath =
-    ORGANIZER_DASHBOARD_LINKS.find((link) => location.pathname === link.to)?.to ??
-    ORGANIZER_DASHBOARD_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
+    HOST_DASHBOARD_LINKS.find((link) => location.pathname === link.to)?.to ??
+    HOST_DASHBOARD_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
     location.pathname;
 
   useEffect(() => {
@@ -54,10 +51,10 @@ export const OrganizerShell = ({ title, children, cta, headerExtra }: OrganizerS
       layout="tab"
       title={title}
       showJourney={false}
-      banner={{ src: PAGE_BANNERS.organizer, alt: 'Organizer console' }}
+      banner={{ src: PAGE_BANNERS.organizer, alt: 'Host dashboard' }}
       action={
         avgRating !== null ? (
-          <OrganizerRatingChip
+          <HostRatingChip
             rating={avgRating}
             reviewCount={reviewCount}
             onClick={() => navigate('/host/profile')}
@@ -68,9 +65,9 @@ export const OrganizerShell = ({ title, children, cta, headerExtra }: OrganizerS
         <div className="space-y-3">
           <div className="relative overflow-hidden rounded-2xl border border-emerald-100/80 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 px-4 py-3 text-white">
             <div className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-white/15 blur-xl" aria-hidden />
-            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-white/80">Organizer hub</p>
+            <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-white/80">Host dashboard</p>
             <h2 className="text-lg font-bold leading-tight mt-0.5">{title}</h2>
-            <p className="text-xs text-white/90 mt-0.5">Manage organization context, events, team, and requests.</p>
+            <p className="text-xs text-white/90 mt-0.5">Manage activities, team, venues, and join requests.</p>
           </div>
           {headerExtra}
           <div className="flex items-center gap-2">
@@ -91,3 +88,6 @@ export const OrganizerShell = ({ title, children, cta, headerExtra }: OrganizerS
     </ConsumerShell>
   );
 };
+
+/** @deprecated Use HostShell */
+export const OrganizerShell = HostShell;

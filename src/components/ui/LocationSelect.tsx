@@ -52,7 +52,7 @@ export const LocationSelect = ({
     try {
       const [publicRes, pendingRes] = await Promise.all([
         api.getPublicLocations(),
-        tenantId ? api.getOrganizerSubmittedLocations(tenantId) : Promise.resolve({ data: [] as LocationDTO[] }),
+        tenantId ? api.getHostSubmittedLocations(tenantId) : Promise.resolve({ data: [] as LocationDTO[] }),
       ]);
       setActiveLocations(publicRes.data);
       setPendingLocations(pendingRes.data.filter((l) => l.status === 'draft'));

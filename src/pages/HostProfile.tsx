@@ -6,13 +6,13 @@ import { getActiveTenantId } from '../api/tenant';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { TenantSwitcher } from '../components/ui';
-import { OrganizerPublicProfile } from '../components/organizer/OrganizerPublicProfile';
+import { HostPublicProfile } from '../components/host/HostPublicProfile';
 import { PAGE_BANNERS } from '../config/pageBanners';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { accountRouteByRole } from '../utils/authRouting';
 import { useNavigate } from 'react-router-dom';
 
-export const OrganizerProfile = () => {
+export const HostProfile = () => {
   const { user, initializing, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [tenantSlug, setTenantSlug] = useState('');
@@ -67,8 +67,8 @@ export const OrganizerProfile = () => {
   return (
     <ConsumerShell
       layout="tab"
-      title="Organizer profile"
-      banner={{ src: PAGE_BANNERS.organizer, alt: 'Organizer profile' }}
+      title="Host profile"
+      banner={{ src: PAGE_BANNERS.organizer, alt: 'Host profile' }}
       toolbar={
         <div className="w-full flex items-center justify-start">
           <TenantSwitcher onChange={(tenantId) => resolveSlug(tenantId)} />
@@ -104,7 +104,7 @@ export const OrganizerProfile = () => {
           <p className="text-neutral-600">Select an organization to view your public profile.</p>
         </GlassCard>
       ) : (
-        <OrganizerPublicProfile slug={tenantSlug} mode="owner" />
+        <HostPublicProfile slug={tenantSlug} mode="owner" />
       )}
     </ConsumerShell>
   );

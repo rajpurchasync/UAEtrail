@@ -42,6 +42,11 @@ export const patchActivityInMongo = async (
 export const findActivityDocInMongo = async (activityId: string): Promise<MongoActivityDoc | null> =>
   activitiesCollection().findOne({ _id: activityId });
 
+export const deleteActivityDocInMongo = async (activityId: string): Promise<boolean> => {
+  const result = await activitiesCollection().deleteOne({ _id: activityId });
+  return result.deletedCount > 0;
+};
+
 /** Atomically reserve one participant slot when capacity allows. */
 export const tryReserveActivityParticipantSlot = async (
   activityId: string,

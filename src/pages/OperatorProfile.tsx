@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { OrganizerPublicProfile } from '../components/organizer/OrganizerPublicProfile';
+import { HostPublicProfile } from '../components/host/HostPublicProfile';
 
 /** Public-facing organizer page — about, certificates, trips, reviews. */
 export const OperatorProfile = () => {
@@ -7,6 +7,6 @@ export const OperatorProfile = () => {
   if (!id) return null;
 
   return (
-    <OrganizerPublicProfile slug={id} mode="public" backTo="/activities" backLabel="Back to activities" />
+    <HostPublicProfile slug={id} mode="public" backTo="/activities" backLabel="Back to activities" />
   );
 };

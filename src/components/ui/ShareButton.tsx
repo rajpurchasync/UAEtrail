@@ -6,7 +6,7 @@ interface ShareButtonProps {
   title: string;
   /** Short line included in WhatsApp / email / native share */
   text?: string;
-  /** App path, e.g. `/trip/abc` — builds full URL for sharing from cards */
+  /** App path, e.g. `/activity/abc` — builds full URL for sharing from cards */
   path?: string;
   /** Icon-only overlay for heroes and cards */
   compact?: boolean;

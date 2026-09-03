@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { Mountain, Star, ChevronRight, Tent, Compass, Calendar, MapPin } from 'lucide-react';
 import { TrailCard } from '../components/ui/TrailCard';
 import { CampingCard } from '../components/ui/CampingCard';
-import { TripCard } from '../components/ui/TripCard';
-import { EmptyTripsBanner } from '../components/ui/EmptyTripsBanner';
+import { ActivityCard, EmptyActivitiesBanner } from '../components/ui';
 import { DEFAULT_OG_IMAGE, HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -29,7 +28,7 @@ import {
   activitiesBrowsePath,
   type ActivityType,
 } from '../config/activityTypes';
-import { PUBLIC_ACTIVITIES_PATH } from '../constants';
+import { ACTIVITIES_PATH } from '../constants';
 
 const EXPLORE_REGION_ICONS: Record<ExploreRegionIcon, typeof Mountain> = {
   mountain: Mountain,
@@ -254,7 +253,7 @@ export const Home = () => {
               </p>
               <div className="flex flex-row flex-wrap justify-center gap-2.5 md:gap-3">
                 <Link
-                  to={PUBLIC_ACTIVITIES_PATH}
+                  to={ACTIVITIES_PATH}
                   className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 md:min-h-0 md:px-10 md:py-3.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all font-medium shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 text-sm md:text-base"
                 >
                   <Calendar className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
@@ -336,7 +335,7 @@ export const Home = () => {
               </p>
             </div>
             <Link
-              to={activityFilter === 'all' ? PUBLIC_ACTIVITIES_PATH : activitiesBrowsePath(activityFilter)}
+              to={activityFilter === 'all' ? ACTIVITIES_PATH : activitiesBrowsePath(activityFilter)}
               className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
               All activities
@@ -352,7 +351,7 @@ export const Home = () => {
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {displayedTrips.map((trip) => (
               <div key={trip.id} className="mobile-snap-rail__item">
-                <TripCard trip={trip} variant="featured" />
+                <ActivityCard trip={trip} variant="featured" />
               </div>
             ))}
             {displayedTrips.length === 0 && (
@@ -371,7 +370,7 @@ export const Home = () => {
                     </Link>
                   </div>
                 ) : (
-                  <EmptyTripsBanner />
+                  <EmptyActivitiesBanner />
                 )}
               </div>
             )}

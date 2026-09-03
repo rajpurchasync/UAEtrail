@@ -630,6 +630,13 @@ export const api = {
       headers: { 'x-tenant-id': tenantId }
     }),
 
+  duplicateHostActivity: (tenantId: string, activityId: string) =>
+    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}/duplicate`, {
+      method: 'POST',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId }
+    }),
+
   cancelHostActivity: (tenantId: string, activityId: string) =>
     apiRequest(`/host/activities/${activityId}`, {
       method: 'DELETE',
@@ -637,11 +644,25 @@ export const api = {
       headers: { 'x-tenant-id': tenantId }
     }),
 
+  getHostRequests: (tenantId: string) =>
+    apiRequest<{ data: ActivityRequestView[] }>('/host/requests?pageSize=100', {
+      auth: true,
+      headers: { 'x-tenant-id': tenantId }
+    }),
+  /** @deprecated Use getHostRequests */
   getOrganizerRequests: (tenantId: string) =>
     apiRequest<{ data: ActivityRequestView[] }>('/host/requests?pageSize=100', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
+  decideHostRequest: (tenantId: string, requestId: string, status: 'approved' | 'rejected', hostNote?: string) =>
+    apiRequest(`/host/requests/${requestId}`, {
+      method: 'PATCH',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId },
+      body: JSON.stringify({ status, organizerNote: hostNote })
+    }),
+  /** @deprecated Use decideHostRequest */
   decideOrganizerRequest: (tenantId: string, requestId: string, status: 'approved' | 'rejected', organizerNote?: string) =>
     apiRequest(`/host/requests/${requestId}`, {
       method: 'PATCH',
@@ -649,11 +670,25 @@ export const api = {
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify({ status, organizerNote })
     }),
+  getHostTeam: (tenantId: string) =>
+    apiRequest<{ data: TeamMember[] }>('/host/team', {
+      auth: true,
+      headers: { 'x-tenant-id': tenantId }
+    }),
+  /** @deprecated Use getHostTeam */
   getOrganizerTeam: (tenantId: string) =>
     apiRequest<{ data: TeamMember[] }>('/host/team', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
+  createHostTeamMember: (tenantId: string, payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }) =>
+    apiRequest<{ data: TeamMember }>('/host/team', {
+      method: 'POST',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId },
+      body: JSON.stringify(payload)
+    }),
+  /** @deprecated Use createHostTeamMember */
   createOrganizerTeamMember: (tenantId: string, payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }) =>
     apiRequest<{ data: TeamMember }>('/host/team', {
       method: 'POST',
@@ -661,6 +696,14 @@ export const api = {
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify(payload)
     }),
+  updateHostTeamMemberRole: (tenantId: string, membershipId: string, role: 'tenant_admin' | 'tenant_guide') =>
+    apiRequest<{ data: { id: string; role: string } }>(`/host/team/${membershipId}`, {
+      method: 'PATCH',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId },
+      body: JSON.stringify({ role })
+    }),
+  /** @deprecated Use updateHostTeamMemberRole */
   updateOrganizerTeamMemberRole: (tenantId: string, membershipId: string, role: 'tenant_admin' | 'tenant_guide') =>
     apiRequest<{ data: { id: string; role: string } }>(`/host/team/${membershipId}`, {
       method: 'PATCH',
@@ -668,6 +711,14 @@ export const api = {
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify({ role })
     }),
+  toggleHostTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
+    apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/host/team/${membershipId}`, {
+      method: 'PATCH',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId },
+      body: JSON.stringify({ isActive })
+    }),
+  /** @deprecated Use toggleHostTeamMemberStatus */
   toggleOrganizerTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
     apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/host/team/${membershipId}`, {
       method: 'PATCH',
@@ -675,6 +726,13 @@ export const api = {
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify({ isActive })
     }),
+  removeHostTeamMember: (tenantId: string, membershipId: string) =>
+    apiRequest(`/host/team/${membershipId}`, {
+      method: 'DELETE',
+      auth: true,
+      headers: { 'x-tenant-id': tenantId }
+    }),
+  /** @deprecated Use removeHostTeamMember */
   removeOrganizerTeamMember: (tenantId: string, membershipId: string) =>
     apiRequest(`/host/team/${membershipId}`, {
       method: 'DELETE',
@@ -783,7 +841,7 @@ export const api = {
   getMySubmittedLocations: () =>
     apiRequest<{ data: LocationDTO[] }>('/me/locations', { auth: true }),
 
-  getOrganizerSubmittedLocations: (tenantId: string) =>
+  getHostSubmittedLocations: (tenantId: string) =>
     apiRequest<{ data: LocationDTO[] }>('/host/locations', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }

@@ -16,17 +16,20 @@ export const STATUS_COLORS = {
   full: 'bg-gray-400'
 };
 
-/** Frontend page routes for scheduled activities (not API paths). */
-export const PUBLIC_ACTIVITIES_PATH = '/activities';
-export const ORGANIZER_ACTIVITIES_PATH = '/host/activities';
-export const ORGANIZER_ACTIVITIES_NEW_PATH = '/host/activities/new';
+/** Public activities browse + dashboard tab. */
+export const ACTIVITIES_PATH = '/activities';
 export const ADMIN_ACTIVITIES_PATH = '/admin/activities';
 
-/** Desktop organizer dashboard sidebar — Team is separate from public profile. */
-export const ORGANIZER_DASHBOARD_LINKS = [
+export const activityDetailPath = (activityId: string) => `/activity/${activityId}`;
+
+/** @deprecated Use activityDetailPath */
+export const tripDetailPath = activityDetailPath;
+
+/** Host console nav — hosting tools live under /host, not on the public activities page. */
+export const HOST_DASHBOARD_LINKS = [
   { to: '/host/overview', label: 'Overview' },
   { to: '/host/profile', label: 'Public Profile' },
-  { to: ORGANIZER_ACTIVITIES_PATH, label: 'Activities' },
+  { to: '/host/activities', label: 'Activities' },
   { to: '/host/requests', label: 'Join Requests' },
   { to: '/host/team', label: 'Team' },
   { to: '/host/locations', label: 'Venues' },
@@ -34,6 +37,9 @@ export const ORGANIZER_DASHBOARD_LINKS = [
   { to: '/host/history', label: 'History' },
   { to: '/my-rewards', label: 'Trail Points' },
 ];
+
+/** @deprecated Use HOST_DASHBOARD_LINKS */
+export const ORGANIZER_DASHBOARD_LINKS = HOST_DASHBOARD_LINKS;
 
 export const ADMIN_LINKS = [
   { to: '/admin/overview', label: 'Overview' },

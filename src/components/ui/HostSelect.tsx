@@ -22,7 +22,7 @@ export const HostSelect = ({ tenantId, value, onChange, required, className = ''
     }
     setLoading(true);
     api
-      .getOrganizerTeam(tenantId)
+      .getHostTeam(tenantId)
       .then((res) => {
         setHosts(res.data);
       })

@@ -1,17 +1,16 @@
 import { UserRole } from '@uaetrail/shared-types';
+import { isMerchantRole, isPlatformAdmin } from './roles';
 
 export const defaultRouteByRole = (role: UserRole): string => {
-  if (role === 'platform_admin') return '/admin/overview';
-  if (role === 'merchant_admin') return '/merchant/dashboard';
-  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/host/overview';
+  if (isPlatformAdmin(role)) return '/admin/overview';
+  if (isMerchantRole(role)) return '/merchant/dashboard';
   return '/';
 };
 
-/** Mobile-first home for account access — no desktop dashboard for participants. */
+/** Participant account home — all explorers including hosts. */
 export const accountRouteByRole = (role: UserRole): string => {
-  if (role === 'platform_admin') return '/admin/overview';
-  if (role === 'merchant_admin') return '/merchant/dashboard';
-  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') return '/host/overview';
+  if (isPlatformAdmin(role)) return '/admin/overview';
+  if (isMerchantRole(role)) return '/merchant/dashboard';
   return '/profile';
 };
 
@@ -34,7 +33,7 @@ export const participantDashboardRedirect = (subpath: string): string => {
   }
 };
 
-export const organizerDashboardRedirect = (subpath: string): string => {
+export const hostDashboardRedirect = (subpath: string): string => {
   switch (subpath) {
     case 'messages':
       return '/host/messages';
@@ -49,6 +48,9 @@ export const organizerDashboardRedirect = (subpath: string): string => {
       return '/host/overview';
   }
 };
+
+/** @deprecated Use hostDashboardRedirect */
+export const organizerDashboardRedirect = hostDashboardRedirect;
 
 export const adminDashboardRedirect = (subpath: string): string => {
   switch (subpath) {

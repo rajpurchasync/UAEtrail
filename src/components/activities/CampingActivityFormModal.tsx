@@ -1,24 +1,24 @@
 import type { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import { ACTIVITY_TYPE_GROUP_LABELS } from '../../config/activityTypes';
-import { saveHikingDraft } from '../../utils/activityFormSessionStorage';
+import { saveCampingDraft } from '../../utils/activityFormSessionStorage';
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
 import { ActivityFormShell } from './ActivityFormShell';
 import { ActivityTripPreviewOverlay } from './ActivityTripPreviewOverlay';
 import { MIN_ABOUT_WORDS } from './activityFormValidation';
 import {
+  campingLocationTabs,
   FormStepProgress,
-  hikingLocationTabs,
   InstructionsStep,
   InstructionsStepTabs,
   LocationStep,
   LocationStepTabs,
   ParticipationStep,
-  SummaryStepHiking,
+  SummaryStepCamping,
   TransportationStep,
 } from './activityFormSteps';
 import { useHostActivityFormModal } from './useHostActivityFormModal';
 
-export interface HikingActivityFormModalProps {
+export interface CampingActivityFormModalProps {
   open: boolean;
   onClose: () => void;
   onSaved?: () => void;
@@ -30,7 +30,7 @@ export interface HikingActivityFormModalProps {
   onSessionChange?: (snapshot: ActivityFormSessionSnapshot) => void;
 }
 
-export const HikingActivityFormModal = ({
+export const CampingActivityFormModal = ({
   open,
   onClose,
   onSaved,
@@ -40,35 +40,35 @@ export const HikingActivityFormModal = ({
   venueLocations,
   sessionSnapshot,
   onSessionChange,
-}: HikingActivityFormModalProps) => {
+}: CampingActivityFormModalProps) => {
   const modal = useHostActivityFormModal({
     open,
-    activityType: 'hiking',
+    activityType: 'camping',
     tenantId,
     editingActivity,
     hostOrganizations,
     venueLocations,
     sessionSnapshot,
-    draftFromSession: sessionSnapshot?.hikingDraft ?? null,
+    draftFromSession: sessionSnapshot?.campingDraft ?? null,
     onSessionChange,
     onSaved,
     onClose,
     persistDraft: (draft, hostTenantId) => {
       if (!onSessionChange) return;
-      saveHikingDraft(draft, {
+      saveCampingDraft(draft, {
         open: true,
         tenantId: hostTenantId,
-        activityType: 'hiking',
+        activityType: 'camping',
         editingActivityId: editingActivity?.id ?? draft.editingActivityId,
       });
       onSessionChange({
         open: true,
-        activityType: 'hiking',
+        activityType: 'camping',
         tenantId: hostTenantId,
         editingActivityId: editingActivity?.id ?? draft.editingActivityId,
         initialActivityType: null,
-        hikingDraft: draft,
-        campingDraft: sessionSnapshot?.campingDraft ?? null,
+        hikingDraft: sessionSnapshot?.hikingDraft ?? null,
+        campingDraft: draft,
       });
     },
   });
@@ -76,8 +76,8 @@ export const HikingActivityFormModal = ({
   if (!open) return null;
 
   const title = modal.isEdit
-    ? 'Edit hiking activity'
-    : `Add ${ACTIVITY_TYPE_GROUP_LABELS.hiking.toLowerCase()} activity`;
+    ? 'Edit camping activity'
+    : `Add ${ACTIVITY_TYPE_GROUP_LABELS.camping.toLowerCase()} activity`;
   const isLastStep = modal.step === 5;
   const isPublishedEdit = modal.isEdit && editingActivity?.status === 'published';
 
@@ -92,7 +92,7 @@ export const HikingActivityFormModal = ({
           modal.step === 3 ? (
             <LocationStepTabs
               locationTab={modal.locationTab}
-              locationTabs={hikingLocationTabs}
+              locationTabs={campingLocationTabs}
               onChange={modal.setLocationTab}
             />
           ) : modal.step === 4 ? (
@@ -149,7 +149,7 @@ export const HikingActivityFormModal = ({
       >
         <div className="space-y-4">
           {modal.step === 1 && (
-            <SummaryStepHiking
+            <SummaryStepCamping
               form={modal.form}
               set={modal.set}
               titleWords={modal.titleWords}
@@ -174,9 +174,9 @@ export const HikingActivityFormModal = ({
               form={modal.form}
               setPin={modal.setPin}
               locationTab={modal.locationTab}
-              locationTabs={hikingLocationTabs}
+              locationTabs={campingLocationTabs}
               venueCenter={modal.venueCenter}
-              activityType="hiking"
+              activityType="camping"
             />
           )}
 

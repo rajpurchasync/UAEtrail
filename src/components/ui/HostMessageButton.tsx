@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { messagesRouteForRole } from '../../utils/authRouting';
 
-interface OrganizerMessageButtonProps {
+interface HostMessageButtonProps {
   organizerUserId?: string | null;
   /** Trip/event context — enables inquiry messages before a join request exists. */
   activityId?: string | null;
@@ -22,12 +22,12 @@ const iconSizes = {
 };
 
 /** Message organizer — guests are sent to sign-in first. */
-export const OrganizerMessageButton = ({
+export const HostMessageButton = ({
   organizerUserId,
   activityId,
   size = 'sm',
   className = '',
-}: OrganizerMessageButtonProps) => {
+}: HostMessageButtonProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 

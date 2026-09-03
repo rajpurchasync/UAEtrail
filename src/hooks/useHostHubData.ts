@@ -3,12 +3,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 
-const organizerHubKey = (tenantId: string) => ['organizer-hub', tenantId] as const;
+const hostHubKey = (tenantId: string) => ['host-hub', tenantId] as const;
 
-async function fetchOrganizerHub(tenantId: string) {
+async function fetchHostHub(tenantId: string) {
   const [activitiesResponse, requestsResponse] = await Promise.all([
     api.listHostActivities(tenantId),
-    api.getOrganizerRequests(tenantId),
+    api.getHostRequests(tenantId),
   ]);
   return {
     activities: activitiesResponse.data,
@@ -16,13 +16,13 @@ async function fetchOrganizerHub(tenantId: string) {
   };
 }
 
-export const useOrganizerHubData = () => {
+export const useHostHubData = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: tenantId ? organizerHubKey(tenantId) : ['organizer-hub', 'none'],
-    queryFn: () => fetchOrganizerHub(tenantId!),
+    queryKey: tenantId ? hostHubKey(tenantId) : ['host-hub', 'none'],
+    queryFn: () => fetchHostHub(tenantId!),
     enabled: Boolean(tenantId),
   });
 
@@ -59,7 +59,7 @@ export const useOrganizerHubData = () => {
 
   const reload = useCallback(async () => {
     if (tenantId) {
-      await queryClient.invalidateQueries({ queryKey: organizerHubKey(tenantId) });
+      await queryClient.invalidateQueries({ queryKey: hostHubKey(tenantId) });
     }
     await refetch();
   }, [queryClient, refetch, tenantId]);
@@ -75,7 +75,10 @@ export const useOrganizerHubData = () => {
     pastActivitiesCount,
     upcomingActivities,
     loading: isLoading,
-    error: error instanceof Error ? error.message : error ? 'Failed to load organizer data' : null,
+    error: error instanceof Error ? error.message : error ? 'Failed to load host data' : null,
     reload,
   };
 };
+
+/** @deprecated Use useHostHubData */
+export const useOrganizerHubData = useHostHubData;

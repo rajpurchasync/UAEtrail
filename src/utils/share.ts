@@ -11,4 +11,7 @@ export const buildShareText = (title: string, detail?: string): string =>
 export const locationSharePath = (activityType: string, locationId: string): string =>
   activityType === 'camping' ? `/camp/${locationId}` : `/trail/${locationId}`;
 
-export const tripSharePath = (tripId: string): string => `/trip/${tripId}`;
+export const activitySharePath = (activityId: string): string => `/activity/${activityId}`;
+
+/** @deprecated Use activitySharePath */
+export const tripSharePath = activitySharePath;

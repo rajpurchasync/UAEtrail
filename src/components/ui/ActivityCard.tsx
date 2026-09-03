@@ -8,19 +8,19 @@ import { organizerProfilePath } from '../../utils/organizerLinks';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
 import { ParticipantPreview } from './ParticipantPreview';
-import { OrganizerMessageButton } from './OrganizerMessageButton';
+import { HostMessageButton } from './HostMessageButton';
 import { SecureAvatar } from './SecureAvatar';
 import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../../utils/hostLabels';
 
-interface TripCardProps {
+interface ActivityCardProps {
   trip: Trip;
-  /** Featured home carousel: tap opens trip detail */
+  /** Featured home carousel: tap opens activity detail */
   variant?: 'default' | 'featured';
 }
 
-export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
+export const ActivityCard = ({ trip, variant = 'default' }: ActivityCardProps) => {
   const navigate = useNavigate();
-  const tripPath = `/trip/${trip.id}`;
+  const tripPath = `/activity/${trip.id}`;
 
   const locationImage =
     trip.images?.[0] ??
@@ -89,7 +89,7 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
         </div>
       )}
       {!isFeatured && (
-        <OrganizerMessageButton
+        <HostMessageButton
           organizerUserId={hostUserId}
           activityId={trip.id}
         />
@@ -122,7 +122,7 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
         <ShareButton
           title={trip.title || trip.locationName}
           text={`${trip.date} · ${trip.activityType} trip on UAE Trails`}
-          path={`/trip/${trip.id}`}
+          path={`/activity/${trip.id}`}
           iconOnly
         />
       </div>
@@ -221,3 +221,6 @@ export const TripCard = ({ trip, variant = 'default' }: TripCardProps) => {
     </>
   );
 };
+
+/** @deprecated Use ActivityCard */
+export const TripCard = ActivityCard;

@@ -73,7 +73,7 @@ export const tripEventSchema = (trip: ActivityDetailDTO) => ({
   '@type': 'Event',
   name: trip.title || trip.locationName,
   description: trip.description,
-  url: `${SITE_ORIGIN}/trip/${trip.id}`,
+  url: `${SITE_ORIGIN}/activity/${trip.id}`,
   image: absImage(trip.images?.[0] ?? trip.location?.images?.[0]),
   startDate: `${trip.date}T${trip.time}:00+04:00`,
   endDate: trip.endDate ? `${trip.endDate}T${trip.endTime ?? trip.time}:00+04:00` : undefined,
@@ -97,7 +97,7 @@ export const tripEventSchema = (trip: ActivityDetailDTO) => ({
       trip.slotsAvailable > 0
         ? 'https://schema.org/InStock'
         : 'https://schema.org/SoldOut',
-    url: `${SITE_ORIGIN}/trip/${trip.id}`
+    url: `${SITE_ORIGIN}/activity/${trip.id}`
   }
 });
 

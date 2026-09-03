@@ -4,7 +4,7 @@ import {
   accountRouteByRole,
   adminDashboardRedirect,
   defaultRouteByRole,
-  organizerDashboardRedirect,
+  hostDashboardRedirect,
   participantDashboardRedirect,
 } from './authRouting';
 
@@ -13,9 +13,9 @@ describe('auth routing by role', () => {
     const cases: Array<[UserRole, string]> = [
       ['participant', '/profile'],
       ['merchant_admin', '/merchant/dashboard'],
-      ['tenant_owner', '/host/overview'],
-      ['tenant_admin', '/host/overview'],
-      ['tenant_guide', '/host/overview'],
+      ['tenant_owner', '/profile'],
+      ['tenant_admin', '/profile'],
+      ['tenant_guide', '/profile'],
       ['platform_admin', '/admin/overview'],
     ];
 
@@ -28,9 +28,9 @@ describe('auth routing by role', () => {
     const cases: Array<[UserRole, string]> = [
       ['participant', '/'],
       ['merchant_admin', '/merchant/dashboard'],
-      ['tenant_owner', '/host/overview'],
-      ['tenant_admin', '/host/overview'],
-      ['tenant_guide', '/host/overview'],
+      ['tenant_owner', '/'],
+      ['tenant_admin', '/'],
+      ['tenant_guide', '/'],
       ['platform_admin', '/admin/overview'],
     ];
 
@@ -48,13 +48,13 @@ describe('auth routing by role', () => {
     expect(participantDashboardRedirect('unknown')).toBe('/profile');
   });
 
-  it('maps organizer dashboard aliases', () => {
-    expect(organizerDashboardRedirect('messages')).toBe('/host/messages');
-    expect(organizerDashboardRedirect('requests')).toBe('/host/requests');
-    expect(organizerDashboardRedirect('trips')).toBe('/host/activities');
-    expect(organizerDashboardRedirect('activities')).toBe('/host/activities');
-    expect(organizerDashboardRedirect('profile')).toBe('/host/profile');
-    expect(organizerDashboardRedirect('unknown')).toBe('/host/overview');
+  it('maps host dashboard aliases', () => {
+    expect(hostDashboardRedirect('messages')).toBe('/host/messages');
+    expect(hostDashboardRedirect('requests')).toBe('/host/requests');
+    expect(hostDashboardRedirect('trips')).toBe('/host/activities');
+    expect(hostDashboardRedirect('activities')).toBe('/host/activities');
+    expect(hostDashboardRedirect('profile')).toBe('/host/profile');
+    expect(hostDashboardRedirect('unknown')).toBe('/host/overview');
   });
 
   it('maps admin dashboard aliases', () => {

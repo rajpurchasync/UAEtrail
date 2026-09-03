@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { ActivityDTO } from '@uaetrail/shared-types';
 import { api, ActivityRequestView } from '../../api/services';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
-import { ShareButton, OrganizerMessageButton } from '../../components/ui';
+import { ShareButton, HostMessageButton } from '../../components/ui';
 import { organizerProfilePath } from '../../utils/organizerLinks';
 import { daysUntil, getRequestEventDate, isUpcomingTrip, pendingUpcomingRequests } from '../../utils/tripDates';
 import { showTenantBrand, tripHostName } from '../../utils/hostLabels';
@@ -124,7 +124,7 @@ export const MineSection = ({ onExplore }: { onExplore: () => void }) => {
 const JoinedTripCard = ({ trip, variant }: { trip: ActivityDTO; variant: 'confirmed' | 'past' }) => {
   const upcoming = isUpcomingTrip(trip);
   return (
-    <Link to={`/trip/${trip.id}`} className="glass-card-interactive block p-4">
+    <Link to={`/activity/${trip.id}`} className="glass-card-interactive block p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="font-semibold text-neutral-900 truncate">{trip.title || trip.locationName}</h3>
@@ -138,7 +138,7 @@ const JoinedTripCard = ({ trip, variant }: { trip: ActivityDTO; variant: 'confir
           <ShareButton
             title={trip.title || trip.locationName}
             text={`${trip.date} · ${trip.activityType} trip on UAE Trails`}
-            path={`/trip/${trip.id}`}
+            path={`/activity/${trip.id}`}
             iconOnly
             light
           />
@@ -174,7 +174,7 @@ const JoinedTripCard = ({ trip, variant }: { trip: ActivityDTO; variant: 'confir
                 {showTenantBrand(trip) && trip.tenantName ? ` · ${trip.tenantName}` : ''}
               </span>
             )}
-            <OrganizerMessageButton
+            <HostMessageButton
               organizerUserId={trip.hostUserId ?? trip.organizerUserId}
               activityId={trip.id}
             />
@@ -221,7 +221,7 @@ const JoinedRequestCard = ({ request }: { request: ActivityRequestView }) => {
             <ShareButton
               title={request.activity.title || request.activity.locationName}
               text={`${date} · trip on UAE Trails`}
-              path={`/trip/${request.activity.id}`}
+              path={`/activity/${request.activity.id}`}
               iconOnly
               light
             />
@@ -244,7 +244,7 @@ const JoinedRequestCard = ({ request }: { request: ActivityRequestView }) => {
               Hosted by {request.activity.hostName ?? request.activity.organizerName}
             </p>
           )}
-          <OrganizerMessageButton
+          <HostMessageButton
             organizerUserId={request.activity.organizerUserId}
             activityId={request.activity.id}
           />

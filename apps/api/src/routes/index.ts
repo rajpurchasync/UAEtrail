@@ -4,7 +4,7 @@ import { adminRouter } from './admin.js';
 import { authRouter } from './auth.js';
 import { chatRouter } from './chat.js';
 import { mediaRouter } from './media.js';
-import { hostRouter } from './organizer.js';
+import { hostRouter } from './host.js';
 import { shopRouter } from './shop.js';
 import { socialRouter } from './social.js';
 import { reportsRouter } from './reports.js';

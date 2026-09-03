@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -29,7 +29,7 @@ const Shop = lazy(() => import('./pages/Shop').then((m) => ({ default: m.Shop })
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
 const MerchantPublic = lazy(() => import('./pages/MerchantPublic').then((m) => ({ default: m.MerchantPublic })));
 const Community = lazy(() => import('./pages/Community').then((m) => ({ default: m.Community })));
-const TripDetail = lazy(() => import('./pages/TripDetail').then((m) => ({ default: m.TripDetail })));
+const ActivityDetail = lazy(() => import('./pages/ActivityDetail').then((m) => ({ default: m.ActivityDetail })));
 const OperatorProfile = lazy(() => import('./pages/OperatorProfile').then((m) => ({ default: m.OperatorProfile })));
 const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
 const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
@@ -48,18 +48,18 @@ const AdminShop = lazy(() => import('./pages/AdminShop').then((m) => ({ default:
 const AdminNotifications = lazy(() =>
   import('./pages/AdminNotifications').then((m) => ({ default: m.AdminNotifications }))
 );
-const OrganizerOverview = lazy(() => import('./pages/OrganizerOverview').then((m) => ({ default: m.OrganizerOverview })));
-const OrganizerActivities = lazy(() => import('./pages/OrganizerActivities').then((m) => ({ default: m.OrganizerActivities })));
-const OrganizerRequests = lazy(() => import('./pages/OrganizerRequests').then((m) => ({ default: m.OrganizerRequests })));
-const OrganizerTeam = lazy(() => import('./pages/OrganizerTeam').then((m) => ({ default: m.OrganizerTeam })));
-const OrganizerProfile = lazy(() => import('./pages/OrganizerProfile').then((m) => ({ default: m.OrganizerProfile })));
-const OrganizerLocations = lazy(() => import('./pages/OrganizerLocations').then((m) => ({ default: m.OrganizerLocations })));
-const OrganizerHistory = lazy(() => import('./pages/OrganizerHistory').then((m) => ({ default: m.OrganizerHistory })));
+const HostOverview = lazy(() => import('./pages/HostOverview').then((m) => ({ default: m.HostOverview })));
+const HostActivities = lazy(() => import('./pages/HostActivities').then((m) => ({ default: m.HostActivities })));
+const HostRequests = lazy(() => import('./pages/HostRequests').then((m) => ({ default: m.HostRequests })));
+const HostTeam = lazy(() => import('./pages/HostTeam').then((m) => ({ default: m.HostTeam })));
+const HostProfile = lazy(() => import('./pages/HostProfile').then((m) => ({ default: m.HostProfile })));
+const HostLocations = lazy(() => import('./pages/HostLocations').then((m) => ({ default: m.HostLocations })));
+const HostHistory = lazy(() => import('./pages/HostHistory').then((m) => ({ default: m.HostHistory })));
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
 const Favorites = lazy(() => import('./pages/Favorites').then((m) => ({ default: m.Favorites })));
 const MerchantDashboard = lazy(() => import('./pages/MerchantDashboard').then((m) => ({ default: m.MerchantDashboard })));
-const Trips = lazy(() => import('./pages/Trips').then((m) => ({ default: m.Activities })));
+const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const JoinRequestDetail = lazy(() =>
   import('./pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
@@ -68,9 +68,7 @@ const Notifications = lazy(() =>
   import('./pages/Notifications').then((m) => ({ default: m.Notifications }))
 );
 const Groups = lazy(() => import('./pages/Groups').then((m) => ({ default: m.Groups })));
-const BecomeOrganizer = lazy(() =>
-  import('./pages/BecomeOrganizer').then((m) => ({ default: m.BecomeOrganizer }))
-);
+const BecomeHost = lazy(() => import('./pages/BecomeHost').then((m) => ({ default: m.BecomeHost })));
 const MyRewards = lazy(() => import('./pages/MyRewards').then((m) => ({ default: m.MyRewards })));
 const TrailPointsAbout = lazy(() =>
   import('./pages/TrailPointsAbout').then((m) => ({ default: m.TrailPointsAbout }))
@@ -165,6 +163,11 @@ const LegacyTripsRedirect = () => {
   return <Navigate to={`/activities${search}`} replace />;
 };
 
+const LegacyTripDetailRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/activity/${id}`} replace />;
+};
+
 function App() {
   return (
     <ErrorBoundary>
@@ -181,12 +184,12 @@ function App() {
           <Route path="/camp/:id" element={<CampDetail />} />
           <Route path="/community-activity/:id" element={<CommunityActivityDetail />} />
           <Route path="/calendar" element={<Navigate to="/activities" replace />} />
-          <Route path="/activities" element={<ConsumerRoute><Trips /></ConsumerRoute>} />
+          <Route path="/activities" element={<ConsumerRoute><Activities /></ConsumerRoute>} />
           <Route path="/trips" element={<LegacyTripsRedirect />} />
           <Route
             path="/profile"
             element={
-              <ProtectedRoute roles={['participant']}>
+              <ProtectedRoute>
                 <Profile />
               </ProtectedRoute>
             }
@@ -195,7 +198,7 @@ function App() {
           <Route
             path="/my-rewards"
             element={
-              <ProtectedRoute roles={['participant']}>
+              <ProtectedRoute>
                 <MyRewards />
               </ProtectedRoute>
             }
@@ -204,7 +207,7 @@ function App() {
           <Route
             path="/my-requests"
             element={
-              <ProtectedRoute roles={['participant']}>
+              <ProtectedRoute>
                 <UserRequests />
               </ProtectedRoute>
             }
@@ -212,7 +215,7 @@ function App() {
           <Route
             path="/my-requests/:requestId"
             element={
-              <ProtectedRoute roles={['participant']}>
+              <ProtectedRoute>
                 <JoinRequestDetail />
               </ProtectedRoute>
             }
@@ -220,7 +223,7 @@ function App() {
           <Route
             path="/messages"
             element={
-              <ProtectedRoute roles={['participant', 'merchant_admin']}>
+              <ProtectedRoute>
                 <Messages />
               </ProtectedRoute>
             }
@@ -249,10 +252,11 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/trip/:id" element={<TripDetail />} />
+          <Route path="/activity/:id" element={<ConsumerRoute><ActivityDetail /></ConsumerRoute>} />
+          <Route path="/trip/:id" element={<LegacyTripDetailRedirect />} />
           <Route path="/operator/:id" element={<OperatorProfile />} />
-          <Route path="/become-organizer" element={<BecomeOrganizer />} />
-          <Route path="/become-host" element={<BecomeOrganizer />} />
+          <Route path="/become-organizer" element={<BecomeHost />} />
+          <Route path="/become-host" element={<BecomeHost />} />
           <Route
             path="/membership"
             element={FEATURE_FLAGS.membershipEnabled ? <Membership /> : <Navigate to="/trail-points" replace />}
@@ -377,7 +381,7 @@ function App() {
             path="/host/overview"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerOverview />
+                <HostOverview />
               </ProtectedRoute>
             }
           />
@@ -385,7 +389,7 @@ function App() {
             path="/host/activities"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerActivities />
+                <HostActivities />
               </ProtectedRoute>
             }
           />
@@ -393,7 +397,7 @@ function App() {
             path="/host/activities/new"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerActivities />
+                <HostActivities />
               </ProtectedRoute>
             }
           />
@@ -401,7 +405,7 @@ function App() {
             path="/host/requests"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerRequests />
+                <HostRequests />
               </ProtectedRoute>
             }
           />
@@ -409,7 +413,7 @@ function App() {
             path="/host/team"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerTeam />
+                <HostTeam />
               </ProtectedRoute>
             }
           />
@@ -417,7 +421,7 @@ function App() {
             path="/host/profile"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerProfile />
+                <HostProfile />
               </ProtectedRoute>
             }
           />
@@ -433,7 +437,7 @@ function App() {
             path="/host/locations"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerLocations />
+                <HostLocations />
               </ProtectedRoute>
             }
           />
@@ -441,7 +445,7 @@ function App() {
             path="/host/history"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganizerHistory />
+                <HostHistory />
               </ProtectedRoute>
             }
           />

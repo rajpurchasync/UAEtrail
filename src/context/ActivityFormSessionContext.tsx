@@ -49,6 +49,7 @@ const defaultSession = (): ActivityFormSessionSnapshot => ({
   editingActivityId: null,
   initialActivityType: null,
   hikingDraft: null,
+  campingDraft: null,
 });
 
 const resolveHostOrganizations = (opts: OpenActivityFormOptions): TenantListDTO[] | undefined =>
@@ -57,12 +58,13 @@ const resolveHostOrganizations = (opts: OpenActivityFormOptions): TenantListDTO[
 export const ActivityFormSessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<ActivityFormSessionSnapshot>(() => {
     const loaded = loadActivityFormSession();
-    if (loaded?.hikingDraft) return { ...loaded, open: true };
+    if (loaded?.hikingDraft || loaded?.campingDraft) return { ...loaded, open: true };
     return loaded ?? defaultSession();
   });
   const [options, setOptions] = useState<OpenActivityFormOptions>({});
   const [onSaved, setOnSaved] = useState<(() => void) | null>(null);
   const [editingActivity, setEditingActivity] = useState<ActivityDTO | null>(null);
+  const [editSessionKey, setEditSessionKey] = useState(0);
 
   useEffect(() => {
     if (session.open) {
@@ -82,6 +84,7 @@ export const ActivityFormSessionProvider = ({ children }: { children: ReactNode 
       initialActivityType: opts.initialActivityType ?? null,
       activityType: opts.initialActivityType ?? null,
       hikingDraft: null,
+      campingDraft: null,
     }));
   }, []);
 
@@ -89,21 +92,23 @@ export const ActivityFormSessionProvider = ({ children }: { children: ReactNode 
     const hostOrganizations = resolveHostOrganizations(opts);
     setOptions({ ...opts, hostOrganizations });
     setEditingActivity(activity);
-    setSession((prev) => ({
-      ...prev,
+    setEditSessionKey((key) => key + 1);
+    setSession({
       open: true,
       tenantId: opts.tenantId ?? activity.tenantId ?? getActiveTenantId(),
       editingActivityId: activity.id,
       initialActivityType: null,
       activityType: (activity.activityType as ActivityType) ?? 'hiking',
       hikingDraft: null,
-    }));
+      campingDraft: null,
+    });
   }, []);
 
   const close = useCallback(() => {
     clearActivityFormSession();
     setSession(defaultSession());
     setEditingActivity(null);
+    setEditSessionKey(0);
     setOptions({});
   }, []);
 
@@ -137,6 +142,7 @@ export const ActivityFormSessionProvider = ({ children }: { children: ReactNode 
         tenantId={options.tenantId ?? session.tenantId}
         initialActivityType={options.initialActivityType ?? session.initialActivityType}
         editingActivity={editingActivity ?? options.editingActivity ?? null}
+        editSessionKey={editSessionKey}
         hostOrganizations={hostOrganizations}
         venueLocations={options.venueLocations}
         sessionSnapshot={session}

@@ -6,7 +6,7 @@ import { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { DashboardLayout } from '../components/layout';
 import { MobileScreen } from '../components/layout/MobileScreen';
-import { ORGANIZER_DASHBOARD_LINKS } from '../constants';
+import { HOST_DASHBOARD_LINKS } from '../constants';
 import { useChatStream } from '../hooks/useChatStream';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
@@ -34,8 +34,8 @@ export const Messages = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const isConsumerMessages = location.pathname === '/messages';
-  const isOrganizerMessages = location.pathname === '/host/messages';
-  const useMobileShell = isConsumerMessages || (isOrganizerMessages && isMobile);
+  const isHostMessages = location.pathname === '/host/messages';
+  const useMobileShell = isConsumerMessages || (isHostMessages && isMobile);
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('to'));
@@ -60,9 +60,9 @@ export const Messages = () => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
-  const isOrganizer =
+  const isHost =
     user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
-  const links = isOrganizer ? ORGANIZER_DASHBOARD_LINKS : userLinks;
+  const links = isHost ? HOST_DASHBOARD_LINKS : userLinks;
 
   const loadConversations = useCallback(async () => {
     try {
@@ -351,7 +351,7 @@ export const Messages = () => {
     return (
       <MobileScreen
         title="Messages"
-        backTo={isOrganizer ? '/host/overview' : '/profile'}
+        backTo={isHost ? '/host/overview' : '/profile'}
         hideHeader={inThread}
         showBanner={!inThread}
       >

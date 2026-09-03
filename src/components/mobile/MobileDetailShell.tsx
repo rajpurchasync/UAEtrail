@@ -18,6 +18,10 @@ interface MobileDetailShellProps {
     linkTo?: string;
     desktopChromeOnly?: boolean;
     desktopAction?: ReactNode;
+    showMobileChrome?: boolean;
+    showJourney?: boolean;
+    journeyFallbackTo?: string;
+    journeyLabel?: string;
   };
   /** Optional fixed bottom action (e.g. join CTA) */
   footer?: ReactNode;
@@ -43,10 +47,10 @@ export const MobileDetailShell = ({
         backLabel={backLabel}
         linkTo={banner.linkTo ?? backTo}
         linkAriaLabel={banner.linkTo ? backLabel : banner.title ?? banner.alt ?? backLabel}
-        showMobileChrome
-        showJourney
-        journeyFallbackTo={backTo}
-        journeyLabel={backLabel}
+        showMobileChrome={banner.showMobileChrome ?? true}
+        showJourney={banner.showJourney ?? true}
+        journeyFallbackTo={banner.journeyFallbackTo ?? backTo}
+        journeyLabel={banner.journeyLabel ?? backLabel}
         action={headerAction ?? banner.desktopAction}
         desktopAction={banner.desktopAction}
         desktopChromeOnly={banner.desktopChromeOnly}

@@ -19,9 +19,9 @@ export const SecurityPrivacy = () => {
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const requiresOtp = import.meta.env.PROD;
 
-  const isOrganizerPath = location.pathname.startsWith('/host/');
-  const backPath = isOrganizerPath ? '/host/overview' : '/profile';
-  const backLabel = isOrganizerPath ? 'Organizer' : 'Profile';
+  const isHostPath = location.pathname.startsWith('/host/');
+  const backPath = isHostPath ? '/host/overview' : '/profile';
+  const backLabel = isHostPath ? 'Host dashboard' : 'Profile';
 
   const handleChangePassword = async (event: FormEvent) => {
     event.preventDefault();

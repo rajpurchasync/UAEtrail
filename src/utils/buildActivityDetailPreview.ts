@@ -1,13 +1,14 @@
 import type { ActivityDetailDTO, ActivityDTO, LocationDTO, AuthUser } from '@uaetrail/shared-types';
+import type { ActivityType } from '../config/activityTypes';
 import type { ActivityFormState } from '../components/activities/activityFormState';
 import { buildHostActivityPayload, buildRequirementsFromForm } from '../components/activities/activityFormState';
 import { derivePriceAed } from './tripPricing';
 
-const fallbackLocation = (locationId: string, name: string): LocationDTO => ({
+const fallbackLocation = (locationId: string, name: string, activityType: ActivityType): LocationDTO => ({
   id: locationId,
   name,
   region: '',
-  activityType: 'hiking',
+  activityType,
   description: '',
   season: [],
   childFriendly: false,
@@ -36,17 +37,20 @@ export const buildActivityDetailPreview = (
       : derivePriceAed(pricePackages ?? [], saved.price);
 
   const venueName = venue?.name ?? saved.locationName ?? 'Venue';
+  const resolvedActivityType = form.activityType ?? saved.activityType ?? 'hiking';
 
   return {
     ...saved,
     id: saved.id,
     tenantId: saved.tenantId ?? form.tenantId,
+    tenantSlug: saved.tenantSlug ?? 'preview',
     locationId: form.locationId || saved.locationId,
     title: form.title.trim() || saved.title,
     description: form.description.trim() || saved.description,
     date: form.date || saved.date,
     time: form.time || saved.time,
-    activityType: 'hiking',
+    activityType: resolvedActivityType,
+    region: venue?.region ?? saved.region,
     status: saved.status ?? 'draft',
     slotsTotal: form.capacity || saved.slotsTotal || 0,
     slotsAvailable: form.capacity || saved.slotsAvailable || 0,
@@ -78,7 +82,7 @@ export const buildActivityDetailPreview = (
     tenantName: tenantName ?? saved.tenantName,
     hostId: form.hostUserId || saved.hostId,
     participants: [],
-    location: venue ?? fallbackLocation(form.locationId || saved.locationId, venueName),
+    location: venue ?? fallbackLocation(form.locationId || saved.locationId, venueName, resolvedActivityType),
     myParticipation: null,
     myRequest: null,
   };

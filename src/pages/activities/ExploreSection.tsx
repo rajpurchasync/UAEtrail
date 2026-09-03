@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { fetchApiTrips } from '../../api/public';
 import { Trip } from '../../types';
-import { TripCard, EmptyTripsBanner } from '../../components/ui';
+import { ActivityCard, EmptyActivitiesBanner } from '../../components/ui';
 import {
   ACTIVITY_TYPE_GROUP_LABELS,
   ACTIVITY_TYPES,
@@ -325,7 +325,7 @@ export const ExploreSection = () => {
               {filteredTrips.length} {filteredTrips.length === 1 ? 'activity' : 'activities'} found
             </div>
             {showOffSeasonBanner ? (
-              <EmptyTripsBanner />
+              <EmptyActivitiesBanner />
             ) : filteredTrips.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <p className="text-gray-600 mb-3 text-sm">
@@ -343,7 +343,7 @@ export const ExploreSection = () => {
             ) : (
               <div className="browse-card-grid">
                 {filteredTrips.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} />
+                  <ActivityCard key={trip.id} trip={trip} />
                 ))}
               </div>
             )}

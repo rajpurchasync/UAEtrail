@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/services';
-import { OrganizerShell } from '../components/organizer/OrganizerShell';
+import { HostShell } from '../components/host/HostShell';
 
 interface HistoryEvent {
   id: string;
@@ -14,7 +14,7 @@ interface HistoryEvent {
   checkedInCount: number;
 }
 
-export const OrganizerHistory = () => {
+export const HostHistory = () => {
   const [events, setEvents] = useState<HistoryEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +44,7 @@ export const OrganizerHistory = () => {
   };
 
   return (
-    <OrganizerShell title="History">
+    <HostShell title="History">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Past Events</h2>
 
       {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
@@ -92,6 +92,6 @@ export const OrganizerHistory = () => {
           </tbody>
         </table>
       </div>
-    </OrganizerShell>
+    </HostShell>
   );
 };

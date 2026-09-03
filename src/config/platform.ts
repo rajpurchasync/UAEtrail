@@ -6,7 +6,7 @@
 /** Primary mobile navigation tabs: Explore | Activities | Community | Shop | Profile */
 export const MOBILE_NAV = [
   { to: '/', label: 'Explore', match: ['/'] },
-  { to: '/activities', label: 'Activities', match: ['/activities', '/trips', '/trip'] },
+  { to: '/activities', label: 'Activities', match: ['/activities', '/trips', '/trip', '/activity'] },
   { to: '/community', label: 'Community', match: ['/community'] },
   { to: '/shop', label: 'Shop', match: ['/shop', '/product', '/merchant'] },
   { to: '/profile', label: 'Profile', match: ['/profile', '/favorites', '/my-requests', '/messages', '/notifications'] },
@@ -28,7 +28,7 @@ export const MOBILE_DRAWER_MENU = [
   },
   { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
   { label: 'Trails & Spots', to: '/discovery', match: ['/discovery', '/trail', '/camp'] },
-  { label: 'Upcoming Activities', to: '/activities', match: ['/activities', '/trips', '/trip'] },
+  { label: 'Upcoming Activities', to: '/activities', match: ['/activities', '/trips', '/trip', '/activity'] },
   { label: 'Gears Shop', to: '/shop', match: ['/shop', '/product', '/merchant'] },
   { label: 'Community', to: '/community', match: ['/community'] },
 ] as const;

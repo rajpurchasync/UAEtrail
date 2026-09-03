@@ -137,7 +137,7 @@ export const JoinRequestDetail = () => {
           <p className="text-sm text-neutral-600">Organizer: {request.activity.organizerName}</p>
         )}
         <Link
-          to={`/trip/${request.activity.id}`}
+          to={`/activity/${request.activity.id}`}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600"
         >
           <MapPin className="w-4 h-4" />

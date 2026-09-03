@@ -354,7 +354,7 @@ const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null
         </Section>
       )}
 
-      <Link to={`/trip/${activity.id}`} target="_blank" className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800">
+      <Link to={`/activity/${activity.id}`} target="_blank" className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800">
         View public trip page ↗
       </Link>
     </div>
@@ -653,7 +653,7 @@ export const AdminUserDetailPanel = ({
                         meta={<span className="text-xs capitalize text-gray-500">{activity.role}</span>}
                         status={statusBadge(activity.status)}
                         onView={() => setDrillDown({ type: 'activity', id: activity.activityId })}
-                        href={`/trip/${activity.activityId}`}
+                        href={`/activity/${activity.activityId}`}
                       />
                     ))}
                   </div>
@@ -674,7 +674,7 @@ export const AdminUserDetailPanel = ({
                         subtitle={[trip.locationName, trip.organizerName, trip.date].filter(Boolean).join(' · ')}
                         meta={trip.checkedInAt ? <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Checked in</span> : undefined}
                         onView={() => setDrillDown({ type: 'activity', id: trip.activityId })}
-                        href={`/trip/${trip.activityId}`}
+                        href={`/activity/${trip.activityId}`}
                       />
                     ))}
                   </div>
@@ -695,7 +695,7 @@ export const AdminUserDetailPanel = ({
                         subtitle={[request.locationName, new Date(request.createdAt).toLocaleDateString()].filter(Boolean).join(' · ')}
                         status={statusBadge(request.status)}
                         onView={() => setDrillDown({ type: 'activity', id: request.activityId })}
-                        href={`/trip/${request.activityId}`}
+                        href={`/activity/${request.activityId}`}
                       />
                     ))}
                   </div>

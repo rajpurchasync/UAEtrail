@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Bell, Calendar, Compass, Crown, MessageCircle, Plus, ShieldCheck } from 'lucide-react';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
-import { OrganizerShell } from '../components/organizer/OrganizerShell';
+import { HostShell } from '../components/host/HostShell';
 import { TenantSwitcher } from '../components/ui';
 import { GlassCard } from '../components/mobile/GlassCard';
 import {
@@ -12,20 +12,20 @@ import {
   AccountIdentityBar,
   AccountLinkList,
   AccountSignOutButton,
-  OrganizerHubSections,
+  HostHubSections,
 } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
-import { useOrganizerHubData } from '../hooks/useOrganizerHubData';
+import { useHostHubData } from '../hooks/useHostHubData';
 import { FEATURE_FLAGS } from '../config/platform';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
 import { inferNotificationPath } from '../utils/notificationRouting';
 
-export const OrganizerOverview = () => {
+export const HostOverview = () => {
   const { user, signOut, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const participant = useParticipantHubData();
-  const organizer = useOrganizerHubData();
+  const host = useHostHubData();
 
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -69,15 +69,15 @@ export const OrganizerOverview = () => {
     await signOut();
   };
 
-  const loading = participant.loading || organizer.loading;
-  const error = participant.error ?? organizer.error;
+  const loading = participant.loading || host.loading;
+  const error = participant.error ?? host.error;
   const messagesPath = '/host/messages';
 
-  const displayName = participant.profile.displayName || user!.displayName || 'Organizer';
+  const displayName = participant.profile.displayName || user!.displayName || 'Host';
 
   return (
-    <OrganizerShell
-      title="Organizer"
+    <HostShell
+      title="Host"
       cta={
         <Link to="/host/activities/new" className="app-cta-sm">
           <Plus className="w-4 h-4" />
@@ -86,7 +86,7 @@ export const OrganizerOverview = () => {
       }
       headerExtra={
         <div className="w-full flex items-center justify-start">
-          <TenantSwitcher onChange={(value) => organizer.setTenantId(value)} />
+          <TenantSwitcher onChange={(value) => host.setTenantId(value)} />
         </div>
       }
     >
@@ -97,7 +97,7 @@ export const OrganizerOverview = () => {
             type="button"
             onClick={() => {
               participant.reload();
-              organizer.reload();
+              host.reload();
             }}
             className="text-sm font-semibold text-emerald-600 mt-2"
           >
@@ -106,9 +106,9 @@ export const OrganizerOverview = () => {
         </GlassCard>
       )}
 
-      {!organizer.tenantId && (
+      {!host.tenantId && (
         <GlassCard padding className="mb-3 border-amber-200/50 bg-amber-50/50">
-          <p className="text-sm text-amber-800">Select an organization above to load your events.</p>
+          <p className="text-sm text-amber-800">Select a host organization above to load your activities.</p>
         </GlassCard>
       )}
 
@@ -116,7 +116,7 @@ export const OrganizerOverview = () => {
         displayName={displayName}
         email={participant.profile.email || user!.email || ''}
         avatarUrl={participant.profile.avatarUrl}
-        roleLabel="Organizer"
+        roleLabel="Host"
         bio={participant.profile.bio}
         phone={participant.profile.phone}
         expanded={showDetails}
@@ -195,12 +195,12 @@ export const OrganizerOverview = () => {
           </div>
         ) : (
           <>
-            <OrganizerHubSections
-              activitiesCount={organizer.activities.length}
-              pendingJoinRequests={organizer.pendingJoinRequests}
-              upcomingActivitiesCount={organizer.upcomingActivitiesCount}
-              pastActivitiesCount={organizer.pastActivitiesCount}
-              upcomingActivities={organizer.upcomingActivities}
+            <HostHubSections
+              activitiesCount={host.activities.length}
+              pendingJoinRequests={host.pendingJoinRequests}
+              upcomingActivitiesCount={host.upcomingActivitiesCount}
+              pastActivitiesCount={host.pastActivitiesCount}
+              upcomingActivities={host.upcomingActivities}
             />
 
             <AccountLinkList
@@ -262,6 +262,6 @@ export const OrganizerOverview = () => {
         onSave={save}
         onEmailChanged={refreshUser}
       />
-    </OrganizerShell>
+    </HostShell>
   );
 };

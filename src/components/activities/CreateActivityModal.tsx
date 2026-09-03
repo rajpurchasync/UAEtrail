@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import { parseActivityTypeParam, type ActivityType } from '../../config/activityTypes';
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
 import { ActivityComingSoonModal } from './ActivityComingSoonModal';
 import { ActivityTypePickerModal } from './ActivityTypePickerModal';
+import { CampingActivityFormModal } from './CampingActivityFormModal';
 import { HikingActivityFormModal } from './HikingActivityFormModal';
 
 type ActiveModal = 'picker' | 'form' | null;
@@ -15,6 +16,7 @@ export interface CreateActivityModalProps {
   tenantId?: string;
   initialActivityType?: ActivityType | null;
   editingActivity?: ActivityDTO | null;
+  editSessionKey?: number;
   hostOrganizations?: TenantListDTO[];
   venueLocations?: LocationDTO[];
   sessionSnapshot?: ActivityFormSessionSnapshot | null;
@@ -33,6 +35,7 @@ export const CreateActivityModal = ({
   tenantId = '',
   initialActivityType = null,
   editingActivity = null,
+  editSessionKey = 0,
   hostOrganizations,
   venueLocations,
   sessionSnapshot,
@@ -40,18 +43,13 @@ export const CreateActivityModal = ({
 }: CreateActivityModalProps) => {
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedType, setSelectedType] = useState<ActivityType | null>(null);
-  const initializedForOpen = useRef(false);
 
   useEffect(() => {
     if (!open) {
-      initializedForOpen.current = false;
       setActiveModal(null);
       setSelectedType(null);
       return;
     }
-
-    if (initializedForOpen.current) return;
-    initializedForOpen.current = true;
 
     if (editingActivity) {
       const type = (editingActivity.activityType as ActivityType) ?? 'hiking';
@@ -66,6 +64,12 @@ export const CreateActivityModal = ({
       return;
     }
 
+    if (sessionSnapshot?.campingDraft) {
+      setSelectedType('camping');
+      setActiveModal('form');
+      return;
+    }
+
     if (initialActivityType) {
       setSelectedType(initialActivityType);
       setActiveModal('form');
@@ -74,12 +78,18 @@ export const CreateActivityModal = ({
 
     setSelectedType(null);
     setActiveModal('picker');
-  }, [open, editingActivity, initialActivityType, sessionSnapshot?.hikingDraft]);
+  }, [
+    open,
+    editingActivity,
+    editingActivity?.id,
+    initialActivityType,
+    sessionSnapshot?.hikingDraft,
+    sessionSnapshot?.campingDraft,
+  ]);
 
   const handleCloseAll = () => {
     setActiveModal(null);
     setSelectedType(null);
-    initializedForOpen.current = false;
     onClose();
   };
 
@@ -95,6 +105,10 @@ export const CreateActivityModal = ({
 
   if (!open) return null;
 
+  const formInstanceKey = editingActivity?.id
+    ? `edit-${editingActivity.id}-${editSessionKey}`
+    : `create-${selectedType ?? 'picker'}`;
+
   return (
     <>
       {activeModal === 'picker' && (
@@ -103,6 +117,7 @@ export const CreateActivityModal = ({
 
       {activeModal === 'form' && selectedType === 'hiking' && (
         <HikingActivityFormModal
+          key={`hiking-${formInstanceKey}`}
           open
           onClose={handleCloseAll}
           onSaved={onSaved}
@@ -115,7 +130,22 @@ export const CreateActivityModal = ({
         />
       )}
 
-      {activeModal === 'form' && selectedType && selectedType !== 'hiking' && (
+      {activeModal === 'form' && selectedType === 'camping' && (
+        <CampingActivityFormModal
+          key={`camping-${formInstanceKey}`}
+          open
+          onClose={handleCloseAll}
+          onSaved={onSaved}
+          tenantId={tenantId}
+          editingActivity={editingActivity}
+          hostOrganizations={hostOrganizations}
+          venueLocations={venueLocations}
+          sessionSnapshot={sessionSnapshot}
+          onSessionChange={onSessionChange}
+        />
+      )}
+
+      {activeModal === 'form' && selectedType && selectedType !== 'hiking' && selectedType !== 'camping' && (
         <ActivityComingSoonModal
           open
           activityType={selectedType}

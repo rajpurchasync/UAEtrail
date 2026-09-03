@@ -1,5 +1,6 @@
+import type { ClipboardEvent } from 'react';
 import { MapLocationPicker } from './MapLocationPicker';
-import { isGoogleMapsUrl, parseGoogleMapsUrl } from '../../utils/googleMapsUrl';
+import { isGoogleMapsUrl, normalizeMapsLinkInput, parseGoogleMapsUrl } from '../../utils/googleMapsUrl';
 import type { LocationPinForm } from '../activities/activityFormState';
 import { FORM_INPUT, FORM_LABEL } from '../activities/activityFormState';
 
@@ -23,7 +24,8 @@ export const ActivityLocationPinField = ({
   required,
   hideLabel,
 }: ActivityLocationPinFieldProps) => {
-  const applyMapsUrl = (url: string) => {
+  const applyMapsUrl = (raw: string) => {
+    const url = normalizeMapsLinkInput(raw);
     const coords = parseGoogleMapsUrl(url);
     onChange({
       mapsUrl: url,
@@ -31,6 +33,13 @@ export const ActivityLocationPinField = ({
         ? { lat: String(coords.lat), lng: String(coords.lng) }
         : {}),
     });
+  };
+
+  const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData('text').trim();
+    if (!pasted) return;
+    e.preventDefault();
+    applyMapsUrl(pasted);
   };
 
   const hasPin = Boolean(value.lat.trim() && value.lng.trim());
@@ -59,15 +68,19 @@ export const ActivityLocationPinField = ({
         <div>
           <label className={FORM_LABEL}>Google Maps link (optional)</label>
           <input
-            type="url"
+            type="text"
+            inputMode="url"
+            autoComplete="off"
             value={value.mapsUrl}
             onChange={(e) => applyMapsUrl(e.target.value)}
+            onPaste={handlePaste}
             className={FORM_INPUT}
-            placeholder="https://maps.google.com/…"
+            placeholder="https://maps.google.com/… or maps.app.goo.gl/…"
           />
           {value.mapsUrl.trim() && !hasPin && isGoogleMapsUrl(value.mapsUrl) && (
             <p className="text-xs text-amber-700 mt-1">
-              Link saved. Drop a pin on the map below if coordinates could not be read from the URL.
+              Link saved. If the pin did not move, open the link in Google Maps, copy the full URL from
+              the address bar, or drop a pin on the map below.
             </p>
           )}
         </div>

@@ -17,32 +17,32 @@ import { ReviewDTO } from '@uaetrail/shared-types';
 import { NAV_ICONS } from '../../config/navIcons';
 import { api, OrganizerDetails, TenantProfile } from '../../api/services';
 import { mapActivityToTrip } from '../../api/public';
-import { TripCard } from '../ui/TripCard';
+import { ActivityCard } from '../ui/ActivityCard';
 import { ReviewSection } from '../ui/ReviewSection';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { PageMeta } from '../seo/PageMeta';
 import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
-import { OrganizerMessageButton } from '../ui/OrganizerMessageButton';
+import { HostMessageButton } from '../ui/HostMessageButton';
 import { GlassCard } from '../mobile/GlassCard';
 import { useAuth } from '../../context/AuthContext';
 import { COUNTRIES } from '../../constants';
 
 type ProfileMode = 'public' | 'owner';
 
-interface OrganizerPublicProfileProps {
+interface HostPublicProfileProps {
   slug: string;
   mode?: ProfileMode;
   backTo?: string;
   backLabel?: string;
 }
 
-export const OrganizerPublicProfile = ({
+export const HostPublicProfile = ({
   slug,
   mode = 'public',
   backTo = '/activities',
-  backLabel = 'Back to trips',
-}: OrganizerPublicProfileProps) => {
+  backLabel = 'Back to activities',
+}: HostPublicProfileProps) => {
   const { user } = useAuth();
   const isOwner = mode === 'owner';
 
@@ -72,7 +72,7 @@ export const OrganizerPublicProfile = ({
         const reviewsRes = await api.getReviews('tenant', tenantRes.data.id).catch(() => ({ data: [] }));
         setReviews(reviewsRes.data);
       })
-      .catch(() => setError('Organizer not found'))
+      .catch(() => setError('Host not found'))
       .finally(() => setLoading(false));
   };
 
@@ -102,7 +102,7 @@ export const OrganizerPublicProfile = ({
   if (loading) {
     return (
       <>
-        <PageMeta title="Loading organizer" noIndex />
+        <PageMeta title="Loading host profile" noIndex />
         <div className="min-h-[40vh] flex items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
@@ -113,10 +113,10 @@ export const OrganizerPublicProfile = ({
   if (error || !tenant) {
     return (
       <>
-        <PageMeta title="Organizer not found" noIndex />
+        <PageMeta title="Host not found" noIndex />
         <div className="min-h-[40vh] flex items-center justify-center px-4">
           <div className="text-center">
-            <h1 className="text-xl font-bold text-gray-900 mb-3">Organizer not found</h1>
+            <h1 className="text-xl font-bold text-gray-900 mb-3">Host not found</h1>
             <Link to={backTo} className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
               {backLabel}
             </Link>
@@ -151,7 +151,7 @@ export const OrganizerPublicProfile = ({
             }
             path={`/operator/${slug}`}
             image={tenant.ownerAvatar}
-            imageAlt={`${tenant.name} — UAE Trail organizer`}
+            imageAlt={`${tenant.name} — UAE Trail host`}
           />
           <JsonLd data={organizationSchema(tenant, slug, reviews)} id={`org-${tenant.id}`} />
         </>
@@ -162,7 +162,7 @@ export const OrganizerPublicProfile = ({
             to={isOwner ? '/host/overview' : backTo}
             className="inline-flex items-center gap-1 text-emerald-200 hover:text-white text-sm mb-4"
           >
-            <ArrowLeft className="w-4 h-4" /> {isOwner ? 'Organizer hub' : backLabel}
+            <ArrowLeft className="w-4 h-4" /> {isOwner ? 'Host dashboard' : backLabel}
           </Link>
 
           {isOwner && (
@@ -210,7 +210,7 @@ export const OrganizerPublicProfile = ({
               </div>
               {!isOwner && user?.id !== tenant.ownerId && (
                 <div className="mt-4">
-                  <OrganizerMessageButton
+                  <HostMessageButton
                     organizerUserId={tenant.ownerId}
                     size="md"
                     className="!bg-white/10 !text-white !border-white/20 hover:!bg-white/20"
@@ -426,7 +426,7 @@ export const OrganizerPublicProfile = ({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {trips.map((trip) => (
-                <TripCard key={trip.id} trip={trip} />
+                <ActivityCard key={trip.id} trip={trip} />
               ))}
             </div>
           )}

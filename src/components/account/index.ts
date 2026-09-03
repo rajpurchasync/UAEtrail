@@ -4,7 +4,7 @@ export { AccountSectionHeader } from './AccountSectionHeader';
 export { AccountActivityPreview } from './AccountActivityPreview';
 export { AccountGroupsPreview } from './AccountGroupsPreview';
 export { AccountLinkList, type AccountLinkItem } from './AccountLinkList';
-export { OrganizerHubSections, buildOrganizerStats } from './OrganizerHubSections';
+export { HostHubSections, buildHostStats } from './HostHubSections';
 export { AccountEditModal, AccountSignOutButton } from './AccountEditModal';
 export { AccountDeleteSection } from './AccountDeleteSection';
 export { AccountDataExportSection } from './AccountDataExportSection';

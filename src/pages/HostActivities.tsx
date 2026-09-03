@@ -3,11 +3,10 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { ActivityDTO, ParticipantDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
-import { parseActivityTypeParam } from '../components/activities';
+import { parseActivityTypeParam, ActivityActionsMenu, buildHostActivityMenuItems } from '../components/activities';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
-import { OrganizerShell } from '../components/organizer/OrganizerShell';
+import { HostShell } from '../components/host/HostShell';
 import { TenantSwitcher, ShareButton, SecureAvatar } from '../components/ui';
-import { ORGANIZER_ACTIVITIES_NEW_PATH } from '../constants';
 import {
   activityTypeBadgeClass,
   formatActivityType,
@@ -16,7 +15,7 @@ import {
 
 type ViewMode = 'list' | 'checkin';
 
-export const OrganizerActivities = () => {
+export const HostActivities = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [tenantId, setTenantId] = useState(getActiveTenantId());
@@ -24,6 +23,7 @@ export const OrganizerActivities = () => {
   const [error, setError] = useState<string | null>(null);
   const { openCreate, openEdit, setOnSaved } = useActivityFormSession();
   const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
 
   // Check-in state
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -56,7 +56,7 @@ export const OrganizerActivities = () => {
   }, [tenantId, setOnSaved]);
 
   useEffect(() => {
-    if (location.pathname === ORGANIZER_ACTIVITIES_NEW_PATH) {
+    if (location.pathname === '/host/activities/new') {
       openCreate({
         tenantId,
         initialActivityType: parseActivityTypeParam(searchParams.get('type')),
@@ -87,6 +87,29 @@ export const OrganizerActivities = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to cancel event');
       setConfirmCancel(null);
+    }
+  };
+
+  const deleteDraft = async () => {
+    if (!tenantId || !confirmDelete) return;
+    try {
+      await api.cancelHostActivity(tenantId, confirmDelete.id);
+      setConfirmDelete(null);
+      await loadEvents(tenantId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete draft');
+      setConfirmDelete(null);
+    }
+  };
+
+  const duplicateActivity = async (event: ActivityDTO) => {
+    if (!tenantId) return;
+    try {
+      const res = await api.duplicateHostActivity(tenantId, event.id);
+      await loadEvents(tenantId);
+      openEdit(res.data, { tenantId });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to duplicate activity');
     }
   };
 
@@ -137,7 +160,7 @@ export const OrganizerActivities = () => {
   const checkedInCount = participants.filter((p) => p.checkedInAt).length;
 
   return (
-    <OrganizerShell title="Activities">
+    <HostShell title="Activities">
       <div className="space-y-4">
         <TenantSwitcher onChange={setTenantId} />
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -194,32 +217,26 @@ export const OrganizerActivities = () => {
                       <td className="px-4 py-3 text-center">{event.price > 0 ? `AED ${event.price}` : 'Free'}</td>
                       <td className="px-4 py-3">{statusBadge(event.status)}</td>
                       <td className="px-4 py-3">
-                        <div className="flex gap-2">
-                          {event.status === 'draft' && (
-                            <>
-                              <button onClick={() => openEditActivity(event)}
-                                className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
-                              <button onClick={() => publish(event.id)}
-                                className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Publish</button>
-                            </>
-                          )}
+                        <div className="flex items-center gap-1">
                           {event.status === 'published' && (
-                            <>
-                              <button onClick={() => openEditActivity(event)}
-                                className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
-                              <button onClick={() => openCheckin(event)}
-                                className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Check-in</button>
-                              <ShareButton
-                                title={event.title || event.locationName}
-                                text={`${event.date} · ${event.activityType} trip on UAE Trails`}
-                                path={`/trip/${event.id}`}
-                      iconOnly
-                      light
-                    />
-                              <button onClick={() => setConfirmCancel(event)}
-                                className="px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs">Cancel</button>
-                            </>
+                            <ShareButton
+                              title={event.title || event.locationName}
+                              text={`${event.date} · ${event.activityType} trip on UAE Trails`}
+                              path={`/activity/${event.id}`}
+                              iconOnly
+                              light
+                            />
                           )}
+                          <ActivityActionsMenu
+                            items={buildHostActivityMenuItems(event, {
+                              onEdit: openEditActivity,
+                              onPublish: (e) => publish(e.id),
+                              onDuplicate: duplicateActivity,
+                              onDelete: setConfirmDelete,
+                              onCancel: setConfirmCancel,
+                              onCheckin: openCheckin,
+                            })}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -308,6 +325,23 @@ export const OrganizerActivities = () => {
         )}
       </div>
 
+      {/* Delete Draft Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmDelete(null)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Draft?</h3>
+            <p className="text-sm text-gray-600 mb-1">
+              This will permanently delete this draft. This action cannot be undone.
+            </p>
+            <p className="text-sm font-medium text-gray-900 mb-4">{confirmDelete.title || confirmDelete.locationName}</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setConfirmDelete(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Keep Draft</button>
+              <button onClick={deleteDraft} className="px-4 py-2 rounded-md text-sm text-white bg-red-600 hover:bg-red-700">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Cancel Event Confirmation Modal */}
       {confirmCancel && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmCancel(null)}>
@@ -324,6 +358,6 @@ export const OrganizerActivities = () => {
           </div>
         </div>
       )}
-    </OrganizerShell>
+    </HostShell>
   );
 };

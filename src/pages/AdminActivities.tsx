@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
+import { ActivityActionsMenu, buildAdminActivityMenuItems } from '../components/activities';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
@@ -22,8 +23,10 @@ export const AdminActivities = () => {
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<{ activity: ActivityDTO; action: 'suspend' | 'unsuspend' } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
   const [suspendComment, setSuspendComment] = useState('');
-  const { openCreate, setOnSaved } = useActivityFormSession();
+  const { openCreate, openEdit, setOnSaved } = useActivityFormSession();
 
   useEffect(() => {
     setOnSaved(() => () => void loadEvents());
@@ -108,6 +111,63 @@ export const AdminActivities = () => {
     }
   };
 
+  const openEditActivity = (event: ActivityDTO) => {
+    openEdit(event, {
+      tenantId: event.tenantId,
+      hostOrganizations: tenants,
+      venueLocations: locations,
+    });
+  };
+
+  const publish = async (event: ActivityDTO) => {
+    if (!event.tenantId) return;
+    try {
+      await api.publishHostActivity(event.tenantId, event.id);
+      await loadEvents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to publish activity');
+    }
+  };
+
+  const duplicateActivity = async (event: ActivityDTO) => {
+    if (!event.tenantId) return;
+    try {
+      const res = await api.duplicateHostActivity(event.tenantId, event.id);
+      await loadEvents();
+      openEdit(res.data, {
+        tenantId: event.tenantId,
+        hostOrganizations: tenants,
+        venueLocations: locations,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to duplicate activity');
+    }
+  };
+
+  const deleteDraft = async () => {
+    if (!confirmDelete?.tenantId) return;
+    try {
+      await api.cancelHostActivity(confirmDelete.tenantId, confirmDelete.id);
+      setConfirmDelete(null);
+      await loadEvents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete draft');
+      setConfirmDelete(null);
+    }
+  };
+
+  const cancelActivity = async () => {
+    if (!confirmCancel?.tenantId) return;
+    try {
+      await api.cancelHostActivity(confirmCancel.tenantId, confirmCancel.id);
+      setConfirmCancel(null);
+      await loadEvents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel activity');
+      setConfirmCancel(null);
+    }
+  };
+
   return (
     <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
       <div className="space-y-4">
@@ -167,8 +227,17 @@ export const AdminActivities = () => {
                   {tab === 'active' ? 'No active events' : 'No past events'}
                 </td></tr>
               ) : filtered.map((event) => (
-                <>
-                  <tr key={event.id} className="border-t hover:bg-gray-50 cursor-pointer" onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}>
+                <Fragment key={event.id}>
+                  <tr
+                    className="border-t hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      if (event.status === 'draft') {
+                        openEditActivity(event);
+                        return;
+                      }
+                      setExpandedId(expandedId === event.id ? null : event.id);
+                    }}
+                  >
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-900">{event.title || '—'}</p>
                     </td>
@@ -192,24 +261,24 @@ export const AdminActivities = () => {
                     <td className="px-4 py-3 text-center">{event.price > 0 ? `AED ${event.price}` : 'Free'}</td>
                     <td className="px-4 py-3">{statusBadge(event.status)}</td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1.5">
-                        {/* Featured toggle */}
-                        {event.status === 'published' && (
-                          <button onClick={() => toggleFeatured(event.id)}
-                            title={event.featured ? 'Remove from featured' : 'Feature on landing page'}
-                            className={`px-2 py-1 rounded text-xs font-medium ${event.featured ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                            {event.featured ? '★ Featured' : '☆ Feature'}
-                          </button>
-                        )}
-                        {/* Moderation */}
-                        {event.status === 'suspended' ? (
-                          <button onClick={() => { setConfirmTarget({ activity: event, action: 'unsuspend' }); setSuspendComment(''); }}
-                            className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Unsuspend</button>
-                        ) : event.status !== 'cancelled' ? (
-                          <button onClick={() => { setConfirmTarget({ activity: event, action: 'suspend' }); setSuspendComment(''); }}
-                            className="px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-xs">Suspend</button>
-                        ) : null}
-                      </div>
+                      <ActivityActionsMenu
+                        items={buildAdminActivityMenuItems(event, {
+                          onEdit: openEditActivity,
+                          onPublish: publish,
+                          onDuplicate: duplicateActivity,
+                          onDelete: setConfirmDelete,
+                          onCancel: setConfirmCancel,
+                          onFeature: () => toggleFeatured(event.id),
+                          onSuspend: () => {
+                            setConfirmTarget({ activity: event, action: 'suspend' });
+                            setSuspendComment('');
+                          },
+                          onUnsuspend: () => {
+                            setConfirmTarget({ activity: event, action: 'unsuspend' });
+                            setSuspendComment('');
+                          },
+                        })}
+                      />
                     </td>
                   </tr>
                   {expandedId === event.id && (
@@ -256,13 +325,47 @@ export const AdminActivities = () => {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
         </div>
         <p className="text-xs text-gray-500">Showing {filtered.length} of {displayed.length} {tab} events</p>
       </div>
+
+      {/* Delete Draft Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmDelete(null)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Draft?</h3>
+            <p className="text-sm text-gray-600 mb-1">
+              This will permanently delete this draft. This action cannot be undone.
+            </p>
+            <p className="text-sm font-medium text-gray-900 mb-4">{confirmDelete.title || confirmDelete.locationName}</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setConfirmDelete(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Keep Draft</button>
+              <button onClick={deleteDraft} className="px-4 py-2 rounded-md text-sm text-white bg-red-600 hover:bg-red-700">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Activity Confirmation Modal */}
+      {confirmCancel && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmCancel(null)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Cancel Activity?</h3>
+            <p className="text-sm text-gray-600 mb-1">
+              This will cancel the activity and notify all registered participants. This action cannot be undone.
+            </p>
+            <p className="text-sm font-medium text-gray-900 mb-4">{confirmCancel.title || confirmCancel.locationName}</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setConfirmCancel(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Keep Activity</button>
+              <button onClick={cancelActivity} className="px-4 py-2 rounded-md text-sm text-white bg-red-600 hover:bg-red-700">Cancel Activity</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Moderation Confirmation Modal */}
       {confirmTarget && (

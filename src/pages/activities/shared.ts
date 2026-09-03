@@ -3,9 +3,6 @@ import type { AuthUser } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
 import type { TripPricePackage } from '../../utils/tripPricing';
 
-export const isOrganizer = (role?: string) =>
-  role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide';
-
 export const emptyForm = {
   activityType: 'hiking' as ActivityType,
   locationId: '',
@@ -29,14 +26,10 @@ export const emptyForm = {
   hostUserId: '',
 };
 
-export type PageTab = 'explore' | 'mine' | 'organized';
+export type PageTab = 'explore' | 'mine';
 
-export const parseTabParam = (
-  value: string | null,
-  user: AuthUser | null,
-  showOrganized: boolean
-): PageTab => {
+/** Participant dashboard tab on /activities (joined trips + requests). */
+export const parseTabParam = (value: string | null, user: AuthUser | null): PageTab => {
   if ((value === 'mine' || value === 'joined') && user) return 'mine';
-  if (value === 'organized' && showOrganized) return 'organized';
   return 'explore';
 };

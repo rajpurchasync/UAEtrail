@@ -1,13 +1,30 @@
 import type { Db } from 'mongodb';
 import { COLLECTIONS, LEGACY_COLLECTIONS } from './collections.js';
 
-const renameCollectionIfNeeded = async (db: Db, from: string, to: string): Promise<void> => {
+const migrateCollectionNameIfNeeded = async (db: Db, from: string, to: string): Promise<void> => {
   const collections = await db.listCollections().toArray();
   const names = new Set(collections.map((c) => c.name));
-  if (names.has(from) && !names.has(to)) {
-    await db.collection(from).rename(to);
-    console.log(`[mongo] Renamed collection ${from} → ${to}`);
+  if (!names.has(from) || names.has(to)) return;
+
+  const source = db.collection(from);
+  const target = db.collection(to);
+  const cursor = source.find({});
+  const batchSize = 500;
+  let batch: Record<string, unknown>[] = [];
+
+  for await (const doc of cursor) {
+    batch.push(doc as Record<string, unknown>);
+    if (batch.length >= batchSize) {
+      await target.insertMany(batch, { ordered: false });
+      batch = [];
+    }
   }
+  if (batch.length > 0) {
+    await target.insertMany(batch, { ordered: false });
+  }
+
+  await source.deleteMany({});
+  console.log(`[mongo] Migrated collection ${from} → ${to}`);
 };
 
 const renameFieldIfPresent = async (
@@ -78,10 +95,10 @@ const migrateNotificationKinds = async (db: Db): Promise<void> => {
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
-  await renameCollectionIfNeeded(db, LEGACY_COLLECTIONS.EVENTS, COLLECTIONS.ACTIVITIES);
-  await renameCollectionIfNeeded(db, LEGACY_COLLECTIONS.EVENT_REQUESTS, COLLECTIONS.ACTIVITY_REQUESTS);
-  await renameCollectionIfNeeded(db, LEGACY_COLLECTIONS.EVENT_PARTICIPANTS, COLLECTIONS.ACTIVITY_PARTICIPANTS);
-  await renameCollectionIfNeeded(db, LEGACY_COLLECTIONS.ORGANIZER_APPLICATIONS, COLLECTIONS.HOST_APPLICATIONS);
+  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENTS, COLLECTIONS.ACTIVITIES);
+  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENT_REQUESTS, COLLECTIONS.ACTIVITY_REQUESTS);
+  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENT_PARTICIPANTS, COLLECTIONS.ACTIVITY_PARTICIPANTS);
+  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.ORGANIZER_APPLICATIONS, COLLECTIONS.HOST_APPLICATIONS);
 
   for (const name of [COLLECTIONS.ACTIVITY_REQUESTS, COLLECTIONS.ACTIVITY_PARTICIPANTS, 'user_favorites', 'chat_messages', 'notifications']) {
     await renameFieldIfPresent(db, name, 'eventId', 'activityId');

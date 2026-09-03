@@ -119,7 +119,7 @@ const splitStoredPhone = (value?: string | null): { dial: string; national: stri
 };
 
 /** Become a host — individual or business. Route: /become-host (alias /become-organizer). */
-export const BecomeOrganizer = () => {
+export const BecomeHost = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 

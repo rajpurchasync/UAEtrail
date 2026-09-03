@@ -44,7 +44,7 @@ export const VenueSelect = ({
 
     void Promise.all([
       api.getPublicLocations(),
-      tenantId ? api.getOrganizerSubmittedLocations(tenantId) : Promise.resolve({ data: [] as LocationDTO[] }),
+      tenantId ? api.getHostSubmittedLocations(tenantId) : Promise.resolve({ data: [] as LocationDTO[] }),
     ])
       .then(([publicRes, pendingRes]) => {
         if (disposed) return;

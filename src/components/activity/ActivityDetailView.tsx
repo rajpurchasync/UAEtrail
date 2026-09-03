@@ -1,35 +1,21 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import {
-  Calendar,
-  Clock,
-  Users,
-  ChevronRight,
-  CheckCircle2,
-  Car
-} from 'lucide-react';
-import { ActivityDetailDTO, MyTripRequestDTO, TripParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
-import { api } from '../api/services';
-import { formatDate } from '../utils';
-import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../utils/tripPricing';
-import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../utils/hostLabels';
-import { useAuth } from '../context/AuthContext';
-import { organizerProfilePath } from '../utils/organizerLinks';
-import { PARTICIPANT_PRIVACY } from '../config/platform';
-import { PageMeta } from '../components/seo/PageMeta';
-import { JsonLd } from '../components/seo/JsonLd';
-import { tripEventSchema } from '../components/seo/schemas';
-import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
+import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import { Calendar, Clock, Users, ChevronRight, CheckCircle2, Car } from 'lucide-react';
+import type { ActivityDetailDTO, MyTripRequestDTO, TripParticipationDTO } from '@uaetrail/shared-types';
+import { formatDate } from '../../utils';
+import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../../utils/tripPricing';
+import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../../utils/hostLabels';
+import { organizerProfilePath } from '../../utils/organizerLinks';
+import { PARTICIPANT_PRIVACY } from '../../config/platform';
+import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import {
   ShareButton,
   MeetingPointMap,
   ParticipantPreview,
-  OrganizerMessageButton,
+  HostMessageButton,
   TripCheckInPanel,
-  WithdrawRequestModal,
-  JoinRequestModal,
-  SecureAvatar
-} from '../components/ui';
+  SecureAvatar,
+} from '../ui';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden>
@@ -67,112 +53,65 @@ const buildGoogleMapsSearchUrl = (lat: number, lng: number): string =>
 const buildWazeDriveUrl = (lat: number, lng: number): string =>
   `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
 
-export const TripDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [trip, setTrip] = useState<ActivityDetailDTO | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [participation, setParticipation] = useState<TripParticipationDTO | null | undefined>(undefined);
-  const [myRequest, setMyRequest] = useState<MyTripRequestDTO | null | undefined>(undefined);
-  const [withdrawing, setWithdrawing] = useState(false);
-  const [showWithdraw, setShowWithdraw] = useState(false);
+export interface TripDetailViewProps {
+  trip: ActivityDetailDTO;
+  previewMode?: boolean;
+  backTo?: string;
+  backLabel?: string;
+  participation?: TripParticipationDTO | null;
+  myRequest?: MyTripRequestDTO | null;
+  message?: string | null;
+  error?: string | null;
+  onJoin?: () => void;
+  onWithdraw?: () => void;
+  onCheckIn?: (activityId: string) => Promise<TripParticipationDTO>;
+  onParticipationUpdated?: (p: TripParticipationDTO) => void;
+  footerOverride?: ReactNode;
+  sidebarJoinOverride?: ReactNode;
+}
+
+export const ActivityDetailView = ({
+  trip,
+  previewMode = false,
+  backTo = '/activities',
+  backLabel = 'Activities',
+  participation = null,
+  myRequest = null,
+  message = null,
+  error = null,
+  onJoin,
+  onWithdraw,
+  onCheckIn,
+  onParticipationUpdated,
+  footerOverride,
+  sidebarJoinOverride,
+}: TripDetailViewProps) => {
   const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
 
-  const loadTrip = () => {
-    if (!id) return;
-    setLoading(true);
-    setParticipation(undefined);
-    setMyRequest(undefined);
-    api
-      .getPublicActivityDetail(id)
-      .then((res) => {
-        setTrip(res.data);
-        setParticipation(res.data.myParticipation ?? null);
-        setMyRequest(res.data.myRequest ?? null);
-      })
-      .catch((loadError) =>
-        setError(loadError instanceof Error ? loadError.message : 'Failed to load trip details')
-      )
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    loadTrip();
-  }, [id]);
-
-  const pricePackages = trip?.pricePackages?.filter((p) => p.label.trim()) ?? [];
+  const pricePackages = trip.pricePackages?.filter((p) => p.label.trim()) ?? [];
   const hasMultiplePackages = pricePackages.length > 1;
-  const pricingMode = trip ? inferTripPricingMode(trip) : 'free';
-  const pricingBadge = trip ? tripPricingBadge(trip) : null;
-
+  const pricingMode = inferTripPricingMode(trip);
+  const pricingBadge = tripPricingBadge(trip);
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
-
-  const openJoinModal = () => {
-    if (!id || !trip) return;
-    if (!user) {
-      navigate('/signin', { state: { from: `/trip/${id}` } });
-      return;
-    }
-    if (!packageSelected) {
-      setError('Please select a package option.');
-      return;
-    }
-    setError(null);
-    setShowJoinModal(true);
-  };
-
-  const handleJoinSuccess = (successMessage: string) => {
-    setMessage(successMessage);
-    loadTrip();
-  };
-
-  if (loading) {
-    return (
-      <>
-        <PageMeta title="Loading trip" path={id ? `/trip/${id}` : undefined} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-        </div>
-      </>
-    );
-  }
-
-  if (!trip) {
-    return (
-      <>
-        <PageMeta title="Trip not found" noIndex path={id ? `/trip/${id}` : undefined} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center px-4">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Trip Not Found</h1>
-            <Link to="/activities" className="text-emerald-600 hover:text-emerald-700 font-medium">
-              View all trips
-            </Link>
-          </div>
-        </div>
-      </>
-    );
-  }
 
   const heroImage =
     trip.images?.[0] ??
-    trip.location.images?.[0] ??
+    trip.location?.images?.[0] ??
     (trip.activityType === 'camping'
       ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600'
       : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
   const participants = trip.participants ?? [];
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
-  const organizerPath = organizerProfilePath(trip.tenantSlug);
-  const isFull = trip.slotsAvailable <= 0;
-  const accessLat = trip.startLat ?? trip.meetingLat ?? trip.parkingLat ?? trip.location.latitude ?? null;
-  const accessLng = trip.startLng ?? trip.meetingLng ?? trip.parkingLng ?? trip.location.longitude ?? null;
+  const organizerPath = previewMode ? null : organizerProfilePath(trip.tenantSlug);
+  const isFull = (trip.slotsAvailable ?? 0) <= 0;
+  const accessLat =
+    trip.startLat ?? trip.meetingLat ?? trip.parkingLat ?? trip.location?.latitude ?? null;
+  const accessLng =
+    trip.startLng ?? trip.meetingLng ?? trip.parkingLng ?? trip.location?.longitude ?? null;
   const hasAccessCoordinates = accessLat != null && accessLng != null;
   const openInGoogleMapsUrl =
-    trip.location.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
+    trip.location?.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
 
   const dateRangeLabel = trip.endDate
     ? `${formatDate(trip.date)} – ${formatDate(trip.endDate)}`
@@ -183,35 +122,16 @@ export const TripDetail = () => {
   const hasActiveRequest = Boolean(myRequest?.canWithdraw);
   const requestStatus = myRequest?.status;
 
-  const handleCheckIn = async (activityId: string) => api.checkInToTrip(activityId);
-
-  const handleWithdraw = async (payload: { reason: WithdrawReason; message?: string }) => {
-    if (!trip || !myRequest) return;
-    setWithdrawing(true);
-    setError(null);
-    try {
-      await api.cancelJoinRequest(trip.id, myRequest.id, payload);
-      setShowWithdraw(false);
-      setParticipation(null);
-      setMyRequest(null);
-      setMessage('You have withdrawn from this trip.');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to withdraw');
-      setShowWithdraw(false);
-    } finally {
-      setWithdrawing(false);
-    }
-  };
-
-  const withdrawButton = hasActiveRequest ? (
-    <button
-      type="button"
-      onClick={() => setShowWithdraw(true)}
-      className="w-full mt-2 py-2.5 text-sm font-semibold text-red-600 hover:text-red-700"
-    >
-      {isConfirmed ? 'Withdraw from trip' : 'Cancel request'}
-    </button>
-  ) : null;
+  const withdrawButton =
+    hasActiveRequest && onWithdraw ? (
+      <button
+        type="button"
+        onClick={onWithdraw}
+        className="w-full mt-2 py-2.5 text-sm font-semibold text-red-600 hover:text-red-700"
+      >
+        {isConfirmed ? 'Withdraw from trip' : 'Cancel request'}
+      </button>
+    ) : null;
 
   const requestStatusBanner =
     hasActiveRequest && !isConfirmed ? (
@@ -223,92 +143,109 @@ export const TripDetail = () => {
       </div>
     ) : null;
 
-  const checkInFooter = participation ? (
-    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-      <TripCheckInPanel
-        activityId={trip!.id}
-        participation={participation}
-        onCheckIn={handleCheckIn}
-        onUpdated={setParticipation}
-      />
-      {withdrawButton}
+  const previewFooter = (
+    <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-center">
+      <p className="text-sm font-semibold text-amber-900">Draft preview</p>
+      <p className="text-xs text-amber-800 mt-1">This is how your activity will look once published.</p>
     </div>
-  ) : hasActiveRequest ? (
-    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-      {requestStatusBanner}
-      {withdrawButton}
-    </div>
-  ) : null;
+  );
 
-  const joinButton = checkInFooter ?? (
-    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
+  const checkInFooter =
+    participation && onCheckIn && onParticipationUpdated ? (
+      <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
+        <TripCheckInPanel
+          activityId={trip.id}
+          participation={participation}
+          onCheckIn={onCheckIn}
+          onUpdated={onParticipationUpdated}
+        />
+        {withdrawButton}
+      </div>
+    ) : hasActiveRequest ? (
+      <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
+        {requestStatusBanner}
+        {withdrawButton}
+      </div>
+    ) : null;
+
+  const joinButton =
+    footerOverride ??
+    (previewMode
+      ? previewFooter
+      : checkInFooter ?? (
+          <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
+            <button
+              type="button"
+              onClick={onJoin}
+              disabled={hasActiveRequest}
+              className={`w-full ios-btn shadow-lg disabled:opacity-60 ${
+                isFull ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
+              }`}
+            >
+              {joinLabel}
+            </button>
+          </div>
+        ));
+
+  const sidebarJoin =
+    sidebarJoinOverride ??
+    (previewMode ? (
+      <p className="mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+        Preview only — join is disabled until you publish.
+      </p>
+    ) : isConfirmed ? (
+      participation &&
+      onCheckIn &&
+      onParticipationUpdated && (
+        <>
+          <TripCheckInPanel
+            activityId={trip.id}
+            participation={participation}
+            onCheckIn={onCheckIn}
+            onUpdated={onParticipationUpdated}
+          />
+          {withdrawButton}
+        </>
+      )
+    ) : hasActiveRequest ? (
+      <>
+        {requestStatusBanner}
+        {withdrawButton}
+      </>
+    ) : (
       <button
         type="button"
-        onClick={openJoinModal}
-        disabled={hasActiveRequest}
-        className={`w-full ios-btn shadow-lg disabled:opacity-60 ${
-          isFull ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
+        onClick={onJoin}
+        disabled={!packageSelected}
+        className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
+          isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
         }`}
       >
         {joinLabel}
       </button>
-    </div>
-  );
-
-  const sidebarJoin = isConfirmed ? (
-    participation && (
-      <>
-        <TripCheckInPanel
-          activityId={trip.id}
-          participation={participation}
-          onCheckIn={handleCheckIn}
-          onUpdated={setParticipation}
-        />
-        {withdrawButton}
-      </>
-    )
-  ) : hasActiveRequest ? (
-    <>
-      {requestStatusBanner}
-      {withdrawButton}
-    </>
-  ) : (
-    <button
-      onClick={openJoinModal}
-      disabled={!packageSelected}
-      className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
-        isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
-      }`}
-    >
-      {joinLabel}
-    </button>
-  );
+    ));
 
   return (
     <MobileDetailShell
-      backTo="/activities"
-      backLabel="Trips"
+      backTo={backTo}
+      backLabel={backLabel}
       footer={joinButton}
       banner={{
         src: heroImage,
         alt: trip.title || trip.locationName,
         title: trip.title || trip.locationName,
         eyebrow: trip.activityType === 'hiking' ? 'Hiking trip' : 'Camping trip',
+        showMobileChrome: !previewMode,
+        showJourney: !previewMode,
+        journeyFallbackTo: backTo,
+        journeyLabel: backLabel,
       }}
     >
-      <PageMeta
-        title={trip.title || trip.locationName}
-        description={trip.description?.slice(0, 160) ?? `Join this ${trip.activityType} trip in the UAE on UAE Trail`}
-        path={`/trip/${trip.id}`}
-        image={heroImage}
-        imageAlt={trip.title || trip.locationName}
-      />
-      <JsonLd data={tripEventSchema(trip)} id={`trip-${trip.id}`} />
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-3">About this trip</h2>
-            <p className="text-gray-600 leading-relaxed">{trip.description}</p>
+            <p className="text-gray-600 leading-relaxed whitespace-pre-line">{trip.description}</p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
               <div className="bg-gray-50 rounded-xl p-3">
@@ -340,15 +277,11 @@ export const TripDetail = () => {
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-500 mb-1">Pricing</p>
-                {trip && pricingBadge && (
-                  <>
-                    <p className={`text-sm font-semibold inline-flex px-2 py-0.5 rounded-lg ${pricingBadge.bg} ${pricingBadge.text}`}>
-                      {tripPricingModeLabel(trip)}
-                    </p>
-                    {pricingMode !== 'free' && (
-                      <p className="text-sm font-semibold text-gray-900 mt-1">{tripPriceLabel(trip)}</p>
-                    )}
-                  </>
+                <p className={`text-sm font-semibold inline-flex px-2 py-0.5 rounded-lg ${pricingBadge.bg} ${pricingBadge.text}`}>
+                  {tripPricingModeLabel(trip)}
+                </p>
+                {pricingMode !== 'free' && (
+                  <p className="text-sm font-semibold text-gray-900 mt-1">{tripPriceLabel(trip)}</p>
                 )}
               </div>
             </div>
@@ -360,7 +293,9 @@ export const TripDetail = () => {
                   {pricePackages.map((pkg, index) => (
                     <label
                       key={`${pkg.label}-${index}`}
-                      className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${
+                      className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
+                        previewMode ? '' : 'cursor-pointer'
+                      } transition-colors ${
                         hasMultiplePackages && selectedPackageIndex === index
                           ? 'border-emerald-500 bg-emerald-50'
                           : hasMultiplePackages
@@ -376,6 +311,7 @@ export const TripDetail = () => {
                               name="trip-package"
                               checked={selectedPackageIndex === index}
                               onChange={() => setSelectedPackageIndex(index)}
+                              disabled={previewMode}
                               className="text-emerald-600 focus:ring-emerald-500"
                             />
                             <span className="text-sm text-gray-800">{pkg.label}</span>
@@ -400,16 +336,28 @@ export const TripDetail = () => {
               <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-start gap-3">
                   <Car className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div className="space-y-3">
+                  <div className="space-y-3 w-full">
                     <p className="text-sm font-semibold text-gray-900">Access details</p>
                     {(trip.startPoint || trip.meetingPoint || trip.parkingPoint) && (
                       <div className="space-y-1 text-sm text-gray-700">
-                        {trip.startPoint && <p><span className="font-medium text-gray-900">Hike start point:</span> {trip.startPoint}</p>}
-                        {trip.meetingPoint && <p><span className="font-medium text-gray-900">Meeting point:</span> {trip.meetingPoint}</p>}
-                        {trip.parkingPoint && <p><span className="font-medium text-gray-900">Parking:</span> {trip.parkingPoint}</p>}
+                        {trip.startPoint && (
+                          <p>
+                            <span className="font-medium text-gray-900">Hike start point:</span> {trip.startPoint}
+                          </p>
+                        )}
+                        {trip.meetingPoint && (
+                          <p>
+                            <span className="font-medium text-gray-900">Meeting point:</span> {trip.meetingPoint}
+                          </p>
+                        )}
+                        {trip.parkingPoint && (
+                          <p>
+                            <span className="font-medium text-gray-900">Parking:</span> {trip.parkingPoint}
+                          </p>
+                        )}
                       </div>
                     )}
-                    {hasAccessCoordinates && (
+                    {hasAccessCoordinates && !previewMode && (
                       <MeetingPointMap
                         lat={accessLat}
                         lng={accessLng}
@@ -417,41 +365,53 @@ export const TripDetail = () => {
                         hideExternalLink
                       />
                     )}
-                    <div className="flex flex-wrap gap-2">
-                      {openInGoogleMapsUrl && (
-                        <a
-                          href={openInGoogleMapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100"
-                        >
-                          <GoogleMapsIcon className="h-4 w-4" />
-                          Open with Google Maps
-                        </a>
-                      )}
-                      {hasAccessCoordinates && (
-                        <>
+                    {hasAccessCoordinates && previewMode && (
+                      <a
+                        href={buildGoogleMapsSearchUrl(accessLat, accessLng)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800"
+                      >
+                        View location on Google Maps →
+                      </a>
+                    )}
+                    {!previewMode && (
+                      <div className="flex flex-wrap gap-2">
+                        {openInGoogleMapsUrl && (
                           <a
-                            href={buildGoogleDriveUrl(accessLat, accessLng)}
+                            href={openInGoogleMapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100"
                           >
                             <GoogleMapsIcon className="h-4 w-4" />
-                            Drive with Google Maps
+                            Open with Google Maps
                           </a>
-                          <a
-                            href={buildWazeDriveUrl(accessLat, accessLng)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-100"
-                          >
-                            <WazeIcon className="h-4 w-4" />
-                            Drive with Waze
-                          </a>
-                        </>
-                      )}
-                    </div>
+                        )}
+                        {hasAccessCoordinates && (
+                          <>
+                            <a
+                              href={buildGoogleDriveUrl(accessLat, accessLng)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100"
+                            >
+                              <GoogleMapsIcon className="h-4 w-4" />
+                              Drive with Google Maps
+                            </a>
+                            <a
+                              href={buildWazeDriveUrl(accessLat, accessLng)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-100"
+                            >
+                              <WazeIcon className="h-4 w-4" />
+                              Drive with Waze
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -478,13 +438,14 @@ export const TripDetail = () => {
                 </div>
               </div>
             )}
-
           </div>
 
           {trip.paymentTerms && pricingMode === 'shared' && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-1">Cost Shared</h2>
-              <p className="text-sm text-gray-500 mb-3">Why this cost is shared among participants</p>
+              <p className="text-sm text-gray-500 mb-3">
+                Why this cost is shared among participants
+              </p>
               <p className="text-gray-700 text-sm whitespace-pre-wrap">{trip.paymentTerms}</p>
             </div>
           )}
@@ -540,13 +501,15 @@ export const TripDetail = () => {
                 <p className="text-2xl font-bold text-gray-900">{tripPriceLabel(trip)}</p>
                 <p className="text-sm text-gray-500">{pricePackages.length > 1 ? 'options available' : 'per person'}</p>
               </div>
-              <div className="hidden md:block">
-                <ShareButton
-                  title={trip.title || trip.locationName}
-                  text={`${dateRangeLabel} · Join this ${trip.activityType} trip on UAE Trails`}
-                  path={`/trip/${trip.id}`}
-                />
-              </div>
+              {!previewMode && (
+                <div className="hidden md:block">
+                  <ShareButton
+                    title={trip.title || trip.locationName}
+                    text={`${dateRangeLabel} · Join this ${trip.activityType} trip on UAE Trails`}
+                    path={`/activity/${trip.id}`}
+                  />
+                </div>
+              )}
             </div>
 
             {sidebarJoin}
@@ -590,18 +553,14 @@ export const TripDetail = () => {
                     </div>
                   </div>
                 )}
-                <OrganizerMessageButton
-                  organizerUserId={tripHostUserId(trip)}
-                  activityId={trip.id}
-                  size="md"
-                />
+                {!previewMode && (
+                  <HostMessageButton organizerUserId={tripHostUserId(trip)} activityId={trip.id} size="md" />
+                )}
               </div>
-              {trip.hostBio && (
-                <p className="mt-3 text-sm text-gray-600 leading-relaxed">{trip.hostBio}</p>
-              )}
+              {trip.hostBio && <p className="mt-3 text-sm text-gray-600 leading-relaxed">{trip.hostBio}</p>}
             </div>
 
-            {PARTICIPANT_PRIVACY.showPreJoin && (
+            {PARTICIPANT_PRIVACY.showPreJoin && !previewMode && (
               <div className="mt-5 pt-5 border-t border-gray-100">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   Who&apos;s going ({participants.length})
@@ -617,23 +576,9 @@ export const TripDetail = () => {
           </div>
         </div>
       </div>
-      <WithdrawRequestModal
-        open={showWithdraw}
-        onClose={() => setShowWithdraw(false)}
-        tripTitle={trip.title || trip.locationName}
-        tripDate={trip.date}
-        variant={isConfirmed ? 'trip' : 'request'}
-        submitting={withdrawing}
-        onConfirm={handleWithdraw}
-      />
-      <JoinRequestModal
-        open={showJoinModal}
-        onClose={() => setShowJoinModal(false)}
-        trip={trip}
-        isFull={isFull}
-        selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
-        onSuccess={handleJoinSuccess}
-      />
     </MobileDetailShell>
   );
 };
+
+/** @deprecated Use ActivityDetailView */
+export const TripDetailView = ActivityDetailView;

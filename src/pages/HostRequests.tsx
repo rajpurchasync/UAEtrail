@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api, ActivityRequestView } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
-import { OrganizerShell } from '../components/organizer/OrganizerShell';
+import { HostShell } from '../components/host/HostShell';
 import { TenantSwitcher } from '../components/ui';
 import { withdrawReasonLabel } from '@uaetrail/shared-types';
 
-export const OrganizerRequests = () => {
+export const HostRequests = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +16,7 @@ export const OrganizerRequests = () => {
   const loadRequests = async (activeTenantId: string) => {
     if (!activeTenantId) return;
     try {
-      const res = await api.getOrganizerRequests(activeTenantId);
+      const res = await api.getHostRequests(activeTenantId);
       setRequests(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load requests');
@@ -30,7 +30,7 @@ export const OrganizerRequests = () => {
   const submitDecision = async () => {
     if (!tenantId || !decisionModal) return;
     try {
-      await api.decideOrganizerRequest(tenantId, decisionModal.request.id, decisionModal.action, organizerNote || undefined);
+      await api.decideHostRequest(tenantId, decisionModal.request.id, decisionModal.action, organizerNote || undefined);
       setDecisionModal(null);
       setOrganizerNote('');
       await loadRequests(tenantId);
@@ -53,7 +53,7 @@ export const OrganizerRequests = () => {
   };
 
   return (
-    <OrganizerShell title="Join Requests">
+    <HostShell title="Join Requests">
       <div className="space-y-4">
         <TenantSwitcher onChange={setTenantId} />
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -186,6 +186,6 @@ export const OrganizerRequests = () => {
           </div>
         </div>
       )}
-    </OrganizerShell>
+    </HostShell>
   );
 };

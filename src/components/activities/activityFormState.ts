@@ -13,6 +13,8 @@ export type LocationPinForm = {
   lng: string;
 };
 
+export type CampingSurfaceType = '' | 'sand' | 'grass';
+
 export type ActivityFormState = {
   activityType: ActivityType;
   tenantId: string;
@@ -34,9 +36,11 @@ export type ActivityFormState = {
   whatToBringItems: string[];
   mandatoryInstructions: string;
   fitnessLevel: string;
+  campingSurfaceType: CampingSurfaceType;
   noChildren: boolean;
   noPets: boolean;
   additionalRequirements: string;
+  fourByFourOnly: boolean;
   carPoolEnabled: boolean;
   carPoolPricing: CarPoolPricing;
   carPoolSharedAmount: number;
@@ -69,9 +73,11 @@ export const emptyActivityForm = (activityType: ActivityType = 'hiking'): Activi
   whatToBringItems: [''],
   mandatoryInstructions: '',
   fitnessLevel: '',
+  campingSurfaceType: '',
   noChildren: false,
   noPets: false,
   additionalRequirements: '',
+  fourByFourOnly: false,
   carPoolEnabled: false,
   carPoolPricing: 'free',
   carPoolSharedAmount: 0,
@@ -97,6 +103,8 @@ const parseRequirementsToForm = (requirements: string[]) => {
   const instructionLines: string[] = [];
   const recommendationLines: string[] = [];
   let fitnessLevel = '';
+  let campingSurfaceType: CampingSurfaceType = '';
+  let fourByFourOnly = false;
   let noChildren = false;
   let noPets = false;
 
@@ -113,6 +121,11 @@ const parseRequirementsToForm = (requirements: string[]) => {
       recommendationLines.push(trimmed.slice('Recommendation: '.length));
     } else if (trimmed.startsWith('Fitness level: ')) {
       fitnessLevel = trimmed.slice('Fitness level: '.length);
+    } else if (trimmed.startsWith('Camping surface: ')) {
+      const surface = trimmed.slice('Camping surface: '.length).toLowerCase();
+      if (surface === 'sand' || surface === 'grass') campingSurfaceType = surface;
+    } else if (trimmed === 'Reachable by 4x4 only') {
+      fourByFourOnly = true;
     } else if (trimmed === 'No children') {
       noChildren = true;
     } else if (trimmed === 'No pets') {
@@ -126,6 +139,8 @@ const parseRequirementsToForm = (requirements: string[]) => {
     whatToBringItems: whatToBringItems.length > 0 ? whatToBringItems : [''],
     mandatoryInstructions: instructionLines.join('\n'),
     fitnessLevel,
+    campingSurfaceType,
+    fourByFourOnly,
     noChildren,
     noPets,
     additionalRequirements: recommendationLines.join('\n'),
@@ -190,6 +205,11 @@ export const buildRequirementsFromForm = (form: ActivityFormState): string[] => 
     lines.push(`Instructions: ${form.mandatoryInstructions.trim()}`);
   }
   if (form.fitnessLevel.trim()) lines.push(`Fitness level: ${form.fitnessLevel.trim()}`);
+  if (form.campingSurfaceType) {
+    const label = form.campingSurfaceType === 'sand' ? 'Sand' : 'Grass';
+    lines.push(`Camping surface: ${label}`);
+  }
+  if (form.fourByFourOnly) lines.push('Reachable by 4x4 only');
   if (form.noChildren) lines.push('No children');
   if (form.noPets) lines.push('No pets');
   if (form.additionalRequirements.trim()) {

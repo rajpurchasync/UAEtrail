@@ -27,6 +27,8 @@ import {
   cancelActivityById,
   createActivityDetailed,
   createLocationRecord,
+  deleteDraftActivityById,
+  duplicateTenantActivity,
   findTenantActivityBasic,
   findTenantById,
   findTenantCountryCode,
@@ -373,6 +375,23 @@ tenantActivitiesRouter.delete('/:id', validate({ params: idParamSchema }), async
     if (!event) {
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
+
+    if (event.status === ActivityStatus.DRAFT) {
+      const deleted = await deleteDraftActivityById(event.id, tenantId);
+      if (!deleted) {
+        throw new ApiError(400, 'activity_not_deletable', 'Only draft activities can be deleted.');
+      }
+      await createAuditLog({
+        actorId: req.auth!.userId,
+        action: 'activity.delete',
+        entityType: 'activity',
+        entityId: event.id,
+        tenantId
+      });
+      res.status(204).send();
+      return;
+    }
+
     await cancelActivityById(event.id);
 
     // Notify all participants about the cancellation
@@ -396,6 +415,25 @@ tenantActivitiesRouter.delete('/:id', validate({ params: idParamSchema }), async
       tenantId
     });
     res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+});
+
+tenantActivitiesRouter.post('/:id/duplicate', validate({ params: idParamSchema }), async (req, res, next) => {
+  try {
+    const tenantId = req.tenantContext!.tenantId;
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+    const duplicated = await duplicateTenantActivity(id, tenantId, req.auth!.userId);
+    await createAuditLog({
+      actorId: req.auth!.userId,
+      action: 'activity.duplicate',
+      entityType: 'activity',
+      entityId: duplicated.id,
+      tenantId,
+      metadata: { sourceActivityId: id }
+    });
+    res.status(201).json({ data: buildActivityDto(duplicated) });
   } catch (error) {
     next(error);
   }

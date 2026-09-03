@@ -213,14 +213,14 @@ const MobileMenuPanel = () => {
         <aside
           role="dialog"
           aria-modal="true"
-          aria-label="Organizer menu"
+          aria-label="Host menu"
           className={`absolute inset-y-0 right-0 w-[min(100vw-3rem,20rem)] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
             open ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
           <div className="flex items-center justify-between gap-3 px-4 pt-safe-plus-2 pb-4 border-b border-gray-100">
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">Organizer</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">Host</p>
               <p className="text-lg font-bold text-gray-900 truncate">{user?.displayName || 'Account'}</p>
             </div>
             <button
@@ -232,7 +232,7 @@ const MobileMenuPanel = () => {
               <X className="w-5 h-5" />
             </button>
           </div>
-          <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe space-y-1" aria-label="Organizer navigation">
+          <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe space-y-1" aria-label="Host navigation">
             <Link
               to="/host/profile"
               onClick={closeMenu}
@@ -243,7 +243,7 @@ const MobileMenuPanel = () => {
                 name={user?.displayName || user?.email || 'Account'}
                 className="w-9 h-9 text-sm"
               />
-              <span className="font-semibold">Organizer Profile</span>
+              <span className="font-semibold">Host profile</span>
             </Link>
             <button
               type="button"

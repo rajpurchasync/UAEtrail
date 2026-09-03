@@ -126,7 +126,7 @@ const tripCrumbs = (pathname: string, search: string): LogicalBreadcrumb[] | nul
     if (!tabLabel) return [{ label: 'Activities', path: '' }];
     return [{ label: 'Activities', path: '/activities' }, { label: tabLabel, path: '' }];
   }
-  if (pathname.startsWith('/trip/')) return [{ label: 'Activities', path: '/activities' }, { label: 'Activity Details', path: '' }];
+  if (pathname.startsWith('/activity/')) return [{ label: 'Activities', path: '/activities' }, { label: 'Activity Details', path: '' }];
   return null;
 };
 
@@ -146,7 +146,7 @@ const supportCrumbs = (pathname: string): LogicalBreadcrumb[] | null => {
 };
 
 const publicDetailCrumbs = (pathname: string): LogicalBreadcrumb[] | null => {
-  if (pathname.startsWith('/operator/')) return [{ label: 'Activities', path: '/activities' }, { label: 'Organizer Profile', path: '' }];
+  if (pathname.startsWith('/operator/')) return [{ label: 'Activities', path: '/activities' }, { label: 'Host profile', path: '' }];
   return null;
 };
 

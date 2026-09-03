@@ -29,7 +29,7 @@ export const inferNotificationPath = (
 
   const activityId = toStringValue(meta?.activityId);
   if (activityId) {
-    return `/trip/${activityId}`;
+    return `/activity/${activityId}`;
   }
 
   const senderId = toStringValue(meta?.senderId);

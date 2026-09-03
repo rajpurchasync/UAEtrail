@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { LocationDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
-import { OrganizerShell } from '../components/organizer/OrganizerShell';
+import { HostShell } from '../components/host/HostShell';
 import { TenantSwitcher, SubmitLocationForm, ShareButton } from '../components/ui';
 import { locationSharePath } from '../utils/share';
 
@@ -12,7 +12,7 @@ const statusLabel = (status: LocationDTO['status']) => {
   return 'Inactive';
 };
 
-export const OrganizerLocations = () => {
+export const HostLocations = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [submitted, setSubmitted] = useState<LocationDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export const OrganizerLocations = () => {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const res = await api.getOrganizerSubmittedLocations(tenantId);
+      const res = await api.getHostSubmittedLocations(tenantId);
       setSubmitted(res.data);
     } catch {
       setSubmitted([]);
@@ -35,7 +35,7 @@ export const OrganizerLocations = () => {
   }, [tenantId]);
 
   return (
-    <OrganizerShell title="Venues">
+    <HostShell title="Venues">
       <div className="space-y-6 max-w-2xl">
         <TenantSwitcher onChange={setTenantId} />
         <div>
@@ -107,6 +107,6 @@ export const OrganizerLocations = () => {
           </div>
         </div>
       </div>
-    </OrganizerShell>
+    </HostShell>
   );
 };

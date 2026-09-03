@@ -26,6 +26,7 @@ import { RewardSummaryDTO } from '@uaetrail/shared-types';
 import { accountRouteByRole } from '../utils/authRouting';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
 import { inferNotificationPath } from '../utils/notificationRouting';
+import { isHostRole } from '../utils/roles';
 
 export const Profile = () => {
   const { user, signOut, refreshUser } = useAuth();
@@ -79,8 +80,7 @@ export const Profile = () => {
   }, [user]);
 
   const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
-  const isOrganizer =
-    user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
+  const canHost = isHostRole(user?.role);
 
   const openEdit = useCallback(() => {
     setShowEdit(true);
@@ -118,7 +118,7 @@ export const Profile = () => {
   };
 
   const roleLabel = user!.role === 'participant' ? 'Participant' : 'Explorer';
-  const messagesPath = isOrganizer ? '/host/messages' : '/messages';
+  const messagesPath = canHost ? '/host/messages' : '/messages';
   const displayName = profile.displayName || user!.displayName || 'Explorer';
   const canSwitchToVisitor =
     user!.role === 'platform_admin' ||
@@ -330,11 +330,11 @@ export const Profile = () => {
                       },
                     ]
                   : []),
-                isOrganizer
+                canHost
                   ? {
                       to: '/host/overview',
                       icon: <Briefcase className="w-4 h-4" />,
-                      label: 'Organizer console',
+                      label: 'Host dashboard',
                     }
                   : user!.role === 'platform_admin'
                     ? {
