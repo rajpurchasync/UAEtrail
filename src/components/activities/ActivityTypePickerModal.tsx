@@ -1,6 +1,6 @@
 import { ActivityTypePicker } from '../ui/ActivityTypePicker';
 import { Dialog } from '../ui/Dialog';
-import type { ActivityType } from '../../config/activityTypes';
+import { ACTIVITY_PRODUCT_SINGULAR, type ActivityType } from '../../config/activityTypes';
 
 export interface ActivityTypePickerModalProps {
   open: boolean;
@@ -13,7 +13,7 @@ export const ActivityTypePickerModal = ({ open, onClose, onSelect }: ActivityTyp
   if (!open) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} title="Add activity" className="max-w-lg">
+    <Dialog open={open} onClose={onClose} title={`Add ${ACTIVITY_PRODUCT_SINGULAR.toLowerCase()}`} className="max-w-lg">
       <ActivityTypePicker onSelect={onSelect} />
       <button type="button" onClick={onClose} className="mt-4 w-full text-sm text-gray-500 py-1">
         Cancel

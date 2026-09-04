@@ -5,6 +5,7 @@ import { accountRouteByRole } from '../../utils/authRouting';
 import { MEMBERSHIP_NAV_LINK } from '../../config/platform';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { SecureAvatar } from '../ui/SecureAvatar';
+import { MobileMenuButton } from './MobileMenu';
 
 export const Header = () => {
   const { user } = useAuth();
@@ -53,6 +54,7 @@ export const Header = () => {
           </nav>
 
           <div className="flex items-center gap-2">
+            <MobileMenuButton className="md:hidden" />
             {user ? (
               <Link
                 to={accountRouteByRole(user.role)}

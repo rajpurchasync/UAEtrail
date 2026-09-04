@@ -53,6 +53,11 @@ export const ADMIN_LINKS = [
   { to: '/admin/settings', label: 'Broadcast' }
 ];
 
+export const MERCHANT_DASHBOARD_LINKS = [
+  { to: '/merchant/dashboard', label: 'Dashboard' },
+  { to: '/shop', label: 'Public Shop' },
+];
+
 export const HIKING_SUBCATEGORIES = [
   'Shoes',
   'Backpacks',

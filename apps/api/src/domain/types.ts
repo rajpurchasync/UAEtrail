@@ -187,6 +187,8 @@ export interface Activity {
   itinerary: string[];
   requirements: string[];
   images: string[];
+  bannerUrl: string | null;
+  signupUrl: string | null;
   priceAed: number;
   pricePackages: unknown;
   capacity: number;

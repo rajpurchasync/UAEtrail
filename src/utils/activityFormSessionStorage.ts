@@ -20,6 +20,7 @@ export type ActivityFormSessionSnapshot = {
   initialActivityType: ActivityType | null;
   hikingDraft: ActivityDraftSnapshot | null;
   campingDraft: ActivityDraftSnapshot | null;
+  eventDraft: ActivityDraftSnapshot | null;
 };
 
 const STORAGE_KEY = 'uaetrail.activity-form.session';
@@ -36,6 +37,7 @@ export const loadActivityFormSession = (): ActivityFormSessionSnapshot | null =>
     return {
       ...parsed,
       campingDraft: parsed.campingDraft ?? null,
+      eventDraft: parsed.eventDraft ?? null,
     };
   } catch {
     return null;
@@ -67,6 +69,7 @@ export const saveHikingDraft = (
     initialActivityType: current?.initialActivityType ?? null,
     hikingDraft: draft,
     campingDraft: current?.campingDraft ?? null,
+    eventDraft: current?.eventDraft ?? null,
     ...sessionPatch,
   });
 };
@@ -84,6 +87,25 @@ export const saveCampingDraft = (
     initialActivityType: current?.initialActivityType ?? null,
     hikingDraft: current?.hikingDraft ?? null,
     campingDraft: draft,
+    eventDraft: current?.eventDraft ?? null,
+    ...sessionPatch,
+  });
+};
+
+export const saveEventDraft = (
+  draft: ActivityDraftSnapshot,
+  sessionPatch?: Partial<ActivityFormSessionSnapshot>
+): void => {
+  const current = loadActivityFormSession();
+  saveActivityFormSession({
+    open: true,
+    activityType: 'community_activity',
+    tenantId: current?.tenantId ?? '',
+    editingActivityId: draft.editingActivityId,
+    initialActivityType: current?.initialActivityType ?? null,
+    hikingDraft: current?.hikingDraft ?? null,
+    campingDraft: current?.campingDraft ?? null,
+    eventDraft: draft,
     ...sessionPatch,
   });
 };

@@ -25,7 +25,7 @@ const CARD_ACCENTS: Record<ActivityType, string> = {
 export const ActivityTypePicker = ({ onSelect }: ActivityTypePickerProps) => (
   <div className="space-y-3">
     <p className="text-sm text-gray-600">
-      What type of activity are you scheduling? Each type has its own form and requirements.
+      Choose Hiking, Camping, or an Event. Each kind has its own form and requirements.
     </p>
     <div className="grid gap-3">
       {ACTIVITY_TYPES.map((type) => {

@@ -4,10 +4,15 @@ import type { ActivityFormState } from '../components/activities/activityFormSta
 import { buildHostActivityPayload, buildRequirementsFromForm } from '../components/activities/activityFormState';
 import { derivePriceAed } from './tripPricing';
 
-const fallbackLocation = (locationId: string, name: string, activityType: ActivityType): LocationDTO => ({
+const fallbackLocation = (
+  locationId: string,
+  name: string,
+  activityType: ActivityType,
+  region = ''
+): LocationDTO => ({
   id: locationId,
   name,
-  region: '',
+  region,
   activityType,
   description: '',
   season: [],
@@ -17,6 +22,25 @@ const fallbackLocation = (locationId: string, name: string, activityType: Activi
   status: 'active',
   countryCode: 'AE',
 });
+
+/** Build an ActivityDetailDTO for list/dashboard preview from a saved activity row. */
+export const buildActivityDetailFromListItem = (
+  activity: ActivityDTO,
+  venue?: LocationDTO
+): ActivityDetailDTO => {
+  const activityType = activity.activityType ?? 'hiking';
+  const venueName = venue?.name ?? activity.locationName ?? 'Venue';
+
+  return {
+    ...activity,
+    participants: activity.participantPreviews ?? [],
+    location:
+      venue ??
+      fallbackLocation(activity.locationId, venueName, activityType, activity.region ?? ''),
+    myParticipation: null,
+    myRequest: null,
+  };
+};
 
 /** Build an ActivityDetailDTO for host preview from saved form + API activity. */
 export const buildActivityDetailPreview = (
@@ -75,6 +99,8 @@ export const buildActivityDetailPreview = (
     carPoolDetails: (payload.carPoolDetails as string | undefined) ?? saved.carPoolDetails ?? null,
     requirements: buildRequirementsFromForm(form),
     images: form.images.length > 0 ? form.images : saved.images ?? [],
+    bannerUrl: null,
+    signupUrl: form.signupUrl.trim() || saved.signupUrl || null,
     locationName: venueName,
     hostName: saved.hostName ?? user?.displayName ?? user?.email ?? 'Host',
     hostUserId: saved.hostUserId ?? form.hostUserId ?? user?.id,

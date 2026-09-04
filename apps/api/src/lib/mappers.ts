@@ -207,6 +207,8 @@ export const toEventDto = ({
   itinerary: event.itinerary,
   requirements: event.requirements,
   images: event.images ?? [],
+  bannerUrl: event.bannerUrl ?? null,
+  signupUrl: event.signupUrl ?? null,
   hostName,
   hostUserId,
   hostAvatar: hostAvatar ?? undefined,

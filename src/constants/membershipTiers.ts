@@ -123,7 +123,7 @@ export const SUBSCRIPTION_PLANS = [
     popular: false,
     benefits: [
       'Browse trails, camps & community trips',
-      'Join free community events',
+      'Join free events',
       'Pay-as-you-go location guides',
       'Download map + guide on call, per location',
       'Earn Trail Points on every contribution',

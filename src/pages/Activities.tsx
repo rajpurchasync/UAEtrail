@@ -99,7 +99,7 @@ export const Activities = () => {
     >
       <PageMeta
         title="Activities — explore & join outdoor adventures"
-        description="Browse hiking, camping, and outdoor activities across the UAE."
+        description="Browse hiking, camping, and events across the UAE."
         path={ACTIVITIES_PATH}
       />
 

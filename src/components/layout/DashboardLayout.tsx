@@ -58,43 +58,13 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
           {isAdminDashboard ? (
             <div className="flex items-center gap-1.5 md:gap-2">
               <NotificationBellPopover viewAllPath="/admin/notifications" preferAdminRoutes />
+              <MobileMenuButton />
             </div>
           ) : (
             <div className="flex items-center gap-1.5 md:gap-2">
-              <MobileMenuButton showOnDesktop />
+              <MobileMenuButton />
             </div>
           )}
-        </div>
-
-        {/* ─── Horizontal scroll nav (mobile) / hidden on desktop ─── */}
-        <div className="md:hidden border-t border-gray-100 overflow-x-auto scrollbar-none">
-          <div className="flex px-2 py-1.5 gap-0.5 min-w-max">
-            {links.map((link) => {
-              const active = location.pathname === link.to;
-              return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                    active
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 active:bg-gray-100'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-            {isAdminDashboard && (
-              <button
-                type="button"
-                onClick={() => void handleSignOut()}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap text-red-600 hover:bg-red-50 active:bg-red-100 transition-all"
-              >
-                Sign out
-              </button>
-            )}
-          </div>
         </div>
       </header>
 
@@ -129,6 +99,13 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
                   {link.label}
                 </Link>
               ))}
+              <div className="my-2 border-t border-gray-100" />
+              <Link
+                to="/"
+                className="block px-3 py-2 rounded-xl text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
+              >
+                Landing page
+              </Link>
               {isAdminDashboard && (
                 <button
                   type="button"

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, TrendingUp } from 'lucide-react';
 import { CommunityActivitySpot } from '../../types';
+import { VENUE_TYPE_LABELS } from '../../config/activityTypes';
 import { getDifficultyColor, capitalize } from '../../utils';
 import { FavoriteButton } from './FavoriteButton';
 import { ShareButton } from './ShareButton';
@@ -21,12 +22,12 @@ export const CommunityActivityCard = ({ event }: CommunityActivityCardProps) => 
       </div>
       <FavoriteButton locationId={event.id} className="absolute top-12 right-3" />
       <div className="absolute top-3 left-3 bg-violet-600/90 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-xs font-semibold">
-        Community Event
+        {VENUE_TYPE_LABELS.community_activity}
       </div>
       <div className="absolute bottom-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
         <ShareButton
           title={event.name}
-          text={`${event.region} · community event on UAE Trails`}
+          text={`${event.region} · ${VENUE_TYPE_LABELS.community_activity.toLowerCase()} on UAE Trails`}
           path={eventPath}
           iconOnly
         />

@@ -6,8 +6,10 @@ import {
   LocationSelect,
   TimePicker,
 } from '../ui';
+import { useMemo } from 'react';
 import type { LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
+import { UAE_EMIRATES, getStatesForEmirate } from '../../config/uaeRegions';
 import {
   FORM_INPUT,
   FORM_LABEL,
@@ -36,6 +38,11 @@ export const hikingLocationTabs: LocationTabConfig[] = [
 
 export const campingLocationTabs: LocationTabConfig[] = [
   { id: 'start', label: 'Camp start point' },
+  { id: 'meeting', label: 'Meeting point' },
+];
+
+export const eventLocationTabs: LocationTabConfig[] = [
+  { id: 'start', label: 'Event start point' },
   { id: 'meeting', label: 'Meeting point' },
 ];
 
@@ -180,6 +187,7 @@ export interface SummaryStepCampingProps {
   canPickHostOrganization: boolean;
   pickerHostOrganizations: TenantListDTO[];
   showScheduleWarning?: boolean;
+  formActivityType?: ActivityType;
 }
 
 export const SummaryStepCamping = ({
@@ -195,7 +203,22 @@ export const SummaryStepCamping = ({
   canPickHostOrganization,
   pickerHostOrganizations,
   showScheduleWarning,
-}: SummaryStepCampingProps) => (
+  formActivityType = 'camping',
+}: SummaryStepCampingProps) => {
+  const isEvent = formActivityType === 'community_activity';
+  const venueType = formActivityType;
+  const aboutLabel = isEvent ? 'About event' : 'About spot';
+  const titlePlaceholder = isEvent ? 'e.g. Desert Trail Run 2026' : 'e.g. Liwa Desert Weekend Camp';
+  const aboutPlaceholder = isEvent
+    ? 'Describe the event, schedule highlights, and what participants can expect…'
+    : 'Describe the camping spot, facilities, and what campers can expect…';
+  const addVenueLabel = isEvent ? 'Add event spot' : 'Add camping spot';
+  const stateOptions = useMemo(
+    () => (form.eventEmirate ? getStatesForEmirate(form.eventEmirate) : []),
+    [form.eventEmirate]
+  );
+
+  return (
   <>
     <div>
       <label className={FORM_LABEL}>
@@ -207,65 +230,137 @@ export const SummaryStepCamping = ({
         value={form.title}
         onChange={(e) => set({ title: e.target.value })}
         className={FORM_INPUT}
-        placeholder="e.g. Liwa Desert Weekend Camp"
+        placeholder={titlePlaceholder}
       />
     </div>
 
-    <div>
-      <label className={FORM_LABEL}>Venue *</label>
-      <LocationSelect
-        value={form.locationId}
-        onChange={(locationId) => set({ locationId })}
-        tenantId={hostTenantId || undefined}
-        activityType="camping"
-        locations={venueLocations}
-        required
-        addNewHref={venueAddHref}
-        addNewLabel="Add camping spot"
-        onAddNew={onAddVenue}
-      />
-    </div>
-
-    <div>
-      <label className={FORM_LABEL}>Type *</label>
-      <div className="flex flex-wrap gap-2">
-        {(['sand', 'grass'] as const).map((surface) => (
-          <button
-            key={surface}
-            type="button"
-            onClick={() => set({ campingSurfaceType: surface })}
-            className={`px-3 py-1.5 rounded-md text-sm border capitalize ${
-              form.campingSurfaceType === surface
-                ? 'bg-emerald-600 text-white border-emerald-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            {surface}
-          </button>
-        ))}
+    {isEvent ? (
+      <div className="space-y-3">
+        <p className={FORM_LABEL}>Venue *</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Emirate *</label>
+            <select
+              required
+              value={form.eventEmirate}
+              onChange={(e) => set({ eventEmirate: e.target.value, eventState: '' })}
+              className={FORM_INPUT}
+            >
+              <option value="">Select emirate…</option>
+              {UAE_EMIRATES.map((emirate) => (
+                <option key={emirate} value={emirate}>
+                  {emirate}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">State *</label>
+            <select
+              required
+              value={form.eventState}
+              disabled={!form.eventEmirate}
+              onChange={(e) => set({ eventState: e.target.value })}
+              className={`${FORM_INPUT} disabled:bg-gray-50`}
+            >
+              <option value="">Select state…</option>
+              {stateOptions.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-gray-600 mb-1 block">Location detail *</label>
+          <input
+            type="text"
+            required
+            value={form.eventVenueDetail}
+            onChange={(e) => set({ eventVenueDetail: e.target.value })}
+            className={FORM_INPUT}
+            placeholder="Venue name, address, or meeting point details…"
+          />
+        </div>
       </div>
-    </div>
-
-    {canPickHostOrganization && pickerHostOrganizations.length > 0 && (
+    ) : (
       <div>
-        <label className={FORM_LABEL}>Host organization *</label>
-        <select
+        <label className={FORM_LABEL}>Venue *</label>
+        <LocationSelect
+          value={form.locationId}
+          onChange={(locationId) => set({ locationId })}
+          tenantId={hostTenantId || undefined}
+          activityType={venueType}
+          locations={venueLocations}
           required
-          value={form.tenantId}
-          onChange={(e) => set({ tenantId: e.target.value })}
-          className={FORM_INPUT}
-        >
-          <option value="">Select organization…</option>
-          {pickerHostOrganizations.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+          addNewHref={venueAddHref}
+          addNewLabel={addVenueLabel}
+          onAddNew={onAddVenue}
+        />
       </div>
     )}
 
-    {canPickHostOrganization && hostTenantId && (
+    {!isEvent && (
+      <div>
+        <label className={FORM_LABEL}>Type *</label>
+        <div className="flex flex-wrap gap-2">
+          {(['sand', 'grass'] as const).map((surface) => (
+            <button
+              key={surface}
+              type="button"
+              onClick={() => set({ campingSurfaceType: surface })}
+              className={`px-3 py-1.5 rounded-md text-sm border capitalize ${
+                form.campingSurfaceType === surface
+                  ? 'bg-emerald-600 text-white border-emerald-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {surface}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {isEvent ? (
+      <>
+        <div>
+          <label className={FORM_LABEL}>Host organization *</label>
+          <input
+            type="text"
+            required
+            value={form.eventHostOrganization}
+            onChange={(e) => set({ eventHostOrganization: e.target.value })}
+            className={FORM_INPUT}
+            placeholder="e.g. Dubai Trail Runners"
+          />
+        </div>
+        <SignupUrlField form={form} set={set} />
+      </>
+    ) : (
+      canPickHostOrganization &&
+      pickerHostOrganizations.length > 0 && (
+        <div>
+          <label className={FORM_LABEL}>Host organization *</label>
+          <select
+            required
+            value={form.tenantId}
+            onChange={(e) => set({ tenantId: e.target.value })}
+            className={FORM_INPUT}
+          >
+            <option value="">Select organization…</option>
+            {pickerHostOrganizations.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )
+    )}
+
+    {!isEvent && canPickHostOrganization && hostTenantId && (
       <HostSelect
         tenantId={hostTenantId}
         value={form.hostUserId}
@@ -277,7 +372,7 @@ export const SummaryStepCamping = ({
 
     <div>
       <label className={FORM_LABEL}>
-        About spot *{' '}
+        {aboutLabel} *{' '}
         <span className="text-gray-400 font-normal">
           ({aboutWords}/{minAboutWords} min, 100 max words)
         </span>
@@ -287,14 +382,15 @@ export const SummaryStepCamping = ({
         onChange={(e) => set({ description: e.target.value })}
         className={FORM_TEXTAREA}
         rows={5}
-        placeholder="Describe the camping spot, facilities, and what campers can expect…"
+        placeholder={aboutPlaceholder}
         required
       />
     </div>
 
     <CoverImageField form={form} set={set} hostTenantId={hostTenantId} />
   </>
-);
+  );
+};
 
 const SummaryScheduleFields = ({
   form,
@@ -347,8 +443,24 @@ const CoverImageField = ({
       max={1}
       keyPrefix="activities"
       tenantId={hostTenantId || undefined}
-      kind="activity-image"
+      kind="activity"
       preset="activity"
+    />
+  </div>
+);
+
+const SignupUrlField = ({ form, set }: { form: ActivityFormState; set: SetForm }) => (
+  <div>
+    <label className={FORM_LABEL}>Event URL *</label>
+    <p className="text-xs text-gray-500 mb-2">External registration page (Eventbrite, Google Form, etc.).</p>
+    <input
+      type="url"
+      value={form.signupUrl}
+      onChange={(e) => set({ signupUrl: e.target.value })}
+      className={FORM_INPUT}
+      placeholder="https://example.com/register"
+      inputMode="url"
+      autoComplete="url"
     />
   </div>
 );

@@ -8,8 +8,7 @@ import { Dialog } from '../components/ui/Dialog';
 import { SubmitLocationForm } from '../components/ui/SubmitLocationForm';
 import { useAuth } from '../context/AuthContext';
 import type { LocationMapPin } from '../components/ui/LocationsMap';
-import type { ActivityType } from '../config/activityTypes';
-import { ACTIVITY_TYPE_LABELS, locationPathForActivity } from '../config/activityTypes';
+import { ACTIVITY_BROWSE_FILTER_OPTIONS, ACTIVITY_TYPE_LABELS, locationPathForActivity, type ActivityType } from '../config/activityTypes';
 
 const LocationsMap = lazy(() =>
   import('../components/ui/LocationsMap').then((m) => ({ default: m.LocationsMap }))
@@ -349,12 +348,7 @@ export const Discovery = () => {
           <div className="flex gap-2 items-center min-w-0 mb-3">
             <FilterChips
               className="min-w-0 shrink"
-              options={[
-                { key: 'all', label: 'All' },
-                { key: 'hiking', label: 'Hiking' },
-                { key: 'camping', label: 'Camping' },
-                { key: 'community_activity', label: 'Community Event' },
-              ]}
+              options={ACTIVITY_BROWSE_FILTER_OPTIONS}
               value={activityFilter}
               onChange={(key) => setActivityFilter(key as ActivityFilter)}
             />

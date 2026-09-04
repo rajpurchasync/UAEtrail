@@ -78,6 +78,8 @@ export type ActivityCreateInput = {
   itinerary?: string[];
   requirements?: string[];
   images?: string[];
+  bannerUrl?: string | null;
+  signupUrl?: string | null;
   priceAed?: number;
   pricePackages?: unknown;
   capacity: number;
@@ -111,6 +113,8 @@ export type ActivityUpdateInput = {
   itinerary?: string[];
   requirements?: string[];
   images?: string[];
+  bannerUrl?: string | null;
+  signupUrl?: string | null;
   priceAed?: number;
   pricePackages?: unknown;
   capacity?: number;
@@ -202,6 +206,8 @@ export type MongoActivityDoc = {
   itinerary: string[];
   requirements: string[];
   images: string[];
+  bannerUrl: string | null;
+  signupUrl: string | null;
   priceAed: number;
   pricePackages: unknown;
   capacity: number;
@@ -243,6 +249,8 @@ export const activityRowToMongoDoc = (event : Activity): MongoActivityDoc => ({
   itinerary: event.itinerary,
   requirements: event.requirements,
   images: event.images,
+  bannerUrl: event.bannerUrl ?? null,
+  signupUrl: event.signupUrl ?? null,
   priceAed: event.priceAed,
   pricePackages: event.pricePackages,
   capacity: event.capacity,
@@ -285,6 +293,8 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     itinerary: asStringArray(data.itinerary),
     requirements: asStringArray(data.requirements),
     images: asStringArray(data.images),
+    bannerUrl: data.bannerUrl?.trim() || null,
+    signupUrl: data.signupUrl?.trim() || null,
     priceAed: data.priceAed ?? 0,
     pricePackages: data.pricePackages ?? [],
     capacity: data.capacity,

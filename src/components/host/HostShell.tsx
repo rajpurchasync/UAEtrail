@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsumerShell } from '../mobile/ConsumerShell';
@@ -70,7 +70,7 @@ export const HostShell = ({ title, children, cta, headerExtra }: HostShellProps)
             <p className="text-xs text-white/90 mt-0.5">Manage activities, team, venues, and join requests.</p>
           </div>
           {headerExtra}
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <FilterChips
                 options={navOptions}
@@ -79,8 +79,15 @@ export const HostShell = ({ title, children, cta, headerExtra }: HostShellProps)
                 variant="neutral"
               />
             </div>
+            <Link
+              to="/"
+              className="shrink-0 text-sm font-medium text-gray-600 hover:text-emerald-700 whitespace-nowrap"
+            >
+              Landing page
+            </Link>
             {cta && <div className="shrink-0">{cta}</div>}
           </div>
+          {cta && <div className="md:hidden flex justify-end">{cta}</div>}
         </div>
       }
     >

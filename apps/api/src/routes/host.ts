@@ -64,6 +64,28 @@ import {
 const idParamSchema = z.object({ id: z.string().min(1) });
 const membershipIdSchema = z.object({ membershipId: z.string().min(1) });
 
+const optionalHttpUrlSchema = z
+  .string()
+  .max(2000)
+  .optional()
+  .nullable()
+  .transform((value) => {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : null;
+  })
+  .refine(
+    (value) => {
+      if (!value) return true;
+      try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    },
+    { message: 'Must be a valid http(s) URL' }
+  );
+
 const eventCreateSchema = z.object({
   activityType: sharedActivityTypeSchema,
   locationId: z.string().min(1),
@@ -95,6 +117,8 @@ const eventCreateSchema = z.object({
   pricePackages: tripPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
   images: z.array(z.string()).default([]),
+  bannerUrl: optionalHttpUrlSchema,
+  signupUrl: optionalHttpUrlSchema,
   hostId: z.string().optional(),
   pricingMode: z.enum(['free', 'shared', 'paid']).optional()
 });
@@ -218,6 +242,8 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
       itinerary: body.itinerary,
       requirements: body.requirements,
       images: body.images,
+      bannerUrl: body.bannerUrl ?? null,
+      signupUrl: body.signupUrl ?? null,
       priceAed: pricing.priceAed,
       pricePackages: pricing.pricePackages,
       pricingMode: pricing.pricingMode,
@@ -321,6 +347,8 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
       itinerary: body.itinerary,
       requirements: body.requirements,
       images: body.images,
+      bannerUrl: body.bannerUrl,
+      signupUrl: body.signupUrl,
       ...(pricing
         ? {
             priceAed: pricing.priceAed,

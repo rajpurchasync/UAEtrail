@@ -70,6 +70,7 @@ export const uploadMediaBlob = async ({
     size: blob.size,
     tenantId,
     kind,
+    keyPrefix,
   });
 
   return formatMediaUrl(formatEnvironmentUrl(committed.data.url));

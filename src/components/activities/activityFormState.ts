@@ -47,6 +47,12 @@ export type ActivityFormState = {
   carPoolSeats: number;
   carPoolDetails: string;
   images: string[];
+  bannerUrl: string;
+  signupUrl: string;
+  eventEmirate: string;
+  eventState: string;
+  eventVenueDetail: string;
+  eventHostOrganization: string;
   hostUserId: string;
 };
 
@@ -84,6 +90,12 @@ export const emptyActivityForm = (activityType: ActivityType = 'hiking'): Activi
   carPoolSeats: 0,
   carPoolDetails: '',
   images: [],
+  bannerUrl: '',
+  signupUrl: '',
+  eventEmirate: '',
+  eventState: '',
+  eventVenueDetail: '',
+  eventHostOrganization: '',
   hostUserId: '',
 });
 
@@ -107,6 +119,7 @@ const parseRequirementsToForm = (requirements: string[]) => {
   let fourByFourOnly = false;
   let noChildren = false;
   let noPets = false;
+  let eventHostOrganization = '';
 
   for (const item of requirements) {
     const trimmed = item.trim();
@@ -124,6 +137,8 @@ const parseRequirementsToForm = (requirements: string[]) => {
     } else if (trimmed.startsWith('Camping surface: ')) {
       const surface = trimmed.slice('Camping surface: '.length).toLowerCase();
       if (surface === 'sand' || surface === 'grass') campingSurfaceType = surface;
+    } else if (trimmed.startsWith('Host organization: ')) {
+      eventHostOrganization = trimmed.slice('Host organization: '.length);
     } else if (trimmed === 'Reachable by 4x4 only') {
       fourByFourOnly = true;
     } else if (trimmed === 'No children') {
@@ -144,6 +159,7 @@ const parseRequirementsToForm = (requirements: string[]) => {
     noChildren,
     noPets,
     additionalRequirements: recommendationLines.join('\n'),
+    eventHostOrganization,
   };
 };
 
@@ -191,6 +207,12 @@ export const activityToForm = (activity: ActivityDTO): ActivityFormState => {
     carPoolSeats: activity.carPoolSeats ?? 0,
     carPoolDetails: activity.carPoolDetails ?? '',
     images: activity.images?.slice(0, 1) ?? [],
+    bannerUrl: activity.bannerUrl ?? '',
+    signupUrl: activity.signupUrl ?? '',
+    eventEmirate: '',
+    eventState: activity.region ?? '',
+    eventVenueDetail: '',
+    eventHostOrganization: instructionFields.eventHostOrganization ?? '',
     hostUserId: activity.hostId ?? activity.hostUserId ?? '',
   };
 };
@@ -208,6 +230,9 @@ export const buildRequirementsFromForm = (form: ActivityFormState): string[] => 
   if (form.campingSurfaceType) {
     const label = form.campingSurfaceType === 'sand' ? 'Sand' : 'Grass';
     lines.push(`Camping surface: ${label}`);
+  }
+  if (form.activityType === 'community_activity' && form.eventHostOrganization.trim()) {
+    lines.push(`Host organization: ${form.eventHostOrganization.trim()}`);
   }
   if (form.fourByFourOnly) lines.push('Reachable by 4x4 only');
   if (form.noChildren) lines.push('No children');
@@ -278,6 +303,8 @@ export const buildHostActivityPayload = (form: ActivityFormState): Record<string
       form.carPoolEnabled && form.carPoolDetails.trim() ? form.carPoolDetails.trim() : undefined,
     requirements: buildRequirementsFromForm(form),
     images: form.images.slice(0, 1),
+    bannerUrl: null,
+    signupUrl: form.signupUrl.trim() || null,
     hostId: form.hostUserId || undefined,
     pricingMode: form.pricingMode,
   };

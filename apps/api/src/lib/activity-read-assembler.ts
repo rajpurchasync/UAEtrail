@@ -78,6 +78,8 @@ const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
   itinerary: doc.itinerary,
   requirements: doc.requirements,
   images: doc.images,
+  bannerUrl: doc.bannerUrl ?? null,
+  signupUrl: doc.signupUrl ?? null,
   priceAed: doc.priceAed,
   pricePackages: doc.pricePackages,
   capacity: doc.capacity,

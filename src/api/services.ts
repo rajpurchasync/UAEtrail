@@ -1069,7 +1069,14 @@ export const api = {
       body: JSON.stringify(payload)
     }),
 
-  commitUpload: (payload: { key: string; mimeType: string; size: number; tenantId?: string; kind?: string }) =>
+  commitUpload: (payload: {
+    key: string;
+    mimeType: string;
+    size: number;
+    tenantId?: string;
+    kind?: string;
+    keyPrefix?: string;
+  }) =>
     apiRequest<{ data: { id: string; key: string; url: string } }>('/media/commit', {
       method: 'POST',
       auth: true,

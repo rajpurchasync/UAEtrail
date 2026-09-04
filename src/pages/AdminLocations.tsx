@@ -15,15 +15,16 @@ const HIKING_ACCESSIBLE = ['4X4 required', 'Any cars', 'Bike'];
 const CAMPING_ACCESSIBLE = ['4X4 required', 'Any cars'];
 const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-friendly', 'Wheelchair-accessible', 'Night-hiking', 'Sunrise spot', 'Sunset spot'];
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../config/regions';
+import { VENUE_TYPE_LABELS } from '../config/activityTypes';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
 
 const isTrailLike = (type?: LocationDTO['activityType']) =>
   type === 'hiking' || type === 'community_activity';
 
 const activityTypeLabel = (type: LocationDTO['activityType']) => {
-  if (type === 'hiking') return '🥾 Hiking';
-  if (type === 'community_activity') return '🏃 Community Event';
-  return '⛺ Camping';
+  if (type === 'hiking') return `🥾 ${VENUE_TYPE_LABELS.hiking}`;
+  if (type === 'community_activity') return `🏃 ${VENUE_TYPE_LABELS.community_activity}`;
+  return `⛺ ${VENUE_TYPE_LABELS.camping}`;
 };
 
 const activityTypeBadgeClass = (type: LocationDTO['activityType']) => {
@@ -218,7 +219,7 @@ export const AdminLocations = () => {
             </button>
             <button onClick={() => setActiveTab('community_activity')}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'community_activity' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
-              🏃 Community ({communityActivityCount})
+              🏃 Events ({communityActivityCount})
             </button>
           </div>
           <div className="flex items-center gap-3">
@@ -386,7 +387,7 @@ export const AdminLocations = () => {
                     : form.activityType === 'hiking'
                       ? '🥾 Add Hiking Trail'
                       : form.activityType === 'community_activity'
-                        ? '🏃 Add Community Event'
+                        ? `🏃 Add ${VENUE_TYPE_LABELS.community_activity}`
                         : '⛺ Add Camping Location'}
               </h2>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
@@ -412,7 +413,7 @@ export const AdminLocations = () => {
                   <button onClick={() => selectType('community_activity')}
                     className="border-2 border-gray-200 hover:border-violet-400 rounded-xl p-8 text-center transition-all hover:shadow-md group">
                     <div className="text-5xl mb-3">🏃</div>
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-violet-700">Community Event</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-violet-700">{VENUE_TYPE_LABELS.community_activity}</h3>
                     <p className="text-xs text-gray-500 mt-1">Trail runs, triathlons, races</p>
                   </button>
                 </div>

@@ -13,3 +13,31 @@ export const activityTypeBadgeClass = (activityType: ActivityType | string): str
 export const resolveActivityOwnerLabel = (
   activity: Pick<ActivityDTO, 'createdByName' | 'hostName' | 'organizerName'>
 ): string => activity.createdByName ?? activity.hostName ?? activity.organizerName ?? '—';
+
+/** Person hosting the activity (guide/owner on the ground — not tenant brand). */
+export const resolveActivityHostLabel = (
+  activity: Pick<ActivityDTO, 'hostName' | 'organizerName' | 'createdByName'>
+): string =>
+  activity.hostName?.trim() ||
+  activity.organizerName?.trim() ||
+  activity.createdByName?.trim() ||
+  '—';
+
+/** Emirate / region for list tables (state only — not venue name). */
+export const resolveActivityLocationState = (
+  activity: Pick<ActivityDTO, 'region'>
+): string => activity.region?.trim() || '—';
+
+export const resolveActivityTitle = (
+  activity: Pick<ActivityDTO, 'title' | 'locationName'>
+): string => activity.title?.trim() || activity.locationName?.trim() || '—';
+
+export const formatActivityCapacity = (
+  activity: Pick<ActivityDTO, 'slotsTotal' | 'slotsAvailable'>
+): string => {
+  const booked = Math.max(0, activity.slotsTotal - activity.slotsAvailable);
+  return `${booked}/${activity.slotsTotal}`;
+};
+
+export const formatActivityPrice = (activity: Pick<ActivityDTO, 'price'>): string =>
+  activity.price > 0 ? `AED ${activity.price}` : 'Free';

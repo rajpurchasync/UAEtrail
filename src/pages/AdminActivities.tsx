@@ -1,14 +1,18 @@
 import { useEffect, useState, Fragment } from 'react';
 import { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
-import { ActivityActionsMenu, buildAdminActivityMenuItems } from '../components/activities';
+import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import {
   activityTypeBadgeClass,
+  formatActivityCapacity,
+  formatActivityPrice,
   formatActivityType,
-  resolveActivityOwnerLabel,
+  resolveActivityHostLabel,
+  resolveActivityLocationState,
+  resolveActivityTitle,
 } from '../utils/activityIdentity';
 
 type Tab = 'active' | 'past';
@@ -25,6 +29,8 @@ export const AdminActivities = () => {
   const [confirmTarget, setConfirmTarget] = useState<{ activity: ActivityDTO; action: 'suspend' | 'unsuspend' } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
   const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
+  const [previewActivity, setPreviewActivity] = useState<ActivityDTO | null>(null);
+  const [previewPublishing, setPreviewPublishing] = useState(false);
   const [suspendComment, setSuspendComment] = useState('');
   const { openCreate, openEdit, setOnSaved } = useActivityFormSession();
 
@@ -86,9 +92,11 @@ export const AdminActivities = () => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
+      (e.title ?? '').toLowerCase().includes(q) ||
       e.locationName.toLowerCase().includes(q) ||
-      (e.organizerName ?? e.hostName ?? '').toLowerCase().includes(q) ||
-      (e.title ?? '').toLowerCase().includes(q)
+      (e.region ?? '').toLowerCase().includes(q) ||
+      (e.tenantName ?? '').toLowerCase().includes(q) ||
+      (e.organizerName ?? e.hostName ?? '').toLowerCase().includes(q)
     );
   });
 
@@ -168,6 +176,32 @@ export const AdminActivities = () => {
     }
   };
 
+  const openPreview = (event: ActivityDTO) => {
+    if (event.status === 'published') {
+      openPublishedActivityPreview(event.id);
+      return;
+    }
+    setPreviewActivity(event);
+  };
+
+  const publishFromPreview = async (event: ActivityDTO) => {
+    if (!event.tenantId) return;
+    setPreviewPublishing(true);
+    try {
+      await api.publishHostActivity(event.tenantId, event.id);
+      setPreviewActivity(null);
+      await loadEvents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to publish activity');
+    } finally {
+      setPreviewPublishing(false);
+    }
+  };
+
+  const previewVenue = previewActivity
+    ? locations.find((location) => location.id === previewActivity.locationId)
+    : undefined;
+
   return (
     <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
       <div className="space-y-4">
@@ -184,7 +218,7 @@ export const AdminActivities = () => {
             </button>
           </div>
           <div className="flex items-center gap-3">
-            <input type="text" placeholder="Search events..." value={search} onChange={(e) => setSearch(e.target.value)}
+            <input type="text" placeholder="Search activities..." value={search} onChange={(e) => setSearch(e.target.value)}
               className="border rounded-lg px-3 py-1.5 text-sm w-56" />
             <button
               onClick={() =>
@@ -206,10 +240,10 @@ export const AdminActivities = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left">Activity</th>
-                <th className="px-4 py-3 text-left">Activity Type</th>
-                <th className="px-4 py-3 text-left">Owner</th>
-                <th className="px-4 py-3 text-left">Venue</th>
+                <th className="px-4 py-3 text-left">Title</th>
+                <th className="px-4 py-3 text-left">Type</th>
+                <th className="px-4 py-3 text-left">Host</th>
+                <th className="px-4 py-3 text-left">Location</th>
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-center">Capacity</th>
                 <th className="px-4 py-3 text-center">Price</th>
@@ -239,7 +273,7 @@ export const AdminActivities = () => {
                     }}
                   >
                     <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900">{event.title || '—'}</p>
+                      <p className="font-medium text-gray-900">{resolveActivityTitle(event)}</p>
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -248,21 +282,19 @@ export const AdminActivities = () => {
                         {formatActivityType(event.activityType)}
                       </span>
                     </td>
-                    <td className="px-4 py-3">{resolveActivityOwnerLabel(event)}</td>
-                    <td className="px-4 py-3">{event.locationName}</td>
+                    <td className="px-4 py-3">{resolveActivityHostLabel(event)}</td>
+                    <td className="px-4 py-3">{resolveActivityLocationState(event)}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <p className="text-gray-900">{event.date}</p>
                       <p className="text-xs text-gray-500">{event.time}</p>
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-gray-900">{event.slotsTotal - event.slotsAvailable}</span>
-                      <span className="text-gray-400">/{event.slotsTotal}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">{event.price > 0 ? `AED ${event.price}` : 'Free'}</td>
+                    <td className="px-4 py-3 text-center text-gray-900">{formatActivityCapacity(event)}</td>
+                    <td className="px-4 py-3 text-center">{formatActivityPrice(event)}</td>
                     <td className="px-4 py-3">{statusBadge(event.status)}</td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <ActivityActionsMenu
                         items={buildAdminActivityMenuItems(event, {
+                          onPreview: openPreview,
                           onEdit: openEditActivity,
                           onPublish: publish,
                           onDuplicate: duplicateActivity,
@@ -289,6 +321,12 @@ export const AdminActivities = () => {
                             <div className="col-span-2">
                               <p className="text-xs text-gray-500 uppercase font-medium">Description</p>
                               <p className="text-gray-700 text-sm mt-0.5">{event.description}</p>
+                            </div>
+                          )}
+                          {event.locationName && (
+                            <div>
+                              <p className="text-xs text-gray-500 uppercase font-medium">Venue</p>
+                              <p className="text-gray-700 text-xs mt-0.5">{event.locationName}</p>
                             </div>
                           )}
                           {event.meetingPoint && (
@@ -332,6 +370,15 @@ export const AdminActivities = () => {
         </div>
         <p className="text-xs text-gray-500">Showing {filtered.length} of {displayed.length} {tab} events</p>
       </div>
+
+      <ActivityListPreview
+        activity={previewActivity}
+        venue={previewVenue}
+        saving={previewPublishing}
+        onClose={() => setPreviewActivity(null)}
+        onSaveDraft={() => setPreviewActivity(null)}
+        onPublish={publishFromPreview}
+      />
 
       {/* Delete Draft Confirmation Modal */}
       {confirmDelete && (

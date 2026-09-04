@@ -1,37 +1,107 @@
+/**
+ * Product taxonomy
+ * ─────────────────
+ * Activities (scheduled host listings)
+ *   ├── Hiking
+ *   ├── Camping
+ *   └── Events
+ *
+ * Venues/locations (trails, camps, event spots) are a separate catalog — see VENUE_TYPE_LABELS.
+ */
+
 export const ACTIVITY_TYPES = ['hiking', 'camping', 'community_activity'] as const;
 
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
+/** Umbrella product name for scheduled listings (singular). */
+export const ACTIVITY_PRODUCT_SINGULAR = 'Activity';
+
+/** Umbrella product name for scheduled listings (plural). */
+export const ACTIVITY_PRODUCT_PLURAL = 'Activities';
+
+/** Short summary of the three kinds — use in blurbs and empty states. */
+export const ACTIVITY_KINDS_SUMMARY = 'Hiking, Camping, and Events';
+
+/** Singular label for one scheduled listing of a given kind. */
 export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
-  community_activity: 'Community Activity',
+  community_activity: 'Event',
+};
+
+/** Plural labels for browse filters and grouped sections. */
+export const ACTIVITY_TYPE_GROUP_LABELS: Record<ActivityType, string> = {
+  hiking: 'Hiking',
+  camping: 'Camping',
+  community_activity: 'Events',
 };
 
 /** Labels on the add-activity type picker cards. */
 export const ACTIVITY_TYPE_PICKER_LABELS: Record<ActivityType, string> = {
-  hiking: 'Hiking Trip',
-  camping: 'Camping',
-  community_activity: 'Community Activity',
-};
-
-/** Consumer-facing activity group labels (browse / filter). */
-export const ACTIVITY_TYPE_GROUP_LABELS: Record<ActivityType, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
-  community_activity: 'Community Activities',
+  community_activity: 'Event',
 };
 
 /** Short descriptions for the activity-type picker when creating. */
 export const ACTIVITY_TYPE_DESCRIPTIONS: Record<ActivityType, string> = {
   hiking: 'Trail outings with meeting points, itinerary, transport, and join requests.',
   camping: 'Overnight or multi-day camping experiences at outdoor venues.',
-  community_activity: 'Trail runs, mountain clean-ups, workshops, and other outdoor community gatherings.',
+  community_activity: 'Trail runs, clean-ups, workshops, and other outdoor events with optional external signup.',
+};
+
+/** Venue/location catalog labels (not the same as a scheduled activity listing). */
+export const VENUE_TYPE_LABELS: Record<ActivityType, string> = {
+  hiking: 'Hiking trail',
+  camping: 'Camping spot',
+  community_activity: 'Event spot',
 };
 
 export const parseActivityTypeParam = (value: string | null | undefined): ActivityType | null => {
   if (value === 'hiking' || value === 'camping' || value === 'community_activity') return value;
   return null;
+};
+
+/** Browse filter chips: All + Hiking / Camping / Events. */
+export const ACTIVITY_BROWSE_FILTER_OPTIONS: Array<{ key: 'all' | ActivityType; label: string }> = [
+  { key: 'all', label: 'All' },
+  ...ACTIVITY_TYPES.map((type) => ({
+    key: type,
+    label: ACTIVITY_TYPE_GROUP_LABELS[type],
+  })),
+];
+
+/** Title for host create/edit activity forms. */
+export const activityFormTitle = (type: ActivityType, mode: 'create' | 'edit'): string => {
+  const typeLabel = ACTIVITY_TYPE_LABELS[type];
+  if (type === 'community_activity') {
+    return mode === 'edit' ? 'Edit Event' : 'New Event';
+  }
+  const verb = mode === 'edit' ? 'Edit' : 'New';
+  return `${verb} ${typeLabel} ${ACTIVITY_PRODUCT_SINGULAR}`;
+};
+
+/** Consumer explore blurb under the Activities section. */
+export const activitiesExploreBlurb = (): string =>
+  `Scheduled ${ACTIVITY_PRODUCT_PLURAL.toLowerCase()} you can join — hiking, camping, and events hosted by verified hosts.`;
+
+/** Detail page banner eyebrow for a scheduled listing. */
+export const activityDetailEyebrow = (type: ActivityType): string => {
+  if (type === 'hiking') return 'Hiking';
+  if (type === 'camping') return 'Camping';
+  return 'Event';
+};
+
+/** Empty-state copy when filtering Activities by kind. */
+export const noScheduledActivitiesMessage = (type: ActivityType): string => {
+  if (type === 'community_activity') return 'No events on the calendar right now.';
+  return `No ${ACTIVITY_TYPE_GROUP_LABELS[type].toLowerCase()} activities on the calendar right now.`;
+};
+
+/** Link label for browsing all of one activity kind. */
+export const browseAllActivitiesOfTypeLabel = (type: ActivityType): string => {
+  if (type === 'community_activity') return 'Browse all events';
+  return `Browse all ${ACTIVITY_TYPE_GROUP_LABELS[type].toLowerCase()} activities`;
 };
 
 /** Public browse page for scheduled activities, optionally filtered by type. */

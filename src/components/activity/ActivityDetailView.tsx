@@ -6,6 +6,7 @@ import { formatDate } from '../../utils';
 import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../../utils/tripPricing';
 import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../../utils/hostLabels';
 import { organizerProfilePath } from '../../utils/organizerLinks';
+import { activityDetailEyebrow } from '../../config/activityTypes';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import {
@@ -99,7 +100,12 @@ export const ActivityDetailView = ({
     trip.location?.images?.[0] ??
     (trip.activityType === 'camping'
       ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600'
-      : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
+      : trip.activityType === 'community_activity'
+        ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
+        : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
+
+  const externalSignupUrl = trip.signupUrl?.trim() || null;
+  const usesExternalSignup = Boolean(externalSignupUrl) && !previewMode;
 
   const participants = trip.participants ?? [];
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
@@ -117,7 +123,19 @@ export const ActivityDetailView = ({
     ? `${formatDate(trip.date)} – ${formatDate(trip.endDate)}`
     : formatDate(trip.date);
 
-  const joinLabel = isFull ? 'Join Waitlist' : 'Request to Join';
+  const joinLabel = usesExternalSignup
+    ? 'Sign up / Join'
+    : isFull
+      ? 'Join Waitlist'
+      : 'Request to Join';
+
+  const handleJoinClick = () => {
+    if (usesExternalSignup && externalSignupUrl) {
+      window.open(externalSignupUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    onJoin?.();
+  };
   const isConfirmed = Boolean(participation);
   const hasActiveRequest = Boolean(myRequest?.canWithdraw);
   const requestStatus = myRequest?.status;
@@ -176,7 +194,7 @@ export const ActivityDetailView = ({
           <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
             <button
               type="button"
-              onClick={onJoin}
+              onClick={handleJoinClick}
               disabled={hasActiveRequest}
               className={`w-full ios-btn shadow-lg disabled:opacity-60 ${
                 isFull ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
@@ -215,7 +233,7 @@ export const ActivityDetailView = ({
     ) : (
       <button
         type="button"
-        onClick={onJoin}
+        onClick={handleJoinClick}
         disabled={!packageSelected}
         className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
           isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
@@ -234,7 +252,7 @@ export const ActivityDetailView = ({
         src: heroImage,
         alt: trip.title || trip.locationName,
         title: trip.title || trip.locationName,
-        eyebrow: trip.activityType === 'hiking' ? 'Hiking trip' : 'Camping trip',
+        eyebrow: activityDetailEyebrow(trip.activityType),
         showMobileChrome: !previewMode,
         showJourney: !previewMode,
         journeyFallbackTo: backTo,
@@ -244,8 +262,25 @@ export const ActivityDetailView = ({
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">About this trip</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">About this {trip.activityType === 'community_activity' ? 'event' : 'activity'}</h2>
             <p className="text-gray-600 leading-relaxed whitespace-pre-line">{trip.description}</p>
+
+            {externalSignupUrl && (
+              <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50 px-4 py-3">
+                <p className="text-sm font-medium text-violet-900">Registration</p>
+                <p className="text-xs text-violet-800 mt-1">
+                  Sign up on the host&apos;s external page to secure your spot.
+                </p>
+                <a
+                  href={externalSignupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex mt-2 text-sm font-semibold text-violet-700 hover:text-violet-900 underline underline-offset-2"
+                >
+                  Open signup link
+                </a>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
               <div className="bg-gray-50 rounded-xl p-3">

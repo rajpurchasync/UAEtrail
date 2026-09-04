@@ -1,12 +1,13 @@
 import type { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
-import { ACTIVITY_TYPE_GROUP_LABELS } from '../../config/activityTypes';
-import { saveCampingDraft } from '../../utils/activityFormSessionStorage';
+import { activityFormTitle, type ActivityType } from '../../config/activityTypes';
+import { saveCampingDraft, saveEventDraft } from '../../utils/activityFormSessionStorage';
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
 import { ActivityFormShell } from './ActivityFormShell';
 import { ActivityTripPreviewOverlay } from './ActivityTripPreviewOverlay';
 import { MIN_ABOUT_WORDS } from './activityFormValidation';
 import {
   campingLocationTabs,
+  eventLocationTabs,
   FormStepProgress,
   InstructionsStep,
   InstructionsStepTabs,
@@ -28,6 +29,8 @@ export interface CampingActivityFormModalProps {
   venueLocations?: LocationDTO[];
   sessionSnapshot?: ActivityFormSessionSnapshot | null;
   onSessionChange?: (snapshot: ActivityFormSessionSnapshot) => void;
+  /** Defaults to camping. Pass community_activity for Events. */
+  formActivityType?: Extract<ActivityType, 'camping' | 'community_activity'>;
 }
 
 export const CampingActivityFormModal = ({
@@ -40,44 +43,49 @@ export const CampingActivityFormModal = ({
   venueLocations,
   sessionSnapshot,
   onSessionChange,
+  formActivityType = 'camping',
 }: CampingActivityFormModalProps) => {
+  const isEvent = formActivityType === 'community_activity';
+  const locationTabs = isEvent ? eventLocationTabs : campingLocationTabs;
+  const draftFromSession = isEvent ? sessionSnapshot?.eventDraft ?? null : sessionSnapshot?.campingDraft ?? null;
+
   const modal = useHostActivityFormModal({
     open,
-    activityType: 'camping',
+    activityType: formActivityType,
     tenantId,
     editingActivity,
     hostOrganizations,
     venueLocations,
     sessionSnapshot,
-    draftFromSession: sessionSnapshot?.campingDraft ?? null,
+    draftFromSession,
     onSessionChange,
     onSaved,
     onClose,
     persistDraft: (draft, hostTenantId) => {
       if (!onSessionChange) return;
-      saveCampingDraft(draft, {
+      const saveDraft = isEvent ? saveEventDraft : saveCampingDraft;
+      saveDraft(draft, {
         open: true,
         tenantId: hostTenantId,
-        activityType: 'camping',
+        activityType: formActivityType,
         editingActivityId: editingActivity?.id ?? draft.editingActivityId,
       });
       onSessionChange({
         open: true,
-        activityType: 'camping',
+        activityType: formActivityType,
         tenantId: hostTenantId,
         editingActivityId: editingActivity?.id ?? draft.editingActivityId,
         initialActivityType: null,
         hikingDraft: sessionSnapshot?.hikingDraft ?? null,
-        campingDraft: draft,
+        campingDraft: isEvent ? sessionSnapshot?.campingDraft ?? null : draft,
+        eventDraft: isEvent ? draft : sessionSnapshot?.eventDraft ?? null,
       });
     },
   });
 
   if (!open) return null;
 
-  const title = modal.isEdit
-    ? 'Edit camping activity'
-    : `Add ${ACTIVITY_TYPE_GROUP_LABELS.camping.toLowerCase()} activity`;
+  const title = activityFormTitle(formActivityType, modal.isEdit ? 'edit' : 'create');
   const isLastStep = modal.step === 5;
   const isPublishedEdit = modal.isEdit && editingActivity?.status === 'published';
 
@@ -92,7 +100,7 @@ export const CampingActivityFormModal = ({
           modal.step === 3 ? (
             <LocationStepTabs
               locationTab={modal.locationTab}
-              locationTabs={campingLocationTabs}
+              locationTabs={locationTabs}
               onChange={modal.setLocationTab}
             />
           ) : modal.step === 4 ? (
@@ -162,6 +170,7 @@ export const CampingActivityFormModal = ({
               canPickHostOrganization={modal.canPickHostOrganization}
               pickerHostOrganizations={modal.pickerHostOrganizations}
               showScheduleWarning={editingActivity?.status === 'published'}
+              formActivityType={formActivityType}
             />
           )}
 
@@ -174,9 +183,9 @@ export const CampingActivityFormModal = ({
               form={modal.form}
               setPin={modal.setPin}
               locationTab={modal.locationTab}
-              locationTabs={campingLocationTabs}
+              locationTabs={locationTabs}
               venueCenter={modal.venueCenter}
-              activityType="camping"
+              activityType={formActivityType}
             />
           )}
 
@@ -213,3 +222,8 @@ export const CampingActivityFormModal = ({
     </>
   );
 };
+
+// Re-export for clarity in create flow imports.
+export const EventActivityFormModal = (props: Omit<CampingActivityFormModalProps, 'formActivityType'>) => (
+  <CampingActivityFormModal {...props} formActivityType="community_activity" />
+);

@@ -5,8 +5,10 @@ import { fetchApiActivities } from '../../api/public';
 import { ActivityListing } from '../../types';
 import { ActivityCard, EmptyActivitiesBanner } from '../../components/ui';
 import {
+  ACTIVITY_BROWSE_FILTER_OPTIONS,
   ACTIVITY_TYPE_GROUP_LABELS,
   ACTIVITY_TYPES,
+  activitiesExploreBlurb,
   parseActivityTypeParam,
   type ActivityType,
 } from '../../config/activityTypes';
@@ -20,13 +22,7 @@ type ActivityBrowseFilter = 'all' | ActivityType;
 
 const TRIP_FILTER_PILLS: TripFilterPill[] = ['hiking', 'camping', 'community_activity', 'free', 'paid'];
 
-const activityFilterOptions = [
-  { key: 'all' as const, label: 'All' },
-  ...ACTIVITY_TYPES.map((type) => ({
-    key: type,
-    label: ACTIVITY_TYPE_GROUP_LABELS[type],
-  })),
-];
+const activityFilterOptions = ACTIVITY_BROWSE_FILTER_OPTIONS;
 
 const pillsForActivityFilter = (filter: ActivityBrowseFilter): Set<TripFilterPill> => {
   const pills = new Set<TripFilterPill>(['free', 'paid']);
@@ -252,7 +248,7 @@ export const ExploreSection = () => {
   return (
     <>
       <p className="text-sm text-neutral-500 mb-3">
-        Scheduled activities you can join — hiking, camping, and community events hosted by verified organizers.
+        {activitiesExploreBlurb()}
       </p>
       <FilterChips
         className="mb-4"

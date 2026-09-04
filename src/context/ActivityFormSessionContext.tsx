@@ -50,6 +50,7 @@ const defaultSession = (): ActivityFormSessionSnapshot => ({
   initialActivityType: null,
   hikingDraft: null,
   campingDraft: null,
+  eventDraft: null,
 });
 
 const resolveHostOrganizations = (opts: OpenActivityFormOptions): TenantListDTO[] | undefined =>
@@ -58,7 +59,7 @@ const resolveHostOrganizations = (opts: OpenActivityFormOptions): TenantListDTO[
 export const ActivityFormSessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<ActivityFormSessionSnapshot>(() => {
     const loaded = loadActivityFormSession();
-    if (loaded?.hikingDraft || loaded?.campingDraft) return { ...loaded, open: true };
+    if (loaded?.hikingDraft || loaded?.campingDraft || loaded?.eventDraft) return { ...loaded, open: true };
     return loaded ?? defaultSession();
   });
   const [options, setOptions] = useState<OpenActivityFormOptions>({});
@@ -85,6 +86,7 @@ export const ActivityFormSessionProvider = ({ children }: { children: ReactNode 
       activityType: opts.initialActivityType ?? null,
       hikingDraft: null,
       campingDraft: null,
+      eventDraft: null,
     }));
   }, []);
 
@@ -101,6 +103,7 @@ export const ActivityFormSessionProvider = ({ children }: { children: ReactNode 
       activityType: (activity.activityType as ActivityType) ?? 'hiking',
       hikingDraft: null,
       campingDraft: null,
+      eventDraft: null,
     });
   }, []);
 

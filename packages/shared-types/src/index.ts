@@ -148,6 +148,10 @@ export interface ActivityDTO {
   itinerary?: string[] | null;
   requirements?: string[] | null;
   images?: string[];
+  /** Wide hero banner (outdoor events) */
+  bannerUrl?: string | null;
+  /** External registration or join link */
+  signupUrl?: string | null;
   /** Person responsible for hosting this activity on the ground */
   hostName?: string;
   hostUserId?: string;

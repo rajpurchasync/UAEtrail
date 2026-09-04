@@ -68,6 +68,14 @@ const resolveMediaKeyPrefix = (input: {
   return `users/${input.userId}/${segment}`;
 };
 
+const KIND_ALIASES: Record<string, MediaKind> = {
+  'activity-image': 'activity',
+  'location-image': 'location',
+  'location-premium-image': 'location',
+  'location-gpx': 'guide',
+  'location-guide-pdf': 'guide',
+};
+
 const resolveMediaKind = (input: {
   kind?: string;
   keyPrefix?: string;
@@ -76,6 +84,7 @@ const resolveMediaKind = (input: {
     uploads: 'general',
     avatars: 'avatar',
     activities: 'activity',
+    events: 'activity',
     locations: 'location',
     products: 'shop',
     shop: 'shop',
@@ -90,6 +99,9 @@ const resolveMediaKind = (input: {
   }
   if (input.kind && input.kind in KIND_PREFIX) {
     return input.kind as MediaKind;
+  }
+  if (input.kind && input.kind in KIND_ALIASES) {
+    return KIND_ALIASES[input.kind];
   }
   return 'general';
 };
@@ -118,7 +130,7 @@ const resolveQuerySchema = z.object({
 
 /** Keys issued by presign-upload follow: {scope}/{segment}/{timestamp}-{token}-{filename} */
 const PRESIGN_KEY_PATTERN =
-  /^(users\/[\w-]+|tenants\/[\w-]+)\/(uploads|avatars|events|locations|shop|guides|waivers|private-photos)\/\d+-[a-f0-9]+-.+$/i;
+  /^(users\/[\w-]+|tenants\/[\w-]+)\/(uploads|avatars|activities|events|locations|shop|guides|waivers|private-photos)\/\d+-[a-f0-9]+-.+$/i;
 
 const assertValidPresignKey = (key: string): void => {
   if (!PRESIGN_KEY_PATTERN.test(key)) {

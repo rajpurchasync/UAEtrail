@@ -1,5 +1,5 @@
 import type { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
-import { ACTIVITY_TYPE_GROUP_LABELS } from '../../config/activityTypes';
+import { activityFormTitle } from '../../config/activityTypes';
 import { saveHikingDraft } from '../../utils/activityFormSessionStorage';
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
 import { ActivityFormShell } from './ActivityFormShell';
@@ -69,15 +69,14 @@ export const HikingActivityFormModal = ({
         initialActivityType: null,
         hikingDraft: draft,
         campingDraft: sessionSnapshot?.campingDraft ?? null,
+        eventDraft: sessionSnapshot?.eventDraft ?? null,
       });
     },
   });
 
   if (!open) return null;
 
-  const title = modal.isEdit
-    ? 'Edit hiking activity'
-    : `Add ${ACTIVITY_TYPE_GROUP_LABELS.hiking.toLowerCase()} activity`;
+  const title = activityFormTitle('hiking', modal.isEdit ? 'edit' : 'create');
   const isLastStep = modal.step === 5;
   const isPublishedEdit = modal.isEdit && editingActivity?.status === 'published';
 

@@ -7,6 +7,7 @@ import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
 import { useAuth } from '../../context/AuthContext';
 import { countWords } from '../../utils/activityFormHelpers';
 import { buildActivityDetailPreview } from '../../utils/buildActivityDetailPreview';
+import { resolveEventVenueLocationId } from '../../utils/eventVenue';
 import { isBusinessHostOrg, isPlatformAdmin } from '../../utils/hostPermissions';
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
 import {
@@ -15,7 +16,7 @@ import {
   emptyActivityForm,
   type ActivityFormState,
 } from './activityFormState';
-import { MIN_ABOUT_WORDS, validateActivityFormStep, validateAllActivityFormSteps } from './activityFormValidation';
+import { MIN_ABOUT_WORDS, isValidHttpUrl, validateActivityFormStep, validateAllActivityFormSteps } from './activityFormValidation';
 import type { InstructionTabId } from './activityFormSteps';
 
 export type ActivityDraftSnapshot = {
@@ -200,6 +201,29 @@ export const useHostActivityFormModal = ({
   }, [open, initSignature, editingActivity, activityType]);
 
   useEffect(() => {
+    if (!open || activityType !== 'community_activity') return;
+    const locationId = editingActivity?.locationId ?? form.locationId;
+    if (!locationId) return;
+
+    let disposed = false;
+    void api.getPublicLocationDetail(locationId).then((res) => {
+      if (disposed) return;
+      const loc = res.data;
+      setForm((prev) => ({
+        ...prev,
+        locationId: loc.id,
+        eventEmirate: loc.emirate ?? prev.eventEmirate,
+        eventState: loc.region ?? prev.eventState,
+        eventVenueDetail: prev.eventVenueDetail || loc.description || loc.name,
+      }));
+    }).catch(() => undefined);
+
+    return () => {
+      disposed = true;
+    };
+  }, [open, activityType, editingActivity?.locationId]);
+
+  useEffect(() => {
     if (!open || !onSessionChange || lastInitSignature.current === null) return;
     persistDraft(
       {
@@ -324,13 +348,25 @@ export const useHostActivityFormModal = ({
       );
     }
 
+    let formForSave = form;
+    if (activityType === 'community_activity') {
+      if (!form.locationId && form.images.length === 0) {
+        throw new Error('Add a cover image before saving the event.');
+      }
+      const locationId = await resolveEventVenueLocationId(activeTenant, form);
+      if (locationId !== form.locationId) {
+        formForSave = { ...form, locationId };
+        setForm(formForSave);
+      }
+    }
+
     const payload = {
       ...buildHostActivityPayload({
-        ...form,
-        hostUserId: form.hostUserId || user?.id || '',
+        ...formForSave,
+        hostUserId: formForSave.hostUserId || user?.id || '',
       }),
       activityType,
-      hostId: form.hostUserId || user?.id || undefined,
+      hostId: formForSave.hostUserId || user?.id || undefined,
     };
 
     if (existingId) {
@@ -421,15 +457,45 @@ export const useHostActivityFormModal = ({
         setError('Select a camping surface type (Sand or Grass).');
         return;
       }
+      if (activityType === 'community_activity') {
+        if (!form.eventEmirate.trim()) {
+          setError('Select an emirate.');
+          return;
+        }
+        if (!form.eventState.trim()) {
+          setError('Select a state.');
+          return;
+        }
+        if (!form.eventVenueDetail.trim()) {
+          setError('Enter location details for the event venue.');
+          return;
+        }
+        if (!form.eventHostOrganization.trim()) {
+          setError('Host organization is required.');
+          return;
+        }
+        if (!isValidHttpUrl(form.signupUrl)) {
+          setError('Enter a valid event URL (https://…).');
+          return;
+        }
+      }
       if (!form.description.trim()) {
-        setError(activityType === 'camping' ? 'About spot is required.' : 'About trip is required.');
+        setError(
+          activityType === 'camping'
+            ? 'About spot is required.'
+            : activityType === 'community_activity'
+              ? 'About event is required.'
+              : 'About trip is required.'
+        );
         return;
       }
       if (aboutWords < MIN_ABOUT_WORDS) {
         setError(
           activityType === 'camping'
             ? `About spot must be at least ${MIN_ABOUT_WORDS} words.`
-            : `About trip must be at least ${MIN_ABOUT_WORDS} words.`
+            : activityType === 'community_activity'
+              ? `About event must be at least ${MIN_ABOUT_WORDS} words.`
+              : `About trip must be at least ${MIN_ABOUT_WORDS} words.`
         );
         return;
       }

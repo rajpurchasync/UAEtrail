@@ -11,7 +11,7 @@ export const locationSubmitBodySchema = z.object({
   countryCode: z.string().length(2).default('AE'),
   emirate: z.string().min(2).max(80).optional(),
   region: z.string().min(2).max(80),
-  activityType: z.enum(['hiking', 'camping', 'COMMUNITY_ACTIVITY']),
+  activityType: z.enum(['hiking', 'camping', 'COMMUNITY_ACTIVITY', 'community_activity']),
   description: z.string().min(20).max(3000),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
   distance: z.number().positive().optional(),

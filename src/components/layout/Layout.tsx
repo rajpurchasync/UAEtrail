@@ -1,10 +1,11 @@
 import { ReactNode, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
-import { isConsumerChromeHidden } from '../../config/platform';
+import { isConsumerChromeHidden, isMobileDetailRoute } from '../../config/platform';
 import { Footer } from './Footer';
 import { ComposeRail } from './ComposeRail';
 import { Header } from './Header';
+import { MobileConsumerNavBar } from './MobileConsumerNavBar';
 import { MobileMenuProvider } from './MobileMenu';
 
 interface LayoutProps {
@@ -21,6 +22,29 @@ export const Layout = ({ children }: LayoutProps) => {
   const hideChrome = isConsumerChromeHidden(location.pathname);
   const showConsumerChrome = !hideChrome;
   const useDesktopShell = showConsumerChrome;
+
+  const tabRootsWithBanner = new Set([
+    '/activities',
+    '/discovery',
+    '/community',
+    '/shop',
+    '/profile',
+    '/trail-points',
+    '/my-rewards',
+    '/groups',
+    '/messages',
+    '/notifications',
+    '/favorites',
+    '/my-requests',
+  ]);
+
+  const showMobileConsumerNavBar =
+    showConsumerChrome &&
+    location.pathname !== '/' &&
+    !tabRootsWithBanner.has(location.pathname) &&
+    !isMobileDetailRoute(location.pathname) &&
+    !location.pathname.startsWith('/activity/') &&
+    !location.pathname.startsWith('/trip/');
 
   const main = (
     <main className="flex-1 scroll-touch min-w-0 max-w-full overflow-x-clip">
@@ -39,6 +63,7 @@ export const Layout = ({ children }: LayoutProps) => {
     <ComposeRailProvider>
       <MobileMenuProvider>
         <div className="min-h-screen flex flex-col consumer-bg md:bg-gray-50 overflow-x-clip max-w-full">
+          {showMobileConsumerNavBar && <MobileConsumerNavBar />}
           {showConsumerChrome && location.pathname !== '/' && (
             <div className="hidden md:block shrink-0">
               <Header />

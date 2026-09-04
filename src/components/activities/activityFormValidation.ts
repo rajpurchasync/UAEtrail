@@ -5,6 +5,29 @@ import { FORM_TOTAL_STEPS } from './activityFormSteps';
 
 export const MIN_ABOUT_WORDS = 10;
 
+export const isValidHttpUrl = (value: string): boolean => {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+const aboutFieldLabel = (activityType: ActivityType): string => {
+  if (activityType === 'camping') return 'About spot';
+  if (activityType === 'community_activity') return 'About event';
+  return 'About trip';
+};
+
+const startPointLabel = (activityType: ActivityType): string => {
+  if (activityType === 'camping') return 'camp start point';
+  if (activityType === 'community_activity') return 'event start point';
+  return 'hike start point';
+};
+
 export const validateActivityFormStep = (
   form: ActivityFormState,
   targetStep: number,
@@ -18,33 +41,42 @@ export const validateActivityFormStep = (
   const totalSteps = options.totalSteps ?? FORM_TOTAL_STEPS;
   const titleWords = countWords(form.title);
   const aboutWords = countWords(form.description);
-  const startPointLabel = options.activityType === 'camping' ? 'camp start point' : 'hike start point';
+  const aboutLabel = aboutFieldLabel(options.activityType);
+  const isEvent = options.activityType === 'community_activity';
 
   if (targetStep >= 1) {
     if (!form.title.trim()) return 'Title is required.';
     if (titleWords > 5) return 'Title must be 5 words or fewer.';
-    if (!form.locationId) return 'Select a venue.';
+    if (isEvent) {
+      if (!form.eventEmirate.trim()) return 'Select an emirate.';
+      if (!form.eventState.trim()) return 'Select a state.';
+      if (!form.eventVenueDetail.trim()) return 'Enter location details for the event venue.';
+    } else if (!form.locationId) {
+      return 'Select a venue.';
+    }
     if (options.activityType === 'camping' && !form.campingSurfaceType) {
       return 'Select a camping surface type (Sand or Grass).';
     }
+    if (isEvent && mode === 'publish' && !form.eventHostOrganization.trim()) {
+      return 'Host organization is required.';
+    }
     if (mode === 'publish') {
       if (!form.date || !form.time) return 'Date and start time are required.';
-      if (!form.description.trim()) {
-        return options.activityType === 'camping' ? 'About spot is required.' : 'About trip is required.';
-      }
+      if (!form.description.trim()) return `${aboutLabel} is required.`;
       if (aboutWords < MIN_ABOUT_WORDS) {
-        return options.activityType === 'camping'
-          ? `About spot must be at least ${MIN_ABOUT_WORDS} words.`
-          : `About trip must be at least ${MIN_ABOUT_WORDS} words.`;
+        return `${aboutLabel} must be at least ${MIN_ABOUT_WORDS} words.`;
       }
       if (aboutWords > 100) {
-        return options.activityType === 'camping'
-          ? 'About spot must be 100 words or fewer.'
-          : 'About trip must be 100 words or fewer.';
+        return `${aboutLabel} must be 100 words or fewer.`;
       }
       if (form.images.length === 0) return 'Add a cover image.';
+      if (isEvent && !isValidHttpUrl(form.signupUrl)) {
+        return 'Enter a valid event URL (https://…).';
+      }
     }
-    if (options.canPickHostOrganization && !form.tenantId) return 'Select a host organization.';
+    if (options.canPickHostOrganization && !form.tenantId && !isEvent) {
+      return 'Select a host organization.';
+    }
   }
 
   if (targetStep >= 2 && mode === 'publish') {
@@ -62,7 +94,7 @@ export const validateActivityFormStep = (
   if (targetStep >= 3 && mode === 'publish') {
     const hasStart =
       form.start.label.trim() || form.start.mapsUrl.trim() || (form.start.lat && form.start.lng);
-    if (!hasStart) return `Set a ${startPointLabel} (map pin or Google Maps link).`;
+    if (!hasStart) return `Set a ${startPointLabel(options.activityType)} (map pin or Google Maps link).`;
   }
 
   if (targetStep >= 5 && mode === 'publish' && form.carPoolEnabled) {

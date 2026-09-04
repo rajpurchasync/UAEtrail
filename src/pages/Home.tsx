@@ -23,9 +23,11 @@ import { EXPLORE_UAE_REGIONS, type ExploreRegionIcon } from '../config/exploreUa
 import { MobileBrandBar } from '../components/layout/MobileBrandBar';
 import { FilterChips } from '../components/mobile/FilterChips';
 import {
-  ACTIVITY_TYPE_GROUP_LABELS,
-  ACTIVITY_TYPES,
+  ACTIVITY_BROWSE_FILTER_OPTIONS,
+  ACTIVITY_KINDS_SUMMARY,
   activitiesBrowsePath,
+  browseAllActivitiesOfTypeLabel,
+  noScheduledActivitiesMessage,
   type ActivityType,
 } from '../config/activityTypes';
 import { ACTIVITIES_PATH } from '../constants';
@@ -38,13 +40,7 @@ const EXPLORE_REGION_ICONS: Record<ExploreRegionIcon, typeof Mountain> = {
 
 type HomeActivityFilter = 'all' | ActivityType;
 
-const HOME_ACTIVITY_FILTERS: { key: HomeActivityFilter; label: string }[] = [
-  { key: 'all', label: 'All' },
-  ...ACTIVITY_TYPES.map((type) => ({
-    key: type,
-    label: ACTIVITY_TYPE_GROUP_LABELS[type],
-  })),
-];
+const HOME_ACTIVITY_FILTERS = ACTIVITY_BROWSE_FILTER_OPTIONS;
 
 const getLandingLoadErrorMessage = (error: unknown): string => {
   if (!(error instanceof Error)) {
@@ -331,7 +327,7 @@ export const Home = () => {
               <p className="text-sm text-gray-500 mt-1 hidden md:block">
                 {featuredActivities.length > 0
                   ? 'Handpicked adventures selected for you'
-                  : 'Join organized hiking trips, camping outings, and outdoor events'}
+                  : `Join organized ${ACTIVITY_KINDS_SUMMARY.toLowerCase()}`}
               </p>
             </div>
             <Link
@@ -359,13 +355,13 @@ export const Home = () => {
                 {activityFilter !== 'all' ? (
                   <div className="rounded-[22px] glass-card px-6 py-10 text-center shadow-glass">
                     <p className="text-sm text-gray-600">
-                      No {ACTIVITY_TYPE_GROUP_LABELS[activityFilter].toLowerCase()} activities on the calendar right now.
+                      {noScheduledActivitiesMessage(activityFilter)}
                     </p>
                     <Link
                       to={activitiesBrowsePath(activityFilter)}
                       className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700 mt-3"
                     >
-                      Browse all {ACTIVITY_TYPE_GROUP_LABELS[activityFilter].toLowerCase()} activities
+                      {browseAllActivitiesOfTypeLabel(activityFilter)}
                       <ChevronRight className="w-4 h-4" />
                     </Link>
                   </div>

@@ -3,14 +3,18 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { ActivityDTO, ParticipantDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
-import { parseActivityTypeParam, ActivityActionsMenu, buildHostActivityMenuItems } from '../components/activities';
+import { parseActivityTypeParam, ActivityActionsMenu, ActivityListPreview, buildHostActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
 import { HostShell } from '../components/host/HostShell';
 import { TenantSwitcher, ShareButton, SecureAvatar } from '../components/ui';
 import {
   activityTypeBadgeClass,
+  formatActivityCapacity,
+  formatActivityPrice,
   formatActivityType,
-  resolveActivityOwnerLabel,
+  resolveActivityHostLabel,
+  resolveActivityLocationState,
+  resolveActivityTitle,
 } from '../utils/activityIdentity';
 
 type ViewMode = 'list' | 'checkin';
@@ -24,6 +28,8 @@ export const HostActivities = () => {
   const { openCreate, openEdit, setOnSaved } = useActivityFormSession();
   const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
+  const [previewActivity, setPreviewActivity] = useState<ActivityDTO | null>(null);
+  const [previewPublishing, setPreviewPublishing] = useState(false);
 
   // Check-in state
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -113,6 +119,28 @@ export const HostActivities = () => {
     }
   };
 
+  const openPreview = (event: ActivityDTO) => {
+    if (event.status === 'published') {
+      openPublishedActivityPreview(event.id);
+      return;
+    }
+    setPreviewActivity(event);
+  };
+
+  const publishFromPreview = async (event: ActivityDTO) => {
+    if (!tenantId) return;
+    setPreviewPublishing(true);
+    try {
+      await api.publishHostActivity(tenantId, event.id);
+      setPreviewActivity(null);
+      await loadEvents(tenantId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to publish event');
+    } finally {
+      setPreviewPublishing(false);
+    }
+  };
+
   // Check-in functions
   const openCheckin = async (event: ActivityDTO) => {
     if (!tenantId) return;
@@ -180,22 +208,22 @@ export const HostActivities = () => {
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left">Activity</th>
-                    <th className="px-4 py-3 text-left">Activity Type</th>
-                    <th className="px-4 py-3 text-left">Owner</th>
-                    <th className="px-4 py-3 text-left">Venue</th>
+                    <th className="px-4 py-3 text-left">Title</th>
+                    <th className="px-4 py-3 text-left">Type</th>
+                    <th className="px-4 py-3 text-left">Host</th>
+                    <th className="px-4 py-3 text-left">Location</th>
                     <th className="px-4 py-3 text-left">Date</th>
                     <th className="px-4 py-3 text-center">Capacity</th>
                     <th className="px-4 py-3 text-center">Price</th>
                     <th className="px-4 py-3 text-left">Status</th>
-                    <th className="px-4 py-3 text-left">Actions</th>
+                    <th className="px-4 py-3 text-left">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {events.map((event) => (
                     <tr key={event.id} className="border-t hover:bg-gray-50">
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900">{event.title || '—'}</p>
+                        <p className="font-medium text-gray-900">{resolveActivityTitle(event)}</p>
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -204,17 +232,14 @@ export const HostActivities = () => {
                           {formatActivityType(event.activityType)}
                         </span>
                       </td>
-                      <td className="px-4 py-3">{resolveActivityOwnerLabel(event)}</td>
-                      <td className="px-4 py-3">{event.locationName}</td>
+                      <td className="px-4 py-3">{resolveActivityHostLabel(event)}</td>
+                      <td className="px-4 py-3">{resolveActivityLocationState(event)}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <p>{event.date}</p>
+                        <p className="text-gray-900">{event.date}</p>
                         <p className="text-xs text-gray-500">{event.time}</p>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span>{event.slotsTotal - event.slotsAvailable}</span>
-                        <span className="text-gray-400">/{event.slotsTotal}</span>
-                      </td>
-                      <td className="px-4 py-3 text-center">{event.price > 0 ? `AED ${event.price}` : 'Free'}</td>
+                      <td className="px-4 py-3 text-center text-gray-900">{formatActivityCapacity(event)}</td>
+                      <td className="px-4 py-3 text-center">{formatActivityPrice(event)}</td>
                       <td className="px-4 py-3">{statusBadge(event.status)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
@@ -229,6 +254,7 @@ export const HostActivities = () => {
                           )}
                           <ActivityActionsMenu
                             items={buildHostActivityMenuItems(event, {
+                              onPreview: openPreview,
                               onEdit: openEditActivity,
                               onPublish: (e) => publish(e.id),
                               onDuplicate: duplicateActivity,
@@ -242,7 +268,7 @@ export const HostActivities = () => {
                     </tr>
                   ))}
                   {events.length === 0 && (
-                    <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No activities yet. Create your first activity!</td></tr>
+                    <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500">No activities yet. Create your first activity!</td></tr>
                   )}
                 </tbody>
               </table>
@@ -324,6 +350,14 @@ export const HostActivities = () => {
           </div>
         )}
       </div>
+
+      <ActivityListPreview
+        activity={previewActivity}
+        saving={previewPublishing}
+        onClose={() => setPreviewActivity(null)}
+        onSaveDraft={() => setPreviewActivity(null)}
+        onPublish={publishFromPreview}
+      />
 
       {/* Delete Draft Confirmation Modal */}
       {confirmDelete && (

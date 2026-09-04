@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import { parseActivityTypeParam, type ActivityType } from '../../config/activityTypes';
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
-import { ActivityComingSoonModal } from './ActivityComingSoonModal';
 import { ActivityTypePickerModal } from './ActivityTypePickerModal';
 import { CampingActivityFormModal } from './CampingActivityFormModal';
 import { HikingActivityFormModal } from './HikingActivityFormModal';
@@ -70,6 +69,12 @@ export const CreateActivityModal = ({
       return;
     }
 
+    if (sessionSnapshot?.eventDraft) {
+      setSelectedType('community_activity');
+      setActiveModal('form');
+      return;
+    }
+
     if (initialActivityType) {
       setSelectedType(initialActivityType);
       setActiveModal('form');
@@ -85,6 +90,7 @@ export const CreateActivityModal = ({
     initialActivityType,
     sessionSnapshot?.hikingDraft,
     sessionSnapshot?.campingDraft,
+    sessionSnapshot?.eventDraft,
   ]);
 
   const handleCloseAll = () => {
@@ -96,11 +102,6 @@ export const CreateActivityModal = ({
   const handleSelectType = (type: ActivityType) => {
     setSelectedType(type);
     setActiveModal('form');
-  };
-
-  const handleBackToPicker = () => {
-    setSelectedType(null);
-    setActiveModal('picker');
   };
 
   if (!open) return null;
@@ -145,12 +146,19 @@ export const CreateActivityModal = ({
         />
       )}
 
-      {activeModal === 'form' && selectedType && selectedType !== 'hiking' && selectedType !== 'camping' && (
-        <ActivityComingSoonModal
+      {activeModal === 'form' && selectedType === 'community_activity' && (
+        <CampingActivityFormModal
+          key={`event-${formInstanceKey}`}
           open
-          activityType={selectedType}
+          formActivityType="community_activity"
           onClose={handleCloseAll}
-          onBack={editingActivity ? undefined : handleBackToPicker}
+          onSaved={onSaved}
+          tenantId={tenantId}
+          editingActivity={editingActivity}
+          hostOrganizations={hostOrganizations}
+          venueLocations={venueLocations}
+          sessionSnapshot={sessionSnapshot}
+          onSessionChange={onSessionChange}
         />
       )}
     </>
