@@ -16,10 +16,10 @@ export const isValidHttpUrl = (value: string): boolean => {
   }
 };
 
-const aboutFieldLabel = (activityType: ActivityType): string => {
+export const aboutFieldLabel = (activityType: ActivityType): string => {
   if (activityType === 'camping') return 'About spot';
   if (activityType === 'community_activity') return 'About event';
-  return 'About trip';
+  return 'About hike';
 };
 
 const startPointLabel = (activityType: ActivityType): string => {
@@ -105,6 +105,40 @@ export const validateActivityFormStep = (
   }
 
   if (targetStep > totalSteps) return null;
+
+  return null;
+};
+
+/** Step-1 "Next" navigation: draft fields plus summary content required before leaving step 1. */
+export const validateActivityFormStepNavigation = (
+  form: ActivityFormState,
+  fromStep: number,
+  options: Parameters<typeof validateActivityFormStep>[3]
+): string | null => {
+  if (fromStep !== 1) return null;
+
+  const draftErr = validateActivityFormStep(form, 1, 'draft', options);
+  if (draftErr) return draftErr;
+
+  const isEvent = options.activityType === 'community_activity';
+  const aboutLabel = aboutFieldLabel(options.activityType);
+  const aboutWords = countWords(form.description);
+
+  if (isEvent && !form.eventHostOrganization.trim()) {
+    return 'Host organization is required.';
+  }
+  if (isEvent && !isValidHttpUrl(form.signupUrl)) {
+    return 'Enter a valid event URL (https://…).';
+  }
+  if (!form.description.trim()) {
+    return `${aboutLabel} is required.`;
+  }
+  if (aboutWords < MIN_ABOUT_WORDS) {
+    return `${aboutLabel} must be at least ${MIN_ABOUT_WORDS} words.`;
+  }
+  if (form.images.length === 0) {
+    return 'Add a cover image.';
+  }
 
   return null;
 };

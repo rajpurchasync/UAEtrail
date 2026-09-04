@@ -16,7 +16,7 @@ import {
   emptyActivityForm,
   type ActivityFormState,
 } from './activityFormState';
-import { MIN_ABOUT_WORDS, isValidHttpUrl, validateActivityFormStep, validateAllActivityFormSteps } from './activityFormValidation';
+import { validateActivityFormStep, validateActivityFormStepNavigation, validateAllActivityFormSteps } from './activityFormValidation';
 import type { InstructionTabId } from './activityFormSteps';
 
 export type ActivityDraftSnapshot = {
@@ -448,59 +448,9 @@ export const useHostActivityFormModal = ({
 
   const goNext = () => {
     if (step === 1) {
-      const err = validateActivityFormStep(form, 1, 'draft', validationOptions);
+      const err = validateActivityFormStepNavigation(form, 1, validationOptions);
       if (err) {
         setError(err);
-        return;
-      }
-      if (activityType === 'camping' && !form.campingSurfaceType) {
-        setError('Select a camping surface type (Sand or Grass).');
-        return;
-      }
-      if (activityType === 'community_activity') {
-        if (!form.eventEmirate.trim()) {
-          setError('Select an emirate.');
-          return;
-        }
-        if (!form.eventState.trim()) {
-          setError('Select a state.');
-          return;
-        }
-        if (!form.eventVenueDetail.trim()) {
-          setError('Enter location details for the event venue.');
-          return;
-        }
-        if (!form.eventHostOrganization.trim()) {
-          setError('Host organization is required.');
-          return;
-        }
-        if (!isValidHttpUrl(form.signupUrl)) {
-          setError('Enter a valid event URL (https://…).');
-          return;
-        }
-      }
-      if (!form.description.trim()) {
-        setError(
-          activityType === 'camping'
-            ? 'About spot is required.'
-            : activityType === 'community_activity'
-              ? 'About event is required.'
-              : 'About trip is required.'
-        );
-        return;
-      }
-      if (aboutWords < MIN_ABOUT_WORDS) {
-        setError(
-          activityType === 'camping'
-            ? `About spot must be at least ${MIN_ABOUT_WORDS} words.`
-            : activityType === 'community_activity'
-              ? `About event must be at least ${MIN_ABOUT_WORDS} words.`
-              : `About trip must be at least ${MIN_ABOUT_WORDS} words.`
-        );
-        return;
-      }
-      if (form.images.length === 0) {
-        setError('Add a cover image.');
         return;
       }
     }

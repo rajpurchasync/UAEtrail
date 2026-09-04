@@ -47,7 +47,6 @@ export type ActivityFormState = {
   carPoolSeats: number;
   carPoolDetails: string;
   images: string[];
-  bannerUrl: string;
   signupUrl: string;
   eventEmirate: string;
   eventState: string;
@@ -90,7 +89,6 @@ export const emptyActivityForm = (activityType: ActivityType = 'hiking'): Activi
   carPoolSeats: 0,
   carPoolDetails: '',
   images: [],
-  bannerUrl: '',
   signupUrl: '',
   eventEmirate: '',
   eventState: '',
@@ -207,7 +205,6 @@ export const activityToForm = (activity: ActivityDTO): ActivityFormState => {
     carPoolSeats: activity.carPoolSeats ?? 0,
     carPoolDetails: activity.carPoolDetails ?? '',
     images: activity.images?.slice(0, 1) ?? [],
-    bannerUrl: activity.bannerUrl ?? '',
     signupUrl: activity.signupUrl ?? '',
     eventEmirate: '',
     eventState: activity.region ?? '',

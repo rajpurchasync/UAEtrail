@@ -155,7 +155,7 @@ export const SummaryStepHiking = ({
 
     <div>
       <label className={FORM_LABEL}>
-        About trip *{' '}
+        About hike *{' '}
         <span className="text-gray-400 font-normal">
           ({aboutWords}/{minAboutWords} min, 100 max words)
         </span>
