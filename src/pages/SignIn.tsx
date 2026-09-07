@@ -124,9 +124,10 @@ export const SignIn = () => {
 
   const demoAccounts = [
     { label: 'Admin', email: 'admin@uaetrails.app', password: 'Admin@12345' },
-    { label: 'Visitor', email: 'visitor@uaetrails.app', password: 'Visitor@12345' },
-    { label: 'Vendor', email: 'vendor@uaetrails.app', password: 'Vendor@12345' },
-    { label: 'Tour Operator', email: 'organizer@uaetrails.app', password: 'Organizer@12345' }
+    { label: 'Participant', email: 'visitor@uaetrails.app', password: 'Visitor@12345' },
+    { label: 'Individual host', email: 'host@uaetrails.app', password: 'Host@12345' },
+    { label: 'Agency', email: 'organizer@uaetrails.app', password: 'Agency@12345' },
+    { label: 'Shop', email: 'shop@uaetrails.app', password: 'Shop@12345' }
   ];
 
   const quickLogin = async (account: (typeof demoAccounts)[number]) => {

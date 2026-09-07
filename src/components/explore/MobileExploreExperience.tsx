@@ -8,7 +8,7 @@ import {
   Search,
   X,
 } from 'lucide-react';
-import type { ExploreMapItemDTO, ExploreMapKind } from '@uaetrail/shared-types';
+import type { ActivityDTO, ExploreMapItemDTO, ExploreMapKind } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import { mapActivityToListing } from '../../api/public';
 import { PageMeta } from '../seo/PageMeta';
@@ -20,7 +20,6 @@ import { useHostGate } from '../../hooks/useHostGate';
 import { MobileCreateActivityFlow } from './MobileCreateActivityFlow';
 import { MobileCreateDemandFlow } from './MobileCreateDemandFlow';
 import { MobileCreateIntentSheet } from './MobileCreateIntentSheet';
-import { MobileBecomeHostFlow } from '../host/MobileBecomeHostFlow';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG } from '../../config/platform';
@@ -33,24 +32,26 @@ const LocationsMap = lazy(() =>
   import('../ui/LocationsMap').then((m) => ({ default: m.LocationsMap }))
 );
 
-type MapFilterKey = 'all' | ExploreMapKind | 'carpool';
+type MapFilterKey = 'all' | ExploreMapKind | 'carpool' | 'looking';
 
 const MAP_FILTER_PILLS: Array<{ key: MapFilterKey; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'hiking', label: 'Hiking' },
   { key: 'camping', label: 'Camping' },
   { key: 'event', label: 'Events' },
+  { key: 'looking', label: 'Looking' },
   { key: 'shop', label: 'Shop' },
   { key: 'carpool', label: 'Carpool' },
 ];
 
 /** List sheet filters — activities only (no shop). */
 const ACTIVITY_LIST_FILTERS = MAP_FILTER_PILLS.filter(
-  (option): option is { key: Exclude<MapFilterKey, 'shop'>; label: string } => option.key !== 'shop'
+  (option): option is { key: Exclude<MapFilterKey, 'shop' | 'looking'>; label: string } =>
+    option.key !== 'shop' && option.key !== 'looking'
 );
 
-const activityListFilter = (filter: MapFilterKey): Exclude<MapFilterKey, 'shop'> =>
-  filter === 'shop' ? 'all' : filter;
+const activityListFilter = (filter: MapFilterKey): Exclude<MapFilterKey, 'shop' | 'looking'> =>
+  filter === 'shop' || filter === 'looking' ? 'all' : filter;
 
 const isMapPin = (item: ExploreMapItemDTO): boolean => {
   if (item.latitude == null || item.longitude == null) return false;
@@ -60,6 +61,7 @@ const isMapPin = (item: ExploreMapItemDTO): boolean => {
 
 const matchesFilter = (item: ExploreMapItemDTO, filter: MapFilterKey): boolean => {
   if (filter === 'all') return true;
+  if (filter === 'looking') return item.source === 'demand';
   if (item.source === 'demand') {
     if (filter === 'shop' || filter === 'agency') return false;
     if (filter === 'carpool') return item.kind === 'carpool';
@@ -136,10 +138,14 @@ const pinLayerOrder = (source?: ExploreMapItemDTO['source']): number => {
 
 const FilterPillIcon = ({ filter }: { filter: MapFilterKey }) => {
   if (filter === 'all') return null;
+  if (filter === 'looking') {
+    return <span className="font-emoji text-sm leading-none">🙋</span>;
+  }
   return <span className="font-emoji text-sm leading-none">{MAP_FILTER_EMOJI[filter]}</span>;
 };
 
 const listItemLabel = (filter: MapFilterKey, count: number): string => {
+  if (filter === 'looking') return `${count} requests in this area`;
   const activityFilter = activityListFilter(filter);
   if (activityFilter === 'carpool') return `${count} carpools in this area`;
   if (activityFilter === 'event') return `${count} events in this area`;
@@ -150,7 +156,7 @@ const listItemLabel = (filter: MapFilterKey, count: number): string => {
 
 export const MobileExploreExperience = () => {
   const { user } = useAuth();
-  const { canPublish, loading: hostGateLoading, refresh: refreshHostGate } = useHostGate({
+  const { canPublish, loading: hostGateLoading } = useHostGate({
     enabled: Boolean(user),
   });
   const navigate = useNavigate();
@@ -166,9 +172,10 @@ export const MobileExploreExperience = () => {
   const [composeOpen, setComposeOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [demandOpen, setDemandOpen] = useState(false);
-  const [hostApplyOpen, setHostApplyOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
+  const [joinActivity, setJoinActivity] = useState<ActivityDTO | null>(null);
   const [query, setQuery] = useState('');
+  const [demandNotice, setDemandNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -245,7 +252,6 @@ export const MobileExploreExperience = () => {
     setComposeOpen(false);
     setCreateOpen(false);
     setDemandOpen(false);
-    setHostApplyOpen(false);
     if (item.source === 'shop' && item.id.startsWith('product:')) {
       navigate(item.path);
       return;
@@ -268,7 +274,7 @@ export const MobileExploreExperience = () => {
     setComposeOpen(false);
     if (choice === 'add') {
       if (!canPublish) {
-        setHostApplyOpen(true);
+        navigate('/profile', { state: { scrollTo: 'map-presence' } });
         return;
       }
       setCreateOpen(true);
@@ -277,19 +283,20 @@ export const MobileExploreExperience = () => {
     setDemandOpen(true);
   };
 
-  const handleHostSubmitted = async (_tenantId: string | null) => {
-    await refreshHostGate();
-    setHostApplyOpen(false);
-    setCreateOpen(true);
-  };
-
   const handleJoin = () => {
     if (!selected?.activity) return;
     if (!user) {
       navigate(`/signin?redirect=${encodeURIComponent(selected.path)}`);
       return;
     }
+    setJoinActivity(selected.activity);
+    setSelectedId(null);
     setJoinOpen(true);
+  };
+
+  const closeJoinModal = () => {
+    setJoinOpen(false);
+    setJoinActivity(null);
   };
 
 
@@ -385,6 +392,22 @@ export const MobileExploreExperience = () => {
           })}
         </div>
       </div>
+      )}
+
+      {demandNotice && (
+        <div className="absolute left-4 right-4 top-[calc(var(--safe-top)+5.25rem)] z-[1100] rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900 shadow">
+          <div className="flex items-start justify-between gap-3">
+            <p>{demandNotice}</p>
+            <button
+              type="button"
+              onClick={() => setDemandNotice(null)}
+              className="shrink-0 text-emerald-700"
+              aria-label="Dismiss"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       )}
 
       {loadError && (
@@ -507,7 +530,7 @@ export const MobileExploreExperience = () => {
           onPublished={reloadMap}
           onOpenHostApplication={() => {
             setCreateOpen(false);
-            setHostApplyOpen(true);
+            navigate('/profile', { state: { scrollTo: 'map-presence' } });
           }}
           signInHref={signInHref}
         />
@@ -518,27 +541,26 @@ export const MobileExploreExperience = () => {
           open={demandOpen}
           onClose={() => setDemandOpen(false)}
           onBackToIntent={() => setComposeOpen(true)}
-          onSubmitted={reloadMap}
+          onSubmitted={(result) => {
+            reloadMap();
+            if (!result.visibleOnMap) {
+              setDemandNotice(
+                'Request posted. It is saved — drop a map pin next time to show it on the explore map.'
+              );
+            } else {
+              setDemandNotice('Request posted and visible on the map.');
+            }
+          }}
           signInHref={signInHref}
         />
       )}
 
-      {hostApplyOpen && (
-        <MobileBecomeHostFlow
-          open={hostApplyOpen}
-          onClose={() => setHostApplyOpen(false)}
-          onSubmitted={handleHostSubmitted}
-          signInHref={signInHref}
-          overlay="absolute"
-          intent="become-host"
-        />
-      )}
-
-      {selected?.activity && (
+      {joinOpen && joinActivity && (
         <JoinRequestModal
           open={joinOpen}
-          onClose={() => setJoinOpen(false)}
-          activity={mapActivityToListing(selected.activity)}
+          onClose={closeJoinModal}
+          activity={mapActivityToListing(joinActivity)}
+          overlayClassName="z-[6000]"
         />
       )}
     </div>

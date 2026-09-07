@@ -4,8 +4,8 @@ import { listPublishedActivitiesForExploreMap } from './activities-store.js';
 import { listActiveLocations } from './location-query.js';
 import { buildActivityDto, toLocationDto } from './mappers.js';
 import { buildExploreActivityDisplay } from './explore-display.js';
-import { listPublicMerchantsForMap } from './shop-store.js';
-import { listPublicAgenciesForMap } from './tenant-store.js';
+import { findMerchantProfileByUserId, listPublicMerchantsForMap } from './shop-store.js';
+import { listPublicAgenciesForMap, listPublicShopsForMap } from './tenant-store.js';
 import { listActiveParticipantIntentsForMap } from './participant-intents-store.js';
 
 const venuePath = (activityType: string, id: string): string => {
@@ -54,11 +54,12 @@ const resolveToCoords = (activity: ActivityDTO): { latitude: number; longitude: 
 };
 
 export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
-  const [activityEvents, locationsResult, merchants, agencies, demandItems] = await Promise.all([
+  const [activityEvents, locationsResult, merchants, agencies, shopTenants, demandItems] = await Promise.all([
     listPublishedActivitiesForExploreMap(250),
     listActiveLocations({ page: 1, pageSize: 250 }),
     listPublicMerchantsForMap(),
     listPublicAgenciesForMap(250),
+    listPublicShopsForMap(250),
     listActiveParticipantIntentsForMap(200)
   ]);
 
@@ -150,8 +151,28 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
     });
   }
 
+  for (const shop of shopTenants) {
+    if (shop.latitude == null || shop.longitude == null) continue;
+    const merchant = await findMerchantProfileByUserId(shop.ownerId);
+    items.push({
+      id: `shop:${merchant?.id ?? shop.id}`,
+      kind: 'shop',
+      source: 'shop',
+      title: shop.name,
+      subtitle: shop.region ?? 'Outdoor gear shop',
+      latitude: shop.latitude,
+      longitude: shop.longitude,
+      path: merchant ? `/merchant/${merchant.id}` : `/operator/${shop.slug}`,
+      image: shop.logoUrl ?? merchant?.logo ?? null,
+      merchantId: merchant?.id,
+      websiteUrl: shop.website ?? null,
+      contactPhone: merchant?.contactPhone ?? null
+    });
+  }
+
   for (const { merchant, products } of merchants) {
     if (products.length === 0) continue;
+    if (items.some((item) => item.merchantId === merchant.id)) continue;
     items.push({
       id: `shop:${merchant.id}`,
       kind: 'shop',
@@ -164,7 +185,8 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
       image: merchant.logo ?? products[0]?.images[0] ?? null,
       merchantId: merchant.id,
       productId: products[0]?.id,
-      priceAed: products[0]?.priceAed ?? null
+      priceAed: products[0]?.priceAed ?? null,
+      contactPhone: merchant.contactPhone ?? null
     });
 
     for (const product of products) {
@@ -195,8 +217,9 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
       subtitle: agency.region ?? agency.services ?? 'Tour agency',
       latitude: agency.latitude,
       longitude: agency.longitude,
-      path: `/tenants/${agency.slug}`,
-      image: agency.logoUrl ?? null
+      path: `/operator/${agency.slug}`,
+      image: agency.logoUrl ?? null,
+      websiteUrl: agency.website ?? null,
     });
   }
 

@@ -16,6 +16,7 @@ import {
   RequestStatus,
   RewardAction,
   ReviewTargetType,
+  TenantBusinessMode,
   TenantStatus,
   TenantType,
   UserRole,
@@ -36,6 +37,7 @@ import {
 } from '../src/lib/entity-builders.js';
 import { findActivityDocInMongo, findLocationInMongo, writeActivityDocToMongo, writeLocationToMongo } from '../src/lib/entity-sync.js';
 import { getMongoClient, connectMongo, disconnectMongo } from '../src/lib/mongo.js';
+import { ObjectId } from 'mongodb';
 import { createRewardLedgerEntry, createUserBadge } from '../src/lib/reward-ledger-store.js';
 import { createSocialReview } from '../src/lib/social-data.js';
 import {
@@ -52,14 +54,16 @@ import {
 
 const db = () => getMongoClient()!.db();
 
+/** Demo passwords — one per persona (Participant, Individual host, Agency, Shop, Admin). */
 const credentials = {
   admin: 'Admin@12345',
-  organizer: 'Organizer@12345',
-  guide: 'Guide@12345',
-  visitor: 'Visitor@12345',
-  pendingVisitor: 'Visitor2@12345',
-  suspended: 'Suspended@12345',
-  guide2: 'Guide2@12345'
+  participant: 'Visitor@12345',
+  individualHost: 'Host@12345',
+  agency: 'Agency@12345',
+  agencyGuide: 'Guide@12345',
+  shop: 'Shop@12345',
+  pendingParticipant: 'Visitor2@12345',
+  suspended: 'Suspended@12345'
 };
 
 const demoAvatar = (key: string) => `https://i.pravatar.cc/150?u=${encodeURIComponent(key)}`;
@@ -120,6 +124,14 @@ const upsertTenant = async (input: {
   type: TenantRecord['type'];
   status: TenantRecord['status'];
   ownerId: string;
+  businessMode?: TenantRecord['businessMode'];
+  description?: string | null;
+  website?: string | null;
+  logoUrl?: string | null;
+  services?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: string | null;
 }): Promise<TenantRecord> => {
   const existing = await findTenantBySlug(input.slug);
   if (existing) {
@@ -127,15 +139,23 @@ const upsertTenant = async (input: {
       ...existing,
       name: input.name,
       type: input.type,
+      businessMode: input.businessMode ?? null,
       status: input.status,
       ownerId: input.ownerId,
+      description: input.description ?? existing.description ?? null,
+      website: input.website ?? existing.website ?? null,
+      logoUrl: input.logoUrl ?? existing.logoUrl ?? null,
+      services: input.services ?? existing.services ?? null,
+      latitude: input.latitude ?? existing.latitude ?? null,
+      longitude: input.longitude ?? existing.longitude ?? null,
+      region: input.region ?? existing.region ?? null,
       updatedAt: new Date()
     };
     await writeTenantToMongo(updated);
     return updated;
   }
 
-  return createTenantRecord({
+  const created = await createTenantRecord({
     id: input.id,
     name: input.name,
     slug: input.slug,
@@ -143,6 +163,20 @@ const upsertTenant = async (input: {
     status: input.status,
     ownerId: input.ownerId
   });
+  const enriched: TenantRecord = {
+    ...created,
+    businessMode: input.businessMode ?? null,
+    description: input.description ?? null,
+    website: input.website ?? null,
+    logoUrl: input.logoUrl ?? null,
+    services: input.services ?? null,
+    latitude: input.latitude ?? null,
+    longitude: input.longitude ?? null,
+    region: input.region ?? null,
+    updatedAt: new Date()
+  };
+  await writeTenantToMongo(enriched);
+  return enriched;
 };
 
 const upsertLocation = async (id: string, data: LocationCreateInput) => {
@@ -508,6 +542,11 @@ const SEED_MARKER_EMAIL = 'admin@uaetrails.app';
 const SEED_MARKER_EVENT_ID = 'seed-event-jais';
 const SEED_MARKER_LOCATION_ID = 'jebel-jais-summit-trail';
 
+const seedObjectId = (label: string): ObjectId => {
+  const hex = crypto.createHash('md5').update(`uaetrail-seed:${label}`).digest('hex').slice(0, 24);
+  return new ObjectId(hex);
+};
+
 const isProductionEnv = (): boolean => process.env.NODE_ENV === 'production';
 
 const isSeedDataEnabled = (): boolean => {
@@ -581,39 +620,46 @@ async function main() {
     displayName: 'UAE Trails Admin'
   });
 
-  const organizer = await upsertUser({
-    email: 'organizer@uaetrails.app',
-    password: credentials.organizer,
-    role: UserRole.TENANT_OWNER,
-    displayName: 'Adventure Organizer'
-  });
-
-  const guide = await upsertUser({
-    email: 'guide@uaetrails.app',
-    password: credentials.guide,
-    role: UserRole.TENANT_GUIDE,
-    displayName: 'Trail Guide'
-  });
-
-  const visitor = await upsertUser({
+  const participant = await upsertUser({
     email: 'visitor@uaetrails.app',
-    password: credentials.visitor,
+    password: credentials.participant,
     role: UserRole.PARTICIPANT,
-    displayName: 'Visitor User'
+    displayName: 'Demo Participant'
   });
 
-  const vendor = await upsertUser({
-    email: 'vendor@uaetrails.app',
-    password: 'Vendor@12345',
-    role: UserRole.MERCHANT_ADMIN,
-    displayName: 'Vendor Admin'
+  const agencyOwner = await upsertUser({
+    email: 'organizer@uaetrails.app',
+    password: credentials.agency,
+    role: UserRole.TENANT_OWNER,
+    displayName: 'Agency Owner'
   });
 
-  const pendingVisitor = await upsertUser({
+  const agencyGuide = await upsertUser({
+    email: 'guide@uaetrails.app',
+    password: credentials.agencyGuide,
+    role: UserRole.TENANT_GUIDE,
+    displayName: 'Agency Guide'
+  });
+
+  const individualHost = await upsertUser({
+    email: 'host@uaetrails.app',
+    password: credentials.individualHost,
+    role: UserRole.TENANT_OWNER,
+    displayName: 'Individual Host'
+  });
+
+  const shopOwner = await upsertUser({
+    email: 'shop@uaetrails.app',
+    password: credentials.shop,
+    role: UserRole.TENANT_OWNER,
+    displayName: 'Shop Owner'
+  });
+
+  const pendingParticipant = await upsertUser({
     email: 'visitor2@uaetrails.app',
-    password: credentials.pendingVisitor,
+    password: credentials.pendingParticipant,
     role: UserRole.PARTICIPANT,
-    displayName: 'Pending Visitor'
+    displayName: 'Pending Participant'
   });
 
   const suspendedHash = await bcrypt.hash(credentials.suspended, 10);
@@ -638,87 +684,183 @@ async function main() {
     });
   }
 
-  const guide2 = await upsertUser({
-    email: 'guide2@uaetrails.app',
-    password: credentials.guide2,
-    role: UserRole.TENANT_OWNER,
-    displayName: 'Desert Explorer Guide'
-  });
-
   await Promise.all([
-    setDemoAvatar(organizer._id, 'organizer'),
-    setDemoAvatar(guide._id, 'guide'),
-    setDemoAvatar(visitor._id, 'visitor'),
-    setDemoAvatar(guide2._id, 'guide2'),
+    setDemoAvatar(participant._id, 'participant'),
+    setDemoAvatar(agencyOwner._id, 'agency-owner'),
+    setDemoAvatar(agencyGuide._id, 'agency-guide'),
+    setDemoAvatar(individualHost._id, 'individual-host'),
+    setDemoAvatar(shopOwner._id, 'shop-owner'),
+    setDemoAvatar(pendingParticipant._id, 'pending-participant'),
     setDemoAvatar(admin._id, 'admin')
   ]);
 
-  const tenant = await upsertTenant({
+  const agencyTenant = await upsertTenant({
     id: 'tenant-uae-adventure',
     name: 'UAE Adventure Co',
     slug: 'uae-adventure-co',
     type: TenantType.COMPANY,
+    businessMode: TenantBusinessMode.AGENCY,
     status: TenantStatus.ACTIVE,
-    ownerId: organizer._id
+    ownerId: agencyOwner._id,
+    description:
+      'Licensed tour agency for guided hiking, camping, and corporate outdoor programs across the UAE.',
+    logoUrl: demoAvatar('uae-adventure-co'),
+    services: 'Guided hikes, desert camping, corporate retreats, mountain safety courses',
+    latitude: 24.4539,
+    longitude: 54.3773,
+    region: 'Abu Dhabi'
   });
 
   await upsertTenantMembership({
-    tenantId: tenant.id,
-    userId: organizer._id,
+    tenantId: agencyTenant.id,
+    userId: agencyOwner._id,
     role: MembershipRole.TENANT_OWNER
   });
 
-  await updateAuthUserProfile(organizer._id, {
-    bio: 'UAE-based adventure company specializing in guided hiking and camping across the Emirates. Safety-first trips with small groups and experienced local guides.'
+  await upsertTenantMembership({
+    tenantId: agencyTenant.id,
+    userId: agencyGuide._id,
+    role: MembershipRole.TENANT_GUIDE
+  });
+
+  await updateAuthUserProfile(agencyOwner._id, {
+    bio: 'UAE-based tour agency specializing in guided hiking and camping across the Emirates. Safety-first trips with small groups and experienced local guides.',
+    phone: '+971501234567'
   });
 
   await upsertHostApplication({
     id: 'seed-app-uae-adventure',
-    applicantId: organizer._id,
-    requestedTenantId: tenant.id,
-    requestedName: tenant.name,
-    requestedSlug: tenant.slug,
+    applicantId: agencyOwner._id,
+    requestedTenantId: agencyTenant.id,
+    requestedName: agencyTenant.name,
+    requestedSlug: agencyTenant.slug,
     requestedType: TenantType.COMPANY,
     status: HostApplicationStatus.APPROVED,
     metadata: {
-      phone: '+971 50 123 4567',
+      hostProfileType: 'agency',
+      requestedName: agencyTenant.name,
+      bio: 'Licensed tour agency for guided outdoor experiences across the UAE.',
+      phone: '+971501234567',
+      phoneE164: '+971501234567',
+      services: agencyTenant.services,
+      latitude: agencyTenant.latitude,
+      longitude: agencyTenant.longitude,
+      region: agencyTenant.region,
+      profilePhoto: demoAvatar('uae-adventure-co'),
       nationality: 'UAE',
-      residence: 'UAE',
+      residence: 'Abu Dhabi',
       experience: '5+ years',
       languages: 'English, Arabic',
-      certificates: 'Wilderness First Aid, UAE Mountain Guide certification, Leave No Trace trainer',
+      certificates: 'Wilderness First Aid, UAE Mountain Guide certification',
       notableHikes: 'Jebel Jais summit routes, Wadi Shawka loop, Hatta dam trails'
     }
   });
 
-  await upsertTenantMembership({
-    tenantId: tenant.id,
-    userId: guide._id,
-    role: MembershipRole.TENANT_GUIDE
-  });
-
-  const tenant2 = await upsertTenant({
+  const individualHostTenant = await upsertTenant({
     id: 'tenant-desert-explorer',
     name: 'Desert Explorer',
     slug: 'desert-explorer',
     type: TenantType.GUIDE_OWNED,
     status: TenantStatus.ACTIVE,
-    ownerId: guide2._id
+    ownerId: individualHost._id,
+    description: 'Independent guide hosting free and shared-cost hikes and desert meetups.',
+    logoUrl: demoAvatar('desert-explorer'),
+    region: 'Sharjah'
   });
 
   await upsertTenantMembership({
-    tenantId: tenant2.id,
-    userId: guide2._id,
+    tenantId: individualHostTenant.id,
+    userId: individualHost._id,
     role: MembershipRole.TENANT_OWNER
+  });
+
+  await updateAuthUserProfile(individualHost._id, {
+    bio: 'Weekend hiking host based in Sharjah. I lead small free groups to Fossil Rock, Wadi Shawka, and nearby trails.',
+    phone: '+971509876543'
+  });
+
+  await upsertHostApplication({
+    id: 'seed-app-desert-explorer',
+    applicantId: individualHost._id,
+    requestedTenantId: individualHostTenant.id,
+    requestedName: individualHostTenant.name,
+    requestedSlug: individualHostTenant.slug,
+    requestedType: TenantType.GUIDE_OWNED,
+    status: HostApplicationStatus.APPROVED,
+    metadata: {
+      hostProfileType: 'individual',
+      hostDisplayName: 'Individual Host',
+      dateOfBirth: '1995-06-15',
+      bio: 'Weekend hiking host based in Sharjah. I lead small free groups to Fossil Rock, Wadi Shawka, and nearby trails.',
+      phone: '+971509876543',
+      phoneE164: '+971509876543',
+      nationality: 'UAE',
+      residence: 'Sharjah',
+      languages: 'English, Arabic, Hindi',
+      interests: 'Hiking, camping, photography, community building'
+    }
+  });
+
+  const shopTenant = await upsertTenant({
+    id: 'tenant-desert-trail-shop',
+    name: 'Desert Trail Outfitters',
+    slug: 'desert-trail-outfitters',
+    type: TenantType.COMPANY,
+    businessMode: TenantBusinessMode.SHOP,
+    status: TenantStatus.ACTIVE,
+    ownerId: shopOwner._id,
+    description: 'Trail running shoes, hydration packs, and camping essentials for UAE outdoor conditions.',
+    logoUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
+    latitude: 25.1972,
+    longitude: 55.2744,
+    region: 'Dubai'
+  });
+
+  await upsertTenantMembership({
+    tenantId: shopTenant.id,
+    userId: shopOwner._id,
+    role: MembershipRole.TENANT_OWNER
+  });
+
+  await updateAuthUserProfile(shopOwner._id, {
+    bio: 'Outdoor gear shop on the map — trail shoes, tents, and hydration for UAE hikers and campers.',
+    phone: '+971501100221'
+  });
+
+  await upsertHostApplication({
+    id: 'seed-app-desert-trail-shop',
+    applicantId: shopOwner._id,
+    requestedTenantId: shopTenant.id,
+    requestedName: shopTenant.name,
+    requestedSlug: shopTenant.slug,
+    requestedType: TenantType.COMPANY,
+    status: HostApplicationStatus.APPROVED,
+    metadata: {
+      hostProfileType: 'shop',
+      requestedName: shopTenant.name,
+      bio: shopTenant.description,
+      phone: '+971501100221',
+      phoneE164: '+971501100221',
+      profilePhoto: shopTenant.logoUrl,
+      latitude: shopTenant.latitude,
+      longitude: shopTenant.longitude,
+      region: shopTenant.region
+    }
   });
 
   await upsertHostApplication({
     id: 'seed-app-pending',
-    applicantId: pendingVisitor._id,
+    applicantId: pendingParticipant._id,
     requestedName: 'Hatta Hiking Club',
     requestedSlug: 'hatta-hiking-club',
     requestedType: TenantType.COMPANY,
-    status: HostApplicationStatus.PENDING
+    status: HostApplicationStatus.PENDING,
+    metadata: {
+      hostProfileType: 'agency',
+      requestedName: 'Hatta Hiking Club',
+      bio: 'Community hiking club applying to host group trips around Hatta.',
+      services: 'Weekend group hikes around Hatta and Dubai outskirts'
+    }
   });
 
   const seedLocations: Array<{ id: string; data: LocationCreateInput }> = [
@@ -961,11 +1103,12 @@ Share your live location and carry extra water in summer months.`
   start.setDate(start.getDate() + 7);
   start.setHours(6, 0, 0, 0);
 
-  const event = await upsertEvent('seed-event-jais', {
-    tenant: { connect: { id: tenant.id } },
+  const event =   await upsertEvent('seed-event-jais', {
+    tenant: { connect: { id: agencyTenant.id } },
     location: { connect: { id: 'jebel-jais-summit-trail' } },
-    createdBy: { connect: { id: organizer._id } },
-    guide: { connect: { id: guide._id } },
+    createdBy: { connect: { id: agencyOwner._id } },
+    guide: { connect: { id: agencyGuide._id } },
+    activityType: ActivityType.HIKING,
     title: 'Jebel Jais Group Hike',
     description: 'Guided early morning summit trek.',
     startAt: start,
@@ -985,9 +1128,10 @@ Share your live location and carry extra water in summer months.`
   start2.setHours(16, 0, 0, 0);
 
   await upsertEvent('seed-event-fossil-camp', {
-    tenant: { connect: { id: tenant2.id } },
+    tenant: { connect: { id: individualHostTenant.id } },
     location: { connect: { id: 'fossil-rock-desert-camp' } },
-    createdBy: { connect: { id: guide2._id } },
+    createdBy: { connect: { id: individualHost._id } },
+    activityType: ActivityType.CAMPING,
     title: 'Fossil Rock Overnight Camp',
     description: 'Desert camping with stargazing and sunrise photography.',
     startAt: start2,
@@ -1013,10 +1157,11 @@ Share your live location and carry extra water in summer months.`
   freeHikeStart.setHours(7, 0, 0, 0);
 
   await upsertEvent('seed-event-shawka-free', {
-    tenant: { connect: { id: tenant.id } },
+    tenant: { connect: { id: agencyTenant.id } },
     location: { connect: { id: 'wadi-shawka-loop' } },
-    createdBy: { connect: { id: organizer._id } },
-    guide: { connect: { id: guide._id } },
+    createdBy: { connect: { id: agencyOwner._id } },
+    guide: { connect: { id: agencyGuide._id } },
+    activityType: ActivityType.HIKING,
     title: 'Wadi Shawka Community Hike',
     description:
       'Free guided group hike through Wadi Shawka — open to all skill levels. A great intro to UAE trail culture with no cost to join.',
@@ -1038,9 +1183,10 @@ Share your live location and carry extra water in summer months.`
   freeCampStart.setHours(15, 0, 0, 0);
 
   await upsertEvent('seed-event-desert-meetup', {
-    tenant: { connect: { id: tenant2.id } },
+    tenant: { connect: { id: individualHostTenant.id } },
     location: { connect: { id: 'fossil-rock-desert-camp' } },
-    createdBy: { connect: { id: guide2._id } },
+    createdBy: { connect: { id: individualHost._id } },
+    activityType: ActivityType.EVENT,
     title: 'Desert Sunset Meetup (Free)',
     description:
       'Free afternoon desert meetup — stargazing tips, campfire chat, and sunset views. Bring your own gear; no overnight stay required.',
@@ -1062,11 +1208,66 @@ Share your live location and carry extra water in summer months.`
     requirements: ['Chair or mat', 'Warm layer', 'Snacks & water']
   });
 
-  await seedParticipant(event._id, visitor._id, organizer._id);
+  const eventRunStart = new Date();
+  eventRunStart.setDate(eventRunStart.getDate() + 5);
+  eventRunStart.setHours(6, 30, 0, 0);
+
+  await upsertEvent('seed-event-kite-beach-run', {
+    tenant: { connect: { id: agencyTenant.id } },
+    location: { connect: { id: 'hatta-dam-loop' } },
+    createdBy: { connect: { id: agencyOwner._id } },
+    guide: { connect: { id: agencyGuide._id } },
+    activityType: ActivityType.EVENT,
+    title: 'Kite Beach Sunrise Run',
+    description: 'Community 5K along the Dubai Marina/Kite Beach track — all paces welcome.',
+    startAt: eventRunStart,
+    meetingPoint: 'Kite Beach running track',
+    meetingLat: 25.1654,
+    meetingLng: 55.2553,
+    priceAed: 0,
+    capacity: 30,
+    featured: true,
+    status: ActivityStatus.PUBLISHED,
+    publishedAt: new Date(),
+    itinerary: ['Warm-up 6:30 AM', '5K out-and-back', 'Stretch & coffee'],
+    requirements: ['Running shoes', 'Water bottle', 'High-vis top']
+  });
+
+  const carpoolStart = new Date();
+  carpoolStart.setDate(carpoolStart.getDate() + 4);
+  carpoolStart.setHours(5, 0, 0, 0);
+
+  await upsertEvent('seed-event-carpool-marina-jais', {
+    tenant: { connect: { id: individualHostTenant.id } },
+    location: { connect: { id: 'jebel-jais-summit-trail' } },
+    createdBy: { connect: { id: individualHost._id } },
+    activityType: ActivityType.CARPOOL,
+    title: 'Carpool Dubai Marina → Jebel Jais',
+    description: 'Shared ride for the Jebel Jais hike — split fuel costs.',
+    startAt: carpoolStart,
+    meetingPoint: 'Dubai Marina Mall parking',
+    meetingLat: 25.0782,
+    meetingLng: 55.1394,
+    startPoint: 'Jebel Jais Viewing Deck',
+    startLat: 25.9433,
+    startLng: 56.1422,
+    pricingMode: 'shared',
+    carPoolFree: false,
+    carPoolPriceAed: 35,
+    priceAed: 35,
+    capacity: 4,
+    featured: true,
+    status: ActivityStatus.PUBLISHED,
+    publishedAt: new Date(),
+    itinerary: ['Depart Marina 5:00 AM', 'Arrive Jebel Jais ~7:00 AM'],
+    requirements: ['Be on time', 'Share fuel cost at pickup', 'Max 1 bag per seat']
+  });
+
+  await seedParticipant(event._id, participant._id, agencyOwner._id);
 
   const approvedRequest = await db().collection('activity_requests').findOne({
     activityId: event._id,
-    userId: visitor._id
+    userId: participant._id
   });
   if (approvedRequest) {
     await db().collection('activity_requests').updateOne(
@@ -1080,12 +1281,12 @@ Share your live location and carry extra water in summer months.`
     );
   }
 
-  await seedParticipant(event._id, guide._id, organizer._id);
-  await seedParticipant(event._id, admin._id, organizer._id);
+  await seedParticipant(event._id, agencyGuide._id, agencyOwner._id);
+  await seedParticipant(event._id, admin._id, agencyOwner._id);
 
   const pendingNow = new Date();
   await db().collection('activity_requests').updateOne(
-    { activityId: event._id, userId: pendingVisitor._id },
+    { activityId: event._id, userId: pendingParticipant._id },
     {
       $set: {
         status: RequestStatus.PENDING,
@@ -1107,8 +1308,8 @@ Share your live location and carry extra water in summer months.`
     { upsert: true }
   );
 
-  const nikeMerchantProfile = await upsertMerchantProfile([vendor._id], {
-    shopName: 'Nike UAE',
+  const nikeMerchantProfile = await upsertMerchantProfile([shopOwner._id], {
+    shopName: 'Desert Trail Outfitters — Marina',
     description: 'Performance footwear, hydration, and trail apparel for UAE runners.',
     logo: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
     contactEmail: 'nike-uae@uaetrails.app',
@@ -1118,8 +1319,8 @@ Share your live location and carry extra water in summer months.`
     region: 'Dubai'
   });
 
-  const adidasMerchantProfile = await upsertMerchantProfile([vendor._id], {
-    shopName: 'Adidas GCC',
+  const adidasMerchantProfile = await upsertMerchantProfile([shopOwner._id], {
+    shopName: 'Desert Trail Outfitters — Abu Dhabi',
     description: 'Trail gear and expedition essentials curated for Gulf conditions.',
     logo: 'https://images.unsplash.com/photo-1514996937319-344454492b37?w=400',
     contactEmail: 'adidas-gcc@uaetrails.app',
@@ -1191,11 +1392,11 @@ Share your live location and carry extra water in summer months.`
 
   await seedMerchantAnalytics({
     products: seedProducts.map((product) => ({ id: product.id, priceAed: product.priceAed })),
-    userIds: [vendor._id, visitor._id, guide._id, pendingVisitor._id]
+    userIds: [shopOwner._id, participant._id, agencyGuide._id, pendingParticipant._id]
   });
 
   await upsertReview({
-    userId: visitor._id,
+    userId: participant._id,
     targetType: ReviewTargetType.LOCATION,
     targetId: 'wadi-shawka-loop',
     rating: 5,
@@ -1203,15 +1404,15 @@ Share your live location and carry extra water in summer months.`
   });
 
   await upsertReview({
-    userId: visitor._id,
+    userId: participant._id,
     targetType: ReviewTargetType.TENANT,
-    targetId: tenant.id,
+    targetId: agencyTenant.id,
     rating: 5,
     comment: 'UAE Adventure Co runs well-organized trips with clear communication and safety briefings.'
   });
 
   await upsertReview({
-    userId: guide._id,
+    userId: agencyGuide._id,
     targetType: ReviewTargetType.LOCATION,
     targetId: 'jebel-jais-summit-trail',
     rating: 4,
@@ -1226,13 +1427,13 @@ Share your live location and carry extra water in summer months.`
       'Early morning in winter is ideal — cooler temps and great light. Bring at least 2L of water per person.',
     images: [],
     locationId: 'wadi-shawka-loop',
-    authorId: organizer._id
+    authorId: agencyOwner._id
   });
 
   await upsertPostReply({
     id: 'seed-reply-shawka-1',
     postId: 'seed-post-shawka-tips',
-    authorId: visitor._id,
+    authorId: participant._id,
     content:
       'Agreed — we went last January at 6am and it was perfect. Parking fills up by 8am on weekends.'
   });
@@ -1244,12 +1445,12 @@ Share your live location and carry extra water in summer months.`
     content:
       'Planning my first summit hike — are trail runners enough or do I need proper hiking boots?',
     images: [],
-    authorId: visitor._id
+    authorId: participant._id
   });
 
   await upsertNotification({
     id: 'seed-notif-visitor-approved',
-    userId: visitor._id,
+    userId: participant._id,
     title: 'Join request approved',
     body: 'Your request to join a trip was approved. Check My Trips for details.',
     type: NotificationType.REQUEST_UPDATE,
@@ -1258,27 +1459,27 @@ Share your live location and carry extra water in summer months.`
 
   const chatMessages = [
     {
-      senderId: visitor._id,
-      receiverId: organizer._id,
+      senderId: participant._id,
+      receiverId: agencyOwner._id,
       content: 'Hi! I signed up for the Jebel Jais hike. What should I bring?',
       activityId: event._id
     },
     {
-      senderId: organizer._id,
-      receiverId: visitor._id,
+      senderId: agencyOwner._id,
+      receiverId: participant._id,
       content:
         'Great to have you! Bring at least 2L of water, hiking shoes, and sun protection. We start early!',
       activityId: event._id
     },
     {
-      senderId: visitor._id,
-      receiverId: organizer._id,
+      senderId: participant._id,
+      receiverId: agencyOwner._id,
       content: 'Perfect, thanks! Should I bring my own headlamp?',
       activityId: event._id
     },
     {
-      senderId: organizer._id,
-      receiverId: visitor._id,
+      senderId: agencyOwner._id,
+      receiverId: participant._id,
       content: 'Yes, a headlamp is recommended since we start before sunrise. See you there!',
       activityId: event._id
     }
@@ -1286,8 +1487,8 @@ Share your live location and carry extra water in summer months.`
 
   await db().collection('chat_messages').deleteMany({
     $or: [
-      { senderId: visitor._id, receiverId: organizer._id },
-      { senderId: organizer._id, receiverId: visitor._id }
+      { senderId: participant._id, receiverId: agencyOwner._id },
+      { senderId: agencyOwner._id, receiverId: participant._id }
     ]
   });
 
@@ -1306,45 +1507,110 @@ Share your live location and carry extra water in summer months.`
     });
   }
 
-  const participant = await db().collection('activity_participants').findOne({
+  const participantRecord = await db().collection('activity_participants').findOne({
     activityId: event._id,
-    userId: visitor._id
+    userId: participant._id
   });
-  if (participant) {
+  if (participantRecord) {
     await db().collection('activity_participants').updateOne(
-      { _id: participant._id },
+      { _id: participantRecord._id },
       { $set: { checkedInAt: new Date() } }
     );
   }
 
-  await seedReward(visitor._id, RewardAction.SIGNUP_WELCOME, 25, visitor._id, 'Welcome bonus');
-  await seedReward(visitor._id, RewardAction.TRIP_ATTENDED, 30, `${event._id}:${visitor._id}`, 'Attended a trip');
-  await seedReward(visitor._id, RewardAction.COMMUNITY_POST, 20, 'seed-post-1', 'Community post');
-  await seedReward(organizer._id, RewardAction.ACTIVITY_PUBLISHED, 50, event._id, 'Published a trip');
-  await seedReward(organizer._id, RewardAction.ACTIVITY_HOSTED, 75, event._id, 'Hosted a trip');
+  await seedReward(participant._id, RewardAction.SIGNUP_WELCOME, 25, participant._id, 'Welcome bonus');
+  await seedReward(participant._id, RewardAction.TRIP_ATTENDED, 30, `${event._id}:${participant._id}`, 'Attended a trip');
+  await seedReward(participant._id, RewardAction.COMMUNITY_POST, 20, 'seed-post-1', 'Community post');
+  await seedReward(agencyOwner._id, RewardAction.ACTIVITY_PUBLISHED, 50, event._id, 'Published a trip');
+  await seedReward(agencyOwner._id, RewardAction.ACTIVITY_HOSTED, 75, event._id, 'Hosted a trip');
 
   await db().collection('auth_users').updateOne(
-    { _id: organizer._id },
+    { _id: agencyOwner._id },
     { $set: { 'profile.membershipTier': MembershipTier.ACTIVE, updatedAt: new Date() } }
   );
 
-  await createUserBadge({ userId: organizer._id, badgeKey: 'tier_active' });
-  await createUserBadge({ userId: organizer._id, badgeKey: 'trip_leader' });
+  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'tier_active' });
+  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'trip_leader' });
+
+  const suspendLegacyDemoUser = async (email: string, keepUserId: string) => {
+    const legacy = await findAuthUserByEmail(email);
+    if (legacy && legacy._id !== keepUserId) {
+      await updateAuthUserCore({ userId: legacy._id, status: UserStatus.SUSPENDED });
+    }
+  };
+
+  await suspendLegacyDemoUser('vendor@uaetrails.app', shopOwner._id);
+  await suspendLegacyDemoUser('guide2@uaetrails.app', individualHost._id);
+
+  const demandNow = new Date();
+  await db().collection('participant_intents').deleteMany({
+    _id: { $in: ['seed-demand-hike-hatta', 'seed-demand-carpool-dxb-rak'] }
+  });
+
+  await db().collection('participant_intents').updateOne(
+    { _id: seedObjectId('demand-hike-hatta') },
+    {
+      $set: {
+        userId: participant._id,
+        kind: 'hiking',
+        date: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10),
+        time: null,
+        preferredArea: 'Hatta, Wadi Hub area',
+        latitude: 24.7847,
+        longitude: 56.1136,
+        locationPrecision: 'general',
+        toLatitude: null,
+        toLongitude: null,
+        partySize: 2,
+        comment: 'Looking for hiking buddies around Hatta this weekend.',
+        status: 'active',
+        updatedAt: demandNow
+      },
+      $setOnInsert: { createdAt: demandNow }
+    },
+    { upsert: true }
+  );
+
+  await db().collection('participant_intents').updateOne(
+    { _id: seedObjectId('demand-carpool-dxb-rak') },
+    {
+      $set: {
+        userId: pendingParticipant._id,
+        kind: 'carpool',
+        date: new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10),
+        time: '07:30',
+        preferredArea: 'Dubai Marina → Jebel Jais',
+        latitude: 25.0782,
+        longitude: 55.1394,
+        locationPrecision: 'specific',
+        toLatitude: 25.9433,
+        toLongitude: 56.1422,
+        partySize: 3,
+        comment: 'Need a ride to Jebel Jais hike — happy to share fuel.',
+        status: 'active',
+        updatedAt: demandNow
+      },
+      $setOnInsert: { createdAt: demandNow }
+    },
+    { upsert: true }
+  );
 
   console.log('Seed complete.');
   console.log(`Admin: admin@uaetrails.app / ${credentials.admin}`);
-  console.log(`Organizer: organizer@uaetrails.app / ${credentials.organizer}`);
-  console.log(`Guide: guide@uaetrails.app / ${credentials.guide}`);
-  console.log(`Guide2 (tenant owner): guide2@uaetrails.app / ${credentials.guide2}`);
-  console.log(`Visitor: visitor@uaetrails.app / ${credentials.visitor}`);
-  console.log('Merchant Admin: vendor@uaetrails.app / Vendor@12345');
-  console.log(`Pending Visitor: visitor2@uaetrails.app / ${credentials.pendingVisitor}`);
+  console.log(`Participant: visitor@uaetrails.app / ${credentials.participant}`);
+  console.log(`Individual host: host@uaetrails.app / ${credentials.individualHost}`);
+  console.log(`Agency owner: organizer@uaetrails.app / ${credentials.agency}`);
+  console.log(`Agency guide (staff): guide@uaetrails.app / ${credentials.agencyGuide}`);
+  console.log(`Shop owner: shop@uaetrails.app / ${credentials.shop}`);
+  console.log(`Pending participant: visitor2@uaetrails.app / ${credentials.pendingParticipant}`);
   console.log(`Suspended: suspended@uaetrails.app / ${credentials.suspended}`);
-  console.log(`Tenant 1 (COMPANY): ${tenant.id} — ${tenant.slug}`);
-  console.log(`Tenant 2 (GUIDE_OWNED): ${tenant2.id} — ${tenant2.slug}`);
-  console.log(`Pending application: Hatta Hiking Club (by ${pendingVisitor.email})`);
+  console.log(`Agency tenant: ${agencyTenant.id} — ${agencyTenant.slug} (${agencyTenant.businessMode})`);
+  console.log(`Individual host tenant: ${individualHostTenant.id} — ${individualHostTenant.slug}`);
+  console.log(`Shop tenant: ${shopTenant.id} — ${shopTenant.slug} (${shopTenant.businessMode})`);
+  console.log(`Pending application: Hatta Hiking Club (by ${pendingParticipant.email})`);
   console.log(`Seeded by admin id: ${admin._id}`);
   console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName} (${seedProducts.length} products)`);
+  console.log('Explore map demo pins: hiking, camping, event, carpool activities + shop merchants + agency + demand');
   console.log(`Chat messages: ${chatMessages.length} seeded`);
 }
 

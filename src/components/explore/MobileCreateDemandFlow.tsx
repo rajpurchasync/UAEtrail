@@ -29,6 +29,7 @@ import {
   validateDemandDraft,
   validateDemandStep,
   type DemandFlowStepId,
+  type DemandSubmitResult,
   type MobileDemandDraft,
   type MobileDemandKind,
 } from './mobileDemandFlow';
@@ -44,7 +45,7 @@ interface MobileCreateDemandFlowProps {
   open: boolean;
   onClose: () => void;
   onBackToIntent?: () => void;
-  onSubmitted?: () => void;
+  onSubmitted?: (result: DemandSubmitResult) => void;
   signInHref: string;
 }
 
@@ -236,8 +237,8 @@ export const MobileCreateDemandFlow = ({
     setSubmitting(true);
     setError(null);
     try {
-      await publishMobileDemandRequest({ ...draft, kind: draft.kind ?? selectedKind });
-      onSubmitted?.();
+      const result = await publishMobileDemandRequest({ ...draft, kind: draft.kind ?? selectedKind });
+      onSubmitted?.(result);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not post your request.');
@@ -306,9 +307,9 @@ export const MobileCreateDemandFlow = ({
   }
 
   return (
-    <div className="absolute inset-0 z-[1400] flex flex-col justify-end bg-black/35 pb-[calc(var(--safe-bottom)+72px)]">
+    <div className="absolute inset-0 z-[1400] flex flex-col justify-end bg-black/35">
       <button type="button" className="absolute inset-0" aria-label="Close" onClick={handleClose} />
-      <div className="relative max-h-[min(78dvh,720px)] overflow-y-auto rounded-t-3xl bg-white px-5 pb-4 pt-2 shadow-2xl">
+      <div className="relative max-h-[min(78dvh,720px)] overflow-y-auto rounded-t-3xl bg-white px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-3 shadow-2xl">
         <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-neutral-200" />
 
         {step === 'type' && (

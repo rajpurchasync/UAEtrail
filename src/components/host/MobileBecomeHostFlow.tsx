@@ -31,6 +31,7 @@ import {
   type HostFlowStep,
   type HostFlowStepId,
 } from './becomeHostFlow';
+import { useHostGate } from '../../hooks/useHostGate';
 
 const MobileCreateLocationPicker = lazy(() =>
   import('../explore/MobileCreateLocationPicker').then((m) => ({ default: m.MobileCreateLocationPicker }))
@@ -113,6 +114,20 @@ export const MobileBecomeHostFlow = ({
 }: MobileBecomeHostFlowProps) => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
+  const { hasGuideProfile, hasAgencyProfile, hasShopProfile } = useHostGate({
+    enabled: open && Boolean(user),
+  });
+
+  const availableProfileOptions = useMemo(
+    () =>
+      PROFILE_TYPE_OPTIONS.filter((option) => {
+        if (option.key === 'individual') return !hasGuideProfile;
+        if (option.key === 'agency') return !hasAgencyProfile;
+        if (option.key === 'shop') return !hasShopProfile;
+        return true;
+      }),
+    [hasGuideProfile, hasAgencyProfile, hasShopProfile]
+  );
 
   const [step, setStep] = useState<HostFlowStep>('pick');
   const [selectedType, setSelectedType] = useState<HostProfileType | null>(null);
@@ -323,9 +338,9 @@ export const MobileBecomeHostFlow = ({
     <>
       {locationMapOverlay}
       {!locationMapOpen && (
-      <div className={`${overlayClass} flex flex-col justify-end bg-black/35 pb-[calc(var(--safe-bottom)+72px)]`}>
+      <div className={`${overlayClass} flex flex-col justify-end bg-black/35`}>
       <button type="button" className="absolute inset-0" aria-label="Close" onClick={handleClose} />
-      <div className="relative max-h-[min(78dvh,720px)] overflow-y-auto rounded-t-3xl bg-white px-5 pb-4 pt-2 shadow-2xl">
+      <div className="relative max-h-[min(78dvh,720px)] overflow-y-auto rounded-t-3xl bg-white px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-3 shadow-2xl">
         <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-neutral-200" />
 
         {prefillLoading && (showPickStep || lockedProfileType) && (
@@ -337,7 +352,7 @@ export const MobileBecomeHostFlow = ({
             <SheetHeader title={flowTitle} onClose={handleClose} />
             <p className="mb-4 text-sm text-gray-600">{hostFlowPickSubtitle(intent)}</p>
             <div className="space-y-3">
-              {PROFILE_TYPE_OPTIONS.map((option) => {
+              {availableProfileOptions.map((option) => {
                 const active = selectedType === option.key;
                 return (
                   <button

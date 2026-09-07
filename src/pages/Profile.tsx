@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Bell, Briefcase, Compass, Crown, Heart, Shield, ShieldCheck, Sparkles, Trophy, Users } from 'lucide-react';
+import { Bell, Briefcase, Compass, Crown, Heart, Shield, ShieldCheck, Trophy, Users } from 'lucide-react';
 import { api } from '../api/services';
 import { setStoredSession } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -26,12 +26,14 @@ import { RewardSummaryDTO } from '@uaetrail/shared-types';
 import { accountRouteByRole } from '../utils/authRouting';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
 import { inferNotificationPath } from '../utils/notificationRouting';
+import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { isHostRole } from '../utils/roles';
 
 export const Profile = () => {
   const { user, signOut, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     profile,
     setProfile,
@@ -78,6 +80,17 @@ export const Profile = () => {
       })
       .catch(() => undefined);
   }, [user]);
+
+  useEffect(() => {
+    const state = location.state as { scrollTo?: string } | null;
+    const hashTarget = location.hash === '#map-presence' ? 'map-presence' : state?.scrollTo;
+    if (!hashTarget) return;
+    const target = document.getElementById(hashTarget);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (state?.scrollTo) {
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.hash, location.state, navigate]);
 
   const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
   const canHost = isHostRole(user?.role);
@@ -275,6 +288,10 @@ export const Profile = () => {
 
             <AccountGroupsPreview groups={groups} loading={loading} />
 
+            {user!.role !== 'platform_admin' && user!.role !== 'merchant_admin' && (
+              <ProfileMapPresenceSection />
+            )}
+
             <AccountLinkList
               items={[
                 ...(trailPointsEligible
@@ -343,13 +360,8 @@ export const Profile = () => {
                         label: 'Admin console',
                         accent: 'blue' as const,
                       }
-                    : {
-                        to: '/become-host',
-                        icon: <Sparkles className="w-4 h-4" />,
-                        label: 'Become a host',
-                        accent: 'amber' as const,
-                      },
-              ]}
+                    : null,
+              ].filter(Boolean) as Parameters<typeof AccountLinkList>[0]['items']}
             />
 
             {(canSwitchToVisitor || canSwitchBack) && (

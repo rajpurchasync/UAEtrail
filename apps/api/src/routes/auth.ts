@@ -142,10 +142,11 @@ const issueEmailVerificationOtp = async (input: {
 
 const demoAccountEmails = new Set([
   'admin@uaetrails.app',
-  'organizer@uaetrails.app',
-  'guide@uaetrails.app',
   'visitor@uaetrails.app',
-  'vendor@uaetrails.app'
+  'host@uaetrails.app',
+  'organizer@uaetrails.app',
+  'shop@uaetrails.app',
+  'guide@uaetrails.app'
 ]);
 
 const demoAccountDefaults: Record<string, { password: string; role: UserRole; displayName: string }> = {
@@ -154,25 +155,30 @@ const demoAccountDefaults: Record<string, { password: string; role: UserRole; di
     role: UserRole.PLATFORM_ADMIN,
     displayName: 'UAE Trails Admin'
   },
-  'organizer@uaetrails.app': {
-    password: 'Organizer@12345',
+  'visitor@uaetrails.app': {
+    password: 'Visitor@12345',
+    role: UserRole.PARTICIPANT,
+    displayName: 'Demo Participant'
+  },
+  'host@uaetrails.app': {
+    password: 'Host@12345',
     role: UserRole.TENANT_OWNER,
-    displayName: 'Adventure Organizer'
+    displayName: 'Individual Host'
+  },
+  'organizer@uaetrails.app': {
+    password: 'Agency@12345',
+    role: UserRole.TENANT_OWNER,
+    displayName: 'Agency Owner'
+  },
+  'shop@uaetrails.app': {
+    password: 'Shop@12345',
+    role: UserRole.TENANT_OWNER,
+    displayName: 'Shop Owner'
   },
   'guide@uaetrails.app': {
     password: 'Guide@12345',
     role: UserRole.TENANT_GUIDE,
-    displayName: 'Trail Guide'
-  },
-  'visitor@uaetrails.app': {
-    password: 'Visitor@12345',
-    role: UserRole.PARTICIPANT,
-    displayName: 'Visitor User'
-  },
-  'vendor@uaetrails.app': {
-    password: 'Vendor@12345',
-    role: UserRole.MERCHANT_ADMIN,
-    displayName: 'Vendor Admin'
+    displayName: 'Agency Guide'
   }
 };
 

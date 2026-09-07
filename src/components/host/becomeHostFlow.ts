@@ -20,17 +20,19 @@ export type HostFlowStepId =
 export type HostFlowStep = 'pick' | HostFlowStepId;
 
 /** How the host wizard was opened — drives sheet title and submit label. */
-export type HostFlowIntent = 'become-host' | 'add-shop' | 'add-agency';
+export type HostFlowIntent = 'become-host' | 'add-guide' | 'add-shop' | 'add-agency';
 
 export const hostFlowIntentProfileType = (intent: HostFlowIntent): HostProfileType | null => {
   if (intent === 'add-shop') return 'shop';
   if (intent === 'add-agency') return 'agency';
+  if (intent === 'add-guide') return 'individual';
   return null;
 };
 
 export const parseHostFlowIntent = (value: string | null | undefined): HostFlowIntent => {
   if (value === 'add-shop') return 'add-shop';
   if (value === 'add-agency') return 'add-agency';
+  if (value === 'add-guide') return 'add-guide';
   return 'become-host';
 };
 
@@ -40,9 +42,9 @@ export const PROFILE_TYPE_OPTIONS: Array<{
   subtitle: string;
   emoji: string;
 }> = [
-  { key: 'individual', title: 'Individual', subtitle: 'Lead hikes & meetups', emoji: '👤' },
-  { key: 'agency', title: 'Agency', subtitle: 'Tour operator on the map', emoji: '🏢' },
-  { key: 'shop', title: 'Shop', subtitle: 'Gear or rental storefront', emoji: '🛍️' },
+  { key: 'individual', title: 'Guide', subtitle: 'Free & shared community activities', emoji: '👤' },
+  { key: 'agency', title: 'Agency', subtitle: 'Licensed business — paid trips', emoji: '🏢' },
+  { key: 'shop', title: 'Shop', subtitle: 'Gear shop pin on the map', emoji: '🛍️' },
 ];
 
 export const getHostFlowSteps = (profileType: HostProfileType): HostFlowStepId[] => {
@@ -88,22 +90,25 @@ export const locationPickerTitle = (profileType: HostProfileType): string =>
 
 /** Sheet header title for the whole flow (not per-step). */
 export const hostFlowTitle = (intent: HostFlowIntent, step: HostFlowStep): string => {
-  if (intent === 'add-shop') return 'Add a shop';
-  if (intent === 'add-agency') return 'Add an agency';
+  if (intent === 'add-shop') return 'List a shop';
+  if (intent === 'add-agency') return 'Register agency';
+  if (intent === 'add-guide') return 'Become a guide';
   if (step === 'pick') return 'How do you host?';
-  return 'Become a host';
+  return 'Set up profile';
 };
 
 export const hostFlowSubmitLabel = (intent: HostFlowIntent): string => {
-  if (intent === 'add-shop') return 'Add shop';
-  if (intent === 'add-agency') return 'Add agency';
-  return 'Become a host';
+  if (intent === 'add-shop') return 'List shop';
+  if (intent === 'add-agency') return 'Register agency';
+  if (intent === 'add-guide') return 'Become a guide';
+  return 'Submit';
 };
 
 export const hostFlowPickSubtitle = (intent: HostFlowIntent): string => {
-  if (intent === 'add-shop') return 'Set up your shop profile to appear on the map.';
-  if (intent === 'add-agency') return 'Set up your agency profile to appear on the map.';
-  return 'Pick the profile that fits — guide, tour agency, or shop on the map.';
+  if (intent === 'add-shop') return 'Pin your outdoor gear shop so hikers can find you nearby.';
+  if (intent === 'add-agency') return 'Set up your licensed tour agency for paid activities.';
+  if (intent === 'add-guide') return 'Lead free and shared hikes, camps, and meetups.';
+  return 'Pick what fits — community guide, licensed agency, or gear shop pin.';
 };
 
 export const validateHostFlowStep = (

@@ -10,7 +10,7 @@ const INTENT_OPTIONS = [
   {
     key: 'add' as const,
     title: 'Add',
-    subtitle: 'Host a hike, camp, event, or carpool on the map',
+    subtitle: 'Post a hike, camp, event, or carpool',
     icon: Plus,
     iconWrap: 'bg-rose-500 text-white shadow-md shadow-rose-500/30',
     card: 'border-rose-200 bg-gradient-to-br from-rose-50 to-white active:border-rose-400',
@@ -31,9 +31,9 @@ export const MobileCreateIntentSheet = ({ open, onClose, onChoose }: MobileCreat
   if (!open) return null;
 
   return (
-    <div className="absolute inset-0 z-[1400] flex flex-col justify-end bg-black/40 pb-[calc(var(--safe-bottom)+72px)]">
+    <div className="absolute inset-0 z-[1400] flex flex-col justify-end bg-black/40">
       <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
-      <div className="relative rounded-t-[28px] bg-white px-5 pb-4 pt-2 shadow-[0_-8px_40px_rgba(15,23,42,0.12)]">
+      <div className="relative rounded-t-[28px] bg-white px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-3 shadow-[0_-8px_40px_rgba(15,23,42,0.12)]">
         <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-neutral-200" />
 
         <div className="relative mb-4 flex items-start justify-between gap-3">

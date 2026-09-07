@@ -64,7 +64,13 @@ import {
   listPublishedUpcomingActivitiesByLocation,
   listSubmittedLocationsByUser
 } from '../lib/activities-store.js';
-import { findTenantById } from '../lib/tenant-store.js';
+import {
+  findTenantById,
+  listTenantsByOwnerId,
+  pickActivityTenant,
+  resolveOwnedProfileType,
+  tenantMatchesHostProfileType
+} from '../lib/tenant-store.js';
 import {
   approveHostApplicationAndProvisionTenant,
   createHostApplicationDetailed,
@@ -1568,12 +1574,20 @@ userRouter.get('/me/host-status', requireAuth, async (req, res, next) => {
       role === UserRole.TENANT_GUIDE;
     const isPlatformAdmin = role === UserRole.PLATFORM_ADMIN;
 
-    const memberships = await listActiveTenantMembershipsByUser(userId);
-    let tenantId: string | null = memberships[0]?.tenantId ?? null;
-    if (!tenantId && isHostRole) {
-      const owned = await findTenantByOwnerId(userId);
-      tenantId = owned?.id ?? null;
-    }
+    const ownedTenants = isHostRole || isPlatformAdmin ? await listTenantsByOwnerId(userId) : [];
+    const ownedProfiles = ownedTenants.map((tenant) => ({
+      type: resolveOwnedProfileType(tenant),
+      tenantId: tenant.id,
+      name: tenant.name,
+      slug: tenant.slug
+    }));
+
+    const hasGuideProfile = ownedProfiles.some((profile) => profile.type === 'guide');
+    const hasAgencyProfile = ownedProfiles.some((profile) => profile.type === 'agency');
+    const hasShopProfile = ownedProfiles.some((profile) => profile.type === 'shop');
+
+    const activityTenant = pickActivityTenant(ownedTenants);
+    const tenantId = activityTenant?.id ?? null;
 
     const application = await findLatestHostApplicationByApplicant(userId);
     let applicationStatus: 'none' | 'pending' | 'approved' | 'rejected' = 'none';
@@ -1584,25 +1598,22 @@ userRouter.get('/me/host-status', requireAuth, async (req, res, next) => {
       }
     }
 
-    const canPublish = isPlatformAdmin || (isHostRole && Boolean(tenantId));
+    const canPublish =
+      isPlatformAdmin || ((isHostRole || ownedTenants.length > 0) && (hasGuideProfile || hasAgencyProfile));
 
     let tenantType: 'company' | 'guide_owned' | null = null;
     let businessMode: 'agency' | 'shop' | null = null;
-    if (tenantId) {
-      const tenant = await findTenantById(tenantId);
-      if (tenant) {
-        tenantType = tenant.type === TenantType.COMPANY ? 'company' : 'guide_owned';
-        businessMode =
-          tenant.businessMode === TenantBusinessMode.AGENCY
-            ? 'agency'
-            : tenant.businessMode === TenantBusinessMode.SHOP
-              ? 'shop'
-              : null;
-      }
+    if (activityTenant) {
+      tenantType = activityTenant.type === TenantType.COMPANY ? 'company' : 'guide_owned';
+      businessMode =
+        activityTenant.businessMode === TenantBusinessMode.AGENCY
+          ? 'agency'
+          : activityTenant.businessMode === TenantBusinessMode.SHOP
+            ? 'shop'
+            : null;
     }
 
-    const canHostPaidActivities =
-      isPlatformAdmin || tenantType === 'company';
+    const canHostPaidActivities = isPlatformAdmin || hasAgencyProfile;
 
     res.json({
       data: {
@@ -1610,10 +1621,14 @@ userRouter.get('/me/host-status', requireAuth, async (req, res, next) => {
         applicationStatus,
         tenantId,
         isHostRole,
-        hasTenant: Boolean(tenantId),
+        hasTenant: ownedTenants.length > 0,
         tenantType,
         businessMode,
-        canHostPaidActivities
+        canHostPaidActivities,
+        hasGuideProfile,
+        hasAgencyProfile,
+        hasShopProfile,
+        ownedProfiles
       }
     });
   } catch (error) {
@@ -1757,18 +1772,19 @@ userRouter.post(
   async (req, res, next) => {
     try {
       const userId = req.auth!.userId;
-
-      const memberships = await listActiveTenantMembershipsByUser(userId);
-      let existingTenantId: string | null = memberships[0]?.tenantId ?? null;
-      if (!existingTenantId) {
-        const owned = await findTenantByOwnerId(userId);
-        existingTenantId = owned?.id ?? null;
-      }
-      if (existingTenantId) {
-        throw new ApiError(409, 'already_host', 'You already have a host profile.');
-      }
-
       const body = req.body as z.infer<typeof hostApplicationBodySchema>;
+
+      const ownedTenants = await listTenantsByOwnerId(userId);
+      if (ownedTenants.some((tenant) => tenantMatchesHostProfileType(tenant, body.hostProfileType))) {
+        const label =
+          body.hostProfileType === 'agency'
+            ? 'agency'
+            : body.hostProfileType === 'shop'
+              ? 'shop'
+              : 'guide';
+        throw new ApiError(409, 'profile_exists', `You already have a ${label} profile on the map.`);
+      }
+
       const phoneE164 = formatE164Phone(body.phoneCountryCode, body.phone);
       const requestedName = resolveHostApplicationRequestedName(body);
       const displayName = resolveHostApplicationDisplayName(body);

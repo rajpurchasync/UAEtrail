@@ -268,50 +268,6 @@ const FlyToSelectedPin = ({
   return null;
 };
 
-const CarpoolRoutes = ({ pins }: { pins: LocationMapPin[] }) => {
-  const map = useMap();
-  const pinsKeyValue = useMemo(() => pinsKey(pins), [pins]);
-
-  useEffect(() => {
-    const fromByItem = new Map<string, LocationMapPin>();
-    const toByItem = new Map<string, LocationMapPin>();
-
-    for (const pin of pins) {
-      if (!pin.exploreItemId || pin.carpoolEndpoint == null) continue;
-      if (pin.carpoolEndpoint === 'from') fromByItem.set(pin.exploreItemId, pin);
-      if (pin.carpoolEndpoint === 'to') toByItem.set(pin.exploreItemId, pin);
-    }
-
-    const layers: L.Polyline[] = [];
-    for (const [itemId, fromPin] of fromByItem) {
-      const toPin = toByItem.get(itemId);
-      if (!toPin) continue;
-      const line = L.polyline(
-        [
-          [fromPin.latitude, fromPin.longitude],
-          [toPin.latitude, toPin.longitude],
-        ],
-        {
-          color: '#0ea5e9',
-          weight: 3,
-          opacity: 0.7,
-          dashArray: '8 6',
-        }
-      );
-      line.addTo(map);
-      layers.push(line);
-    }
-
-    return () => {
-      for (const layer of layers) {
-        map.removeLayer(layer);
-      }
-    };
-  }, [map, pins, pinsKeyValue]);
-
-  return null;
-};
-
 /** Imperative cluster layer — avoids react-leaflet-markercluster compatibility issues. */
 const ClusteredMarkers = ({
   pins,
@@ -497,7 +453,6 @@ export const LocationsMap = ({
         <RecenterMap target={recenterTo} />
         <MapZoomReporter onZoomChange={onZoomChange} />
         <FlyToSelectedPin pins={pins} selectedExploreItemId={activeSelection} />
-        <CarpoolRoutes pins={pins} />
         {exploreMode ? (
           <ClusteredMarkers pins={pins} selectedExploreItemId={activeSelection} onPinClick={onPinClick} />
         ) : (

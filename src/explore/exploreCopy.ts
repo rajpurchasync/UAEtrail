@@ -86,8 +86,7 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
   }
 
   if (input.source === 'demand') {
-    const user = getFirstName(input.participantName || input.hostName || 'Someone');
-    return `${user} wants to go “${input.title}”`;
+    return input.title;
   }
 
   if (input.kind === 'carpool') {
@@ -127,6 +126,11 @@ export const exploreSubtitle = (item: ExploreMapItemDTO, kind: ExploreCardKind, 
 };
 
 export const exploreSpotsLabel = (item: ExploreMapItemDTO): string | null => {
+  if (item.source === 'demand') {
+    const size = item.slotsTotal ?? 0;
+    if (size <= 1) return '1 person looking';
+    return `${size} people looking`;
+  }
   if (item.source !== 'activity') return null;
   const total = item.slotsTotal ?? 0;
   const available = item.slotsAvailable ?? 0;
@@ -137,9 +141,12 @@ export const exploreSpotsLabel = (item: ExploreMapItemDTO): string | null => {
   return null;
 };
 
-export const explorePrimaryCtaLabel = (source: ExploreCardSource): string => {
-  if (source === 'demand') return 'Join this plan';
-  if (source === 'shop') return 'View shop';
+export const explorePrimaryCtaLabel = (
+  source: ExploreCardSource,
+  options?: { websiteUrl?: string | null }
+): string => {
+  if (source === 'demand') return 'Close';
+  if (source === 'shop') return options?.websiteUrl ? 'Visit website' : 'View shop';
   if (source === 'agency') return 'View agency';
   if (source === 'activity') return 'Request to join';
   return 'View details';
@@ -150,7 +157,18 @@ export const exploreSecondaryCtaLabel = (source: ExploreCardSource): string | nu
   return null;
 };
 
+export const exploreDemandHint = (): string =>
+  'Community request — hosts can post a matching trip from the map. Direct join coming soon.';
+
+export const exploreShopHint = (): string =>
+  'Outdoor gear shop — visit their website or get directions from the map pin.';
+
+export const exploreAgencyHint = (): string => 'Licensed tour operator — view trips and contact details.';
+
 export const exploreVenueHint = (source: ExploreCardSource, kind: ExploreCardKind): string | null => {
+  if (source === 'demand') return exploreDemandHint();
+  if (source === 'shop') return exploreShopHint();
+  if (source === 'agency') return exploreAgencyHint();
   if (source !== 'venue') return null;
   if (kind === 'hiking') return 'Trail or outdoor spot';
   if (kind === 'camping') return 'Camping location';

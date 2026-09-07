@@ -205,7 +205,7 @@ export const MobileMenuButton = ({ tone = 'default', className = '', showOnDeskt
 
 const MobileMenuPanel = () => {
   const { open, closeMenu } = useMobileMenu();
-  const { pathname, search } = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, signOut, refreshUser } = useAuth();
   const unreadNotifications = useNotificationUnreadCount();
@@ -426,16 +426,14 @@ const MobileMenuPanel = () => {
 
           {user && !isMerchantRole && (
             <Link
-              to="/become-host?intent=add-shop"
+              to="/profile#map-presence"
               onClick={closeMenu}
-              className={navItemClass(
-                pathname.startsWith('/become-host') && search.includes('intent=add-shop')
-              )}
+              className={navItemClass(pathname === '/profile')}
             >
               <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
                 <ShoppingBag className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
               </span>
-              <span className="font-semibold">Add a shop</span>
+              <span className="font-semibold">Your map profiles</span>
             </Link>
           )}
 

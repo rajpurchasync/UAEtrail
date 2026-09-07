@@ -185,7 +185,11 @@ export const validateDemandDraft = (draft: MobileDemandDraft): string | null => 
   return null;
 };
 
-export const publishMobileDemandRequest = async (draft: MobileDemandDraft) => {
+export type DemandSubmitResult = {
+  visibleOnMap: boolean;
+};
+
+export const publishMobileDemandRequest = async (draft: MobileDemandDraft): Promise<DemandSubmitResult> => {
   if (!draft.kind) throw new Error('Choose what you are looking for.');
 
   const payload = {
@@ -203,6 +207,10 @@ export const publishMobileDemandRequest = async (draft: MobileDemandDraft) => {
   };
 
   await api.createParticipantIntent(payload);
+
+  return {
+    visibleOnMap: payload.latitude != null && payload.longitude != null,
+  };
 };
 
 export { buildDateOptions };

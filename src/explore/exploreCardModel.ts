@@ -31,6 +31,8 @@ export interface ExploreCardModel {
   primaryCta: string;
   secondaryCta: string | null;
   showJoinActions: boolean;
+  websiteUrl?: string | null;
+  contactPhone?: string | null;
   activity?: ExploreMapItemDTO['activity'];
 }
 
@@ -96,9 +98,11 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     spotsLabel: exploreSpotsLabel(item),
     venueHint: exploreVenueHint(source, kind),
     showJoinHint: source === 'activity',
-    primaryCta: explorePrimaryCtaLabel(source),
+    primaryCta: explorePrimaryCtaLabel(source, { websiteUrl: item.websiteUrl }),
     secondaryCta: exploreSecondaryCtaLabel(source),
     showJoinActions: source === 'activity' && Boolean(activity),
+    websiteUrl: item.websiteUrl ?? null,
+    contactPhone: item.contactPhone ?? null,
     activity,
   };
 };

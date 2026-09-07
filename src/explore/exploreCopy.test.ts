@@ -75,6 +75,17 @@ describe('exploreHeadline', () => {
       exploreHeadline({ source: 'shop', kind: 'shop', title: 'Desert Gear Co' })
     ).toBe('Desert Gear Co');
   });
+
+  it('uses backend demand title as headline', () => {
+    expect(
+      exploreHeadline({
+        source: 'demand',
+        kind: 'hiking',
+        title: 'Sarah wants to go hiking',
+        hostName: 'Sarah Host',
+      })
+    ).toBe('Sarah wants to go hiking');
+  });
 });
 
 describe('resolveExplorePrice', () => {

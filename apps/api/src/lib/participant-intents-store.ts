@@ -27,6 +27,9 @@ type MongoParticipantIntent = {
 
 const collection = () => getMongoClient()!.db().collection<MongoParticipantIntent>(COLLECTION);
 
+const stringifyDocId = (id: ObjectId | string): string =>
+  typeof id === 'string' ? id : id.toHexString();
+
 const mapExploreKind = (kind: ParticipantIntentKind): ExploreMapItemDTO['kind'] => {
   if (kind === 'guide' || kind === 'other') return 'event';
   return kind;
@@ -56,7 +59,7 @@ const mapDto = (
   doc: MongoParticipantIntent,
   user?: { profile?: { displayName?: string | null; avatarUrl?: string | null } } | null
 ): ParticipantIntentDTO => ({
-  id: doc._id.toHexString(),
+  id: stringifyDocId(doc._id),
   userId: doc.userId,
   kind: doc.kind,
   date: doc.date,
@@ -123,7 +126,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
       const user = userMap.get(doc.userId);
       const displayName = user?.profile?.displayName ?? 'Someone';
       return {
-        id: `demand:${doc._id.toHexString()}`,
+        id: `demand:${stringifyDocId(doc._id)}`,
         kind: mapExploreKind(doc.kind),
         source: 'demand' as const,
         title: demandTitle(doc.kind, displayName),
@@ -132,7 +135,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
         longitude: doc.longitude,
         toLatitude: doc.toLatitude,
         toLongitude: doc.toLongitude,
-        path: `/community?demand=${doc._id.toHexString()}`,
+        path: `/`,
         hostName: displayName,
         hostAvatar: user?.profile?.avatarUrl ?? null,
         date: doc.date,

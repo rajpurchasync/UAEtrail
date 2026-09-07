@@ -100,10 +100,16 @@ npm run cap:android
 ## Seed Accounts (shared Atlas `uaetrail` DB)
 
 After seeding with `SEED_DATA=true` (or `FORCE_SEED=1`), the team can log in with:
-- Admin: `admin@uaetrails.app` / `Admin@12345`
-- Organizer: `organizer@uaetrails.app` / `Organizer@12345`
-- Guide: `guide@uaetrails.app` / `Guide@12345`
-- Visitor: `visitor@uaetrails.app` / `Visitor@12345`
+
+| Persona | Email | Password |
+|---------|-------|----------|
+| Admin | `admin@uaetrails.app` | `Admin@12345` |
+| Participant | `visitor@uaetrails.app` | `Visitor@12345` |
+| Individual host | `host@uaetrails.app` | `Host@12345` |
+| Agency | `organizer@uaetrails.app` | `Agency@12345` |
+| Shop | `shop@uaetrails.app` | `Shop@12345` |
+
+Additional demo accounts: agency guide staff `guide@uaetrails.app` / `Guide@12345`, pending participant `visitor2@uaetrails.app` / `Visitor2@12345`.
 
 ## Feature Flags (Frontend)
 Add in root `.env`:

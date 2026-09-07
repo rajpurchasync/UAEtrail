@@ -67,8 +67,8 @@ const whyHostReasons = [
 ];
 
 const howItWorks = [
-  { step: '1', title: 'Become a host', desc: 'Pick individual, agency, or shop — quick profile setup.' },
-  { step: '2', title: 'Create activity', desc: 'Post a hike, camp, event, or carpool on the map.' },
+  { step: '1', title: 'Set up profile', desc: 'Guide, licensed agency, or gear shop pin — about a minute each.' },
+  { step: '2', title: 'Create activity', desc: 'Guides and agencies post hikes, camps, and trips on the map.' },
   { step: '3', title: 'Welcome your group', desc: 'Meet participants and lead the day.' },
   { step: '4', title: 'Grow', desc: 'Earn reviews and build your outdoor community.' },
 ];
@@ -85,18 +85,39 @@ export const BecomeHost = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const intent = parseHostFlowIntent(searchParams.get('intent'));
-  const { canPublish, loading: hostGateLoading, refresh: refreshHostGate } = useHostGate({
+  const {
+    canPublish,
+    loading: hostGateLoading,
+    refresh: refreshHostGate,
+    hasGuideProfile,
+    hasAgencyProfile,
+    hasShopProfile,
+  } = useHostGate({
     enabled: Boolean(user),
   });
 
   const [hostFlowOpen, setHostFlowOpen] = useState(false);
   const [justBecameHost, setJustBecameHost] = useState(false);
 
+  const profileAlreadyExists =
+    (intent === 'add-shop' && hasShopProfile) ||
+    (intent === 'add-agency' && hasAgencyProfile) ||
+    (intent === 'add-guide' && hasGuideProfile);
+
+  const canOpenWizardForIntent =
+    (intent === 'add-shop' && !hasShopProfile) ||
+    (intent === 'add-agency' && !hasAgencyProfile) ||
+    (intent === 'add-guide' && !hasGuideProfile) ||
+    intent === 'become-host';
+
   useEffect(() => {
-    if (intent !== 'become-host' && user && !hostGateLoading) {
+    if (intent === 'become-host' || !user || hostGateLoading) return;
+    if (canOpenWizardForIntent) {
       setHostFlowOpen(true);
+      return;
     }
-  }, [intent, user, hostGateLoading]);
+    setHostFlowOpen(false);
+  }, [intent, user, hostGateLoading, canOpenWizardForIntent]);
 
   useEffect(() => {
     if (canPublish && !justBecameHost && !hostFlowOpen && intent === 'become-host') {
@@ -108,7 +129,7 @@ export const BecomeHost = () => {
 
   const handlePostEvent = () => {
     if (!user) {
-      navigate('/signup?redirect=/become-host');
+      navigate(`/signup?redirect=${encodeURIComponent(`/become-host?intent=${intent}`)}`);
       return;
     }
     if (canPublish) {
@@ -118,7 +139,23 @@ export const BecomeHost = () => {
     openForm();
   };
 
-  const ctaLabel = canPublish ? 'Create your first activity' : 'Become a host';
+  const alreadyHostMessage =
+    intent === 'add-shop'
+      ? 'Your gear shop is already on the map. Manage it from your profile.'
+      : intent === 'add-agency'
+        ? 'Your agency profile is live. Post paid trips from the map or host dashboard.'
+        : intent === 'add-guide'
+          ? 'You already have a community guide profile. Post activities from the map.'
+          : null;
+
+  const pageTitle =
+    intent === 'add-shop'
+      ? 'List a shop'
+      : intent === 'add-agency'
+        ? 'Register agency'
+        : intent === 'add-guide'
+          ? 'Become a guide'
+          : 'Become a host';
 
   const handleHostSubmitted = async (_tenantId: string | null) => {
     setHostFlowOpen(false);
@@ -131,8 +168,7 @@ export const BecomeHost = () => {
       ? '/signin?redirect=/become-host'
       : `/signin?redirect=${encodeURIComponent(`/become-host?intent=${intent}`)}`;
 
-  const pageTitle =
-    intent === 'add-shop' ? 'Add a shop' : intent === 'add-agency' ? 'Add an agency' : 'Become a host';
+  const ctaLabel = canPublish ? 'Create on the map' : 'Set up profile';
 
   const PostEventButton = ({
     className = '',
@@ -278,7 +314,21 @@ export const BecomeHost = () => {
               </GlassCard>
             )}
 
-            {user && !hostGateLoading && !canPublish && !justBecameHost && (
+            {user && !hostGateLoading && profileAlreadyExists && (
+              <GlassCard padding className="text-center border-amber-100">
+                <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
+                <h2 className="text-lg font-bold text-neutral-900 mb-2">Already set up</h2>
+                <p className="text-sm text-neutral-600 mb-4 leading-relaxed">{alreadyHostMessage}</p>
+                <Link
+                  to="/profile#map-presence"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold"
+                >
+                  Go to profile <ArrowRight className="w-4 h-4" />
+                </Link>
+              </GlassCard>
+            )}
+
+            {user && !hostGateLoading && !profileAlreadyExists && !justBecameHost && intent !== 'become-host' && (
               <GlassCard padding className="text-center">
                 <Sparkles className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
                 <h2 className="text-lg font-bold text-neutral-900 mb-2">Your community is waiting</h2>

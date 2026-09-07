@@ -57,6 +57,10 @@ export const useHostGate = ({ enabled = true }: UseHostGateOptions = {}) => {
     tenantId: status?.tenantId ?? null,
     tenantType: status?.tenantType ?? null,
     businessMode: status?.businessMode ?? null,
+    hasGuideProfile: status?.hasGuideProfile ?? false,
+    hasAgencyProfile: status?.hasAgencyProfile ?? false,
+    hasShopProfile: status?.hasShopProfile ?? false,
+    ownedProfiles: status?.ownedProfiles ?? [],
     refresh,
   };
 };

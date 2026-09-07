@@ -8,6 +8,8 @@ interface DialogProps {
   children: ReactNode;
   /** Bottom sheet on mobile, centered card on desktop */
   className?: string;
+  /** Override backdrop stacking (e.g. explore map overlays). */
+  overlayClassName?: string;
   /** Form layout: fixed header/footer with scrollable body */
   variant?: 'default' | 'form';
 }
@@ -15,7 +17,7 @@ interface DialogProps {
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export const Dialog = ({ open, onClose, title, children, className = '', variant = 'default' }: DialogProps) => {
+export const Dialog = ({ open, onClose, title, children, className = '', overlayClassName = 'z-50', variant = 'default' }: DialogProps) => {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
@@ -78,7 +80,7 @@ export const Dialog = ({ open, onClose, title, children, className = '', variant
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center p-4"
+      className={`fixed inset-0 ${overlayClassName} bg-black/40 flex items-end md:items-center justify-center p-4`}
       onClick={onClose}
       role="presentation"
     >

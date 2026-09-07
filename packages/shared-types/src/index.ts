@@ -234,8 +234,18 @@ export type HostProfileType = 'individual' | 'agency' | 'shop';
 
 export type TenantBusinessMode = 'agency' | 'shop';
 
+export type OwnedHostProfileType = 'guide' | 'agency' | 'shop';
+
+export interface OwnedHostProfileDTO {
+  type: OwnedHostProfileType;
+  tenantId: string;
+  name: string;
+  slug: string;
+}
+
 /** Host publish eligibility for mobile create gate (Phase P3). */
 export interface HostStatusDTO {
+  /** Can post dated activities (guide or agency profile — not shop-only). */
   canPublish: boolean;
   applicationStatus: HostApplicationStatus;
   tenantId: string | null;
@@ -243,8 +253,12 @@ export interface HostStatusDTO {
   hasTenant: boolean;
   tenantType: TenantType | null;
   businessMode: TenantBusinessMode | null;
-  /** Business hosts (agency/shop) may publish paid activities. */
+  /** Licensed agencies only — paid commercial activities. */
   canHostPaidActivities: boolean;
+  hasGuideProfile: boolean;
+  hasAgencyProfile: boolean;
+  hasShopProfile: boolean;
+  ownedProfiles: OwnedHostProfileDTO[];
 }
 
 /** Predefined reasons when a user withdraws from a trip */
@@ -483,6 +497,8 @@ export interface ExploreMapItemDTO {
   priceDisplay?: string | null;
   fromLabel?: string | null;
   toLabel?: string | null;
+  websiteUrl?: string | null;
+  contactPhone?: string | null;
 }
 
 export interface ProductClick {

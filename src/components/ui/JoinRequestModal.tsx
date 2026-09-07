@@ -37,6 +37,7 @@ interface JoinRequestModalProps {
   isFull?: boolean;
   selectedPackageIndex?: number;
   onSuccess?: (message: string) => void;
+  overlayClassName?: string;
 }
 
 export const JoinRequestModal = ({
@@ -47,6 +48,7 @@ export const JoinRequestModal = ({
   isFull,
   selectedPackageIndex,
   onSuccess,
+  overlayClassName,
 }: JoinRequestModalProps) => {
   const activity = activityProp ?? trip!;
   const navigate = useNavigate();
@@ -119,7 +121,13 @@ export const JoinRequestModal = ({
   const submitLabel = submitting ? 'Submitting…' : full ? 'Join Waitlist' : 'Submit Join Request';
 
   return (
-    <Dialog open={open} onClose={onClose} title={full ? 'Join Waitlist' : 'Request to Join'} className="max-w-md">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={full ? 'Join Waitlist' : 'Request to Join'}
+      className="max-w-md"
+      overlayClassName={overlayClassName ?? 'z-50'}
+    >
       {!submitted ? (
         <>
           <div className="p-4 -mx-2 mb-4 bg-gray-50 border border-gray-100 rounded-xl">

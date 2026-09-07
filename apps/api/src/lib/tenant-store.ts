@@ -120,8 +120,41 @@ export const findTenantById = async (tenantId: string): Promise<TenantRecord | n
 };
 
 export const findTenantByOwnerId = async (ownerId: string): Promise<TenantRecord | null> => {
-  const doc = await tenantsCollection().findOne({ ownerId });
+  const doc = await tenantsCollection().findOne({ ownerId }, { sort: { createdAt: 1 } });
   return doc ? mapMongoTenant(doc) : null;
+};
+
+export const listTenantsByOwnerId = async (ownerId: string): Promise<TenantRecord[]> => {
+  const docs = await tenantsCollection()
+    .find({ ownerId, status: TenantStatus.ACTIVE })
+    .sort({ createdAt: 1 })
+    .toArray();
+  return docs.map(mapMongoTenant);
+};
+
+export type OwnedHostProfileType = 'guide' | 'agency' | 'shop';
+
+export const resolveOwnedProfileType = (tenant: TenantRecord): OwnedHostProfileType => {
+  if (tenant.businessMode === TenantBusinessMode.AGENCY) return 'agency';
+  if (tenant.businessMode === TenantBusinessMode.SHOP) return 'shop';
+  return 'guide';
+};
+
+export const tenantMatchesHostProfileType = (
+  tenant: TenantRecord,
+  profileType: 'individual' | 'agency' | 'shop'
+): boolean => {
+  if (profileType === 'individual') return tenant.type === TenantType.GUIDE_OWNED;
+  if (profileType === 'agency') return tenant.businessMode === TenantBusinessMode.AGENCY;
+  return tenant.businessMode === TenantBusinessMode.SHOP;
+};
+
+export const pickActivityTenant = (tenants: TenantRecord[]): TenantRecord | null => {
+  const activityCapable = tenants.filter(
+    (tenant) =>
+      tenant.type === TenantType.GUIDE_OWNED || tenant.businessMode === TenantBusinessMode.AGENCY
+  );
+  return activityCapable[0] ?? tenants[0] ?? null;
 };
 
 export const listCompanyTenantOwnerIds = async (): Promise<string[]> => {
@@ -179,6 +212,19 @@ export const listPublicAgenciesForMap = async (limit = 250): Promise<TenantRecor
   const docs = await tenantsCollection()
     .find({
       businessMode: TenantBusinessMode.AGENCY,
+      status: TenantStatus.ACTIVE,
+      latitude: { $ne: null },
+      longitude: { $ne: null }
+    })
+    .limit(limit)
+    .toArray();
+  return docs.map(mapMongoTenant);
+};
+
+export const listPublicShopsForMap = async (limit = 250): Promise<TenantRecord[]> => {
+  const docs = await tenantsCollection()
+    .find({
+      businessMode: TenantBusinessMode.SHOP,
       status: TenantStatus.ACTIVE,
       latitude: { $ne: null },
       longitude: { $ne: null }
