@@ -56,8 +56,8 @@ export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number]['id'];
 export const FEATURE_FLAGS = {
   /** Premium subscription checkout — keep false until launch. */
   membershipEnabled: false,
-  /** Gear shop catalog — show Coming Soon until merchants are live. */
-  shopComingSoon: true,
+  /** Gear shop catalog — live on this experiment branch so shops can appear on the map. */
+  shopComingSoon: false,
 } as const;
 
 export const MEMBERSHIP_NAV_LINK = FEATURE_FLAGS.membershipEnabled
@@ -85,14 +85,45 @@ export const PARTICIPANT_PRIVACY = {
   maxPreviewCount: 8,
 };
 
-/** Map provider for Discovery (Phase 2). */
+/**
+ * Map provider for Discovery (Phase 2).
+ * Esri light-gray base + reference labels — free, no API key, English place names.
+ */
+const envTileUrl =
+  typeof import.meta.env.VITE_MAP_TILE_URL === 'string' ? import.meta.env.VITE_MAP_TILE_URL : undefined;
+const envLabelTileUrl =
+  typeof import.meta.env.VITE_MAP_LABEL_TILE_URL === 'string'
+    ? import.meta.env.VITE_MAP_LABEL_TILE_URL
+    : undefined;
+
 export const MAP_CONFIG = {
-  provider: 'carto' as const,
+  provider: 'esri' as const,
   defaultCenter: { lat: 24.4539, lng: 54.3773 },
   defaultZoom: 8,
-  /** English-label raster tiles (OpenStreetMap — no API key). */
-  tileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  tileAttribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  /** Mobile explore — start on Dubai metro at city zoom. */
+  exploreDefaultCenter: { lat: 25.2048, lng: 55.2708 },
+  exploreDefaultZoom: 11,
+  /** Discovery / detail maps — light base + label overlay. */
+  tileUrl:
+    envTileUrl ||
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  labelTileUrl:
+    envLabelTileUrl ||
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  /**
+   * Mobile explore — colorful street base + English reference label overlay.
+   * Override with VITE_MAP_TILE_URL / VITE_MAP_LABEL_TILE_URL (e.g. MapTiler language=en).
+   */
+  exploreTileUrl:
+    envTileUrl ||
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+  exploreLabelTileUrl:
+    envLabelTileUrl ||
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  exploreTileAttribution:
+    'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS',
+  tileAttribution:
+    'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS',
 };
 
 /** Default platform country — see src/config/regions.ts for GCC catalog. */
@@ -122,4 +153,4 @@ export const isConsumerChromeHidden = (pathname: string): boolean =>
 
 /** Mobile detail pages render their own back header (trip, trail, camp, product). */
 export const isMobileDetailRoute = (pathname: string): boolean =>
-  /^\/(trip|trail|camp|product)\//.test(pathname);
+  /^\/(trip|trail|camp|product|activity|event-spot|community-activity)\//.test(pathname);

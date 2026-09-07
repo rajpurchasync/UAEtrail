@@ -54,6 +54,7 @@ export type ActivityCreateInput = {
   location?: RelationConnect;
   createdBy?: RelationConnect;
   host?: RelationConnect;
+  activityType?: ActivityType | string;
   title: string;
   description?: string;
   startAt: Date;
@@ -89,6 +90,7 @@ export type ActivityCreateInput = {
 };
 
 export type ActivityUpdateInput = {
+  activityType?: ActivityType | string;
   title?: string;
   description?: string;
   startAt?: Date;
@@ -180,6 +182,7 @@ export type MongoActivityDoc = {
   _id: string;
   tenantId: string;
   locationId: string;
+  activityType?: ActivityType | null;
   createdById: string;
   hostId: string | null;
   title: string;
@@ -223,6 +226,7 @@ export const activityRowToMongoDoc = (event : Activity): MongoActivityDoc => ({
   _id: event.id,
   tenantId: event.tenantId,
   locationId: event.locationId,
+  activityType: event.activityType ?? null,
   createdById: event.createdById,
   hostId: event.hostId,
   title: event.title,
@@ -267,6 +271,7 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     _id: id,
     tenantId: extractConnectedId(data.tenant)!,
     locationId: extractConnectedId(data.location)!,
+    activityType: (data.activityType as ActivityType | undefined) ?? null,
     createdById: extractConnectedId(data.createdBy)!,
     hostId: extractConnectedId(data.host),
     title: data.title,

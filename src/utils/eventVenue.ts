@@ -33,7 +33,7 @@ export const resolveEventVenueLocationId = async (
     countryCode: 'AE',
     emirate,
     region: state,
-    activityType: 'community_activity' as const,
+    activityType: 'event' as const,
     description: padVenueDescription(detail, state, emirate),
     difficulty: 'easy',
     images: [coverImage],

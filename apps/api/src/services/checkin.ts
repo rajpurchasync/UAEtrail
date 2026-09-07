@@ -177,7 +177,7 @@ export async function performParticipantCheckIn(opts: {
       ? 'hiking'
       : activity.location.activityType === 'CAMPING'
         ? 'camping'
-        : 'community_activity';
+        : 'event';
   await promptPostActivityReview({
     userId: participant.userId,
     activityId: activity.id,

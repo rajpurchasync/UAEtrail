@@ -101,7 +101,7 @@ export const LocationDetailTabs = ({
   const { user } = useAuth();
   const { pathname } = useLocation();
   const styles = accentStyles[accent];
-  const showTrailStats = data.activityType === 'hiking' || data.activityType === 'community_activity';
+  const showTrailStats = data.activityType === 'hiking' || data.activityType === 'event';
   const isCamping = data.activityType === 'camping';
   const signInHref = `/signin?redirect=${encodeURIComponent(pathname)}`;
   const lat = data.latitude;

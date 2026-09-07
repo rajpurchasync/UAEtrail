@@ -22,6 +22,7 @@ import type {
   ReviewTargetType,
   RewardAction,
   TenantStatus,
+  TenantBusinessMode,
   TenantType,
   UserRole,
   UserStatus
@@ -77,9 +78,17 @@ export interface Tenant {
   name: string;
   slug: string;
   type: TenantType;
+  businessMode?: TenantBusinessMode | null;
   status: TenantStatus;
   ownerId: string;
   countryCode: string;
+  description?: string | null;
+  website?: string | null;
+  logoUrl?: string | null;
+  services?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -161,6 +170,8 @@ export interface Activity {
   id: string;
   tenantId: string;
   locationId: string;
+  /** When set, overrides location.activityType for scheduled listing kind. */
+  activityType?: ActivityType | null;
   createdById: string;
   hostId: string | null;
   title: string;
@@ -313,6 +324,9 @@ export interface MerchantProfile {
   logo: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  region: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

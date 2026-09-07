@@ -36,7 +36,9 @@ export const mapActivityToListing = (event: ActivityDTO): ActivityListing => ({
   participantPreviews: event.participantPreviews,
   meetingPoint: event.meetingPoint ?? undefined,
   itinerary: event.itinerary ?? undefined,
-  requirements: event.requirements ?? undefined
+  requirements: event.requirements ?? undefined,
+  latitude: event.meetingLat ?? event.startLat ?? event.locationLatitude ?? null,
+  longitude: event.meetingLng ?? event.startLng ?? event.locationLongitude ?? null
 });
 
 /** @deprecated Use mapActivityToListing */
@@ -109,7 +111,7 @@ export const fetchPopularLocations = async (): Promise<{
   return {
     trails: res.data.filter((l) => l.activityType === 'hiking').map(mapLocationToTrail),
     camps: res.data.filter((l) => l.activityType === 'camping').map(mapLocationToCamp),
-    communityActivities: res.data.filter((l) => l.activityType === 'community_activity').map(mapLocationTocommunityActivity),
+    communityActivities: res.data.filter((l) => l.activityType === 'event').map(mapLocationTocommunityActivity),
   };
 };
 
@@ -149,7 +151,7 @@ export const fetchHomeRegionLocations = async (): Promise<{
   return {
     trails: res.data.filter((item) => item.activityType === 'hiking').map(mapLocationToTrail),
     camps: res.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp),
-    communityActivities: res.data.filter((item) => item.activityType === 'community_activity').map(mapLocationTocommunityActivity),
+    communityActivities: res.data.filter((item) => item.activityType === 'event').map(mapLocationTocommunityActivity),
   };
 };
 
@@ -163,7 +165,7 @@ export const fetchPublicMappedData = async (): Promise<{
   const trails = locationsResponse.data.filter((item) => item.activityType === 'hiking').map(mapLocationToTrail);
   const camps = locationsResponse.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp);
   const communityActivities = locationsResponse.data
-    .filter((item) => item.activityType === 'community_activity')
+    .filter((item) => item.activityType === 'event')
     .map(mapLocationTocommunityActivity);
   const activities = eventsResponse.data.map(mapActivityToListing);
   return { trails, camps, communityActivities, activities };
@@ -187,7 +189,7 @@ export const fetchApiLocations = async (countryCode?: string): Promise<{
     trails: locations.data.filter((item) => item.activityType === 'hiking').map(mapLocationToTrail),
     camps: locations.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp),
     communityActivities: locations.data
-      .filter((item) => item.activityType === 'community_activity')
+      .filter((item) => item.activityType === 'event')
       .map(mapLocationTocommunityActivity),
   };
 };

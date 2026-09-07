@@ -35,6 +35,9 @@ export type LocationStatus = (typeof LocationStatus)[keyof typeof LocationStatus
 export const ActivityType = {
   HIKING: 'HIKING',
   CAMPING: 'CAMPING',
+  EVENT: 'EVENT',
+  CARPOOL: 'CARPOOL',
+  /** @deprecated Use EVENT. Kept so existing Mongo documents still type-check until migrated. */
   COMMUNITY_ACTIVITY: 'COMMUNITY_ACTIVITY'
 } as const;
 export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType];
@@ -109,6 +112,12 @@ export const TenantType = {
   GUIDE_OWNED: 'GUIDE_OWNED'
 } as const;
 export type TenantType = (typeof TenantType)[keyof typeof TenantType];
+
+export const TenantBusinessMode = {
+  AGENCY: 'AGENCY',
+  SHOP: 'SHOP'
+} as const;
+export type TenantBusinessMode = (typeof TenantBusinessMode)[keyof typeof TenantBusinessMode];
 
 export const RewardAction = {
   SIGNUP_WELCOME: 'SIGNUP_WELCOME',

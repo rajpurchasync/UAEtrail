@@ -4,12 +4,12 @@
  * Activities (scheduled host listings)
  *   ├── Hiking
  *   ├── Camping
- *   └── Events
+ *   └── Event
  *
  * Venues/locations (trails, camps, event spots) are a separate catalog — see VENUE_TYPE_LABELS.
  */
 
-export const ACTIVITY_TYPES = ['hiking', 'camping', 'community_activity'] as const;
+export const ACTIVITY_TYPES = ['hiking', 'camping', 'event'] as const;
 
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
@@ -26,39 +26,41 @@ export const ACTIVITY_KINDS_SUMMARY = 'Hiking, Camping, and Events';
 export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
-  community_activity: 'Event',
+  event: 'Event',
 };
 
 /** Plural labels for browse filters and grouped sections. */
 export const ACTIVITY_TYPE_GROUP_LABELS: Record<ActivityType, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
-  community_activity: 'Events',
+  event: 'Events',
 };
 
 /** Labels on the add-activity type picker cards. */
 export const ACTIVITY_TYPE_PICKER_LABELS: Record<ActivityType, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
-  community_activity: 'Event',
+  event: 'Event',
 };
 
 /** Short descriptions for the activity-type picker when creating. */
 export const ACTIVITY_TYPE_DESCRIPTIONS: Record<ActivityType, string> = {
   hiking: 'Trail outings with meeting points, itinerary, transport, and join requests.',
   camping: 'Overnight or multi-day camping experiences at outdoor venues.',
-  community_activity: 'Trail runs, clean-ups, workshops, and other outdoor events with optional external signup.',
+  event: 'Trail runs, clean-ups, workshops, and other outdoor events with optional external signup.',
 };
 
 /** Venue/location catalog labels (not the same as a scheduled activity listing). */
 export const VENUE_TYPE_LABELS: Record<ActivityType, string> = {
   hiking: 'Hiking trail',
   camping: 'Camping spot',
-  community_activity: 'Event spot',
+  event: 'Event spot',
 };
 
+/** Normalize API/query aliases to the canonical activity type. */
 export const parseActivityTypeParam = (value: string | null | undefined): ActivityType | null => {
-  if (value === 'hiking' || value === 'camping' || value === 'community_activity') return value;
+  if (value === 'hiking' || value === 'camping' || value === 'event') return value;
+  if (value === 'community_activity' || value === 'COMMUNITY_ACTIVITY' || value === 'EVENT') return 'event';
   return null;
 };
 
@@ -73,12 +75,11 @@ export const ACTIVITY_BROWSE_FILTER_OPTIONS: Array<{ key: 'all' | ActivityType; 
 
 /** Title for host create/edit activity forms. */
 export const activityFormTitle = (type: ActivityType, mode: 'create' | 'edit'): string => {
-  const typeLabel = ACTIVITY_TYPE_LABELS[type];
-  if (type === 'community_activity') {
+  if (type === 'event') {
     return mode === 'edit' ? 'Edit Event' : 'New Event';
   }
   const verb = mode === 'edit' ? 'Edit' : 'New';
-  return `${verb} ${typeLabel} ${ACTIVITY_PRODUCT_SINGULAR}`;
+  return `${verb} ${ACTIVITY_TYPE_LABELS[type]} ${ACTIVITY_PRODUCT_SINGULAR}`;
 };
 
 /** Consumer explore blurb under the Activities section. */
@@ -86,7 +87,8 @@ export const activitiesExploreBlurb = (): string =>
   `Scheduled ${ACTIVITY_PRODUCT_PLURAL.toLowerCase()} you can join — hiking, camping, and events hosted by verified hosts.`;
 
 /** Detail page banner eyebrow for a scheduled listing. */
-export const activityDetailEyebrow = (type: ActivityType): string => {
+export const activityDetailEyebrow = (type: ActivityType | 'carpool'): string => {
+  if (type === 'carpool') return 'Carpool';
   if (type === 'hiking') return 'Hiking';
   if (type === 'camping') return 'Camping';
   return 'Event';
@@ -94,13 +96,13 @@ export const activityDetailEyebrow = (type: ActivityType): string => {
 
 /** Empty-state copy when filtering Activities by kind. */
 export const noScheduledActivitiesMessage = (type: ActivityType): string => {
-  if (type === 'community_activity') return 'No events on the calendar right now.';
+  if (type === 'event') return 'No events on the calendar right now.';
   return `No ${ACTIVITY_TYPE_GROUP_LABELS[type].toLowerCase()} activities on the calendar right now.`;
 };
 
 /** Link label for browsing all of one activity kind. */
 export const browseAllActivitiesOfTypeLabel = (type: ActivityType): string => {
-  if (type === 'community_activity') return 'Browse all events';
+  if (type === 'event') return 'Browse all events';
   return `Browse all ${ACTIVITY_TYPE_GROUP_LABELS[type].toLowerCase()} activities`;
 };
 
@@ -110,6 +112,6 @@ export const activitiesBrowsePath = (activityType?: ActivityType | null): string
 
 export const locationPathForActivity = (activityType: ActivityType, id: string): string => {
   if (activityType === 'camping') return `/camp/${id}`;
-  if (activityType === 'community_activity') return `/community-activity/${id}`;
+  if (activityType === 'event') return `/event-spot/${id}`;
   return `/trail/${id}`;
 };

@@ -100,7 +100,7 @@ export const ActivityDetailView = ({
     trip.location?.images?.[0] ??
     (trip.activityType === 'camping'
       ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600'
-      : trip.activityType === 'community_activity'
+      : trip.activityType === 'event'
         ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
         : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
@@ -262,7 +262,7 @@ export const ActivityDetailView = ({
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">About this {trip.activityType === 'community_activity' ? 'event' : 'activity'}</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">About this {trip.activityType === 'event' ? 'event' : 'activity'}</h2>
             <p className="text-gray-600 leading-relaxed whitespace-pre-line">{trip.description}</p>
 
             {externalSignupUrl && (

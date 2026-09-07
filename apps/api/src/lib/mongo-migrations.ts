@@ -44,14 +44,13 @@ const renameFieldIfPresent = async (
 
 const migrateActivityTypeValues = async (db: Db, collectionName: string): Promise<void> => {
   const collection = db.collection(collectionName);
-  const result = await collection.updateMany(
-    { activityType: 'COMMUNITY_EVENT' },
-    { $set: { activityType: 'COMMUNITY_ACTIVITY' } }
-  );
-  if (result.modifiedCount > 0) {
-    console.log(
-      `[mongo] Migrated activityType COMMUNITY_EVENT → COMMUNITY_ACTIVITY on ${collectionName} (${result.modifiedCount} docs)`
-    );
+  for (const from of ['COMMUNITY_EVENT', 'COMMUNITY_ACTIVITY'] as const) {
+    const result = await collection.updateMany({ activityType: from }, { $set: { activityType: 'EVENT' } });
+    if (result.modifiedCount > 0) {
+      console.log(
+        `[mongo] Migrated activityType ${from} → EVENT on ${collectionName} (${result.modifiedCount} docs)`
+      );
+    }
   }
 };
 
@@ -93,6 +92,17 @@ const migrateNotificationKinds = async (db: Db): Promise<void> => {
   }
 };
 
+const migrateLegacyCarpoolActivities = async (db: Db): Promise<void> => {
+  const collection = db.collection(COLLECTIONS.ACTIVITIES);
+  const result = await collection.updateMany(
+    { carPoolEnabled: true, activityType: { $ne: 'CARPOOL' } },
+    { $set: { activityType: 'CARPOOL' } }
+  );
+  if (result.modifiedCount > 0) {
+    console.log(`[mongo] Migrated legacy carPoolEnabled → CARPOOL (${result.modifiedCount} docs)`);
+  }
+};
+
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENTS, COLLECTIONS.ACTIVITIES);
@@ -106,6 +116,7 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
 
   await migrateActivityTypeValues(db, COLLECTIONS.ACTIVITIES);
   await migrateActivityTypeValues(db, 'locations');
+  await migrateLegacyCarpoolActivities(db);
   await renameFieldIfPresent(db, COLLECTIONS.ACTIVITIES, 'guideId', 'hostId');
   await migrateUserRoleVisitorToParticipant(db);
   await migrateAuditLogEntityTypes(db);

@@ -12,7 +12,7 @@ interface CommunityActivityCardProps {
 }
 
 export const CommunityActivityCard = ({ event }: CommunityActivityCardProps) => {
-  const eventPath = `/community-activity/${event.id}`;
+  const eventPath = `/event-spot/${event.id}`;
   const imageBlock = (
     <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
       <EnvironmentImage src={event.images[0]} alt={event.name} className="w-full h-full object-cover" />
@@ -22,12 +22,12 @@ export const CommunityActivityCard = ({ event }: CommunityActivityCardProps) => 
       </div>
       <FavoriteButton locationId={event.id} className="absolute top-12 right-3" />
       <div className="absolute top-3 left-3 bg-violet-600/90 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-xs font-semibold">
-        {VENUE_TYPE_LABELS.community_activity}
+        {VENUE_TYPE_LABELS.event}
       </div>
       <div className="absolute bottom-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
         <ShareButton
           title={event.name}
-          text={`${event.region} · ${VENUE_TYPE_LABELS.community_activity.toLowerCase()} on UAE Trails`}
+          text={`${event.region} · ${VENUE_TYPE_LABELS.event.toLowerCase()} on UAE Trails`}
           path={eventPath}
           iconOnly
         />

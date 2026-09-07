@@ -11,7 +11,7 @@ export const locationSubmitBodySchema = z.object({
   countryCode: z.string().length(2).default('AE'),
   emirate: z.string().min(2).max(80).optional(),
   region: z.string().min(2).max(80),
-  activityType: z.enum(['hiking', 'camping', 'COMMUNITY_ACTIVITY', 'community_activity']),
+  activityType: z.enum(['hiking', 'camping', 'event', 'carpool', 'EVENT', 'COMMUNITY_ACTIVITY', 'community_activity']),
   description: z.string().min(20).max(3000),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
   distance: z.number().positive().optional(),
@@ -29,7 +29,9 @@ export const locationSubmitBodySchema = z.object({
   gpxKey: z.string().max(500).optional().nullable(),
   guidePdfKey: z.string().max(500).optional().nullable(),
   guideMarkdown: z.string().max(50000).optional().nullable(),
-  premiumImages: z.array(mediaUrlSchema).default([])
+  premiumImages: z.array(mediaUrlSchema).default([]),
+  /** When true, publish the pin immediately on the explore map (mobile quick-create). */
+  mapPin: z.boolean().optional()
 });
 
 export type LocationSubmitBody = z.infer<typeof locationSubmitBodySchema>;

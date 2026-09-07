@@ -8,7 +8,7 @@ import { Dialog } from '../components/ui/Dialog';
 import { SubmitLocationForm } from '../components/ui/SubmitLocationForm';
 import { useAuth } from '../context/AuthContext';
 import type { LocationMapPin } from '../components/ui/LocationsMap';
-import { ACTIVITY_BROWSE_FILTER_OPTIONS, ACTIVITY_TYPE_LABELS, locationPathForActivity, type ActivityType } from '../config/activityTypes';
+import { ACTIVITY_BROWSE_FILTER_OPTIONS, ACTIVITY_TYPE_LABELS, locationPathForActivity, parseActivityTypeParam, type ActivityType } from '../config/activityTypes';
 
 const LocationsMap = lazy(() =>
   import('../components/ui/LocationsMap').then((m) => ({ default: m.LocationsMap }))
@@ -26,7 +26,7 @@ import { matchesLocationSearch, resolveRegionFilter } from '../utils/locationSea
 type LocationItem =
   | { type: 'trail'; data: Trail }
   | { type: 'camp'; data: CampingSpot }
-  | { type: 'community_activity'; data: CommunityActivitySpot };
+  | { type: 'event'; data: CommunityActivitySpot };
 type ActivityFilter = 'all' | ActivityType;
 
 export const Discovery = () => {
@@ -84,8 +84,9 @@ export const Discovery = () => {
       setFilters((prev) => ({ ...prev, regions: [] }));
     }
 
-    if (activity === 'hiking' || activity === 'camping' || activity === 'community_activity') {
-      setActivityFilter(activity);
+    const parsedActivity = parseActivityTypeParam(activity);
+    if (parsedActivity) {
+      setActivityFilter(parsedActivity);
     } else {
       setActivityFilter('all');
     }
@@ -126,7 +127,7 @@ export const Discovery = () => {
     const locations: LocationItem[] = [];
     const showTrails = activityFilter === 'all' || activityFilter === 'hiking';
     const showCamps = activityFilter === 'all' || activityFilter === 'camping';
-    const showcommunityActivities = activityFilter === 'all' || activityFilter === 'community_activity';
+    const showcommunityActivities = activityFilter === 'all' || activityFilter === 'event';
 
     if (showTrails) {
       const filteredTrails = trailSource.filter((trail) => {
@@ -189,7 +190,7 @@ export const Discovery = () => {
         return true;
       });
       locations.push(
-        ...filteredEvents.map((event) => ({ type: 'community_activity' as const, data: event }))
+        ...filteredEvents.map((event) => ({ type: 'event' as const, data: event }))
       );
     }
 
@@ -211,13 +212,13 @@ export const Discovery = () => {
               ? 'hiking'
               : location.type === 'camp'
                 ? 'camping'
-                : 'community_activity',
+                : 'event',
           path: locationPathForActivity(
             location.type === 'trail'
               ? 'hiking'
               : location.type === 'camp'
                 ? 'camping'
-                : 'community_activity',
+                : 'event',
             item.id
           ),
         },
@@ -429,7 +430,7 @@ export const Discovery = () => {
                 </div>
               </div>
 
-              {(activityFilter === 'all' || activityFilter === 'hiking' || activityFilter === 'community_activity') && (
+              {(activityFilter === 'all' || activityFilter === 'hiking' || activityFilter === 'event') && (
                 <>
                   <div className="mb-6">
                     <h3 className="font-medium text-gray-900 mb-3">
@@ -628,8 +629,8 @@ export const Discovery = () => {
           defaultActivityType={
             activityFilter === 'camping'
               ? 'camping'
-              : activityFilter === 'community_activity'
-                ? 'community_activity'
+              : activityFilter === 'event'
+                ? 'event'
                 : 'hiking'
           }
           onSubmitted={(loc) => {

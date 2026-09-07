@@ -228,7 +228,7 @@ export const buildRequirementsFromForm = (form: ActivityFormState): string[] => 
     const label = form.campingSurfaceType === 'sand' ? 'Sand' : 'Grass';
     lines.push(`Camping surface: ${label}`);
   }
-  if (form.activityType === 'community_activity' && form.eventHostOrganization.trim()) {
+  if (form.activityType === 'event' && form.eventHostOrganization.trim()) {
     lines.push(`Host organization: ${form.eventHostOrganization.trim()}`);
   }
   if (form.fourByFourOnly) lines.push('Reachable by 4x4 only');

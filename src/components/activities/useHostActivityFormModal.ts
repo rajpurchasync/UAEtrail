@@ -201,7 +201,7 @@ export const useHostActivityFormModal = ({
   }, [open, initSignature, editingActivity, activityType]);
 
   useEffect(() => {
-    if (!open || activityType !== 'community_activity') return;
+    if (!open || activityType !== 'event') return;
     const locationId = editingActivity?.locationId ?? form.locationId;
     if (!locationId) return;
 
@@ -349,7 +349,7 @@ export const useHostActivityFormModal = ({
     }
 
     let formForSave = form;
-    if (activityType === 'community_activity') {
+    if (activityType === 'event') {
       if (!form.locationId && form.images.length === 0) {
         throw new Error('Add a cover image before saving the event.');
       }

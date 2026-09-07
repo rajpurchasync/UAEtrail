@@ -7,6 +7,7 @@ import {
   TenantDetail
 } from '../../api/services';
 import { USER_TYPE_BADGE, USER_TYPE_LABELS, isBusinessHostUserType } from '../../constants/userTypes';
+import { formatActivityType } from '../../utils/activityIdentity';
 
 export interface AdminUserDetail {
   id: string;
@@ -312,7 +313,7 @@ const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null
       <div className="flex flex-wrap gap-2 items-center">
         {statusBadge(activity.status)}
         <span className="text-xs text-gray-500">{activity.date} {activity.time}</span>
-        <span className="text-xs text-gray-500 capitalize">{activity.activityType}</span>
+        <span className="text-xs text-gray-500">{formatActivityType(activity.activityType)}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-sm">

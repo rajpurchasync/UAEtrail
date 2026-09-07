@@ -1,4 +1,4 @@
-import { ActivityType, LocationUnlockSource, NotificationType, HostApplicationStatus, RequestStatus, RewardAction, UserRole } from '../domain/enums.js';
+import { ActivityType, LocationUnlockSource, NotificationType, HostApplicationStatus, RequestStatus, RewardAction, TenantBusinessMode, TenantType, UserRole } from '../domain/enums.js';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { registerActivityRoute } from '../lib/activity-routes.js';
@@ -39,6 +39,7 @@ import {
   unlockLocationForUser
 } from '../services/location-premium.js';
 import { listActiveLocations } from '../lib/location-query.js';
+import { buildExploreMapPayload } from '../lib/explore-map.js';
 import { env } from '../config/env.js';
 import { getStripe, isStripeConfigured } from '../lib/stripe.js';
 import { clearRefreshCookie } from '../lib/auth-cookies.js';
@@ -63,13 +64,17 @@ import {
   listPublishedUpcomingActivitiesByLocation,
   listSubmittedLocationsByUser
 } from '../lib/activities-store.js';
+import { findTenantById } from '../lib/tenant-store.js';
 import {
+  approveHostApplicationAndProvisionTenant,
   createHostApplicationDetailed,
   findLatestHostApplicationByApplicant,
   findLatestHostApplicationWithApplicant,
   findPendingHostApplicationByApplicant,
   updateHostApplicationMetadata
 } from '../lib/host-applications-store.js';
+import { createParticipantIntentSchema } from '../domain/participant-intent.js';
+import { createParticipantIntent } from '../lib/participant-intents-store.js';
 import {
   cancelUserActivityRequestAndPromoteWaitlist,
   countUserActivityParticipants,
@@ -199,7 +204,10 @@ const SWITCHABLE_PRIVILEGED_ROLES: UserRole[] = [
 ];
 
 const listFilterSchema = z.object({
-  activityType: z.enum(['hiking', 'camping', 'COMMUNITY_ACTIVITY']).optional(),
+  activityType: z
+    .enum(['hiking', 'camping', 'event', 'COMMUNITY_ACTIVITY'])
+    .optional()
+    .transform((value) => (value === 'COMMUNITY_ACTIVITY' ? 'event' : value)),
   featured: z.coerce.boolean().optional(),
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
@@ -214,6 +222,15 @@ export const userRouter = Router();
 userRouter.get('/push/vapid-public-key', (_req, res) => {
   const key = getVapidPublicKey();
   res.json({ data: { publicKey: key } });
+});
+
+userRouter.get('/explore/map', async (_req, res, next) => {
+  try {
+    const data = await buildExploreMapPayload();
+    res.json({ data });
+  } catch (error) {
+    next(error);
+  }
 });
 
 userRouter.get('/locations', validate({ query: listFilterSchema }), async (req, res, next) => {
@@ -346,7 +363,9 @@ userRouter.get('/locations/:id/premium/guide/pdf', requireAuth, validate({ param
 
 const locationDetailPath = (location: { id: string; activityType: ActivityType }) => {
   if (location.activityType === ActivityType.CAMPING) return `/camp/${location.id}`;
-  if (location.activityType === ActivityType.COMMUNITY_ACTIVITY) return `/community-activity/${location.id}`;
+  if (location.activityType === ActivityType.EVENT || location.activityType === ActivityType.COMMUNITY_ACTIVITY) {
+    return `/event-spot/${location.id}`;
+  }
   return `/trail/${location.id}`;
 };
 
@@ -1538,6 +1557,70 @@ userRouter.get('/me/tenants', async (req, res, next) => {
   }
 });
 
+userRouter.get('/me/host-status', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.auth!.userId;
+    const user = await findAuthUserById(userId);
+    const role = user?.role ?? UserRole.PARTICIPANT;
+    const isHostRole =
+      role === UserRole.TENANT_OWNER ||
+      role === UserRole.TENANT_ADMIN ||
+      role === UserRole.TENANT_GUIDE;
+    const isPlatformAdmin = role === UserRole.PLATFORM_ADMIN;
+
+    const memberships = await listActiveTenantMembershipsByUser(userId);
+    let tenantId: string | null = memberships[0]?.tenantId ?? null;
+    if (!tenantId && isHostRole) {
+      const owned = await findTenantByOwnerId(userId);
+      tenantId = owned?.id ?? null;
+    }
+
+    const application = await findLatestHostApplicationByApplicant(userId);
+    let applicationStatus: 'none' | 'pending' | 'approved' | 'rejected' = 'none';
+    if (application) {
+      const normalized = application.status.toLowerCase();
+      if (normalized === 'pending' || normalized === 'approved' || normalized === 'rejected') {
+        applicationStatus = normalized;
+      }
+    }
+
+    const canPublish = isPlatformAdmin || (isHostRole && Boolean(tenantId));
+
+    let tenantType: 'company' | 'guide_owned' | null = null;
+    let businessMode: 'agency' | 'shop' | null = null;
+    if (tenantId) {
+      const tenant = await findTenantById(tenantId);
+      if (tenant) {
+        tenantType = tenant.type === TenantType.COMPANY ? 'company' : 'guide_owned';
+        businessMode =
+          tenant.businessMode === TenantBusinessMode.AGENCY
+            ? 'agency'
+            : tenant.businessMode === TenantBusinessMode.SHOP
+              ? 'shop'
+              : null;
+      }
+    }
+
+    const canHostPaidActivities =
+      isPlatformAdmin || tenantType === 'company';
+
+    res.json({
+      data: {
+        canPublish,
+        applicationStatus,
+        tenantId,
+        isHostRole,
+        hasTenant: Boolean(tenantId),
+        tenantType,
+        businessMode,
+        canHostPaidActivities
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // ─── User Search (for starting new conversations) ──────────────────────────
 
 const userSearchSchema = z.object({
@@ -1586,39 +1669,13 @@ userRouter.get('/users/:userId/brief', validate({ params: userBriefParamSchema }
 
 // ─── Organizer Application (user-facing) ───────────────────────────────────
 
-const applicationSchema = z
-  .object({
-    requestedName: z.string().min(2).max(120),
-    requestedType: z.enum(['GUIDE_OWNED', 'COMPANY']),
-    hostDisplayName: z.string().min(2).max(80),
-    bio: z.string().min(20).max(400),
-    phoneCountryCode: z.string().regex(/^\+\d{1,4}$/),
-    phone: z.string().min(4).max(20),
-    nationality: z.string().min(2).max(80),
-    residence: z.string().min(2).max(80),
-    experience: z.string().min(1).max(50),
-    languages: z.string().min(1).max(300),
-    certificates: z.string().max(1000).optional(),
-    notableHikes: z.string().max(1000).optional(),
-    profilePhoto: z.string().url().optional().or(z.literal('')),
-  })
-  .superRefine((body, ctx) => {
-    if (!isValidNationalPhone(body.phone)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Enter a valid mobile number.',
-        path: ['phone']
-      });
-    }
-    const e164 = formatE164Phone(body.phoneCountryCode, body.phone);
-    if (!isValidE164Phone(e164)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Enter a valid mobile number with country code.',
-        path: ['phone']
-      });
-    }
-  });
+import {
+  buildHostApplicationMetadata,
+  hostApplicationBodySchema,
+  resolveHostApplicationDisplayName,
+  resolveHostApplicationRequestedName,
+  resolveHostApplicationTenantType
+} from '../domain/host-application.js';
 
 const organizerDetailsSchema = z.object({
   experience: z.string().max(50).optional(),
@@ -1696,51 +1753,69 @@ userRouter.get('/me/host-application', requireAuth, async (req, res, next) => {
 userRouter.post(
   '/me/host-application',
   requireAuth,
-  validate({ body: applicationSchema }),
+  validate({ body: hostApplicationBodySchema }),
   async (req, res, next) => {
     try {
       const userId = req.auth!.userId;
 
-      // Check for existing pending application
-      const existing = await findPendingHostApplicationByApplicant(userId);
-      if (existing) {
-        throw new ApiError(409, 'application_exists', 'You already have a pending organizer application.');
+      const memberships = await listActiveTenantMembershipsByUser(userId);
+      let existingTenantId: string | null = memberships[0]?.tenantId ?? null;
+      if (!existingTenantId) {
+        const owned = await findTenantByOwnerId(userId);
+        existingTenantId = owned?.id ?? null;
+      }
+      if (existingTenantId) {
+        throw new ApiError(409, 'already_host', 'You already have a host profile.');
       }
 
-      const body = req.body as z.infer<typeof applicationSchema>;
+      const body = req.body as z.infer<typeof hostApplicationBodySchema>;
       const phoneE164 = formatE164Phone(body.phoneCountryCode, body.phone);
+      const requestedName = resolveHostApplicationRequestedName(body);
+      const displayName = resolveHostApplicationDisplayName(body);
+      const metadata = buildHostApplicationMetadata(body, phoneE164);
 
       await updateAuthUserProfile(userId, {
-        displayName: body.hostDisplayName,
+        displayName,
         bio: body.bio,
         phone: phoneE164,
-        ...(body.profilePhoto ? { avatarUrl: body.profilePhoto } : {})
+        ...('profilePhoto' in body && body.profilePhoto ? { avatarUrl: body.profilePhoto } : {})
       });
 
-      const application = await createHostApplicationDetailed({
-        applicantId: userId,
-        requestedName: body.requestedName,
-        requestedSlug: slugify(body.requestedName),
-        requestedType: body.requestedType,
-        metadata: {
-          hostDisplayName: body.hostDisplayName,
-          bio: body.bio,
-          phoneCountryCode: body.phoneCountryCode,
-          phone: body.phone,
-          phoneE164,
-          nationality: body.nationality,
-          residence: body.residence,
-          experience: body.experience,
-          languages: body.languages,
-          certificates: body.certificates ?? '',
-          notableHikes: body.notableHikes ?? '',
-          profilePhoto: body.profilePhoto ?? '',
-        },
+      let application = await findPendingHostApplicationByApplicant(userId);
+      if (application) {
+        await updateHostApplicationMetadata(application.id, metadata);
+      } else {
+        application = await createHostApplicationDetailed({
+          applicantId: userId,
+          requestedName,
+          requestedSlug: slugify(requestedName),
+          requestedType: resolveHostApplicationTenantType(body.hostProfileType),
+          metadata
+        });
+      }
+
+      const provisioned = await approveHostApplicationAndProvisionTenant({
+        applicationId: application.id,
+        reviewerId: userId,
+        reviewerNote: 'Auto-approved on host signup'
       });
+
+      if (!provisioned) {
+        throw new ApiError(500, 'host_provision_failed', 'Could not set up your host profile.');
+      }
+
+      const approvedApplication = await findLatestHostApplicationByApplicant(userId);
+
+      const profileLabel =
+        body.hostProfileType === 'agency'
+          ? 'a tour agency'
+          : body.hostProfileType === 'shop'
+            ? 'a shop'
+            : 'an individual guide';
 
       void notifyPlatformAdmins({
-        title: 'New host application',
-        body: `${body.hostDisplayName} applied to host as ${body.requestedType === 'COMPANY' ? 'a business' : 'an individual'}.`,
+        title: 'New host joined',
+        body: `${displayName} is now hosting as ${profileLabel}.`,
         meta: {
           kind: 'host_application_submitted',
           applicationId: application.id,
@@ -1752,11 +1827,12 @@ userRouter.post(
         data: {
           id: application.id,
           applicantEmail: req.auth!.email,
-          applicantName: body.requestedName,
+          applicantName: displayName,
           requestedName: application.requestedName,
           requestedType: application.requestedType,
-          status: application.status,
-          metadata: application.metadata,
+          requestedTenantId: provisioned.tenantId,
+          status: HostApplicationStatus.APPROVED,
+          metadata: approvedApplication?.metadata ?? application.metadata,
           createdAt: application.createdAt.toISOString(),
         }
       });
@@ -1804,6 +1880,20 @@ userRouter.post('/me/locations', validate({ body: locationSubmitBodySchema }), a
 });
 
 // ─── Trail Points / Rewards (authenticated) ─────────────────────────────────
+
+userRouter.post(
+  '/me/participant-intents',
+  requireAuth,
+  validate({ body: createParticipantIntentSchema }),
+  async (req, res, next) => {
+    try {
+      const data = await createParticipantIntent(req.auth!.userId, req.body);
+      res.status(201).json({ data });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 userRouter.get('/me/rewards', async (req, res, next) => {
   try {

@@ -18,13 +18,13 @@ export const isValidHttpUrl = (value: string): boolean => {
 
 export const aboutFieldLabel = (activityType: ActivityType): string => {
   if (activityType === 'camping') return 'About spot';
-  if (activityType === 'community_activity') return 'About event';
+  if (activityType === 'event') return 'About event';
   return 'About hike';
 };
 
 const startPointLabel = (activityType: ActivityType): string => {
   if (activityType === 'camping') return 'camp start point';
-  if (activityType === 'community_activity') return 'event start point';
+  if (activityType === 'event') return 'event start point';
   return 'hike start point';
 };
 
@@ -42,7 +42,7 @@ export const validateActivityFormStep = (
   const titleWords = countWords(form.title);
   const aboutWords = countWords(form.description);
   const aboutLabel = aboutFieldLabel(options.activityType);
-  const isEvent = options.activityType === 'community_activity';
+  const isEvent = options.activityType === 'event';
 
   if (targetStep >= 1) {
     if (!form.title.trim()) return 'Title is required.';
@@ -120,7 +120,7 @@ export const validateActivityFormStepNavigation = (
   const draftErr = validateActivityFormStep(form, 1, 'draft', options);
   if (draftErr) return draftErr;
 
-  const isEvent = options.activityType === 'community_activity';
+  const isEvent = options.activityType === 'event';
   const aboutLabel = aboutFieldLabel(options.activityType);
   const aboutWords = countWords(form.description);
 

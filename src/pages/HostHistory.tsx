@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/services';
 import { HostShell } from '../components/host/HostShell';
+import { formatActivityType } from '../utils/activityIdentity';
 
 interface HistoryEvent {
   id: string;
@@ -72,7 +73,7 @@ export const HostHistory = () => {
                 <tr key={e.id} className="border-t hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-900">{e.title}</p>
-                    <p className="text-xs text-gray-500 capitalize">{e.activityType}</p>
+                    <p className="text-xs text-gray-500">{formatActivityType(e.activityType)}</p>
                   </td>
                   <td className="px-4 py-3 text-gray-700">{e.locationName}</td>
                   <td className="px-4 py-3 text-gray-600">{new Date(e.startAt).toLocaleDateString()}</td>

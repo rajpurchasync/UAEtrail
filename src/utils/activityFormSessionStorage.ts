@@ -99,7 +99,7 @@ export const saveEventDraft = (
   const current = loadActivityFormSession();
   saveActivityFormSession({
     open: true,
-    activityType: 'community_activity',
+    activityType: 'event',
     tenantId: current?.tenantId ?? '',
     editingActivityId: draft.editingActivityId,
     initialActivityType: current?.initialActivityType ?? null,

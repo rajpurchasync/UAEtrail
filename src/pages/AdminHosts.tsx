@@ -114,7 +114,18 @@ export const AdminHosts = () => {
   };
 
   const hostDisplayName = (app: HostApplication): string =>
-    app.metadata?.hostDisplayName?.trim() || app.applicantName;
+    app.metadata?.hostDisplayName?.trim() ||
+    app.metadata?.requestedName?.trim() ||
+    app.requestedName?.trim() ||
+    app.applicantName;
+
+  const profileTypeLabel = (app: HostApplication): string => {
+    const type = app.metadata?.hostProfileType;
+    if (type === 'agency') return 'Agency';
+    if (type === 'shop') return 'Shop';
+    if (type === 'individual') return 'Individual';
+    return app.requestedType?.toLowerCase() === 'company' ? 'Business' : 'Individual';
+  };
 
   const metaField = (label: string, value?: string | null) => {
     if (!value?.trim()) return null;
@@ -359,15 +370,26 @@ export const AdminHosts = () => {
                 </div>
               </div>
 
+              {metaField('Profile type', profileTypeLabel(applicationDetail))}
               {metaField('Display name', applicationDetail.metadata?.hostDisplayName)}
-
+              {metaField('Organization', applicationDetail.metadata?.requestedName)}
+              {metaField('Date of birth', applicationDetail.metadata?.dateOfBirth)}
               {metaField('Bio', applicationDetail.metadata?.bio)}
-              {metaField('Experience', applicationDetail.metadata?.experience)}
+              {metaField('Website', applicationDetail.metadata?.website)}
+              {metaField('Services', applicationDetail.metadata?.services)}
               {metaField('Languages', applicationDetail.metadata?.languages)}
+              {metaField('Interests', applicationDetail.metadata?.interests)}
+              {metaField('Nationality', applicationDetail.metadata?.nationality)}
+              {metaField('Based in', applicationDetail.metadata?.residence ?? applicationDetail.metadata?.region)}
+              {metaField(
+                'Map pin',
+                applicationDetail.metadata?.latitude != null && applicationDetail.metadata?.longitude != null
+                  ? `${applicationDetail.metadata.latitude}, ${applicationDetail.metadata.longitude}`
+                  : null
+              )}
+              {metaField('Experience', applicationDetail.metadata?.experience)}
               {metaField('Certificates', applicationDetail.metadata?.certificates)}
               {metaField('Notable hikes', applicationDetail.metadata?.notableHikes)}
-              {metaField('Nationality', applicationDetail.metadata?.nationality)}
-              {metaField('Residence', applicationDetail.metadata?.residence)}
 
               {applicationDetail.reviewerNote && (
                 <div className="border-t pt-3">

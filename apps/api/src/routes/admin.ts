@@ -84,7 +84,7 @@ import {
 const locationCreateSchema = z.object({
   name: z.string().min(2),
   region: z.string().min(2),
-  activityType: z.enum(['hiking', 'camping', 'COMMUNITY_ACTIVITY']),
+  activityType: z.enum(['hiking', 'camping', 'event', 'EVENT', 'community_activity', 'COMMUNITY_ACTIVITY']),
   description: z.string().min(20),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
   season: z.array(z.string()).min(1),
@@ -144,10 +144,11 @@ const eventModerationSchema = suspendCommentSchema.extend({
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
-const toPrismaActivityType = (activityType: 'hiking' | 'camping' | 'COMMUNITY_ACTIVITY'): ActivityType => {
-  if (activityType === 'hiking') return ActivityType.HIKING;
-  if (activityType === 'camping') return ActivityType.CAMPING;
-  return ActivityType.COMMUNITY_ACTIVITY;
+const toPrismaActivityType = (activityType: string): ActivityType => {
+  const normalized = activityType.toLowerCase();
+  if (normalized === 'hiking') return ActivityType.HIKING;
+  if (normalized === 'camping') return ActivityType.CAMPING;
+  return ActivityType.EVENT;
 };
 
 const toPrismaDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {
@@ -257,7 +258,7 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
       const longitude = body.longitude !== undefined ? body.longitude : existing.longitude;
 
       if (
-        (activityType === ActivityType.HIKING || activityType === ActivityType.COMMUNITY_ACTIVITY) &&
+        (activityType === ActivityType.HIKING || activityType === ActivityType.EVENT) &&
         !difficulty
       ) {
         throw new ApiError(

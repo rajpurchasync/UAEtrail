@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
-import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MAP_CONFIG } from '../../config/platform';
+import { MapTileLayers } from './MapTileLayers';
 import { formatCoord, parseCoord } from '../../utils/coords';
 
 const pickerIcon = L.divIcon({
@@ -123,7 +124,7 @@ export const MapLocationPicker = ({
           className="z-0 h-full w-full"
           style={{ height: minHeight, minHeight }}
         >
-          <TileLayer url={MAP_CONFIG.tileUrl} />
+          <MapTileLayers attribution="" />
           <MapResize />
           <MapCenterSync center={defaultCenter} zoom={zoom} />
           <MapClickPin onPick={setPin} />

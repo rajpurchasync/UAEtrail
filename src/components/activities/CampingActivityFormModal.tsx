@@ -29,8 +29,8 @@ export interface CampingActivityFormModalProps {
   venueLocations?: LocationDTO[];
   sessionSnapshot?: ActivityFormSessionSnapshot | null;
   onSessionChange?: (snapshot: ActivityFormSessionSnapshot) => void;
-  /** Defaults to camping. Pass community_activity for Events. */
-  formActivityType?: Extract<ActivityType, 'camping' | 'community_activity'>;
+  /** Defaults to camping. Pass event for Events. */
+  formActivityType?: Extract<ActivityType, 'camping' | 'event'>;
 }
 
 export const CampingActivityFormModal = ({
@@ -45,7 +45,7 @@ export const CampingActivityFormModal = ({
   onSessionChange,
   formActivityType = 'camping',
 }: CampingActivityFormModalProps) => {
-  const isEvent = formActivityType === 'community_activity';
+  const isEvent = formActivityType === 'event';
   const locationTabs = isEvent ? eventLocationTabs : campingLocationTabs;
   const draftFromSession = isEvent ? sessionSnapshot?.eventDraft ?? null : sessionSnapshot?.campingDraft ?? null;
 
@@ -225,5 +225,5 @@ export const CampingActivityFormModal = ({
 
 // Re-export for clarity in create flow imports.
 export const EventActivityFormModal = (props: Omit<CampingActivityFormModalProps, 'formActivityType'>) => (
-  <CampingActivityFormModal {...props} formActivityType="community_activity" />
+  <CampingActivityFormModal {...props} formActivityType="event" />
 );

@@ -3,6 +3,7 @@ import {
   ChatMessageDTO,
   ActivityDTO,
   ActivityDetailDTO,
+  ExploreMapItemDTO,
   FavoriteDTO,
   JoinRequestDTO,
   LocationDTO,
@@ -46,15 +47,24 @@ export interface HostApplication {
   reviewerNote?: string;
   reviewedAt?: string | null;
   metadata?: {
+    hostProfileType?: 'individual' | 'agency' | 'shop';
     hostDisplayName?: string;
+    requestedName?: string;
+    dateOfBirth?: string;
     bio?: string;
     phoneCountryCode?: string;
     phone?: string;
     phoneE164?: string;
     nationality?: string;
     residence?: string;
-    experience?: string;
+    region?: string;
     languages?: string;
+    interests?: string;
+    services?: string;
+    website?: string;
+    latitude?: number;
+    longitude?: number;
+    experience?: string;
     certificates?: string;
     notableHikes?: string;
     profilePhoto?: string;
@@ -296,6 +306,26 @@ export interface TenantProfile {
 }
 
 export const api = {
+  getExploreMap: () =>
+    apiRequest<{ data: { items: ExploreMapItemDTO[] } }>('/explore/map'),
+  createParticipantIntent: (payload: {
+    kind: 'hiking' | 'camping' | 'event' | 'guide' | 'carpool' | 'other';
+    date?: string | null;
+    time?: string | null;
+    preferredArea?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    locationPrecision?: 'general' | 'specific';
+    toLatitude?: number | null;
+    toLongitude?: number | null;
+    partySize: number;
+    comment: string;
+  }) =>
+    apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentDTO }>('/me/participant-intents', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      auth: true,
+    }),
   getPublicLocations: async (countryCode?: string) => {
     const pageSize = 100;
     const all: LocationDTO[] = [];
@@ -1100,6 +1130,9 @@ export const api = {
 
   getMyHostApplication: () =>
     apiRequest<{ data: HostApplication | null }>('/me/host-application', { auth: true }),
+
+  getMyHostStatus: () =>
+    apiRequest<{ data: import('@uaetrail/shared-types').HostStatusDTO }>('/me/host-status', { auth: true }),
 
   updateHostDetails: (data: HostDetails) =>
     apiRequest<{ data: HostDetails }>('/me/host-details', {

@@ -74,7 +74,10 @@ shopRouter.get('/products', validate({ query: productListSchema }), async (req, 
         category: p.category,
         status: p.status.toLowerCase(),
         merchantId: p.merchant.id,
-        merchantName: p.merchant.shopName
+        merchantName: p.merchant.shopName,
+        latitude: p.merchant.latitude ?? null,
+        longitude: p.merchant.longitude ?? null,
+        region: p.merchant.region ?? null
       })),
       pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) }
     });
@@ -105,11 +108,17 @@ shopRouter.get('/products/:id', validate({ params: idParamSchema }), async (req,
         status: product.status.toLowerCase(),
         merchantId: product.merchant.id,
         merchantName: product.merchant.shopName,
+        latitude: product.merchant.latitude ?? null,
+        longitude: product.merchant.longitude ?? null,
+        region: product.merchant.region ?? null,
         merchant: {
           id: product.merchant.id,
           shopName: product.merchant.shopName,
           description: product.merchant.description,
-          logo: product.merchant.logo
+          logo: product.merchant.logo,
+          latitude: product.merchant.latitude ?? null,
+          longitude: product.merchant.longitude ?? null,
+          region: product.merchant.region ?? null
         }
       }
     });
@@ -132,6 +141,9 @@ shopRouter.get('/merchants/:id', validate({ params: idParamSchema }), async (req
         logo: merchant.logo,
         contactEmail: merchant.contactEmail,
         contactPhone: merchant.contactPhone,
+        latitude: merchant.latitude,
+        longitude: merchant.longitude,
+        region: merchant.region,
         products: merchant.products.map((p) => ({
           id: p.id,
           name: p.name,
@@ -266,7 +278,10 @@ const merchantProfileSchema = z.object({
   description: z.string().max(500).optional(),
   logo: z.string().url().optional(),
   contactEmail: z.string().email().optional(),
-  contactPhone: z.string().max(30).optional()
+  contactPhone: z.string().max(30).optional(),
+  latitude: z.number().min(-90).max(90).optional().nullable(),
+  longitude: z.number().min(-180).max(180).optional().nullable(),
+  region: z.string().max(80).optional().nullable()
 });
 
 const merchantProfilePatchSchema = merchantProfileSchema.partial();
@@ -332,13 +347,19 @@ const serializeMerchantProfile = (profile: {
   logo: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: string | null;
 }) => ({
   id: profile.id,
   shopName: profile.shopName,
   description: profile.description,
   logo: profile.logo,
   contactEmail: profile.contactEmail,
-  contactPhone: profile.contactPhone
+  contactPhone: profile.contactPhone,
+  latitude: profile.latitude ?? null,
+  longitude: profile.longitude ?? null,
+  region: profile.region ?? null
 });
 
 const toSharedOrderStatus = (status: OrderStatus) => status.toLowerCase() as z.infer<typeof merchantOrderStatusSchema>['status'];

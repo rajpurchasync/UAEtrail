@@ -26,7 +26,7 @@ export { MapLocationPicker } from './MapLocationPicker';
 export { ActivityLocationPinField } from './ActivityLocationPinField';
 export { FormTabBar } from './FormTabBar';
 export { LocationsMap, boundsFromPins } from './LocationsMap';
-export type { LocationMapPin, MapBounds } from './LocationsMap';
+export type { LocationMapPin, MapBounds, MapPinKind } from './LocationsMap';
 export { ImageUpload } from './ImageUpload';
 export { EnvironmentImage } from './EnvironmentImage';
 export { InitialsAvatar } from './InitialsAvatar';

@@ -124,6 +124,7 @@ const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
   id: doc._id,
   tenantId: doc.tenantId,
   locationId: doc.locationId,
+  activityType: doc.activityType ?? null,
   createdById: doc.createdById,
   hostId: doc.hostId,
   title: doc.title,

@@ -1,6 +1,6 @@
 import type { Collection } from 'mongodb';
 import type { Location } from '../domain/types.js';
-import { ActivityStatus, LocationStatus } from '../domain/enums.js';
+import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
 import {
   buildActivityFromCreateInput,
   buildLocationFromCreateInput,
@@ -17,6 +17,7 @@ import {
   listActivitiesByIdsFromMongo,
   listFeaturedPublishedActivitiesFromMongo,
   listPublishedActivitiesWithPreviewsFromMongo,
+  listPublishedActivitiesForExploreMapFromMongo,
   listPublishedUpcomingActivitiesByLocationFromMongo,
   listTenantActivitiesFromMongo,
   type ActivityWithTenantRelations
@@ -98,6 +99,7 @@ export const updateActivityDetailed = async (
   data: ActivityUpdateInput
 ): Promise<ActivityWithTenantRelations> => {
   const patch: Partial<MongoActivityDoc> = { updatedAt: new Date() };
+  if (data.activityType !== undefined) patch.activityType = data.activityType as ActivityType;
   if (data.title !== undefined) patch.title = data.title;
   if (data.startAt !== undefined) patch.startAt = data.startAt;
   if (data.endAt !== undefined) patch.endAt = data.endAt;
@@ -316,6 +318,9 @@ export const findPublicTenantProfileBySlug = async (slug: string) =>
 
 export const listFeaturedPublishedActivities = async (take: number) =>
   listFeaturedPublishedActivitiesFromMongo(take);
+
+export const listPublishedActivitiesForExploreMap = async (take = 250) =>
+  listPublishedActivitiesForExploreMapFromMongo(take);
 
 export const listPublishedActivitiesWithPreviews = async (input: {
   skip: number;

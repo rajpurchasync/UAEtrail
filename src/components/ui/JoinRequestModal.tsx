@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ActivityListing } from '../../types';
 import { ActivityDetailDTO } from '@uaetrail/shared-types';
-import { formatDate, formatPrice } from '../../utils';
+import { formatDate } from '../../utils';
 import { formatPackagePrice, tripHasPaidPricing } from '../../utils/tripPricing';
 import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
+import { OFFLINE_PAYMENT_NOTE, resolveExplorePrice } from '../../explore/explorePriceLabel';
 import { api } from '../../api/services';
 import { Dialog } from './Dialog';
 
@@ -68,6 +69,11 @@ export const JoinRequestModal = ({
       ? pricePackages[selectedPackageIndex]
       : pricePackages[0];
 
+  const priceInfo = resolveExplorePrice({
+    isCarpool: false,
+    price: activity.price,
+  });
+
   useEffect(() => {
     if (!open) return;
     setNote('');
@@ -122,12 +128,21 @@ export const JoinRequestModal = ({
               {formatDate(activity.date)} at {activity.time}
             </p>
             <div className="flex items-center gap-3 mt-2">
-              <p className="text-sm font-semibold text-emerald-600">{formatPrice(activity.price)}</p>
+              <p
+                className={`text-sm font-semibold ${
+                  priceInfo.kind === 'free' ? 'text-emerald-600' : 'text-gray-800'
+                }`}
+              >
+                {priceInfo.badge}
+              </p>
               <span className="text-xs text-gray-500">•</span>
               <p className="text-sm text-gray-600">
                 {activity.slotsAvailable} / {activity.slotsTotal} slots available
               </p>
             </div>
+            {priceInfo.showOfflineNote && (
+              <p className="text-xs text-gray-500 mt-1">{OFFLINE_PAYMENT_NOTE}</p>
+            )}
             {selectedPackage && pricePackages.length > 1 && (
               <p className="text-xs text-gray-600 mt-1">Selected: {formatPackagePrice(selectedPackage)}</p>
             )}
@@ -152,9 +167,10 @@ export const JoinRequestModal = ({
             )}
 
             {hasPaymentTerms && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <p className="text-sm font-semibold text-blue-900 mb-2">Payment terms</p>
-                <p className="text-sm text-blue-800 whitespace-pre-wrap">{activity.paymentTerms}</p>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-900 mb-1">Host payment notes</p>
+                <p className="text-xs text-gray-500 mb-2">{OFFLINE_PAYMENT_NOTE}</p>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.paymentTerms}</p>
               </div>
             )}
 

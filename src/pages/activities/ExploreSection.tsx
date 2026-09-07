@@ -17,10 +17,10 @@ import { FilterIconButton } from '../../components/mobile/FilterIconButton';
 import { ListBrowseLayout } from '../../components/layout/ListBrowseLayout';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 
-type TripFilterPill = 'hiking' | 'camping' | 'community_activity' | 'free' | 'paid';
+type TripFilterPill = 'hiking' | 'camping' | 'event' | 'free' | 'paid';
 type ActivityBrowseFilter = 'all' | ActivityType;
 
-const TRIP_FILTER_PILLS: TripFilterPill[] = ['hiking', 'camping', 'community_activity', 'free', 'paid'];
+const TRIP_FILTER_PILLS: TripFilterPill[] = ['hiking', 'camping', 'event', 'free', 'paid'];
 
 const activityFilterOptions = ACTIVITY_BROWSE_FILTER_OPTIONS;
 
@@ -95,7 +95,7 @@ export const ExploreSection = () => {
         const d = new Date(activity.date);
         if (activity.activityType === 'hiking' && !filterPills.has('hiking')) return false;
         if (activity.activityType === 'camping' && !filterPills.has('camping')) return false;
-        if (activity.activityType === 'community_activity' && !filterPills.has('community_activity')) return false;
+        if (activity.activityType === 'event' && !filterPills.has('event')) return false;
         const isFree = activity.price === 0;
         if (isFree && !filterPills.has('free')) return false;
         if (!isFree && !filterPills.has('paid')) return false;
@@ -127,7 +127,7 @@ export const ExploreSection = () => {
   const filterOptionLabel: Record<TripFilterPill, string> = {
     hiking: ACTIVITY_TYPE_GROUP_LABELS.hiking,
     camping: ACTIVITY_TYPE_GROUP_LABELS.camping,
-    community_activity: ACTIVITY_TYPE_GROUP_LABELS.community_activity,
+    event: ACTIVITY_TYPE_GROUP_LABELS.event,
     free: 'Free',
     paid: 'Paid',
   };
@@ -168,7 +168,7 @@ export const ExploreSection = () => {
           Activity
         </h3>
         <div className="space-y-1.5">
-          {(['hiking', 'camping', 'community_activity'] as const).map((pill) => (
+          {(['hiking', 'camping', 'event'] as const).map((pill) => (
             <label key={pill} className="flex items-center min-h-[36px] cursor-pointer">
               <input
                 type="checkbox"

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import L from 'leaflet';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MAP_CONFIG } from '../../config/platform';
+import { MapTileLayers } from './MapTileLayers';
 import { MapLocationPicker } from './MapLocationPicker';
 import { parseCoord } from '../../utils/coords';
 
@@ -66,7 +66,7 @@ export const MeetingPointMap = ({ lat, lng, hideExternalLink = false }: MeetingP
             className="z-0 h-full w-full"
             style={{ height: '100%', width: '100%' }}
           >
-            <TileLayer url={MAP_CONFIG.tileUrl} />
+            <MapTileLayers attribution="" />
             <MapResize />
             <Marker position={[lat, lng]} icon={previewIcon} />
           </MapContainer>

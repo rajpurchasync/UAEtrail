@@ -8,7 +8,7 @@ export async function promptPostActivityReview(opts: {
   activityId: string;
   locationId: string;
   locationName: string;
-  activityType: 'hiking' | 'camping' | 'community_activity';
+  activityType: 'hiking' | 'camping' | 'event';
 }): Promise<void> {
   const mongo = getMongoClient();
   if (mongo) {
@@ -25,7 +25,7 @@ export async function promptPostActivityReview(opts: {
       ? `/trail/${opts.locationId}`
       : opts.activityType === 'camping'
         ? `/camp/${opts.locationId}`
-        : `/community-activity/${opts.locationId}`;
+        : `/event-spot/${opts.locationId}`;
 
   await dispatchNotification({
     userId: opts.userId,

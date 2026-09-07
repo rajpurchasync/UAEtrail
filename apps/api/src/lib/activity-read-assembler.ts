@@ -1,6 +1,6 @@
 import type { Collection } from 'mongodb';
 import type { Activity, ActivityParticipant, Location } from '../domain/types.js';
-import { ActivityStatus, LocationStatus } from '../domain/enums.js';
+import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
 import { findAuthUsersByIds, type AuthUserRecord } from './auth-users.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { findLocationInMongo } from './entity-sync.js';
@@ -52,6 +52,7 @@ const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
   id: doc._id,
   tenantId: doc.tenantId,
   locationId: doc.locationId,
+  activityType: doc.activityType ?? null,
   createdById: doc.createdById,
   hostId: doc.hostId,
   title: doc.title,
@@ -110,6 +111,48 @@ const toParticipantUser = (user: AuthUserRecord | undefined) => ({
       }
     : null
 });
+
+const fallbackLocationFromActivityDoc = (doc: MongoActivityDoc): Location =>
+  ({
+    id: doc.locationId,
+    name: doc.title,
+    region: '',
+    activityType: ActivityType.HIKING,
+    description: doc.description,
+    difficulty: null,
+    season: [],
+    childFriendly: false,
+    maxGroupSize: null,
+    accessibility: null,
+    images: doc.images ?? [],
+    featured: false,
+    status: LocationStatus.ACTIVE,
+    distance: null,
+    duration: null,
+    elevation: null,
+    campingType: null,
+    latitude: doc.meetingLat ?? doc.startLat ?? doc.parkingLat ?? null,
+    longitude: doc.meetingLng ?? doc.startLng ?? doc.parkingLng ?? null,
+    highlights: [],
+    surfaceType: [],
+    tags: [],
+    parkingLink: null,
+    parkingLat: doc.parkingLat ?? null,
+    parkingLng: doc.parkingLng ?? null,
+    emirate: null,
+    premiumImages: [],
+    accessibleBy: [],
+    viewCount: 0,
+    countryCode: 'AE',
+    gpxKey: null,
+    guidePdfKey: null,
+    guideMarkdown: null,
+    guidePreview: null,
+    unlockPriceAed: 0,
+    submittedById: null,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt
+  }) as Location;
 
 const loadActiveLocations = async (locationIds: string[]): Promise<Map<string, Location>> => {
   const uniqueIds = [...new Set(locationIds)];
@@ -260,6 +303,21 @@ export const listPublishedActivitiesWithPreviewsFromMongo = async (input: {
   return { items, total: filtered.length };
 };
 
+export const listPublishedActivitiesForExploreMapFromMongo = async (
+  take = 250
+): Promise<ActivityWithPublicRelations[]> => {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const docs = await activitiesCollection()
+    .find({ status: ActivityStatus.PUBLISHED, startAt: { $gte: startOfToday } })
+    .sort({ startAt: 1 })
+    .limit(take)
+    .toArray();
+
+  return assembleEventsForExploreMap(docs);
+};
+
 export const findPublishedActivityWithPreviewsFromMongo = async (
   activityId: string
 ): Promise<ActivityWithPublicRelations | null> => {
@@ -327,6 +385,97 @@ const loadLocationsByIds = async (
   }
 
   return map;
+};
+
+/** Like assembleEventsWithPublicRelations but includes draft/inactive venues (for explore map). */
+export const assembleEventsForExploreMap = async (
+  docs: MongoActivityDoc[]
+): Promise<ActivityWithPublicRelations[]> => {
+  if (docs.length === 0) return [];
+
+  const locationMap = await loadLocationsByIds(
+    docs.map((doc) => doc.locationId),
+    false
+  );
+  const filteredDocs = docs.filter(
+    (doc) =>
+      locationMap.has(doc.locationId) ||
+      (doc.meetingLat != null && doc.meetingLng != null) ||
+      (doc.startLat != null && doc.startLng != null) ||
+      (doc.parkingLat != null && doc.parkingLng != null)
+  );
+  if (filteredDocs.length === 0) return [];
+
+  const tenantIds = [...new Set(filteredDocs.map((doc) => doc.tenantId))];
+  const tenantEntries = await Promise.all(
+    tenantIds.map(async (tenantId) => [tenantId, await findTenantById(tenantId)] as const)
+  );
+  const tenantMap = new Map(tenantEntries.filter((entry): entry is [string, TenantRecord] => Boolean(entry[1])));
+
+  const eventIds = filteredDocs.map((doc) => doc._id);
+  const participantDocs = await activityParticipantsCollection().find({ activityId: { $in: eventIds } }).toArray();
+  const participantsByActivity = new Map<string, MongoActivityParticipant[]>();
+  for (const participant of participantDocs) {
+    const list = participantsByActivity.get(participant.activityId) ?? [];
+    list.push(participant);
+    participantsByActivity.set(participant.activityId, list);
+  }
+
+  const userIds = new Set<string>();
+  for (const doc of filteredDocs) {
+    if (doc.hostId) userIds.add(doc.hostId);
+    userIds.add(doc.createdById);
+  }
+  for (const participant of participantDocs) {
+    userIds.add(participant.userId);
+  }
+
+  const users = await findAuthUsersByIds([...userIds]);
+  const userMap = new Map(users.map((user) => [user._id, user]));
+
+  return filteredDocs.flatMap((doc) => {
+    const linkedLocation = locationMap.get(doc.locationId);
+    const location = linkedLocation ?? fallbackLocationFromActivityDoc(doc);
+
+    const tenant = tenantMap.get(doc.tenantId) ?? {
+      id: doc.tenantId,
+      slug: 'host',
+      name: 'Host',
+      countryCode: location.countryCode ?? 'AE',
+      ownerId: doc.createdById
+    };
+
+    const participants = (participantsByActivity.get(doc._id) ?? []).map((participant) => ({
+      id: participant._id,
+      activityId: participant.activityId,
+      requestId: participant.requestId,
+      userId: participant.userId,
+      approvedById: participant.approvedById,
+      checkedInAt: participant.checkedInAt,
+      createdAt: participant.createdAt,
+      user: toParticipantUser(userMap.get(participant.userId))
+    }));
+
+    return [
+      {
+        ...mongoEventToEvent(doc),
+        location,
+        tenant: {
+          id: tenant.id,
+          slug: tenant.slug,
+          name: tenant.name,
+          countryCode: tenant.countryCode,
+          ownerId: tenant.ownerId
+        },
+        guide: doc.hostId ? toGuidePreview(userMap.get(doc.hostId)) : { profile: null },
+        createdBy: (() => {
+          const creator = userMap.get(doc.createdById);
+          return creator ? { profile: { displayName: creator.profile.displayName } } : { profile: null };
+        })(),
+        participants
+      }
+    ];
+  });
 };
 
 export const assembleTenantEventsWithRelations = async (

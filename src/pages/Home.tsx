@@ -21,6 +21,8 @@ import { TrailPointsPromoBanner } from '../components/rewards';
 import { MEMBERSHIP_NAV_LINK } from '../config/platform';
 import { EXPLORE_UAE_REGIONS, type ExploreRegionIcon } from '../config/exploreUaeRegions';
 import { MobileBrandBar } from '../components/layout/MobileBrandBar';
+import { MobileExploreExperience } from '../components/explore/MobileExploreExperience';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { FilterChips } from '../components/mobile/FilterChips';
 import {
   ACTIVITY_BROWSE_FILTER_OPTIONS,
@@ -58,6 +60,12 @@ const getLandingLoadErrorMessage = (error: unknown): string => {
 };
 
 export const Home = () => {
+  const isMobile = useIsMobile();
+  if (isMobile) return <MobileExploreExperience />;
+  return <HomeDesktop />;
+};
+
+const HomeDesktop = () => {
   const [popularTrails, setPopularTrails] = useState<Trail[]>([]);
   const [popularCamps, setPopularCamps] = useState<CampingSpot[]>([]);
   const [featuredActivities, setFeaturedActivities] = useState<ActivityListing[]>([]);
@@ -171,7 +179,6 @@ export const Home = () => {
           <img
             src={HOME_HERO_IMAGE_JPEG}
             alt=""
-            fetchPriority="high"
             decoding="async"
             className="w-full h-full object-cover object-center"
           />

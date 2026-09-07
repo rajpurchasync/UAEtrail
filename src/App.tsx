@@ -16,6 +16,11 @@ const LegacyHostPathRedirect = () => {
   return <Navigate to={`${next}${search}${hash}`} replace />;
 };
 
+const CommunityActivityRedirect = () => {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/event-spot/${id ?? ''}`} replace />;
+};
+
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 const Discovery = lazy(() => import('./pages/Discovery').then((m) => ({ default: m.Discovery })));
 const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
@@ -182,7 +187,8 @@ function App() {
           <Route path="/discovery" element={<ConsumerRoute><Discovery /></ConsumerRoute>} />
           <Route path="/trail/:id" element={<TrailDetail />} />
           <Route path="/camp/:id" element={<CampDetail />} />
-          <Route path="/community-activity/:id" element={<CommunityActivityDetail />} />
+          <Route path="/event-spot/:id" element={<CommunityActivityDetail />} />
+          <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
           <Route path="/calendar" element={<Navigate to="/activities" replace />} />
           <Route path="/activities" element={<ConsumerRoute><Activities /></ConsumerRoute>} />
           <Route path="/trips" element={<LegacyTripsRedirect />} />

@@ -42,7 +42,7 @@ export const CommunityActivityDetail = () => {
   if (loading) {
     return (
       <>
-        <PageMeta title="Loading event" path={id ? `/community-activity/${id}` : undefined} />
+        <PageMeta title="Loading event" path={id ? `/event-spot/${id}` : undefined} />
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-600" />
         </div>
@@ -53,9 +53,9 @@ export const CommunityActivityDetail = () => {
   if (!event) {
     return (
       <>
-        <PageMeta title="Activity not found" noIndex path={id ? `/community-activity/${id}` : undefined} />
+        <PageMeta title="Activity not found" noIndex path={id ? `/event-spot/${id}` : undefined} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">{VENUE_TYPE_LABELS.community_activity} not found</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{VENUE_TYPE_LABELS.event} not found</h1>
           <Link to="/discovery" className="text-violet-600 hover:text-violet-700 mt-4 inline-block">
             Back to discovery
           </Link>
@@ -77,18 +77,18 @@ export const CommunityActivityDetail = () => {
       <div className="min-h-screen bg-ios-bg md:bg-gray-50">
         <PageMeta
           title={event.name}
-          description={event.description?.slice(0, 160) ?? `${VENUE_TYPE_LABELS.community_activity} at ${event.name} — ${event.region}, UAE`}
-          path={`/community-activity/${event.id}`}
+          description={event.description?.slice(0, 160) ?? `${VENUE_TYPE_LABELS.event} at ${event.name} — ${event.region}, UAE`}
+          path={`/event-spot/${event.id}`}
           image={event.images?.[0]}
-          imageAlt={`${event.name} — ${VENUE_TYPE_LABELS.community_activity.toLowerCase()}`}
+          imageAlt={`${event.name} — ${VENUE_TYPE_LABELS.event.toLowerCase()}`}
         />
         <div className="bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-end mb-4 hidden md:flex">
               <ShareButton
                 title={event.name}
-                text={`${event.region} · ${VENUE_TYPE_LABELS.community_activity.toLowerCase()} on UAE Trails`}
-                path={`/community-activity/${event.id}`}
+                text={`${event.region} · ${VENUE_TYPE_LABELS.event.toLowerCase()} on UAE Trails`}
+                path={`/event-spot/${event.id}`}
               />
             </div>
 
@@ -103,8 +103,8 @@ export const CommunityActivityDetail = () => {
                   <div className="absolute top-3 right-3 z-10">
                     <ShareButton
                       title={event.name}
-                      text={`${event.region} · ${VENUE_TYPE_LABELS.community_activity.toLowerCase()} on UAE Trails`}
-                      path={`/community-activity/${event.id}`}
+                      text={`${event.region} · ${VENUE_TYPE_LABELS.event.toLowerCase()} on UAE Trails`}
+                      path={`/event-spot/${event.id}`}
                       compact
                     />
                   </div>
@@ -128,7 +128,7 @@ export const CommunityActivityDetail = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <span className="inline-block mb-2 px-3 py-1 bg-violet-100 text-violet-800 rounded-full text-xs font-semibold">
-                      {VENUE_TYPE_LABELS.community_activity}
+                      {VENUE_TYPE_LABELS.event}
                     </span>
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{event.name}</h1>
                     <div className="flex items-center text-gray-600">
@@ -183,7 +183,7 @@ export const CommunityActivityDetail = () => {
             </div>
 
             <LocationDetailTabs
-              data={toLocationDetailData(event, 'community_activity')}
+              data={toLocationDetailData(event, 'event')}
               accent="violet"
               locationId={event.id}
               premium={premium}

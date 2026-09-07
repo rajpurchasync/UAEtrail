@@ -70,7 +70,7 @@ export const CreateActivityModal = ({
     }
 
     if (sessionSnapshot?.eventDraft) {
-      setSelectedType('community_activity');
+      setSelectedType('event');
       setActiveModal('form');
       return;
     }
@@ -146,11 +146,11 @@ export const CreateActivityModal = ({
         />
       )}
 
-      {activeModal === 'form' && selectedType === 'community_activity' && (
+      {activeModal === 'form' && selectedType === 'event' && (
         <CampingActivityFormModal
           key={`event-${formInstanceKey}`}
           open
-          formActivityType="community_activity"
+          formActivityType="event"
           onClose={handleCloseAll}
           onSaved={onSaved}
           tenantId={tenantId}

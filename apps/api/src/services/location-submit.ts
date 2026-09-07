@@ -1,11 +1,10 @@
 import { ActivityType, Difficulty, LocationStatus } from '../domain/enums.js';
+import { toPrismaActivityType } from '../domain/activity-type.js';
 import type { LocationSubmitBody } from '../domain/location-submit.js';
 
-const toActivityType = (activityType: 'hiking' | 'camping' | 'COMMUNITY_ACTIVITY' | 'community_activity'): ActivityType => {
-  if (activityType === 'hiking') return ActivityType.HIKING;
-  if (activityType === 'camping') return ActivityType.CAMPING;
-  return ActivityType.COMMUNITY_ACTIVITY;
-};
+const toActivityType = (
+  activityType: LocationSubmitBody['activityType']
+): ActivityType => toPrismaActivityType(activityType);
 
 const toDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {
   if (!difficulty) return undefined;
@@ -71,6 +70,6 @@ export const buildLocationCreateData = (
   guidePdfKey: body.guidePdfKey ?? null,
   guideMarkdown: body.guideMarkdown ?? null,
   season: ['year-round'],
-  status: LocationStatus.DRAFT,
+  status: body.mapPin ? LocationStatus.ACTIVE : LocationStatus.DRAFT,
   submittedBy: { connect: { id: submittedById } }
 });

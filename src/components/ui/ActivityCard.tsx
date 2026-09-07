@@ -2,7 +2,7 @@ import { type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Users, MapPin, ChevronRight } from 'lucide-react';
 import { ActivityListing } from '../../types';
-import { ACTIVITY_TYPE_LABELS } from '../../config/activityTypes';
+import { formatActivityType } from '../../utils/activityIdentity';
 import { tripPricingBadge } from '../../utils/tripPricing';
 import { hostProfilePath } from '../../utils/hostLinks';
 import { ShareButton } from './ShareButton';
@@ -29,7 +29,7 @@ export const ActivityCard = ({ activity: activityProp, trip, variant = 'default'
     activity.images?.[0] ??
     (activity.activityType === 'camping'
       ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600'
-      : activity.activityType === 'community_activity'
+      : activity.activityType === 'event'
         ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=600'
         : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600');
 
@@ -118,13 +118,13 @@ export const ActivityCard = ({ activity: activityProp, trip, variant = 'default'
                 : 'bg-violet-600/90 text-white'
           }`}
         >
-          {ACTIVITY_TYPE_LABELS[activity.activityType]}
+          {formatActivityType(activity.activityType)}
         </span>
       </div>
       <div className="absolute bottom-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
         <ShareButton
           title={activity.title || activity.locationName}
-          text={`${activity.date} · ${activity.activityType} activity on UAE Trails`}
+          text={`${activity.date} · ${formatActivityType(activity.activityType)} on UAE Trails`}
           path={`/activity/${activity.id}`}
           iconOnly
         />

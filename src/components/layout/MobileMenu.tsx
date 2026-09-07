@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogIn, LogOut, Menu, RefreshCw, X } from 'lucide-react';
+import { LogIn, LogOut, Menu, RefreshCw, ShoppingBag, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import { isConsumerChromeHidden, MOBILE_DRAWER_MENU } from '../../config/platform';
 import { ADMIN_LINKS, HOST_DASHBOARD_LINKS, MERCHANT_DASHBOARD_LINKS } from '../../constants';
@@ -205,7 +205,7 @@ export const MobileMenuButton = ({ tone = 'default', className = '', showOnDeskt
 
 const MobileMenuPanel = () => {
   const { open, closeMenu } = useMobileMenu();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { user, signOut, refreshUser } = useAuth();
   const unreadNotifications = useNotificationUnreadCount();
@@ -423,6 +423,21 @@ const MobileMenuPanel = () => {
               </Link>
             );
           })}
+
+          {user && !isMerchantRole && (
+            <Link
+              to="/become-host?intent=add-shop"
+              onClick={closeMenu}
+              className={navItemClass(
+                pathname.startsWith('/become-host') && search.includes('intent=add-shop')
+              )}
+            >
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
+                <ShoppingBag className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
+              </span>
+              <span className="font-semibold">Add a shop</span>
+            </Link>
+          )}
 
           {canSwitchBack && (
             <button

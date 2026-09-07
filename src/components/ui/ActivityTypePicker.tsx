@@ -13,13 +13,13 @@ interface ActivityTypePickerProps {
 const CARD_ICONS: Record<ActivityType, typeof Mountain> = {
   hiking: Mountain,
   camping: Tent,
-  community_activity: CalendarDays,
+  event: CalendarDays,
 };
 
 const CARD_ACCENTS: Record<ActivityType, string> = {
   hiking: 'bg-emerald-500/12 text-emerald-600',
   camping: 'bg-amber-500/12 text-amber-600',
-  community_activity: 'bg-violet-500/12 text-violet-600',
+  event: 'bg-violet-500/12 text-violet-600',
 };
 
 export const ActivityTypePicker = ({ onSelect }: ActivityTypePickerProps) => (

@@ -1,5 +1,5 @@
 import type { Collection } from 'mongodb';
-import { TenantStatus, TenantType } from '../domain/enums.js';
+import { TenantStatus, TenantBusinessMode, TenantType } from '../domain/enums.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
 import { slugify } from './slug.js';
@@ -9,9 +9,17 @@ export type TenantRecord = {
   name: string;
   slug: string;
   type: TenantType;
+  businessMode?: TenantBusinessMode | null;
   status: TenantStatus;
   ownerId: string;
   countryCode: string;
+  description?: string | null;
+  website?: string | null;
+  logoUrl?: string | null;
+  services?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -21,9 +29,17 @@ type MongoTenantDoc = {
   name: string;
   slug: string;
   type: TenantType;
+  businessMode?: TenantBusinessMode | null;
   status: TenantStatus;
   ownerId: string;
   countryCode: string;
+  description?: string | null;
+  website?: string | null;
+  logoUrl?: string | null;
+  services?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -36,9 +52,17 @@ const mapMongoTenant = (doc: MongoTenantDoc): TenantRecord => ({
   name: doc.name,
   slug: doc.slug,
   type: doc.type,
+  businessMode: doc.businessMode ?? null,
   status: doc.status,
   ownerId: doc.ownerId,
   countryCode: doc.countryCode,
+  description: doc.description ?? null,
+  website: doc.website ?? null,
+  logoUrl: doc.logoUrl ?? null,
+  services: doc.services ?? null,
+  latitude: doc.latitude ?? null,
+  longitude: doc.longitude ?? null,
+  region: doc.region ?? null,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
 });
@@ -48,9 +72,17 @@ const tenantRowToMongoDoc = (row: TenantRecord): MongoTenantDoc => ({
   name: row.name,
   slug: row.slug,
   type: row.type,
+  businessMode: row.businessMode ?? null,
   status: row.status,
   ownerId: row.ownerId,
   countryCode: row.countryCode,
+  description: row.description ?? null,
+  website: row.website ?? null,
+  logoUrl: row.logoUrl ?? null,
+  services: row.services ?? null,
+  latitude: row.latitude ?? null,
+  longitude: row.longitude ?? null,
+  region: row.region ?? null,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt
 });
@@ -141,4 +173,17 @@ export const createTenantRecord = async (input: {
 export const findTenantStatus = async (tenantId: string): Promise<TenantStatus | null> => {
   const tenant = await findTenantById(tenantId);
   return tenant?.status ?? null;
+};
+
+export const listPublicAgenciesForMap = async (limit = 250): Promise<TenantRecord[]> => {
+  const docs = await tenantsCollection()
+    .find({
+      businessMode: TenantBusinessMode.AGENCY,
+      status: TenantStatus.ACTIVE,
+      latitude: { $ne: null },
+      longitude: { $ne: null }
+    })
+    .limit(limit)
+    .toArray();
+  return docs.map(mapMongoTenant);
 };

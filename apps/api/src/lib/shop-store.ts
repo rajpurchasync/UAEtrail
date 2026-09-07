@@ -32,6 +32,9 @@ type MongoMerchantProfile = {
   logo: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -70,7 +73,10 @@ type MongoOrderLineItem = {
 };
 
 type MerchantProfileUpdate = Partial<
-  Pick<MerchantProfile, 'shopName' | 'description' | 'logo' | 'contactEmail' | 'contactPhone'>
+  Pick<
+    MerchantProfile,
+    'shopName' | 'description' | 'logo' | 'contactEmail' | 'contactPhone' | 'latitude' | 'longitude' | 'region'
+  >
 >;
 
 type ProductUpdate = Partial<Omit<Product, 'id' | 'merchantId' | 'createdAt'>>;
@@ -126,6 +132,9 @@ const mapMongoMerchantProfile = (merchant: MongoMerchantProfile): MerchantProfil
   logo: merchant.logo,
   contactEmail: merchant.contactEmail,
   contactPhone: merchant.contactPhone,
+  latitude: merchant.latitude ?? null,
+  longitude: merchant.longitude ?? null,
+  region: merchant.region ?? null,
   createdAt: merchant.createdAt,
   updatedAt: merchant.updatedAt
 });
@@ -247,12 +256,38 @@ export const listPublicProducts = async (input: {
           status: item.status,
           merchant: {
             id: merchant._id,
-            shopName: merchant.shopName
+            shopName: merchant.shopName,
+            latitude: merchant.latitude ?? null,
+            longitude: merchant.longitude ?? null,
+            region: merchant.region ?? null
           }
         };
       })
       .filter((item): item is NonNullable<typeof item> => Boolean(item))
   };
+};
+
+export const listPublicMerchantsForMap = async () => {
+  const products = await productsCollection()
+    .find({ status: ProductStatus.ACTIVE })
+    .sort({ createdAt: -1 })
+    .limit(200)
+    .toArray();
+  const merchantIds = [...new Set(products.map((product) => product.merchantId))];
+  if (merchantIds.length === 0) return [];
+
+  const merchants = await merchantProfilesCollection().find({ _id: { $in: merchantIds } }).toArray();
+  const productsByMerchant = new Map<string, MongoProduct[]>();
+  for (const product of products) {
+    const list = productsByMerchant.get(product.merchantId) ?? [];
+    list.push(product);
+    productsByMerchant.set(product.merchantId, list);
+  }
+
+  return merchants.map((merchant) => ({
+    merchant: mapMongoMerchantProfile(merchant),
+    products: (productsByMerchant.get(merchant._id) ?? []).map(mapMongoProduct)
+  }));
 };
 
 export const findActiveProductById = async (id: string) => {
@@ -268,7 +303,10 @@ export const findActiveProductById = async (id: string) => {
       id: merchant._id,
       shopName: merchant.shopName,
       description: merchant.description,
-      logo: merchant.logo
+      logo: merchant.logo,
+      latitude: merchant.latitude ?? null,
+      longitude: merchant.longitude ?? null,
+      region: merchant.region ?? null
     }
   };
 };
@@ -323,6 +361,9 @@ export const createMerchantProfileForUser = async (
     logo?: string;
     contactEmail?: string;
     contactPhone?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    region?: string | null;
   }
 ) => {
   const now = new Date();
@@ -334,6 +375,9 @@ export const createMerchantProfileForUser = async (
     logo: data.logo ?? null,
     contactEmail: data.contactEmail ?? null,
     contactPhone: data.contactPhone ?? null,
+    latitude: data.latitude ?? null,
+    longitude: data.longitude ?? null,
+    region: data.region ?? null,
     createdAt: now,
     updatedAt: now
   };

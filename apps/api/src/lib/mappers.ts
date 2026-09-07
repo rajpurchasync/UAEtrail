@@ -12,6 +12,7 @@ import { ActivityDTO, LocationDTO, MembershipRole as SharedMembershipRole, Reque
 
 import { formatActivityLocal } from './datetime.js';
 import { parseStoredPricePackages } from './trip-pricing.js';
+import { resolveActivityDtoType } from '../domain/activity-type.js';
 
 const enumMap = <T extends string>(value: string | null | undefined): T =>
   (typeof value === 'string' ? value.toLowerCase() : '') as T;
@@ -23,8 +24,13 @@ export const toSharedTenantType = (type: TenantType): SharedTenantType => enumMa
 export const toSharedRequestStatus = (status: RequestStatus): SharedRequestStatus =>
   enumMap<SharedRequestStatus>(status);
 
-const mapActivity = (activityType: ActivityType): 'hiking' | 'camping' | 'community_activity' =>
-  enumMap<'hiking' | 'camping' | 'community_activity'>(activityType);
+const mapActivity = (activityType: ActivityType | string): ActivityDTO['activityType'] => {
+  const value = String(activityType).toUpperCase();
+  if (value === 'HIKING') return 'hiking';
+  if (value === 'CAMPING') return 'camping';
+  if (value === 'CARPOOL') return 'carpool';
+  return 'event';
+};
 
 const mapLocationStatus = (status: LocationStatus): 'draft' | 'active' | 'inactive' =>
   enumMap<'draft' | 'active' | 'inactive'>(status);
@@ -64,7 +70,7 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
   return toEventDto({
     event,
     locationName: event.location.name,
-    activityType: event.location.activityType,
+    activityType: resolveActivityDtoType(event, event.location),
     region: event.location.region,
     slotsAvailable: Math.max(
       event.capacity - (event.participants?.length ?? 0),
@@ -80,7 +86,9 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
     createdByName,
     tenantSlug: event.tenant.slug,
     participantPreviews: participantsWithUser.length > 0 ? toParticipantPreviews(participantsWithUser) : undefined,
-    countryCode: event.location.countryCode ?? event.tenant.countryCode ?? 'AE'
+    countryCode: event.location.countryCode ?? event.tenant.countryCode ?? 'AE',
+    locationLatitude: event.location.latitude ?? null,
+    locationLongitude: event.location.longitude ?? null
   });
 };
 
@@ -147,11 +155,13 @@ export const toEventDto = ({
   createdByName,
   tenantSlug,
   participantPreviews,
-  countryCode = 'AE'
+  countryCode = 'AE',
+  locationLatitude,
+  locationLongitude
 }: {
   event : Activity;
   locationName: string;
-  activityType: ActivityType;
+  activityType: ActivityType | string;
   region?: string;
   slotsAvailable: number;
   hostName: string;
@@ -165,6 +175,8 @@ export const toEventDto = ({
   tenantSlug: string;
   participantPreviews?: Array<{ id: string; name: string; avatar?: string | null }>;
   countryCode?: string;
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
 }): ActivityDTO => {
   const local = formatActivityLocal(event.startAt, countryCode);
   const endLocal = event.endAt ? formatActivityLocal(event.endAt, countryCode) : null;
@@ -222,6 +234,8 @@ export const toEventDto = ({
   organizerUserId: hostUserId,
   featured: event.featured,
   participantPreviews,
-  countryCode
+  countryCode,
+  locationLatitude: locationLatitude ?? null,
+  locationLongitude: locationLongitude ?? null
 };
 };

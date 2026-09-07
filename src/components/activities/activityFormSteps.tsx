@@ -205,7 +205,7 @@ export const SummaryStepCamping = ({
   showScheduleWarning,
   formActivityType = 'camping',
 }: SummaryStepCampingProps) => {
-  const isEvent = formActivityType === 'community_activity';
+  const isEvent = formActivityType === 'event';
   const venueType = formActivityType;
   const aboutLabel = isEvent ? 'About event' : 'About spot';
   const titlePlaceholder = isEvent ? 'e.g. Desert Trail Run 2026' : 'e.g. Liwa Desert Weekend Camp';

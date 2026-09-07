@@ -206,6 +206,9 @@ const upsertMerchantProfile = async (
     logo?: string;
     contactEmail: string;
     contactPhone: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    region?: string | null;
   }
 ) => {
   const existing = await db().collection('merchant_profiles').findOne({ shopName: data.shopName });
@@ -221,6 +224,9 @@ const upsertMerchantProfile = async (
           logo: data.logo ?? null,
           contactEmail: data.contactEmail,
           contactPhone: data.contactPhone,
+          latitude: data.latitude ?? null,
+          longitude: data.longitude ?? null,
+          region: data.region ?? null,
           updatedAt: now
         }
       }
@@ -231,7 +237,16 @@ const upsertMerchantProfile = async (
   const created = await createMerchantProfileForUser(adminIds[0]!, data);
   await db().collection('merchant_profiles').updateOne(
     { _id: created.id },
-    { $set: { adminIds, logo: data.logo ?? null, updatedAt: new Date() } }
+    {
+      $set: {
+        adminIds,
+        logo: data.logo ?? null,
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
+        region: data.region ?? null,
+        updatedAt: new Date()
+      }
+    }
   );
   return (await findManagedMerchantProfileById(adminIds[0]!, created.id))!;
 };
@@ -1097,7 +1112,10 @@ Share your live location and carry extra water in summer months.`
     description: 'Performance footwear, hydration, and trail apparel for UAE runners.',
     logo: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
     contactEmail: 'nike-uae@uaetrails.app',
-    contactPhone: '+971-50-1100221'
+    contactPhone: '+971-50-1100221',
+    latitude: 25.1972,
+    longitude: 55.2744,
+    region: 'Dubai'
   });
 
   const adidasMerchantProfile = await upsertMerchantProfile([vendor._id], {
@@ -1105,7 +1123,10 @@ Share your live location and carry extra water in summer months.`
     description: 'Trail gear and expedition essentials curated for Gulf conditions.',
     logo: 'https://images.unsplash.com/photo-1514996937319-344454492b37?w=400',
     contactEmail: 'adidas-gcc@uaetrails.app',
-    contactPhone: '+971-50-2200332'
+    contactPhone: '+971-50-2200332',
+    latitude: 24.4539,
+    longitude: 54.3773,
+    region: 'Abu Dhabi'
   });
 
   const seedProducts = [

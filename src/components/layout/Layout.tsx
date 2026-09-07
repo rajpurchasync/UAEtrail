@@ -54,7 +54,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const siteFooter =
     showConsumerChrome && (
-      <div className="shrink-0">
+      <div className={`shrink-0 ${location.pathname === '/' ? 'hidden md:block' : ''}`}>
         <Footer />
       </div>
     );

@@ -17,8 +17,11 @@ import { createUniqueReferralCode } from '../lib/referral-code.js';
 import { performParticipantCheckInDefault } from '../services/checkin.js';
 import { buildLocationCreateData } from '../services/location-submit.js';
 import {
+  assertCarpoolActivityFields,
   assertLocationMatchesActivityType,
-  sharedActivityTypeSchema
+  fromPrismaActivityType,
+  sharedActivityTypeSchema,
+  toPrismaActivityType
 } from '../domain/activity-type.js';
 import { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { createPasswordResetToken } from '../lib/auth-tokens.js';
@@ -196,6 +199,7 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
 
     const location = await resolveActivityLocation(body.locationId, req.auth!.userId, { platformAdmin });
     assertLocationMatchesActivityType(location.activityType, body.activityType);
+    assertCarpoolActivityFields(body);
 
     const tenant = await findTenantById(tenantId);
     if (!tenant) {
@@ -211,13 +215,27 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
       pricePackages: body.pricePackages,
       pricingMode: body.pricingMode,
     });
-    assertActivityPricingAllowed(tenant.type, body.pricingMode, pricing);
+    const isCarpool = body.activityType === 'carpool';
+    assertActivityPricingAllowed({
+      tenantType: tenant.type,
+      pricingMode: body.pricingMode,
+      pricing,
+      paymentTerms: body.paymentTerms,
+      sharedAmountAed: isCarpool
+        ? body.carPoolFree === false
+          ? body.carPoolPriceAed ?? body.price ?? 0
+          : null
+        : body.pricingMode === 'shared'
+          ? pricing.priceAed
+          : null,
+    });
 
     const created = await createActivityDetailed({
       tenant: { connect: { id: tenantId } },
       location: { connect: { id: body.locationId } },
       createdBy: { connect: { id: req.auth!.userId } },
       host: { connect: { id: hostId } },
+      activityType: toPrismaActivityType(body.activityType),
       title: body.title,
       description: body.description,
       startAt: parseLocalDateTime(body.date, body.time, countryCode),
@@ -232,12 +250,21 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
       parkingLat: body.parkingLat,
       parkingLng: body.parkingLng,
       meetingDifferent: body.meetingDifferent ?? false,
-      carPoolEnabled: body.carPoolEnabled ?? false,
-      carPoolFree: body.carPoolEnabled ? (body.carPoolFree ?? true) : null,
-      carPoolPriceAed:
-        body.carPoolEnabled && body.carPoolFree === false ? body.carPoolPriceAed ?? 0 : null,
-      carPoolSeats: body.carPoolEnabled ? body.carPoolSeats ?? null : null,
-      carPoolDetails: body.carPoolEnabled ? body.carPoolDetails : null,
+      carPoolEnabled: isCarpool ? true : (body.carPoolEnabled ?? false),
+      carPoolFree: isCarpool
+        ? body.carPoolFree ?? body.price === 0
+        : body.carPoolEnabled
+          ? (body.carPoolFree ?? true)
+          : null,
+      carPoolPriceAed: isCarpool
+        ? body.carPoolFree === false
+          ? body.carPoolPriceAed ?? body.price ?? 0
+          : null
+        : body.carPoolEnabled && body.carPoolFree === false
+          ? body.carPoolPriceAed ?? 0
+          : null,
+      carPoolSeats: isCarpool ? body.carPoolSeats ?? body.capacity : body.carPoolEnabled ? body.carPoolSeats ?? null : null,
+      carPoolDetails: isCarpool ? body.carPoolDetails ?? null : body.carPoolEnabled ? body.carPoolDetails : null,
       paymentTerms: body.paymentTerms,
       itinerary: body.itinerary,
       requirements: body.requirements,
@@ -318,7 +345,22 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
     if (pricing) {
       const tenant = await findTenantById(tenantId);
       if (tenant) {
-        assertActivityPricingAllowed(tenant.type, body.pricingMode, pricing);
+        const isCarpool =
+          body.activityType === 'carpool' ||
+          String(existing.activityType ?? '').toLowerCase() === 'carpool';
+        assertActivityPricingAllowed({
+          tenantType: tenant.type,
+          pricingMode: body.pricingMode ?? pricing.pricingMode,
+          pricing,
+          paymentTerms: body.paymentTerms ?? existing.paymentTerms,
+          sharedAmountAed: isCarpool
+            ? body.carPoolFree === false
+              ? body.carPoolPriceAed ?? body.price ?? existing.carPoolPriceAed ?? 0
+              : null
+            : (body.pricingMode ?? pricing.pricingMode) === 'shared'
+              ? pricing.priceAed
+              : null,
+        });
       }
     }
 
@@ -961,7 +1003,7 @@ tenantActivitiesRouter.get('/history', async (req, res, next) => {
         id: e.id,
         title: e.title,
         locationName: e.location.name,
-        activityType: e.location.activityType.toLowerCase(),
+        activityType: fromPrismaActivityType(e.location.activityType),
         startAt: e.startAt,
         status: e.status.toLowerCase(),
         capacity: e.capacity,

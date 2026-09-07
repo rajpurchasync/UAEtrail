@@ -9,7 +9,7 @@ export type UserRole =
 export type TenantType = 'company' | 'guide_owned';
 export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
 
-export type ActivityType = 'hiking' | 'camping' | 'community_activity';
+export type ActivityType = 'hiking' | 'camping' | 'event' | 'carpool';
 export type LocationStatus = 'draft' | 'active' | 'inactive';
 export type ActivityStatus = 'draft' | 'published' | 'cancelled' | 'suspended';
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | 'waitlisted';
@@ -170,6 +170,9 @@ export interface ActivityDTO {
   featured?: boolean;
   participantPreviews?: ParticipantPreviewDTO[];
   countryCode?: string;
+  /** Venue coordinates — used when meeting/start pins are missing. */
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
 }
 
 
@@ -223,6 +226,25 @@ export interface JoinRequestDTO {
   cancelledAt?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export type HostApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
+
+export type HostProfileType = 'individual' | 'agency' | 'shop';
+
+export type TenantBusinessMode = 'agency' | 'shop';
+
+/** Host publish eligibility for mobile create gate (Phase P3). */
+export interface HostStatusDTO {
+  canPublish: boolean;
+  applicationStatus: HostApplicationStatus;
+  tenantId: string | null;
+  isHostRole: boolean;
+  hasTenant: boolean;
+  tenantType: TenantType | null;
+  businessMode: TenantBusinessMode | null;
+  /** Business hosts (agency/shop) may publish paid activities. */
+  canHostPaidActivities: boolean;
 }
 
 /** Predefined reasons when a user withdraws from a trip */
@@ -313,6 +335,9 @@ export interface ProductDTO {
   status: ProductStatusType;
   merchantId: string;
   merchantName: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: string | null;
 }
 
 export type ReviewTargetType = 'location' | 'tenant';
@@ -395,6 +420,69 @@ export interface MerchantProfileDTO {
   logo?: string;
   contactEmail?: string;
   contactPhone?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: string | null;
+}
+
+export type ExploreMapKind = ActivityType | 'shop' | 'agency';
+export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+
+export type ParticipantIntentKind = 'hiking' | 'camping' | 'event' | 'guide' | 'carpool' | 'other';
+
+export interface ParticipantIntentDTO {
+  id: string;
+  userId: string;
+  kind: ParticipantIntentKind;
+  date: string | null;
+  time: string | null;
+  preferredArea: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  locationPrecision: 'general' | 'specific' | null;
+  toLatitude: number | null;
+  toLongitude: number | null;
+  partySize: number;
+  comment: string;
+  status: 'active' | 'fulfilled' | 'cancelled';
+  createdAt: string;
+  requesterName?: string | null;
+  requesterAvatar?: string | null;
+}
+
+export type ExplorePriceLabelKind = 'free' | 'paid' | 'shared';
+
+/** Unified map/list item for the mobile explore experience. */
+export interface ExploreMapItemDTO {
+  id: string;
+  kind: ExploreMapKind;
+  source: ExploreMapSource;
+  title: string;
+  subtitle?: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  path: string;
+  hostName?: string | null;
+  hostAvatar?: string | null;
+  date?: string | null;
+  time?: string | null;
+  slotsAvailable?: number;
+  slotsTotal?: number;
+  participantPreviews?: ParticipantPreviewDTO[];
+  image?: string | null;
+  activity?: ActivityDTO;
+  carPoolEnabled?: boolean;
+  merchantId?: string;
+  productId?: string;
+  priceAed?: number | null;
+  /** Carpool destination pin (Phase P2). */
+  toLatitude?: number | null;
+  toLongitude?: number | null;
+  /** Server-computed display helpers for map cards (Phase P1). */
+  priceLabel?: ExplorePriceLabelKind | null;
+  priceDisplay?: string | null;
+  fromLabel?: string | null;
+  toLabel?: string | null;
 }
 
 export interface ProductClick {

@@ -454,4 +454,48 @@
   .leaflet-control-attribution {
     display: none !important;
   }
+
+  .leaflet-container {
+    background: #e8eef4;
+    font-family: inherit;
+  }
+
+  .leaflet-tile-pane img {
+    image-rendering: auto;
+  }
+
+  .uaetrail-map-pin {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .uaetrail-map-cluster-wrap {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .uaetrail-map-cluster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: #fff;
+    border: 2.5px solid #f43f5e;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18), 0 1px 3px rgba(15, 23, 42, 0.1);
+  }
+
+  .marker-cluster-small,
+  .marker-cluster-medium,
+  .marker-cluster-large {
+    background: transparent !important;
+  }
+
+  .marker-cluster-small div,
+  .marker-cluster-medium div,
+  .marker-cluster-large div {
+    background: transparent !important;
+  }
 }

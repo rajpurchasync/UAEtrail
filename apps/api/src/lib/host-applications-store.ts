@@ -2,6 +2,7 @@ import type { Collection } from 'mongodb';
 import {
   HostApplicationStatus,
   MembershipRole,
+  TenantBusinessMode,
   TenantStatus,
   UserRole,
   type TenantType
@@ -11,6 +12,7 @@ import { COLLECTIONS } from './collections.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
 import { writeTenantToMongo, ensureUniqueTenantSlug } from './tenant-store.js';
+import { createMerchantProfileForUser } from './shop-store.js';
 
 export type HostApplicationRecord = {
   id: string;
@@ -291,12 +293,23 @@ export const approveHostApplicationAndProvisionTenant = async (input: {
     return null;
   }
 
+  if (application.status === HostApplicationStatus.APPROVED && application.requestedTenantId) {
+    return { applicationId: application.id, tenantId: application.requestedTenantId };
+  }
+
   const tenantSlug = await ensureUniqueTenantSlug(application.requestedSlug);
   const tenantId = newEntityId();
   const membershipId = newEntityId();
   const reviewedAt = new Date();
-  const meta = (application.metadata as Record<string, string> | null) ?? {};
+  const meta = (application.metadata as Record<string, unknown> | null) ?? {};
   const applicationId = application.id;
+  const hostProfileType = String(meta.hostProfileType ?? 'individual').toLowerCase();
+  const businessMode =
+    hostProfileType === 'agency'
+      ? TenantBusinessMode.AGENCY
+      : hostProfileType === 'shop'
+        ? TenantBusinessMode.SHOP
+        : null;
 
   const now = new Date();
   await writeTenantToMongo({
@@ -304,9 +317,17 @@ export const approveHostApplicationAndProvisionTenant = async (input: {
     name: application.requestedName,
     slug: tenantSlug,
     type: application.requestedType,
+    businessMode,
     status: TenantStatus.ACTIVE,
     ownerId: application.applicantId,
     countryCode: 'AE',
+    description: typeof meta.bio === 'string' ? meta.bio : null,
+    website: typeof meta.website === 'string' && meta.website ? meta.website : null,
+    logoUrl: typeof meta.profilePhoto === 'string' && meta.profilePhoto ? meta.profilePhoto : null,
+    services: typeof meta.services === 'string' ? meta.services : null,
+    latitude: typeof meta.latitude === 'number' ? meta.latitude : null,
+    longitude: typeof meta.longitude === 'number' ? meta.longitude : null,
+    region: typeof meta.region === 'string' ? meta.region : null,
     createdAt: now,
     updatedAt: now
   });
@@ -332,12 +353,30 @@ export const approveHostApplicationAndProvisionTenant = async (input: {
     userId: application.applicantId,
     role: UserRole.TENANT_OWNER,
     profile: {
-      ...(meta.hostDisplayName ? { displayName: meta.hostDisplayName } : {}),
-      ...(meta.bio ? { bio: meta.bio } : {}),
-      ...(meta.phoneE164 || meta.phone ? { phone: meta.phoneE164 || meta.phone } : {}),
-      ...(meta.profilePhoto ? { avatarUrl: meta.profilePhoto } : {})
+      ...(typeof meta.hostDisplayName === 'string' && meta.hostDisplayName
+        ? { displayName: meta.hostDisplayName }
+        : {}),
+      ...(typeof meta.bio === 'string' && meta.bio ? { bio: meta.bio } : {}),
+      ...(typeof meta.phoneE164 === 'string' && meta.phoneE164
+        ? { phone: meta.phoneE164 }
+        : typeof meta.phone === 'string' && meta.phone
+          ? { phone: meta.phone }
+          : {}),
+      ...(typeof meta.profilePhoto === 'string' && meta.profilePhoto ? { avatarUrl: meta.profilePhoto } : {})
     }
   });
+
+  if (businessMode === TenantBusinessMode.SHOP) {
+    await createMerchantProfileForUser(application.applicantId, {
+      shopName: application.requestedName,
+      description: typeof meta.bio === 'string' ? meta.bio : undefined,
+      logo: typeof meta.profilePhoto === 'string' ? meta.profilePhoto : undefined,
+      contactPhone: typeof meta.phoneE164 === 'string' ? meta.phoneE164 : undefined,
+      latitude: typeof meta.latitude === 'number' ? meta.latitude : null,
+      longitude: typeof meta.longitude === 'number' ? meta.longitude : null,
+      region: typeof meta.region === 'string' ? meta.region : null
+    });
+  }
 
   await patchHostApplicationInMongo(applicationId, {
     requestedTenantId: tenantId,

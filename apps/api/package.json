@@ -9,6 +9,7 @@
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "seed": "tsx scripts/seed.ts",
+    "bump-activity-dates": "tsx scripts/bump-activity-dates.ts",
     "cleanup:test-users": "node scripts/cleanup-test-users.mjs",
     "test": "vitest run"
   },
