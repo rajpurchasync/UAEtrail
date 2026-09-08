@@ -13,7 +13,7 @@ export type CountryCode = (typeof SUPPORTED_COUNTRIES)[number]['code'];
 export const DEFAULT_COUNTRY: CountryCode = 'AE';
 
 /** Regions per country — used in Discovery filters and location forms. */
-export const REGIONS_BY_COUNTRY: Record<CountryCode, string[]> = {
+const REGIONS_BY_COUNTRY: Record<CountryCode, string[]> = {
   AE: ['Dubai', 'RAK', 'Fujairah', 'Abu Dhabi', 'Al Ain', 'Sharjah'],
   SA: ['Riyadh', 'Jeddah', 'Abha', 'AlUla', 'Taif', 'Dammam'],
   OM: ['Muscat', 'Nizwa', 'Salalah', 'Jebel Shams', 'Wahiba Sands'],

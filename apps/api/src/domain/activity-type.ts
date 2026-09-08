@@ -25,15 +25,11 @@ export const fromPrismaActivityType = (activityType: ActivityType | string): Sha
   return 'event';
 };
 
-export const isCarpoolActivityType = (activityType: ActivityType | SharedActivityType | string): boolean =>
-  String(activityType).toUpperCase() === 'CARPOOL' || String(activityType).toLowerCase() === 'carpool';
-
 export const resolveActivityDtoType = (
   activity: Pick<Activity, 'activityType' | 'carPoolEnabled'>,
   location: Pick<Location, 'activityType'>
 ): SharedActivityType => {
   if (activity.activityType) return fromPrismaActivityType(activity.activityType);
-  if (activity.carPoolEnabled) return 'carpool';
   return fromPrismaActivityType(location.activityType);
 };
 

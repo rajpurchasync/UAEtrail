@@ -124,6 +124,7 @@ export const Shop = () => {
           layout="tab"
           title="Shop"
           banner={{ src: PAGE_BANNERS.shop, alt: 'Camping tent under the stars' }}
+          journey={{ fallbackTo: '/', label: 'Home' }}
         >
           <div className="flex flex-col items-center justify-center py-16 md:py-24 px-6 text-center min-h-[40vh]">
             <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700 mb-5">
@@ -150,6 +151,7 @@ export const Shop = () => {
         layout="tab"
         title="Shop"
         banner={{ src: PAGE_BANNERS.shop, alt: 'Camping tent under the stars' }}
+        journey={{ fallbackTo: '/', label: 'Home' }}
         action={<ShopCartButton onClick={() => setCartOpen(true)} />}
         toolbar={
           <div className="md:hidden space-y-3 min-w-0">

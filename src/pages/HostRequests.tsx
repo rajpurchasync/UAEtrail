@@ -1,17 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api, ActivityRequestView } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 import { HostShell } from '../components/host/HostShell';
+import { HostJoinRequestCard } from '../components/host/HostJoinRequestCard';
 import { TenantSwitcher } from '../components/ui';
-import { withdrawReasonLabel } from '@uaetrail/shared-types';
+import { AppSegmented } from '../components/mobile/AppSegmented';
+import { GlassCard } from '../components/mobile/GlassCard';
+import { Dialog } from '../components/ui/Dialog';
+import { AppButton } from '../components/mobile/AppButton';
+
+type RequestFilter = 'pending' | 'all';
 
 export const HostRequests = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [decisionModal, setDecisionModal] = useState<{ request: ActivityRequestView; action: 'approved' | 'rejected' } | null>(null);
+  const [filter, setFilter] = useState<RequestFilter>('pending');
+  const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
+  const [decisionModal, setDecisionModal] = useState<{
+    request: ActivityRequestView;
+    action: 'approved' | 'rejected';
+  } | null>(null);
   const [hostNote, setHostNote] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
 
   const loadRequests = async (activeTenantId: string) => {
     if (!activeTenantId) return;
@@ -24,168 +34,153 @@ export const HostRequests = () => {
   };
 
   useEffect(() => {
-    loadRequests(tenantId);
+    void loadRequests(tenantId);
   }, [tenantId]);
+
+  const pendingCount = useMemo(
+    () => requests.filter((request) => request.status === 'pending').length,
+    [requests]
+  );
+
+  const filtered = useMemo(() => {
+    if (filter === 'pending') {
+      return requests.filter((request) => request.status === 'pending');
+    }
+    return requests;
+  }, [filter, requests]);
 
   const submitDecision = async () => {
     if (!tenantId || !decisionModal) return;
+    setBusyRequestId(decisionModal.request.id);
     try {
-      await api.decideHostRequest(tenantId, decisionModal.request.id, decisionModal.action, hostNote || undefined);
+      await api.decideHostRequest(
+        tenantId,
+        decisionModal.request.id,
+        decisionModal.action,
+        hostNote || undefined
+      );
       setDecisionModal(null);
       setHostNote('');
       await loadRequests(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process request');
+    } finally {
+      setBusyRequestId(null);
     }
   };
 
-  const filtered = statusFilter === 'all' ? requests : requests.filter((r) => r.status === statusFilter);
-  const pendingCount = requests.filter((r) => r.status === 'pending').length;
-
-  const statusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-amber-100 text-amber-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
-      cancelled: 'bg-gray-100 text-gray-600'
-    };
-    return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] ?? 'bg-gray-100 text-gray-800'}`}>{status}</span>;
+  const quickDecide = async (requestId: string, status: 'approved' | 'rejected') => {
+    if (!tenantId) return;
+    setBusyRequestId(requestId);
+    try {
+      await api.decideHostRequest(tenantId, requestId, status);
+      await loadRequests(tenantId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to process request');
+    } finally {
+      setBusyRequestId(null);
+    }
   };
 
   return (
     <HostShell title="Join Requests">
       <div className="space-y-4">
         <TenantSwitcher onChange={setTenantId} />
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <GlassCard padding className="border-red-200/50 bg-red-50/50">
+            <p className="text-sm text-red-600">{error}</p>
+          </GlassCard>
+        )}
 
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold text-gray-900">Join Requests</h2>
-            {pendingCount > 0 && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs font-medium">{pendingCount} pending</span>}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Join requests</h2>
+            {pendingCount > 0 && (
+              <p className="text-sm text-amber-700 mt-0.5">{pendingCount} waiting for your response</p>
+            )}
           </div>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border rounded px-3 py-1.5 text-sm">
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+          <AppSegmented
+            segments={[
+              { key: 'pending', label: `Pending (${pendingCount})` },
+              { key: 'all', label: 'All' },
+            ]}
+            value={filter}
+            onChange={setFilter}
+          />
         </div>
 
-        <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left">Requester</th>
-                <th className="px-4 py-3 text-left">Activity</th>
-                <th className="px-4 py-3 text-left">Note</th>
-                <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Cancellation</th>
-                <th className="px-4 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((req) => (
-                <tr key={req.id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{req.user?.displayName ?? '—'}</p>
-                    <p className="text-xs text-gray-500">{req.user?.email ?? ''}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{req.activity.title || req.activity.locationName}</p>
-                    <p className="text-xs text-gray-500">
-                      {req.activity.date || req.activity.startAt ? new Date(req.activity.startAt || req.activity.date || '').toLocaleDateString() : ''}
-                    </p>
-                  </td>
-                  <td className="px-4 py-3">
-                    {req.note ? (
-                      <p className="text-xs text-gray-700 max-w-[200px] truncate" title={req.note}>{req.note}</p>
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-gray-500">{new Date(req.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-3">{statusBadge(req.status)}</td>
-                  <td className="px-4 py-3">
-                    {req.status === 'cancelled' && req.cancelReason ? (
-                      <div className="text-xs text-gray-700 max-w-[220px]">
-                        <p className="font-medium text-gray-900">{withdrawReasonLabel(req.cancelReason)}</p>
-                        {req.cancelMessage && (
-                          <p className="text-gray-600 mt-1 whitespace-pre-wrap">{req.cancelMessage}</p>
-                        )}
-                        {req.cancelledAt && (
-                          <p className="text-gray-400 mt-1">
-                            {new Date(req.cancelledAt).toLocaleString()}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    {req.status === 'pending' ? (
-                      <div className="flex gap-2">
-                        <button onClick={() => { setDecisionModal({ request: req, action: 'approved' }); setHostNote(''); }}
-                          className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Approve</button>
-                        <button onClick={() => { setDecisionModal({ request: req, action: 'rejected' }); setHostNote(''); }}
-                          className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs">Reject</button>
-                      </div>
-                    ) : (
-                      <>
-                        {req.organizerNote && (
-                          <span className="text-xs text-gray-500" title={req.organizerNote}>📝 Note added</span>
-                        )}
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">No requests found</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        {filtered.length === 0 ? (
+          <GlassCard padding>
+            <p className="text-sm text-neutral-600">
+              {filter === 'pending' ? 'No pending join requests.' : 'No join requests yet.'}
+            </p>
+          </GlassCard>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map((request) => (
+              <HostJoinRequestCard
+                key={request.id}
+                request={request}
+                busy={busyRequestId === request.id}
+                showActions={request.status === 'pending'}
+                onApprove={() => void quickDecide(request.id, 'approved')}
+                onReject={() => setDecisionModal({ request, action: 'rejected' })}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Decision Modal */}
-      {decisionModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setDecisionModal(null)}>
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-2">
-              {decisionModal.action === 'approved' ? 'Approve Request' : 'Reject Request'}
-            </h3>
-
-            {/* Requester Info */}
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <p className="text-sm font-medium">{decisionModal.request.user?.displayName}</p>
-              <p className="text-xs text-gray-500">{decisionModal.request.user?.email}</p>
+      <Dialog
+        open={Boolean(decisionModal)}
+        onClose={() => setDecisionModal(null)}
+        title={decisionModal?.action === 'approved' ? 'Approve request' : 'Decline request'}
+      >
+        {decisionModal && (
+          <>
+            <div className="rounded-xl bg-neutral-50 p-3 mb-4">
+              <p className="text-sm font-semibold text-neutral-900">
+                {decisionModal.request.user?.displayName ?? 'Guest'}
+              </p>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                {decisionModal.request.activity.title || decisionModal.request.activity.locationName}
+              </p>
               {decisionModal.request.note && (
-                <div className="mt-2 text-xs">
-                  <p className="text-gray-500 font-medium">Visitor&apos;s note:</p>
-                  <p className="text-gray-700 italic">&quot;{decisionModal.request.note}&quot;</p>
-                </div>
+                <p className="text-xs text-neutral-600 mt-2 italic">&ldquo;{decisionModal.request.note}&rdquo;</p>
               )}
             </div>
 
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Response note (optional)</label>
-            <textarea value={hostNote} onChange={(e) => setHostNote(e.target.value)}
-              placeholder={decisionModal.action === 'approved' ? 'e.g. Welcome! Please bring hiking boots and water.' : 'e.g. Sorry, this event is already at capacity.'}
-              className="w-full border rounded-lg px-3 py-2 text-sm mb-4" rows={3} />
+            <label className="text-sm font-medium text-neutral-700 mb-1 block">
+              Optional note to the guest
+            </label>
+            <textarea
+              value={hostNote}
+              onChange={(event) => setHostNote(event.target.value)}
+              placeholder={
+                decisionModal.action === 'approved'
+                  ? 'Welcome — see you on the trail!'
+                  : 'Sorry, this trip is full.'
+              }
+              className="w-full border rounded-xl px-3 py-2 text-sm mb-4"
+              rows={3}
+            />
 
-            <div className="flex justify-end gap-3">
-              <button onClick={() => setDecisionModal(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button>
-              <button onClick={submitDecision}
-                className={`px-4 py-2 rounded-lg text-sm text-white ${decisionModal.action === 'approved' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'}`}>
-                {decisionModal.action === 'approved' ? 'Approve' : 'Reject'}
-              </button>
+            <div className="flex justify-end gap-2">
+              <AppButton type="button" variant="secondary" onClick={() => setDecisionModal(null)}>
+                Cancel
+              </AppButton>
+              <AppButton
+                type="button"
+                variant={decisionModal.action === 'approved' ? 'primary' : 'destructive'}
+                disabled={Boolean(busyRequestId)}
+                onClick={() => void submitDecision()}
+              >
+                {decisionModal.action === 'approved' ? 'Approve' : 'Decline'}
+              </AppButton>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Dialog>
     </HostShell>
   );
 };

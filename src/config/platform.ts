@@ -3,21 +3,6 @@
  * Reference: UAE Trail Platform Audit & Strategy plan.
  */
 
-/** Primary mobile navigation tabs: Explore | Activities | Community | Shop | Profile */
-export const MOBILE_NAV = [
-  { to: '/', label: 'Explore', match: ['/'] },
-  { to: '/activities', label: 'Activities', match: ['/activities', '/trips', '/trip', '/activity'] },
-  { to: '/community', label: 'Community', match: ['/community'] },
-  { to: '/shop', label: 'Shop', match: ['/shop', '/product', '/merchant'] },
-  { to: '/profile', label: 'Profile', match: ['/profile', '/favorites', '/my-requests', '/messages', '/notifications'] },
-] as const;
-
-/** Extra links shown in the mobile hamburger menu. */
-export const MOBILE_MENU_EXTRAS = [
-  { to: '/discovery', label: 'Trails & Spots', match: ['/discovery', '/trail', '/camp'] },
-  { to: '/faq', label: 'Help', match: ['/faq'] },
-] as const;
-
 /** Right-side hamburger drawer order (mobile/PWA only). */
 export const MOBILE_DRAWER_MENU = [
   {
@@ -49,8 +34,6 @@ export const COMMUNITY_CATEGORIES = [
   { id: 'photos', label: 'Photos' },
   { id: 'tips', label: 'Tips & Gear' },
 ] as const;
-
-export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number]['id'];
 
 /** Feature toggles — flip without redeploying copy in many files. */
 export const FEATURE_FLAGS = {
@@ -126,11 +109,8 @@ export const MAP_CONFIG = {
     'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS',
 };
 
-/** Default platform country — see src/config/regions.ts for GCC catalog. */
-export const PLATFORM_DEFAULT_COUNTRY = 'AE';
-
 /** Routes where bottom nav, footer padding, and mobile chrome are hidden. */
-export const CONSUMER_CHROME_HIDDEN_PREFIXES = [
+const CONSUMER_CHROME_HIDDEN_PREFIXES = [
   '/admin',
   '/host',
   '/organizer',
@@ -138,7 +118,7 @@ export const CONSUMER_CHROME_HIDDEN_PREFIXES = [
   '/merchant'
 ] as const;
 
-export const CONSUMER_CHROME_HIDDEN_EXACT = [
+const CONSUMER_CHROME_HIDDEN_EXACT = [
   '/signin',
   '/signup',
   '/verify',

@@ -13,7 +13,7 @@ interface HostHubSectionsProps {
   upcomingActivities: ActivityDTO[];
 }
 
-export const buildHostStats = ({
+const buildHostStats = ({
   activitiesCount,
   pendingJoinRequests,
   upcomingActivitiesCount,
@@ -132,8 +132,3 @@ export const HostHubSections = ({
   );
 };
 
-/** @deprecated Use buildHostStats */
-export const buildOrganizerStats = buildHostStats;
-
-/** @deprecated Use HostHubSections */
-export const OrganizerHubSections = HostHubSections;

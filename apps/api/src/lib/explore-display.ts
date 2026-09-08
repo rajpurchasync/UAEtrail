@@ -8,7 +8,7 @@ export interface ExploreActivityDisplayFields {
 }
 
 const isCarpoolActivity = (activity: ActivityDTO): boolean =>
-  activity.activityType === 'carpool' || Boolean(activity.carPoolEnabled);
+  activity.activityType === 'carpool';
 
 export const buildExploreActivityDisplay = (activity: ActivityDTO): ExploreActivityDisplayFields => {
   const fromLabel = activity.meetingPoint ?? null;

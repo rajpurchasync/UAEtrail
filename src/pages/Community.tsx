@@ -234,6 +234,7 @@ export const Community = () => {
       title="Community"
       maxWidth="4xl"
       banner={{ src: PAGE_BANNERS.community, alt: 'Friends hiking together' }}
+      journey={{ fallbackTo: '/', label: 'Home' }}
       toolbar={
         <>
           <form onSubmit={handleSearch} className="relative mb-3">

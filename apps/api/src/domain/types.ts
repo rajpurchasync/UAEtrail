@@ -28,7 +28,7 @@ import type {
   UserStatus
 } from './enums.js';
 
-export interface User {
+interface User {
   id: string;
   email: string;
   passwordHash: string | null;
@@ -44,7 +44,7 @@ export interface User {
   referredById: string | null;
 }
 
-export interface Profile {
+interface Profile {
   id: string;
   userId: string;
   displayName: string | null;
@@ -55,7 +55,7 @@ export interface Profile {
   membershipTier: MembershipTier;
 }
 
-export interface RewardLedger {
+interface RewardLedger {
   id: string;
   userId: string;
   action: RewardAction;
@@ -66,7 +66,7 @@ export interface RewardLedger {
   createdAt: Date;
 }
 
-export interface UserBadge {
+interface UserBadge {
   id: string;
   userId: string;
   badgeKey: string;
@@ -101,7 +101,7 @@ export interface TenantMembership {
   createdAt: Date;
 }
 
-export interface HostApplication {
+interface HostApplication {
   id: string;
   applicantId: string;
   requestedTenantId: string | null;
@@ -158,7 +158,7 @@ export interface Location {
   updatedAt: Date;
 }
 
-export interface LocationUnlock {
+interface LocationUnlock {
   id: string;
   userId: string;
   locationId: string;
@@ -193,6 +193,10 @@ export interface Activity {
   carPoolPriceAed: number | null;
   carPoolSeats: number | null;
   carPoolDetails: string | null;
+  /** Parent hike/camp/event when this is a linked carpool listing. */
+  linkedActivityId: string | null;
+  /** Linked carpool activity id when car pool is offered for this listing. */
+  linkedCarpoolActivityId: string | null;
   paymentTerms: string | null;
   pricingMode: 'free' | 'shared' | 'paid' | null;
   itinerary: string[];
@@ -250,7 +254,7 @@ export interface MediaAsset {
   createdAt: Date;
 }
 
-export interface Notification {
+interface Notification {
   id: string;
   userId: string;
   title: string;
@@ -261,7 +265,7 @@ export interface Notification {
   createdAt: Date;
 }
 
-export interface RefreshToken {
+interface RefreshToken {
   id: string;
   userId: string;
   tokenHash: string;
@@ -272,7 +276,7 @@ export interface RefreshToken {
   createdAt: Date;
 }
 
-export interface AuditLog {
+interface AuditLog {
   id: string;
   actorId: string;
   action: string;
@@ -283,7 +287,7 @@ export interface AuditLog {
   createdAt: Date;
 }
 
-export interface EmailVerificationToken {
+interface EmailVerificationToken {
   id: string;
   userId: string;
   token: string;
@@ -292,7 +296,7 @@ export interface EmailVerificationToken {
   createdAt: Date;
 }
 
-export interface PasswordResetToken {
+interface PasswordResetToken {
   id: string;
   userId: string;
   token: string;
@@ -301,7 +305,7 @@ export interface PasswordResetToken {
   createdAt: Date;
 }
 
-export interface StripeWebhookEvent {
+interface StripeWebhookEvent {
   id: string;
   processedAt: Date;
 }
@@ -359,7 +363,7 @@ export interface ShopOrder {
   updatedAt: Date;
 }
 
-export interface ShopOrderItem {
+interface ShopOrderItem {
   id: string;
   orderId: string;
   productId: string;
@@ -374,7 +378,7 @@ export interface ProductClick {
   userId: string;
 }
 
-export interface OrderLineItem {
+interface OrderLineItem {
   id: string;
   productId: string;
   quantity: number;
@@ -384,7 +388,7 @@ export interface OrderLineItem {
   timestamp: Date;
 }
 
-export interface PushSubscription {
+interface PushSubscription {
   id: string;
   userId: string;
   endpoint: string;
@@ -393,7 +397,7 @@ export interface PushSubscription {
   createdAt: Date;
 }
 
-export interface UserFavorite {
+interface UserFavorite {
   id: string;
   userId: string;
   locationId: string | null;
@@ -401,7 +405,7 @@ export interface UserFavorite {
   createdAt: Date;
 }
 
-export interface Review {
+interface Review {
   id: string;
   targetType: ReviewTargetType;
   targetId: string;
@@ -412,7 +416,7 @@ export interface Review {
   updatedAt: Date;
 }
 
-export interface Post {
+interface Post {
   id: string;
   category: PostCategory;
   title: string;
@@ -425,7 +429,7 @@ export interface Post {
   updatedAt: Date;
 }
 
-export interface PostReply {
+interface PostReply {
   id: string;
   postId: string;
   authorId: string;
@@ -433,7 +437,7 @@ export interface PostReply {
   createdAt: Date;
 }
 
-export interface PostLike {
+interface PostLike {
   id: string;
   postId: string;
   userId: string;

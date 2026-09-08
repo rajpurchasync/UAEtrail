@@ -3,7 +3,7 @@ import { ArrowLeft, Flag, Loader2, MessageSquare, Plus, Search, X } from 'lucide
 import { ChatMessageDTO, ChatConversationDTO } from '@uaetrail/shared-types';
 import { ChatComposeBar } from '../ui/ChatComposeBar';
 
-export const MessageAvatar = ({
+const MessageAvatar = ({
   name,
   url,
   size = 'md',

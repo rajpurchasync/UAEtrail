@@ -1,0 +1,271 @@
+﻿node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...version of npm.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+> uaetrail@0.1.0 knip
+> knip
+
+Unused exports (116)
+isStandaloneDisplayMode                         function  src/utils/pwa.ts:4:17                                    
+formatWeekdayDate                                         src/explore/exploreCopy.ts:42:14                         
+formatRelativeDayShort                                    src/explore/exploreCopy.ts:56:14                         
+demandKindLabel                                           src/explore/exploreCopy.ts:121:14                        
+buildExploreListGoingLabel                                src/explore/exploreCopy.ts:224:14                        
+isParticipantRole                                         src/utils/authRouting.ts:17:14                           
+getInitials                                               src/utils/userDisplay.ts:1:14                            
+MOBILE_NAV                                                src/config/platform.ts:7:14                              
+MOBILE_MENU_EXTRAS                                        src/config/platform.ts:16:14                             
+PLATFORM_DEFAULT_COUNTRY                                  src/config/platform.ts:130:14                            
+CONSUMER_CHROME_HIDDEN_PREFIXES                           src/config/platform.ts:133:14                            
+CONSUMER_CHROME_HIDDEN_EXACT                              src/config/platform.ts:141:14                            
+buildPathFromLocation                                     src/utils/authReturnContext.ts:17:14                     
+SESSION_STORAGE_KEY                                       src/api/client.ts:12:14                                  
+TRIP_CURRENCIES                                           src/utils/tripPricing.ts:3:14                            
+TRIP_PRICING_MODE_LABELS                                  src/utils/tripPricing.ts:9:14                            
+emptyPricePackage                                         src/utils/tripPricing.ts:15:14                           
+ACTIVITY_PRODUCT_PLURAL                                   src/config/activityTypes.ts:20:14                        
+isNativePlatform                                          src/config/authProviders.ts:15:14                        
+nativePlatform                                            src/config/authProviders.ts:17:14                        
+unsplashPhoto                                             src/config/exploreUaeRegions.ts:22:14                    
+REGIONS_BY_COUNTRY                                        src/config/regions.ts:16:14                              
+HOME_HERO_IMAGE                                           src/config/seo.ts:15:14                                  
+UAE_STATES_BY_EMIRATE                                     src/config/uaeRegions.ts:14:14                           
+STATUS_COLORS                                             src/constants/index.ts:7:14                              
+ADMIN_ACTIVITIES_PATH                                     src/constants/index.ts:15:14                             
+activityDetailPath                                        src/constants/index.ts:17:14                             
+HIKING_SUBCATEGORIES                                      src/constants/index.ts:49:14                             
+CAMPING_SUBCATEGORIES                                     src/constants/index.ts:56:14                             
+getTierByKey                                              src/constants/membershipTiers.ts:109:14                  
+getSubscriptionPlan                                       src/constants/membershipTiers.ts:180:14                  
+useComposeRailOptional                                    src/context/ComposeRailContext.tsx:64:14                 
+isUpcomingDate                                            src/utils/tripDates.ts:6:14                              
+isUpcomingRequest                                         src/utils/tripDates.ts:14:14                             
+daysUntil                                                 src/utils/tripDates.ts:33:14                             
+formatPrice                                               src/utils/index.ts:4:14                                  
+formatTime                                                src/utils/index.ts:19:14                                 
+truncateText                                              src/utils/index.ts:31:14                                 
+isParticipantRole                                         src/utils/roles.ts:14:14                                 
+isStaffChromeRole                                         src/utils/roles.ts:17:14                                 
+hostRoles                                                 src/utils/roles.ts:20:14                                 
+digitsOnly                                                src/utils/phone.ts:3:14                                  
+boundsFromPins                                            src/components/ui/LocationsMap.tsx:45:14                 
+PLATFORM_FAQ_ITEMS                                        src/content/platformFaqs.ts:130:14                       
+activitySharePath                                         src/utils/share.ts:14:14                                 
+AccountStatGrid                                           src/components/account/index.ts:2:10                     
+AccountSectionHeader                                      src/components/account/index.ts:3:10                     
+AppButtonLink                                             src/components/mobile/AppButton.tsx:36:14                
+MessageAvatar                                             src/components/messages/MessagePanels.tsx:6:14           
+buildHostStats                                            src/components/account/HostHubSections.tsx:16:14         
+FORM_STEPS                                                src/components/activities/activityFormSteps.tsx:22:14    
+isValidHttpUrl                                            src/components/activities/activityFormValidation.ts:8:14 
+aboutFieldLabel                                           src/components/activities/activityFormValidation.ts:19:14
+useMobileMenu                                             src/components/layout/MobileMenu.tsx:163:14              
+validateBecomeHostForm                                    src/components/host/becomeHostForm.ts:122:14             
+logWarn                                                   apps/api/src/lib/logger.ts:108:14                        
+logInfo                                                   apps/api/src/lib/logger.ts:112:14                        
+findAuthUserForLogin                 authUsers            apps/api/src/lib/auth-users.ts:110:14                    
+extractConnectedId                                        apps/api/src/lib/entity-builders.ts:135:14               
+activityRowToMongoDoc                                     apps/api/src/lib/entity-builders.ts:232:14               
+updateMerchantProfileForUser                              apps/api/src/lib/shop-store.ts:393:14                    
+findTenantById                                            apps/api/src/lib/tenant-access.ts:96:14                  
+syncTenantMembershipByTenantAndUser                       apps/api/src/lib/tenant-access.ts:266:14                 
+syncTenantById                                            apps/api/src/lib/tenant-store.ts:98:14                   
+app                                                       apps/api/src/app.ts:213:12                               
+validateProductionConfig                                  apps/api/src/config/env.ts:45:14                         
+PROD_EMAIL_FROM_DEFAULT                                   apps/api/src/lib/email-config.ts:4:14                    
+formatScheduleLabel                                       apps/api/src/services/activity-schedule.ts:16:14         
+assertCanApproveRequest                                   apps/api/src/services/join-request.ts:2:3                
+createJoinOrWaitlistRequest                               apps/api/src/services/join-request.ts:3:3                
+promoteNextWaitlisted                                     apps/api/src/services/join-request.ts:6:3                
+PRIVATE_MEDIA_KINDS                                       apps/api/src/lib/media-access.ts:1:14                    
+PROFILE_VISIBILITIES                                      apps/api/src/lib/media-access.ts:2:14                    
+LAST_ACTIVE_THROTTLE_SECONDS                              apps/api/src/lib/user-activity.ts:5:14                   
+isCarpoolActivityType                                     apps/api/src/domain/activity-type.ts:28:14               
+hostProfileTypeSchema                                     apps/api/src/domain/host-application.ts:76:14            
+assembleEventsWithPublicRelations                         apps/api/src/lib/activity-read-assembler.ts:184:14       
+countPublishedEventsInMongo                               apps/api/src/lib/activity-read-assembler.ts:350:14       
+assembleEventsForExploreMap                               apps/api/src/lib/activity-read-assembler.ts:393:14       
+assembleTenantEventsWithRelations                         apps/api/src/lib/activity-read-assembler.ts:483:14       
+TRIP_CURRENCIES                                           apps/api/src/lib/trip-pricing.ts:3:14                    
+tripPricePackageSchema                                    apps/api/src/lib/trip-pricing.ts:6:14                    
+derivePriceAed                                            apps/api/src/lib/trip-pricing.ts:21:14                   
+eventHasPaidPricing                                       apps/api/src/lib/trip-pricing.ts:27:14                   
+assertCanApproveRequest                         function  apps/api/src/lib/activity-engagement-store.ts:29:17      
+createJoinOrWaitlistRequest                     function  apps/api/src/lib/activity-engagement-store.ts:150:23     
+promoteNextWaitlisted                           function  apps/api/src/lib/activity-engagement-store.ts:225:23     
+isTenantSlugTaken                                         apps/api/src/lib/admin-store.ts:269:14                   
+sha256                                                    apps/api/src/lib/hash.ts:3:14                            
+findEmailVerificationToken                                apps/api/src/lib/auth-tokens.ts:107:14                   
+isEmailConfigured                                         apps/api/src/lib/email.ts:20:10                          
+peekTestVerificationOtp                                   apps/api/src/lib/email.ts:25:14                          
+clearTestVerificationOtps                                 apps/api/src/lib/email.ts:28:14                          
+sendRawEmail                                              apps/api/src/lib/email.ts:72:14                          
+sendTransactionalEmail                                    apps/api/src/lib/email.ts:101:14                         
+notifyActivityCancelled                                   apps/api/src/lib/email.ts:181:14                         
+syncLocationsToMongo                                      apps/api/src/lib/location-query.ts:37:14                 
+toSharedMembershipRole                                    apps/api/src/lib/mappers.ts:21:14                        
+toSharedTenantType                                        apps/api/src/lib/mappers.ts:23:14                        
+toSharedRequestStatus                                     apps/api/src/lib/mappers.ts:24:14                        
+toEventDto                                                apps/api/src/lib/mappers.ts:145:14                       
+isGoogleAuthConfigured                                    apps/api/src/lib/google-auth.ts:14:14                    
+markHostApplicationApproved                               apps/api/src/lib/host-applications-store.ts:392:14       
+toLocationGeoPoint                                        apps/api/src/lib/location-geo.ts:8:14                    
+createLocalMediaAssetRecord                               apps/api/src/lib/media-store.ts:66:14                    
+paginate                                                  apps/api/src/lib/pagination.ts:10:14                     
+generateReferralCode                                      apps/api/src/lib/referral-code.ts:4:14                   
+TIER_BADGE_DEFINITIONS                                    apps/api/src/lib/rewards-config.ts:107:14                
+tierEnumToKey                                             apps/api/src/lib/rewards-config.ts:165:14                
+findInviteByToken                                         apps/api/src/lib/social-groups-store.ts:399:14           
+ADMIN_USER_TYPE_LABELS                                    apps/api/src/lib/user-type.ts:18:14                      
+isBusinessHost                                            apps/api/src/lib/user-type.ts:48:14                      
+WITHDRAW_REASON_VALUES                                    apps/api/src/lib/withdraw-reasons.ts:3:14                
+getUserMembershipTier                           function  apps/api/src/services/location-premium.ts:40:23          
+evaluateAchievementBadges                       function  apps/api/src/services/rewards.ts:167:23                  
+getCheckInWindow                                function  apps/api/src/services/checkin.ts:15:17                   
+Unused exported types (132)
+PwaDisplayMode                   type       src/utils/pwa.ts:1:13                                       
+ExploreHeadlineInput             interface  src/explore/exploreCopy.ts:63:18                            
+Time12Parts                      interface  src/utils/timePicker.ts:3:18                                
+CommunityCategory                type       src/config/platform.ts:53:13                                
+LocationLike                     interface  src/utils/authReturnContext.ts:1:18                         
+AuthReturnContext                interface  src/utils/authReturnContext.ts:7:18                         
+OpenActivityFormOptions          type       src/context/ActivityFormSessionContext.tsx:21:13            
+AuthSession                      interface  src/api/client.ts:8:18                                      
+ActivityDetail                   type       src/api/services.ts:247:13                                  
+Operator                         interface  src/types/index.ts:73:18                                    
+Participant                      interface  src/types/index.ts:84:18                                    
+GearItem                         interface  src/types/index.ts:123:18                                   
+Review                           interface  src/types/index.ts:135:18                                   
+TripCurrency                     type       src/utils/tripPricing.ts:4:13                               
+TripPricingMode                  type       src/utils/tripPricing.ts:7:13                               
+ExploreUaeRegion                 interface  src/config/exploreUaeRegions.ts:8:18                        
+UaeEmirate                       type       src/config/uaeRegions.ts:12:13                              
+ImageUploadPresetConfig          interface  src/constants/imageUploadPresets.ts:5:18                    
+PhoneCountry                     type       src/constants/phoneCountries.ts:1:13                        
+ComposeRailPayload               interface  src/context/ComposeRailContext.tsx:12:18                    
+ConsumerLayout                   type       src/components/mobile/ConsumerShell.tsx:8:13                
+SubmitLocationPayload            interface  src/components/ui/SubmitLocationForm.tsx:29:18              
+MapBounds                        interface  src/components/ui/LocationsMap.tsx:31:18                    
+FaqSection                       interface  src/content/platformFaqs.ts:6:18                            
+AccountStat                      type       src/components/account/index.ts:2:32                        
+AccountLinkItem                  type       src/components/account/index.ts:5:32                        
+WithdrawRequestModalProps        interface  src/components/ui/WithdrawRequestModal.tsx:6:18             
+ProfileShareOptions              interface  src/utils/profileShare.ts:3:18                              
+AccountLinkItem                  type       src/components/account/AccountLinkList.tsx:5:13             
+ActivityMenuActionId             type       src/components/activities/ActivityActionsMenu.tsx:6:13      
+ActivityMenuItem                 type       src/components/activities/ActivityActionsMenu.tsx:18:13     
+LocationTabConfig                type       src/components/activities/activityFormSteps.tsx:32:13       
+SummaryStepHikingProps           interface  src/components/activities/activityFormSteps.tsx:55:18       
+SummaryStepCampingProps          interface  src/components/activities/activityFormSteps.tsx:180:18      
+ParticipationStepProps           interface  src/components/activities/activityFormSteps.tsx:471:18      
+LocationStepProps                interface  src/components/activities/activityFormSteps.tsx:595:18      
+InstructionsStepProps            interface  src/components/activities/activityFormSteps.tsx:661:18      
+TransportationStepProps          interface  src/components/activities/activityFormSteps.tsx:756:18      
+ActivityDetailViewProps          interface  src/components/activity/ActivityDetailView.tsx:57:18        
+ActivityTypePickerModalProps     interface  src/components/activities/ActivityTypePickerModal.tsx:5:18  
+ActivityDraftSnapshot            type       src/components/activities/useHostActivityFormModal.ts:22:13 
+UseHostActivityFormModalOptions  interface  src/components/activities/useHostActivityFormModal.ts:30:18 
+CampingActivityFormModalProps    interface  src/components/activities/CampingActivityFormModal.tsx:22:18
+HikingActivityFormModalProps     interface  src/components/activities/HikingActivityFormModal.tsx:21:18 
+CreateActivityModalProps         interface  src/components/activities/CreateActivityModal.tsx:11:18     
+ParticipantPreviewItem           interface  src/components/ui/ParticipantPreview.tsx:4:18               
+DemandFlowStep                   type       src/components/explore/mobileDemandFlow.ts:10:13            
+LocationTab                      type       src/components/ui/LocationDetailTabs.tsx:45:13              
+LocationDetailData               interface  src/components/ui/LocationDetailTabs.tsx:47:18              
+SocialReview                     type       apps/api/src/lib/social-data.ts:6:13                        
+SocialReply                      type       apps/api/src/lib/social-data.ts:16:13                       
+SocialPost                       type       apps/api/src/lib/social-data.ts:35:13                       
+MerchantAnalyticsInterval        type       apps/api/src/lib/shop-store.ts:143:13                       
+MerchantAnalyticsPoint           type       apps/api/src/lib/shop-store.ts:145:13                       
+TenantMembershipContext          type       apps/api/src/lib/tenant-access.ts:9:13                      
+TenantMembershipRecord           type       apps/api/src/lib/tenant-access.ts:120:13                    
+OwnedHostProfileType             type       apps/api/src/lib/tenant-store.ts:135:13                     
+ChatStreamEvent                  type       apps/api/src/services/chat-stream.ts:9:13                   
+S3ObjectHead                     type       apps/api/src/lib/s3.ts:141:13                               
+AppRunEnv                        type       apps/api/src/lib/email-config.ts:1:13                       
+ResolvedEmailConfig              type       apps/api/src/lib/email-config.ts:10:13                      
+AccessTokenPayload               interface  apps/api/src/lib/jwt.ts:4:18                                
+PrivateMediaKind                 type       apps/api/src/lib/media-access.ts:4:13                       
+ProfileVisibility                type       apps/api/src/lib/media-access.ts:5:13                       
+MediaAccessInput                 type       apps/api/src/lib/media-access.ts:35:13                      
+ActivityPricingMode              type       apps/api/src/domain/activity-pricing.ts:4:13                
+User                             interface  apps/api/src/domain/types.ts:31:18                          
+Profile                          interface  apps/api/src/domain/types.ts:47:18                          
+RewardLedger                     interface  apps/api/src/domain/types.ts:58:18                          
+UserBadge                        interface  apps/api/src/domain/types.ts:69:18                          
+HostApplication                  interface  apps/api/src/domain/types.ts:104:18                         
+LocationUnlock                   interface  apps/api/src/domain/types.ts:161:18                         
+Notification                     interface  apps/api/src/domain/types.ts:257:18                         
+RefreshToken                     interface  apps/api/src/domain/types.ts:268:18                         
+AuditLog                         interface  apps/api/src/domain/types.ts:279:18                         
+EmailVerificationToken           interface  apps/api/src/domain/types.ts:290:18                         
+PasswordResetToken               interface  apps/api/src/domain/types.ts:299:18                         
+StripeWebhookEvent               interface  apps/api/src/domain/types.ts:308:18                         
+ShopOrderItem                    interface  apps/api/src/domain/types.ts:366:18                         
+OrderLineItem                    interface  apps/api/src/domain/types.ts:381:18                         
+PushSubscription                 interface  apps/api/src/domain/types.ts:391:18                         
+UserFavorite                     interface  apps/api/src/domain/types.ts:400:18                         
+Review                           interface  apps/api/src/domain/types.ts:408:18                         
+Post                             interface  apps/api/src/domain/types.ts:419:18                         
+PostReply                        interface  apps/api/src/domain/types.ts:432:18                         
+PostLike                         interface  apps/api/src/domain/types.ts:440:18                         
+SharedActivityType               type       apps/api/src/domain/activity-type.ts:10:13                  
+HostProfileType                  type       apps/api/src/domain/host-application.ts:78:13               
+HostApplicationBody              type       apps/api/src/domain/host-application.ts:127:13              
+ActivityWithPublicRelations      type       apps/api/src/lib/activity-read-assembler.ts:25:13           
+PublicTenantProfile              type       apps/api/src/lib/activity-read-assembler.ts:585:13          
+TripCurrency                     type       apps/api/src/lib/trip-pricing.ts:4:13                       
+TripPricePackage                 type       apps/api/src/lib/trip-pricing.ts:12:13                      
+NotificationInput                interface  apps/api/src/services/notifications.ts:5:18                 
+AuditLogFilter                   type       apps/api/src/lib/admin-store.ts:50:13                       
+ProductAdminFilter               type       apps/api/src/lib/admin-store.ts:55:13                       
+EmailTemplate                    type       apps/api/src/lib/email.ts:6:13                              
+LocationListFilters              interface  apps/api/src/lib/location-query.ts:8:18                     
+ExploreActivityDisplayFields     interface  apps/api/src/lib/explore-display.ts:3:18                    
+FavoriteRecord                   type       apps/api/src/lib/favorites-store.ts:32:13                   
+FavoriteWithDetails              type       apps/api/src/lib/favorites-store.ts:41:13                   
+GoogleProfile                    interface  apps/api/src/lib/google-auth.ts:5:18                        
+HostApplicationRecord            type       apps/api/src/lib/host-applications-store.ts:17:13           
+HostApplicationWithApplicant     type       apps/api/src/lib/host-applications-store.ts:33:13           
+GeoPoint                         type       apps/api/src/lib/location-geo.ts:1:13                       
+MongoDuplicateKeyError           type       apps/api/src/lib/mongo-errors.ts:2:13                       
+NotificationRecord               type       apps/api/src/lib/notifications-store.ts:6:13                
+PaginationParams                 type       apps/api/src/lib/pagination.ts:8:13                         
+PushSubscriptionRecord           type       apps/api/src/lib/push-subscriptions.ts:5:13                 
+MembershipTierKey                type       apps/api/src/lib/rewards-config.ts:31:13                    
+MembershipTierDefinition         interface  apps/api/src/lib/rewards-config.ts:33:18                    
+BadgeDefinition                  interface  apps/api/src/lib/rewards-config.ts:99:18                    
+GroupType                        type       apps/api/src/lib/social-groups-store.ts:6:13                
+GroupRole                        type       apps/api/src/lib/social-groups-store.ts:7:13                
+GroupMemberType                  type       apps/api/src/lib/social-groups-store.ts:8:13                
+GroupInviteStatus                type       apps/api/src/lib/social-groups-store.ts:9:13                
+GroupStatus                      type       apps/api/src/lib/social-groups-store.ts:11:13               
+GroupRecord                      type       apps/api/src/lib/social-groups-store.ts:13:13               
+GroupMemberRecord                type       apps/api/src/lib/social-groups-store.ts:26:13               
+GroupInviteRecord                type       apps/api/src/lib/social-groups-store.ts:39:13               
+GroupWallReactionKind            type       apps/api/src/lib/social-groups-store.ts:65:13               
+GroupWallReactionSummary         type       apps/api/src/lib/social-groups-store.ts:67:13               
+GroupWallMessageRecord           type       apps/api/src/lib/social-groups-store.ts:73:13               
+AdminUserType                    type       apps/api/src/lib/user-type.ts:5:13                          
+WithdrawReasonInput              type       apps/api/src/lib/withdraw-reasons.ts:27:13                  
+PremiumAccessReason              type       apps/api/src/services/location-premium.ts:29:13             
+PremiumAccessResult              interface  apps/api/src/services/location-premium.ts:31:18             
+AccountDeletionInfo              interface  apps/api/src/services/account-deletion.ts:17:18             
+AwardPointsInput                 interface  apps/api/src/services/rewards.ts:29:18                      
+UserDataExport                   interface  apps/api/src/services/data-export.ts:8:18                   
+CarpoolRouteInput                type       apps/api/src/services/linked-carpool.ts:13:13               
+LocationCreateData               type       apps/api/src/services/location-submit.ts:16:13              
+Duplicate exports (2)
+HOME_HERO_IMAGE_JPEG|HOME_HERO_IMAGE                       src/config/seo.ts              
+findAdminLocationById|findAdminLocationByIdForEventCreate  apps/api/src/lib/admin-store.ts
+Configuration hints (6)
+**/*.test.ts                               knip.json  Remove from ignore            
+**/*.test.tsx                              knip.json  Remove from ignore            
+@capacitor/android                         knip.json  Remove from ignoreDependencies
+src/main.tsx                               knip.json  Remove redundant entry pattern
+src/index.ts        apps/api               knip.json  Remove redundant entry pattern
+src/index.ts        packages/shared-types  knip.json  Remove redundant entry pattern

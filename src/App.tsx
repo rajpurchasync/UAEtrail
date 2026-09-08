@@ -66,6 +66,7 @@ const Favorites = lazy(() => import('./pages/Favorites').then((m) => ({ default:
 const MerchantDashboard = lazy(() => import('./pages/MerchantDashboard').then((m) => ({ default: m.MerchantDashboard })));
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
+const ProfileSettings = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
 const JoinRequestDetail = lazy(() =>
   import('./pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
 );
@@ -192,6 +193,14 @@ function App() {
           <Route path="/calendar" element={<Navigate to="/activities" replace />} />
           <Route path="/activities" element={<ConsumerRoute><Activities /></ConsumerRoute>} />
           <Route path="/trips" element={<LegacyTripsRedirect />} />
+          <Route
+            path="/profile/settings"
+            element={
+              <ProtectedRoute>
+                <ProfileSettings />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/profile"
             element={

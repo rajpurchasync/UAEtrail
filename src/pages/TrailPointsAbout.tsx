@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/services';
+import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { RewardStatsDTO } from '@uaetrail/shared-types';
 import { MEMBERSHIP_TIERS, EARN_WAYS } from '../constants/membershipTiers';
 import { FEATURE_FLAGS } from '../config/platform';
@@ -152,6 +153,7 @@ export const TrailPointsAbout = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/55 to-[#eef6f3]" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-safe-plus-2 pb-8 sm:pb-10 lg:pb-16 lg:pt-8">
+          <MobileBackButton fallbackTo="/" label="Home" tone="light" className="mb-4" />
           <div className="mb-4 md:hidden">
             <MobileBrandBar tone="light" />
           </div>

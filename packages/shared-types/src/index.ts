@@ -143,6 +143,10 @@ export interface ActivityDTO {
   carPoolPriceAed?: number | null;
   carPoolSeats?: number | null;
   carPoolDetails?: string | null;
+  linkedActivityId?: string | null;
+  linkedCarpoolActivityId?: string | null;
+  linkedCarpool?: ActivityDTO | null;
+  linkedParentActivity?: Pick<ActivityDTO, 'id' | 'title' | 'activityType'> | null;
   paymentTerms?: string | null;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[] | null;
@@ -437,6 +441,12 @@ export interface MerchantProfileDTO {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  contactPersonName?: string | null;
+  contactPersonAvatar?: string | null;
+}
+
+export interface MerchantPublicDTO extends MerchantProfileDTO {
+  products: ProductDTO[];
 }
 
 export type ExploreMapKind = ActivityType | 'shop' | 'agency';
@@ -448,6 +458,7 @@ export interface ParticipantIntentDTO {
   id: string;
   userId: string;
   kind: ParticipantIntentKind;
+  title: string;
   date: string | null;
   time: string | null;
   preferredArea: string | null;
@@ -499,6 +510,10 @@ export interface ExploreMapItemDTO {
   toLabel?: string | null;
   websiteUrl?: string | null;
   contactPhone?: string | null;
+  /** Demand requester user id — for message / respond actions. */
+  requesterUserId?: string | null;
+  /** Shop/agency about one-liner for map cards. */
+  about?: string | null;
 }
 
 export interface ProductClick {

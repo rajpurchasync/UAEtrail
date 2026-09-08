@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { OrderStatus, ProductStatus } from '../domain/enums.js';
 import type { MerchantProfile, Product, ProductClick, ShopOrder } from '../domain/types.js';
+import { findAuthUserById } from './auth-users.js';
 import type { Collection } from 'mongodb';
 import { getMongoClient } from './mongo.js';
 
@@ -320,8 +321,12 @@ export const findMerchantPublicById = async (id: string) => {
     .sort({ createdAt: -1 })
     .toArray();
 
+  const owner = merchant.adminIds[0] ? await findAuthUserById(merchant.adminIds[0]) : null;
+
   return {
     ...mapMongoMerchantProfile(merchant),
+    contactPersonName: owner?.profile?.displayName ?? null,
+    contactPersonAvatar: owner?.profile?.avatarUrl ?? null,
     products: products.map(mapMongoProduct)
   };
 };
@@ -383,14 +388,6 @@ export const createMerchantProfileForUser = async (
   };
   await merchantProfilesCollection().insertOne(doc);
   return mapMongoMerchantProfile(doc);
-};
-
-export const updateMerchantProfileForUser = async (userId: string, data: MerchantProfileUpdate) => {
-  const merchant = await findMerchantProfileByUserId(userId);
-  if (!merchant) {
-    throw new Error('Merchant profile not found.');
-  }
-  return updateManagedMerchantProfileById(userId, merchant.id, data);
 };
 
 export const updateManagedMerchantProfileById = async (

@@ -11,7 +11,3 @@ export const isGoogleSignInOffered = (): boolean => {
   }
   return isGoogleAuthEnabled();
 };
-
-export const isNativePlatform = (): boolean => Capacitor.isNativePlatform();
-
-export const nativePlatform = (): string => Capacitor.getPlatform();

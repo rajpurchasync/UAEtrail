@@ -125,6 +125,7 @@ export const Favorites = () => {
       layout="tab"
       title="Saved"
       banner={{ src: PAGE_BANNERS.profile, alt: 'Saved hiking and camping inspiration' }}
+      journey={{ fallbackTo: '/profile', label: 'Profile' }}
       toolbar={
         <FilterChips options={SAVED_TAB_OPTIONS} value={activeTab} onChange={setActiveTab} />
       }

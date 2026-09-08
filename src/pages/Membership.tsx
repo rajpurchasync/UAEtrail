@@ -1,6 +1,7 @@
-import { ArrowRight, Check, Star, Trophy, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ArrowRight, Check, Star, Trophy, Zap } from 'lucide-react';
 import { FEATURE_FLAGS } from '../config/platform';
+import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { SUBSCRIPTION_PLANS } from '../constants/membershipTiers';
 
 const PLAN_STYLES: Record<string, { card: string; accent: string; ring: string; cta: string }> = {
@@ -76,6 +77,9 @@ export const Membership = () => {
 
   return (
     <div className="min-h-screen consumer-bg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-safe-plus-2">
+        <MobileBackButton fallbackTo="/profile/settings" label="Settings" className="py-2" />
+      </div>
       {!FEATURE_FLAGS.membershipEnabled && (
         <div className="bg-amber-50 border-b border-amber-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-center gap-2 text-center sm:text-left">

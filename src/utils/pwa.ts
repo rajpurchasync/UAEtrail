@@ -1,7 +1,7 @@
-export type PwaDisplayMode = 'standalone' | 'minimal-ui' | 'fullscreen' | 'browser' | 'window-controls-overlay';
+type PwaDisplayMode = 'standalone' | 'minimal-ui' | 'fullscreen' | 'browser' | 'window-controls-overlay';
 
 /** True when the app runs as an installed PWA or native shell (no browser chrome). */
-export function isStandaloneDisplayMode(): boolean {
+function isStandaloneDisplayMode(): boolean {
   if (typeof window === 'undefined') return false;
 
   const standaloneMq = window.matchMedia('(display-mode: standalone)').matches;

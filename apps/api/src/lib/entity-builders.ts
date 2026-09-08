@@ -54,6 +54,7 @@ export type ActivityCreateInput = {
   location?: RelationConnect;
   createdBy?: RelationConnect;
   host?: RelationConnect;
+  guide?: RelationConnect;
   activityType?: ActivityType | string;
   title: string;
   description?: string;
@@ -74,6 +75,8 @@ export type ActivityCreateInput = {
   carPoolPriceAed?: number | null;
   carPoolSeats?: number | null;
   carPoolDetails?: string | null;
+  linkedActivityId?: string | null;
+  linkedCarpoolActivityId?: string | null;
   paymentTerms?: string | null;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[];
@@ -110,6 +113,8 @@ export type ActivityUpdateInput = {
   carPoolPriceAed?: number | null;
   carPoolSeats?: number | null;
   carPoolDetails?: string | null;
+  linkedActivityId?: string | null;
+  linkedCarpoolActivityId?: string | null;
   paymentTerms?: string | null;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[];
@@ -127,7 +132,7 @@ export type ActivityUpdateInput = {
   location?: RelationConnect;
 };
 
-export const extractConnectedId = (relation?: RelationConnect): string | null => {
+const extractConnectedId = (relation?: RelationConnect): string | null => {
   if (relation && typeof relation === 'object' && 'connect' in relation) {
     return relation.connect?.id ?? null;
   }
@@ -204,6 +209,8 @@ export type MongoActivityDoc = {
   carPoolPriceAed: number | null;
   carPoolSeats: number | null;
   carPoolDetails: string | null;
+  linkedActivityId: string | null;
+  linkedCarpoolActivityId: string | null;
   paymentTerms: string | null;
   pricingMode: 'free' | 'shared' | 'paid' | null;
   itinerary: string[];
@@ -222,49 +229,6 @@ export type MongoActivityDoc = {
   updatedAt: Date;
 };
 
-export const activityRowToMongoDoc = (event : Activity): MongoActivityDoc => ({
-  _id: event.id,
-  tenantId: event.tenantId,
-  locationId: event.locationId,
-  activityType: event.activityType ?? null,
-  createdById: event.createdById,
-  hostId: event.hostId,
-  title: event.title,
-  description: event.description,
-  startAt: event.startAt,
-  endAt: event.endAt,
-  meetingPoint: event.meetingPoint,
-  meetingLat: event.meetingLat,
-  meetingLng: event.meetingLng,
-  startPoint: event.startPoint,
-  startLat: event.startLat,
-  startLng: event.startLng,
-  parkingPoint: event.parkingPoint,
-  parkingLat: event.parkingLat,
-  parkingLng: event.parkingLng,
-  meetingDifferent: event.meetingDifferent,
-  carPoolEnabled: event.carPoolEnabled,
-  carPoolFree: event.carPoolFree,
-  carPoolPriceAed: event.carPoolPriceAed,
-  carPoolSeats: event.carPoolSeats ?? null,
-  carPoolDetails: event.carPoolDetails,
-  paymentTerms: event.paymentTerms,
-  pricingMode: event.pricingMode ?? null,
-  itinerary: event.itinerary,
-  requirements: event.requirements,
-  images: event.images,
-  bannerUrl: event.bannerUrl ?? null,
-  signupUrl: event.signupUrl ?? null,
-  priceAed: event.priceAed,
-  pricePackages: event.pricePackages,
-  capacity: event.capacity,
-  status: event.status,
-  featured: event.featured,
-  publishedAt: event.publishedAt,
-  createdAt: event.createdAt,
-  updatedAt: event.updatedAt
-});
-
 export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: string): MongoActivityDoc => {
   const now = new Date();
   return {
@@ -273,7 +237,7 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     locationId: extractConnectedId(data.location)!,
     activityType: (data.activityType as ActivityType | undefined) ?? null,
     createdById: extractConnectedId(data.createdBy)!,
-    hostId: extractConnectedId(data.host),
+    hostId: extractConnectedId(data.host) ?? extractConnectedId(data.guide),
     title: data.title,
     description: data.description ?? '',
     startAt: data.startAt,
@@ -293,6 +257,8 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     carPoolPriceAed: data.carPoolPriceAed ?? null,
     carPoolSeats: data.carPoolSeats ?? null,
     carPoolDetails: data.carPoolDetails ?? null,
+    linkedActivityId: data.linkedActivityId ?? null,
+    linkedCarpoolActivityId: data.linkedCarpoolActivityId ?? null,
     paymentTerms: data.paymentTerms ?? null,
     pricingMode: data.pricingMode ?? null,
     itinerary: asStringArray(data.itinerary),

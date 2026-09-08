@@ -94,7 +94,10 @@ export const useHostActivityFormModal = ({
   const validationOptions = { activityType, canPickHostOrganization };
 
   const set = (patch: Partial<ActivityFormState>) => setForm((prev) => ({ ...prev, ...patch }));
-  const setPin = (key: 'start' | 'parking' | 'meeting', patch: Partial<ActivityFormState['start']>) =>
+  const setPin = (
+    key: 'start' | 'parking' | 'meeting' | 'carPoolFrom' | 'carPoolTo',
+    patch: Partial<ActivityFormState['start']>
+  ) =>
     setForm((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
 
   const handleAddVenue = () => {

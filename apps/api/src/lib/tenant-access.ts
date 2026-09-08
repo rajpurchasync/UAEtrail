@@ -93,8 +93,6 @@ export const listTenantMembershipsWithUsers = async (tenantId: string) => {
   });
 };
 
-export const findTenantById = async (tenantId: string) => findTenantRecordById(tenantId);
-
 export const findCompanyGuideMembershipForUser = async (userId: string, tenantIdToExclude?: string) => {
   const memberships = await tenantMembershipsCollection()
     .find({ userId, role: MembershipRole.TENANT_GUIDE })
@@ -261,13 +259,6 @@ export const updateTenantMembershipRole = async (
 export const deleteTenantMembership = async (membershipId: string): Promise<boolean> => {
   const result = await tenantMembershipsCollection().deleteOne({ _id: membershipId });
   return result.deletedCount > 0;
-};
-
-export const syncTenantMembershipByTenantAndUser = async (
-  _tenantId: string,
-  _userId: string
-): Promise<void> => {
-  // Mongo is the source of truth; no sync needed.
 };
 
 export const deleteTenantMembershipsByUser = async (userId: string): Promise<void> => {

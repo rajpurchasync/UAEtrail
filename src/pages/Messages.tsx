@@ -15,7 +15,7 @@ import { ConversationListPanel, MessageThreadPanel, NewChatModal } from '../comp
 const userLinks = [
   { to: '/profile', label: 'Profile' },
   { to: '/my-requests', label: 'My Requests' },
-  { to: '/activities?tab=mine', label: 'My Activities' },
+  { to: '/activities?tab=joined', label: 'My Activities' },
   { to: '/messages', label: 'Messages' },
   { to: '/notifications', label: 'Notifications' },
 ];

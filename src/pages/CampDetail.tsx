@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Car, ChevronRight } from 'lucide-react';
 import { ReviewDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
-import { ActivityCard, BookingModal, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
+import { ActivityCard, JoinRequestModal, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { campSchema } from '../components/seo/schemas';
@@ -211,7 +211,12 @@ export const CampDetail = () => {
       </div>
 
       {bookingActivity && (
-        <BookingModal activity={bookingActivity} trip={bookingActivity} onClose={() => setBookingActivity(null)} />
+        <JoinRequestModal
+          open
+          activity={bookingActivity}
+          onClose={() => setBookingActivity(null)}
+          isFull={bookingActivity.slotsAvailable <= 0}
+        />
       )}
     </div>
     </MobileDetailShell>

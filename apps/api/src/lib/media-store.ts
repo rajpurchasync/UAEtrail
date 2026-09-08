@@ -62,22 +62,3 @@ export const findMediaAssetByKey = async (key: string): Promise<MediaAsset | nul
   const doc = await mediaAssetsCollection().findOne({ key });
   return doc ? mapMediaAsset(doc) : null;
 };
-
-export const createLocalMediaAssetRecord = async (input: {
-  key: string;
-  url: string;
-  bucket: string;
-  mimeType: string;
-  size: number;
-  uploadedById: string;
-  tenantId?: string;
-  kind: string;
-}) => {
-  const created = await createMediaAssetRecord(input);
-  return {
-    id: created.id,
-    key: created.key,
-    url: created.url,
-    kind: created.kind
-  };
-};

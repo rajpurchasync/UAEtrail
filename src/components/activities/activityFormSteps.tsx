@@ -19,7 +19,7 @@ import {
   type PricingMode,
 } from './activityFormState';
 
-export const FORM_STEPS = ['Summary', 'Participation', 'Location', 'Instructions', 'Transportation'] as const;
+const FORM_STEPS = ['Summary', 'Participation', 'Location', 'Instructions', 'Transportation'] as const;
 export const FORM_TOTAL_STEPS = FORM_STEPS.length;
 
 export const INSTRUCTION_TABS = [
@@ -47,7 +47,10 @@ export const eventLocationTabs: LocationTabConfig[] = [
 ];
 
 type SetForm = (patch: Partial<ActivityFormState>) => void;
-type SetPin = (key: 'start' | 'parking' | 'meeting', patch: Partial<ActivityFormState['start']>) => void;
+type SetPin = (
+  key: 'start' | 'parking' | 'meeting' | 'carPoolFrom' | 'carPoolTo',
+  patch: Partial<ActivityFormState['start']>
+) => void;
 
 export interface SummaryStepHikingProps {
   form: ActivityFormState;
@@ -776,8 +779,10 @@ export const TransportationStep = ({ form, set, setPin, venueCenter }: Transport
 
     <label className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 p-4 bg-gray-50/50 cursor-pointer">
       <div>
-        <p className="text-sm font-medium text-gray-900">Car pool available</p>
-        <p className="text-xs text-gray-500 mt-0.5">Let participants share rides to the venue.</p>
+        <p className="text-sm font-medium text-gray-900">Offer carpool</p>
+        <p className="text-xs text-gray-500 mt-0.5">
+          Creates a linked carpool listing on the map with from/to pickup and destination.
+        </p>
       </div>
       <button
         type="button"
@@ -798,6 +803,27 @@ export const TransportationStep = ({ form, set, setPin, venueCenter }: Transport
 
     {form.carPoolEnabled && (
       <div className="space-y-4 rounded-lg border border-gray-200 p-4">
+        <p className="text-sm font-medium text-gray-900">Carpool route</p>
+        <p className="text-xs text-gray-500">
+          Set pickup and destination on the map. A separate carpool listing will appear on the explore map,
+          linked to this activity.
+        </p>
+        <ActivityLocationPinField
+          label="From location"
+          value={form.carPoolFrom}
+          onChange={(patch) => setPin('carPoolFrom', patch)}
+          centerLat={venueCenter.lat}
+          centerLng={venueCenter.lng}
+          required
+        />
+        <ActivityLocationPinField
+          label="To location"
+          value={form.carPoolTo}
+          onChange={(patch) => setPin('carPoolTo', patch)}
+          centerLat={venueCenter.lat}
+          centerLng={venueCenter.lng}
+          required
+        />
         <div>
           <label className={FORM_LABEL}>Available seats *</label>
           <input

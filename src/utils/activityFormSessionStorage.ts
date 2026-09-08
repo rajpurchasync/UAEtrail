@@ -9,9 +9,6 @@ export type ActivityDraftSnapshot = {
   editingActivityId: string | null;
 };
 
-/** @deprecated Use ActivityDraftSnapshot */
-export type HikingDraftSnapshot = ActivityDraftSnapshot;
-
 export type ActivityFormSessionSnapshot = {
   open: boolean;
   activityType: ActivityType | null;
@@ -109,5 +106,3 @@ export const saveEventDraft = (
     ...sessionPatch,
   });
 };
-
-export const draftFromActivity = (activity: { id: string } | null): string | null => activity?.id ?? null;

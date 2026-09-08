@@ -1,22 +1,13 @@
 import type { ActivityDTO, ActivityPricePackageDTO } from '@uaetrail/shared-types';
 
-export const TRIP_CURRENCIES = ['AED', 'USD', 'EUR', 'SAR', 'OMR'] as const;
-export type TripCurrency = (typeof TRIP_CURRENCIES)[number];
-
 export type TripPricePackage = ActivityPricePackageDTO;
 export type TripPricingMode = 'free' | 'shared' | 'paid';
 
-export const TRIP_PRICING_MODE_LABELS: Record<TripPricingMode, string> = {
+const TRIP_PRICING_MODE_LABELS: Record<TripPricingMode, string> = {
   free: 'Free',
   shared: 'Cost Shared',
   paid: 'Professional Paid trip',
 };
-
-export const emptyPricePackage = (): TripPricePackage => ({
-  label: '',
-  amount: 0,
-  currency: 'AED'
-});
 
 export const formatPackagePrice = (pkg: Pick<TripPricePackage, 'amount' | 'currency'>): string => {
   if (pkg.amount === 0) return 'Free';

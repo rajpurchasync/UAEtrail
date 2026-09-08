@@ -31,9 +31,7 @@ type JoinableActivity = Pick<
 interface JoinRequestModalProps {
   open: boolean;
   onClose: () => void;
-  activity?: JoinableActivity | ActivityDetailDTO;
-  /** @deprecated Use activity */
-  trip?: JoinableActivity | ActivityDetailDTO;
+  activity: JoinableActivity | ActivityDetailDTO;
   isFull?: boolean;
   selectedPackageIndex?: number;
   onSuccess?: (message: string) => void;
@@ -43,14 +41,12 @@ interface JoinRequestModalProps {
 export const JoinRequestModal = ({
   open,
   onClose,
-  activity: activityProp,
-  trip,
+  activity,
   isFull,
   selectedPackageIndex,
   onSuccess,
   overlayClassName,
 }: JoinRequestModalProps) => {
-  const activity = activityProp ?? trip!;
   const navigate = useNavigate();
   const [note, setNote] = useState('');
   const [agreed, setAgreed] = useState(false);

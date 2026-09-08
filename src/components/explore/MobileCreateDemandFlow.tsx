@@ -23,6 +23,7 @@ import {
   demandAreaTextRequired,
   demandAreaUsesMap,
   demandFlowStepTitle,
+  demandTitlePlaceholder,
   emptyMobileDemandDraft,
   getDemandFlowSteps,
   publishMobileDemandRequest,
@@ -104,10 +105,10 @@ const NextButton = ({
 );
 
 const REVIEW_EDIT_LABELS: Partial<Record<DemandFlowStepId, string>> = {
+  title: 'Title',
   area: 'Location',
   when: 'When',
-  from: 'From',
-  to: 'To',
+  route: 'Route',
   persons: 'People',
   comment: 'Comment',
 };
@@ -129,8 +130,7 @@ export const MobileCreateDemandFlow = ({
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
   const [areaMapOpen, setAreaMapOpen] = useState(false);
-  const [fromMapOpen, setFromMapOpen] = useState(false);
-  const [toMapOpen, setToMapOpen] = useState(false);
+  const [routeMapTarget, setRouteMapTarget] = useState<'from' | 'to' | null>(null);
 
   const kind = draft.kind ?? selectedKind;
   const flowSteps = useMemo(() => (kind ? getDemandFlowSteps(kind) : []), [kind]);
@@ -151,8 +151,7 @@ export const MobileCreateDemandFlow = ({
       setSubmitting(false);
       setShowMonthView(false);
       setAreaMapOpen(false);
-      setFromMapOpen(false);
-      setToMapOpen(false);
+      setRouteMapTarget(null);
       return;
     }
     if (!user) {
@@ -179,20 +178,14 @@ export const MobileCreateDemandFlow = ({
 
   const goToStep = (target: DemandFlowStepId) => {
     setAreaMapOpen(false);
-    setFromMapOpen(false);
-    setToMapOpen(false);
+    setRouteMapTarget(null);
     setStep(target);
     setError(null);
   };
 
   const goBack = () => {
-    if (toMapOpen) {
-      setToMapOpen(false);
-      setError(null);
-      return;
-    }
-    if (fromMapOpen) {
-      setFromMapOpen(false);
+    if (routeMapTarget) {
+      setRouteMapTarget(null);
       setError(null);
       return;
     }
@@ -248,13 +241,40 @@ export const MobileCreateDemandFlow = ({
   };
 
   const isMapOverlay =
-    (step === 'area' && areaMapOpen) || (step === 'from' && fromMapOpen) || (step === 'to' && toMapOpen);
+    (step === 'area' && areaMapOpen) || (step === 'route' && routeMapTarget !== null);
+
+  const renderRoutePicker = (endpoint: 'from' | 'to') => {
+    const isTo = endpoint === 'to';
+    const placed = isTo ? draft.toPinPlaced : draft.fromPinPlaced;
+    const lat = isTo ? draft.toLatitude : draft.latitude;
+    const lng = isTo ? draft.toLongitude : draft.longitude;
+
+    return (
+      <button
+        key={endpoint}
+        type="button"
+        onClick={() => setRouteMapTarget(endpoint)}
+        className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
+      >
+        <span className="flex items-center gap-2 text-gray-800">
+          <MapPin className={`h-5 w-5 ${isTo ? 'text-sky-500' : 'text-emerald-500'}`} />
+          <span>
+            <span className="block text-sm font-bold">{isTo ? 'To location' : 'From location'}</span>
+            <span className="text-xs text-gray-500">
+              {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
+            </span>
+          </span>
+        </span>
+        <span className="text-xs font-semibold text-emerald-600">{placed ? 'Edit' : 'Map'}</span>
+      </button>
+    );
+  };
 
   if (!open) return null;
 
   if (isMapOverlay && kind) {
-    const isToStep = step === 'to';
-    const isFromStep = step === 'from';
+    const isToStep = routeMapTarget === 'to';
+    const isFromStep = routeMapTarget === 'from';
     const lat = isToStep
       ? draft.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
       : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
@@ -262,7 +282,7 @@ export const MobileCreateDemandFlow = ({
       ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
       : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
 
-    const mapTitle = isToStep ? 'Choose to' : isFromStep ? 'Choose from' : 'Where would you like to go?';
+    const mapTitle = isToStep ? 'To location' : isFromStep ? 'From location' : 'Where would you like to go?';
 
     return (
       <div className="absolute inset-0 z-[1400] bg-neutral-100">
@@ -287,14 +307,14 @@ export const MobileCreateDemandFlow = ({
             onConfirm={() => {
               if (isToStep) {
                 patchDraft({ toPinPlaced: true });
-                setToMapOpen(false);
-                goNext();
+                setRouteMapTarget(null);
+                setError(null);
                 return;
               }
               if (isFromStep) {
                 patchDraft({ fromPinPlaced: true });
-                setFromMapOpen(false);
-                goNext();
+                setRouteMapTarget(null);
+                setError(null);
                 return;
               }
               patchDraft({ areaPinPlaced: true });
@@ -340,6 +360,27 @@ export const MobileCreateDemandFlow = ({
             </div>
             <div className="mt-5 pb-2">
               <NextButton disabled={!selectedKind} onClick={goToFirstStep} />
+            </div>
+          </>
+        )}
+
+        {step === 'title' && kind && (
+          <>
+            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-gray-700">Give your request a short title</span>
+              <input
+                value={draft.title}
+                onChange={(event) => patchDraft({ title: event.target.value })}
+                placeholder={demandTitlePlaceholder(kind)}
+                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+                maxLength={120}
+                autoFocus
+              />
+            </label>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={!draft.title.trim()} onClick={goNext} />
             </div>
           </>
         )}
@@ -464,60 +505,20 @@ export const MobileCreateDemandFlow = ({
           </>
         )}
 
-        {step === 'from' && kind === 'carpool' && (
+        {step === 'route' && kind === 'carpool' && (
           <>
             <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-4 text-sm text-gray-600">Set your pickup point on the map.</p>
-            <button
-              type="button"
-              onClick={() => setFromMapOpen(true)}
-              className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
-            >
-              <span className="flex items-center gap-2 text-gray-800">
-                <MapPin className="h-5 w-5 text-emerald-500" />
-                <span>
-                  <span className="block text-sm font-bold">
-                    {draft.fromPinPlaced
-                      ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
-                      : 'Choose starting point'}
-                  </span>
-                  <span className="text-xs text-gray-500">Tap to open map</span>
-                </span>
-              </span>
-              <span className="text-xs font-semibold text-emerald-600">{draft.fromPinPlaced ? 'Edit' : 'Map'}</span>
-            </button>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton disabled={!draft.fromPinPlaced} onClick={goNext} />
+            <p className="mb-4 text-sm text-gray-600">Set both pickup and destination on the map.</p>
+            <div className="space-y-3">
+              {renderRoutePicker('from')}
+              {renderRoutePicker('to')}
             </div>
-          </>
-        )}
-
-        {step === 'to' && kind === 'carpool' && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-4 text-sm text-gray-600">Set your destination on the map.</p>
-            <button
-              type="button"
-              onClick={() => setToMapOpen(true)}
-              className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
-            >
-              <span className="flex items-center gap-2 text-gray-800">
-                <MapPin className="h-5 w-5 text-emerald-500" />
-                <span>
-                  <span className="block text-sm font-bold">
-                    {draft.toPinPlaced
-                      ? `${draft.toLatitude?.toFixed(4)}, ${draft.toLongitude?.toFixed(4)}`
-                      : 'Choose destination'}
-                  </span>
-                  <span className="text-xs text-gray-500">Tap to open map</span>
-                </span>
-              </span>
-              <span className="text-xs font-semibold text-emerald-600">{draft.toPinPlaced ? 'Edit' : 'Map'}</span>
-            </button>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
-              <NextButton disabled={!draft.toPinPlaced} onClick={goNext} />
+              <NextButton
+                disabled={!draft.fromPinPlaced || !draft.toPinPlaced}
+                onClick={goNext}
+              />
             </div>
           </>
         )}
@@ -586,6 +587,12 @@ export const MobileCreateDemandFlow = ({
                 )}
                 {DEMAND_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind}
               </p>
+              {draft.title && (
+                <p className="mt-2 text-xs text-gray-600">
+                  <span className="font-semibold text-gray-700">Title: </span>
+                  {draft.title}
+                </p>
+              )}
               {draft.preferredArea && (
                 <p className="mt-2 text-xs text-gray-600">
                   <span className="font-semibold text-gray-700">{demandAreaFieldLabel(kind)}: </span>
@@ -601,13 +608,13 @@ export const MobileCreateDemandFlow = ({
               {kind === 'carpool' && draft.fromPinPlaced && (
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
                   <MapPin className="h-3.5 w-3.5" />
-                  From: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
+                  From location: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
               {kind === 'carpool' && draft.toPinPlaced && (
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
                   <MapPin className="h-3.5 w-3.5" />
-                  To: {draft.toLatitude?.toFixed(4)}, {draft.toLongitude?.toFixed(4)}
+                  To location: {draft.toLatitude?.toFixed(4)}, {draft.toLongitude?.toFixed(4)}
                 </p>
               )}
               {draft.areaPinPlaced && kind !== 'carpool' && (
@@ -630,6 +637,8 @@ export const MobileCreateDemandFlow = ({
                         ? 'Activity'
                         : kind === 'guide'
                           ? 'Details'
+                          : kind === 'carpool'
+                            ? 'Route details'
                           : 'Location'
                       : REVIEW_EDIT_LABELS[target] ?? target;
                   return (

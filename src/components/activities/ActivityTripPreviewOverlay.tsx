@@ -21,7 +21,7 @@ type ActivityTripPreviewOverlayProps = {
     }
 );
 
-/** Full-screen activity page preview (same layout as TripDetail). */
+/** Full-screen activity page preview (same layout as ActivityDetail). */
 export const ActivityTripPreviewOverlay = (props: ActivityTripPreviewOverlayProps) => {
   const { trip, onClose, saving = false } = props;
   const variant = props.variant ?? 'form';

@@ -74,6 +74,8 @@ const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
   carPoolPriceAed: doc.carPoolPriceAed,
   carPoolSeats: doc.carPoolSeats ?? null,
   carPoolDetails: doc.carPoolDetails,
+  linkedActivityId: doc.linkedActivityId ?? null,
+  linkedCarpoolActivityId: doc.linkedCarpoolActivityId ?? null,
   paymentTerms: doc.paymentTerms,
   pricingMode: doc.pricingMode ?? null,
   itinerary: doc.itinerary,
@@ -179,7 +181,7 @@ const loadActiveLocations = async (locationIds: string[]): Promise<Map<string, L
   return map;
 };
 
-export const assembleEventsWithPublicRelations = async (
+const assembleEventsWithPublicRelations = async (
   docs: MongoActivityDoc[]
 ): Promise<ActivityWithPublicRelations[]> => {
   if (docs.length === 0) return [];
@@ -345,12 +347,6 @@ export const listPublishedUpcomingActivitiesByLocationFromMongo = async (
   return assembleEventsWithPublicRelations(docs);
 };
 
-export const countPublishedEventsInMongo = async (): Promise<number> => {
-  const docs = await activitiesCollection().find({ status: ActivityStatus.PUBLISHED }).toArray();
-  const filtered = await filterPublishedUpcomingDocs(docs);
-  return filtered.length;
-};
-
 export type ActivityWithTenantRelations = Activity & {
   location: Location;
   tenant: TenantRecord;
@@ -388,7 +384,7 @@ const loadLocationsByIds = async (
 };
 
 /** Like assembleEventsWithPublicRelations but includes draft/inactive venues (for explore map). */
-export const assembleEventsForExploreMap = async (
+const assembleEventsForExploreMap = async (
   docs: MongoActivityDoc[]
 ): Promise<ActivityWithPublicRelations[]> => {
   if (docs.length === 0) return [];
@@ -478,7 +474,7 @@ export const assembleEventsForExploreMap = async (
   });
 };
 
-export const assembleTenantEventsWithRelations = async (
+const assembleTenantEventsWithRelations = async (
   docs: MongoActivityDoc[]
 ): Promise<ActivityWithTenantRelations[]> => {
   if (docs.length === 0) return [];

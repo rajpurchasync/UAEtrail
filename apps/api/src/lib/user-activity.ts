@@ -2,7 +2,7 @@ import { updateAuthUserLastActive } from './auth-users.js';
 import { getRedisClient } from './redis.js';
 
 /** Minimum interval between persisted lastActiveAt writes per user. */
-export const LAST_ACTIVE_THROTTLE_SECONDS = 300;
+const LAST_ACTIVE_THROTTLE_SECONDS = 300;
 
 const memoryLastTouch = new Map<string, number>();
 

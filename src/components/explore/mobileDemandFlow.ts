@@ -5,12 +5,11 @@ import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } fro
 
 export type MobileDemandKind = ParticipantIntentKind;
 
-export type DemandFlowStepId = 'area' | 'when' | 'from' | 'to' | 'persons' | 'comment' | 'review';
-
-export type DemandFlowStep = 'type' | DemandFlowStepId;
+export type DemandFlowStepId = 'title' | 'area' | 'when' | 'route' | 'persons' | 'comment' | 'review';
 
 export type MobileDemandDraft = {
   kind: MobileDemandKind | null;
+  title: string;
   date: string;
   time: string;
   timeMode: TimeMode;
@@ -37,7 +36,7 @@ export const DEMAND_TYPE_OPTIONS: Array<{
   { key: 'camping', title: 'Camp', subtitle: 'Camping plans', emoji: '⛺' },
   { key: 'event', title: 'Event', subtitle: 'Runs, meetups & more', emoji: '🎉' },
   { key: 'guide', title: 'Guide', subtitle: 'Looking for a guide', emoji: '🧭' },
-  { key: 'carpool', title: 'Carpool', subtitle: 'Need a ride', emoji: '🚗' },
+  { key: 'carpool', title: 'Ride sharing', subtitle: 'Need a ride', emoji: '🚗' },
   { key: 'other', title: 'Others', subtitle: 'Something else outdoors', emoji: '✨' },
 ];
 
@@ -45,6 +44,7 @@ export const DEMAND_PARTY_PRESETS = [1, 2, 3, 4, 6, 8] as const;
 
 export const emptyMobileDemandDraft = (): MobileDemandDraft => ({
   kind: null,
+  title: '',
   date: todayIso(),
   time: '09:00',
   timeMode: 'flexible',
@@ -65,32 +65,32 @@ export const getDemandFlowSteps = (kind: MobileDemandKind): DemandFlowStepId[] =
   switch (kind) {
     case 'hiking':
     case 'camping':
-      return ['area', 'when', 'persons', 'comment', 'review'];
+      return ['title', 'area', 'when', 'persons', 'comment', 'review'];
     case 'event':
     case 'guide':
-      return ['area', 'when', 'persons', 'comment', 'review'];
+      return ['title', 'area', 'when', 'persons', 'comment', 'review'];
     case 'carpool':
-      return ['area', 'when', 'from', 'to', 'persons', 'comment', 'review'];
+      return ['title', 'area', 'when', 'route', 'persons', 'comment', 'review'];
     case 'other':
-      return ['area', 'persons', 'comment', 'review'];
+      return ['title', 'area', 'persons', 'comment', 'review'];
     default:
-      return ['comment', 'review'];
+      return ['title', 'comment', 'review'];
   }
 };
 
 /** Sheet heading for each step (shown under the header). */
 export const demandFlowStepTitle = (step: DemandFlowStepId, kind: MobileDemandKind): string => {
   switch (step) {
+    case 'title':
+      return "What's the plan?";
     case 'area':
       if (kind === 'event') return 'What would you like to do?';
       if (kind === 'guide') return 'What are you looking for?';
       return 'Where would you like to go?';
     case 'when':
       return 'When?';
-    case 'from':
-      return 'Choose from';
-    case 'to':
-      return 'Choose to';
+    case 'route':
+      return 'From & to';
     case 'persons':
       return 'How many people?';
     case 'comment':
@@ -99,6 +99,23 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: MobileDemandKi
       return 'Review & submit';
     default:
       return 'Request';
+  }
+};
+
+export const demandTitlePlaceholder = (kind: MobileDemandKind): string => {
+  switch (kind) {
+    case 'hiking':
+      return 'e.g. Hiking buddies for Jebel Jais';
+    case 'camping':
+      return 'e.g. Weekend camping near Al Qudra';
+    case 'event':
+      return 'e.g. Sunrise run at Kite Beach';
+    case 'guide':
+      return 'e.g. Desert guide for overnight camp';
+    case 'carpool':
+      return 'e.g. Need a ride Dubai to Hatta';
+    default:
+      return 'e.g. Outdoor photography meetup';
   }
 };
 
@@ -126,7 +143,7 @@ export const demandAreaPlaceholder = (kind: MobileDemandKind): string => {
 };
 
 export const demandAreaUsesMap = (kind: MobileDemandKind): boolean =>
-  kind === 'camping' || kind === 'guide' || kind === 'other' || kind === 'carpool';
+  kind === 'camping' || kind === 'guide' || kind === 'other';
 
 export const demandAreaTextRequired = (kind: MobileDemandKind): boolean =>
   kind === 'hiking' || kind === 'event' || kind === 'guide';
@@ -136,6 +153,10 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: MobileDemandDr
   if (!kind) return 'Choose what you are looking for.';
 
   switch (step) {
+    case 'title':
+      if (!draft.title.trim()) return 'Enter a short title for your request.';
+      if (draft.title.trim().length < 3) return 'Title should be at least 3 characters.';
+      return null;
     case 'area': {
       if (demandAreaTextRequired(kind) && !draft.preferredArea.trim()) {
         return kind === 'event'
@@ -150,12 +171,10 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: MobileDemandDr
       if (!draft.date) return 'Pick a date.';
       if (draft.timeMode === 'specific' && !draft.time) return 'Pick a time.';
       return null;
-    case 'from':
+    case 'route':
       if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
         return 'Choose a starting point on the map.';
       }
-      return null;
-    case 'to':
       if (!draft.toPinPlaced || draft.toLatitude == null || draft.toLongitude == null) {
         return 'Choose a destination on the map.';
       }
@@ -194,6 +213,7 @@ export const publishMobileDemandRequest = async (draft: MobileDemandDraft): Prom
 
   const payload = {
     kind: draft.kind,
+    title: draft.title.trim(),
     date: draft.kind === 'other' ? null : draft.date,
     time: draft.kind === 'other' || draft.timeMode === 'flexible' ? null : draft.time,
     preferredArea: draft.preferredArea.trim() || null,

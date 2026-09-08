@@ -8,8 +8,6 @@ import { PhoneInput } from '../ui/PhoneInput';
 import { OtpInput } from '../auth/OtpInput';
 import { registerPushNotifications } from '../../utils/push';
 import { formatE164Phone, isValidNationalPhone, splitStoredPhone } from '../../utils/phone';
-import { ProfilePhotoEditorField } from './ProfilePhotoEditorField';
-
 interface AccountEditModalProps {
   open: boolean;
   onClose: () => void;
@@ -24,7 +22,6 @@ interface AccountEditModalProps {
     displayName: string;
     bio?: string;
     phone?: string;
-    avatarUrl?: string;
   }) => void | Promise<void>;
   onEmailChanged?: () => void | Promise<void>;
 }
@@ -86,7 +83,6 @@ export const AccountEditModal = ({
       displayName,
       bio: profile.bio?.trim() || undefined,
       phone,
-      avatarUrl: profile.avatarUrl,
     };
     setProfile((prev) => ({ ...prev, ...payload }));
     await onSave(payload);
@@ -144,13 +140,6 @@ export const AccountEditModal = ({
   return (
     <Dialog open={open} onClose={onClose} title="Edit profile">
       <form className="space-y-4" onSubmit={handleProfileSubmit}>
-        <ProfilePhotoEditorField
-          value={profile.avatarUrl}
-          name={profile.displayName || currentEmail || 'Profile'}
-          onChange={(url) => setProfile((p) => ({ ...p, avatarUrl: url }))}
-          disabled={saving || emailBusy}
-        />
-
         <div>
           <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
             Name

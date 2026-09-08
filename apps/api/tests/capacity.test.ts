@@ -7,6 +7,6 @@ describe('capacity checks', () => {
   });
 
   it('throws when capacity is full', () => {
-    expect(() => assertCapacityAvailable(10, 10)).toThrowError('Event capacity has already been reached.');
+    expect(() => assertCapacityAvailable(10, 10)).toThrowError('Activity capacity has already been reached.');
   });
 });

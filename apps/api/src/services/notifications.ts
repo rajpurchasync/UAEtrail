@@ -26,6 +26,3 @@ export async function dispatchNotification(input: NotificationInput): Promise<vo
     data: input.meta
   });
 }
-
-/** @deprecated Use dispatchNotification */
-export const dispatchNotificationDefault = dispatchNotification;

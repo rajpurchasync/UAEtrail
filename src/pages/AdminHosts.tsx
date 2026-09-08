@@ -561,5 +561,3 @@ export const AdminHosts = () => {
   );
 };
 
-/** @deprecated Use AdminHosts */
-export const AdminOrganizers = AdminHosts;

@@ -1,5 +1,4 @@
 import { ButtonHTMLAttributes, ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 
 type Variant = 'primary' | 'secondary' | 'tint' | 'destructive' | 'plain';
 
@@ -31,22 +30,4 @@ export const AppButton = ({
   >
     {children}
   </button>
-);
-
-export const AppButtonLink = ({
-  to,
-  variant = 'primary',
-  fullWidth,
-  className = '',
-  children
-}: {
-  to: string;
-  variant?: Variant;
-  fullWidth?: boolean;
-  className?: string;
-  children: ReactNode;
-}) => (
-  <Link to={to} className={`ios-btn inline-flex justify-center ${variants[variant]} ${fullWidth ? 'w-full' : ''} ${className}`}>
-    {children}
-  </Link>
 );

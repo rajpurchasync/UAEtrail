@@ -43,7 +43,6 @@ export const HostOverview = () => {
     displayName: string;
     bio?: string;
     phone?: string;
-    avatarUrl?: string;
   }) => {
     setMessage(null);
     setSaving(true);
@@ -52,7 +51,6 @@ export const HostOverview = () => {
         displayName: payload.displayName,
         phone: payload.phone,
         bio: payload.bio,
-        avatarUrl: payload.avatarUrl,
       });
       await refreshUser();
       setMessage('Profile saved.');
@@ -206,7 +204,7 @@ export const HostOverview = () => {
             <AccountLinkList
               items={[
                 {
-                  to: '/activities?tab=mine',
+                  to: '/activities?tab=joined',
                   icon: <Calendar className="w-4 h-4" />,
                   label: 'My trips as participant',
                   badge: participant.upcomingTripsCount || undefined,

@@ -38,36 +38,41 @@ export const MobileDetailShell = ({
 }: MobileDetailShellProps) => (
   <div className={`min-h-screen consumer-bg md:bg-gray-50 ${footer ? 'pb-cta-safe md:pb-8' : ''}`}>
     {banner && (
-      <ConsumerHeroBanner
-        src={banner.src}
-        alt={banner.alt}
-        title={banner.title}
-        eyebrow={banner.eyebrow}
-        backTo={backTo}
-        backLabel={backLabel}
-        linkTo={banner.linkTo ?? backTo}
-        linkAriaLabel={banner.linkTo ? backLabel : banner.title ?? banner.alt ?? backLabel}
-        showMobileChrome={banner.showMobileChrome ?? true}
-        showJourney={banner.showJourney ?? true}
-        journeyFallbackTo={banner.journeyFallbackTo ?? backTo}
-        journeyLabel={banner.journeyLabel ?? backLabel}
-        action={headerAction ?? banner.desktopAction}
-        desktopAction={banner.desktopAction}
-        desktopChromeOnly={banner.desktopChromeOnly}
-        className="animate-fade-up"
-      />
-    )}
-    {!banner && (
-      <div className="md:hidden sticky top-0 z-30 glass-header">
-        <div className="max-w-6xl mx-auto px-4 pt-safe-plus-2 pb-2 flex items-center justify-between gap-2">
-          <MobileBackButton fallbackTo={backTo} label={backLabel} className="flex-1 min-w-0" />
-          <div className="flex items-center gap-2 shrink-0">
-            {headerAction}
-            <MobileMenuButton />
-          </div>
-        </div>
+      <div className="hidden md:block">
+        <ConsumerHeroBanner
+          src={banner.src}
+          alt={banner.alt}
+          title={banner.title}
+          eyebrow={banner.eyebrow}
+          backTo={backTo}
+          backLabel={backLabel}
+          linkTo={banner.linkTo ?? backTo}
+          linkAriaLabel={banner.linkTo ? backLabel : banner.title ?? banner.alt ?? backLabel}
+          showMobileChrome={banner.showMobileChrome ?? true}
+          showJourney={banner.showJourney ?? true}
+          journeyFallbackTo={banner.journeyFallbackTo ?? backTo}
+          journeyLabel={banner.journeyLabel ?? backLabel}
+          action={headerAction ?? banner.desktopAction}
+          desktopAction={banner.desktopAction}
+          desktopChromeOnly={banner.desktopChromeOnly}
+          className="animate-fade-up"
+        />
       </div>
     )}
+    <div className="md:hidden sticky top-0 z-30 glass-header">
+      <div className="relative max-w-6xl mx-auto px-4 pt-safe-plus-2 pb-2 flex items-center justify-between gap-2">
+        <MobileBackButton fallbackTo={backTo} label={backLabel} className="flex-1 min-w-0" />
+        {banner?.title && (
+          <h1 className="absolute left-1/2 max-w-[52%] -translate-x-1/2 truncate text-center text-[17px] font-semibold text-neutral-900 pointer-events-none">
+            {banner.title}
+          </h1>
+        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {headerAction}
+          <MobileMenuButton />
+        </div>
+      </div>
+    </div>
     {children}
     {footer && (
       <div className="md:hidden fixed inset-x-0 bottom-0 z-40 px-4 pb-safe">{footer}</div>

@@ -50,7 +50,7 @@ export const HostShell = ({ title, children, cta, headerExtra }: HostShellProps)
     <ConsumerShell
       layout="tab"
       title={title}
-      showJourney={false}
+      journey={{ fallbackTo: '/profile', label: 'Profile' }}
       banner={{ src: PAGE_BANNERS.organizer, alt: 'Host dashboard' }}
       action={
         avgRating !== null ? (
@@ -96,5 +96,3 @@ export const HostShell = ({ title, children, cta, headerExtra }: HostShellProps)
   );
 };
 
-/** @deprecated Use HostShell */
-export const OrganizerShell = HostShell;

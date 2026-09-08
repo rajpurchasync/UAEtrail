@@ -9,7 +9,7 @@ vi.mock('../src/lib/redis.js', () => ({
   }))
 }));
 
-const { publishChatStreamActivity, registerChatStreamClient } = await import(
+const { publishChatStreamEvent, registerChatStreamClient } = await import(
   '../src/services/chat-stream.js'
 );
 

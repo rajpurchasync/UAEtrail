@@ -1,4 +1,4 @@
-import { ActivityType, LocationUnlockSource, NotificationType, HostApplicationStatus, RequestStatus, RewardAction, TenantBusinessMode, TenantType, UserRole } from '../domain/enums.js';
+import { ActivityType, LocationUnlockSource, MembershipRole, NotificationType, HostApplicationStatus, RequestStatus, RewardAction, TenantBusinessMode, TenantStatus, TenantType, UserRole } from '../domain/enums.js';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { registerActivityRoute } from '../lib/activity-routes.js';
@@ -10,12 +10,12 @@ import { optionalAuth } from '../middleware/optional-auth.js';
 import { viewLimiter, sensitiveDataLimiter } from '../middleware/rate-limit-instances.js';
 import { validate } from '../middleware/validate.js';
 import { slugify } from '../lib/slug.js';
-import { createJoinOrWaitlistRequestDefault } from '../services/join-request.js';
-import { buildParticipationDto, performParticipantCheckInDefault } from '../services/checkin.js';
+import { createJoinOrWaitlistRequest } from '../services/join-request.js';
+import { buildParticipationDto, performParticipantCheckIn } from '../services/checkin.js';
 import { canWithdrawRequest, withdrawReasonSchema } from '../lib/withdraw-reasons.js';
 import { getVapidPublicKey } from '../lib/push.js';
 import { EARN_OPPORTUNITIES, MEMBERSHIP_TIERS, REWARD_POINTS } from '../lib/rewards-config.js';
-import { awardPointsDefault, getLeaderboardDefault, getRewardStatsDefault, getRewardSummaryDefault } from '../services/rewards.js';
+import { awardPoints, getLeaderboard, getRewardStats, getRewardSummary } from '../services/rewards.js';
 import { buildLocationCreateData } from '../services/location-submit.js';
 import { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { createAuditLog } from '../lib/audit.js';
@@ -67,6 +67,7 @@ import {
 import {
   findTenantById,
   listTenantsByOwnerId,
+  mergeActiveTenantsForHostStatus,
   pickActivityTenant,
   resolveOwnedProfileType,
   tenantMatchesHostProfileType
@@ -592,9 +593,31 @@ registerActivityRoute(userRouter, 'get', '/:id', optionalAuth, validate({ params
       }
     }
 
+    let linkedCarpool = null;
+    if (event.linkedCarpoolActivityId) {
+      const linkedEvent = await findPublishedActivityWithPreviewsById(event.linkedCarpoolActivityId);
+      if (linkedEvent) {
+        linkedCarpool = buildActivityDto(linkedEvent);
+      }
+    }
+
+    let linkedParentActivity = null;
+    if (event.linkedActivityId) {
+      const parentEvent = await findPublishedActivityWithPreviewsById(event.linkedActivityId);
+      if (parentEvent) {
+        linkedParentActivity = {
+          id: parentEvent.id,
+          title: parentEvent.title,
+          activityType: buildActivityDto(parentEvent).activityType,
+        };
+      }
+    }
+
     res.json({
       data: {
         ...buildActivityDto(event),
+        linkedCarpool,
+        linkedParentActivity,
         organizerId: event.hostId ?? event.tenant.ownerId,
         participants: toParticipantPreviews(event.participants),
         location: toLocationDto(event.location),
@@ -619,7 +642,7 @@ registerActivityRoute(
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
       const { note, selectedPackageIndex } = req.body as z.infer<typeof createRequestSchema>;
 
-      const { request, waitlisted } = await createJoinOrWaitlistRequestDefault({
+      const { request, waitlisted } = await createJoinOrWaitlistRequest({
         activityId: id,
         userId: req.auth!.userId,
         note,
@@ -774,7 +797,7 @@ userRouter.get('/rewards/catalog', (_req, res) => {
 
 userRouter.get('/rewards/stats', async (_req, res, next) => {
   try {
-    const data = await getRewardStatsDefault();
+    const data = await getRewardStats();
     res.json({ data });
   } catch (error) {
     next(error);
@@ -783,7 +806,7 @@ userRouter.get('/rewards/stats', async (_req, res, next) => {
 
 userRouter.get('/rewards/leaderboard', async (_req, res, next) => {
   try {
-    const data = await getLeaderboardDefault(10);
+    const data = await getLeaderboard(10);
     res.json({ data });
   } catch (error) {
     next(error);
@@ -800,7 +823,7 @@ registerActivityRoute(userRouter, 'post', '/:id/checkin', validate({ params: eve
       throw new ApiError(404, 'not_a_participant', 'You are not confirmed for this trip.');
     }
 
-    const result = await performParticipantCheckInDefault({
+    const result = await performParticipantCheckIn({
       activityId: id,
       participantId: participant.id,
       actorUserId: req.auth!.userId,
@@ -1574,7 +1597,11 @@ userRouter.get('/me/host-status', requireAuth, async (req, res, next) => {
       role === UserRole.TENANT_GUIDE;
     const isPlatformAdmin = role === UserRole.PLATFORM_ADMIN;
 
-    const ownedTenants = isHostRole || isPlatformAdmin ? await listTenantsByOwnerId(userId) : [];
+    const [ownedByOwnerId, memberships] = await Promise.all([
+      listTenantsByOwnerId(userId),
+      listActiveTenantMembershipsByUser(userId),
+    ]);
+    const ownedTenants = mergeActiveTenantsForHostStatus(ownedByOwnerId, memberships);
     const ownedProfiles = ownedTenants.map((tenant) => ({
       type: resolveOwnedProfileType(tenant),
       tenantId: tenant.id,
@@ -1882,7 +1909,7 @@ userRouter.post('/me/locations', validate({ body: locationSubmitBodySchema }), a
       entityId: created.id
     });
 
-    void awardPointsDefault({
+    void awardPoints({
       userId: req.auth!.userId,
       action: RewardAction.LOCATION_SUBMITTED,
       referenceId: created.id,
@@ -1913,7 +1940,7 @@ userRouter.post(
 
 userRouter.get('/me/rewards', async (req, res, next) => {
   try {
-    const data = await getRewardSummaryDefault(req.auth!.userId);
+    const data = await getRewardSummary(req.auth!.userId);
     res.json({ data });
   } catch (error) {
     next(error);

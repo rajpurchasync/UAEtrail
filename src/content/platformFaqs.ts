@@ -127,7 +127,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
   }
 ];
 
-export const PLATFORM_FAQ_ITEMS: FaqItem[] = PLATFORM_FAQ_SECTIONS.flatMap((section) => section.items);
+const PLATFORM_FAQ_ITEMS: FaqItem[] = PLATFORM_FAQ_SECTIONS.flatMap((section) => section.items);
 
 const pickFaqs = (...questions: string[]) =>
   PLATFORM_FAQ_ITEMS.filter((item) => questions.includes(item.question));

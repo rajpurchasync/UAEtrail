@@ -19,14 +19,14 @@ import {
 } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { parseStoredPricePackages } from './trip-pricing.js';
-import { dispatchNotificationDefault } from '../services/notifications.js';
+import { dispatchNotification } from '../services/notifications.js';
 
 const ACTIVE_STATUSES: RequestStatus[] = ['PENDING', 'APPROVED', 'WAITLISTED'];
 
 export const isActivityFull = (capacity: number, participantCount: number): boolean =>
   participantCount >= capacity;
 
-export function assertCanApproveRequest(capacity: number, participantCount: number): void {
+function assertCanApproveRequest(capacity: number, participantCount: number): void {
   assertCapacityAvailable(capacity, participantCount);
 }
 
@@ -212,17 +212,8 @@ export async function createJoinOrWaitlistRequest(opts: {
   return { request: toActivityRequestRecord(mongoRow), waitlisted };
 }
 
-export async function createJoinOrWaitlistRequestDefault(opts: {
-  activityId: string;
-  userId: string;
-  note?: string;
-  selectedPackageIndex?: number;
-}) {
-  return createJoinOrWaitlistRequest(opts);
-}
-
 /** Promote oldest waitlisted request to pending when a slot opens. */
-export async function promoteNextWaitlisted(activityId: string): Promise<boolean> {
+async function promoteNextWaitlisted(activityId: string): Promise<boolean> {
   const eventDoc = await findActivityDocInMongo(activityId);
   if (!eventDoc) return false;
 
@@ -239,7 +230,7 @@ export async function promoteNextWaitlisted(activityId: string): Promise<boolean
 
   await patchActivityRequestInMongo(next._id, { status: RequestStatus.PENDING });
 
-  await dispatchNotificationDefault({
+  await dispatchNotification({
     userId: next.userId,
     title: 'A spot opened up!',
     body: 'Your waitlisted trip now has availability. Your request is pending organizer approval.',

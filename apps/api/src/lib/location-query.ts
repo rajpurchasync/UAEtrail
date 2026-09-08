@@ -34,19 +34,6 @@ export const locationDocForMongo = (location: Location): MongoLocationDoc => {
   return withLocationGeoFields({ _id: id, ...rest }) as MongoLocationDoc;
 };
 
-export const syncLocationsToMongo = async (locations: Location[]): Promise<void> => {
-  if (locations.length === 0) return;
-  await Promise.all(
-    locations.map((location) =>
-      locationsCollection().updateOne(
-        { _id: location.id },
-        { $set: locationDocForMongo(location) },
-        { upsert: true }
-      )
-    )
-  );
-};
-
 const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown> => {
   const query: Record<string, unknown> = {
     status: LocationStatus.ACTIVE

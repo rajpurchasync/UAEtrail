@@ -24,8 +24,6 @@ export type OpenActivityFormOptions = {
   editingActivity?: ActivityDTO | null;
   /** Host organizations the user may publish under (platform admin). */
   hostOrganizations?: TenantListDTO[];
-  /** @deprecated Use hostOrganizations */
-  publishingOrganizations?: TenantListDTO[];
   venueLocations?: LocationDTO[];
 };
 
@@ -54,7 +52,7 @@ const defaultSession = (): ActivityFormSessionSnapshot => ({
 });
 
 const resolveHostOrganizations = (opts: OpenActivityFormOptions): TenantListDTO[] | undefined =>
-  opts.hostOrganizations ?? opts.publishingOrganizations;
+  opts.hostOrganizations;
 
 export const ActivityFormSessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<ActivityFormSessionSnapshot>(() => {

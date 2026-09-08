@@ -1,35 +1,12 @@
 import type { AuthUser } from '@uaetrail/shared-types';
 
-import type { ActivityType } from '../../config/activityTypes';
-import type { TripPricePackage } from '../../utils/tripPricing';
+export type PageTab = 'explore' | 'joined' | 'hosted';
 
-export const emptyForm = {
-  activityType: 'hiking' as ActivityType,
-  locationId: '',
-  title: '',
-  description: '',
-  date: '',
-  time: '',
-  endDate: '',
-  endTime: '',
-  capacity: 10,
-  pricing: 'free' as 'free' | 'paid',
-  price: 0,
-  pricePackages: [] as TripPricePackage[],
-  meetingPoint: '',
-  meetingLat: '',
-  meetingLng: '',
-  paymentTerms: '',
-  itinerary: '',
-  requirements: '',
-  images: [] as string[],
-  hostUserId: '',
-};
-
-export type PageTab = 'explore' | 'mine';
-
-/** Participant dashboard tab on /activities (joined trips + requests). */
+/** Primary tabs on /activities for signed-in users. */
 export const parseTabParam = (value: string | null, user: AuthUser | null): PageTab => {
-  if ((value === 'mine' || value === 'joined') && user) return 'mine';
-  return 'explore';
+  if (!user) return 'explore';
+  if (value === 'hosted' || value === 'organized') return 'hosted';
+  if (value === 'joined' || value === 'mine') return 'joined';
+  if (value === 'explore') return 'explore';
+  return 'joined';
 };

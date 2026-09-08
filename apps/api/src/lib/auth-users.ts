@@ -107,8 +107,6 @@ export const getAuthUserMembershipTier = async (userId: string): Promise<Members
   return user?.profile?.membershipTier ?? MembershipTier.FREE;
 };
 
-export const findAuthUserForLogin = async (email: string) => findAuthUserByEmail(email);
-
 export const createAuthUser = async (input: {
   id?: string;
   email: string;

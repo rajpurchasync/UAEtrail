@@ -7,7 +7,7 @@ import { createLocationRecord } from './activities-store.js';
 import { newEntityId, type MongoActivityDoc } from './entity-builders.js';
 import { findLocationInMongo, writeActivityDocToMongo, writeLocationToMongo } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
-import { findTenantById, isTenantSlugTaken as isTenantSlugTakenInStore } from './tenant-store.js';
+import { findTenantById } from './tenant-store.js';
 import { syncTenantMembershipStatusForTenant } from './tenant-access.js';
 
 type MongoAuditLog = {
@@ -146,6 +146,8 @@ const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
   carPoolPriceAed: doc.carPoolPriceAed,
   carPoolSeats: doc.carPoolSeats ?? null,
   carPoolDetails: doc.carPoolDetails,
+  linkedActivityId: doc.linkedActivityId ?? null,
+  linkedCarpoolActivityId: doc.linkedCarpoolActivityId ?? null,
   paymentTerms: doc.paymentTerms,
   pricingMode: doc.pricingMode ?? null,
   itinerary: doc.itinerary,
@@ -264,8 +266,6 @@ const loadTenantsByIds = async (ids: string[]): Promise<Map<string, Tenant>> => 
   return new Map(docs.map((doc) => [doc._id, mapMongoTenant(doc)]));
 };
 
-export const isTenantSlugTaken = isTenantSlugTakenInStore;
-
 export const listAdminLocationsPaged = async (input: { skip: number; take: number }) => {
   const [items, total] = await Promise.all([
     locationsCollection()
@@ -326,8 +326,6 @@ export const findAdminTenantById = async (id: string) => {
   return findTenantById(id);
 };
 
-export const findAdminLocationByIdForEventCreate = findAdminLocationById;
-
 export const createAdminPublishedActivity = async (input: {
   tenantId: string;
   locationId: string;
@@ -370,6 +368,8 @@ export const createAdminPublishedActivity = async (input: {
     carPoolPriceAed: null,
     carPoolSeats: null,
     carPoolDetails: null,
+    linkedActivityId: null,
+    linkedCarpoolActivityId: null,
     paymentTerms: null,
     pricingMode: null,
     itinerary: input.itinerary,

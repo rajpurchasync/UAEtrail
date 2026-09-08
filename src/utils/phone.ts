@@ -1,6 +1,6 @@
 import { DEFAULT_PHONE_DIAL, PHONE_COUNTRIES } from '../constants/phoneCountries';
 
-export const digitsOnly = (value: string): string => value.replace(/\D/g, '');
+const digitsOnly = (value: string): string => value.replace(/\D/g, '');
 
 export const formatE164Phone = (dialCode: string, nationalNumber: string): string => {
   const dialDigits = digitsOnly(dialCode);

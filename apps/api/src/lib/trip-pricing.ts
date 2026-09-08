@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
-export const TRIP_CURRENCIES = ['AED', 'USD', 'EUR', 'SAR', 'OMR'] as const;
-export type TripCurrency = (typeof TRIP_CURRENCIES)[number];
+const TRIP_CURRENCIES = ['AED', 'USD', 'EUR', 'SAR', 'OMR'] as const;
 
-export const tripPricePackageSchema = z.object({
+const tripPricePackageSchema = z.object({
   label: z.string().min(1).max(120),
   amount: z.number().int().min(0).max(999_999),
   currency: z.enum(TRIP_CURRENCIES).default('AED')
@@ -18,14 +17,11 @@ export const parseStoredPricePackages = (value: unknown): TripPricePackage[] => 
   return parsed.success ? parsed.data : [];
 };
 
-export const derivePriceAed = (packages: TripPricePackage[], fallback = 0): number => {
+const derivePriceAed = (packages: TripPricePackage[], fallback = 0): number => {
   if (packages.length === 0) return fallback;
   const amounts = packages.map((p) => p.amount);
   return Math.min(...amounts);
 };
-
-export const eventHasPaidPricing = (priceAed: number, packages: TripPricePackage[]): boolean =>
-  priceAed > 0 || packages.some((p) => p.amount > 0);
 
 export const normalizeActivityPricing = (input: {
   price?: number;

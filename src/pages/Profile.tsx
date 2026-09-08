@@ -1,37 +1,36 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
-import { Bell, Briefcase, Compass, Crown, Heart, Shield, ShieldCheck, Trophy, Users } from 'lucide-react';
+import {
+  Compass,
+  MessageCircle,
+  Trophy,
+  Users,
+} from 'lucide-react';
 import { api } from '../api/services';
-import { setStoredSession } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
-import { PAGE_BANNERS } from '../config/pageBanners';
 import { GlassCard } from '../components/mobile/GlassCard';
+import { NotificationBellPopover } from '../components/layout/NotificationBellPopover';
 import {
   AccountActivityPreview,
-  AccountGroupsPreview,
+  AccountAvatarModal,
   AccountEditModal,
-  AccountIdentityBar,
-  AccountLinkList,
-  AccountSignOutButton,
-  AccountStatGrid,
-  buildParticipantStats,
 } from '../components/account';
-import { FEATURE_FLAGS } from '../config/platform';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
+import { useHostHubData } from '../hooks/useHostHubData';
+import { useHostGate } from '../hooks/useHostGate';
 import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
-import { ProfileTrailPointsChip, TrailPointsPathSheet } from '../components/rewards';
+import { TrailPointsPathSheet } from '../components/rewards';
 import { RewardSummaryDTO } from '@uaetrail/shared-types';
-import { accountRouteByRole } from '../utils/authRouting';
-import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
-import { inferNotificationPath } from '../utils/notificationRouting';
-import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
+import { ProfileHeroSection } from '../components/profile/ProfileHeroSection';
+import { ProfileQuickActions, type ProfileQuickAction } from '../components/profile/ProfileQuickActions';
+import { ProfileCompletionCard } from '../components/profile/ProfileCompletionCard';
+import { buildProfileCompletion } from '../utils/profileCompletion';
+import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
 import { isHostRole } from '../utils/roles';
 
 export const Profile = () => {
-  const { user, signOut, refreshUser } = useAuth();
-  const queryClient = useQueryClient();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -42,79 +41,153 @@ export const Profile = () => {
     pendingRequests,
     upcomingTripsCount,
     upcomingTrip,
-    notifications,
     unreadMessages,
-    unreadNotifications,
-    pastTripsCount,
     loading,
     error,
     reload,
   } = useParticipantHubData();
 
-  const [message, setMessage] = useState<string | null>(null);
+  const {
+    ownedProfiles,
+    loading: hostGateLoading,
+  } = useHostGate({ enabled: Boolean(user) });
+
+  const host = useHostHubData();
+
   const [saving, setSaving] = useState(false);
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
   const [pushStatus, setPushStatus] = useState<string | null>(null);
   const [showEdit, setShowEdit] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-  const [savedItemsCount, setSavedItemsCount] = useState(0);
-  const [rewardPoints, setRewardPoints] = useState<number | null>(null);
-  const [rewardTier, setRewardTier] = useState<{ key: string; name: string; emoji?: string } | null>(null);
+  const [showAvatarEdit, setShowAvatarEdit] = useState(false);
   const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
   const [showPointsPath, setShowPointsPath] = useState(false);
-  const [roleSwitching, setRoleSwitching] = useState(false);
-  const [showNotifPopover, setShowNotifPopover] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    api.getMeFavorites()
-      .then((res) => {
-        setSavedItemsCount(res.data.filter((item) => Boolean(item.locationId) || Boolean(item.productId)).length);
-      })
-      .catch(() => undefined);
-
-    api.getMyRewards()
-      .then((res) => {
-        setRewardPoints(res.data.points);
-        setRewardTier(res.data.membershipTier);
-        setRewardSummary(res.data);
-      })
+    void api.getMyRewards()
+      .then((res) => setRewardSummary(res.data))
       .catch(() => undefined);
   }, [user]);
 
   useEffect(() => {
-    const state = location.state as { scrollTo?: string } | null;
-    const hashTarget = location.hash === '#map-presence' ? 'map-presence' : state?.scrollTo;
-    if (!hashTarget) return;
-    const target = document.getElementById(hashTarget);
-    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (state?.scrollTo) {
-      navigate(location.pathname, { replace: true, state: null });
-    }
-  }, [location.pathname, location.hash, location.state, navigate]);
+    const state = location.state as { openEdit?: boolean } | null;
+    if (!state?.openEdit) return;
+    setShowEdit(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
   const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
   const canHost = isHostRole(user?.role);
+  const messagesPath = canHost ? '/host/messages' : '/messages';
+  const activitiesPath = '/activities?tab=joined';
+  const displayName = profile.displayName || user!.displayName || 'Explorer';
+  const roleLabel = user!.role === 'participant' ? 'Community member' : 'Explorer';
+  const avatarUrl = profile.avatarUrl ?? user?.avatarUrl ?? null;
+
+  const completion = useMemo(
+    () =>
+      buildProfileCompletion({
+        displayName,
+        avatarUrl,
+        bio: profile.bio,
+        phone: profile.phone,
+      }),
+    [avatarUrl, displayName, profile.bio, profile.phone]
+  );
+
+  const sharePath = useMemo(
+    () =>
+      resolveProfileSharePath(ownedProfiles, {
+        referralCode: rewardSummary?.referralCode,
+      }),
+    [ownedProfiles, rewardSummary?.referralCode]
+  );
+  const shareText = resolveProfileShareText(displayName, ownedProfiles);
+  const shareReady = !hostGateLoading || ownedProfiles.length > 0 || Boolean(rewardSummary?.referralCode);
+
+  const openActivities = useCallback(() => {
+    navigate(activitiesPath);
+  }, [activitiesPath, navigate]);
+
+  const quickActions = useMemo((): ProfileQuickAction[] => {
+    const actions: ProfileQuickAction[] = [
+      {
+        key: 'activities',
+        label: 'Activities',
+        onClick: openActivities,
+        icon: Compass,
+        badge:
+          (canHost
+            ? upcomingTripsCount + host.pendingJoinRequests
+            : upcomingTripsCount) || undefined,
+        accent: 'bg-emerald-50 text-emerald-700',
+      },
+      {
+        key: 'messages',
+        label: 'Messages',
+        to: messagesPath,
+        icon: MessageCircle,
+        badge: unreadMessages,
+        accent: 'bg-sky-50 text-sky-700',
+      },
+      {
+        key: 'groups',
+        label: 'Groups',
+        to: '/groups',
+        icon: Users,
+        badge: groups.length,
+        accent: 'bg-indigo-50 text-indigo-700',
+      },
+    ];
+
+    if (trailPointsEligible) {
+      actions.splice(3, 0, {
+        key: 'rewards',
+        label: 'Points',
+        to: '/my-rewards',
+        icon: Trophy,
+        badge: rewardSummary?.points,
+        accent: 'bg-emerald-50 text-emerald-700',
+      });
+    }
+
+    return actions;
+  }, [
+    canHost,
+    groups.length,
+    host.pendingJoinRequests,
+    messagesPath,
+    openActivities,
+    rewardSummary?.points,
+    trailPointsEligible,
+    unreadMessages,
+    upcomingTripsCount,
+  ]);
+
+  const openSettings = useCallback(() => {
+    navigate('/profile/settings');
+  }, [navigate]);
 
   const openEdit = useCallback(() => {
     setShowEdit(true);
-    setShowDetails(false);
   }, []);
 
-  const save = async (payload: {
+  const openAvatarEdit = useCallback(() => {
+    setAvatarMessage(null);
+    setShowAvatarEdit(true);
+  }, []);
+
+  const saveProfile = async (payload: {
     displayName: string;
     bio?: string;
     phone?: string;
-    avatarUrl?: string;
   }) => {
     setMessage(null);
     setSaving(true);
     try {
-      await api.updateMeProfile({
-        displayName: payload.displayName,
-        phone: payload.phone,
-        bio: payload.bio,
-        ...(payload.avatarUrl ? { avatarUrl: payload.avatarUrl } : {}),
-      });
+      await api.updateMeProfile(payload);
       await refreshUser();
       setMessage('Profile saved.');
       setShowEdit(false);
@@ -126,57 +199,47 @@ export const Profile = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
-  const roleLabel = user!.role === 'participant' ? 'Participant' : 'Explorer';
-  const messagesPath = canHost ? '/host/messages' : '/messages';
-  const displayName = profile.displayName || user!.displayName || 'Explorer';
-  const canSwitchToVisitor =
-    user!.role === 'platform_admin' ||
-    user!.role === 'merchant_admin' ||
-    user!.role === 'tenant_owner' ||
-    user!.role === 'tenant_admin' ||
-    user!.role === 'tenant_guide';
-  const canSwitchBack = user!.role === 'participant' && Boolean(profile.switchedFromRole);
-
-  const switchRole = async (target: 'participant' | 'original') => {
-    setMessage(null);
-    setRoleSwitching(true);
+  const saveAvatar = async (nextAvatarUrl: string) => {
+    setAvatarMessage(null);
+    setAvatarSaving(true);
     try {
-      const res = await api.switchMeRole(target);
-      setStoredSession(res.tokens);
+      await api.updateMeProfile({ avatarUrl: nextAvatarUrl });
+      setProfile((prev) => ({ ...prev, avatarUrl: nextAvatarUrl }));
       await refreshUser();
+      setAvatarMessage('Photo saved.');
+      setShowAvatarEdit(false);
       await reload();
-      const nextPath = accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]);
-      setMessage(target === 'participant' ? 'Switched to participant mode.' : 'Restored your original role.');
-      navigate(nextPath, { replace: true });
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Failed to switch role');
+      setAvatarMessage(err instanceof Error ? err.message : 'Failed to save photo');
     } finally {
-      setRoleSwitching(false);
+      setAvatarSaving(false);
     }
   };
 
-  const statItems = buildParticipantStats({
-    upcomingTripsCount,
-    pendingRequestsCount: pendingRequests.length,
-    unreadMessages,
-    unreadNotifications,
-    messagesPath,
-  });
+  const heroExtra =
+    trailPointsEligible && rewardSummary?.membershipTier && rewardSummary.membershipTier.key !== 'free' ? (
+      <MembershipTierBadge
+        tierKey={rewardSummary.membershipTier.key}
+        name={rewardSummary.membershipTier.name}
+        size="md"
+      />
+    ) : trailPointsEligible && rewardSummary ? (
+      <button
+        type="button"
+        onClick={() => setShowPointsPath(true)}
+        className="text-xs font-semibold text-emerald-600"
+      >
+        {rewardSummary.points.toLocaleString()} trail points
+      </button>
+    ) : null;
 
   return (
     <ConsumerShell
-      layout="tab"
+      layout="stack"
       title="Profile"
-      banner={{ src: PAGE_BANNERS.profile, alt: 'Mountain peaks at dawn' }}
-      action={
-        rewardSummary && trailPointsEligible ? (
-          <ProfileTrailPointsChip summary={rewardSummary} onClick={() => setShowPointsPath(true)} />
-        ) : undefined
-      }
+      showJourney={false}
+      back={{ fallbackTo: '/', label: 'Back' }}
+      action={<NotificationBellPopover />}
     >
       {error && !loading && (
         <GlassCard padding className="mb-3 border-red-200/50 bg-red-50/50">
@@ -187,210 +250,48 @@ export const Profile = () => {
         </GlassCard>
       )}
 
-      <AccountIdentityBar
-        displayName={displayName}
-        email={profile.email || user!.email || ''}
-        avatarUrl={profile.avatarUrl}
-        roleLabel={roleLabel}
-        bio={profile.bio}
-        phone={profile.phone}
-        expanded={showDetails}
-        onToggle={() => setShowDetails((open) => !open)}
-        onEdit={openEdit}
-        onAvatarClick={() => setShowNotifPopover((open) => !open)}
-        extra={
-          trailPointsEligible && rewardTier && rewardTier.key !== 'free' ? (
-            <MembershipTierBadge tierKey={rewardTier.key} name={rewardTier.name} size="md" />
-          ) : trailPointsEligible && rewardPoints != null ? (
-            <span className="text-xs font-semibold text-gray-500">{rewardPoints.toLocaleString()} pts</span>
-          ) : null
-        }
-      />
+      <div className="space-y-3 pb-nav-safe animate-fade-up">
+        <ProfileHeroSection
+          displayName={displayName}
+          roleLabel={roleLabel}
+          avatarUrl={avatarUrl}
+          completionPercent={completion.percent}
+          shareTitle={`${displayName} on UAE Trail`}
+          shareText={shareText}
+          sharePath={sharePath}
+          shareReady={shareReady}
+          showCompletionBadge={!loading}
+          onEditAvatar={openAvatarEdit}
+          onOpenSettings={openSettings}
+          extra={heroExtra}
+        />
 
-      {showNotifPopover && (
-        <GlassCard padding className="mb-3 border border-emerald-100/80">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <p className="text-sm font-semibold text-neutral-900">Notifications</p>
-            {unreadNotifications > 0 && (
-              <button
-                type="button"
-                onClick={async () => {
-                  await api.markAllNotificationsRead();
-                  setShowNotifPopover(false);
-                  await reload();
-                  if (user?.id) {
-                    void invalidateNotificationUnreadBadge(queryClient, user.id);
-                  }
-                }}
-                className="text-xs font-semibold text-emerald-700"
-              >
-                Mark all read
-              </button>
-            )}
-          </div>
-          {notifications.length === 0 ? (
-            <p className="text-xs text-neutral-600">No notifications yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {notifications.map((notif) => (
-                <button
-                  key={notif.id}
-                  type="button"
-                  onClick={() => {
-                    if (!notif.isRead) {
-                      void api.markNotificationRead(notif.id).then(() => {
-                        if (user?.id) {
-                          void invalidateNotificationUnreadBadge(queryClient, user.id);
-                        }
-                      });
-                    }
-                    setShowNotifPopover(false);
-                    navigate(inferNotificationPath(notif));
-                  }}
-                  className={`w-full text-left rounded-xl px-3 py-2 border ${
-                    notif.isRead ? 'border-neutral-100 bg-white' : 'border-emerald-100 bg-emerald-50/60'
-                  }`}
-                >
-                  <p className="text-sm font-semibold text-neutral-900 line-clamp-1">{notif.title}</p>
-                  <p className="text-xs text-neutral-600 line-clamp-2 mt-0.5">{notif.body}</p>
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowNotifPopover(false);
-                  navigate('/notifications');
-                }}
-                className="w-full text-xs font-semibold text-emerald-700 text-left px-1"
-              >
-                See all notifications
-              </button>
-            </div>
-          )}
-        </GlassCard>
-      )}
+        {!loading && (
+          <ProfileCompletionCard
+            percent={completion.percent}
+            items={completion.items}
+            onEditProfile={openEdit}
+            onEditAvatar={openAvatarEdit}
+          />
+        )}
 
-      <div className="space-y-3 animate-fade-up">
+        <ProfileQuickActions actions={quickActions} columns={3} />
+
         {loading ? (
           <div className="flex justify-center py-8">
             <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <>
-            <AccountStatGrid stats={statItems} />
-
             <AccountActivityPreview
               messagesPath={messagesPath}
               upcomingTrip={upcomingTrip}
               pendingRequests={pendingRequests}
               conversations={conversations}
             />
-
-            <AccountGroupsPreview groups={groups} loading={loading} />
-
-            {user!.role !== 'platform_admin' && user!.role !== 'merchant_admin' && (
-              <ProfileMapPresenceSection />
-            )}
-
-            <AccountLinkList
-              items={[
-                ...(trailPointsEligible
-                  ? [{
-                      to: '/my-rewards',
-                      icon: <Trophy className="w-4 h-4" />,
-                      label: 'Trail Points',
-                      badge: rewardPoints ?? undefined,
-                      accent: 'emerald' as const,
-                    }]
-                  : []),
-                {
-                  to: '/notifications',
-                  icon: <Bell className="w-4 h-4" />,
-                  label: 'Notifications',
-                  badge: unreadNotifications || undefined,
-                  accent: 'amber' as const,
-                },
-                {
-                  to: '/groups',
-                  icon: <Users className="w-4 h-4" />,
-                  label: 'My Groups',
-                  badge: groups.length || undefined,
-                  accent: 'blue' as const,
-                },
-                {
-                  to: '/favorites',
-                  icon: <Heart className="w-4 h-4" />,
-                  label: 'Saved items',
-                  badge: savedItemsCount || undefined,
-                  accent: 'emerald' as const,
-                },
-                {
-                  to: '/activities?tab=mine&sub=past',
-                  icon: <Compass className="w-4 h-4" />,
-                  label: 'Past trips',
-                  badge: pastTripsCount || undefined,
-                  accent: 'neutral',
-                },
-                {
-                  to: '/security-privacy',
-                  icon: <ShieldCheck className="w-4 h-4" />,
-                  label: 'Security & privacy',
-                  accent: 'blue' as const,
-                },
-                ...(FEATURE_FLAGS.membershipEnabled
-                  ? [
-                      {
-                        to: '/membership',
-                        icon: <Crown className="w-4 h-4" />,
-                        label: 'Membership',
-                        accent: 'amber' as const,
-                      },
-                    ]
-                  : []),
-                canHost
-                  ? {
-                      to: '/host/overview',
-                      icon: <Briefcase className="w-4 h-4" />,
-                      label: 'Host dashboard',
-                    }
-                  : user!.role === 'platform_admin'
-                    ? {
-                        to: '/admin/overview',
-                        icon: <Shield className="w-4 h-4" />,
-                        label: 'Admin console',
-                        accent: 'blue' as const,
-                      }
-                    : null,
-              ].filter(Boolean) as Parameters<typeof AccountLinkList>[0]['items']}
-            />
-
-            {(canSwitchToVisitor || canSwitchBack) && (
-              <GlassCard padding className="border border-emerald-100/80">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">Role mode</p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {canSwitchBack
-                        ? `You are browsing as a participant. Restore ${profile.switchedFromRole?.replace('_', ' ')} mode anytime.`
-                        : 'Switch to participant mode to book trips and shop as a participant.'}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={roleSwitching}
-                    onClick={() => void switchRole(canSwitchBack ? 'original' : 'participant')}
-                    className="ios-btn bg-emerald-600 text-white min-h-[40px] px-3"
-                  >
-                    {roleSwitching ? 'Switching…' : canSwitchBack ? 'Restore role' : 'Switch to participant'}
-                  </button>
-                </div>
-              </GlassCard>
-            )}
           </>
         )}
       </div>
-
-      <AccountSignOutButton onSignOut={handleSignOut} />
 
       {rewardSummary && trailPointsEligible && (
         <TrailPointsPathSheet
@@ -410,8 +311,18 @@ export const Profile = () => {
         message={message}
         pushStatus={pushStatus}
         setPushStatus={setPushStatus}
-        onSave={save}
+        onSave={saveProfile}
         onEmailChanged={refreshUser}
+      />
+
+      <AccountAvatarModal
+        open={showAvatarEdit}
+        onClose={() => setShowAvatarEdit(false)}
+        avatarUrl={avatarUrl}
+        displayName={displayName}
+        saving={avatarSaving}
+        message={avatarMessage}
+        onSave={saveAvatar}
       />
     </ConsumerShell>
   );

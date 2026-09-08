@@ -41,8 +41,6 @@ export const mapActivityToListing = (event: ActivityDTO): ActivityListing => ({
   longitude: event.meetingLng ?? event.startLng ?? event.locationLongitude ?? null
 });
 
-/** @deprecated Use mapActivityToListing */
-export const mapActivityToTrip = mapActivityToListing;
 const mapLocationFields = (location: LocationDTO) => ({
   parkingLink: location.parkingLink,
   highlights: location.highlights,
@@ -102,24 +100,6 @@ const mapLocationTocommunityActivity = (location: LocationDTO): CommunityActivit
   ...mapLocationFields(location),
 });
 
-export const fetchPopularLocations = async (): Promise<{
-  trails: Trail[];
-  camps: CampingSpot[];
-  communityActivities: CommunityActivitySpot[];
-}> => {
-  const res = await api.getPopularLocations(6);
-  return {
-    trails: res.data.filter((l) => l.activityType === 'hiking').map(mapLocationToTrail),
-    camps: res.data.filter((l) => l.activityType === 'camping').map(mapLocationToCamp),
-    communityActivities: res.data.filter((l) => l.activityType === 'event').map(mapLocationTocommunityActivity),
-  };
-};
-
-export const fetchFeaturedEvents = async (): Promise<ActivityListing[]> => {
-  const res = await api.getFeaturedActivities(6);
-  return res.data.map(mapActivityToListing);
-};
-
 /** Fast home payload: 3 parallel requests, no location pagination loop. */
 export const fetchHomeLandingData = async (): Promise<{
   popularTrails: Trail[];
@@ -176,9 +156,6 @@ export const fetchApiActivities = async (when: 'upcoming' | 'past' = 'upcoming')
   return events.data.map(mapActivityToListing);
 };
 
-/** @deprecated Use fetchApiActivities */
-export const fetchApiTrips = fetchApiActivities;
-
 export const fetchApiLocations = async (countryCode?: string): Promise<{
   trails: Trail[];
   camps: CampingSpot[];
@@ -193,14 +170,6 @@ export const fetchApiLocations = async (countryCode?: string): Promise<{
       .map(mapLocationTocommunityActivity),
   };
 };
-
-export const fetchApiActivityDetail = async (id: string) => {
-  const response = await api.getPublicActivityDetail(id);
-  return response.data;
-};
-
-/** @deprecated Use fetchApiActivityDetail */
-export const fetchApiTripDetail = fetchApiActivityDetail;
 
 export const fetchApiLocationDetail = async (
   id: string

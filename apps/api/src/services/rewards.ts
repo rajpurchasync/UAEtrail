@@ -14,7 +14,7 @@ import {
 } from '../lib/rewards-config.js';
 import { findAuthUserById, findAuthUserByReferralCode } from '../lib/auth-users.js';
 import { listCompanyTenantOwnerIds } from '../lib/tenant-store.js';
-import { isBusinessOrganizerById } from '../lib/user-type.js';
+import { isBusinessHostById } from '../lib/user-type.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { dispatchNotification } from './notifications.js';
 import {
@@ -119,7 +119,7 @@ async function syncMembershipTier(userId: string, points: number): Promise<strin
 export async function awardPoints(input: AwardPointsInput): Promise<{ awarded: boolean; points: number }> {
   const points = REWARD_POINTS[input.action];
   if (points <= 0) return { awarded: false, points: 0 };
-  if (await isBusinessOrganizerById(input.userId)) {
+  if (await isBusinessHostById(input.userId)) {
     return { awarded: false, points: 0 };
   }
 
@@ -164,7 +164,7 @@ export async function awardPoints(input: AwardPointsInput): Promise<{ awarded: b
   }
 }
 
-export async function evaluateAchievementBadges(userId: string): Promise<string[]> {
+async function evaluateAchievementBadges(userId: string): Promise<string[]> {
   const badges = await findUserBadges(userId);
   const earnedKeys = new Set(badges.map((b) => b.badgeKey));
 
@@ -231,9 +231,6 @@ export async function evaluateAchievementBadges(userId: string): Promise<string[
   return newlyEarned;
 }
 
-/** @deprecated Use evaluateAchievementBadges */
-export const evaluateBadges = evaluateAchievementBadges;
-
 export async function processSignupRewards(
   userId: string,
   referralCode?: string | null
@@ -273,7 +270,7 @@ export async function getRewardSummary(userId: string) {
   const user = await findAuthUserById(userId);
   const freeTier = getTierForPoints(0);
 
-  if (await isBusinessOrganizerById(userId)) {
+  if (await isBusinessHostById(userId)) {
     return {
       trailPointsEligible: false,
       points: 0,
@@ -399,7 +396,7 @@ export async function getRewardSummary(userId: string) {
 }
 
 export async function getUserLeaderboardRank(userId: string): Promise<number | null> {
-  if (await isBusinessOrganizerById(userId)) return null;
+  if (await isBusinessHostById(userId)) return null;
 
   const user = await findAuthUserById(userId);
   const points = user?.profile?.rewardPoints ?? 0;
@@ -467,18 +464,3 @@ export async function getRewardStats() {
     }))
   };
 }
-
-/** @deprecated Use awardPoints */
-export const awardPointsDefault = awardPoints;
-
-/** @deprecated Use processSignupRewards */
-export const processSignupRewardsDefault = processSignupRewards;
-
-/** @deprecated Use getRewardSummary */
-export const getRewardSummaryDefault = getRewardSummary;
-
-/** @deprecated Use getLeaderboard */
-export const getLeaderboardDefault = getLeaderboard;
-
-/** @deprecated Use getRewardStats */
-export const getRewardStatsDefault = getRewardStats;

@@ -17,17 +17,11 @@ interface EmailPayload {
   html?: string;
 }
 
-export { isEmailConfigured };
-
 const testVerificationOtps = new Map<string, string>();
 
 /** Test-only: read the last verification OTP captured for an email address. */
 export const peekTestVerificationOtp = (email: string): string | undefined =>
   process.env.NODE_ENV === 'test' ? testVerificationOtps.get(email.trim().toLowerCase()) : undefined;
-
-export const clearTestVerificationOtps = (): void => {
-  testVerificationOtps.clear();
-};
 
 const createTransport = (): Transporter | null => {
   const config = resolveEmailConfig();
@@ -69,7 +63,7 @@ const createTransport = (): Transporter | null => {
   return null;
 };
 
-export const sendRawEmail = async (payload: EmailPayload): Promise<boolean> => {
+const sendRawEmail = async (payload: EmailPayload): Promise<boolean> => {
   const transport = createTransport();
   const { emailFrom } = resolveEmailConfig();
 
@@ -98,7 +92,7 @@ const templateSubjects: Record<EmailTemplate, string> = {
   password_reset: 'Reset your UAE Trail password'
 };
 
-export const sendTransactionalEmail = async (
+const sendTransactionalEmail = async (
   template: EmailTemplate,
   to: string,
   vars: Record<string, string>
@@ -176,17 +170,4 @@ export const notifyRequestDecision = async (opts: {
       note: opts.note ?? ''
     }
   );
-};
-
-export const notifyActivityCancelled = async (opts: {
-  to: string;
-  userName: string;
-  activityTitle: string;
-  activityDate: string;
-}) => {
-  await sendTransactionalEmail('activity_cancelled', opts.to, {
-    name: opts.userName,
-    activityTitle: opts.activityTitle,
-    activityDate: opts.activityDate
-  });
 };

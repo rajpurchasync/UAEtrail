@@ -132,5 +132,3 @@ export const ConsumerHeroBanner = ({
   </div>
 );
 
-/** @deprecated Use ConsumerHeroBanner */
-export const ConsumerPageBanner = ConsumerHeroBanner;

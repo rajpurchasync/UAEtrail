@@ -8,7 +8,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { MAP_CONFIG } from '../../config/platform';
-import { resolveMapPinEmoji } from '../../utils/mapPinEmoji';
+import { resolveMapPinEmoji } from '../../explore/exploreCopy';
 import { MapTileLayers } from './MapTileLayers';
 
 export type MapPinKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
@@ -42,7 +42,7 @@ const padBounds = (bounds: MapBounds, padding = 0.08): MapBounds => ({
   north: bounds.north + padding,
 });
 
-export const boundsFromPins = (pins: LocationMapPin[], fallback: MapBounds): MapBounds => {
+const boundsFromPins = (pins: LocationMapPin[], fallback: MapBounds): MapBounds => {
   if (pins.length === 0) return fallback;
 
   let west = Infinity;

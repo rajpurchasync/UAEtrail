@@ -42,7 +42,7 @@ if (!parsed.success) {
 export const env = parsed.data;
 
 /** Fail fast when production is misconfigured. */
-export const validateProductionConfig = (): void => {
+const validateProductionConfig = (): void => {
   if (env.NODE_ENV !== 'production') return;
 
   if (!isEmailConfigured()) {

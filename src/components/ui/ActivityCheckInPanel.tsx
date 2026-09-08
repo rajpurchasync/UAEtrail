@@ -3,7 +3,7 @@ import { CheckCircle2, MapPin, Loader2 } from 'lucide-react';
 import { TripParticipationDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
 
-interface TripCheckInPanelProps {
+interface ActivityCheckInPanelProps {
   activityId: string;
   participation: TripParticipationDTO;
   onCheckIn: (activityId: string) => Promise<TripParticipationDTO>;
@@ -22,13 +22,13 @@ const formatCheckInTime = (iso: string) => {
   });
 };
 
-export const TripCheckInPanel = ({
+export const ActivityCheckInPanel = ({
   activityId,
   participation,
   onCheckIn,
   onUpdated,
   compact = false
-}: TripCheckInPanelProps) => {
+}: ActivityCheckInPanelProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [local, setLocal] = useState(participation);

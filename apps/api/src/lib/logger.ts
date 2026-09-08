@@ -104,11 +104,3 @@ export const createRequestLogger = (req: { traceId?: string; method?: string; ur
 export const logError = (message: string, error: unknown, context?: Record<string, unknown>) => {
   logger.error({ err: error, ...context }, message);
 };
-
-export const logWarn = (message: string, context?: Record<string, unknown>) => {
-  logger.warn(context, message);
-};
-
-export const logInfo = (message: string, context?: Record<string, unknown>) => {
-  logger.info(context, message);
-};

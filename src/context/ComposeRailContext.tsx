@@ -59,6 +59,3 @@ export const useComposeRail = () => {
   }
   return ctx;
 };
-
-/** Optional hook for components that may render outside the provider (e.g. tests). */
-export const useComposeRailOptional = () => useContext(ComposeRailContext);

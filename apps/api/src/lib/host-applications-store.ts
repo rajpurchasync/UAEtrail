@@ -389,36 +389,6 @@ export const approveHostApplicationAndProvisionTenant = async (input: {
   return { applicationId, tenantId };
 };
 
-export const markHostApplicationApproved = async (input: {
-  id: string;
-  tenantId: string;
-  reviewerId: string;
-  reviewerNote?: string;
-}): Promise<HostApplicationRecord> => {
-  const reviewedAt = new Date();
-  await patchHostApplicationInMongo(input.id, {
-    requestedTenantId: input.tenantId,
-    status: HostApplicationStatus.APPROVED,
-    reviewerId: input.reviewerId,
-    reviewerNote: input.reviewerNote ?? null,
-    reviewedAt
-  });
-
-  const mongoRow = await findHostApplicationInMongo(input.id);
-  if (!mongoRow) {
-    throw new Error('Failed to approve host application.');
-  }
-
-  return {
-    ...mongoRow,
-    requestedTenantId: input.tenantId,
-    status: HostApplicationStatus.APPROVED,
-    reviewerId: input.reviewerId,
-    reviewerNote: input.reviewerNote ?? null,
-    reviewedAt
-  };
-};
-
 export const markHostApplicationRejected = async (input: {
   id: string;
   reviewerId: string;

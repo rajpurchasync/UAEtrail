@@ -13,7 +13,7 @@ export const scheduleInstantChanged = (
   return prev.date !== updated.date || prev.time !== updated.time;
 };
 
-export const formatScheduleLabel = (instant: Date, countryCode: string): string => {
+const formatScheduleLabel = (instant: Date, countryCode: string): string => {
   const { date, time } = formatActivityLocal(instant, countryCode);
   return `${date} at ${time}`;
 };

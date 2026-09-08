@@ -43,7 +43,7 @@ import {
   updateAuthUserCore
 } from '../lib/auth-users.js';
 import { createHostApplicationRecord } from '../lib/host-applications-store.js';
-import { processSignupRewardsDefault } from '../services/rewards.js';
+import { processSignupRewards } from '../services/rewards.js';
 import { acceptGroupInviteByToken, acceptPendingGroupInvitesForEmail } from '../lib/social-groups-store.js';
 
 const registerSchema = z.object({
@@ -355,7 +355,7 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       displayName
     });
 
-    void processSignupRewardsDefault(created._id, referralCode).catch(() => undefined);
+    void processSignupRewards(created._id, referralCode).catch(() => undefined);
     if (groupInviteToken) {
       void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
         () => undefined
@@ -734,7 +734,7 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
 
       user = { id: created._id, email: created.email, role: created.role, status: created.status };
 
-      void processSignupRewardsDefault(created._id, referralCode).catch(() => undefined);
+      void processSignupRewards(created._id, referralCode).catch(() => undefined);
       if (groupInviteToken) {
         void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
           () => undefined

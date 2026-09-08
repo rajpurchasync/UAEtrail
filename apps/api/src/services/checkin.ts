@@ -12,7 +12,7 @@ const CHECKIN_LATE_MS = 12 * 60 * 60 * 1000;
 
 type ActivityTiming = { startAt: Date; endAt: Date | null; status: ActivityStatus };
 
-export function getCheckInWindow(activity: ActivityTiming) {
+function getCheckInWindow(activity: ActivityTiming) {
   const opensAt = new Date(activity.startAt.getTime() - CHECKIN_EARLY_MS);
   const closesAt = activity.endAt
     ? new Date(activity.endAt.getTime() + CHECKIN_LATE_MS)
@@ -188,6 +188,3 @@ export async function performParticipantCheckIn(opts: {
 
   return { checkedInAt, alreadyCheckedIn: false };
 }
-
-/** @deprecated Use performParticipantCheckIn */
-export const performParticipantCheckInDefault = performParticipantCheckIn;

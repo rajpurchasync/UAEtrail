@@ -1,138 +1,93 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, ChevronRight, MapPin, ShoppingBag, User } from 'lucide-react';
 import { GlassCard } from '../mobile/GlassCard';
 import { MobileBecomeHostFlow } from '../host/MobileBecomeHostFlow';
 import type { HostFlowIntent } from '../host/becomeHostFlow';
 import { useHostGate } from '../../hooks/useHostGate';
 
-const PRESENCE_CARDS = [
-  {
-    key: 'guide' as const,
-    intent: 'add-guide' as HostFlowIntent,
-    title: 'Community guide',
-    subtitle: 'Host free & shared hikes, camps, and meetups',
-    emoji: '👤',
-    icon: User,
-    accent: 'border-emerald-100 bg-emerald-50/40',
-  },
-  {
-    key: 'agency' as const,
-    intent: 'add-agency' as HostFlowIntent,
-    title: 'Tour agency',
-    subtitle: 'Licensed business — host paid activities',
-    emoji: '🏢',
-    icon: Building2,
-    accent: 'border-indigo-100 bg-indigo-50/40',
-  },
-  {
-    key: 'shop' as const,
-    intent: 'add-shop' as HostFlowIntent,
-    title: 'Gear shop',
-    subtitle: 'Pin your store for camping gear & supplies',
-    emoji: '🛍️',
-    icon: ShoppingBag,
-    accent: 'border-rose-100 bg-rose-50/40',
-  },
+const PRESENCE_CHIPS = [
+  { key: 'guide' as const, intent: 'add-guide' as HostFlowIntent, label: 'Guide', emoji: '🥾' },
+  { key: 'agency' as const, intent: 'add-agency' as HostFlowIntent, label: 'Agency', emoji: '🏢' },
+  { key: 'shop' as const, intent: 'add-shop' as HostFlowIntent, label: 'Shop', emoji: '🛍️' },
 ];
 
+/** Manage guide, agency, and shop profiles that appear as pins on the explore map. */
 export const ProfileMapPresenceSection = () => {
-  const {
-    loading,
-    hasGuideProfile,
-    hasAgencyProfile,
-    hasShopProfile,
-    ownedProfiles,
-    refresh,
-  } = useHostGate();
-
+  const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles, refresh } = useHostGate();
   const [flowOpen, setFlowOpen] = useState(false);
   const [flowIntent, setFlowIntent] = useState<HostFlowIntent>('add-guide');
 
-  const hasProfile = (key: (typeof PRESENCE_CARDS)[number]['key']) => {
+  const isActive = (key: (typeof PRESENCE_CHIPS)[number]['key']) => {
     if (key === 'guide') return hasGuideProfile;
     if (key === 'agency') return hasAgencyProfile;
     return hasShopProfile;
   };
-
-  const profileName = (key: (typeof PRESENCE_CARDS)[number]['key']) =>
-    ownedProfiles.find((profile) => profile.type === key)?.name ?? null;
 
   const openFlow = (intent: HostFlowIntent) => {
     setFlowIntent(intent);
     setFlowOpen(true);
   };
 
+  const activeCount = PRESENCE_CHIPS.filter((chip) => isActive(chip.key)).length;
+
   return (
     <>
-      <GlassCard padding id="map-presence" className="scroll-mt-24">
-        <div className="mb-4 flex items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-neutral-100 text-emerald-700">
-            <MapPin className="h-5 w-5" />
-          </span>
-          <div>
-            <h2 className="text-base font-bold text-gray-900">Your presence on the map</h2>
-            <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-              Guides and agencies post activities. Shops appear as gear-store pins — set each up once.
-            </p>
-          </div>
+      <GlassCard padding id="host-profiles" className="scroll-mt-24 animate-fade-up">
+        <div className="mb-3">
+          <h2 className="text-sm font-bold text-gray-900">Host profiles on the map</h2>
+          <p className="mt-1 text-xs text-gray-500 leading-relaxed">
+            Guides, agencies, and gear shops get their own pin on the explore map. Set up one or more — they are separate
+            from your personal profile.
+          </p>
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500">Loading map profiles…</p>
+          <p className="text-sm text-gray-500">Loading…</p>
         ) : (
-          <div className="space-y-2.5">
-            {PRESENCE_CARDS.map((card) => {
-              const active = hasProfile(card.key);
-              const name = profileName(card.key);
-              const Icon = card.icon;
+          <>
+            {activeCount > 0 && (
+              <p className="mb-2 text-xs font-semibold text-emerald-700">
+                {activeCount} active on the map
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {PRESENCE_CHIPS.map((chip) => {
+                const active = isActive(chip.key);
+                const name = ownedProfiles.find((profile) => profile.type === chip.key)?.name;
 
-              if (active) {
+                if (active) {
+                  const managePath = chip.key === 'shop' ? '/merchant/dashboard' : '/host/overview';
+                  const className = `inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold ${
+                    chip.key === 'guide'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                      : chip.key === 'agency'
+                        ? 'border-indigo-200 bg-indigo-50 text-indigo-800'
+                        : 'border-rose-200 bg-rose-50 text-rose-800'
+                  }`;
+
+                  return (
+                    <Link key={chip.key} to={managePath} className={className} title={name ?? chip.label}>
+                      <span>{chip.emoji}</span>
+                      <span className="max-w-[120px] truncate">{name ?? chip.label}</span>
+                      <span className="text-[10px] opacity-70">✓</span>
+                    </Link>
+                  );
+                }
+
                 return (
-                  <div
-                    key={card.key}
-                    className={`flex items-center gap-3 rounded-2xl border px-4 py-3.5 ${card.accent}`}
+                  <button
+                    key={chip.key}
+                    type="button"
+                    onClick={() => openFlow(chip.intent)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:border-rose-300 hover:bg-rose-50/40"
                   >
-                    <span className="text-2xl">{card.emoji}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-gray-900">{name ?? card.title}</p>
-                      <p className="text-xs text-gray-600">{card.subtitle}</p>
-                    </div>
-                    {card.key === 'guide' || card.key === 'agency' ? (
-                      <Link
-                        to="/host/overview"
-                        className="shrink-0 text-xs font-semibold text-emerald-700 hover:underline"
-                      >
-                        Manage
-                      </Link>
-                    ) : (
-                      <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
-                        Live
-                      </span>
-                    )}
-                  </div>
+                    <span>{chip.emoji}</span>
+                    <span>Add {chip.label.toLowerCase()}</span>
+                  </button>
                 );
-              }
-
-              return (
-                <button
-                  key={card.key}
-                  type="button"
-                  onClick={() => openFlow(card.intent)}
-                  className="flex w-full items-center gap-3 rounded-2xl border border-dashed border-neutral-200 bg-white px-4 py-3.5 text-left transition hover:border-emerald-300 hover:bg-emerald-50/30"
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-gray-700">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-gray-900">Add {card.title.toLowerCase()}</p>
-                    <p className="text-xs text-gray-600">{card.subtitle}</p>
-                  </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
-                </button>
-              );
-            })}
-          </div>
+              })}
+            </div>
+          </>
         )}
       </GlassCard>
 
@@ -143,7 +98,7 @@ export const ProfileMapPresenceSection = () => {
           await refresh();
           setFlowOpen(false);
         }}
-        signInHref="/signin?redirect=/profile"
+        signInHref="/signin?redirect=/become-host"
         intent={flowIntent}
       />
     </>

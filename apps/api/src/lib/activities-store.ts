@@ -131,6 +131,8 @@ export const updateActivityDetailed = async (
   if (data.bannerUrl !== undefined) patch.bannerUrl = data.bannerUrl?.trim() || null;
   if (data.signupUrl !== undefined) patch.signupUrl = data.signupUrl?.trim() || null;
   if (data.pricePackages !== undefined) patch.pricePackages = data.pricePackages;
+  if (data.linkedActivityId !== undefined) patch.linkedActivityId = data.linkedActivityId;
+  if (data.linkedCarpoolActivityId !== undefined) patch.linkedCarpoolActivityId = data.linkedCarpoolActivityId;
   if (data.publishedAt !== undefined) patch.publishedAt = data.publishedAt;
   if (data.host !== undefined) {
     patch.hostId =
@@ -351,3 +353,10 @@ export const findActivityForRequestViewById = async (activityId: string) => {
   const [event] = await listActivitiesByIdsFromMongo([activityId]);
   return event ?? null;
 };
+
+export const findLinkedCarpoolDocByParentId = async (parentActivityId: string): Promise<MongoActivityDoc | null> =>
+  activitiesCollection().findOne({
+    linkedActivityId: parentActivityId,
+    activityType: ActivityType.CARPOOL,
+    status: { $ne: ActivityStatus.CANCELLED },
+  });

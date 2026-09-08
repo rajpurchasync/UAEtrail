@@ -23,7 +23,7 @@ const venueKind = (activityType: string): 'hiking' | 'camping' | 'event' => {
 };
 
 const isCarpoolActivity = (activity: ActivityDTO): boolean =>
-  activity.activityType === 'carpool' || Boolean(activity.carPoolEnabled);
+  activity.activityType === 'carpool';
 
 const resolveFromCoords = (
   activity: ActivityDTO,
@@ -159,7 +159,8 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
       kind: 'shop',
       source: 'shop',
       title: shop.name,
-      subtitle: shop.region ?? 'Outdoor gear shop',
+      subtitle: shop.region ?? null,
+      about: merchant?.description ?? shop.description ?? null,
       latitude: shop.latitude,
       longitude: shop.longitude,
       path: merchant ? `/merchant/${merchant.id}` : `/operator/${shop.slug}`,
@@ -178,7 +179,8 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
       kind: 'shop',
       source: 'shop',
       title: merchant.shopName,
-      subtitle: merchant.region ?? `${products.length} product${products.length === 1 ? '' : 's'}`,
+      subtitle: merchant.region ?? null,
+      about: merchant.description ?? null,
       latitude: merchant.latitude,
       longitude: merchant.longitude,
       path: `/merchant/${merchant.id}`,

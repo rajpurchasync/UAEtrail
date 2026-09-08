@@ -15,17 +15,6 @@ export type AdminUserType =
   /** @deprecated */
   | 'organizer_staff';
 
-export const ADMIN_USER_TYPE_LABELS: Record<AdminUserType, string> = {
-  participant: 'Participant',
-  business_host: 'Business Host',
-  guide_host: 'Individual Host',
-  host_staff: 'Host Staff',
-  platform_admin: 'Admin',
-  business_organizer: 'Business Host',
-  guide_organizer: 'Individual Host',
-  organizer_staff: 'Host Staff'
-};
-
 type UserTypeInput = {
   role: UserRole;
   ownedTenants?: { type: TenantType }[];
@@ -44,22 +33,12 @@ export const resolveAdminUserType = (user: UserTypeInput): AdminUserType => {
   return 'participant';
 };
 
-/** Business (company) tenant owners do not participate in Trail Points. */
-export const isBusinessHost = (user: UserTypeInput): boolean =>
-  resolveAdminUserType(user) === 'business_host';
-
-/** @deprecated Use isBusinessHost */
-export const isBusinessOrganizer = isBusinessHost;
-
 export const isBusinessHostById = async (userId: string): Promise<boolean> => {
   const user = await findAuthUserById(userId);
   if (!user || user.role !== UserRole.TENANT_OWNER) return false;
   const tenant = await findTenantByOwnerId(userId);
   return tenant?.type === TenantType.COMPANY;
 };
-
-/** @deprecated Use isBusinessHostById */
-export const isBusinessOrganizerById = isBusinessHostById;
 
 export const adminUserTypeFilter = (userType: string): Record<string, unknown> | null => {
   switch (userType) {

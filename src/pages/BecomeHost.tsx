@@ -20,6 +20,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { MobileBecomeHostFlow } from '../components/host/MobileBecomeHostFlow';
 import { parseHostFlowIntent } from '../components/host/becomeHostFlow';
 import { useHostGate } from '../hooks/useHostGate';
+import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 
 const whyHostReasons = [
   {
@@ -320,12 +321,18 @@ export const BecomeHost = () => {
                 <h2 className="text-lg font-bold text-neutral-900 mb-2">Already set up</h2>
                 <p className="text-sm text-neutral-600 mb-4 leading-relaxed">{alreadyHostMessage}</p>
                 <Link
-                  to="/profile#map-presence"
+                  to="/host/overview"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold"
                 >
-                  Go to profile <ArrowRight className="w-4 h-4" />
+                  Open host dashboard <ArrowRight className="w-4 h-4" />
                 </Link>
               </GlassCard>
+            )}
+
+            {user && !hostGateLoading && (
+              <div className="mt-4">
+                <ProfileMapPresenceSection />
+              </div>
             )}
 
             {user && !hostGateLoading && !profileAlreadyExists && !justBecameHost && intent !== 'become-host' && (

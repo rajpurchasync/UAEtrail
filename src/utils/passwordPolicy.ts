@@ -5,9 +5,6 @@ export const PASSWORD_REQUIREMENTS = [
   { id: 'number', label: 'One number', test: (password: string) => /[0-9]/.test(password) },
 ] as const;
 
-export const isPasswordValid = (password: string): boolean =>
-  PASSWORD_REQUIREMENTS.every((rule) => rule.test(password));
-
 export const getPasswordValidationError = (password: string): string | null => {
   const failed = PASSWORD_REQUIREMENTS.find((rule) => !rule.test(password));
   return failed ? `Password must include ${failed.label.toLowerCase()}.` : null;

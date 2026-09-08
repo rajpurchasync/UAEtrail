@@ -1,5 +1,5 @@
-export const PRIVATE_MEDIA_KINDS = ['avatar', 'waiver', 'private_photo'] as const;
-export const PROFILE_VISIBILITIES = ['public', 'group_members', 'private'] as const;
+const PRIVATE_MEDIA_KINDS = ['avatar', 'waiver', 'private_photo'] as const;
+const PROFILE_VISIBILITIES = ['public', 'group_members', 'private'] as const;
 
 export type PrivateMediaKind = (typeof PRIVATE_MEDIA_KINDS)[number];
 export type ProfileVisibility = (typeof PROFILE_VISIBILITIES)[number];

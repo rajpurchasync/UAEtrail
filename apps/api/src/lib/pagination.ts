@@ -7,11 +7,6 @@ export const paginationSchema = z.object({
 
 export type PaginationParams = z.infer<typeof paginationSchema>;
 
-export const paginate = (params: PaginationParams) => ({
-  skip: (params.page - 1) * params.pageSize,
-  take: params.pageSize
-});
-
 export const paginatedResponse = <T>(data: T[], total: number, params: PaginationParams) => ({
   data,
   meta: {

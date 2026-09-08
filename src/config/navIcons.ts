@@ -8,7 +8,7 @@ import {
   type LucideIcon
 } from 'lucide-react';
 
-/** Shared outline icons for mobile nav + participant UI (keep in sync with MOBILE_NAV). */
+/** Shared outline icons for mobile nav + participant UI (keep in sync with MOBILE_DRAWER_MENU). */
 export const NAV_ICONS = {
   explore: Map,
   trips: Compass,

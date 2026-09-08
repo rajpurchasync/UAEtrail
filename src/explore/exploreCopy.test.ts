@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreCardModel } from './exploreCardModel';
-import { exploreHeadline, resolveMapPinEmoji } from './exploreCopy';
+import { buildExploreCardModel, buildExploreListMeta } from './exploreCardModel';
+import {
+  buildExploreRouteLabel,
+  buildExploreSpotsSegment,
+  buildExploreListWhen,
+  buildExploreWhenSegment,
+  exploreHeadline,
+  formatExploreDayShort,
+  formatExploreTime,
+  formatPlanPhrase,
+  resolveMapPinEmoji,
+  sanitizeExploreLocation,
+} from './exploreCopy';
 import { resolveExplorePrice } from './explorePriceLabel';
 
 describe('resolveMapPinEmoji', () => {
@@ -22,52 +33,99 @@ describe('resolveMapPinEmoji', () => {
   });
 });
 
+describe('formatPlanPhrase', () => {
+  it('turns descriptive titles into natural plan phrases', () => {
+    expect(formatPlanPhrase('See sunrise at Kite Beach', 'event')).toBe('to see sunrise at Kite Beach');
+  });
+
+  it('falls back for auto-generated hiking titles', () => {
+    expect(formatPlanPhrase('Hiking today', 'hiking')).toBe('for a hike');
+  });
+});
+
+describe('formatExploreDayShort', () => {
+  it('returns short weekday names', () => {
+    expect(formatExploreDayShort('2026-09-12')).toBe('Sat');
+    expect(formatExploreDayShort('2026-09-13')).toBe('Sun');
+  });
+});
+
+describe('formatExploreTime', () => {
+  it('formats morning times with colon', () => {
+    expect(formatExploreTime('09:00')).toBe('9:00');
+  });
+
+  it('formats afternoon times compactly', () => {
+    expect(formatExploreTime('16:00')).toBe('4 PM');
+    expect(formatExploreTime('14:00')).toBe('2 PM');
+  });
+});
+
 describe('exploreHeadline', () => {
-  it('formats hiking activity', () => {
+  it('formats hiking activity as title by host with location, time, and spots', () => {
     expect(
       exploreHeadline({
         source: 'activity',
         kind: 'hiking',
-        title: 'Wadi Shawka',
-        hostName: 'Sarah Guide',
+        title: 'Sunrise Hike',
+        hostName: 'Sarah',
+        location: 'Fujairah',
         date: '2026-09-12',
+        time: '09:00',
+        slotsAvailable: 8,
+        slotsTotal: 20,
       })
-    ).toContain('Sarah is going Hiking on');
+    ).toBe('Sunrise Hike by Sarah - Fujairah - Sat at 9:00 - 8 spots');
   });
 
-  it('formats event activity', () => {
+  it('formats camping activity', () => {
+    expect(
+      exploreHeadline({
+        source: 'activity',
+        kind: 'camping',
+        title: 'Al Qudra camping',
+        hostName: 'John',
+        location: 'Al Qudra',
+        date: '2026-09-13',
+        time: '16:00',
+        slotsTotal: 20,
+      })
+    ).toBe('Al Qudra camping by John - Al Qudra - Sun at 4 PM - 20 spots');
+  });
+
+  it('formats event activity without spots when none set', () => {
     expect(
       exploreHeadline({
         source: 'activity',
         kind: 'event',
-        title: 'Sunrise Run',
-        hostName: 'Omar Ali',
-        date: '2026-09-14',
+        title: 'Trail Run',
+        hostName: 'desert Adventure',
+        location: 'Hatta',
+        date: '2026-09-12',
+        time: '15:00',
       })
-    ).toContain('hosting “Sunrise Run”');
+    ).toBe('Trail Run by desert Adventure - Hatta - Sat at 3 PM');
   });
 
-  it('formats carpool activity', () => {
+  it('formats carpool supply with route, time, and fixed tag', () => {
     expect(
       exploreHeadline({
         source: 'activity',
         kind: 'carpool',
-        title: 'Ride to RAK',
+        title: 'Ride to Fujairah',
         hostName: 'Ali',
-        date: '2026-09-10',
-        fromLabel: 'Dubai Marina',
-        toLabel: 'Jebel Jais',
+        date: '2026-09-13',
+        time: '13:00',
+        fromLabel: 'Dubai',
+        toLabel: 'Fujairah',
       })
-    ).toContain('carpooling Dubai Marina → Jebel Jais');
+    ).toBe('Ali is offering Rideshare - Dubai to Fujairah - Sun at 1 PM (fixed)');
   });
 
   it('formats venue spots', () => {
     expect(
       exploreHeadline({ source: 'venue', kind: 'hiking', title: 'Hatta Loop' })
     ).toBe('Hiking Spot');
-    expect(
-      exploreHeadline({ source: 'venue', kind: 'camping', title: 'Fossil Rock' })
-    ).toBe('Camping Spot');
   });
 
   it('formats shop listing', () => {
@@ -76,15 +134,70 @@ describe('exploreHeadline', () => {
     ).toBe('Desert Gear Co');
   });
 
-  it('uses backend demand title as headline', () => {
+  it('formats rideshare demand with route and flexible tag', () => {
+    expect(
+      exploreHeadline({
+        source: 'demand',
+        kind: 'carpool',
+        title: 'Ride share request',
+        hostName: 'Alex Rider',
+        date: '2026-09-13',
+        time: '14:00',
+        fromLabel: 'Dubai',
+        toLabel: 'Fujairah',
+      })
+    ).toBe('Alex is looking for Rideshare - Dubai to Fujairah - Sun at 2 PM (flexible)');
+  });
+
+  it('formats hiking demand with location and flexible tag', () => {
     expect(
       exploreHeadline({
         source: 'demand',
         kind: 'hiking',
-        title: 'Sarah wants to go hiking',
+        title: 'Morning hike',
         hostName: 'Sarah Host',
+        location: 'Wadi Shawka',
+        date: '2026-09-12',
+        time: '07:00',
       })
-    ).toBe('Sarah wants to go hiking');
+    ).toBe('Sarah is looking for Hiking - Wadi Shawka - Sat at 7:00 (flexible)');
+  });
+});
+
+describe('buildExploreRouteLabel', () => {
+  it('returns route for carpool only', () => {
+    expect(buildExploreRouteLabel('Dubai', 'Fujairah', 'carpool')).toBe('Dubai to Fujairah');
+    expect(buildExploreRouteLabel('Dubai', 'Fujairah', 'hiking')).toBeNull();
+  });
+});
+
+describe('buildExploreWhenSegment', () => {
+  it('adds flexible suffix for demands', () => {
+    expect(buildExploreWhenSegment('2026-09-13', '14:00', 'flexible')).toBe('Sun at 2 PM (flexible)');
+  });
+
+  it('adds fixed suffix for carpool supply', () => {
+    expect(buildExploreWhenSegment('2026-09-13', '13:00', 'fixed')).toBe('Sun at 1 PM (fixed)');
+  });
+});
+
+describe('sanitizeExploreLocation', () => {
+  it('drops coordinate map spot labels', () => {
+    expect(sanitizeExploreLocation('Map spot 25.733416, 56.006241')).toBeNull();
+    expect(sanitizeExploreLocation('Hatta Dam Loop')).toBe('Hatta Dam Loop');
+  });
+});
+
+describe('buildExploreListWhen', () => {
+  it('uses compact day labels', () => {
+    expect(buildExploreListWhen('2026-09-13', '14:00')).toBe('Sun · 2 PM');
+  });
+});
+
+describe('buildExploreSpotsSegment', () => {
+  it('prefers available spots', () => {
+    expect(buildExploreSpotsSegment(8, 20)).toBe('8 spots');
+    expect(buildExploreSpotsSegment(0, 20)).toBe('20 spots');
   });
 });
 
@@ -109,23 +222,25 @@ describe('buildExploreCardModel', () => {
     id: 'activity:1',
     kind: 'hiking',
     source: 'activity',
-    title: 'Wadi Shawka Community Hike',
-    subtitle: 'Wadi Shawka Loop',
+    title: 'Sunrise Hike',
+    subtitle: 'Fujairah',
     latitude: 25.3,
     longitude: 56.1,
     path: '/activity/1',
-    hostName: 'Guide Person',
+    hostName: 'Sarah',
     date: '2026-09-12',
+    time: '09:00',
     slotsAvailable: 8,
     slotsTotal: 20,
+    participantPreviews: [{ id: '1', name: 'A' }, { id: '2', name: 'B' }],
     activity: {
       id: '1',
       tenantId: 't',
       tenantSlug: 'host',
       locationId: 'loc',
-      locationName: 'Wadi Shawka Loop',
+      locationName: 'Fujairah',
       activityType: 'hiking',
-      title: 'Wadi Shawka Community Hike',
+      title: 'Sunrise Hike',
       description: '',
       date: '2026-09-12',
       time: '09:00',
@@ -136,11 +251,47 @@ describe('buildExploreCardModel', () => {
     },
   };
 
-  it('builds activity card with join actions', () => {
+  it('builds one-line activity card', () => {
     const card = buildExploreCardModel(hikingActivity);
     expect(card.showJoinActions).toBe(true);
     expect(card.primaryCta).toBe('Request to join');
     expect(card.price?.badge).toBe('Free');
-    expect(card.headline).toContain('going Hiking');
+    expect(card.listTitle).toBe('Sunrise Hike by Sarah - Fujairah - Sat at 9:00 - 8 spots');
+    expect(card.headline).toBe(card.listTitle);
+    expect(buildExploreListMeta(card)).toContain('Fujairah');
+    expect(card.sections.titleText).toBe('Sunrise Hike');
+    expect(card.sections.hostName).toBe('Sarah');
+    expect(card.sections.listTitle).toBe('Sunrise Hike');
+    expect(card.sections.listWhen).toContain('Sat');
+    expect(card.sections.listGoing).toBe('12 going');
+  });
+
+  it('builds one-line demand card', () => {
+    const demand: ExploreMapItemDTO = {
+      id: 'demand:1',
+      kind: 'carpool',
+      source: 'demand',
+      title: 'Ride share request',
+      subtitle: 'Dubai to Fujairah',
+      latitude: 25.3,
+      longitude: 55.3,
+      path: '/demand/1',
+      hostName: 'Alex Rider',
+      date: '2026-09-13',
+      time: '14:00',
+      fromLabel: 'Dubai',
+      toLabel: 'Fujairah',
+      requesterUserId: 'user-1',
+    };
+    const card = buildExploreCardModel(demand);
+    expect(card.listTitle).toBe(
+      'Alex is looking for Rideshare - Dubai to Fujairah - Sun at 2 PM (flexible)'
+    );
+    expect(card.routeLabel).toBe('Dubai to Fujairah');
+    expect(card.secondaryCta).toBe('Message');
+    expect(buildExploreListMeta(card)).toContain('Dubai to Fujairah');
+    expect(card.sections.highlightName).toBe('Alex');
+    expect(card.sections.listTitle).toBe('Ride share request');
+    expect(card.sections.listWhen).toContain('Sun');
   });
 });

@@ -77,6 +77,7 @@ interface MobileCreateLocationPickerProps {
   onConfirm: () => void;
   headerTitle?: string;
   confirmLabel?: string;
+  hint?: string;
   /** Initial map zoom — 15+ for street-level pin placement. */
   initialZoom?: number;
 }
@@ -92,6 +93,7 @@ export const MobileCreateLocationPicker = ({
   onConfirm,
   headerTitle = 'Drop your pin',
   confirmLabel = 'Confirm location',
+  hint,
   initialZoom = 15,
 }: MobileCreateLocationPickerProps) => {
   const [mapReady, setMapReady] = useState(false);
@@ -219,9 +221,10 @@ export const MobileCreateLocationPicker = ({
         <div className="mx-auto mt-4 max-w-sm rounded-2xl bg-white/95 px-4 py-3 text-center shadow-lg">
           <p className="text-sm font-bold text-gray-900">{headerTitle}</p>
           <p className="mt-0.5 text-xs text-gray-500">
-            {precision === 'general'
-              ? "If you're not sure about the exact location"
-              : 'Pinch or drag to zoom — place the pin on your storefront'}
+            {hint ??
+              (precision === 'general'
+                ? "If you're not sure about the exact location"
+                : 'Pinch or drag to zoom — place the pin on the map')}
           </p>
         </div>
       </header>

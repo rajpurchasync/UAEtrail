@@ -3,12 +3,9 @@ import {
   ActivityType,
   ActivityStatus,
   LocationStatus,
-  MembershipRole,
-  RequestStatus,
-  TenantType,
   UserRole
 } from '../domain/enums.js';
-import { ActivityDTO, LocationDTO, MembershipRole as SharedMembershipRole, RequestStatus as SharedRequestStatus, TenantType as SharedTenantType, UserRole as SharedUserRole } from '@uaetrail/shared-types';
+import { ActivityDTO, LocationDTO, UserRole as SharedUserRole } from '@uaetrail/shared-types';
 
 import { formatActivityLocal } from './datetime.js';
 import { parseStoredPricePackages } from './trip-pricing.js';
@@ -18,11 +15,6 @@ const enumMap = <T extends string>(value: string | null | undefined): T =>
   (typeof value === 'string' ? value.toLowerCase() : '') as T;
 
 export const toSharedRole = (role: UserRole): SharedUserRole => enumMap<SharedUserRole>(role);
-export const toSharedMembershipRole = (role: MembershipRole): SharedMembershipRole =>
-  enumMap<SharedMembershipRole>(role);
-export const toSharedTenantType = (type: TenantType): SharedTenantType => enumMap<SharedTenantType>(type);
-export const toSharedRequestStatus = (status: RequestStatus): SharedRequestStatus =>
-  enumMap<SharedRequestStatus>(status);
 
 const mapActivity = (activityType: ActivityType | string): ActivityDTO['activityType'] => {
   const value = String(activityType).toUpperCase();
@@ -62,10 +54,13 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
   const participantsWithUser = (event.participants ?? []).filter(
     (p): p is ParticipantWithUser => 'user' in p && Boolean(p.user)
   );
-  const hostUserId = event.hostId ?? event.tenant.ownerId;
-  const hostName = event.guide?.profile?.displayName ?? 'Host';
-  const hostAvatar = event.guide?.profile?.avatarUrl ?? null;
   const tenantName = event.tenant.name;
+  const hostUserId = event.hostId ?? event.tenant.ownerId;
+  const hostName =
+    event.guide?.profile?.displayName ??
+    event.createdBy?.profile?.displayName ??
+    tenantName;
+  const hostAvatar = event.guide?.profile?.avatarUrl ?? null;
   const createdByName = event.createdBy?.profile?.displayName ?? undefined;
   return toEventDto({
     event,
@@ -139,7 +134,7 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
     : {})
 });
 
-export const toEventDto = ({
+const toEventDto = ({
   event,
   locationName,
   activityType,
@@ -214,6 +209,8 @@ export const toEventDto = ({
   carPoolPriceAed: event.carPoolPriceAed,
   carPoolSeats: event.carPoolSeats ?? null,
   carPoolDetails: event.carPoolDetails,
+  linkedActivityId: event.linkedActivityId ?? null,
+  linkedCarpoolActivityId: event.linkedCarpoolActivityId ?? null,
   paymentTerms: event.paymentTerms,
   pricingMode: event.pricingMode ?? null,
   itinerary: event.itinerary,

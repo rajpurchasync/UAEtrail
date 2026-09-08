@@ -1,29 +1,11 @@
-import { UAERegion } from '../types';
-import { getRegionsForCountry, DEFAULT_COUNTRY } from '../config/regions';
-
-/** @deprecated Use getRegionsForCountry() for GCC support */
-export const UAE_REGIONS: UAERegion[] = getRegionsForCountry(DEFAULT_COUNTRY) as UAERegion[];
-
 export const DIFFICULTY_COLORS = {
   easy: 'bg-green-100 text-green-800',
   moderate: 'bg-yellow-100 text-yellow-800',
   hard: 'bg-red-100 text-red-800'
 };
 
-export const STATUS_COLORS = {
-  free: 'bg-green-500',
-  paid: 'bg-blue-500',
-  full: 'bg-gray-400'
-};
-
 /** Public activities browse + dashboard tab. */
 export const ACTIVITIES_PATH = '/activities';
-export const ADMIN_ACTIVITIES_PATH = '/admin/activities';
-
-export const activityDetailPath = (activityId: string) => `/activity/${activityId}`;
-
-/** @deprecated Use activityDetailPath */
-export const tripDetailPath = activityDetailPath;
 
 /** Host console nav — hosting tools live under /host, not on the public activities page. */
 export const HOST_DASHBOARD_LINKS = [
@@ -38,15 +20,12 @@ export const HOST_DASHBOARD_LINKS = [
   { to: '/my-rewards', label: 'Trail Points' },
 ];
 
-/** @deprecated Use HOST_DASHBOARD_LINKS */
-export const ORGANIZER_DASHBOARD_LINKS = HOST_DASHBOARD_LINKS;
-
 export const ADMIN_LINKS = [
   { to: '/admin/overview', label: 'Overview' },
   { to: '/admin/locations', label: 'Locations' },
   { to: '/admin/users', label: 'User Management' },
   { to: '/admin/hosts', label: 'Hosts' },
-  { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },
+  { to: '/admin/activities', label: 'Activities' },
   { to: '/admin/groups', label: 'Groups' },
   { to: '/admin/shop', label: 'Shop' },
   { to: '/admin/audit-log', label: 'Audit Log' },
@@ -56,20 +35,6 @@ export const ADMIN_LINKS = [
 export const MERCHANT_DASHBOARD_LINKS = [
   { to: '/merchant/dashboard', label: 'Dashboard' },
   { to: '/shop', label: 'Public Shop' },
-];
-
-export const HIKING_SUBCATEGORIES = [
-  'Shoes',
-  'Backpacks',
-  'Clothing',
-  'Accessories'
-];
-
-export const CAMPING_SUBCATEGORIES = [
-  'Tents',
-  'Chairs',
-  'BBQ',
-  'Accessories'
 ];
 
 export const COUNTRIES = [

@@ -14,9 +14,8 @@ import { isHostRole } from '../utils/roles';
 import { parseActivityTypeParam } from '../config/activityTypes';
 import { parseTabParam, type PageTab } from './activities/shared';
 import { ExploreSection } from './activities/ExploreSection';
-import { MineSection } from './activities/MineSection';
-
-const HOST_ACTIVITIES_PATH = '/host/activities';
+import { JoinedSection } from './activities/JoinedSection';
+import { HostedSection } from './activities/HostedSection';
 
 export const Activities = () => {
   const { user } = useAuth();
@@ -27,17 +26,14 @@ export const Activities = () => {
   const canHost = isHostRole(user?.role);
 
   useEffect(() => {
-    if (searchParams.get('tab') === 'organized' && canHost) {
-      navigate(HOST_ACTIVITIES_PATH, { replace: true });
-    }
-  }, [searchParams, canHost, navigate]);
-
-  useEffect(() => {
     setOnSaved(() => () => {
-      if (canHost) navigate(HOST_ACTIVITIES_PATH);
+      setActiveTab('hosted');
+      const next = new URLSearchParams(searchParams);
+      next.set('tab', 'hosted');
+      setSearchParams(next, { replace: true });
     });
     return () => setOnSaved(null);
-  }, [canHost, navigate, setOnSaved]);
+  }, [searchParams, setSearchParams, setOnSaved]);
 
   useEffect(() => {
     const createType = parseActivityTypeParam(searchParams.get('create'));
@@ -53,7 +49,7 @@ export const Activities = () => {
   useEffect(() => {
     if (user) return;
     const tab = searchParams.get('tab');
-    if (tab === 'mine' || tab === 'joined') {
+    if (tab === 'joined' || tab === 'hosted' || tab === 'mine') {
       const next = new URLSearchParams(searchParams);
       next.delete('tab');
       next.delete('sub');
@@ -69,28 +65,34 @@ export const Activities = () => {
       next.delete('sub');
     } else {
       next.set('tab', tab);
-      if (tab !== 'mine') next.delete('sub');
+      if (tab !== 'joined') next.delete('sub');
     }
     setSearchParams(next, { replace: true });
   };
 
-  const navOptions = useMemo(
-    () => [
+  const navOptions = useMemo(() => {
+    if (!user) return [{ key: 'explore' as PageTab, label: 'Explore' }];
+    return [
+      { key: 'joined' as PageTab, label: 'Joined' },
+      ...(canHost ? [{ key: 'hosted' as PageTab, label: 'Hosted' }] : []),
       { key: 'explore' as PageTab, label: 'Explore' },
-      ...(user ? [{ key: 'mine' as PageTab, label: 'Dashboard' }] : []),
-    ],
-    [user]
-  );
+    ];
+  }, [user, canHost]);
 
   const handleHostCta = useCallback(() => {
-    navigate(canHost ? HOST_ACTIVITIES_PATH : '/become-host');
-  }, [canHost, navigate]);
+    if (canHost) {
+      openCreate({ tenantId: getActiveTenantId() ?? '' });
+      return;
+    }
+    navigate('/become-host');
+  }, [canHost, navigate, openCreate]);
 
   return (
     <ConsumerShell
       layout="tab"
       title="Activities"
       banner={{ src: PAGE_BANNERS.trips, alt: 'Hikers on a mountain trail' }}
+      journey={{ fallbackTo: '/', label: 'Home' }}
       toolbar={
         navOptions.length > 1 ? (
           <FilterChips options={navOptions} value={activeTab} onChange={setTab} />
@@ -105,16 +107,31 @@ export const Activities = () => {
 
       <div className="pb-24 md:pb-8">
         {activeTab === 'explore' && <ExploreSection />}
-        {activeTab === 'mine' && user && <MineSection onExplore={() => setTab('explore')} />}
+        {activeTab === 'joined' && user && <JoinedSection />}
+        {activeTab === 'hosted' && user && canHost && <HostedSection />}
+        {activeTab === 'hosted' && user && !canHost && (
+          <div className="glass-card p-6 text-center">
+            <p className="text-sm text-neutral-600 mb-3">Host activities on the map to share trips with the community.</p>
+            <button
+              type="button"
+              onClick={() => navigate('/become-host')}
+              className="text-sm font-semibold text-emerald-700"
+            >
+              Become a host
+            </button>
+          </div>
+        )}
       </div>
 
-      <FloatingActionButton
-        extended
-        icon={<Plus className="w-5 h-5 shrink-0" strokeWidth={2.5} />}
-        text={canHost ? 'Host activity' : 'Become a host'}
-        label={canHost ? 'Host activity' : 'Become a host'}
-        onClick={handleHostCta}
-      />
+      {user && activeTab === 'hosted' && canHost && (
+        <FloatingActionButton
+          extended
+          icon={<Plus className="w-5 h-5 shrink-0" strokeWidth={2.5} />}
+          text="New activity"
+          label="New activity"
+          onClick={handleHostCta}
+        />
+      )}
     </ConsumerShell>
   );
 };

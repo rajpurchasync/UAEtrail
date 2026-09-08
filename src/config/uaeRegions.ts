@@ -11,7 +11,7 @@ export const UAE_EMIRATES = [
 
 export type UaeEmirate = (typeof UAE_EMIRATES)[number];
 
-export const UAE_STATES_BY_EMIRATE: Record<UaeEmirate, string[]> = {
+const UAE_STATES_BY_EMIRATE: Record<UaeEmirate, string[]> = {
   'Abu Dhabi': ['Abu Dhabi City', 'Al Ain', 'Liwa', 'Al Dhafra'],
   Dubai: ['Dubai', 'Hatta'],
   Sharjah: ['Sharjah', 'Kalba', 'Khor Fakkan'],

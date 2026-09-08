@@ -14,8 +14,6 @@ export const accountRouteByRole = (role: UserRole): string => {
   return '/profile';
 };
 
-export const isParticipantRole = (role: UserRole): boolean => role === 'participant';
-
 export const participantDashboardRedirect = (subpath: string): string => {
   switch (subpath) {
     case 'overview':
@@ -23,7 +21,7 @@ export const participantDashboardRedirect = (subpath: string): string => {
     case 'requests':
       return '/my-requests';
     case 'trips':
-      return '/activities?tab=mine';
+      return '/activities?tab=joined';
     case 'messages':
       return '/messages';
     case 'profile':
@@ -48,9 +46,6 @@ export const hostDashboardRedirect = (subpath: string): string => {
       return '/host/overview';
   }
 };
-
-/** @deprecated Use hostDashboardRedirect */
-export const organizerDashboardRedirect = hostDashboardRedirect;
 
 export const adminDashboardRedirect = (subpath: string): string => {
   switch (subpath) {

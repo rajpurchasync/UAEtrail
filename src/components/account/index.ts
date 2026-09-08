@@ -1,11 +1,8 @@
 export { AccountIdentityBar } from './AccountIdentityBar';
-export { AccountStatGrid, type AccountStat } from './AccountStatGrid';
-export { AccountSectionHeader } from './AccountSectionHeader';
 export { AccountActivityPreview } from './AccountActivityPreview';
-export { AccountGroupsPreview } from './AccountGroupsPreview';
 export { AccountLinkList, type AccountLinkItem } from './AccountLinkList';
-export { HostHubSections, buildHostStats } from './HostHubSections';
+export { HostHubSections } from './HostHubSections';
+export { AccountAvatarModal } from './AccountAvatarModal';
 export { AccountEditModal, AccountSignOutButton } from './AccountEditModal';
 export { AccountDeleteSection } from './AccountDeleteSection';
 export { AccountDataExportSection } from './AccountDataExportSection';
-export { buildParticipantStats } from './participantStats';

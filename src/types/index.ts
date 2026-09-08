@@ -4,8 +4,7 @@ export type CampingType = 'self-guided' | 'operator-led';
 export type Accessibility = 'car-accessible' | 'remote';
 export type Season = 'winter' | 'summer' | 'year-round';
 export type ActivityListingStatus = 'free' | 'paid' | 'full';
-/** @deprecated Use ActivityListingStatus */
-export type TripStatus = ActivityListingStatus;
+
 export type UAERegion = 'Dubai' | 'RAK' | 'Fujairah' | 'Abu Dhabi' | 'Al Ain' | 'Sharjah';
 
 export interface Trail {
@@ -71,23 +70,6 @@ export interface CommunityActivitySpot {
   accessibleBy?: string[];
 }
 
-export interface Operator {
-  id: string;
-  name: string;
-  bio: string;
-  experience: string;
-  languages: string[];
-  certifications: string[];
-  activityTypes: ActivityType[];
-  avatar: string;
-}
-
-export interface Participant {
-  id: string;
-  name: string;
-  avatar: string;
-}
-
 export interface ActivityListing {
   id: string;
   locationId: string;
@@ -119,28 +101,4 @@ export interface ActivityListing {
   carpoolAvailable?: boolean;
   latitude?: number | null;
   longitude?: number | null;
-}
-
-/** @deprecated Use ActivityListing */
-export type Trip = ActivityListing;
-
-export interface GearItem {
-  id: string;
-  name: string;
-  category: ActivityType;
-  subcategory: string;
-  price: number;
-  image: string;
-  affiliateLink: string;
-  featured: boolean;
-  description: string;
-}
-
-export interface Review {
-  id: string;
-  locationId: string;
-  userName: string;
-  rating: number;
-  comment: string;
-  date: string;
 }

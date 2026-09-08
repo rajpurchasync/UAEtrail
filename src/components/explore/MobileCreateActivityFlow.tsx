@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   CalendarDays,
   Car,
-  ChevronDown,
   ChevronLeft,
-  ChevronUp,
   Clock3,
   Lock,
   MapPin,
@@ -22,10 +20,13 @@ import {
   buildDateOptions,
   CAPACITY_PRESETS,
   createFlowStepTitle,
+  createTitlePlaceholder,
   defaultCapacityForKind,
   emptyMobileCreateDraft,
+  formatCapacityLabel,
   getCreateFlowSteps,
   locationPickerConfirmLabel,
+  locationPickerHint,
   locationPickerTitle,
   OFFLINE_PRICE_NOTE,
   priceModeLabel,
@@ -138,7 +139,9 @@ export const MobileCreateActivityFlow = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
-  const [showMoreOptions, setShowMoreOptions] = useState(false);
+  const [routeMapTarget, setRouteMapTarget] = useState<'from' | 'to' | null>(null);
+  const [whereMapOpen, setWhereMapOpen] = useState(false);
+  const [carPoolMapTarget, setCarPoolMapTarget] = useState<'from' | 'to' | null>(null);
 
   const kind = draft.kind ?? selectedKind;
   const flowSteps = useMemo(() => (kind ? getCreateFlowSteps(kind) : []), [kind]);
@@ -152,7 +155,9 @@ export const MobileCreateActivityFlow = ({
       setError(null);
       setSubmitting(false);
       setShowMonthView(false);
-      setShowMoreOptions(false);
+      setRouteMapTarget(null);
+      setWhereMapOpen(false);
+      setCarPoolMapTarget(null);
       return;
     }
 
@@ -191,6 +196,21 @@ export const MobileCreateActivityFlow = ({
   const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as CreateFlowStepId) : -1;
 
   const goBack = () => {
+    if (routeMapTarget) {
+      setRouteMapTarget(null);
+      setError(null);
+      return;
+    }
+    if (whereMapOpen) {
+      setWhereMapOpen(false);
+      setError(null);
+      return;
+    }
+    if (carPoolMapTarget) {
+      setCarPoolMapTarget(null);
+      setError(null);
+      return;
+    }
     if (step === 'type' || currentStepIndex <= 0) {
       if (step === 'type') {
         onBackToIntent?.();
@@ -217,6 +237,8 @@ export const MobileCreateActivityFlow = ({
 
   const handlePublish = async () => {
     if (!user?.id) return;
+
+    if (hostGateLoading) return;
 
     if (!canPublish) {
       if (onOpenHostApplication) {
@@ -256,14 +278,42 @@ export const MobileCreateActivityFlow = ({
     }
   };
 
-  const isLocationStep = step === 'where' || step === 'to';
+  const isMeetingPointMapOpen = kind !== 'carpool' && step === 'where' && whereMapOpen;
+  const isLinkedCarpoolMapOpen =
+    kind !== 'carpool' && step === 'carpool' && draft.carPoolEnabled && carPoolMapTarget !== null;
+  const isFullScreenLocationStep = isMeetingPointMapOpen || step === 'to';
+  const isRouteMapOverlay = kind === 'carpool' && step === 'route' && routeMapTarget !== null;
+
+  const hasFromPin = draft.latitude != null && draft.longitude != null;
+  const hasToPin = draft.toLatitude != null && draft.toLongitude != null;
+  const hasCarPoolFromPin = draft.carPoolFromLat != null && draft.carPoolFromLng != null;
+  const hasCarPoolToPin = draft.carPoolToLat != null && draft.carPoolToLng != null;
 
   if (!open) return null;
 
-  if (isLocationStep && kind) {
-    const isToStep = step === 'to';
-    const lat = isToStep ? draft.toLatitude ?? MAP_CONFIG.defaultCenter.lat : draft.latitude ?? MAP_CONFIG.defaultCenter.lat;
-    const lng = isToStep ? draft.toLongitude ?? MAP_CONFIG.defaultCenter.lng : draft.longitude ?? MAP_CONFIG.defaultCenter.lng;
+  if ((isFullScreenLocationStep || isRouteMapOverlay || isLinkedCarpoolMapOpen) && kind) {
+    const isLinkedCarpoolTo = isLinkedCarpoolMapOpen && carPoolMapTarget === 'to';
+    const isToStep = isRouteMapOverlay
+      ? routeMapTarget === 'to'
+      : isLinkedCarpoolMapOpen
+        ? isLinkedCarpoolTo
+        : step === 'to';
+    const lat = isLinkedCarpoolMapOpen
+      ? isLinkedCarpoolTo
+        ? draft.carPoolToLat ?? MAP_CONFIG.exploreDefaultCenter.lat
+        : draft.carPoolFromLat ?? MAP_CONFIG.exploreDefaultCenter.lat
+      : isToStep
+        ? draft.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
+        : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
+    const lng = isLinkedCarpoolMapOpen
+      ? isLinkedCarpoolTo
+        ? draft.carPoolToLng ?? MAP_CONFIG.exploreDefaultCenter.lng
+        : draft.carPoolFromLng ?? MAP_CONFIG.exploreDefaultCenter.lng
+      : isToStep
+        ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
+        : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
+    const mapEndpoint: 'from' | 'to' = isToStep ? 'to' : 'from';
+    const mapStep: CreateFlowStepId = isLinkedCarpoolMapOpen ? 'carpool' : (step as CreateFlowStepId);
 
     return (
       <div className="absolute inset-0 z-[1400] bg-neutral-100">
@@ -272,10 +322,25 @@ export const MobileCreateActivityFlow = ({
             precision={draft.locationPrecision}
             latitude={lat}
             longitude={lng}
-            headerTitle={locationPickerTitle(step as CreateFlowStepId, kind)}
-            confirmLabel={locationPickerConfirmLabel(step as CreateFlowStepId)}
+            headerTitle={
+              isLinkedCarpoolMapOpen
+                ? mapEndpoint === 'to'
+                  ? 'Carpool destination'
+                  : 'Carpool pickup'
+                : locationPickerTitle(mapStep, kind, mapEndpoint)
+            }
+            confirmLabel={locationPickerConfirmLabel(kind, mapStep, mapEndpoint)}
+            hint={locationPickerHint(kind, draft.locationPrecision)}
             onPrecisionChange={(locationPrecision: LocationPrecision) => patchDraft({ locationPrecision })}
             onLocationChange={(latitude, longitude) => {
+              if (isLinkedCarpoolMapOpen) {
+                if (isLinkedCarpoolTo) {
+                  patchDraft({ carPoolToLat: latitude, carPoolToLng: longitude });
+                } else {
+                  patchDraft({ carPoolFromLat: latitude, carPoolFromLng: longitude });
+                }
+                return;
+              }
               if (isToStep) {
                 patchDraft({ toLatitude: latitude, toLongitude: longitude });
               } else {
@@ -284,7 +349,24 @@ export const MobileCreateActivityFlow = ({
             }}
             onBack={goBack}
             onClose={handleClose}
-            onConfirm={goNext}
+            onConfirm={() => {
+              if (isRouteMapOverlay) {
+                setRouteMapTarget(null);
+                setError(null);
+                return;
+              }
+              if (isLinkedCarpoolMapOpen) {
+                setCarPoolMapTarget(null);
+                setError(null);
+                return;
+              }
+              if (isMeetingPointMapOpen) {
+                setWhereMapOpen(false);
+                setError(null);
+                return;
+              }
+              goNext();
+            }}
           />
         </Suspense>
       </div>
@@ -293,6 +375,60 @@ export const MobileCreateActivityFlow = ({
 
   const stepTitle =
     step === 'type' || !kind ? 'What type?' : createFlowStepTitle(step as CreateFlowStepId, kind);
+
+  const renderRoutePicker = (endpoint: 'from' | 'to') => {
+    const isTo = endpoint === 'to';
+    const placed = isTo ? hasToPin : hasFromPin;
+    const lat = isTo ? draft.toLatitude : draft.latitude;
+    const lng = isTo ? draft.toLongitude : draft.longitude;
+
+    return (
+      <button
+        key={endpoint}
+        type="button"
+        onClick={() => setRouteMapTarget(endpoint)}
+        className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-rose-300"
+      >
+        <span className="flex items-center gap-2 text-gray-800">
+          <MapPin className={`h-5 w-5 ${isTo ? 'text-sky-500' : 'text-rose-500'}`} />
+          <span>
+            <span className="block text-sm font-bold">{isTo ? 'To location' : 'From location'}</span>
+            <span className="text-xs text-gray-500">
+              {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
+            </span>
+          </span>
+        </span>
+        <span className="text-xs font-semibold text-rose-600">{placed ? 'Edit' : 'Map'}</span>
+      </button>
+    );
+  };
+
+  const renderLinkedCarpoolPicker = (endpoint: 'from' | 'to') => {
+    const isTo = endpoint === 'to';
+    const placed = isTo ? hasCarPoolToPin : hasCarPoolFromPin;
+    const lat = isTo ? draft.carPoolToLat : draft.carPoolFromLat;
+    const lng = isTo ? draft.carPoolToLng : draft.carPoolFromLng;
+
+    return (
+      <button
+        key={`carpool-${endpoint}`}
+        type="button"
+        onClick={() => setCarPoolMapTarget(endpoint)}
+        className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-sky-300"
+      >
+        <span className="flex items-center gap-2 text-gray-800">
+          <Car className={`h-5 w-5 ${isTo ? 'text-sky-500' : 'text-rose-500'}`} />
+          <span>
+            <span className="block text-sm font-bold">{isTo ? 'To location' : 'From location'}</span>
+            <span className="text-xs text-gray-500">
+              {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
+            </span>
+          </span>
+        </span>
+        <span className="text-xs font-semibold text-sky-600">{placed ? 'Edit' : 'Map'}</span>
+      </button>
+    );
+  };
 
   return (
     <div className="absolute inset-0 z-[1400] flex flex-col justify-end bg-black/35">
@@ -332,22 +468,96 @@ export const MobileCreateActivityFlow = ({
           </>
         )}
 
+        {step === 'route' && kind === 'carpool' && (
+          <>
+            <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
+            <p className="mb-4 text-sm text-gray-600">Set both pickup and destination on the map.</p>
+            <div className="space-y-3">
+              {renderRoutePicker('from')}
+              {renderRoutePicker('to')}
+            </div>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={!hasFromPin || !hasToPin} onClick={goNext} />
+            </div>
+          </>
+        )}
+
         {step === 'title' && kind && (
           <>
             <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">What are you hosting?</span>
+              <span className="mb-2 block text-sm font-medium text-gray-700">Give your plan a short title</span>
               <input
                 value={draft.title}
                 onChange={(event) => patchDraft({ title: event.target.value })}
-                placeholder="e.g. Sunrise trail run"
+                placeholder={createTitlePlaceholder(kind)}
                 className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-rose-400"
                 maxLength={120}
+                autoFocus
               />
             </label>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton disabled={!draft.title.trim()} onClick={goNext} />
+            </div>
+          </>
+        )}
+
+        {step === 'where' && kind && (
+          <>
+            <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
+            <p className="mb-4 text-sm text-gray-600">
+              {kind === 'camping'
+                ? 'Choose where campers will meet or set up.'
+                : 'Choose where participants should meet before the activity starts.'}
+            </p>
+            <button
+              type="button"
+              onClick={() => setWhereMapOpen(true)}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-rose-300"
+            >
+              <span className="flex items-center gap-2 text-gray-800">
+                <MapPin className="h-5 w-5 text-rose-500" />
+                <span>
+                  <span className="block text-sm font-bold">
+                    {kind === 'camping' ? 'Camp location' : 'Meeting point'}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {hasFromPin
+                      ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
+                      : 'Tap to choose on map'}
+                  </span>
+                </span>
+              </span>
+              <span className="text-xs font-semibold text-rose-600">{hasFromPin ? 'Edit' : 'Map'}</span>
+            </button>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={!hasFromPin} onClick={goNext} />
+            </div>
+          </>
+        )}
+
+        {step === 'instructions' && kind && (
+          <>
+            <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
+            <p className="mb-3 text-sm text-gray-600">
+              Share anything participants should know before joining — pace, gear, meeting protocol, or safety notes.
+            </p>
+            <label className="block">
+              <textarea
+                value={draft.additionalInstructions}
+                onChange={(event) => patchDraft({ additionalInstructions: event.target.value })}
+                rows={5}
+                placeholder="e.g. Bring 2L water, moderate pace, arrive 10 minutes early…"
+                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-rose-400"
+                maxLength={1000}
+              />
+            </label>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton onClick={goNext} />
             </div>
           </>
         )}
@@ -454,7 +664,7 @@ export const MobileCreateActivityFlow = ({
                       active ? 'bg-rose-500 text-white' : 'bg-neutral-100 text-gray-800'
                     }`}
                   >
-                    {value}
+                    {formatCapacityLabel(value)}
                   </button>
                 );
               })}
@@ -466,42 +676,152 @@ export const MobileCreateActivityFlow = ({
           </>
         )}
 
+        {step === 'carpool' && kind && kind !== 'carpool' && (
+          <>
+            <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
+            <label className="flex items-center justify-between gap-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Offer carpool</p>
+                <p className="mt-0.5 text-xs text-gray-500">
+                  Creates a linked carpool listing on the map with pickup and destination.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={draft.carPoolEnabled}
+                onClick={() =>
+                  patchDraft({
+                    carPoolEnabled: !draft.carPoolEnabled,
+                    carPoolFromLat: null,
+                    carPoolFromLng: null,
+                    carPoolToLat: null,
+                    carPoolToLng: null,
+                  })
+                }
+                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${
+                  draft.carPoolEnabled ? 'bg-sky-500' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                    draft.carPoolEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </label>
+            {draft.carPoolEnabled && (
+              <div className="mt-4 space-y-3">
+                <p className="text-sm text-gray-600">Set the carpool route on the map.</p>
+                {renderLinkedCarpoolPicker('from')}
+                {renderLinkedCarpoolPicker('to')}
+              </div>
+            )}
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton
+                disabled={draft.carPoolEnabled && (!hasCarPoolFromPin || !hasCarPoolToPin)}
+                onClick={goNext}
+              />
+            </div>
+          </>
+        )}
+
+        {step === 'audience' && kind && (
+          <>
+            <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
+            <p className="mb-4 text-sm text-gray-600">Set age range and who can request to join.</p>
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+              <MobileAgeRangeSlider
+                minAge={draft.ageMin}
+                maxAge={draft.ageMax}
+                onChange={(ageMin, ageMax) => patchDraft({ ageMin, ageMax })}
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              {([
+                { key: 'open' as JoinMode, title: 'Open', subtitle: 'Anyone can request', icon: Users },
+                { key: 'private' as JoinMode, title: 'Private', subtitle: 'Invite or approve only', icon: Lock },
+              ]).map((option) => {
+                const active = draft.joinMode === option.key;
+                const Icon = option.icon;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => patchDraft({ joinMode: option.key })}
+                    className={`rounded-2xl border-2 px-3 py-4 text-left ${
+                      active ? 'border-rose-500 bg-rose-50/50' : 'border-neutral-200 bg-white'
+                    }`}
+                  >
+                    <Icon className={`h-5 w-5 ${active ? 'text-rose-500' : 'text-gray-500'}`} />
+                    <p className="mt-2 text-sm font-bold text-gray-900">{option.title}</p>
+                    <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
+                  </button>
+                );
+              })}
+            </div>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton label="Preview" onClick={goNext} />
+            </div>
+          </>
+        )}
+
         {step === 'publish' && kind && (
           <>
             <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
 
             <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-gray-700">
-              <p className="font-semibold text-gray-900">
+              <p className="font-semibold text-gray-900">{draft.title}</p>
+              <p className="mt-1 text-xs text-gray-500">
                 {kind === 'carpool' ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <Car className="h-4 w-4 text-sky-500" />
+                    <Car className="h-3.5 w-3.5 text-sky-500" />
                     Carpool
                   </span>
                 ) : kind === 'camping' ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <Tent className="h-4 w-4 text-amber-600" />
+                    <Tent className="h-3.5 w-3.5 text-amber-600" />
                     Camping
                   </span>
                 ) : kind === 'event' ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <CalendarDays className="h-4 w-4 text-violet-600" />
-                    {draft.title || 'Event'}
+                    <CalendarDays className="h-3.5 w-3.5 text-violet-600" />
+                    Event
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5">
-                    <Mountain className="h-4 w-4 text-emerald-600" />
+                    <Mountain className="h-3.5 w-3.5 text-emerald-600" />
                     Hiking
                   </span>
                 )}
               </p>
               <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
                 <MapPin className="h-3.5 w-3.5" />
-                {kind === 'carpool' ? 'From & to pins on map' : 'Pin on map'}
-                {draft.locationPrecision === 'general' ? ' · general area' : ' · exact spot'}
+                {kind === 'carpool' && hasFromPin && hasToPin
+                  ? `From ${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)} → To ${draft.toLatitude?.toFixed(4)}, ${draft.toLongitude?.toFixed(4)}`
+                  : kind === 'carpool'
+                    ? 'Set from and to on map'
+                    : `Pin on map${draft.locationPrecision === 'general' ? ' · general area' : ' · exact spot'}`}
               </p>
               <p className="mt-1 text-xs text-gray-500">
-                {draft.capacity} {kind === 'carpool' ? 'seats' : 'spots'} · {draft.date}
+                {formatCapacityLabel(draft.capacity)} {kind === 'carpool' ? 'seats' : 'spots'} · {draft.date}
+                {draft.timeMode === 'specific' && draft.time ? ` · ${draft.time}` : ' · flexible time'}
               </p>
+              {draft.additionalInstructions.trim() && (
+                <p className="mt-2 line-clamp-3 text-xs text-gray-600">{draft.additionalInstructions}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Ages {draft.ageMin}–{draft.ageMax >= 80 ? '80+' : draft.ageMax} ·{' '}
+                {draft.joinMode === 'private' ? 'Private' : 'Open'}
+              </p>
+              {draft.carPoolEnabled && kind !== 'carpool' && (
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-sky-700">
+                  <Car className="h-3.5 w-3.5" />
+                  Carpool available on map
+                </p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -573,48 +893,6 @@ export const MobileCreateActivityFlow = ({
                 <p className="mt-2 text-xs text-gray-500">{OFFLINE_PRICE_NOTE}</p>
               )}
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowMoreOptions((value) => !value)}
-              className="mt-4 flex w-full items-center justify-between rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800"
-            >
-              More options
-              {showMoreOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
-
-            {showMoreOptions && (
-              <div className="mt-3 space-y-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-                <MobileAgeRangeSlider
-                  minAge={draft.ageMin}
-                  maxAge={draft.ageMax}
-                  onChange={(ageMin, ageMax) => patchDraft({ ageMin, ageMax })}
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  {([
-                    { key: 'open' as JoinMode, title: 'Open', subtitle: 'Anyone', icon: Users },
-                    { key: 'private' as JoinMode, title: 'Private', subtitle: 'Invite only', icon: Lock },
-                  ]).map((option) => {
-                    const active = draft.joinMode === option.key;
-                    const Icon = option.icon;
-                    return (
-                      <button
-                        key={option.key}
-                        type="button"
-                        onClick={() => patchDraft({ joinMode: option.key })}
-                        className={`rounded-2xl border-2 px-3 py-4 text-left ${
-                          active ? 'border-rose-500 bg-white' : 'border-neutral-200 bg-white/80'
-                        }`}
-                      >
-                        <Icon className={`h-5 w-5 ${active ? 'text-rose-500' : 'text-gray-500'}`} />
-                        <p className="mt-2 text-sm font-bold text-gray-900">{option.title}</p>
-                        <p className="text-xs text-gray-500">{option.subtitle}</p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {!canPublish && !hostGateLoading && (
               <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">

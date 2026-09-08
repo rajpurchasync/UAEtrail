@@ -11,8 +11,6 @@ export interface GoogleProfile {
   locale: string | null;
 }
 
-export const isGoogleAuthConfigured = (): boolean => Boolean(env.GOOGLE_CLIENT_ID);
-
 export const verifyGoogleIdToken = async (idToken: string): Promise<GoogleProfile> => {
   if (!env.GOOGLE_CLIENT_ID) {
     throw new ApiError(503, 'google_auth_unavailable', 'Google sign-in is not configured.');

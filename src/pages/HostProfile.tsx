@@ -69,6 +69,7 @@ export const HostProfile = () => {
       layout="tab"
       title="Host profile"
       banner={{ src: PAGE_BANNERS.organizer, alt: 'Host profile' }}
+      journey={{ fallbackTo: '/host/overview', label: 'Host' }}
       toolbar={
         <div className="w-full flex items-center justify-start">
           <TenantSwitcher onChange={(tenantId) => resolveSlug(tenantId)} />

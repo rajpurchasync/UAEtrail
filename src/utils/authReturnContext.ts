@@ -1,10 +1,10 @@
-export interface LocationLike {
+interface LocationLike {
   pathname: string;
   search: string;
   hash?: string;
 }
 
-export interface AuthReturnContext {
+interface AuthReturnContext {
   from: string;
   scrollY: number;
   focusSelector?: string;
@@ -14,7 +14,7 @@ const AUTH_RETURN_CONTEXT_STORAGE_KEY = 'uaetrail.auth.return-context';
 
 const getSafeWindow = (): Window | null => (typeof window === 'undefined' ? null : window);
 
-export const buildPathFromLocation = (location: LocationLike, overrideHash?: string): string => {
+const buildPathFromLocation = (location: LocationLike, overrideHash?: string): string => {
   const hash = overrideHash ?? location.hash ?? '';
   return `${location.pathname}${location.search}${hash}`;
 };

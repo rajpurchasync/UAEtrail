@@ -12,9 +12,9 @@ import { ActivityDetailDTO, MyTripRequestDTO, TripParticipationDTO, WithdrawReas
 import { api } from '../api/services';
 import { formatDate } from '../utils';
 import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../utils/tripPricing';
-import { showTenantBrand, tripHostAvatar, tripHostName, tripHostUserId } from '../utils/hostLabels';
+import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../utils/hostLabels';
+import { hostProfilePath } from '../utils/hostLinks';
 import { useAuth } from '../context/AuthContext';
-import { organizerProfilePath } from '../utils/organizerLinks';
 import { PARTICIPANT_PRIVACY } from '../config/platform';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -25,7 +25,7 @@ import {
   MeetingPointMap,
   ParticipantPreview,
   HostMessageButton,
-  TripCheckInPanel,
+  ActivityCheckInPanel,
   WithdrawRequestModal,
   JoinRequestModal,
   SecureAvatar
@@ -166,7 +166,7 @@ export const ActivityDetail = () => {
 
   const participants = trip.participants ?? [];
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
-  const organizerPath = organizerProfilePath(trip.tenantSlug);
+  const hostPath = hostProfilePath(trip.tenantSlug);
   const isFull = trip.slotsAvailable <= 0;
   const accessLat = trip.startLat ?? trip.meetingLat ?? trip.parkingLat ?? trip.location.latitude ?? null;
   const accessLng = trip.startLng ?? trip.meetingLng ?? trip.parkingLng ?? trip.location.longitude ?? null;
@@ -225,7 +225,7 @@ export const ActivityDetail = () => {
 
   const checkInFooter = participation ? (
     <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-      <TripCheckInPanel
+      <ActivityCheckInPanel
         activityId={trip!.id}
         participation={participation}
         onCheckIn={handleCheckIn}
@@ -258,7 +258,7 @@ export const ActivityDetail = () => {
   const sidebarJoin = isConfirmed ? (
     participation && (
       <>
-        <TripCheckInPanel
+        <ActivityCheckInPanel
           activityId={trip.id}
           participation={participation}
           onCheckIn={handleCheckIn}
@@ -458,24 +458,61 @@ export const ActivityDetail = () => {
             )}
 
             {trip.carPoolEnabled && (
-              <div className="mt-4 flex items-start gap-2 text-sm text-gray-700">
-                <Car className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-gray-900">Car pool</p>
-                  <p>
-                    {trip.carPoolSeats != null && trip.carPoolSeats > 0
-                      ? `${trip.carPoolSeats} seat${trip.carPoolSeats === 1 ? '' : 's'} available · `
-                      : ''}
-                    {trip.carPoolFree
-                      ? 'Free shared ride'
-                      : trip.carPoolPriceAed != null
-                        ? `AED ${trip.carPoolPriceAed} per seat`
-                        : 'Paid shared ride'}
-                  </p>
-                  {trip.carPoolDetails && (
-                    <p className="text-gray-600 mt-1 whitespace-pre-line">{trip.carPoolDetails}</p>
-                  )}
+              <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
+                <div className="flex items-start gap-2 text-sm text-gray-700">
+                  <Car className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900">Carpool available</p>
+                    <p className="mt-1">
+                      {trip.carPoolSeats != null && trip.carPoolSeats > 0
+                        ? `${trip.carPoolSeats} seat${trip.carPoolSeats === 1 ? '' : 's'} · `
+                        : ''}
+                      {trip.carPoolFree
+                        ? 'Free shared ride'
+                        : trip.carPoolPriceAed != null
+                          ? `AED ${trip.carPoolPriceAed} per seat`
+                          : 'Shared ride'}
+                    </p>
+                    {trip.carPoolDetails && (
+                      <p className="text-gray-600 mt-1 whitespace-pre-line">{trip.carPoolDetails}</p>
+                    )}
+                    {trip.linkedCarpool && (
+                      <div className="mt-3 rounded-xl border border-sky-200 bg-white px-3 py-2.5">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
+                          Linked carpool listing
+                        </p>
+                        <p className="mt-1 text-sm text-gray-800">
+                          {trip.linkedCarpool.meetingPoint && trip.linkedCarpool.startPoint
+                            ? `${trip.linkedCarpool.meetingPoint} → ${trip.linkedCarpool.startPoint}`
+                            : trip.linkedCarpool.title}
+                        </p>
+                        <Link
+                          to={`/activity/${trip.linkedCarpool.id}`}
+                          className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
+                        >
+                          View carpool details
+                          <ChevronRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </div>
+            )}
+
+            {trip.linkedParentActivity && (
+              <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-gray-700">
+                <p className="font-medium text-gray-900">Linked activity</p>
+                <p className="mt-1">
+                  This carpool is offered for{' '}
+                  <Link
+                    to={`/activity/${trip.linkedParentActivity.id}`}
+                    className="font-semibold text-emerald-700 hover:text-emerald-800"
+                  >
+                    {trip.linkedParentActivity.title}
+                  </Link>
+                  .
+                </p>
               </div>
             )}
 
@@ -557,16 +594,16 @@ export const ActivityDetail = () => {
             <div className="mt-5 pt-5 border-t border-gray-100">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Host</p>
               <div className="flex items-center gap-2">
-                {organizerPath ? (
-                  <Link to={organizerPath} className="flex items-center gap-3 group flex-1 min-w-0">
+                {hostPath ? (
+                  <Link to={hostPath} className="flex items-center gap-3 group flex-1 min-w-0">
                     <SecureAvatar
-                      src={tripHostAvatar(trip)}
-                      name={tripHostName(trip)}
+                      src={activityHostAvatar(trip)}
+                      name={activityHostName(trip)}
                       className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-gray-900 group-hover:text-emerald-700 truncate">
-                        {tripHostName(trip)}
+                        {activityHostName(trip)}
                       </p>
                       {showTenantBrand(trip) && trip.tenantName && (
                         <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
@@ -578,12 +615,12 @@ export const ActivityDetail = () => {
                 ) : (
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <SecureAvatar
-                      src={tripHostAvatar(trip)}
-                      name={tripHostName(trip)}
+                      src={activityHostAvatar(trip)}
+                      name={activityHostName(trip)}
                       className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 truncate">{tripHostName(trip)}</p>
+                      <p className="font-semibold text-gray-900 truncate">{activityHostName(trip)}</p>
                       {showTenantBrand(trip) && trip.tenantName && (
                         <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
                       )}
@@ -591,7 +628,7 @@ export const ActivityDetail = () => {
                   </div>
                 )}
                 <HostMessageButton
-                  organizerUserId={tripHostUserId(trip)}
+                  organizerUserId={activityHostUserId(trip)}
                   activityId={trip.id}
                   size="md"
                 />
@@ -629,7 +666,7 @@ export const ActivityDetail = () => {
       <JoinRequestModal
         open={showJoinModal}
         onClose={() => setShowJoinModal(false)}
-        trip={trip}
+        activity={trip}
         isFull={isFull}
         selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
         onSuccess={handleJoinSuccess}
@@ -637,6 +674,3 @@ export const ActivityDetail = () => {
     </MobileDetailShell>
   );
 };
-
-/** @deprecated Use ActivityDetail */
-export const TripDetail = ActivityDetail;

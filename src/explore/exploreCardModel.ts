@@ -1,5 +1,8 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO, ParticipantPreviewDTO } from '@uaetrail/shared-types';
 import {
+  buildExploreCardSections,
+  buildExploreRouteLabel,
+  buildExploreWhenSegment,
   exploreHeadline,
   explorePrimaryCtaLabel,
   exploreSecondaryCtaLabel,
@@ -7,6 +10,8 @@ import {
   exploreSubtitle,
   exploreVenueHint,
   resolveMapPinEmoji,
+  sanitizeExploreLocation,
+  type ExploreCardSections,
 } from './exploreCopy';
 import { resolveExplorePrice, type ExplorePriceInfo } from './explorePriceLabel';
 
@@ -23,6 +28,8 @@ export interface ExploreCardModel {
   tone: ExploreCardTone;
   emoji: string;
   headline: string;
+  listTitle: string;
+  listHost: string | null;
   subtitle: string | null;
   price: ExplorePriceInfo | null;
   spotsLabel: string | null;
@@ -33,27 +40,47 @@ export interface ExploreCardModel {
   showJoinActions: boolean;
   websiteUrl?: string | null;
   contactPhone?: string | null;
+  shareTitle: string;
+  sharePath: string;
+  shareText?: string | null;
+  requesterUserId?: string | null;
+  routeLabel?: string | null;
+  whenLabel?: string | null;
+  sections: ExploreCardSections;
+  hostAvatar?: string | null;
+  participantPreviews?: ParticipantPreviewDTO[];
   activity?: ExploreMapItemDTO['activity'];
 }
 
-export const isCarpoolItem = (item: ExploreMapItemDTO): boolean =>
-  item.kind === 'carpool' ||
-  item.activity?.activityType === 'carpool' ||
-  Boolean(item.carPoolEnabled ?? item.activity?.carPoolEnabled);
+const isCarpoolItem = (item: ExploreMapItemDTO): boolean =>
+  item.kind === 'carpool' || item.activity?.activityType === 'carpool';
 
-export const resolveCardKind = (item: ExploreMapItemDTO): ExploreCardKind => {
+const resolveCardKind = (item: ExploreMapItemDTO): ExploreCardKind => {
   if (item.kind === 'shop') return 'shop';
   if (item.kind === 'agency') return 'agency';
   if (item.kind === 'carpool' || isCarpoolItem(item)) return 'carpool';
   return item.kind as ExploreCardKind;
 };
 
-export const resolveCardSource = (item: ExploreMapItemDTO): ExploreCardSource => {
+const resolveCardSource = (item: ExploreMapItemDTO): ExploreCardSource => {
   if (item.source === 'demand') return 'demand';
   if (item.source === 'venue') return 'venue';
   if (item.source === 'shop') return 'shop';
   if (item.source === 'agency') return 'agency';
   return 'activity';
+};
+
+/** Compact second line for list rows. */
+export const buildExploreListMeta = (card: ExploreCardModel): string | null => {
+  if (card.source === 'shop') {
+    return card.sections.aboutLine ?? card.subtitle ?? null;
+  }
+  const labels = card.sections.details.map((detail) => detail.label).filter(Boolean);
+  if (labels.length > 0) return labels.join(' · ');
+  if (card.source === 'agency') {
+    return card.sections.aboutLine ?? card.subtitle ?? null;
+  }
+  return null;
 };
 
 export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel => {
@@ -64,6 +91,40 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
 
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
+  const routeLabel = buildExploreRouteLabel(fromLabel, toLabel, kind);
+  const whenSuffix =
+    source === 'demand' ? 'flexible' : kind === 'carpool' ? 'fixed' : null;
+  const whenLabel = buildExploreWhenSegment(
+    item.date,
+    item.time ?? activity?.time ?? null,
+    whenSuffix
+  );
+  const location = sanitizeExploreLocation(
+    item.subtitle?.trim() ||
+      activity?.locationName?.trim() ||
+      activity?.meetingPoint?.trim() ||
+      null
+  );
+  const subtitle = exploreSubtitle(item, kind, source);
+
+  const headlineInput = {
+    source,
+    kind,
+    title: item.title,
+    hostName: item.hostName,
+    location,
+    subtitle,
+    about: item.about ?? null,
+    date: item.date,
+    time: item.time ?? activity?.time ?? null,
+    fromLabel,
+    toLabel,
+    slotsAvailable: item.slotsAvailable,
+    slotsTotal: item.slotsTotal,
+    participantCount: item.participantPreviews?.length ?? 0,
+  };
+
+  const headline = exploreHeadline(headlineInput);
 
   const price =
     source === 'activity'
@@ -77,6 +138,8 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
         })
       : null;
 
+  const sections = buildExploreCardSections(headlineInput);
+
   return {
     id: item.id,
     path: item.path,
@@ -84,25 +147,30 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     kind,
     tone: isCarpool ? 'carpool' : kind,
     emoji: resolveMapPinEmoji(kind, source),
-    headline: exploreHeadline({
-      source,
-      kind,
-      title: item.title,
-      hostName: item.hostName,
-      date: item.date,
-      fromLabel,
-      toLabel,
-    }),
+    headline,
+    listTitle: headline,
+    listHost: item.hostName ?? null,
     subtitle: exploreSubtitle(item, kind, source),
     price,
     spotsLabel: exploreSpotsLabel(item),
     venueHint: exploreVenueHint(source, kind),
-    showJoinHint: source === 'activity',
+    showJoinHint: false,
     primaryCta: explorePrimaryCtaLabel(source, { websiteUrl: item.websiteUrl }),
     secondaryCta: exploreSecondaryCtaLabel(source),
-    showJoinActions: source === 'activity' && Boolean(activity),
+    showJoinActions:
+      (source === 'activity' && Boolean(activity)) ||
+      (source === 'demand' && Boolean(item.requesterUserId)),
     websiteUrl: item.websiteUrl ?? null,
     contactPhone: item.contactPhone ?? null,
+    shareTitle: headline,
+    sharePath: item.path,
+    shareText: [routeLabel, whenLabel].filter(Boolean).join(' · ') || item.subtitle || null,
+    requesterUserId: item.requesterUserId ?? null,
+    routeLabel,
+    whenLabel,
+    sections,
+    hostAvatar: item.hostAvatar ?? null,
+    participantPreviews: item.participantPreviews,
     activity,
   };
 };

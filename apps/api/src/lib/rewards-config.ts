@@ -104,7 +104,7 @@ export interface BadgeDefinition {
   kind: 'tier' | 'achievement';
 }
 
-export const TIER_BADGE_DEFINITIONS: BadgeDefinition[] = MEMBERSHIP_TIERS.filter((t) => t.badgeKey).map((t) => ({
+const TIER_BADGE_DEFINITIONS: BadgeDefinition[] = MEMBERSHIP_TIERS.filter((t) => t.badgeKey).map((t) => ({
   key: t.badgeKey!,
   name: t.name,
   description: t.tagline,
@@ -162,7 +162,7 @@ export const getNextTier = (points: number): MembershipTierDefinition | null => 
 export const tierKeyToEnum = (key: MembershipTierKey): 'FREE' | 'ACTIVE' | 'PRO' | 'GOAT' =>
   key.toUpperCase() as 'FREE' | 'ACTIVE' | 'PRO' | 'GOAT';
 
-export const tierEnumToKey = (tier: string): MembershipTierKey =>
+const tierEnumToKey = (tier: string): MembershipTierKey =>
   tier.toLowerCase() as MembershipTierKey;
 
 export const tierEnumToDisplay = (tier: string | null | undefined) => {
@@ -179,15 +179,3 @@ export const buildPointsToNextTierMessage = (points: number): string | null => {
   const remaining = next.minPoints - points;
   return `${remaining} pts to ${next.name}`;
 };
-
-/** @deprecated Use getTierForPoints */
-export const getLevelForPoints = getTierForPoints;
-/** @deprecated Use getNextTier */
-export const getNextLevel = getNextTier;
-/** @deprecated Use MEMBERSHIP_TIERS */
-export const REWARD_LEVELS = MEMBERSHIP_TIERS.map((t) => ({
-  key: t.key,
-  name: t.name,
-  minPoints: t.minPoints,
-  maxPoints: null as number | null
-}));

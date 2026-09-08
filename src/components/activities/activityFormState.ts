@@ -46,6 +46,8 @@ export type ActivityFormState = {
   carPoolSharedAmount: number;
   carPoolSeats: number;
   carPoolDetails: string;
+  carPoolFrom: LocationPinForm;
+  carPoolTo: LocationPinForm;
   images: string[];
   signupUrl: string;
   eventEmirate: string;
@@ -88,6 +90,8 @@ export const emptyActivityForm = (activityType: ActivityType = 'hiking'): Activi
   carPoolSharedAmount: 0,
   carPoolSeats: 0,
   carPoolDetails: '',
+  carPoolFrom: emptyPin(),
+  carPoolTo: emptyPin(),
   images: [],
   signupUrl: '',
   eventEmirate: '',
@@ -204,6 +208,16 @@ export const activityToForm = (activity: ActivityDTO): ActivityFormState => {
     carPoolSharedAmount: activity.carPoolPriceAed ?? 0,
     carPoolSeats: activity.carPoolSeats ?? 0,
     carPoolDetails: activity.carPoolDetails ?? '',
+    carPoolFrom: pinFromEvent(
+      activity.linkedCarpool?.meetingPoint,
+      activity.linkedCarpool?.meetingLat,
+      activity.linkedCarpool?.meetingLng
+    ),
+    carPoolTo: pinFromEvent(
+      activity.linkedCarpool?.startPoint,
+      activity.linkedCarpool?.startLat,
+      activity.linkedCarpool?.startLng
+    ),
     images: activity.images?.slice(0, 1) ?? [],
     signupUrl: activity.signupUrl ?? '',
     eventEmirate: '',
@@ -298,6 +312,12 @@ export const buildHostActivityPayload = (form: ActivityFormState): Record<string
     carPoolSeats: form.carPoolEnabled ? form.carPoolSeats : null,
     carPoolDetails:
       form.carPoolEnabled && form.carPoolDetails.trim() ? form.carPoolDetails.trim() : undefined,
+    carPoolFromPoint: form.carPoolEnabled ? resolvePinText(form.carPoolFrom) : undefined,
+    carPoolFromLat: form.carPoolEnabled ? parseCoord(form.carPoolFrom.lat) : undefined,
+    carPoolFromLng: form.carPoolEnabled ? parseCoord(form.carPoolFrom.lng) : undefined,
+    carPoolToPoint: form.carPoolEnabled ? resolvePinText(form.carPoolTo) : undefined,
+    carPoolToLat: form.carPoolEnabled ? parseCoord(form.carPoolTo.lat) : undefined,
+    carPoolToLng: form.carPoolEnabled ? parseCoord(form.carPoolTo.lng) : undefined,
     requirements: buildRequirementsFromForm(form),
     images: form.images.slice(0, 1),
     bannerUrl: null,

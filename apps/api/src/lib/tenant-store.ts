@@ -1,5 +1,5 @@
 import type { Collection } from 'mongodb';
-import { TenantStatus, TenantBusinessMode, TenantType } from '../domain/enums.js';
+import { MembershipRole, TenantStatus, TenantBusinessMode, TenantType } from '../domain/enums.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
 import { slugify } from './slug.js';
@@ -95,11 +95,7 @@ export const writeTenantToMongo = async (row: TenantRecord): Promise<void> => {
   );
 };
 
-export const syncTenantById = async (_id: string): Promise<void> => {
-  // Mongo is the source of truth; no sync needed.
-};
-
-export const isTenantSlugTaken = async (slug: string): Promise<boolean> => {
+const isTenantSlugTaken = async (slug: string): Promise<boolean> => {
   const existing = await tenantsCollection().findOne({ slug }, { projection: { _id: 1 } });
   return Boolean(existing);
 };
@@ -155,6 +151,32 @@ export const pickActivityTenant = (tenants: TenantRecord[]): TenantRecord | null
       tenant.type === TenantType.GUIDE_OWNED || tenant.businessMode === TenantBusinessMode.AGENCY
   );
   return activityCapable[0] ?? tenants[0] ?? null;
+};
+
+/** Merge tenant ownership and active memberships for host-status / publish gates. */
+export const mergeActiveTenantsForHostStatus = (
+  ownerTenants: TenantRecord[],
+  memberships: Array<{ role: MembershipRole; tenant: TenantRecord }>
+): TenantRecord[] => {
+  const map = new Map<string, TenantRecord>();
+
+  for (const tenant of ownerTenants) {
+    if (tenant.status === TenantStatus.ACTIVE) map.set(tenant.id, tenant);
+  }
+
+  for (const membership of memberships) {
+    const tenant = membership.tenant;
+    if (tenant.status !== TenantStatus.ACTIVE) continue;
+    if (
+      membership.role === MembershipRole.TENANT_OWNER ||
+      membership.role === MembershipRole.TENANT_ADMIN ||
+      membership.role === MembershipRole.TENANT_GUIDE
+    ) {
+      map.set(tenant.id, tenant);
+    }
+  }
+
+  return [...map.values()];
 };
 
 export const listCompanyTenantOwnerIds = async (): Promise<string[]> => {

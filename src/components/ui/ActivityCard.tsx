@@ -13,15 +13,12 @@ import { SecureAvatar } from './SecureAvatar';
 import { activityHostAvatar, activityHostName, activityHostUserId, showTenantBrand } from '../../utils/hostLabels';
 
 interface ActivityCardProps {
-  activity?: ActivityListing;
-  /** @deprecated Use activity */
-  trip?: ActivityListing;
+  activity: ActivityListing;
   /** Featured home carousel: tap opens activity detail */
   variant?: 'default' | 'featured';
 }
 
-export const ActivityCard = ({ activity: activityProp, trip, variant = 'default' }: ActivityCardProps) => {
-  const activity = activityProp ?? trip!;
+export const ActivityCard = ({ activity, variant = 'default' }: ActivityCardProps) => {
   const navigate = useNavigate();
   const activityPath = `/activity/${activity.id}`;
 
@@ -225,5 +222,3 @@ export const ActivityCard = ({ activity: activityProp, trip, variant = 'default'
   );
 };
 
-/** @deprecated Use ActivityCard */
-export const TripCard = ActivityCard;

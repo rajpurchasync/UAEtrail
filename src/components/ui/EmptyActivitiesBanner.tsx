@@ -49,5 +49,3 @@ export const EmptyActivitiesBanner = () => {
   );
 };
 
-/** @deprecated Use EmptyActivitiesBanner */
-export const EmptyTripsBanner = EmptyActivitiesBanner;

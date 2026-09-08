@@ -5,7 +5,7 @@ export type GeoPoint = {
 
 const EARTH_RADIUS_KM = 6378.1;
 
-export const toLocationGeoPoint = (
+const toLocationGeoPoint = (
   latitude: number | null | undefined,
   longitude: number | null | undefined
 ): GeoPoint | null => {

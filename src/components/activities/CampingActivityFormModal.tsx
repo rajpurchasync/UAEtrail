@@ -222,8 +222,3 @@ export const CampingActivityFormModal = ({
     </>
   );
 };
-
-// Re-export for clarity in create flow imports.
-export const EventActivityFormModal = (props: Omit<CampingActivityFormModalProps, 'formActivityType'>) => (
-  <CampingActivityFormModal {...props} formActivityType="event" />
-);

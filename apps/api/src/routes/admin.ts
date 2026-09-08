@@ -70,9 +70,9 @@ import {
   listHostApplicationsDetailed,
   markHostApplicationRejected
 } from '../lib/host-applications-store.js';
-import { dispatchNotificationDefault } from '../services/notifications.js';
+import { dispatchNotification } from '../services/notifications.js';
 import { notifyUserAdminAction } from '../services/admin-notifications.js';
-import { awardPointsDefault, getRewardSummaryDefault, getUserLeaderboardRank } from '../services/rewards.js';
+import { awardPoints, getRewardSummary, getUserLeaderboardRank } from '../services/rewards.js';
 import {
   countSocialGroups,
   getSocialGroupAdminDetail,
@@ -316,14 +316,14 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
     });
 
     if (activating && updated.submittedById) {
-      await dispatchNotificationDefault({
+      await dispatchNotification({
         userId: updated.submittedById,
         title: 'Location approved',
         body: `"${updated.name}" is now live. You can use it when creating trips.`,
         type: NotificationType.SYSTEM,
         meta: { locationId: updated.id, kind: 'location_approved' }
       });
-      void awardPointsDefault({
+      void awardPoints({
         userId: updated.submittedById,
         action: RewardAction.LOCATION_PUBLISHED,
         referenceId: updated.id,
@@ -724,7 +724,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
       listUserActivityParticipantsBasic(id, 20),
       listUserGroupsWithMembership(id),
       listUserHostedActivitiesBasic(id, 20),
-      getRewardSummaryDefault(id),
+      getRewardSummary(id),
       getUserLeaderboardRank(id)
     ]);
 

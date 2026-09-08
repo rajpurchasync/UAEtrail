@@ -24,7 +24,8 @@ import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCou
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG } from '../../config/platform';
 import { buildExploreCardModel } from '../../explore/exploreCardModel';
-import { MAP_FILTER_EMOJI } from '../../utils/mapPinEmoji';
+import { MAP_FILTER_EMOJI } from '../../explore/exploreCopy';
+import { messagesRouteForRole } from '../../utils/authRouting';
 import { ExploreItemSheet } from './ExploreItemSheet';
 import { ExploreListRow } from './ExploreListRow';
 
@@ -41,7 +42,7 @@ const MAP_FILTER_PILLS: Array<{ key: MapFilterKey; label: string }> = [
   { key: 'event', label: 'Events' },
   { key: 'looking', label: 'Looking' },
   { key: 'shop', label: 'Shop' },
-  { key: 'carpool', label: 'Carpool' },
+  { key: 'carpool', label: 'Ride sharing' },
 ];
 
 /** List sheet filters — activities only (no shop). */
@@ -147,7 +148,7 @@ const FilterPillIcon = ({ filter }: { filter: MapFilterKey }) => {
 const listItemLabel = (filter: MapFilterKey, count: number): string => {
   if (filter === 'looking') return `${count} requests in this area`;
   const activityFilter = activityListFilter(filter);
-  if (activityFilter === 'carpool') return `${count} carpools in this area`;
+  if (activityFilter === 'carpool') return `${count} ride shares in this area`;
   if (activityFilter === 'event') return `${count} events in this area`;
   if (activityFilter === 'hiking') return `${count} hikes in this area`;
   if (activityFilter === 'camping') return `${count} camps in this area`;
@@ -273,8 +274,9 @@ export const MobileExploreExperience = () => {
   const handleComposeChoice = (choice: 'add' | 'request') => {
     setComposeOpen(false);
     if (choice === 'add') {
+      if (hostGateLoading) return;
       if (!canPublish) {
-        navigate('/profile', { state: { scrollTo: 'map-presence' } });
+        navigate('/become-host');
         return;
       }
       setCreateOpen(true);
@@ -283,7 +285,22 @@ export const MobileExploreExperience = () => {
     setDemandOpen(true);
   };
 
+  const respondToDemand = (item: ExploreMapItemDTO) => {
+    const requesterId = item.requesterUserId;
+    if (!requesterId) return;
+    if (!user) {
+      navigate(signInHref);
+      return;
+    }
+    navigate(messagesRouteForRole(user.role ?? 'participant', requesterId));
+    setSelectedId(null);
+  };
+
   const handleJoin = () => {
+    if (selected?.source === 'demand') {
+      respondToDemand(selected);
+      return;
+    }
     if (!selected?.activity) return;
     if (!user) {
       navigate(`/signin?redirect=${encodeURIComponent(selected.path)}`);
@@ -292,6 +309,10 @@ export const MobileExploreExperience = () => {
     setJoinActivity(selected.activity);
     setSelectedId(null);
     setJoinOpen(true);
+  };
+
+  const handleDemandMessage = () => {
+    if (selected) respondToDemand(selected);
   };
 
   const closeJoinModal = () => {
@@ -449,6 +470,7 @@ export const MobileExploreExperience = () => {
           card={selectedCard}
           onClose={() => setSelectedId(null)}
           onJoin={handleJoin}
+          onMessage={handleDemandMessage}
         />
       )}
 
@@ -530,7 +552,7 @@ export const MobileExploreExperience = () => {
           onPublished={reloadMap}
           onOpenHostApplication={() => {
             setCreateOpen(false);
-            navigate('/profile', { state: { scrollTo: 'map-presence' } });
+            navigate('/become-host');
           }}
           signInHref={signInHref}
         />

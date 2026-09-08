@@ -2,7 +2,7 @@ import type { HostProfileType } from '@uaetrail/shared-types';
 import { MAP_CONFIG } from '../../config/platform';
 import { DEFAULT_PHONE_DIAL, PHONE_COUNTRIES } from '../../constants/phoneCountries';
 import type { HostApplication } from '../../api/services';
-import { formatE164Phone, isValidNationalPhone } from '../../utils/phone';
+import { formatE164Phone } from '../../utils/phone';
 
 export type BecomeHostFormState = {
   hostProfileType: HostProfileType | null;
@@ -117,44 +117,6 @@ export const buildBecomeHostFormPrefill = (input: {
     longitude: typeof meta?.longitude === 'number' ? meta.longitude : base.longitude,
     region: meta?.region ?? '',
   };
-};
-
-export const validateBecomeHostForm = (form: BecomeHostFormState): string | null => {
-  if (!form.hostProfileType) return 'Choose how you want to host.';
-
-  if (!isValidNationalPhone(form.phone)) {
-    return 'Enter a valid mobile number.';
-  }
-
-  if (form.bio.trim().length < 20) {
-    return 'About section must be at least 20 characters.';
-  }
-
-  if (form.hostProfileType === 'individual') {
-    if (!form.hostDisplayName.trim()) return 'Name is required.';
-    if (!form.dateOfBirth) return 'Date of birth is required.';
-    if (!isAtLeastHostAge(form.dateOfBirth)) return 'You must be at least 15 years old.';
-    if (!form.nationality) return 'Nationality is required.';
-    if (!form.residence) return 'Based in (UAE) is required.';
-    if (!form.languages.trim()) return 'Languages are required.';
-    if (!form.interests.trim()) return 'Interests are required.';
-    return null;
-  }
-
-  if (!form.requestedName.trim()) {
-    return form.hostProfileType === 'agency' ? 'Agency name is required.' : 'Shop name is required.';
-  }
-  if (!form.profilePhoto.trim()) {
-    return form.hostProfileType === 'agency' ? 'Agency image is required.' : 'Shop image is required.';
-  }
-  if (form.hostProfileType === 'agency' && !form.services.trim()) {
-    return 'Services are required.';
-  }
-  if (form.latitude == null || form.longitude == null) {
-    return 'Pin your location on the map.';
-  }
-
-  return null;
 };
 
 export const buildHostApplicationPayload = (

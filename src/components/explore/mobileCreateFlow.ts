@@ -1,13 +1,23 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import { HOME_HERO_IMAGE_JPEG } from '../../config/seo';
-import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../../config/activityTypes';
+import { type ActivityType } from '../../config/activityTypes';
 import { formatCoord } from '../../utils/coords';
 import { OFFLINE_PAYMENT_NOTE } from '../../explore/explorePriceLabel';
 
 export type MobileCreateKind = 'hiking' | 'camping' | 'event' | 'carpool';
 
-export type CreateFlowStepId = 'where' | 'to' | 'title' | 'when' | 'spots' | 'publish';
+export type CreateFlowStepId =
+  | 'where'
+  | 'to'
+  | 'route'
+  | 'title'
+  | 'instructions'
+  | 'when'
+  | 'spots'
+  | 'carpool'
+  | 'audience'
+  | 'publish';
 
 export type LocationPrecision = 'general' | 'specific';
 
@@ -37,43 +47,92 @@ export type MobileCreateDraft = {
   joinMode: JoinMode;
   ageMin: number;
   ageMax: number;
+  additionalInstructions: string;
+  carPoolEnabled: boolean;
+  carPoolFromLat: number | null;
+  carPoolFromLng: number | null;
+  carPoolToLat: number | null;
+  carPoolToLng: number | null;
+  carPoolFromLabel: string;
+  carPoolToLabel: string;
 };
 
 export const OFFLINE_PRICE_NOTE = OFFLINE_PAYMENT_NOTE;
 
-export const CAPACITY_PRESETS = [4, 6, 10, 15, 20] as const;
+export const CAPACITY_PRESETS = [2, 4, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50] as const;
+
+export const formatCapacityLabel = (value: number): string => (value >= 50 ? '50+' : String(value));
 
 export const getCreateFlowSteps = (kind: MobileCreateKind): CreateFlowStepId[] => {
   switch (kind) {
     case 'hiking':
     case 'camping':
-      return ['where', 'when', 'spots', 'publish'];
     case 'event':
-      return ['title', 'where', 'when', 'spots', 'publish'];
+      return ['title', 'where', 'instructions', 'when', 'spots', 'carpool', 'audience', 'publish'];
     case 'carpool':
-      return ['where', 'to', 'when', 'spots', 'publish'];
+      return ['title', 'route', 'when', 'spots', 'audience', 'publish'];
     default:
-      return ['where', 'when', 'spots', 'publish'];
+      return ['title', 'where', 'instructions', 'when', 'spots', 'carpool', 'audience', 'publish'];
   }
 };
 
 export const createFlowStepTitle = (step: CreateFlowStepId, kind: MobileCreateKind): string => {
-  if (step === 'where') return kind === 'carpool' ? 'From?' : 'Where?';
-  if (step === 'to') return 'To?';
-  if (step === 'title') return 'Event title';
+  if (step === 'route') return 'From & to';
+  if (step === 'where') {
+    if (kind === 'camping') return 'Camp location';
+    return 'Meeting point';
+  }
+  if (step === 'to') return 'To location';
+  if (step === 'title') return "What's the plan?";
+  if (step === 'instructions') return 'Additional instructions';
   if (step === 'when') return 'When?';
   if (step === 'spots') return kind === 'carpool' ? 'Seats' : 'Spots';
-  return 'Publish';
+  if (step === 'carpool') return 'Carpool available';
+  if (step === 'audience') return 'Who can attend?';
+  return 'Preview & publish';
 };
 
-export const locationPickerTitle = (step: CreateFlowStepId, kind: MobileCreateKind): string =>
-  createFlowStepTitle(step, kind);
+export const locationPickerTitle = (
+  step: CreateFlowStepId,
+  kind: MobileCreateKind,
+  endpoint?: 'from' | 'to'
+): string => {
+  if (step === 'route' || kind === 'carpool') {
+    return endpoint === 'to' ? 'To location' : 'From location';
+  }
+  if (step === 'to') return 'To location';
+  if (step === 'where') return createFlowStepTitle('where', kind);
+  return createFlowStepTitle(step, kind);
+};
 
-export const locationPickerConfirmLabel = (step: CreateFlowStepId): string =>
-  step === 'to' ? 'Confirm destination' : 'Confirm location';
+export const locationPickerConfirmLabel = (
+  kind: MobileCreateKind,
+  step: CreateFlowStepId,
+  endpoint?: 'from' | 'to'
+): string => {
+  if (step === 'carpool') {
+    return endpoint === 'to' ? 'Confirm destination' : 'Confirm pickup';
+  }
+  if (endpoint === 'to' || step === 'to') return 'Confirm destination';
+  if (kind === 'carpool') return 'Confirm pickup';
+  if (step === 'where') return 'Confirm meeting point';
+  return 'Confirm location';
+};
+
+export const locationPickerHint = (
+  kind: MobileCreateKind,
+  precision: LocationPrecision
+): string => {
+  if (precision === 'general') {
+    return "If you're not sure about the exact spot, use general area";
+  }
+  if (kind === 'camping') return 'Pinch or drag to zoom — place the camp spot on the map';
+  if (kind === 'carpool') return 'Pinch or drag to zoom — place the pin on the map';
+  return 'Pinch or drag to zoom — place the meeting point on the map';
+};
 
 export const defaultCapacityForKind = (kind: MobileCreateKind): number =>
-  kind === 'carpool' ? 4 : 10;
+  kind === 'carpool' ? 4 : 6;
 
 export const emptyMobileCreateDraft = (): MobileCreateDraft => ({
   kind: null,
@@ -88,13 +147,21 @@ export const emptyMobileCreateDraft = (): MobileCreateDraft => ({
   date: todayIso(),
   timeMode: 'flexible',
   time: '09:00',
-  capacity: 10,
+  capacity: 6,
   priceMode: 'free',
   priceAmount: 0,
   sharedCostNote: '',
   joinMode: 'open',
   ageMin: 5,
   ageMax: 80,
+  additionalInstructions: '',
+  carPoolEnabled: false,
+  carPoolFromLat: null,
+  carPoolFromLng: null,
+  carPoolToLat: null,
+  carPoolToLng: null,
+  carPoolFromLabel: '',
+  carPoolToLabel: '',
 });
 
 export const todayIso = (): string => {
@@ -126,16 +193,25 @@ export const buildDateOptions = (count = 14): Array<{ iso: string; label: string
 const resolveActivityType = (kind: MobileCreateKind): ActivityType | 'carpool' =>
   kind === 'carpool' ? 'carpool' : kind;
 
-const defaultTitle = (kind: MobileCreateKind, dateIso: string, customTitle?: string): string => {
-  if (kind === 'event' && customTitle?.trim()) return customTitle.trim();
-  const date = new Date(`${dateIso}T00:00:00`);
-  const dayLabel =
-    dateIso === todayIso()
-      ? 'today'
-      : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toLowerCase();
+export const createTitlePlaceholder = (kind: MobileCreateKind): string => {
+  switch (kind) {
+    case 'hiking':
+      return 'e.g. Sunrise hike at Wadi Shawka';
+    case 'camping':
+      return 'e.g. Weekend camp at Al Qudra';
+    case 'event':
+      return 'e.g. See sunrise at Kite Beach';
+    case 'carpool':
+      return 'e.g. Ride to Hatta Friday morning';
+    default:
+      return 'Describe your plan in a few words';
+  }
+};
 
-  if (kind === 'carpool') return `Carpool ${dayLabel}`;
-  return `${ACTIVITY_TYPE_LABELS[resolveActivityType(kind) as ActivityType]} ${dayLabel}`;
+const resolveActivityTitle = (draft: MobileCreateDraft): string => {
+  const title = draft.title.trim();
+  if (!title) throw new Error('Enter a title for your plan.');
+  return title;
 };
 
 const defaultDescription = (kind: MobileCreateKind): string => {
@@ -164,6 +240,9 @@ const buildRequirements = (draft: MobileCreateDraft): string[] => {
   if (draft.locationPrecision === 'general') {
     requirements.push('General area — exact meeting point may vary');
   }
+  if (draft.additionalInstructions.trim()) {
+    requirements.push(draft.additionalInstructions.trim());
+  }
   if (draft.ageMin > 5 || draft.ageMax < 80) {
     const maxLabel = draft.ageMax >= 80 ? '80+' : String(draft.ageMax);
     requirements.push(`Age range: ${draft.ageMin}–${maxLabel}`);
@@ -181,6 +260,16 @@ const resolveFromLabel = (draft: MobileCreateDraft, lat: number, lng: number): s
 
 const resolveToLabel = (draft: MobileCreateDraft, lat: number, lng: number): string => {
   if (draft.toLabel.trim()) return draft.toLabel.trim();
+  return `To · ${formatCoord(lat)}, ${formatCoord(lng)}`;
+};
+
+const resolveCarPoolFromLabel = (draft: MobileCreateDraft, lat: number, lng: number): string => {
+  if (draft.carPoolFromLabel.trim()) return draft.carPoolFromLabel.trim();
+  return `From · ${formatCoord(lat)}, ${formatCoord(lng)}`;
+};
+
+const resolveCarPoolToLabel = (draft: MobileCreateDraft, lat: number, lng: number): string => {
+  if (draft.carPoolToLabel.trim()) return draft.carPoolToLabel.trim();
   return `To · ${formatCoord(lat)}, ${formatCoord(lng)}`;
 };
 
@@ -206,8 +295,19 @@ export const publishMobileQuickActivity = async (input: {
     }
   }
 
-  if (kind === 'event' && !draft.title.trim()) {
-    throw new Error('Enter an event title.');
+  if (draft.carPoolEnabled && draft.kind !== 'carpool') {
+    if (
+      draft.carPoolFromLat == null ||
+      draft.carPoolFromLng == null ||
+      draft.carPoolToLat == null ||
+      draft.carPoolToLng == null
+    ) {
+      throw new Error('Set carpool pickup and destination on the map.');
+    }
+  }
+
+  if (!draft.title.trim()) {
+    throw new Error('Enter a title for your plan.');
   }
 
   const locationRes = await api.submitLocation(tenantId, {
@@ -235,8 +335,8 @@ export const publishMobileQuickActivity = async (input: {
   const payload: Record<string, unknown> = {
     activityType,
     locationId: locationRes.data.id,
-    title: defaultTitle(kind, draft.date, draft.title),
-    description: defaultDescription(kind),
+    title: resolveActivityTitle(draft),
+    description: draft.additionalInstructions.trim() || defaultDescription(kind),
     date: draft.date,
     time: draft.timeMode === 'flexible' ? '09:00' : draft.time,
     capacity: draft.capacity,
@@ -258,6 +358,23 @@ export const publishMobileQuickActivity = async (input: {
     payload.carPoolPriceAed = isShared ? priceAmount : null;
     payload.carPoolSeats = draft.capacity;
     payload.carPoolDetails = 'Carpool — confirm pickup and drop-off details after joining.';
+  } else if (draft.carPoolEnabled) {
+    const carFromLat = draft.carPoolFromLat!;
+    const carFromLng = draft.carPoolFromLng!;
+    const carToLat = draft.carPoolToLat!;
+    const carToLng = draft.carPoolToLng!;
+    payload.carPoolEnabled = true;
+    payload.carPoolFree = true;
+    payload.carPoolSeats = draft.capacity;
+    payload.carPoolDetails =
+      draft.additionalInstructions.trim() ||
+      'Carpool available — coordinate pickup details after joining.';
+    payload.carPoolFromPoint = resolveCarPoolFromLabel(draft, carFromLat, carFromLng);
+    payload.carPoolFromLat = carFromLat;
+    payload.carPoolFromLng = carFromLng;
+    payload.carPoolToPoint = resolveCarPoolToLabel(draft, carToLat, carToLng);
+    payload.carPoolToLat = carToLat;
+    payload.carPoolToLng = carToLng;
   }
 
   if (isShared && draft.sharedCostNote.trim()) {
@@ -270,9 +387,25 @@ export const publishMobileQuickActivity = async (input: {
 };
 
 export const validateDraftStep = (step: CreateFlowStepId, draft: MobileCreateDraft): string | null => {
-  if (step === 'title' && !draft.title.trim()) return 'Enter a title for your event.';
+  if (step === 'title' && !draft.title.trim()) return 'Enter a title for your plan.';
+  if (step === 'route') {
+    if (draft.latitude == null || draft.longitude == null) {
+      return 'Choose a starting point on the map.';
+    }
+    if (draft.toLatitude == null || draft.toLongitude == null) {
+      return 'Choose a destination on the map.';
+    }
+  }
   if (step === 'where' && (draft.latitude == null || draft.longitude == null)) {
     return 'Drop a pin on the map.';
+  }
+  if (step === 'carpool' && draft.carPoolEnabled) {
+    if (draft.carPoolFromLat == null || draft.carPoolFromLng == null) {
+      return 'Choose a carpool pickup point on the map.';
+    }
+    if (draft.carPoolToLat == null || draft.carPoolToLng == null) {
+      return 'Choose a carpool destination on the map.';
+    }
   }
   if (step === 'to' && (draft.toLatitude == null || draft.toLongitude == null)) {
     return 'Drop a destination pin on the map.';
@@ -286,7 +419,12 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: MobileCreateDra
     if (draft.kind === 'carpool' && (draft.toLatitude == null || draft.toLongitude == null)) {
       return 'Drop a destination pin on the map.';
     }
-    if (draft.kind === 'event' && !draft.title.trim()) return 'Enter an event title.';
+    if (draft.kind !== 'carpool' && draft.carPoolEnabled) {
+      if (draft.carPoolFromLat == null || draft.carPoolFromLng == null || draft.carPoolToLat == null || draft.carPoolToLng == null) {
+        return 'Set carpool pickup and destination on the map.';
+      }
+    }
+    if (!draft.title.trim()) return 'Enter a title for your plan.';
     if (draft.priceMode === 'paid' && draft.priceAmount <= 0) return 'Enter a price amount.';
     if (draft.priceMode === 'shared' && draft.priceAmount <= 0) return 'Enter a shared cost amount.';
     if (draft.priceMode === 'shared' && !draft.sharedCostNote.trim()) {

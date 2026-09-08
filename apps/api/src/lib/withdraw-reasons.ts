@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const WITHDRAW_REASON_VALUES = [
+const WITHDRAW_REASON_VALUES = [
   'schedule_conflict',
   'cant_attend',
   'found_other',
@@ -24,7 +24,7 @@ export const withdrawReasonSchema = z
     }
   });
 
-export type WithdrawReasonInput = z.infer<typeof withdrawReasonSchema>;
+type WithdrawReasonInput = z.infer<typeof withdrawReasonSchema>;
 
 export const canWithdrawRequest = (status: string): boolean =>
   status === 'pending' || status === 'approved' || status === 'waitlisted';

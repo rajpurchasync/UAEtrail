@@ -104,19 +104,6 @@ export const createEmailVerificationToken = async (input: {
   });
 };
 
-export const findEmailVerificationToken = async (token: string): Promise<{
-  id: string;
-  userId: string;
-  expiresAt: Date;
-  usedAt: Date | null;
-} | null> => {
-  const tokenHash = hashToken(token);
-  const record = await verificationTokensCollection().findOne({ token: tokenHash });
-  return record
-    ? { id: record._id, userId: record.userId, expiresAt: record.expiresAt, usedAt: record.usedAt }
-    : null;
-};
-
 export const findEmailVerificationTokenForUser = async (
   userId: string,
   token: string

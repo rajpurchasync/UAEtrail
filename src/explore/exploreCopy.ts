@@ -1,6 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { getFirstName } from '../utils/userDisplay';
-import { formatDate } from '../utils';
+import { formatRequesterDisplayName, getFirstName } from '../utils/userDisplay';
 import type { ExploreCardKind, ExploreCardSource } from './exploreCardModel';
 
 export const MAP_FILTER_EMOJI = {
@@ -39,10 +38,83 @@ export const resolveMapPinEmoji = (
   return '📍';
 };
 
-export const formatWeekdayDate = (date?: string | null): string => {
-  if (!date) return '';
+interface ExploreHeadlineInput {
+  source: ExploreCardSource;
+  kind: ExploreCardKind;
+  title: string;
+  hostName?: string | null;
+  location?: string | null;
+  subtitle?: string | null;
+  about?: string | null;
+  date?: string | null;
+  time?: string | null;
+  fromLabel?: string | null;
+  toLabel?: string | null;
+  participantName?: string | null;
+  slotsAvailable?: number;
+  slotsTotal?: number;
+  participantCount?: number;
+}
+
+const joinExploreParts = (...parts: (string | null | undefined)[]): string =>
+  parts.filter((part): part is string => Boolean(part?.trim())).join(' - ');
+
+const isLegacyAutoTitle = (title: string, kind: ExploreCardKind): boolean => {
+  const trimmed = title.trim();
+  if (!trimmed) return true;
+  if (kind === 'hiking' && /^hiking\b/i.test(trimmed)) return true;
+  if (kind === 'camping' && /^camping\b/i.test(trimmed)) return true;
+  if (kind === 'carpool' && /^carpool\b/i.test(trimmed)) return true;
+  return false;
+};
+
+const fallbackPlanPhrase = (kind: ExploreCardKind): string => {
+  switch (kind) {
+    case 'hiking':
+      return 'for a hike';
+    case 'camping':
+      return 'camping';
+    case 'event':
+      return 'to an outdoor event';
+    case 'carpool':
+      return 'on a shared ride';
+    default:
+      return 'outdoors';
+  }
+};
+
+/** Turn a user title into a mid-sentence plan phrase, e.g. "See sunrise at Kite Beach" → "to see sunrise at Kite Beach". */
+export const formatPlanPhrase = (title: string, kind: ExploreCardKind): string => {
+  const trimmed = title.trim();
+  if (!trimmed || isLegacyAutoTitle(trimmed, kind)) return fallbackPlanPhrase(kind);
+
+  const lower = trimmed.charAt(0).toLowerCase() + trimmed.slice(1);
+  if (/^(to|for|on|at|in)\s/i.test(trimmed)) return lower;
+  if (/^(see|watch|join|run|hike|camp|explore|visit|go|climb|kayak|surf|meet|catch|enjoy)\b/i.test(trimmed)) {
+    return `to ${lower}`;
+  }
+  return `to ${lower}`;
+};
+
+const demandKindLabel = (kind: ExploreCardKind): string => {
+  switch (kind) {
+    case 'carpool':
+      return 'Rideshare';
+    case 'hiking':
+      return 'Hiking';
+    case 'camping':
+      return 'Camping';
+    case 'event':
+      return 'an Event';
+    default:
+      return 'company';
+  }
+};
+
+export const formatExploreDayShort = (date?: string | null): string | null => {
+  if (!date) return null;
   const target = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(target.getTime())) return date;
+  if (Number.isNaN(target.getTime())) return null;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -50,31 +122,128 @@ export const formatWeekdayDate = (date?: string | null): string => {
 
   if (diff === 0) return 'Today';
   if (diff === 1) return 'Tomorrow';
-  return formatDate(date);
+  return target.toLocaleDateString('en-US', { weekday: 'short' });
 };
 
-export const formatRelativeDayShort = (date?: string | null): string => {
-  const label = formatWeekdayDate(date);
-  if (label === 'Today') return 'Today';
-  if (label === 'Tomorrow') return 'Tmr';
-  return label;
+export const formatExploreTime = (time?: string | null): string | null => {
+  if (!time?.trim()) return null;
+  const match = time.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return time.trim();
+
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return time.trim();
+
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hour12 = hours % 12 || 12;
+
+  if (minutes === 0) {
+    if (hours > 0 && hours < 12) return `${hour12}:00`;
+    return `${hour12} ${period}`;
+  }
+
+  return `${hour12}:${String(minutes).padStart(2, '0')} ${period}`;
 };
 
-export interface ExploreHeadlineInput {
-  source: ExploreCardSource;
-  kind: ExploreCardKind;
-  title: string;
-  hostName?: string | null;
-  date?: string | null;
-  fromLabel?: string | null;
-  toLabel?: string | null;
-  participantName?: string | null;
-}
+export const buildExploreWhenSegment = (
+  date?: string | null,
+  time?: string | null,
+  suffix?: 'flexible' | 'fixed' | null
+): string | null => {
+  const day = formatExploreDayShort(date);
+  const clock = formatExploreTime(time);
+  let segment: string | null = null;
+
+  if (day && clock) segment = `${day} at ${clock}`;
+  else if (day) segment = day;
+  else if (clock) segment = clock;
+
+  if (!segment) return null;
+  if (suffix === 'flexible') return `${segment} (flexible)`;
+  if (suffix === 'fixed') return `${segment} (fixed)`;
+  return segment;
+};
+
+export const buildExploreRouteLabel = (
+  fromLabel?: string | null,
+  toLabel?: string | null,
+  kind?: ExploreCardKind
+): string | null => {
+  if (kind !== 'carpool' || !fromLabel || !toLabel) return null;
+  return `${fromLabel} to ${toLabel}`;
+};
+
+export const buildExploreSpotsSegment = (
+  slotsAvailable?: number,
+  slotsTotal?: number
+): string | null => {
+  const count = (slotsAvailable ?? 0) > 0 ? slotsAvailable! : slotsTotal ?? 0;
+  if (count <= 0) return null;
+  return `${count} spots`;
+};
+
+/** Hide raw map-pin coordinate labels from card copy. */
+export const sanitizeExploreLocation = (label?: string | null): string | null => {
+  const trimmed = label?.trim();
+  if (!trimmed) return null;
+  if (/^[\d.-]+,\s*[\d.-]+$/.test(trimmed)) return null;
+  if (/map spot/i.test(trimmed) && /[\d.-]+/.test(trimmed)) return null;
+  return trimmed;
+};
+
+export const buildExploreListWhen = (date?: string | null, time?: string | null): string | null => {
+  const day = formatExploreDayShort(date);
+  if (!day) return formatExploreTime(time);
+  const shortDay = day === 'Tomorrow' ? 'Tmr' : day;
+  const clock = formatExploreTime(time);
+  return clock ? `${shortDay} · ${clock}` : shortDay;
+};
+
+const buildExploreListGoingLabel = (
+  input: ExploreHeadlineInput & { participantCount?: number }
+): string | null => {
+  if (input.source === 'demand') {
+    const count = input.slotsTotal ?? 0;
+    return count > 0 ? `${count} going` : null;
+  }
+  if (input.source !== 'activity') return null;
+
+  const filled = Math.max(
+    input.participantCount ?? 0,
+    (input.slotsTotal ?? 0) - (input.slotsAvailable ?? 0)
+  );
+  if (filled > 0) return `${filled} going`;
+
+  const open = input.slotsAvailable ?? input.slotsTotal ?? 0;
+  return open > 0 ? `${open} spots` : null;
+};
+
+const buildExploreListTitle = (input: ExploreHeadlineInput): string => {
+  if (input.source === 'venue' || input.source === 'shop' || input.source === 'agency') {
+    return input.title.trim() || 'Listing';
+  }
+
+  if (input.source === 'demand') {
+    const user = getFirstName(formatRequesterDisplayName(input.hostName));
+    const trimmed = input.title.trim();
+    if (trimmed && !isLegacyDemandTitle(trimmed) && !isLegacyAutoTitle(trimmed, input.kind)) {
+      return trimmed;
+    }
+    return `${demandKindLabel(input.kind)} · ${user}`;
+  }
+
+  if (input.kind === 'carpool') {
+    const dest = input.toLabel?.trim();
+    return dest ? `Rideshare to ${dest}` : 'Rideshare';
+  }
+
+  return input.title.trim() || demandKindLabel(input.kind);
+};
+
+const isLegacyDemandTitle = (title: string): boolean =>
+  /needs a (carpool|ride)|wants to go|is looking for|posted a plan|community request/i.test(title);
 
 export const exploreHeadline = (input: ExploreHeadlineInput): string => {
-  const host = getFirstName(input.hostName || 'Host');
-  const dateLabel = formatWeekdayDate(input.date);
-
   if (input.source === 'venue') {
     if (input.kind === 'hiking') return 'Hiking Spot';
     if (input.kind === 'camping') return 'Camping Spot';
@@ -85,67 +254,159 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
     return input.title;
   }
 
+  const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
+  const whenSuffix =
+    input.source === 'demand' ? 'flexible' : input.kind === 'carpool' ? 'fixed' : null;
+  const when = buildExploreWhenSegment(input.date, input.time, whenSuffix);
+  const spots =
+    input.source === 'activity' && input.kind !== 'carpool'
+      ? buildExploreSpotsSegment(input.slotsAvailable, input.slotsTotal)
+      : null;
+  const location = sanitizeExploreLocation(input.location);
+
   if (input.source === 'demand') {
-    return input.title;
+    const user = getFirstName(formatRequesterDisplayName(input.hostName));
+    const lead = `${user} is looking for ${demandKindLabel(input.kind)}`;
+    return joinExploreParts(lead, route ?? location, when);
   }
 
   if (input.kind === 'carpool') {
-    const from = input.fromLabel || 'Pickup';
-    const to = input.toLabel || 'Destination';
-    return dateLabel
-      ? `${host} is carpooling ${from} → ${to} on ${dateLabel}`
-      : `${host} is carpooling ${from} → ${to}`;
+    const host = getFirstName(input.hostName || input.participantName || 'Host');
+    return joinExploreParts(`${host} is offering Rideshare`, route, when);
   }
 
-  if (input.kind === 'event') {
-    return dateLabel
-      ? `${host} is hosting “${input.title}” on ${dateLabel}`
-      : `${host} is hosting “${input.title}”`;
+  const host = input.hostName?.trim() || input.participantName?.trim() || 'Host';
+  const title = input.title.trim() || demandKindLabel(input.kind);
+  return joinExploreParts(`${title} by ${host}`, location, when, spots);
+};
+
+export type ExploreCardDetailIcon = 'location' | 'time' | 'spots' | 'route' | 'price';
+
+export interface ExploreCardDetail {
+  icon: ExploreCardDetailIcon;
+  label: string;
+}
+
+export interface ExploreCardSections {
+  plainTitle?: string | null;
+  highlightName?: string | null;
+  prefix?: string | null;
+  suffix?: string | null;
+  titleText?: string | null;
+  hostName?: string | null;
+  partyLabel?: string | null;
+  aboutLine?: string | null;
+  listTitle: string;
+  listWhen: string | null;
+  listGoing: string | null;
+  details: ExploreCardDetail[];
+}
+
+const finishExploreCardSections = (
+  input: ExploreHeadlineInput,
+  sections: Omit<ExploreCardSections, 'listTitle' | 'listWhen' | 'listGoing'> & {
+    participantCount?: number;
+  }
+): ExploreCardSections => {
+  const { participantCount, ...rest } = sections;
+  return {
+    ...rest,
+    listTitle: buildExploreListTitle(input),
+    listWhen: buildExploreListWhen(input.date, input.time),
+    listGoing: buildExploreListGoingLabel({ ...input, participantCount }),
+  };
+};
+
+export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCardSections => {
+  const details: ExploreCardDetail[] = [];
+  const push = (icon: ExploreCardDetailIcon, label?: string | null) => {
+    if (label?.trim()) details.push({ icon, label: label.trim() });
+  };
+
+  if (input.source === 'venue' || input.source === 'shop' || input.source === 'agency') {
+    push('location', input.subtitle);
+    return finishExploreCardSections(input, {
+      plainTitle: exploreHeadline(input),
+      aboutLine: input.about?.trim() || null,
+      details,
+    });
   }
 
-  if (input.kind === 'hiking') {
-    return dateLabel ? `${host} is going Hiking on ${dateLabel}` : `${host} is going Hiking`;
+  const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
+  const whenSuffix =
+    input.source === 'demand' ? 'flexible' : input.kind === 'carpool' ? 'fixed' : null;
+  const when = buildExploreWhenSegment(input.date, input.time, whenSuffix);
+  const spots =
+    input.source === 'activity' && input.kind !== 'carpool'
+      ? buildExploreSpotsSegment(input.slotsAvailable, input.slotsTotal)
+      : null;
+  const partySize = input.source === 'demand' ? input.slotsTotal : null;
+  const partyLabel =
+    partySize && partySize > 0 ? `${partySize} ${partySize === 1 ? 'person' : 'people'}` : null;
+  const location = sanitizeExploreLocation(input.location);
+
+  if (input.source === 'demand') {
+    const user = getFirstName(formatRequesterDisplayName(input.hostName));
+    push('route', route);
+    push('location', input.kind !== 'carpool' ? location : null);
+    push('time', when);
+
+    return finishExploreCardSections(input, {
+      highlightName: user,
+      suffix: ` is looking for ${demandKindLabel(input.kind)}`,
+      details,
+      partyLabel,
+    });
   }
 
-  if (input.kind === 'camping') {
-    return dateLabel ? `${host} is going Camping on ${dateLabel}` : `${host} is going Camping`;
+  if (input.kind === 'carpool') {
+    const host = getFirstName(input.hostName || input.participantName || 'Host');
+    push('route', route);
+    push('time', when);
+
+    return finishExploreCardSections(input, {
+      highlightName: host,
+      suffix: ' is offering Rideshare',
+      details,
+    });
   }
 
-  return input.title;
+  const host = input.hostName?.trim() || input.participantName?.trim() || 'Host';
+  const title = input.title.trim() || demandKindLabel(input.kind);
+
+  push('location', location);
+  push('time', when);
+  push('spots', spots);
+
+  return finishExploreCardSections(input, {
+    titleText: title,
+    hostName: host,
+    details,
+    participantCount: input.participantCount,
+  });
 };
 
 export const exploreSubtitle = (item: ExploreMapItemDTO, kind: ExploreCardKind, source: ExploreCardSource): string | null => {
   if (source === 'venue') return item.title;
   if (source === 'demand') {
-    const parts = [formatWeekdayDate(item.date), item.time].filter(Boolean);
-    return parts.length > 0 ? parts.join(' · ') : item.subtitle ?? null;
+    if (kind === 'carpool') return null;
+    return item.subtitle?.trim() || null;
   }
   if (source === 'shop' || source === 'agency') return item.subtitle ?? null;
-  if (kind === 'carpool') return item.subtitle ?? null;
   return item.subtitle ?? item.activity?.locationName ?? null;
 };
 
 export const exploreSpotsLabel = (item: ExploreMapItemDTO): string | null => {
-  if (item.source === 'demand') {
-    const size = item.slotsTotal ?? 0;
-    if (size <= 1) return '1 person looking';
-    return `${size} people looking`;
-  }
+  if (item.source === 'demand') return null;
   if (item.source !== 'activity') return null;
-  const total = item.slotsTotal ?? 0;
-  const available = item.slotsAvailable ?? 0;
-  const going = Math.max(total - available, item.participantPreviews?.length ?? 0);
-  if (going > 0 && available > 0) return `${going} going · ${available} left`;
-  if (going > 0) return `${going} going`;
-  if (total > 0) return `${total} spots`;
-  return null;
+  return buildExploreSpotsSegment(item.slotsAvailable, item.slotsTotal);
 };
 
 export const explorePrimaryCtaLabel = (
   source: ExploreCardSource,
   options?: { websiteUrl?: string | null }
 ): string => {
-  if (source === 'demand') return 'Close';
+  if (source === 'demand') return 'Request to join';
   if (source === 'shop') return options?.websiteUrl ? 'Visit website' : 'View shop';
   if (source === 'agency') return 'View agency';
   if (source === 'activity') return 'Request to join';
@@ -154,20 +415,14 @@ export const explorePrimaryCtaLabel = (
 
 export const exploreSecondaryCtaLabel = (source: ExploreCardSource): string | null => {
   if (source === 'activity') return 'View details';
+  if (source === 'demand') return 'Message';
   return null;
 };
 
-export const exploreDemandHint = (): string =>
-  'Community request — hosts can post a matching trip from the map. Direct join coming soon.';
-
-export const exploreShopHint = (): string =>
-  'Outdoor gear shop — visit their website or get directions from the map pin.';
-
-export const exploreAgencyHint = (): string => 'Licensed tour operator — view trips and contact details.';
+const exploreAgencyHint = (): string => 'Licensed tour operator — view trips and contact details.';
 
 export const exploreVenueHint = (source: ExploreCardSource, kind: ExploreCardKind): string | null => {
-  if (source === 'demand') return exploreDemandHint();
-  if (source === 'shop') return exploreShopHint();
+  if (source === 'demand' || source === 'shop') return null;
   if (source === 'agency') return exploreAgencyHint();
   if (source !== 'venue') return null;
   if (kind === 'hiking') return 'Trail or outdoor spot';

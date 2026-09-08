@@ -160,7 +160,7 @@ export const MobileMenuProvider = ({ children }: MobileMenuProviderProps) => {
   );
 };
 
-export const useMobileMenu = () => {
+const useMobileMenu = () => {
   const context = useContext(MobileMenuContext);
   if (!context) {
     throw new Error('useMobileMenu must be used within MobileMenuProvider');
@@ -426,14 +426,14 @@ const MobileMenuPanel = () => {
 
           {user && !isMerchantRole && (
             <Link
-              to="/profile#map-presence"
+              to="/become-host#host-profiles"
               onClick={closeMenu}
-              className={navItemClass(pathname === '/profile')}
+              className={navItemClass(pathname.startsWith('/become-host'))}
             >
               <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
                 <ShoppingBag className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
               </span>
-              <span className="font-semibold">Your map profiles</span>
+              <span className="font-semibold">Host on the map</span>
             </Link>
           )}
 

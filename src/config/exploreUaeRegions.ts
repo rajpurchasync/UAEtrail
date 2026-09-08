@@ -19,7 +19,7 @@ export interface ExploreUaeRegion {
 }
 
 /** Build a cropped Unsplash CDN URL from a photo-* asset id */
-export const unsplashPhoto = (photoId: string, width = 800) =>
+const unsplashPhoto = (photoId: string, width = 800) =>
   `https://images.unsplash.com/${photoId}?w=${width}&fit=crop&q=80`;
 
 export const EXPLORE_UAE_REGIONS: ExploreUaeRegion[] = [

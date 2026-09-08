@@ -14,6 +14,7 @@ export type ParticipantIntentKind = z.infer<typeof participantIntentKindSchema>;
 export const createParticipantIntentSchema = z
   .object({
     kind: participantIntentKindSchema,
+    title: z.string().trim().min(3).max(120),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
     time: z.string().regex(/^\d{2}:\d{2}$/).optional().nullable(),
     preferredArea: z.string().trim().max(200).optional().nullable(),

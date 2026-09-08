@@ -1,6 +1,6 @@
 import { LocationStatus } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
-import { findAdminLocationByIdForEventCreate } from '../lib/admin-store.js';
+import { findAdminLocationById } from '../lib/admin-store.js';
 import { findLocationById, findTenantMembershipByUser } from '../lib/activities-store.js';
 import type { Location } from '../domain/types.js';
 
@@ -10,7 +10,7 @@ export const resolveActivityLocation = async (
   opts: { platformAdmin: boolean }
 ): Promise<Location> => {
   if (opts.platformAdmin) {
-    const location = await findAdminLocationByIdForEventCreate(locationId);
+    const location = await findAdminLocationById(locationId);
     if (!location) {
       throw new ApiError(404, 'location_not_found', 'Location not found.');
     }

@@ -6,7 +6,7 @@ import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { optionalAuth } from '../middleware/optional-auth.js';
 import { validate } from '../middleware/validate.js';
-import { awardPointsDefault } from '../services/rewards.js';
+import { awardPoints } from '../services/rewards.js';
 import { tierEnumToDisplay } from '../lib/rewards-config.js';
 import { findAuthUserById, findAuthUsersByIds, getAuthUserMembershipTier } from '../lib/auth-users.js';
 import { createUserFavorite, deleteUserFavoriteById, findUserFavorite, listUserFavoritesWithDetails } from '../lib/favorites-store.js';
@@ -181,7 +181,7 @@ socialRouter.post('/reviews', requireAuth, requireVerifiedEmail, validate({ body
       rating: body.rating,
       comment: sanitizedComment
     });
-    void awardPointsDefault({
+    void awardPoints({
       userId: req.auth!.userId,
       action: RewardAction.REVIEW_WRITTEN,
       referenceId: review.id
@@ -291,7 +291,7 @@ socialRouter.post('/posts', requireAuth, requireVerifiedEmail, validate({ body: 
       activityId: body.activityId,
       authorId: req.auth!.userId
     });
-    void awardPointsDefault({
+    void awardPoints({
       userId: req.auth!.userId,
       action: RewardAction.COMMUNITY_POST,
       referenceId: post.id
@@ -321,7 +321,7 @@ socialRouter.post(
       }
 
       const reply = await createSocialReply({ postId: id, authorId: req.auth!.userId, content: sanitizedReply });
-      void awardPointsDefault({
+      void awardPoints({
         userId: req.auth!.userId,
         action: RewardAction.COMMUNITY_REPLY,
         referenceId: reply.id

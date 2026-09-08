@@ -23,7 +23,7 @@ interface LocationSelectProps {
   onAddNew?: () => void;
 }
 
-/** Pick an existing venue from the catalog. Use VenueSelect in activity forms. */
+/** Pick an existing venue from the catalog. */
 export const LocationSelect = ({
   value,
   onChange,

@@ -144,6 +144,8 @@ shopRouter.get('/merchants/:id', validate({ params: idParamSchema }), async (req
         latitude: merchant.latitude,
         longitude: merchant.longitude,
         region: merchant.region,
+        contactPersonName: merchant.contactPersonName ?? null,
+        contactPersonAvatar: merchant.contactPersonAvatar ?? null,
         products: merchant.products.map((p) => ({
           id: p.id,
           name: p.name,

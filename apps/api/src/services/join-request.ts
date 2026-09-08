@@ -1,7 +1,1 @@
-export {
-  assertCanApproveRequest,
-  createJoinOrWaitlistRequest,
-  createJoinOrWaitlistRequestDefault,
-  isActivityFull,
-  promoteNextWaitlisted
-} from '../lib/activity-engagement-store.js';
+export { isActivityFull, createJoinOrWaitlistRequest } from '../lib/activity-engagement-store.js';

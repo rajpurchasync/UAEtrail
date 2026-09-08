@@ -1,5 +1,5 @@
 /** MongoDB duplicate key error (E11000). */
-export type MongoDuplicateKeyError = {
+type MongoDuplicateKeyError = {
   code: 11000;
   keyPattern?: Record<string, unknown>;
   keyValue?: Record<string, unknown>;

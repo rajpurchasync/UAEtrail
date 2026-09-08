@@ -5,7 +5,7 @@ import { FORM_TOTAL_STEPS } from './activityFormSteps';
 
 export const MIN_ABOUT_WORDS = 10;
 
-export const isValidHttpUrl = (value: string): boolean => {
+const isValidHttpUrl = (value: string): boolean => {
   const trimmed = value.trim();
   if (!trimmed) return false;
   try {
@@ -16,7 +16,7 @@ export const isValidHttpUrl = (value: string): boolean => {
   }
 };
 
-export const aboutFieldLabel = (activityType: ActivityType): string => {
+const aboutFieldLabel = (activityType: ActivityType): string => {
   if (activityType === 'camping') return 'About spot';
   if (activityType === 'event') return 'About event';
   return 'About hike';
@@ -102,6 +102,16 @@ export const validateActivityFormStep = (
     if (form.carPoolPricing === 'shared' && form.carPoolSharedAmount <= 0) {
       return 'Enter the shared car pool amount.';
     }
+    const hasFrom =
+      form.carPoolFrom.label.trim() ||
+      form.carPoolFrom.mapsUrl.trim() ||
+      (form.carPoolFrom.lat && form.carPoolFrom.lng);
+    const hasTo =
+      form.carPoolTo.label.trim() ||
+      form.carPoolTo.mapsUrl.trim() ||
+      (form.carPoolTo.lat && form.carPoolTo.lng);
+    if (!hasFrom) return 'Set a car pool from location (map pin or Google Maps link).';
+    if (!hasTo) return 'Set a car pool to location (map pin or Google Maps link).';
   }
 
   if (targetStep > totalSteps) return null;

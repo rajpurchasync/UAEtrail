@@ -624,42 +624,42 @@ async function main() {
     email: 'visitor@uaetrails.app',
     password: credentials.participant,
     role: UserRole.PARTICIPANT,
-    displayName: 'Demo Participant'
+    displayName: 'Samira Khan'
   });
 
   const agencyOwner = await upsertUser({
     email: 'organizer@uaetrails.app',
     password: credentials.agency,
     role: UserRole.TENANT_OWNER,
-    displayName: 'Agency Owner'
+    displayName: 'Khalid Rahman'
   });
 
   const agencyGuide = await upsertUser({
     email: 'guide@uaetrails.app',
     password: credentials.agencyGuide,
     role: UserRole.TENANT_GUIDE,
-    displayName: 'Agency Guide'
+    displayName: 'Fatima Al Mazrouei'
   });
 
   const individualHost = await upsertUser({
     email: 'host@uaetrails.app',
     password: credentials.individualHost,
     role: UserRole.TENANT_OWNER,
-    displayName: 'Individual Host'
+    displayName: 'Omar Al Hosani'
   });
 
   const shopOwner = await upsertUser({
     email: 'shop@uaetrails.app',
     password: credentials.shop,
     role: UserRole.TENANT_OWNER,
-    displayName: 'Shop Owner'
+    displayName: 'Priya Sharma'
   });
 
   const pendingParticipant = await upsertUser({
     email: 'visitor2@uaetrails.app',
     password: credentials.pendingParticipant,
     role: UserRole.PARTICIPANT,
-    displayName: 'Pending Participant'
+    displayName: 'Maya Hassan'
   });
 
   const suspendedHash = await bcrypt.hash(credentials.suspended, 10);
@@ -693,6 +693,21 @@ async function main() {
     setDemoAvatar(pendingParticipant._id, 'pending-participant'),
     setDemoAvatar(admin._id, 'admin')
   ]);
+
+  await updateAuthUserProfile(participant._id, {
+    bio: 'Weekend hiker exploring Hatta, Wadi Shawka, and Dubai trail groups.',
+    phone: '+971508887766'
+  });
+
+  await updateAuthUserProfile(pendingParticipant._id, {
+    bio: 'Applying to host group hikes around Hatta — love early-morning desert routes.',
+    phone: '+971507654321'
+  });
+
+  await updateAuthUserProfile(agencyGuide._id, {
+    bio: 'Certified mountain guide — Jebel Jais, Wadi Shawka, and family-friendly dam loops.',
+    phone: '+971502223344'
+  });
 
   const agencyTenant = await upsertTenant({
     id: 'tenant-uae-adventure',
@@ -738,6 +753,7 @@ async function main() {
     status: HostApplicationStatus.APPROVED,
     metadata: {
       hostProfileType: 'agency',
+      hostDisplayName: 'Khalid Rahman',
       requestedName: agencyTenant.name,
       bio: 'Licensed tour agency for guided outdoor experiences across the UAE.',
       phone: '+971501234567',
@@ -765,6 +781,8 @@ async function main() {
     ownerId: individualHost._id,
     description: 'Independent guide hosting free and shared-cost hikes and desert meetups.',
     logoUrl: demoAvatar('desert-explorer'),
+    latitude: 25.22,
+    longitude: 55.85,
     region: 'Sharjah'
   });
 
@@ -789,7 +807,7 @@ async function main() {
     status: HostApplicationStatus.APPROVED,
     metadata: {
       hostProfileType: 'individual',
-      hostDisplayName: 'Individual Host',
+      hostDisplayName: 'Omar Al Hosani',
       dateOfBirth: '1995-06-15',
       bio: 'Weekend hiking host based in Sharjah. I lead small free groups to Fossil Rock, Wadi Shawka, and nearby trails.',
       phone: '+971509876543',
@@ -837,6 +855,7 @@ async function main() {
     status: HostApplicationStatus.APPROVED,
     metadata: {
       hostProfileType: 'shop',
+      hostDisplayName: 'Priya Sharma',
       requestedName: shopTenant.name,
       bio: shopTenant.description,
       phone: '+971501100221',
@@ -857,8 +876,14 @@ async function main() {
     status: HostApplicationStatus.PENDING,
     metadata: {
       hostProfileType: 'agency',
+      hostDisplayName: 'Maya Hassan',
       requestedName: 'Hatta Hiking Club',
       bio: 'Community hiking club applying to host group trips around Hatta.',
+      phone: '+971507654321',
+      phoneE164: '+971507654321',
+      nationality: 'UAE',
+      residence: 'Dubai',
+      languages: 'English, Urdu',
       services: 'Weekend group hikes around Hatta and Dubai outskirts'
     }
   });
@@ -1107,7 +1132,7 @@ Share your live location and carry extra water in summer months.`
     tenant: { connect: { id: agencyTenant.id } },
     location: { connect: { id: 'jebel-jais-summit-trail' } },
     createdBy: { connect: { id: agencyOwner._id } },
-    guide: { connect: { id: agencyGuide._id } },
+    host: { connect: { id: agencyGuide._id } },
     activityType: ActivityType.HIKING,
     title: 'Jebel Jais Group Hike',
     description: 'Guided early morning summit trek.',
@@ -1131,6 +1156,7 @@ Share your live location and carry extra water in summer months.`
     tenant: { connect: { id: individualHostTenant.id } },
     location: { connect: { id: 'fossil-rock-desert-camp' } },
     createdBy: { connect: { id: individualHost._id } },
+    host: { connect: { id: individualHost._id } },
     activityType: ActivityType.CAMPING,
     title: 'Fossil Rock Overnight Camp',
     description: 'Desert camping with stargazing and sunrise photography.',
@@ -1140,6 +1166,7 @@ Share your live location and carry extra water in summer months.`
     meetingLng: 55.8521,
     priceAed: 200,
     capacity: 12,
+    featured: true,
     status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     itinerary: [
@@ -1160,7 +1187,7 @@ Share your live location and carry extra water in summer months.`
     tenant: { connect: { id: agencyTenant.id } },
     location: { connect: { id: 'wadi-shawka-loop' } },
     createdBy: { connect: { id: agencyOwner._id } },
-    guide: { connect: { id: agencyGuide._id } },
+    host: { connect: { id: agencyGuide._id } },
     activityType: ActivityType.HIKING,
     title: 'Wadi Shawka Community Hike',
     description:
@@ -1186,6 +1213,7 @@ Share your live location and carry extra water in summer months.`
     tenant: { connect: { id: individualHostTenant.id } },
     location: { connect: { id: 'fossil-rock-desert-camp' } },
     createdBy: { connect: { id: individualHost._id } },
+    host: { connect: { id: individualHost._id } },
     activityType: ActivityType.EVENT,
     title: 'Desert Sunset Meetup (Free)',
     description:
@@ -1216,7 +1244,7 @@ Share your live location and carry extra water in summer months.`
     tenant: { connect: { id: agencyTenant.id } },
     location: { connect: { id: 'hatta-dam-loop' } },
     createdBy: { connect: { id: agencyOwner._id } },
-    guide: { connect: { id: agencyGuide._id } },
+    host: { connect: { id: agencyGuide._id } },
     activityType: ActivityType.EVENT,
     title: 'Kite Beach Sunrise Run',
     description: 'Community 5K along the Dubai Marina/Kite Beach track — all paces welcome.',
@@ -1241,6 +1269,7 @@ Share your live location and carry extra water in summer months.`
     tenant: { connect: { id: individualHostTenant.id } },
     location: { connect: { id: 'jebel-jais-summit-trail' } },
     createdBy: { connect: { id: individualHost._id } },
+    host: { connect: { id: individualHost._id } },
     activityType: ActivityType.CARPOOL,
     title: 'Carpool Dubai Marina → Jebel Jais',
     description: 'Shared ride for the Jebel Jais hike — split fuel costs.',
@@ -1543,8 +1572,14 @@ Share your live location and carry extra water in summer months.`
   await suspendLegacyDemoUser('guide2@uaetrails.app', individualHost._id);
 
   const demandNow = new Date();
+  const demandSeedIds = [
+    seedObjectId('demand-hike-hatta'),
+    seedObjectId('demand-camp-fossil-rock'),
+    seedObjectId('demand-event-kite-beach'),
+    seedObjectId('demand-carpool-dxb-rak')
+  ];
   await db().collection('participant_intents').deleteMany({
-    _id: { $in: ['seed-demand-hike-hatta', 'seed-demand-carpool-dxb-rak'] }
+    _id: { $in: demandSeedIds }
   });
 
   await db().collection('participant_intents').updateOne(
@@ -1552,10 +1587,11 @@ Share your live location and carry extra water in summer months.`
     {
       $set: {
         userId: participant._id,
+        title: 'Hiking buddies near Hatta',
         kind: 'hiking',
         date: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10),
         time: null,
-        preferredArea: 'Hatta, Wadi Hub area',
+        preferredArea: 'Hatta Dam loop, Wadi Hub area',
         latitude: 24.7847,
         longitude: 56.1136,
         locationPrecision: 'general',
@@ -1572,10 +1608,61 @@ Share your live location and carry extra water in summer months.`
   );
 
   await db().collection('participant_intents').updateOne(
+    { _id: seedObjectId('demand-camp-fossil-rock') },
+    {
+      $set: {
+        userId: individualHost._id,
+        title: 'Weekend desert camp at Fossil Rock',
+        kind: 'camping',
+        date: new Date(Date.now() + 8 * 86400000).toISOString().slice(0, 10),
+        time: '16:00',
+        preferredArea: 'Fossil Rock, Sharjah desert',
+        latitude: 25.22,
+        longitude: 55.85,
+        locationPrecision: 'general',
+        toLatitude: null,
+        toLongitude: null,
+        partySize: 4,
+        comment: 'Looking for people to join a weekend desert camp — tents and 4x4 preferred.',
+        status: 'active',
+        updatedAt: demandNow
+      },
+      $setOnInsert: { createdAt: demandNow }
+    },
+    { upsert: true }
+  );
+
+  await db().collection('participant_intents').updateOne(
+    { _id: seedObjectId('demand-event-kite-beach') },
+    {
+      $set: {
+        userId: agencyGuide._id,
+        title: 'Sunrise yoga at Kite Beach',
+        kind: 'event',
+        date: new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10),
+        time: '06:00',
+        preferredArea: 'Kite Beach running track, Dubai',
+        latitude: 25.1654,
+        longitude: 55.2553,
+        locationPrecision: 'specific',
+        toLatitude: null,
+        toLongitude: null,
+        partySize: 6,
+        comment: 'Casual sunrise yoga meetup — bring your mat and water.',
+        status: 'active',
+        updatedAt: demandNow
+      },
+      $setOnInsert: { createdAt: demandNow }
+    },
+    { upsert: true }
+  );
+
+  await db().collection('participant_intents').updateOne(
     { _id: seedObjectId('demand-carpool-dxb-rak') },
     {
       $set: {
         userId: pendingParticipant._id,
+        title: 'Ride to Jebel Jais hike',
         kind: 'carpool',
         date: new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10),
         time: '07:30',
@@ -1596,13 +1683,13 @@ Share your live location and carry extra water in summer months.`
   );
 
   console.log('Seed complete.');
-  console.log(`Admin: admin@uaetrails.app / ${credentials.admin}`);
-  console.log(`Participant: visitor@uaetrails.app / ${credentials.participant}`);
-  console.log(`Individual host: host@uaetrails.app / ${credentials.individualHost}`);
-  console.log(`Agency owner: organizer@uaetrails.app / ${credentials.agency}`);
-  console.log(`Agency guide (staff): guide@uaetrails.app / ${credentials.agencyGuide}`);
-  console.log(`Shop owner: shop@uaetrails.app / ${credentials.shop}`);
-  console.log(`Pending participant: visitor2@uaetrails.app / ${credentials.pendingParticipant}`);
+  console.log(`Admin: admin@uaetrails.app (${admin.profile?.displayName ?? 'UAE Trails Admin'}) / ${credentials.admin}`);
+  console.log(`Participant: visitor@uaetrails.app (${participant.profile?.displayName ?? 'Samira Khan'}) / ${credentials.participant}`);
+  console.log(`Individual host: host@uaetrails.app (${individualHost.profile?.displayName ?? 'Omar Al Hosani'}) / ${credentials.individualHost}`);
+  console.log(`Agency owner: organizer@uaetrails.app (${agencyOwner.profile?.displayName ?? 'Khalid Rahman'}) / ${credentials.agency}`);
+  console.log(`Agency guide: guide@uaetrails.app (${agencyGuide.profile?.displayName ?? 'Fatima Al Mazrouei'}) / ${credentials.agencyGuide}`);
+  console.log(`Shop owner: shop@uaetrails.app (${shopOwner.profile?.displayName ?? 'Priya Sharma'}) / ${credentials.shop}`);
+  console.log(`Pending participant: visitor2@uaetrails.app (${pendingParticipant.profile?.displayName ?? 'Maya Hassan'}) / ${credentials.pendingParticipant}`);
   console.log(`Suspended: suspended@uaetrails.app / ${credentials.suspended}`);
   console.log(`Agency tenant: ${agencyTenant.id} — ${agencyTenant.slug} (${agencyTenant.businessMode})`);
   console.log(`Individual host tenant: ${individualHostTenant.id} — ${individualHostTenant.slug}`);
@@ -1610,7 +1697,7 @@ Share your live location and carry extra water in summer months.`
   console.log(`Pending application: Hatta Hiking Club (by ${pendingParticipant.email})`);
   console.log(`Seeded by admin id: ${admin._id}`);
   console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName} (${seedProducts.length} products)`);
-  console.log('Explore map demo pins: hiking, camping, event, carpool activities + shop merchants + agency + demand');
+  console.log('Explore map demo pins: supply (hiking, camping, event, rideshare) + demand (all four types) + shops + agency');
   console.log(`Chat messages: ${chatMessages.length} seeded`);
 }
 

@@ -5,11 +5,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
 
 export { API_BASE_URL };
 
-export interface AuthSession {
+interface AuthSession {
   accessToken: string;
 }
 
-export const SESSION_STORAGE_KEY = 'uaetrail_session';
+const SESSION_STORAGE_KEY = 'uaetrail_session';
 export const USER_STORAGE_KEY = 'uaetrail_user';
 
 let onSessionInvalidated: (() => void) | null = null;

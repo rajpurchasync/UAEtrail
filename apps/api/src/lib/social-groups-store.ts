@@ -396,11 +396,6 @@ export const listGroupInvites = async (groupId: string): Promise<GroupInviteReco
   return rows.map(mapInvite);
 };
 
-export const findInviteByToken = async (token: string): Promise<GroupInviteRecord | null> => {
-  const row = await invitesCollection().findOne({ token });
-  return row ? mapInvite(row) : null;
-};
-
 const markInviteAccepted = async (inviteId: string, acceptedByUserId: string, now: Date): Promise<void> => {
   await invitesCollection().updateOne(
     { _id: inviteId },

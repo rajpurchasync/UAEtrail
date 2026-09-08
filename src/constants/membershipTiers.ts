@@ -106,9 +106,6 @@ export const EARN_WAYS = [
   },
 ] as const;
 
-export const getTierByKey = (key: string) =>
-  MEMBERSHIP_TIERS.find((t) => t.key === key) ?? MEMBERSHIP_TIERS[0];
-
 /** Paid subscription plans — /membership pricing (Active is free, Pro & GOAT are paid). */
 export const SUBSCRIPTION_PLANS = [
   {
@@ -176,6 +173,3 @@ export const SUBSCRIPTION_PLANS = [
     ctaExternal: false,
   },
 ] as const;
-
-export const getSubscriptionPlan = (key: string) =>
-  SUBSCRIPTION_PLANS.find((p) => p.key === key) ?? SUBSCRIPTION_PLANS[0];

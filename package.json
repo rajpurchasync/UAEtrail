@@ -22,6 +22,7 @@
     "seed": "npm --workspace @uaetrail/api run seed",
     "test:api": "npm --workspace @uaetrail/api run test",
     "test:frontend": "vitest run",
+    "knip": "knip",
     "ci": "npm run typecheck && npm run typecheck:api && npm run lint && npm run build && npm run build:api && npm run test:frontend && npm run test:api",
     "cap:sync": "npm run build && npx cap sync",
     "cap:ios": "npx cap open ios",
@@ -43,10 +44,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
-    "react-leaflet-markercluster": "^2.0.0",
     "react-router-dom": "^7.12.0",
-    "recharts": "^2.15.4",
-    "zod": "^3.24.1"
+    "recharts": "^2.15.4"
   },
   "devDependencies": {
     "@capacitor/android": "^8.4.1",
@@ -64,6 +63,7 @@
     "eslint-plugin-react-refresh": "^0.4.11",
     "globals": "^15.9.0",
     "jsdom": "^29.1.1",
+    "knip": "^5.63.0",
     "postcss": "^8.4.35",
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",

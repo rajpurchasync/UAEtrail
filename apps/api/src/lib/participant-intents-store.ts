@@ -10,6 +10,7 @@ type MongoParticipantIntent = {
   _id: ObjectId;
   userId: string;
   kind: ParticipantIntentKind;
+  title?: string | null;
   date: string | null;
   time: string | null;
   preferredArea: string | null;
@@ -35,24 +36,74 @@ const mapExploreKind = (kind: ParticipantIntentKind): ExploreMapItemDTO['kind'] 
   return kind;
 };
 
-const demandTitle = (kind: ParticipantIntentKind, displayName: string): string => {
-  const first = displayName.split(/\s+/)[0] || 'Someone';
+const demandFallbackTitle = (kind: ParticipantIntentKind): string => {
   switch (kind) {
     case 'hiking':
-      return `${first} wants to go hiking`;
+      return 'Looking for hiking buddies';
     case 'camping':
-      return `${first} wants to go camping`;
+      return 'Looking for camping plans';
     case 'event':
-      return `${first} is looking for an event`;
+      return 'Looking for an event';
     case 'guide':
-      return `${first} is looking for a guide`;
+      return 'Looking for a guide';
     case 'carpool':
-      return `${first} needs a carpool`;
+      return 'Ride share request';
     case 'other':
-      return `${first} posted a plan`;
+      return 'Outdoor plan request';
     default:
-      return `${first} wants to go`;
+      return 'Community request';
   }
+};
+
+/** Strip legacy auto-titles that incorrectly embed the requester name in the title string. */
+const normalizeLegacyDemandTitle = (title: string, kind: ParticipantIntentKind): string => {
+  const trimmed = title.trim();
+  if (!trimmed) return demandFallbackTitle(kind);
+
+  const legacyPatterns: RegExp[] = [
+    /^.+ needs a carpool$/i,
+    /^.+ wants to go hiking$/i,
+    /^.+ wants to go camping$/i,
+    /^.+ is looking for an event$/i,
+    /^.+ is looking for a guide$/i,
+    /^.+ posted a plan$/i,
+    /^.+ wants to go$/i,
+  ];
+
+  if (legacyPatterns.some((pattern) => pattern.test(trimmed))) {
+    return demandFallbackTitle(kind);
+  }
+
+  return trimmed;
+};
+
+const buildDemandRouteLabels = (
+  doc: MongoParticipantIntent
+): { fromLabel: string | null; toLabel: string | null } => {
+  if (doc.kind !== 'carpool') {
+    return { fromLabel: null, toLabel: null };
+  }
+
+  if (doc.preferredArea?.includes('→')) {
+    const [from, to] = doc.preferredArea.split('→').map((part) => part.trim());
+    if (from && to) return { fromLabel: from, toLabel: to };
+  }
+
+  const fromLabel =
+    doc.latitude != null && doc.longitude != null
+      ? `${doc.latitude.toFixed(4)}, ${doc.longitude.toFixed(4)}`
+      : doc.preferredArea?.trim() || null;
+  const toLabel =
+    doc.toLatitude != null && doc.toLongitude != null
+      ? `${doc.toLatitude.toFixed(4)}, ${doc.toLongitude.toFixed(4)}`
+      : null;
+
+  return { fromLabel, toLabel };
+};
+
+const demandTitle = (kind: ParticipantIntentKind, displayName: string): string => {
+  void displayName;
+  return demandFallbackTitle(kind);
 };
 
 const mapDto = (
@@ -62,6 +113,9 @@ const mapDto = (
   id: stringifyDocId(doc._id),
   userId: doc.userId,
   kind: doc.kind,
+  title: doc.title?.trim()
+    ? normalizeLegacyDemandTitle(doc.title.trim(), doc.kind)
+    : demandTitle(doc.kind, user?.profile?.displayName ?? 'Someone'),
   date: doc.date,
   time: doc.time,
   preferredArea: doc.preferredArea,
@@ -87,6 +141,7 @@ export const createParticipantIntent = async (
     _id: new ObjectId(),
     userId,
     kind: input.kind,
+    title: input.title.trim(),
     date: input.date ?? null,
     time: input.time ?? null,
     preferredArea: input.preferredArea?.trim() || null,
@@ -125,19 +180,29 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
     .map((doc) => {
       const user = userMap.get(doc.userId);
       const displayName = user?.profile?.displayName ?? 'Someone';
+      const route = buildDemandRouteLabels(doc);
+      const planTitle = doc.title?.trim()
+        ? normalizeLegacyDemandTitle(doc.title.trim(), doc.kind)
+        : demandTitle(doc.kind, displayName);
       return {
         id: `demand:${stringifyDocId(doc._id)}`,
         kind: mapExploreKind(doc.kind),
         source: 'demand' as const,
-        title: demandTitle(doc.kind, displayName),
-        subtitle: doc.preferredArea || doc.comment.slice(0, 80),
+        title: planTitle,
+        subtitle:
+          doc.kind === 'carpool' && route.fromLabel && route.toLabel
+            ? `${route.fromLabel} → ${route.toLabel}`
+            : doc.preferredArea || doc.comment.slice(0, 80),
         latitude: doc.latitude,
         longitude: doc.longitude,
         toLatitude: doc.toLatitude,
         toLongitude: doc.toLongitude,
+        fromLabel: route.fromLabel,
+        toLabel: route.toLabel,
         path: `/`,
         hostName: displayName,
         hostAvatar: user?.profile?.avatarUrl ?? null,
+        requesterUserId: doc.userId,
         date: doc.date,
         time: doc.time,
         slotsTotal: doc.partySize,

@@ -73,7 +73,7 @@ const mapPinFields = {
   region: z.string().min(2).max(80).optional()
 };
 
-export const hostProfileTypeSchema = z.enum(['individual', 'agency', 'shop']);
+const hostProfileTypeSchema = z.enum(['individual', 'agency', 'shop']);
 
 export type HostProfileType = z.infer<typeof hostProfileTypeSchema>;
 

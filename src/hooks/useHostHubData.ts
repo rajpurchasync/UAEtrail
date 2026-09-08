@@ -10,9 +10,11 @@ async function fetchHostHub(tenantId: string) {
     api.listHostActivities(tenantId),
     api.getHostRequests(tenantId),
   ]);
+  const requests = requestsResponse.data;
   return {
     activities: activitiesResponse.data,
-    pendingJoinRequests: requestsResponse.data.filter((request) => request.status === 'pending').length,
+    requests,
+    pendingJoinRequests: requests.filter((request) => request.status === 'pending').length,
   };
 }
 
@@ -64,10 +66,19 @@ export const useHostHubData = () => {
     await refetch();
   }, [queryClient, refetch, tenantId]);
 
+  const requests = data?.requests ?? [];
+
+  const pendingRequests = useMemo(
+    () => requests.filter((request) => request.status === 'pending'),
+    [requests]
+  );
+
   return {
     tenantId,
     setTenantId,
     activities,
+    requests,
+    pendingRequests,
     pendingJoinRequests: data?.pendingJoinRequests ?? 0,
     publishedCount,
     draftCount,
@@ -80,5 +91,3 @@ export const useHostHubData = () => {
   };
 };
 
-/** @deprecated Use useHostHubData */
-export const useOrganizerHubData = useHostHubData;

@@ -11,8 +11,6 @@ export const SITE_DESCRIPTION =
 /** Self-hosted hero — optimized WebP (~120KB) with JPEG fallback */
 export const HOME_HERO_IMAGE_WEBP = '/traveler-hiking-mountains-while-having-his-essentials-backpack.webp';
 export const HOME_HERO_IMAGE_JPEG = '/traveler-hiking-mountains-while-having-his-essentials-backpack-optimized.jpg';
-/** @deprecated Use HOME_HERO_IMAGE_WEBP — kept for OG tags until CDN serves WebP */
-export const HOME_HERO_IMAGE = HOME_HERO_IMAGE_JPEG;
 
 export const toAbsoluteUrl = (pathOrUrl?: string | null): string | undefined => {
   if (!pathOrUrl) return undefined;
@@ -21,7 +19,7 @@ export const toAbsoluteUrl = (pathOrUrl?: string | null): string | undefined => 
   return `${SITE_ORIGIN}${path}`;
 };
 
-export const DEFAULT_OG_IMAGE = toAbsoluteUrl(HOME_HERO_IMAGE)!;
+export const DEFAULT_OG_IMAGE = toAbsoluteUrl(HOME_HERO_IMAGE_JPEG)!;
 
 export const DEFAULT_OG_IMAGE_ALT = 'Hiker with backpack on a mountain trail — outdoor adventure in the UAE';
 

@@ -5,7 +5,8 @@ import type { HostProfileType } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { setActiveTenantId } from '../../api/tenant';
 import { api } from '../../api/services';
-import { COUNTRIES, UAE_REGIONS } from '../../constants';
+import { COUNTRIES } from '../../constants';
+import { DEFAULT_COUNTRY, getRegionsForCountry } from '../../config/regions';
 import { PhoneInput } from '../ui/PhoneInput';
 import { ImageUpload } from '../ui/ImageUpload';
 import type { LocationPrecision } from '../explore/mobileCreateFlow';
@@ -564,7 +565,7 @@ export const MobileBecomeHostFlow = ({
               <div>
                 <span className="mb-2 block text-sm font-medium text-gray-700">Based in (UAE)</span>
                 <div className="flex flex-wrap gap-2">
-                  {UAE_REGIONS.map((region) => {
+                  {getRegionsForCountry(DEFAULT_COUNTRY).map((region) => {
                     const active = form.residence === region;
                     return (
                       <button
@@ -657,7 +658,7 @@ export const MobileBecomeHostFlow = ({
             <div className="mt-4">
               <span className="mb-2 block text-sm font-medium text-gray-700">Region (optional)</span>
               <div className="flex flex-wrap gap-2">
-                {UAE_REGIONS.map((region) => {
+                {getRegionsForCountry(DEFAULT_COUNTRY).map((region) => {
                   const active = form.region === region;
                   return (
                     <button

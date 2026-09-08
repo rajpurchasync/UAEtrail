@@ -6,15 +6,16 @@ import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { randomToken } from '../lib/hash.js';
 import { toLocationDto, buildActivityDto } from '../lib/mappers.js';
+import type { ActivityDTO } from '@uaetrail/shared-types';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { hashPassword } from '../lib/password.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { requireMembershipRole, requireTenantContext } from '../middleware/tenant.js';
 import { notifyRequestDecision, sendPasswordResetEmail } from '../lib/email.js';
 import { validate } from '../middleware/validate.js';
-import { awardPointsDefault } from '../services/rewards.js';
+import { awardPoints } from '../services/rewards.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
-import { performParticipantCheckInDefault } from '../services/checkin.js';
+import { performParticipantCheckIn } from '../services/checkin.js';
 import { buildLocationCreateData } from '../services/location-submit.js';
 import {
   assertCarpoolActivityFields,
@@ -44,6 +45,7 @@ import {
   publishActivityById,
   updateActivityDetailed
 } from '../lib/activities-store.js';
+import type { ActivityWithTenantRelations } from '../lib/activity-read-assembler.js';
 import {
   applyTenantActivityRequestDecision,
   clearActivityParticipantCheckIn,
@@ -113,6 +115,12 @@ const eventCreateSchema = z.object({
   carPoolPriceAed: z.number().int().min(0).optional(),
   carPoolSeats: z.number().int().min(1).optional(),
   carPoolDetails: z.string().max(1000).optional(),
+  carPoolFromPoint: z.string().max(200).optional(),
+  carPoolFromLat: z.number().min(-90).max(90).optional(),
+  carPoolFromLng: z.number().min(-180).max(180).optional(),
+  carPoolToPoint: z.string().max(200).optional(),
+  carPoolToLat: z.number().min(-90).max(90).optional(),
+  carPoolToLng: z.number().min(-180).max(180).optional(),
   paymentTerms: z.string().max(1000).optional(),
   itinerary: z.array(z.string()).default([]),
   requirements: z.array(z.string()).default([]),
@@ -154,19 +162,69 @@ import {
   scheduleInstantChanged
 } from '../services/activity-schedule.js';
 import {
+  assertCarpoolRouteWhenEnabled,
+  carpoolRouteFromBody,
+  publishLinkedCarpoolIfNeeded,
+  syncLinkedCarpoolForParent,
+} from '../services/linked-carpool.js';
+import {
   assertActivityHost,
   assertActivityHostPatch,
   resolveActivityLocation
 } from '../services/host-activity.js';
 import { assertActivityPricingAllowed } from '../domain/activity-pricing.js';
+import type { Activity } from '../domain/types.js';
+
+const isStandaloneCarpoolType = (activityType?: string | null): boolean =>
+  String(activityType ?? '').toLowerCase() === 'carpool';
+
+const maybeSyncLinkedCarpool = async (input: {
+  parent: Activity;
+  tenantId: string;
+  userId: string;
+  body: Partial<z.infer<typeof eventCreateSchema>>;
+}) => {
+  if (isStandaloneCarpoolType(input.body.activityType ?? input.parent.activityType)) return;
+
+  const enabled = input.body.carPoolEnabled ?? input.parent.carPoolEnabled;
+  const route = carpoolRouteFromBody(input.body);
+  assertCarpoolRouteWhenEnabled(Boolean(enabled), route);
+
+  await syncLinkedCarpoolForParent({
+    parent: input.parent,
+    tenantId: input.tenantId,
+    actorUserId: input.userId,
+    enabled: Boolean(enabled),
+    route,
+    carPoolFree: input.body.carPoolFree ?? (enabled ? input.parent.carPoolFree : null),
+    carPoolPriceAed: input.body.carPoolPriceAed ?? (enabled ? input.parent.carPoolPriceAed : null),
+    carPoolSeats: input.body.carPoolSeats ?? (enabled ? input.parent.carPoolSeats : null),
+    carPoolDetails: input.body.carPoolDetails ?? (enabled ? input.parent.carPoolDetails : null),
+    parentTitle: input.body.title ?? input.parent.title,
+    parentImages: input.body.images ?? input.parent.images,
+    parentHostId: input.body.hostId ?? input.parent.hostId,
+  });
+};
+
+const buildHostActivityResponse = async (event: ActivityWithTenantRelations): Promise<ActivityDTO> => {
+  const dto = buildActivityDto(event);
+  if (!event.linkedCarpoolActivityId) return dto;
+
+  const linked = await findTenantActivityForEdit(event.linkedCarpoolActivityId, event.tenantId);
+  if (!linked) return dto;
+
+  return {
+    ...dto,
+    linkedCarpool: buildActivityDto(linked),
+  };
+};
 
 const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): MembershipRole =>
   role === 'tenant_admin' ? MembershipRole.TENANT_ADMIN : MembershipRole.TENANT_GUIDE;
 
-export const organizerRouter = Router();
-export const hostRouter = organizerRouter;
+export const hostRouter = Router();
 
-organizerRouter.use(requireAuth, requireVerifiedEmail, requireTenantContext);
+hostRouter.use(requireAuth, requireVerifiedEmail, requireTenantContext);
 
 const tenantActivitiesRouter = Router();
 
@@ -285,8 +343,17 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
       tenantId
     });
 
+    await maybeSyncLinkedCarpool({
+      parent: created,
+      tenantId,
+      userId: req.auth!.userId,
+      body,
+    });
+
+    const refreshed = await findTenantActivityForEdit(created.id, tenantId);
+
     res.status(201).json({
-      data: buildActivityDto(created)
+      data: await buildHostActivityResponse(refreshed ?? created)
     });
   } catch (error) {
     next(error);
@@ -429,8 +496,17 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
       });
     }
 
+    await maybeSyncLinkedCarpool({
+      parent: updated,
+      tenantId,
+      userId: req.auth!.userId,
+      body,
+    });
+
+    const refreshed = await findTenantActivityForEdit(id, tenantId);
+
     res.json({
-      data: buildActivityDto(updated)
+      data: await buildHostActivityResponse(refreshed ?? updated)
     });
   } catch (error) {
     next(error);
@@ -521,6 +597,7 @@ tenantActivitiesRouter.post('/:id/publish', validate({ params: idParamSchema }),
       throw new ApiError(400, 'activity_not_draft', 'Only draft activities can be published.');
     }
     const updated = await publishActivityById(event.id);
+    await publishLinkedCarpoolIfNeeded(event.id);
     await createAuditLog({
       actorId: req.auth!.userId,
       action: 'activity.publish',
@@ -529,7 +606,7 @@ tenantActivitiesRouter.post('/:id/publish', validate({ params: idParamSchema }),
       tenantId
     });
     const hostUserId = updated.hostId ?? updated.createdById;
-    void awardPointsDefault({
+    void awardPoints({
       userId: hostUserId,
       action: RewardAction.ACTIVITY_PUBLISHED,
       referenceId: updated.id,
@@ -541,7 +618,7 @@ tenantActivitiesRouter.post('/:id/publish', validate({ params: idParamSchema }),
   }
 });
 
-organizerRouter.get('/requests', async (req, res, next) => {
+hostRouter.get('/requests', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const pg = paginationSchema.parse(req.query);
@@ -583,7 +660,7 @@ organizerRouter.get('/requests', async (req, res, next) => {
   }
 });
 
-organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: requestDecisionSchema }), async (req, res, next) => {
+hostRouter.patch('/requests/:id', validate({ params: idParamSchema, body: requestDecisionSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
@@ -659,7 +736,7 @@ organizerRouter.patch('/requests/:id', validate({ params: idParamSchema, body: r
   }
 });
 
-organizerRouter.get('/team', async (req, res, next) => {
+hostRouter.get('/team', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const members = await listTenantMembershipsWithUsers(tenantId);
@@ -680,7 +757,7 @@ organizerRouter.get('/team', async (req, res, next) => {
   }
 });
 
-organizerRouter.post(
+hostRouter.post(
   '/team',
   requireMembershipRole([MembershipRole.TENANT_OWNER, MembershipRole.TENANT_ADMIN]),
   validate({ body: teamCreateSchema }),
@@ -768,7 +845,7 @@ organizerRouter.post(
   }
 );
 
-organizerRouter.patch(
+hostRouter.patch(
   '/team/:membershipId',
   requireMembershipRole([MembershipRole.TENANT_OWNER, MembershipRole.TENANT_ADMIN]),
   validate({ params: membershipIdSchema, body: teamPatchSchema }),
@@ -822,7 +899,7 @@ organizerRouter.patch(
   }
 );
 
-organizerRouter.delete(
+hostRouter.delete(
   '/team/:membershipId',
   requireMembershipRole([MembershipRole.TENANT_OWNER, MembershipRole.TENANT_ADMIN]),
   validate({ params: membershipIdSchema }),
@@ -904,7 +981,7 @@ tenantActivitiesRouter.post('/:id/participants/:participantId/checkin', validate
     const tenantId = req.tenantContext!.tenantId;
     const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
 
-    const result = await performParticipantCheckInDefault({
+    const result = await performParticipantCheckIn({
       activityId: id,
       participantId,
       actorUserId: req.auth!.userId,
@@ -950,7 +1027,7 @@ tenantActivitiesRouter.delete('/:id/participants/:participantId/checkin', valida
 
 // ─── Location Submission ────────────────────────────────────────────────────
 
-organizerRouter.get('/locations', async (req, res, next) => {
+hostRouter.get('/locations', async (req, res, next) => {
   try {
     const locations = await listSubmittedLocationsByUser(req.auth!.userId);
     res.json({ data: locations.map((l) => toLocationDto(l)) });
@@ -959,7 +1036,7 @@ organizerRouter.get('/locations', async (req, res, next) => {
   }
 });
 
-organizerRouter.post('/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
+hostRouter.post('/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof locationSubmitBodySchema>;
 
@@ -973,7 +1050,7 @@ organizerRouter.post('/locations', validate({ body: locationSubmitBodySchema }),
       tenantId: req.tenantContext!.tenantId
     });
 
-    void awardPointsDefault({
+    void awardPoints({
       userId: req.auth!.userId,
       action: RewardAction.LOCATION_SUBMITTED,
       referenceId: created.id,
@@ -1018,4 +1095,4 @@ tenantActivitiesRouter.get('/history', async (req, res, next) => {
   }
 });
 
-mountActivityRoutes(organizerRouter, tenantActivitiesRouter);
+mountActivityRoutes(hostRouter, tenantActivitiesRouter);

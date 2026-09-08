@@ -14,6 +14,7 @@ import {
   MerchantAnalyticsSeriesDTO,
   MerchantOrderLineItemDTO,
   MerchantProfileDTO,
+  MerchantPublicDTO,
   OrderStatus,
   MyActivityDTO,
   NotificationDTO,
@@ -286,9 +287,6 @@ export interface HostDetails {
   residence?: string;
 }
 
-/** @deprecated Use HostDetails */
-export type OrganizerDetails = HostDetails;
-
 export interface TenantProfile {
   id: string;
   name: string;
@@ -310,6 +308,7 @@ export const api = {
     apiRequest<{ data: { items: ExploreMapItemDTO[] } }>('/explore/map'),
   createParticipantIntent: (payload: {
     kind: 'hiking' | 'camping' | 'event' | 'guide' | 'carpool' | 'other';
+    title: string;
     date?: string | null;
     time?: string | null;
     preferredArea?: string | null;
@@ -419,8 +418,6 @@ export const api = {
   getMeRequest: (requestId: string) =>
     apiRequest<{ data: ActivityRequestView }>(`/me/requests/${requestId}`, { auth: true }),
   getMeActivities: () => apiRequest<{ data: MyActivityDTO[] }>('/me/activities', { auth: true }),
-  /** @deprecated Use getMeActivities */
-  getMeTrips: () => apiRequest<{ data: MyActivityDTO[] }>('/me/trips', { auth: true }),
   getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
   updateMeProfile: (payload: UserProfile) =>
     apiRequest<{ data: UserProfile }>('/me/profile', {
@@ -685,12 +682,6 @@ export const api = {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
-  /** @deprecated Use getHostRequests */
-  getOrganizerRequests: (tenantId: string) =>
-    apiRequest<{ data: ActivityRequestView[] }>('/host/requests?pageSize=100', {
-      auth: true,
-      headers: { 'x-tenant-id': tenantId }
-    }),
   decideHostRequest: (tenantId: string, requestId: string, status: 'approved' | 'rejected', hostNote?: string) =>
     apiRequest(`/host/requests/${requestId}`, {
       method: 'PATCH',
@@ -698,34 +689,12 @@ export const api = {
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify({ status, organizerNote: hostNote })
     }),
-  /** @deprecated Use decideHostRequest */
-  decideOrganizerRequest: (tenantId: string, requestId: string, status: 'approved' | 'rejected', organizerNote?: string) =>
-    apiRequest(`/host/requests/${requestId}`, {
-      method: 'PATCH',
-      auth: true,
-      headers: { 'x-tenant-id': tenantId },
-      body: JSON.stringify({ status, organizerNote })
-    }),
   getHostTeam: (tenantId: string) =>
     apiRequest<{ data: TeamMember[] }>('/host/team', {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
-  /** @deprecated Use getHostTeam */
-  getOrganizerTeam: (tenantId: string) =>
-    apiRequest<{ data: TeamMember[] }>('/host/team', {
-      auth: true,
-      headers: { 'x-tenant-id': tenantId }
-    }),
   createHostTeamMember: (tenantId: string, payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }) =>
-    apiRequest<{ data: TeamMember }>('/host/team', {
-      method: 'POST',
-      auth: true,
-      headers: { 'x-tenant-id': tenantId },
-      body: JSON.stringify(payload)
-    }),
-  /** @deprecated Use createHostTeamMember */
-  createOrganizerTeamMember: (tenantId: string, payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }) =>
     apiRequest<{ data: TeamMember }>('/host/team', {
       method: 'POST',
       auth: true,
@@ -739,23 +708,7 @@ export const api = {
       headers: { 'x-tenant-id': tenantId },
       body: JSON.stringify({ role })
     }),
-  /** @deprecated Use updateHostTeamMemberRole */
-  updateOrganizerTeamMemberRole: (tenantId: string, membershipId: string, role: 'tenant_admin' | 'tenant_guide') =>
-    apiRequest<{ data: { id: string; role: string } }>(`/host/team/${membershipId}`, {
-      method: 'PATCH',
-      auth: true,
-      headers: { 'x-tenant-id': tenantId },
-      body: JSON.stringify({ role })
-    }),
   toggleHostTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
-    apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/host/team/${membershipId}`, {
-      method: 'PATCH',
-      auth: true,
-      headers: { 'x-tenant-id': tenantId },
-      body: JSON.stringify({ isActive })
-    }),
-  /** @deprecated Use toggleHostTeamMemberStatus */
-  toggleOrganizerTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
     apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/host/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
@@ -768,14 +721,6 @@ export const api = {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
-  /** @deprecated Use removeHostTeamMember */
-  removeOrganizerTeamMember: (tenantId: string, membershipId: string) =>
-    apiRequest(`/host/team/${membershipId}`, {
-      method: 'DELETE',
-      auth: true,
-      headers: { 'x-tenant-id': tenantId }
-    }),
-
   // ─── Admin - Users ──────────────────────────────────────────────────────
 
   getAdminUsers: (filters?: { role?: string; userType?: string; status?: string; search?: string; page?: number; pageSize?: number }) => {
@@ -1140,13 +1085,6 @@ export const api = {
       auth: true,
       body: JSON.stringify(data),
     }),
-  /** @deprecated Use updateHostDetails */
-  updateOrganizerDetails: (data: HostDetails) =>
-    apiRequest<{ data: HostDetails }>('/me/host-details', {
-      method: 'PATCH',
-      auth: true,
-      body: JSON.stringify(data),
-    }),
 
   // ─── Social: Reviews ───────────────────────────────────────────────────
 
@@ -1234,7 +1172,7 @@ export const api = {
     apiRequest(`/me/favorites/${id}`, { method: 'DELETE', auth: true }),
 
   getMerchantPublic: (id: string) =>
-    apiRequest<{ data: MerchantProfileDTO & { products: ProductDTO[] } }>(`/shop/merchants/${id}`),
+    apiRequest<{ data: MerchantPublicDTO }>(`/shop/merchants/${id}`),
 
   // ─── Trail Points / Rewards ─────────────────────────────────────────────
 

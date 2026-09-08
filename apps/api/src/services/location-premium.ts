@@ -37,7 +37,7 @@ export interface PremiumAccessResult {
 export const locationHasPremiumContent = (location: Pick<Location, 'gpxKey' | 'guideMarkdown' | 'guidePdfKey'>) =>
   Boolean(location.gpxKey || location.guideMarkdown || location.guidePdfKey);
 
-export async function getUserMembershipTier(userId: string): Promise<MembershipTier> {
+async function getUserMembershipTier(userId: string): Promise<MembershipTier> {
   return getAuthUserMembershipTier(userId);
 }
 
