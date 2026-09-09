@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { OrderStatus, ProductStatus } from '../domain/enums.js';
 import type { MerchantProfile, Product, ProductClick, ShopOrder } from '../domain/types.js';
-import { findAuthUserById } from './auth-users.js';
+import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import type { Collection } from 'mongodb';
 import { getMongoClient } from './mongo.js';
 
@@ -327,8 +327,40 @@ export const findMerchantPublicById = async (id: string) => {
     ...mapMongoMerchantProfile(merchant),
     contactPersonName: owner?.profile?.displayName ?? null,
     contactPersonAvatar: owner?.profile?.avatarUrl ?? null,
+    contactPersonUserId: owner?._id ?? null,
     products: products.map(mapMongoProduct)
   };
+};
+
+export const resolveMerchantOwnerDisplay = async (
+  adminIds: string[]
+): Promise<{ userId: string; name: string | null; avatarUrl: string | null } | null> => {
+  const map = await loadMerchantOwnerDisplaysByAdminIds([adminIds]);
+  const ownerId = adminIds[0];
+  return ownerId ? map.get(ownerId) ?? null : null;
+};
+
+export const loadMerchantOwnerDisplaysByAdminIds = async (
+  adminIdsList: string[][]
+): Promise<Map<string, { userId: string; name: string | null; avatarUrl: string | null }>> => {
+  const ownerIds = [...new Set(adminIdsList.map((ids) => ids?.[0]).filter(Boolean))] as string[];
+  if (ownerIds.length === 0) return new Map();
+
+  const owners = await findAuthUsersByIds(ownerIds);
+  const ownersById = new Map(owners.map((owner) => [owner._id, owner]));
+  const result = new Map<string, { userId: string; name: string | null; avatarUrl: string | null }>();
+
+  for (const ownerId of ownerIds) {
+    const owner = ownersById.get(ownerId);
+    if (!owner) continue;
+    result.set(ownerId, {
+      userId: owner._id,
+      name: owner.profile?.displayName ?? null,
+      avatarUrl: owner.profile?.avatarUrl ?? null,
+    });
+  }
+
+  return result;
 };
 
 export const listActiveProductsByIds = async (productIds: string[]) => {
@@ -346,6 +378,29 @@ export const findMerchantProfileByUserId = async (userId: string) => {
     { sort: { createdAt: 1 } }
   );
   return merchant ? mapMongoMerchantProfile(merchant) : null;
+};
+
+export const findMerchantProfilesByUserIds = async (userIds: (string | null | undefined)[]) => {
+  const uniqueIds = [...new Set(userIds.filter((id): id is string => Boolean(id)))];
+  if (uniqueIds.length === 0) {
+    return new Map<string, ReturnType<typeof mapMongoMerchantProfile>>();
+  }
+
+  const merchants = await merchantProfilesCollection()
+    .find({ adminIds: { $in: uniqueIds } })
+    .sort({ createdAt: 1 })
+    .toArray();
+
+  const byUserId = new Map<string, ReturnType<typeof mapMongoMerchantProfile>>();
+  for (const merchant of merchants) {
+    const mapped = mapMongoMerchantProfile(merchant);
+    for (const adminId of merchant.adminIds) {
+      if (uniqueIds.includes(adminId) && !byUserId.has(adminId)) {
+        byUserId.set(adminId, mapped);
+      }
+    }
+  }
+  return byUserId;
 };
 
 export const listManagedMerchantProfiles = async (adminId: string) => {

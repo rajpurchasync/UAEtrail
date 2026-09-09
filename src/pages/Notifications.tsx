@@ -9,6 +9,7 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { ShareButton } from '../components/ui/ShareButton';
 import { useAuth } from '../context/AuthContext';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
+import { notificationReasonLine } from '../utils/notificationDisplay';
 
 function rewardMeta(notif: NotificationDTO) {
   const meta = notif.meta as Record<string, unknown> | null | undefined;
@@ -22,6 +23,7 @@ type NotificationSection =
   | 'Trip updates'
   | 'Reminders'
   | 'Messages'
+  | 'Group chat'
   | 'Buddy requests'
   | 'Comments approved'
   | 'Comments liked'
@@ -31,6 +33,7 @@ const sectionOrder: NotificationSection[] = [
   'Trip updates',
   'Reminders',
   'Messages',
+  'Group chat',
   'Buddy requests',
   'Comments approved',
   'Comments liked',
@@ -42,7 +45,9 @@ const inferSection = (notif: NotificationDTO): NotificationSection => {
   const kind = typeof meta?.kind === 'string' ? meta.kind.toLowerCase() : '';
   const text = `${notif.title} ${notif.body}`.toLowerCase();
 
+  if (kind.startsWith('join_request') || kind === 'request_withdrawal') return 'Trip updates';
   if (kind.includes('buddy') || text.includes('buddy') || text.includes('group invite')) return 'Buddy requests';
+  if (kind.includes('group_message') || text.includes('new message in')) return 'Group chat';
   if (kind.includes('comment_approved') || text.includes('comment approved')) return 'Comments approved';
   if (kind.includes('comment_liked') || text.includes('comment liked') || text.includes('liked your comment')) {
     return 'Comments liked';
@@ -84,7 +89,7 @@ export const Notifications = () => {
       setNotifications(res.data);
       setUnreadCount(res.unreadCount);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load notifications');
+      setError(err instanceof Error ? err.message : 'Couldn\'t load notifications — tap to retry.');
     } finally {
       setLoading(false);
     }
@@ -130,8 +135,8 @@ export const Notifications = () => {
       ) : notifications.length === 0 ? (
         <GlassCard padding className="text-center py-12">
           <Bell className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
-          <p className="text-neutral-600 font-medium">No notifications yet</p>
-          <p className="text-sm text-neutral-500 mt-1">Trip updates and request replies appear here.</p>
+          <p className="text-neutral-600 font-medium">You&apos;re all caught up</p>
+          <p className="text-sm text-neutral-500 mt-1">Trip updates, messages, and request replies appear here.</p>
         </GlassCard>
       ) : (
         <div className="space-y-4">
@@ -147,6 +152,7 @@ export const Notifications = () => {
             const meta = rewardMeta(notif);
             const isReward = meta?.kind === 'reward';
             const isTierUpgrade = meta?.kind === 'tier_upgrade';
+            const reasonLine = notificationReasonLine(notif);
 
             return (
               <div
@@ -171,6 +177,9 @@ export const Notifications = () => {
                         <p className="font-semibold text-neutral-900 text-[15px]">{notif.title}</p>
                       </div>
                       <p className="text-sm text-neutral-600 mt-1 leading-relaxed">{notif.body}</p>
+                      {reasonLine && (
+                        <p className="text-xs font-medium text-neutral-700 mt-2">{reasonLine}</p>
+                      )}
                       {isReward && typeof meta.pointsToNextTier === 'string' && meta.pointsToNextTier && (
                         <p className="text-xs font-medium text-emerald-700 mt-2">{meta.pointsToNextTier}</p>
                       )}

@@ -1,4 +1,5 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
+import { resolveActivityHostDisplayName } from '@uaetrail/shared-types';
 import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
 
 export const formatActivityType = (activityType: ActivityType | string): string => {
@@ -13,17 +14,13 @@ export const activityTypeBadgeClass = (activityType: ActivityType | string): str
 };
 
 export const resolveActivityOwnerLabel = (
-  activity: Pick<ActivityDTO, 'createdByName' | 'hostName' | 'organizerName'>
-): string => activity.createdByName ?? activity.hostName ?? activity.organizerName ?? '—';
+  activity: Pick<ActivityDTO, 'createdByName' | 'hostName'>
+): string => activity.createdByName?.trim() || resolveActivityHostDisplayName(activity);
 
 /** Person hosting the activity (guide/owner on the ground — not tenant brand). */
 export const resolveActivityHostLabel = (
-  activity: Pick<ActivityDTO, 'hostName' | 'organizerName' | 'createdByName'>
-): string =>
-  activity.hostName?.trim() ||
-  activity.organizerName?.trim() ||
-  activity.createdByName?.trim() ||
-  '—';
+  activity: Pick<ActivityDTO, 'hostName'>
+): string => resolveActivityHostDisplayName(activity);
 
 /** Emirate / region for list tables (state only — not venue name). */
 export const resolveActivityLocationState = (

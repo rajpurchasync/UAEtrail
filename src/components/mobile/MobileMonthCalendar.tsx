@@ -93,7 +93,7 @@ export const MobileMonthCalendar = ({
               onClick={() => onSelectDate(cell.iso)}
               className={`flex h-9 items-center justify-center rounded-xl text-sm font-semibold ${
                 active
-                  ? 'bg-rose-500 text-white'
+                  ? 'bg-emerald-600 text-white'
                   : cell.disabled
                     ? 'text-gray-300'
                     : 'text-gray-800 hover:bg-white'

@@ -51,19 +51,15 @@ import {
   writeTenantToMongo,
   type TenantRecord
 } from '../src/lib/tenant-store.js';
+import { DEMO_ACCOUNTS } from '../src/lib/demo-accounts.js';
 
 const db = () => getMongoClient()!.db();
 
-/** Demo passwords — one per persona (Participant, Individual host, Agency, Shop, Admin). */
-const credentials = {
-  admin: 'Admin@12345',
-  participant: 'Visitor@12345',
-  individualHost: 'Host@12345',
-  agency: 'Agency@12345',
-  agencyGuide: 'Guide@12345',
-  shop: 'Shop@12345',
-  pendingParticipant: 'Visitor2@12345',
-  suspended: 'Suspended@12345'
+const demoAccount = (email: keyof typeof DEMO_ACCOUNTS) => DEMO_ACCOUNTS[email];
+
+const upsertDemoUser = (email: keyof typeof DEMO_ACCOUNTS) => {
+  const { password, role, displayName } = DEMO_ACCOUNTS[email];
+  return upsertUser({ email, password, role, displayName });
 };
 
 const demoAvatar = (key: string) => `https://i.pravatar.cc/150?u=${encodeURIComponent(key)}`;
@@ -613,74 +609,40 @@ async function main() {
     return;
   }
 
-  const admin = await upsertUser({
-    email: 'admin@uaetrails.app',
-    password: credentials.admin,
-    role: UserRole.PLATFORM_ADMIN,
-    displayName: 'UAE Trails Admin'
-  });
+  const admin = await upsertDemoUser('admin@uaetrails.app');
 
-  const participant = await upsertUser({
-    email: 'visitor@uaetrails.app',
-    password: credentials.participant,
-    role: UserRole.PARTICIPANT,
-    displayName: 'Samira Khan'
-  });
+  const participant = await upsertDemoUser('visitor@uaetrails.app');
 
-  const agencyOwner = await upsertUser({
-    email: 'organizer@uaetrails.app',
-    password: credentials.agency,
-    role: UserRole.TENANT_OWNER,
-    displayName: 'Khalid Rahman'
-  });
+  const agencyOwner = await upsertDemoUser('organizer@uaetrails.app');
 
-  const agencyGuide = await upsertUser({
-    email: 'guide@uaetrails.app',
-    password: credentials.agencyGuide,
-    role: UserRole.TENANT_GUIDE,
-    displayName: 'Fatima Al Mazrouei'
-  });
+  const agencyGuide = await upsertDemoUser('guide@uaetrails.app');
 
-  const individualHost = await upsertUser({
-    email: 'host@uaetrails.app',
-    password: credentials.individualHost,
-    role: UserRole.TENANT_OWNER,
-    displayName: 'Omar Al Hosani'
-  });
+  const individualHost = await upsertDemoUser('host@uaetrails.app');
 
-  const shopOwner = await upsertUser({
-    email: 'shop@uaetrails.app',
-    password: credentials.shop,
-    role: UserRole.TENANT_OWNER,
-    displayName: 'Priya Sharma'
-  });
+  const shopOwner = await upsertDemoUser('shop@uaetrails.app');
 
-  const pendingParticipant = await upsertUser({
-    email: 'visitor2@uaetrails.app',
-    password: credentials.pendingParticipant,
-    role: UserRole.PARTICIPANT,
-    displayName: 'Maya Hassan'
-  });
+  const pendingParticipant = await upsertDemoUser('visitor2@uaetrails.app');
 
-  const suspendedHash = await bcrypt.hash(credentials.suspended, 10);
+  const suspendedDemo = demoAccount('suspended@uaetrails.app');
+  const suspendedHash = await bcrypt.hash(suspendedDemo.password, 10);
   const suspendedExisting = await findAuthUserByEmail('suspended@uaetrails.app');
   if (suspendedExisting) {
     await updateAuthUserCore({
       userId: suspendedExisting._id,
       status: UserStatus.SUSPENDED
     });
-    await updateAuthUserProfile(suspendedExisting._id, { displayName: 'Suspended User' });
+    await updateAuthUserProfile(suspendedExisting._id, { displayName: suspendedDemo.displayName });
   } else {
     await createAuthUser({
       email: 'suspended@uaetrails.app',
       passwordHash: suspendedHash,
       googleId: null,
       authProvider: AuthProvider.EMAIL,
-      role: UserRole.PARTICIPANT,
+      role: suspendedDemo.role,
       status: UserStatus.SUSPENDED,
       emailVerifiedAt: new Date(),
       referralCode: 'SUSP01',
-      profile: { displayName: 'Suspended User', phone: null, bio: null, avatarUrl: null }
+      profile: { displayName: suspendedDemo.displayName, phone: null, bio: null, avatarUrl: null }
     });
   }
 
@@ -794,7 +756,10 @@ async function main() {
 
   await updateAuthUserProfile(individualHost._id, {
     bio: 'Weekend hiking host based in Sharjah. I lead small free groups to Fossil Rock, Wadi Shawka, and nearby trails.',
-    phone: '+971509876543'
+    phone: '+971509876543',
+    dateOfBirth: '1995-06-15',
+    gender: 'male',
+    city: 'sharjah',
   });
 
   await upsertHostApplication({
@@ -808,7 +773,6 @@ async function main() {
     metadata: {
       hostProfileType: 'individual',
       hostDisplayName: 'Omar Al Hosani',
-      dateOfBirth: '1995-06-15',
       bio: 'Weekend hiking host based in Sharjah. I lead small free groups to Fossil Rock, Wadi Shawka, and nearby trails.',
       phone: '+971509876543',
       phoneE164: '+971509876543',
@@ -1550,8 +1514,15 @@ Share your live location and carry extra water in summer months.`
   await seedReward(participant._id, RewardAction.SIGNUP_WELCOME, 25, participant._id, 'Welcome bonus');
   await seedReward(participant._id, RewardAction.TRIP_ATTENDED, 30, `${event._id}:${participant._id}`, 'Attended a trip');
   await seedReward(participant._id, RewardAction.COMMUNITY_POST, 20, 'seed-post-1', 'Community post');
+  await seedReward(participant._id, RewardAction.REVIEW_WRITTEN, 25, 'seed-review-shawka', 'Review written');
   await seedReward(agencyOwner._id, RewardAction.ACTIVITY_PUBLISHED, 50, event._id, 'Published a trip');
   await seedReward(agencyOwner._id, RewardAction.ACTIVITY_HOSTED, 75, event._id, 'Hosted a trip');
+  await seedReward(agencyGuide._id, RewardAction.TRIP_ATTENDED, 30, `${event._id}:${agencyGuide._id}`, 'Attended a trip');
+  await seedReward(agencyGuide._id, RewardAction.REVIEW_WRITTEN, 25, 'seed-review-jais', 'Review written');
+  await seedReward(individualHost._id, RewardAction.SIGNUP_WELCOME, 25, individualHost._id, 'Welcome bonus');
+  await seedReward(individualHost._id, RewardAction.ACTIVITY_PUBLISHED, 50, 'seed-event-fossil-camp', 'Published Fossil Rock camp');
+  await seedReward(individualHost._id, RewardAction.LOCATION_SUBMITTED, 15, SEED_MARKER_LOCATION_ID, 'Location submitted');
+  await seedReward(pendingParticipant._id, RewardAction.SIGNUP_WELCOME, 25, pendingParticipant._id, 'Welcome bonus');
 
   await db().collection('auth_users').updateOne(
     { _id: agencyOwner._id },
@@ -1560,6 +1531,10 @@ Share your live location and carry extra water in summer months.`
 
   await createUserBadge({ userId: agencyOwner._id, badgeKey: 'tier_active' });
   await createUserBadge({ userId: agencyOwner._id, badgeKey: 'trip_leader' });
+  await createUserBadge({ userId: individualHost._id, badgeKey: 'trip_leader' });
+  await createUserBadge({ userId: individualHost._id, badgeKey: 'trail_mapper' });
+  await createUserBadge({ userId: participant._id, badgeKey: 'reviewer' });
+  await createUserBadge({ userId: agencyGuide._id, badgeKey: 'reviewer' });
 
   const suspendLegacyDemoUser = async (email: string, keepUserId: string) => {
     const legacy = await findAuthUserByEmail(email);
@@ -1683,14 +1658,14 @@ Share your live location and carry extra water in summer months.`
   );
 
   console.log('Seed complete.');
-  console.log(`Admin: admin@uaetrails.app (${admin.profile?.displayName ?? 'UAE Trails Admin'}) / ${credentials.admin}`);
-  console.log(`Participant: visitor@uaetrails.app (${participant.profile?.displayName ?? 'Samira Khan'}) / ${credentials.participant}`);
-  console.log(`Individual host: host@uaetrails.app (${individualHost.profile?.displayName ?? 'Omar Al Hosani'}) / ${credentials.individualHost}`);
-  console.log(`Agency owner: organizer@uaetrails.app (${agencyOwner.profile?.displayName ?? 'Khalid Rahman'}) / ${credentials.agency}`);
-  console.log(`Agency guide: guide@uaetrails.app (${agencyGuide.profile?.displayName ?? 'Fatima Al Mazrouei'}) / ${credentials.agencyGuide}`);
-  console.log(`Shop owner: shop@uaetrails.app (${shopOwner.profile?.displayName ?? 'Priya Sharma'}) / ${credentials.shop}`);
-  console.log(`Pending participant: visitor2@uaetrails.app (${pendingParticipant.profile?.displayName ?? 'Maya Hassan'}) / ${credentials.pendingParticipant}`);
-  console.log(`Suspended: suspended@uaetrails.app / ${credentials.suspended}`);
+  console.log(`Admin: admin@uaetrails.app (${admin.profile?.displayName ?? demoAccount('admin@uaetrails.app').displayName}) / ${demoAccount('admin@uaetrails.app').password}`);
+  console.log(`Participant: visitor@uaetrails.app (${participant.profile?.displayName ?? demoAccount('visitor@uaetrails.app').displayName}) / ${demoAccount('visitor@uaetrails.app').password}`);
+  console.log(`Individual host: host@uaetrails.app (${individualHost.profile?.displayName ?? demoAccount('host@uaetrails.app').displayName}) / ${demoAccount('host@uaetrails.app').password}`);
+  console.log(`Agency owner: organizer@uaetrails.app (${agencyOwner.profile?.displayName ?? demoAccount('organizer@uaetrails.app').displayName}) / ${demoAccount('organizer@uaetrails.app').password}`);
+  console.log(`Agency guide: guide@uaetrails.app (${agencyGuide.profile?.displayName ?? demoAccount('guide@uaetrails.app').displayName}) / ${demoAccount('guide@uaetrails.app').password}`);
+  console.log(`Shop owner: shop@uaetrails.app (${shopOwner.profile?.displayName ?? demoAccount('shop@uaetrails.app').displayName}) / ${demoAccount('shop@uaetrails.app').password}`);
+  console.log(`Pending participant: visitor2@uaetrails.app (${pendingParticipant.profile?.displayName ?? demoAccount('visitor2@uaetrails.app').displayName}) / ${demoAccount('visitor2@uaetrails.app').password}`);
+  console.log(`Suspended: suspended@uaetrails.app / ${suspendedDemo.password}`);
   console.log(`Agency tenant: ${agencyTenant.id} — ${agencyTenant.slug} (${agencyTenant.businessMode})`);
   console.log(`Individual host tenant: ${individualHostTenant.id} — ${individualHostTenant.slug}`);
   console.log(`Shop tenant: ${shopTenant.id} — ${shopTenant.slug} (${shopTenant.businessMode})`);

@@ -56,13 +56,13 @@ export const ProfileMapPresenceSection = () => {
                 const name = ownedProfiles.find((profile) => profile.type === chip.key)?.name;
 
                 if (active) {
-                  const managePath = chip.key === 'shop' ? '/merchant/dashboard' : '/host/overview';
+                  const managePath = chip.key === 'shop' ? '/shop/manage' : chip.key === 'agency' ? '/agency/manage' : '/host/overview';
                   const className = `inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold ${
                     chip.key === 'guide'
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                       : chip.key === 'agency'
                         ? 'border-indigo-200 bg-indigo-50 text-indigo-800'
-                        : 'border-rose-200 bg-rose-50 text-rose-800'
+                        : 'border-amber-200 bg-amber-50 text-amber-800'
                   }`;
 
                   return (
@@ -79,7 +79,7 @@ export const ProfileMapPresenceSection = () => {
                     key={chip.key}
                     type="button"
                     onClick={() => openFlow(chip.intent)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:border-rose-300 hover:bg-rose-50/40"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:border-emerald-300 hover:bg-emerald-50/40"
                   >
                     <span>{chip.emoji}</span>
                     <span>Add {chip.label.toLowerCase()}</span>

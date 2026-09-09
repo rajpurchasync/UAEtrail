@@ -50,23 +50,6 @@ const validatePhone = (body: { phoneCountryCode: string; phone: string }, ctx: z
   }
 };
 
-const validateMinAge = (dateOfBirth: string, ctx: z.RefinementCtx, minYears = 15) => {
-  const dob = new Date(`${dateOfBirth}T00:00:00`);
-  if (Number.isNaN(dob.getTime())) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Enter a valid date of birth.', path: ['dateOfBirth'] });
-    return;
-  }
-  const cutoff = new Date();
-  cutoff.setFullYear(cutoff.getFullYear() - minYears);
-  if (dob > cutoff) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: `You must be at least ${minYears} years old.`,
-      path: ['dateOfBirth']
-    });
-  }
-};
-
 const mapPinFields = {
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
@@ -80,14 +63,12 @@ export type HostProfileType = z.infer<typeof hostProfileTypeSchema>;
 const individualApplicationSchema = z.object({
   hostProfileType: z.literal('individual'),
   hostDisplayName: z.string().min(2).max(80),
-  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   bio: z.string().min(20).max(2000),
-  profilePhoto: mediaPathSchema.optional().or(z.literal('')),
+  profilePhoto: mediaPathSchema,
   ...phoneFields,
   nationality: z.string().min(2).max(80),
   residence: z.string().min(2).max(80),
   languages: z.string().min(1).max(300),
-  interests: z.string().min(2).max(500)
 });
 
 const agencyApplicationSchema = z.object({
@@ -119,9 +100,6 @@ export const hostApplicationBodySchema = z
   ])
   .superRefine((body, ctx) => {
     validatePhone(body, ctx);
-    if (body.hostProfileType === 'individual') {
-      validateMinAge(body.dateOfBirth, ctx);
-    }
   });
 
 export type HostApplicationBody = z.infer<typeof hostApplicationBodySchema>;
@@ -145,12 +123,10 @@ export const buildHostApplicationMetadata = (
     return {
       ...base,
       hostDisplayName: body.hostDisplayName,
-      dateOfBirth: body.dateOfBirth,
       nationality: body.nationality,
       residence: body.residence,
       languages: body.languages,
-      interests: body.interests,
-      profilePhoto: body.profilePhoto ?? ''
+      profilePhoto: body.profilePhoto,
     };
   }
 

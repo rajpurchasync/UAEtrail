@@ -1,5 +1,6 @@
 import type { Db } from 'mongodb';
 import { COLLECTIONS, LEGACY_COLLECTIONS } from './collections.js';
+import { isLegacyEmbeddedDemandTitle, normalizeLegacyDemandTitle, type DemandTitleKind } from '@uaetrail/shared-types';
 
 const migrateCollectionNameIfNeeded = async (db: Db, from: string, to: string): Promise<void> => {
   const collections = await db.listCollections().toArray();
@@ -103,6 +104,63 @@ const migrateLegacyCarpoolActivities = async (db: Db): Promise<void> => {
   }
 };
 
+const migrateActivityJoinModeFromRequirements = async (db: Db): Promise<void> => {
+  const collection = db.collection(COLLECTIONS.ACTIVITIES);
+  const cursor = collection.find({
+    joinMode: { $exists: false },
+    requirements: { $type: 'array' },
+  });
+
+  let updated = 0;
+  for await (const doc of cursor) {
+    const requirements = Array.isArray(doc.requirements) ? doc.requirements : [];
+    const hasPrivate = requirements.some(
+      (item: unknown) =>
+        typeof item === 'string' && item.trim().startsWith('Private: group or invite only')
+    );
+    if (!hasPrivate) continue;
+    await collection.updateOne({ _id: doc._id }, { $set: { joinMode: 'private', updatedAt: new Date() } });
+    updated += 1;
+  }
+
+  if (updated > 0) {
+    console.log(`[mongo] Backfilled joinMode=private from requirements (${updated} docs)`);
+  }
+};
+
+const migrateLegacyParticipantIntentTitles = async (db: Db): Promise<void> => {
+  const collection = db.collection('participant_intents');
+  const cursor = collection.find({ title: { $type: 'string' } });
+  let updated = 0;
+
+  for await (const doc of cursor) {
+    const title = typeof doc.title === 'string' ? doc.title.trim() : '';
+    const kind = doc.kind;
+    if (
+      !title ||
+      typeof kind !== 'string' ||
+      !isLegacyEmbeddedDemandTitle(title)
+    ) {
+      continue;
+    }
+
+    await collection.updateOne(
+      { _id: doc._id },
+      {
+        $set: {
+          title: normalizeLegacyDemandTitle(title, kind as DemandTitleKind),
+          updatedAt: new Date(),
+        },
+      }
+    );
+    updated += 1;
+  }
+
+  if (updated > 0) {
+    console.log(`[mongo] Migrated legacy participant intent titles (${updated} docs)`);
+  }
+};
+
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENTS, COLLECTIONS.ACTIVITIES);
@@ -121,4 +179,6 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateUserRoleVisitorToParticipant(db);
   await migrateAuditLogEntityTypes(db);
   await migrateNotificationKinds(db);
+  await migrateActivityJoinModeFromRequirements(db);
+  await migrateLegacyParticipantIntentTitles(db);
 };

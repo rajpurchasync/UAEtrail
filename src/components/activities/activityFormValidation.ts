@@ -83,11 +83,9 @@ export const validateActivityFormStep = (
     if (form.capacity < 1) return 'Available spots must be at least 1.';
     if (form.pricingMode === 'shared') {
       if (form.sharedAmount <= 0) return 'Enter the shared cost amount.';
-      if (!form.sharedCostInfo.trim()) return 'Let participants know why this cost is shared among participants.';
     }
     if (form.pricingMode === 'paid') {
       if (form.price <= 0) return 'Enter the trip price.';
-      if (!form.paymentTerms.trim()) return 'Payment terms are required for paid trips.';
     }
   }
 
@@ -97,21 +95,10 @@ export const validateActivityFormStep = (
     if (!hasStart) return `Set a ${startPointLabel(options.activityType)} (map pin or Google Maps link).`;
   }
 
-  if (targetStep >= 5 && mode === 'publish' && form.carPoolEnabled) {
-    if (form.carPoolSeats < 1) return 'Enter how many car pool seats are available.';
-    if (form.carPoolPricing === 'shared' && form.carPoolSharedAmount <= 0) {
-      return 'Enter the shared car pool amount.';
+  if (targetStep >= 4 && mode === 'publish') {
+    if (!form.mandatoryInstructions.trim()) {
+      return 'Add mandatory instructions joiners must agree to.';
     }
-    const hasFrom =
-      form.carPoolFrom.label.trim() ||
-      form.carPoolFrom.mapsUrl.trim() ||
-      (form.carPoolFrom.lat && form.carPoolFrom.lng);
-    const hasTo =
-      form.carPoolTo.label.trim() ||
-      form.carPoolTo.mapsUrl.trim() ||
-      (form.carPoolTo.lat && form.carPoolTo.lng);
-    if (!hasFrom) return 'Set a car pool from location (map pin or Google Maps link).';
-    if (!hasTo) return 'Set a car pool to location (map pin or Google Maps link).';
   }
 
   if (targetStep > totalSteps) return null;

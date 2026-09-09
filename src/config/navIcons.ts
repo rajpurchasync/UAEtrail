@@ -1,6 +1,7 @@
 import {
   Bell,
   Compass,
+  Heart,
   Map,
   MessageCircle,
   ShoppingBag,
@@ -24,15 +25,23 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'Community'
   | 'Shop'
   | 'Profile'
-  | 'Trails & Spots'
+  | 'Trail catalog'
   | 'Upcoming Activities'
   | 'Upcoming Trips'
   | 'Gears Shop'
+  | 'Explore Map'
   | 'My Profile'
-  | 'Notifications',
+  | 'My trips'
+  | 'Notifications'
+  | 'Favourites'
+  | 'Join'
+  | 'Contact',
   LucideIcon
 > = {
+  'Explore Map': NAV_ICONS.explore,
   Explore: NAV_ICONS.explore,
+  Join: NAV_ICONS.trips,
+  Contact: MessageCircle,
   Activities: NAV_ICONS.trips,
   Trips: NAV_ICONS.trips,
   Community: NAV_ICONS.community,
@@ -40,7 +49,9 @@ export const MOBILE_NAV_ICON_MAP: Record<
   Profile: NAV_ICONS.profile,
   'My Profile': NAV_ICONS.profile,
   Notifications: Bell,
-  'Trails & Spots': Map,
+  Favourites: Heart,
+  'Trail catalog': Map,
+  'My trips': NAV_ICONS.trips,
   'Upcoming Activities': NAV_ICONS.trips,
   'Upcoming Trips': NAV_ICONS.trips,
   'Gears Shop': NAV_ICONS.shop,

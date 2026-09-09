@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { api } from '../api/services';
 import { setStoredSession } from '../api/client';
 import { getActiveTenantId } from '../api/tenant';
 import { useAuth } from '../context/AuthContext';
-import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { TenantSwitcher } from '../components/ui';
 import { HostPublicProfile } from '../components/host/HostPublicProfile';
-import { PAGE_BANNERS } from '../config/pageBanners';
+import { HostShell } from '../components/host/HostShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { accountRouteByRole } from '../utils/authRouting';
-import { useNavigate } from 'react-router-dom';
 
 export const HostProfile = () => {
   const { user, initializing, refreshUser } = useAuth();
@@ -54,8 +52,8 @@ export const HostProfile = () => {
 
   if (initializing) {
     return (
-      <div className="min-h-screen consumer-bg flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+      <div className="flex min-h-[40vh] items-center justify-center consumer-bg">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
       </div>
     );
   }
@@ -65,48 +63,39 @@ export const HostProfile = () => {
   }
 
   return (
-    <ConsumerShell
-      layout="tab"
-      title="Host profile"
-      banner={{ src: PAGE_BANNERS.organizer, alt: 'Host profile' }}
-      journey={{ fallbackTo: '/host/overview', label: 'Host' }}
-      toolbar={
-        <div className="w-full flex items-center justify-start">
-          <TenantSwitcher onChange={(tenantId) => resolveSlug(tenantId)} />
-        </div>
-      }
+    <HostShell
+      title="Public profile"
+      headerExtra={<TenantSwitcher onChange={(tenantId) => resolveSlug(tenantId)} />}
     >
       <GlassCard padding className="mb-3 border border-emerald-100/80">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-neutral-900">Role mode</p>
-            <p className="text-xs text-neutral-600 mt-1">
-              Switch to participant mode to browse and book trips.
-            </p>
+            <p className="mt-1 text-xs text-neutral-600">Switch to participant mode to browse and book trips.</p>
           </div>
           <button
             type="button"
             disabled={switchingRole}
             onClick={() => void switchToVisitorMode()}
-            className="ios-btn bg-emerald-600 text-white min-h-[40px] px-3"
+            className="ios-btn min-h-[40px] bg-emerald-600 px-3 text-white"
           >
             {switchingRole ? 'Switching...' : 'Switch to participant'}
           </button>
         </div>
-        {switchMessage && <p className="text-xs text-red-600 mt-2">{switchMessage}</p>}
+        {switchMessage && <p className="mt-2 text-xs text-red-600">{switchMessage}</p>}
       </GlassCard>
 
       {loadingTenants ? (
         <div className="flex justify-center py-12">
-          <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+          <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
         </div>
       ) : !tenantSlug ? (
-        <GlassCard padding className="text-center py-10">
+        <GlassCard padding className="py-10 text-center">
           <p className="text-neutral-600">Select an organization to view your public profile.</p>
         </GlassCard>
       ) : (
         <HostPublicProfile slug={tenantSlug} mode="owner" />
       )}
-    </ConsumerShell>
+    </HostShell>
   );
 };

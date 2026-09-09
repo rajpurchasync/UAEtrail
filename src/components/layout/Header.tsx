@@ -1,8 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { accountRouteByRole } from '../../utils/authRouting';
-import { MEMBERSHIP_NAV_LINK } from '../../config/platform';
+import { DESKTOP_NAV_LINKS, EXPLORE_MAP_PATH, MEMBERSHIP_NAV_LINK } from '../../config/platform';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { MobileMenuButton } from './MobileMenu';
@@ -10,31 +10,37 @@ import { MobileMenuButton } from './MobileMenu';
 export const Header = () => {
   const { user } = useAuth();
   const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
   const unreadCount = useNotificationUnreadCount();
   const navLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/discovery', label: 'Trails and Spots' },
-    { to: '/activities', label: 'Activities' },
-    { to: '/shop', label: 'Shop' },
-    { to: '/community', label: 'Community' },
+    ...DESKTOP_NAV_LINKS,
     ...(MEMBERSHIP_NAV_LINK ? [MEMBERSHIP_NAV_LINK] : []),
-    { to: '/faq', label: 'Help' },
   ];
 
   const isActiveLink = (to: string) => {
     if (to === '/') return pathname === '/';
+    if (to === EXPLORE_MAP_PATH) {
+      if (pathname === EXPLORE_MAP_PATH || pathname === '/discovery' || pathname === '/shop') {
+        return true;
+      }
+      if (pathname === '/activities') {
+        const tab = searchParams.get('tab');
+        return tab !== 'joined' && tab !== 'hosted';
+      }
+      return false;
+    }
     return pathname.startsWith(to);
   };
 
   return (
     <header className="bg-white/80 backdrop-blur-xl shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-14 md:h-16">
+        <div className="flex justify-between items-center h-11 lg:h-12">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-lg flex items-center justify-center">
-              <Mountain className="w-4.5 h-4.5 text-white" />
+            <div className="w-7 h-7 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-lg flex items-center justify-center">
+              <Mountain className="w-4 h-4 text-white" />
             </div>
-            <span className="text-base font-bold text-gray-900 tracking-tight">UAE Trail</span>
+            <span className="text-sm font-bold text-gray-900 tracking-tight lg:text-[15px]">UAE Trail</span>
           </Link>
 
           <nav className="hidden md:flex space-x-1 items-center mx-auto">
@@ -58,7 +64,7 @@ export const Header = () => {
             {user ? (
               <Link
                 to={accountRouteByRole(user.role)}
-                className="hidden md:flex relative items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium shadow-sm shadow-emerald-200"
+                className="hidden md:flex relative items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm shadow-emerald-200/80"
               >
                 <SecureAvatar
                   src={user.avatarUrl}
@@ -75,7 +81,7 @@ export const Header = () => {
             ) : (
               <Link
                 to="/signin"
-                className="hidden md:block px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium shadow-sm shadow-emerald-200"
+                className="hidden md:inline-flex items-center px-4 py-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm shadow-emerald-200/80"
               >
                 Sign In
               </Link>

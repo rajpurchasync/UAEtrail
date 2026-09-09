@@ -1,8 +1,8 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogIn, LogOut, Menu, RefreshCw, ShoppingBag, X } from 'lucide-react';
+import { LogIn, LogOut, Menu, RefreshCw, ShoppingBag, User, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
-import { isConsumerChromeHidden, MOBILE_DRAWER_MENU } from '../../config/platform';
+import { isConsumerChromeHidden, MOBILE_DRAWER_MENU, MOBILE_LANDING_USER_MENU, EXPLORE_MAP_PATH } from '../../config/platform';
 import { ADMIN_LINKS, HOST_DASHBOARD_LINKS, MERCHANT_DASHBOARD_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/services';
@@ -203,6 +203,134 @@ export const MobileMenuButton = ({ tone = 'default', className = '', showOnDeskt
   );
 };
 
+/** Landing hero — user icon opens Explore · Join · Contact only (no hamburger). */
+export const MobileUserMenuButton = ({
+  tone = 'default',
+  className = '',
+  showOnDesktop = false,
+}: MobileMenuButtonProps) => {
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const toneClass =
+    tone === 'light'
+      ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
+      : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  const closeMenu = () => setOpen(false);
+
+  const isActive = (match: readonly string[]) =>
+    match.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={`${showOnDesktop ? '' : 'md:hidden'} relative h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 overflow-hidden ${toneClass} ${className}`}
+        aria-label="Open account menu"
+      >
+        {user ? (
+          <SecureAvatar
+            src={user.avatarUrl}
+            name={user.displayName || user.email || 'Account'}
+            className="h-full w-full text-sm"
+          />
+        ) : (
+          <User className="w-5 h-5" strokeWidth={2.25} />
+        )}
+      </button>
+
+      <MobileDrawer
+        open={open}
+        closeMenu={closeMenu}
+        eyebrow="Menu"
+        title={user?.displayName || 'UAE Trail'}
+        ariaLabel="Landing navigation"
+      >
+        {MOBILE_LANDING_USER_MENU.map((item) => {
+          const active = 'match' in item ? isActive(item.match) : false;
+          const Icon = MOBILE_NAV_ICON_MAP[item.label];
+          const content = (
+            <>
+              <span
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                  active ? 'bg-emerald-600/12' : 'bg-gray-100'
+                }`}
+              >
+                <Icon
+                  className={`w-5 h-5 ${active ? 'text-emerald-700' : 'text-gray-600'}`}
+                  strokeWidth={active ? iconStroke.active : iconStroke.default}
+                />
+              </span>
+              <span className="font-semibold">{item.label}</span>
+            </>
+          );
+
+          if ('href' in item) {
+            return (
+              <a
+                key={item.label}
+                href={item.href}
+                onClick={closeMenu}
+                className={navItemClass(false)}
+              >
+                {content}
+              </a>
+            );
+          }
+
+          if (item.to === EXPLORE_MAP_PATH) {
+            return (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => {
+                  closeMenu();
+                  navigate(EXPLORE_MAP_PATH);
+                }}
+                className={`w-full ${navItemClass(active)}`}
+              >
+                {content}
+              </button>
+            );
+          }
+
+          return (
+            <Link
+              key={item.label}
+              to={item.to}
+              onClick={closeMenu}
+              className={navItemClass(active)}
+              aria-current={active ? 'page' : undefined}
+            >
+              {content}
+            </Link>
+          );
+        })}
+      </MobileDrawer>
+    </>
+  );
+};
+
 const MobileMenuPanel = () => {
   const { open, closeMenu } = useMobileMenu();
   const { pathname } = useLocation();
@@ -241,7 +369,7 @@ const MobileMenuPanel = () => {
       const res = await api.switchMeRole(target);
       setStoredSession(res.tokens);
       await refreshUser();
-      navigate(target === 'participant' ? '/' : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
+      navigate(target === 'participant' ? EXPLORE_MAP_PATH : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
     } catch { /* noop */ }
   };
 

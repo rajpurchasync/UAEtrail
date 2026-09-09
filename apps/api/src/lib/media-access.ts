@@ -39,6 +39,8 @@ export type MediaAccessInput = {
   ownerUserId: string | null;
   sharesGroupOrActivity: boolean;
   isPlatformAdmin: boolean;
+  /** From resolveProfileViewerAccess — grants private/group media when true. */
+  profileAccessGranted?: boolean;
 };
 
 /** Decide whether a viewer may receive a time-limited GET URL for a media object. */
@@ -56,9 +58,8 @@ export const canAccessMedia = (input: MediaAccessInput): boolean => {
     case 'public':
       return true;
     case 'private':
-      return false;
     case 'group_members':
-      return Boolean(input.viewerUserId) && input.sharesGroupOrActivity;
+      return Boolean(input.profileAccessGranted);
     default:
       return false;
   }

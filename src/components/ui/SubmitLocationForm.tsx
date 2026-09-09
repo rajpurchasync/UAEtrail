@@ -4,6 +4,7 @@ import { LocationDTO } from '@uaetrail/shared-types';
 import { MapPinFields, parseCoord } from './MeetingPointMap';
 import { ImageUpload } from './ImageUpload';
 import { AssetKeyUpload } from './AssetKeyUpload';
+import { AppSelect } from './AppSelect';
 import { api } from '../../api/services';
 import { DEFAULT_COUNTRY } from '../../config/regions';
 import { UAE_EMIRATES, getStatesForEmirate } from '../../config/uaeRegions';
@@ -25,6 +26,14 @@ const STEPS: { id: WizardStep; label: string }[] = [
   { id: 'location', label: 'Map' },
   { id: 'premium', label: 'Premium' },
 ];
+
+const DIFFICULTY_OPTIONS = [
+  { value: 'easy' as const, label: 'Easy' },
+  { value: 'moderate' as const, label: 'Moderate' },
+  { value: 'hard' as const, label: 'Hard' },
+];
+
+const emirateOptions = UAE_EMIRATES.map((emirate) => ({ value: emirate, label: emirate }));
 
 export interface SubmitLocationPayload {
   name: string;
@@ -327,32 +336,26 @@ export const SubmitLocationForm = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Emirate *</label>
-              <select
-                required
+              <AppSelect
                 value={form.emirate}
-                onChange={(e) => setForm({ ...form, emirate: e.target.value, region: '' })}
-                className="w-full border rounded-xl px-3 py-2.5 text-sm"
-              >
-                <option value="">Select emirate…</option>
-                {UAE_EMIRATES.map((e) => (
-                  <option key={e} value={e}>{e}</option>
-                ))}
-              </select>
+                onChange={(emirate) => setForm({ ...form, emirate, region: '' })}
+                options={emirateOptions}
+                placeholder="Select emirate…"
+                inputClassName="w-full rounded-xl border px-3 py-2.5 text-sm"
+                aria-label="Emirate"
+              />
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">State / Area *</label>
-              <select
-                required
+              <AppSelect
                 value={form.region}
+                onChange={(region) => setForm({ ...form, region })}
+                options={stateOptions.map((region) => ({ value: region, label: region }))}
                 disabled={!form.emirate}
-                onChange={(e) => setForm({ ...form, region: e.target.value })}
-                className="w-full border rounded-xl px-3 py-2.5 text-sm disabled:bg-gray-50"
-              >
-                <option value="">Select state…</option>
-                {stateOptions.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
+                placeholder="Select state…"
+                inputClassName="w-full rounded-xl border px-3 py-2.5 text-sm disabled:bg-gray-50"
+                aria-label="State or area"
+              />
             </div>
           </div>
           <div>
@@ -387,15 +390,13 @@ export const SubmitLocationForm = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Difficulty</label>
-              <select
-                value={form.difficulty}
-                onChange={(e) => setForm({ ...form, difficulty: e.target.value as typeof form.difficulty })}
-                className="w-full border rounded-xl px-3 py-2.5 text-sm"
-              >
-                <option value="easy">Easy</option>
-                <option value="moderate">Moderate</option>
-                <option value="hard">Hard</option>
-              </select>
+              <AppSelect
+                value={form.difficulty ?? 'easy'}
+                onChange={(difficulty) => setForm({ ...form, difficulty })}
+                options={DIFFICULTY_OPTIONS}
+                inputClassName="w-full rounded-xl border px-3 py-2.5 text-sm"
+                aria-label="Difficulty"
+              />
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Route length (km)</label>

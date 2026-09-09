@@ -2,82 +2,24 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowRight,
   CalendarPlus,
-  CheckCircle,
-  Globe2,
-  HandHeart,
-  Heart,
   Loader2,
-  Mountain,
-  Sparkles,
-  Users,
+  UserPlus,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useEffect, useState } from 'react';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
-import { PAGE_BANNERS } from '../config/pageBanners';
+import { AppButton } from '../components/mobile/AppButton';
 import { PageMeta } from '../components/seo/PageMeta';
 import { MobileBecomeHostFlow } from '../components/host/MobileBecomeHostFlow';
 import { parseHostFlowIntent } from '../components/host/becomeHostFlow';
 import { useHostGate } from '../hooks/useHostGate';
-import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
+import { EXPLORE_MAP_PATH } from '../config/platform';
 
-const whyHostReasons = [
-  {
-    icon: Users,
-    title: 'Make new friends',
-    description:
-      'Bring together people who love the outdoors. A shared summit, a campfire chat — hosting turns strangers into your trail family.',
-    accent: 'bg-sky-50 text-sky-600',
-  },
-  {
-    icon: HandHeart,
-    title: 'Give back to the community',
-    description:
-      'Welcome beginners, share safety tips, and help more residents & visitors experience the UAE outdoors with confidence.',
-    accent: 'bg-rose-50 text-rose-600',
-  },
-  {
-    icon: Globe2,
-    title: 'Promote the UAE',
-    description:
-      'From Fossil Rock to Jebel Jais — show the landscapes you love and inspire others to explore beyond the city.',
-    accent: 'bg-amber-50 text-amber-600',
-  },
-  {
-    icon: Heart,
-    title: 'Create real connections',
-    description:
-      'This is not just logistics. You are building memories — sunrise coffees, summit high-fives, and stories people retell for years.',
-    accent: 'bg-emerald-50 text-emerald-600',
-  },
-  {
-    icon: Sparkles,
-    title: 'Grow your reputation',
-    description:
-      'Earn reviews, build a following, and become a trusted voice in the outdoor community — one great trip at a time.',
-    accent: 'bg-violet-50 text-violet-600',
-  },
-  {
-    icon: Mountain,
-    title: 'Host your way',
-    description:
-      'Solo guide, tour agency, or shop. You choose the pace, places, and people you lead.',
-    accent: 'bg-teal-50 text-teal-600',
-  },
-];
-
-const howItWorks = [
-  { step: '1', title: 'Set up profile', desc: 'Guide, licensed agency, or gear shop pin — about a minute each.' },
-  { step: '2', title: 'Create activity', desc: 'Guides and agencies post hikes, camps, and trips on the map.' },
-  { step: '3', title: 'Welcome your group', desc: 'Meet participants and lead the day.' },
-  { step: '4', title: 'Grow', desc: 'Earn reviews and build your outdoor community.' },
-];
-
-const communityQuotes = [
-  '"I hosted my first wadi walk and left with eight new hiking buddies."',
-  '"Giving newcomers their first summit view — that feeling never gets old."',
-  '"The UAE has so much to offer. Hosting lets me share that pride every weekend."',
+const setupSteps = [
+  { emoji: '👋', title: 'Introduce yourself', detail: 'Guide, agency, or gear shop — pick what fits you.' },
+  { emoji: '📍', title: 'Pin yourself on the map', detail: 'A photo and where you\'re based helps people find you.' },
+  { emoji: '🏕️', title: 'Invite people along', detail: 'Post hikes, camps, carpools, and meetups when you\'re ready.' },
 ];
 
 /** Become a host — individual, agency, or shop. Route: /become-host (alias /become-organizer). */
@@ -122,19 +64,19 @@ export const BecomeHost = () => {
 
   useEffect(() => {
     if (canPublish && !justBecameHost && !hostFlowOpen && intent === 'become-host') {
-      navigate('/', { replace: true });
+      navigate(EXPLORE_MAP_PATH, { replace: true });
     }
   }, [canPublish, justBecameHost, hostFlowOpen, navigate, intent]);
 
   const openForm = () => setHostFlowOpen(true);
 
-  const handlePostEvent = () => {
+  const handlePrimaryAction = () => {
     if (!user) {
       navigate(`/signup?redirect=${encodeURIComponent(`/become-host?intent=${intent}`)}`);
       return;
     }
     if (canPublish) {
-      navigate('/');
+      navigate(EXPLORE_MAP_PATH);
       return;
     }
     openForm();
@@ -142,21 +84,21 @@ export const BecomeHost = () => {
 
   const alreadyHostMessage =
     intent === 'add-shop'
-      ? 'Your gear shop is already on the map. Manage it from your profile.'
+      ? 'Your shop is already on the map — nice one.'
       : intent === 'add-agency'
-        ? 'Your agency profile is live. Post paid trips from the map or host dashboard.'
+        ? 'Your agency is already live with the community.'
         : intent === 'add-guide'
-          ? 'You already have a community guide profile. Post activities from the map.'
+          ? 'You\'re already set up as a guide.'
           : null;
 
   const pageTitle =
     intent === 'add-shop'
-      ? 'List a shop'
+      ? 'Share your shop'
       : intent === 'add-agency'
-        ? 'Register agency'
+        ? 'Join as an agency'
         : intent === 'add-guide'
           ? 'Become a guide'
-          : 'Become a host';
+          : 'Join as a host';
 
   const handleHostSubmitted = async (_tenantId: string | null) => {
     setHostFlowOpen(false);
@@ -169,192 +111,132 @@ export const BecomeHost = () => {
       ? '/signin?redirect=/become-host'
       : `/signin?redirect=${encodeURIComponent(`/become-host?intent=${intent}`)}`;
 
-  const ctaLabel = canPublish ? 'Create on the map' : 'Set up profile';
+  const primaryLabel = !user
+    ? 'Join to start hosting'
+    : hostGateLoading
+      ? 'Just a moment…'
+      : canPublish
+        ? 'Back to the map'
+        : 'Count me in';
 
-  const PostEventButton = ({
-    className = '',
-    fullWidth = false,
-  }: {
-    className?: string;
-    fullWidth?: boolean;
-  }) => (
-    <button
-      type="button"
-      onClick={handlePostEvent}
-      disabled={Boolean(user && hostGateLoading)}
-      className={`inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full font-bold text-sm shadow-sm hover:bg-emerald-700 disabled:opacity-70 disabled:cursor-not-allowed transition-colors ${fullWidth ? 'w-full' : ''} ${className}`}
-    >
-      <CalendarPlus className="w-4 h-4" />
-      {hostGateLoading ? 'Loading…' : ctaLabel}
-      {!hostGateLoading && <ArrowRight className="w-4 h-4" />}
-    </button>
-  );
+  const headline =
+    intent === 'add-shop'
+      ? 'Got gear? Put your shop on the map'
+      : intent === 'add-agency'
+        ? 'Bring your agency to the trail community'
+        : intent === 'add-guide'
+          ? 'Love the outdoors? Lead the way'
+          : 'Want to share a trip with everyone?';
+
+  const subcopy =
+    intent === 'become-host'
+      ? 'Hosts here are just members who love getting outside and bringing people along. A quick intro — then you can post hikes, camps, carpools, and more.'
+      : intent === 'add-shop'
+        ? 'Help hikers and campers find your gear shop when they\'re planning their next trip.'
+        : intent === 'add-agency'
+          ? 'Connect with people looking for guided adventures across the UAE.'
+          : 'Share your experience and welcome others on the trails you know best.';
+
+  const backFallback = user ? EXPLORE_MAP_PATH : '/';
 
   return (
     <>
       <PageMeta
         title={pageTitle}
-        description="Join the UAE Trails community as a host — set up your profile, then post hikes, camps, and meetups."
+        description="Join the UAE Trail community as a host — share hikes, camps, and outdoor meetups with fellow explorers."
         path="/become-organizer"
       />
       <ConsumerShell
-        layout="editorial"
-        maxWidth="4xl"
-        eyebrow="Join the community"
+        layout="stack"
         title={pageTitle}
-        banner={{ src: PAGE_BANNERS.community, alt: 'Group of friends hiking together' }}
-        back={{ fallbackTo: user ? '/profile' : '/activities', label: user ? 'Profile' : 'Activities' }}
-        toolbar={
-          <div className="space-y-3">
-            <p className="text-sm text-neutral-700 leading-relaxed">
-              <span className="font-semibold text-neutral-900">Share the trails. Grow the tribe.</span>{' '}
-              Set up your host profile first, then create your first activity on the map.
-            </p>
-            <PostEventButton fullWidth />
-            {!user && (
-              <p className="text-xs text-neutral-500 text-center">
-                Already have an account?{' '}
-                <Link to="/signin?redirect=/become-host" className="text-emerald-700 font-semibold hover:underline">
-                  Sign in
-                </Link>
-              </p>
-            )}
-          </div>
-        }
+        showJourney={false}
+        back={{ fallbackTo: backFallback, label: 'Back' }}
       >
-        <div className="space-y-8 md:space-y-10 pb-nav-safe animate-fade-up">
-          <section>
-            <div className="text-center mb-5">
-              <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-1.5">Community first</p>
-              <h2 className="text-xl md:text-2xl font-extrabold text-neutral-900">Why become a Host?</h2>
-              <p className="mt-2 text-sm text-neutral-600 max-w-xl mx-auto leading-relaxed">
-                Hosting is about people — not just routes on a map. Lead with heart, welcome newcomers, and help
-                build the UAE&apos;s outdoor community.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {whyHostReasons.map((item) => (
-                <GlassCard key={item.title} padding>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${item.accent}`}>
-                    <item.icon className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-bold text-neutral-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-neutral-600 leading-relaxed">{item.description}</p>
-                </GlassCard>
-              ))}
-            </div>
-          </section>
+        <div className="mx-auto max-w-lg space-y-4 pb-nav-safe animate-fade-up">
+          {user && hostGateLoading && (
+            <GlassCard padding className="text-center">
+              <Loader2 className="mx-auto mb-3 h-7 w-7 animate-spin text-emerald-600" />
+              <p className="text-sm text-neutral-500">Just a moment…</p>
+            </GlassCard>
+          )}
 
-          <section>
-            <GlassCard padding className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white border-0">
-              <p className="text-center text-xs font-bold uppercase tracking-widest text-emerald-200/90 mb-4">
-                From the community
+          {user && justBecameHost && (
+            <GlassCard padding className="text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
+                🎉
+              </div>
+              <h2 className="text-xl font-bold text-neutral-900">Welcome aboard!</h2>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                You&apos;re ready to host. Head back to the map and tap + whenever you want to invite people along.
               </p>
-              <div className="space-y-3">
-                {communityQuotes.map((quote) => (
-                  <blockquote key={quote} className="text-center text-sm text-emerald-50/95 italic leading-relaxed">
-                    {quote}
-                  </blockquote>
-                ))}
+              <AppButton fullWidth onClick={() => navigate(EXPLORE_MAP_PATH)} className="mt-5">
+                Back to the map
+                <ArrowRight className="h-4 w-4" />
+              </AppButton>
+            </GlassCard>
+          )}
+
+          {user && !hostGateLoading && profileAlreadyExists && (
+            <GlassCard padding className="text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
+                ✓
+              </div>
+              <h2 className="text-xl font-bold text-neutral-900">You&apos;re already part of the crew</h2>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">{alreadyHostMessage}</p>
+              <AppButton fullWidth onClick={() => navigate('/host/overview')} className="mt-5">
+                Go to your host space
+                <ArrowRight className="h-4 w-4" />
+              </AppButton>
+            </GlassCard>
+          )}
+
+          {(!user || (!hostGateLoading && !justBecameHost && !profileAlreadyExists)) && (
+            <GlassCard padding className="!p-5 sm:!p-6 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
+                {intent === 'add-shop' ? '🛍️' : intent === 'add-agency' ? '🏢' : intent === 'add-guide' ? '🥾' : '🏕️'}
+              </div>
+              <h2 className="text-xl font-bold leading-snug text-neutral-900">{headline}</h2>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-neutral-600">{subcopy}</p>
+              <p className="mt-3 text-xs font-medium text-neutral-500">Takes about 2 minutes — promise.</p>
+
+              <div className="mt-5">
+                <AppButton
+                  fullWidth
+                  onClick={handlePrimaryAction}
+                  disabled={Boolean(user && hostGateLoading)}
+                >
+                  {!user ? <UserPlus className="h-4 w-4" /> : <CalendarPlus className="h-4 w-4" />}
+                  {primaryLabel}
+                </AppButton>
+              </div>
+
+              {!user && (
+                <p className="mt-3 text-xs text-neutral-500">
+                  Already one of us?{' '}
+                  <Link to={signInHref} className="font-semibold text-emerald-700 hover:underline">
+                    Sign in
+                  </Link>
+                </p>
+              )}
+
+              <div className="mt-6 border-t border-neutral-100 pt-5 text-left">
+                <p className="text-sm font-semibold text-neutral-900">Here&apos;s all it takes</p>
+                <ul className="mt-3 space-y-3">
+                  {setupSteps.map((item) => (
+                    <li key={item.title} className="flex items-start gap-3">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-neutral-50 text-base">
+                        {item.emoji}
+                      </span>
+                      <div className="min-w-0 pt-0.5">
+                        <p className="text-sm font-medium text-neutral-900">{item.title}</p>
+                        <p className="text-xs leading-relaxed text-neutral-500">{item.detail}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </GlassCard>
-          </section>
-
-          <section>
-            <h2 className="text-lg md:text-xl font-bold text-neutral-900 text-center mb-1">How it works</h2>
-            <p className="text-sm text-neutral-500 text-center mb-5 max-w-md mx-auto">
-              Host first, create second — no waiting for approval.
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {howItWorks.map((s) => (
-                <GlassCard key={s.step} padding className="text-center">
-                  <div className="w-9 h-9 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center mx-auto mb-2.5 text-sm">
-                    {s.step}
-                  </div>
-                  <h3 className="font-semibold text-neutral-900 mb-1 text-sm">{s.title}</h3>
-                  <p className="text-xs text-neutral-500 leading-relaxed">{s.desc}</p>
-                </GlassCard>
-              ))}
-            </div>
-          </section>
-
-          <section id="host-status">
-            {!user && (
-              <GlassCard padding className="text-center">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center mx-auto mb-4">
-                  <CalendarPlus className="w-7 h-7 text-white" />
-                </div>
-                <h2 className="text-lg font-bold text-neutral-900 mb-2">Ready to bring people together?</h2>
-                <p className="text-sm text-neutral-600 mb-6 leading-relaxed">
-                  Create a free account, become a host, then post your first activity on the map.
-                </p>
-                <PostEventButton fullWidth />
-              </GlassCard>
-            )}
-
-            {user && hostGateLoading && (
-              <GlassCard padding className="text-center">
-                <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-3" />
-                <p className="text-sm text-neutral-500">Checking your host status…</p>
-              </GlassCard>
-            )}
-
-            {user && justBecameHost && (
-              <GlassCard padding className="text-center border-emerald-100">
-                <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-neutral-900 mb-2">You&apos;re a host — create your first activity</h2>
-                <p className="text-sm text-neutral-600 mb-4 leading-relaxed">
-                  Your profile is live. Tap below to open the map and publish a hike, camp, event, or carpool.
-                </p>
-                <Link
-                  to="/"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold"
-                >
-                  Create on the map <ArrowRight className="w-4 h-4" />
-                </Link>
-              </GlassCard>
-            )}
-
-            {user && !hostGateLoading && profileAlreadyExists && (
-              <GlassCard padding className="text-center border-amber-100">
-                <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-neutral-900 mb-2">Already set up</h2>
-                <p className="text-sm text-neutral-600 mb-4 leading-relaxed">{alreadyHostMessage}</p>
-                <Link
-                  to="/host/overview"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold"
-                >
-                  Open host dashboard <ArrowRight className="w-4 h-4" />
-                </Link>
-              </GlassCard>
-            )}
-
-            {user && !hostGateLoading && (
-              <div className="mt-4">
-                <ProfileMapPresenceSection />
-              </div>
-            )}
-
-            {user && !hostGateLoading && !profileAlreadyExists && !justBecameHost && intent !== 'become-host' && (
-              <GlassCard padding className="text-center">
-                <Sparkles className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-neutral-900 mb-2">Your community is waiting</h2>
-                <p className="text-sm text-neutral-600 mb-6 leading-relaxed">
-                  Choose individual guide, tour agency, or shop — setup takes about a minute, then you can post
-                  activities.
-                </p>
-                <PostEventButton fullWidth />
-              </GlassCard>
-            )}
-          </section>
-
-          <GlassCard padding className="bg-gradient-to-br from-emerald-700 to-emerald-900 text-white border-0 text-center">
-            <h2 className="text-lg md:text-xl font-extrabold mb-2">The UAE outdoors is better shared</h2>
-            <p className="text-sm text-emerald-100/90 mb-5 leading-relaxed">
-              Someone out there is looking for their first hiking friend. Maybe that&apos;s you — ready to host.
-            </p>
-            <PostEventButton className="!bg-white !text-emerald-800 hover:!bg-emerald-50" />
-          </GlassCard>
+          )}
         </div>
 
         {hostFlowOpen && (

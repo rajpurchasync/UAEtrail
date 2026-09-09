@@ -5,9 +5,11 @@ import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { PasswordRequirements } from '../components/auth/PasswordRequirements';
 import { useAuth } from '../context/AuthContext';
 import { defaultRouteByRole } from '../utils/authRouting';
-import { resolveAuthRedirect } from '../utils/authRedirect';
+import { navigateAuthBack, navigateAuthClose, resolveAuthRedirect } from '../utils/authRedirect';
 import { getPasswordValidationError } from '../utils/passwordPolicy';
 import { PageMeta } from '../components/seo/PageMeta';
+import { api } from '../api/services';
+import { isSignupProfileComplete } from '../constants/userProfileOptions';
 
 export const SignUp = () => {
   const { register, signInWithGoogle, loading } = useAuth();
@@ -29,29 +31,25 @@ export const SignUp = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleBack = () => {
-    if (redirectTo && redirectTo !== '/signin' && redirectTo !== '/signup') {
-      navigate(redirectTo);
-      return;
-    }
-    if (window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
-    navigate('/');
-  };
+  const handleBack = () => navigateAuthBack(navigate, redirectTo);
+  const handleClose = () => navigateAuthClose(navigate, redirectTo);
 
   const handleGoogleSignUp = async (idToken: string) => {
     setError(null);
     if (!agreedToTerms) {
-      setError('Please agree to the Terms and Conditions and Privacy Policy.');
+      setError('Quick step first — agree to our Terms and Privacy Policy to continue.');
       return;
     }
     try {
       const user = await signInWithGoogle(idToken, referralCode, groupInviteToken);
+      const profile = await api.getMeProfile().catch(() => null);
+      if (profile && !isSignupProfileComplete(profile.data)) {
+        navigate('/welcome', { replace: true, state: { redirectTo } });
+        return;
+      }
       navigate(redirectTo ?? defaultRouteByRole(user.role), { replace: true });
     } catch (submissionError) {
-      setError(submissionError instanceof Error ? submissionError.message : 'Google sign up failed');
+      setError(submissionError instanceof Error ? submissionError.message : 'We couldn\'t finish sign-up — try again or use Google.');
     }
   };
 
@@ -59,7 +57,7 @@ export const SignUp = () => {
     event.preventDefault();
     setError(null);
     if (!agreedToTerms) {
-      setError('Please agree to the Terms and Conditions and Privacy Policy.');
+      setError('Quick step first — agree to our Terms and Privacy Policy to continue.');
       return;
     }
 
@@ -70,7 +68,7 @@ export const SignUp = () => {
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
+      setError('Those passwords don\'t match — try again.');
       return;
     }
 
@@ -94,7 +92,7 @@ export const SignUp = () => {
       });
     } catch (submissionError) {
       const message =
-        submissionError instanceof Error ? submissionError.message : 'Could not create account.';
+        submissionError instanceof Error ? submissionError.message : 'We couldn\'t finish sign-up — check your email and try again.';
       if (
         submissionError instanceof Error &&
         'code' in submissionError &&
@@ -118,25 +116,25 @@ export const SignUp = () => {
       <PageMeta title="Create account" noIndex />
 
       <div className="max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-6 sm:p-8 flex-1">
-        <div className="flex items-center justify-between mb-4">
+        <div className="relative z-20 flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={handleBack}
-            className="inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
+            className="relative z-20 inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
           >
             <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
             <span className="text-[17px] font-medium">Back</span>
           </button>
           <button
             type="button"
-            onClick={handleBack}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:opacity-60"
+            onClick={handleClose}
+            className="relative z-20 inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:opacity-60"
             aria-label="Close"
           >
             <X className="w-5 h-5" strokeWidth={2.25} />
           </button>
         </div>
-        <Link to="/" className="flex items-center justify-center gap-2 mb-6">
+        <Link to="/" className="relative z-0 flex items-center justify-center gap-2 mb-6">
           <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-[10px] flex items-center justify-center">
             <Mountain className="w-5 h-5 text-white" />
           </div>

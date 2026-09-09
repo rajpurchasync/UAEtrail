@@ -13,11 +13,11 @@ import {
   listThreadMessages,
   markThreadAsRead
 } from '../lib/chat-data.js';
-import { createNotificationRecord } from '../lib/notifications-store.js';
+import { dispatchNotification } from '../services/notifications.js';
 import { requireAuth, requireSseTicket, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { createSseTicket, SSE_TICKET_TTL_SECONDS } from '../lib/sse-ticket.js';
-import { assertCanMessageUser, assertChatRateLimit } from '../services/chat-policy.js';
+import { assertCanMessageUser, assertChatRateLimit, canMessageUser } from '../services/chat-policy.js';
 import { publishChatStreamEvent, registerChatStreamClient } from '../services/chat-stream.js';
 
 export const chatRouter = Router();
@@ -73,23 +73,27 @@ chatRouter.get('/conversations', async (req, res, next) => {
     const unreadMap = unreadCounts;
     const lastMessageMap = await getLastMessageByPartner(userId, partnerIds);
 
-    const conversations = partnerIds.map((partnerId) => {
-      const partner = partnerMap.get(partnerId);
-      const lastMsg = lastMessageMap.get(partnerId);
-      return {
-        userId: partnerId,
-        displayName: partner?.profile.displayName ?? partner?.email ?? 'Unknown',
-        avatarUrl: partner?.profile.avatarUrl ?? undefined,
-        lastMessage: lastMsg?.content ?? '',
-        lastMessageAt: lastMsg?.createdAt?.toISOString() ?? '',
-        unreadCount: unreadMap.get(partnerId) ?? 0
-      };
-    });
+    const conversationRows = await Promise.all(
+      partnerIds.map(async (partnerId) => {
+        const allowed = await canMessageUser(userId, partnerId);
+        if (!allowed) return null;
 
-    // Sort by last message time descending
-    conversations.sort((a, b) =>
-      new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+        const partner = partnerMap.get(partnerId);
+        const lastMsg = lastMessageMap.get(partnerId);
+        return {
+          userId: partnerId,
+          displayName: partner?.profile.displayName ?? partner?.email ?? 'Unknown',
+          avatarUrl: partner?.profile.avatarUrl ?? undefined,
+          lastMessage: lastMsg?.content ?? '',
+          lastMessageAt: lastMsg?.createdAt?.toISOString() ?? '',
+          unreadCount: unreadMap.get(partnerId) ?? 0
+        };
+      })
     );
+
+    const conversations = conversationRows
+      .filter((row): row is NonNullable<typeof row> => row !== null)
+      .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
 
     res.json({ data: conversations });
   } catch (error) {
@@ -110,6 +114,8 @@ chatRouter.get('/messages/:userId', validate({ params: messageThreadSchema, quer
     const currentUserId = req.auth!.userId;
     const { userId: partnerId } = req.params as z.infer<typeof messageThreadSchema>;
     const { page, pageSize } = req.query as unknown as z.infer<typeof paginationSchema>;
+
+    await assertCanMessageUser(currentUserId, partnerId);
 
     // Mark unread messages from this partner as read
     await markThreadAsRead(currentUserId, partnerId);
@@ -168,12 +174,17 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
 
     const sender = await findAuthUserById(senderId);
     const senderName = sender?.profile.displayName ?? sender?.email ?? 'Someone';
-    await createNotificationRecord({
+    await dispatchNotification({
       userId: receiverId,
       title: 'New message',
       body: `${senderName}: ${content.substring(0, 100)}`,
       type: NotificationType.SYSTEM,
-      meta: { chatMessageId: message.id, senderId }
+      meta: {
+        kind: 'message',
+        chatMessageId: message.id,
+        senderId,
+        path: `/messages?to=${encodeURIComponent(senderId)}`
+      }
     });
 
     const messageDto = toChatMessageDto(message);

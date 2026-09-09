@@ -2,6 +2,15 @@ import { useEffect, useState } from 'react';
 import { api } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
+import { AppSelect, ADMIN_SELECT_CLASS } from '../components/ui/AppSelect';
+
+const BROADCAST_TARGET_OPTIONS = [
+  { value: 'all' as const, label: 'All Active Users' },
+  { value: 'participant' as const, label: 'Participants Only' },
+  { value: 'tenant_owner' as const, label: 'Tenant Owners Only' },
+  { value: 'tenant_admin' as const, label: 'Tenant Admins Only' },
+  { value: 'tenant_guide' as const, label: 'Guides Only' },
+];
 
 interface BroadcastHistory {
   id: string;
@@ -93,14 +102,13 @@ export const AdminSettings = () => {
 
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Target Audience</label>
-              <select value={targetRole} onChange={(e) => setTargetRole(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm">
-                <option value="all">All Active Users</option>
-                <option value="participant">Participants Only</option>
-                <option value="tenant_owner">Tenant Owners Only</option>
-                <option value="tenant_admin">Tenant Admins Only</option>
-                <option value="tenant_guide">Guides Only</option>
-              </select>
+              <AppSelect
+                value={targetRole}
+                onChange={setTargetRole}
+                options={BROADCAST_TARGET_OPTIONS}
+                inputClassName={ADMIN_SELECT_CLASS}
+                aria-label="Target audience"
+              />
             </div>
 
             <button onClick={() => setConfirmSend(true)} disabled={!canSend || sending}

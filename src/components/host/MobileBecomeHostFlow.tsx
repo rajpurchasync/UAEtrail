@@ -8,7 +8,9 @@ import { api } from '../../api/services';
 import { COUNTRIES } from '../../constants';
 import { DEFAULT_COUNTRY, getRegionsForCountry } from '../../config/regions';
 import { PhoneInput } from '../ui/PhoneInput';
+import { AppSelect } from '../ui/AppSelect';
 import { ImageUpload } from '../ui/ImageUpload';
+import { AppButton } from '../mobile/AppButton';
 import type { LocationPrecision } from '../explore/mobileCreateFlow';
 import {
   buildBecomeHostFormPrefill,
@@ -25,7 +27,6 @@ import {
   hostFlowSubmitLabel,
   hostFlowTitle,
   locationPickerTitle,
-  maxDateOfBirthForHost,
   PROFILE_TYPE_OPTIONS,
   validateHostFlowStep,
   type HostFlowIntent,
@@ -38,58 +39,59 @@ const MobileCreateLocationPicker = lazy(() =>
   import('../explore/MobileCreateLocationPicker').then((m) => ({ default: m.MobileCreateLocationPicker }))
 );
 
-const SheetHeader = ({
+const fieldClass =
+  'w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-base text-neutral-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20';
+
+const FlowHeader = ({
   title,
   onBack,
   onClose,
   showBack,
+  stepCounter,
+  progressPercent,
 }: {
   title: string;
   onBack?: () => void;
   onClose: () => void;
   showBack?: boolean;
+  stepCounter?: string | null;
+  progressPercent?: number | null;
 }) => (
-  <div className="relative mb-4 flex items-center justify-between">
-    {showBack ? (
-      <button
-        type="button"
-        onClick={onBack}
-        className="inline-flex items-center gap-0.5 text-sm font-semibold text-gray-700"
-      >
-        <ChevronLeft className="h-5 w-5" />
-        Back
+  <div className="shrink-0 border-b border-neutral-100 bg-white/95 backdrop-blur-md">
+    <div className="relative flex items-center justify-between px-4 pb-3 pt-safe-plus-2">
+      {showBack ? (
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center gap-0.5 text-sm font-semibold text-emerald-700"
+        >
+          <ChevronLeft className="h-5 w-5" />
+          Back
+        </button>
+      ) : (
+        <span className="w-14" />
+      )}
+      <div className="absolute left-1/2 max-w-[58%] -translate-x-1/2 text-center">
+        <h2 className="truncate text-base font-bold text-neutral-900">{title}</h2>
+        {stepCounter && (
+          <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-600">{stepCounter}</p>
+        )}
+      </div>
+      <button type="button" onClick={onClose} className="rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100" aria-label="Close">
+        <X className="h-5 w-5" />
       </button>
-    ) : (
-      <span className="w-14" />
+    </div>
+    {progressPercent != null && (
+      <div className="px-4 pb-3">
+        <div className="h-1.5 overflow-hidden rounded-full bg-neutral-100">
+          <div
+            className="h-full rounded-full bg-emerald-600 transition-all duration-300"
+            style={{ width: `${Math.max(8, progressPercent)}%` }}
+          />
+        </div>
+      </div>
     )}
-    <h2 className="absolute left-1/2 max-w-[60%] -translate-x-1/2 truncate text-base font-bold text-gray-900">
-      {title}
-    </h2>
-    <button type="button" onClick={onClose} className="rounded-full p-1.5 text-gray-500" aria-label="Close">
-      <X className="h-5 w-5" />
-    </button>
   </div>
-);
-
-const NextButton = ({
-  label = 'Next',
-  disabled,
-  loading,
-  onClick,
-}: {
-  label?: string;
-  disabled?: boolean;
-  loading?: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    type="button"
-    disabled={disabled || loading}
-    onClick={onClick}
-    className="w-full rounded-2xl bg-rose-500 py-4 text-base font-bold text-white shadow-lg shadow-rose-500/25 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    {loading ? 'Submitting…' : `${label} →`}
-  </button>
 );
 
 interface MobileBecomeHostFlowProps {
@@ -313,6 +315,14 @@ export const MobileBecomeHostFlow = ({
   const stepHeading =
     step !== 'pick' && profileType ? hostFlowStepTitle(step as HostFlowStepId, profileType) : flowTitle;
   const showPickStep = step === 'pick' && !lockedProfileType;
+  const stepCounter =
+    step !== 'pick' && profileType && currentStepIndex >= 0
+      ? `Step ${currentStepIndex + 1} of ${flowSteps.length}`
+      : null;
+  const progressPercent =
+    step !== 'pick' && profileType && flowSteps.length > 0 && currentStepIndex >= 0
+      ? ((currentStepIndex + 1) / flowSteps.length) * 100
+      : null;
 
   const locationMapOverlay =
     step === 'location' && locationMapOpen && profileType && profileType !== 'individual' ? (
@@ -339,19 +349,27 @@ export const MobileBecomeHostFlow = ({
     <>
       {locationMapOverlay}
       {!locationMapOpen && (
-      <div className={`${overlayClass} flex flex-col justify-end bg-black/35`}>
-      <button type="button" className="absolute inset-0" aria-label="Close" onClick={handleClose} />
-      <div className="relative max-h-[min(78dvh,720px)] overflow-y-auto rounded-t-3xl bg-white px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-3 shadow-2xl">
-        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-neutral-200" />
+      <div className={`${overlayClass} flex flex-col bg-neutral-50`}>
+        {(showPickStep || step !== 'pick' || lockedProfileType) && (
+          <FlowHeader
+            title={flowTitle}
+            onClose={handleClose}
+            showBack={step !== 'pick'}
+            onBack={goBack}
+            stepCounter={stepCounter}
+            progressPercent={progressPercent}
+          />
+        )}
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 pb-[calc(var(--safe-bottom)+1rem)]">
 
         {prefillLoading && (showPickStep || lockedProfileType) && (
-          <div className="py-16 text-center text-sm text-gray-500">Loading your profile…</div>
+          <div className="py-16 text-center text-sm text-neutral-500">Loading your profile…</div>
         )}
 
         {!prefillLoading && showPickStep && (
           <>
-            <SheetHeader title={flowTitle} onClose={handleClose} />
-            <p className="mb-4 text-sm text-gray-600">{hostFlowPickSubtitle(intent)}</p>
+            <p className="mb-4 text-sm leading-relaxed text-neutral-600">{hostFlowPickSubtitle(intent)}</p>
             <div className="space-y-3">
               {availableProfileOptions.map((option) => {
                 const active = selectedType === option.key;
@@ -362,33 +380,34 @@ export const MobileBecomeHostFlow = ({
                     onClick={() => setSelectedType(option.key)}
                     className={`flex w-full items-start gap-3 rounded-2xl border-2 px-4 py-4 text-left transition ${
                       active
-                        ? 'border-rose-500 bg-rose-50/60 shadow-sm'
-                        : 'border-neutral-200 bg-white hover:border-rose-200'
+                        ? 'border-emerald-500 bg-emerald-50/70 shadow-sm'
+                        : 'border-neutral-200 bg-white hover:border-emerald-200'
                     }`}
                   >
                     <span className="text-3xl">{option.emoji}</span>
                     <span>
-                      <p className={`text-sm font-bold ${active ? 'text-rose-600' : 'text-gray-900'}`}>
+                      <p className={`text-sm font-bold ${active ? 'text-emerald-700' : 'text-neutral-900'}`}>
                         {option.title}
                       </p>
-                      <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
+                      <p className="mt-0.5 text-xs text-neutral-500">{option.subtitle}</p>
                     </span>
                   </button>
                 );
               })}
             </div>
-            <div className="mt-5 pb-2">
-              <NextButton disabled={!selectedType} onClick={goToFirstStep} />
+            <div className="mt-5">
+              <AppButton fullWidth disabled={!selectedType} onClick={goToFirstStep}>
+                Next
+              </AppButton>
             </div>
           </>
         )}
 
         {step === 'name' && profileType && (
           <>
-            <SheetHeader title={flowTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-3 text-sm font-semibold text-gray-900">{stepHeading}</p>
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{stepHeading}</p>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">
+              <span className="mb-2 block text-sm font-medium text-neutral-700">
                 {profileType === 'individual' ? 'Full name' : 'Display name'}
               </span>
               <input
@@ -401,51 +420,31 @@ export const MobileBecomeHostFlow = ({
                   )
                 }
                 placeholder={profileType === 'individual' ? 'Your name' : 'Business name'}
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-rose-400"
+                className={fieldClass}
                 maxLength={120}
                 autoFocus
               />
             </label>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton
+            <div className="mt-5">
+              <AppButton
+                fullWidth
                 disabled={
                   !(profileType === 'individual' ? form.hostDisplayName.trim() : form.requestedName.trim())
                 }
                 onClick={goNext}
-              />
-            </div>
-          </>
-        )}
-
-        {step === 'dob' && profileType === 'individual' && (
-          <>
-            <SheetHeader title={flowTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-3 text-sm font-semibold text-gray-900">{stepHeading}</p>
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">Date of birth</span>
-              <input
-                type="date"
-                max={maxDateOfBirthForHost()}
-                value={form.dateOfBirth}
-                onChange={(event) => patchForm({ dateOfBirth: event.target.value })}
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900"
-              />
-            </label>
-            <p className="mt-2 text-xs text-gray-500">You must be at least 15 years old to host.</p>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton disabled={!form.dateOfBirth} onClick={goNext} />
+              >
+                Next
+              </AppButton>
             </div>
           </>
         )}
 
         {step === 'about' && profileType && (
           <>
-            <SheetHeader title={flowTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-3 text-sm font-semibold text-gray-900">{stepHeading}</p>
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{stepHeading}</p>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">
+              <span className="mb-2 block text-sm font-medium text-neutral-700">
                 {profileType === 'individual' ? 'About me' : 'About your business'}
               </span>
               <textarea
@@ -453,21 +452,22 @@ export const MobileBecomeHostFlow = ({
                 onChange={(event) => patchForm({ bio: event.target.value })}
                 rows={4}
                 placeholder="Why do you love the outdoors? What will people get from you?"
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-rose-400"
+                className={fieldClass}
               />
             </label>
-            <p className="mt-2 text-xs text-gray-500">At least 20 characters.</p>
+            <p className="mt-2 text-xs text-neutral-500">At least 20 characters.</p>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton disabled={form.bio.trim().length < 20} onClick={goNext} />
+            <div className="mt-5">
+              <AppButton fullWidth disabled={form.bio.trim().length < 20} onClick={goNext}>
+                Next
+              </AppButton>
             </div>
           </>
         )}
 
         {step === 'photo' && profileType && (
           <>
-            <SheetHeader title={flowTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-3 text-sm font-semibold text-gray-900">{stepHeading}</p>
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{stepHeading}</p>
             <ImageUpload
               images={form.profilePhoto ? [form.profilePhoto] : []}
               onChange={(urls) => patchForm({ profilePhoto: urls[0] ?? '' })}
@@ -477,38 +477,22 @@ export const MobileBecomeHostFlow = ({
               label=""
               preset="profile"
             />
-            {profileType === 'individual' && (
-              <p className="mt-2 text-xs text-gray-500">Optional — you can add one later.</p>
-            )}
+            <p className="mt-2 text-xs text-neutral-500">A clear photo helps joiners recognize you on trips.</p>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 flex flex-col gap-2 pb-2">
-              {profileType === 'individual' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError(null);
-                    goNext();
-                  }}
-                  className="w-full rounded-2xl border border-neutral-200 py-3 text-sm font-semibold text-gray-700"
-                >
-                  Skip for now
-                </button>
-              )}
-              <NextButton
-                disabled={profileType !== 'individual' && !form.profilePhoto.trim()}
-                onClick={goNext}
-              />
+            <div className="mt-5">
+              <AppButton fullWidth disabled={!form.profilePhoto.trim()} onClick={goNext}>
+                Next
+              </AppButton>
             </div>
           </>
         )}
 
         {step === 'contact' && profileType && (
           <>
-            <SheetHeader title={flowTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-3 text-sm font-semibold text-gray-900">{stepHeading}</p>
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{stepHeading}</p>
             <div className="space-y-4">
               <div>
-                <span className="mb-2 block text-sm font-medium text-gray-700">Mobile number</span>
+                <span className="mb-2 block text-sm font-medium text-neutral-700">Mobile number</span>
                 <PhoneInput
                   dialCode={form.phoneCountryCode}
                   nationalNumber={form.phone}
@@ -517,53 +501,50 @@ export const MobileBecomeHostFlow = ({
                   required
                   disabled={submitting}
                 />
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-neutral-500">
                   Saved as {formatHostPhonePreview(form.phoneCountryCode, form.phone)}.
                 </p>
               </div>
               {profileType !== 'individual' && (
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-gray-700">Website (optional)</span>
+                  <span className="mb-2 block text-sm font-medium text-neutral-700">Website (optional)</span>
                   <input
                     type="url"
                     value={form.website}
                     onChange={(event) => patchForm({ website: event.target.value })}
                     placeholder="https://"
-                    className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-rose-400"
+                    className={fieldClass}
                   />
                 </label>
               )}
             </div>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton onClick={goNext} />
+            <div className="mt-5">
+              <AppButton fullWidth onClick={goNext}>
+                Next
+              </AppButton>
             </div>
           </>
         )}
 
         {step === 'details' && profileType === 'individual' && (
           <>
-            <SheetHeader title={flowTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-3 text-sm font-semibold text-gray-900">{stepHeading}</p>
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{stepHeading}</p>
             <div className="space-y-4">
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-gray-700">Nationality</span>
-                <select
+                <span className="mb-2 block text-sm font-medium text-neutral-700">Nationality</span>
+                <AppSelect
                   value={form.nationality}
-                  onChange={(event) => patchForm({ nationality: event.target.value })}
-                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900"
-                >
-                  <option value="">Select</option>
-                  {COUNTRIES.map((country) => (
-                    <option key={country} value={country}>
-                      {country}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(nationality) => patchForm({ nationality })}
+                  options={COUNTRIES.map((country) => ({ value: country, label: country }))}
+                  placeholder="Select"
+                  inputClassName={fieldClass}
+                  aria-label="Nationality"
+                />
               </label>
 
               <div>
-                <span className="mb-2 block text-sm font-medium text-gray-700">Based in (UAE)</span>
+                <span className="mb-2 block text-sm font-medium text-neutral-700">Based in (UAE)</span>
                 <div className="flex flex-wrap gap-2">
                   {getRegionsForCountry(DEFAULT_COUNTRY).map((region) => {
                     const active = form.residence === region;
@@ -573,7 +554,7 @@ export const MobileBecomeHostFlow = ({
                         type="button"
                         onClick={() => patchForm({ residence: region })}
                         className={`rounded-full px-3 py-2 text-sm font-semibold ${
-                          active ? 'bg-rose-500 text-white' : 'bg-neutral-100 text-gray-800'
+                          active ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-800'
                         }`}
                       >
                         {region}
@@ -584,79 +565,70 @@ export const MobileBecomeHostFlow = ({
               </div>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-gray-700">Languages</span>
+                <span className="mb-2 block text-sm font-medium text-neutral-700">Languages</span>
                 <input
                   value={form.languages}
                   onChange={(event) => patchForm({ languages: event.target.value })}
                   placeholder="English, Arabic…"
-                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-rose-400"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-gray-700">Interests</span>
-                <textarea
-                  value={form.interests}
-                  onChange={(event) => patchForm({ interests: event.target.value })}
-                  rows={2}
-                  placeholder="Hiking, camping, photography…"
-                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-rose-400"
+                  className={fieldClass}
                 />
               </label>
             </div>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton onClick={goNext} />
+            <div className="mt-5">
+              <AppButton fullWidth onClick={goNext}>
+                Next
+              </AppButton>
             </div>
           </>
         )}
 
         {step === 'services' && profileType === 'agency' && (
           <>
-            <SheetHeader title={flowTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-3 text-sm font-semibold text-gray-900">{stepHeading}</p>
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{stepHeading}</p>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">What do you offer?</span>
+              <span className="mb-2 block text-sm font-medium text-neutral-700">What do you offer?</span>
               <textarea
                 value={form.services}
                 onChange={(event) => patchForm({ services: event.target.value })}
                 rows={4}
                 placeholder="Desert safaris, guided hikes, team building…"
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-rose-400"
+                className={fieldClass}
               />
             </label>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton disabled={!form.services.trim()} onClick={goNext} />
+            <div className="mt-5">
+              <AppButton fullWidth disabled={!form.services.trim()} onClick={goNext}>
+                Next
+              </AppButton>
             </div>
           </>
         )}
 
         {step === 'location' && profileType && profileType !== 'individual' && (
           <>
-            <SheetHeader title={flowTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-3 text-sm font-semibold text-gray-900">{stepHeading}</p>
-            <p className="mb-4 text-sm text-gray-600">
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{stepHeading}</p>
+            <p className="mb-4 text-sm text-neutral-600">
               Place your {profileType === 'agency' ? 'agency' : 'shop'} on the map so explorers can find you.
             </p>
             <button
               type="button"
               onClick={() => setLocationMapOpen(true)}
-              className="w-full flex items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-rose-300"
+              className="w-full flex items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
             >
-              <span className="flex items-center gap-2 text-gray-800">
-                <MapPin className="h-5 w-5 text-rose-500" />
+              <span className="flex items-center gap-2 text-neutral-800">
+                <MapPin className="h-5 w-5 text-emerald-600" />
                 <span>
                   <span className="block text-sm font-bold">
                     {form.latitude.toFixed(4)}, {form.longitude.toFixed(4)}
                   </span>
-                  <span className="text-xs text-gray-500">Tap to adjust on the map</span>
+                  <span className="text-xs text-neutral-500">Tap to adjust on the map</span>
                 </span>
               </span>
-              <span className="text-xs font-semibold text-rose-600">Edit</span>
+              <span className="text-xs font-semibold text-emerald-700">Edit</span>
             </button>
             <div className="mt-4">
-              <span className="mb-2 block text-sm font-medium text-gray-700">Region (optional)</span>
+              <span className="mb-2 block text-sm font-medium text-neutral-700">Region (optional)</span>
               <div className="flex flex-wrap gap-2">
                 {getRegionsForCountry(DEFAULT_COUNTRY).map((region) => {
                   const active = form.region === region;
@@ -666,7 +638,7 @@ export const MobileBecomeHostFlow = ({
                       type="button"
                       onClick={() => patchForm({ region })}
                       className={`rounded-full px-3 py-2 text-sm font-semibold ${
-                        active ? 'bg-rose-500 text-white' : 'bg-neutral-100 text-gray-800'
+                        active ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-800'
                       }`}
                     >
                       {region}
@@ -676,35 +648,39 @@ export const MobileBecomeHostFlow = ({
               </div>
             </div>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton onClick={goNext} />
+            <div className="mt-5">
+              <AppButton fullWidth onClick={goNext}>
+                Next
+              </AppButton>
             </div>
           </>
         )}
 
         {step === 'review' && profileType && (
           <>
-            <SheetHeader title={flowTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-3 text-sm font-semibold text-gray-900">{stepHeading}</p>
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-gray-700">
-              <p className="flex items-center gap-2 font-semibold text-gray-900">
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{stepHeading}</p>
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
+              <p className="flex items-center gap-2 font-semibold text-neutral-900">
                 {profileType === 'individual' ? (
                   <User className="h-4 w-4 text-emerald-600" />
                 ) : profileType === 'agency' ? (
                   <Building2 className="h-4 w-4 text-indigo-600" />
                 ) : (
-                  <ShoppingBag className="h-4 w-4 text-rose-600" />
+                  <ShoppingBag className="h-4 w-4 text-amber-600" />
                 )}
                 {profileType === 'individual' ? form.hostDisplayName : form.requestedName}
               </p>
-              <p className="mt-2 line-clamp-3 text-xs text-gray-600">{form.bio}</p>
-              <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+              <p className="mt-2 line-clamp-3 text-xs text-neutral-600">{form.bio}</p>
+              {profileType === 'individual' && form.languages && (
+                <p className="mt-2 text-xs text-neutral-600">Languages: {form.languages}</p>
+              )}
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-neutral-500">
                 <MapPin className="h-3.5 w-3.5" />
                 {profileType === 'individual'
                   ? form.residence || 'UAE'
                   : `${form.latitude.toFixed(4)}, ${form.longitude.toFixed(4)}`}
               </p>
-              <p className="mt-1 text-xs text-gray-500">{user?.email}</p>
+              <p className="mt-1 text-xs text-neutral-500">{user?.email}</p>
             </div>
 
             {profileType !== 'individual' && (
@@ -723,7 +699,7 @@ export const MobileBecomeHostFlow = ({
                     key={target}
                     type="button"
                     onClick={() => goToStep(target)}
-                    className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-rose-300"
+                    className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-emerald-300"
                   >
                     Edit {label}
                   </button>
@@ -731,12 +707,14 @@ export const MobileBecomeHostFlow = ({
               </div>
             )}
 
-            <p className="mt-3 text-xs text-gray-500">
+            <p className="mt-3 text-xs text-neutral-500">
               You&apos;ll be ready to host immediately. Admins may review or suspend accounts if needed.
             </p>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton label={hostFlowSubmitLabel(intent)} loading={submitting} onClick={handleSubmit} />
+            <div className="mt-5">
+              <AppButton fullWidth disabled={submitting} onClick={handleSubmit}>
+                {submitting ? 'Submitting…' : hostFlowSubmitLabel(intent)}
+              </AppButton>
             </div>
           </>
         )}

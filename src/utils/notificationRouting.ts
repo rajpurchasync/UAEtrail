@@ -1,4 +1,5 @@
 import { NotificationDTO } from '@uaetrail/shared-types';
+import { explorePath } from '../utils/exploreRouting';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
   meta && typeof meta === 'object' ? meta : null;
@@ -38,14 +39,30 @@ export const inferNotificationPath = (
   }
 
   const kind = toStringValue(meta?.kind)?.toLowerCase() ?? '';
+  if (kind === 'join_request_approved') {
+    const groupId = toStringValue(meta?.groupId);
+    if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
+  }
+  if (kind === 'group_message') {
+    const groupId = toStringValue(meta?.groupId);
+    if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
+  }
+  if (kind === 'request_withdrawal') {
+    return '/host/requests';
+  }
   if (kind === 'reward' || kind === 'tier_upgrade' || kind === 'badge') {
     return '/my-rewards';
+  }
+  if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') {
+    const buddyUserId = toStringValue(meta?.buddyUserId) ?? toStringValue(meta?.fromUserId);
+    if (buddyUserId) return `/member/${buddyUserId}`;
+    return '/profile';
   }
   if (kind.includes('buddy')) {
     return '/groups';
   }
   if (kind === 'location_approved') {
-    return '/discovery';
+    return explorePath({ panel: 'venues', list: true });
   }
   if (kind === 'host_application_submitted' || kind === 'organizer_application_submitted') {
     return '/admin/hosts';
@@ -63,7 +80,7 @@ export const inferNotificationPath = (
     return '/profile';
   }
   if (kind === 'location_rejected') {
-    return '/discovery';
+    return explorePath({ panel: 'venues', list: true, addLocation: true });
   }
 
   if (options?.preferAdminRoutes) {

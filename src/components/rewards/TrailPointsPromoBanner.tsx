@@ -32,7 +32,7 @@ export const TrailPointsPromoBanner = ({ variant = 'home', className = '' }: Tra
       <div className={`border-b border-gray-200 bg-white ${className}`}>
         <Link
           to="/trail-points"
-          className="rewards-promo-banner flex items-center justify-center gap-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5 text-center text-sm sm:text-base text-gray-800 hover:text-gray-900 transition-colors"
+          className="rewards-promo-banner flex items-center justify-center gap-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5 text-center text-sm sm:text-base text-gray-800 hover:bg-neutral-50/80 transition-colors"
         >
           <Award className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-amber-500 shrink-0" strokeWidth={2} aria-hidden />
           <span>

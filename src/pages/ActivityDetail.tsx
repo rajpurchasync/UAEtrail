@@ -6,14 +6,21 @@ import {
   Users,
   ChevronRight,
   CheckCircle2,
-  Car
+  Car,
+  Lock
 } from 'lucide-react';
 import { ActivityDetailDTO, MyTripRequestDTO, TripParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { formatDate } from '../utils';
 import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../utils/tripPricing';
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../utils/hostLabels';
-import { hostProfilePath } from '../utils/hostLinks';
+import { resolveHostProfilePath } from '../utils/hostLinks';
+import { explorePath } from '../utils/exploreRouting';
+import {
+  extractJoinInstructionLines,
+  extractNonJoinRequirements,
+  MANDATORY_INSTRUCTIONS_LABEL,
+} from '../utils/joinInstructions';
 import { useAuth } from '../context/AuthContext';
 import { PARTICIPANT_PRIVACY } from '../config/platform';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -28,8 +35,12 @@ import {
   ActivityCheckInPanel,
   WithdrawRequestModal,
   JoinRequestModal,
+  JoinRequestActions,
   SecureAvatar
 } from '../components/ui';
+import { TripChatCallout } from '../components/ui/TripChatCallout';
+import { PushEnableBanner } from '../components/ui/PushEnableBanner';
+import { resolveJoinRequestUiState, withdrawModalVariant } from '../utils/joinRequestUi';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden>
@@ -95,7 +106,7 @@ export const ActivityDetail = () => {
         setMyRequest(res.data.myRequest ?? null);
       })
       .catch((loadError) =>
-        setError(loadError instanceof Error ? loadError.message : 'Failed to load trip details')
+        setError(loadError instanceof Error ? loadError.message : 'Couldn\'t load this trip — try again.')
       )
       .finally(() => setLoading(false));
   };
@@ -147,8 +158,8 @@ export const ActivityDetail = () => {
         <PageMeta title="Trip not found" noIndex path={id ? `/activity/${id}` : undefined} />
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center px-4">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Trip Not Found</h1>
-            <Link to="/activities" className="text-emerald-600 hover:text-emerald-700 font-medium">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">We couldn&apos;t find this trip</h1>
+            <Link to={explorePath({ list: true, panel: 'activities' })} className="text-emerald-600 hover:text-emerald-700 font-medium">
               View all trips
             </Link>
           </div>
@@ -157,121 +168,150 @@ export const ActivityDetail = () => {
     );
   }
 
+  if (trip.visibilityState === 'private') {
+    return (
+      <>
+        <PageMeta title="Private activity" noIndex path={id ? `/activity/${id}` : undefined} />
+        <MobileDetailShell
+          backTo={explorePath({ list: true, panel: 'activities' })}
+          backLabel="Explore"
+        >
+          <div className="max-w-lg mx-auto px-4 py-16 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
+              <Lock className="h-7 w-7 text-neutral-500" />
+            </div>
+            <h1 className="mt-4 text-xl font-bold text-neutral-900">Private activity</h1>
+            <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
+              {trip.message ?? 'This activity is private — only invited members can view it.'}
+            </p>
+            {!user && (
+              <Link
+                to="/signin"
+                state={{ from: `/activity/${trip.id}` }}
+                className="mt-4 inline-block text-sm font-semibold text-emerald-700"
+              >
+                Log in if you were invited
+              </Link>
+            )}
+          </div>
+        </MobileDetailShell>
+      </>
+    );
+  }
+
   const heroImage =
     trip.images?.[0] ??
-    trip.location.images?.[0] ??
+    trip.location?.images?.[0] ??
     (trip.activityType === 'camping'
       ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600'
       : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
   const participants = trip.participants ?? [];
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
-  const hostPath = hostProfilePath(trip.tenantSlug);
+  const hostPath = resolveHostProfilePath({
+    tenantSlug: trip.tenantSlug,
+    hostUserId: activityHostUserId(trip),
+  });
+  const hostProfileHint = trip.tenantSlug ? 'Runs this trip · view organization' : 'Runs this trip · view profile';
   const isFull = trip.slotsAvailable <= 0;
-  const accessLat = trip.startLat ?? trip.meetingLat ?? trip.parkingLat ?? trip.location.latitude ?? null;
-  const accessLng = trip.startLng ?? trip.meetingLng ?? trip.parkingLng ?? trip.location.longitude ?? null;
+  const accessLat = trip.startLat ?? trip.meetingLat ?? trip.parkingLat ?? trip.location?.latitude ?? null;
+  const accessLng = trip.startLng ?? trip.meetingLng ?? trip.parkingLng ?? trip.location?.longitude ?? null;
   const hasAccessCoordinates = accessLat != null && accessLng != null;
   const openInGoogleMapsUrl =
-    trip.location.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
+    trip.location?.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
 
   const dateRangeLabel = trip.endDate
     ? `${formatDate(trip.date)} – ${formatDate(trip.endDate)}`
     : formatDate(trip.date);
 
   const joinLabel = isFull ? 'Join Waitlist' : 'Request to Join';
-  const isConfirmed = Boolean(participation);
-  const hasActiveRequest = Boolean(myRequest?.canWithdraw);
-  const requestStatus = myRequest?.status;
-
-  const handleCheckIn = async (activityId: string) => api.checkInToTrip(activityId);
+  const joinUiState = resolveJoinRequestUiState({ myRequest: myRequest ?? null, participation: participation ?? null });
 
   const handleWithdraw = async (payload: { reason: WithdrawReason; message?: string }) => {
-    if (!trip || !myRequest) return;
+    if (!trip || (joinUiState.kind !== 'pending' && joinUiState.kind !== 'confirmed')) return;
     setWithdrawing(true);
     setError(null);
     try {
-      await api.cancelJoinRequest(trip.id, myRequest.id, payload);
+      await api.cancelJoinRequest(trip.id, joinUiState.requestId, payload);
       setShowWithdraw(false);
-      setParticipation(null);
-      setMyRequest(null);
-      setMessage('You have withdrawn from this trip.');
+      setMessage(
+        joinUiState.kind === 'confirmed'
+          ? 'You have withdrawn from this trip.'
+          : 'Join request cancelled.'
+      );
+      loadTrip();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to withdraw');
+      setError(err instanceof Error ? err.message : 'Couldn\'t withdraw — try again.');
       setShowWithdraw(false);
     } finally {
       setWithdrawing(false);
     }
   };
 
-  const withdrawButton = hasActiveRequest ? (
-    <button
-      type="button"
-      onClick={() => setShowWithdraw(true)}
-      className="w-full mt-2 py-2.5 text-sm font-semibold text-red-600 hover:text-red-700"
-    >
-      {isConfirmed ? 'Withdraw from trip' : 'Cancel request'}
-    </button>
-  ) : null;
-
-  const requestStatusBanner =
-    hasActiveRequest && !isConfirmed ? (
-      <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-3 text-center">
-        <p className="text-sm font-semibold text-amber-900 capitalize">
-          {requestStatus === 'waitlisted' ? 'On waitlist' : 'Request pending approval'}
-        </p>
-        <p className="text-xs text-amber-700/80 mt-0.5">The organizer will confirm your spot</p>
-      </div>
-    ) : null;
+  const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
 
   const checkInFooter = participation ? (
-    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-      <ActivityCheckInPanel
-        activityId={trip!.id}
-        participation={participation}
-        onCheckIn={handleCheckIn}
-        onUpdated={setParticipation}
-      />
-      {withdrawButton}
+    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg space-y-2">
+      {isConfirmedParticipant && id && <TripChatCallout activityId={id} />}
+      {isConfirmedParticipant && <PushEnableBanner context="join" />}
+      <ActivityCheckInPanel participation={participation} />
+      {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && (
+        <JoinRequestActions
+          uiState={joinUiState}
+          joinLabel={joinLabel}
+          isFull={isFull}
+          onWithdraw={() => setShowWithdraw(true)}
+          joinButtonClassName="ios-btn shadow-lg"
+        />
+      )}
     </div>
-  ) : hasActiveRequest ? (
+  ) : joinUiState.kind !== 'open' ? (
     <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-      {requestStatusBanner}
-      {withdrawButton}
+      <JoinRequestActions
+        uiState={joinUiState}
+        joinLabel={joinLabel}
+        isFull={isFull}
+        onWithdraw={() => setShowWithdraw(true)}
+        joinButtonClassName="ios-btn shadow-lg"
+      />
     </div>
   ) : null;
 
   const joinButton = checkInFooter ?? (
     <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-      <button
-        type="button"
-        onClick={openJoinModal}
-        disabled={hasActiveRequest}
-        className={`w-full ios-btn shadow-lg disabled:opacity-60 ${
-          isFull ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
-        }`}
-      >
-        {joinLabel}
-      </button>
+      <JoinRequestActions
+        uiState={joinUiState}
+        joinLabel={joinLabel}
+        isFull={isFull}
+        onJoin={openJoinModal}
+        onWithdraw={() => setShowWithdraw(true)}
+        joinDisabled={!packageSelected}
+        joinButtonClassName="ios-btn shadow-lg"
+      />
     </div>
   );
 
-  const sidebarJoin = isConfirmed ? (
-    participation && (
-      <>
-        <ActivityCheckInPanel
-          activityId={trip.id}
-          participation={participation}
-          onCheckIn={handleCheckIn}
-          onUpdated={setParticipation}
-        />
-        {withdrawButton}
-      </>
-    )
-  ) : hasActiveRequest ? (
+  const sidebarJoin = participation ? (
     <>
-      {requestStatusBanner}
-      {withdrawButton}
+      {isConfirmedParticipant && id && <TripChatCallout activityId={id} className="mb-4" />}
+      {isConfirmedParticipant && <PushEnableBanner context="join" className="mb-4" />}
+      <ActivityCheckInPanel participation={participation} />
+      {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && (
+        <JoinRequestActions
+          uiState={joinUiState}
+          joinLabel={joinLabel}
+          isFull={isFull}
+          onWithdraw={() => setShowWithdraw(true)}
+        />
+      )}
     </>
+  ) : joinUiState.kind !== 'open' ? (
+    <JoinRequestActions
+      uiState={joinUiState}
+      joinLabel={joinLabel}
+      isFull={isFull}
+      onWithdraw={() => setShowWithdraw(true)}
+    />
   ) : (
     <button
       onClick={openJoinModal}
@@ -286,8 +326,8 @@ export const ActivityDetail = () => {
 
   return (
     <MobileDetailShell
-      backTo="/activities"
-      backLabel="Trips"
+      backTo={explorePath({ list: true, panel: 'activities' })}
+      backLabel="Explore"
       footer={joinButton}
       banner={{
         src: heroImage,
@@ -405,7 +445,14 @@ export const ActivityDetail = () => {
                     {(trip.startPoint || trip.meetingPoint || trip.parkingPoint) && (
                       <div className="space-y-1 text-sm text-gray-700">
                         {trip.startPoint && <p><span className="font-medium text-gray-900">Hike start point:</span> {trip.startPoint}</p>}
-                        {trip.meetingPoint && <p><span className="font-medium text-gray-900">Meeting point:</span> {trip.meetingPoint}</p>}
+                        {trip.meetingPoint && (
+                          <p>
+                            <span className="font-medium text-gray-900">Meeting point:</span> {trip.meetingPoint}
+                            <span className="block text-xs font-normal text-gray-500 mt-0.5">
+                              Information only — not a join requirement.
+                            </span>
+                          </p>
+                        )}
                         {trip.parkingPoint && <p><span className="font-medium text-gray-900">Parking:</span> {trip.parkingPoint}</p>}
                       </div>
                     )}
@@ -413,7 +460,7 @@ export const ActivityDetail = () => {
                       <MeetingPointMap
                         lat={accessLat}
                         lng={accessLng}
-                        label={trip.meetingPoint ?? trip.parkingPoint ?? trip.locationName}
+                        label={trip.meetingPoint ?? trip.parkingPoint ?? trip.locationName ?? trip.location?.name ?? undefined}
                         hideExternalLink
                       />
                     )}
@@ -518,20 +565,6 @@ export const ActivityDetail = () => {
 
           </div>
 
-          {trip.paymentTerms && pricingMode === 'shared' && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-1">Cost Shared</h2>
-              <p className="text-sm text-gray-500 mb-3">Why this cost is shared among participants</p>
-              <p className="text-gray-700 text-sm whitespace-pre-wrap">{trip.paymentTerms}</p>
-            </div>
-          )}
-
-          {trip.paymentTerms && pricingMode === 'paid' && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Payment terms</h2>
-              <p className="text-gray-700 text-sm whitespace-pre-wrap">{trip.paymentTerms}</p>
-            </div>
-          )}
 
           {trip.itinerary && trip.itinerary.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
@@ -547,16 +580,35 @@ export const ActivityDetail = () => {
             </div>
           )}
 
-          {trip.requirements && trip.requirements.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Instructions</h2>
-              <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-                {trip.requirements.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {(() => {
+            const mandatoryInstructions = extractJoinInstructionLines(trip.requirements);
+            const otherRequirements = extractNonJoinRequirements(trip.requirements);
+            return (
+              <>
+                {mandatoryInstructions.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-amber-100 p-5 sm:p-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-1">{MANDATORY_INSTRUCTIONS_LABEL}</h2>
+                    <p className="text-xs text-gray-500 mb-3">Joiners must agree to these when requesting a spot.</p>
+                    <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
+                      {mandatoryInstructions.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {otherRequirements.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-3">Trip details</h2>
+                    <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
+                      {otherRequirements.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           {trip.images && trip.images.length > 1 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
@@ -608,7 +660,7 @@ export const ActivityDetail = () => {
                       {showTenantBrand(trip) && trip.tenantName && (
                         <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
                       )}
-                      <p className="text-xs text-gray-500">Runs this trip · view organization</p>
+                      <p className="text-xs text-gray-500">{hostProfileHint}</p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
                   </Link>
@@ -628,7 +680,7 @@ export const ActivityDetail = () => {
                   </div>
                 )}
                 <HostMessageButton
-                  organizerUserId={activityHostUserId(trip)}
+                  hostUserId={activityHostUserId(trip)}
                   activityId={trip.id}
                   size="md"
                 />
@@ -647,8 +699,12 @@ export const ActivityDetail = () => {
                   participants={previewParticipants}
                   size="md"
                   showNames
+                  linkToProfile
                   emptyLabel="No confirmed participants yet — be the first to join!"
                 />
+                {previewParticipants.length > 0 && (
+                  <p className="mt-2 text-[11px] text-gray-400">Tap a name to view profile</p>
+                )}
               </div>
             )}
           </div>
@@ -659,7 +715,7 @@ export const ActivityDetail = () => {
         onClose={() => setShowWithdraw(false)}
         tripTitle={trip.title || trip.locationName}
         tripDate={trip.date}
-        variant={isConfirmed ? 'trip' : 'request'}
+        variant={withdrawModalVariant(joinUiState)}
         submitting={withdrawing}
         onConfirm={handleWithdraw}
       />

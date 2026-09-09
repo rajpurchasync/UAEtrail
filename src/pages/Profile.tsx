@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Compass,
+  Handshake,
+  Heart,
   MessageCircle,
+  Settings,
   Trophy,
   Users,
 } from 'lucide-react';
@@ -15,6 +18,7 @@ import {
   AccountActivityPreview,
   AccountAvatarModal,
   AccountEditModal,
+  AccountSignOutButton,
 } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useHostHubData } from '../hooks/useHostHubData';
@@ -24,13 +28,18 @@ import { TrailPointsPathSheet } from '../components/rewards';
 import { RewardSummaryDTO } from '@uaetrail/shared-types';
 import { ProfileHeroSection } from '../components/profile/ProfileHeroSection';
 import { ProfileQuickActions, type ProfileQuickAction } from '../components/profile/ProfileQuickActions';
+import { ProfileStampsRow } from '../components/profile/ProfileStampsRow';
 import { ProfileCompletionCard } from '../components/profile/ProfileCompletionCard';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
+import { buildProfileStamps } from '../utils/profileStamps';
+import { computeAgeFromDateOfBirth, formatMemberAge } from '../utils/profileAge';
+import { resolveProfileHostKind, resolveProfileRoleLabel } from '../utils/profileRoleLabel';
+import { attendedTrips } from '../utils/activityHubSections';
 import { isHostRole } from '../utils/roles';
 
 export const Profile = () => {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -38,7 +47,10 @@ export const Profile = () => {
     setProfile,
     conversations,
     groups,
+    buddies,
+    incomingBuddyRequests,
     pendingRequests,
+    trips,
     upcomingTripsCount,
     upcomingTrip,
     unreadMessages,
@@ -63,6 +75,25 @@ export const Profile = () => {
   const [showAvatarEdit, setShowAvatarEdit] = useState(false);
   const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
   const [showPointsPath, setShowPointsPath] = useState(false);
+  const [memberDetails, setMemberDetails] = useState<{ age: number | null; languages: string | null }>({
+    age: null,
+    languages: null,
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    void Promise.all([api.getMeProfile().catch(() => null), api.getMyHostApplication().catch(() => null)]).then(
+      ([profileRes, hostRes]) => {
+        const profile = profileRes?.data;
+        const meta = hostRes?.data?.metadata;
+        const dateOfBirth = profile?.dateOfBirth ?? meta?.dateOfBirth;
+        setMemberDetails({
+          age: dateOfBirth ? computeAgeFromDateOfBirth(dateOfBirth) : null,
+          languages: meta?.languages?.trim() || null,
+        });
+      }
+    );
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -79,11 +110,13 @@ export const Profile = () => {
   }, [location.pathname, location.state, navigate]);
 
   const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
+  const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const canHost = isHostRole(user?.role);
+  const isTripHost = canHost && hostProfileKind !== 'shop';
   const messagesPath = canHost ? '/host/messages' : '/messages';
   const activitiesPath = '/activities?tab=joined';
   const displayName = profile.displayName || user!.displayName || 'Explorer';
-  const roleLabel = user!.role === 'participant' ? 'Community member' : 'Explorer';
+  const roleLabel = resolveProfileRoleLabel(user?.role, ownedProfiles);
   const avatarUrl = profile.avatarUrl ?? user?.avatarUrl ?? null;
 
   const completion = useMemo(
@@ -106,6 +139,19 @@ export const Profile = () => {
   );
   const shareText = resolveProfileShareText(displayName, ownedProfiles);
   const shareReady = !hostGateLoading || ownedProfiles.length > 0 || Boolean(rewardSummary?.referralCode);
+
+  const profileStamps = useMemo(
+    () =>
+      buildProfileStamps({
+        rewardSummary,
+        attendedCount: attendedTrips(trips).length,
+        hostedCount: host.activities.filter((a) => a.status === 'published').length,
+        isHost: isTripHost,
+        hostProfileKind,
+        isGuideStaff: user?.role === 'tenant_guide',
+      }),
+    [host.activities, hostProfileKind, isTripHost, rewardSummary, trips, user?.role]
+  );
 
   const openActivities = useCallback(() => {
     navigate(activitiesPath);
@@ -133,6 +179,14 @@ export const Profile = () => {
         accent: 'bg-sky-50 text-sky-700',
       },
       {
+        key: 'buddies',
+        label: 'Buddies',
+        to: '/buddies',
+        icon: Handshake,
+        badge: incomingBuddyRequests.length || buddies.length || undefined,
+        accent: 'bg-violet-50 text-violet-700',
+      },
+      {
         key: 'groups',
         label: 'Groups',
         to: '/groups',
@@ -140,10 +194,17 @@ export const Profile = () => {
         badge: groups.length,
         accent: 'bg-indigo-50 text-indigo-700',
       },
+      {
+        key: 'favourites',
+        label: 'Saved',
+        to: '/favorites',
+        icon: Heart,
+        accent: 'bg-rose-50 text-rose-600',
+      },
     ];
 
     if (trailPointsEligible) {
-      actions.splice(3, 0, {
+      actions.push({
         key: 'rewards',
         label: 'Points',
         to: '/my-rewards',
@@ -153,11 +214,21 @@ export const Profile = () => {
       });
     }
 
+    actions.push({
+      key: 'settings',
+      label: 'Settings',
+      to: '/profile/settings',
+      icon: Settings,
+      accent: 'bg-neutral-100 text-neutral-700',
+    });
+
     return actions;
   }, [
+    buddies.length,
     canHost,
     groups.length,
     host.pendingJoinRequests,
+    incomingBuddyRequests.length,
     messagesPath,
     openActivities,
     rewardSummary?.points,
@@ -166,9 +237,10 @@ export const Profile = () => {
     upcomingTripsCount,
   ]);
 
-  const openSettings = useCallback(() => {
-    navigate('/profile/settings');
-  }, [navigate]);
+  const openPublicProfile = useCallback(() => {
+    if (!user?.id) return;
+    navigate(`/member/${user.id}`);
+  }, [navigate, user?.id]);
 
   const openEdit = useCallback(() => {
     setShowEdit(true);
@@ -193,7 +265,7 @@ export const Profile = () => {
       setShowEdit(false);
       await reload();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Failed to save profile');
+      setMessage(err instanceof Error ? err.message : 'Couldn\'t save your profile — try again.');
     } finally {
       setSaving(false);
     }
@@ -210,28 +282,45 @@ export const Profile = () => {
       setShowAvatarEdit(false);
       await reload();
     } catch (err) {
-      setAvatarMessage(err instanceof Error ? err.message : 'Failed to save photo');
+      setAvatarMessage(err instanceof Error ? err.message : 'Couldn\'t save your photo — try again.');
     } finally {
       setAvatarSaving(false);
     }
   };
 
-  const heroExtra =
-    trailPointsEligible && rewardSummary?.membershipTier && rewardSummary.membershipTier.key !== 'free' ? (
-      <MembershipTierBadge
-        tierKey={rewardSummary.membershipTier.key}
-        name={rewardSummary.membershipTier.name}
-        size="md"
-      />
-    ) : trailPointsEligible && rewardSummary ? (
-      <button
-        type="button"
-        onClick={() => setShowPointsPath(true)}
-        className="text-xs font-semibold text-emerald-600"
-      >
-        {rewardSummary.points.toLocaleString()} trail points
-      </button>
-    ) : null;
+  const heroExtra = (
+    <div className="flex flex-col items-center gap-2">
+      {(memberDetails.age != null || memberDetails.languages) && (
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {formatMemberAge(memberDetails.age) && (
+            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
+              {formatMemberAge(memberDetails.age)}
+            </span>
+          )}
+          {memberDetails.languages && (
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+              {memberDetails.languages}
+            </span>
+          )}
+        </div>
+      )}
+      {trailPointsEligible && rewardSummary?.membershipTier && rewardSummary.membershipTier.key !== 'free' ? (
+        <MembershipTierBadge
+          tierKey={rewardSummary.membershipTier.key}
+          name={rewardSummary.membershipTier.name}
+          size="md"
+        />
+      ) : trailPointsEligible && rewardSummary ? (
+        <button
+          type="button"
+          onClick={() => setShowPointsPath(true)}
+          className="text-xs font-semibold text-emerald-600"
+        >
+          {rewardSummary.points.toLocaleString()} trail points
+        </button>
+      ) : null}
+    </div>
+  );
 
   return (
     <ConsumerShell
@@ -262,9 +351,15 @@ export const Profile = () => {
           shareReady={shareReady}
           showCompletionBadge={!loading}
           onEditAvatar={openAvatarEdit}
-          onOpenSettings={openSettings}
+          onViewProfile={openPublicProfile}
           extra={heroExtra}
         />
+
+        {!loading && profileStamps.length > 0 && (
+          <GlassCard padding className="!py-4">
+            <ProfileStampsRow stamps={profileStamps} />
+          </GlassCard>
+        )}
 
         {!loading && (
           <ProfileCompletionCard
@@ -291,6 +386,8 @@ export const Profile = () => {
             />
           </>
         )}
+
+        <AccountSignOutButton onSignOut={() => void signOut()} />
       </div>
 
       {rewardSummary && trailPointsEligible && (

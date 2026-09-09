@@ -1,14 +1,9 @@
 import type { HostProfileType } from '@uaetrail/shared-types';
 import { isValidNationalPhone } from '../../utils/phone';
-import {
-  type BecomeHostFormState,
-  isAtLeastHostAge,
-  maxDateOfBirthForHost,
-} from './becomeHostForm';
+import type { BecomeHostFormState } from './becomeHostForm';
 
 export type HostFlowStepId =
   | 'name'
-  | 'dob'
   | 'about'
   | 'photo'
   | 'contact'
@@ -42,7 +37,7 @@ export const PROFILE_TYPE_OPTIONS: Array<{
   subtitle: string;
   emoji: string;
 }> = [
-  { key: 'individual', title: 'Guide', subtitle: 'Free & shared community activities', emoji: '👤' },
+  { key: 'individual', title: 'Individual', subtitle: 'Free & shared community activities', emoji: '👤' },
   { key: 'agency', title: 'Agency', subtitle: 'Licensed business — paid trips', emoji: '🏢' },
   { key: 'shop', title: 'Shop', subtitle: 'Gear shop pin on the map', emoji: '🛍️' },
 ];
@@ -50,7 +45,7 @@ export const PROFILE_TYPE_OPTIONS: Array<{
 export const getHostFlowSteps = (profileType: HostProfileType): HostFlowStepId[] => {
   switch (profileType) {
     case 'individual':
-      return ['name', 'dob', 'about', 'photo', 'contact', 'details', 'review'];
+      return ['name', 'about', 'photo', 'contact', 'details', 'review'];
     case 'agency':
       return ['name', 'about', 'contact', 'photo', 'services', 'location', 'review'];
     case 'shop':
@@ -64,8 +59,6 @@ export const hostFlowStepTitle = (step: HostFlowStepId, profileType: HostProfile
   switch (step) {
     case 'name':
       return profileType === 'individual' ? 'Your name' : profileType === 'agency' ? 'Agency name' : 'Shop name';
-    case 'dob':
-      return 'Date of birth';
     case 'about':
       return 'About you';
     case 'photo':
@@ -90,25 +83,25 @@ export const locationPickerTitle = (profileType: HostProfileType): string =>
 
 /** Sheet header title for the whole flow (not per-step). */
 export const hostFlowTitle = (intent: HostFlowIntent, step: HostFlowStep): string => {
-  if (intent === 'add-shop') return 'List a shop';
-  if (intent === 'add-agency') return 'Register agency';
+  if (intent === 'add-shop') return 'Share your shop';
+  if (intent === 'add-agency') return 'Join as an agency';
   if (intent === 'add-guide') return 'Become a guide';
-  if (step === 'pick') return 'How do you host?';
-  return 'Set up profile';
+  if (step === 'pick') return 'How do you want to show up?';
+  return 'Tell us about you';
 };
 
 export const hostFlowSubmitLabel = (intent: HostFlowIntent): string => {
-  if (intent === 'add-shop') return 'List shop';
-  if (intent === 'add-agency') return 'Register agency';
-  if (intent === 'add-guide') return 'Become a guide';
-  return 'Submit';
+  if (intent === 'add-shop') return 'Add my shop';
+  if (intent === 'add-agency') return 'Join the map';
+  if (intent === 'add-guide') return 'Start guiding';
+  return 'All done — submit';
 };
 
 export const hostFlowPickSubtitle = (intent: HostFlowIntent): string => {
-  if (intent === 'add-shop') return 'Pin your outdoor gear shop so hikers can find you nearby.';
-  if (intent === 'add-agency') return 'Set up your licensed tour agency for paid activities.';
-  if (intent === 'add-guide') return 'Lead free and shared hikes, camps, and meetups.';
-  return 'Pick what fits — community guide, licensed agency, or gear shop pin.';
+  if (intent === 'add-shop') return 'Help hikers and campers find your gear when they\'re planning a trip.';
+  if (intent === 'add-agency') return 'Connect with people looking for guided adventures across the UAE.';
+  if (intent === 'add-guide') return 'Share the trails and camps you love — free meetups and shared trips welcome.';
+  return 'Individual guide, licensed agency, or gear shop — pick whatever fits you best.';
 };
 
 export const validateHostFlowStep = (
@@ -116,50 +109,49 @@ export const validateHostFlowStep = (
   form: BecomeHostFormState
 ): string | null => {
   const profileType = form.hostProfileType;
-  if (!profileType) return 'Choose how you want to host.';
+  if (!profileType) return 'Pick how you\'d like to show up — guide, agency, or shop.';
 
   switch (step) {
     case 'name': {
       const value = profileType === 'individual' ? form.hostDisplayName : form.requestedName;
-      if (!value.trim()) return profileType === 'individual' ? 'Enter your name.' : 'Enter a name.';
+      if (!value.trim()) return profileType === 'individual' ? 'What should we call you?' : 'What\'s the name?';
       return null;
     }
-    case 'dob':
-      if (!form.dateOfBirth) return 'Enter your date of birth.';
-      if (!isAtLeastHostAge(form.dateOfBirth)) return 'You must be at least 15 years old.';
-      return null;
     case 'about':
-      if (form.bio.trim().length < 20) return 'Write at least 20 characters about yourself.';
+      if (form.bio.trim().length < 20) return 'Tell us a bit more about yourself (20+ characters).';
       return null;
     case 'photo':
-      if (profileType !== 'individual' && !form.profilePhoto.trim()) {
-        return profileType === 'agency' ? 'Add an agency image.' : 'Add a shop image.';
+      if (!form.profilePhoto.trim()) {
+        return profileType === 'individual'
+          ? 'Add a photo so people know who you are.'
+          : profileType === 'agency'
+            ? 'Add a photo for your agency.'
+            : 'Add a photo for your shop.';
       }
       return null;
     case 'contact':
-      if (!isValidNationalPhone(form.phone)) return 'Enter a valid mobile number.';
+      if (!isValidNationalPhone(form.phone)) return 'Add a valid mobile number so people can reach you.';
       if (form.website.trim()) {
         try {
           const url = new URL(form.website.trim());
           if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-            return 'Website must start with http:// or https://';
+            return 'Website links should start with http:// or https://';
           }
         } catch {
-          return 'Enter a valid website URL.';
+          return 'That website link doesn\'t look right — try again.';
         }
       }
       return null;
     case 'details':
-      if (!form.nationality) return 'Select your nationality.';
-      if (!form.residence) return 'Select where you are based in the UAE.';
-      if (!form.languages.trim()) return 'List the languages you speak.';
-      if (!form.interests.trim()) return 'Share a few interests.';
+      if (!form.nationality) return 'Where are you from?';
+      if (!form.residence) return 'Where are you based in the UAE?';
+      if (!form.languages.trim()) return 'Which languages do you speak?';
       return null;
     case 'services':
-      if (!form.services.trim()) return 'Describe the services you offer.';
+      if (!form.services.trim()) return 'What trips or services do you offer?';
       return null;
     case 'location':
-      if (form.latitude == null || form.longitude == null) return 'Drop a pin on the map.';
+      if (form.latitude == null || form.longitude == null) return 'Pin where you\'re based on the map.';
       return null;
     case 'review':
       return null;
@@ -168,4 +160,3 @@ export const validateHostFlowStep = (
   }
 };
 
-export { maxDateOfBirthForHost };

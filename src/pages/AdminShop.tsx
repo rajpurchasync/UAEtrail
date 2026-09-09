@@ -3,6 +3,7 @@ import { ProductDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';
 
 type ShopView = 'all' | 'featured' | 'draft';
 
@@ -11,11 +12,10 @@ interface AdminProduct extends ProductDTO {
   featured?: boolean;
 }
 
-const SHOP_CATEGORIES = [
-  { value: '', label: 'All Categories' },
-  { value: 'apparel', label: 'Apparel' },
-  { value: 'camping accessories', label: 'Camping Accessories' },
-  { value: 'hiking gears', label: 'Hiking Gears' },
+const SHOP_CATEGORY_OPTIONS = [
+  { value: 'apparel' as const, label: 'Apparel' },
+  { value: 'camping accessories' as const, label: 'Camping Accessories' },
+  { value: 'hiking gears' as const, label: 'Hiking Gears' },
 ];
 
 export const AdminShop = () => {
@@ -92,15 +92,17 @@ export const AdminShop = () => {
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-gray-900">Shop</h2>
-          <select
+          <AppSelect
             value={categoryFilter}
-            onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-            className="border rounded px-3 py-1.5 text-sm"
-          >
-            {SHOP_CATEGORIES.map((c) => (
-              <option key={c.value || 'all'} value={c.value}>{c.label}</option>
-            ))}
-          </select>
+            onChange={(value) => {
+              setCategoryFilter(value);
+              setPage(1);
+            }}
+            options={SHOP_CATEGORY_OPTIONS}
+            placeholder="All Categories"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by category"
+          />
         </div>
 
         <div className="border-b flex gap-0">

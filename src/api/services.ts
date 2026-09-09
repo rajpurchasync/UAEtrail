@@ -3,6 +3,9 @@ import {
   ChatMessageDTO,
   ActivityDTO,
   ActivityDetailDTO,
+  BuddyRelationshipDTO,
+  BuddyRequestDTO,
+  BuddySummaryDTO,
   ExploreMapItemDTO,
   FavoriteDTO,
   JoinRequestDTO,
@@ -29,7 +32,6 @@ import {
   RewardSummaryDTO,
   TenantListDTO,
   TenantType,
-  TripParticipationDTO,
   UserListDTO,
   WithdrawReason
 } from '@uaetrail/shared-types';
@@ -118,9 +120,8 @@ export interface ActivityRequestView {
     time?: string;
     startAt?: string;
     hostName?: string;
+    hostUserId?: string;
     tenantName?: string;
-    organizerName?: string;
-    organizerUserId?: string;
     tenantSlug?: string;
   };
 }
@@ -135,16 +136,80 @@ export interface UserProfile {
   bio?: string;
   avatarUrl?: string;
   profileVisibility?: 'public' | 'group_members' | 'private';
+  dateOfBirth?: string | null;
+  gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
+  city?:
+    | 'dubai'
+    | 'sharjah'
+    | 'al_ain'
+    | 'abu_dhabi'
+    | 'ras_al_khaimah'
+    | 'fujairah'
+    | 'ajman'
+    | 'umm_al_quwain'
+    | null;
+  signupProfileComplete?: boolean;
 }
+
+export type PublicMemberProfileDTO =
+  | {
+      visibilityState: 'private';
+      id: string;
+      message: string;
+    }
+  | {
+      visibilityState: 'full';
+      id: string;
+      displayName: string;
+      avatarUrl: string | null;
+      bio: string | null;
+      age: number | null;
+      languages: string | null;
+      isHost: boolean;
+      isGuideStaff?: boolean;
+      hostProfileKind: 'shop' | 'agency' | 'guide' | null;
+      hostProfilePath: string | null;
+      trailPointsEligible: boolean;
+      points: number;
+      membershipTier: {
+        key: string;
+        name: string;
+        minPoints: number;
+        emoji: string;
+        tagline: string;
+        benefits: string[];
+      };
+      tierBadges: Array<{
+        key: string;
+        name: string;
+        description: string;
+        emoji: string;
+        earned: boolean;
+        earnedAt: string | null;
+      }>;
+      badges: Array<{
+        key: string;
+        name: string;
+        description: string;
+        emoji: string;
+        earned: boolean;
+        earnedAt: string | null;
+      }>;
+      stats: {
+        tripsAttended: number;
+        tripsHosted: number;
+      };
+    };
 
 export interface SocialGroupView {
   id: string;
-  type: 'family' | 'friends';
+  type: 'family' | 'friends' | 'activity';
   name: string;
   slogan?: string | null;
   bannerUrl?: string | null;
   photoUrl?: string | null;
   adminUserId: string;
+  activityId?: string | null;
   status?: 'active' | 'suspended';
   createdAt: string;
   updatedAt: string;
@@ -281,6 +346,7 @@ export interface TenantDetail {
 export interface HostDetails {
   experience?: string;
   languages?: string;
+  age?: number;
   certificates?: string;
   notableHikes?: string;
   nationality?: string;
@@ -292,6 +358,12 @@ export interface TenantProfile {
   name: string;
   slug: string;
   type: string;
+  businessMode?: string | null;
+  description?: string | null;
+  website?: string | null;
+  region?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   ownerId: string;
   ownerName: string;
   ownerAvatar: string | null;
@@ -301,6 +373,15 @@ export interface TenantProfile {
   memberCount: number;
   team: { role: string; displayName: string; avatarUrl: string | null }[];
   activities: ActivityDTO[];
+  merchantId?: string | null;
+  shopProducts?: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    images: string[];
+    priceAed: number;
+    discountPercent: number | null;
+  }>;
 }
 
 export const api = {
@@ -384,11 +465,8 @@ export const api = {
     apiRequest<{ data: ActivityDTO[] }>(`/activities/featured?limit=${limit}`),
   getPublicActivityDetail: (id: string) =>
     apiRequest<{ data: ActivityDetail }>(`/activities/${id}`, { auth: Boolean(getStoredSession()) }),
-  checkInToTrip: (activityId: string) =>
-    apiRequest<{ message: string; checkedInAt: string; participation: TripParticipationDTO }>(
-      `/activities/${activityId}/checkin`,
-      { method: 'POST', auth: true }
-    ).then((res) => res.participation),
+  getActivityGroupChat: (activityId: string) =>
+    apiRequest<{ data: { groupId: string } }>(`/activities/${activityId}/group-chat`, { auth: true }),
   createJoinRequest: (activityId: string, note?: string, selectedPackageIndex?: number) =>
     apiRequest<{ data: JoinRequestDTO }>(`/activities/${activityId}/requests`, {
       method: 'POST',
@@ -419,12 +497,27 @@ export const api = {
     apiRequest<{ data: ActivityRequestView }>(`/me/requests/${requestId}`, { auth: true }),
   getMeActivities: () => apiRequest<{ data: MyActivityDTO[] }>('/me/activities', { auth: true }),
   getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
+  getUserPublicProfile: (userId: string) =>
+    apiRequest<{ data: PublicMemberProfileDTO }>(`/users/${userId}/public-profile`),
   updateMeProfile: (payload: UserProfile) =>
     apiRequest<{ data: UserProfile }>('/me/profile', {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(payload)
     }),
+  completeSignupProfile: (payload: {
+    dateOfBirth: string;
+    gender: NonNullable<UserProfile['gender']>;
+    city: NonNullable<UserProfile['city']>;
+  }) =>
+    apiRequest<{ data: Pick<UserProfile, 'dateOfBirth' | 'gender' | 'city' | 'signupProfileComplete'> }>(
+      '/me/profile/signup-details',
+      {
+        method: 'PATCH',
+        auth: true,
+        body: JSON.stringify(payload),
+      }
+    ),
   requestEmailChange: (newEmail: string) =>
     apiRequest<{ message: string; email: string; expiresInSeconds: number }>('/me/email/change/request', {
       method: 'POST',
@@ -487,6 +580,37 @@ export const api = {
     apiRequest(`/me/notifications/${id}/read`, { method: 'PATCH', auth: true }),
   markAllNotificationsRead: () =>
     apiRequest<{ count: number }>('/me/notifications/read-all', { method: 'PATCH', auth: true }),
+  getMeBuddies: () => apiRequest<{ data: BuddySummaryDTO[] }>('/me/buddies', { auth: true }),
+  getMeBuddyRequests: (direction: 'incoming' | 'outgoing' | 'all' = 'all') =>
+    apiRequest<{ data: BuddyRequestDTO[] }>(`/me/buddy-requests?direction=${direction}`, { auth: true }),
+  getBuddyRelationship: (userId: string) =>
+    apiRequest<{ data: BuddyRelationshipDTO }>(`/me/buddy-relationship/${userId}`, { auth: true }),
+  sendBuddyRequest: (payload: { targetUserId: string; message?: string }) =>
+    apiRequest<{ data: BuddyRequestDTO }>('/me/buddy-requests', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload),
+    }),
+  acceptBuddyRequest: (requestId: string) =>
+    apiRequest<{ data: BuddyRequestDTO }>(`/me/buddy-requests/${requestId}/accept`, {
+      method: 'POST',
+      auth: true,
+    }),
+  declineBuddyRequest: (requestId: string) =>
+    apiRequest<{ data: BuddyRequestDTO }>(`/me/buddy-requests/${requestId}/decline`, {
+      method: 'POST',
+      auth: true,
+    }),
+  cancelBuddyRequest: (requestId: string) =>
+    apiRequest<{ data: BuddyRequestDTO }>(`/me/buddy-requests/${requestId}/cancel`, {
+      method: 'POST',
+      auth: true,
+    }),
+  unfriendBuddy: (userId: string) =>
+    apiRequest<{ data: { unfriended: true } }>(`/me/buddies/${userId}/unfriend`, {
+      method: 'POST',
+      auth: true,
+    }),
   getMeGroups: () => apiRequest<{ data: SocialGroupView[] }>('/me/groups', { auth: true }),
   createMeGroup: (payload: {
     type: 'family' | 'friends';
@@ -662,6 +786,17 @@ export const api = {
       auth: true,
       headers: { 'x-tenant-id': tenantId }
     }),
+
+  fulfillParticipantIntent: (tenantId: string, intentId: string, activityId: string) =>
+    apiRequest<import('@uaetrail/shared-types').ParticipantIntentDTO>(
+      `/host/participant-intents/${intentId}/fulfill`,
+      {
+        method: 'POST',
+        auth: true,
+        headers: { 'x-tenant-id': tenantId },
+        body: JSON.stringify({ activityId })
+      }
+    ),
 
   duplicateHostActivity: (tenantId: string, activityId: string) =>
     apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}/duplicate`, {
@@ -903,13 +1038,30 @@ export const api = {
     apiRequest<{ data: MerchantProfileDTO[] }>('/shop/merchant/stores', { auth: true }),
   getMerchantProfileById: (merchantId: string) =>
     apiRequest<{ data: MerchantProfileDTO }>(`/shop/merchant/profile?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
-  createMerchantProfile: (payload: { shopName: string; description?: string; logo?: string; contactEmail?: string; contactPhone?: string }) =>
+  createMerchantProfile: (payload: {
+    shopName: string;
+    description?: string;
+    logo?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    region?: string | null;
+  }) =>
     apiRequest<{ data: MerchantProfileDTO }>('/shop/merchant/profile', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
     }),
-  updateMerchantProfile: (merchantId: string, payload: Partial<{ shopName: string; description?: string; logo?: string; contactEmail?: string; contactPhone?: string }>) =>
+  updateMerchantProfile: (
+    merchantId: string,
+    payload: Partial<{
+      shopName: string;
+      description?: string;
+      logo?: string;
+      contactEmail?: string;
+      contactPhone?: string;
+      region?: string | null;
+    }>
+  ) =>
     apiRequest<{ data: MerchantProfileDTO }>(`/shop/merchant/profile?merchantId=${encodeURIComponent(merchantId)}`, {
       method: 'PATCH',
       auth: true,
@@ -1152,17 +1304,34 @@ export const api = {
   // ─── Favorites ─────────────────────────────────────────────────────────
 
   getMeFavorites: () => apiRequest<{ data: FavoriteDTO[] }>('/me/favorites', { auth: true }),
-  checkFavorite: (locationId?: string, activityId?: string, productId?: string) => {
+  checkFavorite: (target: {
+    locationId?: string;
+    activityId?: string;
+    productId?: string;
+    merchantId?: string;
+    tenantId?: string;
+    profileUserId?: string;
+  }) => {
     const params = new URLSearchParams();
-    if (locationId) params.set('locationId', locationId);
-    if (activityId) params.set('activityId', activityId);
-    if (productId) params.set('productId', productId);
+    if (target.locationId) params.set('locationId', target.locationId);
+    if (target.activityId) params.set('activityId', target.activityId);
+    if (target.productId) params.set('productId', target.productId);
+    if (target.merchantId) params.set('merchantId', target.merchantId);
+    if (target.tenantId) params.set('tenantId', target.tenantId);
+    if (target.profileUserId) params.set('profileUserId', target.profileUserId);
     return apiRequest<{ data: { saved: boolean; favoriteId: string | null } }>(
       `/me/favorites/check?${params.toString()}`,
       { auth: true }
     );
   },
-  addFavorite: (payload: { locationId?: string; activityId?: string; productId?: string }) =>
+  addFavorite: (payload: {
+    locationId?: string;
+    activityId?: string;
+    productId?: string;
+    merchantId?: string;
+    tenantId?: string;
+    profileUserId?: string;
+  }) =>
     apiRequest<{ data: FavoriteDTO }>('/me/favorites', {
       method: 'POST',
       auth: true,

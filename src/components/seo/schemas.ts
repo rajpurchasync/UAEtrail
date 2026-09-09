@@ -1,6 +1,6 @@
 import { ActivityDetailDTO, ProductDTO, ReviewDTO } from '@uaetrail/shared-types';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
-import { CampingSpot, Trail } from '../../types';
+import { CampingSpot, Trail, CommunityActivitySpot } from '../../types';
 import type { TenantProfile } from '../../api/services';
 import { activityHostName } from '../../utils/hostLabels';
 
@@ -20,7 +20,7 @@ export const websiteSchema = () => ({
   },
   potentialAction: {
     '@type': 'SearchAction',
-    target: `${SITE_ORIGIN}/discovery?q={search_term_string}`,
+    target: `${SITE_ORIGIN}/explore?panel=venues&list=1&q={search_term_string}`,
     'query-input': 'required name=search_term_string'
   }
 });
@@ -45,10 +45,30 @@ export const trailSchema = (trail: Trail) => ({
       : undefined,
   touristType: 'Hiker',
   additionalProperty: [
-    { '@type': 'PropertyValue', name: 'difficulty', value: trail.difficulty },
-    { '@type': 'PropertyValue', name: 'distanceKm', value: trail.distance },
-    { '@type': 'PropertyValue', name: 'region', value: trail.region }
-  ]
+    trail.difficulty
+      ? { '@type': 'PropertyValue', name: 'difficulty', value: trail.difficulty }
+      : null,
+    trail.distance != null && trail.distance > 0
+      ? { '@type': 'PropertyValue', name: 'distanceKm', value: trail.distance }
+      : null,
+    { '@type': 'PropertyValue', name: 'region', value: trail.region },
+  ].filter(Boolean),
+});
+
+export const eventVenueSchema = (event: CommunityActivitySpot) => ({
+  '@context': 'https://schema.org',
+  '@type': 'TouristAttraction',
+  name: event.name,
+  description: event.description,
+  url: `${SITE_ORIGIN}/event/${event.id}`,
+  image: absImage(event.images?.[0]),
+  address: locationAddress(event.region),
+  geo:
+    event.latitude != null && event.longitude != null
+      ? { '@type': 'GeoCoordinates', latitude: event.latitude, longitude: event.longitude }
+      : undefined,
+  touristType: 'Outdoor event venue',
+  additionalProperty: [{ '@type': 'PropertyValue', name: 'region', value: event.region }],
 });
 
 export const campSchema = (camp: CampingSpot) => ({

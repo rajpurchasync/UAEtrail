@@ -3,19 +3,42 @@
  * Reference: UAE Trail Platform Audit & Strategy plan.
  */
 
+/** Full-screen explore map (mobile-first). */
+export const EXPLORE_MAP_PATH = '/explore' as const;
+
+/** Post-auth destination for landing “Join” CTA. */
+export const PARTICIPANT_JOIN_REDIRECT = `${EXPLORE_MAP_PATH}?list=1` as const;
+
+/** Desktop top nav — map-first; browse pages redirect into explore. */
+export const DESKTOP_NAV_LINKS = [
+  { to: '/', label: 'Home' },
+  { to: EXPLORE_MAP_PATH, label: 'Explore' },
+  { to: '/community', label: 'Community' },
+  { to: '/faq', label: 'Help' },
+] as const;
+
+export const joinAuthPath = (redirect: string = PARTICIPANT_JOIN_REDIRECT): string =>
+  `/signin?redirect=${encodeURIComponent(redirect)}`;
+
+/** Right-side user menu on landing (mobile/PWA) — Explore, Join, Contact only. */
+export const MOBILE_LANDING_USER_MENU = [
+  { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH] as const },
+  { label: 'Join', to: joinAuthPath(), match: ['/signin', '/signup'] as const },
+  { label: 'Contact', href: 'mailto:support@uaetrail.com' },
+] as const;
+
 /** Right-side hamburger drawer order (mobile/PWA only). */
 export const MOBILE_DRAWER_MENU = [
   {
     label: 'My Profile',
     to: '/profile',
-    match: ['/profile', '/favorites', '/my-requests', '/messages'],
+    match: ['/profile', '/my-requests', '/messages'],
     profileLink: true,
   },
+  { label: 'Explore Map', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery', '/shop'] },
+  { label: 'Favourites', to: '/favorites', match: ['/favorites'] },
   { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
-  { label: 'Trails & Spots', to: '/discovery', match: ['/discovery', '/trail', '/camp'] },
-  { label: 'Upcoming Activities', to: '/activities', match: ['/activities', '/trips', '/trip', '/activity'] },
-  { label: 'Gears Shop', to: '/shop', match: ['/shop', '/product', '/merchant'] },
-  { label: 'Community', to: '/community', match: ['/community'] },
+  { label: 'My trips', to: '/activities?tab=joined', match: ['/activities', '/trips', '/trip', '/activity'] },
 ] as const;
 
 /**
@@ -69,7 +92,7 @@ export const PARTICIPANT_PRIVACY = {
 };
 
 /**
- * Map provider for Discovery (Phase 2).
+ * Map provider for Explore (Phase 2).
  * Esri light-gray base + reference labels — free, no API key, English place names.
  */
 const envTileUrl =
@@ -86,7 +109,7 @@ export const MAP_CONFIG = {
   /** Mobile explore — start on Dubai metro at city zoom. */
   exploreDefaultCenter: { lat: 25.2048, lng: 55.2708 },
   exploreDefaultZoom: 11,
-  /** Discovery / detail maps — light base + label overlay. */
+  /** Explore / detail maps — light base + label overlay. */
   tileUrl:
     envTileUrl ||
     'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
@@ -133,4 +156,46 @@ export const isConsumerChromeHidden = (pathname: string): boolean =>
 
 /** Mobile detail pages render their own back header (trip, trail, camp, product). */
 export const isMobileDetailRoute = (pathname: string): boolean =>
-  /^\/(trip|trail|camp|product|activity|event-spot|community-activity)\//.test(pathname);
+  /^\/(trip|trail|camp|event|product|activity|event-spot|community-activity)\//.test(pathname);
+
+/**
+ * Consumer pages that render their own sticky header (ConsumerShell / MobileScreen / MobileDetailShell).
+ * Layout must not also show MobileConsumerNavBar on these routes.
+ */
+export const CONSUMER_SELF_HEADER_EXACT = [
+  '/',
+  '/explore',
+  '/activities',
+  '/community',
+  '/shop',
+  '/profile',
+  '/trail-points',
+  '/my-rewards',
+  '/groups',
+  '/buddies',
+  '/messages',
+  '/notifications',
+  '/favorites',
+  '/my-requests',
+  '/become-host',
+  '/become-organizer',
+  '/faq',
+  '/terms',
+  '/privacy',
+  '/security-privacy',
+] as const;
+
+export const CONSUMER_SELF_HEADER_PREFIXES = [
+  '/profile/',
+  '/my-requests/',
+  '/member/',
+  '/operator/',
+  '/shop/manage',
+  '/agency/manage',
+  '/host/security-privacy',
+] as const;
+
+export const hasConsumerSelfHeader = (pathname: string): boolean =>
+  CONSUMER_SELF_HEADER_EXACT.includes(pathname as (typeof CONSUMER_SELF_HEADER_EXACT)[number]) ||
+  CONSUMER_SELF_HEADER_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+  isMobileDetailRoute(pathname);

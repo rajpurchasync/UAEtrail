@@ -1,5 +1,6 @@
 import {
   ActivityLocationPinField,
+  AppSelect,
   FormTabBar,
   HostSelect,
   ImageUpload,
@@ -15,7 +16,6 @@ import {
   FORM_LABEL,
   FORM_TEXTAREA,
   type ActivityFormState,
-  type CarPoolPricing,
   type PricingMode,
 } from './activityFormState';
 
@@ -26,6 +26,13 @@ export const INSTRUCTION_TABS = [
   { id: 'mandatory', label: 'Mandatory' },
   { id: 'recommendation', label: 'Recommendation' },
 ] as const;
+
+const FITNESS_LEVEL_OPTIONS = (['Easy', 'Moderate', 'Hard', 'Expert'] as const).map((level) => ({
+  value: level,
+  label: level,
+}));
+
+const emirateOptions = UAE_EMIRATES.map((emirate) => ({ value: emirate, label: emirate }));
 
 export type InstructionTabId = (typeof INSTRUCTION_TABS)[number]['id'];
 
@@ -113,36 +120,27 @@ export const SummaryStepHiking = ({
 
     <div>
       <label className={FORM_LABEL}>Fitness level</label>
-      <select
+      <AppSelect
         value={form.fitnessLevel}
-        onChange={(e) => set({ fitnessLevel: e.target.value })}
-        className={FORM_INPUT}
-      >
-        <option value="">Select level…</option>
-        {(['Easy', 'Moderate', 'Hard', 'Expert'] as const).map((level) => (
-          <option key={level} value={level}>
-            {level}
-          </option>
-        ))}
-      </select>
+        onChange={(fitnessLevel) => set({ fitnessLevel })}
+        options={FITNESS_LEVEL_OPTIONS}
+        placeholder="Select level…"
+        inputClassName={FORM_INPUT}
+        aria-label="Fitness level"
+      />
     </div>
 
     {canPickHostOrganization && pickerHostOrganizations.length > 0 && (
       <div>
         <label className={FORM_LABEL}>Host organization *</label>
-        <select
-          required
+        <AppSelect
           value={form.tenantId}
-          onChange={(e) => set({ tenantId: e.target.value })}
-          className={FORM_INPUT}
-        >
-          <option value="">Select organization…</option>
-          {pickerHostOrganizations.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+          onChange={(tenantId) => set({ tenantId })}
+          options={pickerHostOrganizations.map((tenant) => ({ value: tenant.id, label: tenant.name }))}
+          placeholder="Select organization…"
+          inputClassName={FORM_INPUT}
+          aria-label="Host organization"
+        />
       </div>
     )}
 
@@ -243,36 +241,26 @@ export const SummaryStepCamping = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-medium text-gray-600 mb-1 block">Emirate *</label>
-            <select
-              required
+            <AppSelect
               value={form.eventEmirate}
-              onChange={(e) => set({ eventEmirate: e.target.value, eventState: '' })}
-              className={FORM_INPUT}
-            >
-              <option value="">Select emirate…</option>
-              {UAE_EMIRATES.map((emirate) => (
-                <option key={emirate} value={emirate}>
-                  {emirate}
-                </option>
-              ))}
-            </select>
+              onChange={(eventEmirate) => set({ eventEmirate, eventState: '' })}
+              options={emirateOptions}
+              placeholder="Select emirate…"
+              inputClassName={FORM_INPUT}
+              aria-label="Event emirate"
+            />
           </div>
           <div>
             <label className="text-xs font-medium text-gray-600 mb-1 block">State *</label>
-            <select
-              required
+            <AppSelect
               value={form.eventState}
+              onChange={(eventState) => set({ eventState })}
+              options={stateOptions.map((state) => ({ value: state, label: state }))}
               disabled={!form.eventEmirate}
-              onChange={(e) => set({ eventState: e.target.value })}
-              className={`${FORM_INPUT} disabled:bg-gray-50`}
-            >
-              <option value="">Select state…</option>
-              {stateOptions.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
+              placeholder="Select state…"
+              inputClassName={`${FORM_INPUT} disabled:bg-gray-50`}
+              aria-label="Event state"
+            />
           </div>
         </div>
         <div>
@@ -346,19 +334,14 @@ export const SummaryStepCamping = ({
       pickerHostOrganizations.length > 0 && (
         <div>
           <label className={FORM_LABEL}>Host organization *</label>
-          <select
-            required
+          <AppSelect
             value={form.tenantId}
-            onChange={(e) => set({ tenantId: e.target.value })}
-            className={FORM_INPUT}
-          >
-            <option value="">Select organization…</option>
-            {pickerHostOrganizations.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
+            onChange={(tenantId) => set({ tenantId })}
+            options={pickerHostOrganizations.map((tenant) => ({ value: tenant.id, label: tenant.name }))}
+            placeholder="Select organization…"
+            inputClassName={FORM_INPUT}
+            aria-label="Host organization"
+          />
         </div>
       )
     )}
@@ -529,7 +512,7 @@ export const ParticipationStep = ({ form, set, isBusinessOrg }: ParticipationSte
           />
         </div>
         <div>
-          <label className={FORM_LABEL}>Let participants know why this cost is shared among participants *</label>
+          <label className={FORM_LABEL}>Shared cost note (optional)</label>
           <textarea
             value={form.sharedCostInfo}
             onChange={(e) => set({ sharedCostInfo: e.target.value })}
@@ -551,16 +534,6 @@ export const ParticipationStep = ({ form, set, isBusinessOrg }: ParticipationSte
             value={form.price || ''}
             onChange={(e) => set({ price: Number(e.target.value) })}
             className={FORM_INPUT}
-          />
-        </div>
-        <div>
-          <label className={FORM_LABEL}>Payment terms *</label>
-          <textarea
-            value={form.paymentTerms}
-            onChange={(e) => set({ paymentTerms: e.target.value })}
-            className={FORM_INPUT}
-            rows={2}
-            placeholder="How and when participants pay (off-platform)…"
           />
         </div>
       </div>
@@ -639,6 +612,12 @@ export const LocationStep = ({
           />
         )}
       </div>
+      {locationTab === 'meeting' && (
+        <p className="text-xs text-gray-500">
+          Use the pin label for meeting point information (directions, landmarks). Mandatory join rules go in the
+          Instructions step.
+        </p>
+      )}
       {activityType === 'camping' && (
         <p className="text-xs text-gray-500">Add parking details in the Transportation step.</p>
       )}
@@ -666,7 +645,9 @@ export interface InstructionsStepProps {
 
 export const InstructionsStep = ({ form, set, instructionTab }: InstructionsStepProps) => (
   <div className="space-y-4">
-    <p className="text-sm text-gray-600">Participants must accept mandatory instructions when requesting to join.</p>
+    <p className="text-sm text-gray-600">
+      Mandatory instructions must be accepted when someone requests to join. Meeting point details are informational only.
+    </p>
 
     {instructionTab === 'mandatory' && (
       <div className="space-y-4 pt-2">
@@ -712,7 +693,7 @@ export const InstructionsStep = ({ form, set, instructionTab }: InstructionsStep
         </div>
 
         <div>
-          <label className={FORM_LABEL}>Instructions</label>
+          <label className={FORM_LABEL}>Mandatory instructions *</label>
           <textarea
             value={form.mandatoryInstructions}
             onChange={(e) => set({ mandatoryInstructions: e.target.value })}
@@ -776,110 +757,6 @@ export const TransportationStep = ({ form, set, setPin, venueCenter }: Transport
         <p className="text-xs text-gray-500 mt-0.5">The venue or access road requires a 4x4 vehicle.</p>
       </div>
     </label>
-
-    <label className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 p-4 bg-gray-50/50 cursor-pointer">
-      <div>
-        <p className="text-sm font-medium text-gray-900">Offer carpool</p>
-        <p className="text-xs text-gray-500 mt-0.5">
-          Creates a linked carpool listing on the map with from/to pickup and destination.
-        </p>
-      </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={form.carPoolEnabled}
-        onClick={() => set({ carPoolEnabled: !form.carPoolEnabled })}
-        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${
-          form.carPoolEnabled ? 'bg-emerald-600' : 'bg-gray-200'
-        }`}
-      >
-        <span
-          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
-            form.carPoolEnabled ? 'translate-x-5' : 'translate-x-0'
-          }`}
-        />
-      </button>
-    </label>
-
-    {form.carPoolEnabled && (
-      <div className="space-y-4 rounded-lg border border-gray-200 p-4">
-        <p className="text-sm font-medium text-gray-900">Carpool route</p>
-        <p className="text-xs text-gray-500">
-          Set pickup and destination on the map. A separate carpool listing will appear on the explore map,
-          linked to this activity.
-        </p>
-        <ActivityLocationPinField
-          label="From location"
-          value={form.carPoolFrom}
-          onChange={(patch) => setPin('carPoolFrom', patch)}
-          centerLat={venueCenter.lat}
-          centerLng={venueCenter.lng}
-          required
-        />
-        <ActivityLocationPinField
-          label="To location"
-          value={form.carPoolTo}
-          onChange={(patch) => setPin('carPoolTo', patch)}
-          centerLat={venueCenter.lat}
-          centerLng={venueCenter.lng}
-          required
-        />
-        <div>
-          <label className={FORM_LABEL}>Available seats *</label>
-          <input
-            type="number"
-            min={1}
-            value={form.carPoolSeats || ''}
-            onChange={(e) => set({ carPoolSeats: Number(e.target.value) })}
-            className={FORM_INPUT}
-            placeholder="e.g. 3"
-          />
-        </div>
-        <div>
-          <label className={FORM_LABEL}>Car pool pricing</label>
-          <div className="flex flex-wrap gap-2">
-            {(['free', 'shared'] as CarPoolPricing[]).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => set({ carPoolPricing: mode })}
-                className={`px-3 py-1.5 rounded-md text-sm border ${
-                  form.carPoolPricing === mode
-                    ? 'bg-emerald-600 text-white border-emerald-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {mode === 'free' ? 'Free' : 'Shared'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {form.carPoolPricing === 'shared' && (
-          <div>
-            <label className={FORM_LABEL}>Amount per seat (AED) *</label>
-            <input
-              type="number"
-              min={1}
-              value={form.carPoolSharedAmount || ''}
-              onChange={(e) => set({ carPoolSharedAmount: Number(e.target.value) })}
-              className={FORM_INPUT}
-            />
-          </div>
-        )}
-
-        <div>
-          <label className={FORM_LABEL}>Details (optional)</label>
-          <textarea
-            value={form.carPoolDetails}
-            onChange={(e) => set({ carPoolDetails: e.target.value })}
-            className={FORM_TEXTAREA}
-            rows={4}
-            placeholder="e.g. 3 seats available, meet at Mall of Emirates…"
-          />
-        </div>
-      </div>
-    )}
 
     <div className="rounded-lg border border-gray-200 p-4 space-y-3">
       <p className={FORM_LABEL}>Parking spot</p>

@@ -8,7 +8,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { MAP_CONFIG } from '../../config/platform';
-import { resolveMapPinEmoji } from '../../explore/exploreCopy';
+import { exploreMapPinRingColor } from '../../config/exploreTheme';
+import { resolveMapPinEmoji, MAP_FILTER_EMOJI, HIKING_VENUE_EMOJI, CAMPING_VENUE_EMOJI, CAMPING_ACTIVITY_EMOJI } from '../../explore/exploreCopy';
 import { MapTileLayers } from './MapTileLayers';
 
 export type MapPinKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
@@ -71,24 +72,41 @@ const boundsFromPins = (pins: LocationMapPin[], fallback: MapBounds): MapBounds 
   );
 };
 
-const pinShadow = '0 4px 14px rgba(15,23,42,.18), 0 1px 3px rgba(15,23,42,.1)';
+const resolvePinSource = (pin: Pick<LocationMapPin, 'id' | 'source'>): MapPinSource => {
+  if (
+    pin.source === 'activity' ||
+    pin.source === 'venue' ||
+    pin.source === 'shop' ||
+    pin.source === 'agency' ||
+    pin.source === 'demand'
+  ) {
+    return pin.source;
+  }
+  if (pin.id.startsWith('venue:')) return 'venue';
+  if (pin.id.startsWith('demand:')) return 'demand';
+  if (pin.id.startsWith('shop:')) return 'shop';
+  if (pin.id.startsWith('agency:')) return 'agency';
+  return 'activity';
+};
 
 const pinIcon = (
   kind: MapPinKind,
   selected: boolean,
-  source: MapPinSource = 'activity',
+  pin: Pick<LocationMapPin, 'id' | 'source'>,
   carpoolEndpoint?: 'from' | 'to'
 ): L.DivIcon => {
+  const source = resolvePinSource(pin);
   const emoji = resolveMapPinEmoji(kind, source, carpoolEndpoint);
+  const ringColor = exploreMapPinRingColor(kind, source);
   const isVenue = source === 'venue';
   const size = isVenue ? (selected ? 36 : 32) : selected ? 44 : 40;
   const fontSize = isVenue ? 17 : 21;
-  const scale = selected ? 'transform:scale(1.08);' : '';
-  const border = isVenue ? '2px solid #e5e7eb' : '2.5px solid #fff';
+  const ringWidth = selected ? 3 : 2.5;
+  const selectedClass = selected ? ' uaetrail-map-pin-marker--selected' : '';
 
   return L.divIcon({
     className: 'uaetrail-map-pin',
-    html: `<span style="position:relative;display:block;width:${size}px;height:${size}px;${scale}"><span class="font-emoji" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:9999px;background:#fff;font-size:${fontSize}px;line-height:1;box-shadow:${pinShadow};border:${border};">${emoji}</span></span>`,
+    html: `<span class="uaetrail-map-pin-marker${selectedClass}" style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face font-emoji" style="font-size:${fontSize}px;border:${ringWidth}px solid ${ringColor};">${emoji}</span></span>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     popupAnchor: [0, -size / 2 - 4],
@@ -280,48 +298,68 @@ const ClusteredMarkers = ({
 }) => {
   const map = useMap();
   const pinsKeyValue = useMemo(() => pinsKey(pins), [pins]);
+  const onPinClickRef = useRef(onPinClick);
 
   useEffect(() => {
-    const group = L.markerClusterGroup({
-      chunkedLoading: true,
-      showCoverageOnHover: false,
-      maxClusterRadius: 48,
-      spiderfyOnMaxZoom: true,
-      disableClusteringAtZoom: 15,
-      iconCreateFunction: (cluster) => {
-        const count = cluster.getChildCount();
-        const size = count >= 10 ? 46 : count >= 4 ? 42 : 38;
-        return L.divIcon({
-          html: `<span class="uaetrail-map-cluster font-emoji" style="width:${size}px;height:${size}px;line-height:${size - 4}px;">${count}</span>`,
-          className: 'uaetrail-map-cluster-wrap',
-          iconSize: [size, size],
-        });
-      },
-    });
+    onPinClickRef.current = onPinClick;
+  }, [onPinClick]);
 
-    for (const pin of pins) {
-      const marker = L.marker([pin.latitude, pin.longitude], {
-        icon: pinIcon(
-          pin.activityType,
-          isPinSelected(pin, selectedExploreItemId),
-          pin.source ?? 'activity',
-          pin.carpoolEndpoint
-        ),
-        zIndexOffset: markerZIndex(pin, selectedExploreItemId),
+  useEffect(() => {
+    if (!map?.getContainer()) return;
+
+    let group: L.MarkerClusterGroup | null = null;
+
+    try {
+      group = L.markerClusterGroup({
+        chunkedLoading: true,
+        showCoverageOnHover: false,
+        maxClusterRadius: 48,
+        spiderfyOnMaxZoom: true,
+        disableClusteringAtZoom: 15,
+        iconCreateFunction: (cluster) => {
+          const count = cluster.getChildCount();
+          const size = count >= 10 ? 46 : count >= 4 ? 42 : 38;
+          return L.divIcon({
+            html: `<span class="uaetrail-map-cluster" style="width:${size}px;height:${size}px;">${count}</span>`,
+            className: 'uaetrail-map-cluster-wrap',
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+          });
+        },
       });
-      if (onPinClick) {
-        marker.on('click', () => onPinClick(pin));
+
+      for (const pin of pins) {
+        const marker = L.marker([pin.latitude, pin.longitude], {
+          icon: pinIcon(
+            pin.activityType,
+            isPinSelected(pin, selectedExploreItemId),
+            pin,
+            pin.carpoolEndpoint
+          ),
+          zIndexOffset: markerZIndex(pin, selectedExploreItemId),
+        });
+        marker.on('click', () => onPinClickRef.current?.(pin));
+        group.addLayer(marker);
       }
-      group.addLayer(marker);
+
+      map.addLayer(group);
+    } catch (error) {
+      console.error('[ClusteredMarkers] failed to mount cluster layer', error);
+      return;
     }
 
-    map.addLayer(group);
-
     return () => {
-      map.removeLayer(group);
-      group.clearLayers();
+      if (!group) return;
+      try {
+        group.clearLayers();
+        if (map.hasLayer(group)) {
+          map.removeLayer(group);
+        }
+      } catch {
+        // Map may already be torn down during route changes / StrictMode.
+      }
     };
-  }, [map, pins, pinsKeyValue, selectedExploreItemId, onPinClick]);
+  }, [map, pins, pinsKeyValue, selectedExploreItemId]);
 
   return null;
 };
@@ -392,7 +430,7 @@ export const LocationsMap = ({
       icon={pinIcon(
         pin.activityType,
         isPinSelected(pin, activeSelection),
-        pin.source ?? 'activity',
+        pin,
         pin.carpoolEndpoint
       )}
       zIndexOffset={markerZIndex(pin, activeSelection)}
@@ -462,18 +500,21 @@ export const LocationsMap = ({
       {showLegend && (
         <div className="pointer-events-none absolute bottom-3 left-3 z-[1000] flex flex-wrap gap-2">
           <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-emerald-700 shadow-sm">
-            <span className="font-emoji">🥾</span> Hikes
+            <span className="font-emoji">{MAP_FILTER_EMOJI.hiking}</span> Hikes
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-slate-600 shadow-sm">
+            <span className="font-emoji">{HIKING_VENUE_EMOJI}</span> Trails
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-amber-700 shadow-sm">
-            <span className="font-emoji">🏕️</span> Camps
+            <span className="font-emoji">{CAMPING_ACTIVITY_EMOJI}</span> Camps
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-amber-800 shadow-sm">
+            <span className="font-emoji">{CAMPING_VENUE_EMOJI}</span> Camp spots
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-violet-700 shadow-sm">
             <span className="font-emoji">🏃</span> Events
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-slate-600 shadow-sm">
-            <span className="font-emoji">⛰️</span> Spots
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-rose-700 shadow-sm">
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold text-amber-700 shadow-sm">
             <span className="font-emoji">🛍️</span> Shops
           </span>
         </div>

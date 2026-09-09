@@ -201,6 +201,7 @@ export interface Activity {
   pricingMode: 'free' | 'shared' | 'paid' | null;
   itinerary: string[];
   requirements: string[];
+  joinMode?: 'open' | 'private' | null;
   images: string[];
   bannerUrl: string | null;
   signupUrl: string | null;

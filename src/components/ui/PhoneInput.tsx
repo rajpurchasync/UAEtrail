@@ -1,4 +1,5 @@
 import { DEFAULT_PHONE_DIAL, PHONE_COUNTRIES } from '../../constants/phoneCountries';
+import { AppSelect } from './AppSelect';
 
 interface PhoneInputProps {
   dialCode: string;
@@ -10,6 +11,11 @@ interface PhoneInputProps {
   className?: string;
 }
 
+const dialCodeOptions = PHONE_COUNTRIES.map((country) => ({
+  value: country.dial,
+  label: country.label,
+}));
+
 export const PhoneInput = ({
   dialCode,
   nationalNumber,
@@ -20,20 +26,15 @@ export const PhoneInput = ({
   className = '',
 }: PhoneInputProps) => (
   <div className={`flex gap-2 ${className}`}>
-    <select
+    <AppSelect
       value={dialCode || DEFAULT_PHONE_DIAL}
-      onChange={(e) => onDialCodeChange(e.target.value)}
-      required={required}
+      onChange={onDialCodeChange}
+      options={dialCodeOptions}
       disabled={disabled}
-      className="w-[42%] min-w-[7.5rem] border rounded-xl px-2 py-2.5 text-sm bg-white"
+      className="w-[42%] min-w-[7.5rem]"
+      inputClassName="w-full rounded-xl border px-2 py-2.5 text-sm bg-white"
       aria-label="Country code"
-    >
-      {PHONE_COUNTRIES.map((country) => (
-        <option key={country.code} value={country.dial}>
-          {country.label}
-        </option>
-      ))}
-    </select>
+    />
     <input
       type="tel"
       inputMode="tel"

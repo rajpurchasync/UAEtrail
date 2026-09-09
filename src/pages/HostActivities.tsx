@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { ActivityDTO, ParticipantDTO } from '@uaetrail/shared-types';
+import { ActivityDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 import { parseActivityTypeParam, ActivityActionsMenu, ActivityListPreview, buildHostActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
 import { HostShell } from '../components/host/HostShell';
-import { TenantSwitcher, ShareButton, SecureAvatar } from '../components/ui';
+import { HostActivityCheckInPanel } from '../components/host/HostActivityCheckInPanel';
+import { TenantSwitcher, ShareButton } from '../components/ui';
 import {
   activityTypeBadgeClass,
   formatActivityCapacity,
@@ -21,7 +22,7 @@ type ViewMode = 'list' | 'checkin';
 
 export const HostActivities = () => {
   const location = useLocation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [events, setEvents] = useState<ActivityDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -35,8 +36,6 @@ export const HostActivities = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [checkinActivityId, setCheckinActivityId] = useState<string | null>(null);
   const [checkinActivityTitle, setCheckinActivityTitle] = useState('');
-  const [participants, setParticipants] = useState<ParticipantDTO[]>([]);
-  const [checkinLoading, setCheckinLoading] = useState(false);
 
   const loadEvents = async (tid: string) => {
     if (!tid) return;
@@ -141,38 +140,29 @@ export const HostActivities = () => {
     }
   };
 
-  // Check-in functions
-  const openCheckin = async (event: ActivityDTO) => {
-    if (!tenantId) return;
+  const openCheckin = (event: ActivityDTO) => {
     setCheckinActivityId(event.id);
-    setCheckinActivityTitle(event.locationName);
-    setCheckinLoading(true);
+    setCheckinActivityTitle(event.title || event.locationName);
     setViewMode('checkin');
-    try {
-      const res = await api.getActivityParticipants(tenantId, event.id);
-      setParticipants(res.data.participants ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load participants');
-      setParticipants([]);
-    } finally {
-      setCheckinLoading(false);
-    }
   };
 
-  const toggleCheckin = async (participant: ParticipantDTO) => {
-    if (!tenantId || !checkinActivityId) return;
-    try {
-      if (participant.checkedInAt) {
-        await api.undoCheckin(tenantId, checkinActivityId, participant.id);
-      } else {
-        await api.checkinParticipant(tenantId, checkinActivityId, participant.id);
-      }
-      // Refresh participants
-      const res = await api.getActivityParticipants(tenantId, checkinActivityId);
-      setParticipants(res.data.participants ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update check-in');
-    }
+  useEffect(() => {
+    const checkinId = searchParams.get('checkin');
+    if (!checkinId || !tenantId || events.length === 0) return;
+
+    const event = events.find((item) => item.id === checkinId);
+    if (!event || event.status !== 'published') return;
+
+    openCheckin(event);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('checkin');
+    setSearchParams(nextParams, { replace: true });
+  }, [events, searchParams, setSearchParams, tenantId]);
+
+  const closeCheckin = () => {
+    setViewMode('list');
+    setCheckinActivityId(null);
+    setCheckinActivityTitle('');
   };
 
   const statusBadge = (status: string) => {
@@ -184,8 +174,6 @@ export const HostActivities = () => {
     };
     return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] ?? 'bg-gray-100 text-gray-800'}`}>{status}</span>;
   };
-
-  const checkedInCount = participants.filter((p) => p.checkedInAt).length;
 
   return (
     <HostShell title="Activities">
@@ -274,81 +262,23 @@ export const HostActivities = () => {
               </table>
             </div>
           </>
-        ) : (
-          /* Check-in View */
+        ) : checkinActivityId && tenantId ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setViewMode('list')} className="text-sm text-gray-600 hover:text-gray-900">← Back to Events</button>
-              <h2 className="text-lg font-semibold text-gray-900">Check-in: {checkinActivityTitle}</h2>
-            </div>
-
-            {/* Progress */}
-            <div className="bg-white border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-gray-700">Check-in Progress</p>
-                <p className="text-sm text-gray-600">{checkedInCount} / {participants.length} checked in</p>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div className="bg-emerald-600 h-2.5 rounded-full transition-all" style={{ width: `${participants.length > 0 ? (checkedInCount / participants.length * 100) : 0}%` }} />
-              </div>
-            </div>
-
-            {/* Participants */}
-            <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
-              {checkinLoading ? (
-                <p className="px-4 py-8 text-center text-gray-500">Loading participants...</p>
-              ) : participants.length === 0 ? (
-                <p className="px-4 py-8 text-center text-gray-500">No participants for this event</p>
-              ) : (
-                <table className="min-w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left">Participant</th>
-                      <th className="px-4 py-3 text-left">Email</th>
-                      <th className="px-4 py-3 text-left">Joined</th>
-                      <th className="px-4 py-3 text-center">Status</th>
-                      <th className="px-4 py-3 text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {participants.map((p) => (
-                      <tr key={p.id} className={`border-t ${p.checkedInAt ? 'bg-green-50' : ''}`}>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <SecureAvatar
-                              src={p.avatarUrl}
-                              name={p.displayName || p.email || 'Participant'}
-                              className="w-8 h-8 text-xs"
-                            />
-                            <div>
-                              <p className="font-medium text-gray-900">{p.displayName}</p>
-                              {p.phone && <p className="text-xs text-gray-500">{p.phone}</p>}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">{p.email}</td>
-                        <td className="px-4 py-3 text-xs text-gray-500">{new Date(p.joinedAt).toLocaleDateString()}</td>
-                        <td className="px-4 py-3 text-center">
-                          {p.checkedInAt ? (
-                            <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">Checked In</span>
-                          ) : (
-                            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-medium">Not Yet</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <button onClick={() => toggleCheckin(p)}
-                            className={`px-3 py-1 rounded text-xs font-medium ${p.checkedInAt ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}>
-                            {p.checkedInAt ? 'Undo' : 'Check In'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={closeCheckin}
+              className="text-sm font-semibold text-neutral-600 hover:text-neutral-900"
+            >
+              ← Back to activities
+            </button>
+            <HostActivityCheckInPanel
+              tenantId={tenantId}
+              activityId={checkinActivityId}
+              activityTitle={checkinActivityTitle}
+              onError={setError}
+            />
           </div>
-        )}
+        ) : null}
       </div>
 
       <ActivityListPreview

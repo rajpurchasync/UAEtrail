@@ -118,7 +118,7 @@ export const HostHubSections = ({
           {
             to: '/host/locations',
             icon: <MapPin className="w-4 h-4" />,
-            label: 'Submit a venue',
+            label: 'Submit a location',
             accent: 'blue',
           },
           {

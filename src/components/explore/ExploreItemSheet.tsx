@@ -1,162 +1,242 @@
-import { ExternalLink, X } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel } from '../../explore/exploreCardModel';
-import { OFFLINE_PAYMENT_NOTE } from '../../explore/explorePriceLabel';
-import { ShareButton } from '../ui/ShareButton';
+import { EXPLORE_PEEK, EXPLORE_SHEET, EXPLORE_Z } from '../../config/exploreTheme';
+import type { JoinRequestUiState } from '../../utils/joinRequestUi';
+import { JoinRequestActions } from '../ui/JoinRequestActions';
+import { LocationCardActions } from '../ui/LocationCardActions';
 import {
   ExploreCardCapacityRow,
-  ExploreCardDetailList,
-  ExploreCardHeadline,
   ExploreCardPeopleRow,
-  ExploreCardTypeBadge,
+  ExploreCardRequirementBadges,
 } from './ExploreCardPresentation';
+import { ExploreMapPeekCard } from './ExploreMapPeekCard';
 
 interface ExploreItemSheetProps {
   card: ExploreCardModel;
   onClose: () => void;
   onJoin?: () => void;
   onMessage?: () => void;
+  onHostTrip?: () => void;
+  onManage?: () => void;
+  joinUiState?: JoinRequestUiState;
+  onWithdraw?: () => void;
+  joinStateLoading?: boolean;
+  onFocusMapLocation?: (coords: { lat: number; lng: number }) => void;
 }
 
-export const ExploreItemSheet = ({ card, onClose, onJoin, onMessage }: ExploreItemSheetProps) => {
+export const ExploreItemSheet = ({
+  card,
+  onClose,
+  onJoin,
+  onMessage,
+  onHostTrip,
+  onManage,
+  joinUiState,
+  onWithdraw,
+  joinStateLoading = false,
+  onFocusMapLocation,
+}: ExploreItemSheetProps) => {
   const isShop = card.source === 'shop';
   const isAgency = card.source === 'agency';
   const isDemand = card.source === 'demand';
   const externalUrl = card.websiteUrl?.trim() || null;
   const showPeopleRow =
-    card.source === 'activity' || (card.source === 'demand' && Boolean(card.listHost || card.hostAvatar));
+    card.source === 'activity' ||
+    card.source === 'shop' ||
+    (card.source === 'demand' && Boolean(card.listHost || card.hostAvatar));
 
-  return (
-    <div className="absolute inset-x-0 bottom-0 z-[1200] rounded-t-3xl bg-white shadow-[0_-12px_40px_rgba(15,23,42,.14)]">
-      <div className="flex justify-center pt-3">
-        <span className="h-1 w-10 rounded-full bg-neutral-200" aria-hidden />
-      </div>
-
-      <div className="flex items-start justify-between gap-4 px-5 pt-4">
-        <ExploreCardTypeBadge card={card} />
-        <div className="flex items-center gap-2">
-          <ShareButton
-            title={card.shareTitle}
-            text={card.shareText ?? undefined}
-            path={card.sharePath}
-            iconOnly
-            light
-          />
+  const footer = (
+    <>
+      {card.showHostActions && onMessage && onManage ? (
+        <>
           <button
             type="button"
-            onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-gray-700"
-            aria-label="Close"
+            onClick={onMessage}
+            className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
           >
-            <X className="h-5 w-5" />
+            Message
           </button>
-        </div>
-      </div>
-
-      <div className="px-5 pt-4">
-        <ExploreCardHeadline sections={card.sections} />
-        {isShop && card.sections.aboutLine && (
-          <p className="mt-3 text-sm leading-relaxed text-gray-600">{card.sections.aboutLine}</p>
-        )}
-        <ExploreCardCapacityRow card={card} />
-        <ExploreCardDetailList details={card.sections.details} />
-
-        {card.price && card.source === 'activity' && (
-          <p className="mt-4">
-            <span
-              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                card.price.kind === 'free'
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-amber-50 text-amber-800'
-              }`}
-            >
-              {card.price.badge}
-            </span>
-          </p>
-        )}
-
-        {showPeopleRow && <ExploreCardPeopleRow card={card} />}
-
-        {card.price?.showOfflineNote && (
-          <p className="mt-4 text-xs leading-relaxed text-gray-500">{OFFLINE_PAYMENT_NOTE}</p>
-        )}
-
-        {card.venueHint && isAgency && (
-          <p className="mt-4 text-xs leading-relaxed text-slate-500">{card.venueHint}</p>
-        )}
-
-        {card.contactPhone && (isShop || isAgency) && (
-          <p className="mt-4 text-sm text-gray-600">
-            Phone:{' '}
-            <a href={`tel:${card.contactPhone}`} className="font-semibold text-emerald-700">
-              {card.contactPhone}
-            </a>
-          </p>
-        )}
-      </div>
-
-      <div className="mt-6 space-y-2 border-t border-neutral-100 px-5 py-4 pb-safe">
-        {card.showJoinActions && onJoin ? (
-          <>
-            <button
-              type="button"
-              onClick={onJoin}
-              className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
-            >
-              {card.primaryCta}
-            </button>
-            {card.secondaryCta && isDemand && onMessage ? (
-              <button
-                type="button"
-                onClick={onMessage}
-                className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
-              >
-                {card.secondaryCta}
-              </button>
-            ) : card.secondaryCta && card.source === 'activity' ? (
-              <Link
-                to={card.path}
-                className="block w-full py-2.5 text-center text-sm font-semibold text-gray-600"
-              >
-                {card.secondaryCta}
-              </Link>
-            ) : null}
-          </>
-        ) : isDemand ? (
           <button
             type="button"
-            onClick={onClose}
-            className="w-full rounded-2xl bg-neutral-100 py-3.5 text-center text-base font-bold text-gray-900"
+            onClick={onManage}
+            className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
           >
-            Close
+            {card.activity?.status === 'published' ? 'Check in attendees' : 'Manage'}
           </button>
-        ) : isShop && externalUrl ? (
-          <>
-            <a
-              href={externalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
-            >
-              {card.primaryCta}
-              <ExternalLink className="h-4 w-4" />
-            </a>
+        </>
+      ) : isDemand && onHostTrip ? (
+        <>
+          <button
+            type="button"
+            onClick={onHostTrip}
+            className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
+          >
+            Host this trip
+          </button>
+          {onMessage ? (
             <button
               type="button"
-              onClick={onClose}
+              onClick={onMessage}
               className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
             >
-              Close
+              Message
             </button>
-          </>
-        ) : (
-          <Link
-            to={card.path}
-            className="block w-full rounded-2xl bg-emerald-500 py-3.5 text-center text-base font-bold text-white"
+          ) : null}
+        </>
+      ) : isDemand && onMessage ? (
+        <button
+          type="button"
+          onClick={onMessage}
+          className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
+        >
+          {card.primaryCta}
+        </button>
+      ) : card.showJoinActions && joinUiState && !joinStateLoading ? (
+        <JoinRequestActions
+          uiState={joinUiState}
+          joinLabel={card.primaryCta}
+          isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
+          onJoin={onJoin}
+          onWithdraw={onWithdraw}
+        />
+      ) : card.showJoinActions && joinStateLoading ? (
+        <div className="flex justify-center py-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+        </div>
+      ) : card.showJoinActions && onJoin ? (
+        <>
+          <button
+            type="button"
+            onClick={onJoin}
+            className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
           >
             {card.primaryCta}
-          </Link>
-        )}
+          </button>
+          {card.secondaryCta && isDemand && onMessage ? (
+            <button
+              type="button"
+              onClick={onMessage}
+              className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
+            >
+              {card.secondaryCta}
+            </button>
+          ) : card.secondaryCta && card.source === 'activity' ? (
+            <Link
+              to={card.path}
+              className="block w-full py-2.5 text-center text-sm font-semibold text-gray-600"
+            >
+              {card.secondaryCta}
+            </Link>
+          ) : null}
+        </>
+      ) : isDemand ? (
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full rounded-2xl bg-neutral-100 py-3.5 text-center text-base font-bold text-gray-900"
+        >
+          Close
+        </button>
+      ) : isShop || isAgency ? (
+        card.reviewPath ? (
+          <LocationCardActions
+            detailPath={card.path}
+            reviewPath={card.reviewPath}
+            accent={isAgency ? 'violet' : 'emerald'}
+            embedded
+          />
+        ) : (
+          <>
+            <Link
+              to={card.path}
+              className="block w-full rounded-2xl bg-emerald-500 py-3.5 text-center text-base font-bold text-white"
+            >
+              {card.primaryCta}
+            </Link>
+            {externalUrl ? (
+              <a
+                href={externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center justify-center gap-2 py-2.5 text-center text-sm font-semibold text-emerald-700"
+              >
+                {card.secondaryCta ?? 'Visit website'}
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
+              >
+                Close
+              </button>
+            )}
+          </>
+        )
+      ) : (
+        <Link
+          to={card.path}
+          className="block w-full rounded-2xl bg-emerald-500 py-3.5 text-center text-base font-bold text-white"
+        >
+          {card.primaryCta}
+        </Link>
+      )}
+    </>
+  );
+
+  return (
+    <div
+      className={`${EXPLORE_PEEK.position} lg:fixed lg:inset-0 ${EXPLORE_Z.peekCard} lg:flex lg:items-center lg:justify-center ${EXPLORE_SHEET.scrim} lg:p-6 lg:pb-6`}
+    >
+      <button
+        type="button"
+        className="absolute inset-0 hidden lg:block"
+        aria-label="Close"
+        onClick={onClose}
+      />
+      <div className={EXPLORE_PEEK.inner}>
+        <ExploreMapPeekCard
+          card={card}
+          onClose={onClose}
+          footer={footer}
+          onFocusMapLocation={onFocusMapLocation}
+          pinFooter
+        >
+          {isShop && card.sections.aboutLine && (
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">{card.sections.aboutLine}</p>
+          )}
+          <ExploreCardCapacityRow card={card} />
+          {card.requirementBadges && card.requirementBadges.length > 0 && (
+            <ExploreCardRequirementBadges badges={card.requirementBadges} />
+          )}
+          {card.price && card.source === 'activity' && (
+            <p className="mt-3">
+              <span
+                className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                  card.price.kind === 'free'
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-amber-50 text-amber-800'
+                }`}
+              >
+                {card.price.badge}
+              </span>
+            </p>
+          )}
+          {showPeopleRow && <ExploreCardPeopleRow card={card} />}
+          {card.venueHint && (isAgency || isShop) && (
+            <p className="mt-3 text-xs leading-relaxed text-slate-500">{card.venueHint}</p>
+          )}
+          {card.contactPhone && (isShop || isAgency) && (
+            <p className="mt-3 text-sm text-gray-600">
+              Phone:{' '}
+              <a href={`tel:${card.contactPhone}`} className="font-semibold text-emerald-700">
+                {card.contactPhone}
+              </a>
+            </p>
+          )}
+        </ExploreMapPeekCard>
       </div>
     </div>
   );

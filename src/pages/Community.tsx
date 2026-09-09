@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Search, MessageSquare, ThumbsUp, Plus, X, MapPin, CheckCircle2, Users } from 'lucide-react';
 import { PostDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { ImageUpload } from '../components/ui/ImageUpload';
+import { AppSelect } from '../components/ui/AppSelect';
 import { COMMUNITY_CATEGORIES } from '../config/platform';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
-import { PAGE_BANNERS } from '../config/pageBanners';
 import { PageMeta } from '../components/seo/PageMeta';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
@@ -18,6 +18,7 @@ import { ReportContentButton } from '../components/ui/ReportContentDialog';
 import { ChatComposeBar } from '../components/ui/ChatComposeBar';
 import { EmojiPickerButton } from '../components/ui/EmojiPickerButton';
 import { buildSignInRedirect } from '../utils/authReturnContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 const linkPattern = /(?:https?:\/\/|www\.)\S+|(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/\S*)?/gi;
 const phoneCandidatePattern = /\+?\d[\d\s().-]{6,}\d/g;
@@ -34,6 +35,7 @@ export const Community = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [posts, setPosts] = useState<PostDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -222,6 +224,10 @@ export const Community = () => {
     ...COMMUNITY_CATEGORIES.map((cat) => ({ key: cat.id, label: cat.label })),
   ];
 
+  if (isMobile) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <>
       <PageMeta
@@ -230,11 +236,11 @@ export const Community = () => {
         path="/community"
       />
     <ConsumerShell
-      layout="tab"
+      layout="stack"
       title="Community"
       maxWidth="4xl"
-      banner={{ src: PAGE_BANNERS.community, alt: 'Friends hiking together' }}
-      journey={{ fallbackTo: '/', label: 'Home' }}
+      showJourney={false}
+      back={{ fallbackTo: '/', label: 'Home' }}
       toolbar={
         <>
           <form onSubmit={handleSearch} className="relative mb-3">
@@ -447,15 +453,13 @@ export const Community = () => {
             </div>
             <form onSubmit={handleCreatePost} className="p-4 space-y-4">
               {formError && <p className="text-sm text-red-600">{formError}</p>}
-              <select
+              <AppSelect
                 value={newPost.category}
-                onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
-              >
-                {COMMUNITY_CATEGORIES.map((c) => (
-                  <option key={c.id} value={c.id}>{c.label}</option>
-                ))}
-              </select>
+                onChange={(category) => setNewPost({ ...newPost, category })}
+                options={COMMUNITY_CATEGORIES.map((category) => ({ value: category.id, label: category.label }))}
+                inputClassName="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                aria-label="Post category"
+              />
               <input
                 required
                 value={newPost.title}
@@ -500,7 +504,7 @@ export const Community = () => {
                 />
               )}
               <p className="text-xs text-gray-500">
-                Tip: open a <Link to="/discovery" className="text-emerald-600">location page</Link> and paste its ID to anchor your post.
+                Tip: open a <Link to="/explore?panel=venues&list=1" className="text-emerald-600">location page</Link> and paste its ID to anchor your post.
               </p>
               <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
                 Earn <strong>+20 Trail Points</strong> when you publish.

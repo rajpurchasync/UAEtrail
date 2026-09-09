@@ -12,6 +12,9 @@ import { getDifficultyColor, capitalize } from '../utils';
 import { Trail, ActivityListing } from '../types';
 import { fetchApiLocationDetail, mapActivityToListing } from '../api/public';
 import { api } from '../api/services';
+import { activitiesBrowsePath } from '../config/activityTypes';
+import { explorePath } from '../utils/exploreRouting';
+import { hasPositiveNumber, isDefaultVenueSeason } from '../utils/venueDetailDisplay';
 
 export const TrailDetail = () => {
   const { id } = useParams();
@@ -58,18 +61,28 @@ export const TrailDetail = () => {
         <PageMeta title="Trail not found" noIndex path={id ? `/trail/${id}` : undefined} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900">Trail not found</h1>
-          <Link to="/discovery" className="text-emerald-600 hover:text-emerald-700 mt-4 inline-block">
-            Back to discovery
+          <Link to={explorePath({ panel: 'venues', list: true })} className="text-emerald-600 hover:text-emerald-700 mt-4 inline-block">
+            Back to map
           </Link>
         </div>
       </>
     );
   }
 
+  const shareText = hasPositiveNumber(trail.distance)
+    ? `${trail.region} · ${trail.distance} km trail on UAE Trails`
+    : `${trail.region} · hiking trail on UAE Trails`;
+  const showSeason = trail.season && !isDefaultVenueSeason(trail.season);
+  const showStats =
+    hasPositiveNumber(trail.distance) ||
+    hasPositiveNumber(trail.duration) ||
+    hasPositiveNumber(trail.elevation) ||
+    trail.childFriendly;
+
   return (
     <MobileDetailShell
-      backTo="/discovery"
-      backLabel="Trails & Spots"
+      backTo={explorePath({ panel: 'venues', list: true, filter: 'hiking' })}
+      backLabel="Hiking venues"
       banner={{
         src: trail.images[0],
         alt: trail.name,
@@ -88,11 +101,7 @@ export const TrailDetail = () => {
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-end mb-4 hidden md:flex">
-            <ShareButton
-              title={trail.name}
-              text={`${trail.region} · ${trail.distance} km trail on UAE Trails`}
-              path={`/trail/${trail.id}`}
-            />
+            <ShareButton title={trail.name} text={shareText} path={`/trail/${trail.id}`} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -104,12 +113,7 @@ export const TrailDetail = () => {
                 className="w-full h-96 object-cover rounded-lg"
               />
               <div className="absolute top-3 right-3 z-10">
-                <ShareButton
-                  title={trail.name}
-                  text={`${trail.region} · ${trail.distance} km trail on UAE Trails`}
-                  path={`/trail/${trail.id}`}
-                  compact
-                />
+                <ShareButton title={trail.name} text={shareText} path={`/trail/${trail.id}`} compact />
               </div>
             </div>
               <div className="grid grid-cols-4 gap-2">
@@ -136,61 +140,73 @@ export const TrailDetail = () => {
                     <span>{trail.region}</span>
                   </div>
                 </div>
-                <span
-                  className={`px-4 py-2 rounded-full text-sm font-semibold ${getDifficultyColor(
-                    trail.difficulty
-                  )}`}
-                >
-                  {capitalize(trail.difficulty)}
-                </span>
+                {trail.difficulty && (
+                  <span
+                    className={`px-4 py-2 rounded-full text-sm font-semibold ${getDifficultyColor(
+                      trail.difficulty
+                    )}`}
+                  >
+                    {capitalize(trail.difficulty)}
+                  </span>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center text-gray-600 mb-1">
-                    <TrendingUp className="w-5 h-5 mr-2" />
-                    <span className="text-sm">Distance</span>
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">{trail.distance} km</div>
+              {showStats && (
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {hasPositiveNumber(trail.distance) && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center text-gray-600 mb-1">
+                        <TrendingUp className="w-5 h-5 mr-2" />
+                        <span className="text-sm">Distance</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">{trail.distance} km</div>
+                    </div>
+                  )}
+                  {hasPositiveNumber(trail.duration) && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center text-gray-600 mb-1">
+                        <Clock className="w-5 h-5 mr-2" />
+                        <span className="text-sm">Duration</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">{trail.duration} hrs</div>
+                    </div>
+                  )}
+                  {hasPositiveNumber(trail.elevation) && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center text-gray-600 mb-1">
+                        <Mountain className="w-5 h-5 mr-2" />
+                        <span className="text-sm">Elevation</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">{trail.elevation} m</div>
+                    </div>
+                  )}
+                  {trail.childFriendly && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center text-gray-600 mb-1">
+                        <Baby className="w-5 h-5 mr-2" />
+                        <span className="text-sm">Family</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">Kid-friendly</div>
+                    </div>
+                  )}
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center text-gray-600 mb-1">
-                    <Clock className="w-5 h-5 mr-2" />
-                    <span className="text-sm">Duration</span>
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">{trail.duration} hrs</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center text-gray-600 mb-1">
-                    <Mountain className="w-5 h-5 mr-2" />
-                    <span className="text-sm">Elevation</span>
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">{trail.elevation} m</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center text-gray-600 mb-1">
-                    <Baby className="w-5 h-5 mr-2" />
-                    <span className="text-sm">Family</span>
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    {trail.childFriendly ? 'Yes' : 'No'}
-                  </div>
-                </div>
-              </div>
+              )}
 
-              <div className="mb-6">
-                <h3 className="font-medium text-gray-900 mb-2">Best Season</h3>
-                <div className="flex gap-2">
-                  {trail.season.map((s) => (
-                    <span
-                      key={s}
-                      className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium capitalize"
-                    >
-                      {s}
-                    </span>
-                  ))}
+              {showSeason && (
+                <div className="mb-6">
+                  <h3 className="font-medium text-gray-900 mb-2">Best Season</h3>
+                  <div className="flex gap-2">
+                    {trail.season!.map((s) => (
+                      <span
+                        key={s}
+                        className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium capitalize"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -213,7 +229,7 @@ export const TrailDetail = () => {
               <p className="text-gray-600 mt-1">Join organized hikes at this trail</p>
             </div>
             <Link
-              to="/activities"
+              to={activitiesBrowsePath('hiking')}
               className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
               View all trips

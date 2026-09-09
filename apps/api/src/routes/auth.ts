@@ -45,6 +45,7 @@ import {
 import { createHostApplicationRecord } from '../lib/host-applications-store.js';
 import { processSignupRewards } from '../services/rewards.js';
 import { acceptGroupInviteByToken, acceptPendingGroupInvitesForEmail } from '../lib/social-groups-store.js';
+import { DEMO_LOGIN_EMAILS, getDemoAccount } from '../lib/demo-accounts.js';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -138,48 +139,6 @@ const issueEmailVerificationOtp = async (input: {
     expiresAt,
     expiresInSeconds: EMAIL_VERIFICATION_OTP_TTL_SECONDS
   };
-};
-
-const demoAccountEmails = new Set([
-  'admin@uaetrails.app',
-  'visitor@uaetrails.app',
-  'host@uaetrails.app',
-  'organizer@uaetrails.app',
-  'shop@uaetrails.app',
-  'guide@uaetrails.app'
-]);
-
-const demoAccountDefaults: Record<string, { password: string; role: UserRole; displayName: string }> = {
-  'admin@uaetrails.app': {
-    password: 'Admin@12345',
-    role: UserRole.PLATFORM_ADMIN,
-    displayName: 'UAE Trails Admin'
-  },
-  'visitor@uaetrails.app': {
-    password: 'Visitor@12345',
-    role: UserRole.PARTICIPANT,
-    displayName: 'Demo Participant'
-  },
-  'host@uaetrails.app': {
-    password: 'Host@12345',
-    role: UserRole.TENANT_OWNER,
-    displayName: 'Individual Host'
-  },
-  'organizer@uaetrails.app': {
-    password: 'Agency@12345',
-    role: UserRole.TENANT_OWNER,
-    displayName: 'Agency Owner'
-  },
-  'shop@uaetrails.app': {
-    password: 'Shop@12345',
-    role: UserRole.TENANT_OWNER,
-    displayName: 'Shop Owner'
-  },
-  'guide@uaetrails.app': {
-    password: 'Guide@12345',
-    role: UserRole.TENANT_GUIDE,
-    displayName: 'Agency Guide'
-  }
 };
 
 const isDemoLoginAllowed = (req: Request): boolean => env.NODE_ENV === 'test' || isLocalRequest(req);
@@ -380,7 +339,7 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
     const { email, password } = req.body as z.infer<typeof loginSchema>;
     const normalizedEmail = email.trim().toLowerCase();
 
-    if (demoAccountEmails.has(normalizedEmail) && !isDemoLoginAllowed(req)) {
+    if (DEMO_LOGIN_EMAILS.has(normalizedEmail) && !isDemoLoginAllowed(req)) {
       throw new ApiError(403, 'demo_account_restricted', 'Demo accounts are available only on localhost or test environments.');
     }
 
@@ -435,7 +394,7 @@ authRouter.post('/demo-login', validate({ body: demoLoginSchema }), async (req, 
     const { email } = req.body as z.infer<typeof demoLoginSchema>;
     const normalizedEmail = email.trim().toLowerCase();
 
-    if (!demoAccountEmails.has(normalizedEmail)) {
+    if (!DEMO_LOGIN_EMAILS.has(normalizedEmail)) {
       throw new ApiError(404, 'demo_account_not_found', 'Demo account is not available.');
     }
 
@@ -445,7 +404,7 @@ authRouter.post('/demo-login', validate({ body: demoLoginSchema }), async (req, 
 
     let user = await findAuthUserByEmail(normalizedEmail);
     if (!user) {
-      const defaults = demoAccountDefaults[normalizedEmail];
+      const defaults = getDemoAccount(normalizedEmail);
       if (!defaults) {
         throw new ApiError(404, 'demo_account_not_found', 'Demo account is not available.');
       }
@@ -476,10 +435,13 @@ authRouter.post('/demo-login', validate({ body: demoLoginSchema }), async (req, 
     }
 
     // Demo accounts always use their canonical role — ignore any stale visitor-switch state
-    const defaults = demoAccountDefaults[normalizedEmail];
+    const defaults = getDemoAccount(normalizedEmail);
     const canonicalRole = defaults?.role ?? user.role;
     if (user.role !== canonicalRole || user.profile?.switchedFromRole) {
       await updateAuthUserCore({ userId: user._id, role: canonicalRole, profile: { switchedFromRole: null } });
+    }
+    if (defaults?.displayName && user.profile?.displayName !== defaults.displayName) {
+      await updateAuthUserProfile(user._id, { displayName: defaults.displayName });
     }
 
     const tokens = await createSession({

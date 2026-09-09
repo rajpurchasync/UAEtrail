@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
-import { isConsumerChromeHidden, isMobileDetailRoute } from '../../config/platform';
+import { isConsumerChromeHidden, hasConsumerSelfHeader } from '../../config/platform';
 import { Footer } from './Footer';
 import { ComposeRail } from './ComposeRail';
 import { Header } from './Header';
@@ -19,32 +19,29 @@ export const Layout = ({ children }: LayoutProps) => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  const isExploreMap = location.pathname === '/explore';
   const hideChrome = isConsumerChromeHidden(location.pathname);
-  const showConsumerChrome = !hideChrome;
+  const showConsumerChrome = !hideChrome && !isExploreMap;
   const useDesktopShell = showConsumerChrome;
 
-  const tabRootsWithBanner = new Set([
-    '/activities',
-    '/discovery',
-    '/community',
-    '/shop',
-    '/profile',
-    '/trail-points',
-    '/my-rewards',
-    '/groups',
-    '/messages',
-    '/notifications',
-    '/favorites',
-    '/my-requests',
-  ]);
+  if (isExploreMap) {
+    return (
+      <ComposeRailProvider>
+        <MobileMenuProvider>
+          <div className="flex h-[100dvh] w-full flex-col overflow-hidden consumer-bg">
+            <div className="hidden shrink-0 lg:block">
+              <Header />
+            </div>
+            <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+          </div>
+        </MobileMenuProvider>
+      </ComposeRailProvider>
+    );
+  }
 
   const showMobileConsumerNavBar =
     showConsumerChrome &&
-    location.pathname !== '/' &&
-    !tabRootsWithBanner.has(location.pathname) &&
-    !isMobileDetailRoute(location.pathname) &&
-    !location.pathname.startsWith('/activity/') &&
-    !location.pathname.startsWith('/trip/');
+    !hasConsumerSelfHeader(location.pathname);
 
   const main = (
     <main className="flex-1 scroll-touch min-w-0 max-w-full overflow-x-clip">
@@ -54,7 +51,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const siteFooter =
     showConsumerChrome && (
-      <div className={`shrink-0 ${location.pathname === '/' ? 'hidden md:block' : ''}`}>
+      <div className={`shrink-0 ${location.pathname === '/explore' ? 'hidden md:block' : ''}`}>
         <Footer />
       </div>
     );

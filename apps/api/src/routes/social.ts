@@ -400,10 +400,14 @@ socialRouter.post('/posts/:id/replies/:replyId/accept', requireAuth, requireVeri
 const favoriteCreateSchema = z.object({
   locationId: z.string().optional(),
   activityId: z.string().optional(),
-  productId: z.string().optional()
+  productId: z.string().optional(),
+  merchantId: z.string().optional(),
+  tenantId: z.string().optional(),
+  profileUserId: z.string().optional()
 }).refine(
-  (d) => [d.locationId, d.activityId, d.productId].filter(Boolean).length === 1,
-  { message: 'Exactly one of locationId, activityId, or productId is required.' }
+  (d) =>
+    [d.locationId, d.activityId, d.productId, d.merchantId, d.tenantId, d.profileUserId].filter(Boolean).length === 1,
+  { message: 'Exactly one favorite target id is required.' }
 );
 
 socialRouter.get('/me/favorites', requireAuth, requireVerifiedEmail, async (req, res, next) => {
@@ -415,9 +419,21 @@ socialRouter.get('/me/favorites', requireAuth, requireVerifiedEmail, async (req,
         locationId: f.locationId,
         activityId: f.activityId,
         productId: f.productId,
+        merchantId: f.merchantId,
+        tenantId: f.tenantId,
+        profileUserId: f.profileUserId,
         createdAt: f.createdAt.toISOString(),
         location: f.location ? { id: f.location.id, name: f.location.name, images: f.location.images } : null,
         activity: f.activity ? { id: f.activity.id, title: f.activity.title, locationName: f.activity.locationName } : null,
+        merchant: f.merchant
+          ? { id: f.merchant.id, shopName: f.merchant.shopName, logo: f.merchant.logo }
+          : null,
+        tenant: f.tenant
+          ? { id: f.tenant.id, name: f.tenant.name, slug: f.tenant.slug, logoUrl: f.tenant.logoUrl }
+          : null,
+        profile: f.profile
+          ? { id: f.profile.id, displayName: f.profile.displayName, avatarUrl: f.profile.avatarUrl }
+          : null,
         product: f.product
           ? {
               id: f.product.id,
@@ -444,7 +460,10 @@ socialRouter.post('/me/favorites', requireAuth, requireVerifiedEmail, validate({
       userId: req.auth!.userId,
       locationId: body.locationId,
       activityId: body.activityId,
-      productId: body.productId
+      productId: body.productId,
+      merchantId: body.merchantId,
+      tenantId: body.tenantId,
+      profileUserId: body.profileUserId
     });
     res.status(201).json({
       data: {
@@ -452,6 +471,9 @@ socialRouter.post('/me/favorites', requireAuth, requireVerifiedEmail, validate({
         locationId: favorite.locationId,
         activityId: favorite.activityId,
         productId: favorite.productId,
+        merchantId: favorite.merchantId,
+        tenantId: favorite.tenantId,
+        profileUserId: favorite.profileUserId,
         createdAt: favorite.createdAt.toISOString()
       }
     });
@@ -475,11 +497,17 @@ socialRouter.get('/me/favorites/check', requireAuth, requireVerifiedEmail, async
     const locationId = req.query.locationId as string | undefined;
     const activityId = req.query.activityId as string | undefined;
     const productId = req.query.productId as string | undefined;
+    const merchantId = req.query.merchantId as string | undefined;
+    const tenantId = req.query.tenantId as string | undefined;
+    const profileUserId = req.query.profileUserId as string | undefined;
     const favorite = await findUserFavorite({
       userId: req.auth!.userId,
       locationId,
       activityId,
-      productId
+      productId,
+      merchantId,
+      tenantId,
+      profileUserId
     });
     res.json({ data: { saved: Boolean(favorite), favoriteId: favorite?.id ?? null } });
   } catch (error) {

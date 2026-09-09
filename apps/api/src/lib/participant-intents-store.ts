@@ -1,8 +1,11 @@
 import type { ExploreMapItemDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
+import { buildExploreFeaturedPerson, demandFallbackTitle } from '@uaetrail/shared-types';
 import { ObjectId } from 'mongodb';
 import type { CreateParticipantIntentInput, ParticipantIntentKind } from '../domain/participant-intent.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
+import { invalidateExploreMapCache } from './explore-map-cache.js';
 import { getMongoClient } from './mongo.js';
+import { shouldHideFromMapMemberDiscovery } from '../services/profile-viewer-access.js';
 
 const COLLECTION = 'participant_intents';
 
@@ -22,6 +25,7 @@ type MongoParticipantIntent = {
   partySize: number;
   comment: string;
   status: 'active' | 'fulfilled' | 'cancelled';
+  convertedActivityId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -36,46 +40,8 @@ const mapExploreKind = (kind: ParticipantIntentKind): ExploreMapItemDTO['kind'] 
   return kind;
 };
 
-const demandFallbackTitle = (kind: ParticipantIntentKind): string => {
-  switch (kind) {
-    case 'hiking':
-      return 'Looking for hiking buddies';
-    case 'camping':
-      return 'Looking for camping plans';
-    case 'event':
-      return 'Looking for an event';
-    case 'guide':
-      return 'Looking for a guide';
-    case 'carpool':
-      return 'Ride share request';
-    case 'other':
-      return 'Outdoor plan request';
-    default:
-      return 'Community request';
-  }
-};
-
-/** Strip legacy auto-titles that incorrectly embed the requester name in the title string. */
-const normalizeLegacyDemandTitle = (title: string, kind: ParticipantIntentKind): string => {
-  const trimmed = title.trim();
-  if (!trimmed) return demandFallbackTitle(kind);
-
-  const legacyPatterns: RegExp[] = [
-    /^.+ needs a carpool$/i,
-    /^.+ wants to go hiking$/i,
-    /^.+ wants to go camping$/i,
-    /^.+ is looking for an event$/i,
-    /^.+ is looking for a guide$/i,
-    /^.+ posted a plan$/i,
-    /^.+ wants to go$/i,
-  ];
-
-  if (legacyPatterns.some((pattern) => pattern.test(trimmed))) {
-    return demandFallbackTitle(kind);
-  }
-
-  return trimmed;
-};
+const resolveStoredDemandTitle = (doc: MongoParticipantIntent): string =>
+  doc.title?.trim() || demandFallbackTitle(doc.kind);
 
 const buildDemandRouteLabels = (
   doc: MongoParticipantIntent
@@ -101,11 +67,6 @@ const buildDemandRouteLabels = (
   return { fromLabel, toLabel };
 };
 
-const demandTitle = (kind: ParticipantIntentKind, displayName: string): string => {
-  void displayName;
-  return demandFallbackTitle(kind);
-};
-
 const mapDto = (
   doc: MongoParticipantIntent,
   user?: { profile?: { displayName?: string | null; avatarUrl?: string | null } } | null
@@ -113,9 +74,7 @@ const mapDto = (
   id: stringifyDocId(doc._id),
   userId: doc.userId,
   kind: doc.kind,
-  title: doc.title?.trim()
-    ? normalizeLegacyDemandTitle(doc.title.trim(), doc.kind)
-    : demandTitle(doc.kind, user?.profile?.displayName ?? 'Someone'),
+  title: resolveStoredDemandTitle(doc),
   date: doc.date,
   time: doc.time,
   preferredArea: doc.preferredArea,
@@ -127,6 +86,7 @@ const mapDto = (
   partySize: doc.partySize,
   comment: doc.comment,
   status: doc.status,
+  convertedActivityId: doc.convertedActivityId ?? null,
   createdAt: doc.createdAt.toISOString(),
   requesterName: user?.profile?.displayName ?? null,
   requesterAvatar: user?.profile?.avatarUrl ?? null,
@@ -158,8 +118,48 @@ export const createParticipantIntent = async (
   };
 
   await collection().insertOne(doc);
+  await invalidateExploreMapCache();
   const user = await findAuthUserById(userId);
   return mapDto(doc, user);
+};
+
+export const fulfillParticipantIntent = async (
+  intentId: string,
+  activityId: string
+): Promise<ParticipantIntentDTO | null> => {
+  if (!ObjectId.isValid(intentId)) return null;
+
+  const updated = await collection().findOneAndUpdate(
+    { _id: new ObjectId(intentId), status: 'active' },
+    {
+      $set: {
+        status: 'fulfilled',
+        convertedActivityId: activityId,
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: 'after' }
+  );
+
+  if (!updated) return null;
+
+  const user = await findAuthUserById(updated.userId);
+  return mapDto(updated, user);
+};
+
+const demandExplorePath = (kind: ParticipantIntentKind): string => {
+  const filterByKind: Partial<Record<ParticipantIntentKind, string>> = {
+    hiking: 'hiking',
+    camping: 'camping',
+    carpool: 'carpool',
+    event: 'others',
+    guide: 'others',
+    other: 'others',
+  };
+  const params = new URLSearchParams({ list: '1', panel: 'activities' });
+  const filter = filterByKind[kind];
+  if (filter) params.set('filter', filter);
+  return `/explore?${params.toString()}`;
 };
 
 export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<ExploreMapItemDTO[]> => {
@@ -175,15 +175,26 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
   const users = await findAuthUsersByIds(userIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
 
+  const hideFromMapByUserId = new Map<string, boolean>();
+  await Promise.all(
+    userIds.map(async (userId) => {
+      const user = userMap.get(userId);
+      const hidden = await shouldHideFromMapMemberDiscovery(
+        userId,
+        user?.profile?.profileVisibility
+      );
+      hideFromMapByUserId.set(userId, hidden);
+    })
+  );
+
   return docs
     .filter((doc) => doc.latitude != null && doc.longitude != null)
+    .filter((doc) => !hideFromMapByUserId.get(doc.userId))
     .map((doc) => {
       const user = userMap.get(doc.userId);
       const displayName = user?.profile?.displayName ?? 'Someone';
       const route = buildDemandRouteLabels(doc);
-      const planTitle = doc.title?.trim()
-        ? normalizeLegacyDemandTitle(doc.title.trim(), doc.kind)
-        : demandTitle(doc.kind, displayName);
+      const planTitle = resolveStoredDemandTitle(doc);
       return {
         id: `demand:${stringifyDocId(doc._id)}`,
         kind: mapExploreKind(doc.kind),
@@ -199,10 +210,15 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
         toLongitude: doc.toLongitude,
         fromLabel: route.fromLabel,
         toLabel: route.toLabel,
-        path: `/`,
-        hostName: displayName,
-        hostAvatar: user?.profile?.avatarUrl ?? null,
+        path: demandExplorePath(doc.kind),
+        featuredPerson: buildExploreFeaturedPerson({
+          userId: doc.userId,
+          displayName: user?.profile?.displayName ?? 'Someone',
+          avatarUrl: user?.profile?.avatarUrl ?? null,
+          role: 'requester',
+        }),
         requesterUserId: doc.userId,
+        participantIntentId: stringifyDocId(doc._id),
         date: doc.date,
         time: doc.time,
         slotsTotal: doc.partySize,

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
 import { api, TenantMembershipView } from '../../api/services';
+import { AppSelect } from './AppSelect';
 
 export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => void }) => {
   const [tenants, setTenants] = useState<TenantMembershipView[]>([]);
@@ -12,7 +13,6 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
       .then((res) => {
         const list = res.data ?? [];
         setTenants(list);
-        // Auto-select first tenant if none is active
         if (!selected && list.length === 1) {
           const firstId = list[0].tenantId;
           setSelected(firstId);
@@ -39,7 +39,6 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
   }
 
   if (tenants.length === 0) {
-    // Fallback: manual UUID input for edge cases
     return (
       <div className="w-full rounded-2xl border border-amber-200/80 bg-amber-50/60 px-3.5 py-3 space-y-2.5">
         <label className="text-xs font-semibold uppercase tracking-wide text-amber-800">Organization ID</label>
@@ -61,6 +60,10 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
   }
 
   const activeTenant = tenants.find((tenant) => tenant.tenantId === selected);
+  const tenantOptions = tenants.map((tenant) => ({
+    value: tenant.tenantId,
+    label: `${tenant.tenantName} (${tenant.tenantType === 'company' ? 'Company' : 'Guide'}) · ${tenant.membershipRole.replace('tenant_', '')}`,
+  }));
 
   return (
     <div className="w-full rounded-2xl border border-emerald-100/80 bg-white/95 px-3.5 py-3 shadow-sm space-y-2.5">
@@ -69,18 +72,14 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
         {activeTenant && <span className="text-[11px] font-semibold text-emerald-700">Active</span>}
       </div>
 
-      <select
+      <AppSelect
         value={selected}
-        onChange={(e) => handleChange(e.target.value)}
-        className="w-full border border-emerald-100 rounded-xl px-3 py-2.5 text-sm bg-white text-neutral-900"
-      >
-        <option value="">Select organization...</option>
-        {tenants.map((tenant) => (
-          <option key={tenant.tenantId} value={tenant.tenantId}>
-            {tenant.tenantName} ({tenant.tenantType === 'company' ? 'Company' : 'Guide'}) - {tenant.membershipRole.replace('tenant_', '')}
-          </option>
-        ))}
-      </select>
+        onChange={handleChange}
+        options={tenantOptions}
+        placeholder="Select organization..."
+        inputClassName="w-full rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-sm text-neutral-900"
+        aria-label="Organization"
+      />
 
       {activeTenant && (
         <p className="text-xs text-neutral-600 truncate">

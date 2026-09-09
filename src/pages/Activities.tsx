@@ -8,12 +8,11 @@ import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { PageMeta } from '../components/seo/PageMeta';
-import { PAGE_BANNERS } from '../config/pageBanners';
 import { ACTIVITIES_PATH } from '../constants';
 import { isHostRole } from '../utils/roles';
 import { parseActivityTypeParam } from '../config/activityTypes';
+import { explorePath } from '../utils/exploreRouting';
 import { parseTabParam, type PageTab } from './activities/shared';
-import { ExploreSection } from './activities/ExploreSection';
 import { JoinedSection } from './activities/JoinedSection';
 import { HostedSection } from './activities/HostedSection';
 
@@ -47,6 +46,12 @@ export const Activities = () => {
   }, [searchParams, user]);
 
   useEffect(() => {
+    if (activeTab !== 'explore') return;
+    if (searchParams.get('create') || searchParams.get('checkin')) return;
+    navigate(explorePath({ list: true, panel: 'activities' }), { replace: true });
+  }, [activeTab, navigate, searchParams]);
+
+  useEffect(() => {
     if (user) return;
     const tab = searchParams.get('tab');
     if (tab === 'joined' || tab === 'hosted' || tab === 'mine') {
@@ -58,15 +63,14 @@ export const Activities = () => {
   }, [user, searchParams, setSearchParams]);
 
   const setTab = (tab: PageTab) => {
+    if (tab === 'explore') {
+      navigate(explorePath({ list: true, panel: 'activities' }));
+      return;
+    }
     setActiveTab(tab);
     const next = new URLSearchParams(searchParams);
-    if (tab === 'explore') {
-      next.delete('tab');
-      next.delete('sub');
-    } else {
-      next.set('tab', tab);
-      if (tab !== 'joined') next.delete('sub');
-    }
+    next.set('tab', tab);
+    if (tab !== 'joined') next.delete('sub');
     setSearchParams(next, { replace: true });
   };
 
@@ -89,10 +93,10 @@ export const Activities = () => {
 
   return (
     <ConsumerShell
-      layout="tab"
+      layout="stack"
       title="Activities"
-      banner={{ src: PAGE_BANNERS.trips, alt: 'Hikers on a mountain trail' }}
-      journey={{ fallbackTo: '/', label: 'Home' }}
+      showJourney={false}
+      back={{ fallbackTo: '/', label: 'Home' }}
       toolbar={
         navOptions.length > 1 ? (
           <FilterChips options={navOptions} value={activeTab} onChange={setTab} />
@@ -106,7 +110,6 @@ export const Activities = () => {
       />
 
       <div className="pb-24 md:pb-8">
-        {activeTab === 'explore' && <ExploreSection />}
         {activeTab === 'joined' && user && <JoinedSection />}
         {activeTab === 'hosted' && user && canHost && <HostedSection />}
         {activeTab === 'hosted' && user && !canHost && (

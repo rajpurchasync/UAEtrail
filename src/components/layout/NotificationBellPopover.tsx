@@ -7,6 +7,7 @@ import { api } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
+import { notificationReasonLine } from '../../utils/notificationDisplay';
 import { inferNotificationPath } from '../../utils/notificationRouting';
 
 interface NotificationBellPopoverProps {
@@ -173,10 +174,12 @@ export const NotificationBellPopover = ({
             ) : notifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <Bell className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">No notifications</p>
+                <p className="text-sm text-gray-500">You&apos;re all caught up</p>
               </div>
             ) : (
-              notifications.map((notif) => (
+              notifications.map((notif) => {
+                const reasonLine = notificationReasonLine(notif);
+                return (
                 <button
                   key={notif.id}
                   type="button"
@@ -187,8 +190,12 @@ export const NotificationBellPopover = ({
                 >
                   <p className="text-sm font-semibold text-gray-900 line-clamp-1">{notif.title}</p>
                   <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notif.body}</p>
+                  {reasonLine && (
+                    <p className="text-[11px] font-medium text-gray-700 mt-1 line-clamp-2">{reasonLine}</p>
+                  )}
                 </button>
-              ))
+              );
+              })
             )}
           </div>
 

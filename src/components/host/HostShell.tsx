@@ -48,9 +48,10 @@ export const HostShell = ({ title, children, cta, headerExtra }: HostShellProps)
 
   return (
     <ConsumerShell
-      layout="tab"
+      layout="stack"
       title={title}
-      journey={{ fallbackTo: '/profile', label: 'Profile' }}
+      showJourney={false}
+      back={{ fallbackTo: '/profile', label: 'Profile' }}
       banner={{ src: PAGE_BANNERS.organizer, alt: 'Host dashboard' }}
       action={
         avgRating !== null ? (
@@ -63,36 +64,33 @@ export const HostShell = ({ title, children, cta, headerExtra }: HostShellProps)
       }
       toolbar={
         <div className="space-y-3">
-          <div className="relative overflow-hidden rounded-2xl border border-emerald-100/80 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 px-4 py-3 text-white">
+          <div className="hidden md:block relative overflow-hidden rounded-2xl border border-emerald-100/80 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 px-4 py-3 text-white">
             <div className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-white/15 blur-xl" aria-hidden />
             <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-white/80">Host dashboard</p>
-            <h2 className="text-lg font-bold leading-tight mt-0.5">{title}</h2>
-            <p className="text-xs text-white/90 mt-0.5">Manage activities, team, venues, and join requests.</p>
+            <h2 className="mt-0.5 text-lg font-bold leading-tight">{title}</h2>
+            <p className="mt-0.5 text-xs text-white/90">Manage activities, team, venues, and join requests.</p>
           </div>
           {headerExtra}
-          <div className="hidden md:flex items-center gap-3">
-            <div className="flex-1 min-w-0">
-              <FilterChips
-                options={navOptions}
-                value={activePath}
-                onChange={(path) => navigate(path)}
-                variant="neutral"
-              />
-            </div>
+          <FilterChips
+            options={navOptions}
+            value={activePath}
+            onChange={(path) => navigate(path)}
+            variant="neutral"
+          />
+          <div className="hidden items-center justify-between gap-3 md:flex">
             <Link
               to="/"
-              className="shrink-0 text-sm font-medium text-gray-600 hover:text-emerald-700 whitespace-nowrap"
+              className="shrink-0 text-sm font-medium text-neutral-600 hover:text-emerald-700 whitespace-nowrap"
             >
               Landing page
             </Link>
             {cta && <div className="shrink-0">{cta}</div>}
           </div>
-          {cta && <div className="md:hidden flex justify-end">{cta}</div>}
+          {cta && <div className="flex justify-end md:hidden">{cta}</div>}
         </div>
       }
     >
-      <div className="max-w-5xl mx-auto w-full">{children}</div>
+      <div className="mx-auto w-full max-w-5xl pb-nav-safe">{children}</div>
     </ConsumerShell>
   );
 };
-

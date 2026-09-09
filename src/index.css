@@ -469,6 +469,75 @@
     border: none !important;
   }
 
+  .uaetrail-map-pin-marker {
+    position: relative;
+    display: block;
+  }
+
+  .uaetrail-map-pin-face {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: #fff;
+    line-height: 1;
+    box-shadow:
+      inset 0 0 0 1px rgba(148, 163, 184, 0.55),
+      0 4px 14px rgba(15, 23, 42, 0.18),
+      0 1px 3px rgba(15, 23, 42, 0.1);
+  }
+
+  .uaetrail-map-pin-marker--selected {
+    animation: uaetrail-pin-bob 1.6s ease-in-out infinite;
+  }
+
+  .uaetrail-map-pin-marker--selected::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 9999px;
+    border: 2px solid var(--pin-ring, #059669);
+    opacity: 0.45;
+    pointer-events: none;
+    animation: uaetrail-pin-ring-pulse 1.6s ease-out infinite;
+  }
+
+  @keyframes uaetrail-pin-bob {
+    0%,
+    100% {
+      transform: translateY(0) scale(1.06);
+    }
+    50% {
+      transform: translateY(-3px) scale(1.1);
+    }
+  }
+
+  @keyframes uaetrail-pin-ring-pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.45;
+    }
+    100% {
+      transform: scale(1.4);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uaetrail-map-pin-marker--selected {
+      animation: none;
+      transform: scale(1.08);
+    }
+
+    .uaetrail-map-pin-marker--selected::after {
+      animation: none;
+      opacity: 0.25;
+      transform: scale(1.15);
+    }
+  }
+
   .uaetrail-map-cluster-wrap {
     background: transparent !important;
     border: none !important;
@@ -478,13 +547,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
     border-radius: 9999px;
     background: #fff;
-    border: 2.5px solid #f43f5e;
+    border: 2.5px solid #059669;
     color: #111827;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 13px;
     font-weight: 700;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18), 0 1px 3px rgba(15, 23, 42, 0.1);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    box-shadow:
+      inset 0 0 0 1px rgba(148, 163, 184, 0.55),
+      0 4px 14px rgba(15, 23, 42, 0.18),
+      0 1px 3px rgba(15, 23, 42, 0.1);
   }
 
   .marker-cluster-small,

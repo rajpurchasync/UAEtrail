@@ -1,7 +1,6 @@
-import { Mountain, Facebook, Instagram, Globe } from 'lucide-react';
+import { Facebook, Instagram, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { FEATURE_FLAGS } from '../../config/platform';
+import { EXPLORE_MAP_PATH } from '../../config/platform';
 
 const SOCIAL_LINKS = {
   facebook: 'https://www.facebook.com/profile.php?id=61593777959562',
@@ -22,158 +21,88 @@ const externalLinkProps = {
 };
 
 const footerLinkClass =
-  'hover:text-emerald-500 transition-colors text-[10px] leading-tight sm:text-xs md:text-base md:leading-normal';
+  'hover:text-emerald-500 transition-colors text-xs sm:text-sm';
 
-export const Footer = () => {
-  const { user } = useAuth();
-  return (
-    <footer className="bg-gray-900 text-gray-300 pb-safe">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div className="flex flex-col gap-6 md:grid md:grid-cols-4 md:gap-8">
-          {/* Section 1 — brand */}
-          <div>
-            <div className="flex items-center space-x-2 mb-3 md:mb-4">
-              <Mountain className="w-7 h-7 md:w-8 md:h-8 text-emerald-500 shrink-0" />
-              <span className="text-lg md:text-xl font-bold text-white">UAE Trail</span>
-            </div>
-            <p className="text-[11px] sm:text-xs md:text-sm leading-relaxed">
-              Discover the beauty of UAE&apos;s mountains and deserts through guided hiking and camping experiences.
-            </p>
-          </div>
-
-          {/* Section 2 — menus (side-by-side on mobile) */}
-          <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:gap-x-5 md:contents">
-            <div>
-              <h3 className="text-white font-semibold mb-2 md:mb-4 text-[11px] sm:text-xs md:text-base">
-                Quick Links
-              </h3>
-              <ul className="space-y-1 md:space-y-2">
-                <li>
-                  <Link to="/discovery" className={footerLinkClass}>
-                    Trails & Camps
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/activities" className={footerLinkClass}>
-                    Activities
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/shop" className={footerLinkClass}>
-                    Gear Shop
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/trail-points" className={footerLinkClass}>
-                    Trail Points
-                  </Link>
-                </li>
-                {FEATURE_FLAGS.membershipEnabled && (
-                  <li>
-                    <Link to="/membership" className={footerLinkClass}>
-                      Membership
-                    </Link>
-                  </li>
-                )}
-                <li>
-                  <Link
-                    to={user ? '/become-host' : '/signin?redirect=/become-host'}
-                    className={footerLinkClass}
-                  >
-                    Become a Host
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-white font-semibold mb-2 md:mb-4 text-[11px] sm:text-xs md:text-base">About</h3>
-              <ul className="space-y-1 md:space-y-2">
-                <li>
-                  <Link to="/faq" className={footerLinkClass}>
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <a href="mailto:support@uaetrail.com" className={footerLinkClass}>
-                    Contact
-                  </a>
-                </li>
-                <li>
-                  <Link to="/faq" className={footerLinkClass}>
-                    Safety & prep
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/terms" className={footerLinkClass}>
-                    Terms
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/privacy" className={footerLinkClass}>
-                    Privacy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-white font-semibold mb-2 md:mb-4 text-[11px] sm:text-xs md:text-base">
-                Follow Us
-              </h3>
-              <div className="flex flex-wrap gap-3 md:gap-4">
-                <a
-                  href={SOCIAL_LINKS.facebook}
-                  {...externalLinkProps}
-                  className="hover:text-emerald-500 transition-colors"
-                  aria-label="UAE Trail on Facebook"
-                >
-                  <Facebook className="w-5 h-5 md:w-6 md:h-6" />
-                </a>
-                <a
-                  href={SOCIAL_LINKS.instagram}
-                  {...externalLinkProps}
-                  className="hover:text-emerald-500 transition-colors"
-                  aria-label="UAE Trail on Instagram"
-                >
-                  <Instagram className="w-5 h-5 md:w-6 md:h-6" />
-                </a>
-                <a
-                  href={SOCIAL_LINKS.whatsapp}
-                  {...externalLinkProps}
-                  className="hover:text-emerald-500 transition-colors"
-                  aria-label="UAE Trail on WhatsApp"
-                >
-                  <WhatsAppIcon className="w-5 h-5 md:w-6 md:h-6" />
-                </a>
-                <a
-                  href={SOCIAL_LINKS.website}
-                  {...externalLinkProps}
-                  className="hover:text-emerald-500 transition-colors"
-                  aria-label="UAE Trail website"
-                >
-                  <Globe className="w-5 h-5 md:w-6 md:h-6" />
-                </a>
-              </div>
-              <p className="text-[10px] sm:text-xs md:text-sm mt-2 md:mt-3 leading-snug">
-                <a href={SOCIAL_LINKS.website} {...externalLinkProps} className="hover:text-emerald-500 transition-colors">
-                  www.uaetrail.com
-                </a>
-              </p>
-              <p className="text-[10px] sm:text-xs md:text-sm mt-2 md:mt-4 leading-snug">
-                Always prioritize safety. Check weather and inform someone before heading out.
-              </p>
-            </div>
-          </div>
+export const Footer = () => (
+  <footer className="bg-gray-900 text-gray-300 pb-safe">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+      <div className="grid grid-cols-3 gap-6 md:gap-10">
+        <div>
+          <h3 className="text-white font-semibold mb-3 text-xs sm:text-sm uppercase tracking-wide">
+            Quick Links
+          </h3>
+          <ul className="space-y-2">
+            <li>
+              <Link to="/" className={footerLinkClass}>
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link to={EXPLORE_MAP_PATH} className={footerLinkClass}>
+                Map
+              </Link>
+            </li>
+          </ul>
         </div>
 
-        <div className="border-t border-gray-800 mt-6 md:mt-8 pt-6 md:pt-8 text-[10px] sm:text-xs md:text-sm text-center">
-          <p>&copy; 2026 UAE Trail. All rights reserved.</p>
-          <a href="/llms.txt" className="hover:text-emerald-500 transition-colors text-[10px] mt-2 inline-block">
-            AI / LLM site guide
-          </a>
+        <div>
+          <h3 className="text-white font-semibold mb-3 text-xs sm:text-sm uppercase tracking-wide">About</h3>
+          <ul className="space-y-2">
+            <li>
+              <Link to="/faq" className={footerLinkClass}>
+                FAQ
+              </Link>
+            </li>
+            <li>
+              <a href="mailto:support@uaetrail.com" className={footerLinkClass}>
+                Contact
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="text-white font-semibold mb-3 text-xs sm:text-sm uppercase tracking-wide">Socials</h3>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={SOCIAL_LINKS.facebook}
+              {...externalLinkProps}
+              className="hover:text-emerald-500 transition-colors"
+              aria-label="UAE Trail on Facebook"
+            >
+              <Facebook className="w-5 h-5" />
+            </a>
+            <a
+              href={SOCIAL_LINKS.instagram}
+              {...externalLinkProps}
+              className="hover:text-emerald-500 transition-colors"
+              aria-label="UAE Trail on Instagram"
+            >
+              <Instagram className="w-5 h-5" />
+            </a>
+            <a
+              href={SOCIAL_LINKS.whatsapp}
+              {...externalLinkProps}
+              className="hover:text-emerald-500 transition-colors"
+              aria-label="UAE Trail on WhatsApp"
+            >
+              <WhatsAppIcon className="w-5 h-5" />
+            </a>
+            <a
+              href={SOCIAL_LINKS.website}
+              {...externalLinkProps}
+              className="hover:text-emerald-500 transition-colors"
+              aria-label="UAE Trail website"
+            >
+              <Globe className="w-5 h-5" />
+            </a>
+          </div>
         </div>
       </div>
-    </footer>
-  );
-};
+
+      <div className="border-t border-gray-800 mt-8 pt-6 text-xs text-center text-gray-400">
+        <p>&copy; 2026 UAE Trail. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+);

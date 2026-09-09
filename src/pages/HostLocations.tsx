@@ -35,14 +35,14 @@ export const HostLocations = () => {
   }, [tenantId]);
 
   return (
-    <HostShell title="Venues">
+    <HostShell title="Locations">
       <div className="space-y-6 max-w-2xl">
         <TenantSwitcher onChange={setTenantId} />
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Submit a venue</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Submit a location</h2>
           <p className="text-sm text-gray-600 mt-1">
-            Add a trail, camp, or spot to the catalog. This is separate from scheduling an activity — once a venue is
-            approved, you can pick it when you create an activity under Activities.
+            Add a trail, camp, or outdoor location to the catalog. This is separate from scheduling an activity — once a
+            location is approved, you can pick it when you create an activity under Activities.
           </p>
         </div>
 

@@ -35,6 +35,8 @@ interface ProfileSettingsViewProps {
   groupsCount: number;
   rewardPoints: number | null;
   trailPointsEligible: boolean;
+  hasShopProfile?: boolean;
+  hasAgencyProfile?: boolean;
   canSwitchToVisitor: boolean;
   canSwitchBack: boolean;
   switchedFromRole?: string | null;
@@ -50,6 +52,8 @@ export const ProfileSettingsView = ({
   groupsCount,
   rewardPoints,
   trailPointsEligible,
+  hasShopProfile = false,
+  hasAgencyProfile = false,
   canSwitchToVisitor,
   canSwitchBack,
   switchedFromRole,
@@ -121,6 +125,24 @@ export const ProfileSettingsView = ({
           icon: <Crown className="h-4 w-4 text-amber-600" />,
         }]
       : []),
+    ...(hasShopProfile
+      ? [{
+          key: 'manage-shop',
+          label: 'Manage shop',
+          description: 'Edit shop info and product listings',
+          to: '/shop/manage',
+          icon: <Briefcase className="h-4 w-4 text-amber-600" />,
+        }]
+      : []),
+    ...(hasAgencyProfile
+      ? [{
+          key: 'manage-agency',
+          label: 'Manage agency',
+          description: 'Edit agency profile and team members',
+          to: '/agency/manage',
+          icon: <Briefcase className="h-4 w-4 text-indigo-600" />,
+        }]
+      : []),
     ...(canHost
       ? [{
           key: 'host',
@@ -139,7 +161,7 @@ export const ProfileSettingsView = ({
   ];
 
   return (
-    <ConsumerShell layout="stack" title="Settings" back={{ fallbackTo: '/profile', label: 'Profile' }}>
+    <ConsumerShell layout="stack" title="Settings" showJourney={false} back={{ fallbackTo: '/profile', label: 'Profile' }}>
       <div className="space-y-3 pb-nav-safe animate-fade-up">
         <GlassCard padding className="!p-0 overflow-hidden">
           {rows.map((row, index) => (
@@ -160,7 +182,7 @@ export const ProfileSettingsView = ({
                 )}
               </span>
               {row.badge != null && row.badge > 0 && (
-                <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
                   {row.badge > 99 ? '99+' : row.badge}
                 </span>
               )}

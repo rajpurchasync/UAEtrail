@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useMemo, useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import {
@@ -8,6 +8,7 @@ import {
   openPublishedActivityPreview,
 } from '../../components/activities';
 import { HostJoinRequestCard } from '../../components/host/HostJoinRequestCard';
+import { HostActivityCheckInPanel } from '../../components/host/HostActivityCheckInPanel';
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
 import { useHostHubData } from '../../hooks/useHostHubData';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
@@ -34,6 +35,7 @@ const formatEventMeta = (event: ActivityDTO) => {
 
 export const HostedSection = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const host = useHostHubData();
   const { openEdit } = useActivityFormSession();
   const [activityTab, setActivityTab] = useState<ActivityTab>('upcoming');
@@ -43,6 +45,7 @@ export const HostedSection = () => {
   const [confirmAction, setConfirmAction] = useState<
     { type: 'delete' | 'cancel'; activity: ActivityDTO } | null
   >(null);
+  const [checkinActivity, setCheckinActivity] = useState<ActivityDTO | null>(null);
 
   const today = useMemo(() => new Date(new Date().toDateString()), []);
 
@@ -63,6 +66,19 @@ export const HostedSection = () => {
   );
 
   const visibleActivities = activityTab === 'upcoming' ? upcomingActivities : pastActivities;
+
+  useEffect(() => {
+    const checkinId = searchParams.get('checkin');
+    if (!checkinId || host.loading || !host.tenantId) return;
+
+    const activity = host.activities.find((event) => event.id === checkinId);
+    if (!activity || activity.status !== 'published') return;
+
+    setCheckinActivity(activity);
+    const next = new URLSearchParams(searchParams);
+    next.delete('checkin');
+    setSearchParams(next, { replace: true });
+  }, [host.activities, host.loading, host.tenantId, searchParams, setSearchParams]);
 
   const decideRequest = async (requestId: string, status: 'approved' | 'rejected') => {
     if (!host.tenantId) return;
@@ -242,12 +258,28 @@ export const HostedSection = () => {
                   onDuplicate: duplicateActivity,
                   onDelete: (activity) => setConfirmAction({ type: 'delete', activity }),
                   onCancel: (activity) => setConfirmAction({ type: 'cancel', activity }),
+                  onCheckin: (activity) => setCheckinActivity(activity),
                 })}
               />
             </div>
           ))}
         </div>
       )}
+
+      <Dialog
+        open={Boolean(checkinActivity)}
+        onClose={() => setCheckinActivity(null)}
+        title="Check in attendees"
+      >
+        {checkinActivity && host.tenantId ? (
+          <HostActivityCheckInPanel
+            tenantId={host.tenantId}
+            activityId={checkinActivity.id}
+            activityTitle={checkinActivity.title || checkinActivity.locationName}
+            onError={setError}
+          />
+        ) : null}
+      </Dialog>
 
       <Dialog
         open={Boolean(confirmAction)}

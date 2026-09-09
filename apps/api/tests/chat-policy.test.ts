@@ -43,6 +43,16 @@ afterAll(async () => {
       .deleteMany({
         $or: [{ senderId: { $in: testUserIds } }, { receiverId: { $in: testUserIds } }]
       });
+    await getMongoClient()!
+      .db()
+      .collection('buddy_pairs')
+      .deleteMany({ userIds: { $in: testUserIds } });
+    await getMongoClient()!
+      .db()
+      .collection('buddy_requests')
+      .deleteMany({
+        $or: [{ fromUserId: { $in: testUserIds } }, { toUserId: { $in: testUserIds } }]
+      });
   }
 
   await cleanupTestUsers();
@@ -91,5 +101,53 @@ describe('chat messaging policy', () => {
 
     expect(response.status).toBe(201);
     expect(response.body.data?.content).toBe('Is this trip beginner friendly?');
+  });
+
+  it('blocks buddy-only messaging after unfriend, even when a thread already exists', async () => {
+    const userA = await findAuthUserByEmail(visitorA.email);
+    const userB = await findAuthUserByEmail(visitorB.email);
+    expect(userA).toBeTruthy();
+    expect(userB).toBeTruthy();
+
+    const requestRes = await request(app)
+      .post('/api/v1/me/buddy-requests')
+      .set('Authorization', `Bearer ${visitorA.accessToken}`)
+      .send({ targetUserId: userB!._id });
+
+    expect(requestRes.status).toBe(201);
+
+    const acceptRes = await request(app)
+      .post(`/api/v1/me/buddy-requests/${requestRes.body.data.id}/accept`)
+      .set('Authorization', `Bearer ${visitorB.accessToken}`);
+
+    expect(acceptRes.status).toBe(200);
+
+    const messageRes = await request(app)
+      .post('/api/v1/chat/messages')
+      .set('Authorization', `Bearer ${visitorA.accessToken}`)
+      .send({ receiverId: userB!._id, content: 'Hey buddy' });
+
+    expect(messageRes.status).toBe(201);
+
+    const unfriendRes = await request(app)
+      .post(`/api/v1/me/buddies/${userB!._id}/unfriend`)
+      .set('Authorization', `Bearer ${visitorA.accessToken}`);
+
+    expect(unfriendRes.status).toBe(200);
+
+    const blockedSend = await request(app)
+      .post('/api/v1/chat/messages')
+      .set('Authorization', `Bearer ${visitorB.accessToken}`)
+      .send({ receiverId: userA!._id, content: 'Can we still chat?' });
+
+    expect(blockedSend.status).toBe(403);
+    expect(blockedSend.body.error?.code).toBe('message_not_allowed');
+
+    const blockedRead = await request(app)
+      .get(`/api/v1/chat/messages/${userA!._id}`)
+      .set('Authorization', `Bearer ${visitorB.accessToken}`);
+
+    expect(blockedRead.status).toBe(403);
+    expect(blockedRead.body.error?.code).toBe('message_not_allowed');
   });
 });

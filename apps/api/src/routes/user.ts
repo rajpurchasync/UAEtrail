@@ -11,7 +11,7 @@ import { viewLimiter, sensitiveDataLimiter } from '../middleware/rate-limit-inst
 import { validate } from '../middleware/validate.js';
 import { slugify } from '../lib/slug.js';
 import { createJoinOrWaitlistRequest } from '../services/join-request.js';
-import { buildParticipationDto, performParticipantCheckIn } from '../services/checkin.js';
+import { buildParticipationDto } from '../services/checkin.js';
 import { canWithdrawRequest, withdrawReasonSchema } from '../lib/withdraw-reasons.js';
 import { getVapidPublicKey } from '../lib/push.js';
 import { EARN_OPPORTUNITIES, MEMBERSHIP_TIERS, REWARD_POINTS } from '../lib/rewards-config.js';
@@ -30,6 +30,28 @@ import { generateEmailOtp } from '../lib/hash.js';
 import { sendVerificationEmail } from '../lib/email.js';
 import { formatE164Phone, isValidE164Phone, isValidNationalPhone } from '../lib/phone.js';
 import { notifyPlatformAdmins } from '../services/admin-notifications.js';
+import { notifyHostOfRequestWithdrawal } from '../services/request-notifications.js';
+import {
+  notifyParticipantJoinRequestSubmitted,
+  notifyParticipantJoinRequestWithdrawn
+} from '../services/join-request-notifications.js';
+import { notifyGroupInvite, notifyGroupWallPost } from '../services/social-notifications.js';
+import {
+  notifyBuddyRequestAccepted,
+  notifyBuddyRequestReceived,
+} from '../services/buddy-notifications.js';
+import {
+  acceptBuddyRequest,
+  cancelBuddyRequest,
+  createBuddyRequest,
+  declineBuddyRequest,
+  getBuddyRelationship,
+  listBuddyRequestsForUser,
+  listBuddiesForUser,
+  unfriendBuddy,
+} from '../lib/buddy-store.js';
+import { ensureActivityGroupChat, isActivityGroupChatOpen, userCanAccessActivityGroupChat } from '../services/activity-group-chat.js';
+import { findActivityDocInMongo } from '../lib/entity-sync.js';
 import {
   assertPremiumAccess,
   buildPremiumSummary,
@@ -40,6 +62,13 @@ import {
 } from '../services/location-premium.js';
 import { listActiveLocations } from '../lib/location-query.js';
 import { buildExploreMapPayload } from '../lib/explore-map.js';
+import {
+  PRIVATE_ACTIVITY_MESSAGE,
+  resolveActivityViewerAccess,
+} from '../services/activity-viewer-access.js';
+import { normalizeProfileVisibility } from '../lib/media-access.js';
+import { resolveProfileViewerAccess } from '../services/profile-viewer-access.js';
+import { findMerchantProfilesByUserIds, findMerchantPublicById } from '../lib/shop-store.js';
 import { env } from '../config/env.js';
 import { getStripe, isStripeConfigured } from '../lib/stripe.js';
 import { clearRefreshCookie } from '../lib/auth-cookies.js';
@@ -81,6 +110,12 @@ import {
   updateHostApplicationMetadata
 } from '../lib/host-applications-store.js';
 import { createParticipantIntentSchema } from '../domain/participant-intent.js';
+import {
+  assertMinimumAge,
+  assertSignupProfileAge,
+  completeSignupProfileSchema,
+  isSignupProfileComplete,
+} from '../domain/user-profile.js';
 import { createParticipantIntent } from '../lib/participant-intents-store.js';
 import {
   cancelUserActivityRequestAndPromoteWaitlist,
@@ -143,7 +178,10 @@ const updateProfileSchema = z.object({
     (value) => (value === '' || value === null ? undefined : value),
     mediaUrlSchema.optional()
   ),
-  profileVisibility: z.enum(['public', 'group_members', 'private']).optional()
+  profileVisibility: z.enum(['public', 'group_members', 'private']).optional(),
+  dateOfBirth: completeSignupProfileSchema.shape.dateOfBirth.optional(),
+  gender: completeSignupProfileSchema.shape.gender.optional(),
+  city: completeSignupProfileSchema.shape.city.optional(),
 });
 
 const requestEmailChangeSchema = z.object({
@@ -196,6 +234,16 @@ const groupMembershipPatchSchema = z
 
 const groupWallReactionSchema = z.object({
   kind: z.enum(GROUP_WALL_REACTION_KINDS)
+});
+
+const buddyRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
+const buddyRelationshipParamSchema = z.object({ userId: z.string().min(1) });
+const createBuddyRequestSchema = z.object({
+  targetUserId: z.string().min(1),
+  message: z.string().max(300).optional(),
+});
+const listBuddyRequestsQuerySchema = z.object({
+  direction: z.enum(['incoming', 'outgoing', 'all']).optional(),
 });
 
 const createWallPostSchema = z.object({
@@ -371,7 +419,7 @@ userRouter.get('/locations/:id/premium/guide/pdf', requireAuth, validate({ param
 const locationDetailPath = (location: { id: string; activityType: ActivityType }) => {
   if (location.activityType === ActivityType.CAMPING) return `/camp/${location.id}`;
   if (location.activityType === ActivityType.EVENT || location.activityType === ActivityType.COMMUNITY_ACTIVITY) {
-    return `/event-spot/${location.id}`;
+    return `/event/${location.id}`;
   }
   return `/trail/${location.id}`;
 };
@@ -482,9 +530,21 @@ userRouter.post('/locations/:id/view', viewLimiter, validate({ params: eventIdPa
 const parseOrganizerDetails = (metadata: unknown) => {
   if (!metadata || typeof metadata !== 'object') return {};
   const m = metadata as Record<string, unknown>;
+  const dateOfBirth = typeof m.dateOfBirth === 'string' ? m.dateOfBirth : undefined;
+  const computeAge = (value: string): number | undefined => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+    const dob = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(dob.getTime())) return undefined;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age -= 1;
+    return age >= 0 ? age : undefined;
+  };
   return {
     experience: typeof m.experience === 'string' ? m.experience : undefined,
     languages: typeof m.languages === 'string' ? m.languages : undefined,
+    age: dateOfBirth ? computeAge(dateOfBirth) : undefined,
     certificates: typeof m.certificates === 'string' ? m.certificates : undefined,
     notableHikes: typeof m.notableHikes === 'string' ? m.notableHikes : undefined,
     nationality: typeof m.nationality === 'string' ? m.nationality : undefined,
@@ -508,17 +568,55 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
     }
     const ownerProfile = tenant.owner.profile;
     const organizerDetails = await loadOrganizerDetails(tenant.ownerId);
+
+    let merchantId: string | null = null;
+    let shopProducts: Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      images: string[];
+      priceAed: number;
+      discountPercent: number | null;
+    }> = [];
+
+    const isShopTenant = tenant.businessMode === TenantBusinessMode.SHOP;
+
+    if (isShopTenant && tenant.ownerId) {
+      const merchant = (await findMerchantProfilesByUserIds([tenant.ownerId])).get(tenant.ownerId) ?? null;
+      if (merchant) {
+        merchantId = merchant.id;
+        const publicMerchant = await findMerchantPublicById(merchant.id);
+        shopProducts =
+          publicMerchant?.products.map((product) => ({
+            id: product.id,
+            name: product.name,
+            description: product.description ?? null,
+            images: product.images,
+            priceAed: product.priceAed,
+            discountPercent: product.discountPercent ?? null,
+          })) ?? [];
+      }
+    }
+
     res.json({
       data: {
         id: tenant.id,
         name: tenant.name,
         slug: tenant.slug,
         type: tenant.type,
+        businessMode: tenant.businessMode ?? null,
+        description: tenant.description ?? null,
+        website: tenant.website ?? null,
+        region: tenant.region ?? null,
+        latitude: tenant.latitude ?? null,
+        longitude: tenant.longitude ?? null,
         ownerId: tenant.ownerId,
         ownerName: ownerProfile?.displayName ?? tenant.owner.email,
         ownerAvatar: ownerProfile?.avatarUrl ?? null,
         ownerBio: ownerProfile?.bio ?? null,
         organizerDetails,
+        merchantId,
+        shopProducts,
         memberCount: tenant.memberships.length,
         team: tenant.memberships.map((m) => ({
           role: m.role,
@@ -575,6 +673,31 @@ registerActivityRoute(userRouter, 'get', '/:id', optionalAuth, validate({ params
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
 
+    const access = await resolveActivityViewerAccess({
+      viewerUserId: req.auth?.userId ?? null,
+      activity: {
+        id: event.id,
+        tenantId: event.tenantId,
+        hostId: event.hostId,
+        createdById: event.createdById,
+        joinMode: event.joinMode,
+        requirements: event.requirements,
+      },
+      isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
+    });
+
+    if (!access.canViewFullActivity) {
+      res.json({
+        data: {
+          visibilityState: 'private',
+          id: event.id,
+          joinMode: 'private',
+          message: PRIVATE_ACTIVITY_MESSAGE,
+        },
+      });
+      return;
+    }
+
     let myParticipation = null;
     let myRequest = null;
     if (req.auth?.userId) {
@@ -615,6 +738,7 @@ registerActivityRoute(userRouter, 'get', '/:id', optionalAuth, validate({ params
 
     res.json({
       data: {
+        visibilityState: 'full',
         ...buildActivityDto(event),
         linkedCarpool,
         linkedParentActivity,
@@ -647,6 +771,13 @@ registerActivityRoute(
         userId: req.auth!.userId,
         note,
         selectedPackageIndex
+      });
+
+      void notifyParticipantJoinRequestSubmitted({
+        userId: req.auth!.userId,
+        activityId: id,
+        requestId: request.id,
+        waitlisted
       });
 
       res.status(201).json({
@@ -691,11 +822,29 @@ registerActivityRoute(
         throw new ApiError(400, 'request_not_cancellable', 'This request cannot be cancelled.');
       }
 
+      const wasConfirmed = request.status.toLowerCase() === 'approved';
+
       await cancelUserActivityRequestAndPromoteWaitlist({
         requestId: request.id,
         activityId: request.activityId,
+        userId: req.auth!.userId,
         cancelReason: reason,
         cancelMessage: message?.trim() || null
+      });
+
+      void notifyHostOfRequestWithdrawal({
+        activityId: request.activityId,
+        requestId: request.id,
+        participantUserId: req.auth!.userId,
+        cancelReason: reason,
+        cancelMessage: message?.trim() || null
+      });
+
+      void notifyParticipantJoinRequestWithdrawn({
+        userId: req.auth!.userId,
+        activityId: request.activityId,
+        requestId: request.id,
+        wasConfirmed
       });
 
       res.json({ message: 'Request cancelled successfully.' });
@@ -813,84 +962,132 @@ userRouter.get('/rewards/leaderboard', async (_req, res, next) => {
   }
 });
 
-userRouter.use(requireAuth, requireVerifiedEmail);
+const userBriefParamSchema = z.object({ userId: z.string().min(1) });
 
-registerActivityRoute(userRouter, 'post', '/:id/checkin', validate({ params: eventIdParamSchema }), async (req, res, next) => {
+userRouter.get('/users/:userId/brief', optionalAuth, validate({ params: userBriefParamSchema }), async (req, res, next) => {
   try {
-    const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const participant = await findActivityParticipantByEventAndUser(id, req.auth!.userId);
-    if (!participant) {
-      throw new ApiError(404, 'not_a_participant', 'You are not confirmed for this trip.');
+    const { userId } = req.params as z.infer<typeof userBriefParamSchema>;
+    const user = await findAuthUserById(userId);
+    if (!user) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
     }
 
-    const result = await performParticipantCheckIn({
-      activityId: id,
-      participantId: participant.id,
-      actorUserId: req.auth!.userId,
-      source: 'self'
+    const visibility = normalizeProfileVisibility(user.profile?.profileVisibility);
+    const access = await resolveProfileViewerAccess({
+      viewerUserId: req.auth?.userId ?? null,
+      targetUserId: userId,
+      targetVisibility: visibility,
+      isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
     });
 
-    const eventTiming = await findActivityTimingById(id);
-    if (!eventTiming) {
-      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+    if (visibility === 'private' && !access.canViewFullProfile) {
+      res.json({
+        data: {
+          id: user._id,
+          displayName: 'Private member',
+          avatarUrl: null,
+        },
+      });
+      return;
     }
 
     res.json({
-      message: result.alreadyCheckedIn ? 'You are already checked in.' : 'Checked in successfully.',
-      checkedInAt: result.checkedInAt.toISOString(),
-      participation: buildParticipationDto(eventTiming, {
-        id: participant.id,
-        requestId: participant.requestId,
-        checkedInAt: result.checkedInAt
-      })
+      data: {
+        id: user._id,
+        displayName: user.profile.displayName ?? user.email.split('@')[0],
+        avatarUrl: user.profile.avatarUrl ?? null,
+      },
     });
   } catch (error) {
     next(error);
   }
 });
 
-const meRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
-
-const mapMeRequest = (request: {
-  id: string;
-  status: RequestStatus;
-  note: string | null;
-  organizerNote: string | null;
-  cancelReason: string | null;
-  cancelMessage: string | null;
-  cancelledAt: Date | null;
-  createdAt: Date;
-  activity: {
-    id: string;
-    title: string | null;
-    startAt: Date;
-    hostId: string | null;
-    location: { name: string };
-    tenant: { name: string; slug: string; ownerId: string };
-    guide: { profile: { displayName: string | null } | null } | null;
-  };
-}) => ({
-  id: request.id,
-  status: request.status.toLowerCase(),
-  note: request.note,
-  organizerNote: request.organizerNote,
-  cancelReason: request.cancelReason,
-  cancelMessage: request.cancelMessage,
-  cancelledAt: request.cancelledAt?.toISOString() ?? null,
-  createdAt: request.createdAt,
-  activity: {
-    id: request.activity.id,
-    title: request.activity.title,
-    locationName: request.activity.location.name,
-    date: request.activity.startAt.toISOString().slice(0, 10),
-    time: request.activity.startAt.toISOString().slice(11, 16),
-    organizerName: request.activity.guide?.profile?.displayName ?? 'Host',
-    hostName: request.activity.guide?.profile?.displayName ?? 'Host',
-    tenantName: request.activity.tenant.name,
-    organizerUserId: request.activity.hostId ?? request.activity.tenant.ownerId,
-    tenantSlug: request.activity.tenant.slug
+userRouter.get('/users/:userId/public-profile', optionalAuth, validate({ params: userBriefParamSchema }), async (req, res, next) => {
+  try {
+    const { userId } = req.params as z.infer<typeof userBriefParamSchema>;
+    const { buildPublicMemberProfile } = await import('../services/public-member-profile.js');
+    const profile = await buildPublicMemberProfile(userId, {
+      viewerUserId: req.auth?.userId ?? null,
+      isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
+    });
+    if (!profile) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
+    }
+    res.json({ data: profile });
+  } catch (error) {
+    next(error);
   }
 });
+
+userRouter.use(requireAuth, requireVerifiedEmail);
+
+registerActivityRoute(
+  userRouter,
+  'get',
+  '/:id/group-chat',
+  validate({ params: eventIdParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+      const allowed = await userCanAccessActivityGroupChat({
+        activityId: id,
+        userId: req.auth!.userId
+      });
+      if (!allowed) {
+        throw new ApiError(403, 'forbidden', 'You cannot access this trip chat.');
+      }
+
+      const groupId = await ensureActivityGroupChat(id);
+      if (!groupId) {
+        throw new ApiError(404, 'group_chat_unavailable', 'Trip chat is not available.');
+      }
+
+      res.json({ data: { groupId } });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+const meRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
+
+const mapMeRequest = (
+  request: {
+    id: string;
+    status: RequestStatus;
+    note: string | null;
+    organizerNote: string | null;
+    cancelReason: string | null;
+    cancelMessage: string | null;
+    cancelledAt: Date | null;
+    createdAt: Date;
+  },
+  event: Parameters<typeof buildActivityDto>[0]
+) => {
+  const activity = buildActivityDto(event);
+  return {
+    id: request.id,
+    status: request.status.toLowerCase(),
+    note: request.note,
+    organizerNote: request.organizerNote,
+    cancelReason: request.cancelReason,
+    cancelMessage: request.cancelMessage,
+    cancelledAt: request.cancelledAt?.toISOString() ?? null,
+    createdAt: request.createdAt,
+    activity: {
+      id: activity.id,
+      title: activity.title,
+      locationName: activity.locationName,
+      date: activity.date,
+      time: activity.time,
+      hostName: activity.hostName,
+      hostUserId: activity.hostUserId,
+      tenantName: activity.tenantName,
+      tenantSlug: activity.tenantSlug,
+    },
+  };
+};
 
 userRouter.get('/me/requests/:requestId', validate({ params: meRequestIdParamSchema }), async (req, res, next) => {
   try {
@@ -906,10 +1103,7 @@ userRouter.get('/me/requests/:requestId', validate({ params: meRequestIdParamSch
     }
 
     res.json({
-      data: mapMeRequest({
-        ...request,
-        activity
-      })
+      data: mapMeRequest(request, activity)
     });
   } catch (error) {
     next(error);
@@ -935,7 +1129,7 @@ userRouter.get('/me/requests', async (req, res, next) => {
     const requestViews = requests.reduce<Array<ReturnType<typeof mapMeRequest>>>((acc, request) => {
       const activity = activityMap.get(request.activityId);
       if (!activity) return acc;
-      acc.push(mapMeRequest({ ...request, activity }));
+      acc.push(mapMeRequest(request, activity));
       return acc;
     }, []);
 
@@ -1005,7 +1199,11 @@ userRouter.get('/me/profile', async (req, res, next) => {
         phone: user.profile?.phone,
         bio: user.profile?.bio,
         avatarUrl: user.profile?.avatarUrl,
-        profileVisibility: user.profile?.profileVisibility ?? 'public'
+        profileVisibility: user.profile?.profileVisibility ?? 'public',
+        dateOfBirth: user.profile?.dateOfBirth ?? null,
+        gender: user.profile?.gender ?? null,
+        city: user.profile?.city ?? null,
+        signupProfileComplete: isSignupProfileComplete(user.profile),
       }
     });
   } catch (error) {
@@ -1019,24 +1217,58 @@ userRouter.patch('/me/profile', validate({ body: updateProfileSchema }), async (
     if (data.phone && !isValidE164Phone(data.phone)) {
       throw new ApiError(400, 'invalid_phone', 'Enter a valid phone number.');
     }
+    if (data.dateOfBirth) {
+      assertSignupProfileAge(data.dateOfBirth);
+    }
     await updateAuthUserProfile(req.auth!.userId, {
       ...data,
       phone: data.phone ?? null,
-      bio: data.bio ?? null
+      bio: data.bio ?? null,
+      dateOfBirth: data.dateOfBirth ?? undefined,
+      gender: data.gender ?? undefined,
+      city: data.city ?? undefined,
     });
+    const user = await findAuthUserById(req.auth!.userId);
     res.json({
       data: {
-        displayName: data.displayName ?? null,
-        phone: data.phone ?? null,
-        bio: data.bio ?? null,
-        avatarUrl: data.avatarUrl ?? null,
-        profileVisibility: data.profileVisibility ?? null
+        displayName: user?.profile?.displayName ?? data.displayName ?? null,
+        phone: user?.profile?.phone ?? data.phone ?? null,
+        bio: user?.profile?.bio ?? data.bio ?? null,
+        avatarUrl: user?.profile?.avatarUrl ?? data.avatarUrl ?? null,
+        profileVisibility: user?.profile?.profileVisibility ?? data.profileVisibility ?? null,
+        dateOfBirth: user?.profile?.dateOfBirth ?? data.dateOfBirth ?? null,
+        gender: user?.profile?.gender ?? data.gender ?? null,
+        city: user?.profile?.city ?? data.city ?? null,
+        signupProfileComplete: isSignupProfileComplete(user?.profile),
       }
     });
   } catch (error) {
     next(error);
   }
 });
+
+userRouter.patch(
+  '/me/profile/signup-details',
+  validate({ body: completeSignupProfileSchema }),
+  async (req, res, next) => {
+    try {
+      const data = req.body as z.infer<typeof completeSignupProfileSchema>;
+      assertSignupProfileAge(data.dateOfBirth);
+      await updateAuthUserProfile(req.auth!.userId, data);
+      const user = await findAuthUserById(req.auth!.userId);
+      res.json({
+        data: {
+          dateOfBirth: user?.profile?.dateOfBirth ?? data.dateOfBirth,
+          gender: user?.profile?.gender ?? data.gender,
+          city: user?.profile?.city ?? data.city,
+          signupProfileComplete: isSignupProfileComplete(user?.profile),
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 userRouter.post('/me/email/change/request', validate({ body: requestEmailChangeSchema }), async (req, res, next) => {
   try {
@@ -1225,6 +1457,129 @@ userRouter.patch('/me/notifications/read-all', async (req, res, next) => {
   }
 });
 
+userRouter.get('/me/buddies', async (req, res, next) => {
+  try {
+    const data = await listBuddiesForUser(req.auth!.userId);
+    res.json({ data });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post(
+  '/me/buddies/:userId/unfriend',
+  validate({ params: buddyRelationshipParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { userId } = req.params as z.infer<typeof buddyRelationshipParamSchema>;
+      await unfriendBuddy(req.auth!.userId, userId);
+      res.json({ data: { unfriended: true } });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+userRouter.get('/me/buddy-requests', validate({ query: listBuddyRequestsQuerySchema }), async (req, res, next) => {
+  try {
+    const { direction = 'all' } = req.query as z.infer<typeof listBuddyRequestsQuerySchema>;
+    const data = await listBuddyRequestsForUser(req.auth!.userId, direction);
+    res.json({ data });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post('/me/buddy-requests', validate({ body: createBuddyRequestSchema }), async (req, res, next) => {
+  try {
+    const body = req.body as z.infer<typeof createBuddyRequestSchema>;
+    const request = await createBuddyRequest({
+      fromUserId: req.auth!.userId,
+      toUserId: body.targetUserId,
+      message: body.message,
+    });
+
+    if (request.status === 'pending') {
+      await notifyBuddyRequestReceived({
+        requestId: request.id,
+        fromUserId: request.fromUserId,
+        toUserId: request.toUserId,
+      });
+    } else if (request.status === 'accepted') {
+      await notifyBuddyRequestAccepted({
+        requestId: request.id,
+        fromUserId: request.fromUserId,
+        toUserId: request.toUserId,
+      });
+    }
+
+    res.status(request.status === 'accepted' ? 200 : 201).json({ data: request });
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post(
+  '/me/buddy-requests/:requestId/accept',
+  validate({ params: buddyRequestIdParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { requestId } = req.params as z.infer<typeof buddyRequestIdParamSchema>;
+      const request = await acceptBuddyRequest(requestId, req.auth!.userId);
+      await notifyBuddyRequestAccepted({
+        requestId: request.id,
+        fromUserId: request.fromUserId,
+        toUserId: request.toUserId,
+      });
+      res.json({ data: request });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+userRouter.post(
+  '/me/buddy-requests/:requestId/decline',
+  validate({ params: buddyRequestIdParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { requestId } = req.params as z.infer<typeof buddyRequestIdParamSchema>;
+      const request = await declineBuddyRequest(requestId, req.auth!.userId);
+      res.json({ data: request });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+userRouter.post(
+  '/me/buddy-requests/:requestId/cancel',
+  validate({ params: buddyRequestIdParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { requestId } = req.params as z.infer<typeof buddyRequestIdParamSchema>;
+      const request = await cancelBuddyRequest(requestId, req.auth!.userId);
+      res.json({ data: request });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+userRouter.get(
+  '/me/buddy-relationship/:userId',
+  validate({ params: buddyRelationshipParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { userId } = req.params as z.infer<typeof buddyRelationshipParamSchema>;
+      const data = await getBuddyRelationship(req.auth!.userId, userId);
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 userRouter.get('/me/groups', async (req, res, next) => {
   try {
     const groups = await listGroupsForUser(req.auth!.userId);
@@ -1260,6 +1615,9 @@ userRouter.delete('/me/groups/:groupId', validate({ params: groupIdParamSchema }
     }
     if (group.adminUserId !== req.auth!.userId) {
       throw new ApiError(403, 'forbidden', 'Only the group creator can delete this group.');
+    }
+    if (group.type === 'activity') {
+      throw new ApiError(400, 'activity_group_locked', 'Trip chats are managed with their activity.');
     }
 
     await deleteSocialGroup(groupId);
@@ -1309,6 +1667,11 @@ userRouter.post('/me/groups/:groupId/invites', validate({ params: groupIdParamSc
       throw new ApiError(403, 'forbidden', 'Only group admins can send invites.');
     }
 
+    const group = await findGroupById(groupId);
+    if (group?.type === 'activity') {
+      throw new ApiError(400, 'activity_group_locked', 'Trip chats add members when requests are approved.');
+    }
+
     const invite = await createGroupInvite({
       groupId,
       invitedByUserId: req.auth!.userId,
@@ -1318,18 +1681,12 @@ userRouter.post('/me/groups/:groupId/invites', validate({ params: groupIdParamSc
 
     const invitedUser = await findAuthUserByEmail(body.email.trim().toLowerCase());
     if (invitedUser) {
-      await createNotificationRecord({
-        userId: invitedUser._id,
-        title: 'Buddy request',
-        body: 'You were invited to join a group.',
-        type: NotificationType.SYSTEM,
-        meta: {
-          kind: 'buddy_request',
-          inviteToken: invite.token,
-          groupId,
-          path: `/groups?invite=${encodeURIComponent(invite.token)}`
-        }
-      }).catch(() => undefined);
+      void notifyGroupInvite({
+        invitedUserId: invitedUser._id,
+        groupId,
+        inviteToken: invite.token,
+        invitedByUserId: req.auth!.userId
+      });
     }
 
     const inviteLink = `${env.APP_BASE_URL}/signup?groupInvite=${encodeURIComponent(invite.token)}`;
@@ -1523,10 +1880,25 @@ userRouter.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchem
       throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
     }
 
+    const group = await findGroupById(groupId);
+    if (group?.type === 'activity' && group.activityId) {
+      const eventDoc = await findActivityDocInMongo(group.activityId);
+      if (eventDoc && !isActivityGroupChatOpen(eventDoc.startAt)) {
+        throw new ApiError(403, 'trip_chat_closed', 'Trip chat closed one week after the activity.');
+      }
+    }
+
     const message = await createGroupWallMessage({
       groupId,
       authorUserId: req.auth!.userId,
       body: body.body
+    });
+
+    void notifyGroupWallPost({
+      groupId,
+      messageId: message.id,
+      authorUserId: req.auth!.userId,
+      body: message.body
     });
 
     res.status(201).json({ data: message });
@@ -1688,27 +2060,6 @@ userRouter.get('/users/search', validate({ query: userSearchSchema }), async (re
   }
 });
 
-const userBriefParamSchema = z.object({ userId: z.string().min(1) });
-
-userRouter.get('/users/:userId/brief', validate({ params: userBriefParamSchema }), async (req, res, next) => {
-  try {
-    const { userId } = req.params as z.infer<typeof userBriefParamSchema>;
-    const user = await findAuthUserById(userId);
-    if (!user) {
-      throw new ApiError(404, 'user_not_found', 'User not found.');
-    }
-    res.json({
-      data: {
-        id: user._id,
-        displayName: user.profile.displayName ?? user.email.split('@')[0],
-        avatarUrl: user.profile.avatarUrl ?? null
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
 // ─── Organizer Application (user-facing) ───────────────────────────────────
 
 import {
@@ -1800,6 +2151,19 @@ userRouter.post(
     try {
       const userId = req.auth!.userId;
       const body = req.body as z.infer<typeof hostApplicationBodySchema>;
+
+      if (body.hostProfileType === 'individual') {
+        const applicant = await findAuthUserById(userId);
+        const dateOfBirth = applicant?.profile?.dateOfBirth;
+        if (!dateOfBirth) {
+          throw new ApiError(
+            400,
+            'profile_incomplete',
+            'Complete your profile with date of birth before hosting.'
+          );
+        }
+        assertMinimumAge(dateOfBirth, 15, 'host_age_requirement_not_met');
+      }
 
       const ownedTenants = await listTenantsByOwnerId(userId);
       if (ownedTenants.some((tenant) => tenantMatchesHostProfileType(tenant, body.hostProfileType))) {

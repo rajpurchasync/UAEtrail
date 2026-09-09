@@ -6,7 +6,7 @@ import { setActiveTenantId } from '../api/tenant';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
-import { resolveAuthRedirect } from '../utils/authRedirect';
+import { navigateAuthBack, navigateAuthClose, resolveAuthRedirect } from '../utils/authRedirect';
 import { isPendingEmailVerification } from '../utils/authVerification';
 import {
   clearAuthReturnContext,
@@ -14,6 +14,7 @@ import {
   saveAuthReturnContext
 } from '../utils/authReturnContext';
 import { PageMeta } from '../components/seo/PageMeta';
+import { isSignupProfileComplete } from '../constants/userProfileOptions';
 
 export const SignIn = () => {
   const { signIn, signInDemo, signInWithGoogle, loading } = useAuth();
@@ -44,17 +45,8 @@ export const SignIn = () => {
     searchParams.get('redirect')
   );
 
-  const handleBack = () => {
-    if (from && from !== '/signin' && from !== '/signup') {
-      navigate(from);
-      return;
-    }
-    if (window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
-    navigate('/');
-  };
+  const handleBack = () => navigateAuthBack(navigate, from);
+  const handleClose = () => navigateAuthClose(navigate, from);
 
   const isFromValidForRole = (path: string, role: string): boolean => {
     // non-visitor roles must always land on their hub unless returning to a role-specific path
@@ -102,6 +94,17 @@ export const SignIn = () => {
 
     clearAuthReturnContext();
 
+    if (signedInUser.role === 'participant') {
+      const profile = await api.getMeProfile().catch(() => null);
+      if (profile && !isSignupProfileComplete(profile.data)) {
+        navigate('/welcome', {
+          replace: true,
+          state: { redirectTo: from ?? defaultRouteByRole(signedInUser.role) },
+        });
+        return;
+      }
+    }
+
     if (
       signedInUser.role === 'tenant_owner' ||
       signedInUser.role === 'tenant_admin' ||
@@ -137,7 +140,7 @@ export const SignIn = () => {
     try {
       await completeAuth(await signInDemo(account.email));
     } catch (submissionError) {
-      setError(submissionError instanceof Error ? submissionError.message : 'Sign in failed');
+      setError(submissionError instanceof Error ? submissionError.message : 'That didn\'t work — double-check your email and password.');
     }
   };
 
@@ -147,7 +150,7 @@ export const SignIn = () => {
     try {
       await completeAuth(await signIn(email, password));
     } catch (submissionError) {
-      setError(submissionError instanceof Error ? submissionError.message : 'Sign in failed');
+      setError(submissionError instanceof Error ? submissionError.message : 'That didn\'t work — double-check your email and password.');
     }
   };
 
@@ -156,7 +159,7 @@ export const SignIn = () => {
     try {
       await completeAuth(await signInWithGoogle(idToken));
     } catch (submissionError) {
-      setError(submissionError instanceof Error ? submissionError.message : 'Google sign in failed');
+      setError(submissionError instanceof Error ? submissionError.message : 'Google sign-in didn\'t complete — try again.');
     }
   };
 
@@ -167,26 +170,26 @@ export const SignIn = () => {
       <PageMeta title="Sign in" noIndex />
 
       <div className="max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-6 sm:p-8 flex-1">
-        <div className="flex items-center justify-between mb-2">
+        <div className="relative z-20 flex items-center justify-between mb-2">
           <button
             type="button"
             onClick={handleBack}
-            className="inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
+            className="relative z-20 inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
           >
             <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
             <span className="text-[17px] font-medium">Back</span>
           </button>
           <button
             type="button"
-            onClick={handleBack}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:opacity-60"
+            onClick={handleClose}
+            className="relative z-20 inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:opacity-60"
             aria-label="Close"
           >
             <X className="w-5 h-5" strokeWidth={2.25} />
           </button>
         </div>
 
-        <Link to="/" className="flex items-center justify-center gap-2 mb-5 -mt-1">
+        <Link to="/" className="relative z-0 flex items-center justify-center gap-2 mb-5">
           <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-[10px] flex items-center justify-center">
             <Mountain className="w-5 h-5 text-white" />
           </div>

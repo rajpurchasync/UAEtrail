@@ -51,6 +51,8 @@ export interface LocationDetailData {
   region?: string;
   latitude?: number | null;
   longitude?: number | null;
+  parkingLat?: number | null;
+  parkingLng?: number | null;
   parkingLink?: string;
   highlights?: string[];
   surfaceType?: string[];
@@ -107,7 +109,14 @@ export const LocationDetailTabs = ({
   const lat = data.latitude;
   const lng = data.longitude;
   const hasCoordinates = lat != null && lng != null;
-  const parkingMapsUrl = data.parkingLink ?? (hasCoordinates ? buildGoogleMapsSearchUrl(lat, lng) : null);
+  const parkingLat = data.parkingLat;
+  const parkingLng = data.parkingLng;
+  const hasParkingCoordinates = parkingLat != null && parkingLng != null;
+  const parkingMapsUrl =
+    data.parkingLink ??
+    (hasParkingCoordinates ? buildGoogleMapsSearchUrl(parkingLat, parkingLng) : null);
+  const venuePinLabel =
+    data.activityType === 'hiking' ? 'Trail start' : data.activityType === 'camping' ? 'Camp location' : 'Event location';
 
   const tabClass = (tab: LocationTab) =>
     `py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
@@ -116,7 +125,10 @@ export const LocationDetailTabs = ({
 
   const hasOverviewContent =
     Boolean(data.description?.trim()) ||
-    (showTrailStats && (data.distance || data.duration || data.elevation)) ||
+    (showTrailStats &&
+      ((data.distance != null && data.distance > 0) ||
+        (data.duration != null && data.duration > 0) ||
+        (data.elevation != null && data.elevation > 0))) ||
     (isCamping && data.accessibility) ||
     (data.surfaceType && data.surfaceType.length > 0) ||
     (data.highlights && data.highlights.length > 0) ||
@@ -124,7 +136,8 @@ export const LocationDetailTabs = ({
 
   const hasLocationContent =
     Boolean(data.region) ||
-    (data.latitude != null && data.longitude != null) ||
+    hasCoordinates ||
+    hasParkingCoordinates ||
     Boolean(data.parkingLink) ||
     (data.accessibleBy && data.accessibleBy.length > 0) ||
     (data.tags && data.tags.length > 0);
@@ -243,13 +256,17 @@ export const LocationDetailTabs = ({
             <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 px-6 py-12 text-center">
               <div
                 className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${
-                  accent === 'emerald' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                  accent === 'emerald'
+                    ? 'bg-emerald-100 text-emerald-600'
+                    : accent === 'violet'
+                      ? 'bg-violet-100 text-violet-600'
+                      : 'bg-amber-100 text-amber-600'
                 }`}
               >
                 <Map className="h-7 w-7" strokeWidth={2} aria-hidden />
               </div>
               <p className="text-sm text-neutral-600 leading-relaxed max-w-sm mx-auto">
-                <Link to={signInHref} className="font-bold text-emerald-600 hover:text-emerald-700">
+                <Link to={signInHref} className={`font-bold ${styles.link}`}>
                   Sign in
                 </Link>{' '}
                 to view this and explore all other wonderful places
@@ -259,24 +276,92 @@ export const LocationDetailTabs = ({
             <>
               {data.region && (
                 <div className="flex items-center gap-2 text-neutral-700">
-                  <MapPin className={`w-5 h-5 shrink-0 ${accent === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`} />
+                  <MapPin
+                    className={`w-5 h-5 shrink-0 ${
+                      accent === 'emerald'
+                        ? 'text-emerald-600'
+                        : accent === 'violet'
+                          ? 'text-violet-600'
+                          : 'text-amber-600'
+                    }`}
+                  />
                   <span className="font-medium">{data.region}</span>
                 </div>
               )}
 
-              {(data.parkingLink || hasCoordinates) && (
+              {hasCoordinates && (
                 <div className="glass rounded-xl p-4">
                   <div className="flex items-start gap-3">
-                    <Car className={`w-5 h-5 shrink-0 mt-0.5 ${accent === 'emerald' ? 'text-emerald-600' : 'text-amber-600'}`} />
-                    <div className="space-y-3">
-                      <p className="text-sm font-semibold text-neutral-900 mb-1">Parking & access</p>
-                      {hasCoordinates && (
-                        <div className="space-y-2">
-                          <MeetingPointMap lat={lat} lng={lng} label={data.name} hideExternalLink />
+                    <MapPin
+                      className={`w-5 h-5 shrink-0 mt-0.5 ${
+                        accent === 'emerald'
+                          ? 'text-emerald-600'
+                          : accent === 'violet'
+                            ? 'text-violet-600'
+                            : 'text-amber-600'
+                      }`}
+                    />
+                    <div className="space-y-2 w-full">
+                      <p className="text-sm font-semibold text-neutral-900">{venuePinLabel}</p>
+                      <MeetingPointMap lat={lat!} lng={lng!} label={data.name} hideExternalLink />
+                      <p className="text-xs text-neutral-400 font-mono">
+                        {lat!.toFixed(5)}, {lng!.toFixed(5)}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <a
+                          href={buildGoogleMapsSearchUrl(lat!, lng!)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+                        >
+                          <GoogleMapsIcon className="h-4 w-4" />
+                          Open in Google Maps
+                        </a>
+                        <a
+                          href={buildGoogleDriveUrl(lat!, lng!)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+                        >
+                          <GoogleMapsIcon className="h-4 w-4" />
+                          Drive with Google Maps
+                        </a>
+                        <a
+                          href={buildWazeDriveUrl(lat!, lng!)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-100"
+                        >
+                          <WazeIcon className="h-4 w-4" />
+                          Drive with Waze
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(hasParkingCoordinates || data.parkingLink) && (
+                <div className="glass rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <Car
+                      className={`w-5 h-5 shrink-0 mt-0.5 ${
+                        accent === 'emerald'
+                          ? 'text-emerald-600'
+                          : accent === 'violet'
+                            ? 'text-violet-600'
+                            : 'text-amber-600'
+                      }`}
+                    />
+                    <div className="space-y-2 w-full">
+                      <p className="text-sm font-semibold text-neutral-900">Parking</p>
+                      {hasParkingCoordinates && (
+                        <>
+                          <MeetingPointMap lat={parkingLat!} lng={parkingLng!} label="Parking" hideExternalLink />
                           <p className="text-xs text-neutral-400 font-mono">
-                            {lat!.toFixed(5)}, {lng!.toFixed(5)}
+                            {parkingLat!.toFixed(5)}, {parkingLng!.toFixed(5)}
                           </p>
-                        </div>
+                        </>
                       )}
                       <div className="flex flex-wrap gap-2">
                         {parkingMapsUrl && (
@@ -287,28 +372,28 @@ export const LocationDetailTabs = ({
                             className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
                           >
                             <GoogleMapsIcon className="h-4 w-4" />
-                            Open in Google Maps
+                            Open parking in Google Maps
                           </a>
                         )}
-                        {hasCoordinates && (
+                        {hasParkingCoordinates && (
                           <>
                             <a
-                              href={buildGoogleDriveUrl(lat!, lng!)}
+                              href={buildGoogleDriveUrl(parkingLat!, parkingLng!)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
                             >
                               <GoogleMapsIcon className="h-4 w-4" />
-                              Drive with Google Maps
+                              Drive to parking
                             </a>
                             <a
-                              href={buildWazeDriveUrl(lat!, lng!)}
+                              href={buildWazeDriveUrl(parkingLat!, parkingLng!)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-100"
                             >
                               <WazeIcon className="h-4 w-4" />
-                              Drive with Waze
+                              Waze to parking
                             </a>
                           </>
                         )}
@@ -375,6 +460,8 @@ export const toLocationDetailData = (
     region: string;
     latitude?: number | null;
     longitude?: number | null;
+    parkingLat?: number | null;
+    parkingLng?: number | null;
     parkingLink?: string;
     highlights?: string[];
     surfaceType?: string[];
@@ -395,6 +482,8 @@ export const toLocationDetailData = (
   region: item.region,
   latitude: item.latitude,
   longitude: item.longitude,
+  parkingLat: item.parkingLat,
+  parkingLng: item.parkingLng,
   parkingLink: item.parkingLink,
   highlights: item.highlights,
   surfaceType: item.surfaceType,

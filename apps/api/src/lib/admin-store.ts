@@ -574,7 +574,7 @@ export const listUserHostedActivitiesBasic = async (userId: string, limit = 20) 
       status: doc.status.toLowerCase(),
       date: doc.startAt.toISOString().slice(0, 10),
       locationName: locationMap.get(doc.locationId)?.name ?? '',
-      organizerName: tenant?.name ?? '',
+      tenantName: tenant?.name ?? '',
       role: doc.hostId === userId ? 'guide' : isOwner ? 'owner' : 'staff'
     };
   });

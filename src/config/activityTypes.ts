@@ -6,8 +6,10 @@
  *   ├── Camping
  *   └── Event
  *
- * Venues/locations (trails, camps, event spots) are a separate catalog — see VENUE_TYPE_LABELS.
+ * Locations (trails, camps, event locations) are a separate catalog — see LOCATION_TYPE_LABELS.
  */
+
+import { explorePath } from '../utils/exploreRouting';
 
 export const ACTIVITY_TYPES = ['hiking', 'camping', 'event'] as const;
 
@@ -50,12 +52,15 @@ export const ACTIVITY_TYPE_DESCRIPTIONS: Record<ActivityType, string> = {
   event: 'Trail runs, clean-ups, workshops, and other outdoor events with optional external signup.',
 };
 
-/** Venue/location catalog labels (not the same as a scheduled activity listing). */
-export const VENUE_TYPE_LABELS: Record<ActivityType, string> = {
+/** Location catalog labels (not the same as a scheduled activity listing). */
+export const LOCATION_TYPE_LABELS: Record<ActivityType, string> = {
   hiking: 'Hiking trail',
-  camping: 'Camping spot',
-  event: 'Event spot',
+  camping: 'Camping location',
+  event: 'Event location',
 };
+
+/** @deprecated use LOCATION_TYPE_LABELS */
+export const VENUE_TYPE_LABELS = LOCATION_TYPE_LABELS;
 
 /** Normalize API/query aliases to the canonical activity type. */
 export const parseActivityTypeParam = (value: string | null | undefined): ActivityType | null => {
@@ -108,10 +113,14 @@ export const browseAllActivitiesOfTypeLabel = (type: ActivityType): string => {
 
 /** Public browse page for scheduled activities, optionally filtered by type. */
 export const activitiesBrowsePath = (activityType?: ActivityType | null): string =>
-  activityType ? `/activities?activity=${activityType}` : '/activities';
+  explorePath({
+    list: true,
+    panel: 'activities',
+    activity: activityType ?? undefined,
+  });
 
 export const locationPathForActivity = (activityType: ActivityType, id: string): string => {
   if (activityType === 'camping') return `/camp/${id}`;
-  if (activityType === 'event') return `/event-spot/${id}`;
+  if (activityType === 'event') return `/event/${id}`;
   return `/trail/${id}`;
 };

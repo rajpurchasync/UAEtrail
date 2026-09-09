@@ -8,6 +8,7 @@ import {
   snapMinuteToQuarter,
   type TimePeriod,
 } from '../../utils/timePicker';
+import { AppSelect } from './AppSelect';
 
 interface TimePickerProps {
   value: string;
@@ -17,8 +18,15 @@ interface TimePickerProps {
   id?: string;
 }
 
-const selectClass =
-  'flex-1 min-w-0 h-11 bg-transparent text-center text-base font-medium text-gray-900 focus:outline-none focus:text-emerald-700 touch-manipulation cursor-pointer';
+const inlineSelectClass =
+  'min-h-0 h-11 flex-1 rounded-lg border-0 bg-transparent px-1 text-center text-base font-medium text-gray-900 shadow-none focus:ring-0';
+
+const hourOptions = HOUR_OPTIONS.map((hour) => ({ value: String(hour), label: String(hour) }));
+const minuteOptions = MINUTE_OPTIONS.map((minute) => ({
+  value: String(minute),
+  label: String(minute).padStart(2, '0'),
+}));
+const periodOptions = PERIOD_OPTIONS.map((period) => ({ value: period, label: period }));
 
 /** Compact single-row time picker — hour, minute (15 min steps), AM/PM. */
 export const TimePicker = ({ value, onChange, required, className = '', id }: TimePickerProps) => {
@@ -43,43 +51,34 @@ export const TimePicker = ({ value, onChange, required, className = '', id }: Ti
       className={`flex items-center gap-0.5 rounded-lg border border-gray-200 bg-white px-1 min-h-[44px] ${className}`}
       aria-required={required}
     >
-      <select
-        value={parts.hour}
-        onChange={(e) => update({ hour: Number(e.target.value) })}
-        className={selectClass}
+      <AppSelect
+        value={String(parts.hour)}
+        onChange={(hour) => update({ hour: Number(hour) })}
+        options={hourOptions}
+        className="min-w-0 flex-1"
+        inputClassName={inlineSelectClass}
+        menuClassName="min-w-[5rem]"
         aria-label="Hour"
-      >
-        {HOUR_OPTIONS.map((hour) => (
-          <option key={hour} value={hour}>
-            {hour}
-          </option>
-        ))}
-      </select>
+      />
       <span className="text-gray-400 font-semibold shrink-0">:</span>
-      <select
-        value={minute}
-        onChange={(e) => update({ minute: Number(e.target.value) })}
-        className={selectClass}
+      <AppSelect
+        value={String(minute)}
+        onChange={(minuteValue) => update({ minute: Number(minuteValue) })}
+        options={minuteOptions}
+        className="min-w-0 flex-1"
+        inputClassName={inlineSelectClass}
+        menuClassName="min-w-[5rem]"
         aria-label="Minute"
-      >
-        {MINUTE_OPTIONS.map((m) => (
-          <option key={m} value={m}>
-            {String(m).padStart(2, '0')}
-          </option>
-        ))}
-      </select>
-      <select
+      />
+      <AppSelect
         value={parts.period}
-        onChange={(e) => update({ period: e.target.value as TimePeriod })}
-        className={`${selectClass} max-w-[4.5rem]`}
+        onChange={(period) => update({ period: period as TimePeriod })}
+        options={periodOptions}
+        className="max-w-[4.5rem] shrink-0"
+        inputClassName={inlineSelectClass}
+        menuClassName="min-w-[5.5rem]"
         aria-label="AM or PM"
-      >
-        {PERIOD_OPTIONS.map((period) => (
-          <option key={period} value={period}>
-            {period}
-          </option>
-        ))}
-      </select>
+      />
     </div>
   );
 };

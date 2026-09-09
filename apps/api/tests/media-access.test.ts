@@ -78,7 +78,7 @@ describe('canAccessMedia', () => {
     ).toBe(true);
   });
 
-  it('requires group or event co-membership for group_members visibility', () => {
+  it('requires profile access grant for group_members visibility', () => {
     expect(
       canAccessMedia({
         kind: 'avatar',
@@ -86,7 +86,8 @@ describe('canAccessMedia', () => {
         viewerUserId: viewer,
         ownerUserId: owner,
         sharesGroupOrActivity: false,
-        isPlatformAdmin: false
+        profileAccessGranted: false,
+        isPlatformAdmin: false,
       })
     ).toBe(false);
     expect(
@@ -96,7 +97,8 @@ describe('canAccessMedia', () => {
         viewerUserId: viewer,
         ownerUserId: owner,
         sharesGroupOrActivity: true,
-        isPlatformAdmin: false
+        profileAccessGranted: true,
+        isPlatformAdmin: false,
       })
     ).toBe(true);
     expect(
@@ -106,7 +108,8 @@ describe('canAccessMedia', () => {
         viewerUserId: null,
         ownerUserId: owner,
         sharesGroupOrActivity: true,
-        isPlatformAdmin: false
+        profileAccessGranted: false,
+        isPlatformAdmin: false,
       })
     ).toBe(false);
   });
@@ -119,9 +122,24 @@ describe('canAccessMedia', () => {
         viewerUserId: viewer,
         ownerUserId: owner,
         sharesGroupOrActivity: true,
-        isPlatformAdmin: false
+        profileAccessGranted: false,
+        isPlatformAdmin: false,
       })
     ).toBe(false);
+  });
+
+  it('allows hosts with profile access grant on private avatars', () => {
+    expect(
+      canAccessMedia({
+        kind: 'avatar',
+        visibility: 'private',
+        viewerUserId: viewer,
+        ownerUserId: owner,
+        sharesGroupOrActivity: false,
+        profileAccessGranted: true,
+        isPlatformAdmin: false,
+      })
+    ).toBe(true);
   });
 });
 

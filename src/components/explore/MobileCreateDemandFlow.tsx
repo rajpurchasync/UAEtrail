@@ -13,23 +13,34 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { MobileMonthCalendar } from '../mobile/MobileMonthCalendar';
+import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { MAP_CONFIG } from '../../config/platform';
 import {
   buildDateOptions,
+  buildDemandComment,
+  DEMAND_FITNESS_OPTIONS,
   DEMAND_PARTY_PRESETS,
   DEMAND_TYPE_OPTIONS,
+  demandAdditionalInfoPlaceholder,
   demandAreaFieldLabel,
   demandAreaPlaceholder,
   demandAreaTextRequired,
   demandAreaUsesMap,
   demandFlowStepTitle,
+  demandGoingFromPlaceholder,
   demandTitlePlaceholder,
   emptyMobileDemandDraft,
   getDemandFlowSteps,
   publishMobileDemandRequest,
+  usesStructuredDemandFlow,
+  usesEventDemandFlow,
+  usesOutdoorActivityDemandFlow,
+  usesCarpoolDemandFlow,
+  usesGuidedDemandFlow,
   validateDemandDraft,
   validateDemandStep,
   type DemandFlowStepId,
+  type DemandFitnessLevel,
   type DemandSubmitResult,
   type MobileDemandDraft,
   type MobileDemandKind,
@@ -108,8 +119,14 @@ const REVIEW_EDIT_LABELS: Partial<Record<DemandFlowStepId, string>> = {
   title: 'Title',
   area: 'Location',
   when: 'When',
+  from: 'Leaving from',
+  to: 'Going to',
   route: 'Route',
   persons: 'People',
+  fitness: 'Fitness',
+  requirements: 'Requirements',
+  info: 'Details',
+  carpool: 'Carpool',
   comment: 'Comment',
 };
 
@@ -139,7 +156,7 @@ export const MobileCreateDemandFlow = ({
 
   const headerTitle =
     step === 'type' || !kind
-      ? 'What are you looking for?'
+      ? 'I want to go'
       : demandFlowStepTitle(step as DemandFlowStepId, kind);
 
   useEffect(() => {
@@ -241,7 +258,41 @@ export const MobileCreateDemandFlow = ({
   };
 
   const isMapOverlay =
-    (step === 'area' && areaMapOpen) || (step === 'route' && routeMapTarget !== null);
+    (step === 'area' && areaMapOpen) ||
+    (step === 'route' && routeMapTarget !== null) ||
+    ((step === 'to' || (step === 'from' && kind === 'carpool')) && routeMapTarget !== null);
+
+  const renderMapPinPicker = (
+    endpoint: 'from' | 'to',
+    options: { title: string; accent: 'emerald' | 'sky' }
+  ) => {
+    const isTo = endpoint === 'to';
+    const placed = isTo ? draft.toPinPlaced : draft.fromPinPlaced;
+    const lat = isTo ? draft.toLatitude : draft.latitude;
+    const lng = isTo ? draft.toLongitude : draft.longitude;
+
+    return (
+      <button
+        key={endpoint}
+        type="button"
+        onClick={() => setRouteMapTarget(endpoint)}
+        className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
+      >
+        <span className="flex items-center gap-2 text-gray-800">
+          <MapPin className={`h-5 w-5 ${options.accent === 'sky' ? 'text-sky-500' : 'text-emerald-500'}`} />
+          <span>
+            <span className="block text-sm font-bold">{options.title}</span>
+            <span className="text-xs text-gray-500">
+              {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
+            </span>
+          </span>
+        </span>
+        <span className={`text-xs font-semibold ${options.accent === 'sky' ? 'text-sky-600' : 'text-emerald-600'}`}>
+          {placed ? 'Edit' : 'Map'}
+        </span>
+      </button>
+    );
+  };
 
   const renderRoutePicker = (endpoint: 'from' | 'to') => {
     const isTo = endpoint === 'to';
@@ -282,7 +333,16 @@ export const MobileCreateDemandFlow = ({
       ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
       : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
 
-    const mapTitle = isToStep ? 'To location' : isFromStep ? 'From location' : 'Where would you like to go?';
+    const mapTitle =
+      step === 'to'
+        ? 'Going to'
+        : step === 'from' && kind === 'carpool'
+          ? 'Leaving from'
+          : isToStep
+            ? 'To location'
+            : isFromStep
+              ? 'From location'
+              : 'Where would you like to go?';
 
     return (
       <div className="absolute inset-0 z-[1400] bg-neutral-100">
@@ -327,11 +387,11 @@ export const MobileCreateDemandFlow = ({
   }
 
   return (
-    <div className="absolute inset-0 z-[1400] flex flex-col justify-end bg-black/35">
-      <button type="button" className="absolute inset-0" aria-label="Close" onClick={handleClose} />
-      <div className="relative max-h-[min(78dvh,720px)] overflow-y-auto rounded-t-3xl bg-white px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-3 shadow-2xl">
-        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-neutral-200" />
-
+    <ExploreResponsiveSheet
+      open
+      onClose={handleClose}
+      panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
+    >
         {step === 'type' && (
           <>
             <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
@@ -368,15 +428,29 @@ export const MobileCreateDemandFlow = ({
           <>
             <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">Give your request a short title</span>
-              <input
-                value={draft.title}
-                onChange={(event) => patchDraft({ title: event.target.value })}
-                placeholder={demandTitlePlaceholder(kind)}
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
-                maxLength={120}
-                autoFocus
-              />
+              <span className="mb-2 block text-sm font-medium text-gray-700">
+                {usesGuidedDemandFlow(kind) ? 'Title' : 'Share a few details so others know what you need'}
+              </span>
+              {usesGuidedDemandFlow(kind) ? (
+                <input
+                  value={draft.title}
+                  onChange={(event) => patchDraft({ title: event.target.value })}
+                  placeholder={demandTitlePlaceholder(kind)}
+                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+                  maxLength={120}
+                  autoFocus
+                />
+              ) : (
+                <textarea
+                  value={draft.title}
+                  onChange={(event) => patchDraft({ title: event.target.value })}
+                  placeholder={demandTitlePlaceholder(kind)}
+                  rows={4}
+                  className="w-full resize-none rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+                  maxLength={120}
+                  autoFocus
+                />
+              )}
             </label>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
@@ -385,7 +459,81 @@ export const MobileCreateDemandFlow = ({
           </>
         )}
 
-        {step === 'area' && kind && (
+        {step === 'to' && kind === 'carpool' && (
+          <>
+            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+            <p className="mb-4 text-sm text-gray-600">Pin where you want to go.</p>
+            {renderMapPinPicker('to', { title: 'Destination pin', accent: 'sky' })}
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={!draft.toPinPlaced} onClick={goNext} />
+            </div>
+          </>
+        )}
+
+        {step === 'from' && kind === 'carpool' && (
+          <>
+            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+            <p className="mb-4 text-sm text-gray-600">Pin where you are leaving from.</p>
+            {renderMapPinPicker('from', { title: 'Pickup pin', accent: 'emerald' })}
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={!draft.fromPinPlaced} onClick={goNext} />
+            </div>
+          </>
+        )}
+
+        {step === 'from' && kind && usesStructuredDemandFlow(kind) && (
+          <>
+            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-gray-700">Going from</span>
+              <input
+                value={draft.preferredArea}
+                onChange={(event) => patchDraft({ preferredArea: event.target.value })}
+                placeholder={demandGoingFromPlaceholder(kind)}
+                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+                maxLength={200}
+                autoFocus
+              />
+            </label>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={!draft.preferredArea.trim()} onClick={goNext} />
+            </div>
+          </>
+        )}
+
+        {step === 'area' && kind && usesEventDemandFlow(kind) && (
+          <>
+            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+            <p className="mb-4 text-sm text-gray-600">Pin where you want this event to happen.</p>
+            <button
+              type="button"
+              onClick={() => setAreaMapOpen(true)}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
+            >
+              <span className="flex items-center gap-2 text-gray-800">
+                <MapPin className="h-5 w-5 text-emerald-500" />
+                <span>
+                  <span className="block text-sm font-bold">Location pin</span>
+                  <span className="text-xs text-gray-500">
+                    {draft.areaPinPlaced
+                      ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
+                      : 'Tap to choose on map'}
+                  </span>
+                </span>
+              </span>
+              <span className="text-xs font-semibold text-emerald-600">{draft.areaPinPlaced ? 'Edit' : 'Map'}</span>
+            </button>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={!draft.areaPinPlaced} onClick={goNext} />
+            </div>
+          </>
+        )}
+
+        {step === 'area' && kind && !usesEventDemandFlow(kind) && (
           <>
             <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
             <label className="block">
@@ -551,7 +699,145 @@ export const MobileCreateDemandFlow = ({
           </>
         )}
 
-        {step === 'comment' && kind && (
+        {step === 'fitness' && kind === 'hiking' && (
+          <>
+            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+            <div className="space-y-3">
+              {DEMAND_FITNESS_OPTIONS.map((option) => {
+                const active = draft.fitnessLevel === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => patchDraft({ fitnessLevel: option.value as DemandFitnessLevel })}
+                    className={`w-full rounded-2xl border-2 px-4 py-4 text-left ${
+                      active ? 'border-emerald-500 bg-emerald-50/50' : 'border-neutral-200 bg-white'
+                    }`}
+                  >
+                    <p className="text-sm font-bold text-gray-900">{option.title}</p>
+                    <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
+                  </button>
+                );
+              })}
+            </div>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={!draft.fitnessLevel} onClick={goNext} />
+            </div>
+          </>
+        )}
+
+        {step === 'info' && kind && usesGuidedDemandFlow(kind) && (
+          <>
+            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-gray-700">Additional info</span>
+              <textarea
+                value={draft.additionalInfo}
+                onChange={(event) => patchDraft({ additionalInfo: event.target.value })}
+                rows={4}
+                placeholder={demandAdditionalInfoPlaceholder(kind)}
+                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+                maxLength={1000}
+              />
+            </label>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton onClick={goNext} />
+            </div>
+          </>
+        )}
+
+        {step === 'requirements' && kind === 'carpool' && (
+          <>
+            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+            <p className="mb-4 text-sm text-gray-600">Optional — tell drivers if you have any preferences.</p>
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-3">
+                <input
+                  type="checkbox"
+                  checked={draft.womenOnly}
+                  onChange={(event) => patchDraft({ womenOnly: event.target.checked })}
+                  className="rounded border-gray-300 text-emerald-600"
+                />
+                <span className="text-sm text-gray-800">Women only</span>
+              </label>
+              <label className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-3">
+                <input
+                  type="checkbox"
+                  checked={draft.petsAllowed}
+                  onChange={(event) => patchDraft({ petsAllowed: event.target.checked })}
+                  className="rounded border-gray-300 text-emerald-600"
+                />
+                <span className="text-sm text-gray-800">Pets allowed</span>
+              </label>
+              <label className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-3">
+                <input
+                  type="checkbox"
+                  checked={draft.requirementsOther}
+                  onChange={(event) =>
+                    patchDraft({
+                      requirementsOther: event.target.checked,
+                      requirementsOtherNote: event.target.checked ? draft.requirementsOtherNote : '',
+                    })
+                  }
+                  className="rounded border-gray-300 text-emerald-600"
+                />
+                <span className="text-sm text-gray-800">Others</span>
+              </label>
+              {draft.requirementsOther && (
+                <input
+                  value={draft.requirementsOtherNote}
+                  onChange={(event) => patchDraft({ requirementsOtherNote: event.target.value })}
+                  placeholder="e.g. Non-smoking, child seat needed…"
+                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm text-gray-900 outline-none focus:border-emerald-400"
+                  maxLength={120}
+                />
+              )}
+            </div>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton
+                disabled={draft.requirementsOther && !draft.requirementsOtherNote.trim()}
+                onClick={goNext}
+              />
+            </div>
+          </>
+        )}
+
+        {step === 'carpool' && kind && usesOutdoorActivityDemandFlow(kind) && (
+          <>
+            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+            <p className="mb-4 text-sm text-gray-600">Do you need a carpool to join this trip?</p>
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { value: true, title: 'Yes', subtitle: 'Need a ride' },
+                { value: false, title: 'No', subtitle: 'Have transport' },
+              ] as const).map((option) => {
+                const active = draft.carPoolNeeded === option.value;
+                return (
+                  <button
+                    key={option.title}
+                    type="button"
+                    onClick={() => patchDraft({ carPoolNeeded: option.value })}
+                    className={`rounded-2xl border-2 px-3 py-4 text-left ${
+                      active ? 'border-emerald-500 bg-emerald-50/50' : 'border-neutral-200 bg-white'
+                    }`}
+                  >
+                    <p className="text-sm font-bold text-gray-900">{option.title}</p>
+                    <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
+                  </button>
+                );
+              })}
+            </div>
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton onClick={goNext} />
+            </div>
+          </>
+        )}
+
+        {step === 'comment' && kind && !usesGuidedDemandFlow(kind) && (
           <>
             <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
             <label className="block">
@@ -589,14 +875,28 @@ export const MobileCreateDemandFlow = ({
               </p>
               {draft.title && (
                 <p className="mt-2 text-xs text-gray-600">
-                  <span className="font-semibold text-gray-700">Title: </span>
+                  <span className="font-semibold text-gray-700">
+                    {usesGuidedDemandFlow(kind) ? 'Title: ' : 'Looking for: '}
+                  </span>
                   {draft.title}
                 </p>
               )}
-              {draft.preferredArea && (
+              {usesStructuredDemandFlow(kind) && draft.preferredArea && (
                 <p className="mt-2 text-xs text-gray-600">
-                  <span className="font-semibold text-gray-700">{demandAreaFieldLabel(kind)}: </span>
+                  <span className="font-semibold text-gray-700">Going from: </span>
                   {draft.preferredArea}
+                </p>
+              )}
+              {usesCarpoolDemandFlow(kind) && draft.toPinPlaced && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600">
+                  <MapPin className="h-3.5 w-3.5 text-sky-500" />
+                  Going to: {draft.toLatitude?.toFixed(4)}, {draft.toLongitude?.toFixed(4)}
+                </p>
+              )}
+              {usesCarpoolDemandFlow(kind) && draft.fromPinPlaced && (
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
+                  <MapPin className="h-3.5 w-3.5 text-emerald-500" />
+                  Leaving from: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
               {draft.date && (
@@ -605,26 +905,57 @@ export const MobileCreateDemandFlow = ({
                   {draft.timeMode === 'specific' && draft.time ? ` · ${draft.time}` : ' · flexible time'}
                 </p>
               )}
-              {kind === 'carpool' && draft.fromPinPlaced && (
-                <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
-                  <MapPin className="h-3.5 w-3.5" />
-                  From location: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
+              {kind === 'hiking' && draft.fitnessLevel && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Fitness: {DEMAND_FITNESS_OPTIONS.find((option) => option.value === draft.fitnessLevel)?.title}
                 </p>
               )}
-              {kind === 'carpool' && draft.toPinPlaced && (
-                <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
-                  <MapPin className="h-3.5 w-3.5" />
-                  To location: {draft.toLatitude?.toFixed(4)}, {draft.toLongitude?.toFixed(4)}
+              {usesEventDemandFlow(kind) && draft.areaPinPlaced && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600">
+                  <MapPin className="h-3.5 w-3.5 text-emerald-500" />
+                  Location: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
-              {draft.areaPinPlaced && kind !== 'carpool' && (
+              {usesOutdoorActivityDemandFlow(kind) && draft.additionalInfo.trim() && (
+                <p className="mt-2 line-clamp-3 text-xs text-gray-600">{draft.additionalInfo}</p>
+              )}
+              {usesOutdoorActivityDemandFlow(kind) && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Carpool: {draft.carPoolNeeded ? 'Yes' : 'No'}
+                </p>
+              )}
+              {usesCarpoolDemandFlow(kind) && (draft.womenOnly || draft.petsAllowed || draft.requirementsOther) && (
+                <p className="mt-1 text-xs text-gray-500">
+                  {draft.womenOnly ? 'Women only' : ''}
+                  {draft.womenOnly && draft.petsAllowed ? ' · ' : ''}
+                  {draft.petsAllowed ? 'Pets allowed' : ''}
+                  {draft.requirementsOther && draft.requirementsOtherNote.trim()
+                    ? `${draft.womenOnly || draft.petsAllowed ? ' · ' : ''}${draft.requirementsOtherNote.trim()}`
+                    : ''}
+                </p>
+              )}
+              {usesCarpoolDemandFlow(kind) && draft.additionalInfo.trim() && (
+                <p className="mt-2 line-clamp-3 text-xs text-gray-600">{draft.additionalInfo}</p>
+              )}
+              {draft.areaPinPlaced && !usesCarpoolDemandFlow(kind) && !usesEventDemandFlow(kind) && !usesStructuredDemandFlow(kind) && (
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
                   <MapPin className="h-3.5 w-3.5" />
                   Map pin: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
+              {draft.preferredArea && !usesStructuredDemandFlow(kind) && !usesCarpoolDemandFlow(kind) && (
+                <p className="mt-2 text-xs text-gray-600">
+                  <span className="font-semibold text-gray-700">{demandAreaFieldLabel(kind)}: </span>
+                  {draft.preferredArea}
+                </p>
+              )}
               <p className="mt-1 text-xs text-gray-500">{draft.partySize} people</p>
-              <p className="mt-2 line-clamp-4 text-xs text-gray-600">{draft.comment}</p>
+              {!usesGuidedDemandFlow(kind) && (
+                <p className="mt-2 line-clamp-4 text-xs text-gray-600">{draft.comment}</p>
+              )}
+              {usesOutdoorActivityDemandFlow(kind) && (
+                <p className="mt-2 line-clamp-4 text-xs text-gray-600">{buildDemandComment(draft)}</p>
+              )}
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
@@ -633,13 +964,15 @@ export const MobileCreateDemandFlow = ({
                 .map((target) => {
                   const editLabel =
                     target === 'area'
-                      ? kind === 'event'
-                        ? 'Activity'
-                        : kind === 'guide'
-                          ? 'Details'
-                          : kind === 'carpool'
-                            ? 'Route details'
-                          : 'Location'
+                      ? usesEventDemandFlow(kind)
+                        ? 'Location'
+                        : kind === 'event'
+                          ? 'Activity'
+                          : kind === 'guide'
+                            ? 'Details'
+                            : kind === 'carpool'
+                              ? 'Route details'
+                              : 'Location'
                       : REVIEW_EDIT_LABELS[target] ?? target;
                   return (
                     <button
@@ -655,15 +988,15 @@ export const MobileCreateDemandFlow = ({
             </div>
 
             <p className="mt-3 text-xs text-gray-500">
-              Check everything looks right before posting. Your request will be visible to hosts and other explorers.
+              Check everything looks right before posting. Hosts and explorers nearby can message you or propose a
+              matching trip.
             </p>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
-              <NextButton label="Post request" loading={submitting} onClick={handleSubmit} />
+              <NextButton label={usesGuidedDemandFlow(kind) ? 'Publish' : 'Post request'} loading={submitting} onClick={handleSubmit} />
             </div>
           </>
         )}
-      </div>
-    </div>
+    </ExploreResponsiveSheet>
   );
 };

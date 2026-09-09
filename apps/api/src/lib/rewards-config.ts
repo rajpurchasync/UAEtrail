@@ -140,7 +140,7 @@ export const EARN_PATH_SUGGESTIONS = [
   { title: 'Invite a friend', points: REWARD_POINTS.REFERRAL_BONUS_REFERRER, path: '/my-rewards', note: 'Copy your invite link' },
   { title: 'Join a trip', points: REWARD_POINTS.TRIP_ATTENDED, path: '/trips', note: 'Get checked in on the day' },
   { title: 'Community post', points: REWARD_POINTS.COMMUNITY_POST, path: '/community', note: 'Trip report, tip, or question' },
-  { title: 'Write a review', points: REWARD_POINTS.REVIEW_WRITTEN, path: '/discovery', note: 'After a trail or camp visit' },
+  { title: 'Write a review', points: REWARD_POINTS.REVIEW_WRITTEN, path: '/explore?panel=venues&list=1', note: 'After a trail or camp visit' },
   { title: 'Reply in community', points: REWARD_POINTS.COMMUNITY_REPLY, path: '/community', note: 'Help fellow explorers' },
   { title: 'Host a trip', points: REWARD_POINTS.ACTIVITY_PUBLISHED, path: '/become-host', note: 'Become a host first' }
 ];

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowLeft,
   Award,
   ExternalLink,
   Globe,
@@ -25,8 +24,22 @@ import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
 import { HostMessageButton } from '../ui/HostMessageButton';
 import { GlassCard } from '../mobile/GlassCard';
+import { AppButton } from '../mobile/AppButton';
+import { AppSelect } from '../ui/AppSelect';
 import { useAuth } from '../../context/AuthContext';
 import { COUNTRIES } from '../../constants';
+
+const EXPERIENCE_OPTIONS = [
+  { value: '<1 year', label: 'Less than 1 year' },
+  { value: '1-3 years', label: '1–3 years' },
+  { value: '3-5 years', label: '3–5 years' },
+  { value: '5+ years', label: '5+ years' },
+];
+
+const COUNTRY_OPTIONS = COUNTRIES.map((country) => ({ value: country, label: country }));
+
+const profileSelectClass =
+  'w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500';
 
 type ProfileMode = 'public' | 'owner';
 
@@ -35,6 +48,8 @@ interface HostPublicProfileProps {
   mode?: ProfileMode;
   backTo?: string;
   backLabel?: string;
+  /** When true (default), parent shell provides back/title — use GlassCard layout. */
+  compact?: boolean;
 }
 
 export const HostPublicProfile = ({
@@ -42,6 +57,7 @@ export const HostPublicProfile = ({
   mode = 'public',
   backTo = '/activities',
   backLabel = 'Back to activities',
+  compact = true,
 }: HostPublicProfileProps) => {
   const { user } = useAuth();
   const isOwner = mode === 'owner';
@@ -72,7 +88,7 @@ export const HostPublicProfile = ({
         const reviewsRes = await api.getReviews('tenant', tenantRes.data.id).catch(() => ({ data: [] }));
         setReviews(reviewsRes.data);
       })
-      .catch(() => setError('Host not found'))
+      .catch(() => setError('We couldn\'t find this host profile'))
       .finally(() => setLoading(false));
   };
 
@@ -102,9 +118,9 @@ export const HostPublicProfile = ({
   if (loading) {
     return (
       <>
-        <PageMeta title="Loading host profile" noIndex />
-        <div className="min-h-[40vh] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+        {!isOwner && <PageMeta title="Loading host profile" noIndex />}
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
       </>
     );
@@ -113,15 +129,15 @@ export const HostPublicProfile = ({
   if (error || !tenant) {
     return (
       <>
-        <PageMeta title="Host not found" noIndex />
-        <div className="min-h-[40vh] flex items-center justify-center px-4">
-          <div className="text-center">
-            <h1 className="text-xl font-bold text-gray-900 mb-3">Host not found</h1>
-            <Link to={backTo} className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
+        {!isOwner && <PageMeta title="Host not found" noIndex />}
+        <GlassCard padding className="text-center">
+          <h1 className="text-lg font-bold text-neutral-900">We couldn&apos;t find this host</h1>
+          {!compact && (
+            <Link to={backTo} className="mt-3 inline-block text-sm font-semibold text-emerald-700">
               {backLabel}
             </Link>
-          </div>
-        </div>
+          )}
+        </GlassCard>
       </>
     );
   }
@@ -133,6 +149,7 @@ export const HostPublicProfile = ({
       : null;
 
   const detailItems = [
+    { label: 'Age', value: details.age != null ? `${details.age} years old` : undefined },
     { label: 'Experience', value: details.experience },
     { label: 'Languages', value: details.languages },
     { label: 'Nationality', value: details.nationality },
@@ -140,14 +157,13 @@ export const HostPublicProfile = ({
   ].filter((item) => item.value);
 
   return (
-    <div className={isOwner ? '' : 'min-h-screen bg-gray-50 md:pb-0'}>
+    <div className="animate-fade-up space-y-3">
       {!isOwner && (
         <>
           <PageMeta
             title={tenant.name}
             description={
-              tenant.ownerBio?.slice(0, 160) ??
-              `Outdoor trips and hikes with ${tenant.name} in the UAE.`
+              tenant.ownerBio?.slice(0, 160) ?? `Outdoor trips and hikes with ${tenant.name} in the UAE.`
             }
             path={`/operator/${slug}`}
             image={tenant.ownerAvatar}
@@ -156,294 +172,259 @@ export const HostPublicProfile = ({
           <JsonLd data={organizationSchema(tenant, slug, reviews)} id={`org-${tenant.id}`} />
         </>
       )}
-      <div className="bg-gradient-to-br from-emerald-800 to-teal-900 text-white rounded-b-2xl md:rounded-none">
-        <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
+
+      {isOwner && (
+        <GlassCard padding className="border-emerald-100 bg-emerald-50/50">
+          <p className="text-sm leading-relaxed text-neutral-700">
+            This is your <strong className="text-neutral-900">public organizer profile</strong> — what visitors
+            see when they browse your trips.
+          </p>
           <Link
-            to={isOwner ? '/host/overview' : backTo}
-            className="inline-flex items-center gap-1 text-emerald-200 hover:text-white text-sm mb-4"
+            to={`/operator/${tenant.slug}`}
+            className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700"
           >
-            <ArrowLeft className="w-4 h-4" /> {isOwner ? 'Host dashboard' : backLabel}
+            Open live page <ExternalLink className="h-3.5 w-3.5" />
           </Link>
+        </GlassCard>
+      )}
 
-          {isOwner && (
-            <GlassCard padding className="mb-4 !bg-white/10 !border-white/20 text-emerald-50">
-              <p className="text-sm">
-                This is your <strong className="text-white">public organizer profile</strong> — what visitors see
-                when they browse your trips.
-              </p>
-              <Link
-                to={`/operator/${tenant.slug}`}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-white mt-2 hover:underline"
-              >
-                Open live page <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
-            </GlassCard>
-          )}
-
-          <div className="flex flex-col sm:flex-row items-start gap-5">
-            <SecureAvatar
-              src={tenant.ownerAvatar}
-              name={tenant.ownerName}
-              className="w-24 h-24 text-3xl"
-            />
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl md:text-3xl font-bold">{tenant.name}</h1>
-                <ShieldCheck className="w-5 h-5 text-emerald-300" aria-hidden />
-              </div>
-              <p className="text-emerald-100 mt-1">{tenant.ownerName}</p>
-              {tenant.ownerBio && !editing && (
-                <p className="text-emerald-50/90 mt-3 max-w-2xl">{tenant.ownerBio}</p>
-              )}
-              <div className="flex flex-wrap gap-4 mt-4 text-sm text-emerald-100">
-                <span className="flex items-center gap-1">
-                  <Users className="w-4 h-4" /> {tenant.memberCount} team
-                </span>
-                <span className="flex items-center gap-1">
-                  <NAV_ICONS.trips className="w-4 h-4" strokeWidth={2} /> {activities.length} upcoming
-                </span>
-                {avgRating && (
-                  <span className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-amber-300 text-amber-300" /> {avgRating} ({reviews.length})
-                  </span>
-                )}
-              </div>
-              {!isOwner && user?.id !== tenant.ownerId && (
-                <div className="mt-4">
-                  <HostMessageButton
-                    organizerUserId={tenant.ownerId}
-                    size="md"
-                    className="!bg-white/10 !text-white !border-white/20 hover:!bg-white/20"
-                  />
-                </div>
-              )}
-              {isOwner && (
-                <button
-                  type="button"
-                  onClick={() => setEditing((open) => !open)}
-                  className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-sm font-semibold"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                  {editing ? 'Close editor' : 'Edit public profile'}
-                </button>
-              )}
+      <GlassCard padding className="!p-5">
+        <div className="flex items-start gap-4">
+          <SecureAvatar src={tenant.ownerAvatar} name={tenant.ownerName} className="h-20 w-20 text-2xl shrink-0" />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-bold text-neutral-900">{tenant.name}</h1>
+              <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden />
             </div>
+            <p className="mt-0.5 text-sm text-neutral-500">{tenant.ownerName}</p>
+            {tenant.ownerBio && !editing && (
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">{tenant.ownerBio}</p>
+            )}
           </div>
         </div>
-      </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-8">
-        {isOwner && editing && (
-          <GlassCard padding>
-            <h2 className="text-lg font-bold text-neutral-900 mb-4">Edit public profile</h2>
-            <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-neutral-700 mb-1 block">About</label>
-                <textarea
-                  value={editBio}
-                  onChange={(e) => setEditBio(e.target.value)}
-                  rows={3}
-                  placeholder="Tell visitors about your experience and what makes your trips special..."
-                  className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-neutral-700 mb-1 block">Experience</label>
-                  <select
-                    value={editDetails.experience ?? ''}
-                    onChange={(e) => setEditDetails({ ...editDetails, experience: e.target.value })}
-                    className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm"
-                  >
-                    <option value="">Select...</option>
-                    <option value="<1 year">Less than 1 year</option>
-                    <option value="1-3 years">1–3 years</option>
-                    <option value="3-5 years">3–5 years</option>
-                    <option value="5+ years">5+ years</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-neutral-700 mb-1 block">Languages</label>
-                  <input
-                    type="text"
-                    value={editDetails.languages ?? ''}
-                    onChange={(e) => setEditDetails({ ...editDetails, languages: e.target.value })}
-                    placeholder="English, Arabic..."
-                    className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-neutral-700 mb-1 block">Nationality</label>
-                  <select
-                    value={editDetails.nationality ?? ''}
-                    onChange={(e) => setEditDetails({ ...editDetails, nationality: e.target.value })}
-                    className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm"
-                  >
-                    <option value="">Select country</option>
-                    {COUNTRIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-neutral-700 mb-1 block">Based in</label>
-                  <select
-                    value={editDetails.residence ?? ''}
-                    onChange={(e) => setEditDetails({ ...editDetails, residence: e.target.value })}
-                    className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm"
-                  >
-                    <option value="">Select country</option>
-                    {COUNTRIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-neutral-700 mb-1 block">Certificates & qualifications</label>
-                <textarea
-                  value={editDetails.certificates ?? ''}
-                  onChange={(e) => setEditDetails({ ...editDetails, certificates: e.target.value })}
-                  rows={2}
-                  placeholder="First-aid certified, wilderness guide training..."
-                  className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-neutral-700 mb-1 block">Notable hikes & trips</label>
-                <textarea
-                  value={editDetails.notableHikes ?? ''}
-                  onChange={(e) => setEditDetails({ ...editDetails, notableHikes: e.target.value })}
-                  rows={2}
-                  placeholder="Jebel Jais summit, Wadi Shawka..."
-                  className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm"
-                />
-              </div>
-              {saveMessage && <p className="text-sm text-emerald-700">{saveMessage}</p>}
-              {saveError && <p className="text-sm text-red-600">{saveError}</p>}
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditing(false)}
-                  className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-5 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60"
-                >
-                  {saving ? 'Saving…' : 'Save profile'}
-                </button>
-              </div>
-            </form>
-          </GlassCard>
-        )}
-
-        {!editing && detailItems.length > 0 && (
-          <section>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Globe className="w-5 h-5 text-emerald-600" /> About
-            </h2>
-            <div className="bg-white rounded-xl border p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {detailItems.map((item) => (
-                <div key={item.label}>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{item.label}</p>
-                  <p className="text-sm text-neutral-800 mt-1">{item.value}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {!editing && details.certificates && (
-          <section>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Award className="w-5 h-5 text-emerald-600" /> Certificates
-            </h2>
-            <div className="bg-white rounded-xl border p-5">
-              <p className="text-sm text-neutral-700 whitespace-pre-line">{details.certificates}</p>
-            </div>
-          </section>
-        )}
-
-        {!editing && details.notableHikes && (
-          <section>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-emerald-600" /> Notable hikes
-            </h2>
-            <div className="bg-white rounded-xl border p-5">
-              <p className="text-sm text-neutral-700 whitespace-pre-line">{details.notableHikes}</p>
-            </div>
-          </section>
-        )}
-
-        {tenant.team.length > 1 && (
-          <section>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Users className="w-5 h-5 text-emerald-600" /> Team
-            </h2>
-            <p className="text-sm text-neutral-500 mb-3">
-              {isOwner ? 'Guides and admins who help run trips.' : 'People who help run these adventures.'}
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {tenant.team.map((member, i) => (
-                <div key={i} className="flex items-center gap-2 bg-white rounded-xl border px-3 py-2">
-                  <SecureAvatar
-                    src={member.avatarUrl}
-                    name={member.displayName}
-                    className="w-8 h-8 text-xs"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{member.displayName}</p>
-                    <p className="text-xs text-gray-500 capitalize">{member.role.replace('_', ' ')}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {isOwner && (
-              <Link to="/host/team" className="inline-block text-sm font-semibold text-emerald-700 mt-3 hover:underline">
-                Manage team →
-              </Link>
-            )}
-          </section>
-        )}
-
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Mountain className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-lg font-bold text-gray-900">Activities hosted</h2>
-          </div>
-          {activities.length === 0 ? (
-            <div className="bg-white rounded-xl border p-8 text-center text-gray-600">
-              No upcoming activities scheduled.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activities.map((activity) => (
-                <ActivityCard key={activity.id} activity={activity} />
-              ))}
-            </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
+            <Users className="h-3.5 w-3.5" /> {tenant.memberCount} team
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
+            <NAV_ICONS.trips className="h-3.5 w-3.5" strokeWidth={2} /> {activities.length} upcoming
+          </span>
+          {avgRating && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {avgRating} ({reviews.length})
+            </span>
           )}
+        </div>
+
+        {!isOwner && user?.id !== tenant.ownerId && (
+          <div className="mt-4">
+            <HostMessageButton hostUserId={tenant.ownerId} size="md" className="w-full sm:w-auto" />
+          </div>
+        )}
+
+        {isOwner && (
+          <AppButton
+            type="button"
+            variant="tint"
+            className="mt-4 w-full sm:w-auto"
+            onClick={() => setEditing((open) => !open)}
+          >
+            <Pencil className="mr-1.5 inline h-4 w-4" />
+            {editing ? 'Close editor' : 'Edit public profile'}
+          </AppButton>
+        )}
+      </GlassCard>
+
+      {isOwner && editing && (
+        <GlassCard padding>
+          <h2 className="mb-4 text-base font-bold text-neutral-900">Edit public profile</h2>
+          <form onSubmit={handleSave} className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-neutral-700">About</label>
+              <textarea
+                value={editBio}
+                onChange={(e) => setEditBio(e.target.value)}
+                rows={3}
+                placeholder="Tell visitors about your experience and what makes your trips special..."
+                className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-neutral-700">Experience</label>
+                <AppSelect
+                  value={editDetails.experience ?? ''}
+                  onChange={(experience) => setEditDetails({ ...editDetails, experience })}
+                  options={EXPERIENCE_OPTIONS}
+                  placeholder="Select..."
+                  inputClassName={profileSelectClass}
+                  aria-label="Experience"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-neutral-700">Languages</label>
+                <input
+                  type="text"
+                  value={editDetails.languages ?? ''}
+                  onChange={(e) => setEditDetails({ ...editDetails, languages: e.target.value })}
+                  placeholder="English, Arabic..."
+                  className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-neutral-700">Nationality</label>
+                <AppSelect
+                  value={editDetails.nationality ?? ''}
+                  onChange={(nationality) => setEditDetails({ ...editDetails, nationality })}
+                  options={COUNTRY_OPTIONS}
+                  placeholder="Select country"
+                  inputClassName={profileSelectClass}
+                  aria-label="Nationality"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-neutral-700">Based in</label>
+                <AppSelect
+                  value={editDetails.residence ?? ''}
+                  onChange={(residence) => setEditDetails({ ...editDetails, residence })}
+                  options={COUNTRY_OPTIONS}
+                  placeholder="Select country"
+                  inputClassName={profileSelectClass}
+                  aria-label="Based in"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-neutral-700">Certificates & qualifications</label>
+              <textarea
+                value={editDetails.certificates ?? ''}
+                onChange={(e) => setEditDetails({ ...editDetails, certificates: e.target.value })}
+                rows={2}
+                placeholder="First-aid certified, wilderness guide training..."
+                className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-neutral-700">Notable hikes & trips</label>
+              <textarea
+                value={editDetails.notableHikes ?? ''}
+                onChange={(e) => setEditDetails({ ...editDetails, notableHikes: e.target.value })}
+                rows={2}
+                placeholder="Jebel Jais summit, Wadi Shawka..."
+                className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm"
+              />
+            </div>
+            {saveMessage && <p className="text-sm text-emerald-700">{saveMessage}</p>}
+            {saveError && <p className="text-sm text-red-600">{saveError}</p>}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {saving ? 'Saving…' : 'Save profile'}
+              </button>
+            </div>
+          </form>
+        </GlassCard>
+      )}
+
+      {!editing && detailItems.length > 0 && (
+        <GlassCard padding>
+          <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-neutral-900">
+            <Globe className="h-4 w-4 text-emerald-600" /> About
+          </h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {detailItems.map((item) => (
+              <div key={item.label}>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">{item.label}</p>
+                <p className="mt-1 text-sm text-neutral-800">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      )}
+
+      {!editing && details.certificates && (
+        <GlassCard padding>
+          <h2 className="mb-2 flex items-center gap-2 text-base font-bold text-neutral-900">
+            <Award className="h-4 w-4 text-emerald-600" /> Certificates
+          </h2>
+          <p className="whitespace-pre-line text-sm leading-relaxed text-neutral-700">{details.certificates}</p>
+        </GlassCard>
+      )}
+
+      {!editing && details.notableHikes && (
+        <GlassCard padding>
+          <h2 className="mb-2 flex items-center gap-2 text-base font-bold text-neutral-900">
+            <MapPin className="h-4 w-4 text-emerald-600" /> Notable hikes
+          </h2>
+          <p className="whitespace-pre-line text-sm leading-relaxed text-neutral-700">{details.notableHikes}</p>
+        </GlassCard>
+      )}
+
+      {tenant.team.length > 1 && (
+        <GlassCard padding>
+          <h2 className="mb-1 flex items-center gap-2 text-base font-bold text-neutral-900">
+            <Users className="h-4 w-4 text-emerald-600" /> Team
+          </h2>
+          <p className="mb-3 text-xs text-neutral-500">
+            {isOwner ? 'Guides and admins who help run trips.' : 'People who help run these adventures.'}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {tenant.team.map((member, i) => (
+              <div key={i} className="flex items-center gap-2 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2">
+                <SecureAvatar src={member.avatarUrl} name={member.displayName} className="h-8 w-8 text-xs" />
+                <div>
+                  <p className="text-sm font-medium text-neutral-900">{member.displayName}</p>
+                  <p className="text-xs capitalize text-neutral-500">{member.role.replace('_', ' ')}</p>
+                </div>
+              </div>
+            ))}
+          </div>
           {isOwner && (
-            <Link to="/host/activities" className="inline-block text-sm font-semibold text-emerald-700 mt-3 hover:underline">
-              Manage events →
+            <Link to="/host/team" className="mt-3 inline-block text-sm font-semibold text-emerald-700">
+              Manage team →
             </Link>
           )}
-        </section>
+        </GlassCard>
+      )}
 
-        <ReviewSection
-          targetType="tenant"
-          targetId={tenant.id}
-          reviews={reviews}
-          onReviewSubmitted={(review) => setReviews((prev) => [review, ...prev])}
-        />
-      </div>
+      <GlassCard padding>
+        <div className="mb-3 flex items-center gap-2">
+          <Mountain className="h-4 w-4 text-emerald-600" />
+          <h2 className="text-base font-bold text-neutral-900">Activities hosted</h2>
+        </div>
+        {activities.length === 0 ? (
+          <p className="py-6 text-center text-sm text-neutral-500">No upcoming activities scheduled.</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {activities.map((activity) => (
+              <ActivityCard key={activity.id} activity={activity} />
+            ))}
+          </div>
+        )}
+        {isOwner && (
+          <Link to="/host/activities" className="mt-3 inline-block text-sm font-semibold text-emerald-700">
+            Manage events →
+          </Link>
+        )}
+      </GlassCard>
+
+      <ReviewSection
+        targetType="tenant"
+        targetId={tenant.id}
+        reviews={reviews}
+        onReviewSubmitted={(review) => setReviews((prev) => [review, ...prev])}
+      />
     </div>
   );
 };

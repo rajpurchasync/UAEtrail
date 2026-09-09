@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, TrendingUp, Clock, ChevronRight } from 'lucide-react';
+import { MapPin, ChevronRight } from 'lucide-react';
 import { ReviewDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { ActivityCard, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
 import { PageMeta } from '../components/seo/PageMeta';
+import { JsonLd } from '../components/seo/JsonLd';
+import { eventVenueSchema } from '../components/seo/schemas';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
-import { getDifficultyColor, capitalize } from '../utils';
 import { CommunityActivitySpot, ActivityListing } from '../types';
-import { VENUE_TYPE_LABELS } from '../config/activityTypes';
+import { VENUE_TYPE_LABELS, activitiesBrowsePath } from '../config/activityTypes';
+import { explorePath } from '../utils/exploreRouting';
 import { fetchApiLocationDetail, mapActivityToListing } from '../api/public';
 import { api } from '../api/services';
+import { venueLocationPath } from '../utils/venueDetailDisplay';
 
-export const CommunityActivityDetail = () => {
+/** Event venue detail — trail runs, races, and other outdoor event locations. */
+export const EventDetail = () => {
   const { id } = useParams();
   const [event, setEvent] = useState<CommunityActivitySpot | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,6 +23,8 @@ export const CommunityActivityDetail = () => {
   const [eventReviews, setEventReviews] = useState<ReviewDTO[]>([]);
   const [premium, setPremium] = useState<LocationPremiumSummaryDTO | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+
+  const detailPath = id ? venueLocationPath('event', id) : undefined;
 
   useEffect(() => {
     if (!id) return;
@@ -42,7 +48,7 @@ export const CommunityActivityDetail = () => {
   if (loading) {
     return (
       <>
-        <PageMeta title="Loading event" path={id ? `/event-spot/${id}` : undefined} />
+        <PageMeta title="Loading event venue" path={detailPath} />
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-600" />
         </div>
@@ -53,21 +59,24 @@ export const CommunityActivityDetail = () => {
   if (!event) {
     return (
       <>
-        <PageMeta title="Activity not found" noIndex path={id ? `/event-spot/${id}` : undefined} />
+        <PageMeta title="Event venue not found" noIndex path={detailPath} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900">{VENUE_TYPE_LABELS.event} not found</h1>
-          <Link to="/discovery" className="text-violet-600 hover:text-violet-700 mt-4 inline-block">
-            Back to discovery
+          <Link to={explorePath({ panel: 'venues', list: true, filter: 'others' })} className="text-violet-600 hover:text-violet-700 mt-4 inline-block">
+            Back to map
           </Link>
         </div>
       </>
     );
   }
 
+  const eventPath = venueLocationPath('event', event.id);
+  const shareText = `${event.region} · ${VENUE_TYPE_LABELS.event.toLowerCase()} venue on UAE Trails`;
+
   return (
     <MobileDetailShell
-      backTo="/discovery"
-      backLabel="Trails & Spots"
+      backTo={explorePath({ panel: 'venues', list: true, filter: 'others' })}
+      backLabel="Event venues"
       banner={{
         src: event.images[0],
         alt: event.name,
@@ -78,18 +87,15 @@ export const CommunityActivityDetail = () => {
         <PageMeta
           title={event.name}
           description={event.description?.slice(0, 160) ?? `${VENUE_TYPE_LABELS.event} at ${event.name} — ${event.region}, UAE`}
-          path={`/event-spot/${event.id}`}
+          path={eventPath}
           image={event.images?.[0]}
-          imageAlt={`${event.name} — ${VENUE_TYPE_LABELS.event.toLowerCase()}`}
+          imageAlt={`${event.name} — ${VENUE_TYPE_LABELS.event.toLowerCase()} venue`}
         />
+        <JsonLd data={eventVenueSchema(event)} id={`event-venue-${event.id}`} />
         <div className="bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-end mb-4 hidden md:flex">
-              <ShareButton
-                title={event.name}
-                text={`${event.region} · ${VENUE_TYPE_LABELS.event.toLowerCase()} on UAE Trails`}
-                path={`/event-spot/${event.id}`}
-              />
+              <ShareButton title={event.name} text={shareText} path={eventPath} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -101,12 +107,7 @@ export const CommunityActivityDetail = () => {
                     className="w-full h-96 object-cover rounded-lg"
                   />
                   <div className="absolute top-3 right-3 z-10">
-                    <ShareButton
-                      title={event.name}
-                      text={`${event.region} · ${VENUE_TYPE_LABELS.event.toLowerCase()} on UAE Trails`}
-                      path={`/event-spot/${event.id}`}
-                      compact
-                    />
+                    <ShareButton title={event.name} text={shareText} path={eventPath} compact />
                   </div>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
@@ -125,58 +126,14 @@ export const CommunityActivityDetail = () => {
               </div>
 
               <div>
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <span className="inline-block mb-2 px-3 py-1 bg-violet-100 text-violet-800 rounded-full text-xs font-semibold">
-                      {VENUE_TYPE_LABELS.event}
-                    </span>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{event.name}</h1>
-                    <div className="flex items-center text-gray-600">
-                      <MapPin className="w-5 h-5 mr-1" />
-                      <span>{event.region}</span>
-                    </div>
-                  </div>
-                  <span
-                    className={`px-4 py-2 rounded-full text-sm font-semibold ${getDifficultyColor(event.difficulty)}`}
-                  >
-                    {capitalize(event.difficulty)}
+                <div className="mb-4">
+                  <span className="inline-block mb-2 px-3 py-1 bg-violet-100 text-violet-800 rounded-full text-xs font-semibold">
+                    {VENUE_TYPE_LABELS.event}
                   </span>
-                </div>
-
-                {(event.distance != null || event.duration != null) && (
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    {event.distance != null && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center text-gray-600 mb-1">
-                          <TrendingUp className="w-5 h-5 mr-2" />
-                          <span className="text-sm">Distance</span>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">{event.distance} km</div>
-                      </div>
-                    )}
-                    {event.duration != null && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center text-gray-600 mb-1">
-                          <Clock className="w-5 h-5 mr-2" />
-                          <span className="text-sm">Duration</span>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">{event.duration} hrs</div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="mb-6">
-                  <h3 className="font-medium text-gray-900 mb-2">Best Season</h3>
-                  <div className="flex gap-2">
-                    {event.season.map((s) => (
-                      <span
-                        key={s}
-                        className="px-3 py-1 bg-violet-100 text-violet-800 rounded-full text-sm font-medium capitalize"
-                      >
-                        {s}
-                      </span>
-                    ))}
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{event.name}</h1>
+                  <div className="flex items-center text-gray-600">
+                    <MapPin className="w-5 h-5 mr-1" />
+                    <span>{event.region}</span>
                   </div>
                 </div>
               </div>
@@ -197,22 +154,22 @@ export const CommunityActivityDetail = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg md:text-xl font-bold text-gray-900">Upcoming Events</h2>
-                <p className="text-gray-600 mt-1">Join trail runs, triathlons, and community races</p>
+                <p className="text-gray-600 mt-1">Trail runs, races, and community events at this venue</p>
               </div>
               <Link
-                to="/activities"
+                to={activitiesBrowsePath('event')}
                 className="text-violet-600 hover:text-violet-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
               >
-                View all trips
+                View all events
                 <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
 
             {locationActivities.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-                <p className="text-gray-600">No upcoming events scheduled at this location yet.</p>
-                <Link to="/activities" className="text-violet-600 hover:text-violet-700 mt-2 inline-block">
-                  Check all upcoming trips
+                <p className="text-gray-600">No upcoming events scheduled at this venue yet.</p>
+                <Link to={activitiesBrowsePath('event')} className="text-violet-600 hover:text-violet-700 mt-2 inline-block">
+                  Browse all events
                 </Link>
               </div>
             ) : (
@@ -236,3 +193,6 @@ export const CommunityActivityDetail = () => {
     </MobileDetailShell>
   );
 };
+
+/** @deprecated use EventDetail */
+export const CommunityActivityDetail = EventDetail;

@@ -1,6 +1,8 @@
 import { ObjectId, type Collection } from 'mongodb';
 import { MembershipTier } from '../domain/enums.js';
+import type { UserCity, UserGender } from '../domain/user-profile.js';
 import { getMongoClient } from './mongo.js';
+import { invalidateExploreMapCache } from './explore-map-cache.js';
 
 export type AuthUserRecord = {
   _id: string;
@@ -18,6 +20,9 @@ export type AuthUserRecord = {
     phone: string | null;
     bio: string | null;
     avatarUrl: string | null;
+    dateOfBirth?: string | null;
+    gender?: UserGender | null;
+    city?: UserCity | null;
     profileVisibility?: 'public' | 'group_members' | 'private';
     switchedFromRole?: 'PLATFORM_ADMIN' | 'MERCHANT_ADMIN' | 'TENANT_OWNER' | 'TENANT_ADMIN' | 'TENANT_GUIDE' | null;
     rewardPoints?: number;
@@ -162,10 +167,16 @@ export const updateAuthUserProfile = async (
   if (patch.phone !== undefined) setFields['profile.phone'] = patch.phone ?? null;
   if (patch.bio !== undefined) setFields['profile.bio'] = patch.bio ?? null;
   if (patch.avatarUrl !== undefined) setFields['profile.avatarUrl'] = patch.avatarUrl ?? null;
+  if (patch.dateOfBirth !== undefined) setFields['profile.dateOfBirth'] = patch.dateOfBirth ?? null;
+  if (patch.gender !== undefined) setFields['profile.gender'] = patch.gender ?? null;
+  if (patch.city !== undefined) setFields['profile.city'] = patch.city ?? null;
   if (patch.profileVisibility !== undefined) {
     setFields['profile.profileVisibility'] = patch.profileVisibility;
   }
   await usersCollection().updateOne({ _id: userId }, { $set: setFields });
+  if (patch.displayName !== undefined) {
+    await invalidateExploreMapCache();
+  }
 };
 
 export const updateAuthUserLastActive = async (userId: string): Promise<void> => {

@@ -1,6 +1,6 @@
 import { MembershipRole, RequestStatus } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
-import { countRecentMessagesBySender, hasThreadBetweenUsers } from '../lib/chat-data.js';
+import { countRecentMessagesBySender } from '../lib/chat-data.js';
 import {
   hasActiveJoinRequestLink,
   hasHostToParticipantLink,
@@ -8,6 +8,7 @@ import {
   hasSharedActivityParticipation,
   hasTripInquiryAccess
 } from '../lib/activity-engagement-store.js';
+import { areAcceptedBuddies } from '../lib/buddy-store.js';
 
 const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
   RequestStatus.PENDING,
@@ -33,18 +34,18 @@ export async function assertChatRateLimit(senderId: string): Promise<void> {
 }
 
 /**
- * Users may message if they already have a thread, share a trip, or have a join-request relationship.
+ * Users may message when they are accepted buddies or share an active trip / request relationship.
+ * A past DM thread alone does not grant access — unfriended buddies cannot keep messaging.
  */
-export async function assertCanMessageUser(
+export async function canMessageUser(
   senderId: string,
   receiverId: string,
   options?: { activityId?: string }
-): Promise<void> {
-  const existingThread = await hasThreadBetweenUsers(senderId, receiverId);
-  if (existingThread) return;
+): Promise<boolean> {
+  if (await areAcceptedBuddies(senderId, receiverId)) return true;
 
   const sharedTrip = await hasSharedActivityParticipation(senderId, receiverId);
-  if (sharedTrip) return;
+  if (sharedTrip) return true;
 
   const joinRequestLink = await hasActiveJoinRequestLink({
     senderId,
@@ -52,17 +53,17 @@ export async function assertCanMessageUser(
     organizerRoles: ORGANIZER_ROLES,
     activeStatuses: ACTIVE_REQUEST_STATUSES
   });
-  if (joinRequestLink) return;
+  if (joinRequestLink) return true;
 
   const participantToHost = await hasParticipantToHostLink({
     participantUserId: senderId,
     hostUserId: receiverId,
     organizerRoles: ORGANIZER_ROLES
   });
-  if (participantToHost) return;
+  if (participantToHost) return true;
 
   const hostToParticipant = await hasHostToParticipantLink(senderId, receiverId);
-  if (hostToParticipant) return;
+  if (hostToParticipant) return true;
 
   if (options?.activityId) {
     const tripInquiry = await hasTripInquiryAccess({
@@ -70,12 +71,22 @@ export async function assertCanMessageUser(
       receiverId,
       organizerRoles: ORGANIZER_ROLES
     });
-    if (tripInquiry) return;
+    if (tripInquiry) return true;
   }
+
+  return false;
+}
+
+export async function assertCanMessageUser(
+  senderId: string,
+  receiverId: string,
+  options?: { activityId?: string }
+): Promise<void> {
+  if (await canMessageUser(senderId, receiverId, options)) return;
 
   throw new ApiError(
     403,
     'message_not_allowed',
-    'You can only message people you have an existing conversation or trip connection with.'
+    'You can only message people you are connected with as buddies or share a trip connection with.'
   );
 }

@@ -81,6 +81,7 @@ export type ActivityCreateInput = {
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[];
   requirements?: string[];
+  joinMode?: 'open' | 'private' | null;
   images?: string[];
   bannerUrl?: string | null;
   signupUrl?: string | null;
@@ -119,6 +120,7 @@ export type ActivityUpdateInput = {
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[];
   requirements?: string[];
+  joinMode?: 'open' | 'private' | null;
   images?: string[];
   bannerUrl?: string | null;
   signupUrl?: string | null;
@@ -215,6 +217,7 @@ export type MongoActivityDoc = {
   pricingMode: 'free' | 'shared' | 'paid' | null;
   itinerary: string[];
   requirements: string[];
+  joinMode?: 'open' | 'private' | null;
   images: string[];
   bannerUrl: string | null;
   signupUrl: string | null;
@@ -263,6 +266,7 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     pricingMode: data.pricingMode ?? null,
     itinerary: asStringArray(data.itinerary),
     requirements: asStringArray(data.requirements),
+    joinMode: data.joinMode ?? null,
     images: asStringArray(data.images),
     bannerUrl: data.bannerUrl?.trim() || null,
     signupUrl: data.signupUrl?.trim() || null,

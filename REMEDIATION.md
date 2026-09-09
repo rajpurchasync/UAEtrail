@@ -73,3 +73,98 @@ Phased fixes from the CTO review. **All planned remediation items complete.**
 | 5.4 | Social content sanitization + batched post/reply/like read paths | Done |
 | 5.5 | Mongo index hardening for favorites/social query paths | Done |
 | 5.6 | Persisted handoff instructions for future agents/workspaces (`docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`) | Done |
+
+---
+
+## Phase 6 — Explore API architecture cleanup (backlog)
+
+Prerequisite work from the explore/host-display audit. Complete these before Phase 7.
+
+| # | Item | Status |
+|---|------|--------|
+| 6.1 | **Explore person model:** replace overloaded `hostName` / planned `requesterName` with `featuredPerson: { userId, displayName, avatarUrl, role }` where role is `host` \| `requester` \| `contact`; copy/UI derive labels from role | Done |
+| 6.2 | Legacy demand title migration (remove read-time scrubbing in `participant-intents-store` + explore copy) | Done |
+| 6.3 | Trip pricing consolidation (`packages/shared-types/src/trip-pricing.ts`; API zod schema + FE badge styling only) | Done |
+| 6.4 | Remove `organizerName` from API DTO mappers (compat mirror only) | Done |
+| 6.5 | Remove venue pin offset hack in `explore-map.ts` (`+= 0.004`) | Done |
+| 6.6 | **Carpool consolidation:** rideshare supply = standalone `activityType: 'carpool'` only; deprecate `carPoolEnabled` on hiking/camping/event, `linked-carpool.ts` child activities, and duplicate route fields (`carPoolFromLat` vs `meetingLat`/`startLat`) | Done (create/edit blocked; linked-carpool sync removed; UI toggles removed; read-compat for existing linked carpools retained) |
+
+**Completed in this track:** host resolution (shared-types), deprecated FE `organizerName` usage, explore cache invalidation, server-built `presentation`, join-instructions / explore-price / display coords in shared-types, demo accounts module.
+
+**6.1 design (person + role, not name-per-role):** On `ExploreMapItemDTO`, one optional `featuredPerson` carries the user's display name and a contextual **role** (`host`, `requester`, `contact`). Headlines use name + role-driven templates (`"{name} is going Hiking"` vs `"{name} is looking for Hiking"`). Keep `ActivityDTO.hostName` / `hostUserId` as activity-domain fields; keep `tenantName` separate for org brand. Venues may omit `featuredPerson`.
+
+**6.6 design (one rideshare supply model):** Published rideshare is already `activityType: 'carpool'` on the explore map. Remaining debt is the legacy **linked carpool** path (`carPoolEnabled` toggle on hikes/camps + `syncLinkedCarpoolForParent` spawning `"Carpool · {parentTitle}"` child docs). Target state: (1) hosts create rideshare only as a carpool activity; (2) migrate or fold linked child carpools into standalone carpool activities; (3) remove `carPoolEnabled` from host create/edit APIs and activity form; (4) unify route coords on activity route fields used by explore (`meetingLat`/`startLat` or a single route DTO). Demand stays on `participant_intents` with `kind: 'carpool'` — supply vs demand separation is intentional; duplicate supply models are not.
+
+---
+
+## Phase 7 — Privacy: profiles + activities (backlog)
+
+Two **independent** privacy controls. Both mean **hidden from map discovery**, not fully hidden from the product.
+
+### Locked product model
+
+| Control | Setting | Still visible to | Share link (`/member/:id`, `/activity/:id`) | Explore map |
+|--------|---------|------------------|---------------------------------------------|-------------|
+| **Profile** | `profileVisibility: private` | Self; admin; **host** (join request/roster); **friends** (shared group); **accepted co-participants** on same trip; share link when authorized | Not anonymously browsable; **hosts still show on their activity card** | Hide **only** users who are private **and** host no published activity |
+| **Activity** | `joinMode: private` (first-class field, not requirements text) | Host; approved/waitlisted participants; invited group members | Works for authorized viewers — host can copy/share activity URL | **No** — exclude from `explore/map` payload |
+
+**Principles**
+
+- **Private ≠ invisible.** It blocks **anonymous map/member browse** for users with **no hosted activity**. Hosts with published trips still appear on **activity cards** (name/avatar on that card is OK).
+- **Private profile still viewable by:** activity host; **friends** (shared social group); **accepted co-participants** on the same trip; admin; self.
+- **Share** = direct URL; recipient must pass authorization — not world-readable.
+- Helpers: `resolveProfileViewerAccess` (who can open `/member/:id` and private media) and `shouldHideFromMapMemberDiscovery` (standalone member pins only).
+
+### Phase 7A — Private member profiles
+
+| # | Item | Status |
+|---|------|--------|
+| 7.1 | **Domain + API:** `resolveProfileViewerAccess` + `buildPublicMemberProfile(viewerContext)` | Done |
+| 7.2 | **Shared contract:** `PublicMemberProfileDTO` — `full`, `private` (*"User has set their account private"*), `not_found`; no PII when denied | Done |
+| 7.3 | **Settings UI:** profile visibility toggle (Public / Group members / Private) in Security & privacy | Done |
+| 7.4 | **Contextual access:** host, friends group, accepted co-participants; anonymous browse denied | Done |
+| 7.5 | **Map redaction:** `shouldHideFromMapMemberDiscovery` — private + no hosted activity only; activity cards keep host identity | Done |
+| 7.6 | **Downstream wiring:** media presign, join-request review, notifications, favorites — same helper | Partial (media + brief done) |
+| 7.7 | **Tests:** API matrix (visibility × viewer); FE smoke for private profile page | Partial (API unit tests done) |
+
+**Current baseline:** `profileVisibility` on user profile; `resolveProfileViewerAccess` gates `/users/:id/public-profile`, brief, and media. Demand map pins filtered for private users with no hosted activities. Activity cards still show host identity. Settings toggle in Security & privacy.
+
+### Phase 7B — Private activities (map-hidden, link-accessible)
+
+| # | Item | Status |
+|---|------|--------|
+| 7.8 | **Domain field:** `joinMode: 'open' \| 'private'` on activity (migrate from requirements string hack) | Done |
+| 7.9 | **Explore map:** filter `joinMode: private` out of `buildExploreMapPayload` | Done |
+| 7.10 | **Activity detail:** `resolveActivityViewerAccess` — host, participant, pending invite, group member | Done |
+| 7.11 | **Create/edit flows:** persist `joinMode` from mobile + desktop forms | Done |
+| 7.12 | **Share UX:** copy activity URL; detail page works for authorized viewers only | Done |
+
+**Current baseline:** `joinMode` stored on activities with migration from legacy requirements text. Private activities excluded from explore map and public activity lists. `/activities/:id` returns a private stub for unauthorized viewers; authorized hosts, staff, participants, waitlisted requesters, and activity group members see full detail. Mobile create sends `joinMode`; desktop host payload includes inferred/stored mode.
+
+---
+
+## Phase 8 — Buddy connections (backlog)
+
+Implement **after Phase 7** is complete. **Not a thin UI layer** — first-class relationship model with messaging integration.
+
+| # | Item | Status |
+|---|------|--------|
+| 8.1 | **Domain model:** `buddy_requests` (pending / accepted / declined / cancelled) + derived accepted **buddy pairs** (canonical user-pair key, unique index) | Done |
+| 8.2 | **Store + indexes:** Mongo collection, migrations, idempotent accept/decline, block duplicate pending requests | Done |
+| 8.3 | **API routes:** send request, accept, decline, cancel, list incoming/outgoing, list buddies (`/me/buddies`, `/me/buddy-requests`) | Done |
+| 8.4 | **Shared-types DTOs:** `BuddyRequestDTO`, `BuddySummaryDTO`, status enums — consumed by web/mobile, not duplicated in FE | Done |
+| 8.5 | **Notifications:** request received, accepted (reuse notification pipeline + copy module) | Done |
+| 8.6 | **Chat policy:** extend `assertCanMessageUser` — accepted buddies may message regardless of trip/join-request link | Done |
+| 8.7 | **Profile UX:** "Add buddy" / "Request sent" / Accept·Decline on member profile; buddy list in profile or messages hub | Partial (member profile actions; buddy list API ready) |
+| 8.8 | **Privacy interaction:** respect Phase 7 private profiles — buddy request may still be sent; full profile visible only after accept (or per visibility rules) | Done |
+| 8.9 | **Tests:** request lifecycle, duplicate prevention, chat gate after accept, notification triggers | Partial (pair key + profile/chat integration tests) |
+
+**Current baseline:** First-class 1:1 buddy connections via `buddy_requests` + `buddy_pairs`. Member profile supports add/accept/decline. Accepted buddies can message and view private profiles.
+
+**Architecture**
+
+- Distinct from **social groups** (`family` / `friends` group type and in-group `admin` \| `buddy` **roles**) — Phase 8 is **1:1 user relationships**, not group membership.
+- Buddy acceptance creates a durable relationship record; chat policy reads it — do not infer buddies from message threads alone.
+- Optional future: show buddies in "who's going" or explore — out of scope until core flow is stable.
+
+**Implementation order:** Phase 6 → Phase 7 → Phase 8.

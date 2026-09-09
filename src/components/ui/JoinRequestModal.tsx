@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ActivityListing } from '../../types';
 import { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
-import { formatPackagePrice, tripHasPaidPricing } from '../../utils/tripPricing';
+import { formatPackagePrice } from '../../utils/tripPricing';
 import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
-import { OFFLINE_PAYMENT_NOTE, resolveExplorePrice } from '../../explore/explorePriceLabel';
+import { resolveExplorePrice } from '../../explore/explorePriceLabel';
+import {
+  extractJoinInstructionLines,
+  JOIN_MANDATORY_AGREEMENT_TEXT,
+  MEETING_POINT_LABEL,
+  MANDATORY_INSTRUCTIONS_LABEL,
+} from '../../utils/joinInstructions';
 import { api } from '../../api/services';
 import { Dialog } from './Dialog';
 
@@ -24,9 +29,7 @@ type JoinableActivity = Pick<
   | 'pricePackages'
   | 'tenantName'
   | 'hostName'
-> & {
-  paymentTerms?: string | null;
-};
+>;
 
 interface JoinRequestModalProps {
   open: boolean;
@@ -47,19 +50,16 @@ export const JoinRequestModal = ({
   onSuccess,
   overlayClassName,
 }: JoinRequestModalProps) => {
-  const navigate = useNavigate();
   const [note, setNote] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const instructions = activity.requirements?.filter((item) => item.trim()) ?? [];
+  const instructions = extractJoinInstructionLines(activity.requirements);
   const hasInstructions = instructions.length > 0;
-  const isPaidTrip = tripHasPaidPricing(activity);
   const full = isFull ?? activity.slotsAvailable <= 0;
-  const hasPaymentTerms = Boolean(isPaidTrip && activity.paymentTerms?.trim());
-  const needsAgreement = hasInstructions || hasPaymentTerms;
+  const needsAgreement = hasInstructions;
 
   const pricePackages = activity.pricePackages?.filter((p) => p.label.trim()) ?? [];
   const selectedPackage =
@@ -83,8 +83,12 @@ export const JoinRequestModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasInstructions) {
+      setError('This trip is missing mandatory instructions — contact the host before joining.');
+      return;
+    }
     if (needsAgreement && !agreed) {
-      setError('Please confirm that you understand and agree to continue.');
+      setError('Please read the mandatory instructions and confirm before joining.');
       return;
     }
 
@@ -98,29 +102,28 @@ export const JoinRequestModal = ({
       );
       const successMessage =
         res.data.waitlisted || res.data.status === 'waitlisted'
-          ? 'Added to waitlist. We will notify you when a spot opens.'
-          : 'Request submitted. Track status in My Requests.';
+          ? 'Added to the waitlist — we\'ll let you know when a spot opens.'
+          : 'Request sent! The host will get back to you soon.';
       setSubmitted(true);
       onSuccess?.(successMessage);
       setTimeout(() => {
         onClose();
-        navigate('/my-requests');
-      }, 2000);
+      }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit join request. Please make sure you are signed in.');
+      setError(err instanceof Error ? err.message : 'We couldn\'t send your request — sign in and try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
   const hostName = activityHostName(activity);
-  const submitLabel = submitting ? 'Submitting…' : full ? 'Join Waitlist' : 'Submit Join Request';
+  const submitLabel = submitting ? 'Sending…' : full ? 'Join waitlist' : 'Send request to host';
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      title={full ? 'Join Waitlist' : 'Request to Join'}
+      title={full ? 'Join the waitlist' : 'Request to join'}
       className="max-w-md"
       overlayClassName={overlayClassName ?? 'z-50'}
     >
@@ -144,9 +147,6 @@ export const JoinRequestModal = ({
                 {activity.slotsAvailable} / {activity.slotsTotal} slots available
               </p>
             </div>
-            {priceInfo.showOfflineNote && (
-              <p className="text-xs text-gray-500 mt-1">{OFFLINE_PAYMENT_NOTE}</p>
-            )}
             {selectedPackage && pricePackages.length > 1 && (
               <p className="text-xs text-gray-600 mt-1">Selected: {formatPackagePrice(selectedPackage)}</p>
             )}
@@ -159,28 +159,28 @@ export const JoinRequestModal = ({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {hasInstructions && (
+            {hasInstructions ? (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                <p className="text-sm font-semibold text-amber-900 mb-2">Host instructions</p>
+                <p className="text-sm font-semibold text-amber-900 mb-1">{MANDATORY_INSTRUCTIONS_LABEL}</p>
+                <p className="text-xs text-amber-900/80 mb-2">You must agree to these before requesting to join.</p>
                 <ul className="text-sm text-amber-900/90 list-disc list-inside space-y-1.5">
                   {instructions.map((item, i) => (
                     <li key={i}>{item}</li>
                   ))}
                 </ul>
               </div>
-            )}
-
-            {hasPaymentTerms && (
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                <p className="text-sm font-semibold text-gray-900 mb-1">Host payment notes</p>
-                <p className="text-xs text-gray-500 mb-2">{OFFLINE_PAYMENT_NOTE}</p>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.paymentTerms}</p>
+            ) : (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <p className="text-sm text-amber-900">
+                  This trip does not have mandatory instructions yet. Contact the host before requesting to join.
+                </p>
               </div>
             )}
 
             {activity.meetingPoint && (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                <p className="text-xs font-medium text-gray-700 mb-1">Meeting point</p>
+                <p className="text-xs font-medium text-gray-700 mb-1">{MEETING_POINT_LABEL}</p>
+                <p className="text-xs text-gray-500 mb-1">For reference only — not a join requirement.</p>
                 <p className="text-sm text-gray-600">{activity.meetingPoint}</p>
               </div>
             )}
@@ -204,7 +204,9 @@ export const JoinRequestModal = ({
                   onChange={(e) => setAgreed(e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                 />
-                <span className="text-sm text-gray-800 leading-relaxed">I understand and agree</span>
+                <span className="text-sm text-gray-800 leading-relaxed">
+                  {JOIN_MANDATORY_AGREEMENT_TEXT}
+                </span>
               </label>
             )}
 
@@ -216,12 +218,12 @@ export const JoinRequestModal = ({
 
             <button
               type="submit"
-              disabled={submitting || (needsAgreement && !agreed)}
+              disabled={submitting || !hasInstructions || (needsAgreement && !agreed)}
               className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-60"
             >
               {submitLabel}
             </button>
-            <p className="text-xs text-gray-500 text-center">Your request will be reviewed by the host</p>
+            <p className="text-xs text-gray-500 text-center">The host will review your request</p>
           </form>
         </>
       ) : (
@@ -231,8 +233,8 @@ export const JoinRequestModal = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Request submitted!</h3>
-          <p className="text-gray-600">The host will review your request. You&apos;ll be redirected to your requests page.</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Request sent!</h3>
+          <p className="text-gray-600">We&apos;ll let you know as soon as the host replies.</p>
         </div>
       )}
     </Dialog>

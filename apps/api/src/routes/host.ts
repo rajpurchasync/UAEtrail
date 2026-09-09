@@ -1,4 +1,4 @@
-import { ActivityStatus, MembershipRole, NotificationType, RequestStatus, RewardAction, TenantType, UserRole } from '../domain/enums.js';
+import { ActivityStatus, ActivityType, MembershipRole, NotificationType, RequestStatus, RewardAction, TenantType, UserRole } from '../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { mountActivityRoutes } from '../lib/activity-routes.js';
@@ -14,11 +14,13 @@ import { requireMembershipRole, requireTenantContext } from '../middleware/tenan
 import { notifyRequestDecision, sendPasswordResetEmail } from '../lib/email.js';
 import { validate } from '../middleware/validate.js';
 import { awardPoints } from '../services/rewards.js';
+import { ensureActivityGroupChat } from '../services/activity-group-chat.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
 import { performParticipantCheckIn } from '../services/checkin.js';
 import { buildLocationCreateData } from '../services/location-submit.js';
 import {
   assertCarpoolActivityFields,
+  assertNoLegacyLinkedCarpoolFields,
   assertLocationMatchesActivityType,
   fromPrismaActivityType,
   sharedActivityTypeSchema,
@@ -55,7 +57,9 @@ import {
   listActivityParticipantsWithUsers,
   listTenantActivityRequestsDetailed
 } from '../lib/activity-engagement-store.js';
-import { createNotificationRecord, createNotificationsMany } from '../lib/notifications-store.js';
+import { createNotificationsMany } from '../lib/notifications-store.js';
+import { buildJoinApprovedBody, buildJoinRejectedBody } from '../lib/notification-copy.js';
+import { dispatchNotification } from '../services/notifications.js';
 import {
   deleteTenantMembership,
   findCompanyGuideMembershipForUser,
@@ -65,8 +69,10 @@ import {
   updateTenantMembershipRole,
   upsertTenantMembership
 } from '../lib/tenant-access.js';
+import { fulfillParticipantIntent } from '../lib/participant-intents-store.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
+const intentIdParamSchema = z.object({ intentId: z.string().min(1) });
 const membershipIdSchema = z.object({ membershipId: z.string().min(1) });
 
 const optionalHttpUrlSchema = z
@@ -124,6 +130,7 @@ const eventCreateSchema = z.object({
   paymentTerms: z.string().max(1000).optional(),
   itinerary: z.array(z.string()).default([]),
   requirements: z.array(z.string()).default([]),
+  joinMode: z.enum(['open', 'private']).optional(),
   price: z.number().int().min(0).default(0),
   pricePackages: tripPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
@@ -162,49 +169,13 @@ import {
   scheduleInstantChanged
 } from '../services/activity-schedule.js';
 import {
-  assertCarpoolRouteWhenEnabled,
-  carpoolRouteFromBody,
-  publishLinkedCarpoolIfNeeded,
-  syncLinkedCarpoolForParent,
-} from '../services/linked-carpool.js';
-import {
   assertActivityHost,
   assertActivityHostPatch,
   resolveActivityLocation
 } from '../services/host-activity.js';
 import { assertActivityPricingAllowed } from '../domain/activity-pricing.js';
-import type { Activity } from '../domain/types.js';
-
-const isStandaloneCarpoolType = (activityType?: string | null): boolean =>
-  String(activityType ?? '').toLowerCase() === 'carpool';
-
-const maybeSyncLinkedCarpool = async (input: {
-  parent: Activity;
-  tenantId: string;
-  userId: string;
-  body: Partial<z.infer<typeof eventCreateSchema>>;
-}) => {
-  if (isStandaloneCarpoolType(input.body.activityType ?? input.parent.activityType)) return;
-
-  const enabled = input.body.carPoolEnabled ?? input.parent.carPoolEnabled;
-  const route = carpoolRouteFromBody(input.body);
-  assertCarpoolRouteWhenEnabled(Boolean(enabled), route);
-
-  await syncLinkedCarpoolForParent({
-    parent: input.parent,
-    tenantId: input.tenantId,
-    actorUserId: input.userId,
-    enabled: Boolean(enabled),
-    route,
-    carPoolFree: input.body.carPoolFree ?? (enabled ? input.parent.carPoolFree : null),
-    carPoolPriceAed: input.body.carPoolPriceAed ?? (enabled ? input.parent.carPoolPriceAed : null),
-    carPoolSeats: input.body.carPoolSeats ?? (enabled ? input.parent.carPoolSeats : null),
-    carPoolDetails: input.body.carPoolDetails ?? (enabled ? input.parent.carPoolDetails : null),
-    parentTitle: input.body.title ?? input.parent.title,
-    parentImages: input.body.images ?? input.parent.images,
-    parentHostId: input.body.hostId ?? input.parent.hostId,
-  });
-};
+import { assertActivityJoinInstructions } from '../domain/activity-join-instructions.js';
+import { resolveJoinMode } from '../domain/activity-join-mode.js';
 
 const buildHostActivityResponse = async (event: ActivityWithTenantRelations): Promise<ActivityDTO> => {
   const dto = buildActivityDto(event);
@@ -257,6 +228,7 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
 
     const location = await resolveActivityLocation(body.locationId, req.auth!.userId, { platformAdmin });
     assertLocationMatchesActivityType(location.activityType, body.activityType);
+    assertNoLegacyLinkedCarpoolFields(body.activityType, body);
     assertCarpoolActivityFields(body);
 
     const tenant = await findTenantById(tenantId);
@@ -278,7 +250,6 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
       tenantType: tenant.type,
       pricingMode: body.pricingMode,
       pricing,
-      paymentTerms: body.paymentTerms,
       sharedAmountAed: isCarpool
         ? body.carPoolFree === false
           ? body.carPoolPriceAed ?? body.price ?? 0
@@ -326,6 +297,7 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
       paymentTerms: body.paymentTerms,
       itinerary: body.itinerary,
       requirements: body.requirements,
+      joinMode: resolveJoinMode(body.joinMode, body.requirements),
       images: body.images,
       bannerUrl: body.bannerUrl ?? null,
       signupUrl: body.signupUrl ?? null,
@@ -341,13 +313,6 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
       entityType: 'activity',
       entityId: created.id,
       tenantId
-    });
-
-    await maybeSyncLinkedCarpool({
-      parent: created,
-      tenantId,
-      userId: req.auth!.userId,
-      body,
     });
 
     const refreshed = await findTenantActivityForEdit(created.id, tenantId);
@@ -371,6 +336,10 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
     if (!existing) {
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
+
+    const nextActivityType =
+      body.activityType ?? fromPrismaActivityType(existing.activityType ?? ActivityType.HIKING);
+    assertNoLegacyLinkedCarpoolFields(nextActivityType, body);
     if (existing.status === ActivityStatus.CANCELLED || existing.status === ActivityStatus.SUSPENDED) {
       throw new ApiError(400, 'activity_not_editable', `Cannot edit an activity that is ${existing.status.toLowerCase()}.`);
     }
@@ -419,7 +388,6 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
           tenantType: tenant.type,
           pricingMode: body.pricingMode ?? pricing.pricingMode,
           pricing,
-          paymentTerms: body.paymentTerms ?? existing.paymentTerms,
           sharedAmountAed: isCarpool
             ? body.carPoolFree === false
               ? body.carPoolPriceAed ?? body.price ?? existing.carPoolPriceAed ?? 0
@@ -429,6 +397,11 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
               : null,
         });
       }
+    }
+
+    if (existing.status === ActivityStatus.PUBLISHED) {
+      const nextRequirements = body.requirements ?? existing.requirements ?? [];
+      assertActivityJoinInstructions(nextRequirements);
     }
 
     const updated = await updateActivityDetailed(id, {
@@ -455,6 +428,12 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
       paymentTerms: body.paymentTerms,
       itinerary: body.itinerary,
       requirements: body.requirements,
+      joinMode:
+        body.joinMode !== undefined
+          ? resolveJoinMode(body.joinMode, body.requirements ?? existing.requirements)
+          : body.requirements !== undefined
+            ? resolveJoinMode(existing.joinMode, body.requirements)
+            : undefined,
       images: body.images,
       bannerUrl: body.bannerUrl,
       signupUrl: body.signupUrl,
@@ -495,13 +474,6 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
         countryCode
       });
     }
-
-    await maybeSyncLinkedCarpool({
-      parent: updated,
-      tenantId,
-      userId: req.auth!.userId,
-      body,
-    });
 
     const refreshed = await findTenantActivityForEdit(id, tenantId);
 
@@ -546,7 +518,7 @@ tenantActivitiesRouter.delete('/:id', validate({ params: idParamSchema }), async
         event.participants.map((p) => ({
           userId: p.userId,
           title: 'Activity Cancelled',
-          body: `The activity "${event.title}" has been cancelled by the organizer.`,
+          body: `Sorry — the host had to cancel "${event.title}".`,
           type: NotificationType.ACTIVITY,
           meta: { activityId: event.id }
         }))
@@ -596,8 +568,8 @@ tenantActivitiesRouter.post('/:id/publish', validate({ params: idParamSchema }),
     if (event.status !== ActivityStatus.DRAFT) {
       throw new ApiError(400, 'activity_not_draft', 'Only draft activities can be published.');
     }
+    assertActivityJoinInstructions(event.requirements ?? []);
     const updated = await publishActivityById(event.id);
-    await publishLinkedCarpoolIfNeeded(event.id);
     await createAuditLog({
       actorId: req.auth!.userId,
       action: 'activity.publish',
@@ -606,6 +578,7 @@ tenantActivitiesRouter.post('/:id/publish', validate({ params: idParamSchema }),
       tenantId
     });
     const hostUserId = updated.hostId ?? updated.createdById;
+    void ensureActivityGroupChat(updated.id).catch(() => undefined);
     void awardPoints({
       userId: hostUserId,
       action: RewardAction.ACTIVITY_PUBLISHED,
@@ -685,12 +658,21 @@ hostRouter.patch('/requests/:id', validate({ params: idParamSchema, body: reques
         organizerNote
       });
 
-      await createNotificationRecord({
+      const groupId = await ensureActivityGroupChat(request.activityId);
+
+      await dispatchNotification({
         userId: request.userId,
-        title: 'Join request approved',
-        body: 'Your request was approved. You are now confirmed for the event.',
+        title: "You're in!",
+        body: buildJoinApprovedBody(organizerNote),
         type: NotificationType.REQUEST_UPDATE,
-        meta: { activityId: request.activityId, requestId: request.id }
+        meta: {
+          kind: 'join_request_approved',
+          activityId: request.activityId,
+          requestId: request.id,
+          groupId: groupId ?? null,
+          organizerNote: organizerNote?.trim() || null,
+          path: groupId ? `/groups?group=${groupId}` : `/activity/${request.activityId}`
+        }
       });
     } else {
       await applyTenantActivityRequestDecision({
@@ -702,12 +684,18 @@ hostRouter.patch('/requests/:id', validate({ params: idParamSchema, body: reques
         organizerNote
       });
 
-      await createNotificationRecord({
+      await dispatchNotification({
         userId: request.userId,
-        title: 'Join request rejected',
-        body: organizerNote ?? 'Your request could not be approved at this time.',
+        title: 'Update on your trip request',
+        body: buildJoinRejectedBody(organizerNote),
         type: NotificationType.REQUEST_UPDATE,
-        meta: { activityId: request.activityId, requestId: request.id }
+        meta: {
+          kind: 'join_request_rejected',
+          activityId: request.activityId,
+          requestId: request.id,
+          organizerNote: organizerNote?.trim() || null,
+          path: `/activity/${request.activityId}`
+        }
       });
     }
 
@@ -773,28 +761,12 @@ hostRouter.post(
       }
 
       let user = await findAuthUserByEmail(body.email);
-      let isNewUser = false;
       if (!user) {
-        const tempPassword = `Temp#${randomToken(6)}`;
-        const referralCode = await createUniqueReferralCode();
-        user = await createAuthUser({
-          email: body.email,
-          passwordHash: await hashPassword(tempPassword),
-          referralCode,
-          role: role === MembershipRole.TENANT_ADMIN ? UserRole.TENANT_ADMIN : UserRole.TENANT_GUIDE,
-          status: 'ACTIVE',
-          authProvider: 'EMAIL',
-          emailVerifiedAt: null,
-          lastActiveAt: null,
-          googleId: null,
-          profile: {
-            displayName: body.displayName ?? body.email.split('@')[0],
-            phone: null,
-            bio: null,
-            avatarUrl: null
-          }
-        });
-        isNewUser = true;
+        throw new ApiError(
+          404,
+          'user_not_found',
+          'This person must sign up and sign in on UAE Trail before you can add them to your team.'
+        );
       }
 
       if (role === MembershipRole.TENANT_GUIDE && tenant.type === TenantType.COMPANY) {
@@ -814,29 +786,14 @@ hostRouter.post(
         tenantId
       });
 
-      // For new users, create a password reset token and email the invite link
-      if (isNewUser) {
-        const resetToken = randomToken(24);
-        await createPasswordResetToken({
-          userId: user._id,
-          token: resetToken,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        });
-        await sendPasswordResetEmail({
-          to: user.email,
-          name: user.profile.displayName ?? user.email,
-          token: resetToken
-        });
-      }
-
       res.status(201).json({
         data: {
           id: membership.id,
           userId: user._id,
           email: user.email,
-          displayName: user.profile.displayName ?? user.email,
+          displayName: user.profile?.displayName ?? user.email,
           role: membership.role.toLowerCase(),
-          isNewUser
+          isNewUser: false
         }
       });
     } catch (error) {
@@ -985,7 +942,6 @@ tenantActivitiesRouter.post('/:id/participants/:participantId/checkin', validate
       activityId: id,
       participantId,
       actorUserId: req.auth!.userId,
-      source: 'organizer',
       tenantId
     });
 
@@ -1094,5 +1050,32 @@ tenantActivitiesRouter.get('/history', async (req, res, next) => {
     next(error);
   }
 });
+
+const fulfillIntentBodySchema = z.object({
+  activityId: z.string().min(1)
+});
+
+hostRouter.post(
+  '/participant-intents/:intentId/fulfill',
+  validate({ params: intentIdParamSchema, body: fulfillIntentBodySchema }),
+  async (req, res, next) => {
+    try {
+      const { intentId } = req.params as z.infer<typeof intentIdParamSchema>;
+      const { activityId } = req.body as z.infer<typeof fulfillIntentBodySchema>;
+      const tenantId = req.tenantContext!.tenantId;
+      const activity = await findTenantActivityBasic(activityId, tenantId);
+      if (!activity) {
+        throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+      }
+      const intent = await fulfillParticipantIntent(intentId, activityId);
+      if (!intent) {
+        throw new ApiError(404, 'intent_not_found', 'Community request not found.');
+      }
+      res.json(intent);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 mountActivityRoutes(hostRouter, tenantActivitiesRouter);

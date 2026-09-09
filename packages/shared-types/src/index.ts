@@ -1,3 +1,7 @@
+import type { ExploreCardPresentationDTO } from './explore-presentation.js';
+import type { ExploreMapPersonDTO } from './explore-person.js';
+import type { ActivityJoinMode } from './activity-join-mode.js';
+
 export type UserRole =
   | 'platform_admin'
   | 'merchant_admin'
@@ -151,6 +155,8 @@ export interface ActivityDTO {
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[] | null;
   requirements?: string[] | null;
+  /** Who can discover this trip on the explore map (`open`) vs link-only (`private`). */
+  joinMode?: ActivityJoinMode;
   images?: string[];
   /** Wide hero banner (outdoor events) */
   bannerUrl?: string | null;
@@ -163,9 +169,11 @@ export interface ActivityDTO {
   hostBio?: string | null;
   /** Organization or guide brand running the activity */
   tenantName?: string;
-  /** @deprecated Use hostName — kept for compatibility */
+  /** @deprecated Removed from API responses — use hostName */
   organizerName?: string;
+  /** @deprecated Removed from API responses — use hostAvatar */
   organizerAvatar?: string;
+  /** @deprecated Removed from API responses — use hostUserId */
   organizerUserId?: string;
   hostId?: string | null;
   /** User who created this activity */
@@ -177,13 +185,18 @@ export interface ActivityDTO {
   /** Venue coordinates — used when meeting/start pins are missing. */
   locationLatitude?: number | null;
   locationLongitude?: number | null;
+  /** Canonical map pin — resolved at mapper time from meeting/start/parking/venue. */
+  displayLatitude?: number | null;
+  displayLongitude?: number | null;
 }
 
 
 export interface ActivityDetailDTO extends ActivityDTO {
+  visibilityState?: 'full' | 'private';
+  message?: string;
   organizerId?: string;
-  participants: ParticipantPreviewDTO[];
-  location: LocationDTO;
+  participants?: ParticipantPreviewDTO[];
+  location?: LocationDTO;
   myParticipation?: TripParticipationDTO | null;
   myRequest?: MyTripRequestDTO | null;
 }
@@ -200,9 +213,8 @@ export interface ActivityParticipationDTO {
   requestId: string;
   status: 'confirmed';
   checkedInAt?: string | null;
+  /** Always false — attendance is confirmed by the host only. */
   canCheckIn: boolean;
-  checkInOpensAt?: string;
-  checkInClosesAt?: string;
 }
 
 /** @deprecated Use ActivityParticipationDTO */
@@ -231,6 +243,14 @@ export interface JoinRequestDTO {
   createdAt: string;
   updatedAt: string;
 }
+
+export type {
+  BuddyRelationshipDTO,
+  BuddyRequestDTO,
+  BuddyRequestStatus,
+  BuddySummaryDTO,
+  BuddyUserPreviewDTO,
+} from './buddy-connection.js';
 
 export type HostApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
@@ -416,8 +436,14 @@ export interface FavoriteDTO {
   locationId?: string | null;
   activityId?: string | null;
   productId?: string | null;
+  merchantId?: string | null;
+  tenantId?: string | null;
+  profileUserId?: string | null;
   location?: { id: string; name: string; images: string[] } | null;
   event?: { id: string; title: string; locationName: string | null } | null;
+  merchant?: { id: string; shopName: string; logo?: string | null } | null;
+  tenant?: { id: string; name: string; logoUrl?: string | null; slug?: string | null } | null;
+  profile?: { id: string; displayName: string; avatarUrl?: string | null } | null;
   product?: {
     id: string;
     merchantId: string;
@@ -443,6 +469,7 @@ export interface MerchantProfileDTO {
   region?: string | null;
   contactPersonName?: string | null;
   contactPersonAvatar?: string | null;
+  contactPersonUserId?: string | null;
 }
 
 export interface MerchantPublicDTO extends MerchantProfileDTO {
@@ -470,12 +497,33 @@ export interface ParticipantIntentDTO {
   partySize: number;
   comment: string;
   status: 'active' | 'fulfilled' | 'cancelled';
+  convertedActivityId?: string | null;
   createdAt: string;
   requesterName?: string | null;
   requesterAvatar?: string | null;
 }
 
 export type ExplorePriceLabelKind = 'free' | 'paid' | 'shared';
+
+/** Rich catalog fields for trail/camp location cards on explore. */
+export interface ExploreLocationCardDTO {
+  id: string;
+  activityType: 'hiking' | 'camping' | 'event';
+  region: string;
+  description: string;
+  difficulty?: 'easy' | 'moderate' | 'hard';
+  distance?: number;
+  duration?: number;
+  elevation?: number;
+  childFriendly: boolean;
+  accessibility?: 'car-accessible' | 'remote';
+  campingType?: 'self-guided' | 'operator-led';
+  maxGroupSize?: number;
+  season: string[];
+  surfaceType?: string[];
+  images: string[];
+  featured: boolean;
+}
 
 /** Unified map/list item for the mobile explore experience. */
 export interface ExploreMapItemDTO {
@@ -487,7 +535,11 @@ export interface ExploreMapItemDTO {
   latitude: number | null;
   longitude: number | null;
   path: string;
+  /** Primary person on this card — name is identity; role is contextual (host, requester, contact). */
+  featuredPerson?: ExploreMapPersonDTO | null;
+  /** @deprecated Use `featuredPerson` — kept for cached explore payloads during migration. */
   hostName?: string | null;
+  /** @deprecated Use `featuredPerson.avatarUrl` */
   hostAvatar?: string | null;
   date?: string | null;
   time?: string | null;
@@ -510,10 +562,23 @@ export interface ExploreMapItemDTO {
   toLabel?: string | null;
   websiteUrl?: string | null;
   contactPhone?: string | null;
-  /** Demand requester user id — for message / respond actions. */
+  /** @deprecated Use `featuredPerson.userId` for demand items. */
   requesterUserId?: string | null;
+  /** Demand request id (without demand: prefix). */
+  participantIntentId?: string | null;
+  /** Set when a host converts this request into a published activity. */
+  convertedActivityId?: string | null;
   /** Shop/agency about one-liner for map cards. */
   about?: string | null;
+  /** Trail/camp/event catalog fields for rich location list cards. */
+  locationCard?: ExploreLocationCardDTO | null;
+  /** Aggregate review stats for venues (location) and shops/agencies (tenant). */
+  averageRating?: number | null;
+  reviewCount?: number;
+  /** Server-built headlines, list titles, and card sections for explore UI. */
+  presentation?: ExploreCardPresentationDTO;
+  /** Tenant id when the map item represents a shop or agency profile. */
+  tenantId?: string | null;
 }
 
 export interface ProductClick {
@@ -722,3 +787,113 @@ export interface RewardCatalogDTO {
   }>;
   pointValues: Record<string, number>;
 }
+
+export {
+  demandFallbackTitle,
+  isGenericDemandPlanTitle,
+  isLegacyEmbeddedDemandTitle,
+  normalizeLegacyDemandTitle,
+  type DemandTitleKind,
+} from './demand-titles.js';
+
+export {
+  buildExploreFeaturedPerson,
+  explorePersonFirstName,
+  explorePersonRoleLabel,
+  formatExplorePersonDisplayName,
+  resolveExploreFeaturedPerson,
+  type ExploreFeaturedPersonInput,
+  type ExploreMapPersonDTO,
+  type ExploreMapPersonRole,
+} from './explore-person.js';
+
+export {
+  ROLE_PLACEHOLDER_DISPLAY_NAME,
+  hostPersonFirstName,
+  isRolePlaceholderDisplayName,
+  resolveActivityHostAvatar,
+  resolveActivityHostDisplayName,
+  resolveActivityHostUserId,
+  resolveHostPersonDisplayName,
+  showTenantBrand,
+  type HostPersonNameInput,
+} from './host-display.js';
+
+export {
+  HIKING_ACTIVITY_EMOJI,
+  HIKING_VENUE_EMOJI,
+  CAMPING_ACTIVITY_EMOJI,
+  CAMPING_VENUE_EMOJI,
+  MAP_FILTER_EMOJI,
+  MAP_LAYER_FILTER_EMOJI,
+  buildExploreCardPresentation,
+  buildExploreCardSections,
+  buildExploreListWhen,
+  buildExploreRouteLabel,
+  buildExploreSpotsSegment,
+  buildExploreWhenSegment,
+  exploreHeadline,
+  explorePrimaryCtaLabel,
+  exploreSecondaryCtaLabel,
+  exploreSpotsLabel,
+  exploreSubtitle,
+  exploreVenueHint,
+  formatExploreDayForHeadline,
+  formatExploreDayShort,
+  formatExploreTime,
+  formatPlanPhrase,
+  resolveExploreItemSource,
+  resolveMapPinEmoji,
+  sanitizeExploreLocation,
+  type ExploreCardDetail,
+  type ExploreCardDetailIcon,
+  type ExploreCardKind,
+  type ExploreCardPresentationDTO,
+  type ExploreCardSections,
+  type ExploreCardSource,
+} from './explore-presentation.js';
+
+export {
+  extractJoinInstructionLines,
+  extractNonJoinRequirements,
+  hasActivityJoinInstructions,
+  hasJoinInstructions,
+  JOIN_INSTRUCTION_PREFIX,
+} from './join-instructions.js';
+
+export {
+  inferJoinModeFromRequirements,
+  PRIVATE_JOIN_REQUIREMENT_PREFIX,
+  type ActivityJoinMode,
+} from './activity-join-mode.js';
+
+export {
+  buildExploreActivityDisplay,
+  resolveExplorePrice,
+  type ExploreActivityDisplayFields,
+  type ExplorePriceInfo,
+} from './explore-price.js';
+
+export {
+  resolveActivityDestinationCoordinates,
+  resolveActivityDisplayCoordinates,
+  type ActivityCoordinateSource,
+} from './activity-coordinates.js';
+
+export {
+  derivePriceAed,
+  eventHasPaidPricing,
+  formatPackagePrice,
+  inferTripPricingMode,
+  isTripPricePackage,
+  normalizeActivityPricing,
+  parseStoredPricePackages,
+  tripHasPaidPricing,
+  tripPriceLabel,
+  tripPricingModeLabel,
+  TRIP_CURRENCIES,
+  type TripCurrency,
+  type TripPricePackage,
+  type TripPricingInput,
+  type TripPricingMode,
+} from './trip-pricing.js';

@@ -12,7 +12,7 @@ export type CountryCode = (typeof SUPPORTED_COUNTRIES)[number]['code'];
 
 export const DEFAULT_COUNTRY: CountryCode = 'AE';
 
-/** Regions per country — used in Discovery filters and location forms. */
+/** Regions per country — used in explore filters and venue forms. */
 const REGIONS_BY_COUNTRY: Record<CountryCode, string[]> = {
   AE: ['Dubai', 'RAK', 'Fujairah', 'Abu Dhabi', 'Al Ain', 'Sharjah'],
   SA: ['Riyadh', 'Jeddah', 'Abha', 'AlUla', 'Taif', 'Dammam'],
@@ -25,8 +25,8 @@ const REGIONS_BY_COUNTRY: Record<CountryCode, string[]> = {
 export const getRegionsForCountry = (code: CountryCode = DEFAULT_COUNTRY): string[] =>
   REGIONS_BY_COUNTRY[code] ?? REGIONS_BY_COUNTRY.AE;
 
-/** Human labels for discovery location filter pills (filter value → display). */
-export const DISCOVERY_REGION_PILL_LABELS: Record<string, string> = {
+/** Human labels for explore venue filter pills (filter value → display). */
+export const EXPLORE_REGION_PILL_LABELS: Record<string, string> = {
   'Abu Dhabi': 'Abu Dhabi',
   Dubai: 'Dubai',
   RAK: 'Ras Al Khaimah',
@@ -35,13 +35,19 @@ export const DISCOVERY_REGION_PILL_LABELS: Record<string, string> = {
   Sharjah: 'Sharjah',
 };
 
-export const getDiscoveryRegionPillOptions = (code: CountryCode = DEFAULT_COUNTRY) => [
+export const getExploreRegionPillOptions = (code: CountryCode = DEFAULT_COUNTRY) => [
   { key: 'all', label: 'All UAE' },
   ...getRegionsForCountry(code).map((region) => ({
     key: region,
-    label: DISCOVERY_REGION_PILL_LABELS[region] ?? region,
+    label: EXPLORE_REGION_PILL_LABELS[region] ?? region,
   })),
 ];
+
+/** @deprecated use EXPLORE_REGION_PILL_LABELS */
+export const DISCOVERY_REGION_PILL_LABELS = EXPLORE_REGION_PILL_LABELS;
+
+/** @deprecated use getExploreRegionPillOptions */
+export const getDiscoveryRegionPillOptions = getExploreRegionPillOptions;
 
 export const getMapBounds = (code: CountryCode = DEFAULT_COUNTRY): { west: number; south: number; east: number; north: number } => {
   const bounds: Record<CountryCode, { west: number; south: number; east: number; north: number }> = {

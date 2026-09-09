@@ -5,7 +5,22 @@ import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } fro
 
 export type MobileDemandKind = ParticipantIntentKind;
 
-export type DemandFlowStepId = 'title' | 'area' | 'when' | 'route' | 'persons' | 'comment' | 'review';
+export type DemandFlowStepId =
+  | 'title'
+  | 'when'
+  | 'to'
+  | 'from'
+  | 'area'
+  | 'route'
+  | 'persons'
+  | 'fitness'
+  | 'requirements'
+  | 'info'
+  | 'carpool'
+  | 'comment'
+  | 'review';
+
+export type DemandFitnessLevel = 'beginner' | 'medium' | 'goat';
 
 export type MobileDemandDraft = {
   kind: MobileDemandKind | null;
@@ -20,6 +35,13 @@ export type MobileDemandDraft = {
   toLatitude: number | null;
   toLongitude: number | null;
   partySize: number;
+  fitnessLevel: DemandFitnessLevel | null;
+  additionalInfo: string;
+  carPoolNeeded: boolean;
+  womenOnly: boolean;
+  petsAllowed: boolean;
+  requirementsOther: boolean;
+  requirementsOtherNote: string;
   comment: string;
   areaPinPlaced: boolean;
   fromPinPlaced: boolean;
@@ -32,15 +54,78 @@ export const DEMAND_TYPE_OPTIONS: Array<{
   subtitle: string;
   emoji: string;
 }> = [
-  { key: 'hiking', title: 'Hike', subtitle: 'Find hiking buddies', emoji: '🥾' },
-  { key: 'camping', title: 'Camp', subtitle: 'Camping plans', emoji: '⛺' },
-  { key: 'event', title: 'Event', subtitle: 'Runs, meetups & more', emoji: '🎉' },
-  { key: 'guide', title: 'Guide', subtitle: 'Looking for a guide', emoji: '🧭' },
-  { key: 'carpool', title: 'Ride sharing', subtitle: 'Need a ride', emoji: '🚗' },
-  { key: 'other', title: 'Others', subtitle: 'Something else outdoors', emoji: '✨' },
+  { key: 'hiking', title: 'Hiking', subtitle: 'Find hiking buddies', emoji: '🥾' },
+  { key: 'camping', title: 'Camping', subtitle: 'Camping plans', emoji: '⛺' },
+  { key: 'carpool', title: 'Rideshare', subtitle: 'Need a ride', emoji: '🚗' },
+  { key: 'event', title: 'Other Outdoors', subtitle: 'Runs, meetups & more', emoji: '✨' },
 ];
 
 export const DEMAND_PARTY_PRESETS = [1, 2, 3, 4, 6, 8] as const;
+
+export const DEMAND_FITNESS_OPTIONS: Array<{
+  value: DemandFitnessLevel;
+  title: string;
+  subtitle: string;
+}> = [
+  { value: 'beginner', title: 'Beginner', subtitle: 'Just getting started' },
+  { value: 'medium', title: 'Medium', subtitle: 'Regular hiker' },
+  { value: 'goat', title: 'GOAT', subtitle: 'Hard trails, fast pace' },
+];
+
+const HIKING_DEMAND_STEPS: DemandFlowStepId[] = [
+  'title',
+  'when',
+  'from',
+  'persons',
+  'fitness',
+  'info',
+  'carpool',
+  'review',
+];
+
+const CAMPING_DEMAND_STEPS: DemandFlowStepId[] = [
+  'title',
+  'when',
+  'from',
+  'persons',
+  'info',
+  'carpool',
+  'review',
+];
+
+const CARPOOL_DEMAND_STEPS: DemandFlowStepId[] = [
+  'title',
+  'when',
+  'to',
+  'from',
+  'persons',
+  'requirements',
+  'info',
+  'review',
+];
+
+const EVENT_DEMAND_STEPS: DemandFlowStepId[] = [
+  'title',
+  'when',
+  'area',
+  'persons',
+  'info',
+  'carpool',
+  'review',
+];
+
+export const usesStructuredDemandFlow = (kind: MobileDemandKind | null): boolean =>
+  kind === 'hiking' || kind === 'camping';
+
+export const usesEventDemandFlow = (kind: MobileDemandKind | null): boolean => kind === 'event';
+
+export const usesOutdoorActivityDemandFlow = (kind: MobileDemandKind | null): boolean =>
+  usesStructuredDemandFlow(kind) || usesEventDemandFlow(kind);
+
+export const usesCarpoolDemandFlow = (kind: MobileDemandKind | null): boolean => kind === 'carpool';
+
+export const usesGuidedDemandFlow = (kind: MobileDemandKind | null): boolean =>
+  usesOutdoorActivityDemandFlow(kind) || usesCarpoolDemandFlow(kind);
 
 export const emptyMobileDemandDraft = (): MobileDemandDraft => ({
   kind: null,
@@ -55,6 +140,13 @@ export const emptyMobileDemandDraft = (): MobileDemandDraft => ({
   toLatitude: MAP_CONFIG.exploreDefaultCenter.lat,
   toLongitude: MAP_CONFIG.exploreDefaultCenter.lng,
   partySize: 2,
+  fitnessLevel: null,
+  additionalInfo: '',
+  carPoolNeeded: false,
+  womenOnly: false,
+  petsAllowed: false,
+  requirementsOther: false,
+  requirementsOtherNote: '',
   comment: '',
   areaPinPlaced: false,
   fromPinPlaced: false,
@@ -64,13 +156,15 @@ export const emptyMobileDemandDraft = (): MobileDemandDraft => ({
 export const getDemandFlowSteps = (kind: MobileDemandKind): DemandFlowStepId[] => {
   switch (kind) {
     case 'hiking':
+      return HIKING_DEMAND_STEPS;
     case 'camping':
-      return ['title', 'area', 'when', 'persons', 'comment', 'review'];
+      return CAMPING_DEMAND_STEPS;
     case 'event':
+      return EVENT_DEMAND_STEPS;
     case 'guide':
       return ['title', 'area', 'when', 'persons', 'comment', 'review'];
     case 'carpool':
-      return ['title', 'area', 'when', 'route', 'persons', 'comment', 'review'];
+      return CARPOOL_DEMAND_STEPS;
     case 'other':
       return ['title', 'area', 'persons', 'comment', 'review'];
     default:
@@ -80,9 +174,76 @@ export const getDemandFlowSteps = (kind: MobileDemandKind): DemandFlowStepId[] =
 
 /** Sheet heading for each step (shown under the header). */
 export const demandFlowStepTitle = (step: DemandFlowStepId, kind: MobileDemandKind): string => {
+  if (usesCarpoolDemandFlow(kind)) {
+    switch (step) {
+      case 'title':
+        return 'Title';
+      case 'when':
+        return 'Trip date & time';
+      case 'to':
+        return 'Going to';
+      case 'from':
+        return 'Leaving from';
+      case 'persons':
+        return 'No of people';
+      case 'requirements':
+        return 'Special requirements';
+      case 'info':
+        return 'Additional information';
+      case 'review':
+        return 'Preview & publish';
+      default:
+        return 'Request';
+    }
+  }
+
+  if (usesEventDemandFlow(kind)) {
+    switch (step) {
+      case 'title':
+        return 'Title';
+      case 'when':
+        return 'Preferred date & time';
+      case 'area':
+        return 'Location';
+      case 'persons':
+        return 'No of people';
+      case 'info':
+        return 'Additional info';
+      case 'carpool':
+        return 'Carpool needed';
+      case 'review':
+        return 'Preview & publish';
+      default:
+        return 'Request';
+    }
+  }
+
+  if (usesStructuredDemandFlow(kind)) {
+    switch (step) {
+      case 'title':
+        return 'Title';
+      case 'when':
+        return 'Preferred date & time';
+      case 'from':
+        return 'Going from';
+      case 'persons':
+        return 'No of people';
+      case 'fitness':
+        return 'Fitness level';
+      case 'info':
+        return 'Additional info';
+      case 'carpool':
+        return 'Carpool needed';
+      case 'review':
+        return 'Preview & publish';
+      default:
+        return 'Request';
+    }
+  }
+
   switch (step) {
     case 'title':
-      return "What's the plan?";
+      return 'What are you looking for?';
     case 'area':
       if (kind === 'event') return 'What would you like to do?';
       if (kind === 'guide') return 'What are you looking for?';
@@ -105,17 +266,17 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: MobileDemandKi
 export const demandTitlePlaceholder = (kind: MobileDemandKind): string => {
   switch (kind) {
     case 'hiking':
-      return 'e.g. Hiking buddies for Jebel Jais';
+      return 'e.g. Easy-moderate hike near Hatta this weekend, happy to carpool';
     case 'camping':
-      return 'e.g. Weekend camping near Al Qudra';
+      return 'e.g. Weekend camping near Al Qudra with a small group';
     case 'event':
       return 'e.g. Sunrise run at Kite Beach';
     case 'guide':
-      return 'e.g. Desert guide for overnight camp';
+      return 'e.g. Certified desert guide for an overnight camp';
     case 'carpool':
-      return 'e.g. Need a ride Dubai to Hatta';
+      return 'e.g. Ride to Hatta Friday morning';
     default:
-      return 'e.g. Outdoor photography meetup';
+      return 'e.g. Outdoor photography meetup or something similar';
   }
 };
 
@@ -146,7 +307,58 @@ export const demandAreaUsesMap = (kind: MobileDemandKind): boolean =>
   kind === 'camping' || kind === 'guide' || kind === 'other';
 
 export const demandAreaTextRequired = (kind: MobileDemandKind): boolean =>
-  kind === 'hiking' || kind === 'event' || kind === 'guide';
+  kind === 'hiking' || kind === 'guide';
+
+export const demandGoingFromPlaceholder = (kind: MobileDemandKind): string => {
+  if (kind === 'camping') return 'e.g. Dubai, Sharjah, Abu Dhabi';
+  return 'e.g. Dubai Marina, Business Bay, JLT';
+};
+
+export const demandAdditionalInfoPlaceholder = (kind: MobileDemandKind): string => {
+  if (kind === 'carpool') {
+    return 'Luggage, pickup flexibility, preferred departure window…';
+  }
+  if (kind === 'event') {
+    return 'Event type, pace, what to bring, anything else hosts should know…';
+  }
+  if (kind === 'camping') {
+    return 'Preferred area, camp type, gear needs, overnight or day trip…';
+  }
+  return 'Preferred area, trail type, pace, anything else hosts should know…';
+};
+
+const fitnessLevelLabel = (level: DemandFitnessLevel): string =>
+  DEMAND_FITNESS_OPTIONS.find((option) => option.value === level)?.title ?? level;
+
+export const buildDemandComment = (draft: MobileDemandDraft): string => {
+  if (draft.kind === 'carpool') {
+    const parts: string[] = [];
+    if (draft.womenOnly) parts.push('Women only');
+    if (draft.petsAllowed) parts.push('Pets allowed');
+    if (draft.requirementsOther && draft.requirementsOtherNote.trim()) {
+      parts.push(`Requirements: ${draft.requirementsOtherNote.trim()}`);
+    } else if (draft.requirementsOther) {
+      parts.push('Custom requirements');
+    }
+    if (draft.additionalInfo.trim()) parts.push(draft.additionalInfo.trim());
+    const combined = parts.filter(Boolean).join('\n').trim();
+    return combined.length >= 3 ? combined : 'Looking for a shared ride.';
+  }
+
+  const parts: string[] = [];
+  if (draft.fitnessLevel) {
+    parts.push(`Fitness level: ${fitnessLevelLabel(draft.fitnessLevel)}`);
+  }
+  if (draft.additionalInfo.trim()) {
+    parts.push(draft.additionalInfo.trim());
+  }
+  parts.push(draft.carPoolNeeded ? 'Carpool needed' : 'No carpool needed');
+  if (draft.comment.trim() && !usesOutdoorActivityDemandFlow(draft.kind)) {
+    parts.unshift(draft.comment.trim());
+  }
+  const combined = parts.filter(Boolean).join('\n').trim();
+  return combined.length >= 3 ? combined : 'Open to matching plans nearby.';
+};
 
 export const validateDemandStep = (step: DemandFlowStepId, draft: MobileDemandDraft): string | null => {
   const kind = draft.kind;
@@ -154,16 +366,48 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: MobileDemandDr
 
   switch (step) {
     case 'title':
-      if (!draft.title.trim()) return 'Enter a short title for your request.';
-      if (draft.title.trim().length < 3) return 'Title should be at least 3 characters.';
+      if (!draft.title.trim()) {
+        return usesGuidedDemandFlow(kind) ? 'Enter a title.' : 'Tell us a bit about what you are looking for.';
+      }
+      if (draft.title.trim().length < 3) return 'Please add a few more details (at least 3 characters).';
+      return null;
+    case 'to':
+      if (!draft.toPinPlaced || draft.toLatitude == null || draft.toLongitude == null) {
+        return 'Choose a destination on the map.';
+      }
+      return null;
+    case 'from':
+      if (kind === 'carpool') {
+        if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
+          return 'Choose a leaving-from point on the map.';
+        }
+        return null;
+      }
+      if (!draft.preferredArea.trim()) return 'Enter where you are going from.';
+      return null;
+    case 'requirements':
+      if (draft.requirementsOther && !draft.requirementsOtherNote.trim()) {
+        return 'Describe your special requirements.';
+      }
+      return null;
+    case 'fitness':
+      if (kind === 'hiking' && !draft.fitnessLevel) return 'Choose a fitness level.';
+      return null;
+    case 'info':
+      return null;
+    case 'carpool':
       return null;
     case 'area': {
+      if (kind === 'event') {
+        if (!draft.areaPinPlaced || draft.latitude == null || draft.longitude == null) {
+          return 'Drop a pin on the map.';
+        }
+        return null;
+      }
       if (demandAreaTextRequired(kind) && !draft.preferredArea.trim()) {
-        return kind === 'event'
-          ? 'Describe what you would like to do.'
-          : kind === 'guide'
-            ? 'Describe what you are looking for.'
-            : 'Enter where you would like to go.';
+        return kind === 'guide'
+          ? 'Describe what you are looking for.'
+          : 'Enter where you would like to go.';
       }
       return null;
     }
@@ -183,6 +427,7 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: MobileDemandDr
       if (!draft.partySize || draft.partySize < 1) return 'Enter how many people.';
       return null;
     case 'comment':
+      if (usesGuidedDemandFlow(kind)) return null;
       if (draft.comment.trim().length < 3) return 'Add a short comment (at least 3 characters).';
       return null;
     case 'review':
@@ -211,6 +456,10 @@ export type DemandSubmitResult = {
 export const publishMobileDemandRequest = async (draft: MobileDemandDraft): Promise<DemandSubmitResult> => {
   if (!draft.kind) throw new Error('Choose what you are looking for.');
 
+  const comment = usesGuidedDemandFlow(draft.kind)
+    ? buildDemandComment(draft)
+    : draft.comment.trim();
+
   const payload = {
     kind: draft.kind,
     title: draft.title.trim(),
@@ -223,7 +472,7 @@ export const publishMobileDemandRequest = async (draft: MobileDemandDraft): Prom
     toLatitude: draft.toPinPlaced ? draft.toLatitude : null,
     toLongitude: draft.toPinPlaced ? draft.toLongitude : null,
     partySize: draft.partySize,
-    comment: draft.comment.trim(),
+    comment,
   };
 
   await api.createParticipantIntent(payload);

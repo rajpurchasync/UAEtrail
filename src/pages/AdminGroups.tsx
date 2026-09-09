@@ -2,11 +2,18 @@ import { useEffect, useState } from 'react';
 import { api, AdminSocialGroupDetail, AdminSocialGroupListItem } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';
 
-const typeLabel = {
+const GROUP_TYPE_OPTIONS = [
+  { value: 'family' as const, label: 'Family' },
+  { value: 'friends' as const, label: 'Friends' },
+];
+
+const typeLabel: Record<string, string> = {
   family: 'Family',
   friends: 'Friends',
-} as const;
+  activity: 'Trip chat',
+};
 
 const inviteStatusClass: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800',
@@ -121,18 +128,17 @@ export const AdminGroups = () => {
             Search
           </button>
         </form>
-        <select
+        <AppSelect
           value={typeFilter}
-          onChange={(e) => {
-            setTypeFilter(e.target.value);
+          onChange={(value) => {
+            setTypeFilter(value);
             setPage(1);
           }}
-          className="border border-gray-200 rounded-md px-3 py-2 text-sm"
-        >
-          <option value="">All types</option>
-          <option value="family">Family</option>
-          <option value="friends">Friends</option>
-        </select>
+          options={GROUP_TYPE_OPTIONS}
+          placeholder="All types"
+          inputClassName={ADMIN_FILTER_SELECT_CLASS}
+          aria-label="Filter by group type"
+        />
       </div>
 
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}

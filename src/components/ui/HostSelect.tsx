@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, TeamMember } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
+import { AppSelect } from './AppSelect';
 
 interface HostSelectProps {
   tenantId: string;
@@ -36,31 +37,29 @@ export const HostSelect = ({ tenantId, value, onChange, required, className = ''
     onChange(self?.userId ?? hosts[0].userId);
   }, [hosts, value, user?.id, onChange]);
 
+  const hostOptions = hosts.map((member) => ({
+    value: member.userId,
+    label: `${member.displayName || member.email}${member.userId === user?.id ? ' (you)' : ''}`,
+  }));
+
   return (
     <div className={className}>
       <label className="block text-sm font-medium text-neutral-700 mb-1">
         Host <span className="text-neutral-400 font-normal">(runs the event on the day)</span>
         {required && <span className="text-red-500"> *</span>}
       </label>
-      <select
+      <AppSelect
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
+        onChange={onChange}
+        options={hostOptions}
         disabled={loading || hosts.length === 0}
-        className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 bg-white disabled:opacity-60"
-      >
-        {loading && <option value="">Loading team…</option>}
-        {!loading && hosts.length === 0 && <option value="">No team members — add hosts in Team</option>}
-        {hosts.map((member) => (
-          <option key={member.userId} value={member.userId}>
-            {member.displayName || member.email}
-            {member.userId === user?.id ? ' (you)' : ''}
-          </option>
-        ))}
-      </select>
+        placeholder={loading ? 'Loading team…' : 'No team members — add hosts in Team'}
+        inputClassName="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 disabled:opacity-60"
+        aria-label="Event host"
+      />
       <p className="text-xs text-neutral-500 mt-1">
         Every activity needs a named host — the person participants can contact and who is responsible on site.
       </p>
     </div>
   );
-};
+}

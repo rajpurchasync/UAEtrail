@@ -8,6 +8,7 @@ import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { useAuth } from '../context/AuthContext';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
+import { notificationReasonLine } from '../utils/notificationDisplay';
 import { inferNotificationPath } from '../utils/notificationRouting';
 
 export const AdminNotifications = () => {
@@ -97,7 +98,9 @@ export const AdminNotifications = () => {
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notif) => (
+              {notifications.map((notif) => {
+                const reasonLine = notificationReasonLine(notif);
+                return (
                 <button
                   key={notif.id}
                   type="button"
@@ -113,13 +116,17 @@ export const AdminNotifications = () => {
                     <div className={`flex-1 min-w-0 ${notif.isRead ? '' : 'pl-0'}`}>
                       <p className="font-medium text-gray-900">{notif.title}</p>
                       <p className="text-sm text-gray-600 mt-1">{notif.body}</p>
+                      {reasonLine && (
+                        <p className="text-xs font-medium text-gray-700 mt-2">{reasonLine}</p>
+                      )}
                       <p className="text-xs text-gray-400 mt-2">
                         {new Date(notif.createdAt).toLocaleString()}
                       </p>
                     </div>
                   </div>
                 </button>
-              ))}
+              );
+              })}
             </div>
           )}
         </div>

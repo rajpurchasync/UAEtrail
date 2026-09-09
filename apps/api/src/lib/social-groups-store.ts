@@ -3,7 +3,7 @@ import { newEntityId } from './entity-builders.js';
 import { findAuthUsersByIds } from './auth-users.js';
 import { getMongoClient } from './mongo.js';
 
-export type GroupType = 'family' | 'friends';
+export type GroupType = 'family' | 'friends' | 'activity';
 export type GroupRole = 'admin' | 'buddy';
 export type GroupMemberType = 'adult' | 'kid';
 export type GroupInviteStatus = 'pending' | 'accepted' | 'expired' | 'cancelled';
@@ -18,6 +18,7 @@ export type GroupRecord = {
   bannerUrl: string | null;
   photoUrl: string | null;
   adminUserId: string;
+  activityId: string | null;
   status: GroupStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -87,6 +88,7 @@ type MongoGroup = {
   bannerUrl: string | null;
   photoUrl: string | null;
   adminUserId: string;
+  activityId?: string | null;
   status?: GroupStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -160,6 +162,7 @@ const mapGroup = (row: MongoGroup): GroupRecord => ({
   bannerUrl: row.bannerUrl,
   photoUrl: row.photoUrl,
   adminUserId: row.adminUserId,
+  activityId: row.activityId ?? null,
   status: row.status ?? 'active',
   createdAt: row.createdAt,
   updatedAt: row.updatedAt
@@ -206,6 +209,49 @@ const normalizeInviteEmail = (email: string) => email.trim().toLowerCase();
 export const findGroupById = async (groupId: string): Promise<GroupRecord | null> => {
   const row = await groupsCollection().findOne({ _id: groupId });
   return row ? mapGroup(row) : null;
+};
+
+export const findGroupByActivityId = async (activityId: string): Promise<GroupRecord | null> => {
+  const row = await groupsCollection().findOne({ activityId });
+  return row ? mapGroup(row) : null;
+};
+
+export const createActivityGroup = async (input: {
+  activityId: string;
+  activityTitle: string;
+  hostUserId: string;
+}): Promise<GroupRecord> => {
+  const now = new Date();
+  const groupId = newEntityId();
+  const groupDoc: MongoGroup = {
+    _id: groupId,
+    type: 'activity',
+    name: input.activityTitle.trim() || 'Trip chat',
+    slogan: null,
+    bannerUrl: null,
+    photoUrl: null,
+    adminUserId: input.hostUserId,
+    activityId: input.activityId,
+    status: 'active',
+    createdAt: now,
+    updatedAt: now
+  };
+
+  const memberDoc: MongoGroupMember = {
+    _id: newEntityId(),
+    groupId,
+    userId: input.hostUserId,
+    role: 'admin',
+    memberType: 'adult',
+    displayName: null,
+    invitedEmail: null,
+    createdByUserId: input.hostUserId,
+    createdAt: now,
+    isActive: true
+  };
+
+  await Promise.all([groupsCollection().insertOne(groupDoc), membersCollection().insertOne(memberDoc)]);
+  return mapGroup(groupDoc);
 };
 
 export const createSocialGroup = async (input: {
@@ -447,6 +493,26 @@ const upsertAdultMembership = async (input: {
 
   await membersCollection().insertOne(doc);
   return mapMember(doc);
+};
+
+export const ensureGroupMember = async (input: {
+  groupId: string;
+  userId: string;
+  role: GroupRole;
+  createdByUserId: string;
+}): Promise<GroupMemberRecord> => {
+  const member = await upsertAdultMembership({
+    groupId: input.groupId,
+    userId: input.userId,
+    role: input.role,
+    createdByUserId: input.createdByUserId
+  });
+  await membersCollection().updateOne({ _id: member.id }, { $set: { isActive: true } });
+  return member;
+};
+
+export const removeGroupMember = async (groupId: string, userId: string): Promise<void> => {
+  await membersCollection().deleteOne({ groupId, userId, memberType: 'adult' });
 };
 
 export const acceptGroupInviteByToken = async (input: {

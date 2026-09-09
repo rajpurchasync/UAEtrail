@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ProductDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { SHOP_V1 } from '../config/platform';
+import { exploreShopsPath } from '../utils/exploreRouting';
 import { PAGE_BANNERS } from '../config/pageBanners';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -60,8 +61,8 @@ export const ProductDetail = () => {
         <div className="min-h-screen flex items-center justify-center p-4 text-center">
           <div>
             <p className="text-gray-600 mb-3">{error ?? 'Product not found'}</p>
-            <Link to="/shop" className="text-emerald-600 font-medium">
-              Back to shop
+            <Link to={exploreShopsPath()} className="text-emerald-600 font-medium">
+              Back to map
             </Link>
           </div>
         </div>
@@ -73,17 +74,19 @@ export const ProductDetail = () => {
     ? Math.round(product.priceAed * (1 - product.discountPercent / 100))
     : Math.round(product.priceAed * (1 - SHOP_V1.memberDiscountPercent / 100));
 
+  const shopsMapPath = exploreShopsPath();
+
   return (
     <MobileDetailShell
-      backTo="/shop"
-      backLabel="Shop"
+      backTo={shopsMapPath}
+      backLabel="Explore"
       headerAction={<ShopCartButton onClick={() => setCartOpen(true)} />}
       banner={{
         src: PAGE_BANNERS.shop,
         alt: 'Camping tent under the stars',
         title: product.name,
         eyebrow: 'Shop',
-        linkTo: '/shop',
+        linkTo: shopsMapPath,
         desktopChromeOnly: true,
         desktopAction: <ShopCartButton onClick={() => setCartOpen(true)} />
       }}

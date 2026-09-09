@@ -336,7 +336,7 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
         userId: updated.submittedById,
         title: 'Location not approved',
         body: `"${updated.name}" was not approved for listing. Contact support if you have questions.`,
-        meta: { locationId: updated.id, kind: 'location_rejected', path: '/discovery' }
+        meta: { locationId: updated.id, kind: 'location_rejected', path: '/explore?panel=venues&list=1' }
       });
     }
 
@@ -409,6 +409,7 @@ adminRouter.patch(
           body: reviewerNote
             ? `You can now post activities. Note from reviewer: ${reviewerNote}`
             : 'Your host profile was approved. You can now post activities and welcome participants.',
+          reason: reviewerNote,
           meta: {
             kind: 'host_application_approved',
             applicationId: application.id,
@@ -427,6 +428,7 @@ adminRouter.patch(
           body: reviewerNote
             ? reviewerNote
             : 'Your host application was not approved at this time. You can update your profile and apply again.',
+          reason: reviewerNote,
           meta: {
             kind: 'host_application_rejected',
             applicationId: application.id,
@@ -514,6 +516,7 @@ adminActivitiesRouter.patch(
           body: comment
             ? `Your activity "${event.title}" has been suspended. Reason: ${comment}`
             : `Your activity "${event.title}" has been suspended by an administrator.`,
+          reason: comment,
           meta: { kind: 'activity_suspended', activityId: event.id, path: '/host/activities' }
         });
       }
@@ -817,7 +820,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
           activityId: string;
           activityTitle: string | null;
           locationName: string;
-          organizerName: string;
+          tenantName: string;
           date: string;
           checkedInAt: Date | null;
         }>>((acc, p) => {
@@ -827,7 +830,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
             activityId: p.activityId,
             activityTitle: event.title,
             locationName: event.location.name,
-            organizerName: event.tenant.name,
+            tenantName: event.tenant.name,
             date: event.startAt.toISOString().slice(0, 10),
             checkedInAt: p.checkedInAt
           });
@@ -876,6 +879,7 @@ adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: u
           : comment
             ? `Your account has been suspended. Reason: ${comment}`
             : 'Your account has been suspended by an administrator. Contact support if you believe this is a mistake.',
+      reason: comment,
       meta: {
         kind: status === 'active' ? 'user_reactivated' : 'user_suspended',
         path: '/profile'
@@ -997,6 +1001,7 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
           : comment
             ? `Your host profile "${tenant.name}" has been suspended. Reason: ${comment}`
             : `Your host profile "${tenant.name}" has been suspended. Contact support for details.`,
+      reason: comment,
       meta: {
         kind: status === 'active' ? 'host_reopened' : 'host_suspended',
         tenantId: id,
@@ -1047,6 +1052,7 @@ adminRouter.patch('/groups/:id/status', validate({ params: idParamSchema, body: 
             : comment
               ? `Your group "${detail.group.name}" has been suspended. Reason: ${comment}`
               : `Your group "${detail.group.name}" has been suspended by an administrator.`,
+        reason: comment,
         meta: { kind: status === 'active' ? 'group_reactivated' : 'group_suspended', groupId: id, path: '/groups' }
       });
     }

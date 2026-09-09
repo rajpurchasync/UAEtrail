@@ -24,8 +24,7 @@ import { assertPresignedUploadOwner, registerPresignedUpload } from '../lib/medi
 import { createMediaAssetRecord, findMediaAssetByKey } from '../lib/media-store.js';
 import { hasTenantMembership } from '../lib/tenant-access.js';
 import { findAuthUserById } from '../lib/auth-users.js';
-import { usersShareActiveGroup } from '../lib/social-groups-store.js';
-import { usersShareActivity } from '../lib/activity-engagement-store.js';
+import { resolveProfileViewerAccess } from '../services/profile-viewer-access.js';
 import {
   canAccessMedia,
   extractStorageKey,
@@ -280,25 +279,23 @@ mediaRouter.get('/resolve', optionalAuth, validate({ query: resolveQuerySchema }
     const viewerUserId = req.auth?.userId ?? null;
     const isPlatformAdmin = req.auth?.role === 'PLATFORM_ADMIN';
 
-    let sharesGroupOrActivity = false;
-    if (
-      viewerUserId &&
-      ownerUserId &&
-      viewerUserId !== ownerUserId &&
-      visibility === 'group_members'
-    ) {
-      sharesGroupOrActivity =
-        (await usersShareActiveGroup(viewerUserId, ownerUserId)) ||
-        (await usersShareActivity(viewerUserId, ownerUserId));
-    }
+    const profileAccess = ownerUserId
+      ? await resolveProfileViewerAccess({
+          viewerUserId,
+          targetUserId: ownerUserId,
+          targetVisibility: visibility,
+          isPlatformAdmin,
+        })
+      : null;
 
     const allowed = canAccessMedia({
       kind,
       visibility,
       viewerUserId,
       ownerUserId,
-      sharesGroupOrActivity,
-      isPlatformAdmin
+      sharesGroupOrActivity: profileAccess?.sharesGroup ?? false,
+      profileAccessGranted: profileAccess?.canViewFullProfile ?? false,
+      isPlatformAdmin,
     });
     if (!allowed) {
       throw new ApiError(403, 'forbidden', 'You cannot access this media.');

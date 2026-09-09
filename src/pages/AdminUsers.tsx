@@ -4,6 +4,28 @@ import { api } from '../api/services';
 import { AdminUserDetail, AdminUserDetailPanel } from '../components/admin/AdminUserDetailPanel';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';
+
+const USER_TYPE_OPTIONS = [
+  { value: 'participant' as const, label: 'Participant' },
+  { value: 'guide_host' as const, label: 'Individual Host' },
+  { value: 'business_host' as const, label: 'Business Host' },
+  { value: 'host_staff' as const, label: 'Host Staff' },
+  { value: 'platform_admin' as const, label: 'Admin' },
+];
+
+const ROLE_OPTIONS = [
+  { value: 'platform_admin' as const, label: 'Admin' },
+  { value: 'tenant_owner' as const, label: 'Tenant Owner' },
+  { value: 'tenant_admin' as const, label: 'Tenant Admin' },
+  { value: 'tenant_guide' as const, label: 'Guide' },
+  { value: 'participant' as const, label: 'Participants Only' },
+];
+
+const STATUS_OPTIONS = [
+  { value: 'active' as const, label: 'Active' },
+  { value: 'suspended' as const, label: 'Suspended' },
+];
 import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../constants/userTypes';
 
 interface UserRow {
@@ -119,27 +141,39 @@ export const AdminUsers = () => {
             className="border rounded px-3 py-1.5 text-sm w-60" />
           <button type="submit" className="bg-emerald-600 text-white px-3 py-1.5 rounded text-sm hover:bg-emerald-700">Search</button>
         </form>
-        <select value={userTypeFilter} onChange={(e) => { setUserTypeFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
-          <option value="">All User Types</option>
-          <option value="participant">Participant</option>
-          <option value="guide_host">Individual Host</option>
-          <option value="business_host">Business Host</option>
-          <option value="host_staff">Host Staff</option>
-          <option value="platform_admin">Admin</option>
-        </select>
-        <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
-          <option value="">All Roles (legacy)</option>
-          <option value="platform_admin">Admin</option>
-          <option value="tenant_owner">Tenant Owner</option>
-          <option value="tenant_admin">Tenant Admin</option>
-          <option value="tenant_guide">Guide</option>
-          <option value="participant">Participants Only</option>
-        </select>
-        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-        </select>
+        <AppSelect
+          value={userTypeFilter}
+          onChange={(value) => {
+            setUserTypeFilter(value);
+            setPage(1);
+          }}
+          options={USER_TYPE_OPTIONS}
+          placeholder="All User Types"
+          inputClassName={ADMIN_FILTER_SELECT_CLASS}
+          aria-label="Filter by user type"
+        />
+        <AppSelect
+          value={roleFilter}
+          onChange={(value) => {
+            setRoleFilter(value);
+            setPage(1);
+          }}
+          options={ROLE_OPTIONS}
+          placeholder="All Roles (legacy)"
+          inputClassName={ADMIN_FILTER_SELECT_CLASS}
+          aria-label="Filter by role"
+        />
+        <AppSelect
+          value={statusFilter}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+          options={STATUS_OPTIONS}
+          placeholder="All Status"
+          inputClassName={ADMIN_FILTER_SELECT_CLASS}
+          aria-label="Filter by status"
+        />
       </div>
 
       {error && <p className="text-red-600 text-sm mb-3">{error}</p>}

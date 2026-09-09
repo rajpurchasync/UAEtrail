@@ -1,64 +1,32 @@
 import { z } from 'zod';
+import { parseStoredPricePackages, type TripPricePackage } from '@uaetrail/shared-types';
 
-const TRIP_CURRENCIES = ['AED', 'USD', 'EUR', 'SAR', 'OMR'] as const;
+export {
+  derivePriceAed,
+  eventHasPaidPricing,
+  formatPackagePrice,
+  inferTripPricingMode,
+  normalizeActivityPricing,
+  parseStoredPricePackages,
+  tripHasPaidPricing,
+  tripPriceLabel,
+  tripPricingModeLabel,
+  type TripCurrency,
+  type TripPricePackage,
+  type TripPricingInput,
+  type TripPricingMode,
+} from '@uaetrail/shared-types';
 
 const tripPricePackageSchema = z.object({
   label: z.string().min(1).max(120),
   amount: z.number().int().min(0).max(999_999),
-  currency: z.enum(TRIP_CURRENCIES).default('AED')
+  currency: z.enum(['AED', 'USD', 'EUR', 'SAR', 'OMR']).default('AED'),
 });
-
-export type TripPricePackage = z.infer<typeof tripPricePackageSchema>;
 
 export const tripPricePackagesSchema = z.array(tripPricePackageSchema).max(12);
 
-export const parseStoredPricePackages = (value: unknown): TripPricePackage[] => {
+/** Strict Zod parse for host write APIs — falls back to shared read parser shape. */
+export const parseValidatedPricePackages = (value: unknown): TripPricePackage[] => {
   const parsed = tripPricePackagesSchema.safeParse(value);
-  return parsed.success ? parsed.data : [];
-};
-
-const derivePriceAed = (packages: TripPricePackage[], fallback = 0): number => {
-  if (packages.length === 0) return fallback;
-  const amounts = packages.map((p) => p.amount);
-  return Math.min(...amounts);
-};
-
-export const normalizeActivityPricing = (input: {
-  price?: number;
-  pricePackages?: TripPricePackage[];
-  pricingMode?: 'free' | 'shared' | 'paid';
-}): { priceAed: number; pricePackages: TripPricePackage[]; pricingMode: 'free' | 'shared' | 'paid' } => {
-  const trimmedPackages = input.pricePackages?.filter((p) => p.label.trim()) ?? [];
-  const pricingMode =
-    input.pricingMode ??
-    (trimmedPackages.some((p) => p.amount > 0)
-      ? 'paid'
-      : (input.price ?? 0) > 0
-        ? 'shared'
-        : 'free');
-
-  if (pricingMode === 'free') {
-    return { priceAed: 0, pricePackages: [], pricingMode: 'free' };
-  }
-
-  if (pricingMode === 'shared') {
-    return {
-      priceAed: Math.max(0, input.price ?? 0),
-      pricePackages: [],
-      pricingMode: 'shared',
-    };
-  }
-
-  const pricePackages =
-    trimmedPackages.length > 0
-      ? trimmedPackages
-      : (input.price ?? 0) > 0
-        ? [{ label: 'Standard', amount: input.price!, currency: 'AED' as const }]
-        : [];
-
-  return {
-    pricePackages,
-    priceAed: derivePriceAed(pricePackages, input.price ?? 0),
-    pricingMode: 'paid',
-  };
+  return parsed.success ? parsed.data : parseStoredPricePackages(value);
 };

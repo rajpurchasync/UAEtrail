@@ -1,11 +1,37 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { KeyRound, ShieldCheck, Smartphone, Eye, Lock, Download, Trash2 } from 'lucide-react';
-import { api } from '../api/services';
+import { KeyRound, ShieldCheck, Smartphone, Eye, Lock, Download, Trash2, UserRound } from 'lucide-react';
+import { api, type UserProfile } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { AccountDataExportSection, AccountDeleteSection } from '../components/account';
 import { PageMeta } from '../components/seo/PageMeta';
-import { MobileBackButton } from '../components/mobile/MobileBackButton';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { GlassCard } from '../components/mobile/GlassCard';
+
+type ProfileVisibility = NonNullable<UserProfile['profileVisibility']>;
+
+const VISIBILITY_OPTIONS: Array<{
+  value: ProfileVisibility;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: 'public',
+    label: 'Public',
+    description: 'Anyone can open your member profile from a link or activity context.',
+  },
+  {
+    value: 'group_members',
+    label: 'Friends & family only',
+    description: 'Only people in your family or friends groups see your full profile.',
+  },
+  {
+    value: 'private',
+    label: 'Private',
+    description:
+      'Hidden from map browse unless you host trips. Friends, co-participants, and hosts on your trips can still view.',
+  },
+];
 
 export const SecurityPrivacy = () => {
   const location = useLocation();
@@ -17,11 +43,25 @@ export const SecurityPrivacy = () => {
   const [sendingOtp, setSendingOtp] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [profileVisibility, setProfileVisibility] = useState<ProfileVisibility>('public');
+  const [savingVisibility, setSavingVisibility] = useState(false);
+  const [visibilityMessage, setVisibilityMessage] = useState<string | null>(null);
   const requiresOtp = import.meta.env.PROD;
 
   const isHostPath = location.pathname.startsWith('/host/');
   const backPath = isHostPath ? '/host/overview' : '/profile';
   const backLabel = isHostPath ? 'Host dashboard' : 'Profile';
+
+  useEffect(() => {
+    void api
+      .getMeProfile()
+      .then((res) => {
+        setProfileVisibility(res.data.profileVisibility ?? 'public');
+      })
+      .catch(() => {
+        /* profile load is optional for this page */
+      });
+  }, []);
 
   const handleChangePassword = async (event: FormEvent) => {
     event.preventDefault();
@@ -35,7 +75,7 @@ export const SecurityPrivacy = () => {
       await api.changePassword({
         currentPassword,
         newPassword,
-        ...(otpToken.trim() ? { otpToken: otpToken.trim() } : {})
+        ...(otpToken.trim() ? { otpToken: otpToken.trim() } : {}),
       });
       setCurrentPassword('');
       setNewPassword('');
@@ -64,6 +104,22 @@ export const SecurityPrivacy = () => {
     }
   };
 
+  const handleVisibilityChange = async (next: ProfileVisibility) => {
+    if (next === profileVisibility || savingVisibility) return;
+    setVisibilityMessage(null);
+    setSavingVisibility(true);
+    setProfileVisibility(next);
+    try {
+      await api.updateMeProfile({ profileVisibility: next });
+      setVisibilityMessage('Profile visibility updated.');
+    } catch (error) {
+      setProfileVisibility(profileVisibility);
+      setVisibilityMessage(error instanceof Error ? error.message : 'Could not update visibility');
+    } finally {
+      setSavingVisibility(false);
+    }
+  };
+
   const handleDeleted = async () => {
     await signOut();
   };
@@ -71,16 +127,16 @@ export const SecurityPrivacy = () => {
   return (
     <>
       <PageMeta title="Security & Privacy" noIndex />
-      <div className="min-h-screen consumer-bg safe-area-top safe-area-bottom pb-8">
-        <div className="max-w-2xl mx-auto px-5 pt-4">
-          <MobileBackButton fallbackTo={backPath} label={backLabel} className="mb-4" />
+      <ConsumerShell
+        layout="stack"
+        title="Security & privacy"
+        showJourney={false}
+        back={{ fallbackTo: backPath, label: backLabel }}
+      >
+        <p className="mb-4 text-sm text-neutral-600">Keep your account secure and control your personal data.</p>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Security & Privacy</h1>
-          <p className="text-sm text-gray-600 mb-5">
-            Keep your account secure and control your personal data.
-          </p>
-
-          <div className="glass-card p-4 mb-3 border border-emerald-100/80">
+        <div className="space-y-3 pb-nav-safe">
+          <GlassCard padding className="border-emerald-100/80">
             <div className="flex items-start gap-3">
               <ShieldCheck className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
               <div>
@@ -90,9 +146,52 @@ export const SecurityPrivacy = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </GlassCard>
 
-          <div className="glass-card p-4 mb-3">
+          <GlassCard padding>
+            <div className="flex items-start gap-3">
+              <UserRound className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h2 className="text-sm font-semibold text-gray-900">Profile visibility</h2>
+                <p className="text-xs text-gray-600 mt-1 mb-3 leading-relaxed">
+                  Controls who can open your member profile. Hosts still appear on their activity cards. Friends and
+                  trip co-participants can always view private profiles when authorized.
+                </p>
+                <div className="space-y-2">
+                  {VISIBILITY_OPTIONS.map((option) => {
+                    const selected = profileVisibility === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        disabled={savingVisibility}
+                        onClick={() => void handleVisibilityChange(option.value)}
+                        className={`w-full rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                          selected
+                            ? 'border-emerald-300 bg-emerald-50'
+                            : 'border-neutral-200 bg-white hover:border-neutral-300'
+                        }`}
+                      >
+                        <p className="text-sm font-semibold text-neutral-900">{option.label}</p>
+                        <p className="mt-0.5 text-xs text-neutral-600 leading-relaxed">{option.description}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+                {visibilityMessage && (
+                  <p
+                    className={`text-xs mt-2 ${
+                      visibilityMessage.toLowerCase().includes('updated') ? 'text-emerald-700' : 'text-red-600'
+                    }`}
+                  >
+                    {visibilityMessage}
+                  </p>
+                )}
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard padding>
             <div className="flex items-start gap-3">
               <KeyRound className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
@@ -161,10 +260,10 @@ export const SecurityPrivacy = () => {
                 )}
               </div>
             </div>
-          </div>
+          </GlassCard>
 
-          <div className="glass-card p-4 mb-3">
-            <h2 className="text-sm font-semibold text-gray-900 mb-2">Common protections</h2>
+          <GlassCard padding>
+            <h2 className="mb-2 text-sm font-semibold text-neutral-900">Common protections</h2>
             <ul className="space-y-2 text-xs text-gray-700">
               <li className="flex items-start gap-2">
                 <Smartphone className="w-4 h-4 text-emerald-600 mt-0.5" />
@@ -187,12 +286,12 @@ export const SecurityPrivacy = () => {
                 <span>Delete your account if you no longer want to use the app.</span>
               </li>
             </ul>
-          </div>
+          </GlassCard>
 
           <AccountDataExportSection />
           <AccountDeleteSection onDeleted={handleDeleted} />
         </div>
-      </div>
+      </ConsumerShell>
     </>
   );
 };

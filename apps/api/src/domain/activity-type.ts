@@ -49,6 +49,45 @@ export const assertLocationMatchesActivityType = (
   }
 };
 
+const hasLegacyLinkedCarpoolRouteFields = (body: {
+  carPoolFromLat?: number;
+  carPoolFromLng?: number;
+  carPoolToLat?: number;
+  carPoolToLng?: number;
+  carPoolFromPoint?: string;
+  carPoolToPoint?: string;
+}): boolean =>
+  body.carPoolFromLat != null ||
+  body.carPoolFromLng != null ||
+  body.carPoolToLat != null ||
+  body.carPoolToLng != null ||
+  Boolean(body.carPoolFromPoint?.trim()) ||
+  Boolean(body.carPoolToPoint?.trim());
+
+/** Reject linked carpool on hiking/camping/events — use standalone `activityType: 'carpool'`. */
+export const assertNoLegacyLinkedCarpoolFields = (
+  activityType: SharedActivityType | string | undefined,
+  body: {
+    carPoolEnabled?: boolean;
+    carPoolFromLat?: number;
+    carPoolFromLng?: number;
+    carPoolToLat?: number;
+    carPoolToLng?: number;
+    carPoolFromPoint?: string;
+    carPoolToPoint?: string;
+  }
+): void => {
+  if (String(activityType ?? '').toLowerCase() === 'carpool') return;
+
+  if (body.carPoolEnabled === true || hasLegacyLinkedCarpoolRouteFields(body)) {
+    throw new ApiError(
+      400,
+      'linked_carpool_deprecated',
+      'Linked carpool on hiking, camping, or events is no longer supported. Create a standalone carpool activity instead.'
+    );
+  }
+};
+
 export const assertCarpoolActivityFields = (body: {
   activityType: SharedActivityType;
   meetingLat?: number;

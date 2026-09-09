@@ -53,19 +53,48 @@
   <script>
     const host = window.location.hostname;
     const isLocal = host === 'localhost' || host === '127.0.0.1';
-    const target = window.location.origin + '/';
     const link = document.getElementById('url');
     const lead = document.getElementById('lead');
+    const canvas = document.getElementById('qr');
 
-    if (isLocal) {
-      lead.innerHTML =
-        '<span class="warn">Open this page using the <strong>Network</strong> URL from your terminal ' +
-        '(not localhost), e.g. <code>http://192.168.x.x:5175/mobile-dev-qr.html</code></span>';
+    async function resolveTarget() {
+      if (!isLocal) {
+        return window.location.origin + '/';
+      }
+      try {
+        const res = await fetch('/__dev/mobile-url.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('dev url unavailable');
+        const data = await res.json();
+        if (data.url) return data.url;
+      } catch (_) {
+        /* fall through */
+      }
+      return null;
     }
 
-    link.href = target;
-    link.textContent = target;
-    QRCode.toCanvas(document.getElementById('qr'), target, { width: 280, margin: 2 });
+    async function render() {
+      const target = await resolveTarget();
+
+      if (!target) {
+        lead.innerHTML =
+          '<span class="warn">Could not detect your Wi‑Fi URL. Start <code>npm run dev</code>, then open ' +
+          'the <strong>Network</strong> link from the terminal (not localhost), e.g. ' +
+          '<code>http://192.168.x.x:5175/mobile-dev-qr.html</code></span>';
+        link.textContent = 'Waiting for dev server…';
+        link.removeAttribute('href');
+        return;
+      }
+
+      if (isLocal) {
+        lead.textContent = 'Using your Wi‑Fi address (not localhost). Scan on the same network.';
+      }
+
+      link.href = target;
+      link.textContent = target;
+      QRCode.toCanvas(canvas, target, { width: 280, margin: 4 });
+    }
+
+    void render();
   </script>
 </body>
 </html>

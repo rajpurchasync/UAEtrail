@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mountain, Star, ChevronRight, Tent, Compass, Calendar, MapPin } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mountain, Star, ChevronRight, Tent, Compass } from 'lucide-react';
 import { TrailCard } from '../components/ui/TrailCard';
 import { CampingCard } from '../components/ui/CampingCard';
 import { ActivityCard, EmptyActivitiesBanner } from '../components/ui';
@@ -11,18 +11,17 @@ import { FaqPreview } from '../components/seo/FaqPreview';
 import { websiteSchema } from '../components/seo/schemas';
 import { HOME_FAQ_PREVIEW } from '../content/platformFaqs';
 import { CampingSpot, Trail, ActivityListing } from '../types';
-import { fetchHomeLandingData, fetchHomeRegionLocations } from '../api/public';
+import { fetchHomeLandingData, fetchHomeRegionLocations, HOME_LANDING_SECTION_LIMIT } from '../api/public';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole } from '../utils/authRouting';
 import { getFirstName } from '../utils/userDisplay';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { TrailPointsPromoBanner } from '../components/rewards';
-import { MEMBERSHIP_NAV_LINK } from '../config/platform';
+import { DESKTOP_NAV_LINKS, MEMBERSHIP_NAV_LINK, EXPLORE_MAP_PATH, joinAuthPath } from '../config/platform';
+import { explorePath, exploreVenuesPath } from '../utils/exploreRouting';
 import { EXPLORE_UAE_REGIONS, type ExploreRegionIcon } from '../config/exploreUaeRegions';
 import { MobileBrandBar } from '../components/layout/MobileBrandBar';
-import { MobileExploreExperience } from '../components/explore/MobileExploreExperience';
-import { useIsMobile } from '../hooks/useIsMobile';
 import { FilterChips } from '../components/mobile/FilterChips';
 import {
   ACTIVITY_BROWSE_FILTER_OPTIONS,
@@ -46,26 +45,23 @@ const HOME_ACTIVITY_FILTERS = ACTIVITY_BROWSE_FILTER_OPTIONS;
 
 const getLandingLoadErrorMessage = (error: unknown): string => {
   if (!(error instanceof Error)) {
-    return 'Live content is temporarily unavailable';
+    return 'We\'re having trouble loading trips right now — try again in a moment.';
   }
 
   if (
     /Request failed with status \d{3}/i.test(error.message) ||
     error.message.includes('Failed to reach API')
   ) {
-    return 'Live content is temporarily unavailable';
+    return 'We\'re having trouble loading trips right now — try again in a moment.';
   }
 
   return error.message;
 };
 
-export const Home = () => {
-  const isMobile = useIsMobile();
-  if (isMobile) return <MobileExploreExperience />;
-  return <HomeDesktop />;
-};
+export const Home = () => <HomeDesktop />;
 
 const HomeDesktop = () => {
+  const navigate = useNavigate();
   const [popularTrails, setPopularTrails] = useState<Trail[]>([]);
   const [popularCamps, setPopularCamps] = useState<CampingSpot[]>([]);
   const [featuredActivities, setFeaturedActivities] = useState<ActivityListing[]>([]);
@@ -113,15 +109,26 @@ const HomeDesktop = () => {
       allActivities
         .filter((item) => new Date(item.date) >= new Date())
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(0, 6),
+        .slice(0, HOME_LANDING_SECTION_LIMIT),
     [allActivities]
   );
 
   const displayedActivities = useMemo(() => {
     const base = featuredActivities.length > 0 ? featuredActivities : upcomingActivities;
-    if (activityFilter === 'all') return base;
-    return base.filter((activity) => activity.activityType === activityFilter);
+    const filtered =
+      activityFilter === 'all' ? base : base.filter((activity) => activity.activityType === activityFilter);
+    return filtered.slice(0, HOME_LANDING_SECTION_LIMIT);
   }, [featuredActivities, upcomingActivities, activityFilter]);
+
+  const homeTrails = useMemo(() => {
+    const source = popularTrails.length > 0 ? popularTrails : allTrails.filter((trail) => trail.featured);
+    return source.slice(0, HOME_LANDING_SECTION_LIMIT);
+  }, [popularTrails, allTrails]);
+
+  const homeCamps = useMemo(() => {
+    const source = popularCamps.length > 0 ? popularCamps : allCamps.filter((camp) => camp.featured);
+    return source.slice(0, HOME_LANDING_SECTION_LIMIT);
+  }, [popularCamps, allCamps]);
 
   const trackView = (locationId: string) => {
     api.trackLocationView(locationId).catch(() => { /* silent */ });
@@ -172,104 +179,92 @@ const HomeDesktop = () => {
           {loadError}. Some sections may be empty until the API is available.
         </div>
       )}
-      {/* ──── Hero ──── */}
-      <section className="relative h-[42vh] min-h-[300px] sm:h-[50vh] md:h-[70vh] md:max-h-[600px] overflow-hidden">
+      {/* ──── Hero — mobile sizes to content; desktop keeps a taller centered hero */}
+      <section className="relative overflow-hidden md:h-[58vh] md:min-h-[420px] md:max-h-[520px]">
         <picture className="absolute inset-0">
           <source srcSet={HOME_HERO_IMAGE_WEBP} type="image/webp" />
           <img
             src={HOME_HERO_IMAGE_JPEG}
             alt=""
             decoding="async"
-            className="w-full h-full object-cover object-center"
+            className="h-full w-full object-cover object-[center_35%]"
           />
         </picture>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/50 to-black/70" />
 
-        <div className="relative h-full">
-          {/* Hero header / nav — overlay so headline centers in full image height */}
-          <div className="absolute inset-x-0 top-0 z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-safe-plus-2 md:pt-4">
-            <div className="md:hidden">
-              <MobileBrandBar tone="light" />
-            </div>
-
-            <div className="hidden md:flex justify-between items-center">
-              <Link to="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-lg flex items-center justify-center">
-                  <Mountain className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-base font-bold text-white tracking-tight">UAE Trail</span>
-              </Link>
-
-              <nav className="flex gap-1 items-center bg-white/10 backdrop-blur-md rounded-full px-2 py-1">
-                {[
-                  { to: '/', label: 'Home' },
-                  { to: '/discovery', label: 'Trails & Spots' },
-                  { to: '/activities', label: 'Activities' },
-                  { to: '/shop', label: 'Shop' },
-                  { to: '/community', label: 'Community' },
-                  ...(MEMBERSHIP_NAV_LINK ? [MEMBERSHIP_NAV_LINK] : []),
-                  { to: '/faq', label: 'Help' },
-                ].map((link) => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className="px-3 py-1.5 rounded-full text-sm font-medium text-white/90 hover:bg-white/15 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
-
-              {user ? (
-                <Link
-                  to={accountRouteByRole(user.role)}
-                  className="relative flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-medium"
-                >
-                  <SecureAvatar
-                    src={user.avatarUrl}
-                    name={user.displayName || user.email || 'Account'}
-                    className="w-6 h-6 text-xs"
-                  />
-                  {getFirstName(user.displayName, user.email)}
-                </Link>
-              ) : (
-                <Link
-                  to="/signin"
-                  className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-white/30 transition-colors text-sm font-medium border border-white/30"
-                >
-                  Log in
-                </Link>
-              )}
-            </div>
+        <div className="relative flex flex-col px-4 pb-5 pt-safe-plus-2 sm:px-6 md:h-full md:px-12 md:pb-8 md:pt-6">
+          <div className="shrink-0 md:hidden">
+            <MobileBrandBar tone="light" menuVariant={user ? 'session' : 'user'} />
           </div>
 
-          {/* Hero content — vertically centered in full hero */}
-          <div className="relative z-[1] flex h-full min-h-[300px] items-center justify-center px-5 sm:px-6 md:px-12 pb-6 md:pb-8">
-            <div className="text-white w-full max-w-4xl text-center">
-              <h1 className="text-[1.75rem] leading-[1.12] sm:text-4xl md:text-5xl lg:text-6xl font-semibold mb-3 md:mb-4 tracking-tight">
-                <span className="block sm:whitespace-nowrap">Experience Hiking &amp;</span>
-                <span className="block sm:whitespace-nowrap">Camping in the UAE</span>
-              </h1>
-              <p className="text-sm sm:text-lg md:text-xl text-white/90 mb-5 md:mb-8 max-w-[22rem] sm:max-w-2xl mx-auto leading-relaxed text-balance font-normal">
-                Discover spots, join a trip, host an event or build community.{' '}
-                <span className="text-white/80">Join real community, real people and a real experience.</span>
-              </p>
-              <div className="flex flex-row flex-wrap justify-center gap-2.5 md:gap-3">
-                <Link
-                  to={ACTIVITIES_PATH}
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 md:min-h-0 md:px-10 md:py-3.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all font-medium shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 text-sm md:text-base"
-                >
-                  <Calendar className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
-                  Browse activities
-                </Link>
-                <Link
-                  to="/discovery"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 md:min-h-0 md:px-10 md:py-3.5 bg-white/15 backdrop-blur-sm text-white rounded-full hover:bg-white/25 transition-all font-medium border border-white/20 text-sm md:text-base"
-                >
-                  <MapPin className="w-4 h-4 shrink-0" />
-                  View locations
-                </Link>
+          <div className="hidden shrink-0 items-center justify-between md:flex">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-lg flex items-center justify-center">
+                <Mountain className="w-4 h-4 text-white" />
               </div>
+              <span className="text-base font-bold text-white tracking-tight">UAE Trail</span>
+            </Link>
+
+            <nav className="flex gap-1 items-center bg-white/10 backdrop-blur-md rounded-full px-2 py-1">
+              {[
+                ...DESKTOP_NAV_LINKS,
+                ...(MEMBERSHIP_NAV_LINK ? [MEMBERSHIP_NAV_LINK] : []),
+              ].map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="px-3 py-1.5 rounded-full text-sm font-medium text-white/90 hover:bg-white/15 hover:text-white transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            {user ? (
+              <Link
+                to={accountRouteByRole(user.role)}
+                className="relative flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-medium"
+              >
+                <SecureAvatar
+                  src={user.avatarUrl}
+                  name={user.displayName || user.email || 'Account'}
+                  className="w-6 h-6 text-xs"
+                />
+                {getFirstName(user.displayName, user.email)}
+              </Link>
+            ) : (
+              <Link
+                to="/signin"
+                className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-white/30 transition-colors text-sm font-medium border border-white/30"
+              >
+                Log in
+              </Link>
+            )}
+          </div>
+
+          <div className="mt-3 flex flex-col items-center gap-2 text-center text-white sm:mt-4 sm:gap-2.5 md:mt-0 md:min-h-0 md:flex-1 md:justify-center md:gap-4">
+            <h1 className="max-w-[18rem] text-[1.5rem] font-semibold leading-[1.12] tracking-tight sm:max-w-none sm:text-4xl md:text-5xl lg:text-6xl md:leading-[1.12]">
+              <span className="block">Find Hiking &amp; Camping</span>
+              <span className="block">buddies in the UAE</span>
+            </h1>
+            <p className="max-w-[19rem] text-sm leading-snug text-white/90 sm:max-w-2xl sm:text-lg md:max-w-2xl md:text-xl">
+              Join a trip, host one or make friends while having fun.
+            </p>
+            <div className="grid w-full max-w-[16.5rem] grid-cols-2 gap-2.5 sm:max-w-xs sm:gap-3 md:mt-2">
+              <button
+                type="button"
+                onClick={() => navigate(EXPLORE_MAP_PATH)}
+                className="inline-flex min-h-[40px] items-center justify-center rounded-full bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700 md:min-h-[44px] md:px-4 md:py-2.5 md:text-base"
+              >
+                {user ? 'Map' : 'Explore'}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(user ? '/profile' : joinAuthPath())}
+                className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-white/25 bg-white/15 px-3.5 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/25 md:min-h-[44px] md:px-4 md:py-2.5 md:text-base"
+              >
+                {user ? 'Manage' : 'Join'}
+              </button>
             </div>
           </div>
         </div>
@@ -282,7 +277,7 @@ const HomeDesktop = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
           <div className="flex justify-between items-end mb-5 gap-3">
             <h2 className="text-xl md:text-3xl font-bold text-gray-900">Explore UAE</h2>
-            <Link to="/discovery" className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0">
+            <Link to={explorePath({ panel: 'venues', list: true })} className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0">
               See all <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
@@ -390,14 +385,14 @@ const HomeDesktop = () => {
               <p className="text-sm text-gray-500 mt-1 hidden md:block">Top-rated hiking routes across the Emirates</p>
             </div>
             <Link
-              to="/discovery?activity=hiking"
+              to={exploreVenuesPath()}
               className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0"
             >
               View all <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            {(popularTrails.length > 0 ? popularTrails : allTrails.filter((t) => t.featured).slice(0, 3)).map((trail) => (
+            {homeTrails.map((trail) => (
               <div key={trail.id} className="mobile-snap-rail__item" onClick={() => trackView(trail.id)}>
                 <TrailCard trail={trail} />
               </div>
@@ -415,14 +410,14 @@ const HomeDesktop = () => {
               <p className="text-sm text-gray-500 mt-1 hidden md:block">Best camp sites handpicked by the community</p>
             </div>
             <Link
-              to="/discovery?activity=camping"
+              to={exploreVenuesPath()}
               className="text-amber-600 hover:text-amber-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0"
             >
               View all <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            {(popularCamps.length > 0 ? popularCamps : allCamps.filter((c) => c.featured).slice(0, 3)).map((camp) => (
+            {homeCamps.map((camp) => (
               <div key={camp.id} className="mobile-snap-rail__item" onClick={() => trackView(camp.id)}>
                 <CampingCard camp={camp} />
               </div>

@@ -7,42 +7,18 @@ import { promptPostActivityReview } from './review-prompt.js';
 import { awardPoints } from './rewards.js';
 import { createAuditLog } from '../lib/audit.js';
 
-const CHECKIN_EARLY_MS = 2 * 60 * 60 * 1000;
-const CHECKIN_LATE_MS = 12 * 60 * 60 * 1000;
-
 type ActivityTiming = { startAt: Date; endAt: Date | null; status: ActivityStatus };
 
-function getCheckInWindow(activity: ActivityTiming) {
-  const opensAt = new Date(activity.startAt.getTime() - CHECKIN_EARLY_MS);
-  const closesAt = activity.endAt
-    ? new Date(activity.endAt.getTime() + CHECKIN_LATE_MS)
-    : new Date(activity.startAt.getTime() + CHECKIN_LATE_MS);
-  const now = new Date();
-
-  return {
-    opensAt,
-    closesAt,
-    isOpen: now >= opensAt && now <= closesAt,
-    isUpcoming: now < opensAt,
-    isClosed: now > closesAt
-  };
-}
-
 export function buildParticipationDto(
-  activity: ActivityTiming,
+  _activity: ActivityTiming,
   participant: { id: string; requestId: string; checkedInAt: Date | null }
 ) {
-  const window = getCheckInWindow(activity);
-  const checkedIn = Boolean(participant.checkedInAt);
-
   return {
     participantId: participant.id,
     requestId: participant.requestId,
     status: 'confirmed' as const,
     checkedInAt: participant.checkedInAt?.toISOString() ?? null,
-    canCheckIn: !checkedIn && activity.status === ActivityStatus.PUBLISHED && window.isOpen,
-    checkInOpensAt: window.opensAt.toISOString(),
-    checkInClosesAt: window.closesAt.toISOString()
+    canCheckIn: false,
   };
 }
 
@@ -102,17 +78,12 @@ export async function performParticipantCheckIn(opts: {
   activityId: string;
   participantId: string;
   actorUserId: string;
-  source: 'self' | 'organizer';
   tenantId?: string;
 }) {
   const participant = await loadParticipantForCheckIn(opts.activityId, opts.participantId);
 
   if (!participant) {
     throw new ApiError(404, 'participant_not_found', 'Participant not found.');
-  }
-
-  if (opts.source === 'self' && participant.userId !== opts.actorUserId) {
-    throw new ApiError(403, 'forbidden', 'You can only check yourself in to this trip.');
   }
 
   if (opts.tenantId && participant.activity.tenantId !== opts.tenantId) {
@@ -130,19 +101,6 @@ export async function performParticipantCheckIn(opts: {
       checkedInAt: participant.checkedInAt,
       alreadyCheckedIn: true
     };
-  }
-
-  if (opts.source === 'self') {
-    const window = getCheckInWindow(activity);
-    if (!window.isOpen) {
-      throw new ApiError(
-        400,
-        'checkin_window_closed',
-        window.isUpcoming
-          ? 'Check-in opens closer to the trip start time.'
-          : 'The check-in window for this trip has closed.'
-      );
-    }
   }
 
   const checkedInAt = new Date();
@@ -166,7 +124,7 @@ export async function performParticipantCheckIn(opts: {
 
   await createAuditLog({
     actorId: opts.actorUserId,
-    action: opts.source === 'self' ? 'participant.self_checkin' : 'participant.checkin',
+    action: 'participant.checkin',
     entityType: 'activity_participant',
     entityId: participant.id,
     tenantId: activity.tenantId

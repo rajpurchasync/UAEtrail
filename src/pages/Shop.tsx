@@ -4,12 +4,12 @@ import { SlidersHorizontal, ChevronDown, ChevronRight, X, CheckCircle2 } from 'l
 import { ProductDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { FEATURE_FLAGS } from '../config/platform';
+import { exploreShopsPath } from '../utils/exploreRouting';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ListBrowseLayout } from '../components/layout/ListBrowseLayout';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { FilterIconButton } from '../components/mobile/FilterIconButton';
-import { PAGE_BANNERS } from '../config/pageBanners';
 import { ShopFeaturedMarquee } from '../components/shop/ShopFeaturedMarquee';
 import { ProductPurchaseActions } from '../components/shop/ProductPurchaseActions';
 import { ShopCartButton } from '../components/shop/ShopCartButton';
@@ -112,6 +112,8 @@ export const Shop = () => {
     setShowFilters(false);
   };
 
+  const shopsMapPath = exploreShopsPath();
+
   if (FEATURE_FLAGS.shopComingSoon) {
     return (
       <>
@@ -121,10 +123,10 @@ export const Shop = () => {
           path="/shop"
         />
         <ConsumerShell
-          layout="tab"
+          layout="stack"
           title="Shop"
-          banner={{ src: PAGE_BANNERS.shop, alt: 'Camping tent under the stars' }}
-          journey={{ fallbackTo: '/', label: 'Home' }}
+          showJourney={false}
+          back={{ fallbackTo: shopsMapPath, label: 'Explore' }}
         >
           <div className="flex flex-col items-center justify-center py-16 md:py-24 px-6 text-center min-h-[40vh]">
             <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700 mb-5">
@@ -148,10 +150,10 @@ export const Shop = () => {
         path="/shop"
       />
       <ConsumerShell
-        layout="tab"
+        layout="stack"
         title="Shop"
-        banner={{ src: PAGE_BANNERS.shop, alt: 'Camping tent under the stars' }}
-        journey={{ fallbackTo: '/', label: 'Home' }}
+        showJourney={false}
+        back={{ fallbackTo: shopsMapPath, label: 'Explore' }}
         action={<ShopCartButton onClick={() => setCartOpen(true)} />}
         toolbar={
           <div className="md:hidden space-y-3 min-w-0">

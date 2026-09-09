@@ -34,7 +34,7 @@ describe('matchesLocationSearch', () => {
     expect(matchesLocationSearch(jebelJais, 'RAK')).toBe(true);
   });
 
-  it('matches Ras Al Khaimah via region alias (Discovery bug)', () => {
+  it('matches Ras Al Khaimah via region alias', () => {
     expect(matchesLocationSearch(jebelJais, 'Ras Al Khaimah')).toBe(true);
   });
 

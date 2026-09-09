@@ -4,7 +4,7 @@ import { Clock, Users, MapPin, ChevronRight } from 'lucide-react';
 import { ActivityListing } from '../../types';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { tripPricingBadge } from '../../utils/tripPricing';
-import { hostProfilePath } from '../../utils/hostLinks';
+import { resolveHostProfilePath } from '../../utils/hostLinks';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
 import { ParticipantPreview } from './ParticipantPreview';
@@ -32,7 +32,13 @@ export const ActivityCard = ({ activity, variant = 'default' }: ActivityCardProp
 
   const participants = activity.participantPreviews ?? [];
   const isFeatured = variant === 'featured';
-  const hostPath = hostProfilePath(activity.tenantSlug);
+  const hostName = activityHostName(activity);
+  const hostAvatar = activityHostAvatar(activity);
+  const hostUserId = activityHostUserId(activity);
+  const hostPath = resolveHostProfilePath({
+    tenantSlug: activity.tenantSlug,
+    hostUserId,
+  });
   const activityDate = new Date(activity.date);
   const monthShort = activityDate.toLocaleString('en', { month: 'short' }).toUpperCase();
   const dayNum = activityDate.getDate();
@@ -43,9 +49,6 @@ export const ActivityCard = ({ activity, variant = 'default' }: ActivityCardProp
 
   const goToActivity = () => navigate(activityPath);
 
-  const hostName = activityHostName(activity);
-  const hostAvatar = activityHostAvatar(activity);
-  const hostUserId = activityHostUserId(activity);
   const showOrg = showTenantBrand(activity);
 
   const hostBlock = hostName && (
@@ -90,7 +93,7 @@ export const ActivityCard = ({ activity, variant = 'default' }: ActivityCardProp
       )}
       {!isFeatured && (
         <HostMessageButton
-          organizerUserId={hostUserId}
+          hostUserId={hostUserId}
           activityId={activity.id}
         />
       )}
@@ -190,6 +193,8 @@ export const ActivityCard = ({ activity, variant = 'default' }: ActivityCardProp
           <ParticipantPreview
             participants={participants}
             max={4}
+            showNames
+            linkToProfile
             emptyLabel="Open spots — request to join"
           />
         </div>

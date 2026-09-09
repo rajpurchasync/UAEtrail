@@ -7,5 +7,9 @@ export const PASSWORD_REQUIREMENTS = [
 
 export const getPasswordValidationError = (password: string): string | null => {
   const failed = PASSWORD_REQUIREMENTS.find((rule) => !rule.test(password));
-  return failed ? `Password must include ${failed.label.toLowerCase()}.` : null;
+  if (!failed) return null;
+  if (failed.id === 'length') return 'Use at least 8 characters to keep your account secure.';
+  if (failed.id === 'upper') return 'Add at least one uppercase letter.';
+  if (failed.id === 'lower') return 'Add at least one lowercase letter.';
+  return 'Add at least one number.';
 };

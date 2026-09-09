@@ -8,6 +8,7 @@ import {
 } from '../../api/services';
 import { USER_TYPE_BADGE, USER_TYPE_LABELS, isBusinessHostUserType } from '../../constants/userTypes';
 import { formatActivityType } from '../../utils/activityIdentity';
+import { activityHostName } from '../../utils/hostLabels';
 
 export interface AdminUserDetail {
   id: string;
@@ -33,7 +34,7 @@ export interface AdminUserDetail {
     activityId: string;
     activityTitle: string;
     locationName?: string;
-    organizerName?: string;
+    tenantName?: string;
     date: string;
     checkedInAt?: string | null;
   }>;
@@ -61,7 +62,7 @@ export interface AdminUserDetail {
     status: string;
     date: string;
     locationName?: string;
-    organizerName?: string;
+    tenantName?: string;
     role: string;
   }>;
   rewards?: {
@@ -323,7 +324,7 @@ const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null
         </div>
         <div>
           <p className="text-xs text-gray-500 uppercase">Host</p>
-          <p className="font-medium text-gray-900">{activity.hostName ?? activity.organizerName ?? '—'}</p>
+          <p className="font-medium text-gray-900">{activityHostName(activity)}</p>
         </div>
         <div>
           <p className="text-xs text-gray-500 uppercase">Capacity</p>
@@ -650,7 +651,7 @@ export const AdminUserDetailPanel = ({
                       <ClickableCard
                         key={activity.activityId}
                         title={activity.title}
-                        subtitle={[activity.locationName, activity.organizerName, activity.date].filter(Boolean).join(' · ')}
+                        subtitle={[activity.locationName, activity.tenantName, activity.date].filter(Boolean).join(' · ')}
                         meta={<span className="text-xs capitalize text-gray-500">{activity.role}</span>}
                         status={statusBadge(activity.status)}
                         onView={() => setDrillDown({ type: 'activity', id: activity.activityId })}
@@ -672,7 +673,7 @@ export const AdminUserDetailPanel = ({
                       <ClickableCard
                         key={trip.activityId}
                         title={trip.activityTitle ?? 'Untitled activity'}
-                        subtitle={[trip.locationName, trip.organizerName, trip.date].filter(Boolean).join(' · ')}
+                        subtitle={[trip.locationName, trip.tenantName, trip.date].filter(Boolean).join(' · ')}
                         meta={trip.checkedInAt ? <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Checked in</span> : undefined}
                         onView={() => setDrillDown({ type: 'activity', id: trip.activityId })}
                         href={`/activity/${trip.activityId}`}

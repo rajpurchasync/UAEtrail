@@ -9,6 +9,8 @@ interface MobileDetailShellProps {
   children: ReactNode;
   /** Optional right-side header action (e.g. cart button) */
   headerAction?: ReactNode;
+  /** Show the global mobile menu button in the header (default true). */
+  showMenu?: boolean;
   /** Optional clickable hero banner above the sticky header. */
   banner?: {
     src: string;
@@ -33,6 +35,7 @@ export const MobileDetailShell = ({
   backLabel = 'Back',
   children,
   headerAction,
+  showMenu = true,
   banner,
   footer,
 }: MobileDetailShellProps) => (
@@ -69,7 +72,7 @@ export const MobileDetailShell = ({
         )}
         <div className="flex items-center gap-2 shrink-0">
           {headerAction}
-          <MobileMenuButton />
+          {showMenu && <MobileMenuButton />}
         </div>
       </div>
     </div>

@@ -5,12 +5,14 @@ import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { accountRouteByRole } from '../utils/authRouting';
+import { useHostGate } from '../hooks/useHostGate';
 import { ProfileSettingsView } from '../components/profile/ProfileSettingsView';
 
 export const ProfileSettings = () => {
   const { user, signOut, refreshUser } = useAuth();
   const navigate = useNavigate();
   const { profile, groups, pastTripsCount, unreadNotifications, reload } = useParticipantHubData();
+  const { hasShopProfile, hasAgencyProfile } = useHostGate({ enabled: Boolean(user) });
   const [savedItemsCount, setSavedItemsCount] = useState(0);
   const [rewardPoints, setRewardPoints] = useState<number | null>(null);
   const [trailPointsEligible, setTrailPointsEligible] = useState(true);
@@ -56,6 +58,8 @@ export const ProfileSettings = () => {
       groupsCount={groups.length}
       rewardPoints={rewardPoints}
       trailPointsEligible={trailPointsEligible}
+      hasShopProfile={hasShopProfile}
+      hasAgencyProfile={hasAgencyProfile}
       canSwitchToVisitor={canSwitchToVisitor}
       canSwitchBack={canSwitchBack}
       switchedFromRole={profile.switchedFromRole}

@@ -36,6 +36,7 @@ export function FilterChips<T extends string>({
   };
 
   const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = (event) => {
+    if (event.target !== event.currentTarget) return;
     if (event.pointerType === 'touch') return;
     if (!rowRef.current || rowRef.current.scrollWidth <= rowRef.current.clientWidth) return;
     dragRef.current = { active: true, x: event.clientX };

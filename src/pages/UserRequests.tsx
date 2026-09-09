@@ -2,6 +2,17 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, ActivityRequestView } from '../api/services';
 import { MobileScreen } from '../components/layout/MobileScreen';
+import { AppSelect } from '../components/ui/AppSelect';
+
+import { requestStatusLabel } from '../utils/joinRequestUi';
+import { activityHostName } from '../utils/hostLabels';
+
+const REQUEST_STATUS_OPTIONS = [
+  { value: 'pending' as const, label: 'Waiting for host' },
+  { value: 'approved' as const, label: 'Confirmed' },
+  { value: 'rejected' as const, label: 'Not this time' },
+  { value: 'cancelled' as const, label: 'Cancelled' },
+];
 
 const statusBadge = (status: string) => {
   const map: Record<string, string> = {
@@ -25,7 +36,7 @@ export const UserRequests = () => {
       .getMeRequests()
       .then((response) => setRequests(response.data))
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : 'Failed to load requests');
+        setError(loadError instanceof Error ? loadError.message : 'Couldn\'t load your requests — try again.');
       })
       .finally(() => setLoading(false));
   }, []);
@@ -41,21 +52,18 @@ export const UserRequests = () => {
         <div className="flex items-center gap-2">
           {pendingCount > 0 && (
             <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
-              {pendingCount} pending
+              {pendingCount} waiting
             </span>
           )}
         </div>
-        <select
+        <AppSelect
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="ios-input w-auto py-2 text-[15px]"
-        >
-          <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+          onChange={setStatusFilter}
+          options={REQUEST_STATUS_OPTIONS}
+          placeholder="All Statuses"
+          className="w-auto min-w-[9rem]"
+          aria-label="Filter by status"
+        />
       </div>
 
       {loading ? (
@@ -80,22 +88,22 @@ export const UserRequests = () => {
                 <span
                   className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${statusBadge(request.status)}`}
                 >
-                  {request.status}
+                  {requestStatusLabel(request.status)}
                 </span>
               </div>
               <div className="text-sm text-neutral-600 space-y-1">
                 <p>
                   {request.activity.date} · {request.activity.time}
                 </p>
-                {(request.activity.hostName ?? request.activity.organizerName) && (
-                  <p>Host: {request.activity.hostName ?? request.activity.organizerName}</p>
+                {activityHostName(request.activity) !== 'Host' && (
+                  <p>Host: {activityHostName(request.activity)}</p>
                 )}
                 {request.note && <p className="text-neutral-500 line-clamp-2">{request.note}</p>}
               </div>
             </Link>
           ))}
           {filtered.length === 0 && (
-            <p className="text-center text-sm text-neutral-500 py-12">No requests found</p>
+            <p className="text-center text-sm text-neutral-500 py-12">No trip requests yet — explore the map to find your next adventure.</p>
           )}
         </div>
       )}

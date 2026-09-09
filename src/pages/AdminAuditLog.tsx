@@ -2,6 +2,34 @@ import { useEffect, useState } from 'react';
 import { api, AuditLogEntry } from '../api/services';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';
+
+const ACTION_FILTER_OPTIONS = [
+  { value: 'create' as const, label: 'Create' },
+  { value: 'update' as const, label: 'Update' },
+  { value: 'delete' as const, label: 'Delete' },
+  { value: 'approve' as const, label: 'Approve' },
+  { value: 'reject' as const, label: 'Reject' },
+  { value: 'suspend' as const, label: 'Suspend' },
+  { value: 'activate' as const, label: 'Activate' },
+  { value: 'moderate' as const, label: 'Moderate' },
+  { value: 'content_report' as const, label: 'Content reports' },
+  { value: 'broadcast' as const, label: 'Broadcast' },
+];
+
+const ENTITY_FILTER_OPTIONS = [
+  { value: 'user' as const, label: 'User' },
+  { value: 'tenant' as const, label: 'Tenant' },
+  { value: 'activity' as const, label: 'Activity' },
+  { value: 'location' as const, label: 'Location' },
+  { value: 'application' as const, label: 'Application' },
+  { value: 'product' as const, label: 'Product' },
+  { value: 'notification' as const, label: 'Notification' },
+  { value: 'post' as const, label: 'Post' },
+  { value: 'review' as const, label: 'Review' },
+  { value: 'message' as const, label: 'Message' },
+  { value: 'reply' as const, label: 'Reply' },
+];
 
 export const AdminAuditLog = () => {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
@@ -68,33 +96,28 @@ export const AdminAuditLog = () => {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-gray-900">Audit Log</h2>
           <div className="flex gap-3">
-            <select value={actionFilter} onChange={(e) => { setActionFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
-              <option value="">All Actions</option>
-              <option value="create">Create</option>
-              <option value="update">Update</option>
-              <option value="delete">Delete</option>
-              <option value="approve">Approve</option>
-              <option value="reject">Reject</option>
-              <option value="suspend">Suspend</option>
-              <option value="activate">Activate</option>
-              <option value="moderate">Moderate</option>
-              <option value="content_report">Content reports</option>
-              <option value="broadcast">Broadcast</option>
-            </select>
-            <select value={entityFilter} onChange={(e) => { setEntityFilter(e.target.value); setPage(1); }} className="border rounded px-3 py-1.5 text-sm">
-              <option value="">All Entities</option>
-              <option value="user">User</option>
-              <option value="tenant">Tenant</option>
-              <option value="activity">Activity</option>
-              <option value="location">Location</option>
-              <option value="application">Application</option>
-              <option value="product">Product</option>
-              <option value="notification">Notification</option>
-              <option value="post">Post</option>
-              <option value="review">Review</option>
-              <option value="message">Message</option>
-              <option value="reply">Reply</option>
-            </select>
+            <AppSelect
+              value={actionFilter}
+              onChange={(value) => {
+                setActionFilter(value);
+                setPage(1);
+              }}
+              options={ACTION_FILTER_OPTIONS}
+              placeholder="All Actions"
+              inputClassName={ADMIN_FILTER_SELECT_CLASS}
+              aria-label="Filter by action"
+            />
+            <AppSelect
+              value={entityFilter}
+              onChange={(value) => {
+                setEntityFilter(value);
+                setPage(1);
+              }}
+              options={ENTITY_FILTER_OPTIONS}
+              placeholder="All Entities"
+              inputClassName={ADMIN_FILTER_SELECT_CLASS}
+              aria-label="Filter by entity"
+            />
           </div>
         </div>
 

@@ -96,7 +96,7 @@ export const AdminActivities = () => {
       e.locationName.toLowerCase().includes(q) ||
       (e.region ?? '').toLowerCase().includes(q) ||
       (e.tenantName ?? '').toLowerCase().includes(q) ||
-      (e.organizerName ?? e.hostName ?? '').toLowerCase().includes(q)
+      (e.hostName ?? '').toLowerCase().includes(q)
     );
   });
 

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, type SetStateAction } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ActivityDTO, ChatConversationDTO } from '@uaetrail/shared-types';
+import { BuddyRequestDTO, BuddySummaryDTO, ChatConversationDTO, MyActivityDTO } from '@uaetrail/shared-types';
 import { api, ActivityRequestView, UserProfile, SocialGroupView } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { isUpcomingTrip, todayStart, upcomingTripsTotal } from '../utils/tripDates';
@@ -8,13 +8,16 @@ import { isUpcomingTrip, todayStart, upcomingTripsTotal } from '../utils/tripDat
 const participantHubKey = (userId: string) => ['participant-hub', userId] as const;
 
 async function fetchParticipantHub() {
-  const [profileRes, tripsRes, requestsRes, notifRes, convRes, groupsRes] = await Promise.all([
+  const [profileRes, tripsRes, requestsRes, notifRes, convRes, groupsRes, buddiesRes, buddyRequestsRes] =
+    await Promise.all([
     api.getMeProfile(),
-    api.getMeActivities().catch(() => ({ data: [] as ActivityDTO[] })),
+    api.getMeActivities().catch(() => ({ data: [] as MyActivityDTO[] })),
     api.getMeRequests().catch(() => ({ data: [] as ActivityRequestView[] })),
     api.getMeNotifications(1).catch(() => ({ data: [], unreadCount: 0, total: 0 })),
     api.getConversations().catch(() => ({ data: [] as ChatConversationDTO[] })),
     api.getMeGroups().catch(() => ({ data: [] as SocialGroupView[] })),
+    api.getMeBuddies().catch(() => ({ data: [] as BuddySummaryDTO[] })),
+    api.getMeBuddyRequests('incoming').catch(() => ({ data: [] as BuddyRequestDTO[] })),
   ]);
 
   return {
@@ -25,6 +28,8 @@ async function fetchParticipantHub() {
     unreadNotifications: notifRes.unreadCount ?? 0,
     conversations: convRes.data?.slice(0, 4) ?? [],
     groups: groupsRes.data ?? [],
+    buddies: buddiesRes.data ?? [],
+    incomingBuddyRequests: (buddyRequestsRes.data ?? []).filter((request) => request.status === 'pending'),
   };
 }
 
@@ -45,6 +50,8 @@ export const useParticipantHubData = () => {
   const notifications = data?.notifications ?? [];
   const unreadNotifications = data?.unreadNotifications ?? 0;
   const groups = data?.groups ?? [];
+  const buddies = data?.buddies ?? [];
+  const incomingBuddyRequests = data?.incomingBuddyRequests ?? [];
 
   const setProfile = useCallback(
     (updater: SetStateAction<UserProfile>) => {
@@ -104,6 +111,8 @@ export const useParticipantHubData = () => {
     upcomingTrip,
     unreadMessages,
     groups,
+    buddies,
+    incomingBuddyRequests,
     loading: isLoading,
     error: error instanceof Error ? error.message : error ? 'Failed to load account data' : null,
     reload,

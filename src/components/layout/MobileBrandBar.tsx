@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Mountain } from 'lucide-react';
-import { MobileMenuButton } from './MobileMenu';
+import { MobileMenuButton, MobileUserMenuButton } from './MobileMenu';
+import { MobileSessionHeaderActions } from './MobileSessionHeaderActions';
 
 interface MobileBrandBarProps {
   tone?: 'light' | 'default';
@@ -10,6 +11,8 @@ interface MobileBrandBarProps {
   backLabel?: string;
   /** Show hamburger on desktop (banner chrome pages like Profile). */
   menuOnDesktop?: boolean;
+  /** `user` = visitor menu; `session` = map-style bell + profile when signed in. */
+  menuVariant?: 'hamburger' | 'user' | 'session';
   /** Extra action (e.g. cart) shown next to the menu button on desktop only. */
   desktopAction?: ReactNode;
 }
@@ -21,6 +24,7 @@ export const MobileBrandBar = ({
   backTo,
   backLabel = 'Back',
   menuOnDesktop = false,
+  menuVariant = 'hamburger',
   desktopAction,
 }: MobileBrandBarProps) => (
   <div className={`flex justify-between items-center gap-3 ${className}`}>
@@ -54,7 +58,13 @@ export const MobileBrandBar = ({
     </div>
     <div className="flex shrink-0 items-center gap-2 sm:gap-3">
       {desktopAction && <div className="hidden md:flex items-center">{desktopAction}</div>}
-      <MobileMenuButton tone={tone} showOnDesktop={menuOnDesktop} />
+      {menuVariant === 'session' ? (
+        <MobileSessionHeaderActions tone={tone} />
+      ) : menuVariant === 'user' ? (
+        <MobileUserMenuButton tone={tone} showOnDesktop={menuOnDesktop} />
+      ) : (
+        <MobileMenuButton tone={tone} showOnDesktop={menuOnDesktop} />
+      )}
     </div>
   </div>
 );

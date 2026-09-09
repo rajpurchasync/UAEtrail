@@ -1,5 +1,6 @@
 import type { Collection } from 'mongodb';
 import type { Activity, ActivityParticipant, Location } from '../domain/types.js';
+import { resolveJoinMode, shouldHideActivityFromExploreMap } from '../domain/activity-join-mode.js';
 import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
 import { findAuthUsersByIds, type AuthUserRecord } from './auth-users.js';
 import type { MongoActivityDoc } from './entity-builders.js';
@@ -27,6 +28,7 @@ export type ActivityWithPublicRelations = Activity & {
   tenant: Pick<TenantRecord, 'id' | 'slug' | 'name' | 'countryCode' | 'ownerId'>;
   guide: { profile: { displayName: string | null; avatarUrl: string | null; bio: string | null } | null };
   createdBy: { profile: { displayName: string | null } | null };
+  tenantOwner: { profile: { displayName: string | null } | null };
   participants: Array<
     ActivityParticipant & {
       user: { email: string; profile?: { displayName?: string | null; avatarUrl?: string | null } | null };
@@ -80,6 +82,7 @@ const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
   pricingMode: doc.pricingMode ?? null,
   itinerary: doc.itinerary,
   requirements: doc.requirements,
+  joinMode: resolveJoinMode(doc.joinMode, doc.requirements),
   images: doc.images,
   bannerUrl: doc.bannerUrl ?? null,
   signupUrl: doc.signupUrl ?? null,
@@ -210,6 +213,9 @@ const assembleEventsWithPublicRelations = async (
     if (doc.hostId) userIds.add(doc.hostId);
     userIds.add(doc.createdById);
   }
+  for (const tenant of tenantMap.values()) {
+    if (tenant.ownerId) userIds.add(tenant.ownerId);
+  }
   for (const participant of participantDocs) {
     userIds.add(participant.userId);
   }
@@ -249,6 +255,10 @@ const assembleEventsWithPublicRelations = async (
           const creator = userMap.get(doc.createdById);
           return creator ? { profile: { displayName: creator.profile.displayName } } : { profile: null };
         })(),
+        tenantOwner: (() => {
+          const owner = userMap.get(tenant.ownerId);
+          return owner ? { profile: { displayName: owner.profile.displayName } } : { profile: null };
+        })(),
         participants
       }
     ];
@@ -264,6 +274,7 @@ const filterPublishedDocs = async (
   return docs.filter((doc) => {
     if (doc.status !== ActivityStatus.PUBLISHED) return false;
     if (!activeLocations.has(doc.locationId)) return false;
+    if (shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)) return false;
     if (when === 'upcoming' && doc.startAt < now) return false;
     if (when === 'past' && doc.startAt >= now) return false;
     return true;
@@ -312,12 +323,20 @@ export const listPublishedActivitiesForExploreMapFromMongo = async (
   startOfToday.setHours(0, 0, 0, 0);
 
   const docs = await activitiesCollection()
-    .find({ status: ActivityStatus.PUBLISHED, startAt: { $gte: startOfToday } })
+    .find({
+      status: ActivityStatus.PUBLISHED,
+      startAt: { $gte: startOfToday },
+      joinMode: { $ne: 'private' },
+    })
     .sort({ startAt: 1 })
-    .limit(take)
+    .limit(take * 3)
     .toArray();
 
-  return assembleEventsForExploreMap(docs);
+  const visible = docs.filter(
+    (doc) => !shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)
+  );
+
+  return assembleEventsForExploreMap(visible.slice(0, take));
 };
 
 export const findPublishedActivityWithPreviewsFromMongo = async (
@@ -352,6 +371,7 @@ export type ActivityWithTenantRelations = Activity & {
   tenant: TenantRecord;
   guide: { profile: { displayName: string | null; avatarUrl: string | null; bio: string | null } | null } | null;
   createdBy: { profile: { displayName: string | null } | null } | null;
+  tenantOwner: { profile: { displayName: string | null } | null };
   participants: Array<{ id: string; userId: string; checkedInAt?: Date | null }>;
 };
 
@@ -422,6 +442,9 @@ const assembleEventsForExploreMap = async (
     if (doc.hostId) userIds.add(doc.hostId);
     userIds.add(doc.createdById);
   }
+  for (const tenant of tenantMap.values()) {
+    if (tenant.ownerId) userIds.add(tenant.ownerId);
+  }
   for (const participant of participantDocs) {
     userIds.add(participant.userId);
   }
@@ -468,6 +491,10 @@ const assembleEventsForExploreMap = async (
           const creator = userMap.get(doc.createdById);
           return creator ? { profile: { displayName: creator.profile.displayName } } : { profile: null };
         })(),
+        tenantOwner: (() => {
+          const owner = userMap.get(tenant.ownerId);
+          return owner ? { profile: { displayName: owner.profile.displayName } } : { profile: null };
+        })(),
         participants
       }
     ];
@@ -497,8 +524,11 @@ const assembleTenantEventsWithRelations = async (
 
   const hostIds = docs.map((doc) => doc.hostId).filter((id): id is string => Boolean(id));
   const createdByIds = docs.map((doc) => doc.createdById);
-  const userIds = [...new Set([...hostIds, ...createdByIds])];
-  const users = await findAuthUsersByIds(userIds);
+  const userIds = new Set<string>([...hostIds, ...createdByIds]);
+  for (const tenant of tenantMap.values()) {
+    if (tenant.ownerId) userIds.add(tenant.ownerId);
+  }
+  const users = await findAuthUsersByIds([...userIds]);
   const userMap = new Map(users.map((user) => [user._id, user]));
 
   return docs.flatMap((doc) => {
@@ -517,6 +547,10 @@ const assembleTenantEventsWithRelations = async (
         createdBy: createdByUser
           ? { profile: { displayName: createdByUser.profile.displayName } }
           : { profile: null },
+        tenantOwner: (() => {
+          const owner = userMap.get(tenant.ownerId);
+          return owner ? { profile: { displayName: owner.profile.displayName } } : { profile: null };
+        })(),
         participants: (participantsByActivity.get(doc._id) ?? []).map((participant) => ({
           id: participant._id,
           userId: participant.userId,

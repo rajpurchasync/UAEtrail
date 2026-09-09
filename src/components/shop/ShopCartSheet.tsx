@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { SHOP_V1 } from '../../config/platform';
+import { exploreShopsPath } from '../../utils/exploreRouting';
 import { PAGE_BANNERS } from '../../config/pageBanners';
 import { useShopCart } from '../../context/ShopCartContext';
 import { useShopCheckout } from '../../hooks/useShopCheckout';
@@ -19,6 +20,7 @@ export const ShopCartSheet = ({ open, onClose }: ShopCartSheetProps) => {
 
   if (!open) return null;
 
+  const shopsMapPath = exploreShopsPath();
   const hasExternalOnly = items.length > 0 && items.every((line) => line.externalUrl);
   const nativeCount = items.filter((line) => !line.externalUrl).length;
 
@@ -47,10 +49,10 @@ export const ShopCartSheet = ({ open, onClose }: ShopCartSheetProps) => {
           Back
         </button>
         <Link
-          to="/shop"
+          to={shopsMapPath}
           onClick={onClose}
           className="relative block h-28 sm:h-32 md:h-36 overflow-hidden"
-          aria-label="Back to shop"
+          aria-label="Back to explore map"
         >
           <img src={PAGE_BANNERS.shop} alt="Camping tent under the stars" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/80 via-emerald-950/45 to-emerald-900/20" aria-hidden />
@@ -69,11 +71,11 @@ export const ShopCartSheet = ({ open, onClose }: ShopCartSheetProps) => {
               <ShoppingBag className="w-10 h-10 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-600 font-medium">Your cart is empty</p>
               <Link
-                to="/shop"
+                to={shopsMapPath}
                 onClick={onClose}
                 className="inline-block mt-3 text-sm font-semibold text-emerald-700"
               >
-                Browse shop
+                Find shops on map
               </Link>
             </div>
           ) : (

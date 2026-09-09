@@ -205,6 +205,41 @@ export const listSocialReviews = async (input: {
   return { items: items.map(mapReview), total };
 };
 
+export type ReviewStats = {
+  averageRating: number;
+  reviewCount: number;
+};
+
+export const getReviewStatsByTargets = async (
+  targetType: ReviewTargetType,
+  targetIds: string[]
+): Promise<Map<string, ReviewStats>> => {
+  const uniqueIds = [...new Set(targetIds.filter(Boolean))];
+  if (uniqueIds.length === 0) return new Map();
+
+  const rows = await reviewsCollection()
+    .aggregate<{ _id: string; averageRating: number; reviewCount: number }>([
+      { $match: { targetType, targetId: { $in: uniqueIds } } },
+      {
+        $group: {
+          _id: '$targetId',
+          averageRating: { $avg: '$rating' },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ])
+    .toArray();
+
+  const stats = new Map<string, ReviewStats>();
+  for (const row of rows) {
+    stats.set(row._id, {
+      averageRating: Math.round(row.averageRating * 10) / 10,
+      reviewCount: row.reviewCount,
+    });
+  }
+  return stats;
+};
+
 export const createSocialReview = async (input: {
   targetType: ReviewTargetType;
   targetId: string;

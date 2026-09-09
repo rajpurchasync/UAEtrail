@@ -21,7 +21,10 @@ export const pendingUpcomingRequests = (
 ): ActivityRequestView[] => {
   const confirmedIds = new Set(trips.map((t) => t.id));
   return requests.filter(
-    (r) => r.status === 'pending' && isUpcomingRequest(r) && !confirmedIds.has(r.activity.id)
+    (r) =>
+      (r.status === 'pending' || r.status === 'waitlisted') &&
+      isUpcomingRequest(r) &&
+      !confirmedIds.has(r.activity.id)
   );
 };
 

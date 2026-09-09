@@ -20,10 +20,17 @@ import {
 } from '@uaetrail/shared-types';
 import { DashboardLayout } from '../components/layout';
 import { ImageUpload } from '../components/ui';
+import { AppSelect, ADMIN_SELECT_CLASS } from '../components/ui/AppSelect';
+import { exploreShopsPath } from '../utils/exploreRouting';
+
+const PRODUCT_STATUS_OPTIONS = [
+  { value: 'draft' as const, label: 'Draft' },
+  { value: 'active' as const, label: 'Active' },
+];
 
 const merchantLinks = [
   { to: '/merchant/dashboard', label: 'Dashboard' },
-  { to: '/shop', label: 'Public Shop' }
+  { to: exploreShopsPath(), label: 'Map listing' },
 ];
 
 interface MerchantProduct extends ProductDTO {
@@ -72,6 +79,11 @@ const currencyFormatter = new Intl.NumberFormat('en-AE', {
 });
 
 const orderStatusOptions: OrderStatus[] = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+
+const orderStatusSelectOptions = orderStatusOptions.map((status) => ({
+  value: status,
+  label: status.charAt(0).toUpperCase() + status.slice(1),
+}));
 
 const readMerchantAnalytics = (filters: AnalyticsFilters) => {
   const key = JSON.stringify(filters);
@@ -486,18 +498,14 @@ export const MerchantDashboard = () => {
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Store Context</p>
             <div className="mt-2 flex flex-col gap-3 md:flex-row md:items-center">
-              <select
+              <AppSelect
                 value={selectedStoreId ?? ''}
-                onChange={(event) => setSelectedStoreId(event.target.value || null)}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm md:max-w-sm"
-              >
-                {stores.length === 0 ? <option value="">Create your first merchant store</option> : null}
-                {stores.map((store) => (
-                  <option key={store.id} value={store.id}>
-                    {store.shopName}
-                  </option>
-                ))}
-              </select>
+                onChange={(storeId) => setSelectedStoreId(storeId || null)}
+                options={stores.map((store) => ({ value: store.id, label: store.shopName }))}
+                placeholder={stores.length === 0 ? 'Create your first merchant store' : 'Select store'}
+                inputClassName="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm md:max-w-sm"
+                aria-label="Store"
+              />
               <div>
                 <p className="text-sm font-medium text-slate-900">{selectedStore?.shopName ?? 'No store selected'}</p>
                 <p className="text-sm text-slate-500">{selectedStore?.description ?? 'Choose a managed store to switch dashboard context.'}</p>
@@ -705,10 +713,13 @@ export const MerchantDashboard = () => {
                     </div>
                     <div>
                       <label className="text-sm text-gray-700 block mb-1">Status</label>
-                      <select value={productForm.status} onChange={(e) => setProductForm({ ...productForm, status: e.target.value as 'draft' | 'active' })} className="border rounded w-full px-3 py-2 text-sm">
-                        <option value="draft">Draft</option>
-                        <option value="active">Active</option>
-                      </select>
+                      <AppSelect
+                        value={productForm.status}
+                        onChange={(status) => setProductForm({ ...productForm, status })}
+                        options={PRODUCT_STATUS_OPTIONS}
+                        inputClassName={ADMIN_SELECT_CLASS}
+                        aria-label="Product status"
+                      />
                     </div>
                   </div>
                   <div>
@@ -831,15 +842,19 @@ export const MerchantDashboard = () => {
                       <div className="space-y-2">
                         {orderStatusBadge(order.status)}
                         <div className="flex gap-2">
-                          <select
+                          <AppSelect
                             value={orderStatusDrafts[order.id] ?? order.status}
-                            onChange={(event) => setOrderStatusDrafts((current) => ({ ...current, [order.id]: event.target.value as OrderStatus }))}
-                            className="rounded border px-3 py-2 text-sm capitalize"
-                          >
-                            {orderStatusOptions.map((status) => (
-                              <option key={status} value={status} className="capitalize">{status}</option>
-                            ))}
-                          </select>
+                            onChange={(status) =>
+                              setOrderStatusDrafts((current) => ({
+                                ...current,
+                                [order.id]: status as OrderStatus,
+                              }))
+                            }
+                            options={orderStatusSelectOptions}
+                            size="compact"
+                            inputClassName="rounded border border-gray-200 bg-white px-3 py-2 text-sm capitalize"
+                            aria-label={`Order status for ${order.id}`}
+                          />
                           <button
                             type="button"
                             onClick={() => void updateOrderStatus(order.id)}

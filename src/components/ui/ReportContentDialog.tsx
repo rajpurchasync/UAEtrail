@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Flag } from 'lucide-react';
 import { api, ContentReportReason, ContentReportTargetType } from '../../api/services';
 import { AppButton } from '../mobile/AppButton';
+import { AppSelect } from './AppSelect';
 import { Dialog } from '../ui/Dialog';
 
 const REASONS: { value: ContentReportReason; label: string }[] = [
@@ -25,7 +26,7 @@ export const ReportContentDialog = ({
   onClose,
   targetType,
   targetId,
-  title = 'Report content'
+  title = 'Tell us what\'s wrong'
 }: ReportContentDialogProps) => {
   const [reason, setReason] = useState<ContentReportReason>('harassment');
   const [details, setDetails] = useState('');
@@ -46,7 +47,7 @@ export const ReportContentDialog = ({
       });
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit report');
+      setError(err instanceof Error ? err.message : 'Couldn\'t send your report — try again.');
     } finally {
       setSubmitting(false);
     }
@@ -74,17 +75,12 @@ export const ReportContentDialog = ({
             <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
               Reason
             </label>
-            <select
-              className="ios-input text-[15px]"
+            <AppSelect
               value={reason}
-              onChange={(e) => setReason(e.target.value as ContentReportReason)}
-            >
-              {REASONS.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
+              onChange={setReason}
+              options={REASONS}
+              aria-label="Report reason"
+            />
           </div>
           <div>
             <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">

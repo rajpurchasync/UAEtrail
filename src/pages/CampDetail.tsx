@@ -9,7 +9,10 @@ import { campSchema } from '../components/seo/schemas';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { CampingSpot, ActivityListing } from '../types';
 import { fetchApiLocationDetail, mapActivityToListing } from '../api/public';
+import { activitiesBrowsePath } from '../config/activityTypes';
+import { explorePath } from '../utils/exploreRouting';
 import { api } from '../api/services';
+import { isDefaultVenueSeason } from '../utils/venueDetailDisplay';
 
 export const CampDetail = () => {
   const { id } = useParams();
@@ -57,18 +60,20 @@ export const CampDetail = () => {
         <PageMeta title="Camping spot not found" noIndex path={id ? `/camp/${id}` : undefined} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900">Camping spot not found</h1>
-          <Link to="/discovery" className="text-amber-600 hover:text-amber-700 mt-4 inline-block">
-            Back to discovery
+          <Link to={explorePath({ panel: 'venues', list: true })} className="text-amber-600 hover:text-amber-700 mt-4 inline-block">
+            Back to map
           </Link>
         </div>
       </>
     );
   }
 
+  const showSeason = camp.season && !isDefaultVenueSeason(camp.season);
+
   return (
     <MobileDetailShell
-      backTo="/discovery"
-      backLabel="Trails & Spots"
+      backTo={explorePath({ panel: 'venues', list: true, filter: 'camping' })}
+      backLabel="Camping venues"
       banner={{
         src: camp.images[0],
         alt: camp.name,
@@ -142,19 +147,21 @@ export const CampDetail = () => {
                 </div>
               )}
 
-              <div className="mb-6">
-                <h3 className="font-medium text-gray-900 mb-2">Best Season</h3>
-                <div className="flex gap-2">
-                  {camp.season.map((s) => (
-                    <span
-                      key={s}
-                      className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium capitalize"
-                    >
-                      {s}
-                    </span>
-                  ))}
+              {showSeason && (
+                <div className="mb-6">
+                  <h3 className="font-medium text-gray-900 mb-2">Best Season</h3>
+                  <div className="flex gap-2">
+                    {camp.season!.map((s) => (
+                      <span
+                        key={s}
+                        className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium capitalize"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -177,7 +184,7 @@ export const CampDetail = () => {
               <p className="text-gray-600 mt-1">Join organized camping at this location</p>
             </div>
             <Link
-              to="/activities"
+              to={activitiesBrowsePath('camping')}
               className="text-amber-600 hover:text-amber-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
               View all trips

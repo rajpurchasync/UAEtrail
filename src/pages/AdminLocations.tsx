@@ -6,6 +6,7 @@ import { ADMIN_LINKS } from '../constants';
 import { MapPinPicker } from '../components/ui/MapPinPicker';
 import { ImageUpload } from '../components/ui';
 import { AssetKeyUpload } from '../components/ui/AssetKeyUpload';
+import { AppSelect, ADMIN_SELECT_CLASS } from '../components/ui/AppSelect';
 
 /* ─── Constants ──────────────────────────────────────────────────────────── */
 
@@ -17,6 +18,17 @@ const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-frie
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../config/regions';
 import { VENUE_TYPE_LABELS } from '../config/activityTypes';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
+
+const COUNTRY_OPTIONS = SUPPORTED_COUNTRIES.map((country) => ({
+  value: country.code,
+  label: country.label,
+}));
+
+const LOCATION_STATUS_OPTIONS = [
+  { value: 'draft' as const, label: 'Draft' },
+  { value: 'active' as const, label: 'Active (Published)' },
+  { value: 'inactive' as const, label: 'Inactive' },
+];
 
 const isTrailLike = (type?: LocationDTO['activityType']) =>
   type === 'hiking' || type === 'event';
@@ -451,23 +463,26 @@ export const AdminLocations = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1 block">Country</label>
-                      <select
+                      <AppSelect
                         value={form.countryCode ?? DEFAULT_COUNTRY}
-                        onChange={(e) => setForm({ ...form, countryCode: e.target.value as CountryCode, region: '' })}
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                      >
-                        {SUPPORTED_COUNTRIES.map((c) => (
-                          <option key={c.code} value={c.code}>{c.label}</option>
-                        ))}
-                      </select>
+                        onChange={(countryCode) =>
+                          setForm({ ...form, countryCode: countryCode as CountryCode, region: '' })
+                        }
+                        options={COUNTRY_OPTIONS}
+                        inputClassName={ADMIN_SELECT_CLASS}
+                        aria-label="Country"
+                      />
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1 block">State / Region *</label>
-                      <select required value={form.region ?? ''} onChange={(e) => setForm({ ...form, region: e.target.value })}
-                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
-                        <option value="">Select a region</option>
-                        {regionOptions.map((r) => <option key={r} value={r}>{r}</option>)}
-                      </select>
+                      <AppSelect
+                        value={form.region ?? ''}
+                        onChange={(region) => setForm({ ...form, region })}
+                        options={regionOptions.map((region) => ({ value: region, label: region }))}
+                        placeholder="Select a region"
+                        inputClassName={ADMIN_SELECT_CLASS}
+                        aria-label="State or region"
+                      />
                     </div>
                   </div>
 
@@ -658,12 +673,13 @@ export const AdminLocations = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1 block">Status</label>
-                      <select value={form.status ?? 'draft'} onChange={(e) => setForm({ ...form, status: e.target.value as LocationDTO['status'] })}
-                        className="w-full border rounded-lg px-3 py-2 text-sm">
-                        <option value="draft">Draft</option>
-                        <option value="active">Active (Published)</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
+                      <AppSelect
+                        value={form.status ?? 'draft'}
+                        onChange={(status) => setForm({ ...form, status: status as LocationDTO['status'] })}
+                        options={LOCATION_STATUS_OPTIONS}
+                        inputClassName={ADMIN_SELECT_CLASS}
+                        aria-label="Location status"
+                      />
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1 block">Max Group Size</label>

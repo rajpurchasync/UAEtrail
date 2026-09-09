@@ -72,6 +72,24 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
         unique: true,
         name: 'userId_productId_unique',
         partialFilterExpression: { productId: { $type: 'string' } }
+      },
+      {
+        key: { userId: 1, merchantId: 1 },
+        unique: true,
+        name: 'userId_merchantId_unique',
+        partialFilterExpression: { merchantId: { $type: 'string' } }
+      },
+      {
+        key: { userId: 1, tenantId: 1 },
+        unique: true,
+        name: 'userId_tenantId_unique',
+        partialFilterExpression: { tenantId: { $type: 'string' } }
+      },
+      {
+        key: { userId: 1, profileUserId: 1 },
+        unique: true,
+        name: 'userId_profileUserId_unique',
+        partialFilterExpression: { profileUserId: { $type: 'string' } }
       }
     ]),
     db.collection('reward_ledgers').createIndexes([{ key: { userId: 1, action: 1 } }]),
@@ -142,7 +160,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection('merchant_profiles').createIndexes([
       { key: { adminIds: 1 } }
     ]),
-    db.collection('social_groups').createIndexes([{ key: { adminUserId: 1, createdAt: -1 } }]),
+    db.collection('social_groups').createIndexes([
+      { key: { adminUserId: 1, createdAt: -1 } },
+      { key: { activityId: 1 }, unique: true, sparse: true }
+    ]),
     db.collection('social_group_members').createIndexes([
       { key: { groupId: 1, userId: 1 }, unique: true, partialFilterExpression: { userId: { $type: 'string' } } },
       { key: { userId: 1, createdAt: -1 } },
@@ -159,6 +180,21 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection('social_group_wall_reactions').createIndexes([
       { key: { messageId: 1, userId: 1, kind: 1 }, unique: true },
       { key: { groupId: 1, messageId: 1 } }
+    ]),
+    db.collection('buddy_requests').createIndexes([
+      { key: { fromUserId: 1, toUserId: 1, status: 1 } },
+      { key: { toUserId: 1, status: 1, createdAt: -1 } },
+      { key: { fromUserId: 1, status: 1, createdAt: -1 } },
+      {
+        key: { fromUserId: 1, toUserId: 1 },
+        unique: true,
+        name: 'buddy_pending_pair_unique',
+        partialFilterExpression: { status: 'pending' }
+      }
+    ]),
+    db.collection('buddy_pairs').createIndexes([
+      { key: { userIds: 1 } },
+      { key: { createdAt: -1 } }
     ])
   ]);
 };

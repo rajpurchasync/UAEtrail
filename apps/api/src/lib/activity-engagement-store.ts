@@ -20,6 +20,7 @@ import {
 import { getMongoClient } from './mongo.js';
 import { parseStoredPricePackages } from './trip-pricing.js';
 import { dispatchNotification } from '../services/notifications.js';
+import { addParticipantToActivityGroupChat, removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
 
 const ACTIVE_STATUSES: RequestStatus[] = ['PENDING', 'APPROVED', 'WAITLISTED'];
 
@@ -341,6 +342,15 @@ export const listUserActivityParticipantsPaginated = async (input: {
 export const countUserActivityParticipants = async (userId: string): Promise<number> =>
   activityParticipantsCollection().countDocuments({ userId });
 
+export const countUserCheckedInParticipations = async (userId: string): Promise<number> =>
+  activityParticipantsCollection().countDocuments({ userId, checkedInAt: { $ne: null } });
+
+export const countPublishedActivitiesHostedByUser = async (userId: string): Promise<number> =>
+  activitiesCollection().countDocuments({
+    status: ActivityStatus.PUBLISHED,
+    $or: [{ hostId: userId }, { createdById: userId }],
+  });
+
 export const hasSharedActivityParticipation = async (firstUserId: string, secondUserId: string): Promise<boolean> => {
   const firstUserEvents = await activityParticipantsCollection()
     .aggregate<{ _id: string }>([
@@ -380,6 +390,33 @@ export const hasActiveJoinRequestLink = async (input: {
     if (requestUserId !== input.senderId && requestUserId !== input.receiverId) continue;
 
     if (await isEventHost(event, otherUserId, input.organizerRoles)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+/** True when requester has an active join request on an activity hosted by hostUserId. */
+export const hostHasActiveJoinRequestFromUser = async (
+  hostUserId: string,
+  requesterUserId: string,
+  input: {
+    organizerRoles: MembershipRole[];
+    activeStatuses: RequestStatus[];
+  }
+): Promise<boolean> => {
+  const requests = await activityRequestsCollection()
+    .find({
+      userId: requesterUserId,
+      status: { $in: input.activeStatuses },
+    })
+    .toArray();
+
+  for (const request of requests) {
+    const event = await findActivityDocInMongo(request.activityId);
+    if (!event) continue;
+    if (await isEventHost(event, hostUserId, input.organizerRoles)) {
       return true;
     }
   }
@@ -603,6 +640,11 @@ export const applyTenantActivityRequestDecision = async (input: {
       await releaseActivityParticipantSlot(input.activityId);
       throw error;
     }
+
+    void addParticipantToActivityGroupChat({
+      activityId: input.activityId,
+      userId: input.userId
+    }).catch(() => undefined);
     return;
   }
 
@@ -622,6 +664,7 @@ export const applyTenantActivityRequestDecision = async (input: {
 export const cancelUserActivityRequestAndPromoteWaitlist = async (input: {
   requestId: string;
   activityId: string;
+  userId: string;
   cancelReason: string;
   cancelMessage: string | null;
 }) => {
@@ -636,6 +679,10 @@ export const cancelUserActivityRequestAndPromoteWaitlist = async (input: {
   const deleted = await activityParticipantsCollection().deleteMany({ requestId: input.requestId });
   if (deleted.deletedCount > 0) {
     await releaseActivityParticipantSlot(input.activityId);
+    void removeParticipantFromActivityGroupChat({
+      activityId: input.activityId,
+      userId: input.userId
+    }).catch(() => undefined);
   }
   await promoteNextWaitlisted(input.activityId);
 };

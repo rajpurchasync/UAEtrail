@@ -90,7 +90,7 @@ export const GoogleSignInButton = ({
 
   const handleSuccess = async (response: CredentialResponse) => {
     if (!response.credential) {
-      onError?.('Google did not return a credential.');
+      onError?.('Google sign-in didn\'t complete — try again or use email.');
       return;
     }
     try {

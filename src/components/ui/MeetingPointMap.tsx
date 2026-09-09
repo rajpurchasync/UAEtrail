@@ -5,6 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import { MapTileLayers } from './MapTileLayers';
 import { MapLocationPicker } from './MapLocationPicker';
 import { parseCoord } from '../../utils/coords';
+import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
+import { LocationDirectionLinks } from './LocationDirectionLinks';
 
 const previewIcon = L.divIcon({
   className: '',
@@ -39,10 +41,20 @@ interface MeetingPointMapProps {
   lng?: number | null;
   label?: string | null;
   hideExternalLink?: boolean;
+  /** Tap the map preview to open in Google Maps. */
+  clickable?: boolean;
+  /** Show Open in Maps / Get directions / Waze buttons. */
+  showDirections?: boolean;
 }
 
 /** Lightweight map preview + external maps link for meeting points. */
-export const MeetingPointMap = ({ lat, lng, hideExternalLink = false }: MeetingPointMapProps) => {
+export const MeetingPointMap = ({
+  lat,
+  lng,
+  hideExternalLink = false,
+  clickable = false,
+  showDirections = false,
+}: MeetingPointMapProps) => {
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
@@ -51,30 +63,51 @@ export const MeetingPointMap = ({ lat, lng, hideExternalLink = false }: MeetingP
 
   if (lat == null || lng == null) return null;
 
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  const mapsUrl = buildGoogleMapsSearchUrl(lat, lng);
+
+  const mapPreview = (
+    <div className="rounded-xl overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100">
+      {mapReady ? (
+        <MapContainer
+          center={[lat, lng]}
+          zoom={13}
+          scrollWheelZoom={false}
+          dragging={!clickable}
+          attributionControl={false}
+          className="z-0 h-full w-full"
+          style={{ height: '100%', width: '100%' }}
+        >
+          <MapTileLayers attribution="" />
+          <MapResize />
+          <Marker position={[lat, lng]} icon={previewIcon} />
+        </MapContainer>
+      ) : (
+        <div className="h-full w-full animate-pulse bg-gray-100" aria-hidden />
+      )}
+    </div>
+  );
 
   return (
     <div className="mt-3 space-y-2">
-      <div className="rounded-xl overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100">
-        {mapReady ? (
-          <MapContainer
-            center={[lat, lng]}
-            zoom={13}
-            scrollWheelZoom={false}
-            dragging
-            attributionControl={false}
-            className="z-0 h-full w-full"
-            style={{ height: '100%', width: '100%' }}
-          >
-            <MapTileLayers attribution="" />
-            <MapResize />
-            <Marker position={[lat, lng]} icon={previewIcon} />
-          </MapContainer>
-        ) : (
-          <div className="h-full w-full animate-pulse bg-gray-100" aria-hidden />
-        )}
-      </div>
-      {!hideExternalLink && (
+      {clickable ? (
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          aria-label="Open location in Google Maps"
+        >
+          <div className="relative overflow-hidden rounded-xl">
+            {mapPreview}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-3 py-2.5">
+              <p className="text-xs font-semibold text-white">Tap map to open directions</p>
+            </div>
+          </div>
+        </a>
+      ) : (
+        mapPreview
+      )}
+      {!hideExternalLink && !clickable && (
         <a
           href={mapsUrl}
           target="_blank"
@@ -84,6 +117,7 @@ export const MeetingPointMap = ({ lat, lng, hideExternalLink = false }: MeetingP
           Open in Google Maps →
         </a>
       )}
+      {showDirections && <LocationDirectionLinks lat={lat} lng={lng} />}
     </div>
   );
 };

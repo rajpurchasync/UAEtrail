@@ -62,7 +62,7 @@ export const EARN_WAYS = [
     description: 'Know a trail or camp others should discover? Submit it for the community.',
     pointsLabel: '+15 → +100',
     ctaLabel: 'Explore & submit',
-    ctaPath: '/discovery',
+    ctaPath: '/explore?panel=venues&list=1&addLocation=1',
   },
   {
     title: 'Host a trip',
@@ -78,7 +78,7 @@ export const EARN_WAYS = [
     description: 'Book a community trip — your host confirms attendance and points hit your wallet.',
     pointsLabel: '+30',
     ctaLabel: 'Browse trips',
-    ctaPath: '/activities',
+    ctaPath: '/explore?list=1',
   },
   {
     title: 'Community post',
@@ -102,7 +102,7 @@ export const EARN_WAYS = [
     description: 'Rate a trail, camp, or host after you’ve been there.',
     pointsLabel: '+25',
     ctaLabel: 'Find a place to review',
-    ctaPath: '/discovery',
+    ctaPath: '/explore?panel=venues&list=1',
   },
 ] as const;
 
@@ -126,7 +126,7 @@ export const SUBSCRIPTION_PLANS = [
       'Earn Trail Points on every contribution',
     ],
     ctaLabel: 'Get started free',
-    ctaPath: '/discovery',
+    ctaPath: '/explore?panel=venues&list=1',
     ctaExternal: false,
   },
   {

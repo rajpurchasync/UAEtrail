@@ -170,12 +170,12 @@ export const MobileCreateLocationPicker = ({
       <div className="pointer-events-none absolute inset-0 z-[500] flex items-center justify-center">
         <div className="relative -mt-8">
           <span
-            className="flex h-11 w-11 items-center justify-center rounded-full border-4 border-white bg-rose-500 text-white shadow-xl"
+            className="flex h-11 w-11 items-center justify-center rounded-full border-4 border-white bg-emerald-600 text-white shadow-xl"
             aria-hidden
           >
             <MapPin className="h-5 w-5" />
           </span>
-          <span className="absolute left-1/2 top-full h-3 w-3 -translate-x-1/2 rounded-full bg-rose-500/80" />
+          <span className="absolute left-1/2 top-full h-3 w-3 -translate-x-1/2 rounded-full bg-emerald-600/80" />
         </div>
       </div>
 
@@ -199,7 +199,7 @@ export const MobileCreateLocationPicker = ({
                   type="button"
                   onClick={() => onPrecisionChange(mode)}
                   className={`rounded-full px-3 py-1.5 text-xs font-bold capitalize ${
-                    active ? 'bg-rose-500 text-white' : 'text-gray-600'
+                    active ? 'bg-emerald-600 text-white' : 'text-gray-600'
                   }`}
                 >
                   {mode}
@@ -241,7 +241,7 @@ export const MobileCreateLocationPicker = ({
         <button
           type="button"
           onClick={onConfirm}
-          className="flex-1 rounded-2xl bg-rose-500 py-4 text-center text-base font-bold text-white shadow-lg shadow-rose-500/30"
+          className="flex-1 rounded-2xl bg-emerald-600 py-4 text-center text-base font-bold text-white shadow-lg shadow-emerald-600/30"
         >
           {confirmLabel}
         </button>

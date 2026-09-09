@@ -63,3 +63,15 @@ export const matchesLocationSearch = (
 
   return regionMatchesToken(item.region, q);
 };
+
+/** Match a catalog region filter against a location region label (handles RAK ↔ Ras Al Khaimah, etc.). */
+export const matchesRegionLabel = (region: string | null | undefined, filter: string | null): boolean => {
+  if (!filter) return true;
+  const value = region?.trim();
+  if (!value) return false;
+  const token = filter.trim().toLowerCase();
+  if (!token) return true;
+  if (value.toLowerCase() === token) return true;
+  if (value.toLowerCase().includes(token) || token.includes(value.toLowerCase())) return true;
+  return regionMatchesToken(value, token);
+};

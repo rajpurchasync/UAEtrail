@@ -28,6 +28,8 @@ import {
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { Dialog } from '../components/ui/Dialog';
+import { AppSelect } from '../components/ui/AppSelect';
+import { FormTabBar } from '../components/ui/FormTabBar';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
 
@@ -41,10 +43,21 @@ type GroupDetail = {
   invites: SocialGroupInviteView[];
 };
 
-const typeLabel: Record<GroupType, string> = {
+const typeLabel: Record<string, string> = {
   family: 'Family',
   friends: 'Friends',
+  activity: 'Trip chat',
 };
+
+const GROUP_TYPE_OPTIONS = [
+  { value: 'family' as const, label: 'Family' },
+  { value: 'friends' as const, label: 'Friends' },
+];
+
+const MEMBER_ROLE_OPTIONS = [
+  { value: 'buddy' as const, label: 'Member' },
+  { value: 'admin' as const, label: 'Admin' },
+];
 
 const emptyGroupForm = {
   type: 'family' as GroupType,
@@ -501,18 +514,14 @@ export const Groups = () => {
                     member.memberType === 'adult' &&
                     member.id !== detail.membership.id &&
                     member.userId !== detail.group.adminUserId && (
-                      <select
+                      <AppSelect
                         value={member.role}
                         disabled={memberActionId === member.id}
-                        onChange={(e) =>
-                          void changeMemberRole(member.id, e.target.value as 'buddy' | 'admin')
-                        }
-                        className="text-[11px] rounded-lg border border-neutral-200 bg-white px-2 py-1 text-neutral-700"
+                        onChange={(role) => void changeMemberRole(member.id, role)}
+                        options={MEMBER_ROLE_OPTIONS}
+                        size="compact"
                         aria-label={`Change role for ${member.user?.displayName || 'member'}`}
-                      >
-                        <option value="buddy">Member</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                      />
                     )}
                   {isAdmin && member.id !== detail.membership.id && (
                     <div className="flex gap-1.5">
@@ -572,23 +581,24 @@ export const Groups = () => {
             <UserPlus className="w-4 h-4 text-emerald-600" />
             <h3 className="text-sm font-semibold text-neutral-900">Invite members</h3>
           </div>
-          <p className="text-xs text-neutral-500 mb-3">Send an email invite so they can join and chat in this group.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <p className="mb-4 text-xs leading-relaxed text-neutral-500">
+            Send an email invite so they can join and chat in this group.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
             <input
               type="email"
               value={inviteForm.email}
               onChange={(e) => setInviteForm((prev) => ({ ...prev, email: e.target.value }))}
               placeholder="member@email.com"
-              className="ios-input text-[14px] sm:col-span-2"
+              className="ios-input min-w-0 flex-1 text-[14px]"
             />
-            <select
+            <AppSelect
               value={inviteForm.role}
-              onChange={(e) => setInviteForm((prev) => ({ ...prev, role: e.target.value as 'buddy' | 'admin' }))}
-              className="ios-input text-[14px]"
-            >
-              <option value="buddy">Member</option>
-              <option value="admin">Admin</option>
-            </select>
+              onChange={(role) => setInviteForm((prev) => ({ ...prev, role }))}
+              options={MEMBER_ROLE_OPTIONS}
+              className="sm:w-36"
+              aria-label="Invite role"
+            />
           </div>
           <button
             type="button"
@@ -807,43 +817,15 @@ export const Groups = () => {
                 <>
                   {renderGroupSummary()}
 
-                  <div className="flex gap-1 border-b border-neutral-200">
-                    <button
-                      type="button"
-                      className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px ${
-                        activeTab === 'chat'
-                          ? 'border-emerald-600 text-emerald-700'
-                          : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                      }`}
-                      onClick={() => setActiveTab('chat')}
-                    >
-                      Chat
-                    </button>
-                    <button
-                      type="button"
-                      className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px ${
-                        activeTab === 'members'
-                          ? 'border-emerald-600 text-emerald-700'
-                          : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                      }`}
-                      onClick={() => setActiveTab('members')}
-                    >
-                      Members
-                    </button>
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px ${
-                          activeTab === 'manage'
-                            ? 'border-emerald-600 text-emerald-700'
-                            : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                        }`}
-                        onClick={() => setActiveTab('manage')}
-                      >
-                        Manage
-                      </button>
-                    )}
-                  </div>
+                  <FormTabBar
+                    tabs={[
+                      { id: 'chat', label: 'Chat' },
+                      { id: 'members', label: 'Members' },
+                      ...(isAdmin ? [{ id: 'manage', label: 'Manage' }] : []),
+                    ]}
+                    activeId={activeTab}
+                    onChange={(id) => setActiveTab(id as GroupTab)}
+                  />
 
                   {activeTab === 'chat' && renderChatTab()}
                   {activeTab === 'members' && renderMembersTab()}
@@ -862,14 +844,12 @@ export const Groups = () => {
         <div className="space-y-3">
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-1 block">Type</label>
-            <select
+            <AppSelect
               value={groupForm.type}
-              onChange={(e) => setGroupForm((prev) => ({ ...prev, type: e.target.value as GroupType }))}
-              className="ios-input w-full text-[14px]"
-            >
-              <option value="family">Family</option>
-              <option value="friends">Friends</option>
-            </select>
+              onChange={(type) => setGroupForm((prev) => ({ ...prev, type }))}
+              options={GROUP_TYPE_OPTIONS}
+              aria-label="Group type"
+            />
           </div>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-1 block">Group name *</label>

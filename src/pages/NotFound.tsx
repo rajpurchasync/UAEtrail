@@ -1,17 +1,21 @@
 import { Link } from 'react-router-dom';
 import { PageMeta } from '../components/seo/PageMeta';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { GlassCard } from '../components/mobile/GlassCard';
+import { AppButton } from '../components/mobile/AppButton';
 
 export const NotFound = () => (
   <>
     <PageMeta title="Page not found" noIndex />
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center px-4">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">404 — Page Not Found</h1>
-        <p className="text-gray-600 mb-6">The page you are looking for does not exist.</p>
-        <Link to="/" className="text-emerald-600 hover:text-emerald-700 font-medium">
-          Go back home
+    <ConsumerShell layout="stack" title="Not found" showJourney={false} back={{ fallbackTo: '/', label: 'Home' }}>
+      <GlassCard padding className="py-10 text-center">
+        <p className="text-5xl font-extrabold text-neutral-200">404</p>
+        <h1 className="mt-2 text-lg font-bold text-neutral-900">This page isn&apos;t here</h1>
+        <p className="mt-2 text-sm text-neutral-600">Maybe the link moved, or there&apos;s a typo in the address.</p>
+        <Link to="/" className="mt-5 block">
+          <AppButton fullWidth>Back to the map</AppButton>
         </Link>
-      </div>
-    </div>
+      </GlassCard>
+    </ConsumerShell>
   </>
 );

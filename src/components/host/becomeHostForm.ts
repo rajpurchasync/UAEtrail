@@ -7,7 +7,6 @@ import { formatE164Phone } from '../../utils/phone';
 export type BecomeHostFormState = {
   hostProfileType: HostProfileType | null;
   hostDisplayName: string;
-  dateOfBirth: string;
   bio: string;
   profilePhoto: string;
   phoneCountryCode: string;
@@ -27,7 +26,6 @@ export type BecomeHostFormState = {
 export const emptyBecomeHostForm = (): BecomeHostFormState => ({
   hostProfileType: null,
   hostDisplayName: '',
-  dateOfBirth: '',
   bio: '',
   profilePhoto: '',
   phoneCountryCode: DEFAULT_PHONE_DIAL,
@@ -70,21 +68,6 @@ const resolveProfileType = (
   return null;
 };
 
-export const maxDateOfBirthForHost = (): string => {
-  const cutoff = new Date();
-  cutoff.setFullYear(cutoff.getFullYear() - 15);
-  return cutoff.toISOString().slice(0, 10);
-};
-
-export const isAtLeastHostAge = (dateOfBirth: string, minYears = 15): boolean => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) return false;
-  const dob = new Date(`${dateOfBirth}T00:00:00`);
-  if (Number.isNaN(dob.getTime())) return false;
-  const cutoff = new Date();
-  cutoff.setFullYear(cutoff.getFullYear() - minYears);
-  return dob <= cutoff;
-};
-
 export const buildBecomeHostFormPrefill = (input: {
   displayName?: string | null;
   bio?: string | null;
@@ -101,7 +84,6 @@ export const buildBecomeHostFormPrefill = (input: {
     ...base,
     hostProfileType: profileType,
     hostDisplayName: meta?.hostDisplayName ?? input.displayName ?? '',
-    dateOfBirth: meta?.dateOfBirth ?? '',
     bio: meta?.bio ?? input.bio ?? '',
     profilePhoto: meta?.profilePhoto ?? input.avatarUrl ?? '',
     phoneCountryCode: meta?.phoneCountryCode ?? storedPhone.dial,
@@ -131,7 +113,6 @@ export const buildHostApplicationPayload = (
     return {
       hostProfileType: 'individual',
       hostDisplayName: form.hostDisplayName.trim(),
-      dateOfBirth: form.dateOfBirth,
       bio,
       profilePhoto: form.profilePhoto || '',
       phoneCountryCode: form.phoneCountryCode,
@@ -139,7 +120,6 @@ export const buildHostApplicationPayload = (
       nationality: form.nationality,
       residence: form.residence,
       languages: form.languages.trim(),
-      interests: form.interests.trim(),
     };
   }
 

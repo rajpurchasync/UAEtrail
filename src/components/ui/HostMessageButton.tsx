@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { messagesRouteForRole } from '../../utils/authRouting';
 
 interface HostMessageButtonProps {
-  organizerUserId?: string | null;
+  hostUserId?: string | null;
   /** Trip/event context — enables inquiry messages before a join request exists. */
   activityId?: string | null;
   size?: 'sm' | 'md';
@@ -21,9 +21,9 @@ const iconSizes = {
   md: 'w-[18px] h-[18px]',
 };
 
-/** Message organizer — guests are sent to sign-in first. */
+/** Message host — guests are sent to sign-in first. */
 export const HostMessageButton = ({
-  organizerUserId,
+  hostUserId,
   activityId,
   size = 'sm',
   className = '',
@@ -31,11 +31,11 @@ export const HostMessageButton = ({
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (!organizerUserId) return null;
-  if (user?.id === organizerUserId) return null;
+  if (!hostUserId) return null;
+  if (user?.id === hostUserId) return null;
 
   const messageOptions = activityId ? { activityId } : undefined;
-  const messagePath = messagesRouteForRole(user?.role ?? 'participant', organizerUserId, messageOptions);
+  const messagePath = messagesRouteForRole(user?.role ?? 'participant', hostUserId, messageOptions);
 
   const handleGuestClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -54,8 +54,8 @@ export const HostMessageButton = ({
       <button
         type="button"
         onClick={handleGuestClick}
-        aria-label="Sign in to message host"
-        title="Sign in to message host"
+        aria-label="Log in to message the host"
+        title="Log in to message the host"
         className={`inline-flex items-center justify-center rounded-full text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 transition-colors shrink-0 ${sizeClasses[size]} ${className}`}
       >
         <LogIn className={iconSizes[size]} />

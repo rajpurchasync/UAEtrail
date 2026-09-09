@@ -42,7 +42,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How do I find hiking trails and camping spots in the UAE?',
         answer:
-          'Open Discovery to browse trails and camps on a map or list. Filter by emirate, difficulty, distance, and activity type. Each location page includes description, photos, difficulty, and upcoming organized trips.'
+          'Open Explore to browse trails and camps on a map or list. Filter by emirate, difficulty, distance, and activity type. Each venue page includes description, photos, difficulty, and upcoming organized trips.'
       },
       {
         question: 'How do I join an organized hike or camping trip?',

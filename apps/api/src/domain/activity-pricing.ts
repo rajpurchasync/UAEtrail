@@ -7,7 +7,6 @@ export const assertActivityPricingAllowed = (input: {
   tenantType: TenantType;
   pricingMode?: ActivityPricingMode;
   pricing: { priceAed: number; pricePackages: { amount: number }[] };
-  paymentTerms?: string | null;
   sharedAmountAed?: number | null;
 }): void => {
   const mode =
@@ -30,13 +29,6 @@ export const assertActivityPricingAllowed = (input: {
     const sharedAmount = input.sharedAmountAed ?? input.pricing.priceAed;
     if (sharedAmount <= 0) {
       throw new ApiError(400, 'shared_cost_amount_required', 'Enter the shared cost amount.');
-    }
-    if (!input.paymentTerms?.trim()) {
-      throw new ApiError(
-        400,
-        'shared_cost_note_required',
-        'Explain what the shared cost covers (e.g. fuel, park entry, gear rental).'
-      );
     }
   }
 };

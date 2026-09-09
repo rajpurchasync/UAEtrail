@@ -1,0 +1,115 @@
+import { isRolePlaceholderDisplayName } from './host-display.js';
+
+/** How a featured user relates to an explore map/list item. */
+export type ExploreMapPersonRole = 'host' | 'requester' | 'contact';
+
+export interface ExploreMapPersonDTO {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  role: ExploreMapPersonRole;
+}
+
+type ExploreMapSourceLike = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+
+export type ExploreFeaturedPersonInput = {
+  source?: ExploreMapSourceLike;
+  featuredPerson?: ExploreMapPersonDTO | null;
+  hostName?: string | null;
+  hostAvatar?: string | null;
+  requesterUserId?: string | null;
+  activity?: {
+    hostName?: string | null;
+    hostUserId?: string | null;
+    hostAvatar?: string | null;
+  } | null;
+};
+
+const PLACEHOLDER_FIRST_NAMES = new Set(['pending', 'user', 'guest', 'account', 'new']);
+
+export const formatExplorePersonDisplayName = (name?: string | null): string => {
+  const trimmed = name?.trim();
+  if (!trimmed || isRolePlaceholderDisplayName(trimmed)) return 'Community member';
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length > 1) return trimmed;
+  if (PLACEHOLDER_FIRST_NAMES.has(parts[0].toLowerCase())) return 'Community member';
+  return trimmed;
+};
+
+export const explorePersonFirstName = (person?: ExploreMapPersonDTO | null): string => {
+  const displayName = formatExplorePersonDisplayName(person?.displayName);
+  if (displayName === 'Community member') {
+    return person?.role === 'host' ? 'Host' : 'Community member';
+  }
+  return displayName.split(/\s+/)[0];
+};
+
+export const explorePersonRoleLabel = (role: ExploreMapPersonRole): string => {
+  switch (role) {
+    case 'requester':
+      return 'Posted this request';
+    case 'contact':
+      return 'Shop contact';
+    case 'host':
+    default:
+      return 'Host';
+  }
+};
+
+export const buildExploreFeaturedPerson = (input: {
+  userId?: string | null;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+  role: ExploreMapPersonRole;
+}): ExploreMapPersonDTO | null => {
+  const userId = input.userId?.trim();
+  const displayName = input.displayName?.trim();
+  if (!userId || !displayName) return null;
+  return {
+    userId,
+    displayName,
+    avatarUrl: input.avatarUrl ?? null,
+    role: input.role,
+  };
+};
+
+/** Resolve featured person from canonical field or legacy explore map fields (cached payloads). */
+export const resolveExploreFeaturedPerson = (
+  item: ExploreFeaturedPersonInput
+): ExploreMapPersonDTO | null => {
+  if (item.featuredPerson?.userId && item.featuredPerson.displayName?.trim()) {
+    return item.featuredPerson;
+  }
+
+  const source = item.source;
+  const activity = item.activity;
+
+  if (source === 'demand') {
+    return buildExploreFeaturedPerson({
+      userId: item.requesterUserId,
+      displayName: item.hostName,
+      avatarUrl: item.hostAvatar,
+      role: 'requester',
+    });
+  }
+
+  if (source === 'shop') {
+    return buildExploreFeaturedPerson({
+      userId: item.requesterUserId,
+      displayName: item.hostName,
+      avatarUrl: item.hostAvatar,
+      role: 'contact',
+    });
+  }
+
+  if (source === 'activity') {
+    return buildExploreFeaturedPerson({
+      userId: activity?.hostUserId,
+      displayName: activity?.hostName ?? item.hostName,
+      avatarUrl: activity?.hostAvatar ?? item.hostAvatar,
+      role: 'host',
+    });
+  }
+
+  return null;
+};

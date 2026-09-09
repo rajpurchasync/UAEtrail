@@ -1,3 +1,5 @@
+import { exploreShopsPath } from '../utils/exploreRouting';
+
 export const DIFFICULTY_COLORS = {
   easy: 'bg-green-100 text-green-800',
   moderate: 'bg-yellow-100 text-yellow-800',
@@ -14,7 +16,7 @@ export const HOST_DASHBOARD_LINKS = [
   { to: '/host/activities', label: 'Activities' },
   { to: '/host/requests', label: 'Join Requests' },
   { to: '/host/team', label: 'Team' },
-  { to: '/host/locations', label: 'Venues' },
+  { to: '/host/locations', label: 'Locations' },
   { to: '/host/messages', label: 'Messages' },
   { to: '/host/history', label: 'History' },
   { to: '/my-rewards', label: 'Trail Points' },
@@ -34,7 +36,7 @@ export const ADMIN_LINKS = [
 
 export const MERCHANT_DASHBOARD_LINKS = [
   { to: '/merchant/dashboard', label: 'Dashboard' },
-  { to: '/shop', label: 'Public Shop' },
+  { to: exploreShopsPath(), label: 'Map listing' },
 ];
 
 export const COUNTRIES = [

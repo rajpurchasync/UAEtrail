@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Camera, Settings } from 'lucide-react';
+import { Camera, Eye } from 'lucide-react';
 import { GlassCard } from '../mobile/GlassCard';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { ShareButton } from '../ui/ShareButton';
@@ -15,7 +15,7 @@ interface ProfileHeroSectionProps {
   shareReady?: boolean;
   showCompletionBadge?: boolean;
   onEditAvatar: () => void;
-  onOpenSettings: () => void;
+  onViewProfile: () => void;
   extra?: ReactNode;
 }
 
@@ -30,22 +30,23 @@ export const ProfileHeroSection = ({
   shareReady = true,
   showCompletionBadge = true,
   onEditAvatar,
-  onOpenSettings,
+  onViewProfile,
   extra,
 }: ProfileHeroSectionProps) => (
   <GlassCard padding className="!p-5 text-center animate-fade-up">
     <div className="mb-3 flex items-center justify-end gap-1">
+      <button
+        type="button"
+        onClick={onViewProfile}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90"
+        aria-label="View public profile"
+        title="View public profile"
+      >
+        <Eye className="h-4 w-4" />
+      </button>
       {shareReady && (
         <ShareButton title={shareTitle} text={shareText} path={sharePath} iconOnly light />
       )}
-      <button
-        type="button"
-        onClick={onOpenSettings}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90"
-        aria-label="Open settings"
-      >
-        <Settings className="h-4 w-4" />
-      </button>
     </div>
 
     <div className="relative mx-auto mb-3 h-[92px] w-[92px]">
@@ -56,7 +57,7 @@ export const ProfileHeroSection = ({
           cy="50"
           r="44"
           fill="none"
-          stroke="#f43f5e"
+          stroke="#059669"
           strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={`${(completionPercent / 100) * 276} 276`}
@@ -70,13 +71,13 @@ export const ProfileHeroSection = ({
       <button
         type="button"
         onClick={onEditAvatar}
-        className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white shadow-md"
+        className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md"
         aria-label="Add or change profile photo"
       >
         <Camera className="h-3.5 w-3.5" />
       </button>
       {showCompletionBadge && completionPercent < 100 && (
-        <span className="absolute -top-1 left-1/2 -translate-x-1/2 rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+        <span className="absolute -top-1 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
           {completionPercent}%
         </span>
       )}

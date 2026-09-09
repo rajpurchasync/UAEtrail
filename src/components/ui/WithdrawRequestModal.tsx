@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { WITHDRAW_REASONS, WithdrawReason } from '@uaetrail/shared-types';
 import { AppButton } from '../mobile/AppButton';
+import { AppSelect } from './AppSelect';
 import { Dialog } from './Dialog';
 
 export interface WithdrawRequestModalProps {
@@ -34,18 +35,18 @@ export const WithdrawRequestModal = ({
     setError(null);
   }, [open, tripTitle]);
 
-  const title = variant === 'trip' ? 'Withdraw from trip?' : 'Cancel join request?';
-  const confirmLabel = variant === 'trip' ? 'Withdraw' : 'Cancel request';
+  const title = variant === 'trip' ? 'Leaving this trip?' : 'Cancel your request?';
+  const confirmLabel = variant === 'trip' ? 'Yes, withdraw' : 'Yes, cancel';
   const needsMessage = reason === 'other';
   const canSubmit = Boolean(reason) && (!needsMessage || message.trim().length >= 3);
 
   const handleSubmit = async () => {
     if (!reason) {
-      setError('Please select a reason.');
+      setError('Pick a reason so the host knows what happened.');
       return;
     }
     if (needsMessage && message.trim().length < 3) {
-      setError('Please tell us a bit more when selecting Other.');
+      setError('Tell us a little more when you pick Other.');
       return;
     }
     setError(null);
@@ -69,30 +70,24 @@ export const WithdrawRequestModal = ({
         {tripDate ? <> on {tripDate}</> : null}.
       </p>
 
-      <label className="block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-1.5">
-        Reason <span className="text-red-500">*</span>
+      <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+        Why are you leaving? <span className="text-red-500">*</span>
       </label>
-      <select
+      <AppSelect
         value={reason}
-        onChange={(e) => {
-          setReason(e.target.value as WithdrawReason | '');
+        onChange={(next) => {
+          setReason(next);
           setError(null);
         }}
+        options={WITHDRAW_REASONS}
         disabled={submitting}
-        className="ios-input w-full text-[15px] mb-4"
-      >
-        <option value="" disabled>
-          Select
-        </option>
-        {WITHDRAW_REASONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+        placeholder="Select"
+        aria-label="Withdraw reason"
+        className="mb-4"
+      />
 
-      <label className="block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-1.5">
-        {needsMessage ? 'Tell us more (required)' : 'Additional details (optional)'}
+      <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+        {needsMessage ? 'Tell us more' : 'Anything else for the host? (optional)'}
       </label>
       <textarea
         className="ios-input text-[15px] min-h-[88px] resize-none mb-2"

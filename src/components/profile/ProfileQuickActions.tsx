@@ -29,7 +29,7 @@ export const ProfileQuickActions = ({ actions, columns = 3 }: ProfileQuickAction
             >
               <Icon className="h-5 w-5" strokeWidth={2} />
               {action.badge != null && action.badge > 0 && (
-                <span className="absolute -right-1 -top-1 min-w-[18px] rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-[18px] text-white">
+                <span className="absolute -right-1 -top-1 min-w-[18px] rounded-full bg-emerald-600 px-1 text-[10px] font-bold leading-[18px] text-white">
                   {action.badge > 99 ? '99+' : action.badge}
                 </span>
               )}

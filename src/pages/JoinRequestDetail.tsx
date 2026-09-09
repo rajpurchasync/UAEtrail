@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Calendar, MapPin, MessageCircle } from 'lucide-react';
+import { activityHostName, activityHostUserId } from '../utils/hostLabels';
 import { WithdrawReason, withdrawReasonLabel } from '@uaetrail/shared-types';
 import { api, ActivityRequestView } from '../api/services';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
 import { WithdrawRequestModal } from '../components/ui/WithdrawRequestModal';
+import { requestStatusLabel } from '../utils/joinRequestUi';
 
 const statusBadge: Record<string, string> = {
   pending: 'bg-amber-500/15 text-amber-700',
@@ -36,7 +38,7 @@ export const JoinRequestDetail = () => {
         setRequest(res.data);
         setNote(res.data.note ?? '');
       })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load request'))
+      .catch((err) => setError(err instanceof Error ? err.message : 'Couldn\'t load this request — try again.'))
       .finally(() => setLoading(false));
   }, [requestId]);
 
@@ -47,10 +49,10 @@ export const JoinRequestDetail = () => {
     setMessage(null);
     try {
       await api.updateJoinRequestNote(request.activity.id, request.id, note.trim());
-      setMessage('Your message to the organizer was updated.');
+      setMessage('Your note to the host was updated.');
       setRequest((r) => (r ? { ...r, note: note.trim() } : r));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update request');
+      setError(err instanceof Error ? err.message : 'Couldn\'t save your note — try again.');
     } finally {
       setSaving(false);
     }
@@ -64,7 +66,7 @@ export const JoinRequestDetail = () => {
       await api.cancelJoinRequest(request.activity.id, request.id, payload);
       navigate('/my-requests', { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to cancel request');
+      setError(err instanceof Error ? err.message : 'Couldn\'t cancel your request — try again.');
       setShowWithdraw(false);
     } finally {
       setSaving(false);
@@ -72,11 +74,12 @@ export const JoinRequestDetail = () => {
   };
 
   const askOrganizer = () => {
-    if (!request?.activity.organizerUserId) {
-      setError('Organizer contact is not available for this trip.');
+    const hostUserId = activityHostUserId(request?.activity ?? {});
+    if (!hostUserId) {
+      setError('You can\'t message this host from here yet.');
       return;
     }
-    navigate(`/messages?to=${request.activity.organizerUserId}`);
+    navigate(`/messages?to=${hostUserId}`);
   };
 
   if (loading) {
@@ -93,7 +96,7 @@ export const JoinRequestDetail = () => {
     return (
       <MobileScreen title="Request" backTo="/my-requests">
         <GlassCard padding className="text-center">
-          <p className="text-neutral-600 mb-4">{error ?? 'Request not found.'}</p>
+          <p className="text-neutral-600 mb-4">{error ?? 'We couldn\'t find this request.'}</p>
           <Link to="/my-requests" className="text-emerald-600 font-semibold text-sm">
             Back to requests
           </Link>
@@ -124,7 +127,7 @@ export const JoinRequestDetail = () => {
               statusBadge[request.status] ?? statusBadge.cancelled
             }`}
           >
-            {request.status}
+            {requestStatusLabel(request.status)}
           </span>
         </div>
         <div className="flex items-center gap-2 text-sm text-neutral-600">
@@ -133,8 +136,8 @@ export const JoinRequestDetail = () => {
             {request.activity.date} · {request.activity.time}
           </span>
         </div>
-        {(request.activity.hostName ?? request.activity.organizerName) && (
-          <p className="text-sm text-neutral-600">Host: {request.activity.hostName ?? request.activity.organizerName}</p>
+        {activityHostName(request.activity) && (
+          <p className="text-sm text-neutral-600">Host: {activityHostName(request.activity)}</p>
         )}
         <Link
           to={`/activity/${request.activity.id}`}
@@ -162,7 +165,7 @@ export const JoinRequestDetail = () => {
       {request.organizerNote && (
         <GlassCard padding className="mb-4">
           <p className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-1">
-            Organizer reply
+            From the host
           </p>
           <p className="text-sm text-neutral-700 leading-relaxed">{request.organizerNote}</p>
         </GlassCard>

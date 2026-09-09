@@ -34,7 +34,7 @@ export const LocationSelect = ({
   placeholder = 'Select venue…',
   emptyHelp,
   addNewHref,
-  addNewLabel = 'Add location',
+  addNewLabel = 'Add venue',
   onAddNew,
 }: LocationSelectProps) => {
   const [activeLocations, setActiveLocations] = useState<LocationDTO[]>(locationsOverride ?? []);
@@ -103,7 +103,7 @@ export const LocationSelect = ({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-left bg-white"
+        className="ios-input flex w-full items-center justify-between gap-2 rounded-2xl text-left"
       >
         <span className={selected ? 'text-gray-900 truncate' : 'text-gray-400'}>
           {selected ? `${selected.name} (${selected.region})` : placeholder}
@@ -122,7 +122,7 @@ export const LocationSelect = ({
       )}
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-lg shadow-neutral-900/10">
           <div className="p-2 border-b border-gray-100 bg-white sticky top-0 z-10">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />

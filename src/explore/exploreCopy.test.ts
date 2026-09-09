@@ -11,9 +11,12 @@ import {
   formatExploreTime,
   formatPlanPhrase,
   resolveMapPinEmoji,
+  resolveExploreItemSource,
   sanitizeExploreLocation,
 } from './exploreCopy';
 import { resolveExplorePrice } from './explorePriceLabel';
+import { extractExploreRequirementBadges } from './exploreRequirementBadges';
+import { resolveExploreHostLabel, resolveExploreHostPersonName } from '../utils/userDisplay';
 
 describe('resolveMapPinEmoji', () => {
   it('uses activity emojis', () => {
@@ -24,12 +27,23 @@ describe('resolveMapPinEmoji', () => {
   });
 
   it('uses venue emojis', () => {
-    expect(resolveMapPinEmoji('hiking', 'venue')).toBe('⛰️');
+    expect(resolveMapPinEmoji('hiking', 'venue')).toBe('🧗');
     expect(resolveMapPinEmoji('camping', 'venue')).toBe('⛺');
   });
 
-  it('uses carpool destination emoji', () => {
-    expect(resolveMapPinEmoji('carpool', 'activity', 'to')).toBe('🏁');
+  it('resolves source from id prefix when source is missing', () => {
+    expect(resolveExploreItemSource({ id: 'venue:abc', source: 'activity' })).toBe('activity');
+    expect(
+      resolveExploreItemSource({ id: 'venue:abc', source: undefined as unknown as 'activity' })
+    ).toBe('venue');
+    expect(
+      resolveExploreItemSource({ id: 'activity:abc', source: undefined as unknown as 'activity' })
+    ).toBe('activity');
+  });
+
+  it('uses car emoji for all carpool map pins', () => {
+    expect(resolveMapPinEmoji('carpool', 'activity', 'to')).toBe('🚗');
+    expect(resolveMapPinEmoji('carpool', 'activity', 'from')).toBe('🚗');
   });
 });
 
@@ -61,8 +75,53 @@ describe('formatExploreTime', () => {
   });
 });
 
+describe('resolveExploreHostLabel', () => {
+  it('uses the resolved person name from the API', () => {
+    expect(
+      resolveExploreHostLabel({
+        hostName: 'Khalid Rahman',
+        tenantName: 'UAE Adventure Co',
+      })
+    ).toBe('Khalid');
+  });
+
+  it('falls back to Host when only tenant or role labels are available', () => {
+    expect(
+      resolveExploreHostLabel({
+        hostName: 'Agency Guide',
+        tenantName: 'UAE Adventure Co',
+      })
+    ).toBe('Host');
+  });
+
+  it('rejects org labels passed as hostName', () => {
+    expect(
+      resolveExploreHostPersonName({
+        hostName: 'Desert Explorer',
+        createdByName: 'Omar Al Hosani',
+        tenantName: 'Desert Explorer',
+      })
+    ).toBe('Omar Al Hosani');
+  });
+});
+
 describe('exploreHeadline', () => {
-  it('formats hiking activity as title by host with location, time, and spots', () => {
+  it('uses a real host name instead of demo role labels', () => {
+    expect(
+      exploreHeadline({
+        source: 'activity',
+        kind: 'hiking',
+        title: 'Summit hike',
+        hostName: 'Omar Al Hosani',
+        tenantName: 'Desert Explorer',
+        location: 'Jebel Jais',
+        date: '2026-09-12',
+        time: '06:00',
+      })
+    ).toBe('Omar is going Hiking on Saturday 12th - Jebel Jais - Sat at 6:00');
+  });
+
+  it('formats hiking activity with host, location, time, and spots', () => {
     expect(
       exploreHeadline({
         source: 'activity',
@@ -75,7 +134,7 @@ describe('exploreHeadline', () => {
         slotsAvailable: 8,
         slotsTotal: 20,
       })
-    ).toBe('Sunrise Hike by Sarah - Fujairah - Sat at 9:00 - 8 spots');
+    ).toBe('Sarah is going Hiking on Saturday 12th - Fujairah - Sat at 9:00 - 8 spots');
   });
 
   it('formats camping activity', () => {
@@ -90,7 +149,7 @@ describe('exploreHeadline', () => {
         time: '16:00',
         slotsTotal: 20,
       })
-    ).toBe('Al Qudra camping by John - Al Qudra - Sun at 4 PM - 20 spots');
+    ).toBe('John is going Camping on Sunday 13th - Al Qudra - Sun at 4 PM - 20 spots');
   });
 
   it('formats event activity without spots when none set', () => {
@@ -99,12 +158,12 @@ describe('exploreHeadline', () => {
         source: 'activity',
         kind: 'event',
         title: 'Trail Run',
-        hostName: 'desert Adventure',
+        hostName: 'Alex',
         location: 'Hatta',
         date: '2026-09-12',
         time: '15:00',
       })
-    ).toBe('Trail Run by desert Adventure - Hatta - Sat at 3 PM');
+    ).toBe('Alex is going Outdoor Activity on Saturday 12th - Hatta - Sat at 3 PM');
   });
 
   it('formats carpool supply with route, time, and fixed tag', () => {
@@ -119,13 +178,13 @@ describe('exploreHeadline', () => {
         fromLabel: 'Dubai',
         toLabel: 'Fujairah',
       })
-    ).toBe('Ali is offering Rideshare - Dubai to Fujairah - Sun at 1 PM (fixed)');
+    ).toBe('Ali is offering Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 1 PM (fixed)');
   });
 
-  it('formats venue spots', () => {
+  it('formats location catalog entries by title', () => {
     expect(
       exploreHeadline({ source: 'venue', kind: 'hiking', title: 'Hatta Loop' })
-    ).toBe('Hiking Spot');
+    ).toBe('Hatta Loop');
   });
 
   it('formats shop listing', () => {
@@ -146,7 +205,7 @@ describe('exploreHeadline', () => {
         fromLabel: 'Dubai',
         toLabel: 'Fujairah',
       })
-    ).toBe('Alex is looking for Rideshare - Dubai to Fujairah - Sun at 2 PM (flexible)');
+    ).toBe('Alex is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)');
   });
 
   it('formats hiking demand with location and flexible tag', () => {
@@ -160,7 +219,7 @@ describe('exploreHeadline', () => {
         date: '2026-09-12',
         time: '07:00',
       })
-    ).toBe('Sarah is looking for Hiking - Wadi Shawka - Sat at 7:00 (flexible)');
+    ).toBe('Sarah is looking for Hiking on Saturday 12th - Wadi Shawka - Sat at 7:00 (flexible)');
   });
 });
 
@@ -201,13 +260,27 @@ describe('buildExploreSpotsSegment', () => {
   });
 });
 
+describe('extractExploreRequirementBadges', () => {
+  it('extracts audience and age badges from requirement lines', () => {
+    expect(
+      extractExploreRequirementBadges([
+        'Open: anyone can request to join',
+        'Women only',
+        'Age range: 18–45',
+        'No pets',
+        'Instructions: Bring water',
+      ])
+    ).toEqual(['Women only', 'Ages 18–45', 'No pets']);
+  });
+});
+
 describe('resolveExplorePrice', () => {
   it('returns free for zero price', () => {
     expect(resolveExplorePrice({ isCarpool: false, price: 0 }).badge).toBe('Free');
   });
 
   it('returns paid label', () => {
-    expect(resolveExplorePrice({ isCarpool: false, price: 120 }).badge).toBe('Paid · AED 120');
+    expect(resolveExplorePrice({ isCarpool: false, price: 120 }).badge).toBe('Paid Event · AED 120');
   });
 
   it('returns shared carpool label', () => {
@@ -256,12 +329,13 @@ describe('buildExploreCardModel', () => {
     expect(card.showJoinActions).toBe(true);
     expect(card.primaryCta).toBe('Request to join');
     expect(card.price?.badge).toBe('Free');
-    expect(card.listTitle).toBe('Sunrise Hike by Sarah - Fujairah - Sat at 9:00 - 8 spots');
-    expect(card.headline).toBe(card.listTitle);
+    expect(card.listTitle).toBe('Sarah is going Hiking on Saturday 12th');
+    expect(card.headline).toBe('Sarah is going Hiking on Saturday 12th - Fujairah - Sat at 9:00 - 8 spots');
     expect(buildExploreListMeta(card)).toContain('Fujairah');
-    expect(card.sections.titleText).toBe('Sunrise Hike');
-    expect(card.sections.hostName).toBe('Sarah');
-    expect(card.sections.listTitle).toBe('Sunrise Hike');
+    expect(card.sections.highlightName).toBe('Sarah');
+    expect(card.sections.suffix).toBe(' is going ');
+    expect(card.sections.activityHighlight).toBe('Hiking');
+    expect(card.sections.dateHighlight).toBe(' on Saturday 12th');
     expect(card.sections.listWhen).toContain('Sat');
     expect(card.sections.listGoing).toBe('12 going');
   });
@@ -276,7 +350,11 @@ describe('buildExploreCardModel', () => {
       latitude: 25.3,
       longitude: 55.3,
       path: '/demand/1',
-      hostName: 'Alex Rider',
+      featuredPerson: {
+        userId: 'user-1',
+        displayName: 'Alex Rider',
+        role: 'requester',
+      },
       date: '2026-09-13',
       time: '14:00',
       fromLabel: 'Dubai',
@@ -284,14 +362,16 @@ describe('buildExploreCardModel', () => {
       requesterUserId: 'user-1',
     };
     const card = buildExploreCardModel(demand);
-    expect(card.listTitle).toBe(
-      'Alex is looking for Rideshare - Dubai to Fujairah - Sun at 2 PM (flexible)'
+    expect(card.featuredPerson?.role).toBe('requester');
+    expect(card.listTitle).toBe('Rideshare · Alex');
+    expect(card.headline).toBe(
+      'Alex is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)'
     );
     expect(card.routeLabel).toBe('Dubai to Fujairah');
     expect(card.secondaryCta).toBe('Message');
     expect(buildExploreListMeta(card)).toContain('Dubai to Fujairah');
     expect(card.sections.highlightName).toBe('Alex');
-    expect(card.sections.listTitle).toBe('Ride share request');
+    expect(card.sections.listTitle).toBe('Rideshare · Alex');
     expect(card.sections.listWhen).toContain('Sun');
   });
 });

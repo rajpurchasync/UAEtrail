@@ -22,9 +22,9 @@ export const mapActivityToListing = (event: ActivityDTO): ActivityListing => ({
   operatorId: event.tenantId,
   tenantSlug: event.tenantSlug,
   tenantName: event.tenantName,
-  hostName: event.hostName ?? event.organizerName,
-  hostUserId: event.hostUserId ?? event.organizerUserId,
-  hostAvatar: event.hostAvatar ?? event.organizerAvatar ?? undefined,
+  hostName: event.hostName,
+  hostUserId: event.hostUserId,
+  hostAvatar: event.hostAvatar ?? undefined,
   images: event.images,
   price: event.price,
   pricePackages: event.pricePackages,
@@ -37,11 +37,13 @@ export const mapActivityToListing = (event: ActivityDTO): ActivityListing => ({
   meetingPoint: event.meetingPoint ?? undefined,
   itinerary: event.itinerary ?? undefined,
   requirements: event.requirements ?? undefined,
-  latitude: event.meetingLat ?? event.startLat ?? event.locationLatitude ?? null,
-  longitude: event.meetingLng ?? event.startLng ?? event.locationLongitude ?? null
+  latitude: event.displayLatitude ?? event.meetingLat ?? event.startLat ?? event.locationLatitude ?? null,
+  longitude: event.displayLongitude ?? event.meetingLng ?? event.startLng ?? event.locationLongitude ?? null
 });
 
 const mapLocationFields = (location: LocationDTO) => ({
+  parkingLat: location.parkingLat,
+  parkingLng: location.parkingLng,
   parkingLink: location.parkingLink,
   highlights: location.highlights,
   surfaceType: location.surfaceType,
@@ -49,15 +51,15 @@ const mapLocationFields = (location: LocationDTO) => ({
   accessibleBy: location.accessibleBy,
 });
 
-const mapLocationToTrail = (location: LocationDTO): Trail => ({
+export const mapLocationToTrail = (location: LocationDTO): Trail => ({
   id: location.id,
   name: location.name,
   region: location.region as Trail['region'],
-  difficulty: location.difficulty ?? 'moderate',
-  distance: location.distance ?? 0,
-  duration: location.duration ?? 0,
-  elevation: location.elevation ?? 0,
-  season: (location.season as Trail['season']) ?? ['winter'],
+  difficulty: location.difficulty ?? undefined,
+  distance: location.distance ?? undefined,
+  duration: location.duration ?? undefined,
+  elevation: location.elevation ?? undefined,
+  season: location.season?.length ? (location.season as Trail['season']) : undefined,
   childFriendly: location.childFriendly,
   description: location.description,
   images: location.images,
@@ -67,14 +69,14 @@ const mapLocationToTrail = (location: LocationDTO): Trail => ({
   ...mapLocationFields(location),
 });
 
-const mapLocationToCamp = (location: LocationDTO): CampingSpot => ({
+export const mapLocationToCamp = (location: LocationDTO): CampingSpot => ({
   id: location.id,
   name: location.name,
   region: location.region as CampingSpot['region'],
-  campingType: (location.campingType as CampingSpot['campingType']) ?? 'operator-led',
-  season: (location.season as CampingSpot['season']) ?? ['winter'],
-  maxGroupSize: location.maxGroupSize ?? 10,
-  accessibility: location.accessibility ?? 'car-accessible',
+  campingType: location.campingType as CampingSpot['campingType'] | undefined,
+  season: location.season?.length ? (location.season as CampingSpot['season']) : undefined,
+  maxGroupSize: location.maxGroupSize ?? undefined,
+  accessibility: location.accessibility ?? undefined,
   difficulty: location.difficulty,
   description: location.description,
   images: location.images,
@@ -84,14 +86,14 @@ const mapLocationToCamp = (location: LocationDTO): CampingSpot => ({
   ...mapLocationFields(location),
 });
 
-const mapLocationTocommunityActivity = (location: LocationDTO): CommunityActivitySpot => ({
+export const mapLocationToCommunityActivity = (location: LocationDTO): CommunityActivitySpot => ({
   id: location.id,
   name: location.name,
   region: location.region as CommunityActivitySpot['region'],
-  difficulty: location.difficulty ?? 'moderate',
-  distance: location.distance,
-  duration: location.duration,
-  season: (location.season as CommunityActivitySpot['season']) ?? ['winter'],
+  difficulty: location.difficulty ?? undefined,
+  distance: location.distance ?? undefined,
+  duration: location.duration ?? undefined,
+  season: location.season?.length ? (location.season as CommunityActivitySpot['season']) : undefined,
   description: location.description,
   images: location.images,
   featured: location.featured,
@@ -100,6 +102,9 @@ const mapLocationTocommunityActivity = (location: LocationDTO): CommunityActivit
   ...mapLocationFields(location),
 });
 
+/** Max cards shown per home carousel section (Featured Activities, Trails, Camping). */
+export const HOME_LANDING_SECTION_LIMIT = 3;
+
 /** Fast home payload: 3 parallel requests, no location pagination loop. */
 export const fetchHomeLandingData = async (): Promise<{
   popularTrails: Trail[];
@@ -107,16 +112,17 @@ export const fetchHomeLandingData = async (): Promise<{
   featuredActivities: ActivityListing[];
   allActivities: ActivityListing[];
 }> => {
+  const limit = HOME_LANDING_SECTION_LIMIT;
   const [popularRes, featuredRes, eventsRes] = await Promise.all([
-    api.getPopularLocations(6),
-    api.getFeaturedActivities(6),
+    api.getPopularLocations(limit),
+    api.getFeaturedActivities(limit),
     api.getPublicActivities()
   ]);
 
   return {
-    popularTrails: popularRes.data.filter((l) => l.activityType === 'hiking').map(mapLocationToTrail),
-    popularCamps: popularRes.data.filter((l) => l.activityType === 'camping').map(mapLocationToCamp),
-    featuredActivities: featuredRes.data.map(mapActivityToListing),
+    popularTrails: popularRes.data.filter((l) => l.activityType === 'hiking').map(mapLocationToTrail).slice(0, limit),
+    popularCamps: popularRes.data.filter((l) => l.activityType === 'camping').map(mapLocationToCamp).slice(0, limit),
+    featuredActivities: featuredRes.data.map(mapActivityToListing).slice(0, limit),
     allActivities: eventsRes.data.map(mapActivityToListing)
   };
 };
@@ -131,7 +137,7 @@ export const fetchHomeRegionLocations = async (): Promise<{
   return {
     trails: res.data.filter((item) => item.activityType === 'hiking').map(mapLocationToTrail),
     camps: res.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp),
-    communityActivities: res.data.filter((item) => item.activityType === 'event').map(mapLocationTocommunityActivity),
+    communityActivities: res.data.filter((item) => item.activityType === 'event').map(mapLocationToCommunityActivity),
   };
 };
 
@@ -146,7 +152,7 @@ export const fetchPublicMappedData = async (): Promise<{
   const camps = locationsResponse.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp);
   const communityActivities = locationsResponse.data
     .filter((item) => item.activityType === 'event')
-    .map(mapLocationTocommunityActivity);
+    .map(mapLocationToCommunityActivity);
   const activities = eventsResponse.data.map(mapActivityToListing);
   return { trails, camps, communityActivities, activities };
 };
@@ -167,7 +173,7 @@ export const fetchApiLocations = async (countryCode?: string): Promise<{
     camps: locations.data.filter((item) => item.activityType === 'camping').map(mapLocationToCamp),
     communityActivities: locations.data
       .filter((item) => item.activityType === 'event')
-      .map(mapLocationTocommunityActivity),
+      .map(mapLocationToCommunityActivity),
   };
 };
 
@@ -187,5 +193,5 @@ export const fetchApiLocationDetail = async (
   if (loc.activityType === 'camping') {
     return { camp: mapLocationToCamp(loc), premium: response.premium };
   }
-  return { communityActivity: mapLocationTocommunityActivity(loc), premium: response.premium };
+  return { communityActivity: mapLocationToCommunityActivity(loc), premium: response.premium };
 };

@@ -1,0 +1,59 @@
+---
+description: Explore map UI — shapes, colors, sheets, and form controls
+globs: src/components/explore/**/*,src/config/exploreTheme.ts,src/explore/**/*
+alwaysApply: false
+---
+
+# Explore design system
+
+Use tokens from `src/config/exploreTheme.ts`. Do not invent one-off radii or emerald-on-everything.
+
+## Shapes
+
+| Role | Token / class |
+|------|----------------|
+| Pills (filters, FAB chrome) | `EXPLORE_SHAPE.pill` → `rounded-full` |
+| Controls (inputs, peek cards) | `EXPLORE_SHAPE.control` → `rounded-2xl` |
+| Sheet top (mobile) | `EXPLORE_SHAPE.sheetTop` → `rounded-t-3xl` |
+| Sheet handle | `EXPLORE_SHAPE.sheetHandle` |
+
+## Colors (4 roles)
+
+1. **Brand chrome** — emerald (`EXPLORE_BRAND_ACTIVE`): Browse, default filters, primary CTAs
+2. **Type** — hiking/emerald, camping/amber, rideshare/sky, events/violet, shops/rose
+3. **Intent** — Add/rose (`EXPLORE_INTENT.add`), Request/teal (`EXPLORE_INTENT.request`)
+4. **State** — errors/red, warnings/amber, success/emerald
+
+Map and list filter pills share type colors via `exploreMapFilterActiveClass`, `exploreActivityListFilterActiveClass`, `exploreVenueListFilterActiveClass`.
+
+## Sheets & peek cards
+
+- **Browse / create flows** → `ExploreResponsiveSheet` (one primitive)
+- **Map selection** → `ExploreMapPeekCard` + `ExploreMapPeekPosition` (same silhouette for venues and activities)
+- Do not add a third sheet wrapper
+
+## Dropdowns
+
+Never use native `<select>`. Use `AppSelect` from `src/components/ui/AppSelect.tsx`.
+
+## Map ↔ list filters
+
+When changing map filters, sync list filters via `mapFilterToActivityListFilter` / `mapFilterToVenueListFilter` in `exploreRouting.ts`. Reverse sync via `activityFilterToMapFilter` / `venueFilterToMapFilter`.
+
+Non-`all` map filters auto-open the browse sheet on mobile.
+
+## Map pins
+
+Use `exploreMapPinRingColor(kind, source)` for pin ring colors. Clusters use brand emerald ring.
+
+## Peek cards
+
+Include `coverImage` on `ExploreCardModel` when the item has a photo — rendered as a 2:1 strip at the top of `ExploreMapPeekCard`.
+
+## Browse list rows
+
+Use `coverImage` for a 56px thumbnail with a small type emoji overlay; fall back to `ExploreCardTypeBadge` when no photo.
+
+## Terminology
+
+User-facing: **Venues** (not Locations). Internal: `panel=venues`, `source: 'venue'`.

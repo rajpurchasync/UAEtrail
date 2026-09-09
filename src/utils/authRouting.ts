@@ -1,10 +1,14 @@
 import { UserRole } from '@uaetrail/shared-types';
+import { EXPLORE_MAP_PATH } from '../config/platform';
 import { isMerchantRole, isPlatformAdmin } from './roles';
 
 export const defaultRouteByRole = (role: UserRole): string => {
   if (isPlatformAdmin(role)) return '/admin/overview';
   if (isMerchantRole(role)) return '/merchant/dashboard';
-  return '/';
+  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
+    return '/host/overview';
+  }
+  return EXPLORE_MAP_PATH;
 };
 
 /** Participant account home — all explorers including hosts. */

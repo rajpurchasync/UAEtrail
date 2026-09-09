@@ -27,8 +27,12 @@ export const createParticipantIntentSchema = z
     comment: z.string().trim().min(3).max(1000),
   })
   .superRefine((body, ctx) => {
-    if (body.kind === 'hiking' && !body.preferredArea?.trim()) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Enter a preferred area.', path: ['preferredArea'] });
+    if ((body.kind === 'hiking' || body.kind === 'camping') && !body.preferredArea?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: body.kind === 'camping' ? 'Enter where you are going from.' : 'Enter a preferred area.',
+        path: ['preferredArea'],
+      });
     }
     if (body.kind !== 'other' && !body.date) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Pick a date.', path: ['date'] });

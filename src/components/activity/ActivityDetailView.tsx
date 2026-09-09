@@ -5,7 +5,7 @@ import type { ActivityDetailDTO, MyTripRequestDTO, TripParticipationDTO } from '
 import { formatDate } from '../../utils';
 import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../../utils/tripPricing';
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../../utils/hostLabels';
-import { hostProfilePath } from '../../utils/hostLinks';
+import { resolveHostProfilePath } from '../../utils/hostLinks';
 import { activityDetailEyebrow } from '../../config/activityTypes';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
@@ -16,7 +16,14 @@ import {
   HostMessageButton,
   ActivityCheckInPanel,
   SecureAvatar,
+  JoinRequestActions,
 } from '../ui';
+import { resolveJoinRequestUiState } from '../../utils/joinRequestUi';
+import {
+  extractJoinInstructionLines,
+  extractNonJoinRequirements,
+  MANDATORY_INSTRUCTIONS_LABEL,
+} from '../../utils/joinInstructions';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden>
@@ -65,8 +72,6 @@ export interface ActivityDetailViewProps {
   error?: string | null;
   onJoin?: () => void;
   onWithdraw?: () => void;
-  onCheckIn?: (activityId: string) => Promise<TripParticipationDTO>;
-  onParticipationUpdated?: (p: TripParticipationDTO) => void;
   footerOverride?: ReactNode;
   sidebarJoinOverride?: ReactNode;
 }
@@ -82,8 +87,6 @@ export const ActivityDetailView = ({
   error = null,
   onJoin,
   onWithdraw,
-  onCheckIn,
-  onParticipationUpdated,
   footerOverride,
   sidebarJoinOverride,
 }: ActivityDetailViewProps) => {
@@ -109,7 +112,13 @@ export const ActivityDetailView = ({
 
   const participants = trip.participants ?? [];
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
-  const hostPath = previewMode ? null : hostProfilePath(trip.tenantSlug);
+  const hostPath = previewMode
+    ? null
+    : resolveHostProfilePath({
+        tenantSlug: trip.tenantSlug,
+        hostUserId: activityHostUserId(trip),
+      });
+  const hostProfileHint = trip.tenantSlug ? 'Runs this trip · view organization' : 'Runs this trip · view profile';
   const isFull = (trip.slotsAvailable ?? 0) <= 0;
   const accessLat =
     trip.startLat ?? trip.meetingLat ?? trip.parkingLat ?? trip.location?.latitude ?? null;
@@ -136,30 +145,7 @@ export const ActivityDetailView = ({
     }
     onJoin?.();
   };
-  const isConfirmed = Boolean(participation);
-  const hasActiveRequest = Boolean(myRequest?.canWithdraw);
-  const requestStatus = myRequest?.status;
-
-  const withdrawButton =
-    hasActiveRequest && onWithdraw ? (
-      <button
-        type="button"
-        onClick={onWithdraw}
-        className="w-full mt-2 py-2.5 text-sm font-semibold text-red-600 hover:text-red-700"
-      >
-        {isConfirmed ? 'Withdraw from trip' : 'Cancel request'}
-      </button>
-    ) : null;
-
-  const requestStatusBanner =
-    hasActiveRequest && !isConfirmed ? (
-      <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-3 text-center">
-        <p className="text-sm font-semibold text-amber-900 capitalize">
-          {requestStatus === 'waitlisted' ? 'On waitlist' : 'Request pending approval'}
-        </p>
-        <p className="text-xs text-amber-700/80 mt-0.5">The organizer will confirm your spot</p>
-      </div>
-    ) : null;
+  const joinUiState = resolveJoinRequestUiState({ myRequest, participation });
 
   const previewFooter = (
     <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-center">
@@ -169,20 +155,28 @@ export const ActivityDetailView = ({
   );
 
   const checkInFooter =
-    participation && onCheckIn && onParticipationUpdated ? (
-      <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-        <ActivityCheckInPanel
-          activityId={trip.id}
-          participation={participation}
-          onCheckIn={onCheckIn}
-          onUpdated={onParticipationUpdated}
-        />
-        {withdrawButton}
+    participation ? (
+      <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg space-y-2">
+        <ActivityCheckInPanel participation={participation} />
+        {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw && (
+          <JoinRequestActions
+            uiState={joinUiState}
+            joinLabel={joinLabel}
+            isFull={isFull}
+            onWithdraw={onWithdraw}
+            joinButtonClassName="ios-btn shadow-lg"
+          />
+        )}
       </div>
-    ) : hasActiveRequest ? (
+    ) : joinUiState.kind !== 'open' && onWithdraw ? (
       <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-        {requestStatusBanner}
-        {withdrawButton}
+        <JoinRequestActions
+          uiState={joinUiState}
+          joinLabel={joinLabel}
+          isFull={isFull}
+          onWithdraw={onWithdraw}
+          joinButtonClassName="ios-btn shadow-lg"
+        />
       </div>
     ) : null;
 
@@ -192,16 +186,14 @@ export const ActivityDetailView = ({
       ? previewFooter
       : checkInFooter ?? (
           <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-            <button
-              type="button"
-              onClick={handleJoinClick}
-              disabled={hasActiveRequest}
-              className={`w-full ios-btn shadow-lg disabled:opacity-60 ${
-                isFull ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
-              }`}
-            >
-              {joinLabel}
-            </button>
+            <JoinRequestActions
+              uiState={joinUiState}
+              joinLabel={joinLabel}
+              isFull={isFull}
+              onJoin={handleJoinClick}
+              onWithdraw={onWithdraw}
+              joinButtonClassName="ios-btn shadow-lg"
+            />
           </div>
         ));
 
@@ -211,25 +203,25 @@ export const ActivityDetailView = ({
       <p className="mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
         Preview only — join is disabled until you publish.
       </p>
-    ) : isConfirmed ? (
-      participation &&
-      onCheckIn &&
-      onParticipationUpdated && (
-        <>
-          <ActivityCheckInPanel
-            activityId={trip.id}
-            participation={participation}
-            onCheckIn={onCheckIn}
-            onUpdated={onParticipationUpdated}
-          />
-          {withdrawButton}
-        </>
-      )
-    ) : hasActiveRequest ? (
+    ) : participation ? (
       <>
-        {requestStatusBanner}
-        {withdrawButton}
+        <ActivityCheckInPanel participation={participation} />
+        {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw && (
+          <JoinRequestActions
+            uiState={joinUiState}
+            joinLabel={joinLabel}
+            isFull={isFull}
+            onWithdraw={onWithdraw}
+          />
+        )}
       </>
+    ) : joinUiState.kind !== 'open' && onWithdraw ? (
+      <JoinRequestActions
+        uiState={joinUiState}
+        joinLabel={joinLabel}
+        isFull={isFull}
+        onWithdraw={onWithdraw}
+      />
     ) : (
       <button
         type="button"
@@ -383,6 +375,9 @@ export const ActivityDetailView = ({
                         {trip.meetingPoint && (
                           <p>
                             <span className="font-medium text-gray-900">Meeting point:</span> {trip.meetingPoint}
+                            <span className="block text-xs font-normal text-gray-500 mt-0.5">
+                              Information only — not a join requirement.
+                            </span>
                           </p>
                         )}
                         {trip.parkingPoint && (
@@ -512,23 +507,6 @@ export const ActivityDetailView = ({
             )}
           </div>
 
-          {trip.paymentTerms && pricingMode === 'shared' && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-1">Cost Shared</h2>
-              <p className="text-sm text-gray-500 mb-3">
-                Why this cost is shared among participants
-              </p>
-              <p className="text-gray-700 text-sm whitespace-pre-wrap">{trip.paymentTerms}</p>
-            </div>
-          )}
-
-          {trip.paymentTerms && pricingMode === 'paid' && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Payment terms</h2>
-              <p className="text-gray-700 text-sm whitespace-pre-wrap">{trip.paymentTerms}</p>
-            </div>
-          )}
-
           {trip.itinerary && trip.itinerary.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Itinerary</h2>
@@ -543,16 +521,35 @@ export const ActivityDetailView = ({
             </div>
           )}
 
-          {trip.requirements && trip.requirements.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Instructions</h2>
-              <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-                {trip.requirements.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {(() => {
+            const mandatoryInstructions = extractJoinInstructionLines(trip.requirements);
+            const otherRequirements = extractNonJoinRequirements(trip.requirements);
+            return (
+              <>
+                {mandatoryInstructions.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-amber-100 p-5 sm:p-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-1">{MANDATORY_INSTRUCTIONS_LABEL}</h2>
+                    <p className="text-xs text-gray-500 mb-3">Joiners must agree to these when requesting a spot.</p>
+                    <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
+                      {mandatoryInstructions.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {otherRequirements.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-3">Trip details</h2>
+                    <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
+                      {otherRequirements.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           {trip.images && trip.images.length > 1 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
@@ -606,7 +603,7 @@ export const ActivityDetailView = ({
                       {showTenantBrand(trip) && trip.tenantName && (
                         <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
                       )}
-                      <p className="text-xs text-gray-500">Runs this trip · view organization</p>
+                      <p className="text-xs text-gray-500">{hostProfileHint}</p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
                   </Link>
@@ -626,7 +623,7 @@ export const ActivityDetailView = ({
                   </div>
                 )}
                 {!previewMode && (
-                  <HostMessageButton organizerUserId={activityHostUserId(trip)} activityId={trip.id} size="md" />
+                  <HostMessageButton hostUserId={activityHostUserId(trip)} activityId={trip.id} size="md" />
                 )}
               </div>
               {trip.hostBio && <p className="mt-3 text-sm text-gray-600 leading-relaxed">{trip.hostBio}</p>}
@@ -641,8 +638,12 @@ export const ActivityDetailView = ({
                   participants={previewParticipants}
                   size="md"
                   showNames
+                  linkToProfile
                   emptyLabel="No confirmed participants yet — be the first to join!"
                 />
+                {previewParticipants.length > 0 && (
+                  <p className="mt-2 text-[11px] text-gray-400">Tap a name to view profile</p>
+                )}
               </div>
             )}
           </div>

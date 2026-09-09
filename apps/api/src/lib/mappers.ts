@@ -1,11 +1,18 @@
 import type { Activity, Location } from '../domain/types.js';
+import { resolveJoinMode } from '../domain/activity-join-mode.js';
 import {
   ActivityType,
   ActivityStatus,
   LocationStatus,
   UserRole
 } from '../domain/enums.js';
-import { ActivityDTO, LocationDTO, UserRole as SharedUserRole } from '@uaetrail/shared-types';
+import {
+  ActivityDTO,
+  LocationDTO,
+  resolveActivityDisplayCoordinates,
+  resolveHostPersonDisplayName,
+  UserRole as SharedUserRole
+} from '@uaetrail/shared-types';
 
 import { formatActivityLocal } from './datetime.js';
 import { parseStoredPricePackages } from './trip-pricing.js';
@@ -47,6 +54,7 @@ type ActivityWithRelations = Activity & {
   tenant: { slug: string; name: string; countryCode?: string; ownerId: string };
   guide?: { profile?: { displayName?: string | null; avatarUrl?: string | null; bio?: string | null } | null } | null;
   createdBy?: { profile?: { displayName?: string | null } | null } | null;
+  tenantOwner?: { profile?: { displayName?: string | null } | null } | null;
   participants?: Array<{ id: string } | ParticipantWithUser>;
 };
 
@@ -56,12 +64,17 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
   );
   const tenantName = event.tenant.name;
   const hostUserId = event.hostId ?? event.tenant.ownerId;
+  const guideName = event.guide?.profile?.displayName ?? null;
+  const createdByName = event.createdBy?.profile?.displayName ?? null;
+  const tenantOwnerName = event.tenantOwner?.profile?.displayName ?? null;
   const hostName =
-    event.guide?.profile?.displayName ??
-    event.createdBy?.profile?.displayName ??
-    tenantName;
+    resolveHostPersonDisplayName({
+      guideName,
+      createdByName,
+      tenantOwnerName,
+      tenantName,
+    }) ?? 'Host';
   const hostAvatar = event.guide?.profile?.avatarUrl ?? null;
-  const createdByName = event.createdBy?.profile?.displayName ?? undefined;
   return toEventDto({
     event,
     locationName: event.location.name,
@@ -78,7 +91,7 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
     tenantName,
     hostId: event.hostId ?? undefined,
     createdById: event.createdById,
-    createdByName,
+    createdByName: createdByName ?? undefined,
     tenantSlug: event.tenant.slug,
     participantPreviews: participantsWithUser.length > 0 ? toParticipantPreviews(participantsWithUser) : undefined,
     countryCode: event.location.countryCode ?? event.tenant.countryCode ?? 'AE',
@@ -175,6 +188,16 @@ const toEventDto = ({
 }): ActivityDTO => {
   const local = formatActivityLocal(event.startAt, countryCode);
   const endLocal = event.endAt ? formatActivityLocal(event.endAt, countryCode) : null;
+  const displayCoords = resolveActivityDisplayCoordinates({
+    meetingLat: event.meetingLat,
+    meetingLng: event.meetingLng,
+    startLat: event.startLat,
+    startLng: event.startLng,
+    parkingLat: event.parkingLat,
+    parkingLng: event.parkingLng,
+    locationLatitude: locationLatitude ?? null,
+    locationLongitude: locationLongitude ?? null,
+  });
   return {
   id: event.id,
   tenantId: event.tenantId,
@@ -215,6 +238,7 @@ const toEventDto = ({
   pricingMode: event.pricingMode ?? null,
   itinerary: event.itinerary,
   requirements: event.requirements,
+  joinMode: resolveJoinMode(event.joinMode, event.requirements),
   images: event.images ?? [],
   bannerUrl: event.bannerUrl ?? null,
   signupUrl: event.signupUrl ?? null,
@@ -226,13 +250,12 @@ const toEventDto = ({
   hostId: hostId ?? null,
   createdById,
   createdByName,
-  organizerName: hostName,
-  organizerAvatar: hostAvatar ?? undefined,
-  organizerUserId: hostUserId,
   featured: event.featured,
   participantPreviews,
   countryCode,
   locationLatitude: locationLatitude ?? null,
-  locationLongitude: locationLongitude ?? null
+  locationLongitude: locationLongitude ?? null,
+  displayLatitude: displayCoords.latitude,
+  displayLongitude: displayCoords.longitude
 };
 };

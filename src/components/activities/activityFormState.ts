@@ -1,4 +1,5 @@
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityJoinMode } from '@uaetrail/shared-types';
+import { inferJoinModeFromRequirements } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
 import { derivePriceAed, inferTripPricingMode, type TripPricePackage } from '../../utils/tripPricing';
 import { parseCoord } from '../ui/MeetingPointMap';
@@ -55,6 +56,7 @@ export type ActivityFormState = {
   eventVenueDetail: string;
   eventHostOrganization: string;
   hostUserId: string;
+  joinMode: ActivityJoinMode;
 };
 
 const emptyPin = (): LocationPinForm => ({ label: '', mapsUrl: '', lat: '', lng: '' });
@@ -99,6 +101,7 @@ export const emptyActivityForm = (activityType: ActivityType = 'hiking'): Activi
   eventVenueDetail: '',
   eventHostOrganization: '',
   hostUserId: '',
+  joinMode: 'open',
 });
 
 const pinFromEvent = (
@@ -122,6 +125,7 @@ const parseRequirementsToForm = (requirements: string[]) => {
   let noChildren = false;
   let noPets = false;
   let eventHostOrganization = '';
+  let sharedCostInfo = '';
 
   for (const item of requirements) {
     const trimmed = item.trim();
@@ -132,6 +136,8 @@ const parseRequirementsToForm = (requirements: string[]) => {
       instructionLines.push(trimmed.slice('Instructions: '.length));
     } else if (trimmed.startsWith('Instruction: ')) {
       instructionLines.push(trimmed.slice('Instruction: '.length));
+    } else if (trimmed.startsWith('Shared cost: ')) {
+      sharedCostInfo = trimmed.slice('Shared cost: '.length);
     } else if (trimmed.startsWith('Recommendation: ')) {
       recommendationLines.push(trimmed.slice('Recommendation: '.length));
     } else if (trimmed.startsWith('Fitness level: ')) {
@@ -162,6 +168,7 @@ const parseRequirementsToForm = (requirements: string[]) => {
     noPets,
     additionalRequirements: recommendationLines.join('\n'),
     eventHostOrganization,
+    sharedCostInfo,
   };
 };
 
@@ -195,14 +202,17 @@ export const activityToForm = (activity: ActivityDTO): ActivityFormState => {
     capacity: activity.slotsTotal,
     pricingMode,
     sharedAmount: pricingMode === 'shared' ? activity.price : 0,
-    sharedCostInfo: pricingMode === 'shared' ? activity.paymentTerms ?? '' : '',
     price: activity.price,
     pricePackages,
-    paymentTerms: pricingMode === 'paid' ? activity.paymentTerms ?? '' : '',
+    paymentTerms: '',
     start: pinFromEvent(activity.startPoint, activity.startLat, activity.startLng),
     parking: pinFromEvent(activity.parkingPoint, activity.parkingLat, activity.parkingLng),
     meeting: pinFromEvent(activity.meetingPoint, activity.meetingLat, activity.meetingLng),
     ...instructionFields,
+    sharedCostInfo:
+      pricingMode === 'shared'
+        ? instructionFields.sharedCostInfo || activity.paymentTerms || ''
+        : '',
     carPoolEnabled: activity.carPoolEnabled ?? false,
     carPoolPricing: activity.carPoolEnabled && activity.carPoolFree === false ? 'shared' : 'free',
     carPoolSharedAmount: activity.carPoolPriceAed ?? 0,
@@ -225,6 +235,7 @@ export const activityToForm = (activity: ActivityDTO): ActivityFormState => {
     eventVenueDetail: '',
     eventHostOrganization: instructionFields.eventHostOrganization ?? '',
     hostUserId: activity.hostId ?? activity.hostUserId ?? '',
+    joinMode: activity.joinMode ?? inferJoinModeFromRequirements(activity.requirements),
   };
 };
 
@@ -236,6 +247,9 @@ export const buildRequirementsFromForm = (form: ActivityFormState): string[] => 
   }
   if (form.mandatoryInstructions.trim()) {
     lines.push(`Instructions: ${form.mandatoryInstructions.trim()}`);
+  }
+  if (form.pricingMode === 'shared' && form.sharedCostInfo.trim()) {
+    lines.push(`Shared cost: ${form.sharedCostInfo.trim()}`);
   }
   if (form.fitnessLevel.trim()) lines.push(`Fitness level: ${form.fitnessLevel.trim()}`);
   if (form.campingSurfaceType) {
@@ -264,11 +278,9 @@ const resolvePinText = (pin: LocationPinForm): string | undefined => {
 export const buildHostActivityPayload = (form: ActivityFormState): Record<string, unknown> => {
   let price = 0;
   let pricePackages: TripPricePackage[] = [];
-  let paymentTerms: string | undefined;
 
   if (form.pricingMode === 'shared') {
     price = Math.max(0, form.sharedAmount);
-    paymentTerms = form.sharedCostInfo.trim() || undefined;
   } else if (form.pricingMode === 'paid') {
     pricePackages =
       form.pricePackages.filter((p) => p.label.trim()).length > 0
@@ -277,7 +289,6 @@ export const buildHostActivityPayload = (form: ActivityFormState): Record<string
           ? [{ label: 'Standard', amount: form.price, currency: 'AED' as const }]
           : [];
     price = derivePriceAed(pricePackages, form.price);
-    paymentTerms = form.paymentTerms.trim() || undefined;
   }
 
   return {
@@ -290,7 +301,7 @@ export const buildHostActivityPayload = (form: ActivityFormState): Record<string
     capacity: form.capacity,
     price,
     pricePackages,
-    paymentTerms,
+    paymentTerms: null,
     startPoint: resolvePinText(form.start),
     startLat: parseCoord(form.start.lat),
     startLng: parseCoord(form.start.lng),
@@ -305,20 +316,8 @@ export const buildHostActivityPayload = (form: ActivityFormState): Record<string
         resolvePinText(form.start) &&
         resolvePinText(form.meeting) !== resolvePinText(form.start)
     ),
-    carPoolEnabled: form.carPoolEnabled,
-    carPoolFree: form.carPoolEnabled ? form.carPoolPricing === 'free' : null,
-    carPoolPriceAed:
-      form.carPoolEnabled && form.carPoolPricing === 'shared' ? form.carPoolSharedAmount : null,
-    carPoolSeats: form.carPoolEnabled ? form.carPoolSeats : null,
-    carPoolDetails:
-      form.carPoolEnabled && form.carPoolDetails.trim() ? form.carPoolDetails.trim() : undefined,
-    carPoolFromPoint: form.carPoolEnabled ? resolvePinText(form.carPoolFrom) : undefined,
-    carPoolFromLat: form.carPoolEnabled ? parseCoord(form.carPoolFrom.lat) : undefined,
-    carPoolFromLng: form.carPoolEnabled ? parseCoord(form.carPoolFrom.lng) : undefined,
-    carPoolToPoint: form.carPoolEnabled ? resolvePinText(form.carPoolTo) : undefined,
-    carPoolToLat: form.carPoolEnabled ? parseCoord(form.carPoolTo.lat) : undefined,
-    carPoolToLng: form.carPoolEnabled ? parseCoord(form.carPoolTo.lng) : undefined,
     requirements: buildRequirementsFromForm(form),
+    joinMode: form.joinMode,
     images: form.images.slice(0, 1),
     bannerUrl: null,
     signupUrl: form.signupUrl.trim() || null,

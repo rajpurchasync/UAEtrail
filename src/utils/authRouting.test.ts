@@ -26,11 +26,11 @@ describe('auth routing by role', () => {
 
   it('maps default post-login routes for each role', () => {
     const cases: Array<[UserRole, string]> = [
-      ['participant', '/'],
+      ['participant', '/explore'],
       ['merchant_admin', '/merchant/dashboard'],
-      ['tenant_owner', '/'],
-      ['tenant_admin', '/'],
-      ['tenant_guide', '/'],
+      ['tenant_owner', '/host/overview'],
+      ['tenant_admin', '/host/overview'],
+      ['tenant_guide', '/host/overview'],
       ['platform_admin', '/admin/overview'],
     ];
 

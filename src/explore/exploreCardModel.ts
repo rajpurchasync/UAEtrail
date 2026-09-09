@@ -1,19 +1,12 @@
-import type { ExploreMapItemDTO, ParticipantPreviewDTO } from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO, ExploreMapPersonDTO, ParticipantPreviewDTO } from '@uaetrail/shared-types';
+import { buildExploreCardPresentation, resolveExploreFeaturedPerson } from '@uaetrail/shared-types';
 import {
-  buildExploreCardSections,
   buildExploreRouteLabel,
   buildExploreWhenSegment,
-  exploreHeadline,
-  explorePrimaryCtaLabel,
-  exploreSecondaryCtaLabel,
-  exploreSpotsLabel,
-  exploreSubtitle,
-  exploreVenueHint,
-  resolveMapPinEmoji,
-  sanitizeExploreLocation,
   type ExploreCardSections,
 } from './exploreCopy';
 import { resolveExplorePrice, type ExplorePriceInfo } from './explorePriceLabel';
+import { extractExploreRequirementBadges } from './exploreRequirementBadges';
 
 export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
 export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
@@ -38,6 +31,7 @@ export interface ExploreCardModel {
   primaryCta: string;
   secondaryCta: string | null;
   showJoinActions: boolean;
+  showHostActions?: boolean;
   websiteUrl?: string | null;
   contactPhone?: string | null;
   shareTitle: string;
@@ -50,81 +44,60 @@ export interface ExploreCardModel {
   hostAvatar?: string | null;
   participantPreviews?: ParticipantPreviewDTO[];
   activity?: ExploreMapItemDTO['activity'];
+  coverImage?: string | null;
+  averageRating?: number | null;
+  reviewCount?: number;
+  reviewPath?: string | null;
+  locationId?: string | null;
+  merchantId?: string | null;
+  tenantId?: string | null;
+  profileUserId?: string | null;
+  featuredPerson?: ExploreMapPersonDTO | null;
+  childFriendly?: boolean;
+  difficulty?: 'easy' | 'moderate' | 'hard' | null;
+  surfaceTypes?: string[];
+  requirementBadges?: string[];
+  mapLatitude?: number | null;
+  mapLongitude?: number | null;
 }
 
-const isCarpoolItem = (item: ExploreMapItemDTO): boolean =>
-  item.kind === 'carpool' || item.activity?.activityType === 'carpool';
-
-const resolveCardKind = (item: ExploreMapItemDTO): ExploreCardKind => {
-  if (item.kind === 'shop') return 'shop';
-  if (item.kind === 'agency') return 'agency';
-  if (item.kind === 'carpool' || isCarpoolItem(item)) return 'carpool';
-  return item.kind as ExploreCardKind;
-};
-
-const resolveCardSource = (item: ExploreMapItemDTO): ExploreCardSource => {
-  if (item.source === 'demand') return 'demand';
-  if (item.source === 'venue') return 'venue';
-  if (item.source === 'shop') return 'shop';
-  if (item.source === 'agency') return 'agency';
-  return 'activity';
-};
+const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
+  item.image ??
+  item.locationCard?.images?.[0] ??
+  item.activity?.bannerUrl ??
+  item.activity?.images?.[0] ??
+  null;
 
 /** Compact second line for list rows. */
 export const buildExploreListMeta = (card: ExploreCardModel): string | null => {
-  if (card.source === 'shop') {
-    return card.sections.aboutLine ?? card.subtitle ?? null;
+  if (card.source === 'shop' || card.source === 'agency' || card.source === 'venue') {
+    return null;
   }
   const labels = card.sections.details.map((detail) => detail.label).filter(Boolean);
   if (labels.length > 0) return labels.join(' · ');
-  if (card.source === 'agency') {
-    return card.sections.aboutLine ?? card.subtitle ?? null;
-  }
   return null;
 };
 
 export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel => {
-  const kind = resolveCardKind(item);
-  const source = resolveCardSource(item);
+  const presentation = item.presentation ?? buildExploreCardPresentation(item);
+  const kind = presentation.kind;
+  const source = presentation.source;
+  const featuredPerson = item.featuredPerson ?? presentation.featuredPerson ?? resolveExploreFeaturedPerson(item);
   const isCarpool = kind === 'carpool';
   const activity = item.activity;
 
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
-  const routeLabel = buildExploreRouteLabel(fromLabel, toLabel, kind);
+  const routeLabel = presentation.routeLabel ?? buildExploreRouteLabel(fromLabel, toLabel, kind);
   const whenSuffix =
     source === 'demand' ? 'flexible' : kind === 'carpool' ? 'fixed' : null;
-  const whenLabel = buildExploreWhenSegment(
-    item.date,
-    item.time ?? activity?.time ?? null,
-    whenSuffix
-  );
-  const location = sanitizeExploreLocation(
-    item.subtitle?.trim() ||
-      activity?.locationName?.trim() ||
-      activity?.meetingPoint?.trim() ||
-      null
-  );
-  const subtitle = exploreSubtitle(item, kind, source);
+  const whenLabel =
+    presentation.whenLabel ??
+    buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
 
-  const headlineInput = {
-    source,
-    kind,
-    title: item.title,
-    hostName: item.hostName,
-    location,
-    subtitle,
-    about: item.about ?? null,
-    date: item.date,
-    time: item.time ?? activity?.time ?? null,
-    fromLabel,
-    toLabel,
-    slotsAvailable: item.slotsAvailable,
-    slotsTotal: item.slotsTotal,
-    participantCount: item.participantPreviews?.length ?? 0,
-  };
-
-  const headline = exploreHeadline(headlineInput);
+  const headline = presentation.headline;
+  const sections = presentation.sections;
+  const subtitle = presentation.subtitle;
 
   const price =
     source === 'activity'
@@ -138,7 +111,7 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
         })
       : null;
 
-  const sections = buildExploreCardSections(headlineInput);
+  const catalogSource = source === 'venue' || source === 'shop' || source === 'agency';
 
   return {
     id: item.id,
@@ -146,17 +119,17 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     source,
     kind,
     tone: isCarpool ? 'carpool' : kind,
-    emoji: resolveMapPinEmoji(kind, source),
+    emoji: presentation.emoji,
     headline,
-    listTitle: headline,
-    listHost: item.hostName ?? null,
-    subtitle: exploreSubtitle(item, kind, source),
+    listTitle: presentation.listTitle,
+    listHost: presentation.listHost,
+    subtitle,
     price,
-    spotsLabel: exploreSpotsLabel(item),
-    venueHint: exploreVenueHint(source, kind),
+    spotsLabel: presentation.spotsLabel,
+    venueHint: presentation.venueHint,
     showJoinHint: false,
-    primaryCta: explorePrimaryCtaLabel(source, { websiteUrl: item.websiteUrl }),
-    secondaryCta: exploreSecondaryCtaLabel(source),
+    primaryCta: presentation.primaryCta,
+    secondaryCta: presentation.secondaryCta,
     showJoinActions:
       (source === 'activity' && Boolean(activity)) ||
       (source === 'demand' && Boolean(item.requesterUserId)),
@@ -164,14 +137,29 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     contactPhone: item.contactPhone ?? null,
     shareTitle: headline,
     sharePath: item.path,
-    shareText: [routeLabel, whenLabel].filter(Boolean).join(' · ') || item.subtitle || null,
-    requesterUserId: item.requesterUserId ?? null,
+    shareText: presentation.shareText,
+    requesterUserId: featuredPerson?.userId ?? item.requesterUserId ?? null,
     routeLabel,
     whenLabel,
     sections,
-    hostAvatar: item.hostAvatar ?? null,
+    hostAvatar: featuredPerson?.avatarUrl ?? item.hostAvatar ?? null,
     participantPreviews: item.participantPreviews,
     activity,
+    coverImage: resolveCoverImage(item),
+    averageRating: item.averageRating ?? null,
+    reviewCount: item.reviewCount ?? 0,
+    reviewPath: catalogSource ? `${item.path}#reviews` : null,
+    locationId: item.locationCard?.id ?? null,
+    merchantId: item.merchantId ?? null,
+    tenantId: item.tenantId ?? null,
+    profileUserId: featuredPerson?.userId ?? item.requesterUserId ?? item.activity?.hostUserId ?? null,
+    featuredPerson,
+    childFriendly: item.locationCard?.childFriendly ?? false,
+    difficulty: item.locationCard?.difficulty ?? null,
+    surfaceTypes: item.locationCard?.surfaceType ?? [],
+    requirementBadges: extractExploreRequirementBadges(activity?.requirements),
+    mapLatitude: item.latitude ?? null,
+    mapLongitude: item.longitude ?? null,
   };
 };
 
@@ -182,4 +170,31 @@ export const exploreCardToneClass: Record<ExploreCardTone, string> = {
   shop: 'bg-rose-50 text-rose-700',
   agency: 'bg-indigo-50 text-indigo-700',
   carpool: 'bg-sky-50 text-sky-700',
+};
+
+export const exploreCardToneTextClass: Record<ExploreCardTone, string> = {
+  hiking: 'text-emerald-700',
+  camping: 'text-amber-700',
+  event: 'text-violet-700',
+  shop: 'text-rose-700',
+  agency: 'text-indigo-700',
+  carpool: 'text-sky-700',
+};
+
+export type ExploreFavoriteTarget = {
+  locationId?: string;
+  merchantId?: string;
+  tenantId?: string;
+  profileUserId?: string;
+};
+
+/** Resolve which favorite key applies to this explore card. */
+export const resolveExploreFavoriteTarget = (card: ExploreCardModel): ExploreFavoriteTarget | null => {
+  if (card.source === 'venue' && card.locationId) return { locationId: card.locationId };
+  if (card.source === 'shop') {
+    if (card.merchantId) return { merchantId: card.merchantId };
+    if (card.tenantId) return { tenantId: card.tenantId };
+  }
+  if (card.profileUserId) return { profileUserId: card.profileUserId };
+  return null;
 };

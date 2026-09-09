@@ -26,12 +26,17 @@ export const notifyUserAdminAction = async (input: {
   title: string;
   body: string;
   meta?: Record<string, unknown>;
+  reason?: string | null;
 }): Promise<void> => {
+  const reason = input.reason?.trim();
   await dispatchNotification({
     userId: input.userId,
     title: input.title,
     body: input.body,
     type: NotificationType.SYSTEM,
-    meta: input.meta
+    meta: {
+      ...input.meta,
+      ...(reason ? { comment: reason } : {})
+    }
   }).catch(() => undefined);
 };

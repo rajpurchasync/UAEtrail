@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import { api, TeamMember } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 import { HostShell } from '../components/host/HostShell';
+import { AppSelect } from '../components/ui/AppSelect';
 import { TenantSwitcher } from '../components/ui';
+
+const HOST_TEAM_ROLE_OPTIONS = [
+  { value: 'tenant_guide' as const, label: 'Guide' },
+  { value: 'tenant_admin' as const, label: 'Admin' },
+];
 
 export const HostTeam = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
@@ -118,10 +124,13 @@ export const HostTeam = () => {
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
             />
-            <select className="border rounded-md px-3 py-2" value={role} onChange={(event) => setRole(event.target.value as 'tenant_admin' | 'tenant_guide')}>
-              <option value="tenant_guide">Guide</option>
-              <option value="tenant_admin">Admin</option>
-            </select>
+            <AppSelect
+              value={role}
+              onChange={setRole}
+              options={HOST_TEAM_ROLE_OPTIONS}
+              inputClassName="rounded-xl border border-neutral-200 px-3 py-2 text-sm w-full"
+              aria-label="Team member role"
+            />
             <button className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">Add</button>
           </form>
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
@@ -145,19 +154,18 @@ export const HostTeam = () => {
                     {member.role === 'tenant_owner' ? (
                       <span className="capitalize">tenant owner</span>
                     ) : (
-                      <select
-                        className="border rounded-md px-2 py-1.5 text-xs"
+                      <AppSelect
                         value={roleDrafts[member.id] ?? 'tenant_guide'}
-                        onChange={(event) =>
+                        onChange={(nextRole) =>
                           setRoleDrafts((current) => ({
                             ...current,
-                            [member.id]: event.target.value as 'tenant_admin' | 'tenant_guide'
+                            [member.id]: nextRole,
                           }))
                         }
-                      >
-                        <option value="tenant_guide">Guide</option>
-                        <option value="tenant_admin">Admin</option>
-                      </select>
+                        options={HOST_TEAM_ROLE_OPTIONS}
+                        size="compact"
+                        aria-label={`Role for ${member.displayName}`}
+                      />
                     )}
                   </td>
                   <td className="px-4 py-3">

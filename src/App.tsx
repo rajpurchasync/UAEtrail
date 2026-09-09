@@ -1,14 +1,16 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { DashboardRedirect } from './components/auth/DashboardRedirect';
-import { FEATURE_FLAGS } from './config/platform';
 import { NativeDeepLinkHandler } from './components/NativeDeepLinkHandler';
 import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
 import { ActivityFormSessionProvider } from './context/ActivityFormSessionContext';
 import { Home } from './pages/Home';
+import { Membership } from './pages/Membership';
+import { MobileExploreExperience } from './components/explore/MobileExploreExperience';
+import { discoveryToExploreSearch, explorePath, parseActivityListFilter } from './utils/exploreRouting';
 
 const LegacyHostPathRedirect = () => {
   const { pathname, search, hash } = useLocation();
@@ -16,26 +18,68 @@ const LegacyHostPathRedirect = () => {
   return <Navigate to={`${next}${search}${hash}`} replace />;
 };
 
+const EventSpotRedirect = () => {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/event/${id ?? ''}`} replace />;
+};
+
 const CommunityActivityRedirect = () => {
   const { id } = useParams<{ id: string }>();
-  return <Navigate to={`/event-spot/${id ?? ''}`} replace />;
+  return <Navigate to={`/event/${id ?? ''}`} replace />;
+};
+
+const DiscoveryRedirect = () => {
+  const { search } = useLocation();
+  return <Navigate to={`${explorePath()}?${discoveryToExploreSearch(search)}`} replace />;
+};
+
+const ActivitiesBrowseRoute = () => {
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get('tab');
+  if (tab === 'joined' || tab === 'hosted' || searchParams.get('create') || searchParams.get('checkin')) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Activities />
+      </Suspense>
+    );
+  }
+  const activity = parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter'));
+  return (
+    <Navigate
+      to={explorePath({
+        list: true,
+        panel: 'activities',
+        activity: activity !== 'all' ? activity : undefined,
+      })}
+      replace
+    />
+  );
+};
+
+const ShopBrowseRoute = () => {
+  const [searchParams] = useSearchParams();
+  if (searchParams.get('checkout')) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Shop />
+      </Suspense>
+    );
+  }
+  return <Navigate to={explorePath({ list: true, panel: 'shops', filter: 'shops' })} replace />;
 };
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
-const Discovery = lazy(() => import('./pages/Discovery').then((m) => ({ default: m.Discovery })));
 const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
 const CampDetail = lazy(() => import('./pages/CampDetail').then((m) => ({ default: m.CampDetail })));
-const CommunityActivityDetail = lazy(() =>
-  import('./pages/CommunityActivityDetail').then((m) => ({ default: m.CommunityActivityDetail }))
-);
+const EventDetail = lazy(() => import('./pages/EventDetail').then((m) => ({ default: m.EventDetail })));
 
-const Membership = lazy(() => import('./pages/Membership').then((m) => ({ default: m.Membership })));
 const Shop = lazy(() => import('./pages/Shop').then((m) => ({ default: m.Shop })));
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
 const MerchantPublic = lazy(() => import('./pages/MerchantPublic').then((m) => ({ default: m.MerchantPublic })));
 const Community = lazy(() => import('./pages/Community').then((m) => ({ default: m.Community })));
 const ActivityDetail = lazy(() => import('./pages/ActivityDetail').then((m) => ({ default: m.ActivityDetail })));
 const OperatorProfile = lazy(() => import('./pages/OperatorProfile').then((m) => ({ default: m.OperatorProfile })));
+const MemberProfile = lazy(() => import('./pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
 const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
 const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
 const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
@@ -64,6 +108,8 @@ const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ de
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
 const Favorites = lazy(() => import('./pages/Favorites').then((m) => ({ default: m.Favorites })));
 const MerchantDashboard = lazy(() => import('./pages/MerchantDashboard').then((m) => ({ default: m.MerchantDashboard })));
+const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
+const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
@@ -74,6 +120,7 @@ const Notifications = lazy(() =>
   import('./pages/Notifications').then((m) => ({ default: m.Notifications }))
 );
 const Groups = lazy(() => import('./pages/Groups').then((m) => ({ default: m.Groups })));
+const Buddies = lazy(() => import('./pages/Buddies').then((m) => ({ default: m.Buddies })));
 const BecomeHost = lazy(() => import('./pages/BecomeHost').then((m) => ({ default: m.BecomeHost })));
 const MyRewards = lazy(() => import('./pages/MyRewards').then((m) => ({ default: m.MyRewards })));
 const TrailPointsAbout = lazy(() =>
@@ -97,9 +144,6 @@ const AuthAliasRedirect = ({ to }: { to: string }) => {
   const { search } = useLocation();
   return <Navigate to={`${to}${search}`} replace />;
 };
-
-/** @deprecated Consumer routes are open to all roles; staff can browse trips and discovery. */
-const ConsumerRoute = ({ children }: { children: JSX.Element }) => children;
 
 const AuthReturnContextRestorer = () => {
   const location = useLocation();
@@ -184,14 +228,20 @@ function App() {
         <Layout>
         <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<ConsumerRoute><Home /></ConsumerRoute>} />
-          <Route path="/discovery" element={<ConsumerRoute><Discovery /></ConsumerRoute>} />
+          <Route path="/" element={<Home />} />
+          <Route path="/map" element={<Navigate to="/explore" replace />} />
+          <Route
+            path="/explore"
+            element={<MobileExploreExperience />}
+          />
+          <Route path="/discovery" element={<DiscoveryRedirect />} />
           <Route path="/trail/:id" element={<TrailDetail />} />
           <Route path="/camp/:id" element={<CampDetail />} />
-          <Route path="/event-spot/:id" element={<CommunityActivityDetail />} />
+          <Route path="/event/:id" element={<EventDetail />} />
+          <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
-          <Route path="/calendar" element={<Navigate to="/activities" replace />} />
-          <Route path="/activities" element={<ConsumerRoute><Activities /></ConsumerRoute>} />
+          <Route path="/calendar" element={<Navigate to={explorePath({ list: true, panel: 'activities' })} replace />} />
+          <Route path="/activities" element={<ActivitiesBrowseRoute />} />
           <Route path="/trips" element={<LegacyTripsRedirect />} />
           <Route
             path="/profile/settings"
@@ -209,7 +259,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/trail-points" element={<ConsumerRoute><TrailPointsAbout /></ConsumerRoute>} />
+          <Route path="/trail-points" element={<TrailPointsAbout />} />
           <Route
             path="/my-rewards"
             element={
@@ -267,19 +317,28 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/activity/:id" element={<ConsumerRoute><ActivityDetail /></ConsumerRoute>} />
+          <Route
+            path="/buddies"
+            element={
+              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
+                <Buddies />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/activity/:id"
+            element={<ActivityDetail />}
+          />
           <Route path="/trip/:id" element={<LegacyTripDetailRedirect />} />
           <Route path="/operator/:id" element={<OperatorProfile />} />
+          <Route path="/member/:userId" element={<MemberProfile />} />
           <Route path="/become-organizer" element={<BecomeHost />} />
           <Route path="/become-host" element={<BecomeHost />} />
-          <Route
-            path="/membership"
-            element={FEATURE_FLAGS.membershipEnabled ? <Membership /> : <Navigate to="/trail-points" replace />}
-          />
-          <Route path="/shop" element={<ConsumerRoute><Shop /></ConsumerRoute>} />
+          <Route path="/membership" element={<Membership />} />
+          <Route path="/shop" element={<ShopBrowseRoute />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/merchant/:id" element={<MerchantPublic />} />
-          <Route path="/community" element={<ConsumerRoute><Community /></ConsumerRoute>} />
+          <Route path="/community" element={<Community />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signed-out" element={<Navigate to="/" replace />} />
@@ -510,9 +569,25 @@ function App() {
             element={<Navigate to="/profile" replace />}
           />
           <Route
+            path="/shop/manage"
+            element={
+              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'merchant_admin']}>
+                <ShopManage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agency/manage"
+            element={
+              <ProtectedRoute roles={['tenant_owner', 'tenant_admin']}>
+                <AgencyManage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/merchant/dashboard"
             element={
-              <ProtectedRoute roles={['merchant_admin']}>
+              <ProtectedRoute roles={['merchant_admin', 'tenant_owner', 'tenant_admin']}>
                 <MerchantDashboard />
               </ProtectedRoute>
             }

@@ -1,32 +1,49 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Mountain, ShoppingBag, Tent } from 'lucide-react';
+import { Heart, MapPin, Mountain, ShoppingBag, Tent, User } from 'lucide-react';
 import { ProductDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { fetchPublicMappedData } from '../api/public';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { TrailCard, CampingCard } from '../components/ui';
+import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { PageMeta } from '../components/seo/PageMeta';
-import { PAGE_BANNERS } from '../config/pageBanners';
+import { explorePath } from '../utils/exploreRouting';
 import type { Trail, CampingSpot } from '../types';
 
-type SavedTab = 'all' | 'trails' | 'camps' | 'shop';
+type SavedTab = 'all' | 'trails' | 'camps' | 'shop' | 'people';
 
 const SAVED_TAB_OPTIONS: Array<{ key: SavedTab; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'trails', label: 'Trails' },
   { key: 'camps', label: 'Camps' },
   { key: 'shop', label: 'Shop' },
+  { key: 'people', label: 'People' },
 ];
 
 type FavoriteProduct = ProductDTO & { merchantName: string };
+
+type SavedShop = {
+  id: string;
+  name: string;
+  path: string;
+  logo?: string | null;
+};
+
+type SavedProfile = {
+  id: string;
+  displayName: string;
+  avatarUrl?: string | null;
+};
 
 export const Favorites = () => {
   const [activeTab, setActiveTab] = useState<SavedTab>('all');
   const [savedTrails, setSavedTrails] = useState<Trail[]>([]);
   const [savedCamps, setSavedCamps] = useState<CampingSpot[]>([]);
   const [savedProducts, setSavedProducts] = useState<FavoriteProduct[]>([]);
+  const [savedShops, setSavedShops] = useState<SavedShop[]>([]);
+  const [savedProfiles, setSavedProfiles] = useState<SavedProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -73,12 +90,44 @@ export const Favorites = () => {
               } as FavoriteProduct;
             })
         );
+        setSavedShops(
+          favoritesResponse.data.flatMap((item) => {
+            if (item.merchant) {
+              return [{
+                id: item.merchant.id,
+                name: item.merchant.shopName,
+                path: `/merchant/${item.merchant.id}`,
+                logo: item.merchant.logo,
+              }];
+            }
+            if (item.tenant) {
+              return [{
+                id: item.tenant.id,
+                name: item.tenant.name,
+                path: `/operator/${item.tenant.slug ?? item.tenant.id}`,
+                logo: item.tenant.logoUrl,
+              }];
+            }
+            return [];
+          })
+        );
+        setSavedProfiles(
+          favoritesResponse.data
+            .filter((item) => Boolean(item.profile))
+            .map((item) => ({
+              id: item.profile!.id,
+              displayName: item.profile!.displayName,
+              avatarUrl: item.profile!.avatarUrl,
+            }))
+        );
       } catch (error) {
         if (disposed) return;
         setSavedTrails([]);
         setSavedCamps([]);
         setSavedProducts([]);
-        setLoadError(error instanceof Error ? error.message : 'Failed to load saved items');
+        setSavedShops([]);
+        setSavedProfiles([]);
+        setLoadError(error instanceof Error ? error.message : 'Couldn\'t load your saved places — try again.');
       } finally {
         if (!disposed) {
           setLoading(false);
@@ -94,8 +143,9 @@ export const Favorites = () => {
   }, []);
 
   const savedPlacesCount = savedTrails.length + savedCamps.length;
-  const savedShopCount = savedProducts.length;
-  const totalSavedCount = savedPlacesCount + savedShopCount;
+  const savedShopCount = savedProducts.length + savedShops.length;
+  const savedPeopleCount = savedProfiles.length;
+  const totalSavedCount = savedPlacesCount + savedShopCount + savedPeopleCount;
 
   const emptyState = useMemo(
     () => (
@@ -108,8 +158,8 @@ export const Favorites = () => {
           Save places and shop items using the heart icon. Your saved items will appear here.
         </p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-          <Link to="/discovery" className="app-chip-active">Browse places</Link>
-          <Link to="/shop" className="app-chip-inactive">Browse shop</Link>
+          <Link to={explorePath({ panel: 'venues', list: true })} className="app-chip-active">Browse locations</Link>
+          <Link to={explorePath({ panel: 'shops', list: true, filter: 'shops' })} className="app-chip-inactive">Browse shops</Link>
         </div>
       </div>
     ),
@@ -119,13 +169,14 @@ export const Favorites = () => {
   const showTrails = activeTab === 'all' || activeTab === 'trails';
   const showCamps = activeTab === 'all' || activeTab === 'camps';
   const showShop = activeTab === 'all' || activeTab === 'shop';
+  const showPeople = activeTab === 'all' || activeTab === 'people';
 
   return (
     <ConsumerShell
-      layout="tab"
+      layout="stack"
       title="Saved"
-      banner={{ src: PAGE_BANNERS.profile, alt: 'Saved hiking and camping inspiration' }}
-      journey={{ fallbackTo: '/profile', label: 'Profile' }}
+      showJourney={false}
+      back={{ fallbackTo: '/profile', label: 'Profile' }}
       toolbar={
         <FilterChips options={SAVED_TAB_OPTIONS} value={activeTab} onChange={setActiveTab} />
       }
@@ -220,7 +271,42 @@ export const Favorites = () => {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4 text-emerald-600" />
-                <h2 className="text-lg font-semibold text-neutral-900">Favorite Shop Items</h2>
+                <h2 className="text-lg font-semibold text-neutral-900">Favourite shops</h2>
+                <span className="text-sm text-neutral-500">({savedShops.length})</span>
+              </div>
+              {savedShops.length === 0 ? (
+                <div className="glass-card p-4 text-sm text-neutral-600">
+                  No favourite shops yet.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {savedShops.map((shop) => (
+                    <Link
+                      key={shop.id}
+                      to={shop.path}
+                      className="glass-card flex items-center gap-3 p-4 hover:shadow-md transition-shadow"
+                    >
+                      {shop.logo ? (
+                        <img src={shop.logo} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-xl">🛍️</div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-semibold text-neutral-900 truncate">{shop.name}</p>
+                        <p className="text-xs text-neutral-500">Gear shop</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {showShop && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-emerald-600" />
+                <h2 className="text-lg font-semibold text-neutral-900">Favourite Shop Items</h2>
                 <span className="text-sm text-neutral-500">({savedProducts.length})</span>
               </div>
               {savedProducts.length === 0 ? (
@@ -245,6 +331,41 @@ export const Favorites = () => {
                         <h3 className="font-semibold text-gray-900 line-clamp-1">{product.name}</h3>
                         <p className="text-emerald-700 font-bold mt-1">AED {product.priceAed}</p>
                         <p className="text-xs text-gray-500 mt-1 line-clamp-1">by {product.merchantName}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {showPeople && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-emerald-600" />
+                <h2 className="text-lg font-semibold text-neutral-900">Favourite people</h2>
+                <span className="text-sm text-neutral-500">({savedProfiles.length})</span>
+              </div>
+              {savedProfiles.length === 0 ? (
+                <div className="glass-card p-4 text-sm text-neutral-600">
+                  No favourite profiles yet.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {savedProfiles.map((profile) => (
+                    <Link
+                      key={profile.id}
+                      to={`/member/${profile.id}`}
+                      className="glass-card flex items-center gap-3 p-4 hover:shadow-md transition-shadow"
+                    >
+                      <SecureAvatar
+                        src={profile.avatarUrl}
+                        name={profile.displayName}
+                        className="h-12 w-12 text-sm"
+                      />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-neutral-900 truncate">{profile.displayName}</p>
+                        <p className="text-xs text-neutral-500">Member profile</p>
                       </div>
                     </Link>
                   ))}

@@ -27,9 +27,9 @@ export const ProfileCompletionCard = ({
 
   return (
     <button type="button" onClick={handleClick} className="block w-full text-left">
-      <GlassCard padding className="border border-rose-100 bg-gradient-to-br from-rose-50/80 to-white animate-fade-up">
+      <GlassCard padding className="border border-emerald-100 bg-gradient-to-br from-emerald-50/80 to-white animate-fade-up">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-500 text-sm font-bold text-white">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-bold text-white">
             {percent}%
           </span>
           <div className="min-w-0 flex-1">

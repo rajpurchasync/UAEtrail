@@ -1,5 +1,6 @@
 import type { Collection } from 'mongodb';
 import type { Location } from '../domain/types.js';
+import { resolveJoinMode } from '../domain/activity-join-mode.js';
 import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
 import {
   buildActivityFromCreateInput,
@@ -9,6 +10,7 @@ import {
   type ActivityUpdateInput,
   type MongoActivityDoc
 } from './entity-builders.js';
+import { invalidateExploreMapCache } from './explore-map-cache.js';
 import {
   findPublishedActivityWithPreviewsFromMongo,
   findPublicTenantProfileBySlugFromMongo,
@@ -127,6 +129,7 @@ export const updateActivityDetailed = async (
   if (data.pricingMode !== undefined) patch.pricingMode = data.pricingMode;
   if (data.itinerary !== undefined) patch.itinerary = data.itinerary;
   if (data.requirements !== undefined) patch.requirements = data.requirements;
+  if (data.joinMode !== undefined) patch.joinMode = data.joinMode;
   if (data.images !== undefined) patch.images = data.images;
   if (data.bannerUrl !== undefined) patch.bannerUrl = data.bannerUrl?.trim() || null;
   if (data.signupUrl !== undefined) patch.signupUrl = data.signupUrl?.trim() || null;
@@ -227,6 +230,7 @@ export const duplicateTenantActivity = async (
     paymentTerms: source.paymentTerms ?? undefined,
     itinerary: source.itinerary ?? [],
     requirements: source.requirements ?? [],
+    joinMode: resolveJoinMode(source.joinMode, source.requirements),
     images: source.images ?? [],
     bannerUrl: source.bannerUrl ?? null,
     signupUrl: source.signupUrl ?? null,
@@ -247,6 +251,7 @@ export const publishActivityById = async (activityId: string) => {
   if (!mongoDoc) {
     throw new Error('Failed to publish event.');
   }
+  await invalidateExploreMapCache();
   return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.PUBLISHED, publishedAt });
 };
 
