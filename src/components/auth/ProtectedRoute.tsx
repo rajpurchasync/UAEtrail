@@ -2,6 +2,7 @@ import { UserRole } from '@uaetrail/shared-types';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { accountRouteByRole } from '../../utils/authRouting';
+import { buildSignInRedirect } from '../../utils/authReturnContext';
 
 interface ProtectedRouteProps {
   roles?: UserRole[];
@@ -21,8 +22,13 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    const { href: signInHref } = buildSignInRedirect(location);
     return (
-      <Navigate to="/signin" replace state={{ from: location.pathname + location.search }} />
+      <Navigate
+        to={signInHref}
+        replace
+        state={{ from: location.pathname + location.search }}
+      />
     );
   }
 

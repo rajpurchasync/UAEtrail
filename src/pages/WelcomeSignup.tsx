@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mountain, Users, MapPin, Plus, Share2 } from 'lucide-react';
 import { api } from '../api/services';
 import { PageMeta } from '../components/seo/PageMeta';
+import { EXPLORE_MAP_PATH } from '../config/platform';
 import { explorePath } from '../utils/exploreRouting';
 import {
   USER_CITY_OPTIONS,
@@ -23,7 +24,7 @@ export const WelcomeSignup = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = (location.state as WelcomeLocationState | null) ?? {};
-  const redirectTo = state.redirectTo ?? '/';
+  const redirectTo = state.redirectTo ?? EXPLORE_MAP_PATH;
   const [step, setStep] = useState<WelcomeStep>('confirm');
   const [sharing, setSharing] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -220,7 +221,7 @@ export const WelcomeSignup = () => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate(explorePath(), { replace: true })}
+                onClick={() => navigate(redirectTo, { replace: true })}
                 className="w-full flex items-center gap-3 rounded-2xl border border-neutral-100 bg-neutral-50 px-4 py-3.5 text-left hover:bg-neutral-100 transition-colors"
               >
                 <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-emerald-600">

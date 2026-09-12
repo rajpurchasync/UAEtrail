@@ -7,7 +7,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { ShopContactSection } from '../components/shop/ShopContactSection';
 import { ShopProductCatalogSection } from '../components/shop/ShopProductCatalogSection';
-import { ShareButton, FavoriteButton } from '../components/ui';
+import { ShareButton } from '../components/ui';
 import { explorePath } from '../utils/exploreRouting';
 
 export const MerchantPublic = () => {
@@ -55,16 +55,13 @@ export const MerchantPublic = () => {
       backLabel="Explore"
       showMenu={false}
       headerAction={
-        <div className="flex items-center gap-1.5">
-          <FavoriteButton merchantId={id} compact />
-          <ShareButton
-            title={merchant.shopName}
-            text={merchant.description?.slice(0, 120) ?? `${merchant.shopName} on UAE Trail`}
-            path={`/merchant/${id}`}
-            iconOnly
-            light
-          />
-        </div>
+        <ShareButton
+          title={merchant.shopName}
+          text={merchant.description?.slice(0, 120) ?? `${merchant.shopName} on UAE Trail`}
+          path={`/merchant/${id}`}
+          iconOnly
+          light
+        />
       }
     >
       <PageMeta

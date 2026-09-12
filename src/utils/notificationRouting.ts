@@ -47,6 +47,18 @@ export const inferNotificationPath = (
     const groupId = toStringValue(meta?.groupId);
     if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
   }
+  if (kind === 'group_invite') {
+    const inviteToken = toStringValue(meta?.inviteToken);
+    if (inviteToken) return `/groups?invite=${encodeURIComponent(inviteToken)}`;
+    const groupId = toStringValue(meta?.groupId);
+    if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
+    return '/groups';
+  }
+  if (kind === 'group_invite_accepted') {
+    const groupId = toStringValue(meta?.groupId);
+    if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
+    return '/groups';
+  }
   if (kind === 'request_withdrawal') {
     return '/host/requests';
   }
@@ -56,9 +68,12 @@ export const inferNotificationPath = (
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') {
     const buddyUserId = toStringValue(meta?.buddyUserId) ?? toStringValue(meta?.fromUserId);
     if (buddyUserId) return `/member/${buddyUserId}`;
-    return '/profile';
+    return '/buddies';
   }
-  if (kind.includes('buddy')) {
+  // Legacy mislabeled group invites stored before kind fix.
+  if (kind === 'buddy_request' && toStringValue(meta?.groupId)) {
+    const inviteToken = toStringValue(meta?.inviteToken);
+    if (inviteToken) return `/groups?invite=${encodeURIComponent(inviteToken)}`;
     return '/groups';
   }
   if (kind === 'location_approved') {

@@ -39,6 +39,7 @@ import {
 import { buildExploreCardModel } from '../../explore/exploreCardModel';
 import { MAP_FILTER_EMOJI, MAP_LAYER_FILTER_EMOJI, resolveExploreItemSource } from '../../explore/exploreCopy';
 import { messagesRouteForRole } from '../../utils/authRouting';
+import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { activityHostUserId } from '../../utils/hostLabels';
 import { resolveJoinRequestUiState, withdrawModalVariant, type JoinRequestUiState } from '../../utils/joinRequestUi';
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
@@ -62,6 +63,7 @@ import {
   type MapFilterKey,
   type VenueListFilterKey,
 } from '../../utils/exploreRouting';
+import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
 
 const LocationsMap = lazy(() =>
   import('../ui/LocationsMap').then((m) => ({ default: m.LocationsMap }))
@@ -101,25 +103,20 @@ const PANEL_TABS: Array<{ key: ExplorePanel; label: string }> = [
   { key: 'shops', label: 'Shops' },
 ];
 
-type DesktopBrowseTab = 'all' | 'activities' | 'venues';
+type DesktopBrowseTab = 'activities' | 'venues';
 
 const DESKTOP_BROWSE_TABS: Array<{ key: DesktopBrowseTab; label: string }> = [
-  { key: 'all', label: 'All' },
   { key: 'activities', label: 'Activities' },
   { key: 'venues', label: 'Venues' },
 ];
 
 const MAP_FILTERS_BY_BROWSE_TAB: Record<DesktopBrowseTab, MapFilterKey[]> = {
-  all: ['all', 'hiking', 'camping', 'carpool', 'others', 'shops'],
   activities: ['all', 'hiking', 'camping', 'carpool', 'others'],
   venues: ['all', 'hiking', 'camping', 'others', 'shops'],
 };
 
-const parseDesktopBrowseTab = (panel: ExplorePanel, panelParam: string | null): DesktopBrowseTab => {
-  if (panel === 'venues') return 'venues';
-  if (panelParam === 'activities') return 'activities';
-  return 'all';
-};
+const parseDesktopBrowseTab = (panel: ExplorePanel): DesktopBrowseTab =>
+  panel === 'venues' ? 'venues' : 'activities';
 
 const mapFilterToPanel = (filter: MapFilterKey): ExplorePanel => {
   if (filter === 'shops') return 'shops';
@@ -170,24 +167,14 @@ const panelListTitle = (
 };
 
 const desktopBrowseListTitle = (tab: DesktopBrowseTab, count: number, mapFilter: MapFilterKey): string => {
-  if (tab === 'all') {
-    if (mapFilter === 'all') return `${count} result${count === 1 ? '' : 's'} in your area`;
-    if (mapFilter === 'carpool') return `${count} rideshare${count === 1 ? '' : 's'} in your area`;
-    if (mapFilter === 'others') return `${count} event${count === 1 ? '' : 's'} in your area`;
-    if (mapFilter === 'shops') return `${count} shop${count === 1 ? '' : 's'} in your area`;
-    return `${count} ${mapFilterLabel(mapFilter).toLowerCase()} in your area`;
-  }
   if (tab === 'activities') {
     return listItemLabel(mapFilterToActivityListFilter(mapFilter), count);
   }
   return venueListLabel(mapFilterToVenueListFilter(mapFilter), count);
 };
 
-const desktopSearchPlaceholder = (tab: DesktopBrowseTab): string => {
-  if (tab === 'venues') return 'Search venues…';
-  if (tab === 'activities') return 'Search activities…';
-  return 'Search…';
-};
+const desktopSearchPlaceholder = (tab: DesktopBrowseTab): string =>
+  tab === 'venues' ? 'Search venues…' : 'Search activities…';
 
 const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueListFilterKey): boolean => {
   if (venueFilter === 'all') return true;
@@ -379,7 +366,7 @@ export const MobileExploreExperience = () => {
   const [venueFilter, setVenueFilter] = useState<VenueListFilterKey>('all');
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
   const [desktopBrowseTab, setDesktopBrowseTab] = useState<DesktopBrowseTab>(() =>
-    parseDesktopBrowseTab(parseExplorePanel(searchParams.get('panel')), searchParams.get('panel'))
+    parseDesktopBrowseTab(parseExplorePanel(searchParams.get('panel')))
   );
   const [searchExpanded, setSearchExpanded] = useState(() => Boolean(searchParams.get('q')?.trim()));
 
@@ -418,6 +405,7 @@ export const MobileExploreExperience = () => {
       params.delete('compose');
       params.delete('contribute');
       params.delete('request');
+      params.delete('hostDemand');
 
       setSearchParams(params, { replace: true });
     },
@@ -501,7 +489,7 @@ export const MobileExploreExperience = () => {
     setListOpen(searchParams.get('list') === '1' || isDesktop);
     setQuery(searchParams.get('q') ?? '');
     if (isDesktop) {
-      setDesktopBrowseTab(parseDesktopBrowseTab(nextPanel, searchParams.get('panel')));
+      setDesktopBrowseTab(parseDesktopBrowseTab(nextPanel));
       if (searchParams.get('q')?.trim()) setSearchExpanded(true);
     }
   }, [searchParams, isDesktop]);
@@ -514,11 +502,7 @@ export const MobileExploreExperience = () => {
     const syncedPanel = isDesktop
       ? desktopBrowseTab === 'venues'
         ? 'venues'
-        : desktopBrowseTab === 'activities'
-          ? 'activities'
-          : next === 'shops'
-            ? 'shops'
-            : 'activities'
+        : 'activities'
       : mapFilterToPanel(next);
     setActivityFilter(syncedActivity);
     setVenueFilter(syncedVenue);
@@ -611,18 +595,6 @@ export const MobileExploreExperience = () => {
     syncExploreUrl({ list: listOpen || isDesktop });
   };
 
-  const openSuggestVenue = () => {
-    if (!user) {
-      navigate(
-        `/signin?redirect=${encodeURIComponent(explorePath({ panel: 'venues', list: true, contribute: true }))}`
-      );
-      return;
-    }
-    setPanel('venues');
-    setListOpen(true);
-    setContributeOpen(true);
-  };
-
   useEffect(() => {
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -659,45 +631,41 @@ export const MobileExploreExperience = () => {
     };
 
     if (isDesktop) {
-      if (desktopBrowseTab === 'all') {
-        return items
-          .filter((item) => {
-            if (item.source === 'activity' || item.source === 'demand') {
-              return matchesMapFilter(item, mapFilter);
-            }
-            if (item.source === 'venue') return matchesMapFilter(item, mapFilter);
-            if (isShopMapItem(item)) return matchesMapFilter(item, mapFilter);
-            return false;
-          })
-          .filter(matchesQuery);
-      }
       if (desktopBrowseTab === 'activities') {
-        return items
-          .filter((item) => item.source === 'activity' || item.source === 'demand')
-          .filter((item) => matchesMapFilter(item, mapFilter))
-          .filter(matchesQuery);
+        return sortExploreActivities(
+          items
+            .filter((item) => item.source === 'activity' || item.source === 'demand')
+            .filter((item) => matchesMapFilter(item, mapFilter))
+            .filter(matchesQuery)
+        );
       }
-      return items
-        .filter((item) => item.source === 'venue' || isShopMapItem(item))
-        .filter((item) => matchesMapFilter(item, mapFilter))
-        .filter(matchesQuery);
+      return sortExploreVenues(
+        items
+          .filter((item) => item.source === 'venue' || isShopMapItem(item))
+          .filter((item) => matchesMapFilter(item, mapFilter))
+          .filter(matchesQuery)
+      );
     }
 
     if (sidebarPanel === 'venues') {
-      return items
-        .filter((item) => item.source === 'venue')
-        .filter((item) => matchesVenueFilter(item, venueFilter))
-        .filter(matchesQuery);
+      return sortExploreVenues(
+        items
+          .filter((item) => item.source === 'venue')
+          .filter((item) => matchesVenueFilter(item, venueFilter))
+          .filter(matchesQuery)
+      );
     }
 
     if (sidebarPanel === 'shops') {
-      return items.filter(isShopMapItem).filter(matchesQuery);
+      return sortExploreVenues(items.filter(isShopMapItem).filter(matchesQuery));
     }
 
-    return items
-      .filter((item) => item.source === 'activity' || item.source === 'demand')
-      .filter((item) => matchesActivityFilter(item, activityFilter))
-      .filter(matchesQuery);
+    return sortExploreActivities(
+      items
+        .filter((item) => item.source === 'activity' || item.source === 'demand')
+        .filter((item) => matchesActivityFilter(item, activityFilter))
+        .filter(matchesQuery)
+    );
   }, [items, activityFilter, venueFilter, query, sidebarPanel, isDesktop, desktopBrowseTab, mapFilter]);
 
   const browseFilterHint = useMemo(() => {
@@ -767,7 +735,7 @@ export const MobileExploreExperience = () => {
     }
     void loadJoinContext(selected.activity.id);
   }, [selected?.activity?.id, selectedCard?.showHostActions, user?.id]);
-  const signInHref = `/signin?redirect=${encodeURIComponent(`${pathname}${search}`)}`;
+  const { href: signInHref } = buildSignInRedirect({ pathname, search });
   const reloadMap = () => {
     void queryClient.invalidateQueries({ queryKey: exploreMapQueryKey });
   };
@@ -811,7 +779,7 @@ export const MobileExploreExperience = () => {
     handleCreateTap();
   };
 
-  const primaryFabLabel = 'Add';
+  const primaryFabLabel = 'Add New';
 
   const handleComposeChoice = (choice: ComposeIntentChoice) => {
     setComposeOpen(false);
@@ -871,7 +839,7 @@ export const MobileExploreExperience = () => {
     }
     if (!selected?.activity) return;
     if (!user) {
-      navigate(`/signin?redirect=${encodeURIComponent(selected.path)}`);
+      navigate(signInHref);
       return;
     }
     if (joinUiState.kind !== 'open') return;
@@ -910,29 +878,97 @@ export const MobileExploreExperience = () => {
     }
   };
 
-  const canHostThisTrip = Boolean(
-    canPublish &&
-      selected?.source === 'demand' &&
+  const buildHostDemandReturnPath = useCallback(
+    (demandId: string) => {
+      const params = new URLSearchParams(searchParams);
+      params.set('hostDemand', demandId);
+      if (!params.has('list')) params.set('list', '1');
+      return `${pathname}?${params.toString()}`;
+    },
+    [pathname, searchParams]
+  );
+
+  const clearHostDemandParam = useCallback(() => {
+    if (!searchParams.get('hostDemand')) return;
+    const params = new URLSearchParams(searchParams);
+    params.delete('hostDemand');
+    setSearchParams(params, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const openHostTripFlow = useCallback((item: ExploreMapItemDTO) => {
+    if (!item.participantIntentId) return;
+    setHostTripPrefill({
+      draft: createDraftFromDemand(item),
+      participantIntentId: item.participantIntentId,
+    });
+    setSelectedId(null);
+    setCreateOpen(true);
+  }, []);
+
+  useEffect(() => {
+    const hostDemandId = searchParams.get('hostDemand');
+    if (!hostDemandId || loading) return;
+
+    const item = items.find((entry) => entry.id === hostDemandId);
+    if (!item || item.source !== 'demand' || !item.participantIntentId || item.convertedActivityId) {
+      clearHostDemandParam();
+      return;
+    }
+
+    setSelectedId(hostDemandId);
+
+    if (!user) return;
+    if (item.requesterUserId === user.id) {
+      clearHostDemandParam();
+      return;
+    }
+    if (hostGateLoading) return;
+
+    const returnPath = buildHostDemandReturnPath(hostDemandId);
+
+    if (!canPublish) {
+      navigate(`/become-host?redirect=${encodeURIComponent(returnPath)}`);
+      return;
+    }
+
+    openHostTripFlow(item);
+    clearHostDemandParam();
+  }, [
+    searchParams,
+    loading,
+    items,
+    user,
+    hostGateLoading,
+    canPublish,
+    navigate,
+    buildHostDemandReturnPath,
+    clearHostDemandParam,
+    openHostTripFlow,
+  ]);
+
+  const canOfferHostTrip = Boolean(
+    selected?.source === 'demand' &&
       selected.participantIntentId &&
       !selected.convertedActivityId &&
       selected.requesterUserId &&
-      user &&
-      selected.requesterUserId !== user.id
+      (!user || selected.requesterUserId !== user.id)
   );
 
   const handleHostTrip = () => {
     if (!selected?.participantIntentId) return;
-    if (!canPublish) {
-      navigate('/become-host');
-      setSelectedId(null);
+
+    const returnPath = buildHostDemandReturnPath(selected.id);
+
+    if (!user) {
+      navigate(`/signup?redirect=${encodeURIComponent(returnPath)}`);
       return;
     }
-    setHostTripPrefill({
-      draft: createDraftFromDemand(selected),
-      participantIntentId: selected.participantIntentId,
-    });
-    setSelectedId(null);
-    setCreateOpen(true);
+    if (hostGateLoading) return;
+    if (!canPublish) {
+      navigate(`/become-host?redirect=${encodeURIComponent(returnPath)}`);
+      return;
+    }
+    openHostTripFlow(selected);
   };
 
   const closeCreateFlow = () => {
@@ -1019,16 +1055,6 @@ export const MobileExploreExperience = () => {
               >
                 <Search className="h-4 w-4" />
               </button>
-              {desktopBrowseTab === 'venues' ? (
-                <button
-                  type="button"
-                  onClick={openSuggestVenue}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add venue
-                </button>
-              ) : null}
             </div>
           </div>
           {(searchExpanded || query.trim()) && (
@@ -1163,9 +1189,7 @@ export const MobileExploreExperience = () => {
             {isDesktop
               ? desktopBrowseTab === 'venues'
                 ? 'No venues match this filter yet.'
-                : desktopBrowseTab === 'activities'
-                  ? 'Nothing here with these filters — try another type or date.'
-                  : 'Nothing matches these filters — try another type.'
+                : 'Nothing here with these filters — try another type or date.'
               : sidebarPanel === 'venues'
                 ? 'No venues match this filter yet.'
                 : sidebarPanel === 'shops'
@@ -1230,7 +1254,7 @@ export const MobileExploreExperience = () => {
       <div
         className={`pointer-events-none absolute top-3 max-lg:left-6 max-lg:right-0 lg:left-4 lg:right-4 lg:top-4 ${EXPLORE_Z.mapFilters}`}
       >
-        <div className="pointer-events-auto flex items-start justify-between gap-3">
+        <div className="pointer-events-auto flex items-start gap-3">
           <div className="flex min-w-0 flex-1 flex-nowrap gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-none py-1">
             {contextualMapFilters.map((option) => {
               const active = mapFilter === option.key;
@@ -1249,17 +1273,6 @@ export const MobileExploreExperience = () => {
               );
             })}
           </div>
-          {isDesktop && (
-            <button
-              type="button"
-              onClick={handleCreateTap}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
-              aria-label="Add"
-            >
-              <Plus className="h-4 w-4" strokeWidth={2.5} aria-hidden />
-              Add
-            </button>
-          )}
         </div>
       </div>
       )}
@@ -1308,11 +1321,11 @@ export const MobileExploreExperience = () => {
         </div>
       )}
 
-      <div className="absolute bottom-[calc(var(--safe-bottom)+16px)] left-4 right-4 z-[1100] flex items-end justify-between gap-3 lg:bottom-6">
+      <div className="pointer-events-none absolute bottom-[calc(var(--safe-bottom)+16px)] left-4 right-4 z-[1100] flex items-end justify-between gap-3 lg:bottom-6 lg:justify-end">
         <button
           type="button"
           onClick={openBrowse}
-          className={`${EXPLORE_FLOATING_CONTROL} gap-2 px-4 py-2.5 text-sm font-semibold text-gray-900 lg:hidden`}
+          className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto gap-2 px-4 py-2.5 text-sm font-semibold text-gray-900 lg:hidden`}
         >
           <List className="h-4 w-4" aria-hidden />
           Browse
@@ -1320,10 +1333,11 @@ export const MobileExploreExperience = () => {
         <button
           type="button"
           onClick={handlePrimaryFab}
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_4px_16px_rgba(5,150,105,.35)] lg:hidden"
+          className="pointer-events-auto inline-flex shrink-0 items-center gap-2 rounded-full border-2 border-white/90 bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] ring-1 ring-emerald-700/20 hover:bg-emerald-700 active:scale-[0.98] lg:px-6 lg:py-3.5 lg:text-base"
           aria-label={primaryFabLabel}
         >
-          <Plus className="h-7 w-7" strokeWidth={2.5} />
+          <Plus className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />
+          {primaryFabLabel}
         </button>
       </div>
 
@@ -1339,7 +1353,7 @@ export const MobileExploreExperience = () => {
           onClose={() => setSelectedId(null)}
           onJoin={handleJoin}
           onMessage={selectedCard.showHostActions ? handleHostMessage : handleDemandMessage}
-          onHostTrip={canHostThisTrip ? handleHostTrip : undefined}
+          onHostTrip={canOfferHostTrip ? handleHostTrip : undefined}
           onManage={selectedCard.showHostActions ? handleHostManage : undefined}
           joinUiState={selectedCard.showHostActions ? undefined : joinUiState}
           onWithdraw={() => setShowWithdraw(true)}

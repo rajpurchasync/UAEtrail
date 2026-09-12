@@ -1,18 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Loader2, Lock, UserPlus } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import { api, type PublicMemberProfileDTO } from '../api/services';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
-import { AppButton } from '../components/mobile/AppButton';
-import { ProfileStampsRow } from '../components/profile/ProfileStampsRow';
-import { SecureAvatar } from '../components/ui/SecureAvatar';
-import { FavoriteButton } from '../components/ui/FavoriteButton';
+import { MemberProfileView } from '../components/profile/MemberProfileView';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import { buildProfileStamps } from '../utils/profileStamps';
-import { formatMemberAge } from '../utils/profileAge';
 import { messagesRouteForRole } from '../utils/authRouting';
 
 const isFullProfile = (
@@ -125,27 +121,29 @@ export const MemberProfile = () => {
         hostProfileKind: fullProfile.hostProfileKind,
         isGuideStaff: fullProfile.isGuideStaff,
         rewardSummary: fullProfile.trailPointsEligible
-          ? {
+          ? ({
               points: fullProfile.points,
               membershipTier: fullProfile.membershipTier,
               tierBadges: fullProfile.tierBadges,
               badges: fullProfile.badges,
-            } as never
+            } as never)
           : null,
       })
     : [];
 
   const isSelf = user?.id === userId;
   const isPrivate = profile?.visibilityState === 'private';
+  const pageTitle = fullProfile?.displayName ?? 'Member';
 
   return (
     <ConsumerShell
       layout="stack"
-      title="Member"
+      title={pageTitle}
+      navTitle={pageTitle.length > 18 ? `${pageTitle.slice(0, 16)}…` : pageTitle}
       showJourney={false}
-      back={{ fallbackTo: '/activities', label: 'Activities' }}
+      back={{ fallbackTo: '/activities', label: 'Back' }}
     >
-      <PageMeta title={fullProfile?.displayName ?? 'Member profile'} noIndex />
+      <PageMeta title={pageTitle} noIndex />
 
       {loading ? (
         <div className="flex justify-center py-16">
@@ -175,134 +173,22 @@ export const MemberProfile = () => {
             </Link>
           )}
         </GlassCard>
-      ) : (
-        <div className="space-y-3 pb-nav-safe">
-          <GlassCard padding className="!p-5 text-center">
-            <SecureAvatar
-              src={fullProfile!.avatarUrl}
-              name={fullProfile!.displayName}
-              className="mx-auto h-20 w-20 text-xl ring-2 ring-white shadow-md"
-            />
-            {!isSelf && user && userId && (
-              <div className="mt-3 flex justify-center">
-                <FavoriteButton profileUserId={userId} />
-              </div>
-            )}
-            <h1 className="mt-3 text-xl font-bold text-neutral-900">{fullProfile!.displayName}</h1>
-            {(fullProfile!.age != null || fullProfile!.languages) && (
-              <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                {formatMemberAge(fullProfile!.age) && (
-                  <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
-                    {formatMemberAge(fullProfile!.age)}
-                  </span>
-                )}
-                {fullProfile!.languages && (
-                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-                    {fullProfile!.languages}
-                  </span>
-                )}
-              </div>
-            )}
-            {fullProfile!.bio && (
-              <p className="mt-2 text-sm text-neutral-600 leading-relaxed whitespace-pre-line">{fullProfile!.bio}</p>
-            )}
-
-            <div className="mt-4 grid grid-cols-2 gap-2 text-left">
-              <div className="rounded-xl bg-neutral-50 px-3 py-2">
-                <p className="text-[10px] uppercase tracking-wide text-neutral-500">Trips attended</p>
-                <p className="text-lg font-bold text-neutral-900">{fullProfile!.stats.tripsAttended}</p>
-              </div>
-              <div className="rounded-xl bg-neutral-50 px-3 py-2">
-                <p className="text-[10px] uppercase tracking-wide text-neutral-500">Trips hosted</p>
-                <p className="text-lg font-bold text-neutral-900">{fullProfile!.stats.tripsHosted}</p>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <ProfileStampsRow stamps={stamps} />
-            </div>
-
-            {!isSelf && user && buddyRel && (
-              <div className="mt-4 space-y-2">
-                {buddyRel.areBuddies ? (
-                  <p className="text-xs font-semibold text-emerald-700">Connected as buddies</p>
-                ) : buddyRel.incomingRequest ? (
-                  <div className="flex gap-2">
-                    <AppButton
-                      type="button"
-                      className="flex-1"
-                      disabled={buddyBusy}
-                      onClick={() => void handleAcceptBuddyRequest()}
-                    >
-                      Accept buddy
-                    </AppButton>
-                    <AppButton
-                      type="button"
-                      variant="secondary"
-                      className="flex-1"
-                      disabled={buddyBusy}
-                      onClick={() => void handleDeclineBuddyRequest()}
-                    >
-                      Decline
-                    </AppButton>
-                  </div>
-                ) : buddyRel.outgoingRequest ? (
-                  <p className="text-xs font-semibold text-neutral-600">Buddy request sent</p>
-                ) : buddyRel.canSendRequest ? (
-                  <AppButton
-                    type="button"
-                    className="w-full"
-                    disabled={buddyBusy}
-                    onClick={() => void handleSendBuddyRequest()}
-                  >
-                    <UserPlus className="mr-2 inline h-4 w-4" />
-                    Add buddy
-                  </AppButton>
-                ) : null}
-                {buddyMessage && <p className="text-xs text-neutral-600">{buddyMessage}</p>}
-              </div>
-            )}
-
-            {!isSelf && user && (
-              <AppButton
-                type="button"
-                className="mt-4 w-full"
-                onClick={() => navigate(messagesRouteForRole(user.role, fullProfile!.id))}
-              >
-                Message
-              </AppButton>
-            )}
-
-            {!isSelf && !user && (
-              <Link
-                to="/signin"
-                state={{ from: `/member/${fullProfile!.id}` }}
-                className="mt-4 inline-block text-sm font-semibold text-emerald-700"
-              >
-                Log in to say hi
-              </Link>
-            )}
-
-            {fullProfile!.hostProfilePath && (
-              <Link
-                to={fullProfile!.hostProfilePath}
-                className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700"
-              >
-                View host profile
-              </Link>
-            )}
-          </GlassCard>
-
-          <GlassCard padding>
-            <p className="text-xs font-bold uppercase tracking-wide text-neutral-500 mb-2">What you can see</p>
-            <ul className="text-sm text-neutral-600 space-y-1.5">
-              <li>Public name, photo, bio, age, and languages</li>
-              <li>My Badges and trip counts</li>
-              <li>Host profile link when they lead trips</li>
-            </ul>
-          </GlassCard>
-        </div>
-      )}
+      ) : fullProfile && userId ? (
+        <MemberProfileView
+          profile={fullProfile}
+          stamps={stamps}
+          isSelf={Boolean(isSelf)}
+          userId={userId}
+          userLoggedIn={Boolean(user)}
+          buddyRel={buddyRel}
+          buddyBusy={buddyBusy}
+          buddyMessage={buddyMessage}
+          onSendBuddyRequest={() => void handleSendBuddyRequest()}
+          onAcceptBuddyRequest={() => void handleAcceptBuddyRequest()}
+          onDeclineBuddyRequest={() => void handleDeclineBuddyRequest()}
+          onMessage={() => navigate(messagesRouteForRole(user!.role, fullProfile.id))}
+        />
+      ) : null}
     </ConsumerShell>
   );
 };

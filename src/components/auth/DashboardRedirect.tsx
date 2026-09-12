@@ -3,7 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import {
   adminDashboardRedirect,
   hostDashboardRedirect,
-  participantDashboardRedirect
+  merchantDashboardRedirect,
+  participantDashboardRedirect,
 } from '../../utils/authRouting';
 
 /** Sends participants to mobile routes; staff keep their consoles. */
@@ -22,7 +23,7 @@ export const DashboardRedirect = () => {
     return <Navigate to={`${adminDashboardRedirect(subpath)}${search}`} replace />;
   }
   if (user.role === 'merchant_admin') {
-    return <Navigate to={`/merchant/dashboard${search}`} replace />;
+    return <Navigate to={`${merchantDashboardRedirect(subpath)}${search}`} replace />;
   }
   if (user.role === 'tenant_owner' || user.role === 'tenant_admin' || user.role === 'tenant_guide') {
     return <Navigate to={`${hostDashboardRedirect(subpath)}${search}`} replace />;

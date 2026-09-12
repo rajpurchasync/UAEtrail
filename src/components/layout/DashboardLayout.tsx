@@ -21,23 +21,9 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
     await signOut();
   };
 
-  const breadcrumbFallbackTo =
-    location.pathname.startsWith('/admin')
-      ? '/admin/overview'
-      : location.pathname.startsWith('/merchant')
-        ? '/merchant/dashboard'
-        : location.pathname.startsWith('/host') || location.pathname.startsWith('/organizer')
-          ? '/host/overview'
-          : '/';
+  const breadcrumbFallbackTo = isAdminDashboard ? '/admin/overview' : '/';
 
-  const breadcrumbLabel =
-    location.pathname.startsWith('/admin')
-      ? 'Admin'
-      : location.pathname.startsWith('/merchant')
-        ? 'Merchant'
-        : location.pathname.startsWith('/host') || location.pathname.startsWith('/organizer')
-          ? 'Host'
-          : 'Home';
+  const breadcrumbLabel = isAdminDashboard ? 'Admin' : 'Home';
 
   return (
     <div className="min-h-screen bg-gray-50/80">

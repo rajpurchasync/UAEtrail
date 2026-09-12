@@ -59,8 +59,8 @@ Map each journey to UI, API area, and current automation. Expand API/E2E coverag
 | J1 | Sign up → verify → sign in | Visitor | `/signup` → `/verify` → `/signin` | `/auth` | Partial (`auth.test.ts`) | Required |
 | J2 | Forgot / reset password | Visitor | `/forgot-password` → `/verify` | `/auth` | Partial | Required |
 | J3 | Google sign-in (web) | Visitor | `/signin` | Google OAuth | None | Required (staging + prod clients) |
-| J4 | Discover trail/camp | Anyone | `/` `/discovery` `/trail/:id` `/camp/:id` | locations / discovery | Partial (`locations-list`, `location-query`) | Required |
-| J5 | Browse & open trip | Anyone | `/trips` `/trip/:id` | events | Partial | Required |
+| J4 | Discover trail/camp | Anyone | `/` `/explore` `/trail/:id` `/camp/:id` | locations / explore | Partial (`locations-list`, `location-query`) | Required |
+| J5 | Browse & open trip | Anyone | `/activities` `/activity/:id` | events | Partial | Required |
 | J6 | Request to join trip | Visitor | `/trip/:id` → `/my-requests` | join requests | Strong (`join-request*.ts`, `capacity.ts`) | Required E2E |
 | J7 | Waitlist when full → promote | Visitor + Organizer | `/my-requests` `/organizer/requests` | waitlist promotion | Strong (capacity / join flow) | Required |
 | J8 | Organizer approve / reject | Organizer | `/organizer/requests` | join request status | Partial | Required |
@@ -151,7 +151,7 @@ Give each tester: account, device, script, pass/fail column, severity key (P0–
 
 1. Cold open `/` — can browse without login.
 2. Sign up with new email → verify → land signed in (**J1**).
-3. Discovery → open a trail and a camp (**J4**).
+3. Explore → open a trail and a camp (**J4**).
 4. Trips → open a trip with capacity → Request to join (**J6**).
 5. Open `/my-requests` and `/my-requests/:id` — status visible.
 6. Message organizer from trip/operator profile (**J11**).
@@ -320,7 +320,7 @@ Full VPS steps remain in [PRE_DEPLOY_CHECKLIST.md](PRE_DEPLOY_CHECKLIST.md).
 
 | Area | Paths |
 |------|--------|
-| Public | `/` `/discovery` `/trail/:id` `/camp/:id` `/trips` `/trip/:id` `/community` `/shop` `/product/:id` `/operator/:id` |
+| Public | `/` `/explore` `/trail/:id` `/camp/:id` `/activities` `/activity/:id` `/community` `/shop` `/product/:id` `/operator/:id` |
 | Auth | `/signup` `/signin` `/verify` `/forgot-password` |
 | Visitor app | `/profile` `/my-requests` `/messages` `/notifications` `/my-rewards` |
 | Organizer | `/organizer/overview` `events` `requests` `team` `profile` `locations` `history` `messages` |
@@ -332,7 +332,7 @@ Full VPS steps remain in [PRE_DEPLOY_CHECKLIST.md](PRE_DEPLOY_CHECKLIST.md).
 | Mount | Responsibility |
 |-------|----------------|
 | `/auth` | JWT + refresh, verify, password |
-| `/` user router | Discovery, join requests, `/me/*` |
+| `/` user router | Explore, join requests, `/me/*` |
 | `/organizer` | Events, check-in, approvals (`x-tenant-id`) |
 | `/admin` | Platform ops + audit |
 | `/shop` | Products, Stripe checkout |

@@ -14,6 +14,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { MobileBecomeHostFlow } from '../components/host/MobileBecomeHostFlow';
 import { parseHostFlowIntent } from '../components/host/becomeHostFlow';
 import { useHostGate } from '../hooks/useHostGate';
+import { resolveAuthRedirect } from '../utils/authRedirect';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 
 const setupSteps = [
@@ -28,6 +29,8 @@ export const BecomeHost = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const intent = parseHostFlowIntent(searchParams.get('intent'));
+  const returnTo =
+    resolveAuthRedirect(null, searchParams.get('redirect')) ?? EXPLORE_MAP_PATH;
   const {
     canPublish,
     loading: hostGateLoading,
@@ -64,19 +67,22 @@ export const BecomeHost = () => {
 
   useEffect(() => {
     if (canPublish && !justBecameHost && !hostFlowOpen && intent === 'become-host') {
-      navigate(EXPLORE_MAP_PATH, { replace: true });
+      navigate(returnTo, { replace: true });
     }
-  }, [canPublish, justBecameHost, hostFlowOpen, navigate, intent]);
+  }, [canPublish, justBecameHost, hostFlowOpen, navigate, intent, returnTo]);
 
   const openForm = () => setHostFlowOpen(true);
 
   const handlePrimaryAction = () => {
     if (!user) {
-      navigate(`/signup?redirect=${encodeURIComponent(`/become-host?intent=${intent}`)}`);
+      const signupRedirect = encodeURIComponent(
+        `/become-host?intent=${intent}${searchParams.get('redirect') ? `&redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`
+      );
+      navigate(`/signup?redirect=${signupRedirect}`);
       return;
     }
     if (canPublish) {
-      navigate(EXPLORE_MAP_PATH);
+      navigate(returnTo);
       return;
     }
     openForm();
@@ -108,8 +114,8 @@ export const BecomeHost = () => {
 
   const signInHref =
     intent === 'become-host'
-      ? '/signin?redirect=/become-host'
-      : `/signin?redirect=${encodeURIComponent(`/become-host?intent=${intent}`)}`;
+      ? `/signin?redirect=${encodeURIComponent(`/become-host${searchParams.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`)}`
+      : `/signin?redirect=${encodeURIComponent(`/become-host?intent=${intent}${searchParams.get('redirect') ? `&redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`)}`;
 
   const primaryLabel = !user
     ? 'Join to start hosting'
@@ -169,8 +175,8 @@ export const BecomeHost = () => {
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
                 You&apos;re ready to host. Head back to the map and tap + whenever you want to invite people along.
               </p>
-              <AppButton fullWidth onClick={() => navigate(EXPLORE_MAP_PATH)} className="mt-5">
-                Back to the map
+              <AppButton fullWidth onClick={() => navigate(returnTo)} className="mt-5">
+                {returnTo.startsWith('/explore') ? 'Back to the map' : 'Continue'}
                 <ArrowRight className="h-4 w-4" />
               </AppButton>
             </GlassCard>

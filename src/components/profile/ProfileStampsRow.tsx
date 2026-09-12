@@ -5,12 +5,14 @@ interface ProfileStampsRowProps {
   stamps: ProfileStamp[];
   title?: string;
   compact?: boolean;
+  align?: 'center' | 'start';
 }
 
 export const ProfileStampsRow = ({
   stamps,
   title = 'My Badges',
   compact = false,
+  align = 'center',
 }: ProfileStampsRowProps) => {
   if (stamps.length === 0) return null;
 
@@ -21,7 +23,7 @@ export const ProfileStampsRow = ({
           {title}
         </p>
       )}
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className={`flex flex-wrap gap-2 ${align === 'start' ? 'justify-start' : 'justify-center'}`}>
         {stamps.map((stamp) => (
           <span
             key={stamp.key}

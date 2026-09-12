@@ -208,7 +208,9 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
   }
 
   const ownerDisplays = await loadMerchantOwnerDisplaysByAdminIds([
-    ...merchants.map(({ merchant }) => merchant.adminIds),
+    ...merchants
+      .map(({ merchant }) => merchant.adminIds)
+      .filter((ids): ids is string[] => Array.isArray(ids) && ids.length > 0),
     ...shopTenants.filter((shop) => shop.ownerId).map((shop) => [shop.ownerId!]),
   ]);
   const merchantByOwnerId = await findMerchantProfilesByUserIds(shopTenants.map((shop) => shop.ownerId));

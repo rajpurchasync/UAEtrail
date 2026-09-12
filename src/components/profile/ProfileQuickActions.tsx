@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import type { LucideIcon } from 'lucide-react';
 import { GlassCard } from '../mobile/GlassCard';
 
 export type ProfileQuickAction = {
@@ -7,7 +6,7 @@ export type ProfileQuickAction = {
   label: string;
   to?: string;
   onClick?: () => void;
-  icon: LucideIcon;
+  emoji: string;
   badge?: number;
   accent?: string;
 };
@@ -21,13 +20,12 @@ export const ProfileQuickActions = ({ actions, columns = 3 }: ProfileQuickAction
   <GlassCard padding className="!p-4 animate-fade-up">
     <div className={`grid gap-3 ${columns === 3 ? 'grid-cols-3' : 'grid-cols-4'}`}>
       {actions.map((action) => {
-        const Icon = action.icon;
         const content = (
           <>
             <span
-              className={`relative mx-auto flex h-12 w-12 items-center justify-center rounded-2xl ${action.accent ?? 'bg-neutral-100 text-neutral-700'}`}
+              className={`relative mx-auto flex h-12 w-12 items-center justify-center rounded-2xl text-2xl ${action.accent ?? 'bg-neutral-100'}`}
             >
-              <Icon className="h-5 w-5" strokeWidth={2} />
+              <span aria-hidden>{action.emoji}</span>
               {action.badge != null && action.badge > 0 && (
                 <span className="absolute -right-1 -top-1 min-w-[18px] rounded-full bg-emerald-600 px-1 text-[10px] font-bold leading-[18px] text-white">
                   {action.badge > 99 ? '99+' : action.badge}

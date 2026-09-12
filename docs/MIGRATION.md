@@ -77,5 +77,5 @@ In production, demo seed is disabled. Create admin accounts through your operati
 
 ## Public Pages
 
-All public pages (Home, Discovery, Calendar, TripDetail) fetch from the API by default.
+All public pages (Home, Explore, ActivityDetail) fetch from the API by default.
 The previous `VITE_USE_API_*` feature flags have been removed — API-first is the only mode.

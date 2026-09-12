@@ -1,3 +1,4 @@
+export { AccountSectionHeader } from './AccountSectionHeader';
 export { AccountIdentityBar } from './AccountIdentityBar';
 export { AccountActivityPreview } from './AccountActivityPreview';
 export { AccountLinkList, type AccountLinkItem } from './AccountLinkList';

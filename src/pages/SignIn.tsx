@@ -6,7 +6,12 @@ import { setActiveTenantId } from '../api/tenant';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
-import { navigateAuthBack, navigateAuthClose, resolveAuthRedirect } from '../utils/authRedirect';
+import {
+  canReturnAfterAuth,
+  navigateAuthBack,
+  navigateAuthClose,
+  resolveAuthRedirect
+} from '../utils/authRedirect';
 import { isPendingEmailVerification } from '../utils/authVerification';
 import {
   clearAuthReturnContext,
@@ -47,15 +52,7 @@ export const SignIn = () => {
 
   const handleBack = () => navigateAuthBack(navigate, from);
   const handleClose = () => navigateAuthClose(navigate, from);
-
-  const isFromValidForRole = (path: string, role: string): boolean => {
-    // non-visitor roles must always land on their hub unless returning to a role-specific path
-    const organizerRoles = ['tenant_owner', 'tenant_admin', 'tenant_guide'];
-    if (organizerRoles.includes(role)) return path.startsWith('/host') || path.startsWith('/organizer');
-    if (role === 'platform_admin') return path.startsWith('/admin');
-    if (role === 'merchant_admin') return path.startsWith('/merchant');
-    return true;
-  };
+  const signUpHref = from ? `/signup?redirect=${encodeURIComponent(from)}` : '/signup';
 
   const redirectToVerify = (pending: {
     email: string;
@@ -80,8 +77,7 @@ export const SignIn = () => {
       redirectToVerify(signedInUser);
       return;
     }
-    if (from && from !== '/' && from !== '/signin' && from !== '/signup' &&
-        isFromValidForRole(from, signedInUser.role)) {
+    if (from && canReturnAfterAuth(from, signedInUser.role)) {
       const context = parseAuthReturnContextFromSearch(searchParams, from);
       if (context) {
         saveAuthReturnContext(context);
@@ -251,7 +247,7 @@ export const SignIn = () => {
 
         <p className="text-sm text-gray-500 mt-5 text-center">
           Don&apos;t have an account?{' '}
-          <Link className="text-emerald-700 hover:text-emerald-900 font-medium" to="/signup">
+          <Link className="text-emerald-700 hover:text-emerald-900 font-medium" to={signUpHref}>
             Sign up
           </Link>
         </p>

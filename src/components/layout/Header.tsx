@@ -2,6 +2,7 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { accountRouteByRole } from '../../utils/authRouting';
+import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { DESKTOP_NAV_LINKS, EXPLORE_MAP_PATH, MEMBERSHIP_NAV_LINK } from '../../config/platform';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { SecureAvatar } from '../ui/SecureAvatar';
@@ -9,9 +10,10 @@ import { MobileMenuButton } from './MobileMenu';
 
 export const Header = () => {
   const { user } = useAuth();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const [searchParams] = useSearchParams();
   const unreadCount = useNotificationUnreadCount();
+  const { href: signInHref } = buildSignInRedirect({ pathname, search });
   const navLinks = [
     ...DESKTOP_NAV_LINKS,
     ...(MEMBERSHIP_NAV_LINK ? [MEMBERSHIP_NAV_LINK] : []),
@@ -20,7 +22,7 @@ export const Header = () => {
   const isActiveLink = (to: string) => {
     if (to === '/') return pathname === '/';
     if (to === EXPLORE_MAP_PATH) {
-      if (pathname === EXPLORE_MAP_PATH || pathname === '/discovery' || pathname === '/shop') {
+      if (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') {
         return true;
       }
       if (pathname === '/activities') {
@@ -80,7 +82,7 @@ export const Header = () => {
               </Link>
             ) : (
               <Link
-                to="/signin"
+                to={signInHref}
                 className="hidden md:inline-flex items-center px-4 py-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm shadow-emerald-200/80"
               >
                 Sign In

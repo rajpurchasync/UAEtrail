@@ -8,7 +8,15 @@ let client: MongoClient | null = null;
 let connecting: Promise<MongoClient | null> | null = null;
 
 const defaultSrvFallbackDnsServers = ['1.1.1.1', '8.8.8.8'];
-const mongoConnectWatchdogMs = 12_000;
+const mongoConnectWatchdogMs = env.NODE_ENV === 'production' ? 12_000 : 20_000;
+const mongoSelectionTimeoutMs = env.NODE_ENV === 'production' ? 5_000 : 12_000;
+
+const shouldRetryMongoWithDnsFallback = (uri: string, message: string): boolean =>
+  uri.startsWith('mongodb+srv://') &&
+  (/querySrv\s+ETIMEOUT/i.test(message) ||
+    /getaddrinfo\s+ENOTFOUND/i.test(message) ||
+    /Server selection timed out/i.test(message) ||
+    /MongoDB connection timed out/i.test(message));
 
 const resolveSrvFallbackDnsServers = (): string[] => {
   const configured = (process.env.MONGODB_DNS_SERVERS || '').trim();
@@ -29,8 +37,8 @@ export const connectMongo = async (): Promise<MongoClient> => {
     connecting = (async () => {
       const connectOnce = async (): Promise<MongoClient> => {
         const mongoClient = new MongoClient(env.MONGODB_URI, {
-          serverSelectionTimeoutMS: 5_000,
-          connectTimeoutMS: 5_000,
+          serverSelectionTimeoutMS: mongoSelectionTimeoutMs,
+          connectTimeoutMS: mongoSelectionTimeoutMs,
           serverApi: {
             version: ServerApiVersion.v1,
             strict: true,
@@ -69,15 +77,13 @@ export const connectMongo = async (): Promise<MongoClient> => {
         return await connectOnce();
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        const shouldRetryWithDnsFallback =
-          env.MONGODB_URI.startsWith('mongodb+srv://') &&
-          (/querySrv\s+ETIMEOUT/i.test(message) || /MongoDB connection timed out/i.test(message));
-
-        if (shouldRetryWithDnsFallback) {
+        if (shouldRetryMongoWithDnsFallback(env.MONGODB_URI, message)) {
           const fallbackDnsServers = resolveSrvFallbackDnsServers();
           if (fallbackDnsServers.length > 0) {
             dns.setServers(fallbackDnsServers);
-            console.warn(`[mongo] SRV lookup timeout detected. Retrying with DNS servers: ${fallbackDnsServers.join(', ')}`);
+            console.warn(
+              `[mongo] Atlas DNS/connect issue detected. Retrying with DNS servers: ${fallbackDnsServers.join(', ')}`
+            );
             return await connectOnce();
           }
         }

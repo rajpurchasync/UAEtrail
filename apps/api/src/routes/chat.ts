@@ -75,8 +75,12 @@ chatRouter.get('/conversations', async (req, res, next) => {
 
     const conversationRows = await Promise.all(
       partnerIds.map(async (partnerId) => {
-        const allowed = await canMessageUser(userId, partnerId);
-        if (!allowed) return null;
+        try {
+          const allowed = await canMessageUser(userId, partnerId);
+          if (!allowed) return null;
+        } catch {
+          return null;
+        }
 
         const partner = partnerMap.get(partnerId);
         const lastMsg = lastMessageMap.get(partnerId);

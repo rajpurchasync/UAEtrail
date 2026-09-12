@@ -106,8 +106,7 @@ const HostLocations = lazy(() => import('./pages/HostLocations').then((m) => ({ 
 const HostHistory = lazy(() => import('./pages/HostHistory').then((m) => ({ default: m.HostHistory })));
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
-const Favorites = lazy(() => import('./pages/Favorites').then((m) => ({ default: m.Favorites })));
-const MerchantDashboard = lazy(() => import('./pages/MerchantDashboard').then((m) => ({ default: m.MerchantDashboard })));
+const MerchantDashboardRedirect = () => <Navigate to="/shop/manage" replace />;
 const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
 const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
@@ -290,14 +289,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <Messages />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/favorites"
-            element={
-              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
-                <Favorites />
               </ProtectedRoute>
             }
           />
@@ -588,7 +579,7 @@ function App() {
             path="/merchant/dashboard"
             element={
               <ProtectedRoute roles={['merchant_admin', 'tenant_owner', 'tenant_admin']}>
-                <MerchantDashboard />
+                <MerchantDashboardRedirect />
               </ProtectedRoute>
             }
           />

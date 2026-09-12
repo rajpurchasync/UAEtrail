@@ -1,13 +1,27 @@
-import { useEffect, useState } from 'react';
-import { Bell, LogOut } from 'lucide-react';
-import { api, UserProfile } from '../../api/services';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { UserProfile } from '../../api/services';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
+import {
+  USER_CITY_OPTIONS,
+  maxDateOfBirthForMember,
+  type UserCity,
+} from '../../constants/userProfileOptions';
 import { AppButton } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
 import { PhoneInput } from '../ui/PhoneInput';
-import { OtpInput } from '../auth/OtpInput';
-import { registerPushNotifications } from '../../utils/push';
+import { buildProfileCompletion } from '../../utils/profileCompletion';
+import { computeAgeFromDateOfBirth, formatMemberAge } from '../../utils/profileAge';
 import { formatE164Phone, isValidNationalPhone, splitStoredPhone } from '../../utils/phone';
+
+export interface AccountEditSavePayload {
+  displayName: string;
+  bio?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  city?: UserCity;
+}
+
 interface AccountEditModalProps {
   open: boolean;
   onClose: () => void;
@@ -16,15 +30,16 @@ interface AccountEditModalProps {
   email: string;
   saving: boolean;
   message: string | null;
-  pushStatus: string | null;
-  setPushStatus: (value: string | null) => void;
-  onSave: (payload: {
-    displayName: string;
-    bio?: string;
-    phone?: string;
-  }) => void | Promise<void>;
-  onEmailChanged?: () => void | Promise<void>;
+  onSave: (payload: AccountEditSavePayload) => void | Promise<void>;
 }
+
+const FieldLabel = ({ children }: { children: React.ReactNode }) => (
+  <label className="mb-2 block text-sm font-semibold text-neutral-800">{children}</label>
+);
+
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-xs font-bold uppercase tracking-wide text-neutral-400">{children}</p>
+);
 
 export const AccountEditModal = ({
   open,
@@ -34,236 +49,205 @@ export const AccountEditModal = ({
   email,
   saving,
   message,
-  pushStatus,
-  setPushStatus,
   onSave,
-  onEmailChanged,
 }: AccountEditModalProps) => {
   const currentEmail = profile.email ?? email;
   const [phoneDial, setPhoneDial] = useState(DEFAULT_PHONE_DIAL);
   const [phoneNational, setPhoneNational] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [emailOtp, setEmailOtp] = useState('');
-  const [emailStep, setEmailStep] = useState<'idle' | 'code-sent'>('idle');
-  const [emailBusy, setEmailBusy] = useState(false);
-  const [emailMessage, setEmailMessage] = useState<string | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [city, setCity] = useState<UserCity | ''>('');
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const completion = useMemo(
+    () =>
+      buildProfileCompletion({
+        displayName: profile.displayName,
+        avatarUrl: profile.avatarUrl,
+        bio: profile.bio,
+        phone: profile.phone,
+        dateOfBirth,
+        city: city || null,
+      }),
+    [city, dateOfBirth, profile.avatarUrl, profile.bio, profile.displayName, profile.phone]
+  );
+
+  const previewAge = useMemo(
+    () => (dateOfBirth ? computeAgeFromDateOfBirth(dateOfBirth) : null),
+    [dateOfBirth]
+  );
 
   useEffect(() => {
     if (!open) return;
     const parts = splitStoredPhone(profile.phone);
     setPhoneDial(parts.dial);
     setPhoneNational(parts.national);
-    setNewEmail('');
-    setEmailOtp('');
-    setEmailStep('idle');
-    setEmailMessage(null);
-    setEmailError(null);
-  }, [open, profile.phone]);
+    setDateOfBirth(profile.dateOfBirth ?? '');
+    setCity(profile.city ?? '');
+    setFormError(null);
+  }, [open, profile.city, profile.dateOfBirth, profile.phone]);
 
-  const handleProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleProfileSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     const displayName = profile.displayName?.trim() ?? '';
     if (displayName.length < 2) {
-      setEmailError('Name must be at least 2 characters.');
+      setFormError('Name must be at least 2 characters.');
       return;
     }
-    setEmailError(null);
+    if (!dateOfBirth) {
+      setFormError('Select your date of birth.');
+      return;
+    }
+    if (!city) {
+      setFormError('Select your city.');
+      return;
+    }
 
     let phone: string | undefined;
     if (phoneNational.trim()) {
       if (!isValidNationalPhone(phoneNational)) {
-        setEmailError('Enter a valid phone number.');
+        setFormError('Enter a valid phone number.');
         return;
       }
       phone = formatE164Phone(phoneDial, phoneNational);
     }
 
-    const payload = {
+    setFormError(null);
+    const payload: AccountEditSavePayload = {
       displayName,
       bio: profile.bio?.trim() || undefined,
       phone,
+      dateOfBirth,
+      city,
     };
     setProfile((prev) => ({ ...prev, ...payload }));
     await onSave(payload);
   };
 
-  const requestEmailChange = async () => {
-    const trimmed = newEmail.trim().toLowerCase();
-    if (!trimmed) {
-      setEmailError('Enter a new email address.');
-      return;
-    }
-    if (trimmed === currentEmail.toLowerCase()) {
-      setEmailError('That is already your email address.');
-      return;
-    }
-    setEmailBusy(true);
-    setEmailError(null);
-    setEmailMessage(null);
-    try {
-      const res = await api.requestEmailChange(trimmed);
-      setEmailStep('code-sent');
-      setEmailMessage(`Verification code sent to ${res.email}.`);
-      setEmailOtp('');
-    } catch (err) {
-      setEmailError(err instanceof Error ? err.message : 'Could not send verification code.');
-    } finally {
-      setEmailBusy(false);
-    }
-  };
-
-  const confirmEmailChange = async () => {
-    const trimmed = newEmail.trim().toLowerCase();
-    if (!/^\d{6}$/.test(emailOtp)) {
-      setEmailError('Enter the 6-digit verification code.');
-      return;
-    }
-    setEmailBusy(true);
-    setEmailError(null);
-    setEmailMessage(null);
-    try {
-      const res = await api.confirmEmailChange(trimmed, emailOtp);
-      setProfile((prev) => ({ ...prev, email: res.data.email }));
-      setEmailStep('idle');
-      setNewEmail('');
-      setEmailOtp('');
-      setEmailMessage('Email updated successfully.');
-      await onEmailChanged?.();
-    } catch (err) {
-      setEmailError(err instanceof Error ? err.message : 'Could not verify email.');
-    } finally {
-      setEmailBusy(false);
-    }
-  };
-
   return (
-    <Dialog open={open} onClose={onClose} title="Edit profile">
-      <form className="space-y-4" onSubmit={handleProfileSubmit}>
-        <div>
-          <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
-            Name
-          </label>
-          <input
-            className="ios-input text-[15px]"
-            value={profile.displayName ?? ''}
-            onChange={(e) => setProfile((p) => ({ ...p, displayName: e.target.value }))}
-            placeholder="Your name"
-            disabled={saving || emailBusy}
-          />
-        </div>
-
-        <div>
-          <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
-            About
-          </label>
-          <textarea
-            className="ios-input text-[15px] min-h-[80px] resize-none"
-            value={profile.bio ?? ''}
-            onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
-            rows={3}
-            placeholder="Tell others a little about yourself"
-            disabled={saving || emailBusy}
-          />
-        </div>
-
-        <div>
-          <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
-            Phone
-          </label>
-          <PhoneInput
-            dialCode={phoneDial}
-            nationalNumber={phoneNational}
-            onDialCodeChange={setPhoneDial}
-            onNationalNumberChange={setPhoneNational}
-            disabled={saving || emailBusy}
-          />
-        </div>
-
-        <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-3">
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
-              Email
-            </label>
-            <p className="text-sm text-gray-700 mb-2">Current: {currentEmail}</p>
-            <input
-              type="email"
-              className="ios-input text-[15px]"
-              value={newEmail}
-              onChange={(e) => {
-                setNewEmail(e.target.value);
-                setEmailStep('idle');
-                setEmailError(null);
-              }}
-              placeholder="New email address"
-              disabled={saving || emailBusy || emailStep === 'code-sent'}
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title="Edit profile"
+      variant="form"
+      className="!p-0 !max-h-[min(92dvh,720px)]"
+    >
+      <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleProfileSubmit}>
+        <div className="shrink-0 border-b border-neutral-100 px-5 pb-4 pt-1">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-neutral-800">Profile {completion.percent}% complete</p>
+            <span className="text-xs text-neutral-500">{completion.percent === 100 ? 'All set' : 'Keep going'}</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-neutral-100">
+            <div
+              className="h-full rounded-full bg-emerald-600 transition-all duration-300"
+              style={{ width: `${completion.percent}%` }}
             />
           </div>
-
-          {emailStep === 'code-sent' && (
-            <div className="space-y-2">
-              <p className="text-xs text-gray-600 text-center">Enter the 6-digit code sent to your new email</p>
-              <OtpInput value={emailOtp} onChange={setEmailOtp} disabled={emailBusy} autoFocus />
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2">
-            {emailStep === 'idle' ? (
-              <button
-                type="button"
-                onClick={() => void requestEmailChange()}
-                disabled={saving || emailBusy || !newEmail.trim()}
-                className="ios-btn min-h-[40px] px-3 text-sm"
-              >
-                {emailBusy ? 'Sending…' : 'Send verification code'}
-              </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => void confirmEmailChange()}
-                  disabled={saving || emailBusy || emailOtp.length !== 6}
-                  className="ios-btn min-h-[40px] px-3 text-sm text-white bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {emailBusy ? 'Verifying…' : 'Confirm new email'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmailStep('idle');
-                    setEmailOtp('');
-                    setEmailError(null);
-                  }}
-                  disabled={emailBusy}
-                  className="ios-btn min-h-[40px] px-3 text-sm"
-                >
-                  Change email
-                </button>
-              </>
-            )}
-          </div>
-
-          {emailMessage && <p className="text-xs text-emerald-700">{emailMessage}</p>}
-          {emailError && <p className="text-xs text-red-600">{emailError}</p>}
         </div>
 
-        <button
-          type="button"
-          onClick={async () => {
-            const ok = await registerPushNotifications();
-            setPushStatus(ok ? 'Notifications enabled.' : 'Could not enable notifications.');
-          }}
-          className="ios-btn w-full glass text-neutral-800 min-h-[48px] text-[15px]"
-        >
-          <Bell className="w-4 h-4" />
-          Enable push notifications
-        </button>
-        {pushStatus && <p className="text-xs text-neutral-500 text-center">{pushStatus}</p>}
+        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5">
+          <section className="space-y-4">
+            <SectionTitle>Basics</SectionTitle>
+            <div>
+              <FieldLabel>Name</FieldLabel>
+              <input
+                className="ios-input text-[15px]"
+                value={profile.displayName ?? ''}
+                onChange={(event) => setProfile((prev) => ({ ...prev, displayName: event.target.value }))}
+                placeholder="Your name"
+                disabled={saving}
+                autoComplete="name"
+              />
+            </div>
 
-        <AppButton type="submit" disabled={saving || emailBusy} fullWidth>
-          {saving ? 'Saving…' : 'Save profile'}
-        </AppButton>
-        {message && <p className="text-sm text-emerald-700 text-center font-medium">{message}</p>}
+            <div>
+              <FieldLabel>Date of birth</FieldLabel>
+              <input
+                type="date"
+                className="ios-input w-full text-[15px]"
+                value={dateOfBirth}
+                max={maxDateOfBirthForMember()}
+                onChange={(event) => setDateOfBirth(event.target.value)}
+                disabled={saving}
+                required
+              />
+              {formatMemberAge(previewAge) && (
+                <p className="mt-1.5 text-xs font-medium text-emerald-700">{formatMemberAge(previewAge)}</p>
+              )}
+            </div>
+
+            <div>
+              <FieldLabel>City</FieldLabel>
+              <div className="grid grid-cols-2 gap-2">
+                {USER_CITY_OPTIONS.map((option) => {
+                  const active = city === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setCity(option.value)}
+                      disabled={saving}
+                      className={`rounded-2xl px-3 py-2.5 text-left text-sm font-semibold transition-colors ${
+                        active
+                          ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                          : 'bg-neutral-100 text-neutral-800 ring-1 ring-neutral-200/80'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <SectionTitle>About you</SectionTitle>
+            <div>
+              <FieldLabel>Bio</FieldLabel>
+              <textarea
+                className="ios-input min-h-[168px] resize-y text-[15px] leading-relaxed"
+                value={profile.bio ?? ''}
+                onChange={(event) => setProfile((prev) => ({ ...prev, bio: event.target.value }))}
+                rows={7}
+                maxLength={400}
+                placeholder="Tell others about your hiking style, favourite trails, or what you host."
+                disabled={saving}
+              />
+              <p className="mt-1.5 text-right text-xs text-neutral-400">
+                {(profile.bio ?? '').length}/400
+              </p>
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <SectionTitle>Contact</SectionTitle>
+            <div>
+              <FieldLabel>Phone</FieldLabel>
+              <PhoneInput
+                dialCode={phoneDial}
+                nationalNumber={phoneNational}
+                onDialCodeChange={setPhoneDial}
+                onNationalNumberChange={setPhoneNational}
+                disabled={saving}
+              />
+            </div>
+            <p className="text-xs text-neutral-500">
+              Email: {currentEmail}.{' '}
+              <Link to="/profile/settings" className="font-semibold text-emerald-600" onClick={onClose}>
+                Change in Settings
+              </Link>
+            </p>
+          </section>
+        </div>
+
+        <div className="shrink-0 space-y-2 border-t border-neutral-100 px-5 pb-[calc(var(--safe-bottom)+16px)] pt-4">
+          {formError && <p className="text-sm text-red-600 text-center">{formError}</p>}
+          {message && <p className="text-sm text-emerald-700 text-center font-medium">{message}</p>}
+          <AppButton type="submit" disabled={saving} fullWidth>
+            {saving ? 'Saving…' : 'Save profile'}
+          </AppButton>
+        </div>
       </form>
     </Dialog>
   );
@@ -280,7 +264,7 @@ export const AccountSignOutButton = ({ onSignOut }: AccountSignOutButtonProps) =
       onClick={onSignOut}
       className="ios-btn w-full glass text-red-500 min-h-[50px] font-semibold active:bg-red-50/80"
     >
-      <LogOut className="w-4 h-4" />
+      <span aria-hidden>🚪</span>
       Sign out
     </button>
   </div>

@@ -164,6 +164,7 @@ export type PublicMemberProfileDTO =
       avatarUrl: string | null;
       bio: string | null;
       age: number | null;
+      city: string | null;
       languages: string | null;
       isHost: boolean;
       isGuideStaff?: boolean;

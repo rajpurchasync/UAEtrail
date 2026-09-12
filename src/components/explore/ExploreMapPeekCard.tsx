@@ -1,10 +1,8 @@
 import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import type { ExploreCardModel } from '../../explore/exploreCardModel';
-import { resolveExploreFavoriteTarget } from '../../explore/exploreCardModel';
 import { EXPLORE_PEEK } from '../../config/exploreTheme';
 import { EnvironmentImage } from '../ui/EnvironmentImage';
-import { FavoriteButton } from '../ui/FavoriteButton';
 import { ShareButton } from '../ui/ShareButton';
 import {
   ExploreCardDetailList,
@@ -34,7 +32,6 @@ export const ExploreMapPeekCard = ({
   onFocusMapLocation,
   pinFooter = false,
 }: ExploreMapPeekCardProps) => {
-  const favoriteTarget = resolveExploreFavoriteTarget(card);
   const shellClass = pinFooter
     ? `${EXPLORE_PEEK.shell} lg:flex lg:max-h-[min(85vh,640px)] lg:min-h-0 lg:flex-col lg:overflow-hidden`
     : EXPLORE_PEEK.shell;
@@ -69,7 +66,6 @@ export const ExploreMapPeekCard = ({
       <div className={`flex shrink-0 items-start justify-between gap-3 px-4 ${card.coverImage ? 'pt-3' : 'pt-4'}`}>
         <ExploreCardTypeBadge card={card} size="sm" />
         <div className="flex items-center gap-1.5">
-          {favoriteTarget ? <FavoriteButton {...favoriteTarget} compact /> : null}
           <ShareButton
             title={card.shareTitle}
             text={card.shareText ?? undefined}

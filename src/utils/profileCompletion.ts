@@ -1,3 +1,5 @@
+import type { UserCity } from '../constants/userProfileOptions';
+
 export type ProfileCompletionItem = {
   key: string;
   label: string;
@@ -10,11 +12,13 @@ export const buildProfileCompletion = (input: {
   avatarUrl?: string | null;
   bio?: string | null;
   phone?: string | null;
+  dateOfBirth?: string | null;
+  city?: UserCity | null;
 }): { items: ProfileCompletionItem[]; percent: number } => {
   const items: ProfileCompletionItem[] = [
     {
       key: 'name',
-      label: 'Add your display name',
+      label: 'Add your name',
       done: Boolean(input.displayName?.trim()),
       action: 'edit',
     },
@@ -23,6 +27,18 @@ export const buildProfileCompletion = (input: {
       label: 'Add a profile photo',
       done: Boolean(input.avatarUrl?.trim()),
       action: 'avatar',
+    },
+    {
+      key: 'age',
+      label: 'Add your date of birth',
+      done: Boolean(input.dateOfBirth?.trim()),
+      action: 'edit',
+    },
+    {
+      key: 'city',
+      label: 'Add your city',
+      done: Boolean(input.city),
+      action: 'edit',
     },
     {
       key: 'bio',

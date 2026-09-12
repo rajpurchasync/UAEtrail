@@ -180,7 +180,7 @@ export const resolveProfileViewerAccess = async (input: {
 export const canViewProfileField = (
   visibility: ProfileVisibility,
   access: ProfileViewerAccessResult,
-  field: 'bio' | 'age' | 'languages' | 'identity'
+  field: 'bio' | 'age' | 'city' | 'languages' | 'identity'
 ): boolean => {
   if (field === 'identity') {
     return visibility !== 'private' || access.canViewFullProfile;

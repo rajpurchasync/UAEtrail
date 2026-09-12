@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
+import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
 
 interface MobileSessionHeaderActionsProps {
@@ -18,7 +19,7 @@ export const MobileSessionHeaderActions = ({
   const { user } = useAuth();
   const { pathname, search } = useLocation();
   const unreadCount = useNotificationUnreadCount();
-  const signInHref = `/signin?redirect=${encodeURIComponent(`${pathname}${search}`)}`;
+  const { href: signInHref } = buildSignInRedirect({ pathname, search });
 
   const profileActionClass =
     tone === 'light'

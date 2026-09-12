@@ -1,5 +1,3 @@
-import { exploreShopsPath } from '../utils/exploreRouting';
-
 export const DIFFICULTY_COLORS = {
   easy: 'bg-green-100 text-green-800',
   moderate: 'bg-yellow-100 text-yellow-800',
@@ -32,11 +30,6 @@ export const ADMIN_LINKS = [
   { to: '/admin/shop', label: 'Shop' },
   { to: '/admin/audit-log', label: 'Audit Log' },
   { to: '/admin/settings', label: 'Broadcast' }
-];
-
-export const MERCHANT_DASHBOARD_LINKS = [
-  { to: '/merchant/dashboard', label: 'Dashboard' },
-  { to: exploreShopsPath(), label: 'Map listing' },
 ];
 
 export const COUNTRIES = [

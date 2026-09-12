@@ -43,12 +43,6 @@ export const getExploreRegionPillOptions = (code: CountryCode = DEFAULT_COUNTRY)
   })),
 ];
 
-/** @deprecated use EXPLORE_REGION_PILL_LABELS */
-export const DISCOVERY_REGION_PILL_LABELS = EXPLORE_REGION_PILL_LABELS;
-
-/** @deprecated use getExploreRegionPillOptions */
-export const getDiscoveryRegionPillOptions = getExploreRegionPillOptions;
-
 export const getMapBounds = (code: CountryCode = DEFAULT_COUNTRY): { west: number; south: number; east: number; north: number } => {
   const bounds: Record<CountryCode, { west: number; south: number; east: number; north: number }> = {
     AE: { west: 51.5, south: 22.5, east: 56.5, north: 26.5 },

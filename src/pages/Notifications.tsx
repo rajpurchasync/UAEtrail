@@ -46,7 +46,8 @@ const inferSection = (notif: NotificationDTO): NotificationSection => {
   const text = `${notif.title} ${notif.body}`.toLowerCase();
 
   if (kind.startsWith('join_request') || kind === 'request_withdrawal') return 'Trip updates';
-  if (kind.includes('buddy') || text.includes('buddy') || text.includes('group invite')) return 'Buddy requests';
+  if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') return 'Buddy requests';
+  if (kind === 'group_invite' || kind === 'group_invite_accepted' || text.includes('group invite')) return 'Group chat';
   if (kind.includes('group_message') || text.includes('new message in')) return 'Group chat';
   if (kind.includes('comment_approved') || text.includes('comment approved')) return 'Comments approved';
   if (kind.includes('comment_liked') || text.includes('comment liked') || text.includes('liked your comment')) {

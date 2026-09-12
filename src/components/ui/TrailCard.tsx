@@ -1,7 +1,6 @@
 import { X, MapPin, Clock, TrendingUp, Baby } from 'lucide-react';
 import { Trail } from '../../types';
 import { getDifficultyColor, capitalize } from '../../utils';
-import { FavoriteButton } from './FavoriteButton';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
 import {
@@ -40,9 +39,7 @@ export const TrailCard = ({ trail, actions, onDismiss }: TrailCardProps) => {
           >
             <X className="h-4 w-4" />
           </button>
-        ) : (
-          <FavoriteButton locationId={trail.id} className="absolute top-12 right-3" />
-        )}
+        ) : null}
         {trail.childFriendly && (
           <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-emerald-600/90 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
             <Baby className="h-3 w-3" />

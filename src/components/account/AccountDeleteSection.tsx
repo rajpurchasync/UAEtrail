@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
 import { api, AccountDeletionInfo } from '../../api/services';
 import { AppButton } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
@@ -48,7 +47,7 @@ export const AccountDeleteSection = ({ onDeleted }: AccountDeleteSectionProps) =
     <div className="mt-4 mb-2">
       <div className="glass-card p-4 border border-red-100/80">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <span className="text-xl flex-shrink-0 mt-0.5" aria-hidden>⚠️</span>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold text-gray-900">Delete account</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">

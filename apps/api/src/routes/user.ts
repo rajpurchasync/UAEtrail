@@ -1731,7 +1731,7 @@ userRouter.post('/me/group-invites/accept', validate({ body: acceptInviteSchema 
         body: `${user.profile.displayName ?? user.email} joined ${group.name}.`,
         type: NotificationType.SYSTEM,
         meta: {
-          kind: 'buddy_request',
+          kind: 'group_invite_accepted',
           groupId: accepted.groupId,
           path: '/groups'
         }

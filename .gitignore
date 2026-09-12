@@ -30,6 +30,10 @@ nginx/certs/*.key
 *.sln
 *.sw?
 
+# Accidental TS compile output in source trees
+packages/shared-types/src/*.js
+packages/shared-types/src/*.js.map
+
 # Local API uploads (dev fallback storage)
 apps/api/uploads/
 

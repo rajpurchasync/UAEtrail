@@ -14,6 +14,7 @@ import {
   AccountSignOutButton,
   HostHubSections,
 } from '../components/account';
+import type { AccountEditSavePayload } from '../components/account/AccountEditModal';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useHostHubData } from '../hooks/useHostHubData';
 import { FEATURE_FLAGS } from '../config/platform';
@@ -29,7 +30,6 @@ export const HostOverview = () => {
 
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [pushStatus, setPushStatus] = useState<string | null>(null);
   const [showEdit, setShowEdit] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showNotifPopover, setShowNotifPopover] = useState(false);
@@ -39,19 +39,11 @@ export const HostOverview = () => {
     setShowDetails(false);
   }, []);
 
-  const save = async (payload: {
-    displayName: string;
-    bio?: string;
-    phone?: string;
-  }) => {
+  const save = async (payload: AccountEditSavePayload) => {
     setMessage(null);
     setSaving(true);
     try {
-      await api.updateMeProfile({
-        displayName: payload.displayName,
-        phone: payload.phone,
-        bio: payload.bio,
-      });
+      await api.updateMeProfile(payload);
       await refreshUser();
       setMessage('Profile saved.');
       setShowEdit(false);
@@ -255,10 +247,7 @@ export const HostOverview = () => {
         email={user!.email ?? ''}
         saving={saving}
         message={message}
-        pushStatus={pushStatus}
-        setPushStatus={setPushStatus}
         onSave={save}
-        onEmailChanged={refreshUser}
       />
     </HostShell>
   );

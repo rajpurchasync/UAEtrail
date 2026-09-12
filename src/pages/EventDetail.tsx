@@ -193,6 +193,3 @@ export const EventDetail = () => {
     </MobileDetailShell>
   );
 };
-
-/** @deprecated use EventDetail */
-export const CommunityActivityDetail = EventDetail;

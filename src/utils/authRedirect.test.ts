@@ -1,11 +1,23 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  canReturnAfterAuth,
   isAuthGatedPath,
   navigateAuthBack,
   navigateAuthClose,
   resolveAuthExitFallback,
   resolveAuthRedirect,
 } from './authRedirect';
+
+describe('canReturnAfterAuth', () => {
+  it('allows any role to return to public explore map URLs', () => {
+    expect(canReturnAfterAuth('/explore?compose=1', 'tenant_owner')).toBe(true);
+    expect(canReturnAfterAuth('/explore?list=1', 'participant')).toBe(true);
+  });
+
+  it('blocks host roles from returning to admin routes', () => {
+    expect(canReturnAfterAuth('/admin/overview', 'tenant_owner')).toBe(false);
+  });
+});
 
 describe('resolveAuthRedirect', () => {
   it('prefers router state over query param', () => {

@@ -4,21 +4,10 @@ import { X } from 'lucide-react';
 import { api } from '../api/services';
 import { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
-import { DashboardLayout } from '../components/layout';
 import { MobileScreen } from '../components/layout/MobileScreen';
-import { HOST_DASHBOARD_LINKS } from '../constants';
 import { useChatStream } from '../hooks/useChatStream';
-import { useIsMobile } from '../hooks/useIsMobile';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
 import { ConversationListPanel, MessageThreadPanel, NewChatModal } from '../components/messages/MessagePanels';
-
-const userLinks = [
-  { to: '/profile', label: 'Profile' },
-  { to: '/my-requests', label: 'My Requests' },
-  { to: '/activities?tab=joined', label: 'My Activities' },
-  { to: '/messages', label: 'Messages' },
-  { to: '/notifications', label: 'Notifications' },
-];
 
 interface SearchUser {
   id: string;
@@ -32,10 +21,7 @@ const userLabel = (u: Pick<SearchUser, 'displayName' | 'id'>) =>
 export const Messages = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const isMobile = useIsMobile();
-  const isConsumerMessages = location.pathname === '/messages';
   const isHostMessages = location.pathname === '/host/messages';
-  const useMobileShell = isConsumerMessages || (isHostMessages && isMobile);
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('to'));
@@ -59,10 +45,6 @@ export const Messages = () => {
   useEffect(() => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
-
-  const isHost =
-    user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
-  const links = isHost ? HOST_DASHBOARD_LINKS : userLinks;
 
   const loadConversations = useCallback(async () => {
     try {
@@ -277,92 +259,80 @@ export const Messages = () => {
     return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
-  const chatContent = (
-    <div className={`flex flex-col ${useMobileShell ? 'flex-1 min-h-0' : ''}`}>
-      {error && (
-        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-ios flex items-center justify-between shrink-0">
-          <p className="text-red-700 text-sm">{error}</p>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-red-400"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-      <div
-        className={`flex bg-white overflow-hidden shadow-ios-sm min-h-0 ${
-          useMobileShell ? 'flex-1' : 'border rounded-ios-lg'
-        } ${!useMobileShell || !inThread ? 'border rounded-ios-lg' : ''}`}
-        style={useMobileShell ? undefined : { height: 'calc(100vh - 220px)', minHeight: '400px' }}
-      >
-        <ConversationListPanel
-          mobileShowThread={mobileShowThread}
-          loading={loading}
-          conversations={conversations}
-          selectedUserId={selectedUserId}
-          onNewChat={() => setShowNewChat(true)}
-          onSelect={selectConversation}
-          formatTime={formatTime}
-        />
-        <MessageThreadPanel
-          mobileShowThread={mobileShowThread}
-          selectedUserId={selectedUserId}
-          threadPartnerName={threadPartnerName}
-          threadPartnerAvatar={threadPartnerAvatar}
-          loadingMessages={loadingMessages}
-          messages={messages}
-          newMessage={newMessage}
-          sending={sending}
-          onBack={backToList}
-          onReport={() => setShowReport(true)}
-          onMessageChange={setNewMessage}
-          onSend={handleSend}
-        />
-      </div>
-      <NewChatModal
-        open={showNewChat}
-        searchQuery={searchQuery}
-        searching={searching}
-        searchResults={searchResults}
-        onClose={() => {
-          setShowNewChat(false);
-          setSearchQuery('');
-          setSearchResults([]);
-        }}
-        onSearchChange={setSearchQuery}
-        onSelectUser={startConversation}
-        userLabel={userLabel}
-      />
-      {selectedUserId && (
-        <ReportContentDialog
-          open={showReport}
-          onClose={() => setShowReport(false)}
-          targetType="user"
-          targetId={selectedUserId}
-          title="Report user"
-        />
-      )}
-    </div>
-  );
-
-  if (useMobileShell) {
-    return (
-      <MobileScreen
-        title="Messages"
-        backTo={isHost ? '/host/overview' : '/profile'}
-        hideHeader={inThread}
-        showBanner={!inThread}
-      >
-        <div className={`flex flex-col flex-1 min-h-0 ${inThread ? 'px-0 -mx-1' : ''}`}>{chatContent}</div>
-      </MobileScreen>
-    );
-  }
-
   return (
-    <DashboardLayout title="Messages" links={links}>
-      {chatContent}
-    </DashboardLayout>
+    <MobileScreen
+      title="Messages"
+      backTo={isHostMessages ? '/host/overview' : '/profile'}
+      backLabel={isHostMessages ? 'Host' : 'Back'}
+      hideHeader={inThread}
+      showBanner={false}
+    >
+      <div className={`flex min-h-0 flex-1 flex-col ${inThread ? 'px-0 -mx-1' : ''}`}>
+        {error && (
+          <div className="mb-3 flex shrink-0 items-center justify-between rounded-ios border border-red-200 bg-red-50 p-3">
+            <p className="text-sm text-red-700">{error}</p>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center text-red-400"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+        <div
+          className={`flex min-h-0 flex-1 overflow-hidden rounded-ios-lg border bg-white shadow-ios-sm ${
+            inThread ? '' : 'border-neutral-200'
+          }`}
+        >
+          <ConversationListPanel
+            mobileShowThread={mobileShowThread}
+            loading={loading}
+            conversations={conversations}
+            selectedUserId={selectedUserId}
+            onNewChat={() => setShowNewChat(true)}
+            onSelect={selectConversation}
+            formatTime={formatTime}
+          />
+          <MessageThreadPanel
+            mobileShowThread={mobileShowThread}
+            selectedUserId={selectedUserId}
+            threadPartnerName={threadPartnerName}
+            threadPartnerAvatar={threadPartnerAvatar}
+            loadingMessages={loadingMessages}
+            messages={messages}
+            newMessage={newMessage}
+            sending={sending}
+            onBack={backToList}
+            onReport={() => setShowReport(true)}
+            onMessageChange={setNewMessage}
+            onSend={handleSend}
+          />
+        </div>
+        <NewChatModal
+          open={showNewChat}
+          searchQuery={searchQuery}
+          searching={searching}
+          searchResults={searchResults}
+          onClose={() => {
+            setShowNewChat(false);
+            setSearchQuery('');
+            setSearchResults([]);
+          }}
+          onSearchChange={setSearchQuery}
+          onSelectUser={startConversation}
+          userLabel={userLabel}
+        />
+        {selectedUserId && (
+          <ReportContentDialog
+            open={showReport}
+            onClose={() => setShowReport(false)}
+            targetType="user"
+            targetId={selectedUserId}
+            title="Report user"
+          />
+        )}
+      </div>
+    </MobileScreen>
   );
 };

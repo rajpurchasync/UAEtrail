@@ -163,7 +163,7 @@ describe('exploreHeadline', () => {
         date: '2026-09-12',
         time: '15:00',
       })
-    ).toBe('Alex is going Outdoor Activity on Saturday 12th - Hatta - Sat at 3 PM');
+    ).toBe('Alex is going Other Outdoors on Saturday 12th - Hatta - Sat at 3 PM');
   });
 
   it('formats carpool supply with route, time, and fixed tag', () => {
@@ -219,7 +219,35 @@ describe('exploreHeadline', () => {
         date: '2026-09-12',
         time: '07:00',
       })
-    ).toBe('Sarah is looking for Hiking on Saturday 12th - Wadi Shawka - Sat at 7:00 (flexible)');
+    ).toBe('Sarah is looking for Morning hike on Saturday 12th - Wadi Shawka - Sat at 7:00 (flexible)');
+  });
+
+  it('formats event demand with the requester title instead of a generic category', () => {
+    expect(
+      exploreHeadline({
+        source: 'demand',
+        kind: 'event',
+        title: 'Sunrise run at Kite Beach',
+        hostName: 'Fatima Host',
+        location: 'Kite Beach running track, Dubai',
+        date: '2026-09-15',
+        time: '06:30',
+      })
+    ).toBe(
+      'Fatima is looking for Sunrise run at Kite Beach on Tuesday 15th - Kite Beach running track, Dubai - Tue at 6:30 AM (flexible)'
+    );
+  });
+
+  it('falls back to Other Outdoors when the demand title is generic', () => {
+    expect(
+      exploreHeadline({
+        source: 'demand',
+        kind: 'event',
+        title: 'Looking for an event',
+        hostName: 'Fatima Host',
+        date: '2026-09-15',
+      })
+    ).toBe('Fatima is looking for Other Outdoors on Tuesday 15th - Tue (flexible)');
   });
 });
 

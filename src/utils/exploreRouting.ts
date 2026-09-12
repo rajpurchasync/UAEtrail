@@ -25,9 +25,6 @@ export type ActivityListFilterKey = 'all' | 'hiking' | 'camping' | 'event' | 'ca
 /** Side-panel venue list filter. */
 export type VenueListFilterKey = 'all' | 'hiking' | 'camping' | 'shop' | 'event';
 
-/** @deprecated use MapFilterKey */
-export type ExploreFilterKey = MapFilterKey;
-
 const MAP_FILTERS = new Set<MapFilterKey>(['all', 'hiking', 'camping', 'carpool', 'others', 'shops']);
 
 const ACTIVITY_LIST_FILTER_SET = new Set<ActivityListFilterKey>([
@@ -65,9 +62,6 @@ export const parseMapFilter = (value: string | null): MapFilterKey => {
   return 'all';
 };
 
-/** @deprecated use parseMapFilter */
-export const parseExploreFilter = parseMapFilter;
-
 export const parseActivityListFilter = (
   activityParam: string | null,
   legacyFilterParam: string | null = null
@@ -103,6 +97,8 @@ export const explorePath = (options?: {
   contribute?: boolean | ContributeVenueKind;
   /** Open the “I want to go” request wizard. */
   request?: boolean;
+  /** Re-open a demand pin and continue “Host this trip” after auth/onboarding. */
+  hostDemand?: string;
   q?: string;
 }): string => {
   const params = new URLSearchParams();
@@ -134,6 +130,9 @@ export const explorePath = (options?: {
   }
   if (options?.request) {
     params.set('request', '1');
+  }
+  if (options?.hostDemand) {
+    params.set('hostDemand', options.hostDemand);
   }
   if (options?.q) {
     params.set('q', options.q);

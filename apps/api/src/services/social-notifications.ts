@@ -23,7 +23,7 @@ export const notifyGroupInvite = async (input: {
     body: `${inviterName} invited you to join ${groupName}.`,
     type: NotificationType.SYSTEM,
     meta: {
-      kind: 'buddy_request',
+      kind: 'group_invite',
       inviteToken: input.inviteToken,
       groupId: input.groupId,
       groupName,

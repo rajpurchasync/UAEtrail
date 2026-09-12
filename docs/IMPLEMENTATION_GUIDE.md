@@ -49,7 +49,7 @@ UAE Trail is a community-driven hiking & camping platform for the UAE. Users bro
 - **Media**: S3 presigned upload + commit
 
 ### Frontend Pages (all rendering)
-- **Public**: Home, Discovery, TrailDetail, CampDetail, Calendar, TripDetail, OperatorProfile, Membership, Shop, Community, SignIn, SignUp
+- **Public**: Home, Explore, TrailDetail, CampDetail, EventDetail, ActivityDetail, OperatorProfile, Membership, Shop, Community, SignIn, SignUp
 - **Admin Dashboard**: Overview (metrics), Locations (create+list), Organizers (applications), Events (moderation)
 - **Organizer Dashboard**: Overview, Events (create+publish), Requests, Team, Profile
 - **User Dashboard**: Overview, Requests, Trips, Profile

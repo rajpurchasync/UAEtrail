@@ -216,10 +216,19 @@ const demandKindLabel = (kind: ExploreCardKind): string => {
     case 'camping':
       return 'Camping';
     case 'event':
-      return 'Outdoor Activity';
+      return 'Other Outdoors';
     default:
       return 'company';
   }
+};
+
+/** Prefer the requester's own words; fall back to the demand type label when title is generic. */
+const resolveDemandActivityHighlight = (title: string, kind: ExploreCardKind): string => {
+  const trimmed = title.trim();
+  if (trimmed && !isGenericDemandPlanTitle(trimmed, mapDemandTitleKind(kind))) {
+    return trimmed;
+  }
+  return demandKindLabel(kind);
 };
 
 export const formatExploreDayShort = (date?: string | null): string | null => {
@@ -387,7 +396,7 @@ const buildExploreListTitle = (input: ExploreHeadlineInput): string => {
     if (trimmed && !isGenericDemandPlanTitle(trimmed, mapDemandTitleKind(input.kind))) {
       return trimmed;
     }
-    return `${demandKindLabel(input.kind)} · ${user}`;
+    return `${resolveDemandActivityHighlight(input.title, input.kind)} · ${user}`;
   }
 
   if (input.kind === 'carpool') {
@@ -416,7 +425,8 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
   if (input.source === 'demand') {
     const user = exploreHeadlinePersonLabel(input);
     const day = formatExploreDayForHeadline(input.date);
-    const lead = `${user} is looking for ${demandKindLabel(input.kind)}${day ?? ''}`;
+    const activityLabel = resolveDemandActivityHighlight(input.title, input.kind);
+    const lead = `${user} is looking for ${activityLabel}${day ?? ''}`;
     return joinExploreParts(lead, route ?? location, when);
   }
 
@@ -511,7 +521,7 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
     return finishExploreCardSections(input, {
       highlightName: user,
       suffix: ' is looking for ',
-      activityHighlight: demandKindLabel(input.kind),
+      activityHighlight: resolveDemandActivityHighlight(input.title, input.kind),
       dateHighlight: formatExploreDayForHeadline(input.date),
       details,
       partyLabel,

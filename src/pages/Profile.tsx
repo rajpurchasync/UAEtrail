@@ -1,14 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  Compass,
-  Handshake,
-  Heart,
-  MessageCircle,
-  Settings,
-  Trophy,
-  Users,
-} from 'lucide-react';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
@@ -18,7 +9,9 @@ import {
   AccountActivityPreview,
   AccountAvatarModal,
   AccountEditModal,
+  AccountSectionHeader,
   AccountSignOutButton,
+  HostHubSections,
 } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useHostHubData } from '../hooks/useHostHubData';
@@ -27,14 +20,18 @@ import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
 import { TrailPointsPathSheet } from '../components/rewards';
 import { RewardSummaryDTO } from '@uaetrail/shared-types';
 import { ProfileHeroSection } from '../components/profile/ProfileHeroSection';
+import { ProfileLanguagesCard } from '../components/profile/ProfileLanguagesCard';
 import { ProfileQuickActions, type ProfileQuickAction } from '../components/profile/ProfileQuickActions';
 import { ProfileStampsRow } from '../components/profile/ProfileStampsRow';
 import { ProfileCompletionCard } from '../components/profile/ProfileCompletionCard';
+import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
 import { buildProfileStamps } from '../utils/profileStamps';
+import { USER_CITY_LABELS } from '../constants/userProfileOptions';
 import { computeAgeFromDateOfBirth, formatMemberAge } from '../utils/profileAge';
 import { resolveProfileHostKind, resolveProfileRoleLabel } from '../utils/profileRoleLabel';
+import type { AccountEditSavePayload } from '../components/account/AccountEditModal';
 import { attendedTrips } from '../utils/activityHubSections';
 import { isHostRole } from '../utils/roles';
 
@@ -62,15 +59,21 @@ export const Profile = () => {
   const {
     ownedProfiles,
     loading: hostGateLoading,
+    tenantId: hostTenantId,
   } = useHostGate({ enabled: Boolean(user) });
 
   const host = useHostHubData();
+
+  useEffect(() => {
+    if (hostTenantId) {
+      host.setTenantId(hostTenantId);
+    }
+  }, [hostTenantId, host.setTenantId]);
 
   const [saving, setSaving] = useState(false);
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
-  const [pushStatus, setPushStatus] = useState<string | null>(null);
   const [showEdit, setShowEdit] = useState(false);
   const [showAvatarEdit, setShowAvatarEdit] = useState(false);
   const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
@@ -112,12 +115,21 @@ export const Profile = () => {
   const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
   const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const canHost = isHostRole(user?.role);
+  const canEditLanguages = canHost || ownedProfiles.length > 0 || Boolean(memberDetails.languages);
   const isTripHost = canHost && hostProfileKind !== 'shop';
   const messagesPath = canHost ? '/host/messages' : '/messages';
   const activitiesPath = '/activities?tab=joined';
   const displayName = profile.displayName || user!.displayName || 'Explorer';
   const roleLabel = resolveProfileRoleLabel(user?.role, ownedProfiles);
   const avatarUrl = profile.avatarUrl ?? user?.avatarUrl ?? null;
+
+  const profileAge = useMemo(() => {
+    const dateOfBirth = profile.dateOfBirth;
+    if (dateOfBirth) return computeAgeFromDateOfBirth(dateOfBirth);
+    return memberDetails.age;
+  }, [memberDetails.age, profile.dateOfBirth]);
+
+  const profileCityLabel = profile.city ? USER_CITY_LABELS[profile.city] : null;
 
   const completion = useMemo(
     () =>
@@ -126,8 +138,10 @@ export const Profile = () => {
         avatarUrl,
         bio: profile.bio,
         phone: profile.phone,
+        dateOfBirth: profile.dateOfBirth,
+        city: profile.city,
       }),
-    [avatarUrl, displayName, profile.bio, profile.phone]
+    [avatarUrl, displayName, profile.bio, profile.city, profile.dateOfBirth, profile.phone]
   );
 
   const sharePath = useMemo(
@@ -163,43 +177,36 @@ export const Profile = () => {
         key: 'activities',
         label: 'Activities',
         onClick: openActivities,
-        icon: Compass,
+        emoji: '🧭',
         badge:
           (canHost
             ? upcomingTripsCount + host.pendingJoinRequests
             : upcomingTripsCount) || undefined,
-        accent: 'bg-emerald-50 text-emerald-700',
+        accent: 'bg-emerald-50',
       },
       {
         key: 'messages',
         label: 'Messages',
         to: messagesPath,
-        icon: MessageCircle,
+        emoji: '💬',
         badge: unreadMessages,
-        accent: 'bg-sky-50 text-sky-700',
+        accent: 'bg-sky-50',
       },
       {
         key: 'buddies',
         label: 'Buddies',
         to: '/buddies',
-        icon: Handshake,
+        emoji: '👥',
         badge: incomingBuddyRequests.length || buddies.length || undefined,
-        accent: 'bg-violet-50 text-violet-700',
+        accent: 'bg-violet-50',
       },
       {
         key: 'groups',
         label: 'Groups',
         to: '/groups',
-        icon: Users,
+        emoji: '🫂',
         badge: groups.length,
-        accent: 'bg-indigo-50 text-indigo-700',
-      },
-      {
-        key: 'favourites',
-        label: 'Saved',
-        to: '/favorites',
-        icon: Heart,
-        accent: 'bg-rose-50 text-rose-600',
+        accent: 'bg-indigo-50',
       },
     ];
 
@@ -208,9 +215,9 @@ export const Profile = () => {
         key: 'rewards',
         label: 'Points',
         to: '/my-rewards',
-        icon: Trophy,
+        emoji: '🏆',
         badge: rewardSummary?.points,
-        accent: 'bg-emerald-50 text-emerald-700',
+        accent: 'bg-emerald-50',
       });
     }
 
@@ -218,8 +225,8 @@ export const Profile = () => {
       key: 'settings',
       label: 'Settings',
       to: '/profile/settings',
-      icon: Settings,
-      accent: 'bg-neutral-100 text-neutral-700',
+      emoji: '⚙️',
+      accent: 'bg-neutral-100',
     });
 
     return actions;
@@ -251,11 +258,7 @@ export const Profile = () => {
     setShowAvatarEdit(true);
   }, []);
 
-  const saveProfile = async (payload: {
-    displayName: string;
-    bio?: string;
-    phone?: string;
-  }) => {
+  const saveProfile = async (payload: AccountEditSavePayload) => {
     setMessage(null);
     setSaving(true);
     try {
@@ -290,16 +293,16 @@ export const Profile = () => {
 
   const heroExtra = (
     <div className="flex flex-col items-center gap-2">
-      {(memberDetails.age != null || memberDetails.languages) && (
+      {(profileCityLabel || formatMemberAge(profileAge)) && (
         <div className="flex flex-wrap items-center justify-center gap-2">
-          {formatMemberAge(memberDetails.age) && (
+          {profileCityLabel && (
             <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
-              {formatMemberAge(memberDetails.age)}
+              📍 {profileCityLabel}
             </span>
           )}
-          {memberDetails.languages && (
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-              {memberDetails.languages}
+          {formatMemberAge(profileAge) && (
+            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
+              {formatMemberAge(profileAge)}
             </span>
           )}
         </div>
@@ -351,6 +354,7 @@ export const Profile = () => {
           shareReady={shareReady}
           showCompletionBadge={!loading}
           onEditAvatar={openAvatarEdit}
+          onEditProfile={openEdit}
           onViewProfile={openPublicProfile}
           extra={heroExtra}
         />
@@ -361,7 +365,36 @@ export const Profile = () => {
           </GlassCard>
         )}
 
-        {!loading && (
+        <ProfileLanguagesCard
+          languages={memberDetails.languages}
+          canEdit={canEditLanguages}
+          onUpdated={(languages) => setMemberDetails((prev) => ({ ...prev, languages }))}
+        />
+
+        <ProfileMapPresenceSection />
+
+        {isTripHost && (
+          <GlassCard padding className="space-y-3">
+            <AccountSectionHeader title="Hosting" actionTo="/host/overview" actionLabel="Host hub" />
+            {host.loading ? (
+              <div className="flex justify-center py-6">
+                <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <HostHubSections
+                activitiesCount={host.activities.length}
+                pendingJoinRequests={host.pendingJoinRequests}
+                upcomingActivitiesCount={host.upcomingActivitiesCount}
+                pastActivitiesCount={host.pastActivitiesCount}
+                upcomingActivities={host.upcomingActivities}
+              />
+            )}
+          </GlassCard>
+        )}
+
+        <ProfileQuickActions actions={quickActions} columns={3} />
+
+        {!loading && completion.percent < 100 && (
           <ProfileCompletionCard
             percent={completion.percent}
             items={completion.items}
@@ -370,21 +403,17 @@ export const Profile = () => {
           />
         )}
 
-        <ProfileQuickActions actions={quickActions} columns={3} />
-
         {loading ? (
           <div className="flex justify-center py-8">
             <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          <>
-            <AccountActivityPreview
-              messagesPath={messagesPath}
-              upcomingTrip={upcomingTrip}
-              pendingRequests={pendingRequests}
-              conversations={conversations}
-            />
-          </>
+          <AccountActivityPreview
+            messagesPath={messagesPath}
+            upcomingTrip={upcomingTrip}
+            pendingRequests={pendingRequests}
+            conversations={conversations}
+          />
         )}
 
         <AccountSignOutButton onSignOut={() => void signOut()} />
@@ -406,10 +435,7 @@ export const Profile = () => {
         email={user!.email ?? ''}
         saving={saving}
         message={message}
-        pushStatus={pushStatus}
-        setPushStatus={setPushStatus}
         onSave={saveProfile}
-        onEmailChanged={refreshUser}
       />
 
       <AccountAvatarModal

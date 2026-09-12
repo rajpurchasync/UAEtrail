@@ -5,7 +5,6 @@ export { CampingCard } from './CampingCard';
 export { ActivityCard } from './ActivityCard';
 export { JoinRequestModal } from './JoinRequestModal';
 export { ShareButton } from './ShareButton';
-export { FavoriteButton } from './FavoriteButton';
 export { ParticipantPreview } from './ParticipantPreview';
 export { HostMessageButton } from './HostMessageButton';
 export { LocationDetailTabs, toLocationDetailData } from './LocationDetailTabs';

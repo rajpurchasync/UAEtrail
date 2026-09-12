@@ -87,13 +87,13 @@ Prerequisite work from the explore/host-display audit. Complete these before Pha
 | 6.3 | Trip pricing consolidation (`packages/shared-types/src/trip-pricing.ts`; API zod schema + FE badge styling only) | Done |
 | 6.4 | Remove `organizerName` from API DTO mappers (compat mirror only) | Done |
 | 6.5 | Remove venue pin offset hack in `explore-map.ts` (`+= 0.004`) | Done |
-| 6.6 | **Carpool consolidation:** rideshare supply = standalone `activityType: 'carpool'` only; deprecate `carPoolEnabled` on hiking/camping/event, `linked-carpool.ts` child activities, and duplicate route fields (`carPoolFromLat` vs `meetingLat`/`startLat`) | Done (create/edit blocked; linked-carpool sync removed; UI toggles removed; read-compat for existing linked carpools retained) |
+| 6.6 | **Carpool consolidation:** rideshare supply = standalone `activityType: 'carpool'` only; deprecate `carPoolEnabled` on hiking/camping/event, linked child carpools, and duplicate route fields (`carPoolFromLat` vs `meetingLat`/`startLat`) | Done (create/edit blocked; linked-carpool sync removed; orphaned `linked-carpool.ts` deleted; read-compat for existing linked carpools retained) |
 
 **Completed in this track:** host resolution (shared-types), deprecated FE `organizerName` usage, explore cache invalidation, server-built `presentation`, join-instructions / explore-price / display coords in shared-types, demo accounts module.
 
 **6.1 design (person + role, not name-per-role):** On `ExploreMapItemDTO`, one optional `featuredPerson` carries the user's display name and a contextual **role** (`host`, `requester`, `contact`). Headlines use name + role-driven templates (`"{name} is going Hiking"` vs `"{name} is looking for Hiking"`). Keep `ActivityDTO.hostName` / `hostUserId` as activity-domain fields; keep `tenantName` separate for org brand. Venues may omit `featuredPerson`.
 
-**6.6 design (one rideshare supply model):** Published rideshare is already `activityType: 'carpool'` on the explore map. Remaining debt is the legacy **linked carpool** path (`carPoolEnabled` toggle on hikes/camps + `syncLinkedCarpoolForParent` spawning `"Carpool · {parentTitle}"` child docs). Target state: (1) hosts create rideshare only as a carpool activity; (2) migrate or fold linked child carpools into standalone carpool activities; (3) remove `carPoolEnabled` from host create/edit APIs and activity form; (4) unify route coords on activity route fields used by explore (`meetingLat`/`startLat` or a single route DTO). Demand stays on `participant_intents` with `kind: 'carpool'` — supply vs demand separation is intentional; duplicate supply models are not.
+**6.6 design (one rideshare supply model):** Published rideshare is `activityType: 'carpool'` on the explore map. Legacy linked child carpools remain readable via `linkedCarpoolActivityId` on parent activities; new linked carpool creation is blocked.
 
 ---
 
@@ -143,9 +143,9 @@ Two **independent** privacy controls. Both mean **hidden from map discovery**, n
 
 ---
 
-## Phase 8 — Buddy connections (backlog)
+## Phase 8 — Buddy connections
 
-Implement **after Phase 7** is complete. **Not a thin UI layer** — first-class relationship model with messaging integration.
+First-class 1:1 buddy relationships with messaging and profile privacy integration.
 
 | # | Item | Status |
 |---|------|--------|
@@ -155,11 +155,11 @@ Implement **after Phase 7** is complete. **Not a thin UI layer** — first-class
 | 8.4 | **Shared-types DTOs:** `BuddyRequestDTO`, `BuddySummaryDTO`, status enums — consumed by web/mobile, not duplicated in FE | Done |
 | 8.5 | **Notifications:** request received, accepted (reuse notification pipeline + copy module) | Done |
 | 8.6 | **Chat policy:** extend `assertCanMessageUser` — accepted buddies may message regardless of trip/join-request link | Done |
-| 8.7 | **Profile UX:** "Add buddy" / "Request sent" / Accept·Decline on member profile; buddy list in profile or messages hub | Partial (member profile actions; buddy list API ready) |
+| 8.7 | **Profile UX:** "Add buddy" / "Request sent" / Accept·Decline on member profile; buddies list from profile quick actions (`/buddies`) | Done |
 | 8.8 | **Privacy interaction:** respect Phase 7 private profiles — buddy request may still be sent; full profile visible only after accept (or per visibility rules) | Done |
-| 8.9 | **Tests:** request lifecycle, duplicate prevention, chat gate after accept, notification triggers | Partial (pair key + profile/chat integration tests) |
+| 8.9 | **Tests:** request lifecycle, duplicate prevention, chat gate after accept/unfriend, notification triggers | Partial (pair key + profile access + unfriend chat block; full lifecycle suite still thin) |
 
-**Current baseline:** First-class 1:1 buddy connections via `buddy_requests` + `buddy_pairs`. Member profile supports add/accept/decline. Accepted buddies can message and view private profiles.
+**Current baseline:** First-class 1:1 buddy connections via `buddy_requests` + `buddy_pairs`. Profile quick action opens `/buddies` (view, message, unfriend). Member profile supports add/accept/decline. Accepted buddies can message and view private profiles; unfriend is silent and revokes buddy-only access.
 
 **Architecture**
 

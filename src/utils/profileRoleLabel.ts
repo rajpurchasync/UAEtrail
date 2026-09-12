@@ -9,6 +9,18 @@ export const resolveProfileHostKind = (
   return null;
 };
 
+export const resolvePublicMemberRoleLabel = (profile: {
+  isHost: boolean;
+  isGuideStaff?: boolean;
+  hostProfileKind: 'shop' | 'agency' | 'guide' | null;
+}): string => {
+  if (profile.hostProfileKind === 'shop') return 'Shop owner';
+  if (profile.hostProfileKind === 'agency') return 'Agency host';
+  if (profile.isGuideStaff) return 'Guide';
+  if (profile.isHost) return 'Host';
+  return 'Community member';
+};
+
 export const resolveProfileRoleLabel = (
   role: UserRole | undefined,
   ownedProfiles: OwnedHostProfileDTO[]

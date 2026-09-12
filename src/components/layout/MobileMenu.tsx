@@ -3,11 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogIn, LogOut, Menu, RefreshCw, ShoppingBag, User, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import { isConsumerChromeHidden, MOBILE_DRAWER_MENU, MOBILE_LANDING_USER_MENU, EXPLORE_MAP_PATH } from '../../config/platform';
-import { ADMIN_LINKS, HOST_DASHBOARD_LINKS, MERCHANT_DASHBOARD_LINKS } from '../../constants';
+import { ADMIN_LINKS, HOST_DASHBOARD_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/services';
 import { setStoredSession } from '../../api/client';
 import { accountRouteByRole } from '../../utils/authRouting';
+import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 
@@ -333,24 +334,22 @@ export const MobileUserMenuButton = ({
 
 const MobileMenuPanel = () => {
   const { open, closeMenu } = useMobileMenu();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { user, signOut, refreshUser } = useAuth();
   const unreadNotifications = useNotificationUnreadCount();
+  const { href: signInHref } = buildSignInRedirect({ pathname, search });
 
   const isOrganizerRole =
     user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
   const isAdminRole = user?.role === 'platform_admin';
-  const isMerchantRole = user?.role === 'merchant_admin';
-  const isPrivilegedRole = isOrganizerRole || isAdminRole || isMerchantRole;
+  const isPrivilegedRole = isOrganizerRole || isAdminRole;
   const canSwitchBack = user?.role === 'participant' && Boolean(user?.switchedFromRole);
 
-  // only hide for admin/merchant/organizer shells — they use their own burger
+  // only hide for admin/organizer shells — they use their own burger
   if (isConsumerChromeHidden(pathname) && !isPrivilegedRole) return null;
 
-  const profileDestination = user
-    ? accountRouteByRole(user.role)
-    : { pathname: '/signin', state: { from: pathname } };
+  const profileDestination = user ? accountRouteByRole(user.role) : signInHref;
 
   const isActive = (match: readonly string[]) =>
     match.some((prefix) =>
@@ -401,34 +400,6 @@ const MobileMenuPanel = () => {
           onClick={() => void switchRole('participant')}
           className={dashboardActionClass}
         >
-          Switch to Visitor
-        </button>
-        <button
-          type="button"
-          onClick={async () => {
-            closeMenu();
-            await signOut();
-          }}
-          className={`${dashboardActionClass} text-red-600 hover:bg-red-50`}
-        >
-          Sign Out
-        </button>
-      </MobileDrawer>
-    );
-  }
-
-  if (isMerchantRole) {
-    return (
-      <MobileDrawer
-        open={open}
-        closeMenu={closeMenu}
-        eyebrow="Merchant"
-        title={user?.displayName || 'Account'}
-        ariaLabel="Merchant navigation"
-      >
-        <DashboardDrawerLinks links={MERCHANT_DASHBOARD_LINKS} pathname={pathname} closeMenu={closeMenu} />
-        <DashboardDrawerSiteLink closeMenu={closeMenu} />
-        <button type="button" onClick={() => void switchRole('participant')} className={dashboardActionClass}>
           Switch to Visitor
         </button>
         <button
@@ -594,8 +565,7 @@ const MobileMenuPanel = () => {
             </button>
           ) : (
             <Link
-              to="/signin"
-              state={{ from: pathname }}
+              to={signInHref}
               onClick={closeMenu}
               className={navItemClass(false)}
             >

@@ -5,7 +5,6 @@ import { PageMeta } from '../seo/PageMeta';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import { ShopProductCatalogSection } from './ShopProductCatalogSection';
 import { ShareButton } from '../ui/ShareButton';
-import { FavoriteButton } from '../ui/FavoriteButton';
 import { HostMessageButton } from '../ui/HostMessageButton';
 import { explorePath } from '../../utils/exploreRouting';
 import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
@@ -27,16 +26,13 @@ export const ShopPublicDetail = ({ tenant }: ShopPublicDetailProps) => {
       backLabel="Explore"
       showMenu={false}
       headerAction={
-        <div className="flex items-center gap-1.5">
-          <FavoriteButton tenantId={tenant.id} compact />
-          <ShareButton
-            title={tenant.name}
-            text={tenant.description?.slice(0, 120) ?? `${tenant.name} on UAE Trail`}
-            path={`/operator/${tenant.slug}`}
-            iconOnly
-            light
-          />
-        </div>
+        <ShareButton
+          title={tenant.name}
+          text={tenant.description?.slice(0, 120) ?? `${tenant.name} on UAE Trail`}
+          path={`/operator/${tenant.slug}`}
+          iconOnly
+          light
+        />
       }
     >
       <PageMeta

@@ -1,7 +1,6 @@
 import {
   Bell,
   Compass,
-  Heart,
   Map,
   MessageCircle,
   ShoppingBag,
@@ -33,7 +32,6 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'My Profile'
   | 'My trips'
   | 'Notifications'
-  | 'Favourites'
   | 'Join'
   | 'Contact',
   LucideIcon
@@ -49,7 +47,6 @@ export const MOBILE_NAV_ICON_MAP: Record<
   Profile: NAV_ICONS.profile,
   'My Profile': NAV_ICONS.profile,
   Notifications: Bell,
-  Favourites: Heart,
   'Trail catalog': Map,
   'My trips': NAV_ICONS.trips,
   'Upcoming Activities': NAV_ICONS.trips,

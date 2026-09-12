@@ -35,8 +35,7 @@ export const MOBILE_DRAWER_MENU = [
     match: ['/profile', '/my-requests', '/messages'],
     profileLink: true,
   },
-  { label: 'Explore Map', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery', '/shop'] },
-  { label: 'Favourites', to: '/favorites', match: ['/favorites'] },
+  { label: 'Explore Map', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery'] },
   { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
   { label: 'My trips', to: '/activities?tab=joined', match: ['/activities', '/trips', '/trip', '/activity'] },
 ] as const;
@@ -138,7 +137,6 @@ const CONSUMER_CHROME_HIDDEN_PREFIXES = [
   '/host',
   '/organizer',
   '/dashboard',
-  '/merchant'
 ] as const;
 
 const CONSUMER_CHROME_HIDDEN_EXACT = [
@@ -175,7 +173,6 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/buddies',
   '/messages',
   '/notifications',
-  '/favorites',
   '/my-requests',
   '/become-host',
   '/become-organizer',

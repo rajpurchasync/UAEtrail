@@ -321,7 +321,7 @@ export const findMerchantPublicById = async (id: string) => {
     .sort({ createdAt: -1 })
     .toArray();
 
-  const owner = merchant.adminIds[0] ? await findAuthUserById(merchant.adminIds[0]) : null;
+  const owner = merchant.adminIds?.[0] ? await findAuthUserById(merchant.adminIds[0]) : null;
 
   return {
     ...mapMongoMerchantProfile(merchant),
@@ -333,11 +333,12 @@ export const findMerchantPublicById = async (id: string) => {
 };
 
 export const resolveMerchantOwnerDisplay = async (
-  adminIds: string[]
+  adminIds: string[] | null | undefined
 ): Promise<{ userId: string; name: string | null; avatarUrl: string | null } | null> => {
+  if (!adminIds?.[0]) return null;
   const map = await loadMerchantOwnerDisplaysByAdminIds([adminIds]);
   const ownerId = adminIds[0];
-  return ownerId ? map.get(ownerId) ?? null : null;
+  return map.get(ownerId) ?? null;
 };
 
 export const loadMerchantOwnerDisplaysByAdminIds = async (

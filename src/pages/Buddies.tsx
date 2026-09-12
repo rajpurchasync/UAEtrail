@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Handshake, MessageCircle, UserMinus, UserRound } from 'lucide-react';
+import { MessageCircle, UserMinus, UserRound } from 'lucide-react';
 import type { BuddyRequestDTO, BuddySummaryDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
@@ -169,8 +169,8 @@ export const Buddies = () => {
               </p>
               {buddies.length === 0 ? (
                 <GlassCard padding className="text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
-                    <Handshake className="h-5 w-5" />
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-2xl">
+                    <span aria-hidden>👥</span>
                   </div>
                   <p className="font-semibold text-neutral-900">No buddies yet</p>
                   <p className="mt-1 text-sm text-neutral-500">

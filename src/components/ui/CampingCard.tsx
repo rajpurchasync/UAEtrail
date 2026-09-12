@@ -1,6 +1,5 @@
 import { X, MapPin, Car } from 'lucide-react';
 import { CampingSpot } from '../../types';
-import { FavoriteButton } from './FavoriteButton';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
 import {
@@ -32,9 +31,7 @@ export const CampingCard = ({ camp, actions, onDismiss }: CampingCardProps) => {
           >
             <X className="h-4 w-4" />
           </button>
-        ) : (
-          <FavoriteButton locationId={camp.id} className="absolute top-3 right-3" />
-        )}
+        ) : null}
         {camp.accessibility === 'car-accessible' && (
           <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full glass px-2.5 py-1 text-xs font-semibold text-emerald-700">
             <Car className="h-3 w-3" />

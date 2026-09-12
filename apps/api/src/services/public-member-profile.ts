@@ -11,6 +11,10 @@ import { findUserBadges } from '../lib/reward-ledger-store.js';
 import { findLatestHostApplicationByApplicant } from '../lib/host-applications-store.js';
 import { isBusinessHostById } from '../lib/user-type.js';
 import {
+  USER_CITY_LABELS,
+  type UserCity,
+} from '../domain/user-profile.js';
+import {
   canViewProfileField,
   PRIVATE_PROFILE_MESSAGE,
   resolveProfileViewerAccess,
@@ -74,6 +78,7 @@ export type PublicMemberProfileResponse =
       avatarUrl: string | null;
       bio: string | null;
       age: number | null;
+      city: string | null;
       languages: string | null;
       isHost: boolean;
       isGuideStaff?: boolean;
@@ -171,7 +176,9 @@ export async function buildPublicMemberProfile(
   const memberDetails = parseMemberDetails(hostApplication?.metadata, user.profile?.dateOfBirth ?? null);
   const showBio = canViewProfileField(visibility, access, 'bio');
   const showAge = canViewProfileField(visibility, access, 'age');
+  const showCity = canViewProfileField(visibility, access, 'city');
   const showLanguages = canViewProfileField(visibility, access, 'languages');
+  const profileCity = user.profile?.city ?? null;
 
   return {
     visibilityState: 'full',
@@ -180,6 +187,7 @@ export async function buildPublicMemberProfile(
     avatarUrl: user.profile?.avatarUrl ?? null,
     bio: showBio ? user.profile?.bio ?? null : null,
     age: showAge ? memberDetails.age : null,
+    city: showCity && profileCity ? USER_CITY_LABELS[profileCity as UserCity] : null,
     languages: showLanguages ? memberDetails.languages : null,
     isHost,
     isGuideStaff,

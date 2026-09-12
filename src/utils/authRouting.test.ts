@@ -5,6 +5,7 @@ import {
   adminDashboardRedirect,
   defaultRouteByRole,
   hostDashboardRedirect,
+  merchantDashboardRedirect,
   participantDashboardRedirect,
 } from './authRouting';
 
@@ -12,7 +13,7 @@ describe('auth routing by role', () => {
   it('maps account routes for each role', () => {
     const cases: Array<[UserRole, string]> = [
       ['participant', '/profile'],
-      ['merchant_admin', '/merchant/dashboard'],
+      ['merchant_admin', '/profile'],
       ['tenant_owner', '/profile'],
       ['tenant_admin', '/profile'],
       ['tenant_guide', '/profile'],
@@ -27,7 +28,7 @@ describe('auth routing by role', () => {
   it('maps default post-login routes for each role', () => {
     const cases: Array<[UserRole, string]> = [
       ['participant', '/explore'],
-      ['merchant_admin', '/merchant/dashboard'],
+      ['merchant_admin', '/explore'],
       ['tenant_owner', '/host/overview'],
       ['tenant_admin', '/host/overview'],
       ['tenant_guide', '/host/overview'],
@@ -61,7 +62,18 @@ describe('auth routing by role', () => {
     expect(adminDashboardRedirect('users')).toBe('/admin/users');
     expect(adminDashboardRedirect('activities')).toBe('/admin/activities');
     expect(adminDashboardRedirect('locations')).toBe('/admin/locations');
+    expect(adminDashboardRedirect('hosts')).toBe('/admin/hosts');
+    expect(adminDashboardRedirect('organizers')).toBe('/admin/hosts');
+    expect(adminDashboardRedirect('groups')).toBe('/admin/groups');
+    expect(adminDashboardRedirect('shop')).toBe('/admin/shop');
+    expect(adminDashboardRedirect('notifications')).toBe('/admin/notifications');
+    expect(adminDashboardRedirect('audit-log')).toBe('/admin/audit-log');
     expect(adminDashboardRedirect('settings')).toBe('/admin/settings');
     expect(adminDashboardRedirect('unknown')).toBe('/admin/overview');
+  });
+
+  it('maps merchant dashboard aliases to shop management', () => {
+    expect(merchantDashboardRedirect('overview')).toBe('/shop/manage');
+    expect(merchantDashboardRedirect('unknown')).toBe('/shop/manage');
   });
 });
