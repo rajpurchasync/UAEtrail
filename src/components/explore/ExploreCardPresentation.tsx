@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import type { ExploreCardModel, ExploreCardTone } from '../../explore/exploreCardModel';
 import { exploreCardToneClass, exploreCardToneTextClass } from '../../explore/exploreCardModel';
 import type { ExploreCardDetail, ExploreCardDetailIcon, ExploreCardSections } from '../../explore/exploreCopy';
-import { memberProfilePath, resolveHostProfilePath } from '../../utils/hostLinks';
+import { personProfilePath, resolveOrganisationProfilePath } from '../../utils/hostLinks';
 import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
 import { capitalize } from '../../utils';
 import { explorePersonRoleLabel } from '@uaetrail/shared-types';
@@ -267,11 +267,11 @@ export const ExploreCardPeopleRow = ({ card }: { card: ExploreCardModel }) => {
   const hostName = card.listHost ?? person?.displayName ?? card.sections.hostName ?? card.sections.highlightName;
   const hostPath =
     card.source === 'activity'
-      ? resolveHostProfilePath({
+      ? resolveOrganisationProfilePath({
           tenantSlug: card.activity?.tenantSlug,
           hostUserId: card.activity?.hostUserId ?? person?.userId,
         })
-      : memberProfilePath(person?.userId ?? card.requesterUserId);
+      : personProfilePath(person?.userId ?? card.requesterUserId);
   const personRoleLabel = person ? explorePersonRoleLabel(person.role) : null;
   const showHostRow =
     Boolean(hostName || card.hostAvatar) &&
@@ -316,7 +316,7 @@ export const ExploreCardPeopleRow = ({ card }: { card: ExploreCardModel }) => {
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{hostName}</p>
           <p className="text-xs text-gray-500">
-            {personRoleLabel ?? (card.source === 'demand' ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Host')}
+            {personRoleLabel ?? (card.source === 'demand' ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Organisation')}
           </p>
         </div>
       </div>

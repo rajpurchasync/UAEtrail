@@ -173,7 +173,7 @@ export const JoinRequestDetail = () => {
 
       <GlassCard padding className="mb-4 space-y-3">
         <p className="text-xs font-bold uppercase tracking-wide text-neutral-400">
-          Your note to organizer
+          Your note to the organisation
         </p>
         <textarea
           className="ios-input text-[15px] min-h-[100px] resize-none"
@@ -195,7 +195,7 @@ export const JoinRequestDetail = () => {
       <div className="space-y-3">
         <AppButton variant="tint" fullWidth onClick={askOrganizer} className="gap-2">
           <MessageCircle className="w-4 h-4" />
-          Ask organizer a question
+          Ask the organisation a question
         </AppButton>
         {canWithdraw && (
           <button

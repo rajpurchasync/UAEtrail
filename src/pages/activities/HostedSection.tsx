@@ -7,10 +7,10 @@ import {
   buildHostActivityMenuItems,
   openPublishedActivityPreview,
 } from '../../components/activities';
-import { HostJoinRequestCard } from '../../components/host/HostJoinRequestCard';
-import { HostActivityCheckInPanel } from '../../components/host/HostActivityCheckInPanel';
+import { OrganisationJoinRequestCard } from '../../components/organisation-console/OrganisationJoinRequestCard';
+import { OrganisationActivityCheckInPanel } from '../../components/organisation-console/OrganisationActivityCheckInPanel';
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
-import { useHostHubData } from '../../hooks/useHostHubData';
+import { useOrganisationHubData } from '../../hooks/useOrganisationHubData';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { AppButton } from '../../components/mobile/AppButton';
@@ -36,7 +36,7 @@ const formatEventMeta = (event: ActivityDTO) => {
 export const HostedSection = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const host = useHostHubData();
+  const host = useOrganisationHubData();
   const { openEdit } = useActivityFormSession();
   const [activityTab, setActivityTab] = useState<ActivityTab>('upcoming');
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
@@ -85,7 +85,7 @@ export const HostedSection = () => {
     setError(null);
     setBusyRequestId(requestId);
     try {
-      await api.decideHostRequest(host.tenantId, requestId, status);
+      await api.decideOrganisationJoinRequest(host.tenantId, requestId, status);
       await host.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update request');
@@ -99,7 +99,7 @@ export const HostedSection = () => {
     setError(null);
     setBusyActivityId(event.id);
     try {
-      const res = await api.duplicateHostActivity(host.tenantId, event.id);
+      const res = await api.duplicateOrganisationActivity(host.tenantId, event.id);
       await host.reload();
       openEdit(res.data, { tenantId: host.tenantId });
     } catch (err) {
@@ -114,7 +114,7 @@ export const HostedSection = () => {
     setError(null);
     setBusyActivityId(event.id);
     try {
-      await api.publishHostActivity(host.tenantId, event.id);
+      await api.publishOrganisationActivity(host.tenantId, event.id);
       await host.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish activity');
@@ -128,7 +128,7 @@ export const HostedSection = () => {
     setError(null);
     setBusyActivityId(confirmAction.activity.id);
     try {
-      await api.cancelHostActivity(host.tenantId, confirmAction.activity.id);
+      await api.cancelOrganisationActivity(host.tenantId, confirmAction.activity.id);
       setConfirmAction(null);
       await host.reload();
     } catch (err) {
@@ -161,9 +161,9 @@ export const HostedSection = () => {
   if (!host.tenantId) {
     return (
       <GlassCard padding>
-        <p className="text-sm text-neutral-600">Select a host organization to manage your activities.</p>
+        <p className="text-sm text-neutral-600">Select an organisation to manage your activities.</p>
         <Link to="/host/overview" className="mt-2 inline-block text-sm font-semibold text-emerald-700">
-          Open host dashboard
+          Open organisation console
         </Link>
       </GlassCard>
     );
@@ -188,7 +188,7 @@ export const HostedSection = () => {
             </Link>
           </div>
           {host.pendingRequests.slice(0, 3).map((request) => (
-            <HostJoinRequestCard
+            <OrganisationJoinRequestCard
               key={request.id}
               request={request}
               busy={busyRequestId === request.id}
@@ -272,7 +272,7 @@ export const HostedSection = () => {
         title="Check in attendees"
       >
         {checkinActivity && host.tenantId ? (
-          <HostActivityCheckInPanel
+          <OrganisationActivityCheckInPanel
             tenantId={host.tenantId}
             activityId={checkinActivity.id}
             activityTitle={checkinActivity.title || checkinActivity.locationName}

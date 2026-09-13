@@ -4,7 +4,9 @@
 **Remote:** `purchasync/UAEtrail` (`git push purchasync experiment/new-ui`)  
 **Not in scope for:** `uaetrail/main` until explicit merge approval  
 **Companion doc:** [explore-ux-spec.md](./explore-ux-spec.md)  
-**Last updated:** 2026-09-07
+**Last updated:** 2026-09-12
+
+> **2026-09-12 alignment:** Agencies and guides are **not** explore map pins — only `/operator/:slug` host profiles. Shops use `/shop/:id` with **physical** (map pin) vs **online** (list-only) presence. In-app Stripe checkout is disabled; shops use outbound affiliate links.
 
 ---
 
@@ -12,7 +14,7 @@
 
 This plan implements the mobile **map-first explore experience** for UAE Trail:
 
-- **Supply side:** hosts publish hiking, camping, events, carpools; venues, shops, tour agencies appear as static listings.
+- **Supply side:** hosts publish hiking, camping, events, carpools; venues and gear shops appear as static listings (agencies are host profiles only, not map pins).
 - **Demand side:** participants post public “I want to go” intents; others join; a participant can convert to host.
 - **Social:** auto messaging group per published activity/demand; members added on join approval.
 - **Payments:** indication only (Free/Paid/Shared) — offline settlement, no checkout.

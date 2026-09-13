@@ -441,7 +441,7 @@ export const publishMobileQuickActivity = async (input: {
     throw new Error('Enter a title for your plan.');
   }
 
-  const locationRes = await api.submitLocation(tenantId, {
+  const locationRes = await api.submitPlace(tenantId, {
     name: `Map spot ${fromLabel}`.slice(0, 120),
     countryCode: 'AE',
     emirate: 'Dubai',
@@ -499,8 +499,8 @@ export const publishMobileQuickActivity = async (input: {
 
   payload.paymentTerms = null;
 
-  const created = await api.createHostActivity(tenantId, payload);
-  await api.publishHostActivity(tenantId, created.data.id);
+  const created = await api.createOrganisationActivity(tenantId, payload);
+  await api.publishOrganisationActivity(tenantId, created.data.id);
 
   if (participantIntentId) {
     await api.fulfillParticipantIntent(tenantId, participantIntentId, created.data.id);

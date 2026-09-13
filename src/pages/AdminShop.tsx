@@ -131,7 +131,7 @@ export const AdminShop = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left">Product</th>
-                <th className="px-4 py-3 text-left">Merchant</th>
+                <th className="px-4 py-3 text-left">Shop</th>
                 <th className="px-4 py-3 text-left">Category</th>
                 <th className="px-4 py-3 text-right">Price</th>
                 <th className="px-4 py-3 text-left">Status</th>

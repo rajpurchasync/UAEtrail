@@ -21,10 +21,10 @@ import {
   type MobileContributeDraft,
 } from './mobileContributeFlow';
 import type { LocationPrecision, TripDifficulty } from './mobileCreateFlow';
-import { formatHostPhonePreview } from '../host/becomeHostForm';
+import { formatHostPhonePreview } from '../organisation-console/becomeHostForm';
 
-const MobileCreateLocationPicker = lazy(() =>
-  import('./MobileCreateLocationPicker').then((m) => ({ default: m.MobileCreateLocationPicker }))
+const MobileCreatePlacePicker = lazy(() =>
+  import('./MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
 );
 
 interface MobileCreateContributeFlowProps {
@@ -263,7 +263,7 @@ export const MobileCreateContributeFlow = ({
     return (
       <div className="absolute inset-0 z-[1400] bg-neutral-100">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <MobileCreateLocationPicker
+          <MobileCreatePlacePicker
             precision={mapPrecision}
             latitude={lat}
             longitude={lng}

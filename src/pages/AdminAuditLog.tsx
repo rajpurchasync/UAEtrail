@@ -18,10 +18,10 @@ const ACTION_FILTER_OPTIONS = [
 ];
 
 const ENTITY_FILTER_OPTIONS = [
-  { value: 'user' as const, label: 'User' },
+  { value: 'user' as const, label: 'Member' },
   { value: 'tenant' as const, label: 'Tenant' },
   { value: 'activity' as const, label: 'Activity' },
-  { value: 'location' as const, label: 'Location' },
+  { value: 'location' as const, label: 'Place' },
   { value: 'application' as const, label: 'Application' },
   { value: 'product' as const, label: 'Product' },
   { value: 'notification' as const, label: 'Notification' },

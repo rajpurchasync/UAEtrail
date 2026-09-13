@@ -112,7 +112,7 @@ export const ProfileLanguagesCard = ({
     setError(null);
     try {
       const formatted = formatLanguages(selected);
-      await api.updateHostDetails({ languages: formatted });
+      await api.updateOrganisationDetails({ languages: formatted });
       onUpdated(formatted);
       setOpen(false);
     } catch (err) {

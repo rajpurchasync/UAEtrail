@@ -10,6 +10,7 @@ import {
   FavoriteDTO,
   JoinRequestDTO,
   LocationDTO,
+  PlaceDTO,
   LocationDetailResponse,
   LocationGuideDTO,
   LocationPremiumSummaryDTO,
@@ -74,6 +75,9 @@ export interface HostApplication {
   };
   createdAt: string;
 }
+
+/** Domain alias — organisation signup/application (wire: host_applications). */
+export type OrganisationApplication = HostApplication;
 
 export interface AdminMetrics {
   tenants: number;
@@ -201,6 +205,9 @@ export type PublicMemberProfileDTO =
         tripsHosted: number;
       };
     };
+
+/** Domain alias — a Person's public profile at `/member/:id`. */
+export type PersonPublicProfileDTO = PublicMemberProfileDTO;
 
 export interface SocialGroupView {
   id: string;
@@ -354,6 +361,9 @@ export interface HostDetails {
   residence?: string;
 }
 
+/** Domain alias — public organisation profile fields on guide/agency tenants. */
+export type OrganisationDetails = HostDetails;
+
 export interface TenantProfile {
   id: string;
   name: string;
@@ -455,6 +465,7 @@ export const api = {
     apiRequest<{ data: ActivityDTO[] }>(`/locations/${locationId}/activities`),
   getPopularLocations: (limit = 6) => apiRequest<{ data: LocationDTO[] }>(`/locations/popular?limit=${limit}`),
   trackLocationView: (id: string) => apiRequest('/locations/' + id + '/view', { method: 'POST' }),
+  /** @deprecated Use {@link api.getOrganisationProfile} — domain name for the same endpoint. */
   getTenantProfile: (slug: string) => apiRequest<{ data: TenantProfile }>(`/tenants/${slug}`),
   getPublicActivities: (opts?: { when?: 'upcoming' | 'past' | 'all'; pageSize?: number }) => {
     const params = new URLSearchParams();
@@ -722,13 +733,16 @@ export const api = {
     }),
   getMyTenants: () => apiRequest<{ data: TenantMembershipView[] }>('/me/tenants', { auth: true }),
   getAdminMetrics: () => apiRequest<{ data: AdminMetrics }>('/admin/metrics', { auth: true }),
+  /** @deprecated Use {@link api.getAdminPlaces} — domain name for the same endpoint. */
   getAdminLocations: () => apiRequest<{ data: LocationDTO[] }>('/admin/locations?pageSize=100', { auth: true }),
+  /** @deprecated Use {@link api.createAdminPlace} — domain name for the same endpoint. */
   createAdminLocation: (payload: Partial<LocationDTO>) =>
     apiRequest<{ data: LocationDTO }>('/admin/locations', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
     }),
+  /** @deprecated Use {@link api.updateAdminPlace} — domain name for the same endpoint. */
   updateAdminLocation: (id: string, payload: Partial<LocationDTO>) =>
     apiRequest<{ data: LocationDTO }>(`/admin/locations/${id}`, {
       method: 'PATCH',
@@ -940,6 +954,7 @@ export const api = {
 
   // ─── Organizer - Location Submission ────────────────────────────────────
 
+  /** @deprecated Use {@link api.submitPlace} — domain name for the same endpoint. */
   submitLocation: (tenantId: string, payload: Partial<LocationDTO>) =>
     apiRequest<{ data: LocationDTO }>('/host/locations', {
       method: 'POST',
@@ -948,6 +963,7 @@ export const api = {
       body: JSON.stringify(payload)
     }),
 
+  /** @deprecated Use {@link api.submitUserPlace} — domain name for the same endpoint. */
   submitUserLocation: (payload: Partial<LocationDTO>) =>
     apiRequest<{ data: LocationDTO }>('/me/locations', {
       method: 'POST',
@@ -955,9 +971,11 @@ export const api = {
       body: JSON.stringify(payload)
     }),
 
+  /** @deprecated Use {@link api.getMySubmittedPlaces} — domain name for the same endpoint. */
   getMySubmittedLocations: () =>
     apiRequest<{ data: LocationDTO[] }>('/me/locations', { auth: true }),
 
+  /** @deprecated Use {@link api.getHostSubmittedPlaces} — domain name for the same endpoint. */
   getHostSubmittedLocations: (tenantId: string) =>
     apiRequest<{ data: LocationDTO[] }>('/host/locations', {
       auth: true,
@@ -1031,18 +1049,22 @@ export const api = {
       {}
     ),
 
-  // ─── Shop - Merchant ───────────────────────────────────────────────────
+  // ─── Shop organisation (legacy wire: /shop/merchant/*) ─────────────────
 
   getMerchantProfile: () =>
     apiRequest<{ data: MerchantProfileDTO }>('/shop/merchant/profile', { auth: true }),
+  /** @deprecated Use {@link api.getShopOrganisationStores} — domain name for the same endpoint. */
   getMerchantStores: () =>
     apiRequest<{ data: MerchantProfileDTO[] }>('/shop/merchant/stores', { auth: true }),
+  /** @deprecated Use {@link api.getShopOrganisationProfile} — domain name for the same endpoint. */
   getMerchantProfileById: (merchantId: string) =>
     apiRequest<{ data: MerchantProfileDTO }>(`/shop/merchant/profile?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
+  /** @deprecated Use {@link api.createShopOrganisationProfile} — domain name for the same endpoint. */
   createMerchantProfile: (payload: {
     shopName: string;
     description?: string;
     logo?: string;
+    websiteUrl?: string | null;
     contactEmail?: string;
     contactPhone?: string;
     region?: string | null;
@@ -1052,12 +1074,14 @@ export const api = {
       auth: true,
       body: JSON.stringify(payload)
     }),
+  /** @deprecated Use {@link api.updateShopOrganisationProfile} — domain name for the same endpoint. */
   updateMerchantProfile: (
     merchantId: string,
     payload: Partial<{
       shopName: string;
       description?: string;
       logo?: string;
+      websiteUrl?: string | null;
       contactEmail?: string;
       contactPhone?: string;
       region?: string | null;
@@ -1068,20 +1092,24 @@ export const api = {
       auth: true,
       body: JSON.stringify(payload)
     }),
+  /** @deprecated Use {@link api.getShopOrganisationProducts}. */
   getMerchantProducts: (merchantId: string) =>
     apiRequest<{ data: (ProductDTO & { createdAt: string })[] }>(`/shop/merchant/products?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
-  addMerchantProduct: (payload: { merchantId: string; name: string; description?: string; images?: string[]; priceAed: number; stockQuantity: number; lowStockThreshold: number; discountPercent?: number; packagingInfo?: string; category: string; status?: 'draft' | 'active' }) =>
+  /** @deprecated Use {@link api.addShopOrganisationProduct}. */
+  addMerchantProduct: (payload: { merchantId: string; name: string; description?: string; images?: string[]; priceAed: number; stockQuantity: number; lowStockThreshold: number; discountPercent?: number; externalUrl?: string | null; packagingInfo?: string; category: string; status?: 'draft' | 'active' }) =>
     apiRequest<{ data: ProductDTO }>('/shop/merchant/products', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
     }),
+  /** @deprecated Use {@link api.updateShopOrganisationProduct}. */
   updateMerchantProduct: (id: string, payload: Partial<{ name: string; description?: string; images?: string[]; priceAed: number; stockQuantity: number; lowStockThreshold: number; discountPercent?: number; packagingInfo?: string; category: string; status?: 'draft' | 'active' }>) =>
     apiRequest<{ data: ProductDTO }>(`/shop/merchant/products/${id}`, {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(payload)
     }),
+  /** @deprecated Use {@link api.deleteShopOrganisationProduct}. */
   deleteMerchantProduct: (id: string) =>
     apiRequest(`/shop/merchant/products/${id}`, {
       method: 'DELETE',
@@ -1140,6 +1168,7 @@ export const api = {
 
   // ─── Admin - Location Delete ───────────────────────────────────────────
 
+  /** @deprecated Use {@link api.deleteAdminPlace} — domain name for the same endpoint. */
   deleteAdminLocation: (id: string) =>
     apiRequest(`/admin/locations/${id}`, {
       method: 'DELETE',
@@ -1354,4 +1383,197 @@ export const api = {
 
   getRewardsLeaderboard: () =>
     apiRequest<{ data: RewardLeaderboardEntryDTO[] }>('/rewards/leaderboard', { auth: true }),
+
+  // ─── Domain API aliases (Phase 1) ───────────────────────────────────────
+  // Delegate to legacy methods — same HTTP paths; see docs/DOMAIN_ADOPTION_PLAN.md.
+
+  getAdminPlaces() {
+    return this.getAdminLocations();
+  },
+  createAdminPlace(payload: Partial<PlaceDTO>) {
+    return this.createAdminLocation(payload);
+  },
+  updateAdminPlace(id: string, payload: Partial<PlaceDTO>) {
+    return this.updateAdminLocation(id, payload);
+  },
+  deleteAdminPlace(id: string) {
+    return this.deleteAdminLocation(id);
+  },
+  submitPlace(tenantId: string, payload: Partial<PlaceDTO>) {
+    return this.submitLocation(tenantId, payload);
+  },
+  submitUserPlace(payload: Partial<PlaceDTO>) {
+    return this.submitUserLocation(payload);
+  },
+  getMySubmittedPlaces() {
+    return this.getMySubmittedLocations();
+  },
+  getHostSubmittedPlaces(tenantId: string) {
+    return this.getHostSubmittedLocations(tenantId);
+  },
+  getOrganisationProfile(slug: string) {
+    return this.getTenantProfile(slug);
+  },
+  getShopOrganisationStores() {
+    return this.getMerchantStores();
+  },
+  getShopOrganisationProfile(merchantId: string) {
+    return this.getMerchantProfileById(merchantId);
+  },
+  createShopOrganisationProfile(payload: {
+    shopName: string;
+    description?: string;
+    logo?: string;
+    websiteUrl?: string | null;
+    contactEmail?: string;
+    contactPhone?: string;
+    region?: string | null;
+  }) {
+    return this.createMerchantProfile(payload);
+  },
+  updateShopOrganisationProfile(
+    merchantId: string,
+    payload: Partial<{
+      shopName: string;
+      description?: string;
+      logo?: string;
+      websiteUrl?: string | null;
+      contactEmail?: string;
+      contactPhone?: string;
+      region?: string | null;
+    }>
+  ) {
+    return this.updateMerchantProfile(merchantId, payload);
+  },
+  /** Domain alias — public profile for a Person (`/member/:id`). */
+  getPersonPublicProfile(userId: string) {
+    return this.getUserPublicProfile(userId);
+  },
+  /** Domain alias — admin member list (`/admin/users`). */
+  getAdminMembers(filters?: {
+    role?: string;
+    userType?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  }) {
+    return this.getAdminUsers(filters);
+  },
+  getAdminMemberDetail(id: string) {
+    return this.getAdminUserDetail(id);
+  },
+  updateAdminMemberStatus(id: string, status: 'active' | 'suspended', comment?: string) {
+    return this.updateAdminUserStatus(id, status, comment);
+  },
+  /** Domain alias — organisation applications (`/admin/host-applications`). */
+  getAdminOrganisationApplications() {
+    return this.getAdminApplications();
+  },
+  submitOrganisationApplication(data: Record<string, unknown>) {
+    return this.submitHostApplication(data);
+  },
+  getMyOrganisationApplication() {
+    return this.getMyHostApplication();
+  },
+  getMyOrganisationStatus() {
+    return this.getMyHostStatus();
+  },
+  listOrganisationActivities(tenantId: string) {
+    return this.listHostActivities(tenantId);
+  },
+  getOrganisationJoinRequests(tenantId: string) {
+    return this.getHostRequests(tenantId);
+  },
+  getOrganisationTeam(tenantId: string) {
+    return this.getHostTeam(tenantId);
+  },
+  decideOrganisationJoinRequest(
+    tenantId: string,
+    requestId: string,
+    status: 'approved' | 'rejected',
+    note?: string
+  ) {
+    return this.decideHostRequest(tenantId, requestId, status, note);
+  },
+  createOrganisationTeamMember(
+    tenantId: string,
+    payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }
+  ) {
+    return this.createHostTeamMember(tenantId, payload);
+  },
+  updateOrganisationTeamMemberRole(
+    tenantId: string,
+    membershipId: string,
+    role: 'tenant_admin' | 'tenant_guide'
+  ) {
+    return this.updateHostTeamMemberRole(tenantId, membershipId, role);
+  },
+  toggleOrganisationTeamMemberStatus(tenantId: string, membershipId: string, isActive: boolean) {
+    return this.toggleHostTeamMemberStatus(tenantId, membershipId, isActive);
+  },
+  removeOrganisationTeamMember(tenantId: string, membershipId: string) {
+    return this.removeHostTeamMember(tenantId, membershipId);
+  },
+  createOrganisationActivity(tenantId: string, payload: Record<string, unknown>) {
+    return this.createHostActivity(tenantId, payload);
+  },
+  updateOrganisationActivity(tenantId: string, activityId: string, payload: Record<string, unknown>) {
+    return this.updateHostActivity(tenantId, activityId, payload);
+  },
+  publishOrganisationActivity(tenantId: string, activityId: string) {
+    return this.publishHostActivity(tenantId, activityId);
+  },
+  duplicateOrganisationActivity(tenantId: string, activityId: string) {
+    return this.duplicateHostActivity(tenantId, activityId);
+  },
+  cancelOrganisationActivity(tenantId: string, activityId: string) {
+    return this.cancelHostActivity(tenantId, activityId);
+  },
+  /** Domain alias — public shop by merchant id or slug (`/shop/merchants/:id`). */
+  getShopPublic(id: string) {
+    return this.getMerchantPublic(id);
+  },
+  getShopOrganisationProducts(merchantId: string) {
+    return this.getMerchantProducts(merchantId);
+  },
+  addShopOrganisationProduct(payload: {
+    merchantId: string;
+    name: string;
+    description?: string;
+    images?: string[];
+    priceAed: number;
+    stockQuantity: number;
+    lowStockThreshold: number;
+    discountPercent?: number;
+    externalUrl?: string | null;
+    packagingInfo?: string;
+    category: string;
+    status?: 'draft' | 'active';
+  }) {
+    return this.addMerchantProduct(payload);
+  },
+  updateShopOrganisationProduct(
+    id: string,
+    payload: Partial<{
+      name: string;
+      description?: string;
+      images?: string[];
+      priceAed: number;
+      stockQuantity: number;
+      lowStockThreshold: number;
+      discountPercent?: number;
+      packagingInfo?: string;
+      category: string;
+      status?: 'draft' | 'active';
+    }>
+  ) {
+    return this.updateMerchantProduct(id, payload);
+  },
+  deleteShopOrganisationProduct(id: string) {
+    return this.deleteMerchantProduct(id);
+  },
+  updateOrganisationDetails(data: OrganisationDetails) {
+    return this.updateHostDetails(data);
+  },
 };

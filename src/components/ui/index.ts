@@ -1,5 +1,8 @@
-export { LocationCatalogCardFrame } from './LocationCatalogCardFrame';
-export { LocationCardActions } from './LocationCardActions';
+export {
+  PlaceCatalogCardFrame,
+  type PlaceCardActionsConfig,
+} from './PlaceCatalogCardFrame';
+export { PlaceCardActions, type PlaceCardAccent } from './PlaceCardActions';
 export { TrailCard } from './TrailCard';
 export { CampingCard } from './CampingCard';
 export { ActivityCard } from './ActivityCard';
@@ -7,14 +10,18 @@ export { JoinRequestModal } from './JoinRequestModal';
 export { ShareButton } from './ShareButton';
 export { ParticipantPreview } from './ParticipantPreview';
 export { HostMessageButton } from './HostMessageButton';
-export { LocationDetailTabs, toLocationDetailData } from './LocationDetailTabs';
-export { SubmitLocationForm } from './SubmitLocationForm';
-export { LocationSelect } from './LocationSelect';
+export {
+  PlaceDetailTabs,
+  toPlaceDetailData,
+  type PlaceDetailData,
+} from './PlaceDetailTabs';
+export { SubmitPlaceForm } from './SubmitPlaceForm';
+export { PlaceSelect } from './PlaceSelect';
 export { TimePicker } from './TimePicker';
 export { TenantSwitcher } from './TenantSwitcher';
 export { MeetingPointMap } from './MeetingPointMap';
-export { LocationDirectionLinks } from './LocationDirectionLinks';
-export { ActivityLocationPinField } from './ActivityLocationPinField';
+export { PlaceDirectionLinks } from './PlaceDirectionLinks';
+export { ActivityPlacePinField } from './ActivityPlacePinField';
 export { FormTabBar } from './FormTabBar';
 export { ImageUpload } from './ImageUpload';
 export { SecureAvatar } from './SecureAvatar';
@@ -25,3 +32,4 @@ export { ActivityCheckInPanel } from './ActivityCheckInPanel';
 export { WithdrawRequestModal } from './WithdrawRequestModal';
 export { JoinRequestActions } from './JoinRequestActions';
 export { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_SELECT_CLASS, type AppSelectOption } from './AppSelect';
+export { PlacesMap, type PlaceMapPin, type MapPinKind, type MapPinSource } from './PlacesMap';

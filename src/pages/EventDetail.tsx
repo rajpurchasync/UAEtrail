@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, ChevronRight } from 'lucide-react';
 import { ReviewDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
-import { ActivityCard, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
+import { ActivityCard, ShareButton, PlaceDetailTabs, toPlaceDetailData, ReviewSection } from '../components/ui';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { eventVenueSchema } from '../components/seo/schemas';
@@ -139,10 +139,10 @@ export const EventDetail = () => {
               </div>
             </div>
 
-            <LocationDetailTabs
-              data={toLocationDetailData(event, 'event')}
+            <PlaceDetailTabs
+              data={toPlaceDetailData(event, 'event')}
               accent="violet"
-              locationId={event.id}
+              placeId={event.id}
               premium={premium}
               onPremiumChange={setPremium}
             />

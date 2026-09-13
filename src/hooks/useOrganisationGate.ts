@@ -1,0 +1,70 @@
+import { useCallback, useEffect, useState } from 'react';
+import type { HostStatusDTO } from '@uaetrail/shared-types';
+import { api } from '../api/services';
+import { setActiveTenantId } from '../api/tenant';
+import { useAuth } from '../context/AuthContext';
+
+interface UseOrganisationGateOptions {
+  enabled?: boolean;
+}
+
+/** Whether the signed-in member can manage organisation profiles and publish activities. */
+export const useOrganisationGate = ({ enabled = true }: UseOrganisationGateOptions = {}) => {
+  const { user } = useAuth();
+  const [status, setStatus] = useState<HostStatusDTO | null>(null);
+  const [loading, setLoading] = useState(Boolean(enabled && user));
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    if (!user) {
+      setStatus(null);
+      setLoading(false);
+      return null;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.getMyOrganisationStatus();
+      setStatus(res.data);
+      if (res.data.tenantId) {
+        setActiveTenantId(res.data.tenantId);
+      }
+      return res.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load organisation status');
+      setStatus(null);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!enabled || !user) {
+      setLoading(false);
+      return;
+    }
+    void refresh();
+  }, [enabled, user, refresh]);
+
+  return {
+    status,
+    loading,
+    error,
+    canPublish: status?.canPublish ?? false,
+    canHostPaidActivities: status?.canHostPaidActivities ?? false,
+    applicationStatus: status?.applicationStatus ?? 'none',
+    tenantId: status?.tenantId ?? null,
+    tenantType: status?.tenantType ?? null,
+    businessMode: status?.businessMode ?? null,
+    hasGuideProfile: status?.hasGuideProfile ?? false,
+    hasAgencyProfile: status?.hasAgencyProfile ?? false,
+    hasShopProfile: status?.hasShopProfile ?? false,
+    ownedProfiles: status?.ownedProfiles ?? [],
+    refresh,
+  };
+};
+
+/** @deprecated Use useOrganisationGate */
+export const useHostGate = useOrganisationGate;

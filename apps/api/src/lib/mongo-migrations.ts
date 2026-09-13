@@ -161,6 +161,34 @@ const migrateLegacyParticipantIntentTitles = async (db: Db): Promise<void> => {
   }
 };
 
+/** Link shop merchant_profiles to their SHOP tenant via ownerId (Phase 6 prep). */
+const backfillMerchantProfileTenantLinks = async (db: Db): Promise<void> => {
+  const merchants = db.collection('merchant_profiles');
+  const tenants = db.collection('tenants');
+  const cursor = merchants.find({
+    $or: [{ tenantId: { $exists: false } }, { tenantId: null }],
+  });
+
+  let updated = 0;
+  for await (const merchant of cursor) {
+    const ownerId = Array.isArray(merchant.adminIds) ? merchant.adminIds[0] : null;
+    if (typeof ownerId !== 'string' || !ownerId) continue;
+
+    const shopTenant = await tenants.findOne({ ownerId, businessMode: 'SHOP' });
+    if (!shopTenant || typeof shopTenant._id !== 'string') continue;
+
+    await merchants.updateOne(
+      { _id: merchant._id },
+      { $set: { tenantId: shopTenant._id, updatedAt: new Date() } }
+    );
+    updated += 1;
+  }
+
+  if (updated > 0) {
+    console.log(`[mongo] Backfilled merchant_profiles.tenantId (${updated} docs)`);
+  }
+};
+
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENTS, COLLECTIONS.ACTIVITIES);
@@ -181,4 +209,5 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateNotificationKinds(db);
   await migrateActivityJoinModeFromRequirements(db);
   await migrateLegacyParticipantIntentTitles(db);
+  await backfillMerchantProfileTenantLinks(db);
 };

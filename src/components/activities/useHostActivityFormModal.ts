@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { ActivityDTO, ActivityDetailDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityDetailDTO, PlaceDTO, TenantListDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
 import { api } from '../../api/services';
 import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
@@ -33,7 +33,10 @@ export interface UseHostActivityFormModalOptions {
   tenantId?: string;
   editingActivity?: ActivityDTO | null;
   hostOrganizations?: TenantListDTO[];
-  venueLocations?: LocationDTO[];
+  /** Approved places available when scheduling. */
+  placeOptions?: PlaceDTO[];
+  /** @deprecated Use placeOptions */
+  venueLocations?: PlaceDTO[];
   sessionSnapshot?: ActivityFormSessionSnapshot | null;
   draftFromSession?: ActivityDraftSnapshot | null;
   onSessionChange?: (snapshot: ActivityFormSessionSnapshot) => void;
@@ -48,6 +51,7 @@ export const useHostActivityFormModal = ({
   tenantId = '',
   editingActivity = null,
   hostOrganizations,
+  placeOptions,
   venueLocations,
   sessionSnapshot,
   draftFromSession,
@@ -70,7 +74,8 @@ export const useHostActivityFormModal = ({
   const [previewReady, setPreviewReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tenantType, setTenantType] = useState<string>('guide_owned');
-  const [venues, setVenues] = useState<LocationDTO[]>(venueLocations ?? []);
+  const injectedPlaceOptions = placeOptions ?? venueLocations;
+  const [places, setPlaces] = useState<PlaceDTO[]>(injectedPlaceOptions ?? []);
   const [pickerHostOrganizations, setPickerHostOrganizations] = useState<TenantListDTO[]>(
     hostOrganizations ?? []
   );
@@ -264,19 +269,19 @@ export const useHostActivityFormModal = ({
 
   useEffect(() => {
     if (!open) return;
-    if (venueLocations) {
-      setVenues(venueLocations);
+    if (injectedPlaceOptions) {
+      setPlaces(injectedPlaceOptions);
       return;
     }
     if (canPickHostOrganization) {
       let disposed = false;
       void api
-        .getAdminLocations()
+        .getAdminPlaces()
         .then((res) => {
-          if (!disposed) setVenues(res.data);
+          if (!disposed) setPlaces(res.data);
         })
         .catch(() => {
-          if (!disposed) setVenues([]);
+          if (!disposed) setPlaces([]);
         });
       return () => {
         disposed = true;
@@ -286,27 +291,27 @@ export const useHostActivityFormModal = ({
     void Promise.all([
       api.getPublicLocations(),
       hostTenantId
-        ? api.getHostSubmittedLocations(hostTenantId)
-        : Promise.resolve({ data: [] as LocationDTO[] }),
+        ? api.getHostSubmittedPlaces(hostTenantId)
+        : Promise.resolve({ data: [] as PlaceDTO[] }),
     ])
       .then(([publicRes, pendingRes]) => {
         if (disposed) return;
-        setVenues([...publicRes.data, ...pendingRes.data.filter((l) => l.status === 'draft')]);
+        setPlaces([...publicRes.data, ...pendingRes.data.filter((l) => l.status === 'draft')]);
       })
       .catch(() => {
-        if (!disposed) setVenues([]);
+        if (!disposed) setPlaces([]);
       });
     return () => {
       disposed = true;
     };
-  }, [open, hostTenantId, venueLocations, canPickHostOrganization]);
+  }, [open, hostTenantId, injectedPlaceOptions, canPickHostOrganization]);
 
-  const venueCenter = useMemo(() => {
-    const venue = venues.find((v) => v.id === form.locationId);
-    return venue?.latitude != null && venue?.longitude != null
-      ? { lat: venue.latitude, lng: venue.longitude }
+  const placeCenter = useMemo(() => {
+    const place = places.find((v) => v.id === form.locationId);
+    return place?.latitude != null && place?.longitude != null
+      ? { lat: place.latitude, lng: place.longitude }
       : { lat: null, lng: null };
-  }, [form.locationId, venues]);
+  }, [form.locationId, places]);
 
   const titleWords = countWords(form.title);
   const aboutWords = countWords(form.description);
@@ -346,8 +351,8 @@ export const useHostActivityFormModal = ({
     if (!activeTenant) {
       throw new Error(
         canPickHostOrganization
-          ? 'Select a host organization.'
-          : 'No host organization found. Complete host setup first.'
+          ? 'Select an organisation.'
+          : 'No organisation found. Complete organisation setup first.'
       );
     }
 
@@ -373,12 +378,12 @@ export const useHostActivityFormModal = ({
     };
 
     if (existingId) {
-      const res = await api.updateHostActivity(activeTenant, existingId, payload);
+      const res = await api.updateOrganisationActivity(activeTenant, existingId, payload);
       setDraftActivityId(res.data.id);
       return res.data;
     }
 
-    const res = await api.createHostActivity(activeTenant, payload);
+    const res = await api.createOrganisationActivity(activeTenant, payload);
     setDraftActivityId(res.data.id);
     return res.data;
   };
@@ -401,7 +406,7 @@ export const useHostActivityFormModal = ({
 
       if (mode === 'publish' && activityId && saved.status === 'draft') {
         const publishTenant = await resolveActiveTenantId();
-        await api.publishHostActivity(publishTenant, activityId);
+        await api.publishOrganisationActivity(publishTenant, activityId);
       }
 
       onSaved?.();
@@ -424,11 +429,11 @@ export const useHostActivityFormModal = ({
     setError(null);
     try {
       const saved = await saveDraftEvent();
-      let venue = venues.find((v) => v.id === form.locationId);
-      if (!venue && form.locationId) {
+      let place = places.find((v) => v.id === form.locationId);
+      if (!place && form.locationId) {
         try {
           const locRes = await api.getPublicLocationDetail(form.locationId);
-          venue = locRes.data;
+          place = locRes.data;
         } catch {
           // fallback in preview builder
         }
@@ -438,7 +443,7 @@ export const useHostActivityFormModal = ({
         : (await api.getMyTenants().catch(() => ({ data: [] }))).data.find(
             (t) => t.tenantId === hostTenantId
           )?.tenantName;
-      const trip = buildActivityDetailPreview(form, saved, venue, user, tenantName);
+      const trip = buildActivityDetailPreview(form, saved, place, user, tenantName);
       setPreviewTrip(trip);
       setPreviewReady(true);
       onSaved?.();
@@ -485,8 +490,10 @@ export const useHostActivityFormModal = ({
     saving,
     previewReady,
     error,
-    venues,
-    venueCenter,
+    places,
+    /** @deprecated Use placeCenter */
+    venueCenter: placeCenter,
+    placeCenter,
     titleWords,
     aboutWords,
     isEdit,
@@ -495,7 +502,9 @@ export const useHostActivityFormModal = ({
     hostTenantId,
     pickerHostOrganizations,
     venueAddHref,
-    venueLocations,
+    placeOptions: places,
+    /** @deprecated Use placeOptions */
+    venueLocations: places,
     set,
     setPin,
     handleAddVenue,

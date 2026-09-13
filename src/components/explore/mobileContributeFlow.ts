@@ -213,7 +213,7 @@ export const publishMobileContributeVenue = async (
 
   if (draft.kind === 'shop') {
     const phone = draft.phone.trim();
-    await api.submitHostApplication({
+    await api.submitOrganisationApplication({
       hostProfileType: 'shop',
       requestedName: draft.title.trim(),
       bio: draft.description.trim(),

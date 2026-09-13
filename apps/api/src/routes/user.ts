@@ -564,7 +564,7 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
     const { slug } = req.params;
     const tenant = await findPublicTenantProfileBySlug(slug);
     if (!tenant) {
-      throw new ApiError(404, 'tenant_not_found', 'Organizer not found.');
+      throw new ApiError(404, 'tenant_not_found', 'Organisation not found.');
     }
     const ownerProfile = tenant.owner.profile;
     const organizerDetails = await loadOrganizerDetails(tenant.ownerId);
@@ -2096,7 +2096,7 @@ userRouter.patch(
       } else {
         const tenant = await findTenantByOwnerId(userId);
         if (!tenant) {
-          throw new ApiError(403, 'not_organizer', 'Only organizers can update public profile details.');
+          throw new ApiError(403, 'not_organizer', 'Only organisation owners can update public profile details.');
         }
         application = await createHostApplicationDetailed({
           applicantId: userId,
@@ -2208,7 +2208,7 @@ userRouter.post(
       });
 
       if (!provisioned) {
-        throw new ApiError(500, 'host_provision_failed', 'Could not set up your host profile.');
+        throw new ApiError(500, 'host_provision_failed', 'Could not set up your organisation profile.');
       }
 
       const approvedApplication = await findLatestHostApplicationByApplicant(userId);

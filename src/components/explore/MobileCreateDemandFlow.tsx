@@ -47,8 +47,8 @@ import {
 } from './mobileDemandFlow';
 import type { LocationPrecision, TimeMode } from './mobileCreateFlow';
 
-const MobileCreateLocationPicker = lazy(() =>
-  import('./MobileCreateLocationPicker').then((m) => ({ default: m.MobileCreateLocationPicker }))
+const MobileCreatePlacePicker = lazy(() =>
+  import('./MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
 );
 
 type FlowStep = 'type' | DemandFlowStepId;
@@ -347,7 +347,7 @@ export const MobileCreateDemandFlow = ({
     return (
       <div className="absolute inset-0 z-[1400] bg-neutral-100">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <MobileCreateLocationPicker
+          <MobileCreatePlacePicker
             precision={draft.locationPrecision}
             latitude={lat}
             longitude={lng}

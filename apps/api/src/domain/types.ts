@@ -324,9 +324,12 @@ export interface ChatMessage {
 export interface MerchantProfile {
   id: string;
   adminIds: string[];
+  /** Linked shop tenant — backfilled for legacy rows; set on become-host approval. */
+  tenantId?: string | null;
   shopName: string;
   description: string | null;
   logo: string | null;
+  websiteUrl: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
   latitude: number | null;

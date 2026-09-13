@@ -17,6 +17,7 @@ const AUTH_GATED_PREFIXES = [
   '/host',
   '/admin',
   '/merchant',
+  '/organisation/manage',
   '/agency/manage',
   '/shop/manage',
 ] as const;
@@ -43,7 +44,9 @@ export const canReturnAfterAuth = (path: string, role: UserRole | string): boole
   if (role === 'platform_admin') return pathname.startsWith('/admin');
   if (role === 'merchant_admin') {
     return (
+      pathname.startsWith('/organisation/manage') ||
       pathname.startsWith('/shop/manage') ||
+      pathname.startsWith('/shop/') ||
       pathname.startsWith('/merchant/') ||
       pathname.startsWith('/profile')
     );

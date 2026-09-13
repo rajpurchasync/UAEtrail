@@ -311,6 +311,9 @@ export const approveHostApplicationAndProvisionTenant = async (input: {
         ? TenantBusinessMode.SHOP
         : null;
 
+  const shopPresence = String(meta.shopPresence ?? '').toLowerCase();
+  const isOnlineShop = hostProfileType === 'shop' && shopPresence === 'online';
+
   const now = new Date();
   await writeTenantToMongo({
     id: tenantId,
@@ -325,8 +328,8 @@ export const approveHostApplicationAndProvisionTenant = async (input: {
     website: typeof meta.website === 'string' && meta.website ? meta.website : null,
     logoUrl: typeof meta.profilePhoto === 'string' && meta.profilePhoto ? meta.profilePhoto : null,
     services: typeof meta.services === 'string' ? meta.services : null,
-    latitude: typeof meta.latitude === 'number' ? meta.latitude : null,
-    longitude: typeof meta.longitude === 'number' ? meta.longitude : null,
+    latitude: isOnlineShop ? null : typeof meta.latitude === 'number' ? meta.latitude : null,
+    longitude: isOnlineShop ? null : typeof meta.longitude === 'number' ? meta.longitude : null,
     region: typeof meta.region === 'string' ? meta.region : null,
     createdAt: now,
     updatedAt: now
@@ -367,15 +370,20 @@ export const approveHostApplicationAndProvisionTenant = async (input: {
   });
 
   if (businessMode === TenantBusinessMode.SHOP) {
-    await createMerchantProfileForUser(application.applicantId, {
-      shopName: application.requestedName,
-      description: typeof meta.bio === 'string' ? meta.bio : undefined,
-      logo: typeof meta.profilePhoto === 'string' ? meta.profilePhoto : undefined,
-      contactPhone: typeof meta.phoneE164 === 'string' ? meta.phoneE164 : undefined,
-      latitude: typeof meta.latitude === 'number' ? meta.latitude : null,
-      longitude: typeof meta.longitude === 'number' ? meta.longitude : null,
-      region: typeof meta.region === 'string' ? meta.region : null
-    });
+    await createMerchantProfileForUser(
+      application.applicantId,
+      {
+        shopName: application.requestedName,
+        description: typeof meta.bio === 'string' ? meta.bio : undefined,
+        logo: typeof meta.profilePhoto === 'string' ? meta.profilePhoto : undefined,
+        websiteUrl: typeof meta.website === 'string' && meta.website ? meta.website : null,
+        contactPhone: typeof meta.phoneE164 === 'string' ? meta.phoneE164 : undefined,
+        latitude: isOnlineShop ? null : typeof meta.latitude === 'number' ? meta.latitude : null,
+        longitude: isOnlineShop ? null : typeof meta.longitude === 'number' ? meta.longitude : null,
+        region: typeof meta.region === 'string' ? meta.region : null,
+      },
+      { tenantId }
+    );
   }
 
   await patchHostApplicationInMongo(applicationId, {

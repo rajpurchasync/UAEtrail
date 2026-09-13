@@ -50,7 +50,7 @@ export const SecurityPrivacy = () => {
 
   const isHostPath = location.pathname.startsWith('/host/');
   const backPath = isHostPath ? '/host/overview' : '/profile';
-  const backLabel = isHostPath ? 'Host dashboard' : 'Profile';
+  const backLabel = isHostPath ? 'Organisation console' : 'Profile';
 
   useEffect(() => {
     void api

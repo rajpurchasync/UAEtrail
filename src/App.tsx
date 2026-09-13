@@ -11,6 +11,7 @@ import { Home } from './pages/Home';
 import { Membership } from './pages/Membership';
 import { MobileExploreExperience } from './components/explore/MobileExploreExperience';
 import { discoveryToExploreSearch, explorePath, parseActivityListFilter } from './utils/exploreRouting';
+import { organisationManagePath } from './utils/organisationPaths';
 
 const LegacyHostPathRedirect = () => {
   const { pathname, search, hash } = useLocation();
@@ -56,29 +57,27 @@ const ActivitiesBrowseRoute = () => {
   );
 };
 
-const ShopBrowseRoute = () => {
-  const [searchParams] = useSearchParams();
-  if (searchParams.get('checkout')) {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <Shop />
-      </Suspense>
-    );
-  }
-  return <Navigate to={explorePath({ list: true, panel: 'shops', filter: 'shops' })} replace />;
-};
+const ShopBrowseRoute = () => (
+  <Navigate to={explorePath({ list: true, panel: 'shops', filter: 'shops' })} replace />
+);
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
 const CampDetail = lazy(() => import('./pages/CampDetail').then((m) => ({ default: m.CampDetail })));
 const EventDetail = lazy(() => import('./pages/EventDetail').then((m) => ({ default: m.EventDetail })));
 
-const Shop = lazy(() => import('./pages/Shop').then((m) => ({ default: m.Shop })));
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
-const MerchantPublic = lazy(() => import('./pages/MerchantPublic').then((m) => ({ default: m.MerchantPublic })));
+const BecomeOrganisation = lazy(() =>
+  import('./pages/BecomeHost').then((m) => ({ default: m.BecomeOrganisation }))
+);
+/** Legacy redirect — canonical public shop URL is `/shop/:id`. */
+const LegacyMerchantPublicRedirect = lazy(() =>
+  import('./pages/MerchantPublic').then((m) => ({ default: m.MerchantPublic }))
+);
+const ShopPublic = lazy(() => import('./pages/ShopPublic').then((m) => ({ default: m.ShopPublic })));
 const Community = lazy(() => import('./pages/Community').then((m) => ({ default: m.Community })));
 const ActivityDetail = lazy(() => import('./pages/ActivityDetail').then((m) => ({ default: m.ActivityDetail })));
-const OperatorProfile = lazy(() => import('./pages/OperatorProfile').then((m) => ({ default: m.OperatorProfile })));
+const OrganisationProfile = lazy(() => import('./pages/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
 const MemberProfile = lazy(() => import('./pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
 const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
 const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
@@ -86,10 +85,12 @@ const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then((m) => ({ default:
 const WelcomeSignup = lazy(() => import('./pages/WelcomeSignup').then((m) => ({ default: m.WelcomeSignup })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 const AdminOverview = lazy(() => import('./pages/AdminOverview').then((m) => ({ default: m.AdminOverview })));
-const AdminLocations = lazy(() => import('./pages/AdminLocations').then((m) => ({ default: m.AdminLocations })));
-const AdminHosts = lazy(() => import('./pages/AdminHosts').then((m) => ({ default: m.AdminHosts })));
+const AdminPlaces = lazy(() => import('./pages/AdminPlaces').then((m) => ({ default: m.AdminPlaces })));
+const AdminOrganisations = lazy(() =>
+  import('./pages/AdminOrganisations').then((m) => ({ default: m.AdminOrganisations }))
+);
 const AdminActivities = lazy(() => import('./pages/AdminActivities').then((m) => ({ default: m.AdminActivities })));
-const AdminUsers = lazy(() => import('./pages/AdminUsers').then((m) => ({ default: m.AdminUsers })));
+const AdminMembers = lazy(() => import('./pages/AdminMembers').then((m) => ({ default: m.AdminMembers })));
 const AdminGroups = lazy(() => import('./pages/AdminGroups').then((m) => ({ default: m.AdminGroups })));
 const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog').then((m) => ({ default: m.AdminAuditLog })));
 const AdminSettings = lazy(() => import('./pages/AdminSettings').then((m) => ({ default: m.AdminSettings })));
@@ -97,16 +98,33 @@ const AdminShop = lazy(() => import('./pages/AdminShop').then((m) => ({ default:
 const AdminNotifications = lazy(() =>
   import('./pages/AdminNotifications').then((m) => ({ default: m.AdminNotifications }))
 );
-const HostOverview = lazy(() => import('./pages/HostOverview').then((m) => ({ default: m.HostOverview })));
-const HostActivities = lazy(() => import('./pages/HostActivities').then((m) => ({ default: m.HostActivities })));
-const HostRequests = lazy(() => import('./pages/HostRequests').then((m) => ({ default: m.HostRequests })));
-const HostTeam = lazy(() => import('./pages/HostTeam').then((m) => ({ default: m.HostTeam })));
-const HostProfile = lazy(() => import('./pages/HostProfile').then((m) => ({ default: m.HostProfile })));
-const HostLocations = lazy(() => import('./pages/HostLocations').then((m) => ({ default: m.HostLocations })));
-const HostHistory = lazy(() => import('./pages/HostHistory').then((m) => ({ default: m.HostHistory })));
+const OrganisationConsoleOverview = lazy(() =>
+  import('./pages/OrganisationConsoleOverview').then((m) => ({ default: m.OrganisationConsoleOverview }))
+);
+const OrganisationActivities = lazy(() =>
+  import('./pages/OrganisationActivities').then((m) => ({ default: m.OrganisationActivities }))
+);
+const OrganisationJoinRequests = lazy(() =>
+  import('./pages/OrganisationJoinRequests').then((m) => ({ default: m.OrganisationJoinRequests }))
+);
+const OrganisationTeam = lazy(() =>
+  import('./pages/OrganisationTeam').then((m) => ({ default: m.OrganisationTeam }))
+);
+const OrganisationPublicProfileEdit = lazy(() =>
+  import('./pages/OrganisationPublicProfileEdit').then((m) => ({ default: m.OrganisationPublicProfileEdit }))
+);
+const OrganisationPlaces = lazy(() =>
+  import('./pages/OrganisationPlaces').then((m) => ({ default: m.OrganisationPlaces }))
+);
+const OrganisationHistory = lazy(() =>
+  import('./pages/OrganisationHistory').then((m) => ({ default: m.OrganisationHistory }))
+);
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
-const MerchantDashboardRedirect = () => <Navigate to="/shop/manage" replace />;
+const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} replace />;
+const OrganisationManage = lazy(() =>
+  import('./pages/OrganisationManage').then((m) => ({ default: m.OrganisationManage }))
+);
 const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
 const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
@@ -120,7 +138,7 @@ const Notifications = lazy(() =>
 );
 const Groups = lazy(() => import('./pages/Groups').then((m) => ({ default: m.Groups })));
 const Buddies = lazy(() => import('./pages/Buddies').then((m) => ({ default: m.Buddies })));
-const BecomeHost = lazy(() => import('./pages/BecomeHost').then((m) => ({ default: m.BecomeHost })));
+const BecomeHost = BecomeOrganisation;
 const MyRewards = lazy(() => import('./pages/MyRewards').then((m) => ({ default: m.MyRewards })));
 const TrailPointsAbout = lazy(() =>
   import('./pages/TrailPointsAbout').then((m) => ({ default: m.TrailPointsAbout }))
@@ -321,14 +339,15 @@ function App() {
             element={<ActivityDetail />}
           />
           <Route path="/trip/:id" element={<LegacyTripDetailRedirect />} />
-          <Route path="/operator/:id" element={<OperatorProfile />} />
+          <Route path="/operator/:id" element={<OrganisationProfile />} />
           <Route path="/member/:userId" element={<MemberProfile />} />
           <Route path="/become-organizer" element={<BecomeHost />} />
           <Route path="/become-host" element={<BecomeHost />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/shop" element={<ShopBrowseRoute />} />
+          <Route path="/shop/:id" element={<ShopPublic />} />
           <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/merchant/:id" element={<MerchantPublic />} />
+          <Route path="/merchant/:id" element={<LegacyMerchantPublicRedirect />} />
           <Route path="/community" element={<Community />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
@@ -370,7 +389,7 @@ function App() {
             path="/admin/locations"
             element={
               <ProtectedRoute roles={['platform_admin']}>
-                <AdminLocations />
+                <AdminPlaces />
               </ProtectedRoute>
             }
           />
@@ -382,7 +401,7 @@ function App() {
             path="/admin/hosts"
             element={
               <ProtectedRoute roles={['platform_admin']}>
-                <AdminHosts />
+                <AdminOrganisations />
               </ProtectedRoute>
             }
           />
@@ -398,7 +417,7 @@ function App() {
             path="/admin/users"
             element={
               <ProtectedRoute roles={['platform_admin']}>
-                <AdminUsers />
+                <AdminMembers />
               </ProtectedRoute>
             }
           />
@@ -446,7 +465,7 @@ function App() {
             path="/host/overview"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostOverview />
+                <OrganisationConsoleOverview />
               </ProtectedRoute>
             }
           />
@@ -454,7 +473,7 @@ function App() {
             path="/host/activities"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostActivities />
+                <OrganisationActivities />
               </ProtectedRoute>
             }
           />
@@ -462,7 +481,7 @@ function App() {
             path="/host/activities/new"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostActivities />
+                <OrganisationActivities />
               </ProtectedRoute>
             }
           />
@@ -470,7 +489,7 @@ function App() {
             path="/host/requests"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostRequests />
+                <OrganisationJoinRequests />
               </ProtectedRoute>
             }
           />
@@ -478,7 +497,7 @@ function App() {
             path="/host/team"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostTeam />
+                <OrganisationTeam />
               </ProtectedRoute>
             }
           />
@@ -486,7 +505,7 @@ function App() {
             path="/host/profile"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostProfile />
+                <OrganisationPublicProfileEdit />
               </ProtectedRoute>
             }
           />
@@ -502,7 +521,7 @@ function App() {
             path="/host/locations"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostLocations />
+                <OrganisationPlaces />
               </ProtectedRoute>
             }
           />
@@ -510,7 +529,7 @@ function App() {
             path="/host/history"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostHistory />
+                <OrganisationHistory />
               </ProtectedRoute>
             }
           />
@@ -560,6 +579,14 @@ function App() {
             element={<Navigate to="/profile" replace />}
           />
           <Route
+            path="/organisation/manage"
+            element={
+              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'merchant_admin']}>
+                <OrganisationManage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/shop/manage"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'merchant_admin']}>
@@ -579,7 +606,7 @@ function App() {
             path="/merchant/dashboard"
             element={
               <ProtectedRoute roles={['merchant_admin', 'tenant_owner', 'tenant_admin']}>
-                <MerchantDashboardRedirect />
+                <ShopManageRedirect />
               </ProtectedRoute>
             }
           />

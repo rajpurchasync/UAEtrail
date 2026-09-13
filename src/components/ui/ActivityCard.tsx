@@ -4,7 +4,7 @@ import { Clock, Users, MapPin, ChevronRight } from 'lucide-react';
 import { ActivityListing } from '../../types';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { tripPricingBadge } from '../../utils/tripPricing';
-import { resolveHostProfilePath } from '../../utils/hostLinks';
+import { resolveOrganisationProfilePath } from '../../utils/hostLinks';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
 import { ParticipantPreview } from './ParticipantPreview';
@@ -35,7 +35,7 @@ export const ActivityCard = ({ activity, variant = 'default' }: ActivityCardProp
   const hostName = activityHostName(activity);
   const hostAvatar = activityHostAvatar(activity);
   const hostUserId = activityHostUserId(activity);
-  const hostPath = resolveHostProfilePath({
+  const hostPath = resolveOrganisationProfilePath({
     tenantSlug: activity.tenantSlug,
     hostUserId,
   });

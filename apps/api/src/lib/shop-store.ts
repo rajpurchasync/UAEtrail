@@ -1,9 +1,10 @@
 import { randomUUID } from 'crypto';
-import { OrderStatus, ProductStatus } from '../domain/enums.js';
+import { OrderStatus, ProductStatus, TenantBusinessMode } from '../domain/enums.js';
 import type { MerchantProfile, Product, ProductClick, ShopOrder } from '../domain/types.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import type { Collection } from 'mongodb';
 import { getMongoClient } from './mongo.js';
+import { listTenantsByOwnerId, findTenantById, writeTenantToMongo } from './tenant-store.js';
 
 type MongoStripeWebhookEvent = {
   _id: string;
@@ -28,9 +29,11 @@ type MongoShopOrder = {
 type MongoMerchantProfile = {
   _id: string;
   adminIds: string[];
+  tenantId?: string | null;
   shopName: string;
   description: string | null;
   logo: string | null;
+  websiteUrl?: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
   latitude?: number | null;
@@ -128,9 +131,11 @@ const normalizeOrderLineItemStatus = (status?: OrderStatus) => {
 const mapMongoMerchantProfile = (merchant: MongoMerchantProfile): MerchantProfile => ({
   id: merchant._id,
   adminIds: merchant.adminIds,
+  tenantId: merchant.tenantId ?? null,
   shopName: merchant.shopName,
   description: merchant.description,
   logo: merchant.logo,
+  websiteUrl: merchant.websiteUrl ?? null,
   contactEmail: merchant.contactEmail,
   contactPhone: merchant.contactPhone,
   latitude: merchant.latitude ?? null,
@@ -269,26 +274,12 @@ export const listPublicProducts = async (input: {
 };
 
 export const listPublicMerchantsForMap = async () => {
-  const products = await productsCollection()
-    .find({ status: ProductStatus.ACTIVE })
+  const merchants = await merchantProfilesCollection()
+    .find({})
     .sort({ createdAt: -1 })
     .limit(200)
     .toArray();
-  const merchantIds = [...new Set(products.map((product) => product.merchantId))];
-  if (merchantIds.length === 0) return [];
-
-  const merchants = await merchantProfilesCollection().find({ _id: { $in: merchantIds } }).toArray();
-  const productsByMerchant = new Map<string, MongoProduct[]>();
-  for (const product of products) {
-    const list = productsByMerchant.get(product.merchantId) ?? [];
-    list.push(product);
-    productsByMerchant.set(product.merchantId, list);
-  }
-
-  return merchants.map((merchant) => ({
-    merchant: mapMongoMerchantProfile(merchant),
-    products: (productsByMerchant.get(merchant._id) ?? []).map(mapMongoProduct)
-  }));
+  return merchants.map(mapMongoMerchantProfile);
 };
 
 export const findActiveProductById = async (id: string) => {
@@ -373,6 +364,43 @@ export const listActiveProductsByIds = async (productIds: string[]) => {
   return items.map(mapMongoProduct);
 };
 
+export const findShopTenantForOwner = async (ownerId: string) => {
+  const tenants = await listTenantsByOwnerId(ownerId);
+  return tenants.find((tenant) => tenant.businessMode === TenantBusinessMode.SHOP) ?? null;
+};
+
+/** Set merchant_profiles.tenantId for a shop owner (idempotent). */
+export const linkMerchantProfileToShopTenant = async (
+  merchantId: string,
+  ownerId: string,
+  tenantId?: string | null
+): Promise<string | null> => {
+  const shopTenant =
+    (tenantId ? await findTenantById(tenantId) : null) ?? (await findShopTenantForOwner(ownerId));
+  if (!shopTenant || shopTenant.businessMode !== TenantBusinessMode.SHOP || shopTenant.ownerId !== ownerId) {
+    return null;
+  }
+
+  await merchantProfilesCollection().updateOne(
+    { _id: merchantId, adminIds: ownerId },
+    { $set: { tenantId: shopTenant.id, updatedAt: new Date() } }
+  );
+  return shopTenant.id;
+};
+
+export const findMerchantProfileByTenantId = async (tenantId: string) => {
+  const linked = await merchantProfilesCollection().findOne({ tenantId });
+  if (linked) {
+    return mapMongoMerchantProfile(linked);
+  }
+
+  const tenant = await findTenantById(tenantId);
+  if (!tenant || tenant.businessMode !== TenantBusinessMode.SHOP) {
+    return null;
+  }
+  return findMerchantProfileByUserId(tenant.ownerId);
+};
+
 export const findMerchantProfileByUserId = async (userId: string) => {
   const merchant = await merchantProfilesCollection().findOne(
     { adminIds: userId },
@@ -420,20 +448,24 @@ export const createMerchantProfileForUser = async (
     shopName: string;
     description?: string;
     logo?: string;
+    websiteUrl?: string | null;
     contactEmail?: string;
     contactPhone?: string;
     latitude?: number | null;
     longitude?: number | null;
     region?: string | null;
-  }
+  },
+  options?: { tenantId?: string | null }
 ) => {
   const now = new Date();
   const doc: MongoMerchantProfile = {
     _id: randomUUID(),
     adminIds: [userId],
+    ...(options?.tenantId ? { tenantId: options.tenantId } : {}),
     shopName: data.shopName,
     description: data.description ?? null,
     logo: data.logo ?? null,
+    websiteUrl: data.websiteUrl ?? null,
     contactEmail: data.contactEmail ?? null,
     contactPhone: data.contactPhone ?? null,
     latitude: data.latitude ?? null,
@@ -458,9 +490,37 @@ export const updateManagedMerchantProfileById = async (
     { returnDocument: 'after' }
   );
   if (!result) {
-    throw new Error('Merchant profile not found.');
+    throw new Error('Shop organisation profile not found.');
   }
   return mapMongoMerchantProfile(result);
+};
+
+/** Keep shop tenant row aligned with the merchant profile the owner edits in ShopManage. */
+export const syncShopTenantFromMerchantProfile = async (
+  ownerId: string,
+  profile: Pick<
+    MerchantProfile,
+    'id' | 'shopName' | 'description' | 'logo' | 'websiteUrl' | 'latitude' | 'longitude' | 'region'
+  >
+) => {
+  const tenants = await listTenantsByOwnerId(ownerId);
+  const shopTenant = tenants.find((tenant) => tenant.businessMode === TenantBusinessMode.SHOP);
+  if (!shopTenant) return null;
+
+  const updated = {
+    ...shopTenant,
+    name: profile.shopName,
+    description: profile.description,
+    website: profile.websiteUrl,
+    logoUrl: profile.logo,
+    region: profile.region,
+    latitude: profile.latitude,
+    longitude: profile.longitude,
+    updatedAt: new Date(),
+  };
+  await writeTenantToMongo(updated);
+  await linkMerchantProfileToShopTenant(profile.id, ownerId, shopTenant.id);
+  return updated;
 };
 
 export const listMerchantProducts = async (input: {
@@ -489,6 +549,7 @@ export const createMerchantProduct = async (input: {
   stockQuantity?: number;
   lowStockThreshold?: number;
   discountPercent?: number;
+  externalUrl?: string | null;
   packagingInfo?: string;
   category: string;
   status: ProductStatus;
@@ -504,7 +565,7 @@ export const createMerchantProduct = async (input: {
     stockQuantity: input.stockQuantity ?? 0,
     lowStockThreshold: input.lowStockThreshold ?? 5,
     discountPercent: input.discountPercent ?? null,
-    externalUrl: null,
+    externalUrl: input.externalUrl ?? null,
     packagingInfo: input.packagingInfo ?? null,
     category: input.category,
     status: input.status,

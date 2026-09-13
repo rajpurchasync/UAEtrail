@@ -263,7 +263,7 @@ export const Messages = () => {
     <MobileScreen
       title="Messages"
       backTo={isHostMessages ? '/host/overview' : '/profile'}
-      backLabel={isHostMessages ? 'Host' : 'Back'}
+      backLabel={isHostMessages ? 'Organisation console' : 'Back'}
       hideHeader={inThread}
       showBanner={false}
     >

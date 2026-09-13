@@ -1,4 +1,4 @@
-import type { OwnedHostProfileDTO } from '@uaetrail/shared-types';
+import type { OwnedOrganisationProfileDTO } from '@uaetrail/shared-types';
 
 export interface ProfileShareOptions {
   referralCode?: string | null;
@@ -7,7 +7,7 @@ export interface ProfileShareOptions {
 
 /** Best public URL for sharing this member's profile. */
 export const resolveProfileSharePath = (
-  ownedProfiles: OwnedHostProfileDTO[],
+  ownedProfiles: OwnedOrganisationProfileDTO[],
   options: ProfileShareOptions = {}
 ): string => {
   const agency = ownedProfiles.find((profile) => profile.type === 'agency' && profile.slug);
@@ -17,7 +17,7 @@ export const resolveProfileSharePath = (
   if (guide) return `/operator/${guide.slug}`;
 
   const shop = ownedProfiles.find((profile) => profile.type === 'shop' && profile.slug);
-  if (shop) return `/merchant/${shop.slug}`;
+  if (shop) return `/shop/${shop.slug}`;
 
   const referralCode = options.referralCode?.trim();
   if (referralCode) return `/signup?ref=${encodeURIComponent(referralCode)}`;
@@ -27,7 +27,7 @@ export const resolveProfileSharePath = (
 
 export const resolveProfileShareText = (
   displayName: string,
-  ownedProfiles: OwnedHostProfileDTO[]
+  ownedProfiles: OwnedOrganisationProfileDTO[]
 ): string => {
   if (ownedProfiles.some((profile) => profile.type === 'agency' || profile.type === 'guide')) {
     return `Check out ${displayName} on UAE Trail — hikes, camps, and outdoor trips in the UAE.`;

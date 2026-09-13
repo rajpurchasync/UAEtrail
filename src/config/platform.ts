@@ -63,6 +63,8 @@ export const FEATURE_FLAGS = {
   membershipEnabled: false,
   /** Gear shop catalog — live on this experiment branch so shops can appear on the map. */
   shopComingSoon: false,
+  /** In-app Stripe checkout — disabled; shops use outbound affiliate links. */
+  shopCheckoutEnabled: false,
 } as const;
 
 export const MEMBERSHIP_NAV_LINK = FEATURE_FLAGS.membershipEnabled
@@ -187,6 +189,7 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
   '/my-requests/',
   '/member/',
   '/operator/',
+  '/organisation/manage',
   '/shop/manage',
   '/agency/manage',
   '/host/security-privacy',

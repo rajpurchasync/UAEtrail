@@ -1,23 +1,26 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { GlassCard } from '../mobile/GlassCard';
-import { MobileBecomeHostFlow } from '../host/MobileBecomeHostFlow';
-import type { HostFlowIntent } from '../host/becomeHostFlow';
-import { useHostGate } from '../../hooks/useHostGate';
+import { MobileBecomeOrganisationFlow } from '../organisation-console/MobileBecomeOrganisationFlow';
+import type { HostFlowIntent } from '../organisation-console/becomeHostFlow';
+import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { organisationManagePath } from '../../utils/organisationPaths';
+import { buildSignInRedirect } from '../../utils/authReturnContext';
 
-const PRESENCE_CHIPS = [
+const HOST_PROFILE_CHIPS = [
   { key: 'guide' as const, intent: 'add-guide' as HostFlowIntent, label: 'Guide', emoji: '🥾' },
   { key: 'agency' as const, intent: 'add-agency' as HostFlowIntent, label: 'Agency', emoji: '🏢' },
   { key: 'shop' as const, intent: 'add-shop' as HostFlowIntent, label: 'Shop', emoji: '🛍️' },
 ];
 
-/** Manage guide, agency, and shop profiles that appear as pins on the explore map. */
+/** Manage guide, agency, and shop organisation profiles. Only physical shops appear on the explore map. */
 export const ProfileMapPresenceSection = () => {
-  const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles, refresh } = useHostGate();
+  const location = useLocation();
+  const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles, refresh } = useOrganisationGate();
   const [flowOpen, setFlowOpen] = useState(false);
   const [flowIntent, setFlowIntent] = useState<HostFlowIntent>('add-guide');
 
-  const isActive = (key: (typeof PRESENCE_CHIPS)[number]['key']) => {
+  const isActive = (key: (typeof HOST_PROFILE_CHIPS)[number]['key']) => {
     if (key === 'guide') return hasGuideProfile;
     if (key === 'agency') return hasAgencyProfile;
     return hasShopProfile;
@@ -28,16 +31,16 @@ export const ProfileMapPresenceSection = () => {
     setFlowOpen(true);
   };
 
-  const activeCount = PRESENCE_CHIPS.filter((chip) => isActive(chip.key)).length;
+  const activeCount = HOST_PROFILE_CHIPS.filter((chip) => isActive(chip.key)).length;
 
   return (
     <>
       <GlassCard padding id="host-profiles" className="scroll-mt-24 animate-fade-up">
         <div className="mb-3">
-          <h2 className="text-sm font-bold text-gray-900">Host profiles on the map</h2>
+          <h2 className="text-sm font-bold text-gray-900">Organisation profiles</h2>
           <p className="mt-1 text-xs text-gray-500 leading-relaxed">
-            Guides, agencies, and gear shops get their own pin on the explore map. Set up one or more — they are separate
-            from your personal profile.
+            Guides and agencies host trips on UAE Trail. Gear shops can pin a store on the map or list as an online
+            partner — separate from your personal profile.
           </p>
         </div>
 
@@ -47,16 +50,21 @@ export const ProfileMapPresenceSection = () => {
           <>
             {activeCount > 0 && (
               <p className="mb-2 text-xs font-semibold text-emerald-700">
-                {activeCount} active on the map
+                {activeCount} organisation profile{activeCount === 1 ? '' : 's'} active
               </p>
             )}
             <div className="flex flex-wrap gap-2">
-              {PRESENCE_CHIPS.map((chip) => {
+              {HOST_PROFILE_CHIPS.map((chip) => {
                 const active = isActive(chip.key);
                 const name = ownedProfiles.find((profile) => profile.type === chip.key)?.name;
 
                 if (active) {
-                  const managePath = chip.key === 'shop' ? '/shop/manage' : chip.key === 'agency' ? '/agency/manage' : '/host/overview';
+                  const managePath =
+                    chip.key === 'shop'
+                      ? organisationManagePath('shop')
+                      : chip.key === 'agency'
+                        ? organisationManagePath('agency')
+                        : '/host/overview';
                   const className = `inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold ${
                     chip.key === 'guide'
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
@@ -79,7 +87,7 @@ export const ProfileMapPresenceSection = () => {
                     key={chip.key}
                     type="button"
                     onClick={() => openFlow(chip.intent)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:border-emerald-300 hover:bg-emerald-50/40"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-neutral-300 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-emerald-300 hover:text-emerald-700"
                   >
                     <span>{chip.emoji}</span>
                     <span>Add {chip.label.toLowerCase()}</span>
@@ -91,15 +99,15 @@ export const ProfileMapPresenceSection = () => {
         )}
       </GlassCard>
 
-      <MobileBecomeHostFlow
+      <MobileBecomeOrganisationFlow
         open={flowOpen}
-        onClose={() => setFlowOpen(false)}
-        onSubmitted={async () => {
-          await refresh();
-          setFlowOpen(false);
-        }}
-        signInHref="/signin?redirect=/become-host"
         intent={flowIntent}
+        onClose={() => setFlowOpen(false)}
+        onSubmitted={() => {
+          setFlowOpen(false);
+          void refresh();
+        }}
+        signInHref={buildSignInRedirect(location).href}
       />
     </>
   );

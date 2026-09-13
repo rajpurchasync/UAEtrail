@@ -158,7 +158,8 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { merchantId: 1, status: 1, createdAt: -1 } }
     ]),
     db.collection('merchant_profiles').createIndexes([
-      { key: { adminIds: 1 } }
+      { key: { adminIds: 1 } },
+      { key: { tenantId: 1 }, sparse: true, unique: true },
     ]),
     db.collection('social_groups').createIndexes([
       { key: { adminUserId: 1, createdAt: -1 } },

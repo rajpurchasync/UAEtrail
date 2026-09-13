@@ -63,17 +63,17 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
   },
   {
     id: 'hosts',
-    title: 'Hosts & organizers',
+    title: 'Organisations & trip hosts',
     items: [
       {
-        question: 'How do I become a trip host on UAE Trail?',
+        question: 'How do I run trips on UAE Trail?',
         answer:
-          'Apply at Become a Host as an individual guide or registered outdoor business. Once approved, you can publish trips, manage join requests, and build a public organizer profile with reviews and certificates.'
+          'Apply at Become an organisation as an individual guide or registered outdoor business. Once approved, you can publish trips, manage join requests, and build a public organisation profile with reviews and certificates.'
       },
       {
         question: 'Are trip hosts verified?',
         answer:
-          'Organizer applications are reviewed by our team. Public profiles show host bio, experience, team members, and community reviews so participants can make informed choices before joining.'
+          'Organisation applications are reviewed by our team. Public profiles show experience, team members, and community reviews so participants can make informed choices before joining.'
       }
     ]
   },

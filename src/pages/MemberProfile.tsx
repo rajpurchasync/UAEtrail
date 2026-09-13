@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Loader2, Lock } from 'lucide-react';
 import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
-import { api, type PublicMemberProfileDTO } from '../api/services';
+import { api, type PersonPublicProfileDTO } from '../api/services';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { MemberProfileView } from '../components/profile/MemberProfileView';
@@ -12,15 +12,15 @@ import { buildProfileStamps } from '../utils/profileStamps';
 import { messagesRouteForRole } from '../utils/authRouting';
 
 const isFullProfile = (
-  profile: PublicMemberProfileDTO
-): profile is Extract<PublicMemberProfileDTO, { visibilityState: 'full' }> =>
+  profile: PersonPublicProfileDTO
+): profile is Extract<PersonPublicProfileDTO, { visibilityState: 'full' }> =>
   profile.visibilityState === 'full';
 
 export const MemberProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<PublicMemberProfileDTO | null>(null);
+  const [profile, setProfile] = useState<PersonPublicProfileDTO | null>(null);
   const [buddyRel, setBuddyRel] = useState<BuddyRelationshipDTO | null>(null);
   const [buddyBusy, setBuddyBusy] = useState(false);
   const [buddyMessage, setBuddyMessage] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export const MemberProfile = () => {
     setLoading(true);
     setError(null);
     void api
-      .getUserPublicProfile(userId)
+      .getPersonPublicProfile(userId)
       .then((res) => setProfile(res.data))
       .catch((err) => setError(err instanceof Error ? err.message : 'We couldn\'t find this profile'))
       .finally(() => setLoading(false));
@@ -69,7 +69,7 @@ export const MemberProfile = () => {
       );
       setBuddyMessage(res.data.status === 'accepted' ? 'You are now connected.' : 'Buddy request sent.');
       if (res.data.status === 'accepted') {
-        void api.getUserPublicProfile(userId).then((profileRes) => setProfile(profileRes.data));
+        void api.getPersonPublicProfile(userId).then((profileRes) => setProfile(profileRes.data));
       }
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not send buddy request.');
@@ -87,7 +87,7 @@ export const MemberProfile = () => {
       setBuddyMessage('Buddy request accepted.');
       loadBuddyRelationship();
       if (userId) {
-        void api.getUserPublicProfile(userId).then((profileRes) => setProfile(profileRes.data));
+        void api.getPersonPublicProfile(userId).then((profileRes) => setProfile(profileRes.data));
       }
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not accept request.');

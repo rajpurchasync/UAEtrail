@@ -197,15 +197,18 @@ export const venueFilterToMapFilter = (filter: VenueListFilterKey): MapFilterKey
 export const exploreShopsPath = (): string =>
   explorePath({ panel: 'shops', list: true, filter: 'shops' });
 
-/** Trail & camp locations on the explore map (replaces legacy `/discovery`). */
-export const exploreVenuesPath = (options?: {
+/** Places (trails, camps, events) on the explore map — URL panel stays `venues`. */
+export const explorePlacesPath = (options?: {
   region?: string;
   addLocation?: boolean;
   q?: string;
 }): string => explorePath({ panel: 'venues', list: true, ...options });
 
-/** Alias for exploreVenuesPath — same locations panel. */
-export const exploreLocationsPath = exploreVenuesPath;
+/** @deprecated Use explorePlacesPath */
+export const exploreVenuesPath = explorePlacesPath;
+
+/** @deprecated Use explorePlacesPath */
+export const exploreLocationsPath = explorePlacesPath;
 
 /** Map legacy discovery query params onto explore search params. */
 export const discoveryToExploreSearch = (search: string): string => {

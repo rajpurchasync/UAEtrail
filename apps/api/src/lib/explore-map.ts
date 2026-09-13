@@ -1,4 +1,4 @@
-import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ExploreMapItemDTO, ShopPresence } from '@uaetrail/shared-types';
 import {
   buildExploreCardPresentation,
   buildExploreFeaturedPerson,
@@ -13,7 +13,7 @@ import { listActiveLocations } from './location-query.js';
 import { buildActivityDto, toLocationDto } from './mappers.js';
 import { buildExploreActivityDisplay } from './explore-display.js';
 import { findMerchantProfilesByUserIds, listPublicMerchantsForMap, loadMerchantOwnerDisplaysByAdminIds } from './shop-store.js';
-import { listPublicAgenciesForMap, listPublicShopsForMap } from './tenant-store.js';
+import { listPublicShopTenantsForExplore } from './tenant-store.js';
 import { listActiveParticipantIntentsForMap } from './participant-intents-store.js';
 import { getReviewStatsByTargets } from './social-data.js';
 import { ReviewTargetType } from '../domain/enums.js';
@@ -27,6 +27,14 @@ import {
 } from './explore-map-cache.js';
 
 export { invalidateExploreMapCache };
+
+const shopPublicPath = (merchantId?: string | null, slug?: string | null): string => {
+  const key = merchantId?.trim() || slug?.trim();
+  return key ? `/shop/${encodeURIComponent(key)}` : '/explore?panel=shops&list=1&filter=shops';
+};
+
+const resolveShopPresence = (latitude: number | null, longitude: number | null): ShopPresence =>
+  latitude != null && longitude != null ? 'physical' : 'online';
 
 const venuePath = (activityType: string, id: string): string => {
   const kind = activityType.toLowerCase();
@@ -111,12 +119,11 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
 };
 
 const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
-  const [activityEvents, locationsResult, merchants, agencies, shopTenants, demandItems] = await Promise.all([
+  const [activityEvents, locationsResult, merchants, shopTenants, demandItems] = await Promise.all([
     listPublishedActivitiesForExploreMap(250),
     listActiveLocations({ page: 1, pageSize: 250 }),
     listPublicMerchantsForMap(),
-    listPublicAgenciesForMap(250),
-    listPublicShopsForMap(250),
+    listPublicShopTenantsForExplore(250),
     listActiveParticipantIntentsForMap(200)
   ]);
 
@@ -209,31 +216,38 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
 
   const ownerDisplays = await loadMerchantOwnerDisplaysByAdminIds([
     ...merchants
-      .map(({ merchant }) => merchant.adminIds)
+      .map((merchant) => merchant.adminIds)
       .filter((ids): ids is string[] => Array.isArray(ids) && ids.length > 0),
     ...shopTenants.filter((shop) => shop.ownerId).map((shop) => [shop.ownerId!]),
   ]);
   const merchantByOwnerId = await findMerchantProfilesByUserIds(shopTenants.map((shop) => shop.ownerId));
 
   for (const shop of shopTenants) {
-    if (shop.latitude == null || shop.longitude == null) continue;
     const merchant = shop.ownerId ? merchantByOwnerId.get(shop.ownerId) ?? null : null;
     const owner = shop.ownerId ? ownerDisplays.get(shop.ownerId) ?? null : null;
+    const latitude = shop.latitude ?? merchant?.latitude ?? null;
+    const longitude = shop.longitude ?? merchant?.longitude ?? null;
+    const shopPresence = resolveShopPresence(latitude, longitude);
+    const websiteUrl = shop.website ?? merchant?.websiteUrl ?? null;
+
+    if (shopPresence === 'online' && !websiteUrl && !merchant?.description && !shop.description) continue;
+
     items.push({
       id: `shop:${merchant?.id ?? shop.id}`,
       kind: 'shop',
       source: 'shop',
-      title: shop.name,
-      subtitle: shop.region ?? null,
+      title: merchant?.shopName ?? shop.name,
+      subtitle: shopPresence === 'online' ? 'Online partner' : shop.region ?? merchant?.region ?? null,
       about: merchant?.description ?? shop.description ?? null,
-      latitude: shop.latitude,
-      longitude: shop.longitude,
-      path: merchant ? `/merchant/${merchant.id}` : `/operator/${shop.slug}`,
+      latitude,
+      longitude,
+      path: shopPublicPath(merchant?.id, shop.slug),
       image: shop.logoUrl ?? merchant?.logo ?? null,
       merchantId: merchant?.id,
       tenantId: shop.id,
-      websiteUrl: shop.website ?? null,
+      websiteUrl,
       contactPhone: merchant?.contactPhone ?? null,
+      shopPresence,
       featuredPerson: buildExploreFeaturedPerson({
         userId: owner?.userId,
         displayName: owner?.name,
@@ -246,25 +260,31 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     });
   }
 
-  for (const { merchant, products } of merchants) {
-    if (products.length === 0) continue;
+  for (const merchant of merchants) {
     if (items.some((item) => item.merchantId === merchant.id)) continue;
     const owner = ownerDisplays.get(merchant.adminIds?.[0] ?? '') ?? null;
+    const latitude = merchant.latitude ?? null;
+    const longitude = merchant.longitude ?? null;
+    const shopPresence = resolveShopPresence(latitude, longitude);
+    const websiteUrl = merchant.websiteUrl ?? null;
+
+    if (shopPresence === 'online' && !websiteUrl && !merchant.description) continue;
+
     items.push({
       id: `shop:${merchant.id}`,
       kind: 'shop',
       source: 'shop',
       title: merchant.shopName,
-      subtitle: merchant.region ?? null,
+      subtitle: shopPresence === 'online' ? 'Online partner' : merchant.region ?? null,
       about: merchant.description ?? null,
-      latitude: merchant.latitude,
-      longitude: merchant.longitude,
-      path: `/merchant/${merchant.id}`,
-      image: merchant.logo ?? products[0]?.images[0] ?? null,
+      latitude,
+      longitude,
+      path: shopPublicPath(merchant.id),
+      image: merchant.logo ?? null,
       merchantId: merchant.id,
-      productId: products[0]?.id,
-      priceAed: products[0]?.priceAed ?? null,
+      websiteUrl,
       contactPhone: merchant.contactPhone ?? null,
+      shopPresence,
       featuredPerson: buildExploreFeaturedPerson({
         userId: owner?.userId,
         displayName: owner?.name,
@@ -274,25 +294,6 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       hostName: owner?.name ?? null,
       hostAvatar: owner?.avatarUrl ?? null,
       requesterUserId: owner?.userId ?? null,
-    });
-
-    // Product catalogue pins deferred — one shop pin per merchant; catalogue comes later.
-  }
-
-  for (const agency of agencies) {
-    if (agency.latitude == null || agency.longitude == null) continue;
-    items.push({
-      id: `agency:${agency.id}`,
-      kind: 'agency',
-      source: 'agency',
-      title: agency.name,
-      subtitle: agency.region ?? agency.services ?? 'Tour agency',
-      latitude: agency.latitude,
-      longitude: agency.longitude,
-      path: `/operator/${agency.slug}`,
-      image: agency.logoUrl ?? null,
-      websiteUrl: agency.website ?? null,
-      tenantId: agency.id,
     });
   }
 
@@ -302,8 +303,8 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     .filter((item) => item.source === 'venue')
     .map((item) => item.locationCard?.id ?? item.id.replace(/^venue:/, ''));
   const tenantIds = items
-    .filter((item) => item.source === 'shop' || item.source === 'agency')
-    .map((item) => item.tenantId ?? item.id.replace(/^(shop|agency):/, ''));
+    .filter((item) => item.source === 'shop')
+    .map((item) => item.tenantId ?? item.id.replace(/^shop:/, ''));
 
   const [locationStats, tenantStats] = await Promise.all([
     getReviewStatsByTargets(ReviewTargetType.LOCATION, locationIds),
@@ -321,8 +322,8 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       }
       continue;
     }
-    if (item.source === 'shop' || item.source === 'agency') {
-      const id = item.tenantId ?? item.id.replace(/^(shop|agency):/, '');
+    if (item.source === 'shop') {
+      const id = item.tenantId ?? item.merchantId ?? item.id.replace(/^shop:/, '');
       const stat = tenantStats.get(id);
       if (stat) {
         item.averageRating = stat.averageRating;

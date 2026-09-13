@@ -408,7 +408,7 @@ adminRouter.patch(
           title: 'Host application approved',
           body: reviewerNote
             ? `You can now post activities. Note from reviewer: ${reviewerNote}`
-            : 'Your host profile was approved. You can now post activities and welcome participants.',
+            : 'Your organisation profile was approved. You can now post activities and welcome participants.',
           reason: reviewerNote,
           meta: {
             kind: 'host_application_approved',
@@ -994,13 +994,13 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
 
     await notifyUserAdminAction({
       userId: tenant.ownerId,
-      title: status === 'active' ? 'Host account reopened' : 'Host account suspended',
+      title: status === 'active' ? 'Organisation account reopened' : 'Organisation account suspended',
       body:
         status === 'active'
-          ? `Your host profile "${tenant.name}" is active again. You can create and manage events.`
+          ? `Your organisation profile "${tenant.name}" is active again. You can create and manage events.`
           : comment
-            ? `Your host profile "${tenant.name}" has been suspended. Reason: ${comment}`
-            : `Your host profile "${tenant.name}" has been suspended. Contact support for details.`,
+            ? `Your organisation profile "${tenant.name}" has been suspended. Reason: ${comment}`
+            : `Your organisation profile "${tenant.name}" has been suspended. Contact support for details.`,
       reason: comment,
       meta: {
         kind: status === 'active' ? 'host_reopened' : 'host_suspended',

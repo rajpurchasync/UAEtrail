@@ -3,13 +3,13 @@ import { CampingSpot } from '../../types';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
 import {
-  LocationCatalogCardFrame,
-  type LocationCardActionsConfig,
-} from './LocationCatalogCardFrame';
+  PlaceCatalogCardFrame,
+  type PlaceCardActionsConfig,
+} from './PlaceCatalogCardFrame';
 
 interface CampingCardProps {
   camp: CampingSpot;
-  actions?: LocationCardActionsConfig;
+  actions?: PlaceCardActionsConfig;
   onDismiss?: () => void;
 }
 
@@ -18,7 +18,7 @@ export const CampingCard = ({ camp, actions, onDismiss }: CampingCardProps) => {
   const href = actions ? undefined : campPath;
 
   return (
-    <LocationCatalogCardFrame href={href} actions={actions}>
+    <PlaceCatalogCardFrame href={href} actions={actions}>
       <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
         <EnvironmentImage src={camp.images[0]} alt={camp.name} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
@@ -58,6 +58,6 @@ export const CampingCard = ({ camp, actions, onDismiss }: CampingCardProps) => {
         </div>
         <p className="line-clamp-3 text-sm leading-relaxed text-neutral-600">{camp.description}</p>
       </div>
-    </LocationCatalogCardFrame>
+    </PlaceCatalogCardFrame>
   );
 };

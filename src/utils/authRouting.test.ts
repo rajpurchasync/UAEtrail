@@ -73,7 +73,7 @@ describe('auth routing by role', () => {
   });
 
   it('maps merchant dashboard aliases to shop management', () => {
-    expect(merchantDashboardRedirect('overview')).toBe('/shop/manage');
-    expect(merchantDashboardRedirect('unknown')).toBe('/shop/manage');
+    expect(merchantDashboardRedirect('overview')).toBe('/organisation/manage?kind=shop');
+    expect(merchantDashboardRedirect('unknown')).toBe('/organisation/manage?kind=shop');
   });
 });

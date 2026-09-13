@@ -7,24 +7,27 @@ export const DIFFICULTY_COLORS = {
 /** Public activities browse + dashboard tab. */
 export const ACTIVITIES_PATH = '/activities';
 
-/** Host console nav — hosting tools live under /host, not on the public activities page. */
-export const HOST_DASHBOARD_LINKS = [
+/** Organisation hosting console nav — tools live under /host routes. */
+export const ORGANISATION_CONSOLE_LINKS = [
   { to: '/host/overview', label: 'Overview' },
-  { to: '/host/profile', label: 'Public Profile' },
+  { to: '/host/profile', label: 'Public profile' },
   { to: '/host/activities', label: 'Activities' },
-  { to: '/host/requests', label: 'Join Requests' },
+  { to: '/host/requests', label: 'Join requests' },
   { to: '/host/team', label: 'Team' },
-  { to: '/host/locations', label: 'Locations' },
+  { to: '/host/locations', label: 'Places' },
   { to: '/host/messages', label: 'Messages' },
   { to: '/host/history', label: 'History' },
   { to: '/my-rewards', label: 'Trail Points' },
 ];
 
+/** @deprecated Use ORGANISATION_CONSOLE_LINKS */
+export const HOST_DASHBOARD_LINKS = ORGANISATION_CONSOLE_LINKS;
+
 export const ADMIN_LINKS = [
   { to: '/admin/overview', label: 'Overview' },
-  { to: '/admin/locations', label: 'Locations' },
-  { to: '/admin/users', label: 'User Management' },
-  { to: '/admin/hosts', label: 'Hosts' },
+  { to: '/admin/locations', label: 'Places' },
+  { to: '/admin/users', label: 'Members' },
+  { to: '/admin/hosts', label: 'Organisations' },
   { to: '/admin/activities', label: 'Activities' },
   { to: '/admin/groups', label: 'Groups' },
   { to: '/admin/shop', label: 'Shop' },

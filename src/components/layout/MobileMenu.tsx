@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogIn, LogOut, Menu, RefreshCw, ShoppingBag, User, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import { isConsumerChromeHidden, MOBILE_DRAWER_MENU, MOBILE_LANDING_USER_MENU, EXPLORE_MAP_PATH } from '../../config/platform';
-import { ADMIN_LINKS, HOST_DASHBOARD_LINKS } from '../../constants';
+import { ADMIN_LINKS, ORGANISATION_CONSOLE_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/services';
 import { setStoredSession } from '../../api/client';
@@ -11,6 +11,7 @@ import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
+import { isMerchantRole } from '../../utils/roles';
 
 type MobileMenuTone = 'default' | 'light';
 
@@ -421,11 +422,11 @@ const MobileMenuPanel = () => {
       <MobileDrawer
         open={open}
         closeMenu={closeMenu}
-        eyebrow="Host"
+        eyebrow="Organise"
         title={user?.displayName || 'Account'}
-        ariaLabel="Host navigation"
+        ariaLabel="Organisation console navigation"
       >
-        <DashboardDrawerLinks links={HOST_DASHBOARD_LINKS} pathname={pathname} closeMenu={closeMenu} />
+        <DashboardDrawerLinks links={ORGANISATION_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
         <DashboardDrawerSiteLink closeMenu={closeMenu} />
         <button type="button" onClick={() => void switchRole('participant')} className={dashboardActionClass}>
           Switch to Visitor
@@ -523,7 +524,7 @@ const MobileMenuPanel = () => {
             );
           })}
 
-          {user && !isMerchantRole && (
+          {user && !isMerchantRole(user.role) && (
             <Link
               to="/become-host#host-profiles"
               onClick={closeMenu}
@@ -532,7 +533,7 @@ const MobileMenuPanel = () => {
               <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
                 <ShoppingBag className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
               </span>
-              <span className="font-semibold">Host on the map</span>
+              <span className="font-semibold">Organisation profiles</span>
             </Link>
           )}
 

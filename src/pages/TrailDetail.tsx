@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, TrendingUp, Clock, Mountain, Baby, ChevronRight } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
-import { ActivityCard, ShareButton, LocationDetailTabs, toLocationDetailData, ReviewSection } from '../components/ui';
+import { ActivityCard, ShareButton, PlaceDetailTabs, toPlaceDetailData, ReviewSection } from '../components/ui';
 import { LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -210,10 +210,10 @@ export const TrailDetail = () => {
             </div>
           </div>
 
-          <LocationDetailTabs
-            data={toLocationDetailData(trail, 'hiking')}
+          <PlaceDetailTabs
+            data={toPlaceDetailData(trail, 'hiking')}
             accent="emerald"
-            locationId={trail.id}
+            placeId={trail.id}
             premium={premium}
             onPremiumChange={setPremium}
           />

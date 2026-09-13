@@ -11,11 +11,11 @@ import {
   AccountEditModal,
   AccountSectionHeader,
   AccountSignOutButton,
-  HostHubSections,
+  OrganisationHubSections,
 } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
-import { useHostHubData } from '../hooks/useHostHubData';
-import { useHostGate } from '../hooks/useHostGate';
+import { useOrganisationHubData } from '../hooks/useOrganisationHubData';
+import { useOrganisationGate } from '../hooks/useOrganisationGate';
 import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
 import { TrailPointsPathSheet } from '../components/rewards';
 import { RewardSummaryDTO } from '@uaetrail/shared-types';
@@ -30,7 +30,7 @@ import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profi
 import { buildProfileStamps } from '../utils/profileStamps';
 import { USER_CITY_LABELS } from '../constants/userProfileOptions';
 import { computeAgeFromDateOfBirth, formatMemberAge } from '../utils/profileAge';
-import { resolveProfileHostKind, resolveProfileRoleLabel } from '../utils/profileRoleLabel';
+import { resolveProfileOrganisationKind, resolveProfileRoleLabel } from '../utils/profileRoleLabel';
 import type { AccountEditSavePayload } from '../components/account/AccountEditModal';
 import { attendedTrips } from '../utils/activityHubSections';
 import { isHostRole } from '../utils/roles';
@@ -60,9 +60,9 @@ export const Profile = () => {
     ownedProfiles,
     loading: hostGateLoading,
     tenantId: hostTenantId,
-  } = useHostGate({ enabled: Boolean(user) });
+  } = useOrganisationGate({ enabled: Boolean(user) });
 
-  const host = useHostHubData();
+  const host = useOrganisationHubData();
 
   useEffect(() => {
     if (hostTenantId) {
@@ -85,7 +85,7 @@ export const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
-    void Promise.all([api.getMeProfile().catch(() => null), api.getMyHostApplication().catch(() => null)]).then(
+    void Promise.all([api.getMeProfile().catch(() => null), api.getMyOrganisationApplication().catch(() => null)]).then(
       ([profileRes, hostRes]) => {
         const profile = profileRes?.data;
         const meta = hostRes?.data?.metadata;
@@ -113,7 +113,7 @@ export const Profile = () => {
   }, [location.pathname, location.state, navigate]);
 
   const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
-  const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
+  const hostProfileKind = useMemo(() => resolveProfileOrganisationKind(ownedProfiles), [ownedProfiles]);
   const canHost = isHostRole(user?.role);
   const canEditLanguages = canHost || ownedProfiles.length > 0 || Boolean(memberDetails.languages);
   const isTripHost = canHost && hostProfileKind !== 'shop';
@@ -375,13 +375,13 @@ export const Profile = () => {
 
         {isTripHost && (
           <GlassCard padding className="space-y-3">
-            <AccountSectionHeader title="Hosting" actionTo="/host/overview" actionLabel="Host hub" />
+            <AccountSectionHeader title="Organising" actionTo="/host/overview" actionLabel="Organisation console" />
             {host.loading ? (
               <div className="flex justify-center py-6">
                 <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
-              <HostHubSections
+              <OrganisationHubSections
                 activitiesCount={host.activities.length}
                 pendingJoinRequests={host.pendingJoinRequests}
                 upcomingActivitiesCount={host.upcomingActivitiesCount}

@@ -89,7 +89,10 @@ const shopApplicationSchema = z.object({
   ...phoneFields,
   website: optionalHttpUrlSchema,
   profilePhoto: mediaPathSchema,
-  ...mapPinFields
+  shopPresence: z.enum(['physical', 'online']),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
+  region: z.string().min(2).max(80).optional()
 });
 
 export const hostApplicationBodySchema = z
@@ -100,6 +103,21 @@ export const hostApplicationBodySchema = z
   ])
   .superRefine((body, ctx) => {
     validatePhone(body, ctx);
+    if (body.hostProfileType !== 'shop') return;
+    if (body.shopPresence === 'online' && !body.website) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Online shops need a website URL.',
+        path: ['website']
+      });
+    }
+    if (body.shopPresence === 'physical' && (body.latitude == null || body.longitude == null)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Pin your shop on the map.',
+        path: ['latitude']
+      });
+    }
   });
 
 export type HostApplicationBody = z.infer<typeof hostApplicationBodySchema>;
@@ -130,6 +148,19 @@ export const buildHostApplicationMetadata = (
     };
   }
 
+  if (body.hostProfileType === 'shop') {
+    return {
+      ...base,
+      requestedName: body.requestedName,
+      website: body.website ?? '',
+      profilePhoto: body.profilePhoto,
+      shopPresence: body.shopPresence,
+      latitude: body.shopPresence === 'online' ? null : body.latitude ?? null,
+      longitude: body.shopPresence === 'online' ? null : body.longitude ?? null,
+      region: body.region ?? null,
+    };
+  }
+
   return {
     ...base,
     requestedName: body.requestedName,
@@ -138,7 +169,7 @@ export const buildHostApplicationMetadata = (
     latitude: body.latitude,
     longitude: body.longitude,
     region: body.region ?? null,
-    ...(body.hostProfileType === 'agency' ? { services: body.services } : {})
+    services: body.services,
   };
 };
 

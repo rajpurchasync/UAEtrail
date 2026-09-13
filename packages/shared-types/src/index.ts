@@ -75,6 +75,10 @@ export interface LocationDTO {
   guideMarkdown?: string | null;
 }
 
+/** Domain alias — trail, camp, or event venue. Storage/API remain `locations` / `LocationDTO`. */
+export type PlaceDTO = LocationDTO;
+export type PlaceStatus = LocationStatus;
+
 export type PremiumAccessReason = 'pro' | 'goat' | 'admin' | 'unlocked' | 'locked';
 
 export interface LocationPremiumSummaryDTO {
@@ -100,6 +104,11 @@ export interface LocationDetailResponse {
   data: LocationDTO;
   premium: LocationPremiumSummaryDTO | null;
 }
+
+/** Domain aliases — place detail payloads (wire remains `Location*`). */
+export type PlacePremiumSummaryDTO = LocationPremiumSummaryDTO;
+export type PlaceGuideDTO = LocationGuideDTO;
+export type PlaceDetailResponse = LocationDetailResponse;
 
 export interface ParticipantPreviewDTO {
   id: string;
@@ -285,6 +294,13 @@ export interface HostStatusDTO {
   ownedProfiles: OwnedHostProfileDTO[];
 }
 
+/** Domain aliases — organisation console status (wire: `/me/host-status`). */
+export type OrganisationApplicationStatus = HostApplicationStatus;
+export type OrganisationProfileType = HostProfileType;
+export type OwnedOrganisationProfileType = OwnedHostProfileType;
+export type OwnedOrganisationProfileDTO = OwnedHostProfileDTO;
+export type OrganisationConsoleStatusDTO = HostStatusDTO;
+
 /** Predefined reasons when a user withdraws from a trip */
 export const WITHDRAW_REASONS = [
   { value: 'schedule_conflict', label: 'Schedule conflict' },
@@ -457,11 +473,16 @@ export interface FavoriteDTO {
   createdAt: string;
 }
 
+export type ShopPresence = 'physical' | 'online';
+
 export interface MerchantProfileDTO {
   id: string;
+  /** Linked shop tenant when merchant_profiles.tenantId is set. */
+  tenantId?: string | null;
   shopName: string;
   description?: string;
   logo?: string;
+  websiteUrl?: string | null;
   contactEmail?: string;
   contactPhone?: string;
   latitude?: number | null;
@@ -472,9 +493,15 @@ export interface MerchantProfileDTO {
   contactPersonUserId?: string | null;
 }
 
+/** Domain alias — shop organisation. Storage/API remain `merchant_profiles` / `MerchantProfileDTO`. */
+export type ShopOrganisationDTO = MerchantProfileDTO;
+
 export interface MerchantPublicDTO extends MerchantProfileDTO {
   products: ProductDTO[];
 }
+
+/** Domain alias — public shop page payload. Storage/API remain `merchant_profiles` / `/shop/merchants/:id`. */
+export type ShopPublicDTO = MerchantPublicDTO;
 
 export type ExploreMapKind = ActivityType | 'shop' | 'agency';
 export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
@@ -577,8 +604,10 @@ export interface ExploreMapItemDTO {
   reviewCount?: number;
   /** Server-built headlines, list titles, and card sections for explore UI. */
   presentation?: ExploreCardPresentationDTO;
-  /** Tenant id when the map item represents a shop or agency profile. */
+  /** Tenant id when the map item represents a shop profile. */
   tenantId?: string | null;
+  /** Gear shop map presence — physical stores get pins; online partners are list-only. */
+  shopPresence?: ShopPresence | null;
 }
 
 export interface ProductClick {
@@ -629,6 +658,11 @@ export interface MerchantAnalyticsSeriesDTO {
   interval: MerchantAnalyticsInterval;
   points: MerchantAnalyticsPointDTO[];
 }
+
+/** Domain aliases — shop organisation analytics (wire remains `MerchantAnalytics*`). */
+export type ShopAnalyticsInterval = MerchantAnalyticsInterval;
+export type ShopAnalyticsPointDTO = MerchantAnalyticsPointDTO;
+export type ShopAnalyticsSeriesDTO = MerchantAnalyticsSeriesDTO;
 
 // ─── Admin DTOs ─────────────────────────────────────────────────────────────
 

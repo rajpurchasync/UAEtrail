@@ -11,9 +11,9 @@ import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
 import { PageMeta } from '../components/seo/PageMeta';
-import { MobileBecomeHostFlow } from '../components/host/MobileBecomeHostFlow';
-import { parseHostFlowIntent } from '../components/host/becomeHostFlow';
-import { useHostGate } from '../hooks/useHostGate';
+import { MobileBecomeOrganisationFlow } from '../components/organisation-console/MobileBecomeOrganisationFlow';
+import { parseHostFlowIntent } from '../components/organisation-console/becomeHostFlow';
+import { useOrganisationGate } from '../hooks/useOrganisationGate';
 import { resolveAuthRedirect } from '../utils/authRedirect';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 
@@ -23,8 +23,8 @@ const setupSteps = [
   { emoji: '🏕️', title: 'Invite people along', detail: 'Post hikes, camps, carpools, and meetups when you\'re ready.' },
 ];
 
-/** Become a host — individual, agency, or shop. Route: /become-host (alias /become-organizer). */
-export const BecomeHost = () => {
+/** Become an organisation — individual guide, agency, or shop. Route: /become-host (alias /become-organizer). */
+export const BecomeOrganisation = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -38,7 +38,7 @@ export const BecomeHost = () => {
     hasGuideProfile,
     hasAgencyProfile,
     hasShopProfile,
-  } = useHostGate({
+  } = useOrganisationGate({
     enabled: Boolean(user),
   });
 
@@ -104,7 +104,7 @@ export const BecomeHost = () => {
         ? 'Join as an agency'
         : intent === 'add-guide'
           ? 'Become a guide'
-          : 'Join as a host';
+          : 'Set up your organisation';
 
   const handleHostSubmitted = async (_tenantId: string | null) => {
     setHostFlowOpen(false);
@@ -118,7 +118,7 @@ export const BecomeHost = () => {
       : `/signin?redirect=${encodeURIComponent(`/become-host?intent=${intent}${searchParams.get('redirect') ? `&redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`)}`;
 
   const primaryLabel = !user
-    ? 'Join to start hosting'
+    ? 'Join to get started'
     : hostGateLoading
       ? 'Just a moment…'
       : canPublish
@@ -136,7 +136,7 @@ export const BecomeHost = () => {
 
   const subcopy =
     intent === 'become-host'
-      ? 'Hosts here are just members who love getting outside and bringing people along. A quick intro — then you can post hikes, camps, carpools, and more.'
+      ? 'Guides, agencies, and shops share trips here. A quick intro — then you can post hikes, camps, carpools, and more.'
       : intent === 'add-shop'
         ? 'Help hikers and campers find your gear shop when they\'re planning their next trip.'
         : intent === 'add-agency'
@@ -149,7 +149,7 @@ export const BecomeHost = () => {
     <>
       <PageMeta
         title={pageTitle}
-        description="Join the UAE Trail community as a host — share hikes, camps, and outdoor meetups with fellow explorers."
+        description="Join the UAE Trail community — share hikes, camps, and outdoor meetups as a guide, agency, or shop."
         path="/become-organizer"
       />
       <ConsumerShell
@@ -173,7 +173,7 @@ export const BecomeHost = () => {
               </div>
               <h2 className="text-xl font-bold text-neutral-900">Welcome aboard!</h2>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                You&apos;re ready to host. Head back to the map and tap + whenever you want to invite people along.
+                You&apos;re ready to organise. Head back to the map and tap + whenever you want to invite people along.
               </p>
               <AppButton fullWidth onClick={() => navigate(returnTo)} className="mt-5">
                 {returnTo.startsWith('/explore') ? 'Back to the map' : 'Continue'}
@@ -190,7 +190,7 @@ export const BecomeHost = () => {
               <h2 className="text-xl font-bold text-neutral-900">You&apos;re already part of the crew</h2>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">{alreadyHostMessage}</p>
               <AppButton fullWidth onClick={() => navigate('/host/overview')} className="mt-5">
-                Go to your host space
+                Go to organisation console
                 <ArrowRight className="h-4 w-4" />
               </AppButton>
             </GlassCard>
@@ -246,7 +246,7 @@ export const BecomeHost = () => {
         </div>
 
         {hostFlowOpen && (
-          <MobileBecomeHostFlow
+          <MobileBecomeOrganisationFlow
             open={hostFlowOpen}
             onClose={() => setHostFlowOpen(false)}
             onSubmitted={handleHostSubmitted}
@@ -258,3 +258,6 @@ export const BecomeHost = () => {
     </>
   );
 };
+
+/** @deprecated Import {@link BecomeOrganisation} — route `/become-host` unchanged. */
+export const BecomeHost = BecomeOrganisation;

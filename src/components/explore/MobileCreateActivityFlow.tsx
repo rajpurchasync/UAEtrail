@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useHostGate } from '../../hooks/useHostGate';
+import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { MobileMonthCalendar } from '../mobile/MobileMonthCalendar';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import {
@@ -48,8 +48,8 @@ import {
 } from './mobileCreateFlow';
 import { MAP_CONFIG } from '../../config/platform';
 
-const MobileCreateLocationPicker = lazy(() =>
-  import('./MobileCreateLocationPicker').then((m) => ({ default: m.MobileCreateLocationPicker }))
+const MobileCreatePlacePicker = lazy(() =>
+  import('./MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
 );
 
 type FlowStep = 'type' | CreateFlowStepId;
@@ -142,7 +142,7 @@ export const MobileCreateActivityFlow = ({
 }: MobileCreateActivityFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { canPublish, canHostPaidActivities, tenantId, loading: hostGateLoading } = useHostGate({ enabled: open && Boolean(user) });
+  const { canPublish, canHostPaidActivities, tenantId, loading: hostGateLoading } = useOrganisationGate({ enabled: open && Boolean(user) });
 
   const [step, setStep] = useState<FlowStep>('type');
   const [draft, setDraft] = useState<MobileCreateDraft>(emptyMobileCreateDraft);
@@ -327,7 +327,7 @@ export const MobileCreateActivityFlow = ({
     return (
       <div className="absolute inset-0 z-[1400] bg-neutral-100">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <MobileCreateLocationPicker
+          <MobileCreatePlacePicker
             precision={draft.locationPrecision}
             latitude={lat}
             longitude={lng}

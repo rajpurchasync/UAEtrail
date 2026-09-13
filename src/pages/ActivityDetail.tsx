@@ -14,7 +14,7 @@ import { api } from '../api/services';
 import { formatDate } from '../utils';
 import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../utils/tripPricing';
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../utils/hostLabels';
-import { resolveHostProfilePath } from '../utils/hostLinks';
+import { resolveOrganisationProfilePath } from '../utils/hostLinks';
 import { explorePath } from '../utils/exploreRouting';
 import {
   extractJoinInstructionLines,
@@ -208,7 +208,7 @@ export const ActivityDetail = () => {
 
   const participants = trip.participants ?? [];
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
-  const hostPath = resolveHostProfilePath({
+  const hostPath = resolveOrganisationProfilePath({
     tenantSlug: trip.tenantSlug,
     hostUserId: activityHostUserId(trip),
   });

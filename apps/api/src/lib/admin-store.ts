@@ -801,7 +801,7 @@ export const listAdminProductsPaged = async (input: {
     ...mapMongoProduct(productDoc),
     merchant: {
       id: productDoc.merchantId,
-      shopName: merchantMap.get(productDoc.merchantId)?.shopName ?? 'Unknown merchant'
+      shopName: merchantMap.get(productDoc.merchantId)?.shopName ?? 'Unknown shop'
     }
   }));
 

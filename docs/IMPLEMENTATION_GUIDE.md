@@ -398,7 +398,7 @@ deleteMerchantProduct(id)          → DELETE /shop/merchant/products/:id
 
 ### Phase 7: Frontend — Admin Dashboard
 
-#### 7a. AdminLocations.tsx (ENHANCE)
+#### 7a. AdminPlaces.tsx (ENHANCE)
 - Full CRUD form: name, region, activityType (Hiking/Camping), difficulty, description, images (multi-upload via presign), season checkboxes, childFriendly toggle, maxGroupSize, accessibility, featured toggle
 - Edit modal: click row → pre-filled form → PATCH on save
 - Status toggle: Active/Inactive button per row with confirmation
@@ -570,7 +570,7 @@ deleteMerchantProduct(id)          → DELETE /shop/merchant/products/:id
 | `src/api/services.ts` | All new API methods |
 | `src/App.tsx` | New routes |
 | `src/pages/index.ts` | Export new page components |
-| `src/pages/AdminLocations.tsx` | Full CRUD with edit, status toggle, image upload |
+| `src/pages/AdminPlaces.tsx` | Full CRUD with edit, status toggle, image upload |
 | `src/pages/AdminOrganizers.tsx` | Tenants tab with oversight |
 | `src/pages/AdminEvents.tsx` | Enhanced columns, filters, detail |
 | `src/pages/AdminOverview.tsx` | More metrics, activity feed |

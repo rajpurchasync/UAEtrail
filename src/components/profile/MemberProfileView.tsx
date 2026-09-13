@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
-import type { PublicMemberProfileDTO } from '../../api/services';
+import type { PersonPublicProfileDTO } from '../../api/services';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { ProfileStampsRow } from './ProfileStampsRow';
@@ -12,7 +12,7 @@ import { formatMemberAge } from '../../utils/profileAge';
 import { parseLanguagesList } from '../../utils/profileLanguages';
 import { resolvePublicMemberRoleLabel } from '../../utils/profileRoleLabel';
 
-export type FullMemberProfile = Extract<PublicMemberProfileDTO, { visibilityState: 'full' }>;
+export type FullMemberProfile = Extract<PersonPublicProfileDTO, { visibilityState: 'full' }>;
 
 const SectionHeading = ({ children }: { children: React.ReactNode }) => (
   <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-neutral-400">{children}</h2>
@@ -64,7 +64,7 @@ export const MemberProfileView = ({
   profile,
   stamps,
   isSelf,
-  userId,
+  userId: _userId,
   userLoggedIn,
   buddyRel,
   buddyBusy,
@@ -163,7 +163,7 @@ export const MemberProfileView = ({
               to={profile.hostProfilePath}
               className="ios-btn glass w-full text-neutral-900 active:bg-white/80"
             >
-              View host profile
+              View organisation profile
             </Link>
           )}
 

@@ -29,6 +29,7 @@ export type ExplorePresentationBuildInput = {
   fromLabel?: string | null;
   toLabel?: string | null;
   websiteUrl?: string | null;
+  shopPresence?: 'physical' | 'online' | null;
   activity?: {
     hostName?: string | null;
     tenantName?: string | null;
@@ -602,9 +603,15 @@ export const exploreSecondaryCtaLabel = (
 
 const exploreAgencyHint = (): string => 'Tour operator on UAE Trail — see trips and get in touch.';
 
-export const exploreVenueHint = (source: ExploreCardSource, kind: ExploreCardKind): string | null => {
+export const exploreVenueHint = (
+  source: ExploreCardSource,
+  kind: ExploreCardKind,
+  shopPresence?: 'physical' | 'online' | null
+): string | null => {
   if (source === 'demand') return null;
-  if (source === 'shop') return 'Gear & outdoor shop on the map';
+  if (source === 'shop') {
+    return shopPresence === 'online' ? 'Online gear partner' : 'Gear shop on the map';
+  }
   if (source === 'agency') return exploreAgencyHint();
   if (source !== 'venue') return null;
   if (kind === 'hiking') return 'Hiking trail location';
@@ -697,7 +704,7 @@ export const buildExploreCardPresentation = (
     featuredPerson,
     subtitle,
     spotsLabel: exploreSpotsLabel(item),
-    venueHint: exploreVenueHint(source, kind),
+    venueHint: exploreVenueHint(source, kind, item.shopPresence),
     primaryCta: explorePrimaryCtaLabel(source),
     secondaryCta: exploreSecondaryCtaLabel(source, { websiteUrl: item.websiteUrl }),
     shareText: [routeLabel, whenLabel].filter(Boolean).join(' · ') || item.subtitle || null,

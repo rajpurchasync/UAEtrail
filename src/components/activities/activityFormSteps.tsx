@@ -1,14 +1,14 @@
 import {
-  ActivityLocationPinField,
+  ActivityPlacePinField,
   AppSelect,
   FormTabBar,
   HostSelect,
   ImageUpload,
-  LocationSelect,
+  PlaceSelect,
   TimePicker,
 } from '../ui';
 import { useMemo } from 'react';
-import type { LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
+import type { PlaceDTO, TenantListDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
 import { UAE_EMIRATES, getStatesForEmirate } from '../../config/uaeRegions';
 import {
@@ -68,7 +68,10 @@ export interface SummaryStepHikingProps {
   hostTenantId: string;
   venueAddHref: string;
   onAddVenue: () => void;
-  venueLocations?: LocationDTO[];
+  /** Approved places the host can attach when scheduling. */
+  placeOptions?: PlaceDTO[];
+  /** @deprecated Use placeOptions */
+  venueLocations?: PlaceDTO[];
   canPickHostOrganization: boolean;
   pickerHostOrganizations: TenantListDTO[];
   showScheduleWarning?: boolean;
@@ -83,11 +86,14 @@ export const SummaryStepHiking = ({
   hostTenantId,
   venueAddHref,
   onAddVenue,
+  placeOptions,
   venueLocations,
   canPickHostOrganization,
   pickerHostOrganizations,
   showScheduleWarning,
-}: SummaryStepHikingProps) => (
+}: SummaryStepHikingProps) => {
+  const places = placeOptions ?? venueLocations;
+  return (
   <>
     <div>
       <label className={FORM_LABEL}>
@@ -104,16 +110,16 @@ export const SummaryStepHiking = ({
     </div>
 
     <div>
-      <label className={FORM_LABEL}>Venue *</label>
-      <LocationSelect
+      <label className={FORM_LABEL}>Place *</label>
+      <PlaceSelect
         value={form.locationId}
-        onChange={(locationId) => set({ locationId })}
+        onChange={(placeId) => set({ locationId: placeId })}
         tenantId={hostTenantId || undefined}
         activityType="hiking"
-        locations={venueLocations}
+        places={places}
         required
         addNewHref={venueAddHref}
-        addNewLabel="Add location"
+        addNewLabel="Add place"
         onAddNew={onAddVenue}
       />
     </div>
@@ -132,14 +138,14 @@ export const SummaryStepHiking = ({
 
     {canPickHostOrganization && pickerHostOrganizations.length > 0 && (
       <div>
-        <label className={FORM_LABEL}>Host organization *</label>
+        <label className={FORM_LABEL}>Organisation *</label>
         <AppSelect
           value={form.tenantId}
           onChange={(tenantId) => set({ tenantId })}
           options={pickerHostOrganizations.map((tenant) => ({ value: tenant.id, label: tenant.name }))}
           placeholder="Select organization…"
           inputClassName={FORM_INPUT}
-          aria-label="Host organization"
+          aria-label="Organisation"
         />
       </div>
     )}
@@ -173,7 +179,8 @@ export const SummaryStepHiking = ({
 
     <CoverImageField form={form} set={set} hostTenantId={hostTenantId} />
   </>
-);
+  );
+};
 
 export interface SummaryStepCampingProps {
   form: ActivityFormState;
@@ -184,7 +191,10 @@ export interface SummaryStepCampingProps {
   hostTenantId: string;
   venueAddHref: string;
   onAddVenue: () => void;
-  venueLocations?: LocationDTO[];
+  /** Approved places the host can attach when scheduling. */
+  placeOptions?: PlaceDTO[];
+  /** @deprecated Use placeOptions */
+  venueLocations?: PlaceDTO[];
   canPickHostOrganization: boolean;
   pickerHostOrganizations: TenantListDTO[];
   showScheduleWarning?: boolean;
@@ -200,12 +210,14 @@ export const SummaryStepCamping = ({
   hostTenantId,
   venueAddHref,
   onAddVenue,
+  placeOptions,
   venueLocations,
   canPickHostOrganization,
   pickerHostOrganizations,
   showScheduleWarning,
   formActivityType = 'camping',
 }: SummaryStepCampingProps) => {
+  const places = placeOptions ?? venueLocations;
   const isEvent = formActivityType === 'event';
   const venueType = formActivityType;
   const aboutLabel = isEvent ? 'About event' : 'About spot';
@@ -237,7 +249,7 @@ export const SummaryStepCamping = ({
 
     {isEvent ? (
       <div className="space-y-3">
-        <p className={FORM_LABEL}>Venue *</p>
+        <p className={FORM_LABEL}>Place *</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-medium text-gray-600 mb-1 block">Emirate *</label>
@@ -271,19 +283,19 @@ export const SummaryStepCamping = ({
             value={form.eventVenueDetail}
             onChange={(e) => set({ eventVenueDetail: e.target.value })}
             className={FORM_INPUT}
-            placeholder="Venue name, address, or meeting point details…"
+            placeholder="Place name, address, or meeting point details…"
           />
         </div>
       </div>
     ) : (
       <div>
-        <label className={FORM_LABEL}>Venue *</label>
-        <LocationSelect
+        <label className={FORM_LABEL}>Place *</label>
+        <PlaceSelect
           value={form.locationId}
-          onChange={(locationId) => set({ locationId })}
+          onChange={(placeId) => set({ locationId: placeId })}
           tenantId={hostTenantId || undefined}
           activityType={venueType}
-          locations={venueLocations}
+          places={places}
           required
           addNewHref={venueAddHref}
           addNewLabel={addVenueLabel}
@@ -317,7 +329,7 @@ export const SummaryStepCamping = ({
     {isEvent ? (
       <>
         <div>
-          <label className={FORM_LABEL}>Host organization *</label>
+          <label className={FORM_LABEL}>Organisation *</label>
           <input
             type="text"
             required
@@ -333,14 +345,14 @@ export const SummaryStepCamping = ({
       canPickHostOrganization &&
       pickerHostOrganizations.length > 0 && (
         <div>
-          <label className={FORM_LABEL}>Host organization *</label>
+          <label className={FORM_LABEL}>Organisation *</label>
           <AppSelect
             value={form.tenantId}
             onChange={(tenantId) => set({ tenantId })}
             options={pickerHostOrganizations.map((tenant) => ({ value: tenant.id, label: tenant.name }))}
             placeholder="Select organization…"
             inputClassName={FORM_INPUT}
-            aria-label="Host organization"
+            aria-label="Organisation"
           />
         </div>
       )
@@ -495,7 +507,7 @@ export const ParticipationStep = ({ form, set, isBusinessOrg }: ParticipationSte
         })}
       </div>
       {form.pricingMode === 'paid' && !isBusinessOrg && (
-        <p className="text-xs text-gray-500 mt-1">Paid trips are available for business organizers only.</p>
+        <p className="text-xs text-gray-500 mt-1">Paid trips are available for business organisations only.</p>
       )}
     </div>
 
@@ -591,7 +603,7 @@ export const LocationStep = ({
       </p>
       <div className="pt-2">
         {locationTab === 'start' && (
-          <ActivityLocationPinField
+          <ActivityPlacePinField
             label={startLabel}
             hideLabel
             value={form.start}
@@ -602,7 +614,7 @@ export const LocationStep = ({
           />
         )}
         {locationTab === 'meeting' && (
-          <ActivityLocationPinField
+          <ActivityPlacePinField
             label="Meeting point"
             hideLabel
             value={form.meeting}
@@ -760,7 +772,7 @@ export const TransportationStep = ({ form, set, setPin, venueCenter }: Transport
 
     <div className="rounded-lg border border-gray-200 p-4 space-y-3">
       <p className={FORM_LABEL}>Parking spot</p>
-      <ActivityLocationPinField
+      <ActivityPlacePinField
         label="Parking"
         hideLabel
         value={form.parking}

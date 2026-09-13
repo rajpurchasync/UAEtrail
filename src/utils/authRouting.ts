@@ -1,5 +1,6 @@
 import { UserRole } from '@uaetrail/shared-types';
 import { EXPLORE_MAP_PATH } from '../config/platform';
+import { organisationManagePath } from './organisationPaths';
 import { isPlatformAdmin } from './roles';
 
 export const defaultRouteByRole = (role: UserRole): string => {
@@ -75,8 +76,8 @@ export const adminDashboardRedirect = (subpath: string): string => {
   }
 };
 
-/** Legacy /dashboard/* aliases for shop owners — management lives under /shop/manage. */
-export const merchantDashboardRedirect = (_subpath: string): string => '/shop/manage';
+/** Legacy /dashboard/* aliases for shop owners — management lives under /organisation/manage. */
+export const merchantDashboardRedirect = (_subpath: string): string => organisationManagePath('shop');
 
 /** Deep link to messages for the current role. */
 export const messagesRouteForRole = (

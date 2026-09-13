@@ -163,10 +163,10 @@ const TenantDrillDown = ({
   onOpenUser?: (userId: string) => void;
 }) => {
   if (loading) {
-    return <p className="text-sm text-gray-500 py-8 text-center">Loading host profile…</p>;
+    return <p className="text-sm text-gray-500 py-8 text-center">Loading organisation profile…</p>;
   }
   if (!tenant) {
-    return <p className="text-sm text-gray-500 py-8 text-center">Host profile not found.</p>;
+    return <p className="text-sm text-gray-500 py-8 text-center">Organisation profile not found.</p>;
   }
 
   return (
@@ -189,7 +189,7 @@ const TenantDrillDown = ({
               onClick={() => onOpenUser(tenant.owner.id)}
               className="text-xs font-medium text-blue-700 hover:text-blue-800"
             >
-              View user
+              View member
             </button>
           )}
         </div>
@@ -241,7 +241,7 @@ const TenantDrillDown = ({
         target="_blank"
         className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800"
       >
-        View public host profile ↗
+        View public organisation profile ↗
       </Link>
     </div>
   );
@@ -323,7 +323,7 @@ const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null
           <p className="font-medium text-gray-900">{activity.locationName}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-500 uppercase">Host</p>
+          <p className="text-xs text-gray-500 uppercase">Organisation</p>
           <p className="font-medium text-gray-900">{activityHostName(activity)}</p>
         </div>
         <div>
@@ -427,7 +427,7 @@ export const AdminUserDetailPanel = ({
   }, [drillDown]);
 
   const drillTitle = drillDown?.type === 'tenant'
-    ? tenantDetail?.name ?? 'Host profile'
+    ? tenantDetail?.name ?? 'Organisation profile'
     : drillDown?.type === 'group'
       ? groupDetail?.group.name ?? 'Group'
       : activityDetail?.title ?? activityDetail?.locationName ?? 'Activity';
@@ -537,7 +537,7 @@ export const AdminUserDetailPanel = ({
                   <div className="flex flex-wrap gap-2">
                     {(user.ownedTenants?.length ?? 0) > 0 && (
                       <button type="button" onClick={() => setTab('organizations')} className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-800 text-sm font-medium">
-                        {user.ownedTenants!.length} host profile{user.ownedTenants!.length > 1 ? 's' : ''}
+                        {user.ownedTenants!.length} organisation{user.ownedTenants!.length > 1 ? 's' : ''}
                       </button>
                     )}
                     {(user.groups?.length ?? 0) > 0 && (
@@ -562,7 +562,7 @@ export const AdminUserDetailPanel = ({
 
             {tab === 'organizations' && (
               <div className="space-y-6">
-                <Section title={`Owned host profiles (${user.ownedTenants?.length ?? 0})`}>
+                <Section title={`Owned organisations (${user.ownedTenants?.length ?? 0})`}>
                   {user.ownedTenants?.length ? (
                     <div className="space-y-2">
                       {user.ownedTenants.map((tenant) => (
@@ -578,7 +578,7 @@ export const AdminUserDetailPanel = ({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">No owned host profiles.</p>
+                    <p className="text-sm text-gray-500">No owned organisations.</p>
                   )}
                 </Section>
 

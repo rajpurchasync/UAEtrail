@@ -53,7 +53,7 @@ export const AdminActivities = () => {
 
   const loadRefs = async () => {
     try {
-      const [locRes, tenRes] = await Promise.all([api.getAdminLocations(), api.getAdminTenants()]);
+      const [locRes, tenRes] = await Promise.all([api.getAdminPlaces(), api.getAdminTenants()]);
       setLocations(locRes.data);
       setTenants(tenRes.data);
     } catch { /* non-critical */ }
@@ -130,7 +130,7 @@ export const AdminActivities = () => {
   const publish = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      await api.publishHostActivity(event.tenantId, event.id);
+      await api.publishOrganisationActivity(event.tenantId, event.id);
       await loadEvents();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish activity');
@@ -140,7 +140,7 @@ export const AdminActivities = () => {
   const duplicateActivity = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      const res = await api.duplicateHostActivity(event.tenantId, event.id);
+      const res = await api.duplicateOrganisationActivity(event.tenantId, event.id);
       await loadEvents();
       openEdit(res.data, {
         tenantId: event.tenantId,
@@ -155,7 +155,7 @@ export const AdminActivities = () => {
   const deleteDraft = async () => {
     if (!confirmDelete?.tenantId) return;
     try {
-      await api.cancelHostActivity(confirmDelete.tenantId, confirmDelete.id);
+      await api.cancelOrganisationActivity(confirmDelete.tenantId, confirmDelete.id);
       setConfirmDelete(null);
       await loadEvents();
     } catch (err) {
@@ -167,7 +167,7 @@ export const AdminActivities = () => {
   const cancelActivity = async () => {
     if (!confirmCancel?.tenantId) return;
     try {
-      await api.cancelHostActivity(confirmCancel.tenantId, confirmCancel.id);
+      await api.cancelOrganisationActivity(confirmCancel.tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await loadEvents();
     } catch (err) {
@@ -188,7 +188,7 @@ export const AdminActivities = () => {
     if (!event.tenantId) return;
     setPreviewPublishing(true);
     try {
-      await api.publishHostActivity(event.tenantId, event.id);
+      await api.publishOrganisationActivity(event.tenantId, event.id);
       setPreviewActivity(null);
       await loadEvents();
     } catch (err) {
@@ -243,7 +243,7 @@ export const AdminActivities = () => {
                 <th className="px-4 py-3 text-left">Title</th>
                 <th className="px-4 py-3 text-left">Type</th>
                 <th className="px-4 py-3 text-left">Host</th>
-                <th className="px-4 py-3 text-left">Location</th>
+                <th className="px-4 py-3 text-left">Place</th>
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-center">Capacity</th>
                 <th className="px-4 py-3 text-center">Price</th>
@@ -352,7 +352,7 @@ export const AdminActivities = () => {
                             </div>
                           )}
                           <div>
-                            <p className="text-xs text-gray-500 uppercase font-medium">Location ID</p>
+                            <p className="text-xs text-gray-500 uppercase font-medium">Place ID</p>
                             <p className="text-gray-700 break-all text-xs mt-0.5">{event.locationId}</p>
                           </div>
                           <div>

@@ -21,7 +21,7 @@ export const assertActivityPricingAllowed = (input: {
     throw new ApiError(
       400,
       'paid_pricing_not_allowed',
-      'Paid activities are only available for business host profiles (agency or shop).'
+      'Paid activities are only available for business organisation profiles (agency or shop).'
     );
   }
 

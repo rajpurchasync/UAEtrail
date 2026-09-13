@@ -13,9 +13,9 @@ import { mapActivityToListing } from '../../api/public';
 import { PageMeta } from '../seo/PageMeta';
 import { JoinRequestModal } from '../ui/JoinRequestModal';
 import { WithdrawRequestModal } from '../ui/WithdrawRequestModal';
-import type { LocationMapPin, MapPinKind } from '../ui/LocationsMap';
+import type { PlaceMapPin, MapPinKind } from '../ui/PlacesMap';
 import { useAuth } from '../../context/AuthContext';
-import { useHostGate } from '../../hooks/useHostGate';
+import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { useExploreMap, exploreMapQueryKey } from '../../hooks/useExploreMap';
 import { MobileCreateActivityFlow } from './MobileCreateActivityFlow';
 import { MobileCreateDemandFlow } from './MobileCreateDemandFlow';
@@ -44,7 +44,7 @@ import { activityHostUserId } from '../../utils/hostLabels';
 import { resolveJoinRequestUiState, withdrawModalVariant, type JoinRequestUiState } from '../../utils/joinRequestUi';
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
 import { ExploreItemSheet } from './ExploreItemSheet';
-import { ExploreLocationMapPreview } from './ExploreLocationMapPreview';
+import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
 import { MobileExploreHeader } from './MobileExploreHeader';
 import { ExploreListRow } from './ExploreListRow';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
@@ -65,8 +65,8 @@ import {
 } from '../../utils/exploreRouting';
 import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
 
-const LocationsMap = lazy(() =>
-  import('../ui/LocationsMap').then((m) => ({ default: m.LocationsMap }))
+const PlacesMap = lazy(() =>
+  import('../ui/PlacesMap').then((m) => ({ default: m.PlacesMap }))
 );
 
 const MAP_FILTER_PILLS: Array<{ key: MapFilterKey; label: string }> = [
@@ -162,7 +162,7 @@ const panelListTitle = (
   venueFilter: VenueListFilterKey
 ): string => {
   if (panel === 'venues') return venueListLabel(venueFilter, count);
-  if (panel === 'shops') return `${count} gear shop${count === 1 ? '' : 's'} in your area`;
+  if (panel === 'shops') return 'Gear shops & partners';
   return listItemLabel(activityFilter, count);
 };
 
@@ -185,8 +185,17 @@ const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueListFilte
   return true;
 };
 
-const isShopMapItem = (item: ExploreMapItemDTO): boolean =>
+const isShopListItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'shop' && item.kind === 'shop' && !item.id.startsWith('product:');
+
+const isPhysicalShopItem = (item: ExploreMapItemDTO): boolean =>
+  isShopListItem(item) && item.shopPresence !== 'online' && item.latitude != null && item.longitude != null;
+
+const isOnlineShopItem = (item: ExploreMapItemDTO): boolean =>
+  isShopListItem(item) && (item.shopPresence === 'online' || item.latitude == null || item.longitude == null);
+
+/** @deprecated Use isShopListItem */
+const isShopMapItem = isShopListItem;
 
 const isMapPin = (item: ExploreMapItemDTO): boolean => {
   if (item.latitude == null || item.longitude == null) return false;
@@ -210,7 +219,6 @@ const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKey): boo
     return kind === 'carpool' && (item.source === 'activity' || item.source === 'demand');
   }
   if (mapFilter === 'others') {
-    if (item.source === 'agency') return true;
     return kind === 'event' && (item.source === 'activity' || item.source === 'demand' || item.source === 'venue');
   }
 
@@ -228,13 +236,12 @@ const matchesActivityFilter = (item: ExploreMapItemDTO, activityFilter: Activity
 const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
   if (item.source === 'demand') return item.kind === 'carpool' ? 'carpool' : (item.kind as MapPinKind);
   if (item.kind === 'shop') return 'shop';
-  if (item.kind === 'agency') return 'agency';
   if (item.kind === 'carpool') return 'carpool';
   return item.kind as MapPinKind;
 };
 
-const expandMapPins = (items: ExploreMapItemDTO[]): LocationMapPin[] => {
-  const pins: LocationMapPin[] = [];
+const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
+  const pins: PlaceMapPin[] = [];
 
   for (const item of items.filter(isMapPin)) {
     const hasDistinctTo =
@@ -314,14 +321,14 @@ const FilterPillIcon = ({
 };
 
 const panelSearchPlaceholder = (panel: ExplorePanel): string => {
-  if (panel === 'venues') return 'Search venues…';
+  if (panel === 'venues') return 'Search places…';
   if (panel === 'shops') return 'Search shops…';
   return 'Search activities…';
 };
 
 export const MobileExploreExperience = () => {
   const { user } = useAuth();
-  const { canPublish, loading: hostGateLoading, tenantId } = useHostGate({
+  const { canPublish, loading: hostGateLoading, tenantId } = useOrganisationGate({
     enabled: Boolean(user),
   });
   const { openEdit } = useActivityFormSession();
@@ -621,7 +628,7 @@ export const MobileExploreExperience = () => {
     return result;
   }, [items, mapFilter, isDesktop, desktopBrowseTab]);
 
-  const mapPins = useMemo((): LocationMapPin[] => expandMapPins(filtered), [filtered]);
+  const mapPins = useMemo((): PlaceMapPin[] => expandMapPins(filtered), [filtered]);
 
   const listItems = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -657,7 +664,7 @@ export const MobileExploreExperience = () => {
     }
 
     if (sidebarPanel === 'shops') {
-      return sortExploreVenues(items.filter(isShopMapItem).filter(matchesQuery));
+      return sortExploreVenues(items.filter(isShopListItem).filter(matchesQuery));
     }
 
     return sortExploreActivities(
@@ -667,6 +674,15 @@ export const MobileExploreExperience = () => {
         .filter(matchesQuery)
     );
   }, [items, activityFilter, venueFilter, query, sidebarPanel, isDesktop, desktopBrowseTab, mapFilter]);
+
+  const shopListSections = useMemo(() => {
+    const showShopsPanel =
+      sidebarPanel === 'shops' || (isDesktop && (mapFilter === 'shops' || desktopBrowseTab === 'venues' && listItems.some(isShopListItem)));
+    if (!showShopsPanel || !listItems.some(isShopListItem)) return null;
+    const physical = sortExploreVenues(listItems.filter(isPhysicalShopItem));
+    const online = sortExploreVenues(listItems.filter(isOnlineShopItem));
+    return { physical, online };
+  }, [listItems, sidebarPanel, isDesktop, desktopBrowseTab, mapFilter]);
 
   const browseFilterHint = useMemo(() => {
     const parts: string[] = [];
@@ -757,7 +773,7 @@ export const MobileExploreExperience = () => {
   }, []);
 
   const handleMapPinClick = useCallback(
-    (pin: LocationMapPin) => {
+    (pin: PlaceMapPin) => {
       const itemId = pin.exploreItemId ?? pin.id;
       const item = items.find((entry) => entry.id === itemId);
       if (item) openItem(item);
@@ -1193,19 +1209,56 @@ export const MobileExploreExperience = () => {
               : sidebarPanel === 'venues'
                 ? 'No venues match this filter yet.'
                 : sidebarPanel === 'shops'
-                  ? 'No gear shops on the map yet.'
+                  ? 'No gear shops listed yet.'
                   : 'Nothing here with these filters — try another type or date.'}
           </p>
         )}
-        {listItems.map((item) => (
-          <ExploreListRow
-            key={item.id}
-            item={item}
-            card={buildExploreCardModel(item)}
-            onClick={() => openItem(item)}
-            onFocusMapLocation={handleFocusMapLocation}
-          />
-        ))}
+        {shopListSections ? (
+          <>
+            {shopListSections.physical.length > 0 && (
+              <>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  On the map ({shopListSections.physical.length})
+                </p>
+                {shopListSections.physical.map((item) => (
+                  <ExploreListRow
+                    key={item.id}
+                    item={item}
+                    card={buildExploreCardModel(item)}
+                    onClick={() => openItem(item)}
+                    onFocusMapLocation={handleFocusMapLocation}
+                  />
+                ))}
+              </>
+            )}
+            {shopListSections.online.length > 0 && (
+              <>
+                <p className={`mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 ${shopListSections.physical.length > 0 ? 'mt-6' : ''}`}>
+                  Online partners ({shopListSections.online.length})
+                </p>
+                {shopListSections.online.map((item) => (
+                  <ExploreListRow
+                    key={item.id}
+                    item={item}
+                    card={buildExploreCardModel(item)}
+                    onClick={() => openItem(item)}
+                    onFocusMapLocation={handleFocusMapLocation}
+                  />
+                ))}
+              </>
+            )}
+          </>
+        ) : (
+          listItems.map((item) => (
+            <ExploreListRow
+              key={item.id}
+              item={item}
+              card={buildExploreCardModel(item)}
+              onClick={() => openItem(item)}
+              onFocusMapLocation={handleFocusMapLocation}
+            />
+          ))
+        )}
       </div>
     </>
   );
@@ -1231,7 +1284,7 @@ export const MobileExploreExperience = () => {
         <div className="relative min-h-0 min-w-0 flex-1">
       <div className="absolute inset-0 z-0">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <LocationsMap
+          <PlacesMap
             pins={mapPins}
             bounds={getMapBounds()}
             fill
@@ -1342,7 +1395,7 @@ export const MobileExploreExperience = () => {
       </div>
 
       {selectedCard && selected?.source === 'venue' && selected ? (
-        <ExploreLocationMapPreview
+        <ExplorePlaceMapPreview
           item={selected}
           onClose={() => setSelectedId(null)}
           onFocusMapLocation={handleFocusMapLocation}

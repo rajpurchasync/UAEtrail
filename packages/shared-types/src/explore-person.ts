@@ -52,7 +52,7 @@ export const explorePersonRoleLabel = (role: ExploreMapPersonRole): string => {
       return 'Shop contact';
     case 'host':
     default:
-      return 'Host';
+      return 'Organisation';
   }
 };
 

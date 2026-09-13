@@ -58,7 +58,7 @@ export const validateActivityFormStep = (
       return 'Select a camping surface type (Sand or Grass).';
     }
     if (isEvent && mode === 'publish' && !form.eventHostOrganization.trim()) {
-      return 'Host organization is required.';
+      return 'Organisation is required.';
     }
     if (mode === 'publish') {
       if (!form.date || !form.time) return 'Date and start time are required.';
@@ -75,7 +75,7 @@ export const validateActivityFormStep = (
       }
     }
     if (options.canPickHostOrganization && !form.tenantId && !isEvent) {
-      return 'Select a host organization.';
+      return 'Select an organisation.';
     }
   }
 
@@ -122,7 +122,7 @@ export const validateActivityFormStepNavigation = (
   const aboutWords = countWords(form.description);
 
   if (isEvent && !form.eventHostOrganization.trim()) {
-    return 'Host organization is required.';
+    return 'Organisation is required.';
   }
   if (isEvent && !isValidHttpUrl(form.signupUrl)) {
     return 'Enter a valid event URL (https://…).';

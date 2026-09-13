@@ -4,7 +4,7 @@ import type { ExploreCardModel } from '../../explore/exploreCardModel';
 import { EXPLORE_PEEK, EXPLORE_SHEET, EXPLORE_Z } from '../../config/exploreTheme';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { JoinRequestActions } from '../ui/JoinRequestActions';
-import { LocationCardActions } from '../ui/LocationCardActions';
+import { PlaceCardActions } from '../ui/PlaceCardActions';
 import {
   ExploreCardCapacityRow,
   ExploreCardPeopleRow,
@@ -38,7 +38,6 @@ export const ExploreItemSheet = ({
   onFocusMapLocation,
 }: ExploreItemSheetProps) => {
   const isShop = card.source === 'shop';
-  const isAgency = card.source === 'agency';
   const isDemand = card.source === 'demand';
   const externalUrl = card.websiteUrl?.trim() || null;
   const showPeopleRow =
@@ -138,12 +137,12 @@ export const ExploreItemSheet = ({
         >
           Close
         </button>
-      ) : isShop || isAgency ? (
+      ) : isShop ? (
         card.reviewPath ? (
-          <LocationCardActions
+          <PlaceCardActions
             detailPath={card.path}
             reviewPath={card.reviewPath}
-            accent={isAgency ? 'violet' : 'emerald'}
+            accent="emerald"
             embedded
           />
         ) : (
@@ -225,10 +224,10 @@ export const ExploreItemSheet = ({
             </p>
           )}
           {showPeopleRow && <ExploreCardPeopleRow card={card} />}
-          {card.venueHint && (isAgency || isShop) && (
+          {card.venueHint && isShop && (
             <p className="mt-3 text-xs leading-relaxed text-slate-500">{card.venueHint}</p>
           )}
-          {card.contactPhone && (isShop || isAgency) && (
+          {card.contactPhone && isShop && (
             <p className="mt-3 text-sm text-gray-600">
               Phone:{' '}
               <a href={`tel:${card.contactPhone}`} className="font-semibold text-emerald-700">

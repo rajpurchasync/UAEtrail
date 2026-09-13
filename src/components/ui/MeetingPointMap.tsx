@@ -3,10 +3,10 @@ import L from 'leaflet';
 import { MapContainer, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapTileLayers } from './MapTileLayers';
-import { MapLocationPicker } from './MapLocationPicker';
+import { MapPlacePicker } from './MapPlacePicker';
 import { parseCoord } from '../../utils/coords';
 import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
-import { LocationDirectionLinks } from './LocationDirectionLinks';
+import { PlaceDirectionLinks } from './PlaceDirectionLinks';
 
 const previewIcon = L.divIcon({
   className: '',
@@ -117,7 +117,7 @@ export const MeetingPointMap = ({
           Open in Google Maps →
         </a>
       )}
-      {showDirections && <LocationDirectionLinks lat={lat} lng={lng} />}
+      {showDirections && <PlaceDirectionLinks lat={lat} lng={lng} />}
     </div>
   );
 };
@@ -140,7 +140,7 @@ export const MapPinFields = ({
   centerLng,
 }: MapPinFieldsProps) => (
   <div className="space-y-3">
-    <MapLocationPicker
+    <MapPlacePicker
       lat={lat}
       lng={lng}
       onLatChange={onLatChange}

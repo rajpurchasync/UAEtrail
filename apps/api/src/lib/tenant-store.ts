@@ -230,10 +230,10 @@ export const findTenantStatus = async (tenantId: string): Promise<TenantStatus |
   return tenant?.status ?? null;
 };
 
-export const listPublicAgenciesForMap = async (limit = 250): Promise<TenantRecord[]> => {
+export const listPublicShopsForMap = async (limit = 250): Promise<TenantRecord[]> => {
   const docs = await tenantsCollection()
     .find({
-      businessMode: TenantBusinessMode.AGENCY,
+      businessMode: TenantBusinessMode.SHOP,
       status: TenantStatus.ACTIVE,
       latitude: { $ne: null },
       longitude: { $ne: null }
@@ -243,13 +243,12 @@ export const listPublicAgenciesForMap = async (limit = 250): Promise<TenantRecor
   return docs.map(mapMongoTenant);
 };
 
-export const listPublicShopsForMap = async (limit = 250): Promise<TenantRecord[]> => {
+/** All active shop tenants — physical and online — for explore directory. */
+export const listPublicShopTenantsForExplore = async (limit = 250): Promise<TenantRecord[]> => {
   const docs = await tenantsCollection()
     .find({
       businessMode: TenantBusinessMode.SHOP,
-      status: TenantStatus.ACTIVE,
-      latitude: { $ne: null },
-      longitude: { $ne: null }
+      status: TenantStatus.ACTIVE
     })
     .limit(limit)
     .toArray();

@@ -10,6 +10,8 @@ Monorepo with three layers:
 | API | `apps/api/` | Express + MongoDB |
 | Shared contracts | `packages/shared-types/` | DTOs consumed by both sides |
 
+**Domain glossary:** see [`docs/DOMAIN.md`](./DOMAIN.md) for Place, Activity, Organisation, Person and legacy naming map.
+
 ## Backend (`apps/api`)
 
 ```
@@ -22,32 +24,48 @@ HTTP → routes/ (thin controllers)
 **Route map**
 
 - `/auth` — JWT + refresh
-- `/` (userRouter) — public discovery, join requests, `/me/*`
-- `/organizer` — tenant-scoped events, check-in, approvals
+- `/` (userRouter) — public discovery, join requests, `/me/*`, `/explore/map`
+- `/host` — tenant-scoped activities, check-in, approvals (legacy alias `/organizer`)
 - `/admin` — platform ops
-- `/shop` — products, Stripe checkout, merchant CRUD
-- `/social` — posts, reviews, favorites
+- `/shop` — shop profiles, featured picks, merchant CRUD (Stripe checkout retained but disabled in product)
+- `/social` — posts, reviews
 - `/chat`, `/media`
 
 **Key flows**
 
 1. **Join / waitlist** — `POST /events/:id/requests` creates `PENDING` or `WAITLISTED`. Slot opens → oldest waitlisted promoted to `PENDING` + notification.
-2. **Post-event review** — organizer check-in triggers `REVIEW_PROMPT` notification if user has not reviewed the location.
-3. **Shop** — affiliate `externalUrl` OR Stripe Checkout (`POST /shop/checkout` + webhook).
-4. **Push** — Web Push (VAPID) via `PushSubscription` model; optional when keys configured.
+2. **Post-event review** — host check-in triggers `REVIEW_PROMPT` notification if user has not reviewed the location.
+3. **Explore map** — unified `/explore/map` payload: activities, location venues, shop partners (physical + online), participant demand.
+4. **Shop** — affiliate-style public pages at `/shop/:id` with outbound links; physical shops get map pins, online partners are list-only.
+5. **Host profiles** — guides and agencies host trips (`/operator/:slug`); they do **not** appear as explore map pins.
+6. **Push** — Web Push (VAPID) via `PushSubscription` model; optional when keys configured.
+
+## Domain model (consumer-facing)
+
+See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
+
+| Concept | Storage | Public URL | On explore map? |
+|---------|---------|------------|-----------------|
+| Place (trail/camp/event venue) | `locations` | `/trail`, `/camp`, `/event` | Yes (venue pins) |
+| Activity (scheduled trip) | `activities` | `/activity/:id` | Yes |
+| Demand (participant intent) | `participant_intents` | via explore card | Yes |
+| Shop (organisation) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only |
+| Guide / agency (organisation) | `tenants` (guide/agency) | `/operator/:slug` | No |
+
+Shop identity is split between **tenant** (become-host signup: website, optional pin) and **merchant profile** (ShopManage: contact, featured picks). Saving in ShopManage syncs both and invalidates the explore map cache.
 
 ## Frontend (`src`)
 
 ```
 pages/          Route-level views (lazy-loaded in App.tsx)
-components/     layout/, ui/, seo/
+components/     layout/, ui/, seo/, explore/, host/, shop/
 api/            client.ts → services.ts → public.ts mappers
-config/         platform.ts, regions.ts
+config/         platform.ts, regions.ts, exploreTheme.ts
 context/        AuthContext
-utils/          authRouting, push
+utils/          authRouting, exploreRouting, shopPaths
 ```
 
-**Mobile IA:** Explore → Trips → Community → Shop → Profile (`BottomNav`)
+**Mobile IA:** Explore (map + lists) → Profile; signed-in default landing is `/explore`.
 
 **SEO:** `PageMeta` updates title/description/canonical per route; static `robots.txt` + `sitemap.xml` in `public/`.
 
@@ -57,7 +75,7 @@ utils/          authRouting, push
 
 - List endpoints: `{ data, pagination: { page, pageSize, total, totalPages } }`
 - Errors: `{ error: { code, message } }` via `ApiError`
-- Auth: `Authorization: Bearer` + `x-tenant-id` for organizer routes
+- Auth: `Authorization: Bearer` + `x-tenant-id` for host routes
 - Dates: stored UTC; returned as local `date` + `time` per tenant `countryCode`
 
 ## Cross-Platform Session + Access Addendum (2026-08)
@@ -72,11 +90,6 @@ Architecture-level invariants:
 - Team/group access state is modeled with `isActive` flags, not only membership deletion.
 - Social post/reply/review text is sanitized before write.
 
-Performance carry-forward:
-
-- Mongo indexes for favorites and social collections are part of startup index provisioning and must remain compatible with existing names/partials.
-- Store-level batching for social list/detail reads should be preserved to avoid N+1 read regressions.
-
 ## Deployment notes
 
 - Ensure `MONGODB_URI` is set and MongoDB is reachable before API start
@@ -88,6 +101,7 @@ Performance carry-forward:
 
 ```bash
 npm run test:api   # vitest in apps/api
+npm run test:frontend
 ```
 
 Unit tests cover capacity, JWT, datetime (GCC), and waitlist logic.
@@ -95,6 +109,6 @@ Unit tests cover capacity, JWT, datetime (GCC), and waitlist logic.
 ## Future (not in scope)
 
 - OpenAPI-generated client
-- `features/` folder split on frontend
+- Merge location detail pages (`TrailDetail` / `CampDetail` / `EventDetail`) internally
 - SSR/SSG for SEO-critical pages
 - FCM native apps (web push covers PWA today)
