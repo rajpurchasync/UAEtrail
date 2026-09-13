@@ -21,7 +21,7 @@ import {
   type MobileContributeDraft,
 } from './mobileContributeFlow';
 import type { LocationPrecision, TripDifficulty } from './mobileCreateFlow';
-import { formatHostPhonePreview } from '../organisation-console/becomeHostForm';
+import { formatOrganisationPhonePreview } from '../organisation-console/becomeOrganisationForm';
 
 const MobileCreatePlacePicker = lazy(() =>
   import('./MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
@@ -509,7 +509,7 @@ export const MobileCreateContributeFlow = ({
             )}
             {kind === 'shop' && draft.phone.trim() && (
               <p className="mt-1 text-xs text-gray-500">
-                Contact: {formatHostPhonePreview(draft.phoneCountryCode, draft.phone)}
+                Contact: {formatOrganisationPhonePreview(draft.phoneCountryCode, draft.phone)}
                 {draft.contactEmail.trim() ? ` · ${draft.contactEmail.trim()}` : ''}
               </p>
             )}

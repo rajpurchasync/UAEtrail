@@ -2,7 +2,7 @@ import { ChevronRight, Mail, MapPin, MessageCircle, Navigation, Phone } from 'lu
 import { Link, useLocation } from 'react-router-dom';
 import type { ShopPublicDTO } from '@uaetrail/shared-types';
 import { buildGoogleDriveUrl, buildGoogleMapsSearchUrl, buildWazeDriveUrl } from '../../utils/mapLinks';
-import { personProfilePath } from '../../utils/hostLinks';
+import { personProfilePath } from '../../utils/organisationLinks';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { useAuth } from '../../context/AuthContext';
 import { buildSignInRedirect } from '../../utils/authReturnContext';

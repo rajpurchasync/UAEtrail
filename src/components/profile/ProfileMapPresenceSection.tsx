@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { GlassCard } from '../mobile/GlassCard';
 import { MobileBecomeOrganisationFlow } from '../organisation-console/MobileBecomeOrganisationFlow';
-import type { HostFlowIntent } from '../organisation-console/becomeHostFlow';
+import type { OrganisationFlowIntent } from '../organisation-console/becomeOrganisationFlow';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { organisationManagePath } from '../../utils/organisationPaths';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 
 const HOST_PROFILE_CHIPS = [
-  { key: 'guide' as const, intent: 'add-guide' as HostFlowIntent, label: 'Guide', emoji: '🥾' },
-  { key: 'agency' as const, intent: 'add-agency' as HostFlowIntent, label: 'Agency', emoji: '🏢' },
-  { key: 'shop' as const, intent: 'add-shop' as HostFlowIntent, label: 'Shop', emoji: '🛍️' },
+  { key: 'guide' as const, intent: 'add-guide' as OrganisationFlowIntent, label: 'Guide', emoji: '🥾' },
+  { key: 'agency' as const, intent: 'add-agency' as OrganisationFlowIntent, label: 'Agency', emoji: '🏢' },
+  { key: 'shop' as const, intent: 'add-shop' as OrganisationFlowIntent, label: 'Shop', emoji: '🛍️' },
 ];
 
 /** Manage guide, agency, and shop organisation profiles. Only physical shops appear on the explore map. */
@@ -18,7 +18,7 @@ export const ProfileMapPresenceSection = () => {
   const location = useLocation();
   const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles, refresh } = useOrganisationGate();
   const [flowOpen, setFlowOpen] = useState(false);
-  const [flowIntent, setFlowIntent] = useState<HostFlowIntent>('add-guide');
+  const [flowIntent, setFlowIntent] = useState<OrganisationFlowIntent>('add-guide');
 
   const isActive = (key: (typeof HOST_PROFILE_CHIPS)[number]['key']) => {
     if (key === 'guide') return hasGuideProfile;
@@ -26,7 +26,7 @@ export const ProfileMapPresenceSection = () => {
     return hasShopProfile;
   };
 
-  const openFlow = (intent: HostFlowIntent) => {
+  const openFlow = (intent: OrganisationFlowIntent) => {
     setFlowIntent(intent);
     setFlowOpen(true);
   };

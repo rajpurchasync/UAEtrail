@@ -16,7 +16,7 @@ import {
   SummaryStepHiking,
   TransportationStep,
 } from './activityFormSteps';
-import { useHostActivityFormModal } from './useHostActivityFormModal';
+import { useOrganisationActivityFormModal } from './useOrganisationActivityFormModal';
 
 export interface HikingActivityFormModalProps {
   open: boolean;
@@ -41,7 +41,7 @@ export const HikingActivityFormModal = ({
   sessionSnapshot,
   onSessionChange,
 }: HikingActivityFormModalProps) => {
-  const modal = useHostActivityFormModal({
+  const modal = useOrganisationActivityFormModal({
     open,
     activityType: 'hiking',
     tenantId,

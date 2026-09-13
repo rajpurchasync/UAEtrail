@@ -4,7 +4,7 @@ import { Clock, Users, MapPin, ChevronRight } from 'lucide-react';
 import { ActivityListing } from '../../types';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { tripPricingBadge } from '../../utils/tripPricing';
-import { resolveOrganisationProfilePath } from '../../utils/hostLinks';
+import { resolveOrganisationProfilePath } from '../../utils/organisationLinks';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
 import { ParticipantPreview } from './ParticipantPreview';

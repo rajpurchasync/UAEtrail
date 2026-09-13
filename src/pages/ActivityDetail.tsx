@@ -14,7 +14,7 @@ import { api } from '../api/services';
 import { formatDate } from '../utils';
 import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../utils/tripPricing';
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../utils/hostLabels';
-import { resolveOrganisationProfilePath } from '../utils/hostLinks';
+import { resolveOrganisationProfilePath } from '../utils/organisationLinks';
 import { explorePath } from '../utils/exploreRouting';
 import {
   extractJoinInstructionLines,

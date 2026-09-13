@@ -5,7 +5,7 @@ import type { ActivityDetailDTO, MyTripRequestDTO, TripParticipationDTO } from '
 import { formatDate } from '../../utils';
 import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../../utils/tripPricing';
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../../utils/hostLabels';
-import { resolveOrganisationProfilePath } from '../../utils/hostLinks';
+import { resolveOrganisationProfilePath } from '../../utils/organisationLinks';
 import { activityDetailEyebrow } from '../../config/activityTypes';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';

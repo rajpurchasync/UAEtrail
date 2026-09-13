@@ -12,7 +12,7 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
 import { PageMeta } from '../components/seo/PageMeta';
 import { MobileBecomeOrganisationFlow } from '../components/organisation-console/MobileBecomeOrganisationFlow';
-import { parseHostFlowIntent } from '../components/organisation-console/becomeHostFlow';
+import { parseOrganisationFlowIntent } from '../components/organisation-console/becomeOrganisationFlow';
 import { useOrganisationGate } from '../hooks/useOrganisationGate';
 import { resolveAuthRedirect } from '../utils/authRedirect';
 import { EXPLORE_MAP_PATH } from '../config/platform';
@@ -28,7 +28,7 @@ export const BecomeOrganisation = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const intent = parseHostFlowIntent(searchParams.get('intent'));
+  const intent = parseOrganisationFlowIntent(searchParams.get('intent'));
   const returnTo =
     resolveAuthRedirect(null, searchParams.get('redirect')) ?? EXPLORE_MAP_PATH;
   const {

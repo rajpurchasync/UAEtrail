@@ -17,7 +17,7 @@ import {
   SummaryStepCamping,
   TransportationStep,
 } from './activityFormSteps';
-import { useHostActivityFormModal } from './useHostActivityFormModal';
+import { useOrganisationActivityFormModal } from './useOrganisationActivityFormModal';
 
 export interface CampingActivityFormModalProps {
   open: boolean;
@@ -49,7 +49,7 @@ export const CampingActivityFormModal = ({
   const locationTabs = isEvent ? eventLocationTabs : campingLocationTabs;
   const draftFromSession = isEvent ? sessionSnapshot?.eventDraft ?? null : sessionSnapshot?.campingDraft ?? null;
 
-  const modal = useHostActivityFormModal({
+  const modal = useOrganisationActivityFormModal({
     open,
     activityType: formActivityType,
     tenantId,

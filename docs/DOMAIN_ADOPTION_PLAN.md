@@ -292,6 +292,15 @@ Rename **folder** (optional, one PR):
 
 **Adoption status:** frontend domain migration complete (2026-09-13). Deferred: Phase 6b backend tenant/merchant collapse.
 
+### Phase 11 — Filename cleanup (done)
+
+- [x] `becomeOrganisationFlow.ts`, `becomeOrganisationForm.ts` (shims: `becomeHostFlow.ts`, `becomeHostForm.ts`).
+- [x] `organisationLinks.ts` (shim: `hostLinks.ts`).
+- [x] `useOrganisationActivityFormModal.ts` (shim: `useHostActivityFormModal.ts`).
+- [x] Active imports migrated to canonical filenames.
+
+**Phase 11 status:** complete (2026-09-13).
+
 ---
 
 ## Suggested implementation order

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import type { ExploreCardModel, ExploreCardTone } from '../../explore/exploreCardModel';
 import { exploreCardToneClass, exploreCardToneTextClass } from '../../explore/exploreCardModel';
 import type { ExploreCardDetail, ExploreCardDetailIcon, ExploreCardSections } from '../../explore/exploreCopy';
-import { personProfilePath, resolveOrganisationProfilePath } from '../../utils/hostLinks';
+import { personProfilePath, resolveOrganisationProfilePath } from '../../utils/organisationLinks';
 import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
 import { capitalize } from '../../utils';
 import { explorePersonRoleLabel } from '@uaetrail/shared-types';
