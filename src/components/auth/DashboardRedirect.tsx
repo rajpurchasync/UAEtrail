@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { buildSignInRedirect } from '../../utils/authReturnContext';
 import {
   adminDashboardRedirect,
   hostDashboardRedirect,
@@ -14,7 +15,10 @@ export const DashboardRedirect = () => {
   const subpath = location.pathname.replace(/^\/dashboard\/?/, '') || 'overview';
   const search = location.search;
 
-  if (!user) return <Navigate to="/signin" replace state={{ from: location.pathname + search }} />;
+  if (!user) {
+    const { href: signInHref } = buildSignInRedirect(location);
+    return <Navigate to={signInHref} replace state={{ from: location.pathname + search }} />;
+  }
 
   if (user.role === 'participant') {
     return <Navigate to={`${participantDashboardRedirect(subpath)}${search}`} replace />;

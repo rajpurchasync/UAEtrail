@@ -1,4 +1,4 @@
-import type { Db } from 'mongodb';
+import type { Db, ObjectId } from 'mongodb';
 import { COLLECTIONS, LEGACY_COLLECTIONS } from './collections.js';
 import { isLegacyEmbeddedDemandTitle, normalizeLegacyDemandTitle, type DemandTitleKind } from '@uaetrail/shared-types';
 
@@ -177,6 +177,12 @@ const backfillMerchantProfileTenantLinks = async (db: Db): Promise<void> => {
     const shopTenant = await tenants.findOne({ ownerId, businessMode: 'SHOP' });
     if (!shopTenant || typeof shopTenant._id !== 'string') continue;
 
+    const tenantTaken = await merchants.findOne({
+      tenantId: shopTenant._id,
+      _id: { $ne: merchant._id }
+    });
+    if (tenantTaken) continue;
+
     await merchants.updateOne(
       { _id: merchant._id },
       { $set: { tenantId: shopTenant._id, updatedAt: new Date() } }
@@ -186,6 +192,61 @@ const backfillMerchantProfileTenantLinks = async (db: Db): Promise<void> => {
 
   if (updated > 0) {
     console.log(`[mongo] Backfilled merchant_profiles.tenantId (${updated} docs)`);
+  }
+
+  const orphanCount = await merchants.countDocuments({
+    $or: [{ tenantId: { $exists: false } }, { tenantId: null }]
+  });
+  if (orphanCount > 0) {
+    console.warn(`[mongo] merchant_profiles without tenantId remain: ${orphanCount} (shop hosts only)`);
+  }
+};
+
+/** Keep at most one merchant_profiles row per tenantId so the sparse unique index can build. */
+const dedupeMerchantProfileTenantIds = async (db: Db): Promise<void> => {
+  const merchants = db.collection('merchant_profiles');
+  const dupes = await merchants
+    .aggregate<{ _id: string; ids: string[]; count: number }>([
+      { $match: { tenantId: { $type: 'string' } } },
+      { $group: { _id: '$tenantId', ids: { $push: '$_id' }, count: { $sum: 1 } } },
+      { $match: { count: { $gt: 1 } } }
+    ])
+    .toArray();
+
+  let cleared = 0;
+  for (const group of dupes) {
+    const keepId = [...group.ids].sort()[0];
+    const dropIds = group.ids.filter((id) => id !== keepId);
+    if (dropIds.length === 0) continue;
+    await merchants.updateMany(
+      { _id: { $in: dropIds as unknown as ObjectId[] } },
+      { $unset: { tenantId: '' }, $set: { updatedAt: new Date() } }
+    );
+    cleared += dropIds.length;
+  }
+
+  if (cleared > 0) {
+    console.log(`[mongo] Cleared duplicate merchant_profiles.tenantId (${cleared} docs)`);
+  }
+};
+
+const migrateActivityTerminologyValues = async (db: Db): Promise<void> => {
+  const posts = db.collection('social_posts');
+  const postResult = await posts.updateMany({ category: 'TRIP_REPORTS' }, { $set: { category: 'ACTIVITY_REPORTS' } });
+  if (postResult.modifiedCount > 0) {
+    console.log(`[mongo] Migrated post category TRIP_REPORTS → ACTIVITY_REPORTS (${postResult.modifiedCount} docs)`);
+  }
+
+  const ledger = db.collection('reward_ledgers');
+  const ledgerResult = await ledger.updateMany({ action: 'TRIP_ATTENDED' }, { $set: { action: 'ACTIVITY_ATTENDED' } });
+  if (ledgerResult.modifiedCount > 0) {
+    console.log(`[mongo] Migrated reward action TRIP_ATTENDED → ACTIVITY_ATTENDED (${ledgerResult.modifiedCount} docs)`);
+  }
+
+  const badges = db.collection('user_badges');
+  const badgeResult = await badges.updateMany({ badgeKey: 'trip_leader' }, { $set: { badgeKey: 'activity_leader' } });
+  if (badgeResult.modifiedCount > 0) {
+    console.log(`[mongo] Migrated badge key trip_leader → activity_leader (${badgeResult.modifiedCount} docs)`);
   }
 };
 
@@ -210,4 +271,6 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateActivityJoinModeFromRequirements(db);
   await migrateLegacyParticipantIntentTitles(db);
   await backfillMerchantProfileTenantLinks(db);
+  await dedupeMerchantProfileTenantIds(db);
+  await migrateActivityTerminologyValues(db);
 };

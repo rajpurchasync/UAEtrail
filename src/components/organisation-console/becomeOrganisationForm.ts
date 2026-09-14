@@ -3,7 +3,7 @@ import { DEFAULT_PHONE_DIAL, PHONE_COUNTRIES } from '../../constants/phoneCountr
 import type { HostApplication } from '../../api/services';
 import { formatE164Phone } from '../../utils/phone';
 
-export type BecomeHostFormState = {
+export type BecomeOrganisationFormState = {
   hostProfileType: HostProfileType | null;
   hostDisplayName: string;
   bio: string;
@@ -23,7 +23,7 @@ export type BecomeHostFormState = {
   region: string;
 };
 
-export const emptyBecomeHostForm = (): BecomeHostFormState => ({
+export const emptyBecomeOrganisationForm = (): BecomeOrganisationFormState => ({
   hostProfileType: null,
   hostDisplayName: '',
   bio: '',
@@ -69,14 +69,14 @@ const resolveProfileType = (
   return null;
 };
 
-export const buildBecomeHostFormPrefill = (input: {
+export const buildBecomeOrganisationFormPrefill = (input: {
   displayName?: string | null;
   bio?: string | null;
   phone?: string | null;
   avatarUrl?: string | null;
   application?: HostApplication | null;
-}): BecomeHostFormState => {
-  const base = emptyBecomeHostForm();
+}): BecomeOrganisationFormState => {
+  const base = emptyBecomeOrganisationForm();
   const meta = input.application?.metadata;
   const metaRecord = meta as Record<string, unknown> | undefined;
   const storedPhone = splitStoredPhone(input.phone ?? meta?.phoneE164 ?? meta?.phone);
@@ -112,7 +112,7 @@ export const buildBecomeHostFormPrefill = (input: {
 };
 
 export const buildHostApplicationPayload = (
-  form: BecomeHostFormState
+  form: BecomeOrganisationFormState
 ): Record<string, unknown> | null => {
   if (!form.hostProfileType) return null;
 
@@ -171,10 +171,14 @@ export const buildHostApplicationPayload = (
   };
 };
 
-export const formatHostPhonePreview = (dial: string, national: string): string =>
+export const formatOrganisationPhonePreview = (dial: string, national: string): string =>
   formatE164Phone(dial, national) || 'your full international number';
 
-/** Domain aliases — prefer in new code. */
-export type BecomeOrganisationFormState = BecomeHostFormState;
-export const emptyBecomeOrganisationForm = emptyBecomeHostForm;
-export const formatOrganisationPhonePreview = formatHostPhonePreview;
+/** @deprecated Use {@link BecomeOrganisationFormState}. */
+export type BecomeHostFormState = BecomeOrganisationFormState;
+/** @deprecated Use {@link emptyBecomeOrganisationForm}. */
+export const emptyBecomeHostForm = emptyBecomeOrganisationForm;
+/** @deprecated Use {@link buildBecomeOrganisationFormPrefill}. */
+export const buildBecomeHostFormPrefill = buildBecomeOrganisationFormPrefill;
+/** @deprecated Use {@link formatOrganisationPhonePreview}. */
+export const formatHostPhonePreview = formatOrganisationPhonePreview;

@@ -314,6 +314,11 @@
     padding-top: calc(var(--safe-top) + 8px);
   }
 
+  /* Home landing hero — height follows content + notch; avoids fixed rem on all phones */
+  .home-landing-hero-mobile {
+    min-height: calc(var(--safe-top) + 15.75rem);
+  }
+
   .pb-nav-safe {
     padding-bottom: var(--safe-bottom);
   }

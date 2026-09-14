@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ActivityListing } from '../../types';
 import { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
-import { formatPackagePrice } from '../../utils/tripPricing';
+import { formatPackagePrice } from '../../utils/activityPricing';
 import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
 import { resolveExplorePrice } from '../../explore/explorePriceLabel';
 import {
@@ -84,7 +84,7 @@ export const JoinRequestModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasInstructions) {
-      setError('This trip is missing mandatory instructions — contact the host before joining.');
+      setError('This activity is missing mandatory instructions — contact the host before joining.');
       return;
     }
     if (needsAgreement && !agreed) {
@@ -172,7 +172,7 @@ export const JoinRequestModal = ({
             ) : (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-sm text-amber-900">
-                  This trip does not have mandatory instructions yet. Contact the host before requesting to join.
+                  This activity does not have mandatory instructions yet. Contact the host before requesting to join.
                 </p>
               </div>
             )}

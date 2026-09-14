@@ -132,7 +132,7 @@ const eventCreateSchema = z.object({
   requirements: z.array(z.string()).default([]),
   joinMode: z.enum(['open', 'private']).optional(),
   price: z.number().int().min(0).default(0),
-  pricePackages: tripPricePackagesSchema.optional(),
+  pricePackages: activityPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
   images: z.array(z.string()).default([]),
   bannerUrl: optionalHttpUrlSchema,
@@ -160,10 +160,10 @@ const teamPatchSchema = z.object({
 
 import { parseLocalDateTime } from '../lib/datetime.js';
 import {
+  activityPricePackagesSchema,
   normalizeActivityPricing,
   parseStoredPricePackages,
-  tripPricePackagesSchema
-} from '../lib/trip-pricing.js';
+} from '../lib/activity-pricing.js';
 import {
   notifyParticipantsOfScheduleChange,
   scheduleInstantChanged
@@ -583,7 +583,7 @@ tenantActivitiesRouter.post('/:id/publish', validate({ params: idParamSchema }),
       userId: hostUserId,
       action: RewardAction.ACTIVITY_PUBLISHED,
       referenceId: updated.id,
-      label: `Published trip: ${updated.title}`
+      label: `Published activity: ${updated.title}`
     }).catch(() => undefined);
     res.json({ message: 'Activity published.', activityId: updated.id });
   } catch (error) {
@@ -686,7 +686,7 @@ hostRouter.patch('/requests/:id', validate({ params: idParamSchema, body: reques
 
       await dispatchNotification({
         userId: request.userId,
-        title: 'Update on your trip request',
+        title: 'Update on your activity request',
         body: buildJoinRejectedBody(organizerNote),
         type: NotificationType.REQUEST_UPDATE,
         meta: {

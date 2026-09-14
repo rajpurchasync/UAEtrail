@@ -19,6 +19,7 @@ import {
   MerchantOrderLineItemDTO,
   MerchantProfileDTO,
   MerchantPublicDTO,
+  ShopPublicDTO,
   OrderStatus,
   MyActivityDTO,
   NotificationDTO,
@@ -201,8 +202,8 @@ export type PublicMemberProfileDTO =
         earnedAt: string | null;
       }>;
       stats: {
-        tripsAttended: number;
-        tripsHosted: number;
+        activitiesAttended: number;
+        activitiesHosted: number;
       };
     };
 
@@ -379,11 +380,16 @@ export interface TenantProfile {
   ownerName: string;
   ownerAvatar: string | null;
   ownerBio: string | null;
-  organizerDetails?: HostDetails;
+  /** Preferred — public host profile fields (guide/agency). */
   hostDetails?: HostDetails;
+  /** @deprecated Use hostDetails — kept for legacy clients. */
+  organizerDetails?: HostDetails;
   memberCount: number;
   team: { role: string; displayName: string; avatarUrl: string | null }[];
   activities: ActivityDTO[];
+  /** Preferred shop public id when tenant is a shop. Wire: merchant_profiles._id */
+  shopId?: string | null;
+  /** @deprecated Use shopId */
   merchantId?: string | null;
   shopProducts?: Array<{
     id: string;
@@ -733,16 +739,29 @@ export const api = {
     }),
   getMyTenants: () => apiRequest<{ data: TenantMembershipView[] }>('/me/tenants', { auth: true }),
   getAdminMetrics: () => apiRequest<{ data: AdminMetrics }>('/admin/metrics', { auth: true }),
-  /** @deprecated Use {@link api.getAdminPlaces} — domain name for the same endpoint. */
+  getAdminPlaces: () => apiRequest<{ data: LocationDTO[] }>('/admin/places?pageSize=100', { auth: true }),
+  /** @deprecated Use {@link api.getAdminPlaces} — legacy path for the same endpoint. */
   getAdminLocations: () => apiRequest<{ data: LocationDTO[] }>('/admin/locations?pageSize=100', { auth: true }),
-  /** @deprecated Use {@link api.createAdminPlace} — domain name for the same endpoint. */
+  createAdminPlace: (payload: Partial<PlaceDTO>) =>
+    apiRequest<{ data: PlaceDTO }>('/admin/places', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  /** @deprecated Use {@link api.createAdminPlace} — legacy path for the same endpoint. */
   createAdminLocation: (payload: Partial<LocationDTO>) =>
     apiRequest<{ data: LocationDTO }>('/admin/locations', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
     }),
-  /** @deprecated Use {@link api.updateAdminPlace} — domain name for the same endpoint. */
+  updateAdminPlace: (id: string, payload: Partial<PlaceDTO>) =>
+    apiRequest<{ data: PlaceDTO }>(`/admin/places/${id}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  /** @deprecated Use {@link api.updateAdminPlace} — legacy path for the same endpoint. */
   updateAdminLocation: (id: string, payload: Partial<LocationDTO>) =>
     apiRequest<{ data: LocationDTO }>(`/admin/locations/${id}`, {
       method: 'PATCH',
@@ -1053,13 +1072,34 @@ export const api = {
 
   getMerchantProfile: () =>
     apiRequest<{ data: MerchantProfileDTO }>('/shop/merchant/profile', { auth: true }),
-  /** @deprecated Use {@link api.getShopOrganisationStores} — domain name for the same endpoint. */
+  getShopOrganisationStores: () =>
+    apiRequest<{ data: MerchantProfileDTO[] }>('/shop/organisation/stores', { auth: true }),
+  /** @deprecated Use {@link api.getShopOrganisationStores} — legacy path for the same endpoint. */
   getMerchantStores: () =>
     apiRequest<{ data: MerchantProfileDTO[] }>('/shop/merchant/stores', { auth: true }),
-  /** @deprecated Use {@link api.getShopOrganisationProfile} — domain name for the same endpoint. */
+  getShopOrganisationProfile: (shopId: string) =>
+    apiRequest<{ data: MerchantProfileDTO }>(
+      `/shop/organisation/profile?shopId=${encodeURIComponent(shopId)}`,
+      { auth: true }
+    ),
+  /** @deprecated Use {@link api.getShopOrganisationProfile} — legacy path for the same endpoint. */
   getMerchantProfileById: (merchantId: string) =>
     apiRequest<{ data: MerchantProfileDTO }>(`/shop/merchant/profile?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
-  /** @deprecated Use {@link api.createShopOrganisationProfile} — domain name for the same endpoint. */
+  createShopOrganisationProfile: (payload: {
+    shopName: string;
+    description?: string;
+    logo?: string;
+    websiteUrl?: string | null;
+    contactEmail?: string;
+    contactPhone?: string;
+    region?: string | null;
+  }) =>
+    apiRequest<{ data: MerchantProfileDTO }>('/shop/organisation/profile', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  /** @deprecated Use {@link api.createShopOrganisationProfile} — legacy path for the same endpoint. */
   createMerchantProfile: (payload: {
     shopName: string;
     description?: string;
@@ -1074,7 +1114,24 @@ export const api = {
       auth: true,
       body: JSON.stringify(payload)
     }),
-  /** @deprecated Use {@link api.updateShopOrganisationProfile} — domain name for the same endpoint. */
+  updateShopOrganisationProfile: (
+    shopId: string,
+    payload: Partial<{
+      shopName: string;
+      description?: string;
+      logo?: string;
+      websiteUrl?: string | null;
+      contactEmail?: string;
+      contactPhone?: string;
+      region?: string | null;
+    }>
+  ) =>
+    apiRequest<{ data: MerchantProfileDTO }>(`/shop/organisation/profile?shopId=${encodeURIComponent(shopId)}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+  /** @deprecated Use {@link api.updateShopOrganisationProfile} — legacy path for the same endpoint. */
   updateMerchantProfile: (
     merchantId: string,
     payload: Partial<{
@@ -1092,9 +1149,33 @@ export const api = {
       auth: true,
       body: JSON.stringify(payload)
     }),
+  getShopOrganisationProducts: (shopId: string) =>
+    apiRequest<{ data: (ProductDTO & { createdAt: string })[] }>(
+      `/shop/merchant/products?shopId=${encodeURIComponent(shopId)}`,
+      { auth: true }
+    ),
   /** @deprecated Use {@link api.getShopOrganisationProducts}. */
   getMerchantProducts: (merchantId: string) =>
     apiRequest<{ data: (ProductDTO & { createdAt: string })[] }>(`/shop/merchant/products?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
+  addShopOrganisationProduct: (payload: {
+    shopId: string;
+    name: string;
+    description?: string;
+    images?: string[];
+    priceAed: number;
+    stockQuantity: number;
+    lowStockThreshold: number;
+    discountPercent?: number;
+    externalUrl?: string | null;
+    packagingInfo?: string;
+    category: string;
+    status?: 'draft' | 'active';
+  }) =>
+    apiRequest<{ data: ProductDTO }>('/shop/merchant/products', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
   /** @deprecated Use {@link api.addShopOrganisationProduct}. */
   addMerchantProduct: (payload: { merchantId: string; name: string; description?: string; images?: string[]; priceAed: number; stockQuantity: number; lowStockThreshold: number; discountPercent?: number; externalUrl?: string | null; packagingInfo?: string; category: string; status?: 'draft' | 'active' }) =>
     apiRequest<{ data: ProductDTO }>('/shop/merchant/products', {
@@ -1166,9 +1247,14 @@ export const api = {
     );
   },
 
-  // ─── Admin - Location Delete ───────────────────────────────────────────
+  // ─── Admin - Place delete ───────────────────────────────────────────────
 
-  /** @deprecated Use {@link api.deleteAdminPlace} — domain name for the same endpoint. */
+  deleteAdminPlace: (id: string) =>
+    apiRequest(`/admin/places/${id}`, {
+      method: 'DELETE',
+      auth: true
+    }),
+  /** @deprecated Use {@link api.deleteAdminPlace} — legacy path for the same endpoint. */
   deleteAdminLocation: (id: string) =>
     apiRequest(`/admin/locations/${id}`, {
       method: 'DELETE',
@@ -1372,6 +1458,8 @@ export const api = {
 
   getMerchantPublic: (id: string) =>
     apiRequest<{ data: MerchantPublicDTO }>(`/shop/merchants/${id}`),
+  getShopPublic: (id: string) =>
+    apiRequest<{ data: ShopPublicDTO }>(`/shop/shops/${id}`),
 
   // ─── Trail Points / Rewards ─────────────────────────────────────────────
 
@@ -1387,18 +1475,6 @@ export const api = {
   // ─── Domain API aliases (Phase 1) ───────────────────────────────────────
   // Delegate to legacy methods — same HTTP paths; see docs/DOMAIN_ADOPTION_PLAN.md.
 
-  getAdminPlaces() {
-    return this.getAdminLocations();
-  },
-  createAdminPlace(payload: Partial<PlaceDTO>) {
-    return this.createAdminLocation(payload);
-  },
-  updateAdminPlace(id: string, payload: Partial<PlaceDTO>) {
-    return this.updateAdminLocation(id, payload);
-  },
-  deleteAdminPlace(id: string) {
-    return this.deleteAdminLocation(id);
-  },
   submitPlace(tenantId: string, payload: Partial<PlaceDTO>) {
     return this.submitLocation(tenantId, payload);
   },
@@ -1413,37 +1489,6 @@ export const api = {
   },
   getOrganisationProfile(slug: string) {
     return this.getTenantProfile(slug);
-  },
-  getShopOrganisationStores() {
-    return this.getMerchantStores();
-  },
-  getShopOrganisationProfile(merchantId: string) {
-    return this.getMerchantProfileById(merchantId);
-  },
-  createShopOrganisationProfile(payload: {
-    shopName: string;
-    description?: string;
-    logo?: string;
-    websiteUrl?: string | null;
-    contactEmail?: string;
-    contactPhone?: string;
-    region?: string | null;
-  }) {
-    return this.createMerchantProfile(payload);
-  },
-  updateShopOrganisationProfile(
-    merchantId: string,
-    payload: Partial<{
-      shopName: string;
-      description?: string;
-      logo?: string;
-      websiteUrl?: string | null;
-      contactEmail?: string;
-      contactPhone?: string;
-      region?: string | null;
-    }>
-  ) {
-    return this.updateMerchantProfile(merchantId, payload);
   },
   /** Domain alias — public profile for a Person (`/member/:id`). */
   getPersonPublicProfile(userId: string) {
@@ -1529,29 +1574,6 @@ export const api = {
   },
   cancelOrganisationActivity(tenantId: string, activityId: string) {
     return this.cancelHostActivity(tenantId, activityId);
-  },
-  /** Domain alias — public shop by merchant id or slug (`/shop/merchants/:id`). */
-  getShopPublic(id: string) {
-    return this.getMerchantPublic(id);
-  },
-  getShopOrganisationProducts(merchantId: string) {
-    return this.getMerchantProducts(merchantId);
-  },
-  addShopOrganisationProduct(payload: {
-    merchantId: string;
-    name: string;
-    description?: string;
-    images?: string[];
-    priceAed: number;
-    stockQuantity: number;
-    lowStockThreshold: number;
-    discountPercent?: number;
-    externalUrl?: string | null;
-    packagingInfo?: string;
-    category: string;
-    status?: 'draft' | 'active';
-  }) {
-    return this.addMerchantProduct(payload);
   },
   updateShopOrganisationProduct(
     id: string,

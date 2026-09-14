@@ -1,120 +1,104 @@
 # UAE Trail — Domain model
 
-This glossary maps **product concepts** to **code and routes**. Use it when naming pages, DTOs, and PRs. Routes and API paths stay stable during renames; component and file names should converge on domain language over time.
+This glossary maps **product concepts** to **code and routes**. Use it when naming pages, DTOs, and PRs. Routes and API paths stay stable during renames; component and file names may use `Organisation*` as a **code umbrella** for tenants.
+
+See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing rules.
 
 ## Core objects
 
 | Domain | What it is | Code / storage | Public URL | Explore map |
 |--------|------------|----------------|------------|-------------|
-| **Place** | A physical venue: trail, camp, or event location | `locations`, `LocationDTO`, `activities-store` venue helpers | `/trail/:id`, `/camp/:id`, `/event/:id` | Yes (venue pins) |
+| **Place** | A physical venue: trail, camp, or event location | `locations`, `PlaceDTO` | `/trail/:id`, `/camp/:id`, `/event/:id` | Yes (venue pins) |
 | **Activity** | A scheduled trip hosted at a place | `activities`, `ActivityDTO` | `/activity/:id` | Yes |
-| **Organisation** | A business that hosts trips or sells gear — guide, agency, or shop | `tenants`, `TenantProfile`, `merchant_profiles` (shops) | Guide/agency: `/operator/:slug` · Shop: `/shop/:id` | Physical shops only |
-| **Person** | A member's public identity on the platform | `users` (profile fields), `/member/:id`, explore demand cards | `/profile`, `/member/:id` | Via demand cards only |
+| **Host** (publishing) | Anyone who publishes trips and may have a public profile — **guide**, **agency**, or **shop** | `tenants`, `TenantProfile`, `merchant_profiles` (shops) | Guide/agency: `/operator/:slug` · Shop: `/shop/:id` | Physical shops only |
+| **Person** | A member's public identity on the platform | `users` (profile fields), `/member/:id` | `/profile`, `/member/:id` | Via demand cards |
 | **User** | Auth account (login, roles, suspension) | `users`, `UserDTO`, `AuthContext` | `/signin`, `/signup` | — |
 
-**Participation** (join requests, check-in, reviews) links **Person ↔ Activity ↔ Place**. **Hosting** links **Organisation ↔ Activity** (and shop **Organisation ↔ featured outbound links**).
+**Participation** links **Person ↔ Activity ↔ Place**. **Publishing** links **Host (tenant) ↔ Activity**. Shops also link **featured outbound picks**.
+
+## Host vs Organisation in copy
+
+| Context | Say | Avoid |
+|---------|-----|--------|
+| Umbrella (any publisher) | **Host**, **host profile**, **host console**, **host application** | “Organisation” for solo guides |
+| Individual guide | **Guide**, **guide profile**, **guide console** | “Organisation profile” |
+| Licensed business | **Agency**, **agency profile** | — |
+| Gear seller | **Shop**, **shop profile** | “Merchant” in UI |
+| On-day trip leader | **Host** (“Hosted by …”, `HostSelect`) | Confusing with publishing host — OK when scoped to the activity |
+| Code / filenames / API aliases | `Organisation*`, `tenant`, `/host/*` routes | Renaming wire layer without a migration |
+
+Helpers: `src/utils/hostCopy.ts` — `hostConsoleLabel()`, `hostProfileLabel()`, `normalizeHostKind()`.
+
+### Internal code identifiers (Phase 14)
+
+| Prefer in new code | Deprecated alias | Notes |
+|--------------------|------------------|-------|
+| `hostTenants`, `canPickHostTenant`, `eventHostName` | `hostOrganizations`, `canPickHostOrganization`, `eventHostOrganization` | Activity publish forms |
+| `BecomeOrganisationFormState` | `BecomeHostFormState` | Become-host wizard |
+| `HOST_CONSOLE_LINKS` | `ORGANISATION_CONSOLE_LINKS` | Console nav constant |
+| `resolveProfileHostKind()` | `resolveProfileOrganisationKind()` | Profile hub |
+| `hostName` (signup) | `organizationName` | Wire field on `/auth/register` |
+| `hostDetails`, `shopId` (tenant profile JSON) | `organizerDetails`, `merchantId` | Dual keys on GET tenant profile + PATCH `/me/host-details` |
+| `GET /admin/places` (admin CRUD) | `GET /admin/locations` | Same handlers; legacy path kept |
+| `shopId`, `/shop/organisation/*` (shop manage) | `merchantId`, `/shop/merchant/*` | Dual JSON keys + parallel routes; Mongo still `merchant_profiles` |
+| `GET /shop/shops/:id` (public shop) | `GET /shop/merchants/:id` | Same handler; legacy path kept |
+
+### Capabilities by host kind
+
+| Kind | Paid trips | Typical trips |
+|------|------------|---------------|
+| **Guide** (individual) | No | Free / shared-cost community trips |
+| **Agency** | Yes | Licensed guided adventures |
+| **Shop** | N/A (featured picks) | Gear / affiliate links |
 
 ## Person vs User
 
 | Term | Meaning | Use in new code |
 |------|---------|-----------------|
-| **Person** | Who someone is on the trail — profile, bio, explore card, `/member/:id` | Product copy, `PersonPublicProfileDTO`, `personProfilePath()`, `ExploreMapPersonDTO` |
-| **User** | Auth account — email, password/OAuth, roles, suspension | `UserDTO`, `AuthContext`, `getAdminUsers()`, `/users/:id` API paths |
+| **Person** | Who someone is on the trail — profile, bio, explore card | Product copy, `PersonPublicProfileDTO`, `personProfilePath()` |
+| **User** | Auth account — email, roles, suspension | `UserDTO`, `AuthContext`, admin auth actions |
 
-The route `/member/:userId` still uses a user id in the URL (storage key). In UI and docs, prefer **member** or **person** over **user** unless discussing login or admin auth actions.
+The route `/member/:userId` uses a user id in the URL (storage key). In UI, prefer **member** or **person** over **user** unless discussing login or admin.
 
-**Type aliases (frontend):**
+## Host subtypes (same tenant row)
 
-- `PersonPublicProfileDTO` → same as `PublicMemberProfileDTO`
-- `api.getPersonPublicProfile()` → same as `getUserPublicProfile()`
-- `personProfilePath()` → same as `memberProfilePath()`
+| Subtype | Role | Map pin? | Manage |
+|---------|------|----------|--------|
+| **Guide** | Individual host; public intro at `/operator/:slug` | No | `/host/*` console, `/become-host` |
+| **Agency** | Business host; paid trips | No | `/host/*`, `/organisation/manage?kind=agency` |
+| **Shop** | Physical or online gear partner | Physical only | `/shop/:id`, `/organisation/manage?kind=shop` |
 
-## Organisation subtypes
-
-| Subtype | Role | Map pin? | Manage console |
-|---------|------|----------|----------------|
-| Guide / agency | Hosts activities; public intro at `/operator/:slug` | No | `/agency/manage`, host console |
-| Shop (physical) | Merchant with lat/lng | Yes | `/shop/manage` |
-| Shop (online) | Merchant with website only; list in explore, no pin | No | `/shop/manage` |
-
-Shop identity is split today (Phase 6 prep — explicit link, no collapse yet):
-
-- **Tenant** — become-host signup (`shopPresence`, website, optional coordinates)
-- **Merchant profile** — ShopManage (contact, featured picks with outbound URLs)
-- **`merchant_profiles.tenantId`** — optional FK to the SHOP tenant; backfilled on startup migration and set on become-host approval
-
-Saving in ShopManage syncs tenant + merchant and invalidates the explore map cache.
+Shop identity: **tenant** (become-host) + **merchant profile** (ShopManage), linked via `merchant_profiles.tenantId`.
 
 ## Legacy → domain naming
 
-| Legacy term | Prefer in new code | Keep unchanged (for now) |
-|-------------|-------------------|---------------------------|
-| Location | Place | API `/admin/locations`, `LocationDTO`, `getAdminLocations()` |
-| Operator | Organisation | Route `/operator/:id` |
-| Merchant | Shop (organisation) | `merchant_profiles`, `/merchant/:id` redirect |
-| **Host** (role) | Auth role / capability to publish activities under an organisation | `tenant_owner`, `tenant_guide`, `/host/*` console routes | Keep route prefix `/host/*`; UI says **Organisation console** |
-| **Admin** | Platform operator managing auth accounts and content | `platform_admin`, `/admin/*` | Admin **Members** page = auth accounts, not organisations |
-| User (product copy) | Person / member | `UserDTO`, `AuthContext`, `/users/*` API (auth) |
-| Member profile | Person public profile | `PublicMemberProfileDTO`, `/member/:id` |
-| Tenant | Organisation (account) | `tenants` collection, `x-tenant-id` header |
-| Venue | Place (typed) | `venueType` on locations; explore `?panel=venues` URL |
-
-## Place / location / venue — one concept
-
-Trail, camp, and event spots are **places** in product language. Legacy terms map as follows:
-
-| Term | Still used for | Canonical in new code |
-|------|----------------|------------------------|
-| Place | UI, `PlaceDTO`, components | **Preferred** |
-| Location | API `/locations`, Mongo, activity `locationId` field | Wire/storage only |
-| Venue | Explore panel key, map pin source `venue` | Same as place |
-
-Path helpers live in `src/utils/placePaths.ts`. `share.ts` and `venueDetailDisplay.ts` re-export legacy names.
+| Legacy term | Prefer in new code | Keep unchanged |
+|-------------|-------------------|--------------|
+| Location | Place | API `/locations`, `LocationDTO` |
+| Operator | Host public profile | Route `/operator/:id` |
+| Merchant | Shop | `merchant_profiles`, `/merchant/:id` redirect |
+| Organizer | Host or agency | — |
+| Tenant | Host (copy) / Organisation (code) | `tenants`, `x-tenant-id` |
+| Venue | Place | explore `?panel=venues` |
 
 ## Page renames (routes unchanged)
 
 | File / export | Route | Notes |
 |---------------|-------|-------|
-| `AdminPlaces` | `/admin/locations` | Admin CRUD for places |
-| `OrganisationProfile` | `/operator/:id` | Public agency/guide profile; shops redirect to `/shop/:id` |
-| `OrganisationManage` | `/organisation/manage` | Unified agency + shop console (`?kind=agency` \| `?kind=shop`) |
-| `ShopManage` / `AgencyManage` | `/shop/manage`, `/agency/manage` | Legacy redirects to `OrganisationManage` |
-| `ShopPublic` | `/shop/:id` | Canonical public shop page |
-| `HostPlaces` | `/host/locations` | Host-scoped place submissions |
-| `AdminOrganisations` | `/admin/hosts` | Organisation applications + tenant oversight |
+| `OrganisationProfile` | `/operator/:id` | Public guide/agency host profile |
+| `OrganisationConsoleOverview` | `/host/overview` | **Host console** in UI |
+| `BecomeOrganisation` | `/become-host` | User copy: **become a host**; legacy export `BecomeHost` |
+| `ShopPublic` | `/shop/:id` | Public shop host |
+| `AdminOrganisations` | `/admin/hosts` | Admin copy: **Hosts** |
 
-**Organisation console components** live in `src/components/organisation-console/`. Hooks: `useOrganisationGate`, `useOrganisationHubData`. Client API: prefer `listOrganisationActivities`, `getOrganisationTeam`, `publishOrganisationActivity`, `getShopPublic`, etc. (legacy `*Host*` / `*Merchant*` methods retained). Deprecated exports (`HostShell`, `MobileBecomeHostFlow`, …) remain on canonical components where noted in JSDoc.
-
-## Consoles are views, not new types
-
-Admin, host, agency, and shop UIs are **views on the same objects**:
-
-- Admin places ↔ `AdminPlaces`
-- Host activities ↔ scheduled **Activity** rows for one **Organisation**
-- Organisation manage ↔ `OrganisationManage` (agency + shop)
-
-Do not introduce parallel models per console.
+**Code folder:** `src/components/organisation-console/` (implementation name). **UI:** host / guide / agency / shop per `hostCopy.ts`.
 
 ## Product rules (stable)
 
-1. **Typed place URLs** — keep `/trail`, `/camp`, `/event`; do not unify to `/place/:id` unless SEO/IA requires it.
-2. **Activities stay separate** — `/activity/:id` is not a place detail page.
-3. **No agency map pins** — agencies/guides are profile-only.
-4. **Shop = merchant** — canonical public path `/shop/:id`; affiliate-style featured picks, not in-app checkout.
-5. **API resource names** — `/locations/:id` on the server is fine; "place" is the product word.
+1. Typed place URLs — `/trail`, `/camp`, `/event`.
+2. Activities stay at `/activity/:id`.
+3. No agency/guide map pins.
+4. Shop public path `/shop/:id`; affiliate featured picks, not in-app checkout.
+5. API paths may say `locations` / `merchant`; product copy says place / shop.
 
-## PR naming
-
-When touching an area, prefer domain words in PR titles and new symbols:
-
-- ✅ "Add online shop presence to become-host flow"
-- ✅ "OrganisationProfile redirects shop tenants to ShopPublic"
-- ⚠️ "Fix OperatorProfile merchant redirect" (legacy file name)
-
-## Optional follow-ups (not required for correctness)
-
-- Type aliases in `@uaetrail/shared-types`: `PlaceDTO`, `PlaceStatus`, `ShopOrganisationDTO` (done)
-- Merge `/agency/manage` and `/shop/manage` into one organisation console (done — `/organisation/manage`)
-- Collapse `merchant_profiles` into `tenants` long-term
-
-**Adoption roadmap:** [`DOMAIN_ADOPTION_PLAN.md`](./DOMAIN_ADOPTION_PLAN.md) — phased frontend migration **complete** (Phases 0–10). Deferred: backend tenant/merchant collapse (Phase 6b).
+**Adoption roadmap:** [`DOMAIN_ADOPTION_PLAN.md`](./DOMAIN_ADOPTION_PLAN.md) — frontend migration complete. Deferred: Phase 6b tenant/merchant collapse.

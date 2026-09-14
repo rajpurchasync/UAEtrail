@@ -15,7 +15,7 @@ import {
 } from '@uaetrail/shared-types';
 
 import { formatActivityLocal } from './datetime.js';
-import { parseStoredPricePackages } from './trip-pricing.js';
+import { parseStoredPricePackages } from './activity-pricing.js';
 import { resolveActivityDtoType } from '../domain/activity-type.js';
 
 const enumMap = <T extends string>(value: string | null | undefined): T =>

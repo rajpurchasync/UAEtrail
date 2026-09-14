@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Users, MapPin, ChevronRight } from 'lucide-react';
 import { ActivityListing } from '../../types';
 import { formatActivityType } from '../../utils/activityIdentity';
-import { tripPricingBadge } from '../../utils/tripPricing';
+import { activityPricingBadge } from '../../utils/activityPricing';
 import { resolveOrganisationProfilePath } from '../../utils/organisationLinks';
 import { ShareButton } from './ShareButton';
 import { EnvironmentImage } from './EnvironmentImage';
@@ -43,7 +43,7 @@ export const ActivityCard = ({ activity, variant = 'default' }: ActivityCardProp
   const monthShort = activityDate.toLocaleString('en', { month: 'short' }).toUpperCase();
   const dayNum = activityDate.getDate();
 
-  const pricingBadge = tripPricingBadge(activity);
+  const pricingBadge = activityPricingBadge(activity);
   const isFull = activity.status === 'full' || activity.slotsAvailable <= 0;
   const slotsPercent = Math.round(((activity.slotsTotal - activity.slotsAvailable) / activity.slotsTotal) * 100);
 

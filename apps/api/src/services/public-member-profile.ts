@@ -111,8 +111,8 @@ export type PublicMemberProfileResponse =
         earnedAt: string | null;
       }>;
       stats: {
-        tripsAttended: number;
-        tripsHosted: number;
+        activitiesAttended: number;
+        activitiesHosted: number;
       };
     };
 
@@ -139,7 +139,7 @@ export async function buildPublicMemberProfile(
     };
   }
 
-  const [tripsAttended, tripsHosted, ownedTenants, badges, businessHost, hostApplication] = await Promise.all([
+  const [activitiesAttended, activitiesHosted, ownedTenants, badges, businessHost, hostApplication] = await Promise.all([
     countUserCheckedInParticipations(userId),
     countPublishedActivitiesHostedByUser(userId),
     listTenantsByOwnerId(userId),
@@ -170,7 +170,7 @@ export async function buildPublicMemberProfile(
 
   const primaryTenant = ownedTenants[0] ?? null;
   const hostProfileKind = resolveHostProfileKind(primaryTenant);
-  const isHost = user.role !== UserRole.PARTICIPANT || ownedTenants.length > 0 || tripsHosted > 0;
+  const isHost = user.role !== UserRole.PARTICIPANT || ownedTenants.length > 0 || activitiesHosted > 0;
   const isGuideStaff = user.role === UserRole.TENANT_GUIDE;
 
   const memberDetails = parseMemberDetails(hostApplication?.metadata, user.profile?.dateOfBirth ?? null);
@@ -206,8 +206,8 @@ export async function buildPublicMemberProfile(
     tierBadges,
     badges: achievementBadges,
     stats: {
-      tripsAttended,
-      tripsHosted,
+      activitiesAttended,
+      activitiesHosted,
     },
   };
 }

@@ -1,30 +1,30 @@
-export interface TripPricePackage {
+export interface ActivityPricePackage {
   label: string;
   amount: number;
   currency: string;
 }
-export type TripPricingMode = 'free' | 'shared' | 'paid';
-export type TripCurrency = 'AED' | 'USD' | 'EUR' | 'SAR' | 'OMR';
+export type ActivityPricingMode = 'free' | 'shared' | 'paid';
+export type ActivityCurrency = 'AED' | 'USD' | 'EUR' | 'SAR' | 'OMR';
 
-export const TRIP_CURRENCIES: readonly TripCurrency[] = ['AED', 'USD', 'EUR', 'SAR', 'OMR'];
+export const ACTIVITY_CURRENCIES: readonly ActivityCurrency[] = ['AED', 'USD', 'EUR', 'SAR', 'OMR'];
 
-const TRIP_PRICING_MODE_LABELS: Record<TripPricingMode, string> = {
+const ACTIVITY_PRICING_MODE_LABELS: Record<ActivityPricingMode, string> = {
   free: 'Free',
   shared: 'Cost Shared',
-  paid: 'Professional Paid trip',
+  paid: 'Professional paid activity',
 };
 
-export type TripPricingInput = {
+export type ActivityPricingInput = {
   price: number;
-  pricePackages?: TripPricePackage[] | null;
+  pricePackages?: ActivityPricePackage[] | null;
   paymentTerms?: string | null;
-  pricingMode?: TripPricingMode | null;
+  pricingMode?: ActivityPricingMode | null;
 };
 
-const isTripCurrency = (value: unknown): value is TripCurrency =>
-  typeof value === 'string' && (TRIP_CURRENCIES as readonly string[]).includes(value);
+const isActivityCurrency = (value: unknown): value is ActivityCurrency =>
+  typeof value === 'string' && (ACTIVITY_CURRENCIES as readonly string[]).includes(value);
 
-export const isTripPricePackage = (value: unknown): value is TripPricePackage => {
+export const isActivityPricePackage = (value: unknown): value is ActivityPricePackage => {
   if (!value || typeof value !== 'object') return false;
   const pkg = value as Record<string, unknown>;
   return (
@@ -35,33 +35,33 @@ export const isTripPricePackage = (value: unknown): value is TripPricePackage =>
     Number.isInteger(pkg.amount) &&
     pkg.amount >= 0 &&
     pkg.amount <= 999_999 &&
-    isTripCurrency(pkg.currency ?? 'AED')
+    isActivityCurrency(pkg.currency ?? 'AED')
   );
 };
 
 /** Parse stored Mongo/API price packages — lenient read path for legacy docs. */
-export const parseStoredPricePackages = (value: unknown): TripPricePackage[] => {
+export const parseStoredPricePackages = (value: unknown): ActivityPricePackage[] => {
   if (!Array.isArray(value)) return [];
   return value
-    .filter(isTripPricePackage)
+    .filter(isActivityPricePackage)
     .slice(0, 12)
     .map((pkg) => ({
       label: pkg.label.trim(),
       amount: pkg.amount,
-      currency: (pkg.currency ?? 'AED') as TripCurrency,
+      currency: (pkg.currency ?? 'AED') as ActivityCurrency,
     }));
 };
 
-export const derivePriceAed = (packages: TripPricePackage[], fallback = 0): number => {
+export const derivePriceAed = (packages: ActivityPricePackage[], fallback = 0): number => {
   if (packages.length === 0) return fallback;
   return Math.min(...packages.map((pkg) => pkg.amount));
 };
 
 export const normalizeActivityPricing = (input: {
   price?: number;
-  pricePackages?: TripPricePackage[];
-  pricingMode?: TripPricingMode;
-}): { priceAed: number; pricePackages: TripPricePackage[]; pricingMode: TripPricingMode } => {
+  pricePackages?: ActivityPricePackage[];
+  pricingMode?: ActivityPricingMode;
+}): { priceAed: number; pricePackages: ActivityPricePackage[]; pricingMode: ActivityPricingMode } => {
   const trimmedPackages = input.pricePackages?.filter((pkg) => pkg.label.trim()) ?? [];
   const pricingMode =
     input.pricingMode ??
@@ -97,24 +97,24 @@ export const normalizeActivityPricing = (input: {
   };
 };
 
-export const formatPackagePrice = (pkg: Pick<TripPricePackage, 'amount' | 'currency'>): string => {
+export const formatPackagePrice = (pkg: Pick<ActivityPricePackage, 'amount' | 'currency'>): string => {
   if (pkg.amount === 0) return 'Free';
   return `${pkg.currency} ${pkg.amount.toLocaleString()}`;
 };
 
-export const tripHasPaidPricing = (trip: {
+export const activityHasPaidPricing = (activity: {
   price: number;
-  pricePackages?: TripPricePackage[] | null;
+  pricePackages?: ActivityPricePackage[] | null;
 }): boolean => {
-  const packages = trip.pricePackages?.filter((pkg) => pkg.label.trim()) ?? [];
-  return trip.price > 0 || packages.some((pkg) => pkg.amount > 0);
+  const packages = activity.pricePackages?.filter((pkg) => pkg.label.trim()) ?? [];
+  return activity.price > 0 || packages.some((pkg) => pkg.amount > 0);
 };
 
-export const tripPriceLabel = (trip: {
+export const activityPriceLabel = (activity: {
   price: number;
-  pricePackages?: TripPricePackage[] | null;
+  pricePackages?: ActivityPricePackage[] | null;
 }): string => {
-  const packages = trip.pricePackages?.filter((pkg) => pkg.label.trim()) ?? [];
+  const packages = activity.pricePackages?.filter((pkg) => pkg.label.trim()) ?? [];
   if (packages.length > 1) {
     const paid = packages.filter((pkg) => pkg.amount > 0);
     if (paid.length === 0) return 'Free';
@@ -122,22 +122,22 @@ export const tripPriceLabel = (trip: {
     return `From ${formatPackagePrice(min)}`;
   }
   if (packages.length === 1) return formatPackagePrice(packages[0]);
-  const price = trip.price ?? 0;
+  const price = activity.price ?? 0;
   if (price === 0) return 'Free';
   return `AED ${price.toLocaleString()}`;
 };
 
-export const inferTripPricingMode = (trip: TripPricingInput): TripPricingMode => {
-  if (trip.pricingMode === 'free' || trip.pricingMode === 'shared' || trip.pricingMode === 'paid') {
-    return trip.pricingMode;
+export const inferActivityPricingMode = (activity: ActivityPricingInput): ActivityPricingMode => {
+  if (activity.pricingMode === 'free' || activity.pricingMode === 'shared' || activity.pricingMode === 'paid') {
+    return activity.pricingMode;
   }
 
-  const packages = trip.pricePackages?.filter((pkg) => pkg.label.trim()) ?? [];
-  if (!tripHasPaidPricing({ price: trip.price, pricePackages: packages })) return 'free';
+  const packages = activity.pricePackages?.filter((pkg) => pkg.label.trim()) ?? [];
+  if (!activityHasPaidPricing({ price: activity.price, pricePackages: packages })) return 'free';
 
   if (packages.length > 1) return 'paid';
 
-  const terms = trip.paymentTerms?.trim() ?? '';
+  const terms = activity.paymentTerms?.trim() ?? '';
   if (terms.length > 0 && packages.length <= 1) {
     return 'shared';
   }
@@ -145,14 +145,14 @@ export const inferTripPricingMode = (trip: TripPricingInput): TripPricingMode =>
   return 'paid';
 };
 
-export const tripPricingModeLabel = (trip: TripPricingInput): string =>
-  TRIP_PRICING_MODE_LABELS[inferTripPricingMode(trip)];
+export const activityPricingModeLabel = (activity: ActivityPricingInput): string =>
+  ACTIVITY_PRICING_MODE_LABELS[inferActivityPricingMode(activity)];
 
 export const eventHasPaidPricing = (input: {
   price?: number | null;
-  pricePackages?: TripPricePackage[] | null;
+  pricePackages?: ActivityPricePackage[] | null;
 }): boolean =>
-  tripHasPaidPricing({
+  activityHasPaidPricing({
     price: input.price ?? 0,
     pricePackages: input.pricePackages ?? [],
   });

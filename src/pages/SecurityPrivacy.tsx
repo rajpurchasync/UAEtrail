@@ -29,7 +29,7 @@ const VISIBILITY_OPTIONS: Array<{
     value: 'private',
     label: 'Private',
     description:
-      'Hidden from map browse unless you host trips. Friends, co-participants, and hosts on your trips can still view.',
+      'Hidden from map browse unless you host activities. Friends, co-participants, and hosts on your activities can still view.',
   },
 ];
 
@@ -50,7 +50,7 @@ export const SecurityPrivacy = () => {
 
   const isHostPath = location.pathname.startsWith('/host/');
   const backPath = isHostPath ? '/host/overview' : '/profile';
-  const backLabel = isHostPath ? 'Organisation console' : 'Profile';
+  const backLabel = isHostPath ? 'Host console' : 'Profile';
 
   useEffect(() => {
     void api
@@ -155,7 +155,7 @@ export const SecurityPrivacy = () => {
                 <h2 className="text-sm font-semibold text-gray-900">Profile visibility</h2>
                 <p className="text-xs text-gray-600 mt-1 mb-3 leading-relaxed">
                   Controls who can open your member profile. Hosts still appear on their activity cards. Friends and
-                  trip co-participants can always view private profiles when authorized.
+                  activity co-participants can always view private profiles when authorized.
                 </p>
                 <div className="space-y-2">
                   {VISIBILITY_OPTIONS.map((option) => {

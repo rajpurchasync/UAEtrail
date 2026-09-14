@@ -18,6 +18,7 @@ import { ReportContentButton } from '../components/ui/ReportContentDialog';
 import { ChatComposeBar } from '../components/ui/ChatComposeBar';
 import { EmojiPickerButton } from '../components/ui/EmojiPickerButton';
 import { buildSignInRedirect } from '../utils/authReturnContext';
+import { explorePlacesPath } from '../utils/exploreRouting';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 const linkPattern = /(?:https?:\/\/|www\.)\S+|(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/\S*)?/gi;
@@ -232,7 +233,7 @@ export const Community = () => {
     <>
       <PageMeta
         title="Outdoor community"
-        description="Ask questions, share trip reports, and get tips from hikers and campers across the UAE."
+        description="Ask questions, share activity reports, and get tips from hikers and campers across the UAE."
         path="/community"
       />
     <ConsumerShell
@@ -276,7 +277,7 @@ export const Community = () => {
             <div className="min-w-0">
               <p className="text-sm font-semibold text-neutral-900">Trail with your crew</p>
               <p className="text-xs text-neutral-500 mt-0.5">
-                Create a private group, invite family or friends, and chat together on trips.
+                Create a private group, invite family or friends, and chat together on activities.
               </p>
             </div>
           </div>
@@ -479,7 +480,7 @@ export const Community = () => {
                       e.currentTarget.form?.requestSubmit();
                     }
                   }}
-                  placeholder="Share your question, trip report, or tip..."
+                  placeholder="Share your question, activity report, or tip..."
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 font-emoji"
                 />
                 <EmojiPickerButton
@@ -492,7 +493,7 @@ export const Community = () => {
                 placeholder="Location ID (optional — link to a trail/camp)"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
               />
-              {(newPost.category === 'photos' || newPost.category === 'trip-reports') && (
+              {(newPost.category === 'photos' || newPost.category === 'activity-reports') && (
                 <ImageUpload
                   images={newPost.images}
                   onChange={(urls) => setNewPost({ ...newPost, images: urls })}
@@ -504,7 +505,7 @@ export const Community = () => {
                 />
               )}
               <p className="text-xs text-gray-500">
-                Tip: open a <Link to="/explore?panel=venues&list=1" className="text-emerald-600">location page</Link> and paste its ID to anchor your post.
+                Tip: open a <Link to={explorePlacesPath()} className="text-emerald-600">location page</Link> and paste its ID to anchor your post.
               </p>
               <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
                 Earn <strong>+20 Trail Points</strong> when you publish.

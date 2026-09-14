@@ -51,7 +51,7 @@ export const AccountDeleteSection = ({ onDeleted }: AccountDeleteSectionProps) =
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold text-gray-900">Delete account</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              Permanently remove your profile and sign-in access. Trip history may be retained in anonymized form.
+              Permanently remove your profile and sign-in access. Activity history may be retained in anonymized form.
             </p>
             {info && !info.canDelete && (
               <p className="text-xs text-amber-700 mt-2">{info.blockers[0]}</p>

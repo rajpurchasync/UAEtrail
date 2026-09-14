@@ -316,7 +316,7 @@ export const ExploreCardPeopleRow = ({ card }: { card: ExploreCardModel }) => {
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{hostName}</p>
           <p className="text-xs text-gray-500">
-            {personRoleLabel ?? (card.source === 'demand' ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Organisation')}
+            {personRoleLabel ?? (card.source === 'demand' ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Host')}
           </p>
         </div>
       </div>

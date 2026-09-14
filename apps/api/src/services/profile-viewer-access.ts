@@ -43,7 +43,7 @@ const ACTIVE_JOIN_REQUEST_STATUSES: RequestStatus[] = [
 
 export const PRIVATE_PROFILE_MESSAGE = 'User has set their account private';
 
-/** Host may view a private profile when reviewing requests or managing their trip roster. */
+/** Host may view a private profile when reviewing requests or managing their activity roster. */
 export const viewerIsHostOfTargetOnActivity = async (
   hostUserId: string,
   targetUserId: string

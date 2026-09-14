@@ -30,7 +30,7 @@ export const resolveProfileShareText = (
   ownedProfiles: OwnedOrganisationProfileDTO[]
 ): string => {
   if (ownedProfiles.some((profile) => profile.type === 'agency' || profile.type === 'guide')) {
-    return `Check out ${displayName} on UAE Trail — hikes, camps, and outdoor trips in the UAE.`;
+    return `Check out ${displayName} on UAE Trail — hikes, camps, and outdoor activities in the UAE.`;
   }
   if (ownedProfiles.some((profile) => profile.type === 'shop')) {
     return `Visit ${displayName} on UAE Trail — outdoor gear and adventure shops in the UAE.`;

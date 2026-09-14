@@ -30,9 +30,9 @@ import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profi
 import { buildProfileStamps } from '../utils/profileStamps';
 import { USER_CITY_LABELS } from '../constants/userProfileOptions';
 import { computeAgeFromDateOfBirth, formatMemberAge } from '../utils/profileAge';
-import { resolveProfileOrganisationKind, resolveProfileRoleLabel } from '../utils/profileRoleLabel';
+import { resolveProfileHostKind, resolveProfileRoleLabel } from '../utils/profileRoleLabel';
 import type { AccountEditSavePayload } from '../components/account/AccountEditModal';
-import { attendedTrips } from '../utils/activityHubSections';
+import { attendedActivities } from '../utils/activityHubSections';
 import { isHostRole } from '../utils/roles';
 
 export const Profile = () => {
@@ -47,9 +47,9 @@ export const Profile = () => {
     buddies,
     incomingBuddyRequests,
     pendingRequests,
-    trips,
-    upcomingTripsCount,
-    upcomingTrip,
+    activities,
+    upcomingActivitiesCount,
+    upcomingActivity,
     unreadMessages,
     loading,
     error,
@@ -113,7 +113,7 @@ export const Profile = () => {
   }, [location.pathname, location.state, navigate]);
 
   const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
-  const hostProfileKind = useMemo(() => resolveProfileOrganisationKind(ownedProfiles), [ownedProfiles]);
+  const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const canHost = isHostRole(user?.role);
   const canEditLanguages = canHost || ownedProfiles.length > 0 || Boolean(memberDetails.languages);
   const isTripHost = canHost && hostProfileKind !== 'shop';
@@ -158,13 +158,13 @@ export const Profile = () => {
     () =>
       buildProfileStamps({
         rewardSummary,
-        attendedCount: attendedTrips(trips).length,
+        attendedCount: attendedActivities(activities).length,
         hostedCount: host.activities.filter((a) => a.status === 'published').length,
         isHost: isTripHost,
         hostProfileKind,
         isGuideStaff: user?.role === 'tenant_guide',
       }),
-    [host.activities, hostProfileKind, isTripHost, rewardSummary, trips, user?.role]
+    [host.activities, hostProfileKind, isTripHost, rewardSummary, activities, user?.role]
   );
 
   const openActivities = useCallback(() => {
@@ -180,8 +180,8 @@ export const Profile = () => {
         emoji: '🧭',
         badge:
           (canHost
-            ? upcomingTripsCount + host.pendingJoinRequests
-            : upcomingTripsCount) || undefined,
+            ? upcomingActivitiesCount + host.pendingJoinRequests
+            : upcomingActivitiesCount) || undefined,
         accent: 'bg-emerald-50',
       },
       {
@@ -241,7 +241,7 @@ export const Profile = () => {
     rewardSummary?.points,
     trailPointsEligible,
     unreadMessages,
-    upcomingTripsCount,
+    upcomingActivitiesCount,
   ]);
 
   const openPublicProfile = useCallback(() => {
@@ -375,7 +375,7 @@ export const Profile = () => {
 
         {isTripHost && (
           <GlassCard padding className="space-y-3">
-            <AccountSectionHeader title="Organising" actionTo="/host/overview" actionLabel="Organisation console" />
+            <AccountSectionHeader title="Hosting" actionTo="/host/overview" actionLabel="Host console" />
             {host.loading ? (
               <div className="flex justify-center py-6">
                 <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
@@ -410,7 +410,7 @@ export const Profile = () => {
         ) : (
           <AccountActivityPreview
             messagesPath={messagesPath}
-            upcomingTrip={upcomingTrip}
+            upcomingActivity={upcomingActivity}
             pendingRequests={pendingRequests}
             conversations={conversations}
           />

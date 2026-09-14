@@ -1,7 +1,7 @@
 import type { ActivityDTO, ActivityJoinMode } from '@uaetrail/shared-types';
 import { inferJoinModeFromRequirements } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
-import { derivePriceAed, inferTripPricingMode, type TripPricePackage } from '../../utils/tripPricing';
+import { derivePriceAed, inferActivityPricingMode, type ActivityPricePackage } from '../../utils/activityPricing';
 import { parseCoord } from '../ui/MeetingPointMap';
 
 export type PricingMode = 'free' | 'shared' | 'paid';
@@ -29,7 +29,7 @@ export type ActivityFormState = {
   sharedAmount: number;
   sharedCostInfo: string;
   price: number;
-  pricePackages: TripPricePackage[];
+  pricePackages: ActivityPricePackage[];
   paymentTerms: string;
   start: LocationPinForm;
   parking: LocationPinForm;
@@ -54,7 +54,7 @@ export type ActivityFormState = {
   eventEmirate: string;
   eventState: string;
   eventVenueDetail: string;
-  eventHostOrganization: string;
+  eventHostName: string;
   hostUserId: string;
   joinMode: ActivityJoinMode;
 };
@@ -99,7 +99,7 @@ export const emptyActivityForm = (activityType: ActivityType = 'hiking'): Activi
   eventEmirate: '',
   eventState: '',
   eventVenueDetail: '',
-  eventHostOrganization: '',
+  eventHostName: '',
   hostUserId: '',
   joinMode: 'open',
 });
@@ -124,7 +124,7 @@ const parseRequirementsToForm = (requirements: string[]) => {
   let fourByFourOnly = false;
   let noChildren = false;
   let noPets = false;
-  let eventHostOrganization = '';
+  let eventHostName = '';
   let sharedCostInfo = '';
 
   for (const item of requirements) {
@@ -145,8 +145,10 @@ const parseRequirementsToForm = (requirements: string[]) => {
     } else if (trimmed.startsWith('Camping surface: ')) {
       const surface = trimmed.slice('Camping surface: '.length).toLowerCase();
       if (surface === 'sand' || surface === 'grass') campingSurfaceType = surface;
-    } else if (trimmed.startsWith('Host organization: ')) {
-      eventHostOrganization = trimmed.slice('Host organization: '.length);
+    } else if (trimmed.startsWith('Host: ') || trimmed.startsWith('Host organization: ')) {
+      eventHostName = trimmed.startsWith('Host: ')
+        ? trimmed.slice('Host: '.length)
+        : trimmed.slice('Host organization: '.length);
     } else if (trimmed === 'Reachable by 4x4 only') {
       fourByFourOnly = true;
     } else if (trimmed === 'No children') {
@@ -167,13 +169,13 @@ const parseRequirementsToForm = (requirements: string[]) => {
     noChildren,
     noPets,
     additionalRequirements: recommendationLines.join('\n'),
-    eventHostOrganization,
+    eventHostName,
     sharedCostInfo,
   };
 };
 
 const inferPricingMode = (activity: ActivityDTO): PricingMode =>
-  inferTripPricingMode({
+  inferActivityPricingMode({
     price: activity.price,
     pricePackages: activity.pricePackages,
     paymentTerms: activity.paymentTerms,
@@ -233,7 +235,7 @@ export const activityToForm = (activity: ActivityDTO): ActivityFormState => {
     eventEmirate: '',
     eventState: activity.region ?? '',
     eventVenueDetail: '',
-    eventHostOrganization: instructionFields.eventHostOrganization ?? '',
+    eventHostName: instructionFields.eventHostName ?? '',
     hostUserId: activity.hostId ?? activity.hostUserId ?? '',
     joinMode: activity.joinMode ?? inferJoinModeFromRequirements(activity.requirements),
   };
@@ -256,8 +258,8 @@ export const buildRequirementsFromForm = (form: ActivityFormState): string[] => 
     const label = form.campingSurfaceType === 'sand' ? 'Sand' : 'Grass';
     lines.push(`Camping surface: ${label}`);
   }
-  if (form.activityType === 'event' && form.eventHostOrganization.trim()) {
-    lines.push(`Host organization: ${form.eventHostOrganization.trim()}`);
+  if (form.activityType === 'event' && form.eventHostName.trim()) {
+    lines.push(`Host: ${form.eventHostName.trim()}`);
   }
   if (form.fourByFourOnly) lines.push('Reachable by 4x4 only');
   if (form.noChildren) lines.push('No children');
@@ -277,7 +279,7 @@ const resolvePinText = (pin: LocationPinForm): string | undefined => {
 
 export const buildHostActivityPayload = (form: ActivityFormState): Record<string, unknown> => {
   let price = 0;
-  let pricePackages: TripPricePackage[] = [];
+  let pricePackages: ActivityPricePackage[] = [];
 
   if (form.pricingMode === 'shared') {
     price = Math.max(0, form.sharedAmount);

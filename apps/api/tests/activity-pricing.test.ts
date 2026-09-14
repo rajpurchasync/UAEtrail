@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   derivePriceAed,
-  inferTripPricingMode,
+  inferActivityPricingMode,
   normalizeActivityPricing,
   parseStoredPricePackages,
-  tripHasPaidPricing,
-  tripPriceLabel,
+  activityHasPaidPricing,
+  activityPriceLabel,
 } from '@uaetrail/shared-types';
 
-describe('trip pricing', () => {
+describe('activity pricing', () => {
   it('normalizes free pricing', () => {
     expect(normalizeActivityPricing({ price: 0, pricePackages: [] })).toEqual({
       priceAed: 0,
@@ -37,7 +37,7 @@ describe('trip pricing', () => {
 
   it('infers pricing mode and labels', () => {
     expect(
-      inferTripPricingMode({
+      inferActivityPricingMode({
         price: 0,
         pricePackages: [],
         paymentTerms: null,
@@ -46,7 +46,7 @@ describe('trip pricing', () => {
     ).toBe('free');
 
     expect(
-      tripPriceLabel({
+      activityPriceLabel({
         price: 0,
         pricePackages: [
           { label: 'Adult', amount: 80, currency: 'AED' },
@@ -55,7 +55,7 @@ describe('trip pricing', () => {
       })
     ).toBe('From AED 40');
 
-    expect(tripHasPaidPricing({ price: 0, pricePackages: [{ label: 'Adult', amount: 80, currency: 'AED' }] })).toBe(
+    expect(activityHasPaidPricing({ price: 0, pricePackages: [{ label: 'Adult', amount: 80, currency: 'AED' }] })).toBe(
       true
     );
   });

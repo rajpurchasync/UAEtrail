@@ -1,6 +1,6 @@
 import type { ActivityDTO, ActivityDetailDTO, LocationDTO } from '@uaetrail/shared-types';
 import { buildActivityDetailFromListItem } from '../../utils/buildActivityDetailPreview';
-import { ActivityTripPreviewOverlay } from './ActivityTripPreviewOverlay';
+import { ActivityPreviewOverlay } from './ActivityPreviewOverlay';
 
 /** Opens the public activity page for published activities. */
 export const openPublishedActivityPreview = (activityId: string) => {
@@ -28,13 +28,13 @@ export const ActivityListPreview = ({
 }: ActivityListPreviewProps) => {
   if (!activity) return null;
 
-  const trip: ActivityDetailDTO = buildActivityDetailFromListItem(activity, venue);
+  const previewActivity: ActivityDetailDTO = buildActivityDetailFromListItem(activity, venue);
   const isDraft = activity.status === 'draft';
 
   return (
-    <ActivityTripPreviewOverlay
+    <ActivityPreviewOverlay
       variant="list"
-      trip={trip}
+      activity={previewActivity}
       onClose={onClose}
       saving={saving}
       onEdit={!isDraft && onEdit ? () => onEdit(activity) : undefined}

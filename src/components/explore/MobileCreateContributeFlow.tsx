@@ -8,7 +8,7 @@ import { PhoneInput } from '../ui/PhoneInput';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import type { ContributeVenueKind } from './MobileContributeTypeSheet';
 import {
-  TRIP_DIFFICULTY_OPTIONS,
+  ACTIVITY_DIFFICULTY_OPTIONS,
   contributeDescriptionPlaceholder,
   contributeFlowStepTitle,
   contributeTitlePlaceholder,
@@ -20,7 +20,7 @@ import {
   type ContributeSubmitResult,
   type MobileContributeDraft,
 } from './mobileContributeFlow';
-import type { LocationPrecision, TripDifficulty } from './mobileCreateFlow';
+import type { LocationPrecision, ActivityDifficulty } from './mobileCreateFlow';
 import { formatOrganisationPhonePreview } from '../organisation-console/becomeOrganisationForm';
 
 const MobileCreatePlacePicker = lazy(() =>
@@ -395,13 +395,13 @@ export const MobileCreateContributeFlow = ({
         <>
           <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
           <div className="grid grid-cols-1 gap-3">
-            {TRIP_DIFFICULTY_OPTIONS.map((option) => {
+            {ACTIVITY_DIFFICULTY_OPTIONS.map((option) => {
               const active = draft.difficulty === option.value;
               return (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => patchDraft({ difficulty: option.value as TripDifficulty })}
+                  onClick={() => patchDraft({ difficulty: option.value as ActivityDifficulty })}
                   className={`rounded-2xl border-2 px-4 py-4 text-left ${
                     active ? 'border-emerald-500 bg-emerald-50/50' : 'border-neutral-200 bg-white'
                   }`}
@@ -498,7 +498,7 @@ export const MobileCreateContributeFlow = ({
             )}
             {kind === 'hiking' && draft.difficulty && (
               <p className="mt-1 text-xs text-gray-500">
-                Difficulty: {TRIP_DIFFICULTY_OPTIONS.find((option) => option.value === draft.difficulty)?.title}
+                Difficulty: {ACTIVITY_DIFFICULTY_OPTIONS.find((option) => option.value === draft.difficulty)?.title}
               </p>
             )}
             {kind !== 'shop' && draft.parkingPinPlaced && (

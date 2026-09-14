@@ -11,7 +11,7 @@ import {
 /** Shared outline icons for mobile nav + participant UI (keep in sync with MOBILE_DRAWER_MENU). */
 export const NAV_ICONS = {
   explore: Map,
-  trips: Compass,
+  activities: Compass,
   community: MessageCircle,
   shop: ShoppingBag,
   profile: User
@@ -20,17 +20,15 @@ export const NAV_ICONS = {
 export const MOBILE_NAV_ICON_MAP: Record<
   | 'Explore'
   | 'Activities'
-  | 'Trips'
   | 'Community'
   | 'Shop'
   | 'Profile'
   | 'Trail catalog'
   | 'Upcoming Activities'
-  | 'Upcoming Trips'
   | 'Gears Shop'
   | 'Explore Map'
   | 'My Profile'
-  | 'My trips'
+  | 'My activities'
   | 'Notifications'
   | 'Join'
   | 'Contact',
@@ -38,19 +36,17 @@ export const MOBILE_NAV_ICON_MAP: Record<
 > = {
   'Explore Map': NAV_ICONS.explore,
   Explore: NAV_ICONS.explore,
-  Join: NAV_ICONS.trips,
+  Join: NAV_ICONS.activities,
   Contact: MessageCircle,
-  Activities: NAV_ICONS.trips,
-  Trips: NAV_ICONS.trips,
+  Activities: NAV_ICONS.activities,
   Community: NAV_ICONS.community,
   Shop: NAV_ICONS.shop,
   Profile: NAV_ICONS.profile,
   'My Profile': NAV_ICONS.profile,
   Notifications: Bell,
   'Trail catalog': Map,
-  'My trips': NAV_ICONS.trips,
-  'Upcoming Activities': NAV_ICONS.trips,
-  'Upcoming Trips': NAV_ICONS.trips,
+  'My activities': NAV_ICONS.activities,
+  'Upcoming Activities': NAV_ICONS.activities,
   'Gears Shop': NAV_ICONS.shop,
 };
 

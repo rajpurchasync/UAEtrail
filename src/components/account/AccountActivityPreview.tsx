@@ -11,14 +11,14 @@ const requestStatusStyle: Record<string, string> = {
   cancelled: 'bg-neutral-500/10 text-neutral-500',
 };
 
-const formatTripDate = (dateStr?: string) => {
+const formatActivityDate = (dateStr?: string) => {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 };
 
 interface AccountActivityPreviewProps {
   messagesPath: string;
-  upcomingTrip?: ActivityDTO;
+  upcomingActivity?: ActivityDTO;
   pendingRequests: ActivityRequestView[];
   conversations: ChatConversationDTO[];
 }
@@ -26,23 +26,23 @@ interface AccountActivityPreviewProps {
 /** Shows only actionable items — no empty states or duplicate full lists. */
 export const AccountActivityPreview = ({
   messagesPath,
-  upcomingTrip,
+  upcomingActivity,
   pendingRequests,
   conversations,
 }: AccountActivityPreviewProps) => {
   const unreadConversations = conversations.filter((c) => (c.unreadCount ?? 0) > 0).slice(0, 1);
   const pending = pendingRequests.slice(0, 2);
 
-  const hasContent = Boolean(upcomingTrip) || pending.length > 0 || unreadConversations.length > 0;
+  const hasContent = Boolean(upcomingActivity) || pending.length > 0 || unreadConversations.length > 0;
   if (!hasContent) return null;
 
   return (
     <section>
       <AccountSectionHeader title="Up next" />
       <div className="space-y-2">
-        {upcomingTrip && (
+        {upcomingActivity && (
           <Link
-            to={`/activity/${upcomingTrip.id}`}
+            to={`/activity/${upcomingActivity.id}`}
             className="glass-card-interactive flex items-center gap-3 p-3.5"
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-500/12 flex items-center justify-center shrink-0">
@@ -50,9 +50,9 @@ export const AccountActivityPreview = ({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-neutral-900 truncate">
-                {upcomingTrip.title || upcomingTrip.locationName}
+                {upcomingActivity.title || upcomingActivity.locationName}
               </p>
-              <p className="text-xs text-neutral-500">{formatTripDate(upcomingTrip.date)}</p>
+              <p className="text-xs text-neutral-500">{formatActivityDate(upcomingActivity.date)}</p>
             </div>
             <ChevronRight className="w-4 h-4 text-neutral-300 shrink-0" />
           </Link>

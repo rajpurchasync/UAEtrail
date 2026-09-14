@@ -72,8 +72,8 @@ export interface SummaryStepHikingProps {
   placeOptions?: PlaceDTO[];
   /** @deprecated Use placeOptions */
   venueLocations?: PlaceDTO[];
-  canPickHostOrganization: boolean;
-  pickerHostOrganizations: TenantListDTO[];
+  canPickHostTenant: boolean;
+  pickerHostTenants: TenantListDTO[];
   showScheduleWarning?: boolean;
 }
 
@@ -88,8 +88,8 @@ export const SummaryStepHiking = ({
   onAddVenue,
   placeOptions,
   venueLocations,
-  canPickHostOrganization,
-  pickerHostOrganizations,
+  canPickHostTenant,
+  pickerHostTenants,
   showScheduleWarning,
 }: SummaryStepHikingProps) => {
   const places = placeOptions ?? venueLocations;
@@ -136,21 +136,21 @@ export const SummaryStepHiking = ({
       />
     </div>
 
-    {canPickHostOrganization && pickerHostOrganizations.length > 0 && (
+    {canPickHostTenant && pickerHostTenants.length > 0 && (
       <div>
-        <label className={FORM_LABEL}>Organisation *</label>
+        <label className={FORM_LABEL}>Host *</label>
         <AppSelect
           value={form.tenantId}
           onChange={(tenantId) => set({ tenantId })}
-          options={pickerHostOrganizations.map((tenant) => ({ value: tenant.id, label: tenant.name }))}
-          placeholder="Select organization…"
+          options={pickerHostTenants.map((tenant) => ({ value: tenant.id, label: tenant.name }))}
+          placeholder="Select host…"
           inputClassName={FORM_INPUT}
-          aria-label="Organisation"
+          aria-label="Host"
         />
       </div>
     )}
 
-    {canPickHostOrganization && hostTenantId && (
+    {canPickHostTenant && hostTenantId && (
       <HostSelect
         tenantId={hostTenantId}
         value={form.hostUserId}
@@ -195,8 +195,8 @@ export interface SummaryStepCampingProps {
   placeOptions?: PlaceDTO[];
   /** @deprecated Use placeOptions */
   venueLocations?: PlaceDTO[];
-  canPickHostOrganization: boolean;
-  pickerHostOrganizations: TenantListDTO[];
+  canPickHostTenant: boolean;
+  pickerHostTenants: TenantListDTO[];
   showScheduleWarning?: boolean;
   formActivityType?: ActivityType;
 }
@@ -212,8 +212,8 @@ export const SummaryStepCamping = ({
   onAddVenue,
   placeOptions,
   venueLocations,
-  canPickHostOrganization,
-  pickerHostOrganizations,
+  canPickHostTenant,
+  pickerHostTenants,
   showScheduleWarning,
   formActivityType = 'camping',
 }: SummaryStepCampingProps) => {
@@ -329,12 +329,12 @@ export const SummaryStepCamping = ({
     {isEvent ? (
       <>
         <div>
-          <label className={FORM_LABEL}>Organisation *</label>
+          <label className={FORM_LABEL}>Host *</label>
           <input
             type="text"
             required
-            value={form.eventHostOrganization}
-            onChange={(e) => set({ eventHostOrganization: e.target.value })}
+            value={form.eventHostName}
+            onChange={(e) => set({ eventHostName: e.target.value })}
             className={FORM_INPUT}
             placeholder="e.g. Dubai Trail Runners"
           />
@@ -342,23 +342,23 @@ export const SummaryStepCamping = ({
         <SignupUrlField form={form} set={set} />
       </>
     ) : (
-      canPickHostOrganization &&
-      pickerHostOrganizations.length > 0 && (
+      canPickHostTenant &&
+      pickerHostTenants.length > 0 && (
         <div>
-          <label className={FORM_LABEL}>Organisation *</label>
+          <label className={FORM_LABEL}>Host *</label>
           <AppSelect
             value={form.tenantId}
             onChange={(tenantId) => set({ tenantId })}
-            options={pickerHostOrganizations.map((tenant) => ({ value: tenant.id, label: tenant.name }))}
-            placeholder="Select organization…"
+            options={pickerHostTenants.map((tenant) => ({ value: tenant.id, label: tenant.name }))}
+            placeholder="Select host…"
             inputClassName={FORM_INPUT}
-            aria-label="Organisation"
+            aria-label="Host"
           />
         </div>
       )
     )}
 
-    {!isEvent && canPickHostOrganization && hostTenantId && (
+    {!isEvent && canPickHostTenant && hostTenantId && (
       <HostSelect
         tenantId={hostTenantId}
         value={form.hostUserId}
@@ -501,13 +501,13 @@ export const ParticipationStep = ({ form, set, isBusinessOrg }: ParticipationSte
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               } disabled:opacity-40 disabled:cursor-not-allowed`}
             >
-              {mode === 'free' ? 'Free' : mode === 'shared' ? 'Cost Shared' : 'Professional Paid trip'}
+              {mode === 'free' ? 'Free' : mode === 'shared' ? 'Cost Shared' : 'Professional paid activity'}
             </button>
           );
         })}
       </div>
       {form.pricingMode === 'paid' && !isBusinessOrg && (
-        <p className="text-xs text-gray-500 mt-1">Paid trips are available for business organisations only.</p>
+        <p className="text-xs text-gray-500 mt-1">Paid activities are available for business hosts (agency or shop) only.</p>
       )}
     </div>
 

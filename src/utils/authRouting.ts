@@ -23,7 +23,7 @@ export const participantDashboardRedirect = (subpath: string): string => {
       return '/profile';
     case 'requests':
       return '/my-requests';
-    case 'trips':
+    case 'activities':
       return '/activities?tab=joined';
     case 'messages':
       return '/messages';
@@ -40,7 +40,6 @@ export const hostDashboardRedirect = (subpath: string): string => {
       return '/host/messages';
     case 'requests':
       return '/host/requests';
-    case 'trips':
     case 'activities':
       return '/host/activities';
     case 'profile':

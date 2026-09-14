@@ -490,7 +490,7 @@ export const updateManagedMerchantProfileById = async (
     { returnDocument: 'after' }
   );
   if (!result) {
-    throw new Error('Shop organisation profile not found.');
+    throw new Error('Shop profile not found.');
   }
   return mapMongoMerchantProfile(result);
 };

@@ -19,6 +19,18 @@ const buildPathFromLocation = (location: LocationLike, overrideHash?: string): s
   return `${location.pathname}${location.search}${hash}`;
 };
 
+/** Build `/signin?redirect=…` for a known return path (no scroll capture). */
+export const signInPathForReturn = (
+  returnPath: string,
+  options?: { focusSelector?: string }
+): string => {
+  const params = new URLSearchParams({ redirect: returnPath });
+  if (options?.focusSelector) {
+    params.set('focus', options.focusSelector);
+  }
+  return `/signin?${params.toString()}`;
+};
+
 export const buildSignInRedirect = (
   location: LocationLike,
   options?: { focusSelector?: string; hash?: string }

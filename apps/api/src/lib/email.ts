@@ -85,9 +85,9 @@ const sendRawEmail = async (payload: EmailPayload): Promise<boolean> => {
 };
 
 const templateSubjects: Record<EmailTemplate, string> = {
-  request_approved: 'Your trip request was approved',
-  request_rejected: 'Update on your trip request',
-  activity_cancelled: 'A trip you joined was cancelled',
+  request_approved: 'Your activity request was approved',
+  request_rejected: 'Update on your activity request',
+  activity_cancelled: 'An activity you joined was cancelled',
   email_verification: 'Verify your UAE Trail account',
   password_reset: 'Reset your UAE Trail password'
 };

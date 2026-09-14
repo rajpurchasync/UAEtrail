@@ -1,6 +1,6 @@
 import type { MyActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/services';
-import { getRequestEventDate, isUpcomingTrip } from './tripDates';
+import { getRequestEventDate, isUpcomingActivity } from './activityDates';
 
 export type JoinedSubTab = 'upcoming' | 'attended' | 'cancelled' | 'rejected';
 
@@ -9,18 +9,20 @@ export const parseJoinedSubTab = (value: string | null): JoinedSubTab => {
   return 'upcoming';
 };
 
-export const isAttendedTrip = (trip: MyActivityDTO): boolean =>
-  Boolean(trip.participation?.checkedInAt);
+export const isAttendedActivity = (activity: MyActivityDTO): boolean =>
+  Boolean(activity.participation?.checkedInAt);
 
-export const upcomingConfirmedTrips = (trips: MyActivityDTO[]) =>
-  trips.filter(isUpcomingTrip);
+export const upcomingConfirmedActivities = (activities: MyActivityDTO[]) =>
+  activities.filter(isUpcomingActivity);
 
-export const attendedTrips = (trips: MyActivityDTO[]) =>
-  trips.filter(isAttendedTrip).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+export const attendedActivities = (activities: MyActivityDTO[]) =>
+  activities
+    .filter(isAttendedActivity)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 /** Pending or waitlisted requests for future events not already confirmed. */
-export const upcomingOpenRequests = (trips: MyActivityDTO[], requests: ActivityRequestView[]) => {
-  const confirmedIds = new Set(trips.map((t) => t.id));
+export const upcomingOpenRequests = (activities: MyActivityDTO[], requests: ActivityRequestView[]) => {
+  const confirmedIds = new Set(activities.map((a) => a.id));
   return requests.filter((request) => {
     if (confirmedIds.has(request.activity.id)) return false;
     if (request.status !== 'pending' && request.status !== 'waitlisted') return false;

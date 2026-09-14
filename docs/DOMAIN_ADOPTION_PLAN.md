@@ -140,8 +140,8 @@ Rename **folder** (optional, one PR):
 
 ### 3c — Become-host flow copy (small)
 
-- [x] UI strings: “host profile” → “organisation profile” where it means business (guide/agency/shop).
-- Keep “guide” as subtype label.
+- [x] UI strings use **Host** / **Guide** / **Agency** / **Shop** in product copy (see `hostCopy.ts`, `DOMAIN.md`).
+- Keep “guide” as subtype label for individual hosts.
 - [x] File names: `MobileBecomeHostFlow` → `MobileBecomeOrganisationFlow` (route unchanged; legacy re-export kept).
 
 **PR size:** 3–4 PRs  
@@ -210,11 +210,24 @@ Rename **folder** (optional, one PR):
 - [x] Expose `tenantId` on `MerchantProfileDTO` / shop API responses.
 - [x] Helpers: `linkMerchantProfileToShopTenant`, `findMerchantProfileByTenantId`.
 
-### 6b — Deferred (future PRs)
+### 6b — API wire aliases
 
-- Collapse `merchant_profiles` into `tenants` (data migration + product FK changes).
-- OpenAPI with domain-facing tags while paths stay `/locations`.
-- Duplicate `listAdminPlacesPaged` route handlers, then deprecate legacy names.
+- [x] **6b-i** Tenant profile JSON: dual keys `hostDetails` + `organizerDetails`, `shopId` + `merchantId`.
+- [x] **6b-i** `/me/host-details` PATCH: returns domain keys alongside legacy keys.
+- [x] **6b-i** Frontend reads `hostDetails` / `shopId` first with legacy fallbacks.
+- [x] **6b-ii** Admin place routes: `GET|POST /admin/places`, `PATCH|DELETE /admin/places/:id` (legacy `/admin/locations*` kept).
+- [x] **6b-ii** Store alias `listAdminPlacesPaged`; frontend `getAdminPlaces` uses `/admin/places`.
+- [x] **6b-iii** OpenAPI domain tags (`Places`, `Host`, `Shop`, `Members`, …) + documented `/admin/places`.
+- [x] **6b-iv** Shop wire aliases: dual keys `shopId`/`merchantId` on profile + public shop JSON; scope queries accept `shopId`/`tenantId`.
+- [x] **6b-iv** Routes `/shop/organisation/*` (manage) and `/shop/shops/:id` (public) alongside legacy `/shop/merchant/*` and `/shop/merchants/:id`.
+- [x] **6b-iv** Frontend shop organisation client uses `/shop/organisation/*` and `shopId` body/query keys.
+- [ ] Collapse `merchant_profiles` into `tenants` (data migration + product FK changes).
+
+**Phase 6b-i status:** complete (2026-09-13).
+
+**Phase 6b-ii/iii status:** complete (2026-09-13).
+
+**Phase 6b-iv status:** complete (2026-09-13).
 
 **Phase 6a status:** complete (2026-09-13).
 
@@ -227,14 +240,15 @@ Rename **folder** (optional, one PR):
 ### 7a — Admin & member admin (done)
 
 - [x] `AdminUsers` → `AdminMembers` export; nav already “Members”.
-- [x] Member type badges: “Organisation owner”, “Guide”, “Organisation staff” (not “Business Host”).
-- [x] Admin overview: “Total members”, “Pending organisation applications”.
+- [x] Member type badges: “Host owner”, “Guide”, “Host staff”.
+- [x] Admin overview: “Total members”, “Pending host applications”.
 - [x] API aliases: `getAdminMembers`, `getAdminOrganisationApplications`.
 
-### 7b — Organisation console copy (done)
+### 7b — Host console copy (done; refined in Phase 12)
 
-- [x] Console title “Organisation” (not “Host”); Profile “Organisation console”.
-- [x] `HostHubSections` → `OrganisationHubSections`; `HostPlaces` → `OrganisationPlaces`.
+- [x] Console title “Host”; profile hub “Host console”.
+- [x] `HostHubSections` → `OrganisationHubSections` (code name); UI says “Host profiles”.
+- [x] `HostPlaces` → `OrganisationPlaces` (code name); route `/host/locations` unchanged.
 - [x] Activity forms: “Organisation” not “Host organization”.
 - [x] Become-host page copy aligned; explore cards “Organisation”.
 
@@ -285,12 +299,12 @@ Rename **folder** (optional, one PR):
 - [x] Shop product API aliases + `ShopOrganisationPanel` migration.
 - [x] Organisation application/profile API at call sites (`submitOrganisationApplication`, `getOrganisationProfile`, `updateOrganisationDetails`).
 - [x] Admin pages use `getAdminMembers`, `OrganisationApplication` types.
-- [x] User-facing copy: organisation console, organisation profile, FAQs, admin “Total places”.
+- [x] User-facing copy: host console, host profile, FAQs, admin “Total places”.
 - [x] Backend user-visible strings (user, admin, shop, activity-pricing, admin-store).
 - [x] `BecomeOrganisation` page export; legacy `/become-host` route unchanged.
 - [x] shared-types: `PlacePremiumSummaryDTO`, `ShopAnalytics*` aliases.
 
-**Adoption status:** frontend domain migration complete (2026-09-13). Deferred: Phase 6b backend tenant/merchant collapse.
+**Adoption status:** frontend domain migration complete (2026-09-13). Host copy alignment in Phase 12. Deferred: Phase 6b backend tenant/merchant collapse.
 
 ### Phase 11 — Filename cleanup (done)
 
@@ -303,11 +317,55 @@ Rename **folder** (optional, one PR):
 
 ---
 
+## Phase 12 — Host copy alignment (done)
+
+**Goal:** Product language uses **Host** as the publishing umbrella (guide, agency, shop). **Organisation** remains code-only (`Organisation*` filenames, API aliases, `/organisation/manage` route).
+
+- [x] `src/utils/hostCopy.ts` — `hostConsoleLabel()`, `hostProfileLabel()`, `normalizeHostKind()`, etc.
+- [x] `docs/DOMAIN.md` — “Host vs Organisation in copy” table.
+- [x] Frontend sweep: admin, console, become-host, explore cards, mobile menu, activity forms, profile hub.
+- [x] Backend user-visible strings: user routes, admin notifications, shop errors, activity-pricing.
+- [x] Reverted mid-adoption “organisation profile” UI strings where they conflicted with solo guides.
+
+**Phase 12 status:** complete (2026-09-13).
+
+---
+
+## Phase 13 — Orphan cleanup & canonical routing (done)
+
+**Goal:** Remove dead Host-era trees, zero-import shims, and finish host-language residue in live UI.
+
+- [x] Deleted `components/host/` duplicate tree and unrouted legacy pages (`Host*`, `OperatorProfile`, `AdminLocations`, `MerchantDashboard`).
+- [x] Removed zero-import shims (`hostLinks`, `useHostGate`, `useHostHubData`, `useHostActivityFormModal`, `becomeHostFlow/Form` files, account `HostHubSections` shim).
+- [x] Canonical page file: `BecomeOrganisation.tsx` (routes `/become-host`, `/become-organizer` unchanged).
+- [x] Console nav constant: `HOST_CONSOLE_LINKS` (deprecated alias `ORGANISATION_CONSOLE_LINKS`).
+- [x] UI residue sweep: `TenantSwitcher`, activity forms, admin panels, privacy/FAQs.
+
+**Phase 13 status:** complete (2026-09-13).
+
+---
+
+## Phase 14 — Internal identifier alignment (done)
+
+**Goal:** Code identifiers match domain objects — not just UI copy and thin shims.
+
+- [x] Activity forms: `hostTenants`, `canPickHostTenant`, `pickerHostTenants`, `eventHostName`.
+- [x] Become-host form: canonical `BecomeOrganisationFormState`, `buildBecomeOrganisationFormPrefill`.
+- [x] Auth signup: `hostName` param (wire: `organizationName`).
+- [x] Menu/auth utils: `isHostConsoleRole`, `hostConsoleRoles`, `askHost`.
+- [x] Profile helpers: canonical `resolveProfileHostKind`.
+- [x] Console nav: canonical `HOST_CONSOLE_LINKS`.
+
+**Phase 14 status:** complete (2026-09-13).
+
+**Adoption status:** frontend domain migration, host copy, orphan cleanup, and internal identifier alignment complete. Deferred: Phase 6b backend tenant/merchant collapse.
+
+---
+
 ## Suggested implementation order
 
 ```
-Phase 1  →  Phase 2  →  Phase 3a  →  Phase 3b  →  Phase 3c  →  Phase 4  →  Phase 5
- (1 PR)     (2-3 PRs)    (1 PR)       (2-3 PRs)     (1 PR)       (1 PR)     (1-2 PRs)
+Phase 1  →  Phase 2  →  Phase 3  →  Phase 4  →  Phase 5  →  Phase 6a  →  Phase 12–14  →  Phase 6b-i  →  Phase 6b-ii/iii  →  Phase 6b-iv  →  Phase 6b (collapse)
 ```
 
 **Start with Phase 1** — highest leverage, lowest risk. Then Phase 2 (Place components) because it touches the most files but is mechanical.

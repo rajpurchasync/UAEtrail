@@ -20,7 +20,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What is UAE Trail?',
         answer:
-          'UAE Trail is an outdoor recreation platform for the United Arab Emirates and the wider GCC. We help you discover hiking trails and camping spots, join organized trips with verified hosts, earn Trail Points rewards, and connect with the outdoor community.'
+          'UAE Trail is an outdoor recreation platform for the United Arab Emirates and the wider GCC. We help you discover hiking trails and camping spots, join organized activities with verified hosts, earn Trail Points rewards, and connect with the outdoor community.'
       },
       {
         question: 'Which regions does UAE Trail cover?',
@@ -30,29 +30,29 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'Is UAE Trail free to use?',
         answer:
-          'Creating an account and browsing trails, camps, and trips is free. Some location premium guides require payment or Trail Points. Organized trips may be free or paid depending on the host.'
+          'Creating an account and browsing trails, camps, and activities is free. Some location premium guides require payment or Trail Points. Organized activities may be free or paid depending on the host.'
       }
     ]
   },
   {
-    id: 'trails-trips',
-    title: 'Trails, camps & trips',
+    id: 'trails-activities',
+    title: 'Trails, camps & activities',
     description: 'Finding places and joining adventures.',
     items: [
       {
         question: 'How do I find hiking trails and camping spots in the UAE?',
         answer:
-          'Open Explore to browse trails and camps on a map or list. Filter by emirate, difficulty, distance, and activity type. Each venue page includes description, photos, difficulty, and upcoming organized trips.'
+          'Open Explore to browse trails and camps on a map or list. Filter by emirate, difficulty, distance, and activity type. Each venue page includes description, photos, difficulty, and upcoming organized activities.'
       },
       {
-        question: 'How do I join an organized hike or camping trip?',
+        question: 'How do I join an organized hike or camping activity?',
         answer:
-          'Browse Trips for upcoming events hosted by guides and outdoor businesses. Open a trip page and submit a join request. The host reviews your request and confirms or waitlists you. Track status under My Requests.'
+          'Browse Activities for upcoming events hosted by guides and outdoor businesses. Open an activity page and submit a join request. The host reviews your request and confirms or waitlists you. Track status under My Requests.'
       },
       {
-        question: 'What is the difference between a trail page and a trip?',
+        question: 'What is the difference between a trail page and an activity?',
         answer:
-          'A trail or camp page describes a location — route, terrain, access, and tips. A trip is a scheduled event at that location on a specific date, hosted by an organizer with a set capacity and meeting point.'
+          'A trail or camp page describes a location — route, terrain, access, and tips. An activity is a scheduled event at that location on a specific date, hosted by a host with a set capacity and meeting point.'
       },
       {
         question: 'When is the best time to hike in the UAE?',
@@ -63,17 +63,17 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
   },
   {
     id: 'hosts',
-    title: 'Organisations & trip hosts',
+    title: 'Hosts & hosting',
     items: [
       {
-        question: 'How do I run trips on UAE Trail?',
+        question: 'How do I run activities on UAE Trail?',
         answer:
-          'Apply at Become an organisation as an individual guide or registered outdoor business. Once approved, you can publish trips, manage join requests, and build a public organisation profile with reviews and certificates.'
+          'Apply at Become a host as an individual guide or registered outdoor business. Once approved, you can publish activities, manage join requests, and build a public host profile with reviews and certificates.'
       },
       {
-        question: 'Are trip hosts verified?',
+        question: 'Are activity hosts verified?',
         answer:
-          'Organisation applications are reviewed by our team. Public profiles show experience, team members, and community reviews so participants can make informed choices before joining.'
+          'Host applications are reviewed by our team. Public profiles show experience, team members, and community reviews so participants can make informed choices before joining.'
       }
     ]
   },
@@ -84,7 +84,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What are Trail Points?',
         answer:
-          'Trail Points are rewards for participating on UAE Trail — joining trips, writing reviews, posting in the community, submitting locations, and inviting friends. Points contribute to membership tiers and unlock perks over time.'
+          'Trail Points are rewards for participating on UAE Trail — joining activities, writing reviews, posting in the community, submitting locations, and inviting friends. Points contribute to membership tiers and unlock perks over time.'
       },
       {
         question: 'Where can I learn more about earning Trail Points?',
@@ -100,12 +100,12 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What should I bring on a UAE hike?',
         answer:
-          'At minimum: 2–3 litres of water per person, sun protection (hat, sunscreen, sunglasses), sturdy closed shoes, a fully charged phone, and a basic first-aid kit. Trip pages list host-specific requirements — read them before you go.'
+          'At minimum: 2–3 litres of water per person, sun protection (hat, sunscreen, sunglasses), sturdy closed shoes, a fully charged phone, and a basic first-aid kit. Activity pages list host-specific requirements — read them before you go.'
       },
       {
         question: 'Is it safe to hike alone in the UAE?',
         answer:
-          'We recommend joining organized trips or hiking with a group, especially in remote wadis and mountains. Tell someone your route and expected return time, download offline maps where available, and avoid hiking in peak summer heat.'
+          'We recommend joining organized activities or hiking with a group, especially in remote wadis and mountains. Tell someone your route and expected return time, download offline maps where available, and avoid hiking in peak summer heat.'
       }
     ]
   },
@@ -116,7 +116,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How do I contact UAE Trail support?',
         answer:
-          'Email support@uaetrail.com for account, trip, or safety questions. For privacy-related requests, contact privacy@uaetrail.com.'
+          'Email support@uaetrail.com for account, activity, or safety questions. For privacy-related requests, contact privacy@uaetrail.com.'
       },
       {
         question: 'How do I delete my account or update my profile?',
@@ -136,6 +136,6 @@ const pickFaqs = (...questions: string[]) =>
 export const HOME_FAQ_PREVIEW = pickFaqs(
   'What is UAE Trail?',
   'How do I find hiking trails and camping spots in the UAE?',
-  'How do I join an organized hike or camping trip?',
+  'How do I join an organized hike or camping activity?',
   'Is UAE Trail free to use?'
 );

@@ -148,7 +148,7 @@ export const ProfileLanguagesCard = ({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-neutral-500">Add the languages you speak on trips</p>
+              <p className="text-sm text-neutral-500">Add the languages you speak on activities</p>
             )}
           </GlassCard>
         </button>

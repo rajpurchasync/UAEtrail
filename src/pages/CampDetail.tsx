@@ -10,7 +10,7 @@ import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { CampingSpot, ActivityListing } from '../types';
 import { fetchApiLocationDetail, mapActivityToListing } from '../api/public';
 import { activitiesBrowsePath } from '../config/activityTypes';
-import { explorePath } from '../utils/exploreRouting';
+import { detailBackPath } from '../utils/exploreRouting';
 import { api } from '../api/services';
 import { isDefaultVenueSeason } from '../utils/venueDetailDisplay';
 
@@ -60,7 +60,7 @@ export const CampDetail = () => {
         <PageMeta title="Camping spot not found" noIndex path={id ? `/camp/${id}` : undefined} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900">Camping spot not found</h1>
-          <Link to={explorePath({ panel: 'venues', list: true })} className="text-amber-600 hover:text-amber-700 mt-4 inline-block">
+          <Link to={detailBackPath('camp')} className="text-amber-600 hover:text-amber-700 mt-4 inline-block">
             Back to map
           </Link>
         </div>
@@ -72,7 +72,7 @@ export const CampDetail = () => {
 
   return (
     <MobileDetailShell
-      backTo={explorePath({ panel: 'venues', list: true, filter: 'camping' })}
+      backTo={detailBackPath('camp')}
       backLabel="Camping venues"
       banner={{
         src: camp.images[0],
@@ -180,23 +180,23 @@ export const CampDetail = () => {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg md:text-xl font-bold text-gray-900">Upcoming Camping Trips</h2>
+              <h2 className="text-lg md:text-xl font-bold text-gray-900">Upcoming camping activities</h2>
               <p className="text-gray-600 mt-1">Join organized camping at this location</p>
             </div>
             <Link
               to={activitiesBrowsePath('camping')}
               className="text-amber-600 hover:text-amber-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
-              View all trips
+              View all activities
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
 
           {campActivities.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <p className="text-gray-600">No upcoming trips scheduled for this location yet.</p>
+              <p className="text-gray-600">No upcoming activities scheduled for this location yet.</p>
               <Link to="/activities" className="text-amber-600 hover:text-amber-700 mt-2 inline-block">
-                Check all upcoming trips
+                Check all upcoming activities
               </Link>
             </div>
           ) : (

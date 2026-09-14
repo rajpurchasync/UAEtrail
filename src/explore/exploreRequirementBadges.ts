@@ -16,7 +16,7 @@ const SKIP_BADGE_PATTERNS = [
   /^What to bring:/i,
   /^Recommendation:/i,
   /^Camping surface:/i,
-  /^Host organization:/i,
+  /^Host(?: organization)?:/i,
   /^Policy:/i,
 ];
 

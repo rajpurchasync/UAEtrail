@@ -8,7 +8,7 @@ interface UseOrganisationGateOptions {
   enabled?: boolean;
 }
 
-/** Whether the signed-in member can manage organisation profiles and publish activities. */
+/** Whether the signed-in member can manage host profiles and publish activities. */
 export const useOrganisationGate = ({ enabled = true }: UseOrganisationGateOptions = {}) => {
   const { user } = useAuth();
   const [status, setStatus] = useState<HostStatusDTO | null>(null);
@@ -32,7 +32,7 @@ export const useOrganisationGate = ({ enabled = true }: UseOrganisationGateOptio
       }
       return res.data;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load organisation status');
+      setError(err instanceof Error ? err.message : 'Could not load host status');
       setStatus(null);
       return null;
     } finally {

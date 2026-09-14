@@ -9,7 +9,7 @@ import { eventVenueSchema } from '../components/seo/schemas';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { CommunityActivitySpot, ActivityListing } from '../types';
 import { VENUE_TYPE_LABELS, activitiesBrowsePath } from '../config/activityTypes';
-import { explorePath } from '../utils/exploreRouting';
+import { detailBackPath } from '../utils/exploreRouting';
 import { fetchApiLocationDetail, mapActivityToListing } from '../api/public';
 import { api } from '../api/services';
 import { venueLocationPath } from '../utils/venueDetailDisplay';
@@ -62,7 +62,7 @@ export const EventDetail = () => {
         <PageMeta title="Event venue not found" noIndex path={detailPath} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900">{VENUE_TYPE_LABELS.event} not found</h1>
-          <Link to={explorePath({ panel: 'venues', list: true, filter: 'others' })} className="text-violet-600 hover:text-violet-700 mt-4 inline-block">
+          <Link to={detailBackPath('event')} className="text-violet-600 hover:text-violet-700 mt-4 inline-block">
             Back to map
           </Link>
         </div>
@@ -75,7 +75,7 @@ export const EventDetail = () => {
 
   return (
     <MobileDetailShell
-      backTo={explorePath({ panel: 'venues', list: true, filter: 'others' })}
+      backTo={detailBackPath('event')}
       backLabel="Event venues"
       banner={{
         src: event.images[0],

@@ -23,7 +23,7 @@ const setupSteps = [
   { emoji: '🏕️', title: 'Invite people along', detail: 'Post hikes, camps, carpools, and meetups when you\'re ready.' },
 ];
 
-/** Become an organisation — individual guide, agency, or shop. Route: /become-host (alias /become-organizer). */
+/** Become a host — guide, agency, or shop. Route: /become-host (alias /become-organizer). */
 export const BecomeOrganisation = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -104,7 +104,7 @@ export const BecomeOrganisation = () => {
         ? 'Join as an agency'
         : intent === 'add-guide'
           ? 'Become a guide'
-          : 'Set up your organisation';
+          : 'Set up as a host';
 
   const handleHostSubmitted = async (_tenantId: string | null) => {
     setHostFlowOpen(false);
@@ -132,13 +132,13 @@ export const BecomeOrganisation = () => {
         ? 'Bring your agency to the trail community'
         : intent === 'add-guide'
           ? 'Love the outdoors? Lead the way'
-          : 'Want to share a trip with everyone?';
+          : 'Want to share an activity with everyone?';
 
   const subcopy =
     intent === 'become-host'
-      ? 'Guides, agencies, and shops share trips here. A quick intro — then you can post hikes, camps, carpools, and more.'
+      ? 'Guides, agencies, and shops share activities here. A quick intro — then you can post hikes, camps, carpools, and more.'
       : intent === 'add-shop'
-        ? 'Help hikers and campers find your gear shop when they\'re planning their next trip.'
+        ? 'Help hikers and campers find your gear shop when they\'re planning their next activity.'
         : intent === 'add-agency'
           ? 'Connect with people looking for guided adventures across the UAE.'
           : 'Share your experience and welcome others on the trails you know best.';
@@ -173,7 +173,7 @@ export const BecomeOrganisation = () => {
               </div>
               <h2 className="text-xl font-bold text-neutral-900">Welcome aboard!</h2>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                You&apos;re ready to organise. Head back to the map and tap + whenever you want to invite people along.
+                You&apos;re ready to host. Head back to the map and tap + whenever you want to invite people along.
               </p>
               <AppButton fullWidth onClick={() => navigate(returnTo)} className="mt-5">
                 {returnTo.startsWith('/explore') ? 'Back to the map' : 'Continue'}
@@ -190,7 +190,7 @@ export const BecomeOrganisation = () => {
               <h2 className="text-xl font-bold text-neutral-900">You&apos;re already part of the crew</h2>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600">{alreadyHostMessage}</p>
               <AppButton fullWidth onClick={() => navigate('/host/overview')} className="mt-5">
-                Go to organisation console
+                Go to host console
                 <ArrowRight className="h-4 w-4" />
               </AppButton>
             </GlassCard>

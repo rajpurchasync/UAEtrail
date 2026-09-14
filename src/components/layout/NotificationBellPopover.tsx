@@ -9,6 +9,7 @@ import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCou
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
 import { notificationReasonLine } from '../../utils/notificationDisplay';
 import { inferNotificationPath } from '../../utils/notificationRouting';
+import { buildSignInRedirect } from '../../utils/authReturnContext';
 
 interface NotificationBellPopoverProps {
   tone?: 'default' | 'light';
@@ -67,7 +68,8 @@ export const NotificationBellPopover = ({
   };
 
   const openSignIn = () => {
-    navigate('/signin', { state: { from: location.pathname } });
+    const { href } = buildSignInRedirect(location);
+    navigate(href);
   };
 
   const handleItemClick = async (notif: NotificationDTO) => {

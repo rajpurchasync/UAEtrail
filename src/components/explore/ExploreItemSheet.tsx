@@ -71,7 +71,7 @@ export const ExploreItemSheet = ({
             onClick={onHostTrip}
             className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
           >
-            Host this trip
+            Host this activity
           </button>
           {onMessage ? (
             <button

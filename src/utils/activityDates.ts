@@ -3,23 +3,23 @@ import { ActivityRequestView } from '../api/services';
 
 export const todayStart = () => new Date(new Date().toDateString());
 
-const isUpcomingDate = (dateStr?: string) =>
+export const isUpcomingActivityDate = (dateStr?: string) =>
   Boolean(dateStr && new Date(dateStr) >= todayStart());
 
-export const isUpcomingTrip = (trip: ActivityDTO) => isUpcomingDate(trip.date);
+export const isUpcomingActivity = (activity: ActivityDTO) => isUpcomingActivityDate(activity.date);
 
 export const getRequestEventDate = (request: ActivityRequestView) =>
   request.activity.date ?? request.activity.startAt?.slice(0, 10) ?? '';
 
 const isUpcomingRequest = (request: ActivityRequestView) =>
-  isUpcomingDate(getRequestEventDate(request));
+  isUpcomingActivityDate(getRequestEventDate(request));
 
-/** Pending join requests for future events not already confirmed as trips. */
+/** Pending join requests for future events not already confirmed. */
 export const pendingUpcomingRequests = (
-  trips: ActivityDTO[],
+  activities: ActivityDTO[],
   requests: ActivityRequestView[]
 ): ActivityRequestView[] => {
-  const confirmedIds = new Set(trips.map((t) => t.id));
+  const confirmedIds = new Set(activities.map((a) => a.id));
   return requests.filter(
     (r) =>
       (r.status === 'pending' || r.status === 'waitlisted') &&
@@ -28,7 +28,7 @@ export const pendingUpcomingRequests = (
   );
 };
 
-export const upcomingTripsTotal = (trips: ActivityDTO[], requests: ActivityRequestView[]) => {
-  const upcomingConfirmed = trips.filter(isUpcomingTrip).length;
-  return upcomingConfirmed + pendingUpcomingRequests(trips, requests).length;
+export const upcomingActivitiesTotal = (activities: ActivityDTO[], requests: ActivityRequestView[]) => {
+  const upcomingConfirmed = activities.filter(isUpcomingActivity).length;
+  return upcomingConfirmed + pendingUpcomingRequests(activities, requests).length;
 };

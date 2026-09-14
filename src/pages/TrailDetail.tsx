@@ -13,7 +13,7 @@ import { Trail, ActivityListing } from '../types';
 import { fetchApiLocationDetail, mapActivityToListing } from '../api/public';
 import { api } from '../api/services';
 import { activitiesBrowsePath } from '../config/activityTypes';
-import { explorePath } from '../utils/exploreRouting';
+import { detailBackPath } from '../utils/exploreRouting';
 import { hasPositiveNumber, isDefaultVenueSeason } from '../utils/venueDetailDisplay';
 
 export const TrailDetail = () => {
@@ -61,7 +61,7 @@ export const TrailDetail = () => {
         <PageMeta title="Trail not found" noIndex path={id ? `/trail/${id}` : undefined} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900">Trail not found</h1>
-          <Link to={explorePath({ panel: 'venues', list: true })} className="text-emerald-600 hover:text-emerald-700 mt-4 inline-block">
+          <Link to={detailBackPath('trail')} className="text-emerald-600 hover:text-emerald-700 mt-4 inline-block">
             Back to map
           </Link>
         </div>
@@ -81,7 +81,7 @@ export const TrailDetail = () => {
 
   return (
     <MobileDetailShell
-      backTo={explorePath({ panel: 'venues', list: true, filter: 'hiking' })}
+      backTo={detailBackPath('trail')}
       backLabel="Hiking venues"
       banner={{
         src: trail.images[0],
@@ -225,23 +225,23 @@ export const TrailDetail = () => {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg md:text-xl font-bold text-gray-900">Upcoming Trips</h2>
+              <h2 className="text-lg md:text-xl font-bold text-gray-900">Upcoming activities</h2>
               <p className="text-gray-600 mt-1">Join organized hikes at this trail</p>
             </div>
             <Link
               to={activitiesBrowsePath('hiking')}
               className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
-              View all trips
+              View all activities
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
 
           {trailActivities.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <p className="text-gray-600">No upcoming trips scheduled for this trail yet.</p>
+              <p className="text-gray-600">No upcoming activities scheduled for this trail yet.</p>
               <Link to="/activities" className="text-emerald-600 hover:text-emerald-700 mt-2 inline-block">
-                Check all upcoming trips
+                Check all upcoming activities
               </Link>
             </div>
           ) : (

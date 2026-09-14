@@ -1,4 +1,6 @@
 /** Trail Points tiers & earn rates — keep in sync with apps/api/src/lib/rewards-config.ts */
+import { EXPLORE_MAP_PATH } from '../config/platform';
+import { explorePlacesPath } from '../utils/exploreRouting';
 export const MEMBERSHIP_TIERS = [
   {
     key: 'active',
@@ -21,7 +23,7 @@ export const MEMBERSHIP_TIERS = [
     benefits: [
       'Trusted member badge',
       'Free hike invites each month',
-      'Early access to select community trips',
+      'Early access to select community activities',
     ],
   },
   {
@@ -62,28 +64,28 @@ export const EARN_WAYS = [
     description: 'Know a trail or camp others should discover? Submit it for the community.',
     pointsLabel: '+15 → +100',
     ctaLabel: 'Explore & submit',
-    ctaPath: '/explore?panel=venues&list=1&addLocation=1',
+    ctaPath: explorePlacesPath({ addLocation: true }),
   },
   {
-    title: 'Host a trip',
+    title: 'Host an activity',
     hook: 'Lead the adventure',
-    description: 'Publish a community trip and check in guests on the day.',
+    description: 'Publish a community activity and check in guests on the day.',
     pointsLabel: '+50 → +125',
     ctaLabel: 'Become a host',
     ctaPath: '/become-host',
   },
   {
-    title: 'Join a trip',
+    title: 'Join an activity',
     hook: 'Show up. Get checked in.',
-    description: 'Book a community trip — your host confirms attendance and points hit your wallet.',
+    description: 'Book a community activity — your host confirms attendance and points hit your wallet.',
     pointsLabel: '+30',
-    ctaLabel: 'Browse trips',
-    ctaPath: '/explore?list=1',
+    ctaLabel: 'Browse activities',
+    ctaPath: EXPLORE_MAP_PATH,
   },
   {
     title: 'Community post',
     hook: 'Share the story behind the summit',
-    description: 'Trip reports, tips, photos, and questions — your voice builds the community.',
+    description: 'Activity reports, tips, photos, and questions — your voice builds the community.',
     pointsLabel: '+20',
     ctaLabel: 'Write a post',
     ctaPath: '/community',
@@ -102,7 +104,7 @@ export const EARN_WAYS = [
     description: 'Rate a trail, camp, or host after you’ve been there.',
     pointsLabel: '+25',
     ctaLabel: 'Find a place to review',
-    ctaPath: '/explore?panel=venues&list=1',
+    ctaPath: explorePlacesPath(),
   },
 ] as const;
 
@@ -119,14 +121,14 @@ export const SUBSCRIPTION_PLANS = [
     priceNote: 'Pay-as-you-go per location',
     popular: false,
     benefits: [
-      'Browse trails, camps & community trips',
+      'Browse trails, camps & community activities',
       'Join free events',
       'Pay-as-you-go location guides',
       'Download map + guide on call, per location',
       'Earn Trail Points on every contribution',
     ],
     ctaLabel: 'Get started free',
-    ctaPath: '/explore?panel=venues&list=1',
+    ctaPath: explorePlacesPath(),
     ctaExternal: false,
   },
   {

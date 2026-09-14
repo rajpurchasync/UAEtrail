@@ -43,7 +43,7 @@ interface ShopPublicPageProps {
 /** Unified public gear-shop page — intro, contact, and outbound featured picks. */
 export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
   const publicPath = shopPublicPath({ merchantId: shop.id });
-  const mapBack = explorePath({ panel: 'shops', list: true, filter: 'shops' });
+  const mapBack = explorePath({ panel: 'shops', filter: 'shops' });
   const website = shop.websiteUrl?.trim() || null;
 
   return (

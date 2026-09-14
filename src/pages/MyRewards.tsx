@@ -94,7 +94,7 @@ export const MyRewards = () => {
       {!loading && summary?.trailPointsEligible === false && (
         <GlassCard padding>
           <p className="text-sm leading-relaxed text-neutral-600">
-            Trail Points are for participants and guide staff. Business organisation accounts manage events on the
+            Trail Points are for participants and guide staff. Business host accounts manage events on the
             platform but do not earn personal Trail Points.
           </p>
         </GlassCard>

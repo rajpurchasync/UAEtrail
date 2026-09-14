@@ -3,13 +3,13 @@ import { AdminUserType } from '@uaetrail/shared-types';
 /** Member taxonomy labels for admin UI (auth-backed `AdminUserType` enum values unchanged). */
 export const MEMBER_TYPE_LABELS: Record<AdminUserType, string> = {
   participant: 'Participant',
-  business_host: 'Organisation owner',
+  business_host: 'Business host',
   guide_host: 'Guide',
-  host_staff: 'Organisation staff',
+  host_staff: 'Host staff',
   platform_admin: 'Platform admin',
-  business_organizer: 'Organisation owner',
+  business_organizer: 'Business host',
   guide_organizer: 'Guide',
-  organizer_staff: 'Organisation staff',
+  organizer_staff: 'Host staff',
 };
 
 /** @deprecated Use MEMBER_TYPE_LABELS */

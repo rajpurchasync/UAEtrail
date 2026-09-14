@@ -43,6 +43,13 @@ export const getExploreRegionPillOptions = (code: CountryCode = DEFAULT_COUNTRY)
   })),
 ];
 
+/** Multi-select state/emirate options for venue list filtering. */
+export const getVenueStateFilterOptions = (code: CountryCode = DEFAULT_COUNTRY) =>
+  getRegionsForCountry(code).map((region) => ({
+    key: region,
+    label: EXPLORE_REGION_PILL_LABELS[region] ?? region,
+  }));
+
 export const getMapBounds = (code: CountryCode = DEFAULT_COUNTRY): { west: number; south: number; east: number; north: number } => {
   const bounds: Record<CountryCode, { west: number; south: number; east: number; north: number }> = {
     AE: { west: 51.5, south: 22.5, east: 56.5, north: 26.5 },

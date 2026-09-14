@@ -164,7 +164,7 @@ export interface ActivityDTO {
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[] | null;
   requirements?: string[] | null;
-  /** Who can discover this trip on the explore map (`open`) vs link-only (`private`). */
+  /** Who can discover this activity on the explore map (`open`) vs link-only (`private`). */
   joinMode?: ActivityJoinMode;
   images?: string[];
   /** Wide hero banner (outdoor events) */
@@ -206,16 +206,13 @@ export interface ActivityDetailDTO extends ActivityDTO {
   organizerId?: string;
   participants?: ParticipantPreviewDTO[];
   location?: LocationDTO;
-  myParticipation?: TripParticipationDTO | null;
-  myRequest?: MyTripRequestDTO | null;
+  myParticipation?: ActivityParticipationDTO | null;
+  myRequest?: MyActivityRequestDTO | null;
 }
 
 export interface MyActivityDTO extends ActivityDTO {
   participation: ActivityParticipationDTO;
 }
-
-/** @deprecated Use MyActivityDTO */
-export type MyTripDTO = MyActivityDTO;
 
 export interface ActivityParticipationDTO {
   participantId: string;
@@ -226,17 +223,11 @@ export interface ActivityParticipationDTO {
   canCheckIn: boolean;
 }
 
-/** @deprecated Use ActivityParticipationDTO */
-export type TripParticipationDTO = ActivityParticipationDTO;
-
 export interface MyActivityRequestDTO {
   id: string;
   status: RequestStatus;
   canWithdraw: boolean;
 }
-
-/** @deprecated Use MyActivityRequestDTO */
-export type MyTripRequestDTO = MyActivityRequestDTO;
 
 export interface JoinRequestDTO {
   id: string;
@@ -301,11 +292,11 @@ export type OwnedOrganisationProfileType = OwnedHostProfileType;
 export type OwnedOrganisationProfileDTO = OwnedHostProfileDTO;
 export type OrganisationConsoleStatusDTO = HostStatusDTO;
 
-/** Predefined reasons when a user withdraws from a trip */
+/** Predefined reasons when a user withdraws from an activity */
 export const WITHDRAW_REASONS = [
   { value: 'schedule_conflict', label: 'Schedule conflict' },
   { value: 'cant_attend', label: "Can't make it anymore" },
-  { value: 'found_other', label: 'Found another trip' },
+  { value: 'found_other', label: 'Found another activity' },
   { value: 'health', label: 'Health or personal reasons' },
   { value: 'changed_mind', label: 'Changed my mind' },
   { value: 'other', label: 'Other' }
@@ -409,7 +400,7 @@ export interface ReviewDTO {
   createdAt: string;
 }
 
-export type PostCategory = 'questions' | 'trip-reports' | 'photos' | 'tips';
+export type PostCategory = 'questions' | 'activity-reports' | 'photos' | 'tips';
 
 export interface PostReplyDTO {
   id: string;
@@ -477,6 +468,10 @@ export type ShopPresence = 'physical' | 'online';
 
 export interface MerchantProfileDTO {
   id: string;
+  /** Preferred commerce profile id (`merchant_profiles._id`). Same as `id`. */
+  shopId?: string;
+  /** @deprecated Use shopId — legacy alias for the same id. */
+  merchantId?: string;
   /** Linked shop tenant when merchant_profiles.tenantId is set. */
   tenantId?: string | null;
   shopName: string;
@@ -915,19 +910,19 @@ export {
 } from './activity-coordinates.js';
 
 export {
+  ACTIVITY_CURRENCIES,
+  activityHasPaidPricing,
+  activityPriceLabel,
+  activityPricingModeLabel,
   derivePriceAed,
   eventHasPaidPricing,
   formatPackagePrice,
-  inferTripPricingMode,
-  isTripPricePackage,
+  inferActivityPricingMode,
+  isActivityPricePackage,
   normalizeActivityPricing,
   parseStoredPricePackages,
-  tripHasPaidPricing,
-  tripPriceLabel,
-  tripPricingModeLabel,
-  TRIP_CURRENCIES,
-  type TripCurrency,
-  type TripPricePackage,
-  type TripPricingInput,
-  type TripPricingMode,
-} from './trip-pricing.js';
+  type ActivityCurrency,
+  type ActivityPricePackage,
+  type ActivityPricingInput,
+  type ActivityPricingMode,
+} from './activity-pricing.js';

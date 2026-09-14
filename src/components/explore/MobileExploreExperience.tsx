@@ -3,11 +3,12 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   List,
+  PanelLeftClose,
   Plus,
   Search,
   X,
 } from 'lucide-react';
-import type { ActivityDTO, ExploreMapItemDTO, MyTripRequestDTO, TripParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
+import type { ActivityDTO, ExploreMapItemDTO, MyActivityRequestDTO, ActivityParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import { mapActivityToListing } from '../../api/public';
 import { PageMeta } from '../seo/PageMeta';
@@ -39,7 +40,7 @@ import {
 import { buildExploreCardModel } from '../../explore/exploreCardModel';
 import { MAP_FILTER_EMOJI, MAP_LAYER_FILTER_EMOJI, resolveExploreItemSource } from '../../explore/exploreCopy';
 import { messagesRouteForRole } from '../../utils/authRouting';
-import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
 import { activityHostUserId } from '../../utils/hostLabels';
 import { resolveJoinRequestUiState, withdrawModalVariant, type JoinRequestUiState } from '../../utils/joinRequestUi';
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
@@ -52,6 +53,7 @@ import {
   parseMapFilter,
   parseExplorePanel,
   parseActivityListFilter,
+  parseVenueRegionsParam,
   mapFilterToActivityListFilter,
   mapFilterToVenueListFilter,
   activityFilterToMapFilter,
@@ -64,6 +66,7 @@ import {
   type VenueListFilterKey,
 } from '../../utils/exploreRouting';
 import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
+import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
 const PlacesMap = lazy(() =>
   import('../ui/PlacesMap').then((m) => ({ default: m.PlacesMap }))
@@ -117,6 +120,13 @@ const MAP_FILTERS_BY_BROWSE_TAB: Record<DesktopBrowseTab, MapFilterKey[]> = {
 
 const parseDesktopBrowseTab = (panel: ExplorePanel): DesktopBrowseTab =>
   panel === 'venues' ? 'venues' : 'activities';
+
+/** `list=1` open, `list=0` closed; default closed (map first). */
+const parseListOpen = (listParam: string | null): boolean => {
+  if (listParam === '1') return true;
+  if (listParam === '0') return false;
+  return false;
+};
 
 const mapFilterToPanel = (filter: MapFilterKey): ExplorePanel => {
   if (filter === 'shops') return 'shops';
@@ -347,7 +357,7 @@ export const MobileExploreExperience = () => {
   const [panel, setPanel] = useState<ExplorePanel>(() => parseExplorePanel(searchParams.get('panel')));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [recenterTo, setRecenterTo] = useState<{ lat: number; lng: number } | null>(null);
-  const [listOpen, setListOpen] = useState(() => searchParams.get('list') === '1');
+  const [listOpen, setListOpen] = useState(() => parseListOpen(searchParams.get('list')));
   const [composeOpen, setComposeOpen] = useState(false);
   const [contributeOpen, setContributeOpen] = useState(false);
   const [contributeFlowOpen, setContributeFlowOpen] = useState(false);
@@ -362,8 +372,8 @@ export const MobileExploreExperience = () => {
   const [joinActivity, setJoinActivity] = useState<ActivityDTO | null>(null);
   const [joinUiState, setJoinUiState] = useState<JoinRequestUiState>({ kind: 'open' });
   const [joinContext, setJoinContext] = useState<{
-    myRequest: MyTripRequestDTO | null;
-    participation: TripParticipationDTO | null;
+    myRequest: MyActivityRequestDTO | null;
+    participation: ActivityParticipationDTO | null;
   } | null>(null);
   const [joinStateLoading, setJoinStateLoading] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -371,6 +381,7 @@ export const MobileExploreExperience = () => {
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '');
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueFilter, setVenueFilter] = useState<VenueListFilterKey>('all');
+  const [venueRegions, setVenueRegions] = useState<string[]>(() => parseVenueRegionsParam(searchParams));
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
   const [desktopBrowseTab, setDesktopBrowseTab] = useState<DesktopBrowseTab>(() =>
     parseDesktopBrowseTab(parseExplorePanel(searchParams.get('panel')))
@@ -384,6 +395,7 @@ export const MobileExploreExperience = () => {
       panel?: ExplorePanel;
       list?: boolean;
       q?: string;
+      venueRegions?: string[];
     }) => {
       const params = new URLSearchParams(searchParams);
       const filterValue = next.filter ?? mapFilter;
@@ -391,6 +403,7 @@ export const MobileExploreExperience = () => {
       const panelValue = next.panel ?? panel;
       const listValue = next.list ?? listOpen;
       const queryValue = next.q ?? query;
+      const regionValue = next.venueRegions ?? venueRegions;
 
       if (filterValue === 'all') params.delete('filter');
       else params.set('filter', filterValue);
@@ -402,12 +415,19 @@ export const MobileExploreExperience = () => {
       else params.set('panel', panelValue);
 
       if (listValue) params.set('list', '1');
-      else params.delete('list');
+      else params.set('list', '0');
 
       if (queryValue.trim()) params.set('q', queryValue.trim());
       else params.delete('q');
 
-      params.delete('region');
+      if (regionValue.length > 0) {
+        params.set('regions', regionValue.join(','));
+        params.delete('region');
+      } else {
+        params.delete('regions');
+        params.delete('region');
+      }
+
       params.delete('addLocation');
       params.delete('compose');
       params.delete('contribute');
@@ -416,17 +436,17 @@ export const MobileExploreExperience = () => {
 
       setSearchParams(params, { replace: true });
     },
-    [mapFilter, activityFilter, panel, listOpen, query, searchParams, setSearchParams]
+    [mapFilter, activityFilter, panel, listOpen, query, venueRegions, searchParams, setSearchParams]
   );
 
   useEffect(() => {
     if (searchParams.get('addLocation') !== '1') return;
     if (!user) {
-      navigate(`/signin?redirect=${encodeURIComponent(explorePath({ panel: 'venues', list: true, addLocation: true }))}`);
+      navigate(signInPathForReturn(explorePath({ panel: 'venues', addLocation: true })));
       return;
     }
     setPanel('venues');
-    setListOpen(true);
+    setListOpen(false);
     setContributeOpen(true);
     const params = new URLSearchParams(searchParams);
     params.delete('addLocation');
@@ -440,13 +460,12 @@ export const MobileExploreExperience = () => {
     if (!parsed.openTypeSheet && !parsed.kind) return;
     if (!user) {
       navigate(
-        `/signin?redirect=${encodeURIComponent(
+        signInPathForReturn(
           explorePath({
             panel: 'venues',
-            list: true,
             contribute: parsed.kind ?? true,
           })
-        )}`
+        )
       );
       return;
     }
@@ -464,7 +483,7 @@ export const MobileExploreExperience = () => {
   useEffect(() => {
     if (searchParams.get('request') !== '1') return;
     if (!user) {
-      navigate(`/signin?redirect=${encodeURIComponent(explorePath({ request: true }))}`);
+      navigate(signInPathForReturn(explorePath({ request: true })));
       return;
     }
     setDemandOpen(true);
@@ -476,7 +495,7 @@ export const MobileExploreExperience = () => {
   useEffect(() => {
     if (searchParams.get('compose') !== '1') return;
     if (!user) {
-      navigate(`/signin?redirect=${encodeURIComponent('/explore?compose=1')}`);
+      navigate(signInPathForReturn(explorePath({ compose: true })));
       return;
     }
     setSelectedId(null);
@@ -493,8 +512,9 @@ export const MobileExploreExperience = () => {
     setActivityFilter(parseActivityListFilter(searchParams.get('activity')));
     setVenueFilter(mapFilterToVenueListFilter(nextMapFilter));
     setPanel(nextPanel);
-    setListOpen(searchParams.get('list') === '1' || isDesktop);
+    setListOpen(parseListOpen(searchParams.get('list')));
     setQuery(searchParams.get('q') ?? '');
+    setVenueRegions(parseVenueRegionsParam(searchParams));
     if (isDesktop) {
       setDesktopBrowseTab(parseDesktopBrowseTab(nextPanel));
       if (searchParams.get('q')?.trim()) setSearchExpanded(true);
@@ -518,7 +538,7 @@ export const MobileExploreExperience = () => {
       filter: next,
       panel: syncedPanel,
       activityFilter: syncedActivity,
-      list: listOpen || isDesktop,
+      list: listOpen,
     });
   };
 
@@ -534,7 +554,7 @@ export const MobileExploreExperience = () => {
       filter: 'all',
       activityFilter: 'all',
       panel: syncedPanel,
-      list: true,
+      list: listOpen,
     });
   };
 
@@ -550,11 +570,11 @@ export const MobileExploreExperience = () => {
         activityFilter: next,
         filter: syncedMap,
         panel: 'activities',
-        list: listOpen || isDesktop,
+        list: listOpen,
       });
       return;
     }
-    syncExploreUrl({ activityFilter: next, list: listOpen || isDesktop });
+    syncExploreUrl({ activityFilter: next, list: listOpen });
   };
 
   const applyPanel = (next: ExplorePanel) => {
@@ -571,12 +591,11 @@ export const MobileExploreExperience = () => {
   };
 
   const closeListPanel = () => {
-    if (isDesktop) return;
     setListOpen(false);
     syncExploreUrl({ list: false });
   };
 
-  const showListPanel = listOpen || isDesktop;
+  const showListPanel = listOpen;
   const sidebarPanel: ExplorePanel = isDesktop
     ? panel === 'venues'
       ? 'venues'
@@ -595,11 +614,11 @@ export const MobileExploreExperience = () => {
         filter: syncedMap,
         activityFilter: mapFilterToActivityListFilter(syncedMap),
         panel: syncedMap === 'shops' ? 'shops' : 'venues',
-        list: listOpen || isDesktop,
+        list: listOpen,
       });
       return;
     }
-    syncExploreUrl({ list: listOpen || isDesktop });
+    syncExploreUrl({ list: listOpen });
   };
 
   useEffect(() => {
@@ -650,6 +669,7 @@ export const MobileExploreExperience = () => {
         items
           .filter((item) => item.source === 'venue' || isShopMapItem(item))
           .filter((item) => matchesMapFilter(item, mapFilter))
+          .filter((item) => venueItemMatchesRegions(item, venueRegions))
           .filter(matchesQuery)
       );
     }
@@ -659,6 +679,7 @@ export const MobileExploreExperience = () => {
         items
           .filter((item) => item.source === 'venue')
           .filter((item) => matchesVenueFilter(item, venueFilter))
+          .filter((item) => venueItemMatchesRegions(item, venueRegions))
           .filter(matchesQuery)
       );
     }
@@ -673,7 +694,7 @@ export const MobileExploreExperience = () => {
         .filter((item) => matchesActivityFilter(item, activityFilter))
         .filter(matchesQuery)
     );
-  }, [items, activityFilter, venueFilter, query, sidebarPanel, isDesktop, desktopBrowseTab, mapFilter]);
+  }, [items, activityFilter, venueFilter, venueRegions, query, sidebarPanel, isDesktop, desktopBrowseTab, mapFilter]);
 
   const shopListSections = useMemo(() => {
     const showShopsPanel =
@@ -802,11 +823,11 @@ export const MobileExploreExperience = () => {
     if (!user) {
       const redirect =
         choice === 'contribute'
-          ? explorePath({ panel: 'venues', list: true, contribute: true })
+          ? explorePath({ panel: 'venues', contribute: true })
           : choice === 'request'
             ? explorePath({ request: true })
             : explorePath({ compose: true });
-      navigate(`/signin?redirect=${encodeURIComponent(redirect)}`);
+      navigate(signInPathForReturn(redirect));
       return;
     }
     if (choice === 'host') {
@@ -827,9 +848,7 @@ export const MobileExploreExperience = () => {
 
   const handleContributeChoice = (kind: ContributeVenueKind) => {
     if (!user) {
-      navigate(
-        `/signin?redirect=${encodeURIComponent(explorePath({ panel: 'venues', list: true, contribute: kind }))}`
-      );
+      navigate(signInPathForReturn(explorePath({ panel: 'venues', contribute: kind })));
       return;
     }
     setContributeOpen(false);
@@ -883,7 +902,7 @@ export const MobileExploreExperience = () => {
       await api.cancelJoinRequest(activity.id, requestId, payload);
       setShowWithdraw(false);
       setDemandNotice(
-        joinUiState.kind === 'confirmed' ? 'You have withdrawn from this trip.' : 'Join request cancelled.'
+        joinUiState.kind === 'confirmed' ? 'You have withdrawn from this activity.' : 'Join request cancelled.'
       );
       await loadJoinContext(activity.id);
     } catch (err) {
@@ -1004,7 +1023,7 @@ export const MobileExploreExperience = () => {
       setSelectedId(null);
       navigate(`/groups?group=${encodeURIComponent(res.data.groupId)}`);
     } catch (err) {
-      setDemandNotice(err instanceof Error ? err.message : 'Could not open trip chat.');
+      setDemandNotice(err instanceof Error ? err.message : 'Could not open activity chat.');
     }
   };
 
@@ -1070,6 +1089,14 @@ export const MobileExploreExperience = () => {
                 aria-expanded={searchExpanded}
               >
                 <Search className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={closeListPanel}
+                className="rounded-full p-2 text-gray-500 hover:bg-neutral-50 hover:text-gray-800"
+                aria-label="Collapse list panel"
+              >
+                <PanelLeftClose className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -1276,7 +1303,7 @@ export const MobileExploreExperience = () => {
 
       <div className="relative flex min-h-0 flex-1 lg:flex-row">
         {showListPanel && isDesktop && (
-          <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:border-r lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4">
+          <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:border-r lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300">
             {renderListPanelContent()}
           </aside>
         )}
@@ -1374,15 +1401,28 @@ export const MobileExploreExperience = () => {
         </div>
       )}
 
-      <div className="pointer-events-none absolute bottom-[calc(var(--safe-bottom)+16px)] left-4 right-4 z-[1100] flex items-end justify-between gap-3 lg:bottom-6 lg:justify-end">
+      {!listOpen && isDesktop ? (
         <button
           type="button"
           onClick={openBrowse}
-          className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto gap-2 px-4 py-2.5 text-sm font-semibold text-gray-900 lg:hidden`}
+          className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto absolute left-0 top-1/2 z-[1100] hidden -translate-y-1/2 rounded-l-none border-l-0 px-2.5 py-3 lg:inline-flex`}
+          aria-label="Show activities list"
         >
           <List className="h-4 w-4" aria-hidden />
-          Browse
         </button>
+      ) : null}
+
+      <div className="pointer-events-none absolute bottom-[calc(var(--safe-bottom)+16px)] left-4 right-4 z-[1100] flex items-end justify-between gap-3 lg:bottom-6 lg:justify-end">
+        {!listOpen ? (
+          <button
+            type="button"
+            onClick={openBrowse}
+            className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto inline-flex gap-2 px-4 py-2.5 text-sm font-semibold text-gray-900`}
+          >
+            <List className="h-4 w-4" aria-hidden />
+            Browse
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={handlePrimaryFab}
@@ -1486,7 +1526,7 @@ export const MobileExploreExperience = () => {
           onPublished={() => {
             reloadMap();
             if (hostTripPrefill) {
-              setDemandNotice('Trip published and linked to the community request.');
+              setDemandNotice('Activity published and linked to the community request.');
             }
             setHostTripPrefill(null);
           }}
@@ -1511,7 +1551,7 @@ export const MobileExploreExperience = () => {
               );
             } else {
               setDemandNotice(
-                'Request posted on the map. Nearby hosts and guides can message you or propose a matching trip.'
+                'Request posted on the map. Nearby hosts and guides can message you or propose a matching activity.'
               );
             }
           }}
@@ -1533,7 +1573,7 @@ export const MobileExploreExperience = () => {
         <WithdrawRequestModal
           open={showWithdraw}
           onClose={() => setShowWithdraw(false)}
-          tripTitle={(selected?.activity ?? joinActivity)?.title ?? 'this trip'}
+          tripTitle={(selected?.activity ?? joinActivity)?.title ?? 'this activity'}
           tripDate={(selected?.activity ?? joinActivity)?.date}
           variant={withdrawModalVariant(joinUiState)}
           submitting={withdrawing}

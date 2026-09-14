@@ -34,7 +34,7 @@ import {
   findAdminProductById,
   findAdminTenantById,
   findAdminTenantDetailedById,
-  listAdminLocationsPaged,
+  listAdminPlacesPaged,
   listAdminModerationEventsPaged,
   listAdminProductsPaged,
   listAdminTenantsPaged,
@@ -175,20 +175,26 @@ export const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireVerifiedEmail, requireRole([UserRole.PLATFORM_ADMIN]));
 
-adminRouter.get('/locations', async (req, res, next) => {
-  try {
-    const pg = paginationSchema.parse(req.query);
-    const { items: locations, total } = await listAdminLocationsPaged({
-      skip: (pg.page - 1) * pg.pageSize,
-      take: pg.pageSize
-    });
-    res.json(paginatedResponse(locations.map((l) => toLocationDto(l, { admin: true })), total, pg));
-  } catch (error) {
-    next(error);
-  }
+const adminPlaceCollectionPaths = ['/locations', '/places'] as const;
+const adminPlaceItemPaths = ['/locations/:id', '/places/:id'] as const;
+
+adminPlaceCollectionPaths.forEach((path) => {
+  adminRouter.get(path, async (req, res, next) => {
+    try {
+      const pg = paginationSchema.parse(req.query);
+      const { items: locations, total } = await listAdminPlacesPaged({
+        skip: (pg.page - 1) * pg.pageSize,
+        take: pg.pageSize
+      });
+      res.json(paginatedResponse(locations.map((l) => toLocationDto(l, { admin: true })), total, pg));
+    } catch (error) {
+      next(error);
+    }
+  });
 });
 
-adminRouter.post('/locations', validate({ body: locationCreateSchema }), async (req, res, next) => {
+adminPlaceCollectionPaths.forEach((path) => {
+  adminRouter.post(path, validate({ body: locationCreateSchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof locationCreateSchema>;
     const created = await createAdminLocation({
@@ -227,9 +233,11 @@ adminRouter.post('/locations', validate({ body: locationCreateSchema }), async (
   } catch (error) {
     next(error);
   }
+  });
 });
 
-adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: locationPatchSchema }), async (req, res, next) => {
+adminPlaceItemPaths.forEach((path) => {
+  adminRouter.patch(path, validate({ params: idParamSchema, body: locationPatchSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const body = req.body as z.infer<typeof locationPatchSchema>;
@@ -319,7 +327,7 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
       await dispatchNotification({
         userId: updated.submittedById,
         title: 'Location approved',
-        body: `"${updated.name}" is now live. You can use it when creating trips.`,
+        body: `"${updated.name}" is now live. You can use it when creating activities.`,
         type: NotificationType.SYSTEM,
         meta: { locationId: updated.id, kind: 'location_approved' }
       });
@@ -344,6 +352,7 @@ adminRouter.patch('/locations/:id', validate({ params: idParamSchema, body: loca
   } catch (error) {
     next(error);
   }
+  });
 });
 
 adminRouter.get('/host-applications', async (req, res, next) => {
@@ -408,7 +417,7 @@ adminRouter.patch(
           title: 'Host application approved',
           body: reviewerNote
             ? `You can now post activities. Note from reviewer: ${reviewerNote}`
-            : 'Your organisation profile was approved. You can now post activities and welcome participants.',
+            : 'Your host profile was approved. You can now post activities and welcome participants.',
           reason: reviewerNote,
           meta: {
             kind: 'host_application_approved',
@@ -816,7 +825,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
           });
           return acc;
         }, []),
-        trips: participants.reduce<Array<{
+        joinedActivities: participants.reduce<Array<{
           activityId: string;
           activityTitle: string | null;
           locationName: string;
@@ -994,13 +1003,13 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
 
     await notifyUserAdminAction({
       userId: tenant.ownerId,
-      title: status === 'active' ? 'Organisation account reopened' : 'Organisation account suspended',
+      title: status === 'active' ? 'Host account reopened' : 'Host account suspended',
       body:
         status === 'active'
-          ? `Your organisation profile "${tenant.name}" is active again. You can create and manage events.`
+          ? `Your host profile "${tenant.name}" is active again. You can create and manage events.`
           : comment
-            ? `Your organisation profile "${tenant.name}" has been suspended. Reason: ${comment}`
-            : `Your organisation profile "${tenant.name}" has been suspended. Contact support for details.`,
+            ? `Your host profile "${tenant.name}" has been suspended. Reason: ${comment}`
+            : `Your host profile "${tenant.name}" has been suspended. Contact support for details.`,
       reason: comment,
       meta: {
         kind: status === 'active' ? 'host_reopened' : 'host_suspended',
@@ -1063,9 +1072,10 @@ adminRouter.patch('/groups/:id/status', validate({ params: idParamSchema, body: 
   }
 });
 
-// ─── Location Delete ────────────────────────────────────────────────────────
+// ─── Place delete (legacy path: /locations/:id) ───────────────────────────
 
-adminRouter.delete('/locations/:id', validate({ params: idParamSchema }), async (req, res, next) => {
+adminPlaceItemPaths.forEach((path) => {
+  adminRouter.delete(path, validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof idParamSchema>;
 
@@ -1090,6 +1100,7 @@ adminRouter.delete('/locations/:id', validate({ params: idParamSchema }), async 
   } catch (error) {
     next(error);
   }
+  });
 });
 
 // ─── Audit Logs ─────────────────────────────────────────────────────────────

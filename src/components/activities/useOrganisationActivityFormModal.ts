@@ -32,7 +32,7 @@ export interface UseOrganisationActivityFormModalOptions {
   activityType: ActivityType;
   tenantId?: string;
   editingActivity?: ActivityDTO | null;
-  hostOrganizations?: TenantListDTO[];
+  hostTenants?: TenantListDTO[];
   /** Approved places available when scheduling. */
   placeOptions?: PlaceDTO[];
   /** @deprecated Use placeOptions */
@@ -50,7 +50,7 @@ export const useOrganisationActivityFormModal = ({
   activityType,
   tenantId = '',
   editingActivity = null,
-  hostOrganizations,
+  hostTenants,
   placeOptions,
   venueLocations,
   sessionSnapshot,
@@ -68,7 +68,7 @@ export const useOrganisationActivityFormModal = ({
   const [step, setStep] = useState(1);
   const [locationTab, setLocationTab] = useState('start');
   const [instructionTab, setInstructionTab] = useState<InstructionTabId>('mandatory');
-  const [previewTrip, setPreviewTrip] = useState<ActivityDetailDTO | null>(null);
+  const [previewActivity, setPreviewActivity] = useState<ActivityDetailDTO | null>(null);
   const [draftActivityId, setDraftActivityId] = useState<string | null>(editingActivity?.id ?? null);
   const [saving, setSaving] = useState(false);
   const [previewReady, setPreviewReady] = useState(false);
@@ -76,8 +76,8 @@ export const useOrganisationActivityFormModal = ({
   const [tenantType, setTenantType] = useState<string>('guide_owned');
   const injectedPlaceOptions = placeOptions ?? venueLocations;
   const [places, setPlaces] = useState<PlaceDTO[]>(injectedPlaceOptions ?? []);
-  const [pickerHostOrganizations, setPickerHostOrganizations] = useState<TenantListDTO[]>(
-    hostOrganizations ?? []
+  const [pickerHostTenants, setPickerHostTenants] = useState<TenantListDTO[]>(
+    hostTenants ?? []
   );
   const [resolvedTenantId, setResolvedTenantId] = useState(
     () => tenantId || getActiveTenantId() || sessionSnapshot?.tenantId || ''
@@ -91,12 +91,12 @@ export const useOrganisationActivityFormModal = ({
     : `create:${openSessionId.current}:${activityType}`;
 
   const isEdit = Boolean(editingActivity);
-  const canPickHostOrganization = isPlatformAdmin(user?.role);
-  const hostTenantId = canPickHostOrganization ? form.tenantId : resolvedTenantId;
+  const canPickHostTenant = isPlatformAdmin(user?.role);
+  const hostTenantId = canPickHostTenant ? form.tenantId : resolvedTenantId;
   const isBusinessOrg = isBusinessHostOrg(tenantType);
   const venueAddHref = '/host/locations';
 
-  const validationOptions = { activityType, canPickHostOrganization };
+  const validationOptions = { activityType, canPickHostTenant };
 
   const set = (patch: Partial<ActivityFormState>) => setForm((prev) => ({ ...prev, ...patch }));
   const setPin = (
@@ -124,7 +124,7 @@ export const useOrganisationActivityFormModal = ({
   };
 
   useEffect(() => {
-    if (!open || canPickHostOrganization) return;
+    if (!open || canPickHostTenant) return;
     let disposed = false;
     const syncTenant = async () => {
       const known = tenantId || getActiveTenantId() || sessionSnapshot?.tenantId || '';
@@ -148,34 +148,34 @@ export const useOrganisationActivityFormModal = ({
     return () => {
       disposed = true;
     };
-  }, [open, canPickHostOrganization, tenantId, sessionSnapshot?.tenantId]);
+  }, [open, canPickHostTenant, tenantId, sessionSnapshot?.tenantId]);
 
   useEffect(() => {
-    if (!open || !canPickHostOrganization) return;
-    if (hostOrganizations?.length) {
-      setPickerHostOrganizations(hostOrganizations);
+    if (!open || !canPickHostTenant) return;
+    if (hostTenants?.length) {
+      setPickerHostTenants(hostTenants);
       return;
     }
     let disposed = false;
     void api
       .getAdminTenants()
       .then((res) => {
-        if (!disposed) setPickerHostOrganizations(res.data);
+        if (!disposed) setPickerHostTenants(res.data);
       })
       .catch(() => {
-        if (!disposed) setPickerHostOrganizations([]);
+        if (!disposed) setPickerHostTenants([]);
       });
     return () => {
       disposed = true;
     };
-  }, [open, canPickHostOrganization, hostOrganizations]);
+  }, [open, canPickHostTenant, hostTenants]);
 
   useEffect(() => {
     if (!open) {
       lastInitSignature.current = null;
       openSessionId.current += 1;
       initialDraftRef.current = draftFromSession;
-      setPreviewTrip(null);
+      setPreviewActivity(null);
       setPreviewReady(false);
       return;
     }
@@ -190,7 +190,7 @@ export const useOrganisationActivityFormModal = ({
       setLocationTab('start');
       setInstructionTab('mandatory');
       setDraftActivityId(editingActivity.id);
-      setPreviewTrip(null);
+      setPreviewActivity(null);
       setPreviewReady(false);
     } else if (sessionDraft) {
       setForm(sessionDraft.form);
@@ -253,8 +253,8 @@ export const useOrganisationActivityFormModal = ({
 
   useEffect(() => {
     if (!open || !hostTenantId) return;
-    if (canPickHostOrganization) {
-      const match = pickerHostOrganizations.find((t) => t.id === hostTenantId);
+    if (canPickHostTenant) {
+      const match = pickerHostTenants.find((t) => t.id === hostTenantId);
       if (match) setTenantType(match.type);
       return;
     }
@@ -265,7 +265,7 @@ export const useOrganisationActivityFormModal = ({
         if (match) setTenantType(match.tenantType);
       })
       .catch(() => undefined);
-  }, [open, hostTenantId, canPickHostOrganization, pickerHostOrganizations]);
+  }, [open, hostTenantId, canPickHostTenant, pickerHostTenants]);
 
   useEffect(() => {
     if (!open) return;
@@ -273,7 +273,7 @@ export const useOrganisationActivityFormModal = ({
       setPlaces(injectedPlaceOptions);
       return;
     }
-    if (canPickHostOrganization) {
+    if (canPickHostTenant) {
       let disposed = false;
       void api
         .getAdminPlaces()
@@ -304,7 +304,7 @@ export const useOrganisationActivityFormModal = ({
     return () => {
       disposed = true;
     };
-  }, [open, hostTenantId, injectedPlaceOptions, canPickHostOrganization]);
+  }, [open, hostTenantId, injectedPlaceOptions, canPickHostTenant]);
 
   const placeCenter = useMemo(() => {
     const place = places.find((v) => v.id === form.locationId);
@@ -317,7 +317,7 @@ export const useOrganisationActivityFormModal = ({
   const aboutWords = countWords(form.description);
 
   const resolveActiveTenantId = async (): Promise<string> => {
-    if (canPickHostOrganization) return form.tenantId;
+    if (canPickHostTenant) return form.tenantId;
 
     const known = [
       hostTenantId,
@@ -350,9 +350,9 @@ export const useOrganisationActivityFormModal = ({
 
     if (!activeTenant) {
       throw new Error(
-        canPickHostOrganization
-          ? 'Select an organisation.'
-          : 'No organisation found. Complete organisation setup first.'
+        canPickHostTenant
+          ? 'Select a host.'
+          : 'No host profile found. Complete host setup first.'
       );
     }
 
@@ -438,13 +438,13 @@ export const useOrganisationActivityFormModal = ({
           // fallback in preview builder
         }
       }
-      const tenantName = canPickHostOrganization
-        ? pickerHostOrganizations.find((t) => t.id === hostTenantId)?.name
+      const tenantName = canPickHostTenant
+        ? pickerHostTenants.find((t) => t.id === hostTenantId)?.name
         : (await api.getMyTenants().catch(() => ({ data: [] }))).data.find(
             (t) => t.tenantId === hostTenantId
           )?.tenantName;
-      const trip = buildActivityDetailPreview(form, saved, place, user, tenantName);
-      setPreviewTrip(trip);
+      const activity = buildActivityDetailPreview(form, saved, place, user, tenantName);
+      setPreviewActivity(activity);
       setPreviewReady(true);
       onSaved?.();
     } catch (err) {
@@ -485,8 +485,8 @@ export const useOrganisationActivityFormModal = ({
     setLocationTab,
     instructionTab,
     setInstructionTab,
-    previewTrip,
-    setPreviewTrip,
+    previewActivity,
+    setPreviewActivity,
     saving,
     previewReady,
     error,
@@ -498,9 +498,9 @@ export const useOrganisationActivityFormModal = ({
     aboutWords,
     isEdit,
     isBusinessOrg,
-    canPickHostOrganization,
+    canPickHostTenant,
     hostTenantId,
-    pickerHostOrganizations,
+    pickerHostTenants,
     venueAddHref,
     placeOptions: places,
     /** @deprecated Use placeOptions */

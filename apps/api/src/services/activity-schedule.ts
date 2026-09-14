@@ -31,7 +31,7 @@ export async function notifyParticipantsOfScheduleChange(params: {
 
   const was = formatScheduleLabel(previousStartAt, countryCode);
   const now = formatScheduleLabel(newStartAt, countryCode);
-  const title = 'Trip rescheduled';
+  const title = 'Activity rescheduled';
   const body = `"${activityTitle}" has a new date/time: ${now} (was ${was}).`;
 
   await Promise.all(

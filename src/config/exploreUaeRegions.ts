@@ -3,6 +3,8 @@
  * Images: Unsplash License (https://unsplash.com/license) — free for commercial use.
  */
 
+import { explorePath } from '../utils/exploreRouting';
+
 export type ExploreRegionIcon = 'mountain' | 'tent' | 'compass';
 
 export interface ExploreUaeRegion {
@@ -25,7 +27,7 @@ const unsplashPhoto = (photoId: string, width = 800) =>
 export const EXPLORE_UAE_REGIONS: ExploreUaeRegion[] = [
   {
     name: 'Ras Al Khaimah',
-    discoveryLink: '/explore?panel=venues&list=1&region=RAK',
+    discoveryLink: explorePath({ panel: 'venues', regions: ['RAK'] }),
     image: unsplashPhoto('photo-1680425982087-9f6f25861db1'),
     imageAlt: 'Jebel Jais mountain peaks and winding road, Ras Al Khaimah, UAE',
     regionKeys: ['RAK', 'Ras'],
@@ -34,7 +36,7 @@ export const EXPLORE_UAE_REGIONS: ExploreUaeRegion[] = [
   },
   {
     name: 'Fujairah',
-    discoveryLink: '/explore?panel=venues&list=1&region=Fujairah&filter=camping',
+    discoveryLink: explorePath({ panel: 'venues', regions: ['Fujairah'], filter: 'camping' }),
     image: unsplashPhoto('photo-1683028135155-7638f285b662'),
     imageAlt: 'Dibba coastline where the Hajar Mountains meet the Gulf of Oman, Fujairah, UAE',
     regionKeys: ['Fujairah'],
@@ -43,7 +45,7 @@ export const EXPLORE_UAE_REGIONS: ExploreUaeRegion[] = [
   },
   {
     name: 'Hatta',
-    discoveryLink: '/explore?panel=venues&list=1&q=Hatta',
+    discoveryLink: explorePath({ panel: 'venues', q: 'Hatta' }),
     image: unsplashPhoto('photo-1646641678252-52aee3025261'),
     imageAlt: 'Turquoise waters of Hatta Dam surrounded by Hajar mountains, Dubai, UAE',
     regionKeys: ['Hatta'],
@@ -52,7 +54,7 @@ export const EXPLORE_UAE_REGIONS: ExploreUaeRegion[] = [
   },
   {
     name: 'Al Ain',
-    discoveryLink: '/explore?panel=venues&list=1&region=Al%20Ain&filter=camping',
+    discoveryLink: explorePath({ panel: 'venues', regions: ['Al Ain'], filter: 'camping' }),
     image: unsplashPhoto('photo-1753703986788-2ac0aa05b728'),
     imageAlt: 'Sand dunes stretching across the Abu Dhabi desert near Al Ain, UAE',
     regionKeys: ['Al Ain'],

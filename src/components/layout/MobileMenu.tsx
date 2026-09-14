@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogIn, LogOut, Menu, RefreshCw, ShoppingBag, User, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import { isConsumerChromeHidden, MOBILE_DRAWER_MENU, MOBILE_LANDING_USER_MENU, EXPLORE_MAP_PATH } from '../../config/platform';
-import { ADMIN_LINKS, ORGANISATION_CONSOLE_LINKS } from '../../constants';
+import { ADMIN_LINKS, HOST_CONSOLE_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/services';
 import { setStoredSession } from '../../api/client';
@@ -341,10 +341,10 @@ const MobileMenuPanel = () => {
   const unreadNotifications = useNotificationUnreadCount();
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
 
-  const isOrganizerRole =
+  const isHostConsoleRole =
     user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
   const isAdminRole = user?.role === 'platform_admin';
-  const isPrivilegedRole = isOrganizerRole || isAdminRole;
+  const isPrivilegedRole = isHostConsoleRole || isAdminRole;
   const canSwitchBack = user?.role === 'participant' && Boolean(user?.switchedFromRole);
 
   // only hide for admin/organizer shells — they use their own burger
@@ -417,16 +417,16 @@ const MobileMenuPanel = () => {
     );
   }
 
-  if (isOrganizerRole) {
+  if (isHostConsoleRole) {
     return (
       <MobileDrawer
         open={open}
         closeMenu={closeMenu}
         eyebrow="Organise"
         title={user?.displayName || 'Account'}
-        ariaLabel="Organisation console navigation"
+        ariaLabel="Host console navigation"
       >
-        <DashboardDrawerLinks links={ORGANISATION_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
+        <DashboardDrawerLinks links={HOST_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
         <DashboardDrawerSiteLink closeMenu={closeMenu} />
         <button type="button" onClick={() => void switchRole('participant')} className={dashboardActionClass}>
           Switch to Visitor
@@ -533,7 +533,7 @@ const MobileMenuPanel = () => {
               <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
                 <ShoppingBag className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
               </span>
-              <span className="font-semibold">Organisation profiles</span>
+              <span className="font-semibold">Host profiles</span>
             </Link>
           )}
 

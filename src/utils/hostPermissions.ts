@@ -1,4 +1,4 @@
-/** Platform admin can act on any host organization via x-tenant-id. */
+/** Platform admin can act on any host tenant via x-tenant-id. */
 export const isPlatformAdmin = (role?: string | null): boolean => role === 'platform_admin';
 
 /** Business host profiles (company tenants) may publish professional paid activities. */

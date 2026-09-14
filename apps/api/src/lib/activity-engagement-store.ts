@@ -18,7 +18,7 @@ import {
   tryReserveActivityParticipantSlot
 } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
-import { parseStoredPricePackages } from './trip-pricing.js';
+import { parseStoredPricePackages } from './activity-pricing.js';
 import { dispatchNotification } from '../services/notifications.js';
 import { addParticipantToActivityGroupChat, removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
 
@@ -162,10 +162,10 @@ export async function createJoinOrWaitlistRequest(opts: {
   const packages = parseStoredPricePackages(event.pricePackages);
   if (packages.length > 1) {
     if (opts.selectedPackageIndex === undefined) {
-      throw new ApiError(400, 'package_required', 'Select a package option to join this trip.');
+      throw new ApiError(400, 'package_required', 'Select a package option to join this activity.');
     }
     if (opts.selectedPackageIndex < 0 || opts.selectedPackageIndex >= packages.length) {
-      throw new ApiError(400, 'invalid_package', 'Selected package is not valid for this trip.');
+      throw new ApiError(400, 'invalid_package', 'Selected package is not valid for this activity.');
     }
   }
 
@@ -234,7 +234,7 @@ async function promoteNextWaitlisted(activityId: string): Promise<boolean> {
   await dispatchNotification({
     userId: next.userId,
     title: 'A spot opened up!',
-    body: 'Your waitlisted trip now has availability. Your request is pending organizer approval.',
+    body: 'Your waitlisted activity now has availability. Your request is pending organizer approval.',
     type: NotificationType.REQUEST_UPDATE,
     meta: { activityId, requestId: next._id, fromWaitlist: true }
   });

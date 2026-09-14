@@ -179,7 +179,7 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: MobileDemandKi
       case 'title':
         return 'Title';
       case 'when':
-        return 'Trip date & time';
+        return 'Activity date & time';
       case 'to':
         return 'Going to';
       case 'from':
@@ -322,7 +322,7 @@ export const demandAdditionalInfoPlaceholder = (kind: MobileDemandKind): string 
     return 'Event type, pace, what to bring, anything else hosts should know…';
   }
   if (kind === 'camping') {
-    return 'Preferred area, camp type, gear needs, overnight or day trip…';
+    return 'Preferred area, camp type, gear needs, overnight or day activity…';
   }
   return 'Preferred area, trail type, pace, anything else hosts should know…';
 };

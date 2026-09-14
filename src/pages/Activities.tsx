@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronRight, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
 import { getActiveTenantId } from '../api/tenant';
@@ -11,7 +11,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { ACTIVITIES_PATH } from '../constants';
 import { isHostRole } from '../utils/roles';
 import { parseActivityTypeParam } from '../config/activityTypes';
-import { explorePath } from '../utils/exploreRouting';
+import { exploreActivitiesPath } from '../utils/exploreRouting';
 import { parseTabParam, type PageTab } from './activities/shared';
 import { JoinedSection } from './activities/JoinedSection';
 import { HostedSection } from './activities/HostedSection';
@@ -46,12 +46,6 @@ export const Activities = () => {
   }, [searchParams, user]);
 
   useEffect(() => {
-    if (activeTab !== 'explore') return;
-    if (searchParams.get('create') || searchParams.get('checkin')) return;
-    navigate(explorePath({ list: true, panel: 'activities' }), { replace: true });
-  }, [activeTab, navigate, searchParams]);
-
-  useEffect(() => {
     if (user) return;
     const tab = searchParams.get('tab');
     if (tab === 'joined' || tab === 'hosted' || tab === 'mine') {
@@ -63,10 +57,6 @@ export const Activities = () => {
   }, [user, searchParams, setSearchParams]);
 
   const setTab = (tab: PageTab) => {
-    if (tab === 'explore') {
-      navigate(explorePath({ list: true, panel: 'activities' }));
-      return;
-    }
     setActiveTab(tab);
     const next = new URLSearchParams(searchParams);
     next.set('tab', tab);
@@ -75,11 +65,10 @@ export const Activities = () => {
   };
 
   const navOptions = useMemo(() => {
-    if (!user) return [{ key: 'explore' as PageTab, label: 'Explore' }];
+    if (!user) return [];
     return [
       { key: 'joined' as PageTab, label: 'Joined' },
       ...(canHost ? [{ key: 'hosted' as PageTab, label: 'Hosted' }] : []),
-      { key: 'explore' as PageTab, label: 'Explore' },
     ];
   }, [user, canHost]);
 
@@ -94,7 +83,7 @@ export const Activities = () => {
   return (
     <ConsumerShell
       layout="stack"
-      title="Activities"
+      title="My activities"
       showJourney={false}
       back={{ fallbackTo: '/', label: 'Home' }}
       toolbar={
@@ -104,17 +93,27 @@ export const Activities = () => {
       }
     >
       <PageMeta
-        title="Activities — explore & join outdoor adventures"
-        description="Browse hiking, camping, and events across the UAE."
+        title="My activities — joined and hosted"
+        description="Activities you have joined or host on UAE Trail."
         path={ACTIVITIES_PATH}
       />
+
+      <div className="mb-4">
+        <Link
+          to={exploreActivitiesPath()}
+          className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700"
+        >
+          Browse map
+          <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
 
       <div className="pb-24 md:pb-8">
         {activeTab === 'joined' && user && <JoinedSection />}
         {activeTab === 'hosted' && user && canHost && <HostedSection />}
         {activeTab === 'hosted' && user && !canHost && (
           <div className="glass-card p-6 text-center">
-            <p className="text-sm text-neutral-600 mb-3">Host activities on the map to share trips with the community.</p>
+            <p className="text-sm text-neutral-600 mb-3">Host activities on the map to share them with the community.</p>
             <button
               type="button"
               onClick={() => navigate('/become-host')}

@@ -13,7 +13,7 @@ const HOST_PROFILE_CHIPS = [
   { key: 'shop' as const, intent: 'add-shop' as OrganisationFlowIntent, label: 'Shop', emoji: '🛍️' },
 ];
 
-/** Manage guide, agency, and shop organisation profiles. Only physical shops appear on the explore map. */
+/** Manage guide, agency, and shop host profiles. Only physical shops appear on the explore map. */
 export const ProfileMapPresenceSection = () => {
   const location = useLocation();
   const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles, refresh } = useOrganisationGate();
@@ -37,9 +37,9 @@ export const ProfileMapPresenceSection = () => {
     <>
       <GlassCard padding id="host-profiles" className="scroll-mt-24 animate-fade-up">
         <div className="mb-3">
-          <h2 className="text-sm font-bold text-gray-900">Organisation profiles</h2>
+          <h2 className="text-sm font-bold text-gray-900">Host profiles</h2>
           <p className="mt-1 text-xs text-gray-500 leading-relaxed">
-            Guides and agencies host trips on UAE Trail. Gear shops can pin a store on the map or list as an online
+            Guides and agencies host activities on UAE Trail. Gear shops can pin a store on the map or list as an online
             partner — separate from your personal profile.
           </p>
         </div>
@@ -50,7 +50,7 @@ export const ProfileMapPresenceSection = () => {
           <>
             {activeCount > 0 && (
               <p className="mb-2 text-xs font-semibold text-emerald-700">
-                {activeCount} organisation profile{activeCount === 1 ? '' : 's'} active
+                {activeCount} host profile{activeCount === 1 ? '' : 's'} active
               </p>
             )}
             <div className="flex flex-wrap gap-2">

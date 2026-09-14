@@ -28,6 +28,8 @@ import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';
 import { useAuth } from '../../context/AuthContext';
 import { COUNTRIES } from '../../constants';
+import { hostNotFoundLabel, hostProfileLabel, hostPublicProfileLabel, normalizeHostKind } from '../../utils/hostCopy';
+import { detailBackPath } from '../../utils/exploreRouting';
 
 const EXPERIENCE_OPTIONS = [
   { value: '<1 year', label: 'Less than 1 year' },
@@ -55,8 +57,8 @@ interface OrganisationPublicProfileProps {
 export const OrganisationPublicProfile = ({
   slug,
   mode = 'public',
-  backTo = '/activities',
-  backLabel = 'Back to activities',
+  backTo = detailBackPath('host'),
+  backLabel = 'Back to map',
   compact = true,
 }: OrganisationPublicProfileProps) => {
   const { user } = useAuth();
@@ -84,11 +86,11 @@ export const OrganisationPublicProfile = ({
         setTenant(tenantRes.data);
         setActivities(tenantRes.data.activities.map(mapActivityToListing));
         setEditBio(tenantRes.data.ownerBio ?? '');
-        setEditDetails(tenantRes.data.organizerDetails ?? {});
+        setEditDetails(tenantRes.data.hostDetails ?? tenantRes.data.organizerDetails ?? {});
         const reviewsRes = await api.getReviews('tenant', tenantRes.data.id).catch(() => ({ data: [] }));
         setReviews(reviewsRes.data);
       })
-      .catch(() => setError('We couldn\'t find this organisation profile'))
+      .catch(() => setError(`We couldn't find this ${hostProfileLabel(null).toLowerCase()}`))
       .finally(() => setLoading(false));
   };
 
@@ -116,9 +118,10 @@ export const OrganisationPublicProfile = ({
   };
 
   if (loading) {
+    const loadingTitle = `Loading ${hostProfileLabel(null).toLowerCase()}`;
     return (
       <>
-        {!isOwner && <PageMeta title="Loading organisation profile" noIndex />}
+        {!isOwner && <PageMeta title={loadingTitle} noIndex />}
         <div className="flex justify-center py-16">
           <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
@@ -129,7 +132,7 @@ export const OrganisationPublicProfile = ({
   if (error || !tenant) {
     return (
       <>
-        {!isOwner && <PageMeta title="Organisation not found" noIndex />}
+        {!isOwner && <PageMeta title={hostNotFoundLabel(null)} noIndex />}
         <GlassCard padding className="text-center">
           <h1 className="text-lg font-bold text-neutral-900">We couldn&apos;t find this host</h1>
           {!compact && (
@@ -142,7 +145,9 @@ export const OrganisationPublicProfile = ({
     );
   }
 
-  const details = tenant.organizerDetails ?? {};
+  const hostKind = normalizeHostKind(tenant.type);
+
+  const details = tenant.hostDetails ?? tenant.organizerDetails ?? {};
   const avgRating =
     reviews.length > 0
       ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
@@ -163,7 +168,7 @@ export const OrganisationPublicProfile = ({
           <PageMeta
             title={tenant.name}
             description={
-              tenant.ownerBio?.slice(0, 160) ?? `Outdoor trips and hikes with ${tenant.name} in the UAE.`
+              tenant.ownerBio?.slice(0, 160) ?? `Outdoor activities and hikes with ${tenant.name} in the UAE.`
             }
             path={`/operator/${slug}`}
             image={tenant.ownerAvatar}
@@ -176,8 +181,8 @@ export const OrganisationPublicProfile = ({
       {isOwner && (
         <GlassCard padding className="border-emerald-100 bg-emerald-50/50">
           <p className="text-sm leading-relaxed text-neutral-700">
-            This is your <strong className="text-neutral-900">public organisation profile</strong> — what visitors
-            see when they browse your trips.
+            This is your <strong className="text-neutral-900">{hostPublicProfileLabel(hostKind)}</strong> — what visitors
+            see when they browse your activities.
           </p>
           <Link
             to={`/operator/${tenant.slug}`}
@@ -208,7 +213,7 @@ export const OrganisationPublicProfile = ({
             <Users className="h-3.5 w-3.5" /> {tenant.memberCount} team
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
-            <NAV_ICONS.trips className="h-3.5 w-3.5" strokeWidth={2} /> {activities.length} upcoming
+            <NAV_ICONS.activities className="h-3.5 w-3.5" strokeWidth={2} /> {activities.length} upcoming
           </span>
           {avgRating && (
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900">
@@ -246,7 +251,7 @@ export const OrganisationPublicProfile = ({
                 value={editBio}
                 onChange={(e) => setEditBio(e.target.value)}
                 rows={3}
-                placeholder="Tell visitors about your experience and what makes your trips special..."
+                placeholder="Tell visitors about your experience and what makes your activities special..."
                 className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
               />
             </div>
@@ -306,7 +311,7 @@ export const OrganisationPublicProfile = ({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-neutral-700">Notable hikes & trips</label>
+              <label className="mb-1 block text-sm font-medium text-neutral-700">Notable hikes & activities</label>
               <textarea
                 value={editDetails.notableHikes ?? ''}
                 onChange={(e) => setEditDetails({ ...editDetails, notableHikes: e.target.value })}
@@ -377,7 +382,7 @@ export const OrganisationPublicProfile = ({
             <Users className="h-4 w-4 text-emerald-600" /> Team
           </h2>
           <p className="mb-3 text-xs text-neutral-500">
-            {isOwner ? 'Guides and admins who help run trips.' : 'People who help run these adventures.'}
+            {isOwner ? 'Guides and admins who help run activities.' : 'People who help run these adventures.'}
           </p>
           <div className="flex flex-wrap gap-2">
             {tenant.team.map((member, i) => (

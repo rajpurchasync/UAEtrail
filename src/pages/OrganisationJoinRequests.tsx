@@ -159,7 +159,7 @@ export const OrganisationJoinRequests = () => {
               placeholder={
                 decisionModal.action === 'approved'
                   ? 'Welcome — see you on the trail!'
-                  : 'Sorry, this trip is full.'
+                  : 'Sorry, this activity is full.'
               }
               className="w-full border rounded-xl px-3 py-2 text-sm mb-4"
               rows={3}

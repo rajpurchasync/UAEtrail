@@ -127,7 +127,7 @@ export const WelcomeSignup = () => {
           </h1>
           <p className="text-[15px] text-neutral-500 mt-2">
             {step === 'confirm'
-              ? 'We use this to match you with trips — women-only groups, age limits, and your city.'
+              ? 'We use this to match you with activities — women-only groups, age limits, and your city.'
               : "You're in — welcome to UAE Trail!"}
           </p>
         </div>
@@ -228,8 +228,8 @@ export const WelcomeSignup = () => {
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-semibold text-neutral-900">Join a trip</p>
-                  <p className="text-xs text-neutral-500">Explore trips on the map</p>
+                  <p className="font-semibold text-neutral-900">Join an activity</p>
+                  <p className="text-xs text-neutral-500">Explore activities on the map</p>
                 </div>
               </button>
             </div>
@@ -269,7 +269,7 @@ export const WelcomeSignup = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-neutral-900">Create a Group</p>
-                  <p className="text-xs text-neutral-500">Family or friends chat & trips</p>
+                  <p className="text-xs text-neutral-500">Family or friends chat & activities</p>
                 </div>
               </button>
             </div>

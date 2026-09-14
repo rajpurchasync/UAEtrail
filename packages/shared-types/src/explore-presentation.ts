@@ -76,7 +76,7 @@ export const HIKING_ACTIVITY_EMOJI = '🥾';
 /** Trail & hiking locations on the map. */
 export const HIKING_VENUE_EMOJI = '🧗';
 
-/** Scheduled camping trips on the map. */
+/** Scheduled camping activities on the map. */
 export const CAMPING_ACTIVITY_EMOJI = '🏕️';
 
 /** Camping locations on the map. */
@@ -544,13 +544,13 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
   }
 
   const host = exploreHeadlinePersonLabel(input);
-  const tripTitle = input.title.trim();
+  const activityTitle = input.title.trim();
 
   push('location', location);
   push('time', when);
   push('spots', spots);
-  if (tripTitle && !isLegacyAutoTitle(tripTitle, input.kind)) {
-    push('route', tripTitle);
+  if (activityTitle && !isLegacyAutoTitle(activityTitle, input.kind)) {
+    push('route', activityTitle);
   }
 
   return finishExploreCardSections(input, {
@@ -601,7 +601,7 @@ export const exploreSecondaryCtaLabel = (
   return null;
 };
 
-const exploreAgencyHint = (): string => 'Tour operator on UAE Trail — see trips and get in touch.';
+const exploreAgencyHint = (): string => 'Tour operator on UAE Trail — see activities and get in touch.';
 
 export const exploreVenueHint = (
   source: ExploreCardSource,

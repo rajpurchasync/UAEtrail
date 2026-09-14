@@ -33,7 +33,7 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
   if (loading) {
     return (
       <div className="w-full rounded-2xl border border-emerald-100/80 bg-white/90 px-3.5 py-3 shadow-sm">
-        <p className="text-sm text-neutral-600">Loading organizations...</p>
+        <p className="text-sm text-neutral-600">Loading host profiles…</p>
       </div>
     );
   }
@@ -41,7 +41,7 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
   if (tenants.length === 0) {
     return (
       <div className="w-full rounded-2xl border border-amber-200/80 bg-amber-50/60 px-3.5 py-3 space-y-2.5">
-        <label className="text-xs font-semibold uppercase tracking-wide text-amber-800">Organization ID</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-amber-800">Host profile ID</label>
         <input
           className="w-full border border-amber-200 rounded-xl px-3 py-2 text-sm bg-white"
           value={selected}
@@ -68,7 +68,7 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
   return (
     <div className="w-full rounded-2xl border border-emerald-100/80 bg-white/95 px-3.5 py-3 shadow-sm space-y-2.5">
       <div className="flex items-center justify-between gap-2">
-        <label className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Organization</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Host profile</label>
         {activeTenant && <span className="text-[11px] font-semibold text-emerald-700">Active</span>}
       </div>
 
@@ -76,9 +76,9 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
         value={selected}
         onChange={handleChange}
         options={tenantOptions}
-        placeholder="Select organization..."
+        placeholder="Select host profile…"
         inputClassName="w-full rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-sm text-neutral-900"
-        aria-label="Organization"
+        aria-label="Host profile"
       />
 
       {activeTenant && (

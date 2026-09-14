@@ -104,7 +104,7 @@ describe('resolveActivityViewerAccess', () => {
     vi.mocked(findGroupByActivityId).mockResolvedValue({
       id: 'group-1',
       type: 'activity',
-      name: 'Trip chat',
+      name: 'Activity chat',
       adminUserId: 'host-1',
       activityId: activity.id,
       status: 'active',

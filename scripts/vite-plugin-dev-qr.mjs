@@ -5,9 +5,30 @@ import qrcodeTerminal from 'qrcode-terminal';
 
 const QR_PAGE = '/mobile-dev-qr.html';
 const DEV_URL_PATH = '/__dev/mobile-url.json';
+const REFRESH_MS = 15_000;
 
 function viteNetworkUrls(server) {
   return server.resolvedUrls?.network ?? [];
+}
+
+function liveInterfaceIpv4s() {
+  const ips = new Set();
+  for (const entries of Object.values(os.networkInterfaces())) {
+    for (const entry of entries ?? []) {
+      if (entry.family !== 'IPv4' && entry.family !== 4) continue;
+      if (entry.internal) continue;
+      ips.add(entry.address);
+    }
+  }
+  return ips;
+}
+
+function hostFromUrl(url) {
+  try {
+    return new URL(url.endsWith('/') ? url : `${url}/`).hostname;
+  } catch {
+    return null;
+  }
 }
 
 function interfaceScore(name) {
@@ -20,20 +41,38 @@ function interfaceScore(name) {
   return 50;
 }
 
-function hostScore(host) {
+function hostScore(host, ifaceScore = 0) {
   if (host === 'localhost' || host === '127.0.0.1') return -1;
   if (host.startsWith('192.168.')) return 100;
   if (host.startsWith('10.')) return 90;
   if (host.startsWith('172.')) {
     const second = Number(host.split('.')[1]);
-    if (second >= 16 && second <= 31) return 30;
+    if (second >= 16 && second <= 31) {
+      // 172.16–31 on Wi‑Fi/Ethernet is a real LAN, not WSL/Hyper‑V.
+      if (ifaceScore >= 80) return 95;
+      return 30;
+    }
   }
   return 50;
 }
 
-/** Prefer Wi‑Fi / LAN IPs over WSL, Hyper‑V, or VPN adapters. */
+function envMobileUrlOverride() {
+  const raw = process.env.DEV_MOBILE_URL?.trim();
+  if (!raw) return null;
+  const normalized = raw.endsWith('/') ? raw : `${raw}/`;
+  try {
+    const parsed = new URL(normalized);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    return normalized;
+  } catch {
+    return null;
+  }
+}
+
+/** Prefer live Wi‑Fi / LAN IPs; ignore stale Vite network URLs after a network change. */
 export function pickBestMobileUrl(viteUrls, port = 5175) {
   const candidates = new Map();
+  const liveIps = liveInterfaceIpv4s();
 
   for (const [name, entries] of Object.entries(os.networkInterfaces())) {
     const ifaceScore = interfaceScore(name);
@@ -41,7 +80,7 @@ export function pickBestMobileUrl(viteUrls, port = 5175) {
       if (entry.family !== 'IPv4' && entry.family !== 4) continue;
       if (entry.internal) continue;
       const url = `http://${entry.address}:${port}/`;
-      const score = hostScore(entry.address) + ifaceScore;
+      const score = hostScore(entry.address, ifaceScore) + ifaceScore;
       const prev = candidates.get(url);
       if (!prev || score > prev.score) {
         candidates.set(url, { url, score, source: name });
@@ -51,32 +90,38 @@ export function pickBestMobileUrl(viteUrls, port = 5175) {
 
   for (const url of viteUrls) {
     const normalized = url.endsWith('/') ? url : `${url}/`;
-    let host = '';
-    try {
-      host = new URL(normalized).hostname;
-    } catch {
-      continue;
-    }
+    const host = hostFromUrl(normalized);
+    if (!host || !liveIps.has(host) || candidates.has(normalized)) continue;
     const score = hostScore(host) + 40;
-    const prev = candidates.get(normalized);
-    if (!prev || score > prev.score) {
-      candidates.set(normalized, { url: normalized, score, source: 'vite' });
-    }
+    candidates.set(normalized, { url: normalized, score, source: 'vite' });
   }
 
   return [...candidates.values()].sort((a, b) => b.score - a.score)[0] ?? null;
 }
 
-async function refreshQrArtifacts(server) {
+function resolveMobileTarget(server) {
+  const override = envMobileUrlOverride();
+  if (override) {
+    return { url: override, source: 'DEV_MOBILE_URL' };
+  }
   const port = server.config.server.port ?? 5175;
   const picked = pickBestMobileUrl(viteNetworkUrls(server), port);
+  return picked ? { url: picked.url, source: picked.source } : null;
+}
 
-  if (!picked) {
+async function refreshQrArtifacts(server, { force = false } = {}) {
+  const target = resolveMobileTarget(server);
+  if (!target?.url) {
     console.log('\n  ⚠️  No reachable LAN URL found — phone cannot use localhost.\n');
-    return;
+    return null;
   }
 
-  const primary = picked.url;
+  if (!force && server.__devQrLastUrl === target.url) {
+    return target;
+  }
+  server.__devQrLastUrl = target.url;
+
+  const primary = target.url;
   const pngPath = resolve(process.cwd(), 'dev-mobile-qr.png');
   await qrcode.toFile(pngPath, primary, { margin: 4, width: 512 });
 
@@ -84,15 +129,15 @@ async function refreshQrArtifacts(server) {
   console.log(`\n  📱 Mobile URL (scan this) → ${primary}`);
   console.log(`  📱 QR page (live)         → ${qrPage}`);
   console.log(`  📱 QR image file          → dev-mobile-qr.png`);
-  console.log(`     (picked ${picked.source})\n`);
+  console.log(`     (picked ${target.source})\n`);
 
-  const others = [...new Set([...viteNetworkUrls(server), primary])].filter((u) => {
-    const norm = u.endsWith('/') ? u : `${u}/`;
-    return norm !== primary;
+  const staleVite = viteNetworkUrls(server).filter((url) => {
+    const host = hostFromUrl(url);
+    return host && !liveInterfaceIpv4s().has(host);
   });
-  if (others.length > 0) {
-    console.log('  Other network URLs from Vite (may not work on phone):');
-    for (const url of others) console.log(`    · ${url}`);
+  if (staleVite.length > 0) {
+    console.log('  Ignoring stale Vite network URLs (restart dev after Wi‑Fi change):');
+    for (const url of staleVite) console.log(`    · ${url}`);
     console.log('');
   }
 
@@ -100,14 +145,15 @@ async function refreshQrArtifacts(server) {
     console.log('  Scan with your phone (same Wi‑Fi):\n');
     console.log(ascii);
   });
+
+  return target;
 }
 
 function scheduleRefresh(server) {
   const tryRefresh = (attempt = 0) => {
-    const hasViteUrls = viteNetworkUrls(server).length > 0;
     const hasLan = pickBestMobileUrl([], server.config.server.port ?? 5175);
-    if (hasViteUrls || hasLan || attempt >= 20) {
-      void refreshQrArtifacts(server);
+    if (hasLan || attempt >= 20) {
+      void refreshQrArtifacts(server, { force: true });
       return;
     }
     setTimeout(() => tryRefresh(attempt + 1), 50);
@@ -116,28 +162,31 @@ function scheduleRefresh(server) {
 }
 
 export function devQrPlugin() {
-  let latestMobileUrl = null;
-
   return {
     name: 'dev-qr',
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use(DEV_URL_PATH, (_req, res) => {
-        const port = server.config.server.port ?? 5175;
-        const picked = pickBestMobileUrl(viteNetworkUrls(server), port);
-        latestMobileUrl = picked?.url ?? null;
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Cache-Control', 'no-store');
-        res.end(
-          JSON.stringify({
-            url: latestMobileUrl,
-            qrPage: latestMobileUrl ? `${latestMobileUrl.replace(/\/$/, '')}${QR_PAGE}` : null,
-            source: picked?.source ?? null,
-          })
-        );
+        void refreshQrArtifacts(server).then((target) => {
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Cache-Control', 'no-store');
+          res.end(
+            JSON.stringify({
+              url: target?.url ?? null,
+              qrPage: target?.url ? `${target.url.replace(/\/$/, '')}${QR_PAGE}` : null,
+              source: target?.source ?? null,
+            })
+          );
+        });
       });
 
-      const onListen = () => scheduleRefresh(server);
+      const onListen = () => {
+        scheduleRefresh(server);
+        const timer = setInterval(() => {
+          void refreshQrArtifacts(server);
+        }, REFRESH_MS);
+        server.httpServer?.once('close', () => clearInterval(timer));
+      };
 
       if (server.httpServer?.listening) {
         onListen();

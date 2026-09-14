@@ -37,8 +37,8 @@ export const canReturnAfterAuth = (path: string, role: UserRole | string): boole
   // Public routes (explore map, trails, events, etc.) — any role can return.
   if (!isAuthGatedPath(pathname)) return true;
 
-  const organizerRoles = ['tenant_owner', 'tenant_admin', 'tenant_guide'];
-  if (organizerRoles.includes(role)) {
+  const hostConsoleRoles = ['tenant_owner', 'tenant_admin', 'tenant_guide'];
+  if (hostConsoleRoles.includes(role)) {
     return pathname.startsWith('/host') || pathname.startsWith('/organizer') || pathname.startsWith('/profile');
   }
   if (role === 'platform_admin') return pathname.startsWith('/admin');

@@ -161,9 +161,9 @@ export const HostedSection = () => {
   if (!host.tenantId) {
     return (
       <GlassCard padding>
-        <p className="text-sm text-neutral-600">Select an organisation to manage your activities.</p>
+        <p className="text-sm text-neutral-600">Select a host to manage your activities.</p>
         <Link to="/host/overview" className="mt-2 inline-block text-sm font-semibold text-emerald-700">
-          Open organisation console
+          Open host console
         </Link>
       </GlassCard>
     );

@@ -12,7 +12,7 @@ const GROUP_TYPE_OPTIONS = [
 const typeLabel: Record<string, string> = {
   family: 'Family',
   friends: 'Friends',
-  activity: 'Trip chat',
+  activity: 'Activity chat',
 };
 
 const inviteStatusClass: Record<string, string> = {

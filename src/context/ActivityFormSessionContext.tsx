@@ -22,8 +22,8 @@ export type OpenActivityFormOptions = {
   tenantId?: string;
   initialActivityType?: ActivityType | null;
   editingActivity?: ActivityDTO | null;
-  /** Host organizations the user may publish under (platform admin). */
-  hostOrganizations?: TenantListDTO[];
+  /** Host profiles the user may publish under (platform admin). */
+  hostTenants?: TenantListDTO[];
   venueLocations?: LocationDTO[];
 };
 
@@ -51,8 +51,8 @@ const defaultSession = (): ActivityFormSessionSnapshot => ({
   eventDraft: null,
 });
 
-const resolveHostOrganizations = (opts: OpenActivityFormOptions): TenantListDTO[] | undefined =>
-  opts.hostOrganizations;
+const resolveHostTenants = (opts: OpenActivityFormOptions): TenantListDTO[] | undefined =>
+  opts.hostTenants;
 
 export const ActivityFormSessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<ActivityFormSessionSnapshot>(() => {
@@ -72,8 +72,8 @@ export const ActivityFormSessionProvider = ({ children }: { children: ReactNode 
   }, [session]);
 
   const openCreate = useCallback((opts: OpenActivityFormOptions = {}) => {
-    const hostOrganizations = resolveHostOrganizations(opts);
-    setOptions({ ...opts, hostOrganizations });
+    const hostTenants = resolveHostTenants(opts);
+    setOptions({ ...opts, hostTenants });
     setEditingActivity(opts.editingActivity ?? null);
     setSession((prev) => ({
       ...prev,
@@ -89,8 +89,8 @@ export const ActivityFormSessionProvider = ({ children }: { children: ReactNode 
   }, []);
 
   const openEdit = useCallback((activity: ActivityDTO, opts: OpenActivityFormOptions = {}) => {
-    const hostOrganizations = resolveHostOrganizations(opts);
-    setOptions({ ...opts, hostOrganizations });
+    const hostTenants = resolveHostTenants(opts);
+    setOptions({ ...opts, hostTenants });
     setEditingActivity(activity);
     setEditSessionKey((key) => key + 1);
     setSession({
@@ -131,7 +131,7 @@ export const ActivityFormSessionProvider = ({ children }: { children: ReactNode 
     onSaved?.();
   };
 
-  const hostOrganizations = resolveHostOrganizations(options);
+  const hostTenants = resolveHostTenants(options);
 
   return (
     <ActivityFormSessionContext.Provider value={value}>
@@ -144,7 +144,7 @@ export const ActivityFormSessionProvider = ({ children }: { children: ReactNode 
         initialActivityType={options.initialActivityType ?? session.initialActivityType}
         editingActivity={editingActivity ?? options.editingActivity ?? null}
         editSessionKey={editSessionKey}
-        hostOrganizations={hostOrganizations}
+        hostTenants={hostTenants}
         venueLocations={options.venueLocations}
         sessionSnapshot={session}
         onSessionChange={setSession}

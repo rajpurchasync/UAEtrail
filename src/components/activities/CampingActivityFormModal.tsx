@@ -3,7 +3,7 @@ import { activityFormTitle, type ActivityType } from '../../config/activityTypes
 import { saveCampingDraft, saveEventDraft } from '../../utils/activityFormSessionStorage';
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
 import { ActivityFormShell } from './ActivityFormShell';
-import { ActivityTripPreviewOverlay } from './ActivityTripPreviewOverlay';
+import { ActivityPreviewOverlay } from './ActivityPreviewOverlay';
 import { MIN_ABOUT_WORDS } from './activityFormValidation';
 import {
   campingLocationTabs,
@@ -25,7 +25,7 @@ export interface CampingActivityFormModalProps {
   onSaved?: () => void;
   tenantId?: string;
   editingActivity?: ActivityDTO | null;
-  hostOrganizations?: TenantListDTO[];
+  hostTenants?: TenantListDTO[];
   venueLocations?: LocationDTO[];
   sessionSnapshot?: ActivityFormSessionSnapshot | null;
   onSessionChange?: (snapshot: ActivityFormSessionSnapshot) => void;
@@ -39,7 +39,7 @@ export const CampingActivityFormModal = ({
   onSaved,
   tenantId = '',
   editingActivity = null,
-  hostOrganizations,
+  hostTenants,
   venueLocations,
   sessionSnapshot,
   onSessionChange,
@@ -54,7 +54,7 @@ export const CampingActivityFormModal = ({
     activityType: formActivityType,
     tenantId,
     editingActivity,
-    hostOrganizations,
+    hostTenants,
     venueLocations,
     sessionSnapshot,
     draftFromSession,
@@ -167,8 +167,8 @@ export const CampingActivityFormModal = ({
               venueAddHref={modal.venueAddHref}
               onAddVenue={modal.handleAddVenue}
               venueLocations={venueLocations}
-              canPickHostOrganization={modal.canPickHostOrganization}
-              pickerHostOrganizations={modal.pickerHostOrganizations}
+              canPickHostTenant={modal.canPickHostTenant}
+              pickerHostTenants={modal.pickerHostTenants}
               showScheduleWarning={editingActivity?.status === 'published'}
               formActivityType={formActivityType}
             />
@@ -210,11 +210,11 @@ export const CampingActivityFormModal = ({
         </div>
       </ActivityFormShell>
 
-      {modal.previewTrip && (
-        <ActivityTripPreviewOverlay
-          trip={modal.previewTrip}
+      {modal.previewActivity && (
+        <ActivityPreviewOverlay
+          activity={modal.previewActivity}
           saving={modal.saving}
-          onClose={() => modal.setPreviewTrip(null)}
+          onClose={() => modal.setPreviewActivity(null)}
           onSaveDraft={() => void modal.handleSave('draft')}
           onPublish={() => void modal.handleSave('publish')}
         />

@@ -122,7 +122,7 @@ export const AdminActivities = () => {
   const openEditActivity = (event: ActivityDTO) => {
     openEdit(event, {
       tenantId: event.tenantId,
-      hostOrganizations: tenants,
+      hostTenants: tenants,
       venueLocations: locations,
     });
   };
@@ -144,7 +144,7 @@ export const AdminActivities = () => {
       await loadEvents();
       openEdit(res.data, {
         tenantId: event.tenantId,
-        hostOrganizations: tenants,
+        hostTenants: tenants,
         venueLocations: locations,
       });
     } catch (err) {
@@ -223,7 +223,7 @@ export const AdminActivities = () => {
             <button
               onClick={() =>
                 openCreate({
-                  hostOrganizations: tenants,
+                  hostTenants: tenants,
                   venueLocations: locations,
                 })
               }

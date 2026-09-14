@@ -87,7 +87,7 @@ export const useOrganisationHubData = () => {
     pastActivitiesCount,
     upcomingActivities,
     loading: isLoading,
-    error: error instanceof Error ? error.message : error ? 'Failed to load organisation data' : null,
+    error: error instanceof Error ? error.message : error ? 'Failed to load host data' : null,
     reload,
   };
 };

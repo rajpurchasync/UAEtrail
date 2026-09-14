@@ -148,7 +148,7 @@ export const ShopOrganisationPanel = () => {
       if (editingProductId) {
         await api.updateShopOrganisationProduct(editingProductId, payload);
       } else {
-        await api.addShopOrganisationProduct({ merchantId: selectedStoreId, ...payload });
+        await api.addShopOrganisationProduct({ shopId: selectedStoreId, ...payload });
       }
       setShowProductForm(false);
       setEditingProductId(null);

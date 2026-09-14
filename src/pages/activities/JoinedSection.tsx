@@ -7,17 +7,17 @@ import { GlassCard } from '../../components/mobile/GlassCard';
 import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import { formatActivityType } from '../../utils/activityIdentity';
 import {
-  attendedTrips,
+  attendedActivities,
   cancelledRequests,
   parseJoinedSubTab,
   rejectedRequests,
   requestRecordMeta,
-  upcomingConfirmedTrips,
+  upcomingConfirmedActivities,
   upcomingOpenRequests,
   type JoinedSubTab,
 } from '../../utils/activityHubSections';
 import { requestStatusLabel } from '../../utils/joinRequestUi';
-import { getRequestEventDate } from '../../utils/tripDates';
+import { getRequestEventDate } from '../../utils/activityDates';
 
 const requestStatusStyle: Record<string, string> = {
   pending: 'bg-amber-500/15 text-amber-700',
@@ -27,9 +27,9 @@ const requestStatusStyle: Record<string, string> = {
   cancelled: 'bg-neutral-500/10 text-neutral-500',
 };
 
-const formatTripMeta = (trip: MyActivityDTO) => {
-  const parts = [formatActivityType(trip.activityType), trip.date];
-  if (trip.time) parts.push(trip.time);
+const formatActivityMeta = (activity: MyActivityDTO) => {
+  const parts = [formatActivityType(activity.activityType), activity.date];
+  if (activity.time) parts.push(activity.time);
   return parts.filter(Boolean).join(' · ');
 };
 
@@ -37,7 +37,7 @@ export const JoinedSection = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const subTab = parseJoinedSubTab(searchParams.get('sub'));
-  const [trips, setTrips] = useState<MyActivityDTO[]>([]);
+  const [activities, setActivities] = useState<MyActivityDTO[]>([]);
   const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,27 +53,27 @@ export const JoinedSection = () => {
   useEffect(() => {
     setLoading(true);
     Promise.all([api.getMeActivities(), api.getMeRequests()])
-      .then(([tripsRes, requestsRes]) => {
-        setTrips(tripsRes.data);
+      .then(([activitiesRes, requestsRes]) => {
+        setActivities(activitiesRes.data);
         setRequests(requestsRes.data);
       })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Couldn\'t load your trips — try again.'))
+      .catch((err) => setError(err instanceof Error ? err.message : 'Couldn\'t load your activities — try again.'))
       .finally(() => setLoading(false));
   }, []);
 
-  const upcomingTrips = useMemo(() => upcomingConfirmedTrips(trips), [trips]);
-  const attended = useMemo(() => attendedTrips(trips), [trips]);
-  const openRequests = useMemo(() => upcomingOpenRequests(trips, requests), [trips, requests]);
+  const upcomingActivities = useMemo(() => upcomingConfirmedActivities(activities), [activities]);
+  const attended = useMemo(() => attendedActivities(activities), [activities]);
+  const openRequests = useMemo(() => upcomingOpenRequests(activities, requests), [activities, requests]);
   const cancelled = useMemo(() => cancelledRequests(requests), [requests]);
   const rejected = useMemo(() => rejectedRequests(requests), [requests]);
 
   type UpcomingRow =
-    | { kind: 'confirmed'; date: string; trip: MyActivityDTO }
+    | { kind: 'confirmed'; date: string; activity: MyActivityDTO }
     | { kind: 'requested'; date: string; request: ActivityRequestView };
 
   const upcomingRows = useMemo<UpcomingRow[]>(() => {
     const rows: UpcomingRow[] = [
-      ...upcomingTrips.map((trip) => ({ kind: 'confirmed' as const, date: trip.date, trip })),
+      ...upcomingActivities.map((activity) => ({ kind: 'confirmed' as const, date: activity.date, activity })),
       ...openRequests.map((request) => ({
         kind: 'requested' as const,
         date: getRequestEventDate(request),
@@ -81,7 +81,7 @@ export const JoinedSection = () => {
       })),
     ];
     return rows.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [openRequests, upcomingTrips]);
+  }, [openRequests, upcomingActivities]);
 
   const segments = [
     { key: 'upcoming' as const, label: `Upcoming (${upcomingRows.length})` },
@@ -107,7 +107,7 @@ export const JoinedSection = () => {
       ) : subTab === 'upcoming' ? (
         upcomingRows.length === 0 ? (
           <GlassCard padding>
-            <p className="text-sm text-neutral-600">Nothing on your calendar yet — find a trip on the map.</p>
+            <p className="text-sm text-neutral-600">Nothing on your calendar yet — find an activity on the map.</p>
             <Link to="/" className="mt-2 inline-block text-sm font-semibold text-emerald-700">
               Explore the map
             </Link>
@@ -117,15 +117,15 @@ export const JoinedSection = () => {
             {upcomingRows.map((row) =>
               row.kind === 'confirmed' ? (
                 <ActivityHubListRow
-                  key={row.trip.id}
-                  title={row.trip.title || row.trip.locationName}
-                  meta={formatTripMeta(row.trip)}
+                  key={row.activity.id}
+                  title={row.activity.title || row.activity.locationName}
+                  meta={formatActivityMeta(row.activity)}
                   badge={
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700">
                       Joined
                     </span>
                   }
-                  onClick={() => navigate(`/activity/${row.trip.id}`)}
+                  onClick={() => navigate(`/activity/${row.activity.id}`)}
                 />
               ) : (
                 <ActivityHubListRow
@@ -151,22 +151,22 @@ export const JoinedSection = () => {
         attended.length === 0 ? (
           <GlassCard padding>
             <p className="text-sm text-neutral-600">
-              Trips you attended appear here after your host checks you in.
+              Activities you attended appear here after your host checks you in.
             </p>
           </GlassCard>
         ) : (
           <div className="space-y-2">
-            {attended.map((trip) => (
+            {attended.map((activity) => (
               <ActivityHubListRow
-                key={trip.id}
-                title={trip.title || trip.locationName}
-                meta={formatTripMeta(trip)}
+                key={activity.id}
+                title={activity.title || activity.locationName}
+                meta={formatActivityMeta(activity)}
                 badge={
                   <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-700">
                     Attended
                   </span>
                 }
-                onClick={() => navigate(`/activity/${trip.id}`)}
+                onClick={() => navigate(`/activity/${activity.id}`)}
               />
             ))}
           </div>

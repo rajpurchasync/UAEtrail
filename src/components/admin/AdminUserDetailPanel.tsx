@@ -30,7 +30,7 @@ export interface AdminUserDetail {
     status: string;
     createdAt: string;
   }>;
-  trips?: Array<{
+  joinedActivities?: Array<{
     activityId: string;
     activityTitle: string;
     locationName?: string;
@@ -73,7 +73,7 @@ export interface AdminUserDetail {
   } | null;
 }
 
-type Tab = 'overview' | 'organizations' | 'groups' | 'hosted' | 'participated' | 'requests';
+type Tab = 'overview' | 'hosts' | 'groups' | 'hosted' | 'participated' | 'requests';
 type DrillDown =
   | { type: 'tenant'; id: string }
   | { type: 'group'; id: string }
@@ -163,10 +163,10 @@ const TenantDrillDown = ({
   onOpenUser?: (userId: string) => void;
 }) => {
   if (loading) {
-    return <p className="text-sm text-gray-500 py-8 text-center">Loading organisation profile…</p>;
+    return <p className="text-sm text-gray-500 py-8 text-center">Loading host profile…</p>;
   }
   if (!tenant) {
-    return <p className="text-sm text-gray-500 py-8 text-center">Organisation profile not found.</p>;
+    return <p className="text-sm text-gray-500 py-8 text-center">Host profile not found.</p>;
   }
 
   return (
@@ -241,7 +241,7 @@ const TenantDrillDown = ({
         target="_blank"
         className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800"
       >
-        View public organisation profile ↗
+        View public host profile ↗
       </Link>
     </div>
   );
@@ -323,7 +323,7 @@ const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null
           <p className="font-medium text-gray-900">{activity.locationName}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-500 uppercase">Organisation</p>
+          <p className="text-xs text-gray-500 uppercase">Host</p>
           <p className="font-medium text-gray-900">{activityHostName(activity)}</p>
         </div>
         <div>
@@ -357,7 +357,7 @@ const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null
       )}
 
       <Link to={`/activity/${activity.id}`} target="_blank" className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800">
-        View public trip page ↗
+        View public activity page ↗
       </Link>
     </div>
   );
@@ -385,10 +385,10 @@ export const AdminUserDetailPanel = ({
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: 'overview', label: 'Profile' },
-    { key: 'organizations', label: 'Organizations', count: (user.ownedTenants?.length ?? 0) + (user.memberships?.length ?? 0) },
+    { key: 'hosts', label: 'Host profiles', count: (user.ownedTenants?.length ?? 0) + (user.memberships?.length ?? 0) },
     { key: 'groups', label: 'Groups', count: user.groups?.length },
     { key: 'hosted', label: 'Hosted', count: user.hostedActivities?.length },
-    { key: 'participated', label: 'Joined', count: user.trips?.length },
+    { key: 'participated', label: 'Joined', count: user.joinedActivities?.length },
     { key: 'requests', label: 'Requests', count: user.requests?.length }
   ];
 
@@ -427,7 +427,7 @@ export const AdminUserDetailPanel = ({
   }, [drillDown]);
 
   const drillTitle = drillDown?.type === 'tenant'
-    ? tenantDetail?.name ?? 'Organisation profile'
+    ? tenantDetail?.name ?? 'Host profile'
     : drillDown?.type === 'group'
       ? groupDetail?.group.name ?? 'Group'
       : activityDetail?.title ?? activityDetail?.locationName ?? 'Activity';
@@ -501,7 +501,7 @@ export const AdminUserDetailPanel = ({
 
                 {isBusinessHostUserType(user.userType) && !user.rewards && (
                   <p className="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
-                    Business organizers do not participate in Trail Points.
+                    Business hosts do not participate in Trail Points.
                   </p>
                 )}
 
@@ -536,8 +536,8 @@ export const AdminUserDetailPanel = ({
                 <Section title="Quick links">
                   <div className="flex flex-wrap gap-2">
                     {(user.ownedTenants?.length ?? 0) > 0 && (
-                      <button type="button" onClick={() => setTab('organizations')} className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-800 text-sm font-medium">
-                        {user.ownedTenants!.length} organisation{user.ownedTenants!.length > 1 ? 's' : ''}
+                      <button type="button" onClick={() => setTab('hosts')} className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-800 text-sm font-medium">
+                        {user.ownedTenants!.length} host profile{user.ownedTenants!.length > 1 ? 's' : ''}
                       </button>
                     )}
                     {(user.groups?.length ?? 0) > 0 && (
@@ -550,9 +550,9 @@ export const AdminUserDetailPanel = ({
                         {user.hostedActivities!.length} hosted activit{user.hostedActivities!.length > 1 ? 'ies' : 'y'}
                       </button>
                     )}
-                    {(user.trips?.length ?? 0) > 0 && (
+                    {(user.joinedActivities?.length ?? 0) > 0 && (
                       <button type="button" onClick={() => setTab('participated')} className="px-3 py-1.5 rounded-lg bg-teal-50 text-teal-800 text-sm font-medium">
-                        {user.trips!.length} joined trip{user.trips!.length > 1 ? 's' : ''}
+                        {user.joinedActivities!.length} joined activit{user.joinedActivities!.length > 1 ? 'ies' : 'y'}
                       </button>
                     )}
                   </div>
@@ -560,9 +560,9 @@ export const AdminUserDetailPanel = ({
               </div>
             )}
 
-            {tab === 'organizations' && (
+            {tab === 'hosts' && (
               <div className="space-y-6">
-                <Section title={`Owned organisations (${user.ownedTenants?.length ?? 0})`}>
+                <Section title={`Owned host profiles (${user.ownedTenants?.length ?? 0})`}>
                   {user.ownedTenants?.length ? (
                     <div className="space-y-2">
                       {user.ownedTenants.map((tenant) => (
@@ -578,7 +578,7 @@ export const AdminUserDetailPanel = ({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">No owned organisations.</p>
+                    <p className="text-sm text-gray-500">No owned host profiles.</p>
                   )}
                 </Section>
 
@@ -666,22 +666,22 @@ export const AdminUserDetailPanel = ({
             )}
 
             {tab === 'participated' && (
-              <Section title={`Joined trips (${user.trips?.length ?? 0})`}>
-                {user.trips?.length ? (
+              <Section title={`Joined activities (${user.joinedActivities?.length ?? 0})`}>
+                {user.joinedActivities?.length ? (
                   <div className="space-y-2">
-                    {user.trips.map((trip) => (
+                    {user.joinedActivities.map((joinedActivity) => (
                       <ClickableCard
-                        key={trip.activityId}
-                        title={trip.activityTitle ?? 'Untitled activity'}
-                        subtitle={[trip.locationName, trip.tenantName, trip.date].filter(Boolean).join(' · ')}
-                        meta={trip.checkedInAt ? <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Checked in</span> : undefined}
-                        onView={() => setDrillDown({ type: 'activity', id: trip.activityId })}
-                        href={`/activity/${trip.activityId}`}
+                        key={joinedActivity.activityId}
+                        title={joinedActivity.activityTitle ?? 'Untitled activity'}
+                        subtitle={[joinedActivity.locationName, joinedActivity.tenantName, joinedActivity.date].filter(Boolean).join(' · ')}
+                        meta={joinedActivity.checkedInAt ? <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Checked in</span> : undefined}
+                        onView={() => setDrillDown({ type: 'activity', id: joinedActivity.activityId })}
+                        href={`/activity/${joinedActivity.activityId}`}
                       />
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No participated trips.</p>
+                  <p className="text-sm text-gray-500">No joined activities.</p>
                 )}
               </Section>
             )}

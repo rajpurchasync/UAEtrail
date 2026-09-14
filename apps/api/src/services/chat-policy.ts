@@ -34,7 +34,7 @@ export async function assertChatRateLimit(senderId: string): Promise<void> {
 }
 
 /**
- * Users may message when they are accepted buddies or share an active trip / request relationship.
+ * Users may message when they are accepted buddies or share an active activity / request relationship.
  * A past DM thread alone does not grant access — unfriended buddies cannot keep messaging.
  */
 export async function canMessageUser(
@@ -87,6 +87,6 @@ export async function assertCanMessageUser(
   throw new ApiError(
     403,
     'message_not_allowed',
-    'You can only message people you are connected with as buddies or share a trip connection with.'
+    'You can only message people you are connected with as buddies or share an activity connection with.'
   );
 }

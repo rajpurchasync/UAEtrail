@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mountain, Star, ChevronRight, Tent, Compass } from 'lucide-react';
-import { TrailCard } from '../components/ui/TrailCard';
-import { CampingCard } from '../components/ui/CampingCard';
-import { ActivityCard, EmptyActivitiesBanner } from '../components/ui';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Star, ChevronRight, Mountain, Tent, Compass } from 'lucide-react';
+import { EmptyActivitiesBanner } from '../components/ui';
 import { DEFAULT_OG_IMAGE, HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -11,7 +9,11 @@ import { FaqPreview } from '../components/seo/FaqPreview';
 import { websiteSchema } from '../components/seo/schemas';
 import { HOME_FAQ_PREVIEW } from '../content/platformFaqs';
 import { CampingSpot, Trail, ActivityListing } from '../types';
-import { fetchHomeLandingData, fetchHomeRegionLocations, HOME_LANDING_SECTION_LIMIT } from '../api/public';
+import {
+  fetchHomeLandingData,
+  fetchHomeRegionLocations,
+  HOME_LANDING_SECTION_LIMIT,
+} from '../api/public';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole } from '../utils/authRouting';
@@ -19,40 +21,51 @@ import { getFirstName } from '../utils/userDisplay';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { TrailPointsPromoBanner } from '../components/rewards';
 import { DESKTOP_NAV_LINKS, MEMBERSHIP_NAV_LINK, EXPLORE_MAP_PATH, joinAuthPath } from '../config/platform';
-import { explorePath, exploreVenuesPath } from '../utils/exploreRouting';
+import { buildSignInRedirect } from '../utils/authReturnContext';
+import {
+  exploreActivitiesPath,
+  explorePath,
+  explorePlacesPath,
+} from '../utils/exploreRouting';
 import { EXPLORE_UAE_REGIONS, type ExploreRegionIcon } from '../config/exploreUaeRegions';
 import { MobileBrandBar } from '../components/layout/MobileBrandBar';
 import { FilterChips } from '../components/mobile/FilterChips';
 import {
   ACTIVITY_BROWSE_FILTER_OPTIONS,
   ACTIVITY_KINDS_SUMMARY,
-  activitiesBrowsePath,
   browseAllActivitiesOfTypeLabel,
   noScheduledActivitiesMessage,
   type ActivityType,
 } from '../config/activityTypes';
-import { ACTIVITIES_PATH } from '../constants';
-
-const EXPLORE_REGION_ICONS: Record<ExploreRegionIcon, typeof Mountain> = {
-  mountain: Mountain,
-  tent: Tent,
-  compass: Compass
-};
+import { HomeLandingExploreCard } from '../components/home/HomeLandingExploreCard';
+import { HomeFoundersStory } from '../components/home/HomeFoundersStory';
+import {
+  activityListingToExploreItem,
+  campToExploreItem,
+  trailToExploreItem,
+} from '../utils/homeLandingExploreItems';
+import { isUpcomingActivityDate } from '../utils/activityDates';
 
 type HomeActivityFilter = 'all' | ActivityType;
 
 const HOME_ACTIVITY_FILTERS = ACTIVITY_BROWSE_FILTER_OPTIONS;
 
+const EXPLORE_REGION_ICONS: Record<ExploreRegionIcon, typeof Mountain> = {
+  mountain: Mountain,
+  tent: Tent,
+  compass: Compass,
+};
+
 const getLandingLoadErrorMessage = (error: unknown): string => {
   if (!(error instanceof Error)) {
-    return 'We\'re having trouble loading trips right now — try again in a moment.';
+    return 'We\'re having trouble loading activities right now — try again in a moment.';
   }
 
   if (
     /Request failed with status \d{3}/i.test(error.message) ||
     error.message.includes('Failed to reach API')
   ) {
-    return 'We\'re having trouble loading trips right now — try again in a moment.';
+    return 'We\'re having trouble loading activities right now — try again in a moment.';
   }
 
   return error.message;
@@ -62,6 +75,8 @@ export const Home = () => <HomeDesktop />;
 
 const HomeDesktop = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const signInHref = buildSignInRedirect(location).href;
   const [popularTrails, setPopularTrails] = useState<Trail[]>([]);
   const [popularCamps, setPopularCamps] = useState<CampingSpot[]>([]);
   const [featuredActivities, setFeaturedActivities] = useState<ActivityListing[]>([]);
@@ -104,35 +119,59 @@ const HomeDesktop = () => {
     };
   }, []);
 
-  const upcomingActivities = useMemo(
-    () =>
-      allActivities
-        .filter((item) => new Date(item.date) >= new Date())
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(0, HOME_LANDING_SECTION_LIMIT),
-    [allActivities]
-  );
-
   const displayedActivities = useMemo(() => {
-    const base = featuredActivities.length > 0 ? featuredActivities : upcomingActivities;
+    const byId = new Map<string, ActivityListing>();
+    for (const activity of [...featuredActivities, ...allActivities]) {
+      if (!byId.has(activity.id)) byId.set(activity.id, activity);
+    }
+
+    const upcoming = [...byId.values()]
+      .filter((activity) => isUpcomingActivityDate(activity.date))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
     const filtered =
-      activityFilter === 'all' ? base : base.filter((activity) => activity.activityType === activityFilter);
+      activityFilter === 'all'
+        ? upcoming
+        : upcoming.filter((activity) => activity.activityType === activityFilter);
+
     return filtered.slice(0, HOME_LANDING_SECTION_LIMIT);
-  }, [featuredActivities, upcomingActivities, activityFilter]);
+  }, [featuredActivities, allActivities, activityFilter]);
+
+  /** Cycle placeholder art when several cards share the same activity kind. */
+  const activityCoverVariants = useMemo(() => {
+    const nextIndex: Partial<Record<ActivityListing['activityType'], number>> = {};
+    const variants = new Map<string, number>();
+    for (const activity of displayedActivities) {
+      const variant = nextIndex[activity.activityType] ?? 0;
+      variants.set(activity.id, variant);
+      nextIndex[activity.activityType] = variant + 1;
+    }
+    return variants;
+  }, [displayedActivities]);
 
   const homeTrails = useMemo(() => {
-    const source = popularTrails.length > 0 ? popularTrails : allTrails.filter((trail) => trail.featured);
+    const source = popularTrails.length > 0 ? popularTrails : [];
     return source.slice(0, HOME_LANDING_SECTION_LIMIT);
-  }, [popularTrails, allTrails]);
+  }, [popularTrails]);
 
   const homeCamps = useMemo(() => {
-    const source = popularCamps.length > 0 ? popularCamps : allCamps.filter((camp) => camp.featured);
+    const source = popularCamps.length > 0 ? popularCamps : [];
     return source.slice(0, HOME_LANDING_SECTION_LIMIT);
-  }, [popularCamps, allCamps]);
+  }, [popularCamps]);
 
   const trackView = (locationId: string) => {
     api.trackLocationView(locationId).catch(() => { /* silent */ });
   };
+
+  const activitiesMapPath =
+    activityFilter === 'all'
+      ? exploreActivitiesPath()
+      : exploreActivitiesPath({
+          activity:
+            activityFilter === 'event'
+              ? 'event'
+              : activityFilter,
+        });
 
   const testimonials = [
     {
@@ -147,7 +186,7 @@ const HomeDesktop = () => {
       location: 'Abu Dhabi',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
       rating: 5,
-      text: 'Finally found a community of outdoor enthusiasts in the UAE. The camping trips are well-organized and safe for families.'
+      text: 'Finally found a community of outdoor enthusiasts in the UAE. The camping activities are well-organized and safe for families.'
     },
     {
       name: 'Sara Ahmed',
@@ -161,7 +200,7 @@ const HomeDesktop = () => {
       location: 'Sharjah',
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
       rating: 5,
-      text: 'The community here is amazing. I\'ve made friends through group trips and discovered trails I never knew existed in the Emirates.'
+      text: 'The community here is amazing. I\'ve made friends through group activities and discovered trails I never knew existed in the Emirates.'
     }
   ];
 
@@ -169,7 +208,7 @@ const HomeDesktop = () => {
     <div className="overflow-x-clip max-w-full">
       <PageMeta
         title="Discover hiking & camping in the UAE & GCC"
-        description="Find trails, camping spots, and join organized outdoor trips with trusted guides across the UAE and GCC."
+        description="Find trails, camping spots, and join organized outdoor activities with trusted guides across the UAE and GCC."
         path="/"
         image={DEFAULT_OG_IMAGE}
       />
@@ -179,7 +218,7 @@ const HomeDesktop = () => {
           {loadError}. Some sections may be empty until the API is available.
         </div>
       )}
-      {/* ──── Hero — mobile sizes to content; desktop keeps a taller centered hero */}
+      {/* ──── Hero ──── */}
       <section className="relative overflow-hidden md:h-[58vh] md:min-h-[420px] md:max-h-[520px]">
         <picture className="absolute inset-0">
           <source srcSet={HOME_HERO_IMAGE_WEBP} type="image/webp" />
@@ -187,17 +226,46 @@ const HomeDesktop = () => {
             src={HOME_HERO_IMAGE_JPEG}
             alt=""
             decoding="async"
-            className="h-full w-full object-cover object-[center_35%]"
+            className="h-full w-full object-cover object-[center_42%] md:object-[center_35%]"
           />
         </picture>
         <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/50 to-black/70" />
 
-        <div className="relative flex flex-col px-4 pb-5 pt-safe-plus-2 sm:px-6 md:h-full md:px-12 md:pb-8 md:pt-6">
-          <div className="shrink-0 md:hidden">
-            <MobileBrandBar tone="light" menuVariant={user ? 'session' : 'user'} />
+        {/* Mobile — content-driven height (real iPhone includes safe-area; devtools often omits it) */}
+        <div className="home-landing-hero-mobile relative z-10 flex flex-col px-4 pt-safe-plus-2 pb-6 sm:px-6 md:hidden">
+          <MobileBrandBar tone="light" menuVariant={user ? 'session' : 'user'} />
+          <div className="mt-4 flex flex-col items-center text-center text-white">
+            <div className="flex w-full max-w-[17rem] flex-col items-center">
+              <h1 className="text-[1.4rem] font-semibold leading-[1.2] tracking-tight">
+                <span className="block">Find Hiking &amp; Camping</span>
+                <span className="block">buddies in the UAE</span>
+              </h1>
+              <p className="mt-2.5 max-w-[16rem] text-sm leading-snug text-white/90">
+                Join an activity, host one or make friends while having fun.
+              </p>
+              <div className="mt-3.5 grid w-full grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => navigate(EXPLORE_MAP_PATH)}
+                  className="inline-flex min-h-[38px] items-center justify-center rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700 active:scale-[0.98]"
+                >
+                  {user ? 'Map' : 'Explore'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate(user ? '/profile' : joinAuthPath())}
+                  className="inline-flex min-h-[38px] items-center justify-center rounded-full border border-white/25 bg-white/15 px-3 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/25 active:scale-[0.98]"
+                >
+                  {user ? 'Manage' : 'Join'}
+                </button>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="hidden shrink-0 items-center justify-between md:flex">
+        {/* Desktop */}
+        <div className="relative hidden h-full flex-col px-12 pb-8 pt-6 md:flex">
+          <div className="flex shrink-0 items-center justify-between">
             <Link to="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-lg flex items-center justify-center">
                 <Mountain className="w-4 h-4 text-white" />
@@ -234,7 +302,7 @@ const HomeDesktop = () => {
               </Link>
             ) : (
               <Link
-                to="/signin"
+                to={signInHref}
                 className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-white/30 transition-colors text-sm font-medium border border-white/30"
               >
                 Log in
@@ -242,26 +310,26 @@ const HomeDesktop = () => {
             )}
           </div>
 
-          <div className="mt-3 flex flex-col items-center gap-2 text-center text-white sm:mt-4 sm:gap-2.5 md:mt-0 md:min-h-0 md:flex-1 md:justify-center md:gap-4">
-            <h1 className="max-w-[18rem] text-[1.5rem] font-semibold leading-[1.12] tracking-tight sm:max-w-none sm:text-4xl md:text-5xl lg:text-6xl md:leading-[1.12]">
+          <div className="flex flex-1 flex-col items-center justify-center text-center text-white">
+            <h1 className="text-5xl lg:text-6xl font-semibold leading-[1.12] tracking-tight">
               <span className="block">Find Hiking &amp; Camping</span>
               <span className="block">buddies in the UAE</span>
             </h1>
-            <p className="max-w-[19rem] text-sm leading-snug text-white/90 sm:max-w-2xl sm:text-lg md:max-w-2xl md:text-xl">
-              Join a trip, host one or make friends while having fun.
+            <p className="mt-4 max-w-2xl text-xl text-white/90">
+              Join an activity, host one or make friends while having fun.
             </p>
-            <div className="grid w-full max-w-[16.5rem] grid-cols-2 gap-2.5 sm:max-w-xs sm:gap-3 md:mt-2">
+            <div className="mt-6 grid w-full max-w-xs grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => navigate(EXPLORE_MAP_PATH)}
-                className="inline-flex min-h-[40px] items-center justify-center rounded-full bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700 md:min-h-[44px] md:px-4 md:py-2.5 md:text-base"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-emerald-600 px-4 py-2.5 text-base font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700"
               >
                 {user ? 'Map' : 'Explore'}
               </button>
               <button
                 type="button"
                 onClick={() => navigate(user ? '/profile' : joinAuthPath())}
-                className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-white/25 bg-white/15 px-3.5 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/25 md:min-h-[44px] md:px-4 md:py-2.5 md:text-base"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/25 bg-white/15 px-4 py-2.5 text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/25"
               >
                 {user ? 'Manage' : 'Join'}
               </button>
@@ -277,8 +345,12 @@ const HomeDesktop = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
           <div className="flex justify-between items-end mb-5 gap-3">
             <h2 className="text-xl md:text-3xl font-bold text-gray-900">Explore UAE</h2>
-            <Link to={explorePath({ panel: 'venues', list: true })} className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0">
-              See all <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            <Link
+              to={explorePlacesPath()}
+              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0"
+            >
+              See all
+              <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 min-w-0">
@@ -289,54 +361,50 @@ const HomeDesktop = () => {
                 allCamps.filter((c) => region.regionKeys.some((k) => c.region.includes(k))).length;
 
               return (
-              <Link
-                key={region.name}
-                to={region.discoveryLink}
-                className="group relative aspect-[4/3] min-w-0 rounded-[22px] overflow-hidden glass-card-interactive shadow-glass"
-              >
-                <img
-                  src={region.image}
-                  alt={region.imageAlt}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <RegionIcon className="w-3.5 h-3.5 text-emerald-400" />
-                    <p className="text-white font-semibold text-sm">{region.name}</p>
+                <Link
+                  key={region.name}
+                  to={region.discoveryLink}
+                  className="group relative aspect-[4/3] min-w-0 rounded-[22px] overflow-hidden glass-card-interactive shadow-glass"
+                >
+                  <img
+                    src={region.image}
+                    alt={region.imageAlt}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <RegionIcon className="w-3.5 h-3.5 text-emerald-400" />
+                      <p className="text-white font-semibold text-sm">{region.name}</p>
+                    </div>
+                    {count > 0 && (
+                      <p className="text-white/70 text-xs">{count} locations</p>
+                    )}
                   </div>
-                  {count > 0 && (
-                    <p className="text-white/70 text-xs">{count} locations</p>
-                  )}
-                </div>
-              </Link>
+                </Link>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* ──── Upcoming Activities (swipe) ──── */}
+      {/* ──── Activities near me ──── */}
       <section className="py-8 md:py-12 mobile-snap-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
           <div className="flex justify-between items-end mb-5 gap-3">
             <div className="min-w-0">
-              <h2 className="text-xl md:text-3xl font-bold text-gray-900">
-                {featuredActivities.length > 0 ? 'Featured Activities' : 'Upcoming Activities'}
-              </h2>
+              <h2 className="text-xl md:text-3xl font-bold text-gray-900">Activities near me</h2>
               <p className="text-sm text-gray-500 mt-1 hidden md:block">
-                {featuredActivities.length > 0
-                  ? 'Handpicked adventures selected for you'
-                  : `Join organized ${ACTIVITY_KINDS_SUMMARY.toLowerCase()}`}
+                Upcoming {ACTIVITY_KINDS_SUMMARY.toLowerCase()} on the map near you
               </p>
             </div>
             <Link
-              to={activityFilter === 'all' ? ACTIVITIES_PATH : activitiesBrowsePath(activityFilter)}
+              to={activitiesMapPath}
               className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1.5 group shrink-0"
             >
-              All activities
+              View on map
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
@@ -349,7 +417,12 @@ const HomeDesktop = () => {
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {displayedActivities.map((activity) => (
               <div key={activity.id} className="mobile-snap-rail__item">
-                <ActivityCard activity={activity} variant="featured" />
+                <HomeLandingExploreCard
+                  item={activityListingToExploreItem(
+                    activity,
+                    activityCoverVariants.get(activity.id) ?? 0
+                  )}
+                />
               </div>
             ))}
             {displayedActivities.length === 0 && (
@@ -360,10 +433,15 @@ const HomeDesktop = () => {
                       {noScheduledActivitiesMessage(activityFilter)}
                     </p>
                     <Link
-                      to={activitiesBrowsePath(activityFilter)}
+                      to={exploreActivitiesPath({
+                        activity:
+                          activityFilter === 'event'
+                            ? 'event'
+                            : activityFilter,
+                      })}
                       className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700 mt-3"
                     >
-                      {browseAllActivitiesOfTypeLabel(activityFilter)}
+                      {browseAllActivitiesOfTypeLabel(activityFilter)} on map
                       <ChevronRight className="w-4 h-4" />
                     </Link>
                   </div>
@@ -382,19 +460,30 @@ const HomeDesktop = () => {
           <div className="flex justify-between items-end mb-6 md:mb-8 gap-3">
             <div className="min-w-0">
               <h2 className="text-xl md:text-3xl font-bold text-gray-900">Amazing Trails</h2>
-              <p className="text-sm text-gray-500 mt-1 hidden md:block">Top-rated hiking routes across the Emirates</p>
+              <p className="text-sm text-gray-500 mt-1 hidden md:block">
+                Hiking locations on the map — same flow as adding a trail
+              </p>
             </div>
-            <Link
-              to={exploreVenuesPath()}
-              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0"
-            >
-              View all <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <Link
+                to={explorePath({ panel: 'venues', filter: 'hiking' })}
+                className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group"
+              >
+                View on map
+                <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <Link
+                to={explorePath({ contribute: 'hiking' })}
+                className="text-xs font-semibold text-neutral-500 hover:text-emerald-600"
+              >
+                Add a hiking location
+              </Link>
+            </div>
           </div>
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {homeTrails.map((trail) => (
               <div key={trail.id} className="mobile-snap-rail__item" onClick={() => trackView(trail.id)}>
-                <TrailCard trail={trail} />
+                <HomeLandingExploreCard item={trailToExploreItem(trail)} />
               </div>
             ))}
           </div>
@@ -407,19 +496,30 @@ const HomeDesktop = () => {
           <div className="flex justify-between items-end mb-6 md:mb-8 gap-3">
             <div className="min-w-0">
               <h2 className="text-xl md:text-3xl font-bold text-gray-900">Awesome Camping Spots</h2>
-              <p className="text-sm text-gray-500 mt-1 hidden md:block">Best camp sites handpicked by the community</p>
+              <p className="text-sm text-gray-500 mt-1 hidden md:block">
+                Camping locations on the map — same flow as adding a camp spot
+              </p>
             </div>
-            <Link
-              to={exploreVenuesPath()}
-              className="text-amber-600 hover:text-amber-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0"
-            >
-              View all <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <Link
+                to={explorePath({ panel: 'venues', filter: 'camping' })}
+                className="text-amber-600 hover:text-amber-700 font-medium text-sm inline-flex items-center gap-1 group"
+              >
+                View on map
+                <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <Link
+                to={explorePath({ contribute: 'camping' })}
+                className="text-xs font-semibold text-neutral-500 hover:text-amber-600"
+              >
+                Add a camping location
+              </Link>
+            </div>
           </div>
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {homeCamps.map((camp) => (
               <div key={camp.id} className="mobile-snap-rail__item" onClick={() => trackView(camp.id)}>
-                <CampingCard camp={camp} />
+                <HomeLandingExploreCard item={campToExploreItem(camp)} />
               </div>
             ))}
           </div>
@@ -463,6 +563,8 @@ const HomeDesktop = () => {
           </div>
         </div>
       </section>
+
+      <HomeFoundersStory />
 
       {/* ──── FAQ preview ──── */}
       <section className="py-10 md:py-16">

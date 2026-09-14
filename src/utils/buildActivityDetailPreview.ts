@@ -1,7 +1,7 @@
 import type { ActivityDetailDTO, ActivityDTO, LocationDTO, AuthUser, ActivityType as SharedActivityType } from '@uaetrail/shared-types';
 import type { ActivityFormState } from '../components/activities/activityFormState';
 import { buildHostActivityPayload, buildRequirementsFromForm } from '../components/activities/activityFormState';
-import { derivePriceAed } from './tripPricing';
+import { derivePriceAed } from './activityPricing';
 
 const fallbackLocation = (
   locationId: string,

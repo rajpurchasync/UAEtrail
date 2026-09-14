@@ -103,7 +103,7 @@ export const UserRequests = () => {
             </Link>
           ))}
           {filtered.length === 0 && (
-            <p className="text-center text-sm text-neutral-500 py-12">No trip requests yet — explore the map to find your next adventure.</p>
+            <p className="text-center text-sm text-neutral-500 py-12">No activity requests yet — explore the map to find your next adventure.</p>
           )}
         </div>
       )}

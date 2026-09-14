@@ -18,6 +18,7 @@ import {
   findMerchantProductById,
   findMerchantPublicById,
   findManagedMerchantProfileById,
+  findMerchantProfileByTenantId,
   getMerchantAnalytics,
   listMerchantOrderLineItems,
   listActiveProductsByIds,
@@ -40,9 +41,16 @@ const paginationSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20)
 });
 
-const merchantScopeSchema = z.object({
-  merchantId: z.string().min(1).optional()
+const shopScopeSchema = z.object({
+  merchantId: z.string().min(1).optional(),
+  shopId: z.string().min(1).optional(),
+  tenantId: z.string().min(1).optional()
 });
+
+/** @deprecated Use shopScopeSchema — accepts the same query keys. */
+const merchantScopeSchema = shopScopeSchema;
+
+type ShopManageScope = z.infer<typeof shopScopeSchema>;
 
 // ─── Public Routes ──────────────────────────────────────────────────────────
 
@@ -50,6 +58,54 @@ const productListSchema = paginationSchema.extend({
   category: z.string().optional(),
   search: z.string().optional()
 });
+
+async function handleShopPublic(
+  req: { params: z.infer<typeof idParamSchema> },
+  res: { json: (body: unknown) => void },
+  next: (error: unknown) => void
+) {
+  try {
+    const { id } = req.params;
+    const merchant = await findMerchantPublicById(id);
+    if (!merchant) throw new ApiError(404, 'merchant_not_found', 'Shop not found.');
+
+    res.json({
+      data: {
+        id: merchant.id,
+        shopId: merchant.id,
+        merchantId: merchant.id,
+        tenantId: merchant.tenantId ?? null,
+        shopName: merchant.shopName,
+        description: merchant.description,
+        logo: merchant.logo,
+        contactEmail: merchant.contactEmail,
+        contactPhone: merchant.contactPhone,
+        latitude: merchant.latitude,
+        longitude: merchant.longitude,
+        region: merchant.region,
+        contactPersonName: merchant.contactPersonName ?? null,
+        contactPersonAvatar: merchant.contactPersonAvatar ?? null,
+        contactPersonUserId: merchant.contactPersonUserId ?? null,
+        websiteUrl: merchant.websiteUrl ?? null,
+        products: merchant.products.map((p) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          images: p.images,
+          priceAed: p.priceAed,
+          stockQuantity: p.stockQuantity,
+          lowStockThreshold: p.lowStockThreshold,
+          discountPercent: p.discountPercent,
+          externalUrl: p.externalUrl,
+          category: p.category,
+          status: p.status.toLowerCase()
+        }))
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 shopRouter.get('/products', validate({ query: productListSchema }), async (req, res, next) => {
   try {
@@ -130,46 +186,9 @@ shopRouter.get('/products/:id', validate({ params: idParamSchema }), async (req,
   }
 });
 
-shopRouter.get('/merchants/:id', validate({ params: idParamSchema }), async (req, res, next) => {
-  try {
-    const { id } = req.params as z.infer<typeof idParamSchema>;
-    const merchant = await findMerchantPublicById(id);
-    if (!merchant) throw new ApiError(404, 'merchant_not_found', 'Shop not found.');
-
-    res.json({
-      data: {
-        id: merchant.id,
-        shopName: merchant.shopName,
-        description: merchant.description,
-        logo: merchant.logo,
-        contactEmail: merchant.contactEmail,
-        contactPhone: merchant.contactPhone,
-        latitude: merchant.latitude,
-        longitude: merchant.longitude,
-        region: merchant.region,
-        contactPersonName: merchant.contactPersonName ?? null,
-        contactPersonAvatar: merchant.contactPersonAvatar ?? null,
-        contactPersonUserId: merchant.contactPersonUserId ?? null,
-        websiteUrl: merchant.websiteUrl ?? null,
-        products: merchant.products.map((p) => ({
-          id: p.id,
-          name: p.name,
-          description: p.description,
-          images: p.images,
-          priceAed: p.priceAed,
-          stockQuantity: p.stockQuantity,
-          lowStockThreshold: p.lowStockThreshold,
-          discountPercent: p.discountPercent,
-          externalUrl: p.externalUrl,
-          category: p.category,
-          status: p.status.toLowerCase()
-        }))
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+shopRouter.get('/merchants/:id', validate({ params: idParamSchema }), handleShopPublic);
+/** Preferred public path — legacy alias: `/merchants/:id`. */
+shopRouter.get('/shops/:id', validate({ params: idParamSchema }), handleShopPublic);
 
 shopRouter.get('/checkout/config', (_req, res) => {
   res.json({ data: { stripeEnabled: isStripeConfigured() } });
@@ -297,6 +316,7 @@ const merchantProfilePatchSchema = merchantProfileSchema.partial();
 
 const productCreateSchema = z.object({
   merchantId: z.string().min(1).optional(),
+  shopId: z.string().min(1).optional(),
   name: z.string().min(2).max(200),
   description: z.string().max(1000).optional(),
   images: z.array(z.string().url()).default([]),
@@ -364,6 +384,8 @@ const serializeMerchantProfile = (profile: {
   region?: string | null;
 }) => ({
   id: profile.id,
+  shopId: profile.id,
+  merchantId: profile.id,
   tenantId: profile.tenantId ?? null,
   shopName: profile.shopName,
   description: profile.description,
@@ -376,11 +398,23 @@ const serializeMerchantProfile = (profile: {
   region: profile.region ?? null
 });
 
-const toSharedOrderStatus = (status: OrderStatus) => status.toLowerCase() as z.infer<typeof merchantOrderStatusSchema>['status'];
+async function getManagedMerchantProfile(userId: string, scope?: ShopManageScope | string) {
+  const resolvedScope: ShopManageScope =
+    typeof scope === 'string' ? { merchantId: scope } : (scope ?? {});
+  const merchantKey = resolvedScope.merchantId ?? resolvedScope.shopId;
 
-async function getManagedMerchantProfile(userId: string, merchantId?: string) {
-  if (merchantId) {
-    const profile = await findManagedMerchantProfileById(userId, merchantId);
+  if (merchantKey) {
+    const profile = await findManagedMerchantProfileById(userId, merchantKey);
+    if (!profile) {
+      throw new ApiError(403, 'forbidden', 'You are not authorized to manage this store.');
+    }
+    return profile;
+  }
+
+  if (resolvedScope.tenantId) {
+    const linked = await findMerchantProfileByTenantId(resolvedScope.tenantId);
+    if (!linked) return null;
+    const profile = await findManagedMerchantProfileById(userId, linked.id);
     if (!profile) {
       throw new ApiError(403, 'forbidden', 'You are not authorized to manage this store.');
     }
@@ -405,72 +439,85 @@ async function assertMerchantProductAdmin(userId: string, productId: string) {
   return { product, profile };
 }
 
-shopRouter.get('/merchant/stores', requireAuth, requireVerifiedEmail, async (req, res, next) => {
-  try {
-    const stores = await listManagedMerchantProfiles(req.auth!.userId);
-    res.json({ data: stores.map(serializeMerchantProfile) });
-  } catch (error) {
-    next(error);
-  }
-});
+const toSharedOrderStatus = (status: OrderStatus) => status.toLowerCase() as z.infer<typeof merchantOrderStatusSchema>['status'];
 
-shopRouter.get('/merchant/profile', requireAuth, requireVerifiedEmail, validate({ query: merchantScopeSchema }), async (req, res, next) => {
-  try {
-    const { merchantId } = req.query as z.infer<typeof merchantScopeSchema>;
-    const profile = await getManagedMerchantProfile(req.auth!.userId, merchantId);
-    if (!profile) throw new ApiError(404, 'profile_not_found', 'Shop organisation profile not found. Create one first.');
+const shopOrganisationManagePrefixes = ['/merchant', '/organisation'] as const;
 
-    res.json({
-      data: serializeMerchantProfile(profile)
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-shopRouter.post('/merchant/profile', requireAuth, requireVerifiedEmail, validate({ body: merchantProfileSchema }), async (req, res, next) => {
-  try {
-    if (req.auth!.role !== UserRole.MERCHANT_ADMIN && req.auth!.role !== UserRole.PLATFORM_ADMIN) {
-      throw new ApiError(403, 'forbidden', 'Shop organisation accounts are provisioned by a platform administrator.');
+shopOrganisationManagePrefixes.forEach((prefix) => {
+  shopRouter.get(`${prefix}/stores`, requireAuth, requireVerifiedEmail, async (req, res, next) => {
+    try {
+      const stores = await listManagedMerchantProfiles(req.auth!.userId);
+      res.json({ data: stores.map(serializeMerchantProfile) });
+    } catch (error) {
+      next(error);
     }
-    const userId = req.auth!.userId;
-    const body = req.body as z.infer<typeof merchantProfileSchema>;
-    const profile = await createMerchantProfileForUser(userId, body);
-    await linkMerchantProfileToShopTenant(profile.id, userId);
-
-    res.status(201).json({
-      data: serializeMerchantProfile(profile)
-    });
-  } catch (error) {
-    next(error);
-  }
+  });
 });
 
-shopRouter.patch('/merchant/profile', requireAuth, requireVerifiedEmail, validate({ query: merchantScopeSchema, body: merchantProfilePatchSchema }), async (req, res, next) => {
-  try {
-    const userId = req.auth!.userId;
-    const { merchantId } = req.query as z.infer<typeof merchantScopeSchema>;
-    const existing = await getManagedMerchantProfile(userId, merchantId);
-    if (!existing) throw new ApiError(404, 'profile_not_found', 'Shop organisation profile not found.');
+shopOrganisationManagePrefixes.forEach((prefix) => {
+  shopRouter.get(`${prefix}/profile`, requireAuth, requireVerifiedEmail, validate({ query: shopScopeSchema }), async (req, res, next) => {
+    try {
+      const scope = req.query as ShopManageScope;
+      const profile = await getManagedMerchantProfile(req.auth!.userId, scope);
+      if (!profile) throw new ApiError(404, 'profile_not_found', 'Shop profile not found. Create one first.');
 
-    const body = req.body as z.infer<typeof merchantProfilePatchSchema>;
-    const updated = await updateManagedMerchantProfileById(userId, existing.id, body);
-    await syncShopTenantFromMerchantProfile(userId, updated);
-    await invalidateExploreMapCache();
+      res.json({
+        data: serializeMerchantProfile(profile)
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+});
 
-    res.json({
-      data: serializeMerchantProfile(updated)
-    });
-  } catch (error) {
-    next(error);
-  }
+shopOrganisationManagePrefixes.forEach((prefix) => {
+  shopRouter.post(`${prefix}/profile`, requireAuth, requireVerifiedEmail, validate({ body: merchantProfileSchema }), async (req, res, next) => {
+    try {
+      if (req.auth!.role !== UserRole.MERCHANT_ADMIN && req.auth!.role !== UserRole.PLATFORM_ADMIN) {
+        throw new ApiError(403, 'forbidden', 'Shop accounts are provisioned by a platform administrator.');
+      }
+      const userId = req.auth!.userId;
+      const body = req.body as z.infer<typeof merchantProfileSchema>;
+      const profile = await createMerchantProfileForUser(userId, body);
+      await linkMerchantProfileToShopTenant(profile.id, userId);
+
+      res.status(201).json({
+        data: serializeMerchantProfile(profile)
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+});
+
+shopOrganisationManagePrefixes.forEach((prefix) => {
+  shopRouter.patch(`${prefix}/profile`, requireAuth, requireVerifiedEmail, validate({ query: shopScopeSchema, body: merchantProfilePatchSchema }), async (req, res, next) => {
+    try {
+      const userId = req.auth!.userId;
+      const scope = req.query as ShopManageScope;
+      const existing = await getManagedMerchantProfile(userId, scope);
+      if (!existing) throw new ApiError(404, 'profile_not_found', 'Shop profile not found.');
+
+      const body = req.body as z.infer<typeof merchantProfilePatchSchema>;
+      const updated = await updateManagedMerchantProfileById(userId, existing.id, body);
+      await syncShopTenantFromMerchantProfile(userId, updated);
+      await invalidateExploreMapCache();
+
+      res.json({
+        data: serializeMerchantProfile(updated)
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
 });
 
 shopRouter.get('/merchant/products', requireAuth, requireVerifiedEmail, validate({ query: merchantProductsQuerySchema }), async (req, res, next) => {
   try {
-    const { merchantId, page, pageSize } = req.query as unknown as z.infer<typeof merchantProductsQuerySchema>;
-    const profile = await getManagedMerchantProfile(req.auth!.userId, merchantId);
-    if (!profile) throw new ApiError(404, 'profile_not_found', 'Shop organisation profile not found.');
+    const scope = req.query as unknown as z.infer<typeof merchantProductsQuerySchema>;
+    const { page, pageSize } = scope;
+    const profile = await getManagedMerchantProfile(req.auth!.userId, scope);
+    if (!profile) throw new ApiError(404, 'profile_not_found', 'Shop profile not found.');
 
     const { items: products, total } = await listMerchantProducts({
       merchantId: profile.id,
@@ -509,8 +556,11 @@ shopRouter.get('/merchant/products', requireAuth, requireVerifiedEmail, validate
 shopRouter.post('/merchant/products', requireAuth, requireVerifiedEmail, validate({ body: productCreateSchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof productCreateSchema>;
-    const profile = await getManagedMerchantProfile(req.auth!.userId, body.merchantId);
-    if (!profile) throw new ApiError(404, 'profile_not_found', 'Create a shop organisation profile first.');
+    const profile = await getManagedMerchantProfile(req.auth!.userId, {
+      merchantId: body.merchantId,
+      shopId: body.shopId
+    });
+    if (!profile) throw new ApiError(404, 'profile_not_found', 'Create a shop profile first.');
 
     const product = await createMerchantProduct({
       merchantId: profile.id,
@@ -556,6 +606,7 @@ shopRouter.patch('/merchant/products/:id', requireAuth, requireVerifiedEmail, va
     const body = req.body as z.infer<typeof productPatchSchema>;
     const updateData: Record<string, unknown> = { ...body };
     delete updateData.merchantId;
+    delete updateData.shopId;
     if (body.status) {
       updateData.status = body.status === 'active' ? ProductStatus.ACTIVE : ProductStatus.DRAFT;
     }
@@ -597,9 +648,13 @@ shopRouter.delete('/merchant/products/:id', requireAuth, requireVerifiedEmail, v
 
 shopRouter.get('/merchant/orders', requireAuth, requireVerifiedEmail, validate({ query: merchantOrdersQuerySchema }), async (req, res, next) => {
   try {
-    const { merchantId, page, pageSize } = req.query as unknown as z.infer<typeof merchantOrdersQuerySchema>;
-    if (merchantId) {
-      await getManagedMerchantProfile(req.auth!.userId, merchantId);
+    const scope = req.query as unknown as z.infer<typeof merchantOrdersQuerySchema>;
+    const { page, pageSize } = scope;
+    let merchantId = scope.merchantId ?? scope.shopId;
+
+    if (scope.merchantId || scope.shopId || scope.tenantId) {
+      const profile = await getManagedMerchantProfile(req.auth!.userId, scope);
+      merchantId = profile?.id;
     }
 
     const { items, total } = await listMerchantOrderLineItems({
@@ -672,9 +727,13 @@ shopRouter.patch('/merchant/orders/:orderId/status', requireAuth, requireVerifie
 
 shopRouter.get('/merchant/analytics/sales', requireAuth, requireVerifiedEmail, validate({ query: merchantAnalyticsQuerySchema }), async (req, res, next) => {
   try {
-    const { merchantId, startDate, endDate, interval } = req.query as unknown as z.infer<typeof merchantAnalyticsQuerySchema>;
-    if (merchantId) {
-      await getManagedMerchantProfile(req.auth!.userId, merchantId);
+    const scope = req.query as unknown as z.infer<typeof merchantAnalyticsQuerySchema>;
+    const { startDate, endDate, interval } = scope;
+    let merchantId = scope.merchantId ?? scope.shopId;
+
+    if (scope.merchantId || scope.shopId || scope.tenantId) {
+      const profile = await getManagedMerchantProfile(req.auth!.userId, scope);
+      merchantId = profile?.id;
     }
 
     const normalizedRange = normalizeAnalyticsRange(startDate, endDate);
@@ -703,8 +762,15 @@ shopRouter.get('/merchant/analytics/sales', requireAuth, requireVerifiedEmail, v
 
 shopRouter.get('/merchant/analytics/export', requireAuth, requireVerifiedEmail, validate({ query: merchantAnalyticsQuerySchema }), async (req, res, next) => {
   try {
-    const { merchantId, startDate, endDate, interval } = req.query as unknown as z.infer<typeof merchantAnalyticsQuerySchema>;
-    const profile = merchantId ? await getManagedMerchantProfile(req.auth!.userId, merchantId) : null;
+    const scope = req.query as unknown as z.infer<typeof merchantAnalyticsQuerySchema>;
+    const { startDate, endDate, interval } = scope;
+    let merchantId = scope.merchantId ?? scope.shopId;
+    const profile =
+      scope.merchantId || scope.shopId || scope.tenantId
+        ? await getManagedMerchantProfile(req.auth!.userId, scope)
+        : null;
+    if (profile) merchantId = profile.id;
+
     const normalizedRange = normalizeAnalyticsRange(startDate, endDate);
     const analytics = await getMerchantAnalytics({
       adminId: req.auth!.userId,

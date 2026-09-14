@@ -16,7 +16,7 @@ export interface CreateActivityModalProps {
   initialActivityType?: ActivityType | null;
   editingActivity?: ActivityDTO | null;
   editSessionKey?: number;
-  hostOrganizations?: TenantListDTO[];
+  hostTenants?: TenantListDTO[];
   venueLocations?: LocationDTO[];
   sessionSnapshot?: ActivityFormSessionSnapshot | null;
   onSessionChange?: (snapshot: ActivityFormSessionSnapshot) => void;
@@ -35,7 +35,7 @@ export const CreateActivityModal = ({
   initialActivityType = null,
   editingActivity = null,
   editSessionKey = 0,
-  hostOrganizations,
+  hostTenants,
   venueLocations,
   sessionSnapshot,
   onSessionChange,
@@ -124,7 +124,7 @@ export const CreateActivityModal = ({
           onSaved={onSaved}
           tenantId={tenantId}
           editingActivity={editingActivity}
-          hostOrganizations={hostOrganizations}
+          hostTenants={hostTenants}
           venueLocations={venueLocations}
           sessionSnapshot={sessionSnapshot}
           onSessionChange={onSessionChange}
@@ -139,7 +139,7 @@ export const CreateActivityModal = ({
           onSaved={onSaved}
           tenantId={tenantId}
           editingActivity={editingActivity}
-          hostOrganizations={hostOrganizations}
+          hostTenants={hostTenants}
           venueLocations={venueLocations}
           sessionSnapshot={sessionSnapshot}
           onSessionChange={onSessionChange}
@@ -155,7 +155,7 @@ export const CreateActivityModal = ({
           onSaved={onSaved}
           tenantId={tenantId}
           editingActivity={editingActivity}
-          hostOrganizations={hostOrganizations}
+          hostTenants={hostTenants}
           venueLocations={venueLocations}
           sessionSnapshot={sessionSnapshot}
           onSessionChange={onSessionChange}

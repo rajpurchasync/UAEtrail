@@ -4,6 +4,7 @@ import { OrganisationPublicProfile } from '../components/organisation-console/Or
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { api, TenantProfile } from '../api/services';
 import { shopPublicPath } from '../utils/shopPaths';
+import { detailBackPath } from '../utils/exploreRouting';
 
 const isShopTenant = (tenant: TenantProfile): boolean =>
   tenant.businessMode === 'SHOP' || tenant.type === 'shop' || tenant.type === 'SHOP';
@@ -44,7 +45,7 @@ export const OrganisationProfile = () => {
   if (tenant && isShop) {
     return (
       <Navigate
-        to={shopPublicPath({ merchantId: tenant.merchantId, slug: tenant.slug })}
+        to={shopPublicPath({ merchantId: tenant.shopId ?? tenant.merchantId, slug: tenant.slug })}
         replace
       />
     );
@@ -53,11 +54,11 @@ export const OrganisationProfile = () => {
   return (
     <ConsumerShell
       layout="stack"
-      title="Organisation profile"
+      title="Host profile"
       showJourney={false}
-      back={{ fallbackTo: '/explore?panel=shops&list=1&filter=shops', label: 'Explore' }}
+      back={{ fallbackTo: detailBackPath('host'), label: 'Explore' }}
     >
-      <OrganisationPublicProfile slug={id} mode="public" backTo="/explore?list=1" backLabel="Back to map" />
+      <OrganisationPublicProfile slug={id} mode="public" backTo={detailBackPath('host')} backLabel="Back to map" />
     </ConsumerShell>
   );
 };

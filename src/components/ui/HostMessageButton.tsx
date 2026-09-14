@@ -2,10 +2,11 @@ import { MessageSquare, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { messagesRouteForRole } from '../../utils/authRouting';
+import { signInPathForReturn } from '../../utils/authReturnContext';
 
 interface HostMessageButtonProps {
   hostUserId?: string | null;
-  /** Trip/event context — enables inquiry messages before a join request exists. */
+  /** Activity/event context — enables inquiry messages before a join request exists. */
   activityId?: string | null;
   size?: 'sm' | 'md';
   className?: string;
@@ -40,7 +41,7 @@ export const HostMessageButton = ({
   const handleGuestClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    navigate('/signin', { state: { from: messagePath } });
+    navigate(signInPathForReturn(messagePath));
   };
 
   const handleMessageClick = (e: React.MouseEvent) => {

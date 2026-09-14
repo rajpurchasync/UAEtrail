@@ -15,7 +15,7 @@ export const Privacy = () => (
         <h2 className="text-lg font-semibold text-neutral-900">Information we collect</h2>
         <ul className="list-disc space-y-1 pl-5">
           <li>Account details: email, display name, profile photo</li>
-          <li>Activity: trips joined, requests, check-ins, favorites, and messages you send</li>
+          <li>Activity: activities joined, requests, check-ins, favorites, and messages you send</li>
           <li>Device: push notification tokens if you opt in</li>
           <li>Payment: processed by Stripe; we do not store full card numbers</li>
         </ul>
@@ -26,7 +26,7 @@ export const Privacy = () => (
         </p>
         <h2 className="text-lg font-semibold text-neutral-900">Sharing</h2>
         <p>
-          Organizers see information needed to run trips you join. Public profile fields you choose to
+          Hosts see information needed to run activities you join. Public profile fields you choose to
           display may be visible to other users. We do not sell your personal data.
         </p>
         <h2 className="text-lg font-semibold text-neutral-900">Your choices</h2>

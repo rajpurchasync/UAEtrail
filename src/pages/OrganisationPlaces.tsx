@@ -55,7 +55,7 @@ export const OrganisationPlaces = () => {
             />
           </div>
         ) : (
-          <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-4 py-3">Select your organization above.</p>
+          <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-4 py-3">Select your host profile above.</p>
         )}
 
         <div>

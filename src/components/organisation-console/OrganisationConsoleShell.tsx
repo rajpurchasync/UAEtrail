@@ -4,7 +4,7 @@ import { api } from '../../api/services';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { FilterChips } from '../mobile/FilterChips';
-import { ORGANISATION_CONSOLE_LINKS } from '../../constants';
+import { HOST_CONSOLE_LINKS } from '../../constants';
 import { OrganisationRatingChip } from './OrganisationRatingChip';
 
 interface OrganisationConsoleShellProps {
@@ -22,14 +22,14 @@ export const OrganisationConsoleShell = ({ title, children, cta, headerExtra }: 
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
 
-  const navOptions = ORGANISATION_CONSOLE_LINKS.map((link) => ({
+  const navOptions = HOST_CONSOLE_LINKS.map((link) => ({
     key: link.to,
     label: link.label,
   }));
 
   const activePath =
-    ORGANISATION_CONSOLE_LINKS.find((link) => location.pathname === link.to)?.to ??
-    ORGANISATION_CONSOLE_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
+    HOST_CONSOLE_LINKS.find((link) => location.pathname === link.to)?.to ??
+    HOST_CONSOLE_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
     location.pathname;
 
   useEffect(() => {

@@ -33,7 +33,7 @@ export const AccountDataExportSection = () => {
         <div className="flex-1">
           <h3 className="text-sm font-semibold text-gray-900">Download my data</h3>
           <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-            Export your profile, trips, favorites, orders, and rewards as JSON.
+            Export your profile, activities, favorites, orders, and rewards as JSON.
           </p>
           <AppButton
             type="button"

@@ -46,7 +46,7 @@ type GroupDetail = {
 const typeLabel: Record<string, string> = {
   family: 'Family',
   friends: 'Friends',
-  activity: 'Trip chat',
+  activity: 'Activity chat',
 };
 
 const GROUP_TYPE_OPTIONS = [

@@ -10,6 +10,7 @@ import { ActivityFormSessionProvider } from './context/ActivityFormSessionContex
 import { Home } from './pages/Home';
 import { Membership } from './pages/Membership';
 import { MobileExploreExperience } from './components/explore/MobileExploreExperience';
+import { EXPLORE_MAP_PATH } from './config/platform';
 import { discoveryToExploreSearch, explorePath, parseActivityListFilter } from './utils/exploreRouting';
 import { organisationManagePath } from './utils/organisationPaths';
 
@@ -48,7 +49,6 @@ const ActivitiesBrowseRoute = () => {
   return (
     <Navigate
       to={explorePath({
-        list: true,
         panel: 'activities',
         activity: activity !== 'all' ? activity : undefined,
       })}
@@ -58,7 +58,7 @@ const ActivitiesBrowseRoute = () => {
 };
 
 const ShopBrowseRoute = () => (
-  <Navigate to={explorePath({ list: true, panel: 'shops', filter: 'shops' })} replace />
+  <Navigate to={explorePath({ panel: 'shops', filter: 'shops' })} replace />
 );
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ const EventDetail = lazy(() => import('./pages/EventDetail').then((m) => ({ defa
 
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
 const BecomeOrganisation = lazy(() =>
-  import('./pages/BecomeHost').then((m) => ({ default: m.BecomeOrganisation }))
+  import('./pages/BecomeOrganisation').then((m) => ({ default: m.BecomeOrganisation }))
 );
 /** Legacy redirect — canonical public shop URL is `/shop/:id`. */
 const LegacyMerchantPublicRedirect = lazy(() =>
@@ -138,7 +138,6 @@ const Notifications = lazy(() =>
 );
 const Groups = lazy(() => import('./pages/Groups').then((m) => ({ default: m.Groups })));
 const Buddies = lazy(() => import('./pages/Buddies').then((m) => ({ default: m.Buddies })));
-const BecomeHost = BecomeOrganisation;
 const MyRewards = lazy(() => import('./pages/MyRewards').then((m) => ({ default: m.MyRewards })));
 const TrailPointsAbout = lazy(() =>
   import('./pages/TrailPointsAbout').then((m) => ({ default: m.TrailPointsAbout }))
@@ -225,16 +224,6 @@ const AuthReturnContextRestorer = () => {
   return null;
 };
 
-const LegacyTripsRedirect = () => {
-  const { search } = useLocation();
-  return <Navigate to={`/activities${search}`} replace />;
-};
-
-const LegacyTripDetailRedirect = () => {
-  const { id } = useParams();
-  return <Navigate to={`/activity/${id}`} replace />;
-};
-
 function App() {
   return (
     <ErrorBoundary>
@@ -246,7 +235,7 @@ function App() {
         <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/map" element={<Navigate to="/explore" replace />} />
+          <Route path="/map" element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route
             path="/explore"
             element={<MobileExploreExperience />}
@@ -257,9 +246,8 @@ function App() {
           <Route path="/event/:id" element={<EventDetail />} />
           <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
-          <Route path="/calendar" element={<Navigate to={explorePath({ list: true, panel: 'activities' })} replace />} />
+          <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
           <Route path="/activities" element={<ActivitiesBrowseRoute />} />
-          <Route path="/trips" element={<LegacyTripsRedirect />} />
           <Route
             path="/profile/settings"
             element={
@@ -338,11 +326,10 @@ function App() {
             path="/activity/:id"
             element={<ActivityDetail />}
           />
-          <Route path="/trip/:id" element={<LegacyTripDetailRedirect />} />
           <Route path="/operator/:id" element={<OrganisationProfile />} />
           <Route path="/member/:userId" element={<MemberProfile />} />
-          <Route path="/become-organizer" element={<BecomeHost />} />
-          <Route path="/become-host" element={<BecomeHost />} />
+          <Route path="/become-organizer" element={<BecomeOrganisation />} />
+          <Route path="/become-host" element={<BecomeOrganisation />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/shop" element={<ShopBrowseRoute />} />
           <Route path="/shop/:id" element={<ShopPublic />} />
@@ -552,14 +539,6 @@ function App() {
           />
           <Route
             path="/dashboard/requests"
-            element={
-              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
-                <DashboardRedirect />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/trips"
             element={
               <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
                 <DashboardRedirect />

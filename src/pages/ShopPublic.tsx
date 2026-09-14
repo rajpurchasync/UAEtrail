@@ -10,7 +10,7 @@ const resolvePresence = (latitude?: number | null, longitude?: number | null): S
   latitude != null && longitude != null ? 'physical' : 'online';
 
 const tenantToShopView = (tenant: TenantProfile): ShopPublicView => ({
-  id: tenant.merchantId ?? tenant.slug,
+  id: tenant.shopId ?? tenant.merchantId ?? tenant.slug,
   shopName: tenant.name,
   description: tenant.description ?? tenant.ownerBio ?? null,
   logo: null,
@@ -37,7 +37,7 @@ export const ShopPublic = () => {
   const { id } = useParams<{ id: string }>();
   const [shop, setShop] = useState<ShopPublicView | null>(null);
   const [loading, setLoading] = useState(true);
-  const mapBack = explorePath({ panel: 'shops', list: true, filter: 'shops' });
+  const mapBack = explorePath({ panel: 'shops', filter: 'shops' });
 
   useEffect(() => {
     if (!id) return;

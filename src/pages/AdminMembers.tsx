@@ -18,8 +18,8 @@ const MEMBER_TYPE_OPTIONS = [
 
 const ROLE_OPTIONS = [
   { value: 'platform_admin' as const, label: 'Platform admin' },
-  { value: 'tenant_owner' as const, label: 'Organisation owner' },
-  { value: 'tenant_admin' as const, label: 'Organisation admin' },
+  { value: 'tenant_owner' as const, label: 'Host owner' },
+  { value: 'tenant_admin' as const, label: 'Host staff' },
   { value: 'tenant_guide' as const, label: 'Guide' },
   { value: 'participant' as const, label: 'Participants only' },
 ];

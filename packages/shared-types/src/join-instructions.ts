@@ -13,7 +13,7 @@ export const hasJoinInstructions = (requirements: string[] | null | undefined): 
 /** Alias used by API publish validation. */
 export const hasActivityJoinInstructions = hasJoinInstructions;
 
-/** Requirements shown on trip detail — excludes mandatory join instructions. */
+/** Requirements shown on activity detail — excludes mandatory join instructions. */
 export const extractNonJoinRequirements = (requirements: string[] | null | undefined): string[] =>
   (requirements ?? [])
     .map((item) => item.trim())

@@ -1,8 +1,8 @@
 import { CheckCircle2, Clock3 } from 'lucide-react';
-import { TripParticipationDTO } from '@uaetrail/shared-types';
+import { ActivityParticipationDTO } from '@uaetrail/shared-types';
 
 interface ActivityCheckInPanelProps {
-  participation: TripParticipationDTO;
+  participation: ActivityParticipationDTO;
   compact?: boolean;
 }
 
@@ -47,7 +47,7 @@ export const ActivityCheckInPanel = ({
       <Clock3 className="w-5 h-5 shrink-0 text-gray-500" />
       <div className="min-w-0">
         <p className={`font-semibold text-gray-900 ${compact ? 'text-sm' : 'text-base'}`}>
-          Confirmed for this trip
+          Confirmed for this activity
         </p>
         <p className="text-xs text-gray-500 mt-0.5">
           Your host will check you in at the meeting point to confirm attendance.

@@ -77,7 +77,7 @@ export const inferNotificationPath = (
     return '/groups';
   }
   if (kind === 'location_approved') {
-    return explorePath({ panel: 'venues', list: true });
+    return explorePath({ panel: 'venues' });
   }
   if (kind === 'host_application_submitted' || kind === 'organizer_application_submitted') {
     return '/admin/hosts';
@@ -95,7 +95,7 @@ export const inferNotificationPath = (
     return '/profile';
   }
   if (kind === 'location_rejected') {
-    return explorePath({ panel: 'venues', list: true, addLocation: true });
+    return explorePath({ panel: 'venues', addLocation: true });
   }
 
   if (options?.preferAdminRoutes) {
@@ -116,7 +116,7 @@ export const inferNotificationPath = (
     if (adminText.includes('application') || adminText.includes('host')) return '/admin/hosts';
     if (adminText.includes('user')) return '/admin/users';
     if (adminText.includes('group')) return '/admin/groups';
-    if (adminText.includes('activity') || adminText.includes('trip')) return '/admin/activities';
+    if (adminText.includes('activity')) return '/admin/activities';
     if (adminText.includes('location')) return '/admin/locations';
     if (adminText.includes('product') || adminText.includes('shop')) return '/admin/shop';
   }

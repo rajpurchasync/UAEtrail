@@ -32,7 +32,7 @@ import {
   priceModeLabel,
   priceModeOptions,
   publishMobileQuickActivity,
-  TRIP_DIFFICULTY_OPTIONS,
+  ACTIVITY_DIFFICULTY_OPTIONS,
   usesVenueHostFlow,
   VEHICLE_ACCESS_OPTIONS,
   validateDraftStep,
@@ -43,7 +43,7 @@ import {
   type MobileCreateDraft,
   type MobileCreateKind,
   type TimeMode,
-  type TripDifficulty,
+  type ActivityDifficulty,
   type VehicleAccess,
 } from './mobileCreateFlow';
 import { MAP_CONFIG } from '../../config/platform';
@@ -273,7 +273,7 @@ export const MobileCreateActivityFlow = ({
     }
 
     if (!tenantId) {
-      setError('Almost there — finish your host profile so you can share this trip.');
+      setError('Almost there — finish your host profile so you can share this activity.');
       return;
     }
 
@@ -366,7 +366,7 @@ export const MobileCreateActivityFlow = ({
   const stepTitle =
     step === 'type' || !kind
       ? demandPrefill
-        ? 'Host this trip'
+        ? 'Host this activity'
         : 'I am hosting'
       : createFlowStepTitle(step as CreateFlowStepId, kind);
 
@@ -455,7 +455,7 @@ export const MobileCreateActivityFlow = ({
             <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-gray-700">
-                {kind === 'event' ? 'Event title' : kind === 'carpool' ? 'Title' : 'Trip title'}
+                {kind === 'event' ? 'Event title' : kind === 'carpool' ? 'Title' : 'Activity title'}
               </span>
               <input
                 value={draft.title}
@@ -1008,13 +1008,13 @@ export const MobileCreateActivityFlow = ({
           <>
             <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
             <div className="space-y-3">
-              {TRIP_DIFFICULTY_OPTIONS.map((option) => {
+              {ACTIVITY_DIFFICULTY_OPTIONS.map((option) => {
                 const active = draft.difficulty === option.value;
                 return (
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => patchDraft({ difficulty: option.value as TripDifficulty })}
+                    onClick={() => patchDraft({ difficulty: option.value as ActivityDifficulty })}
                     className={`w-full rounded-2xl border-2 px-4 py-4 text-left ${
                       active ? 'border-emerald-600 bg-emerald-50/50' : 'border-neutral-200 bg-white'
                     }`}
@@ -1099,16 +1099,16 @@ export const MobileCreateActivityFlow = ({
           <>
             <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">About this trip</span>
+              <span className="mb-2 block text-sm font-medium text-gray-700">About this activity</span>
               <textarea
                 value={draft.description}
                 onChange={(event) => patchDraft({ description: event.target.value })}
                 rows={3}
-                placeholder="Tell joiners what to expect — pace, distance, vibe, what makes this trip special…"
+                placeholder="Tell joiners what to expect — pace, distance, vibe, what makes this activity special…"
                 className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                 maxLength={1200}
               />
-              <span className="mt-1 block text-xs text-gray-500">Optional trip information for the listing.</span>
+              <span className="mt-1 block text-xs text-gray-500">Optional activity information for the listing.</span>
             </label>
             {kind === 'hiking' && (
               <label className="mt-4 block">

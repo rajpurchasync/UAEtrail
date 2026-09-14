@@ -33,8 +33,8 @@ const EARN_ICONS: Record<string, typeof MapPin> = {
   'Welcome bonus': Gift,
   'Invite a friend': Share2,
   'Submit a location': MapPin,
-  'Host a trip': Mountain,
-  'Join a trip': Users,
+  'Host an activity': Mountain,
+  'Join an activity': Users,
   'Community post': MessageCircle,
   'Help someone out': Sparkles,
   'Write a review': PenLine,
@@ -80,7 +80,7 @@ export const TrailPointsAbout = () => {
             Show up for the trails
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-            Every hike, post, and trip you lead earns points — and a badge your profile wears.
+            Every hike, post, and activity you lead earns points — and a badge your profile wears.
           </p>
           <Link to={primaryCta.path} className="mt-4 block">
             <AppButton fullWidth>

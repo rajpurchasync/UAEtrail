@@ -21,7 +21,7 @@ describe('canReturnAfterAuth', () => {
 
 describe('resolveAuthRedirect', () => {
   it('prefers router state over query param', () => {
-    expect(resolveAuthRedirect('/profile', '/trips')).toBe('/profile');
+    expect(resolveAuthRedirect('/profile', '/activities')).toBe('/profile');
   });
 
   it('uses redirect query when state is missing', () => {

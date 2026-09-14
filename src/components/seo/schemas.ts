@@ -3,6 +3,7 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, toAbsoluteUrl } from '../../c
 import { CampingSpot, Trail, CommunityActivitySpot } from '../../types';
 import type { TenantProfile } from '../../api/services';
 import { activityHostName } from '../../utils/hostLabels';
+import { explorePlacesPath } from '../../utils/exploreRouting';
 
 const absImage = (url?: string | null) => toAbsoluteUrl(url) ?? undefined;
 
@@ -16,11 +17,11 @@ export const websiteSchema = () => ({
     '@type': 'WebPage',
     name: 'Frequently asked questions',
     url: `${SITE_ORIGIN}/faq`,
-    description: 'Answers about hiking, camping, and organized outdoor trips in the UAE.'
+    description: 'Answers about hiking, camping, and organized outdoor activities in the UAE.'
   },
   potentialAction: {
     '@type': 'SearchAction',
-    target: `${SITE_ORIGIN}/explore?panel=venues&list=1&q={search_term_string}`,
+    target: `${SITE_ORIGIN}${explorePlacesPath()}&q={search_term_string}`,
     'query-input': 'required name=search_term_string'
   }
 });
@@ -89,36 +90,36 @@ export const campSchema = (camp: CampingSpot) => ({
   ]
 });
 
-export const tripEventSchema = (trip: ActivityDetailDTO) => ({
+export const activityEventSchema = (activity: ActivityDetailDTO) => ({
   '@context': 'https://schema.org',
   '@type': 'Event',
-  name: trip.title || trip.locationName,
-  description: trip.description,
-  url: `${SITE_ORIGIN}/activity/${trip.id}`,
-  image: absImage(trip.images?.[0] ?? trip.location?.images?.[0]),
-  startDate: `${trip.date}T${trip.time}:00+04:00`,
-  endDate: trip.endDate ? `${trip.endDate}T${trip.endTime ?? trip.time}:00+04:00` : undefined,
+  name: activity.title || activity.locationName,
+  description: activity.description,
+  url: `${SITE_ORIGIN}/activity/${activity.id}`,
+  image: absImage(activity.images?.[0] ?? activity.location?.images?.[0]),
+  startDate: `${activity.date}T${activity.time}:00+04:00`,
+  endDate: activity.endDate ? `${activity.endDate}T${activity.endTime ?? activity.time}:00+04:00` : undefined,
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   ActivityStatus: 'https://schema.org/EventScheduled',
   location: {
     '@type': 'Place',
-    name: trip.locationName,
-    address: locationAddress(trip.location?.region)
+    name: activity.locationName,
+    address: locationAddress(activity.location?.region)
   },
   organizer: {
     '@type': 'Organization',
-    name: activityHostName(trip),
-    url: trip.tenantSlug ? `${SITE_ORIGIN}/operator/${trip.tenantSlug}` : undefined
+    name: activityHostName(activity),
+    url: activity.tenantSlug ? `${SITE_ORIGIN}/operator/${activity.tenantSlug}` : undefined
   },
   offers: {
     '@type': 'Offer',
-    price: trip.price,
+    price: activity.price,
     priceCurrency: 'AED',
     availability:
-      trip.slotsAvailable > 0
+      activity.slotsAvailable > 0
         ? 'https://schema.org/InStock'
         : 'https://schema.org/SoldOut',
-    url: `${SITE_ORIGIN}/activity/${trip.id}`
+    url: `${SITE_ORIGIN}/activity/${activity.id}`
   }
 });
 
@@ -160,7 +161,7 @@ export const organizationSchema = (
     '@type': 'Organization',
     name: tenant.name,
     url: `${SITE_ORIGIN}/operator/${slug}`,
-    description: tenant.ownerBio ?? `Outdoor trips and hikes with ${tenant.name} in the UAE.`,
+    description: tenant.ownerBio ?? `Outdoor activities and hikes with ${tenant.name} in the UAE.`,
     logo: absImage(tenant.ownerAvatar),
     areaServed: { '@type': 'Country', name: 'United Arab Emirates' },
     ...(rating

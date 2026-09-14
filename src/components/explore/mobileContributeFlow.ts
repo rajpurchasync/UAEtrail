@@ -3,7 +3,7 @@ import { api } from '../../api/services';
 import { DEFAULT_COUNTRY } from '../../config/regions';
 import { MAP_CONFIG } from '../../config/platform';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
-import { TRIP_DIFFICULTY_OPTIONS, type TripDifficulty } from './mobileCreateFlow';
+import { ACTIVITY_DIFFICULTY_OPTIONS, type ActivityDifficulty } from './mobileCreateFlow';
 import type { ContributeVenueKind } from './MobileContributeTypeSheet';
 import { isValidNationalPhone } from '../../utils/phone';
 
@@ -25,7 +25,7 @@ export type MobileContributeDraft = {
   locationPinPlaced: boolean;
   images: string[];
   description: string;
-  difficulty: TripDifficulty | null;
+  difficulty: ActivityDifficulty | null;
   parkingLat: number | null;
   parkingLng: number | null;
   parkingPinPlaced: boolean;
@@ -147,7 +147,7 @@ export const emptyMobileContributeDraft = (): MobileContributeDraft => ({
   contactEmail: '',
 });
 
-const toApiDifficulty = (value: TripDifficulty): 'easy' | 'moderate' | 'hard' =>
+const toApiDifficulty = (value: ActivityDifficulty): 'easy' | 'moderate' | 'hard' =>
   value === 'medium' ? 'moderate' : value;
 
 export const validateContributeStep = (
@@ -249,4 +249,4 @@ export const publishMobileContributeVenue = async (
   return { kind: 'location', location: res.data };
 };
 
-export { TRIP_DIFFICULTY_OPTIONS };
+export { ACTIVITY_DIFFICULTY_OPTIONS };

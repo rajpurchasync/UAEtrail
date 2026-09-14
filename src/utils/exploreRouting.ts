@@ -85,19 +85,32 @@ export const parseExplorePanel = (value: string | null): ExplorePanel => {
   return 'activities';
 };
 
+/** Parse venue state/emirate filters from URL (`regions=Dubai,RAK` or legacy `region=RAK`). */
+export const parseVenueRegionsParam = (searchParams: Pick<URLSearchParams, 'get'>): string[] => {
+  const multi = searchParams.get('regions');
+  if (multi) {
+    return [...new Set(multi.split(',').map((part) => part.trim()).filter(Boolean))];
+  }
+  const single = searchParams.get('region');
+  return single ? [single] : [];
+};
+
 export const explorePath = (options?: {
   filter?: MapFilterKey;
   activity?: ActivityListFilterKey;
   panel?: ExplorePanel;
   list?: boolean;
+  /** @deprecated Prefer `regions` for multi-select venue filters. */
   region?: string;
+  /** Selected venue states/emirates (multi-select). */
+  regions?: string[];
   addLocation?: boolean;
   compose?: boolean;
   /** Open contribute type sheet (`true`) or a specific contribute wizard step. */
   contribute?: boolean | ContributeVenueKind;
   /** Open the “I want to go” request wizard. */
   request?: boolean;
-  /** Re-open a demand pin and continue “Host this trip” after auth/onboarding. */
+  /** Re-open a demand pin and continue “Host this activity” after auth/onboarding. */
   hostDemand?: string;
   q?: string;
 }): string => {
@@ -114,7 +127,9 @@ export const explorePath = (options?: {
   if (options?.list) {
     params.set('list', '1');
   }
-  if (options?.region) {
+  if (options?.regions && options.regions.length > 0) {
+    params.set('regions', options.regions.join(','));
+  } else if (options?.region) {
     params.set('region', options.region);
   }
   if (options?.addLocation) {
@@ -195,14 +210,27 @@ export const venueFilterToMapFilter = (filter: VenueListFilterKey): MapFilterKey
 
 /** Gear shops on the explore map (replaces legacy `/shop` catalogue browse). */
 export const exploreShopsPath = (): string =>
-  explorePath({ panel: 'shops', list: true, filter: 'shops' });
+  explorePath({ panel: 'shops', filter: 'shops' });
+
+/** Scheduled activities on the explore map. */
+export const exploreActivitiesPath = (options?: {
+  activity?: ActivityListFilterKey;
+  /** Pass `true` only when opening the browse list panel intentionally. */
+  list?: boolean;
+}): string =>
+  explorePath({
+    panel: 'activities',
+    list: options?.list,
+    activity: options?.activity,
+  });
 
 /** Places (trails, camps, events) on the explore map — URL panel stays `venues`. */
 export const explorePlacesPath = (options?: {
   region?: string;
   addLocation?: boolean;
   q?: string;
-}): string => explorePath({ panel: 'venues', list: true, ...options });
+  list?: boolean;
+}): string => explorePath({ panel: 'venues', ...options });
 
 /** @deprecated Use explorePlacesPath */
 export const exploreVenuesPath = explorePlacesPath;
@@ -210,12 +238,45 @@ export const exploreVenuesPath = explorePlacesPath;
 /** @deprecated Use explorePlacesPath */
 export const exploreLocationsPath = explorePlacesPath;
 
+/** Entity kinds that map to a consistent explore back target. */
+export type DetailBackKind =
+  | 'activity'
+  | 'trail'
+  | 'camp'
+  | 'event'
+  | 'shop'
+  | 'host'
+  | 'explore';
+
+/** Canonical back target from entity detail pages — always map-first. */
+export const detailBackPath = (kind: DetailBackKind): string => {
+  switch (kind) {
+    case 'activity':
+      return exploreActivitiesPath();
+    case 'trail':
+      return explorePath({ panel: 'venues', filter: 'hiking' });
+    case 'camp':
+      return explorePath({ panel: 'venues', filter: 'camping' });
+    case 'event':
+      return explorePath({ panel: 'venues', filter: 'others' });
+    case 'shop':
+      return exploreShopsPath();
+    case 'host':
+    case 'explore':
+    default:
+      return EXPLORE_MAP_PATH;
+  }
+};
+
+/** Personal activities hub — joined/hosted tabs only (not public browse). */
+export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
+  `/activities?tab=${tab}`;
+
 /** Map legacy discovery query params onto explore search params. */
 export const discoveryToExploreSearch = (search: string): string => {
   const incoming = new URLSearchParams(search);
   const next = new URLSearchParams();
   next.set('panel', 'venues');
-  next.set('list', '1');
 
   const activity = incoming.get('activity');
   if (activity === 'hiking' || activity === 'camping' || activity === 'event') {

@@ -114,7 +114,6 @@ export const browseAllActivitiesOfTypeLabel = (type: ActivityType): string => {
 /** Public browse page for scheduled activities, optionally filtered by type. */
 export const activitiesBrowsePath = (activityType?: ActivityType | null): string =>
   explorePath({
-    list: true,
     panel: 'activities',
     activity: activityType ?? undefined,
   });

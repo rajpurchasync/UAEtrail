@@ -104,8 +104,8 @@ export const MemberProfileView = ({
         </div>
 
         <div className="grid grid-cols-2 divide-x divide-neutral-100 border-t border-neutral-100">
-          <StatBlock label="Trips joined" value={profile.stats.tripsAttended} />
-          <StatBlock label="Trips hosted" value={profile.stats.tripsHosted} />
+          <StatBlock label="Activities joined" value={profile.stats.activitiesAttended} />
+          <StatBlock label="Activities hosted" value={profile.stats.activitiesHosted} />
         </div>
       </GlassCard>
 
@@ -163,7 +163,7 @@ export const MemberProfileView = ({
               to={profile.hostProfilePath}
               className="ios-btn glass w-full text-neutral-900 active:bg-white/80"
             >
-              View organisation profile
+              View host profile
             </Link>
           )}
 

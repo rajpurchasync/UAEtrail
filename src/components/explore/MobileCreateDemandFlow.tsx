@@ -808,7 +808,7 @@ export const MobileCreateDemandFlow = ({
         {step === 'carpool' && kind && usesOutdoorActivityDemandFlow(kind) && (
           <>
             <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-4 text-sm text-gray-600">Do you need a carpool to join this trip?</p>
+            <p className="mb-4 text-sm text-gray-600">Do you need a carpool to join this activity?</p>
             <div className="grid grid-cols-2 gap-3">
               {([
                 { value: true, title: 'Yes', subtitle: 'Need a ride' },
@@ -989,7 +989,7 @@ export const MobileCreateDemandFlow = ({
 
             <p className="mt-3 text-xs text-gray-500">
               Check everything looks right before posting. Hosts and explorers nearby can message you or propose a
-              matching trip.
+              matching activity.
             </p>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">

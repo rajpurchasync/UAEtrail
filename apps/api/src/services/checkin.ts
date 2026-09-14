@@ -93,7 +93,7 @@ export async function performParticipantCheckIn(opts: {
   const activity = participant.activity;
 
   if (activity.status !== ActivityStatus.PUBLISHED) {
-    throw new ApiError(400, 'activity_not_checkinable', 'This trip is not open for check-in.');
+    throw new ApiError(400, 'activity_not_checkinable', 'This activity is not open for check-in.');
   }
 
   if (participant.checkedInAt) {
@@ -109,7 +109,7 @@ export async function performParticipantCheckIn(opts: {
 
   void awardPoints({
     userId: participant.userId,
-    action: RewardAction.TRIP_ATTENDED,
+    action: RewardAction.ACTIVITY_ATTENDED,
     referenceId: `${activity.id}:${participant.userId}`,
     label: `Attended: ${activity.title}`
   }).catch(() => undefined);
@@ -119,7 +119,7 @@ export async function performParticipantCheckIn(opts: {
     userId: hostUserId,
     action: RewardAction.ACTIVITY_HOSTED,
     referenceId: activity.id,
-    label: `Hosted trip: ${activity.title}`
+    label: `Hosted activity: ${activity.title}`
   }).catch(() => undefined);
 
   await createAuditLog({

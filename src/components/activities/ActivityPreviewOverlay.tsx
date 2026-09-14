@@ -1,9 +1,10 @@
 import { createPortal } from 'react-dom';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { ActivityDetailView } from '../activity/ActivityDetailView';
+import { detailBackPath } from '../../utils/exploreRouting';
 
-type ActivityTripPreviewOverlayProps = {
-  trip: ActivityDetailDTO;
+type ActivityPreviewOverlayProps = {
+  activity: ActivityDetailDTO;
   onClose: () => void;
   saving?: boolean;
   backLabel?: string;
@@ -22,8 +23,8 @@ type ActivityTripPreviewOverlayProps = {
 );
 
 /** Full-screen activity page preview (same layout as ActivityDetail). */
-export const ActivityTripPreviewOverlay = (props: ActivityTripPreviewOverlayProps) => {
-  const { trip, onClose, saving = false } = props;
+export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
+  const { activity, onClose, saving = false } = props;
   const variant = props.variant ?? 'form';
   const backLabel = props.backLabel ?? (variant === 'list' ? 'Back to activities' : 'Back to form');
 
@@ -31,7 +32,7 @@ export const ActivityTripPreviewOverlay = (props: ActivityTripPreviewOverlayProp
 
   const listFooter =
     props.variant === 'list' ? (
-      trip.status === 'draft' && (props.onSaveDraft || props.onPublish) ? (
+      activity.status === 'draft' && (props.onSaveDraft || props.onPublish) ? (
         <div className="rounded-2xl bg-white border border-gray-200 shadow-lg p-4 space-y-3">
           <div className="text-center">
             <p className="text-sm font-semibold text-gray-900">Draft preview</p>
@@ -75,7 +76,7 @@ export const ActivityTripPreviewOverlay = (props: ActivityTripPreviewOverlayProp
           <div className="text-center">
             <p className="text-sm font-semibold text-gray-900">Activity preview</p>
             <p className="text-xs text-gray-600 mt-1">
-              {trip.status === 'published'
+              {activity.status === 'published'
                 ? 'This is how the activity appears to participants.'
                 : 'This is how your activity will look once published.'}
             </p>
@@ -154,9 +155,9 @@ export const ActivityTripPreviewOverlay = (props: ActivityTripPreviewOverlayProp
         ← {backLabel}
       </button>
       <ActivityDetailView
-        trip={trip}
+        activity={activity}
         previewMode
-        backTo="/activities"
+        backTo={detailBackPath('activity')}
         backLabel={backLabel}
         footerOverride={footerOverride}
         sidebarJoinOverride={

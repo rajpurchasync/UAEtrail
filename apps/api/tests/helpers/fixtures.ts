@@ -76,7 +76,7 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
     tenant: { connect: { id: tenant.id } },
     location: { connect: { id: location.id } },
     createdBy: { connect: { id: organizer._id } },
-    title: `Test Trip ${suffix}`,
+    title: `Test Activity ${suffix}`,
     description: 'Join us for a test hike',
     startAt,
     endAt: new Date(startAt.getTime() + 4 * 60 * 60 * 1000),

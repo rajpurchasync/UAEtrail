@@ -351,9 +351,6 @@ export const findActivityTimingById = async (activityId: string) => {
 export const listActivitiesForRequestViews = async (eventIds: string[]) =>
   listActivitiesByIdsFromMongo(eventIds);
 
-export const listActivitiesForTripViews = async (eventIds: string[]) =>
-  listActivitiesByIdsFromMongo(eventIds);
-
 export const findActivityForRequestViewById = async (activityId: string) => {
   const [event] = await listActivitiesByIdsFromMongo([activityId]);
   return event ?? null;

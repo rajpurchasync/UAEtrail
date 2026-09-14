@@ -71,7 +71,7 @@ export const OrganisationPublicProfileEdit = () => {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-neutral-900">Role mode</p>
-            <p className="mt-1 text-xs text-neutral-600">Switch to participant mode to browse and book trips.</p>
+            <p className="mt-1 text-xs text-neutral-600">Switch to participant mode to browse and book activities.</p>
           </div>
           <button
             type="button"
@@ -91,7 +91,7 @@ export const OrganisationPublicProfileEdit = () => {
         </div>
       ) : !tenantSlug ? (
         <GlassCard padding className="py-10 text-center">
-          <p className="text-neutral-600">Select an organization to view your public profile.</p>
+          <p className="text-neutral-600">Select a host profile to view your public profile.</p>
         </GlassCard>
       ) : (
         <OrganisationPublicProfile slug={tenantSlug} mode="owner" />

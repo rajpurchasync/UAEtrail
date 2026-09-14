@@ -184,7 +184,7 @@ async function evaluateAchievementBadges(userId: string): Promise<string[]> {
       shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.COMMUNITY_REPLY)) >= 10
     },
     {
-      key: 'trip_leader',
+      key: 'activity_leader',
       shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.ACTIVITY_PUBLISHED)
     },
     {
@@ -201,7 +201,7 @@ async function evaluateAchievementBadges(userId: string): Promise<string[]> {
     },
     {
       key: 'adventurer',
-      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.TRIP_ATTENDED)) >= 5
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.ACTIVITY_ATTENDED)) >= 5
     }
   ];
 

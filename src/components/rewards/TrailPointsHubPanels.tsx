@@ -21,7 +21,7 @@ import { TrailPointsHubSheet } from './TrailPointsHubSheet';
 const EARN_ICONS: Record<string, typeof MapPin> = {
   LOCATION_SUBMITTED: MapPin,
   ACTIVITY_PUBLISHED: Mountain,
-  TRIP_ATTENDED: Users,
+  ACTIVITY_ATTENDED: Users,
   COMMUNITY_POST: MessageCircle,
   COMMUNITY_REPLY: MessageCircle,
   REVIEW_WRITTEN: Star,
@@ -184,7 +184,7 @@ export const TrailPointsHubPanels = ({
             </ul>
           </GlassCard>
         ) : (
-          <p className="text-sm text-neutral-500">No recent activity yet — join a trip or post in the community.</p>
+          <p className="text-sm text-neutral-500">No recent activity yet — join an activity or post in the community.</p>
         )}
       </div>
     </TrailPointsHubSheet>
@@ -233,7 +233,7 @@ export const TRAIL_POINTS_QUICK_WINS = [
   },
   {
     icon: Mountain,
-    title: 'Join a trip',
+    title: 'Join an activity',
     hook: 'Show up, check in, earn +30',
     points: '+30',
     path: '/activities',
@@ -241,7 +241,7 @@ export const TRAIL_POINTS_QUICK_WINS = [
   {
     icon: MessageCircle,
     title: 'Share a post',
-    hook: 'Trip report, tip, or photo — +20',
+    hook: 'Activity report, tip, or photo — +20',
     points: '+20',
     path: '/community',
   },
@@ -251,12 +251,12 @@ export const TRAIL_POINTS_FAQS = [
   {
     question: 'What are Trail Points?',
     answer:
-      'Trail Points are rewards you earn for exploring the outdoors on UAE Trail — joining trips, posting in the community, writing reviews, and more.',
+      'Trail Points are rewards you earn for exploring the outdoors on UAE Trail — joining activities, posting in the community, writing reviews, and more.',
   },
   {
     question: 'How do I earn Trail Points?',
     answer:
-      'Create an account, join organized trips, share community posts, submit locations, invite friends, and write reviews after your adventures.',
+      'Create an account, join organized activities, share community posts, submit locations, invite friends, and write reviews after your adventures.',
   },
   {
     question: 'Do Trail Points expire?',
@@ -266,5 +266,5 @@ export const TRAIL_POINTS_FAQS = [
 
 /** Extra earn cards for the public about page (excluding duplicates in quick wins). */
 export const TRAIL_POINTS_EXTRA_EARN = EARN_WAYS.filter(
-  (item) => !['Welcome bonus', 'Join a trip', 'Community post'].includes(item.title)
+  (item) => !['Welcome bonus', 'Join an activity', 'Community post'].includes(item.title)
 );

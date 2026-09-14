@@ -86,7 +86,6 @@ import {
   incrementActiveLocationViewCount,
   listActiveTenantMembershipsByUser,
   listActivitiesForRequestViews,
-  listActivitiesForTripViews,
   listFeaturedPublishedActivities,
   listPopularActiveLocations,
   listPublishedActivitiesWithPreviews,
@@ -527,7 +526,7 @@ userRouter.post('/locations/:id/view', viewLimiter, validate({ params: eventIdPa
 
 // ─── Featured Events (upcoming, admin-selected) ────────────────────────────
 
-const parseOrganizerDetails = (metadata: unknown) => {
+const parseHostDetails = (metadata: unknown) => {
   if (!metadata || typeof metadata !== 'object') return {};
   const m = metadata as Record<string, unknown>;
   const dateOfBirth = typeof m.dateOfBirth === 'string' ? m.dateOfBirth : undefined;
@@ -552,10 +551,15 @@ const parseOrganizerDetails = (metadata: unknown) => {
   };
 };
 
-const loadOrganizerDetails = async (userId: string) => {
+const loadHostDetails = async (userId: string) => {
   const application = await findLatestHostApplicationByApplicant(userId);
-  return parseOrganizerDetails(application?.metadata);
+  return parseHostDetails(application?.metadata);
 };
+
+/** @deprecated Use loadHostDetails */
+const loadOrganizerDetails = loadHostDetails;
+/** @deprecated Use parseHostDetails */
+const parseOrganizerDetails = parseHostDetails;
 
 // ─── Public Tenant/Operator Profile ─────────────────────────────────────────
 
@@ -564,10 +568,10 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
     const { slug } = req.params;
     const tenant = await findPublicTenantProfileBySlug(slug);
     if (!tenant) {
-      throw new ApiError(404, 'tenant_not_found', 'Organisation not found.');
+      throw new ApiError(404, 'tenant_not_found', 'Host not found.');
     }
     const ownerProfile = tenant.owner.profile;
-    const organizerDetails = await loadOrganizerDetails(tenant.ownerId);
+    const hostDetails = await loadHostDetails(tenant.ownerId);
 
     let merchantId: string | null = null;
     let shopProducts: Array<{
@@ -614,7 +618,9 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
         ownerName: ownerProfile?.displayName ?? tenant.owner.email,
         ownerAvatar: ownerProfile?.avatarUrl ?? null,
         ownerBio: ownerProfile?.bio ?? null,
-        organizerDetails,
+        hostDetails,
+        organizerDetails: hostDetails,
+        shopId: merchantId,
         merchantId,
         shopProducts,
         memberCount: tenant.memberships.length,
@@ -1035,12 +1041,12 @@ registerActivityRoute(
         userId: req.auth!.userId
       });
       if (!allowed) {
-        throw new ApiError(403, 'forbidden', 'You cannot access this trip chat.');
+        throw new ApiError(403, 'forbidden', 'You cannot access this activity chat.');
       }
 
       const groupId = await ensureActivityGroupChat(id);
       if (!groupId) {
-        throw new ApiError(404, 'group_chat_unavailable', 'Trip chat is not available.');
+        throw new ApiError(404, 'group_chat_unavailable', 'Activity chat is not available.');
       }
 
       res.json({ data: { groupId } });
@@ -1156,7 +1162,7 @@ const listMyActivitiesHandler = async (req: Request, res: Response, next: NextFu
     ]);
 
     const eventIds = [...new Set(participantEntries.map((entry) => entry.activityId))];
-    const events = eventIds.length > 0 ? await listActivitiesForTripViews(eventIds) : [];
+    const events = eventIds.length > 0 ? await listActivitiesForRequestViews(eventIds) : [];
     const eventMap = new Map(events.map((event) => [event.id, event]));
 
     const activityViews = participantEntries.reduce<Array<ReturnType<typeof buildActivityDto> & { participation: ReturnType<typeof buildParticipationDto> }>>((acc, entry) => {
@@ -1180,8 +1186,6 @@ const listMyActivitiesHandler = async (req: Request, res: Response, next: NextFu
 };
 
 userRouter.get('/me/activities', listMyActivitiesHandler);
-/** @deprecated Use GET /me/activities */
-userRouter.get('/me/trips', listMyActivitiesHandler);
 
 userRouter.get('/me/profile', async (req, res, next) => {
   try {
@@ -1617,7 +1621,7 @@ userRouter.delete('/me/groups/:groupId', validate({ params: groupIdParamSchema }
       throw new ApiError(403, 'forbidden', 'Only the group creator can delete this group.');
     }
     if (group.type === 'activity') {
-      throw new ApiError(400, 'activity_group_locked', 'Trip chats are managed with their activity.');
+      throw new ApiError(400, 'activity_group_locked', 'Activity chats are managed with their activity.');
     }
 
     await deleteSocialGroup(groupId);
@@ -1669,7 +1673,7 @@ userRouter.post('/me/groups/:groupId/invites', validate({ params: groupIdParamSc
 
     const group = await findGroupById(groupId);
     if (group?.type === 'activity') {
-      throw new ApiError(400, 'activity_group_locked', 'Trip chats add members when requests are approved.');
+      throw new ApiError(400, 'activity_group_locked', 'Activity chats add members when requests are approved.');
     }
 
     const invite = await createGroupInvite({
@@ -1884,7 +1888,7 @@ userRouter.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchem
     if (group?.type === 'activity' && group.activityId) {
       const eventDoc = await findActivityDocInMongo(group.activityId);
       if (eventDoc && !isActivityGroupChatOpen(eventDoc.startAt)) {
-        throw new ApiError(403, 'trip_chat_closed', 'Trip chat closed one week after the activity.');
+        throw new ApiError(403, 'activity_chat_closed', 'Activity chat closed one week after the activity.');
       }
     }
 
@@ -2070,7 +2074,7 @@ import {
   resolveHostApplicationTenantType
 } from '../domain/host-application.js';
 
-const organizerDetailsSchema = z.object({
+const hostDetailsSchema = z.object({
   experience: z.string().max(50).optional(),
   languages: z.string().max(300).optional(),
   certificates: z.string().max(1000).optional(),
@@ -2079,15 +2083,18 @@ const organizerDetailsSchema = z.object({
   residence: z.string().max(80).optional(),
 });
 
+/** @deprecated Use hostDetailsSchema */
+const organizerDetailsSchema = hostDetailsSchema;
+
 userRouter.patch(
   '/me/host-details',
   requireAuth,
   requireVerifiedEmail,
-  validate({ body: organizerDetailsSchema }),
+  validate({ body: hostDetailsSchema }),
   async (req, res, next) => {
     try {
       const userId = req.auth!.userId;
-      const body = req.body as z.infer<typeof organizerDetailsSchema>;
+      const body = req.body as z.infer<typeof hostDetailsSchema>;
       let application = await findLatestHostApplicationByApplicant(userId);
 
       if (application) {
@@ -2096,7 +2103,7 @@ userRouter.patch(
       } else {
         const tenant = await findTenantByOwnerId(userId);
         if (!tenant) {
-          throw new ApiError(403, 'not_organizer', 'Only organisation owners can update public profile details.');
+          throw new ApiError(403, 'not_organizer', 'Only hosts can update public profile details.');
         }
         application = await createHostApplicationDetailed({
           applicantId: userId,
@@ -2109,7 +2116,8 @@ userRouter.patch(
         });
       }
 
-      res.json({ data: parseOrganizerDetails(application.metadata) });
+      const details = parseHostDetails(application.metadata);
+      res.json({ data: { ...details, hostDetails: details, organizerDetails: details } });
     } catch (error) {
       next(error);
     }
@@ -2208,7 +2216,7 @@ userRouter.post(
       });
 
       if (!provisioned) {
-        throw new ApiError(500, 'host_provision_failed', 'Could not set up your organisation profile.');
+        throw new ApiError(500, 'host_provision_failed', 'Could not set up your host profile.');
       }
 
       const approvedApplication = await findLatestHostApplicationByApplicant(userId);

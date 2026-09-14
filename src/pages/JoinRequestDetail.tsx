@@ -73,7 +73,7 @@ export const JoinRequestDetail = () => {
     }
   };
 
-  const askOrganizer = () => {
+  const askHost = () => {
     const hostUserId = activityHostUserId(request?.activity ?? {});
     if (!hostUserId) {
       setError('You can\'t message this host from here yet.');
@@ -107,7 +107,7 @@ export const JoinRequestDetail = () => {
 
   const canEdit = request.status === 'pending';
   const canWithdraw = ['pending', 'approved', 'waitlisted'].includes(request.status);
-  const withdrawVariant = request.status === 'approved' ? 'trip' : 'request';
+  const withdrawVariant = request.status === 'approved' ? 'activity' : 'request';
 
   return (
     <MobileScreen title="Join request" backTo="/my-requests" backLabel="Requests">
@@ -144,7 +144,7 @@ export const JoinRequestDetail = () => {
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600"
         >
           <MapPin className="w-4 h-4" />
-          View trip details
+          View activity details
         </Link>
       </GlassCard>
 
@@ -173,7 +173,7 @@ export const JoinRequestDetail = () => {
 
       <GlassCard padding className="mb-4 space-y-3">
         <p className="text-xs font-bold uppercase tracking-wide text-neutral-400">
-          Your note to the organisation
+          Your note to the host
         </p>
         <textarea
           className="ios-input text-[15px] min-h-[100px] resize-none"
@@ -193,9 +193,9 @@ export const JoinRequestDetail = () => {
       </GlassCard>
 
       <div className="space-y-3">
-        <AppButton variant="tint" fullWidth onClick={askOrganizer} className="gap-2">
+        <AppButton variant="tint" fullWidth onClick={askHost} className="gap-2">
           <MessageCircle className="w-4 h-4" />
-          Ask the organisation a question
+          Ask the host a question
         </AppButton>
         {canWithdraw && (
           <button
@@ -203,7 +203,7 @@ export const JoinRequestDetail = () => {
             onClick={() => setShowWithdraw(true)}
             className="ios-btn w-full glass text-red-500 min-h-[48px] font-semibold"
           >
-            {withdrawVariant === 'trip' ? 'Withdraw from trip' : 'Cancel join request'}
+            {withdrawVariant === 'activity' ? 'Withdraw from activity' : 'Cancel join request'}
           </button>
         )}
       </div>

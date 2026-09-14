@@ -10,7 +10,7 @@ export interface WithdrawRequestModalProps {
   tripTitle: string;
   tripDate?: string;
   /** pending vs confirmed wording */
-  variant?: 'request' | 'trip';
+  variant?: 'request' | 'activity';
   submitting?: boolean;
   onConfirm: (payload: { reason: WithdrawReason; message?: string }) => void | Promise<void>;
 }
@@ -35,8 +35,8 @@ export const WithdrawRequestModal = ({
     setError(null);
   }, [open, tripTitle]);
 
-  const title = variant === 'trip' ? 'Leaving this trip?' : 'Cancel your request?';
-  const confirmLabel = variant === 'trip' ? 'Yes, withdraw' : 'Yes, cancel';
+  const title = variant === 'activity' ? 'Leaving this activity?' : 'Cancel your request?';
+  const confirmLabel = variant === 'activity' ? 'Yes, withdraw' : 'Yes, cancel';
   const needsMessage = reason === 'other';
   const canSubmit = Boolean(reason) && (!needsMessage || message.trim().length >= 3);
 
@@ -65,7 +65,7 @@ export const WithdrawRequestModal = ({
   return (
     <Dialog open={open} onClose={handleClose} title={title}>
       <p className="text-sm text-neutral-600 mb-4">
-        {variant === 'trip' ? 'You are withdrawing from' : 'You are cancelling your request for'}{' '}
+        {variant === 'activity' ? 'You are withdrawing from' : 'You are cancelling your request for'}{' '}
         <strong>{tripTitle}</strong>
         {tripDate ? <> on {tripDate}</> : null}.
       </p>

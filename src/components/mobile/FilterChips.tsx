@@ -10,7 +10,7 @@ interface FilterChipsProps<T extends string> {
   value: T;
   onChange: (key: T) => void;
   className?: string;
-  /** Use dark active state for secondary nav (e.g. My Trips) */
+  /** Use dark active state for secondary nav (e.g. My activities) */
   variant?: 'brand' | 'neutral';
 }
 

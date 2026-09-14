@@ -54,7 +54,7 @@ export const JoinRequestActions = ({
           onClick={onWithdraw}
           className="w-full rounded-2xl border-2 border-red-200 bg-white py-3.5 text-base font-bold text-red-600"
         >
-          Leave trip
+          Leave activity
         </button>
       </div>
     );

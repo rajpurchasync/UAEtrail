@@ -59,7 +59,7 @@ afterAll(async () => {
 });
 
 describe('chat messaging policy', () => {
-  it('blocks messages between users with no trip or thread relationship', async () => {
+  it('blocks messages between users with no activity or thread relationship', async () => {
     const receiver = await findAuthUserByEmail(visitorB.email);
     expect(receiver).toBeTruthy();
 
@@ -89,18 +89,18 @@ describe('chat messaging policy', () => {
     expect(response.body.data?.content).toBe('Hi organizer');
   });
 
-  it('allows trip inquiry messages when activityId matches a published trip host', async () => {
+  it('allows activity inquiry messages when activityId matches a published activity host', async () => {
     const response = await request(app)
       .post('/api/v1/chat/messages')
       .set('Authorization', `Bearer ${visitorA.accessToken}`)
       .send({
         receiverId: organizerId,
-        content: 'Is this trip beginner friendly?',
+        content: 'Is this activity beginner friendly?',
         activityId
       });
 
     expect(response.status).toBe(201);
-    expect(response.body.data?.content).toBe('Is this trip beginner friendly?');
+    expect(response.body.data?.content).toBe('Is this activity beginner friendly?');
   });
 
   it('blocks buddy-only messaging after unfriend, even when a thread already exists', async () => {

@@ -3,7 +3,7 @@ import { activityFormTitle } from '../../config/activityTypes';
 import { saveHikingDraft } from '../../utils/activityFormSessionStorage';
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
 import { ActivityFormShell } from './ActivityFormShell';
-import { ActivityTripPreviewOverlay } from './ActivityTripPreviewOverlay';
+import { ActivityPreviewOverlay } from './ActivityPreviewOverlay';
 import { MIN_ABOUT_WORDS } from './activityFormValidation';
 import {
   FormStepProgress,
@@ -24,7 +24,7 @@ export interface HikingActivityFormModalProps {
   onSaved?: () => void;
   tenantId?: string;
   editingActivity?: ActivityDTO | null;
-  hostOrganizations?: TenantListDTO[];
+  hostTenants?: TenantListDTO[];
   venueLocations?: LocationDTO[];
   sessionSnapshot?: ActivityFormSessionSnapshot | null;
   onSessionChange?: (snapshot: ActivityFormSessionSnapshot) => void;
@@ -36,7 +36,7 @@ export const HikingActivityFormModal = ({
   onSaved,
   tenantId = '',
   editingActivity = null,
-  hostOrganizations,
+  hostTenants,
   venueLocations,
   sessionSnapshot,
   onSessionChange,
@@ -46,7 +46,7 @@ export const HikingActivityFormModal = ({
     activityType: 'hiking',
     tenantId,
     editingActivity,
-    hostOrganizations,
+    hostTenants,
     venueLocations,
     sessionSnapshot,
     draftFromSession: sessionSnapshot?.hikingDraft ?? null,
@@ -158,8 +158,8 @@ export const HikingActivityFormModal = ({
               venueAddHref={modal.venueAddHref}
               onAddVenue={modal.handleAddVenue}
               venueLocations={venueLocations}
-              canPickHostOrganization={modal.canPickHostOrganization}
-              pickerHostOrganizations={modal.pickerHostOrganizations}
+              canPickHostTenant={modal.canPickHostTenant}
+              pickerHostTenants={modal.pickerHostTenants}
               showScheduleWarning={editingActivity?.status === 'published'}
             />
           )}
@@ -200,11 +200,11 @@ export const HikingActivityFormModal = ({
         </div>
       </ActivityFormShell>
 
-      {modal.previewTrip && (
-        <ActivityTripPreviewOverlay
-          trip={modal.previewTrip}
+      {modal.previewActivity && (
+        <ActivityPreviewOverlay
+          activity={modal.previewActivity}
           saving={modal.saving}
-          onClose={() => modal.setPreviewTrip(null)}
+          onClose={() => modal.setPreviewActivity(null)}
           onSaveDraft={() => void modal.handleSave('draft')}
           onPublish={() => void modal.handleSave('publish')}
         />

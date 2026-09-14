@@ -438,7 +438,7 @@ export const AdminPlaces = () => {
               <form onSubmit={handleSave} className="p-6 space-y-6">
                 {form.status === 'draft' && form.submittedById && (
                   <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-900">
-                    Organizer submission — add child-friendly / pet-friendly tags, parking link or map pin, and difficulty (hikes) before approving.
+                    Host submission — add child-friendly / pet-friendly tags, parking link or map pin, and difficulty (hikes) before approving.
                   </div>
                 )}
 

@@ -6,7 +6,7 @@ export const SITE_ORIGIN =
   import.meta.env.VITE_SITE_ORIGIN?.replace(/\/$/, '') ?? 'https://uaetrail.com';
 
 export const SITE_DESCRIPTION =
-  'Discover hiking trails, camping spots, and organized outdoor trips across the UAE and GCC with verified guides.';
+  'Discover hiking trails, camping spots, and organized outdoor activities across the UAE and GCC with verified guides.';
 
 /** Self-hosted hero — optimized WebP (~120KB) with JPEG fallback */
 export const HOME_HERO_IMAGE_WEBP = '/traveler-hiking-mountains-while-having-his-essentials-backpack.webp';

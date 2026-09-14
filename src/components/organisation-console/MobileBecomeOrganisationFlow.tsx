@@ -14,7 +14,7 @@ import { ImageUpload } from '../ui/ImageUpload';
 import { AppButton } from '../mobile/AppButton';
 import type { LocationPrecision } from '../explore/mobileCreateFlow';
 import {
-  buildBecomeHostFormPrefill,
+  buildBecomeOrganisationFormPrefill,
   buildHostApplicationPayload,
   emptyBecomeOrganisationForm,
   formatOrganisationPhonePreview,
@@ -196,7 +196,7 @@ export const MobileBecomeOrganisationFlow = ({
     Promise.all([api.getMeProfile(), api.getMyOrganisationApplication()])
       .then(([profileRes, appRes]) => {
         if (disposed) return;
-        const prefill = buildBecomeHostFormPrefill({
+        const prefill = buildBecomeOrganisationFormPrefill({
           displayName: profileRes.data.displayName,
           bio: profileRes.data.bio,
           phone: profileRes.data.phone,
@@ -216,7 +216,7 @@ export const MobileBecomeOrganisationFlow = ({
       })
       .catch(() => {
         if (disposed) return;
-        const fallback = buildBecomeHostFormPrefill({ displayName: user.displayName });
+        const fallback = buildBecomeOrganisationFormPrefill({ displayName: user.displayName });
         if (lockedProfileType) {
           fallback.hostProfileType = lockedProfileType;
           setSelectedType(lockedProfileType);
@@ -287,7 +287,7 @@ export const MobileBecomeOrganisationFlow = ({
     if (!user) return;
     const payload = buildHostApplicationPayload(form);
     if (!payload) {
-      setError('Choose your organisation type.');
+      setError('Choose your host type.');
       return;
     }
 
@@ -478,7 +478,7 @@ export const MobileBecomeOrganisationFlow = ({
               label=""
               preset="profile"
             />
-            <p className="mt-2 text-xs text-neutral-500">A clear photo helps joiners recognize you on trips.</p>
+            <p className="mt-2 text-xs text-neutral-500">A clear photo helps joiners recognize you on activities.</p>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5">
               <AppButton fullWidth disabled={!form.profilePhoto.trim()} onClick={goNext}>

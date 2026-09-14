@@ -8,6 +8,7 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { Dialog } from '../components/ui/Dialog';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
+import { EXPLORE_MAP_PATH } from '../config/platform';
 import { isHostRole } from '../utils/roles';
 
 const formatConnectedDate = (iso: string) =>
@@ -227,7 +228,7 @@ export const Buddies = () => {
             {emptyState && (
               <button
                 type="button"
-                onClick={() => navigate('/explore?list=1')}
+                onClick={() => navigate(EXPLORE_MAP_PATH)}
                 className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white"
               >
                 Explore members
@@ -246,7 +247,7 @@ export const Buddies = () => {
       >
         <p className="text-sm text-neutral-600 leading-relaxed">
           {unfriendingBuddy
-            ? `${unfriendingBuddy.displayName} will not be notified. They will no longer be able to view your private profile or message you unless you connect again or share a trip.`
+            ? `${unfriendingBuddy.displayName} will not be notified. They will no longer be able to view your private profile or message you unless you connect again or share an activity.`
             : ''}
         </p>
         <div className="mt-4 flex gap-2">

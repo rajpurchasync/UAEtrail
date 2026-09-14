@@ -10,6 +10,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import { buildProfileStamps } from '../utils/profileStamps';
 import { messagesRouteForRole } from '../utils/authRouting';
+import { myActivitiesPath } from '../utils/exploreRouting';
 
 const isFullProfile = (
   profile: PersonPublicProfileDTO
@@ -115,8 +116,8 @@ export const MemberProfile = () => {
 
   const stamps = fullProfile
     ? buildProfileStamps({
-        attendedCount: fullProfile.stats.tripsAttended,
-        hostedCount: fullProfile.stats.tripsHosted,
+        attendedCount: fullProfile.stats.activitiesAttended,
+        hostedCount: fullProfile.stats.activitiesHosted,
         isHost: fullProfile.isHost && fullProfile.hostProfileKind !== 'shop',
         hostProfileKind: fullProfile.hostProfileKind,
         isGuideStaff: fullProfile.isGuideStaff,
@@ -141,7 +142,7 @@ export const MemberProfile = () => {
       title={pageTitle}
       navTitle={pageTitle.length > 18 ? `${pageTitle.slice(0, 16)}…` : pageTitle}
       showJourney={false}
-      back={{ fallbackTo: '/activities', label: 'Back' }}
+      back={{ fallbackTo: myActivitiesPath(), label: 'My activities' }}
     >
       <PageMeta title={pageTitle} noIndex />
 
@@ -152,8 +153,8 @@ export const MemberProfile = () => {
       ) : error || !profile ? (
         <GlassCard padding className="text-center">
           <p className="text-sm text-neutral-600">{error ?? 'We couldn\'t find this profile'}</p>
-          <Link to="/activities" className="mt-3 inline-block text-sm font-semibold text-emerald-700">
-            Back to activities
+          <Link to={myActivitiesPath()} className="mt-3 inline-block text-sm font-semibold text-emerald-700">
+            Back to my activities
           </Link>
         </GlassCard>
       ) : isPrivate ? (
@@ -169,7 +170,7 @@ export const MemberProfile = () => {
               state={{ from: `/member/${profile.id}` }}
               className="mt-4 inline-block text-sm font-semibold text-emerald-700"
             >
-              Log in if you are friends or share a trip
+              Log in if you are friends or share an activity
             </Link>
           )}
         </GlassCard>

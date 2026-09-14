@@ -20,7 +20,7 @@ interface AuthContextValue {
     password: string;
     displayName: string;
     accountType: 'participant' | 'company' | 'guide';
-    organizationName?: string;
+    hostName?: string;
     referralCode?: string;
     groupInviteToken?: string;
   }) => Promise<RegisterPendingVerification>;
@@ -194,7 +194,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password,
     displayName,
     accountType,
-    organizationName,
+    hostName,
     referralCode,
     groupInviteToken
   }: {
@@ -202,7 +202,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password: string;
     displayName: string;
     accountType: 'participant' | 'company' | 'guide';
-    organizationName?: string;
+    /** Display name for agency/shop host profile at signup. Wire: `organizationName`. */
+    hostName?: string;
     referralCode?: string;
     groupInviteToken?: string;
   }): Promise<RegisterPendingVerification> => {
@@ -220,7 +221,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           password,
           displayName,
           accountType,
-          organizationName,
+          organizationName: hostName,
           referralCode,
           groupInviteToken
         })

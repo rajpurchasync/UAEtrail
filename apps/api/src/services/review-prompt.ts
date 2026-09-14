@@ -2,7 +2,7 @@ import { NotificationType, ReviewTargetType } from '../domain/enums.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { dispatchNotification } from './notifications.js';
 
-/** Prompt checked-in participant to review the trip location (once). */
+/** Prompt checked-in participant to review the activity location (once). */
 export async function promptPostActivityReview(opts: {
   userId: string;
   activityId: string;
@@ -29,7 +29,7 @@ export async function promptPostActivityReview(opts: {
 
   await dispatchNotification({
     userId: opts.userId,
-    title: 'How was your trip?',
+    title: 'How was your activity?',
     body: `Share your experience at ${opts.locationName} to help fellow hikers.`,
     type: NotificationType.REVIEW_PROMPT,
     meta: {

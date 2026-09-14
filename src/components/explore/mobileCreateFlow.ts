@@ -32,7 +32,7 @@ export type JoinMode = 'open' | 'private';
 
 export type AudienceAccess = 'anyone' | 'women_only' | 'others';
 
-export type TripDifficulty = 'easy' | 'medium' | 'hard';
+export type ActivityDifficulty = 'easy' | 'medium' | 'hard';
 
 export type VehicleAccess = 'sedan' | '4x4';
 
@@ -61,7 +61,7 @@ export type MobileCreateDraft = {
   audienceOtherNote: string;
   childrenAllowed: boolean;
   petsAllowed: boolean;
-  difficulty: TripDifficulty;
+  difficulty: ActivityDifficulty;
   vehicleAccess: VehicleAccess;
   description: string;
   ageMin: number;
@@ -141,11 +141,11 @@ export const createFlowStepTitle = (step: CreateFlowStepId, kind: MobileCreateKi
   if (step === 'title') {
     if (kind === 'event') return 'Event title';
     if (kind === 'carpool') return 'Title';
-    return 'Trip title';
+    return 'Activity title';
   }
   if (step === 'when') {
     if (kind === 'event') return 'Event date & time';
-    return 'Trip date & time';
+    return 'Activity date & time';
   }
   if (step === 'meeting') return kind === 'carpool' ? 'Meeting point' : 'Meeting point';
   if (step === 'to') return kind === 'carpool' ? 'Destination' : 'To location';
@@ -513,7 +513,7 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: MobileCreateDra
   if (step === 'title' && !draft.title.trim()) {
     if (draft.kind === 'event') return 'Enter an event title.';
     if (draft.kind === 'carpool') return 'Enter a title.';
-    return 'Enter a trip title.';
+    return 'Enter an activity title.';
   }
   if (step === 'audience') {
     if (
@@ -585,7 +585,7 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: MobileCreateDra
   return null;
 };
 
-export const TRIP_DIFFICULTY_OPTIONS: Array<{ value: TripDifficulty; title: string; subtitle: string }> = [
+export const ACTIVITY_DIFFICULTY_OPTIONS: Array<{ value: ActivityDifficulty; title: string; subtitle: string }> = [
   { value: 'easy', title: 'Easy', subtitle: 'Beginner friendly' },
   { value: 'medium', title: 'Medium', subtitle: 'For regulars' },
   { value: 'hard', title: 'Hard', subtitle: 'For professionals' },

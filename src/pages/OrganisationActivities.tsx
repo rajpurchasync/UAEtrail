@@ -234,7 +234,7 @@ export const OrganisationActivities = () => {
                           {event.status === 'published' && (
                             <ShareButton
                               title={event.title || event.locationName}
-                              text={`${event.date} · ${event.activityType} trip on UAE Trails`}
+                              text={`${event.date} · ${event.activityType} activity on UAE Trails`}
                               path={`/activity/${event.id}`}
                               iconOnly
                               light

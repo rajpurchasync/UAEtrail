@@ -12,11 +12,11 @@ import {
   removeGroupMember
 } from '../lib/social-groups-store.js';
 
-/** Trip chat stays open until one week after the scheduled activity start. */
-export const TRIP_CHAT_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
+/** Activity chat stays open until one week after the scheduled activity start. */
+export const ACTIVITY_CHAT_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const isActivityGroupChatOpen = (startAt: Date): boolean =>
-  Date.now() <= startAt.getTime() + TRIP_CHAT_GRACE_MS;
+  Date.now() <= startAt.getTime() + ACTIVITY_CHAT_GRACE_MS;
 
 const resolveActivityHostUserId = (eventDoc: { hostId?: string | null; createdById?: string }): string | null =>
   eventDoc.hostId ?? eventDoc.createdById ?? null;

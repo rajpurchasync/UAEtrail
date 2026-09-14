@@ -12,7 +12,7 @@ interface PushEnableBannerProps {
   className?: string;
 }
 
-/** Lightweight prompt to enable web push (e.g. after joining a trip). */
+/** Lightweight prompt to enable web push (e.g. after joining an activity). */
 export const PushEnableBanner = ({ context = 'general', className = '' }: PushEnableBannerProps) => {
   const [dismissed, setDismissed] = useState(() => {
     try {
@@ -50,8 +50,8 @@ export const PushEnableBanner = ({ context = 'general', className = '' }: PushEn
 
   const copy =
     context === 'join'
-      ? 'Turn on notifications so you never miss trip chat, approvals, and reminders.'
-      : 'Enable notifications for trip updates and messages.';
+      ? 'Turn on notifications so you never miss activity chat, approvals, and reminders.'
+      : 'Enable notifications for activity updates and messages.';
 
   return (
     <div className={`relative rounded-2xl border border-sky-200 bg-sky-50/90 p-4 pr-10 ${className}`}>

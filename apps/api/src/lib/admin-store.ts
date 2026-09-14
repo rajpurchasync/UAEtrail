@@ -266,7 +266,7 @@ const loadTenantsByIds = async (ids: string[]): Promise<Map<string, Tenant>> => 
   return new Map(docs.map((doc) => [doc._id, mapMongoTenant(doc)]));
 };
 
-export const listAdminLocationsPaged = async (input: { skip: number; take: number }) => {
+export const listAdminPlacesPaged = async (input: { skip: number; take: number }) => {
   const [items, total] = await Promise.all([
     locationsCollection()
       .find({})
@@ -282,6 +282,9 @@ export const listAdminLocationsPaged = async (input: { skip: number; take: numbe
     total
   };
 };
+
+/** @deprecated Use {@link listAdminPlacesPaged} — legacy name for the same query. */
+export const listAdminLocationsPaged = listAdminPlacesPaged;
 
 export const createAdminLocation = async (data: Parameters<typeof createLocationRecord>[0]) => {
   return createLocationRecord(data);

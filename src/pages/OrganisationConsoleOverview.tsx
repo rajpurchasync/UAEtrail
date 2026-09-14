@@ -63,11 +63,11 @@ export const OrganisationConsoleOverview = () => {
   const error = participant.error ?? host.error;
   const messagesPath = '/host/messages';
 
-  const displayName = participant.profile.displayName || user!.displayName || 'Organiser';
+  const displayName = participant.profile.displayName || user!.displayName || 'Host';
 
   return (
     <OrganisationConsoleShell
-      title="Organisation"
+      title="Host"
       cta={
         <Link to="/host/activities/new" className="app-cta-sm">
           <Plus className="w-4 h-4" />
@@ -98,7 +98,7 @@ export const OrganisationConsoleOverview = () => {
 
       {!host.tenantId && (
         <GlassCard padding className="mb-3 border-amber-200/50 bg-amber-50/50">
-          <p className="text-sm text-amber-800">Select an organisation above to load your activities.</p>
+          <p className="text-sm text-amber-800">Select a host above to load your activities.</p>
         </GlassCard>
       )}
 
@@ -106,7 +106,7 @@ export const OrganisationConsoleOverview = () => {
         displayName={displayName}
         email={participant.profile.email || user!.email || ''}
         avatarUrl={participant.profile.avatarUrl}
-        roleLabel="Organisation"
+        roleLabel="Host"
         bio={participant.profile.bio}
         phone={participant.profile.phone}
         expanded={showDetails}
@@ -198,8 +198,8 @@ export const OrganisationConsoleOverview = () => {
                 {
                   to: '/activities?tab=joined',
                   icon: <Calendar className="w-4 h-4" />,
-                  label: 'My trips as participant',
-                  badge: participant.upcomingTripsCount || undefined,
+                  label: 'My activities as participant',
+                  badge: participant.upcomingActivitiesCount || undefined,
                   accent: 'neutral',
                 },
                 {

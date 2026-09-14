@@ -1,6 +1,6 @@
 import type { HostProfileType } from '@uaetrail/shared-types';
 import { isValidNationalPhone } from '../../utils/phone';
-import type { BecomeHostFormState } from './becomeOrganisationForm';
+import type { BecomeOrganisationFormState } from './becomeOrganisationForm';
 
 export type HostFlowStepId =
   | 'name'
@@ -38,12 +38,12 @@ export const PROFILE_TYPE_OPTIONS: Array<{
   subtitle: string;
   emoji: string;
 }> = [
-  { key: 'individual', title: 'Individual', subtitle: 'Free & shared community activities', emoji: '👤' },
-  { key: 'agency', title: 'Agency', subtitle: 'Licensed business — paid trips', emoji: '🏢' },
+  { key: 'individual', title: 'Guide', subtitle: 'Free & shared community activities', emoji: '👤' },
+  { key: 'agency', title: 'Agency', subtitle: 'Licensed business — paid activities', emoji: '🏢' },
   { key: 'shop', title: 'Shop', subtitle: 'Physical store or online gear partner', emoji: '🛍️' },
 ];
 
-export const getHostFlowSteps = (profileType: HostProfileType, form?: BecomeHostFormState): HostFlowStepId[] => {
+export const getHostFlowSteps = (profileType: HostProfileType, form?: BecomeOrganisationFormState): HostFlowStepId[] => {
   switch (profileType) {
     case 'individual':
       return ['name', 'about', 'photo', 'contact', 'details', 'review'];
@@ -81,7 +81,7 @@ export const hostFlowStepTitle = (step: HostFlowStepId, profileType: HostProfile
     case 'review':
       return 'Review & submit';
     default:
-      return 'Organisation profile';
+      return 'Host profile';
   }
 };
 
@@ -105,15 +105,15 @@ export const hostFlowSubmitLabel = (intent: HostFlowIntent): string => {
 };
 
 export const hostFlowPickSubtitle = (intent: HostFlowIntent): string => {
-  if (intent === 'add-shop') return 'Help hikers and campers find your gear when they\'re planning a trip.';
+  if (intent === 'add-shop') return 'Help hikers and campers find your gear when they\'re planning an activity.';
   if (intent === 'add-agency') return 'Connect with people looking for guided adventures across the UAE.';
-  if (intent === 'add-guide') return 'Share the trails and camps you love — free meetups and shared trips welcome.';
+  if (intent === 'add-guide') return 'Share the trails and camps you love — free meetups and shared activities welcome.';
   return 'Individual guide, licensed agency, or gear shop — pick whatever fits you best.';
 };
 
 export const validateHostFlowStep = (
   step: HostFlowStepId,
-  form: BecomeHostFormState
+  form: BecomeOrganisationFormState
 ): string | null => {
   const profileType = form.hostProfileType;
   if (!profileType) return 'Pick how you\'d like to show up — guide, agency, or shop.';
@@ -158,7 +158,7 @@ export const validateHostFlowStep = (
       if (!form.languages.trim()) return 'Which languages do you speak?';
       return null;
     case 'services':
-      if (!form.services.trim()) return 'What trips or services do you offer?';
+      if (!form.services.trim()) return 'What activities or services do you offer?';
       return null;
     case 'presence':
       if (profileType !== 'shop') return null;

@@ -15,7 +15,7 @@ const BANNER_COPY = {
   },
   compact: {
     line1: 'Earn Trail Points',
-    line1Accent: 'for hikes, trips & community.',
+    line1Accent: 'for hikes, activities & community.',
     line2: '',
     cta: 'See rewards',
   },

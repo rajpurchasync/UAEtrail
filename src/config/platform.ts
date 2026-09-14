@@ -7,7 +7,7 @@
 export const EXPLORE_MAP_PATH = '/explore' as const;
 
 /** Post-auth destination for landing “Join” CTA. */
-export const PARTICIPANT_JOIN_REDIRECT = `${EXPLORE_MAP_PATH}?list=1` as const;
+export const PARTICIPANT_JOIN_REDIRECT = EXPLORE_MAP_PATH;
 
 /** Desktop top nav — map-first; browse pages redirect into explore. */
 export const DESKTOP_NAV_LINKS = [
@@ -35,9 +35,9 @@ export const MOBILE_DRAWER_MENU = [
     match: ['/profile', '/my-requests', '/messages'],
     profileLink: true,
   },
-  { label: 'Explore Map', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery'] },
+  { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery'] },
   { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
-  { label: 'My trips', to: '/activities?tab=joined', match: ['/activities', '/trips', '/trip', '/activity'] },
+  { label: 'My activities', to: '/activities?tab=joined', match: ['/activities', '/activity'] },
 ] as const;
 
 /**
@@ -49,10 +49,10 @@ export const MOBILE_DRAWER_MENU = [
  * Accounts are ACTIVE on signup/OAuth; organizer tenants may still require approval.
  */
 
-/** Community MVP: location-anchored Q&A, trip reports, and photo posts — not a generic forum. */
+/** Community MVP: location-anchored Q&A, activity reports, and photo posts — not a generic forum. */
 export const COMMUNITY_CATEGORIES = [
   { id: 'questions', label: 'Questions' },
-  { id: 'trip-reports', label: 'Trip Reports' },
+  { id: 'activity-reports', label: 'Activity reports' },
   { id: 'photos', label: 'Photos' },
   { id: 'tips', label: 'Tips & Gear' },
 ] as const;
@@ -154,9 +154,9 @@ export const isConsumerChromeHidden = (pathname: string): boolean =>
   CONSUMER_CHROME_HIDDEN_EXACT.includes(pathname as (typeof CONSUMER_CHROME_HIDDEN_EXACT)[number]) ||
   CONSUMER_CHROME_HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
-/** Mobile detail pages render their own back header (trip, trail, camp, product). */
+/** Mobile detail pages render their own back header (activity, trail, camp, product). */
 export const isMobileDetailRoute = (pathname: string): boolean =>
-  /^\/(trip|trail|camp|event|product|activity|event-spot|community-activity)\//.test(pathname);
+  /^\/(trail|camp|event|product|activity|event-spot|community-activity)\//.test(pathname);
 
 /**
  * Consumer pages that render their own sticky header (ConsumerShell / MobileScreen / MobileDetailShell).

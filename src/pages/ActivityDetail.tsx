@@ -9,13 +9,20 @@ import {
   Car,
   Lock
 } from 'lucide-react';
-import { ActivityDetailDTO, MyTripRequestDTO, TripParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
+import { ActivityDetailDTO, ActivityParticipationDTO, MyActivityRequestDTO, WithdrawReason } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { formatDate } from '../utils';
-import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../utils/tripPricing';
+import {
+  formatPackagePrice,
+  inferActivityPricingMode,
+  activityPriceLabel,
+  activityPricingBadge,
+  activityPricingModeLabel,
+} from '../utils/activityPricing';
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../utils/hostLabels';
 import { resolveOrganisationProfilePath } from '../utils/organisationLinks';
-import { explorePath } from '../utils/exploreRouting';
+import { detailBackPath } from '../utils/exploreRouting';
+import { signInPathForReturn } from '../utils/authReturnContext';
 import {
   extractJoinInstructionLines,
   extractNonJoinRequirements,
@@ -25,7 +32,7 @@ import { useAuth } from '../context/AuthContext';
 import { PARTICIPANT_PRIVACY } from '../config/platform';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
-import { tripEventSchema } from '../components/seo/schemas';
+import { activityEventSchema } from '../components/seo/schemas';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import {
   ShareButton,
@@ -38,7 +45,7 @@ import {
   JoinRequestActions,
   SecureAvatar
 } from '../components/ui';
-import { TripChatCallout } from '../components/ui/TripChatCallout';
+import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
 import { PushEnableBanner } from '../components/ui/PushEnableBanner';
 import { resolveJoinRequestUiState, withdrawModalVariant } from '../utils/joinRequestUi';
 
@@ -82,18 +89,18 @@ export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [trip, setTrip] = useState<ActivityDetailDTO | null>(null);
+  const [activity, setActivity] = useState<ActivityDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const [participation, setParticipation] = useState<TripParticipationDTO | null | undefined>(undefined);
-  const [myRequest, setMyRequest] = useState<MyTripRequestDTO | null | undefined>(undefined);
+  const [participation, setParticipation] = useState<ActivityParticipationDTO | null | undefined>(undefined);
+  const [myRequest, setMyRequest] = useState<MyActivityRequestDTO | null | undefined>(undefined);
   const [withdrawing, setWithdrawing] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
 
-  const loadTrip = () => {
+  const loadActivity = () => {
     if (!id) return;
     setLoading(true);
     setParticipation(undefined);
@@ -101,31 +108,31 @@ export const ActivityDetail = () => {
     api
       .getPublicActivityDetail(id)
       .then((res) => {
-        setTrip(res.data);
+        setActivity(res.data);
         setParticipation(res.data.myParticipation ?? null);
         setMyRequest(res.data.myRequest ?? null);
       })
       .catch((loadError) =>
-        setError(loadError instanceof Error ? loadError.message : 'Couldn\'t load this trip — try again.')
+        setError(loadError instanceof Error ? loadError.message : 'Couldn\'t load this activity — try again.')
       )
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    loadTrip();
+    loadActivity();
   }, [id]);
 
-  const pricePackages = trip?.pricePackages?.filter((p) => p.label.trim()) ?? [];
+  const pricePackages = activity?.pricePackages?.filter((p) => p.label.trim()) ?? [];
   const hasMultiplePackages = pricePackages.length > 1;
-  const pricingMode = trip ? inferTripPricingMode(trip) : 'free';
-  const pricingBadge = trip ? tripPricingBadge(trip) : null;
+  const pricingMode = activity ? inferActivityPricingMode(activity) : 'free';
+  const pricingBadge = activity ? activityPricingBadge(activity) : null;
 
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
 
   const openJoinModal = () => {
-    if (!id || !trip) return;
+    if (!id || !activity) return;
     if (!user) {
-      navigate('/signin', { state: { from: `/activity/${id}` } });
+      navigate(signInPathForReturn(`/activity/${id}`));
       return;
     }
     if (!packageSelected) {
@@ -138,13 +145,13 @@ export const ActivityDetail = () => {
 
   const handleJoinSuccess = (successMessage: string) => {
     setMessage(successMessage);
-    loadTrip();
+    loadActivity();
   };
 
   if (loading) {
     return (
       <>
-        <PageMeta title="Loading trip" path={id ? `/activity/${id}` : undefined} />
+        <PageMeta title="Loading activity" path={id ? `/activity/${id}` : undefined} />
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
         </div>
@@ -152,15 +159,15 @@ export const ActivityDetail = () => {
     );
   }
 
-  if (!trip) {
+  if (!activity) {
     return (
       <>
-        <PageMeta title="Trip not found" noIndex path={id ? `/activity/${id}` : undefined} />
+        <PageMeta title="Activity not found" noIndex path={id ? `/activity/${id}` : undefined} />
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center px-4">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">We couldn&apos;t find this trip</h1>
-            <Link to={explorePath({ list: true, panel: 'activities' })} className="text-emerald-600 hover:text-emerald-700 font-medium">
-              View all trips
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">We couldn&apos;t find this activity</h1>
+            <Link to={detailBackPath('activity')} className="text-emerald-600 hover:text-emerald-700 font-medium">
+              View all activities
             </Link>
           </div>
         </div>
@@ -168,12 +175,12 @@ export const ActivityDetail = () => {
     );
   }
 
-  if (trip.visibilityState === 'private') {
+  if (activity.visibilityState === 'private') {
     return (
       <>
         <PageMeta title="Private activity" noIndex path={id ? `/activity/${id}` : undefined} />
         <MobileDetailShell
-          backTo={explorePath({ list: true, panel: 'activities' })}
+          backTo={detailBackPath('activity')}
           backLabel="Explore"
         >
           <div className="max-w-lg mx-auto px-4 py-16 text-center">
@@ -182,12 +189,11 @@ export const ActivityDetail = () => {
             </div>
             <h1 className="mt-4 text-xl font-bold text-neutral-900">Private activity</h1>
             <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
-              {trip.message ?? 'This activity is private — only invited members can view it.'}
+              {activity.message ?? 'This activity is private — only invited members can view it.'}
             </p>
             {!user && (
               <Link
-                to="/signin"
-                state={{ from: `/activity/${trip.id}` }}
+                to={signInPathForReturn(`/activity/${activity.id}`)}
                 className="mt-4 inline-block text-sm font-semibold text-emerald-700"
               >
                 Log in if you were invited
@@ -200,46 +206,48 @@ export const ActivityDetail = () => {
   }
 
   const heroImage =
-    trip.images?.[0] ??
-    trip.location?.images?.[0] ??
-    (trip.activityType === 'camping'
+    activity.images?.[0] ??
+    activity.location?.images?.[0] ??
+    (activity.activityType === 'camping'
       ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600'
       : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
-  const participants = trip.participants ?? [];
+  const participants = activity.participants ?? [];
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
   const hostPath = resolveOrganisationProfilePath({
-    tenantSlug: trip.tenantSlug,
-    hostUserId: activityHostUserId(trip),
+    tenantSlug: activity.tenantSlug,
+    hostUserId: activityHostUserId(activity),
   });
-  const hostProfileHint = trip.tenantSlug ? 'Runs this trip · view organization' : 'Runs this trip · view profile';
-  const isFull = trip.slotsAvailable <= 0;
-  const accessLat = trip.startLat ?? trip.meetingLat ?? trip.parkingLat ?? trip.location?.latitude ?? null;
-  const accessLng = trip.startLng ?? trip.meetingLng ?? trip.parkingLng ?? trip.location?.longitude ?? null;
+  const hostProfileHint = activity.tenantSlug
+    ? 'Runs this activity · view host profile'
+    : 'Runs this activity · view profile';
+  const isFull = activity.slotsAvailable <= 0;
+  const accessLat = activity.startLat ?? activity.meetingLat ?? activity.parkingLat ?? activity.location?.latitude ?? null;
+  const accessLng = activity.startLng ?? activity.meetingLng ?? activity.parkingLng ?? activity.location?.longitude ?? null;
   const hasAccessCoordinates = accessLat != null && accessLng != null;
   const openInGoogleMapsUrl =
-    trip.location?.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
+    activity.location?.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
 
-  const dateRangeLabel = trip.endDate
-    ? `${formatDate(trip.date)} – ${formatDate(trip.endDate)}`
-    : formatDate(trip.date);
+  const dateRangeLabel = activity.endDate
+    ? `${formatDate(activity.date)} – ${formatDate(activity.endDate)}`
+    : formatDate(activity.date);
 
   const joinLabel = isFull ? 'Join Waitlist' : 'Request to Join';
   const joinUiState = resolveJoinRequestUiState({ myRequest: myRequest ?? null, participation: participation ?? null });
 
   const handleWithdraw = async (payload: { reason: WithdrawReason; message?: string }) => {
-    if (!trip || (joinUiState.kind !== 'pending' && joinUiState.kind !== 'confirmed')) return;
+    if (!activity || (joinUiState.kind !== 'pending' && joinUiState.kind !== 'confirmed')) return;
     setWithdrawing(true);
     setError(null);
     try {
-      await api.cancelJoinRequest(trip.id, joinUiState.requestId, payload);
+      await api.cancelJoinRequest(activity.id, joinUiState.requestId, payload);
       setShowWithdraw(false);
       setMessage(
         joinUiState.kind === 'confirmed'
-          ? 'You have withdrawn from this trip.'
+          ? 'You have withdrawn from this activity.'
           : 'Join request cancelled.'
       );
-      loadTrip();
+      loadActivity();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Couldn\'t withdraw — try again.');
       setShowWithdraw(false);
@@ -252,7 +260,7 @@ export const ActivityDetail = () => {
 
   const checkInFooter = participation ? (
     <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg space-y-2">
-      {isConfirmedParticipant && id && <TripChatCallout activityId={id} />}
+      {isConfirmedParticipant && id && <ActivityChatCallout activityId={id} />}
       {isConfirmedParticipant && <PushEnableBanner context="join" />}
       <ActivityCheckInPanel participation={participation} />
       {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && (
@@ -293,7 +301,7 @@ export const ActivityDetail = () => {
 
   const sidebarJoin = participation ? (
     <>
-      {isConfirmedParticipant && id && <TripChatCallout activityId={id} className="mb-4" />}
+      {isConfirmedParticipant && id && <ActivityChatCallout activityId={id} className="mb-4" />}
       {isConfirmedParticipant && <PushEnableBanner context="join" className="mb-4" />}
       <ActivityCheckInPanel participation={participation} />
       {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && (
@@ -326,67 +334,67 @@ export const ActivityDetail = () => {
 
   return (
     <MobileDetailShell
-      backTo={explorePath({ list: true, panel: 'activities' })}
+      backTo={detailBackPath('activity')}
       backLabel="Explore"
       footer={joinButton}
       banner={{
         src: heroImage,
-        alt: trip.title || trip.locationName,
-        title: trip.title || trip.locationName,
-        eyebrow: trip.activityType === 'hiking' ? 'Hiking trip' : 'Camping trip',
+        alt: activity.title || activity.locationName,
+        title: activity.title || activity.locationName,
+        eyebrow: activity.activityType === 'hiking' ? 'Hiking activity' : 'Camping activity',
       }}
     >
       <PageMeta
-        title={trip.title || trip.locationName}
-        description={trip.description?.slice(0, 160) ?? `Join this ${trip.activityType} trip in the UAE on UAE Trail`}
-        path={`/activity/${trip.id}`}
+        title={activity.title || activity.locationName}
+        description={activity.description?.slice(0, 160) ?? `Join this ${activity.activityType} activity in the UAE on UAE Trail`}
+        path={`/activity/${activity.id}`}
         image={heroImage}
-        imageAlt={trip.title || trip.locationName}
+        imageAlt={activity.title || activity.locationName}
       />
-      <JsonLd data={tripEventSchema(trip)} id={`trip-${trip.id}`} />
+      <JsonLd data={activityEventSchema(activity)} id={`activity-${activity.id}`} />
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">About this trip</h2>
-            <p className="text-gray-600 leading-relaxed">{trip.description}</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">About this activity</h2>
+            <p className="text-gray-600 leading-relaxed">{activity.description}</p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
               <div className="bg-gray-50 rounded-xl p-3">
                 <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
                 <p className="text-xs text-gray-500">Start</p>
-                <p className="text-sm font-semibold text-gray-900">{formatDate(trip.date)}</p>
+                <p className="text-sm font-semibold text-gray-900">{formatDate(activity.date)}</p>
               </div>
-              {trip.endDate && (
+              {activity.endDate && (
                 <div className="bg-gray-50 rounded-xl p-3">
                   <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
                   <p className="text-xs text-gray-500">End</p>
-                  <p className="text-sm font-semibold text-gray-900">{formatDate(trip.endDate)}</p>
+                  <p className="text-sm font-semibold text-gray-900">{formatDate(activity.endDate)}</p>
                 </div>
               )}
               <div className="bg-gray-50 rounded-xl p-3">
                 <Clock className="w-4 h-4 text-emerald-600 mb-1" />
                 <p className="text-xs text-gray-500">Time</p>
                 <p className="text-sm font-semibold text-gray-900">
-                  {trip.time}
-                  {trip.endTime ? ` – ${trip.endTime}` : ''}
+                  {activity.time}
+                  {activity.endTime ? ` – ${activity.endTime}` : ''}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <Users className="w-4 h-4 text-emerald-600 mb-1" />
                 <p className="text-xs text-gray-500">Spots</p>
                 <p className="text-sm font-semibold text-gray-900">
-                  {trip.slotsAvailable}/{trip.slotsTotal} left
+                  {activity.slotsAvailable}/{activity.slotsTotal} left
                 </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-500 mb-1">Pricing</p>
-                {trip && pricingBadge && (
+                {activity && pricingBadge && (
                   <>
                     <p className={`text-sm font-semibold inline-flex px-2 py-0.5 rounded-lg ${pricingBadge.bg} ${pricingBadge.text}`}>
-                      {tripPricingModeLabel(trip)}
+                      {activityPricingModeLabel(activity)}
                     </p>
                     {pricingMode !== 'free' && (
-                      <p className="text-sm font-semibold text-gray-900 mt-1">{tripPriceLabel(trip)}</p>
+                      <p className="text-sm font-semibold text-gray-900 mt-1">{activityPriceLabel(activity)}</p>
                     )}
                   </>
                 )}
@@ -413,7 +421,7 @@ export const ActivityDetail = () => {
                           <span className="flex items-center gap-3 min-w-0">
                             <input
                               type="radio"
-                              name="trip-package"
+                              name="activity-package"
                               checked={selectedPackageIndex === index}
                               onChange={() => setSelectedPackageIndex(index)}
                               className="text-emerald-600 focus:ring-emerald-500"
@@ -436,31 +444,31 @@ export const ActivityDetail = () => {
               </div>
             )}
 
-            {(trip.startPoint || trip.meetingPoint || trip.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
+            {(activity.startPoint || activity.meetingPoint || activity.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
               <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-start gap-3">
                   <Car className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
                   <div className="space-y-3">
                     <p className="text-sm font-semibold text-gray-900">Access details</p>
-                    {(trip.startPoint || trip.meetingPoint || trip.parkingPoint) && (
+                    {(activity.startPoint || activity.meetingPoint || activity.parkingPoint) && (
                       <div className="space-y-1 text-sm text-gray-700">
-                        {trip.startPoint && <p><span className="font-medium text-gray-900">Hike start point:</span> {trip.startPoint}</p>}
-                        {trip.meetingPoint && (
+                        {activity.startPoint && <p><span className="font-medium text-gray-900">Hike start point:</span> {activity.startPoint}</p>}
+                        {activity.meetingPoint && (
                           <p>
-                            <span className="font-medium text-gray-900">Meeting point:</span> {trip.meetingPoint}
+                            <span className="font-medium text-gray-900">Meeting point:</span> {activity.meetingPoint}
                             <span className="block text-xs font-normal text-gray-500 mt-0.5">
                               Information only — not a join requirement.
                             </span>
                           </p>
                         )}
-                        {trip.parkingPoint && <p><span className="font-medium text-gray-900">Parking:</span> {trip.parkingPoint}</p>}
+                        {activity.parkingPoint && <p><span className="font-medium text-gray-900">Parking:</span> {activity.parkingPoint}</p>}
                       </div>
                     )}
                     {hasAccessCoordinates && (
                       <MeetingPointMap
                         lat={accessLat}
                         lng={accessLng}
-                        label={trip.meetingPoint ?? trip.parkingPoint ?? trip.locationName ?? trip.location?.name ?? undefined}
+                        label={activity.meetingPoint ?? activity.parkingPoint ?? activity.locationName ?? activity.location?.name ?? undefined}
                         hideExternalLink
                       />
                     )}
@@ -504,37 +512,37 @@ export const ActivityDetail = () => {
               </div>
             )}
 
-            {trip.carPoolEnabled && (
+            {activity.carPoolEnabled && (
               <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
                 <div className="flex items-start gap-2 text-sm text-gray-700">
                   <Car className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-gray-900">Carpool available</p>
                     <p className="mt-1">
-                      {trip.carPoolSeats != null && trip.carPoolSeats > 0
-                        ? `${trip.carPoolSeats} seat${trip.carPoolSeats === 1 ? '' : 's'} · `
+                      {activity.carPoolSeats != null && activity.carPoolSeats > 0
+                        ? `${activity.carPoolSeats} seat${activity.carPoolSeats === 1 ? '' : 's'} · `
                         : ''}
-                      {trip.carPoolFree
+                      {activity.carPoolFree
                         ? 'Free shared ride'
-                        : trip.carPoolPriceAed != null
-                          ? `AED ${trip.carPoolPriceAed} per seat`
+                        : activity.carPoolPriceAed != null
+                          ? `AED ${activity.carPoolPriceAed} per seat`
                           : 'Shared ride'}
                     </p>
-                    {trip.carPoolDetails && (
-                      <p className="text-gray-600 mt-1 whitespace-pre-line">{trip.carPoolDetails}</p>
+                    {activity.carPoolDetails && (
+                      <p className="text-gray-600 mt-1 whitespace-pre-line">{activity.carPoolDetails}</p>
                     )}
-                    {trip.linkedCarpool && (
+                    {activity.linkedCarpool && (
                       <div className="mt-3 rounded-xl border border-sky-200 bg-white px-3 py-2.5">
                         <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
                           Linked carpool listing
                         </p>
                         <p className="mt-1 text-sm text-gray-800">
-                          {trip.linkedCarpool.meetingPoint && trip.linkedCarpool.startPoint
-                            ? `${trip.linkedCarpool.meetingPoint} → ${trip.linkedCarpool.startPoint}`
-                            : trip.linkedCarpool.title}
+                          {activity.linkedCarpool.meetingPoint && activity.linkedCarpool.startPoint
+                            ? `${activity.linkedCarpool.meetingPoint} → ${activity.linkedCarpool.startPoint}`
+                            : activity.linkedCarpool.title}
                         </p>
                         <Link
-                          to={`/activity/${trip.linkedCarpool.id}`}
+                          to={`/activity/${activity.linkedCarpool.id}`}
                           className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
                         >
                           View carpool details
@@ -547,16 +555,16 @@ export const ActivityDetail = () => {
               </div>
             )}
 
-            {trip.linkedParentActivity && (
+            {activity.linkedParentActivity && (
               <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-gray-700">
                 <p className="font-medium text-gray-900">Linked activity</p>
                 <p className="mt-1">
                   This carpool is offered for{' '}
                   <Link
-                    to={`/activity/${trip.linkedParentActivity.id}`}
+                    to={`/activity/${activity.linkedParentActivity.id}`}
                     className="font-semibold text-emerald-700 hover:text-emerald-800"
                   >
-                    {trip.linkedParentActivity.title}
+                    {activity.linkedParentActivity.title}
                   </Link>
                   .
                 </p>
@@ -566,11 +574,11 @@ export const ActivityDetail = () => {
           </div>
 
 
-          {trip.itinerary && trip.itinerary.length > 0 && (
+          {activity.itinerary && activity.itinerary.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Itinerary</h2>
               <ul className="space-y-2">
-                {trip.itinerary.map((item, i) => (
+                {activity.itinerary.map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                     {item}
@@ -581,8 +589,8 @@ export const ActivityDetail = () => {
           )}
 
           {(() => {
-            const mandatoryInstructions = extractJoinInstructionLines(trip.requirements);
-            const otherRequirements = extractNonJoinRequirements(trip.requirements);
+            const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
+            const otherRequirements = extractNonJoinRequirements(activity.requirements);
             return (
               <>
                 {mandatoryInstructions.length > 0 && (
@@ -598,7 +606,7 @@ export const ActivityDetail = () => {
                 )}
                 {otherRequirements.length > 0 && (
                   <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-                    <h2 className="text-lg font-bold text-gray-900 mb-3">Trip details</h2>
+                    <h2 className="text-lg font-bold text-gray-900 mb-3">Activity details</h2>
                     <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
                       {otherRequirements.map((item, i) => (
                         <li key={i}>{item}</li>
@@ -610,11 +618,11 @@ export const ActivityDetail = () => {
             );
           })()}
 
-          {trip.images && trip.images.length > 1 && (
+          {activity.images && activity.images.length > 1 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Photos</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {trip.images.map((img, i) => (
+                {activity.images.map((img, i) => (
                   <img key={i} src={img} alt="" className="rounded-xl aspect-video object-cover" />
                 ))}
               </div>
@@ -626,14 +634,14 @@ export const ActivityDetail = () => {
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-20">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-2xl font-bold text-gray-900">{tripPriceLabel(trip)}</p>
+                <p className="text-2xl font-bold text-gray-900">{activityPriceLabel(activity)}</p>
                 <p className="text-sm text-gray-500">{pricePackages.length > 1 ? 'options available' : 'per person'}</p>
               </div>
               <div className="hidden md:block">
                 <ShareButton
-                  title={trip.title || trip.locationName}
-                  text={`${dateRangeLabel} · Join this ${trip.activityType} trip on UAE Trails`}
-                  path={`/activity/${trip.id}`}
+                  title={activity.title || activity.locationName}
+                  text={`${dateRangeLabel} · Join this ${activity.activityType} activity on UAE Trails`}
+                  path={`/activity/${activity.id}`}
                 />
               </div>
             </div>
@@ -649,16 +657,16 @@ export const ActivityDetail = () => {
                 {hostPath ? (
                   <Link to={hostPath} className="flex items-center gap-3 group flex-1 min-w-0">
                     <SecureAvatar
-                      src={activityHostAvatar(trip)}
-                      name={activityHostName(trip)}
+                      src={activityHostAvatar(activity)}
+                      name={activityHostName(activity)}
                       className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-gray-900 group-hover:text-emerald-700 truncate">
-                        {activityHostName(trip)}
+                        {activityHostName(activity)}
                       </p>
-                      {showTenantBrand(trip) && trip.tenantName && (
-                        <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
+                      {showTenantBrand(activity) && activity.tenantName && (
+                        <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
                       )}
                       <p className="text-xs text-gray-500">{hostProfileHint}</p>
                     </div>
@@ -667,26 +675,26 @@ export const ActivityDetail = () => {
                 ) : (
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <SecureAvatar
-                      src={activityHostAvatar(trip)}
-                      name={activityHostName(trip)}
+                      src={activityHostAvatar(activity)}
+                      name={activityHostName(activity)}
                       className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 truncate">{activityHostName(trip)}</p>
-                      {showTenantBrand(trip) && trip.tenantName && (
-                        <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
+                      <p className="font-semibold text-gray-900 truncate">{activityHostName(activity)}</p>
+                      {showTenantBrand(activity) && activity.tenantName && (
+                        <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
                       )}
                     </div>
                   </div>
                 )}
                 <HostMessageButton
-                  hostUserId={activityHostUserId(trip)}
-                  activityId={trip.id}
+                  hostUserId={activityHostUserId(activity)}
+                  activityId={activity.id}
                   size="md"
                 />
               </div>
-              {trip.hostBio && (
-                <p className="mt-3 text-sm text-gray-600 leading-relaxed">{trip.hostBio}</p>
+              {activity.hostBio && (
+                <p className="mt-3 text-sm text-gray-600 leading-relaxed">{activity.hostBio}</p>
               )}
             </div>
 
@@ -713,8 +721,8 @@ export const ActivityDetail = () => {
       <WithdrawRequestModal
         open={showWithdraw}
         onClose={() => setShowWithdraw(false)}
-        tripTitle={trip.title || trip.locationName}
-        tripDate={trip.date}
+        tripTitle={activity.title || activity.locationName}
+        tripDate={activity.date}
         variant={withdrawModalVariant(joinUiState)}
         submitting={withdrawing}
         onConfirm={handleWithdraw}
@@ -722,7 +730,7 @@ export const ActivityDetail = () => {
       <JoinRequestModal
         open={showJoinModal}
         onClose={() => setShowJoinModal(false)}
-        activity={trip}
+        activity={activity}
         isFull={isFull}
         selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
         onSuccess={handleJoinSuccess}

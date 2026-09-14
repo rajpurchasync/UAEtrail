@@ -100,7 +100,7 @@ export const OrganisationHubSections = ({
           {
             to: '/host/profile',
             icon: <UserCircle className="w-4 h-4" />,
-            label: 'Public organisation profile',
+            label: 'Public host profile',
             accent: 'emerald',
           },
           {

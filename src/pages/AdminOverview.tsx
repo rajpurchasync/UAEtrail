@@ -35,10 +35,10 @@ export const AdminOverview = () => {
   useEffect(() => { loadData(); }, []);
 
   const metricCards = [
-    { label: 'Pending organisation applications', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-800', icon: '📝', link: '/admin/hosts' },
+    { label: 'Pending host applications', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-800', icon: '📝', link: '/admin/hosts' },
     { label: 'Total places', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', icon: '📍' },
     { label: 'Total members', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥', link: '/admin/users' },
-    { label: 'Active Trips', value: metrics?.activeTrips ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾' }
+    { label: 'Active activities', value: metrics?.activeTrips ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾' }
   ];
 
   if (loading) {

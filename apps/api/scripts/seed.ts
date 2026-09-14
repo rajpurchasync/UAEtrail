@@ -701,7 +701,7 @@ async function main() {
   });
 
   await updateAuthUserProfile(agencyOwner._id, {
-    bio: 'UAE-based tour agency specializing in guided hiking and camping across the Emirates. Safety-first trips with small groups and experienced local guides.',
+    bio: 'UAE-based tour agency specializing in guided hiking and camping across the Emirates. Safety-first activities with small groups and experienced local guides.',
     phone: '+971501234567'
   });
 
@@ -842,7 +842,7 @@ async function main() {
       hostProfileType: 'agency',
       hostDisplayName: 'Maya Hassan',
       requestedName: 'Hatta Hiking Club',
-      bio: 'Community hiking club applying to host group trips around Hatta.',
+      bio: 'Community hiking club applying to host group activities around Hatta.',
       phone: '+971507654321',
       phoneE164: '+971507654321',
       nationality: 'UAE',
@@ -1401,7 +1401,7 @@ Share your live location and carry extra water in summer months.`
     targetType: ReviewTargetType.TENANT,
     targetId: agencyTenant.id,
     rating: 5,
-    comment: 'UAE Adventure Co runs well-organized trips with clear communication and safety briefings.'
+    comment: 'UAE Adventure Co runs well-organized activities with clear communication and safety briefings.'
   });
 
   await upsertReview({
@@ -1445,7 +1445,7 @@ Share your live location and carry extra water in summer months.`
     id: 'seed-notif-visitor-approved',
     userId: participant._id,
     title: 'Join request approved',
-    body: 'Your request to join a trip was approved. Check My Trips for details.',
+    body: 'Your request to join an activity was approved. Check My activities for details.',
     type: NotificationType.REQUEST_UPDATE,
     meta: { activityId: event._id }
   });
@@ -1512,12 +1512,12 @@ Share your live location and carry extra water in summer months.`
   }
 
   await seedReward(participant._id, RewardAction.SIGNUP_WELCOME, 25, participant._id, 'Welcome bonus');
-  await seedReward(participant._id, RewardAction.TRIP_ATTENDED, 30, `${event._id}:${participant._id}`, 'Attended a trip');
+  await seedReward(participant._id, RewardAction.ACTIVITY_ATTENDED, 30, `${event._id}:${participant._id}`, 'Attended an activity');
   await seedReward(participant._id, RewardAction.COMMUNITY_POST, 20, 'seed-post-1', 'Community post');
   await seedReward(participant._id, RewardAction.REVIEW_WRITTEN, 25, 'seed-review-shawka', 'Review written');
-  await seedReward(agencyOwner._id, RewardAction.ACTIVITY_PUBLISHED, 50, event._id, 'Published a trip');
-  await seedReward(agencyOwner._id, RewardAction.ACTIVITY_HOSTED, 75, event._id, 'Hosted a trip');
-  await seedReward(agencyGuide._id, RewardAction.TRIP_ATTENDED, 30, `${event._id}:${agencyGuide._id}`, 'Attended a trip');
+  await seedReward(agencyOwner._id, RewardAction.ACTIVITY_PUBLISHED, 50, event._id, 'Published an activity');
+  await seedReward(agencyOwner._id, RewardAction.ACTIVITY_HOSTED, 75, event._id, 'Hosted an activity');
+  await seedReward(agencyGuide._id, RewardAction.ACTIVITY_ATTENDED, 30, `${event._id}:${agencyGuide._id}`, 'Attended an activity');
   await seedReward(agencyGuide._id, RewardAction.REVIEW_WRITTEN, 25, 'seed-review-jais', 'Review written');
   await seedReward(individualHost._id, RewardAction.SIGNUP_WELCOME, 25, individualHost._id, 'Welcome bonus');
   await seedReward(individualHost._id, RewardAction.ACTIVITY_PUBLISHED, 50, 'seed-event-fossil-camp', 'Published Fossil Rock camp');
@@ -1530,8 +1530,8 @@ Share your live location and carry extra water in summer months.`
   );
 
   await createUserBadge({ userId: agencyOwner._id, badgeKey: 'tier_active' });
-  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'trip_leader' });
-  await createUserBadge({ userId: individualHost._id, badgeKey: 'trip_leader' });
+  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'activity_leader' });
+  await createUserBadge({ userId: individualHost._id, badgeKey: 'activity_leader' });
   await createUserBadge({ userId: individualHost._id, badgeKey: 'trail_mapper' });
   await createUserBadge({ userId: participant._id, badgeKey: 'reviewer' });
   await createUserBadge({ userId: agencyGuide._id, badgeKey: 'reviewer' });

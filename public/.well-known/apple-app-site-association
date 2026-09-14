@@ -5,7 +5,7 @@
       {
         "appID": "TEAM_ID.ae.uaetrail.app",
         "paths": [
-          "/trip/*",
+          "/activity/*",
           "/trail/*",
           "/camp/*",
           "/community",

@@ -1,4 +1,4 @@
-import type { MyTripRequestDTO, TripParticipationDTO } from '@uaetrail/shared-types';
+import type { MyActivityRequestDTO, ActivityParticipationDTO } from '@uaetrail/shared-types';
 
 export type JoinRequestUiState =
   | { kind: 'open' }
@@ -6,8 +6,8 @@ export type JoinRequestUiState =
   | { kind: 'confirmed'; requestId: string };
 
 export const resolveJoinRequestUiState = (input: {
-  myRequest?: MyTripRequestDTO | null;
-  participation?: TripParticipationDTO | null;
+  myRequest?: MyActivityRequestDTO | null;
+  participation?: ActivityParticipationDTO | null;
 }): JoinRequestUiState => {
   if (input.participation && input.myRequest?.id) {
     return { kind: 'confirmed', requestId: input.myRequest.id };
@@ -53,5 +53,5 @@ export const requestStatusLabel = (status: string): string => {
   }
 };
 
-export const withdrawModalVariant = (uiState: JoinRequestUiState): 'request' | 'trip' =>
-  uiState.kind === 'confirmed' ? 'trip' : 'request';
+export const withdrawModalVariant = (uiState: JoinRequestUiState): 'request' | 'activity' =>
+  uiState.kind === 'confirmed' ? 'activity' : 'request';

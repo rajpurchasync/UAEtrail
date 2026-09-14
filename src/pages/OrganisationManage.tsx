@@ -34,7 +34,7 @@ export const OrganisationManage = () => {
   }
 
   const shellTitle = hasMultipleKinds
-    ? 'Manage organisation'
+    ? 'Manage host'
     : activeKind === 'shop'
       ? 'Manage shop'
       : 'Manage agency';

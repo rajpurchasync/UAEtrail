@@ -34,7 +34,7 @@ export const validateActivityFormStep = (
   mode: 'draft' | 'publish',
   options: {
     activityType: ActivityType;
-    canPickHostOrganization: boolean;
+    canPickHostTenant: boolean;
     totalSteps?: number;
   }
 ): string | null => {
@@ -57,8 +57,8 @@ export const validateActivityFormStep = (
     if (options.activityType === 'camping' && !form.campingSurfaceType) {
       return 'Select a camping surface type (Sand or Grass).';
     }
-    if (isEvent && mode === 'publish' && !form.eventHostOrganization.trim()) {
-      return 'Organisation is required.';
+    if (isEvent && mode === 'publish' && !form.eventHostName.trim()) {
+      return 'Host is required.';
     }
     if (mode === 'publish') {
       if (!form.date || !form.time) return 'Date and start time are required.';
@@ -74,8 +74,8 @@ export const validateActivityFormStep = (
         return 'Enter a valid event URL (https://…).';
       }
     }
-    if (options.canPickHostOrganization && !form.tenantId && !isEvent) {
-      return 'Select an organisation.';
+    if (options.canPickHostTenant && !form.tenantId && !isEvent) {
+      return 'Select a host.';
     }
   }
 
@@ -85,7 +85,7 @@ export const validateActivityFormStep = (
       if (form.sharedAmount <= 0) return 'Enter the shared cost amount.';
     }
     if (form.pricingMode === 'paid') {
-      if (form.price <= 0) return 'Enter the trip price.';
+      if (form.price <= 0) return 'Enter the activity price.';
     }
   }
 
@@ -121,8 +121,8 @@ export const validateActivityFormStepNavigation = (
   const aboutLabel = aboutFieldLabel(options.activityType);
   const aboutWords = countWords(form.description);
 
-  if (isEvent && !form.eventHostOrganization.trim()) {
-    return 'Organisation is required.';
+  if (isEvent && !form.eventHostName.trim()) {
+    return 'Host is required.';
   }
   if (isEvent && !isValidHttpUrl(form.signupUrl)) {
     return 'Enter a valid event URL (https://…).';

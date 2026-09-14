@@ -1,12 +1,28 @@
 import { ActivityDTO, LocationDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import { api } from './services';
 import { CampingSpot, Trail, ActivityListing, CommunityActivitySpot } from '../types';
-import { tripHasPaidPricing } from '../utils/tripPricing';
+import { activityHasPaidPricing } from '../utils/activityPricing';
 
 const mapListingStatus = (event: ActivityDTO): ActivityListing['status'] => {
   if (event.slotsAvailable <= 0) return 'full';
-  if (tripHasPaidPricing(event)) return 'paid';
+  if (activityHasPaidPricing(event)) return 'paid';
   return 'free';
+};
+
+const normalizeStringArray = (value: unknown): string[] | undefined => {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+  }
+  if (typeof value === 'string' && value.trim()) return [value.trim()];
+  return undefined;
+};
+
+const normalizeImages = (value: unknown): string[] | undefined => {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+  }
+  if (typeof value === 'string' && value.trim()) return [value.trim()];
+  return undefined;
 };
 
 export const mapActivityToListing = (event: ActivityDTO): ActivityListing => ({
@@ -25,7 +41,7 @@ export const mapActivityToListing = (event: ActivityDTO): ActivityListing => ({
   hostName: event.hostName,
   hostUserId: event.hostUserId,
   hostAvatar: event.hostAvatar ?? undefined,
-  images: event.images,
+  images: normalizeImages(event.images),
   price: event.price,
   pricePackages: event.pricePackages,
   pricingMode: event.pricingMode ?? undefined,
@@ -35,8 +51,8 @@ export const mapActivityToListing = (event: ActivityDTO): ActivityListing => ({
   participantIds: event.participantPreviews?.map((p) => p.id) ?? [],
   participantPreviews: event.participantPreviews,
   meetingPoint: event.meetingPoint ?? undefined,
-  itinerary: event.itinerary ?? undefined,
-  requirements: event.requirements ?? undefined,
+  itinerary: normalizeStringArray(event.itinerary),
+  requirements: normalizeStringArray(event.requirements),
   latitude: event.displayLatitude ?? event.meetingLat ?? event.startLat ?? event.locationLatitude ?? null,
   longitude: event.displayLongitude ?? event.meetingLng ?? event.startLng ?? event.locationLongitude ?? null
 });
@@ -113,17 +129,21 @@ export const fetchHomeLandingData = async (): Promise<{
   allActivities: ActivityListing[];
 }> => {
   const limit = HOME_LANDING_SECTION_LIMIT;
-  const [popularRes, featuredRes, eventsRes] = await Promise.all([
+  const [popularResult, featuredResult, eventsResult] = await Promise.allSettled([
     api.getPopularLocations(limit),
     api.getFeaturedActivities(limit),
-    api.getPublicActivities()
+    api.getPublicActivities({ when: 'upcoming', pageSize: 100 }),
   ]);
+
+  const popularRes = popularResult.status === 'fulfilled' ? popularResult.value : { data: [] as LocationDTO[] };
+  const featuredRes = featuredResult.status === 'fulfilled' ? featuredResult.value : { data: [] as ActivityDTO[] };
+  const eventsRes = eventsResult.status === 'fulfilled' ? eventsResult.value : { data: [] as ActivityDTO[] };
 
   return {
     popularTrails: popularRes.data.filter((l) => l.activityType === 'hiking').map(mapLocationToTrail).slice(0, limit),
     popularCamps: popularRes.data.filter((l) => l.activityType === 'camping').map(mapLocationToCamp).slice(0, limit),
     featuredActivities: featuredRes.data.map(mapActivityToListing).slice(0, limit),
-    allActivities: eventsRes.data.map(mapActivityToListing)
+    allActivities: eventsRes.data.map(mapActivityToListing),
   };
 };
 

@@ -226,7 +226,7 @@ export const createActivityGroup = async (input: {
   const groupDoc: MongoGroup = {
     _id: groupId,
     type: 'activity',
-    name: input.activityTitle.trim() || 'Trip chat',
+    name: input.activityTitle.trim() || 'Activity chat',
     slogan: null,
     bannerUrl: null,
     photoUrl: null,

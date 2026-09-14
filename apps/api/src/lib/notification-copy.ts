@@ -16,15 +16,15 @@ export const formatWithdrawReasonText = (reason: string, message?: string | null
 export const buildJoinApprovedBody = (organizerNote?: string | null): string => {
   const note = organizerNote?.trim();
   if (note) {
-    return `You're in — join trip chat. From the host: ${note}`;
+    return `You're in — join activity chat. From the host: ${note}`;
   }
-  return "You're in — join trip chat.";
+  return "You're in — join activity chat.";
 };
 
 export const buildJoinRejectedBody = (organizerNote?: string | null): string => {
   const note = organizerNote?.trim();
   if (note) {
-    return `The host couldn't add you to this trip. From the host: ${note}`;
+    return `The host couldn't add you to this activity. From the host: ${note}`;
   }
-  return "The host couldn't fit you on this trip this time.";
+  return "The host couldn't fit you on this activity this time.";
 };

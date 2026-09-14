@@ -72,6 +72,8 @@
       return null;
     }
 
+    let lastTarget = null;
+
     async function render() {
       const target = await resolveTarget();
 
@@ -85,16 +87,22 @@
         return;
       }
 
+      if (target === lastTarget) return;
+      lastTarget = target;
+
       if (isLocal) {
         lead.textContent = 'Using your Wi‑Fi address (not localhost). Scan on the same network.';
       }
 
       link.href = target;
       link.textContent = target;
-      QRCode.toCanvas(canvas, target, { width: 280, margin: 4 });
+      if (typeof QRCode !== 'undefined') {
+        QRCode.toCanvas(canvas, target, { width: 280, margin: 4 });
+      }
     }
 
     void render();
+    setInterval(() => { void render(); }, 5000);
   </script>
 </body>
 </html>

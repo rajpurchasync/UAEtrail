@@ -3,12 +3,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BuddyRequestDTO, BuddySummaryDTO, ChatConversationDTO, MyActivityDTO } from '@uaetrail/shared-types';
 import { api, ActivityRequestView, UserProfile, SocialGroupView } from '../api/services';
 import { useAuth } from '../context/AuthContext';
-import { isUpcomingTrip, todayStart, upcomingTripsTotal } from '../utils/tripDates';
+import { isUpcomingActivity, todayStart, upcomingActivitiesTotal } from '../utils/activityDates';
 
 const participantHubKey = (userId: string) => ['participant-hub', userId] as const;
 
 async function fetchParticipantHub() {
-  const [profileRes, tripsRes, requestsRes, notifRes, convRes, groupsRes, buddiesRes, buddyRequestsRes] =
+  const [profileRes, activitiesRes, requestsRes, notifRes, convRes, groupsRes, buddiesRes, buddyRequestsRes] =
     await Promise.all([
     api.getMeProfile(),
     api.getMeActivities().catch(() => ({ data: [] as MyActivityDTO[] })),
@@ -22,7 +22,7 @@ async function fetchParticipantHub() {
 
   return {
     profile: profileRes.data,
-    trips: tripsRes.data ?? [],
+    activities: activitiesRes.data ?? [],
     requests: requestsRes.data ?? [],
     notifications: notifRes.data?.slice(0, 3) ?? [],
     unreadNotifications: notifRes.unreadCount ?? 0,
@@ -44,7 +44,7 @@ export const useParticipantHubData = () => {
   });
 
   const profile = data?.profile ?? ({} as UserProfile);
-  const trips = data?.trips ?? [];
+  const activities = data?.activities ?? [];
   const requests = data?.requests ?? [];
   const conversations = data?.conversations ?? [];
   const notifications = data?.notifications ?? [];
@@ -71,22 +71,22 @@ export const useParticipantHubData = () => {
     [requests]
   );
 
-  const pastTripsCount = useMemo(
-    () => trips.filter((t) => !isUpcomingTrip(t)).length,
-    [trips]
+  const pastActivitiesCount = useMemo(
+    () => activities.filter((a) => !isUpcomingActivity(a)).length,
+    [activities]
   );
 
-  const upcomingTripsCount = useMemo(
-    () => upcomingTripsTotal(trips, requests),
-    [trips, requests]
+  const upcomingActivitiesCount = useMemo(
+    () => upcomingActivitiesTotal(activities, requests),
+    [activities, requests]
   );
 
-  const upcomingTrip = useMemo(() => {
+  const upcomingActivity = useMemo(() => {
     const today = todayStart();
-    return trips
-      .filter((t) => new Date(t.date) >= today)
+    return activities
+      .filter((a) => new Date(a.date) >= today)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
-  }, [trips]);
+  }, [activities]);
 
   const unreadMessages = useMemo(
     () => conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0),
@@ -100,15 +100,15 @@ export const useParticipantHubData = () => {
   return {
     profile,
     setProfile,
-    trips,
+    activities,
     requests,
     conversations,
     notifications,
     unreadNotifications,
     pendingRequests,
-    pastTripsCount,
-    upcomingTripsCount,
-    upcomingTrip,
+    pastActivitiesCount,
+    upcomingActivitiesCount,
+    upcomingActivity,
     unreadMessages,
     groups,
     buddies,

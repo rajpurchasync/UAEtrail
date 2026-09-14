@@ -25,7 +25,7 @@ const idParamSchema = z.object({ id: z.string().min(1) });
 
 const categoryMap: Record<string, PostCategory> = {
   questions: PostCategory.QUESTIONS,
-  'trip-reports': PostCategory.TRIP_REPORTS,
+  'activity-reports': PostCategory.ACTIVITY_REPORTS,
   photos: PostCategory.PHOTOS,
   tips: PostCategory.TIPS
 };
@@ -210,13 +210,13 @@ socialRouter.post('/reviews', requireAuth, requireVerifiedEmail, validate({ body
 // ─── Community Posts ────────────────────────────────────────────────────────
 
 const postListSchema = paginationSchema.extend({
-  category: z.enum(['questions', 'trip-reports', 'photos', 'tips', 'all']).default('all'),
+  category: z.enum(['questions', 'activity-reports', 'photos', 'tips', 'all']).default('all'),
   locationId: z.string().optional(),
   search: z.string().optional()
 });
 
 const postCreateSchema = z.object({
-  category: z.enum(['questions', 'trip-reports', 'photos', 'tips']),
+  category: z.enum(['questions', 'activity-reports', 'photos', 'tips']),
   title: z.string().min(5).max(200),
   content: z.string().min(10).max(5000),
   images: z.array(z.string()).max(6).default([]),

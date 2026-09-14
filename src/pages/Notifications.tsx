@@ -20,7 +20,7 @@ function rewardMeta(notif: NotificationDTO) {
 }
 
 type NotificationSection =
-  | 'Trip updates'
+  | 'Activity updates'
   | 'Reminders'
   | 'Messages'
   | 'Group chat'
@@ -30,7 +30,7 @@ type NotificationSection =
   | 'Other';
 
 const sectionOrder: NotificationSection[] = [
-  'Trip updates',
+  'Activity updates',
   'Reminders',
   'Messages',
   'Group chat',
@@ -45,7 +45,7 @@ const inferSection = (notif: NotificationDTO): NotificationSection => {
   const kind = typeof meta?.kind === 'string' ? meta.kind.toLowerCase() : '';
   const text = `${notif.title} ${notif.body}`.toLowerCase();
 
-  if (kind.startsWith('join_request') || kind === 'request_withdrawal') return 'Trip updates';
+  if (kind.startsWith('join_request') || kind === 'request_withdrawal') return 'Activity updates';
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') return 'Buddy requests';
   if (kind === 'group_invite' || kind === 'group_invite_accepted' || text.includes('group invite')) return 'Group chat';
   if (kind.includes('group_message') || text.includes('new message in')) return 'Group chat';
@@ -55,7 +55,7 @@ const inferSection = (notif: NotificationDTO): NotificationSection => {
   }
   if (kind.includes('message') || text.includes('message')) return 'Messages';
   if (kind.includes('reminder') || text.includes('reminder')) return 'Reminders';
-  if (notif.type === 'activity' || text.includes('trip') || text.includes('request update')) return 'Trip updates';
+  if (notif.type === 'activity' || text.includes('request update')) return 'Activity updates';
   return 'Other';
 };
 
@@ -137,7 +137,7 @@ export const Notifications = () => {
         <GlassCard padding className="text-center py-12">
           <Bell className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
           <p className="text-neutral-600 font-medium">You&apos;re all caught up</p>
-          <p className="text-sm text-neutral-500 mt-1">Trip updates, messages, and request replies appear here.</p>
+          <p className="text-sm text-neutral-500 mt-1">Activity updates, messages, and request replies appear here.</p>
         </GlassCard>
       ) : (
         <div className="space-y-4">

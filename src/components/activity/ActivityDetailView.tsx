@@ -1,12 +1,19 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Users, ChevronRight, CheckCircle2, Car } from 'lucide-react';
-import type { ActivityDetailDTO, MyTripRequestDTO, TripParticipationDTO } from '@uaetrail/shared-types';
+import type { ActivityDetailDTO, MyActivityRequestDTO, ActivityParticipationDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
-import { formatPackagePrice, inferTripPricingMode, tripPriceLabel, tripPricingBadge, tripPricingModeLabel } from '../../utils/tripPricing';
+import {
+  formatPackagePrice,
+  inferActivityPricingMode,
+  activityPriceLabel,
+  activityPricingBadge,
+  activityPricingModeLabel,
+} from '../../utils/activityPricing';
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../../utils/hostLabels';
 import { resolveOrganisationProfilePath } from '../../utils/organisationLinks';
 import { activityDetailEyebrow } from '../../config/activityTypes';
+import { detailBackPath } from '../../utils/exploreRouting';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import {
@@ -62,12 +69,12 @@ const buildWazeDriveUrl = (lat: number, lng: number): string =>
   `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
 
 export interface ActivityDetailViewProps {
-  trip: ActivityDetailDTO;
+  activity: ActivityDetailDTO;
   previewMode?: boolean;
   backTo?: string;
   backLabel?: string;
-  participation?: TripParticipationDTO | null;
-  myRequest?: MyTripRequestDTO | null;
+  participation?: ActivityParticipationDTO | null;
+  myRequest?: MyActivityRequestDTO | null;
   message?: string | null;
   error?: string | null;
   onJoin?: () => void;
@@ -77,10 +84,10 @@ export interface ActivityDetailViewProps {
 }
 
 export const ActivityDetailView = ({
-  trip,
+  activity,
   previewMode = false,
-  backTo = '/activities',
-  backLabel = 'Activities',
+  backTo = detailBackPath('activity'),
+  backLabel = 'Explore',
   participation = null,
   myRequest = null,
   message = null,
@@ -92,45 +99,47 @@ export const ActivityDetailView = ({
 }: ActivityDetailViewProps) => {
   const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
 
-  const pricePackages = trip.pricePackages?.filter((p) => p.label.trim()) ?? [];
+  const pricePackages = activity.pricePackages?.filter((p) => p.label.trim()) ?? [];
   const hasMultiplePackages = pricePackages.length > 1;
-  const pricingMode = inferTripPricingMode(trip);
-  const pricingBadge = tripPricingBadge(trip);
+  const pricingMode = inferActivityPricingMode(activity);
+  const pricingBadge = activityPricingBadge(activity);
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
 
   const heroImage =
-    trip.images?.[0] ??
-    trip.location?.images?.[0] ??
-    (trip.activityType === 'camping'
+    activity.images?.[0] ??
+    activity.location?.images?.[0] ??
+    (activity.activityType === 'camping'
       ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600'
-      : trip.activityType === 'event'
+      : activity.activityType === 'event'
         ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
         : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
-  const externalSignupUrl = trip.signupUrl?.trim() || null;
+  const externalSignupUrl = activity.signupUrl?.trim() || null;
   const usesExternalSignup = Boolean(externalSignupUrl) && !previewMode;
 
-  const participants = trip.participants ?? [];
+  const participants = activity.participants ?? [];
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
   const hostPath = previewMode
     ? null
     : resolveOrganisationProfilePath({
-        tenantSlug: trip.tenantSlug,
-        hostUserId: activityHostUserId(trip),
+        tenantSlug: activity.tenantSlug,
+        hostUserId: activityHostUserId(activity),
       });
-  const hostProfileHint = trip.tenantSlug ? 'Runs this trip · view organization' : 'Runs this trip · view profile';
-  const isFull = (trip.slotsAvailable ?? 0) <= 0;
+  const hostProfileHint = activity.tenantSlug
+    ? 'Runs this activity · view host profile'
+    : 'Runs this activity · view profile';
+  const isFull = (activity.slotsAvailable ?? 0) <= 0;
   const accessLat =
-    trip.startLat ?? trip.meetingLat ?? trip.parkingLat ?? trip.location?.latitude ?? null;
+    activity.startLat ?? activity.meetingLat ?? activity.parkingLat ?? activity.location?.latitude ?? null;
   const accessLng =
-    trip.startLng ?? trip.meetingLng ?? trip.parkingLng ?? trip.location?.longitude ?? null;
+    activity.startLng ?? activity.meetingLng ?? activity.parkingLng ?? activity.location?.longitude ?? null;
   const hasAccessCoordinates = accessLat != null && accessLng != null;
   const openInGoogleMapsUrl =
-    trip.location?.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
+    activity.location?.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
 
-  const dateRangeLabel = trip.endDate
-    ? `${formatDate(trip.date)} – ${formatDate(trip.endDate)}`
-    : formatDate(trip.date);
+  const dateRangeLabel = activity.endDate
+    ? `${formatDate(activity.date)} – ${formatDate(activity.endDate)}`
+    : formatDate(activity.date);
 
   const joinLabel = usesExternalSignup
     ? 'Sign up / Join'
@@ -242,9 +251,9 @@ export const ActivityDetailView = ({
       footer={joinButton}
       banner={{
         src: heroImage,
-        alt: trip.title || trip.locationName,
-        title: trip.title || trip.locationName,
-        eyebrow: activityDetailEyebrow(trip.activityType),
+        alt: activity.title || activity.locationName,
+        title: activity.title || activity.locationName,
+        eyebrow: activityDetailEyebrow(activity.activityType),
         showMobileChrome: !previewMode,
         showJourney: !previewMode,
         journeyFallbackTo: backTo,
@@ -254,8 +263,8 @@ export const ActivityDetailView = ({
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">About this {trip.activityType === 'event' ? 'event' : 'activity'}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-line">{trip.description}</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">About this {activity.activityType === 'event' ? 'event' : 'activity'}</h2>
+            <p className="text-gray-600 leading-relaxed whitespace-pre-line">{activity.description}</p>
 
             {externalSignupUrl && (
               <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50 px-4 py-3">
@@ -278,37 +287,37 @@ export const ActivityDetailView = ({
               <div className="bg-gray-50 rounded-xl p-3">
                 <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
                 <p className="text-xs text-gray-500">Start</p>
-                <p className="text-sm font-semibold text-gray-900">{formatDate(trip.date)}</p>
+                <p className="text-sm font-semibold text-gray-900">{formatDate(activity.date)}</p>
               </div>
-              {trip.endDate && (
+              {activity.endDate && (
                 <div className="bg-gray-50 rounded-xl p-3">
                   <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
                   <p className="text-xs text-gray-500">End</p>
-                  <p className="text-sm font-semibold text-gray-900">{formatDate(trip.endDate)}</p>
+                  <p className="text-sm font-semibold text-gray-900">{formatDate(activity.endDate)}</p>
                 </div>
               )}
               <div className="bg-gray-50 rounded-xl p-3">
                 <Clock className="w-4 h-4 text-emerald-600 mb-1" />
                 <p className="text-xs text-gray-500">Time</p>
                 <p className="text-sm font-semibold text-gray-900">
-                  {trip.time}
-                  {trip.endTime ? ` – ${trip.endTime}` : ''}
+                  {activity.time}
+                  {activity.endTime ? ` – ${activity.endTime}` : ''}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <Users className="w-4 h-4 text-emerald-600 mb-1" />
                 <p className="text-xs text-gray-500">Spots</p>
                 <p className="text-sm font-semibold text-gray-900">
-                  {trip.slotsAvailable}/{trip.slotsTotal} left
+                  {activity.slotsAvailable}/{activity.slotsTotal} left
                 </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-500 mb-1">Pricing</p>
                 <p className={`text-sm font-semibold inline-flex px-2 py-0.5 rounded-lg ${pricingBadge.bg} ${pricingBadge.text}`}>
-                  {tripPricingModeLabel(trip)}
+                  {activityPricingModeLabel(activity)}
                 </p>
                 {pricingMode !== 'free' && (
-                  <p className="text-sm font-semibold text-gray-900 mt-1">{tripPriceLabel(trip)}</p>
+                  <p className="text-sm font-semibold text-gray-900 mt-1">{activityPriceLabel(activity)}</p>
                 )}
               </div>
             </div>
@@ -335,7 +344,7 @@ export const ActivityDetailView = ({
                           <span className="flex items-center gap-3 min-w-0">
                             <input
                               type="radio"
-                              name="trip-package"
+                              name="activity-package"
                               checked={selectedPackageIndex === index}
                               onChange={() => setSelectedPackageIndex(index)}
                               disabled={previewMode}
@@ -359,30 +368,30 @@ export const ActivityDetailView = ({
               </div>
             )}
 
-            {(trip.startPoint || trip.meetingPoint || trip.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
+            {(activity.startPoint || activity.meetingPoint || activity.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
               <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-start gap-3">
                   <Car className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
                   <div className="space-y-3 w-full">
                     <p className="text-sm font-semibold text-gray-900">Access details</p>
-                    {(trip.startPoint || trip.meetingPoint || trip.parkingPoint) && (
+                    {(activity.startPoint || activity.meetingPoint || activity.parkingPoint) && (
                       <div className="space-y-1 text-sm text-gray-700">
-                        {trip.startPoint && (
+                        {activity.startPoint && (
                           <p>
-                            <span className="font-medium text-gray-900">Hike start point:</span> {trip.startPoint}
+                            <span className="font-medium text-gray-900">Hike start point:</span> {activity.startPoint}
                           </p>
                         )}
-                        {trip.meetingPoint && (
+                        {activity.meetingPoint && (
                           <p>
-                            <span className="font-medium text-gray-900">Meeting point:</span> {trip.meetingPoint}
+                            <span className="font-medium text-gray-900">Meeting point:</span> {activity.meetingPoint}
                             <span className="block text-xs font-normal text-gray-500 mt-0.5">
                               Information only — not a join requirement.
                             </span>
                           </p>
                         )}
-                        {trip.parkingPoint && (
+                        {activity.parkingPoint && (
                           <p>
-                            <span className="font-medium text-gray-900">Parking:</span> {trip.parkingPoint}
+                            <span className="font-medium text-gray-900">Parking:</span> {activity.parkingPoint}
                           </p>
                         )}
                       </div>
@@ -391,7 +400,7 @@ export const ActivityDetailView = ({
                       <MeetingPointMap
                         lat={accessLat}
                         lng={accessLng}
-                        label={trip.meetingPoint ?? trip.parkingPoint ?? trip.locationName}
+                        label={activity.meetingPoint ?? activity.parkingPoint ?? activity.locationName}
                         hideExternalLink
                       />
                     )}
@@ -447,37 +456,37 @@ export const ActivityDetailView = ({
               </div>
             )}
 
-            {trip.carPoolEnabled && (
+            {activity.carPoolEnabled && (
               <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
                 <div className="flex items-start gap-2 text-sm text-gray-700">
                   <Car className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-gray-900">Carpool available</p>
                     <p className="mt-1">
-                      {trip.carPoolSeats != null && trip.carPoolSeats > 0
-                        ? `${trip.carPoolSeats} seat${trip.carPoolSeats === 1 ? '' : 's'} · `
+                      {activity.carPoolSeats != null && activity.carPoolSeats > 0
+                        ? `${activity.carPoolSeats} seat${activity.carPoolSeats === 1 ? '' : 's'} · `
                         : ''}
-                      {trip.carPoolFree
+                      {activity.carPoolFree
                         ? 'Free shared ride'
-                        : trip.carPoolPriceAed != null
-                          ? `AED ${trip.carPoolPriceAed} per seat`
+                        : activity.carPoolPriceAed != null
+                          ? `AED ${activity.carPoolPriceAed} per seat`
                           : 'Shared ride'}
                     </p>
-                    {trip.carPoolDetails && (
-                      <p className="text-gray-600 mt-1 whitespace-pre-line">{trip.carPoolDetails}</p>
+                    {activity.carPoolDetails && (
+                      <p className="text-gray-600 mt-1 whitespace-pre-line">{activity.carPoolDetails}</p>
                     )}
-                    {trip.linkedCarpool && (
+                    {activity.linkedCarpool && (
                       <div className="mt-3 rounded-xl border border-sky-200 bg-white px-3 py-2.5">
                         <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
                           Linked carpool listing
                         </p>
                         <p className="mt-1 text-sm text-gray-800">
-                          {trip.linkedCarpool.meetingPoint && trip.linkedCarpool.startPoint
-                            ? `${trip.linkedCarpool.meetingPoint} → ${trip.linkedCarpool.startPoint}`
-                            : trip.linkedCarpool.title}
+                          {activity.linkedCarpool.meetingPoint && activity.linkedCarpool.startPoint
+                            ? `${activity.linkedCarpool.meetingPoint} → ${activity.linkedCarpool.startPoint}`
+                            : activity.linkedCarpool.title}
                         </p>
                         <Link
-                          to={`/activity/${trip.linkedCarpool.id}`}
+                          to={`/activity/${activity.linkedCarpool.id}`}
                           className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
                         >
                           View carpool details
@@ -490,16 +499,16 @@ export const ActivityDetailView = ({
               </div>
             )}
 
-            {trip.linkedParentActivity && (
+            {activity.linkedParentActivity && (
               <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-gray-700">
                 <p className="font-medium text-gray-900">Linked activity</p>
                 <p className="mt-1">
                   This carpool is offered for{' '}
                   <Link
-                    to={`/activity/${trip.linkedParentActivity.id}`}
+                    to={`/activity/${activity.linkedParentActivity.id}`}
                     className="font-semibold text-emerald-700 hover:text-emerald-800"
                   >
-                    {trip.linkedParentActivity.title}
+                    {activity.linkedParentActivity.title}
                   </Link>
                   .
                 </p>
@@ -507,11 +516,11 @@ export const ActivityDetailView = ({
             )}
           </div>
 
-          {trip.itinerary && trip.itinerary.length > 0 && (
+          {activity.itinerary && activity.itinerary.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Itinerary</h2>
               <ul className="space-y-2">
-                {trip.itinerary.map((item, i) => (
+                {activity.itinerary.map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                     {item}
@@ -522,8 +531,8 @@ export const ActivityDetailView = ({
           )}
 
           {(() => {
-            const mandatoryInstructions = extractJoinInstructionLines(trip.requirements);
-            const otherRequirements = extractNonJoinRequirements(trip.requirements);
+            const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
+            const otherRequirements = extractNonJoinRequirements(activity.requirements);
             return (
               <>
                 {mandatoryInstructions.length > 0 && (
@@ -539,7 +548,7 @@ export const ActivityDetailView = ({
                 )}
                 {otherRequirements.length > 0 && (
                   <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-                    <h2 className="text-lg font-bold text-gray-900 mb-3">Trip details</h2>
+                    <h2 className="text-lg font-bold text-gray-900 mb-3">Activity details</h2>
                     <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
                       {otherRequirements.map((item, i) => (
                         <li key={i}>{item}</li>
@@ -551,11 +560,11 @@ export const ActivityDetailView = ({
             );
           })()}
 
-          {trip.images && trip.images.length > 1 && (
+          {activity.images && activity.images.length > 1 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Photos</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {trip.images.map((img, i) => (
+                {activity.images.map((img, i) => (
                   <img key={i} src={img} alt="" className="rounded-xl aspect-video object-cover" />
                 ))}
               </div>
@@ -567,15 +576,15 @@ export const ActivityDetailView = ({
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-20">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-2xl font-bold text-gray-900">{tripPriceLabel(trip)}</p>
+                <p className="text-2xl font-bold text-gray-900">{activityPriceLabel(activity)}</p>
                 <p className="text-sm text-gray-500">{pricePackages.length > 1 ? 'options available' : 'per person'}</p>
               </div>
               {!previewMode && (
                 <div className="hidden md:block">
                   <ShareButton
-                    title={trip.title || trip.locationName}
-                    text={`${dateRangeLabel} · Join this ${trip.activityType} trip on UAE Trails`}
-                    path={`/activity/${trip.id}`}
+                    title={activity.title || activity.locationName}
+                    text={`${dateRangeLabel} · Join this ${activity.activityType} activity on UAE Trails`}
+                    path={`/activity/${activity.id}`}
                   />
                 </div>
               )}
@@ -592,16 +601,16 @@ export const ActivityDetailView = ({
                 {hostPath ? (
                   <Link to={hostPath} className="flex items-center gap-3 group flex-1 min-w-0">
                     <SecureAvatar
-                      src={activityHostAvatar(trip)}
-                      name={activityHostName(trip)}
+                      src={activityHostAvatar(activity)}
+                      name={activityHostName(activity)}
                       className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-gray-900 group-hover:text-emerald-700 truncate">
-                        {activityHostName(trip)}
+                        {activityHostName(activity)}
                       </p>
-                      {showTenantBrand(trip) && trip.tenantName && (
-                        <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
+                      {showTenantBrand(activity) && activity.tenantName && (
+                        <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
                       )}
                       <p className="text-xs text-gray-500">{hostProfileHint}</p>
                     </div>
@@ -610,23 +619,23 @@ export const ActivityDetailView = ({
                 ) : (
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <SecureAvatar
-                      src={activityHostAvatar(trip)}
-                      name={activityHostName(trip)}
+                      src={activityHostAvatar(activity)}
+                      name={activityHostName(activity)}
                       className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 truncate">{activityHostName(trip)}</p>
-                      {showTenantBrand(trip) && trip.tenantName && (
-                        <p className="text-xs text-gray-500 truncate">{trip.tenantName}</p>
+                      <p className="font-semibold text-gray-900 truncate">{activityHostName(activity)}</p>
+                      {showTenantBrand(activity) && activity.tenantName && (
+                        <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
                       )}
                     </div>
                   </div>
                 )}
                 {!previewMode && (
-                  <HostMessageButton hostUserId={activityHostUserId(trip)} activityId={trip.id} size="md" />
+                  <HostMessageButton hostUserId={activityHostUserId(activity)} activityId={activity.id} size="md" />
                 )}
               </div>
-              {trip.hostBio && <p className="mt-3 text-sm text-gray-600 leading-relaxed">{trip.hostBio}</p>}
+              {activity.hostBio && <p className="mt-3 text-sm text-gray-600 leading-relaxed">{activity.hostBio}</p>}
             </div>
 
             {PARTICIPANT_PRIVACY.showPreJoin && !previewMode && (

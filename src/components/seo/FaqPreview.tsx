@@ -12,7 +12,7 @@ interface FaqPreviewProps {
 export const FaqPreview = ({
   items,
   title = 'Common questions',
-  subtitle = 'Quick answers about trails, trips, and how UAE Trail works',
+  subtitle = 'Quick answers about trails, activities, and how UAE Trail works',
   className = ''
 }: FaqPreviewProps) => (
   <section className={className} aria-labelledby="home-faq-heading">

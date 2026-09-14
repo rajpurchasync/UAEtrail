@@ -10,14 +10,14 @@ export const Faq = () => (
   <>
     <PageMeta
       title="Frequently asked questions"
-      description={`Answers about hiking, camping, and organized outdoor trips in the UAE. ${SITE_DESCRIPTION}`}
+      description={`Answers about hiking, camping, and organized outdoor activities in the UAE. ${SITE_DESCRIPTION}`}
       path="/faq"
     />
     <JsonLd data={faqPageSchema(PLATFORM_FAQ_SECTIONS.flatMap((s) => s.items))} id="platform-faq" />
 
     <ConsumerShell layout="stack" title="FAQ" showJourney={false} back={{ fallbackTo: '/', label: 'Home' }}>
       <p className="mb-4 text-sm leading-relaxed text-neutral-600">
-        Everything you need to know about discovering trails, joining trips, and exploring the outdoors across
+        Everything you need to know about discovering trails, joining activities, and exploring the outdoors across
         the UAE on UAE Trail. Still stuck?{' '}
         <a href="mailto:support@uaetrail.com" className="font-semibold text-emerald-700 hover:underline">
           Email support

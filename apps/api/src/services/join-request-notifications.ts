@@ -11,8 +11,8 @@ export const notifyParticipantJoinRequestSubmitted = async (input: {
   const activity = await findActivityForRequestViewById(input.activityId);
   const title = input.waitlisted ? 'Added to waitlist' : 'Request sent';
   const body = input.waitlisted
-    ? `"${activity?.title ?? 'This trip'}" is full right now — we'll let you know when a spot opens.`
-    : `Your request to join "${activity?.title ?? 'this trip'}" is with the host now.`;
+    ? `"${activity?.title ?? 'This activity'}" is full right now — we'll let you know when a spot opens.`
+    : `Your request to join "${activity?.title ?? 'this activity'}" is with the host now.`;
 
   await dispatchNotification({
     userId: input.userId,
@@ -35,10 +35,10 @@ export const notifyParticipantJoinRequestWithdrawn = async (input: {
   wasConfirmed: boolean;
 }): Promise<void> => {
   const activity = await findActivityForRequestViewById(input.activityId);
-  const title = input.wasConfirmed ? "You've left the trip" : 'Request cancelled';
+  const title = input.wasConfirmed ? "You've left the activity" : 'Request cancelled';
   const body = input.wasConfirmed
-    ? `You withdrew from "${activity?.title ?? 'this trip'}".`
-    : `You cancelled your request to join "${activity?.title ?? 'this trip'}".`;
+    ? `You withdrew from "${activity?.title ?? 'this activity'}".`
+    : `You cancelled your request to join "${activity?.title ?? 'this activity'}".`;
 
   await dispatchNotification({
     userId: input.userId,
