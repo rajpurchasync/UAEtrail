@@ -2,6 +2,7 @@ import { ActivityStatus, ActivityType, MembershipRole, NotificationType, Request
 import { Router } from 'express';
 import { z } from 'zod';
 import { mountActivityRoutes } from '../lib/activity-routes.js';
+import { registerPlaceAlias } from '../lib/route-place-alias.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { randomToken } from '../lib/hash.js';
@@ -983,7 +984,7 @@ tenantActivitiesRouter.delete('/:id/participants/:participantId/checkin', valida
 
 // ─── Location Submission ────────────────────────────────────────────────────
 
-hostRouter.get('/locations', async (req, res, next) => {
+registerPlaceAlias(hostRouter, 'get', '/locations', async (req, res, next) => {
   try {
     const locations = await listSubmittedLocationsByUser(req.auth!.userId);
     res.json({ data: locations.map((l) => toLocationDto(l)) });
@@ -992,7 +993,7 @@ hostRouter.get('/locations', async (req, res, next) => {
   }
 });
 
-hostRouter.post('/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
+registerPlaceAlias(hostRouter, 'post', '/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof locationSubmitBodySchema>;
 

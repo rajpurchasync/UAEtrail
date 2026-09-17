@@ -12,7 +12,7 @@ import { PhoneInput } from '../ui/PhoneInput';
 import { AppSelect } from '../ui/AppSelect';
 import { ImageUpload } from '../ui/ImageUpload';
 import { AppButton } from '../mobile/AppButton';
-import type { LocationPrecision } from '../explore/mobileCreateFlow';
+import type { LocationPrecision } from '../../explore';
 import {
   buildBecomeOrganisationFormPrefill,
   buildHostApplicationPayload,
@@ -37,7 +37,7 @@ import {
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 
 const MobileCreatePlacePicker = lazy(() =>
-  import('../explore/MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
+  import('../../explore/ui/MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
 );
 
 const fieldClass =

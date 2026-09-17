@@ -7,8 +7,8 @@ import { Dialog } from './Dialog';
 export interface WithdrawRequestModalProps {
   open: boolean;
   onClose: () => void;
-  tripTitle: string;
-  tripDate?: string;
+  activityTitle: string;
+  activityDate?: string;
   /** pending vs confirmed wording */
   variant?: 'request' | 'activity';
   submitting?: boolean;
@@ -18,8 +18,8 @@ export interface WithdrawRequestModalProps {
 export const WithdrawRequestModal = ({
   open,
   onClose,
-  tripTitle,
-  tripDate,
+  activityTitle,
+  activityDate,
   variant = 'request',
   submitting = false,
   onConfirm
@@ -33,7 +33,7 @@ export const WithdrawRequestModal = ({
     setReason('');
     setMessage('');
     setError(null);
-  }, [open, tripTitle]);
+  }, [open, activityTitle]);
 
   const title = variant === 'activity' ? 'Leaving this activity?' : 'Cancel your request?';
   const confirmLabel = variant === 'activity' ? 'Yes, withdraw' : 'Yes, cancel';
@@ -66,8 +66,8 @@ export const WithdrawRequestModal = ({
     <Dialog open={open} onClose={handleClose} title={title}>
       <p className="text-sm text-neutral-600 mb-4">
         {variant === 'activity' ? 'You are withdrawing from' : 'You are cancelling your request for'}{' '}
-        <strong>{tripTitle}</strong>
-        {tripDate ? <> on {tripDate}</> : null}.
+        <strong>{activityTitle}</strong>
+        {activityDate ? <> on {activityDate}</> : null}.
       </p>
 
       <label className="block text-sm font-medium text-neutral-700 mb-1.5">

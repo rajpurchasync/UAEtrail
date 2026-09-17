@@ -211,8 +211,8 @@ export const JoinRequestDetail = () => {
       <WithdrawRequestModal
         open={showWithdraw}
         onClose={() => setShowWithdraw(false)}
-        tripTitle={request.activity.title || request.activity.locationName}
-        tripDate={request.activity.date}
+        activityTitle={request.activity.title || request.activity.locationName}
+        activityDate={request.activity.date}
         variant={withdrawVariant}
         submitting={saving}
         onConfirm={handleWithdraw}

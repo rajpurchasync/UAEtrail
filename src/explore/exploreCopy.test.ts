@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildExploreCardModel, buildExploreListMeta } from './exploreCardModel';
 import {
@@ -106,6 +106,15 @@ describe('resolveExploreHostLabel', () => {
 });
 
 describe('exploreHeadline', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-14T10:00:00+04:00'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('uses a real host name instead of demo role labels', () => {
     expect(
       exploreHeadline({
@@ -230,11 +239,11 @@ describe('exploreHeadline', () => {
         title: 'Sunrise run at Kite Beach',
         hostName: 'Fatima Host',
         location: 'Kite Beach running track, Dubai',
-        date: '2026-09-15',
+        date: '2026-10-15',
         time: '06:30',
       })
     ).toBe(
-      'Fatima is looking for Sunrise run at Kite Beach on Tuesday 15th - Kite Beach running track, Dubai - Tue at 6:30 AM (flexible)'
+      'Fatima is looking for Sunrise run at Kite Beach on Thursday 15th - Kite Beach running track, Dubai - Thu at 6:30 AM (flexible)'
     );
   });
 
@@ -245,9 +254,9 @@ describe('exploreHeadline', () => {
         kind: 'event',
         title: 'Looking for an event',
         hostName: 'Fatima Host',
-        date: '2026-09-15',
+        date: '2026-10-15',
       })
-    ).toBe('Fatima is looking for Other Outdoors on Tuesday 15th - Tue (flexible)');
+    ).toBe('Fatima is looking for Other Outdoors on Thursday 15th - Thu (flexible)');
   });
 });
 

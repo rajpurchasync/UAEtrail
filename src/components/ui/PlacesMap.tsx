@@ -9,11 +9,12 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { MAP_CONFIG } from '../../config/platform';
 import { exploreMapPinRingColor } from '../../config/exploreTheme';
-import { resolveMapPinEmoji, MAP_FILTER_EMOJI, HIKING_VENUE_EMOJI, CAMPING_VENUE_EMOJI, CAMPING_ACTIVITY_EMOJI } from '../../explore/exploreCopy';
+import { HIKING_VENUE_EMOJI, CAMPING_VENUE_EMOJI, CAMPING_ACTIVITY_EMOJI, MAP_FILTER_EMOJI } from '../../explore/exploreCopy';
+import { resolveMapPinIconSvg } from '../../explore/mapPinIcons';
 import { MapTileLayers } from './MapTileLayers';
+import type { MapPinKind, MapPinSource } from './mapPinTypes';
 
-export type MapPinKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
-export type MapPinSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+export type { MapPinKind, MapPinSource };
 
 export interface PlaceMapPin {
   id: string;
@@ -93,20 +94,20 @@ const pinIcon = (
   kind: MapPinKind,
   selected: boolean,
   pin: Pick<PlaceMapPin, 'id' | 'source'>,
-  carpoolEndpoint?: 'from' | 'to'
+  _carpoolEndpoint?: 'from' | 'to'
 ): L.DivIcon => {
   const source = resolvePinSource(pin);
-  const emoji = resolveMapPinEmoji(kind, source, carpoolEndpoint);
   const ringColor = exploreMapPinRingColor(kind, source);
   const isVenue = source === 'venue';
   const size = isVenue ? (selected ? 36 : 32) : selected ? 44 : 40;
-  const fontSize = isVenue ? 17 : 21;
+  const iconSize = isVenue ? 15 : 18;
   const ringWidth = selected ? 3 : 2.5;
   const selectedClass = selected ? ' uaetrail-map-pin-marker--selected' : '';
+  const iconSvg = resolveMapPinIconSvg(kind, source, ringColor, iconSize);
 
   return L.divIcon({
     className: 'uaetrail-map-pin',
-    html: `<span class="uaetrail-map-pin-marker${selectedClass}" style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face font-emoji" style="font-size:${fontSize}px;border:${ringWidth}px solid ${ringColor};">${emoji}</span></span>`,
+    html: `<span class="uaetrail-map-pin-marker${selectedClass}" style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face" style="border:${ringWidth}px solid ${ringColor};"><span class="uaetrail-map-pin-icon">${iconSvg}</span></span></span>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     popupAnchor: [0, -size / 2 - 4],
@@ -381,6 +382,7 @@ interface PlacesMapProps {
   exploreMode?: boolean;
   onZoomChange?: (zoom: number) => void;
   tileAttribution?: string;
+  minZoom?: number;
 }
 
 /** Interactive map with location pins anchored to coordinates (Leaflet + OSM/Esri). */
@@ -401,6 +403,7 @@ export const PlacesMap = ({
   exploreMode = false,
   onZoomChange,
   tileAttribution,
+  minZoom,
 }: PlacesMapProps) => {
   const mapBounds = useMemo(() => boundsFromPins(pins, bounds), [pins, bounds]);
   const pinsKeyValue = useMemo(() => pinsKey(pins), [pins]);
@@ -465,15 +468,17 @@ export const PlacesMap = ({
     </Marker>
   );
 
+  const resolvedMinZoom = minZoom ?? (exploreMode ? MAP_CONFIG.exploreMinZoom : 9);
+
   return (
     <div
-      className={`relative overflow-hidden bg-[#e8eef4] ${fill ? '' : 'rounded-2xl border border-emerald-100'} ${className}`}
+      className={`relative overflow-hidden bg-[#2a3441] ${exploreMode ? 'explore-map-rich ' : ''}${fill ? '' : 'rounded-2xl border border-emerald-100'} ${className}`}
       style={fill ? { height: '100%', minHeight: '100%' } : { minHeight }}
     >
       <MapContainer
         center={exploreMode ? exploreCenter : [MAP_CONFIG.defaultCenter.lat, MAP_CONFIG.defaultCenter.lng]}
         zoom={exploreMode ? MAP_CONFIG.exploreDefaultZoom : MAP_CONFIG.defaultZoom}
-        minZoom={9}
+        minZoom={resolvedMinZoom}
         maxZoom={18}
         scrollWheelZoom
         zoomControl={!fill}

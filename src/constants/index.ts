@@ -1,3 +1,5 @@
+import { ADMIN_PLACES_PATH, HOST_PLACES_PATH } from '../config/platform';
+
 export const DIFFICULTY_COLORS = {
   easy: 'bg-green-100 text-green-800',
   moderate: 'bg-yellow-100 text-yellow-800',
@@ -14,7 +16,7 @@ export const HOST_CONSOLE_LINKS = [
   { to: '/host/activities', label: 'Activities' },
   { to: '/host/requests', label: 'Join requests' },
   { to: '/host/team', label: 'Team' },
-  { to: '/host/locations', label: 'Places' },
+  { to: HOST_PLACES_PATH, label: 'Places' },
   { to: '/host/messages', label: 'Messages' },
   { to: '/host/history', label: 'History' },
   { to: '/my-rewards', label: 'Trail Points' },
@@ -28,7 +30,7 @@ export const HOST_DASHBOARD_LINKS = HOST_CONSOLE_LINKS;
 
 export const ADMIN_LINKS = [
   { to: '/admin/overview', label: 'Overview' },
-  { to: '/admin/locations', label: 'Places' },
+  { to: ADMIN_PLACES_PATH, label: 'Places' },
   { to: '/admin/users', label: 'Members' },
   { to: '/admin/hosts', label: 'Hosts' },
   { to: '/admin/activities', label: 'Activities' },

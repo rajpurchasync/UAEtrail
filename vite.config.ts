@@ -22,6 +22,11 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
         },
+        '/health': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
     preview: {

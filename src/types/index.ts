@@ -7,74 +7,10 @@ export type ActivityListingStatus = 'free' | 'paid' | 'full';
 
 export type UAERegion = 'Dubai' | 'RAK' | 'Fujairah' | 'Abu Dhabi' | 'Al Ain' | 'Sharjah';
 
-export interface Trail {
-  id: string;
-  name: string;
-  region: UAERegion;
-  difficulty?: DifficultyLevel;
-  distance?: number;
-  duration?: number;
-  elevation?: number;
-  season?: Season[];
-  childFriendly?: boolean;
-  description: string;
-  images: string[];
-  featured: boolean;
-  latitude?: number | null;
-  longitude?: number | null;
-  parkingLat?: number | null;
-  parkingLng?: number | null;
-  parkingLink?: string;
-  highlights?: string[];
-  surfaceType?: string[];
-  tags?: string[];
-  accessibleBy?: string[];
-}
+export type { Place, PlaceActivityType, PlaceRegion, PlaceAsTrail, PlaceAsCamp, PlaceAsEvent } from './place';
 
-export interface CampingSpot {
-  id: string;
-  name: string;
-  region: UAERegion;
-  campingType?: CampingType;
-  season?: Season[];
-  maxGroupSize?: number;
-  accessibility?: Accessibility;
-  difficulty?: DifficultyLevel;
-  description: string;
-  images: string[];
-  featured: boolean;
-  latitude?: number | null;
-  longitude?: number | null;
-  parkingLat?: number | null;
-  parkingLng?: number | null;
-  parkingLink?: string;
-  highlights?: string[];
-  surfaceType?: string[];
-  tags?: string[];
-  accessibleBy?: string[];
-}
-
-export interface CommunityActivitySpot {
-  id: string;
-  name: string;
-  region: UAERegion;
-  difficulty?: DifficultyLevel;
-  distance?: number;
-  duration?: number;
-  season?: Season[];
-  description: string;
-  images: string[];
-  featured: boolean;
-  latitude?: number | null;
-  longitude?: number | null;
-  parkingLat?: number | null;
-  parkingLng?: number | null;
-  parkingLink?: string;
-  highlights?: string[];
-  surfaceType?: string[];
-  tags?: string[];
-  accessibleBy?: string[];
-}
+/** @deprecated Use {@link Place} with `activityType: 'hiking'`. */
+export type Trail = import('./place').PlaceAsTrail;
 
 export interface ActivityListing {
   id: string;
@@ -108,3 +44,9 @@ export interface ActivityListing {
   latitude?: number | null;
   longitude?: number | null;
 }
+
+/** @deprecated Use {@link Place} with `activityType: 'camping'`. */
+export type CampingSpot = import('./place').PlaceAsCamp;
+
+/** @deprecated Use {@link Place} with `activityType: 'event'`. */
+export type CommunityActivitySpot = import('./place').PlaceAsEvent;

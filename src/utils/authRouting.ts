@@ -1,5 +1,5 @@
 import { UserRole } from '@uaetrail/shared-types';
-import { EXPLORE_MAP_PATH } from '../config/platform';
+import { EXPLORE_MAP_PATH, ADMIN_PLACES_PATH } from '../config/platform';
 import { organisationManagePath } from './organisationPaths';
 import { isPlatformAdmin } from './roles';
 
@@ -56,7 +56,8 @@ export const adminDashboardRedirect = (subpath: string): string => {
     case 'activities':
       return '/admin/activities';
     case 'locations':
-      return '/admin/locations';
+    case 'places':
+      return ADMIN_PLACES_PATH;
     case 'hosts':
     case 'organizers':
       return '/admin/hosts';

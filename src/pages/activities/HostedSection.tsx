@@ -11,6 +11,7 @@ import { OrganisationJoinRequestCard } from '../../components/organisation-conso
 import { OrganisationActivityCheckInPanel } from '../../components/organisation-console/OrganisationActivityCheckInPanel';
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
 import { useOrganisationHubData } from '../../hooks/useOrganisationHubData';
+import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { AppButton } from '../../components/mobile/AppButton';
@@ -37,6 +38,7 @@ export const HostedSection = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const host = useOrganisationHubData();
+  const reloadExploreMap = useReloadExploreMap();
   const { openEdit } = useActivityFormSession();
   const [activityTab, setActivityTab] = useState<ActivityTab>('upcoming');
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
@@ -115,6 +117,7 @@ export const HostedSection = () => {
     setBusyActivityId(event.id);
     try {
       await api.publishOrganisationActivity(host.tenantId, event.id);
+      await reloadExploreMap();
       await host.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish activity');

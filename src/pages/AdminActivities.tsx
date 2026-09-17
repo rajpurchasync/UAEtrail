@@ -3,6 +3,7 @@ import { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types'
 import { api } from '../api/services';
 import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
+import { useReloadExploreMap } from '../hooks/useReloadExploreMap';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import {
@@ -33,6 +34,7 @@ export const AdminActivities = () => {
   const [previewPublishing, setPreviewPublishing] = useState(false);
   const [suspendComment, setSuspendComment] = useState('');
   const { openCreate, openEdit, setOnSaved } = useActivityFormSession();
+  const reloadExploreMap = useReloadExploreMap();
 
   useEffect(() => {
     setOnSaved(() => () => void loadEvents());
@@ -131,6 +133,7 @@ export const AdminActivities = () => {
     if (!event.tenantId) return;
     try {
       await api.publishOrganisationActivity(event.tenantId, event.id);
+      await reloadExploreMap();
       await loadEvents();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish activity');
@@ -189,6 +192,7 @@ export const AdminActivities = () => {
     setPreviewPublishing(true);
     try {
       await api.publishOrganisationActivity(event.tenantId, event.id);
+      await reloadExploreMap();
       setPreviewActivity(null);
       await loadEvents();
     } catch (err) {

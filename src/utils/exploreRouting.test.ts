@@ -6,6 +6,7 @@ import {
   explorePlacesPath,
   exploreShopsPath,
   myActivitiesPath,
+  parseFulfillIntentMapItemId,
 } from './exploreRouting';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 
@@ -25,6 +26,16 @@ describe('exploreRouting navigation contract', () => {
     expect(explorePlacesPath()).toBe('/explore?panel=venues');
     expect(exploreShopsPath()).toBe('/explore?filter=shops&panel=shops');
     expect(exploreActivitiesPath({ list: true })).toBe('/explore?list=1');
+  });
+
+  it('fulfillIntent query param supersedes legacy hostDemand', () => {
+    expect(explorePath({ fulfillIntent: 'demand:abc' })).toBe('/explore?fulfillIntent=demand%3Aabc');
+    expect(explorePath({ hostDemand: 'demand:legacy' })).toBe('/explore?fulfillIntent=demand%3Alegacy');
+
+    const legacy = new URLSearchParams('hostDemand=demand%3Aold');
+    const canonical = new URLSearchParams('fulfillIntent=demand%3Anew');
+    expect(parseFulfillIntentMapItemId(legacy)).toBe('demand:old');
+    expect(parseFulfillIntentMapItemId(canonical)).toBe('demand:new');
   });
 
   it('myActivitiesPath targets personal hub tabs', () => {

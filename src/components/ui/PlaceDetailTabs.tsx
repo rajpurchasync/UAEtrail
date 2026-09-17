@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Car, MapPin, Mountain, TrendingUp, Clock, Map } from 'lucide-react';
-import { ActivityType, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
+import { Car, MapPin, Mountain, TrendingUp, Clock, Map, Download, Lock, Loader2 } from 'lucide-react';
+import { ActivityType, LocationPremiumSummaryDTO, PremiumAccessReason } from '@uaetrail/shared-types';
 import { MeetingPointMap } from './MeetingPointMap';
 import { capitalize } from '../../utils';
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../api/services';
+import { AppButton } from '../mobile/AppButton';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden>
@@ -42,6 +44,30 @@ const buildGoogleMapsSearchUrl = (lat: number, lng: number): string =>
 const buildWazeDriveUrl = (lat: number, lng: number): string =>
   `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
 
+const triggerBlobDownload = (blob: Blob, filename: string): void => {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+};
+
+const premiumAccessLabel = (reason: PremiumAccessReason): string => {
+  switch (reason) {
+    case 'pro':
+      return 'Included with Pro membership';
+    case 'goat':
+      return 'Included with GOAT membership';
+    case 'admin':
+      return 'Admin access';
+    case 'unlocked':
+      return 'Unlocked for this place';
+    default:
+      return '';
+  }
+};
+
 export type LocationTab = 'overview' | 'location' | 'guide';
 
 export interface PlaceDetailData {
@@ -74,6 +100,8 @@ interface PlaceDetailTabsProps {
   locationId?: string;
   premium?: LocationPremiumSummaryDTO | null;
   onPremiumChange?: (premium: LocationPremiumSummaryDTO) => void;
+  unlockNotice?: string | null;
+  onDismissUnlockNotice?: () => void;
 }
 
 const accentStyles = {
@@ -97,15 +125,27 @@ const accentStyles = {
 export const PlaceDetailTabs = ({
   data,
   accent = 'emerald',
-  placeId: _placeId,
-  locationId: _legacyPlaceId,
-  premium: _premium,
-  onPremiumChange: _onPremiumChange,
+  placeId,
+  locationId,
+  premium,
+  onPremiumChange,
+  unlockNotice,
+  onDismissUnlockNotice,
 }: PlaceDetailTabsProps) => {
   const [activeTab, setActiveTab] = useState<LocationTab>('overview');
+  const [guideMarkdown, setGuideMarkdown] = useState<string | null>(null);
+  const [guideLoading, setGuideLoading] = useState(false);
+  const [guideError, setGuideError] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [mapDownloading, setMapDownloading] = useState(false);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
   const { user } = useAuth();
   const { pathname } = useLocation();
   const styles = accentStyles[accent];
+  const resolvedPlaceId = placeId ?? locationId;
+  const hasPremiumContent = Boolean(premium?.hasPremium);
+  const isPremiumUnlocked = Boolean(premium?.isUnlocked);
   const showTrailStats = data.activityType === 'hiking' || data.activityType === 'event';
   const isCamping = data.activityType === 'camping';
   const signInHref = `/signin?redirect=${encodeURIComponent(pathname)}`;
@@ -145,6 +185,97 @@ export const PlaceDetailTabs = ({
     (data.accessibleBy && data.accessibleBy.length > 0) ||
     (data.tags && data.tags.length > 0);
 
+  useEffect(() => {
+    if (unlockNotice?.toLowerCase().includes('unlocked')) {
+      setActiveTab('guide');
+    }
+  }, [unlockNotice]);
+
+  useEffect(() => {
+    if (activeTab !== 'guide' || !resolvedPlaceId || !isPremiumUnlocked || !premium?.hasGuide) {
+      return;
+    }
+
+    let cancelled = false;
+    setGuideLoading(true);
+    setGuideError(null);
+
+    api
+      .getPlaceGuide(resolvedPlaceId)
+      .then((response) => {
+        if (!cancelled) {
+          setGuideMarkdown(response.data.markdown);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setGuideError(err instanceof Error ? err.message : 'Could not load guide');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setGuideLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, resolvedPlaceId, isPremiumUnlocked, premium?.hasGuide]);
+
+  const handleUnlock = async () => {
+    if (!resolvedPlaceId || !user) return;
+    setCheckoutLoading(true);
+    setActionError(null);
+    try {
+      const response = await api.checkoutPlacePremium(resolvedPlaceId);
+      if (response.data.url) {
+        window.location.href = response.data.url;
+        return;
+      }
+      if (response.data.premium && onPremiumChange) {
+        onPremiumChange(response.data.premium);
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Checkout failed');
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  const handleDownloadRouteMap = async () => {
+    if (!resolvedPlaceId) return;
+    setMapDownloading(true);
+    setActionError(null);
+    try {
+      const { blob, filename } = await api.downloadPlaceRouteMap(resolvedPlaceId);
+      triggerBlobDownload(blob, filename);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Route map download failed');
+    } finally {
+      setMapDownloading(false);
+    }
+  };
+
+  const handleDownloadGuidePdf = async () => {
+    if (!resolvedPlaceId) return;
+    setPdfDownloading(true);
+    setActionError(null);
+    try {
+      const { blob, filename } = await api.downloadPlaceGuidePdf(resolvedPlaceId);
+      triggerBlobDownload(blob, filename);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Guide PDF download failed');
+    } finally {
+      setPdfDownloading(false);
+    }
+  };
+
+  const unlockPriceLabel =
+    premium && premium.unlockPriceAed > 0
+      ? `Unlock for AED ${premium.unlockPriceAed}`
+      : 'Unlock free guide';
+
   return (
     <>
       <div className="border-b mt-8">
@@ -157,9 +288,11 @@ export const PlaceDetailTabs = ({
           </button>
           <button type="button" onClick={() => setActiveTab('guide')} className={tabClass('guide')}>
             Guided information
-            <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-              Coming SOON
-            </span>
+            {hasPremiumContent && !isPremiumUnlocked ? (
+              <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                Premium
+              </span>
+            ) : null}
           </button>
         </nav>
       </div>
@@ -441,14 +574,121 @@ export const PlaceDetailTabs = ({
       )}
 
       {activeTab === 'guide' && (
-        <div className="py-6 mt-4">
-          <div className="rounded-2xl border border-amber-100 bg-amber-50/60 px-6 py-10 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700 mb-2">Coming SOON</p>
-            <h3 className="text-base font-semibold text-neutral-900">Guided information</h3>
-            <p className="text-sm text-neutral-600 mt-2 max-w-md mx-auto leading-relaxed">
-              GPX routes, trail guides, camp setup notes, and guide-on-call are on the way for {data.name}.
-            </p>
-          </div>
+        <div className="py-6 mt-4 space-y-4">
+          {unlockNotice ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 flex items-start justify-between gap-3">
+              <p>{unlockNotice}</p>
+              {onDismissUnlockNotice ? (
+                <button
+                  type="button"
+                  onClick={onDismissUnlockNotice}
+                  className="shrink-0 text-xs font-semibold text-emerald-700 hover:text-emerald-900"
+                >
+                  Dismiss
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {!hasPremiumContent ? (
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-6 py-10 text-center">
+              <h3 className="text-base font-semibold text-neutral-900">Guided information</h3>
+              <p className="text-sm text-neutral-600 mt-2 max-w-md mx-auto leading-relaxed">
+                No premium route map or guide has been published for {data.name} yet.
+              </p>
+            </div>
+          ) : !user ? (
+            <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 px-6 py-12 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                <Lock className="h-7 w-7" strokeWidth={2} aria-hidden />
+              </div>
+              <p className="text-sm text-neutral-600 leading-relaxed max-w-sm mx-auto">
+                <Link to={signInHref} className={`font-bold ${styles.link}`}>
+                  Sign in
+                </Link>{' '}
+                to preview and unlock route maps and guides for this place.
+              </p>
+            </div>
+          ) : isPremiumUnlocked ? (
+            <>
+              {premium?.accessReason && premium.accessReason !== 'locked' ? (
+                <p className="text-xs font-medium text-emerald-700">{premiumAccessLabel(premium.accessReason)}</p>
+              ) : null}
+
+              <div className="flex flex-wrap gap-2">
+                {premium?.hasRouteMap ? (
+                  <AppButton
+                    type="button"
+                    variant="secondary"
+                    onClick={handleDownloadRouteMap}
+                    disabled={mapDownloading}
+                    className="inline-flex items-center gap-2"
+                  >
+                    {mapDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                    Download route map
+                  </AppButton>
+                ) : null}
+                {premium?.hasGuidePdf ? (
+                  <AppButton
+                    type="button"
+                    variant="secondary"
+                    onClick={handleDownloadGuidePdf}
+                    disabled={pdfDownloading}
+                    className="inline-flex items-center gap-2"
+                  >
+                    {pdfDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                    Download guide PDF
+                  </AppButton>
+                ) : null}
+              </div>
+
+              {guideLoading ? (
+                <div className="flex items-center justify-center py-10 text-neutral-500">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  Loading guide…
+                </div>
+              ) : guideError ? (
+                <p className="text-sm text-red-600">{guideError}</p>
+              ) : guideMarkdown?.trim() ? (
+                <div className="rounded-2xl border border-neutral-200 bg-white px-5 py-4">
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Trail guide</h3>
+                  <div className="text-sm text-neutral-700 leading-relaxed whitespace-pre-wrap">{guideMarkdown}</div>
+                </div>
+              ) : premium?.hasGuide ? (
+                <p className="text-sm text-neutral-500">Guide content is not available right now.</p>
+              ) : null}
+            </>
+          ) : (
+            <div className="rounded-2xl border border-amber-100 bg-amber-50/60 px-6 py-8">
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                  <Lock className="h-5 w-5" aria-hidden />
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-neutral-900">Unlock guided information</h3>
+                    <p className="text-sm text-neutral-600 mt-1 leading-relaxed">
+                      Get the GPX route map and full guide for {data.name}.
+                      {premium?.unlockPriceAed === 0
+                        ? ' This guide is free once you unlock it.'
+                        : ' Pro and GOAT members get access included.'}
+                    </p>
+                  </div>
+
+                  {premium?.guidePreview ? (
+                    <p className="text-sm text-neutral-700 italic border-l-2 border-amber-300 pl-3">{premium.guidePreview}</p>
+                  ) : null}
+
+                  <AppButton type="button" onClick={handleUnlock} disabled={checkoutLoading} className="inline-flex items-center gap-2">
+                    {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    {unlockPriceLabel}
+                  </AppButton>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {actionError ? <p className="text-sm text-red-600">{actionError}</p> : null}
         </div>
       )}
     </>

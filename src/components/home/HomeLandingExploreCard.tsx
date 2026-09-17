@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreCardModel, buildExploreListMeta } from '../../explore/exploreCardModel';
+import { buildExploreCardModel, buildExploreListMeta } from '../../explore';
 import { EnvironmentImage } from '../ui/EnvironmentImage';
 import {
   ExploreCardDetailList,
@@ -8,7 +8,7 @@ import {
   ExploreCardRatingRow,
   ExploreCardTypeBadge,
   ExploreVenueImageBadges,
-} from '../explore/ExploreCardPresentation';
+} from '../../explore';
 
 interface HomeLandingExploreCardProps {
   item: ExploreMapItemDTO;

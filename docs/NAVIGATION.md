@@ -19,6 +19,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, `/shop`, bare `/activitie
 | Explore URLs | `explorePath()`, `exploreActivitiesPath()`, `explorePlacesPath()`, `exploreShopsPath()` | `src/utils/exploreRouting.ts` |
 | Back from detail | `detailBackPath(kind)` | `src/utils/exploreRouting.ts` |
 | My activities hub | `myActivitiesPath('joined' \| 'hosted')` | `src/utils/exploreRouting.ts` |
+| Fulfill participant intent (return from auth) | `explorePath({ fulfillIntent })`, `exploreFulfillIntentReturnPath()` | `src/utils/exploreRouting.ts` |
 | Platform nav constants | `EXPLORE_MAP_PATH`, `joinAuthPath()` | `src/config/platform.ts` |
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |

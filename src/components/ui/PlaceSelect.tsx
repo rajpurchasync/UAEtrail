@@ -56,7 +56,7 @@ export const PlaceSelect = ({
     }
     try {
       const [publicRes, pendingRes] = await Promise.all([
-        api.getPublicLocations(),
+        api.getPublicPlaces(),
         tenantId ? api.getHostSubmittedPlaces(tenantId) : Promise.resolve({ data: [] as PlaceDTO[] }),
       ]);
       setActiveLocations(publicRes.data);

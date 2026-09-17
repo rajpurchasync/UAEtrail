@@ -10,12 +10,15 @@ import { EmojiPickerButton } from './EmojiPickerButton';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 
 interface ReviewSectionProps {
-  targetType: 'location' | 'tenant';
+  targetType: 'location' | 'tenant' | 'place';
   targetId: string;
   reviews: ReviewDTO[];
   onReviewSubmitted: (review: ReviewDTO) => void;
   accent?: 'emerald' | 'amber' | 'violet';
 }
+
+const reviewWireTargetType = (targetType: ReviewSectionProps['targetType']): 'location' | 'tenant' =>
+  targetType === 'place' ? 'location' : targetType;
 
 export const ReviewSection = ({
   targetType,
@@ -77,7 +80,7 @@ export const ReviewSection = ({
     setError(null);
     try {
       const res = await api.createReview({
-        targetType,
+        targetType: reviewWireTargetType(targetType),
         targetId,
         rating,
         comment: comment.trim(),

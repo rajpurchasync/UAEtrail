@@ -60,7 +60,8 @@ describe('auth routing by role', () => {
   it('maps admin dashboard aliases', () => {
     expect(adminDashboardRedirect('users')).toBe('/admin/users');
     expect(adminDashboardRedirect('activities')).toBe('/admin/activities');
-    expect(adminDashboardRedirect('locations')).toBe('/admin/locations');
+    expect(adminDashboardRedirect('locations')).toBe('/admin/places');
+    expect(adminDashboardRedirect('places')).toBe('/admin/places');
     expect(adminDashboardRedirect('hosts')).toBe('/admin/hosts');
     expect(adminDashboardRedirect('organizers')).toBe('/admin/hosts');
     expect(adminDashboardRedirect('groups')).toBe('/admin/groups');

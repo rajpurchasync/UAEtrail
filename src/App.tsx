@@ -9,7 +9,7 @@ import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authRetur
 import { ActivityFormSessionProvider } from './context/ActivityFormSessionContext';
 import { Home } from './pages/Home';
 import { Membership } from './pages/Membership';
-import { MobileExploreExperience } from './components/explore/MobileExploreExperience';
+import { MobileExploreExperience } from './explore';
 import { EXPLORE_MAP_PATH } from './config/platform';
 import { discoveryToExploreSearch, explorePath, parseActivityListFilter } from './utils/exploreRouting';
 import { organisationManagePath } from './utils/organisationPaths';
@@ -373,13 +373,14 @@ function App() {
             }
           />
           <Route
-            path="/admin/locations"
+            path="/admin/places"
             element={
               <ProtectedRoute roles={['platform_admin']}>
                 <AdminPlaces />
               </ProtectedRoute>
             }
           />
+          <Route path="/admin/locations" element={<Navigate to="/admin/places" replace />} />
           <Route
             path="/admin/organizers"
             element={<Navigate to="/admin/hosts" replace />}
@@ -505,13 +506,14 @@ function App() {
             }
           />
           <Route
-            path="/host/locations"
+            path="/host/places"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OrganisationPlaces />
               </ProtectedRoute>
             }
           />
+          <Route path="/host/locations" element={<Navigate to="/host/places" replace />} />
           <Route
             path="/host/history"
             element={

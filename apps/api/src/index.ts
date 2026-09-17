@@ -73,9 +73,15 @@ const startWithRetry = async () => {
         process.exit(1);
       }
 
+      const message = error instanceof Error ? error.message : String(error);
+      const mongoHint =
+        /mongo|27017|server selection|ETIMEDOUT|ENOTFOUND/i.test(message)
+          ? ' — MongoDB unreachable. Allow your IP in Atlas Network Access, or run local Mongo: docker compose --profile local-mongo up -d mongo'
+          : '';
+
       logger.error(
         { err: error, retryInMs: STARTUP_RETRY_DELAY_MS },
-        'api startup failed in development; retrying'
+        `api startup failed in development; retrying${mongoHint}`
       );
       await new Promise((resolve) => setTimeout(resolve, STARTUP_RETRY_DELAY_MS));
     }

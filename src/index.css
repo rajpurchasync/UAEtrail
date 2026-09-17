@@ -316,7 +316,7 @@
 
   /* Home landing hero — height follows content + notch; avoids fixed rem on all phones */
   .home-landing-hero-mobile {
-    min-height: calc(var(--safe-top) + 15.75rem);
+    min-height: calc(var(--safe-top) + 12.5rem);
   }
 
   .pb-nav-safe {
@@ -461,12 +461,16 @@
   }
 
   .leaflet-container {
-    background: #e8eef4;
+    background: #2a3441;
     font-family: inherit;
   }
 
   .leaflet-tile-pane img {
     image-rendering: auto;
+  }
+
+  .explore-map-rich .leaflet-tile-pane {
+    filter: saturate(1.1) contrast(1.05);
   }
 
   .uaetrail-map-pin {
@@ -489,9 +493,20 @@
     background: #fff;
     line-height: 1;
     box-shadow:
-      inset 0 0 0 1px rgba(148, 163, 184, 0.55),
-      0 4px 14px rgba(15, 23, 42, 0.18),
-      0 1px 3px rgba(15, 23, 42, 0.1);
+      inset 0 0 0 1px rgba(148, 163, 184, 0.45),
+      0 4px 14px rgba(15, 23, 42, 0.16),
+      0 1px 3px rgba(15, 23, 42, 0.08);
+  }
+
+  .uaetrail-map-pin-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+  }
+
+  .uaetrail-map-pin-icon svg {
+    display: block;
   }
 
   .uaetrail-map-pin-marker--selected {
@@ -554,19 +569,17 @@
     justify-content: center;
     box-sizing: border-box;
     border-radius: 9999px;
-    background: #fff;
-    border: 2.5px solid #059669;
-    color: #111827;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 13px;
+    background: #059669;
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
     font-weight: 700;
     line-height: 1;
     font-variant-numeric: tabular-nums;
     text-align: center;
     box-shadow:
-      inset 0 0 0 1px rgba(148, 163, 184, 0.55),
-      0 4px 14px rgba(15, 23, 42, 0.18),
-      0 1px 3px rgba(15, 23, 42, 0.1);
+      0 4px 14px rgba(5, 150, 105, 0.35),
+      0 1px 3px rgba(15, 23, 42, 0.12);
   }
 
   .marker-cluster-small,

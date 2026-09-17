@@ -29,14 +29,30 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const getStoredUser = (): AuthUser | null => {
-  const raw = localStorage.getItem(USER_STORAGE_KEY);
-  if (!raw) return null;
+const parseStoredUser = (raw: string): AuthUser | null => {
   try {
-    return JSON.parse(raw) as AuthUser;
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (typeof parsed.id !== 'string' || typeof parsed.email !== 'string' || typeof parsed.role !== 'string') {
+      return null;
+    }
+
+    return {
+      id: parsed.id,
+      email: parsed.email,
+      role: parsed.role as AuthUser['role'],
+      displayName: typeof parsed.displayName === 'string' ? parsed.displayName : undefined,
+      avatarUrl: typeof parsed.avatarUrl === 'string' ? parsed.avatarUrl : undefined,
+      switchedFromRole: typeof parsed.switchedFromRole === 'string' ? parsed.switchedFromRole : null,
+    };
   } catch {
     return null;
   }
+};
+
+const getStoredUser = (): AuthUser | null => {
+  const raw = localStorage.getItem(USER_STORAGE_KEY);
+  if (!raw) return null;
+  return parseStoredUser(raw);
 };
 
 const setStoredUser = (user: AuthUser | null): void => {
@@ -80,8 +96,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: profile.id,
           email: profile.email,
           role: profile.role as AuthUser['role'],
-          displayName: profile.displayName,
-          avatarUrl: profile.avatarUrl,
+          displayName: typeof profile.displayName === 'string' ? profile.displayName : undefined,
+          avatarUrl: typeof profile.avatarUrl === 'string' ? profile.avatarUrl : undefined,
           switchedFromRole: profile.switchedFromRole ?? null,
         };
         setStoredUser(revalidatedUser);
@@ -107,8 +123,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Role comes from the login response (token), not the profile endpoint — avoids stale DB reads
       return {
         ...fallback,
-        displayName: profile.displayName,
-        avatarUrl: profile.avatarUrl,
+        displayName: typeof profile.displayName === 'string' ? profile.displayName : fallback.displayName,
+        avatarUrl: typeof profile.avatarUrl === 'string' ? profile.avatarUrl : undefined,
         switchedFromRole: profile.switchedFromRole ?? null,
       };
     } catch {

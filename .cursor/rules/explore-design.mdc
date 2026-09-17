@@ -1,6 +1,6 @@
 ---
 description: Explore map UI — shapes, colors, sheets, and form controls
-globs: src/components/explore/**/*,src/config/exploreTheme.ts,src/explore/**/*
+globs: src/explore/ui/**/*,src/config/exploreTheme.ts,src/explore/**/*
 alwaysApply: false
 ---
 

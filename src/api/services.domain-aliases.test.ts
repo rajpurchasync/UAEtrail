@@ -12,6 +12,30 @@ describe('api domain aliases (Phase 1)', () => {
     expect(typeof api.deleteAdminPlace).toBe('function');
   });
 
+  it('exposes public place browse aliases alongside legacy location methods', () => {
+    expect(typeof api.getPublicPlaces).toBe('function');
+    expect(typeof api.getPublicLocations).toBe('function');
+    expect(typeof api.getPublicPlaceDetail).toBe('function');
+    expect(typeof api.getPublicLocationDetail).toBe('function');
+    expect(typeof api.getPopularPlaces).toBe('function');
+    expect(typeof api.getPopularLocations).toBe('function');
+    expect(typeof api.trackPlaceView).toBe('function');
+    expect(typeof api.trackLocationView).toBe('function');
+    expect(typeof api.getPlaceActivities).toBe('function');
+    expect(typeof api.getLocationActivities).toBe('function');
+    expect(typeof api.checkoutPlacePremium).toBe('function');
+    expect(typeof api.checkoutLocationPremium).toBe('function');
+    expect(typeof api.getPlaceGuide).toBe('function');
+    expect(typeof api.getLocationGuide).toBe('function');
+  });
+
+  it('exposes place review aliases alongside legacy location review methods', () => {
+    expect(typeof api.getPlaceReviews).toBe('function');
+    expect(typeof api.getReviews).toBe('function');
+    expect(typeof api.createPlaceReview).toBe('function');
+    expect(typeof api.createReview).toBe('function');
+  });
+
   it('exposes host place submission aliases alongside legacy methods', () => {
     expect(typeof api.submitPlace).toBe('function');
     expect(typeof api.submitLocation).toBe('function');

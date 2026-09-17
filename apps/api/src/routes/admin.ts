@@ -41,7 +41,7 @@ import {
   listAuditLogsPaged,
   listBroadcastNotificationAuditLogs,
   listActivitiesForAdminRequests,
-  listActivitiesForAdminTrips,
+  listActivitiesForAdminByIds,
   listUserHostedActivitiesBasic,
   listOwnerTenantTypes,
   listTenantMembershipsForUser,
@@ -593,7 +593,7 @@ adminRouter.get('/metrics', async (_req, res, next) => {
         totalLocations: metrics.totalLocations,
         totalParticipants,
         totalHosts,
-        activeTrips: metrics.activeTrips,
+        activeActivities: metrics.activeActivities,
         totalGroups
       }
     });
@@ -748,7 +748,7 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
         ? listActivitiesForAdminRequests(requestEventIds)
         : Promise.resolve([]),
       participantEventIds.length > 0
-        ? listActivitiesForAdminTrips(participantEventIds)
+        ? listActivitiesForAdminByIds(participantEventIds)
         : Promise.resolve([])
     ]);
     const requestEventMap = new Map(requestEvents.map((event) => [event.id, event]));

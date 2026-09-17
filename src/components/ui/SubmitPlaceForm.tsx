@@ -128,7 +128,7 @@ export const SubmitPlaceForm = ({
     setSearchLoading(true);
     setError(null);
     try {
-      const res = await api.getPublicLocations();
+      const res = await api.getPublicPlaces();
       const q = searchQuery.trim().toLowerCase();
       const matches = (res.data ?? []).filter((loc) => {
         if (!q) return true;

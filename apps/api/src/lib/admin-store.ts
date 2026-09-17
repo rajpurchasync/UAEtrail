@@ -460,7 +460,7 @@ export const toggleAdminEventFeatured = async (id: string, featured: boolean) =>
 };
 
 export const countAdminMetrics = async (now: Date) => {
-  const [tenantCount, activityCount, pendingApplications, totalLocations, activeTrips] = await Promise.all([
+  const [tenantCount, activityCount, pendingApplications, totalLocations, activeActivities] = await Promise.all([
     tenantsCollection().countDocuments({ status: TenantStatus.ACTIVE }),
     activitiesCollection().countDocuments({}),
     organizerApplicationsCollection().countDocuments({ status: 'PENDING' }),
@@ -468,7 +468,7 @@ export const countAdminMetrics = async (now: Date) => {
     activitiesCollection().countDocuments({ status: ActivityStatus.PUBLISHED, startAt: { $gte: now } })
   ]);
 
-  return { tenantCount, activityCount, pendingApplications, totalLocations, activeTrips };
+  return { tenantCount, activityCount, pendingApplications, totalLocations, activeActivities };
 };
 
 export const listOwnerTenantTypes = async (ownerIds: string[]) => {
@@ -524,7 +524,7 @@ export const listActivitiesForAdminRequests = async (eventIds: string[]) => {
   }));
 };
 
-export const listActivitiesForAdminTrips = async (eventIds: string[]) => {
+export const listActivitiesForAdminByIds = async (eventIds: string[]) => {
   if (eventIds.length === 0) return [];
 
   const docs = await activitiesCollection().find({ _id: { $in: eventIds } }).toArray();

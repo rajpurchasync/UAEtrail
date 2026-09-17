@@ -721,8 +721,8 @@ export const ActivityDetail = () => {
       <WithdrawRequestModal
         open={showWithdraw}
         onClose={() => setShowWithdraw(false)}
-        tripTitle={activity.title || activity.locationName}
-        tripDate={activity.date}
+        activityTitle={activity.title || activity.locationName}
+        activityDate={activity.date}
         variant={withdrawModalVariant(joinUiState)}
         submitting={withdrawing}
         onConfirm={handleWithdraw}

@@ -14,7 +14,7 @@ export type ProfileViewerAccessLevel =
   | 'public'
   | 'group_member'
   | 'accepted_buddy'
-  | 'trip_participant'
+  | 'activity_participant'
   | 'host_of_activity'
   | 'platform_admin'
   | 'denied';
@@ -26,7 +26,7 @@ export type ProfileViewerAccessResult = {
   /** Shared friends/family social group. */
   sharesGroup: boolean;
   /** Accepted co-participants on the same published activity. */
-  sharesAcceptedTrip: boolean;
+  sharesAcceptedActivity: boolean;
 };
 
 const HOST_ORGANIZER_ROLES: MembershipRole[] = [
@@ -91,7 +91,7 @@ export const resolveProfileViewerAccess = async (input: {
       level: 'platform_admin',
       canViewFullProfile: true,
       sharesGroup: true,
-      sharesAcceptedTrip: true,
+      sharesAcceptedActivity: true,
     };
   }
 
@@ -100,11 +100,11 @@ export const resolveProfileViewerAccess = async (input: {
       level: 'self',
       canViewFullProfile: true,
       sharesGroup: true,
-      sharesAcceptedTrip: true,
+      sharesAcceptedActivity: true,
     };
   }
 
-  const [sharesGroup, sharesBuddy, hostOfActivity, sharesAcceptedTrip] = await Promise.all([
+  const [sharesGroup, sharesBuddy, hostOfActivity, sharesAcceptedActivity] = await Promise.all([
     viewerUserId ? usersShareActiveGroup(viewerUserId, targetUserId) : Promise.resolve(false),
     viewerUserId ? areAcceptedBuddies(viewerUserId, targetUserId) : Promise.resolve(false),
     viewerUserId
@@ -120,7 +120,7 @@ export const resolveProfileViewerAccess = async (input: {
       level: 'host_of_activity',
       canViewFullProfile: true,
       sharesGroup,
-      sharesAcceptedTrip,
+      sharesAcceptedActivity,
     };
   }
 
@@ -129,7 +129,7 @@ export const resolveProfileViewerAccess = async (input: {
       level: 'public',
       canViewFullProfile: true,
       sharesGroup,
-      sharesAcceptedTrip,
+      sharesAcceptedActivity,
     };
   }
 
@@ -138,7 +138,7 @@ export const resolveProfileViewerAccess = async (input: {
       level: 'group_member',
       canViewFullProfile: true,
       sharesGroup: true,
-      sharesAcceptedTrip,
+      sharesAcceptedActivity,
     };
   }
 
@@ -147,16 +147,16 @@ export const resolveProfileViewerAccess = async (input: {
       level: 'accepted_buddy',
       canViewFullProfile: true,
       sharesGroup,
-      sharesAcceptedTrip,
+      sharesAcceptedActivity,
     };
   }
 
-  if (sharesAcceptedTrip) {
+  if (sharesAcceptedActivity) {
     return {
-      level: 'trip_participant',
+      level: 'activity_participant',
       canViewFullProfile: true,
       sharesGroup,
-      sharesAcceptedTrip: true,
+      sharesAcceptedActivity: true,
     };
   }
 
@@ -165,7 +165,7 @@ export const resolveProfileViewerAccess = async (input: {
       level: 'denied',
       canViewFullProfile: false,
       sharesGroup,
-      sharesAcceptedTrip,
+      sharesAcceptedActivity,
     };
   }
 
@@ -173,7 +173,7 @@ export const resolveProfileViewerAccess = async (input: {
     level: 'denied',
     canViewFullProfile: false,
     sharesGroup,
-    sharesAcceptedTrip,
+    sharesAcceptedActivity,
   };
 };
 

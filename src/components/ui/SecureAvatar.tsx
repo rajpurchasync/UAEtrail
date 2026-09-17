@@ -20,12 +20,16 @@ const requestStatus = (error: unknown): number | undefined =>
     ? Number((error as { status?: number }).status)
     : undefined;
 
+/** Guard against malformed stored/API avatar values (numbers, objects, etc.). */
+export const normalizeAvatarSrc = (src: unknown): string =>
+  typeof src === 'string' ? src.trim() : '';
+
 export const SecureAvatar = ({ src, name, className = '', alt }: SecureAvatarProps) => {
   const [state, setState] = useState<AvatarState>({ status: 'initials' });
 
   useEffect(() => {
     let cancelled = false;
-    const value = src?.trim() ?? '';
+    const value = normalizeAvatarSrc(src);
 
     if (!value) {
       setState({ status: 'initials' });

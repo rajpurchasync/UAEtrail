@@ -2,6 +2,7 @@ import { ActivityType, LocationUnlockSource, MembershipRole, NotificationType, H
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { registerActivityRoute } from '../lib/activity-routes.js';
+import { registerPlaceAlias } from '../lib/route-place-alias.js';
 import { ApiError } from '../lib/api-error.js';
 import { toLocationDto, buildActivityDto, toParticipantPreviews, toSharedRole } from '../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
@@ -287,7 +288,7 @@ userRouter.get('/explore/map', async (_req, res, next) => {
   }
 });
 
-userRouter.get('/locations', validate({ query: listFilterSchema }), async (req, res, next) => {
+registerPlaceAlias(userRouter, 'get', '/locations', validate({ query: listFilterSchema }), async (req, res, next) => {
   try {
     const filters = req.query as z.infer<typeof listFilterSchema>;
     const pg = { page: filters.page ?? 1, pageSize: filters.pageSize ?? 20 };
@@ -307,7 +308,7 @@ userRouter.get('/locations', validate({ query: listFilterSchema }), async (req, 
   }
 });
 
-userRouter.get('/locations/popular', async (req, res, next) => {
+registerPlaceAlias(userRouter, 'get', '/locations/popular', async (req, res, next) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 6, 20);
     const locations = await listPopularActiveLocations(limit);
@@ -327,9 +328,9 @@ const listLocationActivitiesHandler: import('express').RequestHandler = async (r
   }
 };
 
-userRouter.get('/locations/:id/activities', validate({ params: eventIdParamSchema }), listLocationActivitiesHandler);
+registerPlaceAlias(userRouter, 'get', '/locations/:id/activities', validate({ params: eventIdParamSchema }), listLocationActivitiesHandler);
 
-userRouter.get('/locations/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
+registerPlaceAlias(userRouter, 'get', '/locations/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
     const location = await findActiveLocationById(id);
@@ -348,7 +349,7 @@ userRouter.get('/locations/:id', optionalAuth, validate({ params: eventIdParamSc
   }
 });
 
-userRouter.get('/locations/:id/premium/guide', requireAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
+registerPlaceAlias(userRouter, 'get', '/locations/:id/premium/guide', requireAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
     const location = await findActiveLocationById(id);
@@ -374,7 +375,7 @@ userRouter.get('/locations/:id/premium/guide', requireAuth, validate({ params: e
   }
 });
 
-userRouter.get('/locations/:id/premium/map/download', requireAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
+registerPlaceAlias(userRouter, 'get', '/locations/:id/premium/map/download', requireAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
     const location = await findActiveLocationById(id);
@@ -396,7 +397,7 @@ userRouter.get('/locations/:id/premium/map/download', requireAuth, validate({ pa
   }
 });
 
-userRouter.get('/locations/:id/premium/guide/pdf', requireAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
+registerPlaceAlias(userRouter, 'get', '/locations/:id/premium/guide/pdf', requireAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
     const location = await findActiveLocationById(id);
@@ -423,7 +424,7 @@ const locationDetailPath = (location: { id: string; activityType: ActivityType }
   return `/trail/${location.id}`;
 };
 
-userRouter.post('/locations/:id/premium/checkout', requireAuth, requireVerifiedEmail, validate({ params: eventIdParamSchema }), async (req, res, next) => {
+registerPlaceAlias(userRouter, 'post', '/locations/:id/premium/checkout', requireAuth, requireVerifiedEmail, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
     const location = await findActiveLocationById(id);
@@ -504,7 +505,7 @@ userRouter.post('/locations/:id/premium/checkout', requireAuth, requireVerifiedE
 });
 
 /** @deprecated Use POST /locations/:id/premium/checkout */
-userRouter.post('/locations/:id/premium/unlock', requireAuth, requireVerifiedEmail, validate({ params: eventIdParamSchema }), (_req, _res, next) => {
+registerPlaceAlias(userRouter, 'post', '/locations/:id/premium/unlock', requireAuth, requireVerifiedEmail, validate({ params: eventIdParamSchema }), (_req, _res, next) => {
   next(new ApiError(
     402,
     'payment_required',
@@ -514,7 +515,7 @@ userRouter.post('/locations/:id/premium/unlock', requireAuth, requireVerifiedEma
 
 // ─── Track Location View ────────────────────────────────────────────────────
 
-userRouter.post('/locations/:id/view', viewLimiter, validate({ params: eventIdParamSchema }), async (req, res, next) => {
+registerPlaceAlias(userRouter, 'post', '/locations/:id/view', viewLimiter, validate({ params: eventIdParamSchema }), async (req, res, next) => {
   try {
     const { id } = req.params as z.infer<typeof eventIdParamSchema>;
     await incrementActiveLocationViewCount(id);
@@ -2259,7 +2260,7 @@ userRouter.post(
 
 // ─── User location submission (any signed-in user) ─────────────────────────
 
-userRouter.get('/me/locations', async (req, res, next) => {
+registerPlaceAlias(userRouter, 'get', '/me/locations', async (req, res, next) => {
   try {
     const locations = await listSubmittedLocationsByUser(req.auth!.userId);
     res.json({ data: locations.map((l) => toLocationDto(l)) });
@@ -2268,7 +2269,7 @@ userRouter.get('/me/locations', async (req, res, next) => {
   }
 });
 
-userRouter.post('/me/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
+registerPlaceAlias(userRouter, 'post', '/me/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof locationSubmitBodySchema>;
 

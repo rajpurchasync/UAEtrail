@@ -5,6 +5,7 @@ import type { ActivityType } from '../../config/activityTypes';
 import { api } from '../../api/services';
 import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
 import { useAuth } from '../../context/AuthContext';
+import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { countWords } from '../../utils/activityFormHelpers';
 import { buildActivityDetailPreview } from '../../utils/buildActivityDetailPreview';
 import { resolveEventVenueLocationId } from '../../utils/eventVenue';
@@ -62,6 +63,7 @@ export const useOrganisationActivityFormModal = ({
 }: UseOrganisationActivityFormModalOptions) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const reloadExploreMap = useReloadExploreMap();
   const [form, setForm] = useState<ActivityFormState>(() =>
     editingActivity ? activityToForm(editingActivity) : emptyActivityForm(activityType)
   );
@@ -94,7 +96,7 @@ export const useOrganisationActivityFormModal = ({
   const canPickHostTenant = isPlatformAdmin(user?.role);
   const hostTenantId = canPickHostTenant ? form.tenantId : resolvedTenantId;
   const isBusinessOrg = isBusinessHostOrg(tenantType);
-  const venueAddHref = '/host/locations';
+  const venueAddHref = '/host/places';
 
   const validationOptions = { activityType, canPickHostTenant };
 
@@ -214,7 +216,7 @@ export const useOrganisationActivityFormModal = ({
     if (!locationId) return;
 
     let disposed = false;
-    void api.getPublicLocationDetail(locationId).then((res) => {
+    void api.getPublicPlaceDetail(locationId).then((res) => {
       if (disposed) return;
       const loc = res.data;
       setForm((prev) => ({
@@ -289,7 +291,7 @@ export const useOrganisationActivityFormModal = ({
     }
     let disposed = false;
     void Promise.all([
-      api.getPublicLocations(),
+      api.getPublicPlaces(),
       hostTenantId
         ? api.getHostSubmittedPlaces(hostTenantId)
         : Promise.resolve({ data: [] as PlaceDTO[] }),
@@ -407,6 +409,7 @@ export const useOrganisationActivityFormModal = ({
       if (mode === 'publish' && activityId && saved.status === 'draft') {
         const publishTenant = await resolveActiveTenantId();
         await api.publishOrganisationActivity(publishTenant, activityId);
+        await reloadExploreMap();
       }
 
       onSaved?.();
@@ -432,7 +435,7 @@ export const useOrganisationActivityFormModal = ({
       let place = places.find((v) => v.id === form.locationId);
       if (!place && form.locationId) {
         try {
-          const locRes = await api.getPublicLocationDetail(form.locationId);
+          const locRes = await api.getPublicPlaceDetail(form.locationId);
           place = locRes.data;
         } catch {
           // fallback in preview builder

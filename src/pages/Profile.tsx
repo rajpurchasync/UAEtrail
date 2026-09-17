@@ -116,7 +116,7 @@ export const Profile = () => {
   const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const canHost = isHostRole(user?.role);
   const canEditLanguages = canHost || ownedProfiles.length > 0 || Boolean(memberDetails.languages);
-  const isTripHost = canHost && hostProfileKind !== 'shop';
+  const isActivityHost = canHost && hostProfileKind !== 'shop';
   const messagesPath = canHost ? '/host/messages' : '/messages';
   const activitiesPath = '/activities?tab=joined';
   const displayName = profile.displayName || user!.displayName || 'Explorer';
@@ -160,11 +160,11 @@ export const Profile = () => {
         rewardSummary,
         attendedCount: attendedActivities(activities).length,
         hostedCount: host.activities.filter((a) => a.status === 'published').length,
-        isHost: isTripHost,
+        isHost: isActivityHost,
         hostProfileKind,
         isGuideStaff: user?.role === 'tenant_guide',
       }),
-    [host.activities, hostProfileKind, isTripHost, rewardSummary, activities, user?.role]
+    [host.activities, hostProfileKind, isActivityHost, rewardSummary, activities, user?.role]
   );
 
   const openActivities = useCallback(() => {
@@ -373,7 +373,7 @@ export const Profile = () => {
 
         <ProfileMapPresenceSection />
 
-        {isTripHost && (
+        {isActivityHost && (
           <GlassCard padding className="space-y-3">
             <AccountSectionHeader title="Hosting" actionTo="/host/overview" actionLabel="Host console" />
             {host.loading ? (

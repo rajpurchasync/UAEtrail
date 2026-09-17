@@ -33,7 +33,7 @@ export interface UserDataExport {
     profileUserId: string | null;
     createdAt: Date;
   }>;
-  tripRequests: Array<{ id: string; activityId: string; status: string; createdAt: Date }>;
+  activityRequests: Array<{ id: string; activityId: string; status: string; createdAt: Date }>;
   participations: Array<{ id: string; activityId: string; checkedInAt: Date | null; createdAt: Date }>;
   shopOrders: Array<{ id: string; status: string; totalAed: number; createdAt: Date }>;
   rewardLedger: Array<{ action: string; points: number; label: string | null; createdAt: Date }>;
@@ -79,7 +79,7 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
         }
       : null,
     favorites,
-    tripRequests: requests.map((r: (typeof requests)[number]) => ({
+    activityRequests: requests.map((r: (typeof requests)[number]) => ({
       id: r.id,
       activityId: r.activityId,
       status: r.status,

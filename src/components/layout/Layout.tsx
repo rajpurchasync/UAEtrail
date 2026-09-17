@@ -7,6 +7,7 @@ import { ComposeRail } from './ComposeRail';
 import { Header } from './Header';
 import { MobileConsumerNavBar } from './MobileConsumerNavBar';
 import { MobileMenuProvider } from './MobileMenu';
+import { ApiStatusBanner } from './ApiStatusBanner';
 
 interface LayoutProps {
   children: ReactNode;
@@ -29,6 +30,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <ComposeRailProvider>
         <MobileMenuProvider>
           <div className="flex h-[100dvh] w-full flex-col overflow-hidden consumer-bg">
+            <ApiStatusBanner />
             <div className="hidden shrink-0 lg:block">
               <Header />
             </div>
@@ -60,6 +62,7 @@ export const Layout = ({ children }: LayoutProps) => {
     <ComposeRailProvider>
       <MobileMenuProvider>
         <div className="min-h-screen flex flex-col consumer-bg md:bg-gray-50 overflow-x-clip max-w-full">
+          <ApiStatusBanner />
           {showMobileConsumerNavBar && <MobileConsumerNavBar />}
           {showConsumerChrome && location.pathname !== '/' && (
             <div className="hidden md:block shrink-0">

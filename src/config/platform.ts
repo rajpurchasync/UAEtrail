@@ -6,8 +6,69 @@
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
 
+/** Admin console — places (trails, camps, event venues). */
+export const ADMIN_PLACES_PATH = '/admin/places' as const;
+/** Host console — organisation place submissions. */
+export const HOST_PLACES_PATH = '/host/places' as const;
+
+/** @deprecated Use {@link ADMIN_PLACES_PATH} */
+export const ADMIN_LOCATIONS_PATH = ADMIN_PLACES_PATH;
+/** @deprecated Use {@link HOST_PLACES_PATH} */
+export const HOST_LOCATIONS_PATH = HOST_PLACES_PATH;
+
+/**
+ * Domain glossary — product language vs wire/storage names (Phase 1).
+ * Use product names in UI, routes, and new code; legacy aliases remain for API compat.
+ */
+export const DOMAIN_GLOSSARY = {
+  Place: {
+    product: 'Place',
+    description: 'Trail, camp, or event venue (single entity, typed by activityType).',
+    storage: 'Location',
+    api: '/places',
+    legacyApi: '/locations',
+    publicRoutes: ['/trail/:id', '/camp/:id', '/event/:id'],
+    adminRoute: ADMIN_PLACES_PATH,
+    hostRoute: HOST_PLACES_PATH,
+  },
+  Activity: {
+    product: 'Activity',
+    description: 'Scheduled listing at a place (hike, camp trip, event, carpool).',
+    storage: 'Activity',
+    api: '/activities',
+    publicRoute: '/activity/:id',
+  },
+  Organisation: {
+    product: 'Organisation',
+    description: 'Host tenant — agency (guides) or shop operator.',
+    storage: 'Tenant',
+    api: '/host, /tenants/:slug',
+    consoleRoute: '/host/*',
+    publicRoute: '/operator/:slug',
+    manageRoute: '/organisation/manage',
+  },
+  Shop: {
+    product: 'Shop',
+    description: 'Merchant storefront and catalog.',
+    storage: 'MerchantProfile',
+    api: '/shop',
+    publicRoute: '/shop/:id',
+  },
+  Participant: {
+    product: 'Participant',
+    description: 'End-user explorer role.',
+    storage: 'User.role = participant',
+    note: 'Admin UI may say "Member"; social graph uses "Buddy".',
+  },
+} as const;
+
 /** Post-auth destination for landing “Join” CTA. */
 export const PARTICIPANT_JOIN_REDIRECT = EXPLORE_MAP_PATH;
+
+export const ORGANISATION_PUBLIC_PATH_PREFIX = '/operator' as const;
+
+/** @deprecated Use {@link ORGANISATION_PUBLIC_PATH_PREFIX} */
+export const OPERATOR_PUBLIC_PATH_PREFIX = ORGANISATION_PUBLIC_PATH_PREFIX;
 
 /** Desktop top nav — map-first; browse pages redirect into explore. */
 export const DESKTOP_NAV_LINKS = [
@@ -118,19 +179,55 @@ export const MAP_CONFIG = {
     envLabelTileUrl ||
     'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
   /**
-   * Mobile explore — colorful street base + English reference label overlay.
-   * Override with VITE_MAP_TILE_URL / VITE_MAP_LABEL_TILE_URL (e.g. MapTiler language=en).
+   * Mobile explore — satellite base with place labels (rich terrain, works well in UAE).
+   * Override with VITE_MAP_TILE_URL / VITE_MAP_LABEL_TILE_URL.
    */
   exploreTileUrl:
     envTileUrl ||
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   exploreLabelTileUrl:
-    envLabelTileUrl ||
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+    envLabelTileUrl ??
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
   exploreTileAttribution:
     'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS',
   tileAttribution:
     'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS',
+  /** Explore map style presets (satellite vs street map). */
+  exploreStyles: {
+    satellite: {
+      tileUrl:
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      labelTileUrl:
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    },
+    map: {
+      tileUrl:
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+      labelTileUrl: null,
+    },
+  },
+  /** Explore allows wider zoom-out than detail maps (GCC / regional context). */
+  exploreMinZoom: 5,
+} as const;
+
+export type ExploreMapStyle = 'satellite' | 'map';
+
+export const EXPLORE_MAP_STYLE_STORAGE_KEY = 'uaetrail-explore-map-style';
+
+export const readExploreMapStyle = (): ExploreMapStyle => {
+  if (typeof window === 'undefined') return 'satellite';
+  const stored = window.localStorage.getItem(EXPLORE_MAP_STYLE_STORAGE_KEY);
+  return stored === 'map' ? 'map' : 'satellite';
+};
+
+export const getExploreMapTiles = (style: ExploreMapStyle) => {
+  if (envTileUrl) {
+    return {
+      tileUrl: envTileUrl,
+      labelTileUrl: envLabelTileUrl ?? null,
+    };
+  }
+  return MAP_CONFIG.exploreStyles[style];
 };
 
 /** Routes where bottom nav, footer padding, and mobile chrome are hidden. */

@@ -1,8 +1,9 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildExploreFeaturedPerson } from '@uaetrail/shared-types';
 import { resolveActivityTypeCoverImage } from '../config/activityCoverImages';
-import type { ActivityListing, CampingSpot, Trail } from '../types';
-import { explorePath } from './exploreRouting';
+import type { ActivityListing } from '../types';
+import type { Place } from '../types/place';
+import { explorePath, type MapFilterKey } from './exploreRouting';
 
 const resolveActivityCover = (activity: ActivityListing, coverVariantIndex?: number): string =>
   resolveActivityTypeCoverImage(activity.activityType, activity.images, {
@@ -79,55 +80,54 @@ export const activityListingToExploreItem = (
   };
 };
 
-export const trailToExploreItem = (trail: Trail): ExploreMapItemDTO => ({
-  id: `venue:${trail.id}`,
-  kind: 'hiking',
+const placeKind = (activityType: Place['activityType']): ExploreMapItemDTO['kind'] => {
+  if (activityType === 'camping') return 'camping';
+  if (activityType === 'event') return 'event';
+  return 'hiking';
+};
+
+const placeFilter = (activityType: Place['activityType']): MapFilterKey => {
+  if (activityType === 'camping') return 'camping';
+  if (activityType === 'event') return 'others';
+  return 'hiking';
+};
+
+export const placeToExploreItem = (place: Place): ExploreMapItemDTO => ({
+  id: `venue:${place.id}`,
+  kind: placeKind(place.activityType),
   source: 'venue',
-  title: trail.name,
-  subtitle: trail.region,
-  latitude: trail.latitude ?? null,
-  longitude: trail.longitude ?? null,
-  path: explorePath({ panel: 'venues', filter: 'hiking' }),
-  image: trail.images[0] ?? null,
+  title: place.name,
+  subtitle: place.region,
+  latitude: place.latitude ?? null,
+  longitude: place.longitude ?? null,
+  path: explorePath({ panel: 'venues', filter: placeFilter(place.activityType) }),
+  image: place.images[0] ?? null,
   locationCard: {
-    id: trail.id,
-    activityType: 'hiking',
-    region: trail.region,
-    description: trail.description,
-    difficulty: trail.difficulty,
-    distance: trail.distance,
-    duration: trail.duration,
-    elevation: trail.elevation,
-    childFriendly: trail.childFriendly ?? false,
-    season: trail.season ?? [],
-    surfaceType: trail.surfaceType,
-    images: trail.images,
-    featured: trail.featured,
+    id: place.id,
+    activityType: place.activityType,
+    region: place.region,
+    description: place.description,
+    difficulty: place.difficulty,
+    distance: place.distance,
+    duration: place.duration,
+    elevation: place.elevation,
+    childFriendly: place.childFriendly ?? false,
+    accessibility: place.accessibility,
+    campingType: place.campingType,
+    maxGroupSize: place.maxGroupSize,
+    season: place.season ?? [],
+    surfaceType: place.surfaceType,
+    images: place.images,
+    featured: place.featured,
   },
 });
 
-export const campToExploreItem = (camp: CampingSpot): ExploreMapItemDTO => ({
-  id: `venue:${camp.id}`,
-  kind: 'camping',
-  source: 'venue',
-  title: camp.name,
-  subtitle: camp.region,
-  latitude: camp.latitude ?? null,
-  longitude: camp.longitude ?? null,
-  path: explorePath({ panel: 'venues', filter: 'camping' }),
-  image: camp.images[0] ?? null,
-  locationCard: {
-    id: camp.id,
-    activityType: 'camping',
-    region: camp.region,
-    description: camp.description,
-    difficulty: camp.difficulty,
-    childFriendly: false,
-    accessibility: camp.accessibility,
-    campingType: camp.campingType,
-    maxGroupSize: camp.maxGroupSize,
-    season: camp.season ?? [],
-    images: camp.images,
-    featured: camp.featured,
-  },
-});
+/** @deprecated Use {@link placeToExploreItem} */
+export const trailToExploreItem = (trail: Omit<Place, 'activityType'>): ExploreMapItemDTO =>
+  placeToExploreItem({ ...trail, activityType: 'hiking' });
+
+/** @deprecated Use {@link placeToExploreItem} */
+export const campToExploreItem = (
+  camp: Omit<Place, 'activityType' | 'distance' | 'duration' | 'elevation' | 'childFriendly'> &
+    Partial<Pick<Place, 'distance' | 'duration' | 'elevation' | 'childFriendly'>>
+): ExploreMapItemDTO => placeToExploreItem({ ...camp, activityType: 'camping', childFriendly: camp.childFriendly ?? false });

@@ -270,7 +270,7 @@ export const MobileUserMenuButton = ({
       >
         {MOBILE_LANDING_USER_MENU.map((item) => {
           const active = 'match' in item ? isActive(item.match) : false;
-          const Icon = MOBILE_NAV_ICON_MAP[item.label];
+          const Icon = MOBILE_NAV_ICON_MAP[item.label] ?? User;
           const content = (
             <>
               <span

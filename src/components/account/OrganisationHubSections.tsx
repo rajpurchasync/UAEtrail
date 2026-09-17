@@ -116,7 +116,7 @@ export const OrganisationHubSections = ({
             accent: 'amber',
           },
           {
-            to: '/host/locations',
+            to: '/host/places',
             icon: <MapPin className="w-4 h-4" />,
             label: 'Submit a place',
             accent: 'blue',

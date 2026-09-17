@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Star, ChevronRight, Mountain, Tent, Compass } from 'lucide-react';
-import { EmptyActivitiesBanner } from '../components/ui';
+import { EmptyActivitiesBanner, PlaceCard } from '../components/ui';
 import { DEFAULT_OG_IMAGE, HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { FaqPreview } from '../components/seo/FaqPreview';
 import { websiteSchema } from '../components/seo/schemas';
 import { HOME_FAQ_PREVIEW } from '../content/platformFaqs';
-import { CampingSpot, Trail, ActivityListing } from '../types';
+import { ActivityListing } from '../types';
+import type { Place } from '../types/place';
 import {
   fetchHomeLandingData,
-  fetchHomeRegionLocations,
+  fetchHomeRegionPlaces,
   HOME_LANDING_SECTION_LIMIT,
 } from '../api/public';
 import { api } from '../api/services';
@@ -39,11 +40,7 @@ import {
 } from '../config/activityTypes';
 import { HomeLandingExploreCard } from '../components/home/HomeLandingExploreCard';
 import { HomeFoundersStory } from '../components/home/HomeFoundersStory';
-import {
-  activityListingToExploreItem,
-  campToExploreItem,
-  trailToExploreItem,
-} from '../utils/homeLandingExploreItems';
+import { activityListingToExploreItem } from '../utils/homeLandingExploreItems';
 import { isUpcomingActivityDate } from '../utils/activityDates';
 
 type HomeActivityFilter = 'all' | ActivityType;
@@ -77,13 +74,11 @@ const HomeDesktop = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const signInHref = buildSignInRedirect(location).href;
-  const [popularTrails, setPopularTrails] = useState<Trail[]>([]);
-  const [popularCamps, setPopularCamps] = useState<CampingSpot[]>([]);
+  const [popularPlaces, setPopularPlaces] = useState<Place[]>([]);
   const [featuredActivities, setFeaturedActivities] = useState<ActivityListing[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const { user } = useAuth();
-  const [allTrails, setAllTrails] = useState<Trail[]>([]);
-  const [allCamps, setAllCamps] = useState<CampingSpot[]>([]);
+  const [allPlaces, setAllPlaces] = useState<Place[]>([]);
   const [allActivities, setAllActivities] = useState<ActivityListing[]>([]);
   const [activityFilter, setActivityFilter] = useState<HomeActivityFilter>('all');
 
@@ -93,8 +88,7 @@ const HomeDesktop = () => {
     void fetchHomeLandingData()
       .then((data) => {
         if (disposed) return;
-        setPopularTrails(data.popularTrails);
-        setPopularCamps(data.popularCamps);
+        setPopularPlaces(data.popularPlaces);
         setFeaturedActivities(data.featuredActivities);
         setAllActivities(data.allActivities);
         setLoadError(null);
@@ -104,11 +98,10 @@ const HomeDesktop = () => {
         setLoadError(getLandingLoadErrorMessage(err));
       });
 
-    void fetchHomeRegionLocations()
+    void fetchHomeRegionPlaces()
       .then((data) => {
         if (disposed) return;
-        setAllTrails(data.trails);
-        setAllCamps(data.camps);
+        setAllPlaces(data.places);
       })
       .catch(() => {
         // Region counts are optional — hero and carousels still render
@@ -149,18 +142,24 @@ const HomeDesktop = () => {
     return variants;
   }, [displayedActivities]);
 
-  const homeTrails = useMemo(() => {
-    const source = popularTrails.length > 0 ? popularTrails : [];
-    return source.slice(0, HOME_LANDING_SECTION_LIMIT);
-  }, [popularTrails]);
+  const homeTrails = useMemo(
+    () =>
+      popularPlaces
+        .filter((place) => place.activityType === 'hiking')
+        .slice(0, HOME_LANDING_SECTION_LIMIT),
+    [popularPlaces]
+  );
 
-  const homeCamps = useMemo(() => {
-    const source = popularCamps.length > 0 ? popularCamps : [];
-    return source.slice(0, HOME_LANDING_SECTION_LIMIT);
-  }, [popularCamps]);
+  const homeCamps = useMemo(
+    () =>
+      popularPlaces
+        .filter((place) => place.activityType === 'camping')
+        .slice(0, HOME_LANDING_SECTION_LIMIT),
+    [popularPlaces]
+  );
 
   const trackView = (locationId: string) => {
-    api.trackLocationView(locationId).catch(() => { /* silent */ });
+    api.trackPlaceView(locationId).catch(() => { /* silent */ });
   };
 
   const activitiesMapPath =
@@ -232,24 +231,24 @@ const HomeDesktop = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/50 to-black/70" />
 
         {/* Mobile — content-driven height (real iPhone includes safe-area; devtools often omits it) */}
-        <div className="home-landing-hero-mobile relative z-10 flex flex-col px-4 pt-safe-plus-2 pb-6 sm:px-6 md:hidden">
+        <div className="home-landing-hero-mobile relative z-10 flex flex-col px-4 pt-safe-plus-2 pb-4 sm:px-6 md:hidden">
           <MobileBrandBar tone="light" menuVariant={user ? 'session' : 'user'} />
-          <div className="mt-4 flex flex-col items-center text-center text-white">
+          <div className="mt-2 flex flex-col items-center text-center text-white">
             <div className="flex w-full max-w-[17rem] flex-col items-center">
-              <h1 className="text-[1.4rem] font-semibold leading-[1.2] tracking-tight">
+              <h1 className="text-[1.25rem] font-semibold leading-[1.2] tracking-tight">
                 <span className="block">Find Hiking &amp; Camping</span>
                 <span className="block">buddies in the UAE</span>
               </h1>
-              <p className="mt-2.5 max-w-[16rem] text-sm leading-snug text-white/90">
+              <p className="mt-2 max-w-[16rem] text-[13px] leading-snug text-white/90">
                 Join an activity, host one or make friends while having fun.
               </p>
-              <div className="mt-3.5 grid w-full grid-cols-2 gap-2.5">
+              <div className="mt-2.5 grid w-full grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => navigate(EXPLORE_MAP_PATH)}
                   className="inline-flex min-h-[38px] items-center justify-center rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700 active:scale-[0.98]"
                 >
-                  {user ? 'Map' : 'Explore'}
+                  View Map
                 </button>
                 <button
                   type="button"
@@ -324,7 +323,7 @@ const HomeDesktop = () => {
                 onClick={() => navigate(EXPLORE_MAP_PATH)}
                 className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-emerald-600 px-4 py-2.5 text-base font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700"
               >
-                {user ? 'Map' : 'Explore'}
+                View Map
               </button>
               <button
                 type="button"
@@ -356,9 +355,11 @@ const HomeDesktop = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 min-w-0">
             {EXPLORE_UAE_REGIONS.map((region) => {
               const RegionIcon = EXPLORE_REGION_ICONS[region.icon];
-              const count =
-                allTrails.filter((t) => region.regionKeys.some((k) => t.region.includes(k))).length +
-                allCamps.filter((c) => region.regionKeys.some((k) => c.region.includes(k))).length;
+              const count = allPlaces.filter(
+                (place) =>
+                  (place.activityType === 'hiking' || place.activityType === 'camping') &&
+                  region.regionKeys.some((k) => place.region.includes(k))
+              ).length;
 
               return (
                 <Link
@@ -481,9 +482,9 @@ const HomeDesktop = () => {
             </div>
           </div>
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            {homeTrails.map((trail) => (
-              <div key={trail.id} className="mobile-snap-rail__item" onClick={() => trackView(trail.id)}>
-                <HomeLandingExploreCard item={trailToExploreItem(trail)} />
+            {homeTrails.map((place) => (
+              <div key={place.id} className="mobile-snap-rail__item" onClick={() => trackView(place.id)}>
+                <PlaceCard place={place} />
               </div>
             ))}
           </div>
@@ -517,9 +518,9 @@ const HomeDesktop = () => {
             </div>
           </div>
           <div className="mobile-snap-rail md:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            {homeCamps.map((camp) => (
-              <div key={camp.id} className="mobile-snap-rail__item" onClick={() => trackView(camp.id)}>
-                <HomeLandingExploreCard item={campToExploreItem(camp)} />
+            {homeCamps.map((place) => (
+              <div key={place.id} className="mobile-snap-rail__item" onClick={() => trackView(place.id)}>
+                <PlaceCard place={place} />
               </div>
             ))}
           </div>

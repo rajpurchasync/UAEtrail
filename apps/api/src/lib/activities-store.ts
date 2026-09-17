@@ -150,6 +150,10 @@ export const updateActivityDetailed = async (
     throw new Error('Failed to update event record.');
   }
 
+  if (existing.status === ActivityStatus.PUBLISHED) {
+    await invalidateExploreMapCache();
+  }
+
   const updated = await findTenantActivityFromMongo(activityId, existing.tenantId);
   if (!updated) {
     throw new Error('Failed to update event record.');
@@ -170,10 +174,14 @@ export const findTenantActivityBasic = async (activityId: string, tenantId: stri
 };
 
 export const cancelActivityById = async (activityId: string) => {
+  const existing = await findActivityDocInMongo(activityId);
   await patchActivityInMongo(activityId, { status: ActivityStatus.CANCELLED });
-  const mongoDoc = await findActivityDocInMongo(activityId);
+  const mongoDoc = existing ?? (await findActivityDocInMongo(activityId));
   if (!mongoDoc) {
     throw new Error('Failed to cancel event.');
+  }
+  if (existing?.status === ActivityStatus.PUBLISHED) {
+    await invalidateExploreMapCache();
   }
   return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.CANCELLED });
 };

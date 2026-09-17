@@ -5,6 +5,7 @@ import { api } from '../api/services';
 import { getActiveTenantId } from '../api/tenant';
 import { parseActivityTypeParam, ActivityActionsMenu, ActivityListPreview, buildHostActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
+import { useReloadExploreMap } from '../hooks/useReloadExploreMap';
 import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
 import { OrganisationActivityCheckInPanel } from '../components/organisation-console/OrganisationActivityCheckInPanel';
 import { TenantSwitcher, ShareButton } from '../components/ui';
@@ -27,6 +28,7 @@ export const OrganisationActivities = () => {
   const [events, setEvents] = useState<ActivityDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { openCreate, openEdit, setOnSaved } = useActivityFormSession();
+  const reloadExploreMap = useReloadExploreMap();
   const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
   const [previewActivity, setPreviewActivity] = useState<ActivityDTO | null>(null);
@@ -77,6 +79,7 @@ export const OrganisationActivities = () => {
     if (!tenantId) return;
     try {
       await api.publishOrganisationActivity(tenantId, activityId);
+      await reloadExploreMap();
       await loadEvents(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish event');
@@ -131,6 +134,7 @@ export const OrganisationActivities = () => {
     setPreviewPublishing(true);
     try {
       await api.publishOrganisationActivity(tenantId, event.id);
+      await reloadExploreMap();
       setPreviewActivity(null);
       await loadEvents(tenantId);
     } catch (err) {

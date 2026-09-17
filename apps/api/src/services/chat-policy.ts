@@ -6,7 +6,7 @@ import {
   hasHostToParticipantLink,
   hasParticipantToHostLink,
   hasSharedActivityParticipation,
-  hasTripInquiryAccess
+  hasActivityInquiryAccess
 } from '../lib/activity-engagement-store.js';
 import { areAcceptedBuddies } from '../lib/buddy-store.js';
 
@@ -44,8 +44,8 @@ export async function canMessageUser(
 ): Promise<boolean> {
   if (await areAcceptedBuddies(senderId, receiverId)) return true;
 
-  const sharedTrip = await hasSharedActivityParticipation(senderId, receiverId);
-  if (sharedTrip) return true;
+  const sharedActivity = await hasSharedActivityParticipation(senderId, receiverId);
+  if (sharedActivity) return true;
 
   const joinRequestLink = await hasActiveJoinRequestLink({
     senderId,
@@ -66,12 +66,12 @@ export async function canMessageUser(
   if (hostToParticipant) return true;
 
   if (options?.activityId) {
-    const tripInquiry = await hasTripInquiryAccess({
+    const activityInquiry = await hasActivityInquiryAccess({
       activityId: options.activityId,
       receiverId,
       organizerRoles: ORGANIZER_ROLES
     });
-    if (tripInquiry) return true;
+    if (activityInquiry) return true;
   }
 
   return false;

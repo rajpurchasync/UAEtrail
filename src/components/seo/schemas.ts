@@ -1,6 +1,7 @@
 import { ActivityDetailDTO, ProductDTO, ReviewDTO } from '@uaetrail/shared-types';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
-import { CampingSpot, Trail, CommunityActivitySpot } from '../../types';
+import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types/place';
+import { placeDetailPath } from '../../utils/placePaths';
 import type { TenantProfile } from '../../api/services';
 import { activityHostName } from '../../utils/hostLabels';
 import { explorePlacesPath } from '../../utils/exploreRouting';
@@ -32,63 +33,79 @@ const locationAddress = (region?: string) => ({
   addressRegion: region ?? 'UAE'
 });
 
-export const trailSchema = (trail: Trail) => ({
-  '@context': 'https://schema.org',
-  '@type': 'TouristAttraction',
-  name: trail.name,
-  description: trail.description,
-  url: `${SITE_ORIGIN}/trail/${trail.id}`,
-  image: absImage(trail.images?.[0]),
-  address: locationAddress(trail.region),
-  geo:
-    trail.latitude != null && trail.longitude != null
-      ? { '@type': 'GeoCoordinates', latitude: trail.latitude, longitude: trail.longitude }
-      : undefined,
-  touristType: 'Hiker',
-  additionalProperty: [
-    trail.difficulty
-      ? { '@type': 'PropertyValue', name: 'difficulty', value: trail.difficulty }
-      : null,
-    trail.distance != null && trail.distance > 0
-      ? { '@type': 'PropertyValue', name: 'distanceKm', value: trail.distance }
-      : null,
-    { '@type': 'PropertyValue', name: 'region', value: trail.region },
-  ].filter(Boolean),
-});
+const placeGeo = (place: Pick<Place, 'latitude' | 'longitude'>) =>
+  place.latitude != null && place.longitude != null
+    ? { '@type': 'GeoCoordinates' as const, latitude: place.latitude, longitude: place.longitude }
+    : undefined;
 
-export const eventVenueSchema = (event: CommunityActivitySpot) => ({
-  '@context': 'https://schema.org',
-  '@type': 'TouristAttraction',
-  name: event.name,
-  description: event.description,
-  url: `${SITE_ORIGIN}/event/${event.id}`,
-  image: absImage(event.images?.[0]),
-  address: locationAddress(event.region),
-  geo:
-    event.latitude != null && event.longitude != null
-      ? { '@type': 'GeoCoordinates', latitude: event.latitude, longitude: event.longitude }
-      : undefined,
-  touristType: 'Outdoor event venue',
-  additionalProperty: [{ '@type': 'PropertyValue', name: 'region', value: event.region }],
-});
+/** JSON-LD for a unified place (trail, camp, or event venue). */
+export const placeSchema = (place: Place) => {
+  const url = `${SITE_ORIGIN}${placeDetailPath(place.activityType, place.id)}`;
 
-export const campSchema = (camp: CampingSpot) => ({
-  '@context': 'https://schema.org',
-  '@type': 'Campground',
-  name: camp.name,
-  description: camp.description,
-  url: `${SITE_ORIGIN}/camp/${camp.id}`,
-  image: absImage(camp.images?.[0]),
-  address: locationAddress(camp.region),
-  geo:
-    camp.latitude != null && camp.longitude != null
-      ? { '@type': 'GeoCoordinates', latitude: camp.latitude, longitude: camp.longitude }
-      : undefined,
-  additionalProperty: [
-    { '@type': 'PropertyValue', name: 'campingType', value: camp.campingType },
-    { '@type': 'PropertyValue', name: 'region', value: camp.region }
-  ]
-});
+  if (place.activityType === 'camping') {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Campground',
+      name: place.name,
+      description: place.description,
+      url,
+      image: absImage(place.images?.[0]),
+      address: locationAddress(place.region),
+      geo: placeGeo(place),
+      additionalProperty: [
+        place.campingType
+          ? { '@type': 'PropertyValue', name: 'campingType', value: place.campingType }
+          : null,
+        { '@type': 'PropertyValue', name: 'region', value: place.region },
+      ].filter(Boolean),
+    };
+  }
+
+  if (place.activityType === 'event') {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'TouristAttraction',
+      name: place.name,
+      description: place.description,
+      url,
+      image: absImage(place.images?.[0]),
+      address: locationAddress(place.region),
+      geo: placeGeo(place),
+      touristType: 'Outdoor event venue',
+      additionalProperty: [{ '@type': 'PropertyValue', name: 'region', value: place.region }],
+    };
+  }
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'TouristAttraction',
+    name: place.name,
+    description: place.description,
+    url,
+    image: absImage(place.images?.[0]),
+    address: locationAddress(place.region),
+    geo: placeGeo(place),
+    touristType: 'Hiker',
+    additionalProperty: [
+      place.difficulty
+        ? { '@type': 'PropertyValue', name: 'difficulty', value: place.difficulty }
+        : null,
+      place.distance != null && place.distance > 0
+        ? { '@type': 'PropertyValue', name: 'distanceKm', value: place.distance }
+        : null,
+      { '@type': 'PropertyValue', name: 'region', value: place.region },
+    ].filter(Boolean),
+  };
+};
+
+/** @deprecated Use {@link placeSchema} */
+export const trailSchema = (trail: PlaceAsTrail) => placeSchema({ ...trail, activityType: 'hiking' });
+
+/** @deprecated Use {@link placeSchema} */
+export const eventVenueSchema = (event: PlaceAsEvent) => placeSchema({ ...event, activityType: 'event' });
+
+/** @deprecated Use {@link placeSchema} */
+export const campSchema = (camp: PlaceAsCamp) => placeSchema({ ...camp, activityType: 'camping' });
 
 export const activityEventSchema = (activity: ActivityDetailDTO) => ({
   '@context': 'https://schema.org',

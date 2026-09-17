@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
+import { normalizeAvatarSrc } from './SecureAvatar';
 import { initialsFromName } from '../../utils/userDisplay';
 import { extractMediaKey } from '../../lib/mediaKey';
+
+describe('normalizeAvatarSrc', () => {
+  it('returns trimmed strings and rejects non-string values', () => {
+    expect(normalizeAvatarSrc('  https://example.com/a.jpg  ')).toBe('https://example.com/a.jpg');
+    expect(normalizeAvatarSrc(null)).toBe('');
+    expect(normalizeAvatarSrc(undefined)).toBe('');
+    expect(normalizeAvatarSrc(123)).toBe('');
+    expect(normalizeAvatarSrc({ url: 'x' })).toBe('');
+  });
+});
 
 describe('initialsFromName', () => {
   it('uses first and last name letters', () => {

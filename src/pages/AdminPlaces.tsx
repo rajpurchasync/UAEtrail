@@ -56,7 +56,7 @@ const emptyForm: Partial<PlaceDTO> = {
 
 /* ─── Component ──────────────────────────────────────────────────────────── */
 
-/** Admin console for places (trails, camps, event venues). Route stays `/admin/locations`. */
+/** Admin console for places (trails, camps, event venues). Canonical route: `/admin/places`. */
 export const AdminPlaces = () => {
   const [places, setPlaces] = useState<PlaceDTO[]>([]);
   const [form, setForm] = useState<Partial<PlaceDTO>>(emptyForm);

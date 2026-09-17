@@ -19,7 +19,8 @@ export const EXPLORE_SHEET = {
   scrim: 'bg-black/40 lg:bg-black/45',
   panel: 'bg-white shadow-2xl lg:shadow-xl',
   maxHeight: 'lg:max-h-[min(85vh,720px)]',
-  browseHeight: 'flex h-[80dvh] min-h-0 flex-col',
+  browseHeight: 'flex h-[82dvh] min-h-0 flex-col bg-[#f8fafb]',
+  browseList: 'min-h-0 flex-1 space-y-2.5 overflow-y-auto px-1 pb-[calc(var(--safe-bottom)+12px)] lg:px-0 lg:pb-4',
 } as const;
 
 export const exploreSheetPanelClass = `${EXPLORE_SHAPE.sheetTop} ${EXPLORE_SHAPE.sheetDesktop} ${EXPLORE_SHEET.panel} ${EXPLORE_SHEET.maxHeight}`;
@@ -48,7 +49,7 @@ export const exploreMapFilterActiveClass = (key: MapFilterKey): string => {
 };
 
 export const EXPLORE_MAP_FILTER_INACTIVE =
-  'bg-white/95 text-gray-800 border-neutral-200/80 ring-1 ring-neutral-200/70 backdrop-blur-sm';
+  'bg-white/95 text-gray-800 border-neutral-200/80 shadow-[0_2px_10px_rgba(15,23,42,.12)] backdrop-blur-sm';
 
 /** Create intent — distinct affordances for supply vs demand vs venues. */
 export const EXPLORE_INTENT = {
@@ -76,7 +77,13 @@ export const EXPLORE_INTENT = {
 } as const;
 
 export const EXPLORE_FLOATING_CONTROL =
-  'inline-flex items-center rounded-full border border-white/90 bg-white/95 shadow-[0_2px_12px_rgba(15,23,42,.14)] backdrop-blur-sm';
+  'inline-flex items-center rounded-full bg-white/95 shadow-[0_2px_12px_rgba(15,23,42,.14)] backdrop-blur-sm';
+
+/** Mobile explore — offsets for floating map chrome below the solid header. */
+export const EXPLORE_MOBILE_MAP_CHROME = {
+  filterTop: 'max-lg:top-3',
+  noticeTop: 'max-lg:top-14',
+} as const;
 
 /** Explore map stacking — keep in sync across peek cards, filters, and sheets. */
 export const EXPLORE_Z = {

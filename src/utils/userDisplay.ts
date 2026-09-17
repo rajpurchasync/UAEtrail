@@ -13,8 +13,8 @@ export const getFirstName = (name?: string | null, email?: string | null): strin
 };
 
 /** Two uppercase initials from a display name, e.g. "John Doe" → "JD". */
-export const initialsFromName = (name: string): string => {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+export const initialsFromName = (name?: string | null): string => {
+  const parts = (typeof name === 'string' ? name : '').trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return '?';
   if (parts.length === 1) {
     return parts[0].slice(0, 2).toUpperCase();

@@ -1,4 +1,5 @@
 import { NotificationDTO } from '@uaetrail/shared-types';
+import { ADMIN_PLACES_PATH } from '../config/platform';
 import { explorePath } from '../utils/exploreRouting';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
@@ -109,7 +110,7 @@ export const inferNotificationPath = (
     if (toStringValue(meta?.userId)) return '/admin/users';
     if (toStringValue(meta?.groupId)) return '/admin/groups';
     if (toStringValue(meta?.activityId)) return '/admin/activities';
-    if (toStringValue(meta?.locationId)) return '/admin/locations';
+    if (toStringValue(meta?.locationId)) return ADMIN_PLACES_PATH;
     if (toStringValue(meta?.productId)) return '/admin/shop';
 
     const adminText = `${notif.title} ${notif.body}`.toLowerCase();
@@ -117,7 +118,7 @@ export const inferNotificationPath = (
     if (adminText.includes('user')) return '/admin/users';
     if (adminText.includes('group')) return '/admin/groups';
     if (adminText.includes('activity')) return '/admin/activities';
-    if (adminText.includes('location')) return '/admin/locations';
+    if (adminText.includes('location')) return ADMIN_PLACES_PATH;
     if (adminText.includes('product') || adminText.includes('shop')) return '/admin/shop';
   }
 

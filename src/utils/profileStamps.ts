@@ -39,7 +39,7 @@ export const buildProfileStamps = (input: {
 
   const hostKind = input.hostProfileKind ?? null;
   const isShopOwner = hostKind === 'shop';
-  const isTripHost = input.isHost && !isShopOwner;
+  const isActivityHost = input.isHost && !isShopOwner;
 
   if (isShopOwner) {
     push({ key: 'shop_owner', label: 'Shop', emoji: '🛍️', tone: 'rose' });
@@ -49,7 +49,7 @@ export const buildProfileStamps = (input: {
     push({ key: 'guide', label: 'Guide', emoji: '🧭', tone: 'blue' });
   }
 
-  if (isTripHost) {
+  if (isActivityHost) {
     push({
       key: 'host',
       label: hostKind === 'agency' ? 'Agency host' : 'Host',
@@ -61,7 +61,7 @@ export const buildProfileStamps = (input: {
     }
   }
 
-  const showParticipantStamp = !isShopOwner && !(isTripHost && input.hostedCount > 0 && input.attendedCount === 0);
+  const showParticipantStamp = !isShopOwner && !(isActivityHost && input.hostedCount > 0 && input.attendedCount === 0);
 
   if (showParticipantStamp) {
     if (input.attendedCount >= 10) {

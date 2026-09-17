@@ -469,7 +469,7 @@ export const usersShareActivity = async (userA: string, userB: string): Promise<
   return (await hasHostToParticipantLink(userA, userB)) || (await hasHostToParticipantLink(userB, userA));
 };
 
-export const hasTripInquiryAccess = async (input: {
+export const hasActivityInquiryAccess = async (input: {
   activityId: string;
   receiverId: string;
   organizerRoles: MembershipRole[];

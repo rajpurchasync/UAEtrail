@@ -64,7 +64,7 @@ describe('resolveProfileViewerAccess', () => {
     });
 
     expect(access.canViewFullProfile).toBe(true);
-    expect(access.level).toBe('trip_participant');
+    expect(access.level).toBe('activity_participant');
   });
 
   it('allows friends (shared social group) to view a private profile', async () => {

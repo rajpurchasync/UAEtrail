@@ -3,8 +3,7 @@ export {
   type PlaceCardActionsConfig,
 } from './PlaceCatalogCardFrame';
 export { PlaceCardActions, type PlaceCardAccent } from './PlaceCardActions';
-export { TrailCard } from './TrailCard';
-export { CampingCard } from './CampingCard';
+export { PlaceCard, TrailCard, CampingCard } from './PlaceCard';
 export { ActivityCard } from './ActivityCard';
 export { JoinRequestModal } from './JoinRequestModal';
 export { ShareButton } from './ShareButton';
