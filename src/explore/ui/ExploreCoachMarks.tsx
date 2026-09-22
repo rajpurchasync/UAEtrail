@@ -3,9 +3,9 @@ import { X } from 'lucide-react';
 import { EXPLORE_COACH_SEEN_KEY } from '../exploreOnboarding';
 
 const STEPS = [
-  { title: 'Pan the map', detail: 'Explore trails, camps, and activities across the UAE.' },
-  { title: 'Tap a pin', detail: 'Open details, directions, and host info.' },
-  { title: 'Request to join', detail: 'Sign up free to join group hikes and camps.' },
+  { title: 'See what’s on', detail: 'Outings near you — hikes, camps, runs, and more across the UAE.' },
+  { title: 'Tap to connect', detail: 'Open a plan, see who’s going, and chat with the group.' },
+  { title: 'Go together', detail: 'Join free to request a spot or post what you’re looking for.' },
 ] as const;
 
 /** One-time lightweight coach for first map visit. */

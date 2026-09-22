@@ -1,0 +1,64 @@
+---
+description: Guest-only marketing page at / — not the product home; members always use /explore
+alwaysApply: true
+---
+
+# Landing / marketing page (`/`)
+
+Read **`docs/NORTHSTAR.md`**, **`docs/LANDING.md`**, and **`docs/NAVIGATION.md` § Home** before changing Home, hero, or `homeLanding.ts`.
+
+## Voice (north star)
+
+Lead with **find your people · get outside · go together** — not map/host architecture.
+
+- **Audience:** residents, expats, tourists, visitors (UAE & GCC)  
+- **Activities:** hikes, camps, runs, jogs, group outings — wide, with examples  
+- **Mechanisms** (verified hosts, map, join flow) are supporting copy only  
+
+## Audience (hard rule)
+
+- **`/` is for signed-out guests only.**
+- **Signed-in users always redirect to `/explore`** — they never see the marketing page.
+- **`/explore` is the product home** (map-first discovery). Do not treat `/` as a second home or onboarding hub for members.
+
+Enforced in `src/pages/Home.tsx`. Do not remove or bypass that redirect.
+
+## What Home is
+
+Guest **signup funnel**: emotional promise + trust + live proof → **Explore the map** / **Join free**. One pass, then the user lives on the map.
+
+## What Home is not
+
+Do **not** add to Home (unless the user explicitly asks):
+
+- Demand / “find a group” flows, become-host, shops, buddies, chat, rewards 
+- Full product tour or in-app feature documentation 
+- Live map UX (filters, panels, pins) — that is `/explore` 
+
+Home may mention *host-approved joins* and *real outings on the map* as trust/support — not as the lead headline.
+
+## Source of truth
+
+| What | Where |
+|------|--------|
+| Product concept | `docs/NORTHSTAR.md` |
+| Copy | `src/content/homeLanding.ts`, `src/content/productNorthStar.ts` |
+| Section order & conditionals | `src/pages/Home.tsx` |
+| Section UI | `src/components/home/*` |
+| Explore copy (separate) | `src/explore/exploreCopy.ts`, `docs/experiment/explore-ux-spec.md` |
+
+## Section jobs (no duplicate messaging)
+
+- **Proof strip** — quick trust chips (Verified Hosts · Community Driven · Free to Join)  
+- **Value props** — outcomes: see / say / connect / go together (not duplicate of proof chips)  
+- **Live rail** — proof of real outings  
+- **How it works** — only place for step-by-step first-crew flow  
+
+When editing scroll order, update `docs/LANDING.md` and `docs/NAVIGATION.md` § Home to match `Home.tsx`.
+
+## CTAs
+
+- Primary: **Explore the map** → `EXPLORE_MAP_PATH`  
+- Secondary: **Join free** → `joinAuthPath(EXPLORE_MAP_PATH)`  
+
+Use helpers from `src/config/platform.ts` — not raw paths.

@@ -1,6 +1,8 @@
 # Navigation contract
 
-Companion to [`DOMAIN.md`](./DOMAIN.md). Defines **where users go** for each intent. Routes stay stable; new links must follow this contract.
+Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). Defines **where users go** for each intent. Routes stay stable; new links must follow this contract.
+
+**Product intent:** Help people **find like-minded company outdoors** in the UAE & GCC — discover plans, connect, chat, go together. See north star for voice and audience (residents, expats, visitors; hikes, camps, runs, and more).
 
 ## Three surfaces
 
@@ -20,12 +22,25 @@ Companion to [`DOMAIN.md`](./DOMAIN.md). Defines **where users go** for each int
 
 ### Home (`/`) — marketing only
 
-- **Guests only** — signed-in users redirect to `/explore`.
-- **Guest hero:** value prop + **Join free** (full-width primary) + “Browse map first” text link. No duplicate proof line in hero.
-- **Scroll order:** Proof chips → **Live activity rail** (public API) → Product preview → Testimonials → How it works → FAQ (2 on mobile) → Closing CTA → Founder story.
-- **Live proof:** Hero may show “N activities on the map this week” when public API returns data.
-- **Live data** (activities, places, filters) belongs on `/explore`, not Home.
-- Components: `src/components/home/*`, page `src/pages/Home.tsx`.
+Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTHSTAR.md)**.
+
+- **Guests only** — signed-in users redirect to `/explore` (`src/pages/Home.tsx`).
+- **Not the product home** — members always land on and live on `/explore`.
+- **Goal:** convert visitors via **Explore the map** (primary) and **Join free** (secondary); post-auth → `/explore`.
+- **Guest hero:** headline + subline + **Explore the map** (primary CTA) + **Join free** (secondary). Desktop header: Log in pill.
+- **Scroll order** (matches `Home.tsx`):
+  1. Hero (`HomeMobileLaunch` / `HomeDesktopHero`)
+  2. Proof strip (`HomeProofStrip`)
+  3. Live activity rail (`HomeLiveActivityRail` — public API + fallback)
+  4. Value props (`HomeValueProps`)
+  5. How it works (`HomeDayTimeline`)
+  6. Product preview (`HomeProductPreview` — conditional; hidden on mobile when live rail is healthy)
+  7. Testimonials (`HomeTestimonials`)
+  8. FAQ preview (2 on mobile)
+  9. Closing CTA (`HomeMarketingClose`)
+  10. Founder story (`HomeFounderStory` — desktop; hidden on mobile)
+- **Do not add** demand posting, become-host, buddies, shops, or full map UX to Home — those belong on `/explore` or in-app.
+- **Copy:** `src/content/homeLanding.ts`. **Components:** `src/components/home/*`.
 
 Legacy browse URLs (`/map`, `/discovery`, `/calendar`, `/shop`, bare `/activities`) redirect into `/explore` via `App.tsx` only — do not link to them from new UI.
 

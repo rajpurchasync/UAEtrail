@@ -7,12 +7,13 @@ import { LandingShell } from './LandingShell';
 const PREVIEW_COVER = resolveActivityTypeCoverImage('hiking', null, { variantIndex: 1 });
 
 export const HomeProductPreview = () => (
-  <section className="py-8 md:py-14" aria-label="App preview">
+  <section className="py-7 md:py-14" aria-label="App preview">
     <LandingShell>
       <div className="md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] md:items-center md:gap-10 lg:gap-14">
         <LandingSectionIntro
           title={HOME_PRODUCT_PREVIEW.title}
           subtitle={HOME_PRODUCT_PREVIEW.subtitle}
+          mobileSubtitleHidden
           className="md:max-w-md"
         />
 

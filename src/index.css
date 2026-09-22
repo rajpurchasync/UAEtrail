@@ -356,12 +356,28 @@
     padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
   }
 
+  .landing-hero-image {
+    @apply home-launch-hero h-full w-full object-cover object-[center_30%];
+  }
+
+  .landing-hero-overlay-r {
+    @apply absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/25;
+  }
+
+  .landing-hero-overlay-t {
+    @apply absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30;
+  }
+
+  .landing-hero-overlay-mobile {
+    display: none;
+  }
+
   .landing-section-title {
     @apply text-[1.375rem] font-bold tracking-tight text-neutral-900 md:text-[1.75rem];
   }
 
   .landing-section-lead {
-    @apply mt-1.5 text-[15px] leading-relaxed text-neutral-500 md:text-base;
+    @apply mt-1.5 text-[13px] leading-snug text-neutral-500 md:text-base md:leading-relaxed;
   }
 
   .landing-live-badge {
@@ -437,8 +453,59 @@
       min-height: 0;
     }
 
+    .landing-hero-eyebrow {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .landing-hero-overlay-mobile {
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgb(0 0 0 / 0.24) 0%, rgb(0 0 0 / 0.4) 50%, rgb(0 0 0 / 0.62) 100%);
+    }
+
+    .home-launch .landing-hero-overlay-r {
+      background: linear-gradient(to right, rgb(0 0 0 / 0.62) 0%, rgb(0 0 0 / 0.32) 50%, rgb(0 0 0 / 0.18) 100%);
+    }
+
+    .home-launch .landing-hero-overlay-t {
+      background: linear-gradient(to top, rgb(0 0 0 / 0.52) 0%, transparent 45%, rgb(0 0 0 / 0.22) 100%);
+    }
+
+    .landing-hero-copy {
+      margin-top: 0.75rem;
+      padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+      text-align: center;
+    }
+
+    .landing-hero-copy .landing-hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .landing-hero-copy .landing-hero-btn {
+      min-height: 2.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+      line-height: 1.25rem;
+    }
+
+    .home-proof-stat-label {
+      font-size: 0.6875rem;
+      line-height: 1.25;
+    }
+
     .home-landing-scroll {
       background-color: white;
+    }
+  }
+
+  @media (min-width: 400px) and (max-width: 767px) {
+    .home-proof-stat-label {
+      font-size: 0.75rem;
     }
   }
 

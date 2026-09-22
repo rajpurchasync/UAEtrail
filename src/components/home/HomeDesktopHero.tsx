@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../../config/seo';
-import { HOME_HERO_JOIN_CTA, HOME_HERO_JOIN_PROMPT, HOME_HERO_SUBLINE } from '../../content/homeLanding';
-import { DESKTOP_NAV_LINKS, EXPLORE_MAP_PATH, MEMBERSHIP_NAV_LINK } from '../../config/platform';
+import { HOME_HERO_EYEBROW, HOME_HERO_HEADLINE, HOME_HERO_SUBLINE } from '../../content/homeLanding';
+import { EXPLORE_MAP_PATH } from '../../config/platform';
 import { AppButtonLink } from '../mobile/AppButton';
 
 interface HomeDesktopHeroProps {
@@ -11,19 +11,20 @@ interface HomeDesktopHeroProps {
 }
 
 export const HomeDesktopHero = ({ joinHref, signInHref }: HomeDesktopHeroProps) => (
-  <div className="relative hidden overflow-hidden md:block md:min-h-[480px] lg:min-h-[520px]">
+  <div className="relative hidden overflow-hidden md:block md:min-h-[540px] lg:min-h-[580px]">
     <picture className="absolute inset-0">
       <source srcSet={HOME_HERO_IMAGE_WEBP} type="image/webp" />
       <img
         src={HOME_HERO_IMAGE_JPEG}
         alt=""
         decoding="async"
-        className="home-launch-hero h-full w-full object-cover object-[center_30%]"
+        className="landing-hero-image"
       />
     </picture>
-    <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/82" />
+    <div className="landing-hero-overlay-r" />
+    <div className="landing-hero-overlay-t" />
 
-    <div className="relative mx-auto flex min-h-[480px] max-w-7xl flex-col px-8 lg:min-h-[520px] lg:px-12">
+    <div className="relative mx-auto flex min-h-[540px] max-w-7xl flex-col px-8 lg:min-h-[580px] lg:px-12">
       <header className="flex shrink-0 items-center justify-between py-6">
         <Link to="/" className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-700 shadow-lg shadow-emerald-900/30">
@@ -32,44 +33,32 @@ export const HomeDesktopHero = ({ joinHref, signInHref }: HomeDesktopHeroProps) 
           <span className="text-lg font-bold tracking-tight text-white">UAE Trail</span>
         </Link>
 
-        <nav className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/10 px-2 py-1 backdrop-blur-md lg:flex">
-          {[...DESKTOP_NAV_LINKS, ...(MEMBERSHIP_NAV_LINK ? [MEMBERSHIP_NAV_LINK] : [])].map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="rounded-full px-3.5 py-1.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/15"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <Link to={signInHref} className="text-sm font-medium text-white/85 hover:text-white">
-            Log in
-          </Link>
-          <AppButtonLink to={EXPLORE_MAP_PATH} variant="inverse" className="px-5 shadow-md">
-            Browse map
-          </AppButtonLink>
-        </div>
+        <Link
+          to={signInHref}
+          className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition hover:bg-white/20"
+        >
+          Log in
+        </Link>
       </header>
 
-      <div className="mx-auto flex max-w-3xl flex-1 flex-col items-center justify-center pb-12 pt-2 text-center text-white">
-        <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-balance lg:text-[3.25rem]">
-          Find hiking &amp; camping buddies in the UAE
+      <div className="flex flex-1 flex-col justify-center pb-14 pt-4 text-white lg:max-w-2xl lg:pb-16">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/90">{HOME_HERO_EYEBROW}</p>
+        <h1 className="mt-4 text-4xl font-bold leading-[1.08] tracking-tight lg:text-[3.35rem]">
+          {HOME_HERO_HEADLINE}
         </h1>
-        <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/90">{HOME_HERO_SUBLINE}</p>
+        <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/90">{HOME_HERO_SUBLINE}</p>
 
-        <div className="mt-8 flex flex-col items-center gap-3">
-          <AppButtonLink to={EXPLORE_MAP_PATH} className="min-h-[3rem] px-10 text-base shadow-lg shadow-black/25">
-            Browse the map
+        <div className="mt-9 flex flex-wrap items-center gap-3">
+          <AppButtonLink to={EXPLORE_MAP_PATH} className="min-h-[3rem] px-8 text-base shadow-lg shadow-black/25">
+            Explore the map
           </AppButtonLink>
-          <p className="text-[15px] text-white/80">
-            {HOME_HERO_JOIN_PROMPT}{' '}
-            <Link to={joinHref} className="font-semibold text-white underline underline-offset-2">
-              {HOME_HERO_JOIN_CTA}
-            </Link>
-          </p>
+          <AppButtonLink
+            to={joinHref}
+            variant="inverse"
+            className="min-h-[3rem] border border-white/30 !bg-white/10 px-8 text-base !text-white backdrop-blur-sm hover:!bg-white/20 active:!bg-white/15"
+          >
+            Join free
+          </AppButtonLink>
         </div>
       </div>
     </div>

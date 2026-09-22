@@ -1,22 +1,74 @@
-/** Marketing landing — visitors convert here; members live on map + profile. */
+/** Marketing landing — signed-out guests only; members always use /explore. See docs/LANDING.md & docs/NORTHSTAR.md */
+
+export const HOME_HERO_EYEBROW = 'Outdoor community · UAE & GCC';
+
+/** Compact eyebrow for mobile hero — avoids crowded all-caps tracking. */
+export const HOME_HERO_EYEBROW_MOBILE = 'UAE & GCC · get outside together';
+
+export const HOME_HERO_HEADLINE = 'Find your people for whatever gets you outside in the UAE';
 
 export const HOME_HERO_SUBLINE =
-  'Browse the map, join an activity, and meet people who actually show up.';
+  'Residents, visitors, same vibe — discover outings near you, connect with like-minded people, chat, and go together.';
 
-export const HOME_HERO_JOIN_PROMPT = 'New here?';
-export const HOME_HERO_JOIN_CTA = 'Join the community';
+/** Shorter hero copy for mobile — headline carries the main message. */
+export const HOME_HERO_SUBLINE_MOBILE =
+  'Hikes, camps, runs, and more — find your crew and get outside together.';
 
-export const HOME_PROOF_PILLS = [
-  { label: 'Map-first discovery', emoji: '🗺️' },
-  { label: 'All 7 emirates', emoji: '🇦🇪' },
-  { label: 'Free to join', emoji: '✓' },
+export const HOME_PROOF_STATS = [
+  {
+    label: 'Verified Hosts',
+    detail: 'Every activity has a named host who approves who joins.',
+  },
+  {
+    label: 'Community Driven',
+    detail: 'Built by hikers for the UAE outdoor community.',
+  },
+  {
+    label: 'Free to Join',
+    detail: 'Browse the map free, then sign up when you’re ready to request a spot.',
+  },
+] as const;
+
+/** @deprecated Use HOME_PROOF_STATS */
+export const HOME_PROOF_PILLS = HOME_PROOF_STATS.map((s) => ({
+  label: s.label,
+  emoji: '✓',
+}));
+
+export const HOME_VALUE_SECTION = {
+  eyebrow: 'What you can do',
+  title: 'Find your people. Get outside. Go together.',
+  subtitle:
+    'See what’s on, say what you want, connect and chat — then show up with a crew that keeps going.',
+} as const;
+
+export const HOME_VALUE_PROPS = [
+  {
+    title: 'See what’s on near you',
+    tagline: 'Hikes, camps, runs, and group outings on the map.',
+    description:
+      'Real plans near you — filter by emirate and date, then tap in when something fits.',
+  },
+  {
+    title: 'Say what you’re looking for',
+    tagline: 'Post your plan and find like-minded people.',
+    description:
+      'Weekend camp, trail run, early jog — connect with others heading out or hosts who can lead.',
+  },
+  {
+    title: 'Connect and go together',
+    tagline: 'Chat, meet up, keep the same crew.',
+    description:
+      'Group chat and buddies make the next outing easy — show up together, stay connected.',
+  },
 ] as const;
 
 export const HOME_PRODUCT_PREVIEW = {
-  title: 'See what\'s on near you',
-  subtitle: 'Trails, camps, and group outings on one map.',
+  title: 'See what’s on before you sign up',
+  subtitle:
+    'Outings near you on the map — tap a pin, connect with the group, and join when you’re ready.',
   activityTitle: 'Jebel Jais sunrise hike',
-  activityMeta: 'Sat · RAK · Host approved',
+  activityMeta: 'Saturday · RAK · Host approved',
   activitySpots: '4 spots left',
 } as const;
 
@@ -62,65 +114,75 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
 ];
 
 export const HOME_LIVE_SECTION = {
-  title: 'This week on the map',
-  subtitle: 'Real group hikes and camps you can request to join.',
+  title: 'Outings happening this week',
+  subtitle: 'Real group plans posted by hosts and members — join from the map or say what you want.',
 } as const;
 
-/** Product story — what the app feels like, not an onboarding checklist. */
-export const HOME_DAY_TIMELINE = [
-  {
-    emoji: '📍',
-    time: 'Open the map',
-    title: 'See what\'s on',
-    detail: 'Trails, camps, and group outings near you — this week.',
-  },
-  {
-    emoji: '✋',
-    time: 'Tap to join',
-    title: 'Request a spot',
-    detail: 'Hosts approve requests. Chat to confirm plans.',
-  },
-  {
-    emoji: '🥾',
-    time: 'Show up',
-    title: 'Hike with a crew',
-    detail: 'Meet outdoors. No more guessing who\'s going.',
-  },
-] as const;
+export const HOME_DAY_TIMELINE = {
+  title: 'How it works',
+  subtitle: 'From browsing to showing up with your crew.',
+  steps: [
+    {
+      step: '01',
+      title: 'Browse what’s on',
+      line: 'Outings near you on the map.',
+      detail: 'Hikes, camps, runs, and group plans across the UAE — filter and tap in.',
+    },
+    {
+      step: '02',
+      title: 'Join or post your plan',
+      line: 'Request a spot or say what you want.',
+      detail: 'Connect in group chat once you’re in — hosts approve who joins.',
+    },
+    {
+      step: '03',
+      title: 'Show up together',
+      line: 'Meet your crew outdoors.',
+      detail: 'Same people, next outing easier — buddies and group chat keep you going.',
+    },
+  ],
+} as const;
+
+export const HOME_TESTIMONIALS_SECTION = {
+  title: 'People who found their outdoor crew',
+  subtitle: 'Real members — not stock photos.',
+} as const;
 
 export const HOME_TESTIMONIALS = [
   {
     name: 'Fatima Al Mazrouei',
     location: 'Dubai',
     rating: 5,
-    text: 'Found a Jebel Jais group in minutes. The host was organised and welcoming.',
+    text: 'Found a Jebel Jais group in minutes. The host was organised, the group chat was clear, and everyone showed up on time.',
   },
   {
     name: 'James Mitchell',
     location: 'Abu Dhabi',
     rating: 5,
-    text: 'Finally a way to find family-friendly camps without WhatsApp chaos.',
+    text: 'Finally a structured way to find family-friendly camps without endless WhatsApp threads and last-minute cancellations.',
   },
   {
     name: 'Sara Ahmed',
     location: 'RAK',
     rating: 5,
-    text: 'My first solo hike felt safe because the activity had a clear host and group.',
+    text: 'My first solo hike felt safe because the activity had a verified host, a clear meeting point, and a visible group list.',
   },
   {
     name: 'Mohammed Al Hashmi',
     location: 'Sharjah',
     rating: 5,
-    text: 'Made friends I still hike with every month. The map makes it easy.',
+    text: 'I still hike with the same crew I met through UAE Trail six months ago. The map makes it easy to find the next outing.',
   },
 ] as const;
 
-export const HOME_CLOSE_HEADLINE = "You don't have to find trail buddies alone.";
-export const HOME_CLOSE_SUBLINE = 'Join free. Browse the map. Request your first activity.';
+export const HOME_CLOSE_HEADLINE = 'Ready to get outside with your crew?';
+export const HOME_CLOSE_SUBLINE =
+  'Browse what’s on, connect with like-minded people, and join your first outing — free to start.';
 
 export const HOME_FOUNDER_SECTION = {
-  title: 'Built by hikers in the UAE',
-  subtitle: 'We use this app on the same trails you will.',
+  title: 'Built by people who wanted a crew',
+  subtitle:
+    'We started UAE Trail because the trails were here — what was missing was one place to find your people and go together.',
 } as const;
 
 /** Initials avatar for testimonial cards — avoids stock photo trust issues. */

@@ -1,6 +1,8 @@
-# UAE Trails
+# UAE Trail
 
-Monorepo web platform for UAE hiking/camping with:
+Monorepo for **UAE Trail** — find people to get outside with in the UAE & GCC (hikes, camps, runs, group outings). Product concept: [`docs/NORTHSTAR.md`](docs/NORTHSTAR.md).
+
+Monorepo stack:
 - Express backend with MongoDB-first auth/data plumbing (`apps/api`)
 - React + Vite frontend (`src`)
 - Shared DTO/types package (`packages/shared-types`)
@@ -81,7 +83,10 @@ See **[docs/MOBILE_DEPLOYMENT_PLAN.md](docs/MOBILE_DEPLOYMENT_PLAN.md)** for the
 
 | Guide | Purpose |
 |-------|---------|
+| [NORTHSTAR.md](docs/NORTHSTAR.md) | Product concept, voice, surface jobs |
 | [DEV_RUN.md](docs/DEV_RUN.md) | VS Code hot-reload dev convention |
+| [NAVIGATION.md](docs/NAVIGATION.md) | Routes, surfaces, auth redirects |
+| [LANDING.md](docs/LANDING.md) | Guest-only marketing page (`/`) scope |
 | [RELEASE_READINESS.md](docs/RELEASE_READINESS.md) | QA gates, UAT scripts, go/no-go |
 | [PRE_DEPLOY_CHECKLIST.md](docs/PRE_DEPLOY_CHECKLIST.md) | Go-live on VPS |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker + HTTPS |

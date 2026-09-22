@@ -36,9 +36,9 @@ export const ExploreGuestJoinBanner = () => {
     <div className="pointer-events-auto absolute inset-x-4 bottom-[calc(var(--safe-bottom)+4.75rem)] z-[1100] lg:hidden">
       <div className="flex items-start gap-3 rounded-2xl border border-emerald-200/80 bg-white/95 px-4 py-3 shadow-lg shadow-emerald-900/10 backdrop-blur-md">
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-neutral-900">Join to request activities</p>
+          <p className="text-[13px] font-semibold text-neutral-900">Join to connect and go together</p>
           <p className="mt-0.5 text-[12px] leading-snug text-neutral-500">
-            Browse the map free. Sign up to join hikes and camps with hosts.
+            Browse free. Sign up to join outings or post what you&apos;re looking for.
           </p>
           <Link
             to={joinHref}

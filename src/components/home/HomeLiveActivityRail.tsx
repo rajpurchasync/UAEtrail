@@ -59,10 +59,10 @@ export const HomeLiveActivityRail = ({
   loading = false,
   fromLiveApi = false,
 }: HomeLiveActivityRailProps) => (
-  <section className="home-landing-sheet bg-white pb-8 pt-6 md:py-14" aria-label="Activities on the map">
+  <section className="home-landing-sheet bg-white pb-6 pt-5 md:py-14" aria-label="Activities on the map">
     <LandingShell>
-      <header className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+      <header className="min-w-0 flex-1 text-center md:text-left">
+        <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 md:justify-start">
           <h2 className="landing-section-title">{HOME_LIVE_SECTION.title}</h2>
           {fromLiveApi && !loading ? (
             <span className="landing-live-badge shrink-0" aria-label="Live listings">
@@ -70,7 +70,7 @@ export const HomeLiveActivityRail = ({
             </span>
           ) : null}
         </div>
-        <p className="landing-section-lead">
+        <p className={`landing-section-lead ${fromLiveApi ? 'hidden md:block' : ''}`}>
           {fromLiveApi
             ? HOME_LIVE_SECTION.subtitle
             : 'Sample outings — open the map for live listings.'}
@@ -84,14 +84,16 @@ export const HomeLiveActivityRail = ({
           ))}
         </div>
       ) : (
-        <div className="mt-5 space-y-3 md:grid md:grid-cols-3 md:gap-4 md:space-y-0">
-          {activities.slice(0, 6).map((activity) => (
-            <ActivityCard key={activity.id} activity={activity} />
+        <div className="mt-4 space-y-3 md:mt-5 md:grid md:grid-cols-3 md:gap-4 md:space-y-0">
+          {activities.slice(0, 6).map((activity, index) => (
+            <div key={activity.id} className={index >= 2 ? 'hidden md:block' : undefined}>
+              <ActivityCard activity={activity} />
+            </div>
           ))}
         </div>
       )}
 
-      <Link to={EXPLORE_MAP_PATH} className="landing-text-cta mt-5 inline-flex items-center gap-1">
+      <Link to={EXPLORE_MAP_PATH} className="landing-text-cta mx-auto mt-4 flex items-center gap-1 md:mx-0 md:mt-5 md:inline-flex">
         See everything on the map
         <ArrowRight className="h-4 w-4" aria-hidden />
       </Link>

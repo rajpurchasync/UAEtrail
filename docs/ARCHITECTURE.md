@@ -1,5 +1,7 @@
 # UAE Trail — System Architecture
 
+**Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — who we serve, what problem we solve, and how surfaces should feel. Implementation follows that doc; this file describes system shape.
+
 ## Overview
 
 Monorepo with three layers:
@@ -65,7 +67,7 @@ context/        AuthContext
 utils/          authRouting, exploreRouting, shopPaths
 ```
 
-**Mobile IA:** Explore (map + lists) → Profile; signed-in default landing is `/explore`.
+**Mobile IA:** Explore (map + lists) → Profile; signed-in default landing is `/explore`. Guest marketing is `/` only — see [`LANDING.md`](./LANDING.md) and [`NORTHSTAR.md`](./NORTHSTAR.md).
 
 **SEO:** `PageMeta` updates title/description/canonical per route; static `robots.txt` + `sitemap.xml` in `public/`.
 

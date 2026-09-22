@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useHomeLandingActivities } from '../hooks/useHomeLandingActivities';
 import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/platform';
 import { buildSignInRedirect } from '../utils/authReturnContext';
+import { HomeDayTimeline } from '../components/home/HomeDayTimeline';
 import { HomeDesktopHero } from '../components/home/HomeDesktopHero';
 import { HomeFounderStory } from '../components/home/HomeFounderStory';
 import { HomeLiveActivityRail } from '../components/home/HomeLiveActivityRail';
@@ -17,9 +18,11 @@ import { HomeMobileLaunch } from '../components/home/HomeMobileLaunch';
 import { HomeProductPreview } from '../components/home/HomeProductPreview';
 import { HomeProofStrip } from '../components/home/HomeProofStrip';
 import { HomeTestimonials } from '../components/home/HomeTestimonials';
+import { HomeValueProps } from '../components/home/HomeValueProps';
 import { LandingShell } from '../components/home/LandingShell';
 import { HOME_TESTIMONIALS } from '../content/homeLanding';
 
+/** Guest marketing funnel only — signed-in users redirect to /explore. See docs/LANDING.md */
 export const Home = () => {
   const location = useLocation();
   const { user } = useAuth();
@@ -32,12 +35,13 @@ export const Home = () => {
   const joinHref = joinAuthPath(EXPLORE_MAP_PATH);
   const signInHref = buildSignInRedirect(location).href;
   const showProductPreview = !fromLiveApi || loading || activities.length < 2;
+  const hideProductPreviewOnMobile = fromLiveApi && !loading && activities.length >= 2;
 
   return (
     <div className="min-h-screen w-full bg-white">
       <PageMeta
-        title="Discover hiking & camping in the UAE & GCC"
-        description="Find trails, camping spots, and join organized outdoor activities with trusted guides across the UAE and GCC."
+        title="Find your outdoor crew in the UAE & GCC"
+        description="Find people to get outside with — hikes, camps, runs, and group outings. Residents and visitors welcome. Browse free, connect, and go together."
         path="/"
         image={DEFAULT_OG_IMAGE}
       />
@@ -47,11 +51,17 @@ export const Home = () => {
       <HomeDesktopHero joinHref={joinHref} signInHref={signInHref} />
 
       <div className="home-landing-scroll bg-white">
-        <HomeLiveActivityRail activities={activities} loading={loading} fromLiveApi={fromLiveApi} />
         <HomeProofStrip />
-        {showProductPreview ? <HomeProductPreview /> : null}
+        <HomeLiveActivityRail activities={activities} loading={loading} fromLiveApi={fromLiveApi} />
+        <HomeValueProps />
+        <HomeDayTimeline />
+        {showProductPreview ? (
+          <div className={hideProductPreviewOnMobile ? 'hidden md:block' : undefined}>
+            <HomeProductPreview />
+          </div>
+        ) : null}
         <HomeTestimonials items={HOME_TESTIMONIALS} />
-        <section className="py-8 md:py-12">
+        <section className="border-b border-neutral-100 bg-neutral-50/40 py-6 md:py-12">
           <LandingShell className="max-w-3xl md:mx-auto">
             <FaqPreview items={HOME_FAQ_PREVIEW} mobileLimit={2} compact />
           </LandingShell>

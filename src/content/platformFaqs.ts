@@ -20,7 +20,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What is UAE Trail?',
         answer:
-          'UAE Trail is an outdoor recreation platform for the United Arab Emirates and the wider GCC. We help you discover hiking trails and camping spots, join organized activities with verified hosts, earn Trail Points rewards, and connect with the outdoor community.'
+          'UAE Trail helps you find people to get outside with in the UAE and GCC — hikes, camps, trail runs, jogs, and group outings. Browse what’s on, post what you’re looking for, connect and chat, then go together. Residents, expats, and visitors are all welcome. Free to browse; some activities may be paid depending on the host.'
       },
       {
         question: 'Which regions does UAE Trail cover?',

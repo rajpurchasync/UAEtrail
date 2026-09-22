@@ -1,13 +1,43 @@
-# Platform layers
+---
+description: User surfaces, routes, and where features live — marketing vs explore vs profile vs host
+alwaysApply: true
+---
 
-| Layer | Routes | What |
-|-------|--------|------|
-| **Public** | `/activities` (explore), discovery, detail pages | Browse published activities |
-| **Participant** | `/profile`, `/activities?tab=mine` | User dashboard — trips joined, requests |
-| **Host** | `/host/*` | Host activities, team, venues (eligible participants) |
-| **Admin** | `/admin/*` | Approvals, users, moderation |
+# Platform surfaces
 
-- One entity: **Activity** (`draft` / `published` / `cancelled` / `suspended`).
-- Page file: `Activities.tsx` at route `ACTIVITIES_PATH` (`/activities`).
-- Do not add hosting UI on the public activities page — use `/host/activities`.
-- Avoid legacy names: Trips page, OrganizerActivitiesPath, Event.
+**Product north star:** `docs/NORTHSTAR.md` — find people, get outside together (residents, expats, visitors; hikes, camps, runs, and more). Architecture and copy must serve that, not trail-inventory or host-console framing for consumers.
+
+Canonical detail: **`docs/NORTHSTAR.md`**, **`docs/NAVIGATION.md`**, **`docs/ARCHITECTURE.md`**, **`docs/LANDING.md`**.
+
+## Surfaces (where users go)
+
+| Surface | Route | Who | Purpose |
+|---------|-------|-----|---------|
+| **Marketing** | `/` | **Guests only** | Emotional promise + trust + proof → Explore / Join free |
+| **Browse (product home)** | `/explore` | Everyone | Find people and outdoor plans — map-first discovery |
+| **Personal hub** | `/profile`, `/profile/settings` | Signed in | Your crew, up next, settings |
+| **Entity detail** | `/activity`, `/trail`, `/camp`, `/shop`, `/operator`, … | Public / signed in | Understand the plan → connect → join |
+| **Host console** | `/host/*` | Approved hosts | Enable others to go together (secondary audience) |
+| **Admin** | `/admin/*` | Platform admins | Moderation, approvals |
+
+**Do not conflate Marketing (`/`) with Browse (`/explore`).** Members never use `/` as home.
+
+## Redirects
+
+- Signed-in user hits `/` → `/explore` (`Home.tsx`)  
+- Legacy `/map`, `/discovery`, … → `/explore` (`App.tsx`)  
+- Post-auth default → `/explore` (`authRedirect.ts`)  
+- Use `explorePath()` / `EXPLORE_MAP_PATH` — not ad-hoc `/explore?…` strings outside `exploreRouting.ts` and `platform.ts`
+
+## Core entity
+
+- **Activity** — scheduled outing; public join via request + host approval  
+- **Explore map payload** — activities, venue places, shops, participant demand (see `apps/api/src/lib/explore-map.ts`)
+
+## Layer boundaries
+
+- **Hosting UI** → `/host/*` only — not on `/explore` browse chrome or `/` marketing  
+- **Explore copy** → `src/explore/exploreCopy.ts` + `docs/experiment/explore-ux-spec.md`  
+- **Landing copy** → `src/content/homeLanding.ts` + `docs/LANDING.md` + `docs/NORTHSTAR.md`  
+- **Canonical voice strings** → `src/content/productNorthStar.ts`  
+- Avoid legacy route names in new UI: bare `/activities` as browse, OrganizerActivitiesPath, Trips page

@@ -2,6 +2,8 @@
 
 This glossary maps **product concepts** to **code and routes**. Use it when naming pages, DTOs, and PRs. Routes and API paths stay stable during renames; component and file names may use `Organisation*` as a **code umbrella** for tenants.
 
+**Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — people finding company outdoors; code entities below are *how* the product delivers that.
+
 See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing rules.
 
 ## Core objects

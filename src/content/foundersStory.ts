@@ -12,7 +12,7 @@ export interface FounderProfile {
 }
 
 export const FOUNDERS_STORY_INTRO =
-  "We didn't set out to build another app. We wanted one place for the UAE outdoor community to find activities, share spots, and meet people who love the trails as much as we do.";
+  "We didn't set out to build another app. We wanted one place for anyone in the UAE & GCC to find their outdoor crew — discover what's on, connect, and go together.";
 
 export const FOUNDERS_MISSION_PILLARS = [
   { label: 'Find activities', detail: 'Discover hikes, camps, and events near you' },

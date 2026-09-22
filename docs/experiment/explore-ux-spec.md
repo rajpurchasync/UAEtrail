@@ -3,6 +3,8 @@
 **Branch:** `experiment/new-ui` · **Remote:** `purchasync/UAEtrail` only  
 **Status:** Approved for implementation · **Last updated:** 2026-09-07
 
+**Product north star:** [`../NORTHSTAR.md`](../NORTHSTAR.md) — explore is where users **find people and plans to get outside together**. Card copy should feel social and actionable (“{Name} is going…”, “{Name} wants to go…”), not like a trail database.
+
 This document is the **single source of truth** for visitor-facing copy, emojis, badges, and CTAs on the mobile explore map. Code must implement via `src/explore/exploreCopy.ts` (Phase P0) — not ad-hoc strings in components.
 
 ---

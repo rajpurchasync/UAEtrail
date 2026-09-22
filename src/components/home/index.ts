@@ -10,3 +10,4 @@ export { HomeMobileLaunch } from './HomeMobileLaunch';
 export { HomeProductPreview } from './HomeProductPreview';
 export { HomeProofStrip } from './HomeProofStrip';
 export { HomeTestimonials } from './HomeTestimonials';
+export { HomeValueProps } from './HomeValueProps';

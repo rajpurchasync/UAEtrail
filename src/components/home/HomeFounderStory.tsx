@@ -7,7 +7,7 @@ const FOUNDER = FOUNDER_PROFILES.founder;
 const COFOUNDER = FOUNDER_PROFILES.cofounder;
 
 export const HomeFounderStory = () => (
-  <section className="border-t border-neutral-100 bg-neutral-50/50 py-8 md:py-14">
+  <section className="hidden border-t border-neutral-100 bg-neutral-50/50 py-8 md:block md:py-14">
     <LandingShell>
       <LandingSectionIntro title={HOME_FOUNDER_SECTION.title} subtitle={HOME_FOUNDER_SECTION.subtitle} />
 

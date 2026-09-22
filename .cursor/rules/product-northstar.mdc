@@ -1,0 +1,30 @@
+---
+description: Product north star — voice, audience, and copy principles for all user-facing work
+alwaysApply: true
+---
+
+# Product north star
+
+**Canonical doc:** `docs/NORTHSTAR.md` · **UI strings:** `src/content/productNorthStar.ts`
+
+## What UAE Trail is
+
+Help people **find like-minded company outdoors** in the UAE & GCC — discover plans, connect, chat, **go together**.
+
+## Who
+
+Residents, expats, **tourists, visitors** — not “UAE locals only.”
+
+## Activities
+
+**Get outside** — hikes, camps, trail runs, jogs, group outings (examples, not limits).
+
+## Copy lead
+
+Emotion and togetherness first — *find your people · get outside · go together* — not map/host/join architecture.
+
+## Before shipping user-facing copy
+
+1. Read `docs/NORTHSTAR.md`  
+2. Lead with the problem (loneliness, flaky plans, no crew) not features  
+3. Mechanisms (map, hosts, requests) are *how*, not *why*
