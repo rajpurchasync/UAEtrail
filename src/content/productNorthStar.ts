@@ -18,8 +18,38 @@ export const PRODUCT_AUDIENCE =
 export const PRODUCT_ACTIVITY_SCOPE =
   'Hikes, camps, trail runs, jogs, and group outings that get you outside.';
 
+/** Default SEO / Open Graph site description. */
+export const PRODUCT_SITE_DESCRIPTION =
+  'Find people to get outside with in the UAE & GCC — hikes, camps, runs, and group outings. Browse free, connect, and go together.';
+
 /** Browse CTA label (aligned with explore nav). */
 export const PRODUCT_EXPLORE_CTA = 'Explore the map';
 
 /** Join CTA label. */
 export const PRODUCT_JOIN_CTA = 'Join free';
+
+/** Auth screens */
+export const PRODUCT_AUTH_SIGNUP_SUBLINE = 'Find your crew and get outside together — free to join.';
+export const PRODUCT_AUTH_SIGNIN_SUBLINE = 'Pick up where you left off with your crew and plans.';
+
+/** Profile — Up next empty */
+export const PRODUCT_PROFILE_UP_NEXT_EMPTY_TITLE = 'No plans yet';
+export const PRODUCT_PROFILE_UP_NEXT_EMPTY_BODY =
+  "See what's on near you, connect with a group, and go together.";
+
+/** Activity hub — joined upcoming empty */
+export const PRODUCT_JOINED_UPCOMING_EMPTY_TITLE = 'Nothing on your calendar yet';
+export const PRODUCT_JOINED_UPCOMING_EMPTY_BODY =
+  'Find an outing on the map — hikes, camps, runs, and group plans near you.';
+
+/** Welcome / invite */
+export const PRODUCT_WELCOME_HEADLINE = "You're in — find your crew.";
+export const PRODUCT_INVITE_SHARE_TEXT =
+  'Join me on UAE Trail — find people to get outside with in the UAE & GCC.';
+
+/** Explore consumer blurbs */
+export const PRODUCT_ACTIVITIES_EXPLORE_BLURB =
+  'Outings you can join — hikes, camps, runs, and group plans posted by members and hosts.';
+
+export const PRODUCT_EXPLORE_EMPTY_FILTERS =
+  "Nothing here with these filters — try another type or area, or post what you're looking for.";

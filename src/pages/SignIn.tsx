@@ -20,6 +20,7 @@ import {
 } from '../utils/authReturnContext';
 import { PageMeta } from '../components/seo/PageMeta';
 import { isSignupProfileComplete } from '../constants/userProfileOptions';
+import { PRODUCT_AUTH_SIGNIN_SUBLINE } from '../content/productNorthStar';
 
 export const SignIn = () => {
   const { signIn, signInDemo, signInWithGoogle, loading } = useAuth();
@@ -192,7 +193,7 @@ export const SignIn = () => {
           <span className="text-lg font-bold text-neutral-900 tracking-tight">UAE Trail</span>
         </Link>
         <h1 className="text-[28px] font-bold text-neutral-900 mb-1 tracking-tight text-center">Welcome</h1>
-        <p className="text-[15px] text-neutral-500 mb-6 text-center">Log in to your UAE Trail account</p>
+        <p className="text-[15px] text-neutral-500 mb-6 text-center">{PRODUCT_AUTH_SIGNIN_SUBLINE}</p>
 
         <GoogleAuthSection
           onSuccess={handleGoogleSignIn}

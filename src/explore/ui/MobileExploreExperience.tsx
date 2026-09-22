@@ -12,6 +12,7 @@ import type { ActivityDTO, ExploreMapItemDTO, MyActivityRequestDTO, ActivityPart
 import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import { describeExploreMapLoadError } from '../../utils/exploreMapErrors';
+import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
 import { PageMeta } from '../../components/seo/PageMeta';
 import { JoinRequestModal } from '../../components/ui/JoinRequestModal';
 import { WithdrawRequestModal } from '../../components/ui/WithdrawRequestModal';
@@ -1259,12 +1260,12 @@ export const MobileExploreExperience = () => {
             {isDesktop
               ? desktopBrowseTab === 'venues'
                 ? 'No venues match this filter yet.'
-                : 'Nothing here with these filters — try another type or date.'
+                : PRODUCT_EXPLORE_EMPTY_FILTERS
               : sidebarPanel === 'venues'
                 ? 'No venues match this filter yet.'
                 : sidebarPanel === 'shops'
                   ? 'No gear shops listed yet.'
-                  : 'Nothing here with these filters — try another type or date.'}
+                  : PRODUCT_EXPLORE_EMPTY_FILTERS}
           </p>
         ) : null}
         {listItems.length > 0 && shopListSections ? (

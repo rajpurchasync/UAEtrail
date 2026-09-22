@@ -2,6 +2,8 @@
 
 Cross-platform auth/session/access baseline for release verification is persisted in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
 
+Voice and positioning: [`NORTHSTAR.md`](./NORTHSTAR.md). Canonical UI strings: `src/content/productNorthStar.ts`.
+
 Use this copy when creating the Play Console listing. Adjust after final brand review.
 
 ## App name
@@ -10,25 +12,25 @@ Use this copy when creating the Play Console listing. Adjust after final brand r
 
 ## Short description (80 chars max)
 
-Discover UAE trails, join outdoor trips, and connect with hikers & campers.
+Find your outdoor crew in the UAE — hikes, camps, runs. Connect & go together.
 
 ## Full description (4000 chars max)
 
-UAE Trail is your companion for hiking, camping, and organized outdoor adventures across the UAE and GCC.
+The outdoors are better together.
 
-**Explore** — Browse trails and camps by emirate, difficulty, and season. View maps, photos, and community tips.
+UAE Trail helps you **find people to get outside with** in the UAE & GCC — whether you live here, just arrived, or you're visiting for the week.
 
-**Join trips** — Request a spot on guided hikes and camping trips run by verified organizers. Track your requests and upcoming adventures.
+**See what's on** — Browse hikes, camps, trail runs, jogs, and group outings near you on the map.
 
-**Community** — Ask questions, share trip reports, and learn from fellow outdoor enthusiasts.
+**Say what you want** — Post your plan when nothing fits and connect with like-minded people or hosts.
 
-**Shop** — Gear and essentials from trusted merchants (where available).
+**Connect & go** — Chat with the group, join an outing, and show up together.
 
-**Trail Points** — Earn rewards for joining trips, reviews, and community participation.
+**Keep your crew** — Stay connected with buddies and group chat for the next trip.
 
-Whether you are new to the outdoors or an experienced hiker, UAE Trail helps you find your next adventure safely and easily.
+Residents, expats, tourists, and visitors are all welcome. Browse free; sign up when you're ready to join or post a plan.
 
-Account required for trips, messaging, and purchases. Email sign-in supported; Google sign-in on web and Android.
+Account required to join outings, message groups, and save your profile. Email sign-in supported; Google sign-in on web and Android.
 
 ## Category
 
@@ -62,13 +64,13 @@ Expect **Everyone** or **Teen** depending on user-generated chat — complete IA
 
 Capture on **phone** (1080×1920 or higher):
 
-1. Home / Explore with trail cards
-2. Trail detail with map
-3. Trips tab (upcoming)
-4. Community feed
-5. Profile + Trail Points
+1. Explore map with live outings
+2. Activity detail + join flow
+3. Profile — Up next / your crew
+4. Post what you're looking for (demand)
+5. Group chat or buddies
 6. Sign-in screen (email + Google)
-7. Optional: Shop or trip detail
+7. Optional: Host publishing or shop pin
 
 **Feature graphic:** 1024×500 — use `public/icons/icon-1024.png` on brand background.
 

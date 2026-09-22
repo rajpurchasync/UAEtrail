@@ -10,6 +10,7 @@
  */
 
 import { explorePath } from '../utils/exploreRouting';
+import { PRODUCT_ACTIVITIES_EXPLORE_BLURB } from '../content/productNorthStar';
 
 export const ACTIVITY_TYPES = ['hiking', 'camping', 'event'] as const;
 
@@ -21,10 +22,11 @@ export const ACTIVITY_PRODUCT_SINGULAR = 'Activity';
 /** Umbrella product name for scheduled listings (plural). */
 const ACTIVITY_PRODUCT_PLURAL = 'Activities';
 
-/** Short summary of the three kinds — use in blurbs and empty states. */
-export const ACTIVITY_KINDS_SUMMARY = 'Hiking, Camping, and Events';
+/** Short summary of scheduled listing kinds — use in blurbs and empty states. */
+export const ACTIVITY_KINDS_SUMMARY = 'Hikes, camps, runs, and group outings';
 
-/** Singular label for one scheduled listing of a given kind. */
+/** Consumer explore blurb under the Activities section. */
+export const activitiesExploreBlurb = (): string => PRODUCT_ACTIVITIES_EXPLORE_BLURB;
 export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
@@ -86,10 +88,6 @@ export const activityFormTitle = (type: ActivityType, mode: 'create' | 'edit'): 
   const verb = mode === 'edit' ? 'Edit' : 'New';
   return `${verb} ${ACTIVITY_TYPE_LABELS[type]} ${ACTIVITY_PRODUCT_SINGULAR}`;
 };
-
-/** Consumer explore blurb under the Activities section. */
-export const activitiesExploreBlurb = (): string =>
-  `Scheduled ${ACTIVITY_PRODUCT_PLURAL.toLowerCase()} you can join — hiking, camping, and events hosted by verified hosts.`;
 
 /** Detail page banner eyebrow for a scheduled listing. */
 export const activityDetailEyebrow = (type: ActivityType | 'carpool'): string => {

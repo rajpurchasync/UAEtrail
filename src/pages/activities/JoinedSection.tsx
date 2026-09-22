@@ -6,6 +6,11 @@ import { ActivityHubEmptyState } from '../../components/mobile/ActivityHubEmptyS
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
+import {
+  PRODUCT_EXPLORE_CTA,
+  PRODUCT_JOINED_UPCOMING_EMPTY_BODY,
+  PRODUCT_JOINED_UPCOMING_EMPTY_TITLE,
+} from '../../content/productNorthStar';
 import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import { formatActivityType } from '../../utils/activityIdentity';
 import {
@@ -109,9 +114,9 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       ) : subTab === 'upcoming' ? (
         upcomingRows.length === 0 ? (
           <ActivityHubEmptyState
-            title="Nothing on your calendar yet"
-            description="Find a hike or camp on the map and request to join."
-            actionLabel="Explore map"
+            title={PRODUCT_JOINED_UPCOMING_EMPTY_TITLE}
+            description={PRODUCT_JOINED_UPCOMING_EMPTY_BODY}
+            actionLabel={PRODUCT_EXPLORE_CTA}
             actionTo={EXPLORE_MAP_PATH}
           />
         ) : (
@@ -153,9 +158,9 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
         attended.length === 0 ? (
           <ActivityHubEmptyState
             emoji="✅"
-            title="No attended activities yet"
-            description="After your host checks you in, completed outings appear here."
-            actionLabel="Find an activity"
+            title="No outings completed yet"
+            description="After you join and check in, your crew and past trips show up here."
+            actionLabel={PRODUCT_EXPLORE_CTA}
             actionTo={EXPLORE_MAP_PATH}
           />
         ) : (

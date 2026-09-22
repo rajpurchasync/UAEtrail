@@ -63,7 +63,7 @@ Declare data consistent with `Privacy.tsx`:
 
 ## 7 — Review notes (suggested)
 
-> UAE Trail is a hiking and outdoor trip platform for the UAE. Reviewers can sign in with the provided test account or create a new account via email. Google Sign-In is intentionally disabled on iOS; email registration is available. Premium digital unlocks are purchased via web (Stripe) in v1.
+> UAE Trail helps people find company for outdoor outings in the UAE & GCC — hikes, camps, runs, and group plans. Reviewers can sign in with the provided test account or create a new account via email. Google Sign-In is intentionally disabled on iOS; email registration is available. Browse the map free; joining or posting a plan requires an account.
 
 ## Payments (future)
 

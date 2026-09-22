@@ -54,10 +54,10 @@ export const DEMAND_TYPE_OPTIONS: Array<{
   subtitle: string;
   emoji: string;
 }> = [
-  { key: 'hiking', title: 'Hiking', subtitle: 'Find hiking buddies', emoji: '🥾' },
-  { key: 'camping', title: 'Camping', subtitle: 'Camping plans', emoji: '⛺' },
-  { key: 'carpool', title: 'Rideshare', subtitle: 'Need a ride', emoji: '🚗' },
-  { key: 'event', title: 'Other Outdoors', subtitle: 'Runs, meetups & more', emoji: '✨' },
+  { key: 'hiking', title: 'Hiking', subtitle: 'Find a crew for the trail', emoji: '🥾' },
+  { key: 'camping', title: 'Camping', subtitle: 'Camp with the right people', emoji: '⛺' },
+  { key: 'carpool', title: 'Rideshare', subtitle: 'Share a ride to the trailhead', emoji: '🚗' },
+  { key: 'event', title: 'Other outdoors', subtitle: 'Runs, jogs, meetups & more', emoji: '✨' },
 ];
 
 export const DEMAND_PARTY_PRESETS = [1, 2, 3, 4, 6, 8] as const;

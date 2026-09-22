@@ -3,6 +3,11 @@ import { Calendar, ChevronRight } from 'lucide-react';
 import type { ActivityDTO, ChatConversationDTO } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../../api/services';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
+import {
+  PRODUCT_EXPLORE_CTA,
+  PRODUCT_PROFILE_UP_NEXT_EMPTY_BODY,
+  PRODUCT_PROFILE_UP_NEXT_EMPTY_TITLE,
+} from '../../content/productNorthStar';
 import { AppButtonLink } from '../mobile/AppButton';
 import { GlassCard } from '../mobile/GlassCard';
 import { AccountSectionHeader } from '../account/AccountSectionHeader';
@@ -56,14 +61,12 @@ export const ProfileUpNextSection = ({
         <AccountSectionHeader title="Up next" />
         <GlassCard padding className="text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-2xl" aria-hidden>
-            🥾
+            🌄
           </div>
-          <p className="mt-3 text-sm font-bold text-neutral-900">No plans yet</p>
-          <p className="mt-1 text-[13px] leading-snug text-neutral-500">
-            Browse the map and request your first activity.
-          </p>
+          <p className="mt-3 text-sm font-bold text-neutral-900">{PRODUCT_PROFILE_UP_NEXT_EMPTY_TITLE}</p>
+          <p className="mt-1 text-[13px] leading-snug text-neutral-500">{PRODUCT_PROFILE_UP_NEXT_EMPTY_BODY}</p>
           <AppButtonLink to={EXPLORE_MAP_PATH} fullWidth className="mt-4">
-            Explore map
+            {PRODUCT_EXPLORE_CTA}
           </AppButtonLink>
         </GlassCard>
       </section>

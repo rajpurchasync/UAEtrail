@@ -13,6 +13,11 @@ import {
   type UserGender,
   isSignupProfileComplete,
 } from '../constants/userProfileOptions';
+import {
+  PRODUCT_EXPLORE_CTA,
+  PRODUCT_INVITE_SHARE_TEXT,
+  PRODUCT_WELCOME_HEADLINE,
+} from '../content/productNorthStar';
 
 type WelcomeLocationState = {
   redirectTo?: string;
@@ -89,7 +94,7 @@ export const WelcomeSignup = () => {
       const inviteUrl = referralCode
         ? `${window.location.origin}/signup?ref=${referralCode}`
         : `${window.location.origin}/signup`;
-      const shareText = 'Join me on UAE Trail — discover hikes, camps, and outdoor adventures across the Emirates.';
+      const shareText = PRODUCT_INVITE_SHARE_TEXT;
 
       if (navigator.share) {
         await navigator.share({ title: 'Join UAE Trail', text: shareText, url: inviteUrl });
@@ -128,7 +133,7 @@ export const WelcomeSignup = () => {
           <p className="text-[15px] text-neutral-500 mt-2">
             {step === 'confirm'
               ? 'We use this to match you with activities — women-only groups, age limits, and your city.'
-              : "You're in — welcome to UAE Trail!"}
+              : PRODUCT_WELCOME_HEADLINE}
           </p>
         </div>
 
@@ -216,7 +221,7 @@ export const WelcomeSignup = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-neutral-900">Host an event</p>
-                  <p className="text-xs text-neutral-500">Add a hike, camp, event, or carpool</p>
+                  <p className="text-xs text-neutral-500">Lead a hike, camp, run, or group outing</p>
                 </div>
               </button>
               <button
@@ -228,8 +233,8 @@ export const WelcomeSignup = () => {
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-semibold text-neutral-900">Join an activity</p>
-                  <p className="text-xs text-neutral-500">Explore activities on the map</p>
+                  <p className="font-semibold text-neutral-900">Find your crew</p>
+                  <p className="text-xs text-neutral-500">{PRODUCT_EXPLORE_CTA} — join or post a plan</p>
                 </div>
               </button>
             </div>

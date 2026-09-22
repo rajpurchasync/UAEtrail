@@ -584,7 +584,7 @@ export const exploreSpotsLabel = (item: ExplorePresentationBuildInput): string |
 };
 
 export const explorePrimaryCtaLabel = (source: ExploreCardSource): string => {
-  if (source === 'demand') return 'Message';
+  if (source === 'demand') return 'Join this plan';
   if (source === 'shop') return 'View shop';
   if (source === 'agency') return 'View agency';
   if (source === 'activity') return 'Request to join';
@@ -596,12 +596,12 @@ export const exploreSecondaryCtaLabel = (
   options?: { websiteUrl?: string | null }
 ): string | null => {
   if (source === 'activity') return 'View details';
-  if (source === 'demand') return 'Message';
+  if (source === 'demand') return 'View details';
   if (source === 'shop' && options?.websiteUrl) return 'Visit website';
   return null;
 };
 
-const exploreAgencyHint = (): string => 'Tour operator on UAE Trail — see activities and get in touch.';
+const exploreAgencyHint = (): string => 'Outdoor host on UAE Trail — see plans and connect.';
 
 export const exploreVenueHint = (
   source: ExploreCardSource,

@@ -47,7 +47,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How do I join an organized hike or camping activity?',
         answer:
-          'Browse Activities for upcoming events hosted by guides and outdoor businesses. Open an activity page and submit a join request. The host reviews your request and confirms or waitlists you. Track status under My Requests.'
+          'Open Explore to see outings near you — hikes, camps, runs, and group plans on the map. Tap one, connect with the group, and request to join. Hosts approve who comes along. You can also post what you’re looking for if nothing fits.'
       },
       {
         question: 'What is the difference between a trail page and an activity?',

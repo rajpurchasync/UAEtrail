@@ -175,7 +175,7 @@ export const Buddies = () => {
                   </div>
                   <p className="font-semibold text-neutral-900">No buddies yet</p>
                   <p className="mt-1 text-sm text-neutral-500">
-                    Visit a member profile and tap Add buddy to connect.
+                    Meet people on outings — add them as buddies to stay connected.
                   </p>
                 </GlassCard>
               ) : (

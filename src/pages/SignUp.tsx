@@ -10,6 +10,7 @@ import { getPasswordValidationError } from '../utils/passwordPolicy';
 import { PageMeta } from '../components/seo/PageMeta';
 import { api } from '../api/services';
 import { isSignupProfileComplete } from '../constants/userProfileOptions';
+import { PRODUCT_AUTH_SIGNUP_SUBLINE } from '../content/productNorthStar';
 
 export const SignUp = () => {
   const { register, signInWithGoogle, loading } = useAuth();
@@ -141,7 +142,7 @@ export const SignUp = () => {
           <span className="text-lg font-bold text-neutral-900 tracking-tight">UAE Trail</span>
         </Link>
         <h1 className="text-[28px] font-bold text-neutral-900 mb-1 tracking-tight">Create Account</h1>
-        <p className="text-[15px] text-neutral-500 mb-6">Join UAE Trail and start exploring</p>
+        <p className="text-[15px] text-neutral-500 mb-6">{PRODUCT_AUTH_SIGNUP_SUBLINE}</p>
 
         {referralCode && (
           <div className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2.5 text-sm text-emerald-800">
