@@ -1,7 +1,8 @@
 import { type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Users, MapPin, ChevronRight } from 'lucide-react';
-import { ActivityListing } from '../../types';
+import type { ActivityDTO } from '@uaetrail/shared-types';
+import { isActivityFull } from '@uaetrail/shared-types';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { activityPricingBadge } from '../../utils/activityPricing';
 import { resolveOrganisationProfilePath } from '../../utils/organisationLinks';
@@ -13,7 +14,7 @@ import { SecureAvatar } from './SecureAvatar';
 import { activityHostAvatar, activityHostName, activityHostUserId, showTenantBrand } from '../../utils/hostLabels';
 
 interface ActivityCardProps {
-  activity: ActivityListing;
+  activity: ActivityDTO;
   /** Featured home carousel: tap opens activity detail */
   variant?: 'default' | 'featured';
 }
@@ -44,7 +45,7 @@ export const ActivityCard = ({ activity, variant = 'default' }: ActivityCardProp
   const dayNum = activityDate.getDate();
 
   const pricingBadge = activityPricingBadge(activity);
-  const isFull = activity.status === 'full' || activity.slotsAvailable <= 0;
+  const isFull = isActivityFull(activity);
   const slotsPercent = Math.round(((activity.slotsTotal - activity.slotsAvailable) / activity.slotsTotal) * 100);
 
   const goToActivity = () => navigate(activityPath);

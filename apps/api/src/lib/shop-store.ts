@@ -1,14 +1,28 @@
 import { randomUUID } from 'crypto';
-import { OrderStatus, ProductStatus, TenantBusinessMode } from '../domain/enums.js';
+import { OrderStatus, ProductStatus, TenantBusinessMode, UserRole } from '../domain/enums.js';
 import type { MerchantProfile, Product, ProductClick, ShopOrder } from '../domain/types.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
+import { findTenantMembershipContext, listActiveTenantMembershipsByUser } from './tenant-access.js';
+import { ORG_SHOP_MANAGE_ROLES } from './org-permissions.js';
+import { COLLECTIONS } from './collections.js';
 import type { Collection } from 'mongodb';
 import { getMongoClient } from './mongo.js';
-import { listTenantsByOwnerId, findTenantById, writeTenantToMongo } from './tenant-store.js';
+import { listTenantsByOwnerId, findTenantById, writeTenantToMongo, type TenantRecord } from './tenant-store.js';
 
 type MongoStripeWebhookEvent = {
   _id: string;
   createdAt: Date;
+};
+
+type MongoShopOrderItem = {
+  id: string;
+  productId: string;
+  quantity: number;
+  unitPriceAed: number;
+  totalAed: number;
+  status: OrderStatus;
+  fulfillmentTrackingLink: string | null;
+  timestamp: Date;
 };
 
 type MongoShopOrder = {
@@ -19,11 +33,18 @@ type MongoShopOrder = {
   stripeSessionId: string | null;
   createdAt: Date;
   updatedAt: Date;
-  items: Array<{
-    productId: string;
-    quantity: number;
-    unitPriceAed: number;
-  }>;
+  items: MongoShopOrderItem[];
+};
+
+type LegacyMongoShopOrderItem = {
+  id?: string;
+  productId: string;
+  quantity: number;
+  unitPriceAed?: number;
+  totalAed?: number;
+  status?: OrderStatus;
+  fulfillmentTrackingLink?: string | null;
+  timestamp?: Date;
 };
 
 type MongoMerchantProfile = {
@@ -89,19 +110,20 @@ const stripeWebhookEventsCollection = (): Collection<MongoStripeWebhookEvent> =>
   getMongoClient()!.db().collection<MongoStripeWebhookEvent>('stripe_webhook_events');
 
 const shopOrdersCollection = (): Collection<MongoShopOrder> =>
-  getMongoClient()!.db().collection<MongoShopOrder>('shop_orders');
+  getMongoClient()!.db().collection<MongoShopOrder>(COLLECTIONS.SHOP_ORDERS);
 
 const merchantProfilesCollection = (): Collection<MongoMerchantProfile> =>
-  getMongoClient()!.db().collection<MongoMerchantProfile>('merchant_profiles');
+  getMongoClient()!.db().collection<MongoMerchantProfile>(COLLECTIONS.MERCHANT_PROFILES);
 
 const productsCollection = (): Collection<MongoProduct> =>
-  getMongoClient()!.db().collection<MongoProduct>('products');
+  getMongoClient()!.db().collection<MongoProduct>(COLLECTIONS.PRODUCTS);
 
 const productClicksCollection = (): Collection<MongoProductClick> =>
-  getMongoClient()!.db().collection<MongoProductClick>('product_clicks');
+  getMongoClient()!.db().collection<MongoProductClick>(COLLECTIONS.PRODUCT_CLICKS);
 
+/** @deprecated Phase 4 — fulfillment reads/writes use embedded shop_orders.items. Kept for one-time migration reads. */
 const orderLineItemsCollection = (): Collection<MongoOrderLineItem> =>
-  getMongoClient()!.db().collection<MongoOrderLineItem>('order_line_items');
+  getMongoClient()!.db().collection<MongoOrderLineItem>(COLLECTIONS.ORDER_LINE_ITEMS);
 
 const mapMongoProduct = (item: MongoProduct): Product => ({
   id: item._id,
@@ -127,6 +149,50 @@ const normalizeOrderLineItemStatus = (status?: OrderStatus) => {
   }
   return status;
 };
+
+const normalizeEmbeddedOrderItem = (
+  orderId: string,
+  raw: LegacyMongoShopOrderItem,
+  index: number,
+  fallbackTimestamp: Date
+): MongoShopOrderItem => {
+  const unitPriceAed = raw.unitPriceAed ?? (raw.totalAed != null && raw.quantity > 0 ? raw.totalAed / raw.quantity : 0);
+  const totalAed = raw.totalAed ?? unitPriceAed * raw.quantity;
+  return {
+    id: raw.id ?? `${orderId}:${index}`,
+    productId: raw.productId,
+    quantity: raw.quantity,
+    unitPriceAed,
+    totalAed,
+    status: raw.status ?? OrderStatus.PENDING,
+    fulfillmentTrackingLink: raw.fulfillmentTrackingLink ?? null,
+    timestamp: raw.timestamp ?? fallbackTimestamp,
+  };
+};
+
+const mapEmbeddedLineItemForMerchant = (
+  orderId: string,
+  item: MongoShopOrderItem,
+  product: MongoProduct
+) => ({
+  id: item.id,
+  orderId,
+  productId: item.productId,
+  quantity: item.quantity,
+  totalAed: item.totalAed,
+  status: normalizeOrderLineItemStatus(item.status),
+  fulfillmentTrackingLink: item.fulfillmentTrackingLink ?? null,
+  timestamp: item.timestamp,
+  product: {
+    id: product._id,
+    name: product.name,
+    images: product.images,
+    priceAed: product.priceAed,
+    merchantId: product.merchantId,
+    stockQuantity: product.stockQuantity ?? 0,
+    lowStockThreshold: product.lowStockThreshold ?? 5,
+  },
+});
 
 const mapMongoMerchantProfile = (merchant: MongoMerchantProfile): MerchantProfile => ({
   id: merchant._id,
@@ -364,6 +430,42 @@ export const listActiveProductsByIds = async (productIds: string[]) => {
   return items.map(mapMongoProduct);
 };
 
+export const findMerchantProfilesByTenantIds = async (
+  tenantIds: (string | null | undefined)[]
+): Promise<Map<string, MerchantProfile>> => {
+  const uniqueIds = [...new Set(tenantIds.filter((id): id is string => Boolean(id)))];
+  if (uniqueIds.length === 0) return new Map();
+
+  const merchants = await merchantProfilesCollection()
+    .find({ tenantId: { $in: uniqueIds } })
+    .toArray();
+
+  const byTenantId = new Map<string, MerchantProfile>();
+  for (const merchant of merchants) {
+    if (typeof merchant.tenantId === 'string' && !byTenantId.has(merchant.tenantId)) {
+      byTenantId.set(merchant.tenantId, mapMongoMerchantProfile(merchant));
+    }
+  }
+  return byTenantId;
+};
+
+/** Shop owners with an active shop tenant can manage commerce without MERCHANT_ADMIN role. */
+export const userCanManageShopProfile = async (userId: string, role: UserRole): Promise<boolean> => {
+  if (role === UserRole.PLATFORM_ADMIN || role === UserRole.MERCHANT_ADMIN) return true;
+  return (await listManagedMerchantProfiles(userId)).length > 0;
+};
+
+export const userCanCreateShopProfile = async (userId: string, role: UserRole): Promise<boolean> => {
+  if (role === UserRole.PLATFORM_ADMIN) return true;
+  if (await findMerchantProfileByUserId(userId)) return false;
+  const memberships = await listActiveTenantMembershipsByUser(userId);
+  return memberships.some(
+    (membership) =>
+      membership.tenant.businessMode === TenantBusinessMode.SHOP &&
+      ORG_SHOP_MANAGE_ROLES.includes(membership.role)
+  );
+};
+
 export const findShopTenantForOwner = async (ownerId: string) => {
   const tenants = await listTenantsByOwnerId(ownerId);
   return tenants.find((tenant) => tenant.businessMode === TenantBusinessMode.SHOP) ?? null;
@@ -433,13 +535,50 @@ export const findMerchantProfilesByUserIds = async (userIds: (string | null | un
 };
 
 export const listManagedMerchantProfiles = async (adminId: string) => {
-  const merchants = await merchantProfilesCollection().find({ adminIds: adminId }).sort({ createdAt: 1 }).toArray();
-  return merchants.map(mapMongoMerchantProfile);
+  const byAdmin = await merchantProfilesCollection().find({ adminIds: adminId }).sort({ createdAt: 1 }).toArray();
+  const seen = new Set(byAdmin.map((merchant) => merchant._id));
+  const results = byAdmin.map(mapMongoMerchantProfile);
+
+  const memberships = await listActiveTenantMembershipsByUser(adminId);
+  const shopTenantIds = memberships
+    .filter(
+      (membership) =>
+        membership.tenant.businessMode === TenantBusinessMode.SHOP &&
+        ORG_SHOP_MANAGE_ROLES.includes(membership.role)
+    )
+    .map((membership) => membership.tenantId);
+
+  if (shopTenantIds.length > 0) {
+    const linked = await merchantProfilesCollection()
+      .find({ tenantId: { $in: shopTenantIds } })
+      .sort({ createdAt: 1 })
+      .toArray();
+    for (const merchant of linked) {
+      if (seen.has(merchant._id)) continue;
+      seen.add(merchant._id);
+      results.push(mapMongoMerchantProfile(merchant));
+    }
+  }
+
+  return results.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 };
 
 export const findManagedMerchantProfileById = async (adminId: string, merchantId: string) => {
-  const merchant = await merchantProfilesCollection().findOne({ _id: merchantId, adminIds: adminId });
-  return merchant ? mapMongoMerchantProfile(merchant) : null;
+  const merchant = await merchantProfilesCollection().findOne({ _id: merchantId });
+  if (!merchant) return null;
+
+  if (merchant.adminIds.includes(adminId)) {
+    return mapMongoMerchantProfile(merchant);
+  }
+
+  if (merchant.tenantId) {
+    const membership = await findTenantMembershipContext(merchant.tenantId, adminId);
+    if (membership && ORG_SHOP_MANAGE_ROLES.includes(membership.role)) {
+      return mapMongoMerchantProfile(merchant);
+    }
+  }
+
+  return null;
 };
 
 export const createMerchantProfileForUser = async (
@@ -457,11 +596,17 @@ export const createMerchantProfileForUser = async (
   },
   options?: { tenantId?: string | null }
 ) => {
+  let tenantId = options?.tenantId ?? null;
+  if (!tenantId) {
+    const shopTenant = await findShopTenantForOwner(userId);
+    tenantId = shopTenant?.id ?? null;
+  }
+
   const now = new Date();
   const doc: MongoMerchantProfile = {
     _id: randomUUID(),
     adminIds: [userId],
-    ...(options?.tenantId ? { tenantId: options.tenantId } : {}),
+    ...(tenantId ? { tenantId } : {}),
     shopName: data.shopName,
     description: data.description ?? null,
     logo: data.logo ?? null,
@@ -475,7 +620,11 @@ export const createMerchantProfileForUser = async (
     updatedAt: now
   };
   await merchantProfilesCollection().insertOne(doc);
-  return mapMongoMerchantProfile(doc);
+  const profile = mapMongoMerchantProfile(doc);
+  if (tenantId) {
+    await linkMerchantProfileToShopTenant(profile.id, userId, tenantId);
+  }
+  return profile;
 };
 
 export const updateManagedMerchantProfileById = async (
@@ -500,12 +649,15 @@ export const syncShopTenantFromMerchantProfile = async (
   ownerId: string,
   profile: Pick<
     MerchantProfile,
-    'id' | 'shopName' | 'description' | 'logo' | 'websiteUrl' | 'latitude' | 'longitude' | 'region'
+    'id' | 'shopName' | 'description' | 'logo' | 'websiteUrl' | 'latitude' | 'longitude' | 'region' | 'tenantId'
   >
 ) => {
-  const tenants = await listTenantsByOwnerId(ownerId);
-  const shopTenant = tenants.find((tenant) => tenant.businessMode === TenantBusinessMode.SHOP);
-  if (!shopTenant) return null;
+  const shopTenant =
+    (profile.tenantId ? await findTenantById(profile.tenantId) : null) ??
+    (await findShopTenantForOwner(ownerId));
+  if (!shopTenant || shopTenant.businessMode !== TenantBusinessMode.SHOP || shopTenant.ownerId !== ownerId) {
+    return null;
+  }
 
   const updated = {
     ...shopTenant,
@@ -521,6 +673,32 @@ export const syncShopTenantFromMerchantProfile = async (
   await writeTenantToMongo(updated);
   await linkMerchantProfileToShopTenant(profile.id, ownerId, shopTenant.id);
   return updated;
+};
+
+/** Dual-write: when a shop tenant is updated elsewhere, mirror fields onto merchant_profiles. */
+export const syncMerchantProfileFromShopTenant = async (tenant: TenantRecord): Promise<MerchantProfile | null> => {
+  if (tenant.businessMode !== TenantBusinessMode.SHOP) return null;
+
+  const merchant = await merchantProfilesCollection().findOne({ tenantId: tenant.id });
+  if (!merchant) return null;
+
+  const patch = {
+    shopName: tenant.name,
+    description: tenant.description ?? null,
+    logo: tenant.logoUrl ?? null,
+    websiteUrl: tenant.website ?? null,
+    region: tenant.region ?? null,
+    latitude: tenant.latitude ?? null,
+    longitude: tenant.longitude ?? null,
+    updatedAt: new Date(),
+  };
+
+  const result = await merchantProfilesCollection().findOneAndUpdate(
+    { _id: merchant._id },
+    { $set: patch },
+    { returnDocument: 'after' }
+  );
+  return result ? mapMongoMerchantProfile(result) : null;
 };
 
 export const listMerchantProducts = async (input: {
@@ -611,7 +789,16 @@ export const createShopOrderWithItems = async (input: {
     stripeSessionId: null,
     createdAt: now,
     updatedAt: now,
-    items: input.items
+    items: input.items.map((item) => ({
+      id: randomUUID(),
+      productId: item.productId,
+      quantity: item.quantity,
+      unitPriceAed: item.unitPriceAed,
+      totalAed: item.quantity * item.unitPriceAed,
+      status: OrderStatus.PENDING,
+      fulfillmentTrackingLink: null,
+      timestamp: now,
+    })),
   };
   await shopOrdersCollection().insertOne(doc);
   return {
@@ -682,24 +869,21 @@ export const markShopOrderPaid = async (id: string) => {
   }
 
   if (!isAlreadyPaid && result.items.length > 0) {
-    await orderLineItemsCollection().bulkWrite(
-      result.items.map((item, index) => ({
-        updateOne: {
-          filter: { _id: `${result._id}:${index}` },
-          update: {
-            $setOnInsert: {
-              orderId: result._id,
-              productId: item.productId,
-              quantity: item.quantity,
-              totalAed: item.quantity * item.unitPriceAed,
-              status: OrderStatus.PENDING,
-              fulfillmentTrackingLink: null,
-              timestamp: paidAt
-            }
-          },
-          upsert: true
-        }
-      }))
+    const normalizedItems = result.items.map((item, index) =>
+      normalizeEmbeddedOrderItem(result._id, item, index, paidAt)
+    );
+    await shopOrdersCollection().updateOne(
+      { _id: id },
+      {
+        $set: {
+          items: normalizedItems.map((item) => ({
+            ...item,
+            status: OrderStatus.PENDING,
+            timestamp: paidAt,
+          })),
+          updatedAt: paidAt,
+        },
+      }
     );
 
     await productsCollection().bulkWrite(
@@ -781,41 +965,33 @@ export const listMerchantOrderLineItems = async (input: {
 
   const productIds = products.map((product) => product._id);
   const productMap = new Map(products.map((product) => [product._id, product]));
-  const query = { productId: { $in: productIds } };
 
-  const [items, total] = await Promise.all([
-    orderLineItemsCollection().find(query).sort({ timestamp: -1 }).skip(input.skip).limit(input.take).toArray(),
-    orderLineItemsCollection().countDocuments(query)
-  ]);
+  const paidOrders = await shopOrdersCollection()
+    .find({ status: OrderStatus.PAID, 'items.productId': { $in: productIds } })
+    .sort({ updatedAt: -1 })
+    .toArray();
 
-  return {
-    total,
-    items: items
-      .map((item) => {
+  const flattened = paidOrders.flatMap((order) =>
+    order.items
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => productIds.includes(item.productId))
+      .map(({ item, index }) => {
         const product = productMap.get(item.productId);
         if (!product) return null;
-        return {
-          id: item._id,
-          orderId: item.orderId ?? item._id.split(':')[0] ?? item._id,
-          productId: item.productId,
-          quantity: item.quantity,
-          totalAed: item.totalAed,
-          status: normalizeOrderLineItemStatus(item.status),
-          fulfillmentTrackingLink: item.fulfillmentTrackingLink ?? null,
-          timestamp: item.timestamp,
-          product: {
-            id: product._id,
-            name: product.name,
-            images: product.images,
-            priceAed: product.priceAed,
-            merchantId: product.merchantId,
-            stockQuantity: product.stockQuantity ?? 0,
-            lowStockThreshold: product.lowStockThreshold ?? 5
-          }
-        };
+        return mapEmbeddedLineItemForMerchant(
+          order._id,
+          normalizeEmbeddedOrderItem(order._id, item, index, order.updatedAt),
+          product
+        );
       })
       .filter((item): item is NonNullable<typeof item> => Boolean(item))
-  };
+  );
+
+  flattened.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  const total = flattened.length;
+  const items = flattened.slice(input.skip, input.skip + input.take);
+
+  return { total, items };
 };
 
 export const updateMerchantOrderLineItemStatus = async (input: {
@@ -824,12 +1000,17 @@ export const updateMerchantOrderLineItemStatus = async (input: {
   status: OrderStatus;
   fulfillmentTrackingLink?: string | null;
 }) => {
-  const existing = await orderLineItemsCollection().findOne({ _id: input.orderLineItemId });
-  if (!existing) {
+  const order = await shopOrdersCollection().findOne({ 'items.id': input.orderLineItemId });
+  if (!order) {
     throw new Error('Order line item not found.');
   }
 
-  const product = await productsCollection().findOne({ _id: existing.productId });
+  const lineItem = order.items.find((item) => item.id === input.orderLineItemId);
+  if (!lineItem) {
+    throw new Error('Order line item not found.');
+  }
+
+  const product = await productsCollection().findOne({ _id: lineItem.productId });
   if (!product) {
     throw new Error('Product not found.');
   }
@@ -839,14 +1020,14 @@ export const updateMerchantOrderLineItemStatus = async (input: {
     throw new Error('Merchant order access denied.');
   }
 
-  const result = await orderLineItemsCollection().findOneAndUpdate(
-    { _id: input.orderLineItemId },
+  const result = await shopOrdersCollection().findOneAndUpdate(
+    { _id: order._id, 'items.id': input.orderLineItemId },
     {
       $set: {
-        status: input.status,
-        fulfillmentTrackingLink: input.fulfillmentTrackingLink ?? null,
-        timestamp: existing.timestamp
-      }
+        'items.$.status': input.status,
+        'items.$.fulfillmentTrackingLink': input.fulfillmentTrackingLink ?? null,
+        updatedAt: new Date(),
+      },
     },
     { returnDocument: 'after' }
   );
@@ -855,25 +1036,16 @@ export const updateMerchantOrderLineItemStatus = async (input: {
     throw new Error('Order line item not found.');
   }
 
-  return {
-    id: result._id,
-    orderId: result.orderId ?? result._id.split(':')[0] ?? result._id,
-    productId: result.productId,
-    quantity: result.quantity,
-    totalAed: result.totalAed,
-    status: normalizeOrderLineItemStatus(result.status),
-    fulfillmentTrackingLink: result.fulfillmentTrackingLink ?? null,
-    timestamp: result.timestamp,
-    product: {
-      id: product._id,
-      name: product.name,
-      images: product.images,
-      priceAed: product.priceAed,
-      merchantId: product.merchantId,
-      stockQuantity: product.stockQuantity ?? 0,
-      lowStockThreshold: product.lowStockThreshold ?? 5
-    }
-  };
+  const updatedItem = result.items.find((item) => item.id === input.orderLineItemId);
+  if (!updatedItem) {
+    throw new Error('Order line item not found.');
+  }
+
+  return mapEmbeddedLineItemForMerchant(
+    result._id,
+    normalizeEmbeddedOrderItem(result._id, updatedItem, 0, result.updatedAt),
+    product
+  );
 };
 
 export const getMerchantAnalytics = async (input: {
@@ -904,27 +1076,40 @@ export const getMerchantAnalytics = async (input: {
   const bucketExpression = buildAnalyticsBucketExpression(input.interval);
   const rangeMatch = {
     productId: { $in: productIds },
-    timestamp: { $gte: input.startDate, $lte: input.endDate }
+    timestamp: { $gte: input.startDate, $lte: input.endDate },
   };
 
   const [salesRows, clickRows] = await Promise.all([
-    orderLineItemsCollection()
+    shopOrdersCollection()
       .aggregate<{
         _id: string;
         salesAed: number;
         orderCount: number;
         quantitySold: number;
       }>([
-        { $match: rangeMatch },
+        { $match: { status: OrderStatus.PAID } },
+        { $unwind: '$items' },
+        {
+          $match: {
+            'items.productId': { $in: productIds },
+            'items.timestamp': { $gte: input.startDate, $lte: input.endDate },
+          },
+        },
         {
           $group: {
-            _id: bucketExpression,
-            salesAed: { $sum: '$totalAed' },
+            _id: {
+              $dateToString: {
+                format: analyticsBucketFormats[input.interval],
+                date: '$items.timestamp',
+                timezone: 'UTC',
+              },
+            },
+            salesAed: { $sum: '$items.totalAed' },
             orderCount: { $sum: 1 },
-            quantitySold: { $sum: '$quantity' }
-          }
+            quantitySold: { $sum: '$items.quantity' },
+          },
         },
-        { $sort: { _id: 1 } }
+        { $sort: { _id: 1 } },
       ])
       .toArray(),
     productClicksCollection()

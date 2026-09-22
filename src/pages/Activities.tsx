@@ -7,6 +7,7 @@ import { getActiveTenantId } from '../api/tenant';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
+import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ACTIVITIES_PATH } from '../constants';
 import { isHostRole } from '../utils/roles';
@@ -21,6 +22,7 @@ export const Activities = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<PageTab>(() => parseTabParam(searchParams.get('tab'), user));
+  const [refreshKey, setRefreshKey] = useState(0);
   const { openCreate, setOnSaved } = useActivityFormSession();
   const canHost = isHostRole(user?.role);
 
@@ -80,6 +82,10 @@ export const Activities = () => {
     navigate('/become-host');
   }, [canHost, navigate, openCreate]);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshKey((key) => key + 1);
+  }, []);
+
   return (
     <ConsumerShell
       layout="stack"
@@ -98,32 +104,34 @@ export const Activities = () => {
         path={ACTIVITIES_PATH}
       />
 
-      <div className="mb-4">
-        <Link
-          to={exploreActivitiesPath()}
-          className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700"
-        >
-          Browse map
-          <ChevronRight className="h-4 w-4" />
-        </Link>
-      </div>
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="mb-4">
+          <Link
+            to={exploreActivitiesPath()}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700"
+          >
+            Browse map
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
 
-      <div className="pb-24 md:pb-8">
-        {activeTab === 'joined' && user && <JoinedSection />}
-        {activeTab === 'hosted' && user && canHost && <HostedSection />}
-        {activeTab === 'hosted' && user && !canHost && (
-          <div className="glass-card p-6 text-center">
-            <p className="text-sm text-neutral-600 mb-3">Host activities on the map to share them with the community.</p>
-            <button
-              type="button"
-              onClick={() => navigate('/become-host')}
-              className="text-sm font-semibold text-emerald-700"
-            >
-              Become a host
-            </button>
-          </div>
-        )}
-      </div>
+        <div className="pb-24 md:pb-8">
+          {activeTab === 'joined' && user && <JoinedSection refreshKey={refreshKey} />}
+          {activeTab === 'hosted' && user && canHost && <HostedSection refreshKey={refreshKey} />}
+          {activeTab === 'hosted' && user && !canHost && (
+            <div className="glass-card p-6 text-center">
+              <p className="text-sm text-neutral-600 mb-3">Host activities on the map to share them with the community.</p>
+              <button
+                type="button"
+                onClick={() => navigate('/become-host')}
+                className="text-sm font-semibold text-emerald-700"
+              >
+                Become a host
+              </button>
+            </div>
+          )}
+        </div>
+      </PullToRefresh>
 
       {user && activeTab === 'hosted' && canHost && (
         <FloatingActionButton

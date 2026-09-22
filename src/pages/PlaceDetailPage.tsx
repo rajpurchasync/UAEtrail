@@ -14,9 +14,9 @@ import { JsonLd } from '../components/seo/JsonLd';
 import { placeSchema } from '../components/seo/schemas';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { getDifficultyColor, capitalize } from '../utils';
-import { ActivityListing } from '../types';
+import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { Place } from '../types/place';
-import { fetchPlaceDetail, mapActivityToListing } from '../api/public';
+import { fetchPlaceDetail } from '../api/public';
 import { api } from '../api/services';
 import { activitiesBrowsePath } from '../config/activityTypes';
 import { detailBackPath } from '../utils/exploreRouting';
@@ -63,7 +63,7 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [place, setPlace] = useState<Place | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activities, setActivities] = useState<ActivityListing[]>([]);
+  const [activities, setActivities] = useState<ActivityDTO[]>([]);
   const [reviews, setReviews] = useState<ReviewDTO[]>([]);
   const [premium, setPremium] = useState<LocationPremiumSummaryDTO | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -85,7 +85,7 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
         const loaded = placeResult.place?.activityType === config.activityType ? placeResult.place : null;
         setPlace(loaded);
         setPremium(placeResult.premium ?? null);
-        setActivities(eventsRes.data.map(mapActivityToListing));
+        setActivities(eventsRes.data);
         setReviews(reviewsRes.data);
       })
       .catch(() => setPlace(null))

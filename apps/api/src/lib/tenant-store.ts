@@ -93,6 +93,11 @@ export const writeTenantToMongo = async (row: TenantRecord): Promise<void> => {
     { $set: tenantRowToMongoDoc(row) },
     { upsert: true }
   );
+
+  if (row.businessMode === TenantBusinessMode.SHOP) {
+    const { syncMerchantProfileFromShopTenant } = await import('./shop-store.js');
+    await syncMerchantProfileFromShopTenant(row);
+  }
 };
 
 const isTenantSlugTaken = async (slug: string): Promise<boolean> => {

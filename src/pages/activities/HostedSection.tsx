@@ -34,7 +34,7 @@ const formatEventMeta = (event: ActivityDTO) => {
   return parts.filter(Boolean).join(' · ');
 };
 
-export const HostedSection = () => {
+export const HostedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const host = useOrganisationHubData();
@@ -68,6 +68,11 @@ export const HostedSection = () => {
   );
 
   const visibleActivities = activityTab === 'upcoming' ? upcomingActivities : pastActivities;
+
+  useEffect(() => {
+    if (!refreshKey) return;
+    void host.reload();
+  }, [refreshKey, host.reload]);
 
   useEffect(() => {
     const checkinId = searchParams.get('checkin');

@@ -1,16 +1,16 @@
+import { randomUUID } from 'crypto';
 import type { ExploreMapItemDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { buildExploreFeaturedPerson, demandFallbackTitle } from '@uaetrail/shared-types';
-import { ObjectId } from 'mongodb';
+import { ObjectId, type Filter } from 'mongodb';
 import type { CreateParticipantIntentInput, ParticipantIntentKind } from '../domain/participant-intent.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import { invalidateExploreMapCache } from './explore-map-cache.js';
+import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import { shouldHideFromMapMemberDiscovery } from '../services/profile-viewer-access.js';
 
-const COLLECTION = 'participant_intents';
-
 type MongoParticipantIntent = {
-  _id: ObjectId;
+  _id: string;
   userId: string;
   kind: ParticipantIntentKind;
   title?: string | null;
@@ -30,10 +30,7 @@ type MongoParticipantIntent = {
   updatedAt: Date;
 };
 
-const collection = () => getMongoClient()!.db().collection<MongoParticipantIntent>(COLLECTION);
-
-const stringifyDocId = (id: ObjectId | string): string =>
-  typeof id === 'string' ? id : id.toHexString();
+const collection = () => getMongoClient()!.db().collection<MongoParticipantIntent>(COLLECTIONS.PARTICIPANT_INTENTS);
 
 const mapExploreKind = (kind: ParticipantIntentKind): ExploreMapItemDTO['kind'] => {
   if (kind === 'guide' || kind === 'other') return 'event';
@@ -71,7 +68,7 @@ const mapDto = (
   doc: MongoParticipantIntent,
   user?: { profile?: { displayName?: string | null; avatarUrl?: string | null } } | null
 ): ParticipantIntentDTO => ({
-  id: stringifyDocId(doc._id),
+  id: doc._id,
   userId: doc.userId,
   kind: doc.kind,
   title: resolveStoredDemandTitle(doc),
@@ -98,7 +95,7 @@ export const createParticipantIntent = async (
 ): Promise<ParticipantIntentDTO> => {
   const now = new Date();
   const doc: MongoParticipantIntent = {
-    _id: new ObjectId(),
+    _id: randomUUID(),
     userId,
     kind: input.kind,
     title: input.title.trim(),
@@ -127,10 +124,16 @@ export const fulfillParticipantIntent = async (
   intentId: string,
   activityId: string
 ): Promise<ParticipantIntentDTO | null> => {
-  if (!ObjectId.isValid(intentId)) return null;
+  const lookupFilter: Record<string, unknown> =
+    /^[a-f0-9]{24}$/i.test(intentId) && ObjectId.isValid(intentId)
+      ? { $or: [{ _id: intentId }, { _id: new ObjectId(intentId) }] }
+      : { _id: intentId };
 
-  const updated = await collection().findOneAndUpdate(
-    { _id: new ObjectId(intentId), status: 'active' },
+  const updated = await getMongoClient()!
+    .db()
+    .collection<MongoParticipantIntent>(COLLECTIONS.PARTICIPANT_INTENTS)
+    .findOneAndUpdate(
+      { ...lookupFilter, status: 'active' } as Filter<MongoParticipantIntent>,
     {
       $set: {
         status: 'fulfilled',
@@ -192,11 +195,10 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
     .filter((doc) => !hideFromMapByUserId.get(doc.userId))
     .map((doc) => {
       const user = userMap.get(doc.userId);
-      const displayName = user?.profile?.displayName ?? 'Someone';
       const route = buildDemandRouteLabels(doc);
       const planTitle = resolveStoredDemandTitle(doc);
       return {
-        id: `demand:${stringifyDocId(doc._id)}`,
+        id: `demand:${doc._id}`,
         kind: mapExploreKind(doc.kind),
         source: 'demand' as const,
         title: planTitle,
@@ -218,7 +220,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
           role: 'requester',
         }),
         requesterUserId: doc.userId,
-        participantIntentId: stringifyDocId(doc._id),
+        participantIntentId: doc._id,
         date: doc.date,
         time: doc.time,
         slotsTotal: doc.partySize,

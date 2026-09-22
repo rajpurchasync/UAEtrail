@@ -273,6 +273,7 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     priceAed: data.priceAed ?? 0,
     pricePackages: data.pricePackages ?? [],
     capacity: data.capacity,
+    participantSlotsUsed: 0,
     status: (data.status as ActivityStatus) ?? ActivityStatus.DRAFT,
     featured: data.featured ?? false,
     publishedAt: data.publishedAt ?? null,

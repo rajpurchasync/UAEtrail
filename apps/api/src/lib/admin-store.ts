@@ -1,7 +1,7 @@
 import type { Collection } from 'mongodb';
 import { COLLECTIONS } from './collections.js';
 import type { Activity, Location, Product, Tenant, TenantMembership } from '../domain/types.js';
-import { ActivityStatus, ProductStatus, TenantStatus } from '../domain/enums.js';
+import { ActivityStatus, ProductStatus, TenantStatus, TenantType } from '../domain/enums.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import { createLocationRecord } from './activities-store.js';
 import { newEntityId, type MongoActivityDoc } from './entity-builders.js';
@@ -476,6 +476,14 @@ export const listOwnerTenantTypes = async (ownerIds: string[]) => {
     .find({ ownerId: { $in: ownerIds } }, { projection: { ownerId: 1, type: 1 } })
     .toArray();
   return docs.map((doc) => ({ ownerId: doc.ownerId, type: doc.type }));
+};
+
+/** Owner user ids for tenants of a given type — used by admin user filters. */
+export const listTenantOwnerIdsByTenantType = async (tenantType: TenantType): Promise<string[]> => {
+  const docs = await tenantsCollection()
+    .find({ type: tenantType }, { projection: { ownerId: 1 } })
+    .toArray();
+  return [...new Set(docs.map((doc) => String(doc.ownerId)))];
 };
 
 export const listUserOwnedTenantsBasic = async (ownerId: string) => {

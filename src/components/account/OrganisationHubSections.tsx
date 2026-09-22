@@ -56,7 +56,7 @@ export const OrganisationHubSections = ({
     <>
       <AccountStatGrid stats={stats} />
 
-      {previewActivities.length > 0 && (
+      {previewActivities.length > 0 ? (
         <section>
           <AccountSectionHeader title="Up next" actionTo="/host/activities" actionLabel="All activities" />
           <div className="space-y-2">
@@ -93,7 +93,21 @@ export const OrganisationHubSections = ({
             ))}
           </div>
         </section>
-      )}
+      ) : activitiesCount === 0 ? (
+        <Link
+          to="/host/activities/new"
+          className="glass-card-interactive flex items-center gap-3 p-4 text-center"
+        >
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
+            <Plus className="h-5 w-5 text-emerald-600" />
+          </div>
+          <div className="min-w-0 flex-1 text-left">
+            <p className="text-sm font-semibold text-neutral-900">Host your first activity</p>
+            <p className="text-xs text-neutral-500">Publish a hike or camp for others to join</p>
+          </div>
+          <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
+        </Link>
+      ) : null}
 
       <AccountLinkList
         items={[

@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { MyActivityDTO } from '@uaetrail/shared-types';
 import { api, ActivityRequestView } from '../../api/services';
+import { ActivityHubEmptyState } from '../../components/mobile/ActivityHubEmptyState';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { GlassCard } from '../../components/mobile/GlassCard';
+import { EXPLORE_MAP_PATH } from '../../config/platform';
 import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import { formatActivityType } from '../../utils/activityIdentity';
 import {
@@ -33,7 +35,7 @@ const formatActivityMeta = (activity: MyActivityDTO) => {
   return parts.filter(Boolean).join(' · ');
 };
 
-export const JoinedSection = () => {
+export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const subTab = parseJoinedSubTab(searchParams.get('sub'));
@@ -59,7 +61,7 @@ export const JoinedSection = () => {
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Couldn\'t load your activities — try again.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   const upcomingActivities = useMemo(() => upcomingConfirmedActivities(activities), [activities]);
   const attended = useMemo(() => attendedActivities(activities), [activities]);
@@ -106,12 +108,12 @@ export const JoinedSection = () => {
         </div>
       ) : subTab === 'upcoming' ? (
         upcomingRows.length === 0 ? (
-          <GlassCard padding>
-            <p className="text-sm text-neutral-600">Nothing on your calendar yet — find an activity on the map.</p>
-            <Link to="/" className="mt-2 inline-block text-sm font-semibold text-emerald-700">
-              Explore the map
-            </Link>
-          </GlassCard>
+          <ActivityHubEmptyState
+            title="Nothing on your calendar yet"
+            description="Find a hike or camp on the map and request to join."
+            actionLabel="Explore map"
+            actionTo={EXPLORE_MAP_PATH}
+          />
         ) : (
           <div className="space-y-2">
             {upcomingRows.map((row) =>
@@ -149,11 +151,13 @@ export const JoinedSection = () => {
         )
       ) : subTab === 'attended' ? (
         attended.length === 0 ? (
-          <GlassCard padding>
-            <p className="text-sm text-neutral-600">
-              Activities you attended appear here after your host checks you in.
-            </p>
-          </GlassCard>
+          <ActivityHubEmptyState
+            emoji="✅"
+            title="No attended activities yet"
+            description="After your host checks you in, completed outings appear here."
+            actionLabel="Find an activity"
+            actionTo={EXPLORE_MAP_PATH}
+          />
         ) : (
           <div className="space-y-2">
             {attended.map((activity) => (

@@ -3,6 +3,7 @@ export type DifficultyLevel = 'easy' | 'moderate' | 'hard';
 export type CampingType = 'self-guided' | 'operator-led';
 export type Accessibility = 'car-accessible' | 'remote';
 export type Season = 'winter' | 'summer' | 'year-round';
+/** @deprecated Use deriveActivityAvailability from @uaetrail/shared-types */
 export type ActivityListingStatus = 'free' | 'paid' | 'full';
 
 export type UAERegion = 'Dubai' | 'RAK' | 'Fujairah' | 'Abu Dhabi' | 'Al Ain' | 'Sharjah';
@@ -12,6 +13,7 @@ export type { Place, PlaceActivityType, PlaceRegion, PlaceAsTrail, PlaceAsCamp, 
 /** @deprecated Use {@link Place} with `activityType: 'hiking'`. */
 export type Trail = import('./place').PlaceAsTrail;
 
+/** @deprecated Use ActivityDTO from @uaetrail/shared-types */
 export interface ActivityListing {
   id: string;
   locationId: string;

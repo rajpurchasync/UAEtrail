@@ -4,16 +4,17 @@ import { ApiError } from '../lib/api-error.js';
 import { findTenantMembershipContext } from '../lib/tenant-access.js';
 import { findTenantById } from '../lib/tenant-store.js';
 
-const hostRoles: UserRole[] = [
-  UserRole.TENANT_OWNER,
-  UserRole.TENANT_ADMIN,
-  UserRole.TENANT_GUIDE
-];
-
-const readTenantIdHeader = (req: Request): string | undefined => {
-  const tenantIdHeader = req.headers['x-tenant-id'];
-  return Array.isArray(tenantIdHeader) ? tenantIdHeader[0] : tenantIdHeader;
+const readHeader = (req: Request, name: string): string | undefined => {
+  const value = req.headers[name];
+  return Array.isArray(value) ? value[0] : value;
 };
+
+/** Prefer x-organisation-id; accept legacy x-tenant-id during transition. */
+export const readOrganisationIdHeader = (req: Request): string | undefined =>
+  readHeader(req, 'x-organisation-id') ?? readHeader(req, 'x-tenant-id');
+
+/** @deprecated Use readOrganisationIdHeader */
+export const readTenantIdHeader = readOrganisationIdHeader;
 
 export const requireTenantContext = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -21,13 +22,17 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
       throw new ApiError(401, 'unauthorized', 'Authentication is required.');
     }
 
-    const tenantId = readTenantIdHeader(req);
-    if (!tenantId) {
-      throw new ApiError(400, 'tenant_header_missing', 'x-tenant-id header is required.');
+    const organisationId = readOrganisationIdHeader(req);
+    if (!organisationId) {
+      throw new ApiError(
+        400,
+        'organisation_header_missing',
+        'x-organisation-id header is required (x-tenant-id accepted during transition).'
+      );
     }
 
     if (req.auth.role === UserRole.PLATFORM_ADMIN) {
-      const tenant = await findTenantById(tenantId);
+      const tenant = await findTenantById(organisationId);
       if (!tenant) {
         throw new ApiError(404, 'tenant_not_found', 'Host organization not found.');
       }
@@ -36,28 +41,24 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
       }
 
       req.tenantContext = {
-        tenantId,
+        tenantId: organisationId,
         membershipRole: MembershipRole.TENANT_ADMIN,
         actingAsPlatformAdmin: true
       };
       return next();
     }
 
-    if (!hostRoles.includes(req.auth.role)) {
-      throw new ApiError(403, 'forbidden', 'Host access required.');
-    }
-
-    const membership = await findTenantMembershipContext(tenantId, req.auth.userId);
+    const membership = await findTenantMembershipContext(organisationId, req.auth.userId);
 
     if (!membership) {
-      throw new ApiError(403, 'forbidden', 'No host organization membership found.');
+      throw new ApiError(403, 'forbidden', 'No organisation membership found for this scope.');
     }
     if (membership.tenant.status !== 'ACTIVE') {
       throw new ApiError(403, 'tenant_inactive', 'Host organization is not active.');
     }
 
     req.tenantContext = {
-      tenantId,
+      tenantId: organisationId,
       membershipRole: membership.role,
       actingAsPlatformAdmin: false
     };
@@ -72,13 +73,16 @@ export const requireMembershipRole =
   (roles: MembershipRole[]) =>
   (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.tenantContext) {
-      return next(new ApiError(400, 'tenant_context_missing', 'Tenant context missing.'));
+      return next(new ApiError(400, 'tenant_context_missing', 'Organisation context missing.'));
     }
     if (req.tenantContext.actingAsPlatformAdmin) {
       return next();
     }
     if (!roles.includes(req.tenantContext.membershipRole)) {
-      return next(new ApiError(403, 'forbidden', 'Insufficient host organization permissions.'));
+      return next(new ApiError(403, 'forbidden', 'Insufficient organisation permissions.'));
     }
     return next();
   };
+
+/** Organisation-scoped role gate — alias for requireMembershipRole. */
+export const requireOrgRole = requireMembershipRole;

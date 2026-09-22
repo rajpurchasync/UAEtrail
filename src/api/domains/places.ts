@@ -7,6 +7,7 @@ import {
   LocationPremiumSummaryDTO,
 } from '@uaetrail/shared-types';
 import { apiRequest, downloadAuthenticatedFile } from '../client';
+import { organisationRequestHeaders } from '../orgHeaders';
 
 const listAllPublicPlaces = async (countryCode?: string) => {
   const pageSize = 100;
@@ -130,7 +131,7 @@ export const placeApi = {
     apiRequest<{ data: PlaceDTO }>('/host/places', {
       method: 'POST',
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
   submitUserPlace: (payload: Partial<PlaceDTO>) =>
@@ -143,14 +144,14 @@ export const placeApi = {
   getHostSubmittedPlaces: (tenantId: string) =>
     apiRequest<{ data: LocationDTO[] }>('/host/places', {
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
     }),
   /** @deprecated Use {@link placeApi.submitHostPlace} */
   submitLocation: (tenantId: string, payload: Partial<LocationDTO>) =>
     apiRequest<{ data: LocationDTO }>('/host/locations', {
       method: 'POST',
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
   /** @deprecated Use {@link placeApi.submitUserPlace} */
@@ -166,7 +167,7 @@ export const placeApi = {
   getHostSubmittedLocations: (tenantId: string) =>
     apiRequest<{ data: LocationDTO[] }>('/host/locations', {
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
     }),
   deleteAdminPlace: (id: string) =>
     apiRequest(`/admin/places/${id}`, {

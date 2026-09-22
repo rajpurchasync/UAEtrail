@@ -352,9 +352,12 @@ export const approveHostApplicationAndProvisionTenant = async (input: {
       { upsert: true }
     );
 
+  const applicant = await findAuthUserById(application.applicantId);
+  const shouldElevateGlobalHostRole = !applicant || applicant.role === UserRole.PARTICIPANT;
+
   await updateAuthUserCore({
     userId: application.applicantId,
-    role: UserRole.TENANT_OWNER,
+    ...(shouldElevateGlobalHostRole ? { role: UserRole.TENANT_OWNER } : {}),
     profile: {
       ...(typeof meta.hostDisplayName === 'string' && meta.hostDisplayName
         ? { displayName: meta.hostDisplayName }

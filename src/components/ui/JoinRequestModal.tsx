@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityListing } from '../../types';
-import { ActivityDetailDTO } from '@uaetrail/shared-types';
+import { ActivityDetailDTO, type ActivityDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
 import { formatPackagePrice } from '../../utils/activityPricing';
 import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
@@ -15,7 +14,7 @@ import { api } from '../../api/services';
 import { Dialog } from './Dialog';
 
 type JoinableActivity = Pick<
-  ActivityListing,
+  ActivityDTO,
   | 'id'
   | 'locationName'
   | 'title'

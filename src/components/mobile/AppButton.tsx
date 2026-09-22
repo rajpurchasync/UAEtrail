@@ -1,6 +1,7 @@
 import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { Link, type LinkProps } from 'react-router-dom';
 
-type Variant = 'primary' | 'secondary' | 'tint' | 'destructive' | 'plain';
+type Variant = 'primary' | 'secondary' | 'tint' | 'destructive' | 'plain' | 'inverse';
 
 const variants: Record<Variant, string> = {
   primary: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 active:bg-emerald-700',
@@ -8,7 +9,11 @@ const variants: Record<Variant, string> = {
   tint: 'bg-emerald-600/12 text-emerald-700 active:bg-emerald-600/20',
   destructive: 'bg-red-500 text-white shadow-md shadow-red-500/20 active:bg-red-600',
   plain: 'bg-transparent text-emerald-600 active:bg-emerald-50',
+  inverse: 'bg-white text-emerald-800 shadow-md shadow-black/10 active:bg-emerald-50',
 };
+
+const buttonClass = (variant: Variant, fullWidth: boolean | undefined, className: string) =>
+  `ios-btn ${variants[variant]} ${fullWidth ? 'w-full' : ''} ${className}`.trim();
 
 interface AppButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -23,11 +28,25 @@ export const AppButton = ({
   children,
   ...props
 }: AppButtonProps) => (
-  <button
-    type="button"
-    className={`ios-btn ${variants[variant]} ${fullWidth ? 'w-full' : ''} ${className}`}
-    {...props}
-  >
+  <button type="button" className={buttonClass(variant, fullWidth, className)} {...props}>
     {children}
   </button>
+);
+
+interface AppButtonLinkProps extends LinkProps {
+  variant?: Variant;
+  fullWidth?: boolean;
+  children: ReactNode;
+}
+
+export const AppButtonLink = ({
+  variant = 'primary',
+  fullWidth,
+  className = '',
+  children,
+  ...props
+}: AppButtonLinkProps) => (
+  <Link className={buttonClass(variant, fullWidth, className)} {...props}>
+    {children}
+  </Link>
 );

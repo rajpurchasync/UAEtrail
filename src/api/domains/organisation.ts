@@ -1,40 +1,41 @@
+import type { TenantPublicDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
+import { organisationRequestHeaders } from '../orgHeaders';
 import type {
   ActivityRequestView,
   HostApplication,
   HostDetails,
   TeamMember,
-  TenantProfile,
 } from '../types';
 
 export const organisationApi = {
-    getTenantProfile: (slug: string) => apiRequest<{ data: TenantProfile }>(`/tenants/${slug}`),
+    getTenantProfile: (slug: string) => apiRequest<{ data: TenantPublicDTO }>(`/tenants/${slug}`),
 
     getHostRequests: (tenantId: string) =>
     apiRequest<{ data: ActivityRequestView[] }>('/host/requests?pageSize=100', {
       auth: true,
-      headers: { 'x-tenant-id': tenantId }
+      headers: organisationRequestHeaders(tenantId)
     }),
 
     decideHostRequest: (tenantId: string, requestId: string, status: 'approved' | 'rejected', hostNote?: string) =>
     apiRequest(`/host/requests/${requestId}`, {
       method: 'PATCH',
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify({ status, organizerNote: hostNote })
     }),
 
     getHostTeam: (tenantId: string) =>
     apiRequest<{ data: TeamMember[] }>('/host/team', {
       auth: true,
-      headers: { 'x-tenant-id': tenantId }
+      headers: organisationRequestHeaders(tenantId)
     }),
 
     createHostTeamMember: (tenantId: string, payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }) =>
     apiRequest<{ data: TeamMember }>('/host/team', {
       method: 'POST',
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify(payload)
     }),
 
@@ -42,7 +43,7 @@ export const organisationApi = {
     apiRequest<{ data: { id: string; role: string } }>(`/host/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify({ role })
     }),
 
@@ -50,7 +51,7 @@ export const organisationApi = {
     apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/host/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify({ isActive })
     }),
 
@@ -58,7 +59,7 @@ export const organisationApi = {
     apiRequest(`/host/team/${membershipId}`, {
       method: 'DELETE',
       auth: true,
-      headers: { 'x-tenant-id': tenantId }
+      headers: organisationRequestHeaders(tenantId)
     }),
 
     submitHostApplication: (data: Record<string, unknown>) =>

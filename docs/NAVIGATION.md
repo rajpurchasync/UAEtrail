@@ -6,9 +6,26 @@ Companion to [`DOMAIN.md`](./DOMAIN.md). Defines **where users go** for each int
 
 | Surface | Route | Purpose |
 |---------|-------|---------|
+| **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
-| **Personal hub** | `/profile`, `/activities?tab=joined\|hosted` | Account, my activities, messages |
+| **Personal hub** | `/profile`, `/profile/settings`, `/activities?tab=joined\|hosted` | Account hub, settings stack, activity lists |
 | **Entity detail** | `/trail`, `/camp`, `/event`, `/activity`, `/shop`, `/operator` | Single place, trip, or host |
+
+### Profile hub (`/profile`)
+
+- **Priority order:** Hero → **Up next** (activity, requests, messages) → profile completion → quick actions → hosting (hosts only) → collapsible stamps → settings link.
+- **Pull-to-refresh** reloads hub data at scroll top.
+- **Empty “Up next”:** single CTA → Explore map.
+- **Settings stack:** `/profile/settings` — languages, host profiles, password, email, sign out (not on main hub).
+
+### Home (`/`) — marketing only
+
+- **Guests only** — signed-in users redirect to `/explore`.
+- **Guest hero:** value prop + **Join free** (full-width primary) + “Browse map first” text link. No duplicate proof line in hero.
+- **Scroll order:** Proof chips → **Live activity rail** (public API) → Product preview → Testimonials → How it works → FAQ (2 on mobile) → Closing CTA → Founder story.
+- **Live proof:** Hero may show “N activities on the map this week” when public API returns data.
+- **Live data** (activities, places, filters) belongs on `/explore`, not Home.
+- Components: `src/components/home/*`, page `src/pages/Home.tsx`.
 
 Legacy browse URLs (`/map`, `/discovery`, `/calendar`, `/shop`, bare `/activities`) redirect into `/explore` via `App.tsx` only — do not link to them from new UI.
 
@@ -27,6 +44,9 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, `/shop`, bare `/activitie
 ## Browse defaults
 
 - Landing on `/explore` without `list=1` → **map view** (list panel closed).
+- **Mobile map filters:** primary row shows All · Hiking · Camping; Rideshare · Others · Shops live under **More**.
+- **Guest join:** tapping Join on an activity opens a signup sheet (returns to map after auth).
+- First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
 - Pass `list: true` to `explorePath()` only when opening the browse sheet intentionally.
 - Filter/panel query params select map context; they do not imply list mode.
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, HelpCircle } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import type { FaqItem } from '../../content/platformFaqs';
 
 interface FaqPreviewProps {
@@ -7,56 +7,74 @@ interface FaqPreviewProps {
   title?: string;
   subtitle?: string;
   className?: string;
+  /** Cap items on mobile; desktop shows all. */
+  mobileLimit?: number;
+  /** Smaller heading scale for marketing scroll sections. */
+  compact?: boolean;
 }
 
 export const FaqPreview = ({
   items,
   title = 'Common questions',
   subtitle = 'Quick answers about trails, activities, and how UAE Trail works',
-  className = ''
-}: FaqPreviewProps) => (
-  <section className={className} aria-labelledby="home-faq-heading">
-    <div className="flex justify-between items-end mb-5 md:mb-6 gap-4">
-      <div className="flex items-start gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0 hidden sm:flex">
-          <HelpCircle className="w-5 h-5 text-emerald-700" aria-hidden />
-        </div>
-        <div>
-          <h2 id="home-faq-heading" className="text-xl md:text-3xl font-bold text-gray-900">
-            {title}
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
-        </div>
-      </div>
-      <Link
-        to="/faq"
-        className="text-emerald-600 hover:text-emerald-700 font-medium text-sm inline-flex items-center gap-1 group shrink-0"
-      >
-        All FAQs
-        <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-      </Link>
-    </div>
+  className = '',
+  mobileLimit,
+  compact = false,
+}: FaqPreviewProps) => {
+  const mobileItems = mobileLimit ? items.slice(0, mobileLimit) : items;
 
+  const headingClass = compact ? 'app-section-title' : 'text-xl md:text-3xl font-bold text-gray-900';
+
+  const renderItems = (list: FaqItem[]) => (
     <div className="space-y-3">
-      {items.map((item) => (
+      {list.map((item) => (
         <details
           key={item.question}
-          className="bg-white rounded-2xl border border-gray-100 group open:shadow-md open:border-gray-200 transition-all"
+          className="rounded-2xl border border-gray-100 bg-white group open:border-gray-200 open:shadow-md transition-all"
         >
-          <summary className="cursor-pointer list-none px-5 py-4 font-semibold text-gray-900 text-[15px] flex items-center justify-between gap-3">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 font-semibold text-gray-900 text-[15px] md:px-5 md:py-4">
             <span>{item.question}</span>
             <span
-              className="text-emerald-600 text-xl leading-none shrink-0 group-open:rotate-45 transition-transform"
+              className="shrink-0 text-xl leading-none text-emerald-600 transition-transform group-open:rotate-45"
               aria-hidden
             >
               +
             </span>
           </summary>
-          <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-3">
+          <div className="border-t border-gray-100 px-4 pb-3.5 pt-2.5 text-sm leading-relaxed text-gray-600 md:px-5 md:pb-4 md:pt-3">
             {item.answer}
           </div>
         </details>
       ))}
     </div>
-  </section>
-);
+  );
+
+  return (
+    <section className={className} aria-labelledby="home-faq-heading">
+      <div className="mb-4 flex items-end justify-between gap-4 md:mb-6">
+        <div className="min-w-0">
+          <h2 id="home-faq-heading" className={headingClass}>
+            {title}
+          </h2>
+          <p className={`mt-1 text-neutral-500 ${compact ? 'text-[13px] md:text-sm' : 'text-sm'}`}>{subtitle}</p>
+        </div>
+        <Link
+          to="/faq"
+          className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-emerald-600 hover:text-emerald-700 group"
+        >
+          All FAQs
+          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+
+      {mobileLimit ? (
+        <>
+          <div className="md:hidden">{renderItems(mobileItems)}</div>
+          <div className="hidden md:block">{renderItems(items)}</div>
+        </>
+      ) : (
+        renderItems(items)
+      )}
+    </section>
+  );
+};

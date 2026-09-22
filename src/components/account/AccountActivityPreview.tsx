@@ -23,7 +23,7 @@ interface AccountActivityPreviewProps {
   conversations: ChatConversationDTO[];
 }
 
-/** Shows only actionable items — no empty states or duplicate full lists. */
+/** @deprecated Use ProfileUpNextSection — kept for legacy imports. */
 export const AccountActivityPreview = ({
   messagesPath,
   upcomingActivity,

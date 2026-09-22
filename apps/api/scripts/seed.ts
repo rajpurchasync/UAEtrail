@@ -318,16 +318,38 @@ const upsertProduct = async (
   );
 };
 
+const seedDemandId = (label: string): string => `seed-${label}`;
+
 const seedMerchantAnalytics = async (input: {
   products: Array<{ id: string; priceAed: number }>;
   userIds: string[];
 }) => {
   await db().collection('product_clicks').deleteMany({ productId: { $in: input.products.map((product) => product.id) } });
-  await db().collection('order_line_items').deleteMany({ productId: { $in: input.products.map((product) => product.id) } });
+  await db().collection('shop_orders').deleteMany({
+    'items.productId': { $in: input.products.map((product) => product.id) },
+  });
 
   const now = new Date();
   const clickDocs: Array<{ _id: string; productId: string; timestamp: Date; userId: string }> = [];
-  const orderLineDocs: Array<{ _id: string; productId: string; quantity: number; totalAed: number; timestamp: Date }> = [];
+  const orderDocs: Array<{
+    _id: string;
+    userId: string;
+    status: string;
+    totalAed: number;
+    stripeSessionId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    items: Array<{
+      id: string;
+      productId: string;
+      quantity: number;
+      unitPriceAed: number;
+      totalAed: number;
+      status: string;
+      fulfillmentTrackingLink: string | null;
+      timestamp: Date;
+    }>;
+  }> = [];
 
   for (let dayOffset = 0; dayOffset < 30; dayOffset += 1) {
     const timestamp = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOffset, 12, 0, 0, 0));
@@ -345,12 +367,29 @@ const seedMerchantAnalytics = async (input: {
       const orderCount = crypto.randomInt(0, 4);
       for (let orderIndex = 0; orderIndex < orderCount; orderIndex += 1) {
         const quantity = crypto.randomInt(1, 4);
-        orderLineDocs.push({
-          _id: crypto.randomUUID(),
-          productId: product.id,
-          quantity,
-          totalAed: quantity * product.priceAed,
-          timestamp: new Date(timestamp.getTime() + orderIndex * 90_000)
+        const lineTimestamp = new Date(timestamp.getTime() + orderIndex * 90_000);
+        const orderId = crypto.randomUUID();
+        const totalAed = quantity * product.priceAed;
+        orderDocs.push({
+          _id: orderId,
+          userId: input.userIds[crypto.randomInt(0, input.userIds.length)]!,
+          status: 'PAID',
+          totalAed,
+          stripeSessionId: null,
+          createdAt: lineTimestamp,
+          updatedAt: lineTimestamp,
+          items: [
+            {
+              id: `${orderId}:0`,
+              productId: product.id,
+              quantity,
+              unitPriceAed: product.priceAed,
+              totalAed,
+              status: 'PENDING',
+              fulfillmentTrackingLink: null,
+              timestamp: lineTimestamp,
+            },
+          ],
         });
       }
     }
@@ -359,8 +398,8 @@ const seedMerchantAnalytics = async (input: {
   if (clickDocs.length > 0) {
     await db().collection('product_clicks').insertMany(clickDocs);
   }
-  if (orderLineDocs.length > 0) {
-    await db().collection('order_line_items').insertMany(orderLineDocs);
+  if (orderDocs.length > 0) {
+    await db().collection('shop_orders').insertMany(orderDocs);
   }
 };
 
@@ -1548,17 +1587,17 @@ Share your live location and carry extra water in summer months.`
 
   const demandNow = new Date();
   const demandSeedIds = [
-    seedObjectId('demand-hike-hatta'),
-    seedObjectId('demand-camp-fossil-rock'),
-    seedObjectId('demand-event-kite-beach'),
-    seedObjectId('demand-carpool-dxb-rak')
+    seedDemandId('demand-hike-hatta'),
+    seedDemandId('demand-camp-fossil-rock'),
+    seedDemandId('demand-event-kite-beach'),
+    seedDemandId('demand-carpool-dxb-rak'),
   ];
   await db().collection('participant_intents').deleteMany({
-    _id: { $in: demandSeedIds }
+    _id: { $in: demandSeedIds },
   });
 
   await db().collection('participant_intents').updateOne(
-    { _id: seedObjectId('demand-hike-hatta') },
+    { _id: seedDemandId('demand-hike-hatta') },
     {
       $set: {
         userId: participant._id,
@@ -1583,7 +1622,7 @@ Share your live location and carry extra water in summer months.`
   );
 
   await db().collection('participant_intents').updateOne(
-    { _id: seedObjectId('demand-camp-fossil-rock') },
+    { _id: seedDemandId('demand-camp-fossil-rock') },
     {
       $set: {
         userId: individualHost._id,
@@ -1608,7 +1647,7 @@ Share your live location and carry extra water in summer months.`
   );
 
   await db().collection('participant_intents').updateOne(
-    { _id: seedObjectId('demand-event-kite-beach') },
+    { _id: seedDemandId('demand-event-kite-beach') },
     {
       $set: {
         userId: agencyGuide._id,
@@ -1633,7 +1672,7 @@ Share your live location and carry extra water in summer months.`
   );
 
   await db().collection('participant_intents').updateOne(
-    { _id: seedObjectId('demand-carpool-dxb-rak') },
+    { _id: seedDemandId('demand-carpool-dxb-rak') },
     {
       $set: {
         userId: pendingParticipant._id,

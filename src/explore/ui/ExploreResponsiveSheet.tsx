@@ -31,7 +31,7 @@ export const ExploreResponsiveSheet = ({
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative w-full overflow-y-auto ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] lg:shadow-2xl`}
+        className={`relative w-full overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] lg:shadow-2xl`}
         onClick={(event) => event.stopPropagation()}
       >
         {showHandle && <div className={`mb-2 mt-3 lg:hidden ${EXPLORE_SHAPE.sheetHandle}`} />}

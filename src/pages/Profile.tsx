@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { NotificationBellPopover } from '../components/layout/NotificationBellPopover';
 import {
-  AccountActivityPreview,
   AccountAvatarModal,
   AccountEditModal,
   AccountSectionHeader,
-  AccountSignOutButton,
   OrganisationHubSections,
 } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
@@ -20,11 +19,12 @@ import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
 import { TrailPointsPathSheet } from '../components/rewards';
 import { RewardSummaryDTO } from '@uaetrail/shared-types';
 import { ProfileHeroSection } from '../components/profile/ProfileHeroSection';
-import { ProfileLanguagesCard } from '../components/profile/ProfileLanguagesCard';
 import { ProfileQuickActions, type ProfileQuickAction } from '../components/profile/ProfileQuickActions';
 import { ProfileStampsRow } from '../components/profile/ProfileStampsRow';
 import { ProfileCompletionCard } from '../components/profile/ProfileCompletionCard';
-import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
+import { ProfileMoreSection } from '../components/profile/ProfileMoreSection';
+import { ProfileSettingsLink } from '../components/profile/ProfileSettingsLink';
+import { ProfileUpNextSection } from '../components/profile/ProfileUpNextSection';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
 import { buildProfileStamps } from '../utils/profileStamps';
@@ -36,7 +36,7 @@ import { attendedActivities } from '../utils/activityHubSections';
 import { isHostRole } from '../utils/roles';
 
 export const Profile = () => {
-  const { user, refreshUser, signOut } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -78,24 +78,16 @@ export const Profile = () => {
   const [showAvatarEdit, setShowAvatarEdit] = useState(false);
   const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
   const [showPointsPath, setShowPointsPath] = useState(false);
-  const [memberDetails, setMemberDetails] = useState<{ age: number | null; languages: string | null }>({
-    age: null,
-    languages: null,
-  });
+  const [memberDetails, setMemberDetails] = useState<{ age: number | null }>({ age: null });
 
   useEffect(() => {
     if (!user) return;
-    void Promise.all([api.getMeProfile().catch(() => null), api.getMyOrganisationApplication().catch(() => null)]).then(
-      ([profileRes, hostRes]) => {
-        const profile = profileRes?.data;
-        const meta = hostRes?.data?.metadata;
-        const dateOfBirth = profile?.dateOfBirth ?? meta?.dateOfBirth;
-        setMemberDetails({
-          age: dateOfBirth ? computeAgeFromDateOfBirth(dateOfBirth) : null,
-          languages: meta?.languages?.trim() || null,
-        });
-      }
-    );
+    void api.getMeProfile().then((profileRes) => {
+      const dateOfBirth = profileRes?.data?.dateOfBirth;
+      setMemberDetails({
+        age: dateOfBirth ? computeAgeFromDateOfBirth(dateOfBirth) : null,
+      });
+    }).catch(() => undefined);
   }, [user]);
 
   useEffect(() => {
@@ -115,7 +107,6 @@ export const Profile = () => {
   const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
   const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const canHost = isHostRole(user?.role);
-  const canEditLanguages = canHost || ownedProfiles.length > 0 || Boolean(memberDetails.languages);
   const isActivityHost = canHost && hostProfileKind !== 'shop';
   const messagesPath = canHost ? '/host/messages' : '/messages';
   const activitiesPath = '/activities?tab=joined';
@@ -221,14 +212,6 @@ export const Profile = () => {
       });
     }
 
-    actions.push({
-      key: 'settings',
-      label: 'Settings',
-      to: '/profile/settings',
-      emoji: '⚙️',
-      accent: 'bg-neutral-100',
-    });
-
     return actions;
   }, [
     buddies.length,
@@ -257,6 +240,13 @@ export const Profile = () => {
     setAvatarMessage(null);
     setShowAvatarEdit(true);
   }, []);
+
+  const handleRefresh = useCallback(async () => {
+    await reload();
+    if (isActivityHost && hostTenantId) {
+      await host.reload();
+    }
+  }, [host, hostTenantId, isActivityHost, reload]);
 
   const saveProfile = async (payload: AccountEditSavePayload) => {
     setMessage(null);
@@ -336,88 +326,79 @@ export const Profile = () => {
       {error && !loading && (
         <GlassCard padding className="mb-3 border-red-200/50 bg-red-50/50">
           <p className="text-sm text-red-600">{error}</p>
-          <button type="button" onClick={reload} className="text-sm font-semibold text-emerald-600 mt-2">
+          <button type="button" onClick={() => void reload()} className="mt-2 text-sm font-semibold text-emerald-600">
             Retry
           </button>
         </GlassCard>
       )}
 
-      <div className="space-y-3 pb-nav-safe animate-fade-up">
-        <ProfileHeroSection
-          displayName={displayName}
-          roleLabel={roleLabel}
-          avatarUrl={avatarUrl}
-          completionPercent={completion.percent}
-          shareTitle={`${displayName} on UAE Trail`}
-          shareText={shareText}
-          sharePath={sharePath}
-          shareReady={shareReady}
-          showCompletionBadge={!loading}
-          onEditAvatar={openAvatarEdit}
-          onEditProfile={openEdit}
-          onViewProfile={openPublicProfile}
-          extra={heroExtra}
-        />
-
-        {!loading && profileStamps.length > 0 && (
-          <GlassCard padding className="!py-4">
-            <ProfileStampsRow stamps={profileStamps} />
-          </GlassCard>
-        )}
-
-        <ProfileLanguagesCard
-          languages={memberDetails.languages}
-          canEdit={canEditLanguages}
-          onUpdated={(languages) => setMemberDetails((prev) => ({ ...prev, languages }))}
-        />
-
-        <ProfileMapPresenceSection />
-
-        {isActivityHost && (
-          <GlassCard padding className="space-y-3">
-            <AccountSectionHeader title="Hosting" actionTo="/host/overview" actionLabel="Host console" />
-            {host.loading ? (
-              <div className="flex justify-center py-6">
-                <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : (
-              <OrganisationHubSections
-                activitiesCount={host.activities.length}
-                pendingJoinRequests={host.pendingJoinRequests}
-                upcomingActivitiesCount={host.upcomingActivitiesCount}
-                pastActivitiesCount={host.pastActivitiesCount}
-                upcomingActivities={host.upcomingActivities}
-              />
-            )}
-          </GlassCard>
-        )}
-
-        <ProfileQuickActions actions={quickActions} columns={3} />
-
-        {!loading && completion.percent < 100 && (
-          <ProfileCompletionCard
-            percent={completion.percent}
-            items={completion.items}
-            onEditProfile={openEdit}
+      <PullToRefresh onRefresh={handleRefresh} disabled={loading}>
+        <div className="space-y-3 pb-nav-safe animate-fade-up">
+          <ProfileHeroSection
+            displayName={displayName}
+            roleLabel={roleLabel}
+            avatarUrl={avatarUrl}
+            completionPercent={completion.percent}
+            shareTitle={`${displayName} on UAE Trail`}
+            shareText={shareText}
+            sharePath={sharePath}
+            shareReady={shareReady}
+            showCompletionBadge={!loading}
             onEditAvatar={openAvatarEdit}
+            onEditProfile={openEdit}
+            onViewProfile={openPublicProfile}
+            extra={heroExtra}
           />
-        )}
 
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : (
-          <AccountActivityPreview
+          <ProfileUpNextSection
             messagesPath={messagesPath}
             upcomingActivity={upcomingActivity}
             pendingRequests={pendingRequests}
             conversations={conversations}
+            loading={loading}
           />
-        )}
 
-        <AccountSignOutButton onSignOut={() => void signOut()} />
-      </div>
+          {!loading && completion.percent < 100 && (
+            <ProfileCompletionCard
+              percent={completion.percent}
+              items={completion.items}
+              onEditProfile={openEdit}
+              onEditAvatar={openAvatarEdit}
+            />
+          )}
+
+          <ProfileQuickActions actions={quickActions} columns={quickActions.length > 4 ? 3 : 3} />
+
+          {isActivityHost && (
+            <GlassCard padding className="space-y-3">
+              <AccountSectionHeader title="Hosting" actionTo="/host/overview" actionLabel="Host console" />
+              {host.loading ? (
+                <div className="flex justify-center py-6">
+                  <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+                </div>
+              ) : (
+                <OrganisationHubSections
+                  activitiesCount={host.activities.length}
+                  pendingJoinRequests={host.pendingJoinRequests}
+                  upcomingActivitiesCount={host.upcomingActivitiesCount}
+                  pastActivitiesCount={host.pastActivitiesCount}
+                  upcomingActivities={host.upcomingActivities}
+                />
+              )}
+            </GlassCard>
+          )}
+
+          {!loading && profileStamps.length > 0 && (
+            <ProfileMoreSection>
+              <GlassCard padding className="!py-4">
+                <ProfileStampsRow stamps={profileStamps} />
+              </GlassCard>
+            </ProfileMoreSection>
+          )}
+
+          <ProfileSettingsLink />
+        </div>
+      </PullToRefresh>
 
       {rewardSummary && trailPointsEligible && (
         <TrailPointsPathSheet

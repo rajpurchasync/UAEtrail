@@ -15,8 +15,6 @@ export const apiRouter = Router();
 apiRouter.use('/auth', authLimiter, authRouter);
 apiRouter.use('/admin', adminRouter);
 apiRouter.use('/host', hostRouter);
-/** @deprecated Use `/host` — kept for older clients. */
-apiRouter.use('/organizer', hostRouter);
 apiRouter.use('/chat', chatRouter);
 apiRouter.use('/shop', shopRouter);
 apiRouter.use('/media', mediaRouter);

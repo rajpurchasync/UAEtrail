@@ -21,7 +21,7 @@ import { ApiError } from '../lib/api-error.js';
 import { toLocationDto, buildActivityDto } from '../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { revokeRefreshTokensByUser } from '../lib/auth-tokens.js';
-import { adminUserTypeFilter, resolveAdminUserType } from '../lib/user-type.js';
+import { resolveAdminUserListFilters, resolveAdminUserType } from '../lib/user-type.js';
 import {
   countActiveEventsByLocationId,
   countAdminMetrics,
@@ -44,6 +44,7 @@ import {
   listActivitiesForAdminByIds,
   listUserHostedActivitiesBasic,
   listOwnerTenantTypes,
+  listTenantOwnerIdsByTenantType,
   listTenantMembershipsForUser,
   listUserOwnedTenantsBasic,
   toggleAdminEventFeatured,
@@ -617,72 +618,33 @@ adminRouter.get('/users', validate({ query: userListQuerySchema }), async (req, 
   try {
     const { role, userType, status, search, page, pageSize } = req.query as unknown as z.infer<typeof userListQuerySchema>;
 
-    const typeFilter = userType ? adminUserTypeFilter(userType) : null;
-    const useMongoCommonPath = !typeFilter || userType === 'participant' || userType === 'platform_admin' || userType === 'host_staff' || userType === 'organizer_staff';
+    const listFilters = userType ? resolveAdminUserListFilters(userType) : {};
+    const authRoleFilter = role
+      ? (role.toUpperCase() as UserRole)
+      : listFilters.role;
+    const authStatusFilter = status ? (status.toUpperCase() as UserStatus) : undefined;
 
-    if (useMongoCommonPath) {
-      const authRoleFilter = role ? (role.toUpperCase() as UserRole) : typeFilter?.role ? typeFilter.role : undefined;
-      const authStatusFilter = status ? (status.toUpperCase() as UserStatus) : undefined;
-      const [users, total] = await Promise.all([
-        listAuthUsers({
-          role: authRoleFilter as UserRole | UserRole[] | undefined,
-          status: authStatusFilter as 'ACTIVE' | 'SUSPENDED' | undefined,
-          search,
-          skip: (page - 1) * pageSize,
-          take: pageSize
-        }),
-        countAuthUsers({
-          role: authRoleFilter as UserRole | UserRole[] | undefined,
-          status: authStatusFilter as 'ACTIVE' | 'SUSPENDED' | undefined,
-          search
-        })
-      ]);
-
-      const ownedTenantMap = new Map<string, { type: TenantType }[]>();
-      const tenantOwnerIds = users.filter((u) => u.role === 'TENANT_OWNER').map((u) => u._id);
-      if (tenantOwnerIds.length > 0) {
-        const owners = await listOwnerTenantTypes(tenantOwnerIds);
-        owners.forEach((tenant) => {
-          const existing = ownedTenantMap.get(tenant.ownerId) ?? [];
-          existing.push({ type: tenant.type });
-          ownedTenantMap.set(tenant.ownerId, existing);
-        });
-      }
-
-      res.json({
-        data: users.map((u) => ({
-          id: u._id,
-          email: u.email,
-          role: u.role.toLowerCase(),
-          userType: resolveAdminUserType({ role: u.role, ownedTenants: ownedTenantMap.get(u._id) }),
-          status: u.status.toLowerCase(),
-          authProvider: u.authProvider.toLowerCase(),
-          displayName: u.profile.displayName ?? null,
-          avatarUrl: u.profile.avatarUrl ?? null,
-          createdAt: u.createdAt,
-          lastActiveAt: u.lastActiveAt
-        })),
-        total,
-        page,
-        pageSize
-      });
-      return;
+    let ownerIdsFilter: string[] | undefined;
+    if (listFilters.tenantOwnerType) {
+      ownerIdsFilter = await listTenantOwnerIdsByTenantType(listFilters.tenantOwnerType);
     }
 
-    const authRoleFilter = role ? (role.toUpperCase() as UserRole) : typeFilter?.role ? typeFilter.role : undefined;
-    const authStatusFilter = status ? (status.toUpperCase() as UserStatus) : undefined;
+    const listInput = {
+      role: authRoleFilter as UserRole | UserRole[] | undefined,
+      status: authStatusFilter as 'ACTIVE' | 'SUSPENDED' | undefined,
+      search,
+      userIds: ownerIdsFilter,
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    };
+
     const [users, total] = await Promise.all([
-      listAuthUsers({
-        role: authRoleFilter as UserRole | UserRole[] | undefined,
-        status: authStatusFilter as 'ACTIVE' | 'SUSPENDED' | undefined,
-        search,
-        skip: (page - 1) * pageSize,
-        take: pageSize
-      }),
+      listAuthUsers(listInput),
       countAuthUsers({
-        role: authRoleFilter as UserRole | UserRole[] | undefined,
-        status: authStatusFilter as 'ACTIVE' | 'SUSPENDED' | undefined,
-        search
+        role: listInput.role,
+        status: listInput.status,
+        search: listInput.search,
+        userIds: listInput.userIds
       })
     ]);
 

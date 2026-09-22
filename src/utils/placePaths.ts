@@ -1,21 +1,10 @@
-import type { ActivityType } from '@uaetrail/shared-types';
+export {
+  normalizePlaceActivityType,
+  placeDetailPath,
+  type PlaceVenueKind,
+} from '@uaetrail/shared-types';
 
-/** Normalise trail / camp / event activity type strings. */
-export const normalizePlaceActivityType = (activityType: string): ActivityType | 'community_activity' => {
-  const kind = activityType.toLowerCase();
-  if (kind === 'camping') return 'camping';
-  if (kind === 'event' || kind === 'community_activity') return 'event';
-  if (kind === 'carpool') return 'carpool';
-  return 'hiking';
-};
-
-/** Public URL for a place (trail, camp, or event venue). */
-export const placeDetailPath = (activityType: string, placeId: string): string => {
-  const kind = normalizePlaceActivityType(activityType);
-  if (kind === 'camping') return `/camp/${placeId}`;
-  if (kind === 'event') return `/event/${placeId}`;
-  return `/trail/${placeId}`;
-};
+import { placeDetailPath } from '@uaetrail/shared-types';
 
 export const placeReviewPath = (activityType: string, placeId: string): string =>
   `${placeDetailPath(activityType, placeId)}#reviews`;

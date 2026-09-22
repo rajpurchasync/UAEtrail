@@ -208,6 +208,7 @@ export interface Activity {
   priceAed: number;
   pricePackages: unknown;
   capacity: number;
+  participantSlotsUsed?: number;
   status: ActivityStatus;
   featured: boolean;
   publishedAt: Date | null;

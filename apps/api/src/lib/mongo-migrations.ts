@@ -1,5 +1,7 @@
-import type { Db, ObjectId } from 'mongodb';
+import type { Db, Document, ObjectId } from 'mongodb';
+import { randomUUID } from 'crypto';
 import { COLLECTIONS, LEGACY_COLLECTIONS } from './collections.js';
+import { slugify } from './slug.js';
 import { isLegacyEmbeddedDemandTitle, normalizeLegacyDemandTitle, type DemandTitleKind } from '@uaetrail/shared-types';
 
 const migrateCollectionNameIfNeeded = async (db: Db, from: string, to: string): Promise<void> => {
@@ -163,8 +165,8 @@ const migrateLegacyParticipantIntentTitles = async (db: Db): Promise<void> => {
 
 /** Link shop merchant_profiles to their SHOP tenant via ownerId (Phase 6 prep). */
 const backfillMerchantProfileTenantLinks = async (db: Db): Promise<void> => {
-  const merchants = db.collection('merchant_profiles');
-  const tenants = db.collection('tenants');
+  const merchants = db.collection(COLLECTIONS.MERCHANT_PROFILES);
+  const tenants = db.collection(COLLECTIONS.TENANTS);
   const cursor = merchants.find({
     $or: [{ tenantId: { $exists: false } }, { tenantId: null }],
   });
@@ -204,7 +206,7 @@ const backfillMerchantProfileTenantLinks = async (db: Db): Promise<void> => {
 
 /** Keep at most one merchant_profiles row per tenantId so the sparse unique index can build. */
 const dedupeMerchantProfileTenantIds = async (db: Db): Promise<void> => {
-  const merchants = db.collection('merchant_profiles');
+  const merchants = db.collection(COLLECTIONS.MERCHANT_PROFILES);
   const dupes = await merchants
     .aggregate<{ _id: string; ids: string[]; count: number }>([
       { $match: { tenantId: { $type: 'string' } } },
@@ -250,6 +252,276 @@ const migrateActivityTerminologyValues = async (db: Db): Promise<void> => {
   }
 };
 
+/** Create shop tenants for merchant profiles that still lack tenantId after backfill. */
+const provisionShopTenantsForOrphanMerchants = async (db: Db): Promise<void> => {
+  type ShopTenantDoc = {
+    _id: string;
+    name: string;
+    slug: string;
+    type: string;
+    businessMode: string;
+    status: string;
+    ownerId: string;
+    countryCode: string;
+    description?: string | null;
+    website?: string | null;
+    logoUrl?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    region?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
+  const merchants = db.collection<{
+    _id: string;
+    adminIds?: string[];
+    shopName?: string;
+    tenantId?: string | null;
+    description?: string | null;
+    websiteUrl?: string | null;
+    logo?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    region?: string | null;
+  }>(COLLECTIONS.MERCHANT_PROFILES);
+  const tenants = db.collection<ShopTenantDoc>(COLLECTIONS.TENANTS);
+  const memberships = db.collection(COLLECTIONS.TENANT_MEMBERSHIPS);
+
+  const orphans = await merchants
+    .find({ $or: [{ tenantId: { $exists: false } }, { tenantId: null }] })
+    .toArray();
+
+  let createdTenants = 0;
+  let linked = 0;
+
+  for (const merchant of orphans) {
+    const ownerId = Array.isArray(merchant.adminIds) ? merchant.adminIds[0] : null;
+    if (typeof ownerId !== 'string' || !ownerId) continue;
+
+    let shopTenant: ShopTenantDoc | null = await tenants.findOne({ ownerId, businessMode: 'SHOP' });
+
+    if (!shopTenant) {
+      const baseSlug = slugify(String(merchant.shopName ?? 'shop'));
+      let slug = baseSlug;
+      let attempt = 1;
+      while (await tenants.findOne({ slug }, { projection: { _id: 1 } })) {
+        slug = `${baseSlug}-${attempt}`;
+        attempt += 1;
+      }
+
+      const tenantId = randomUUID();
+      const now = new Date();
+      const newTenant: ShopTenantDoc = {
+        _id: tenantId,
+        name: String(merchant.shopName ?? 'Shop'),
+        slug,
+        type: 'GUIDE_OWNED',
+        businessMode: 'SHOP',
+        status: 'ACTIVE',
+        ownerId,
+        countryCode: 'AE',
+        description: merchant.description ?? null,
+        website: merchant.websiteUrl ?? null,
+        logoUrl: merchant.logo ?? null,
+        latitude: merchant.latitude ?? null,
+        longitude: merchant.longitude ?? null,
+        region: merchant.region ?? null,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await tenants.insertOne(newTenant);
+      shopTenant = newTenant;
+      await memberships.updateOne(
+        { tenantId: shopTenant._id, userId: ownerId },
+        {
+          $set: {
+            tenantId: shopTenant._id,
+            userId: ownerId,
+            role: 'TENANT_OWNER',
+            tenant: { status: 'ACTIVE' },
+          },
+          $setOnInsert: { _id: randomUUID(), createdAt: now },
+        },
+        { upsert: true }
+      );
+      createdTenants += 1;
+    }
+
+    if (!shopTenant) continue;
+
+    const tenantTaken = await merchants.findOne({
+      tenantId: shopTenant._id,
+      _id: { $ne: merchant._id },
+    });
+    if (tenantTaken) continue;
+
+    await merchants.updateOne(
+      { _id: merchant._id },
+      { $set: { tenantId: shopTenant._id, updatedAt: new Date() } }
+    );
+    linked += 1;
+  }
+
+  if (createdTenants > 0 || linked > 0) {
+    console.log(
+      `[mongo] Provisioned shop tenants for orphan merchants (tenants created ${createdTenants}, linked ${linked})`
+    );
+  }
+};
+
+const collapseOrderLineItemsIntoShopOrders = async (db: Db): Promise<void> => {
+  const orders = db.collection(COLLECTIONS.SHOP_ORDERS);
+  const lineItems = db.collection(COLLECTIONS.ORDER_LINE_ITEMS);
+
+  let normalizedOrders = 0;
+  const orderCursor = orders.find({ items: { $exists: true, $type: 'array', $ne: [] } });
+  for await (const order of orderCursor) {
+    const rawItems = Array.isArray(order.items) ? order.items : [];
+    const fallbackTimestamp = order.updatedAt instanceof Date ? order.updatedAt : new Date();
+    let changed = false;
+    const nextItems = rawItems.map((item: Record<string, unknown>, index: number) => {
+      const productId = typeof item.productId === 'string' ? item.productId : '';
+      const quantity = typeof item.quantity === 'number' ? item.quantity : 0;
+      const unitPriceAed =
+        typeof item.unitPriceAed === 'number'
+          ? item.unitPriceAed
+          : typeof item.totalAed === 'number' && quantity > 0
+            ? item.totalAed / quantity
+            : 0;
+      const totalAed =
+        typeof item.totalAed === 'number' ? item.totalAed : unitPriceAed * quantity;
+      const id =
+        typeof item.id === 'string'
+          ? item.id
+          : `${String(order._id)}:${index}`;
+      if (
+        item.id !== id ||
+        item.totalAed == null ||
+        item.status == null ||
+        item.timestamp == null
+      ) {
+        changed = true;
+      }
+      return {
+        id,
+        productId,
+        quantity,
+        unitPriceAed,
+        totalAed,
+        status: typeof item.status === 'string' ? item.status : 'PENDING',
+        fulfillmentTrackingLink:
+          typeof item.fulfillmentTrackingLink === 'string' ? item.fulfillmentTrackingLink : null,
+        timestamp: item.timestamp instanceof Date ? item.timestamp : fallbackTimestamp,
+      };
+    });
+
+    if (changed) {
+      await orders.updateOne({ _id: order._id }, { $set: { items: nextItems, updatedAt: new Date() } });
+      normalizedOrders += 1;
+    }
+  }
+
+  let mergedLineItems = 0;
+  const lineCursor = lineItems.find({});
+  for await (const line of lineCursor) {
+    const lineId = typeof line._id === 'string' ? line._id : String(line._id);
+    const orderId =
+      typeof line.orderId === 'string'
+        ? line.orderId
+        : lineId.includes(':')
+          ? lineId.split(':')[0]
+          : null;
+    if (!orderId) continue;
+
+    const order = await orders.findOne({ _id: orderId } as Document);
+    if (!order || !Array.isArray(order.items)) continue;
+
+    const items = [...order.items];
+    const indexFromId = lineId.includes(':') ? Number(lineId.split(':')[1]) : -1;
+    const index =
+      Number.isInteger(indexFromId) && indexFromId >= 0 && indexFromId < items.length
+        ? indexFromId
+        : items.findIndex((item) => item?.productId === line.productId);
+
+    const quantity = typeof line.quantity === 'number' ? line.quantity : 0;
+    const totalAed = typeof line.totalAed === 'number' ? line.totalAed : 0;
+    const mergedItem = {
+      id: lineId,
+      productId: typeof line.productId === 'string' ? line.productId : '',
+      quantity,
+      unitPriceAed: quantity > 0 ? totalAed / quantity : 0,
+      totalAed,
+      status: typeof line.status === 'string' ? line.status : 'PENDING',
+      fulfillmentTrackingLink:
+        typeof line.fulfillmentTrackingLink === 'string' ? line.fulfillmentTrackingLink : null,
+      timestamp: line.timestamp instanceof Date ? line.timestamp : new Date(),
+    };
+
+    if (index >= 0) {
+      items[index] = mergedItem;
+    } else {
+      items.push(mergedItem);
+    }
+
+    await orders.updateOne({ _id: orderId } as Document, { $set: { items, updatedAt: new Date() } });
+    mergedLineItems += 1;
+  }
+
+  if (normalizedOrders > 0 || mergedLineItems > 0) {
+    console.log(
+      `[mongo] Collapsed order line items into shop_orders (normalized ${normalizedOrders}, merged ${mergedLineItems})`
+    );
+  }
+};
+
+const migrateParticipantIntentIdsToString = async (db: Db): Promise<void> => {
+  const collection = db.collection(COLLECTIONS.PARTICIPANT_INTENTS);
+  const cursor = collection.find({ _id: { $type: 'objectId' } });
+  let migrated = 0;
+
+  for await (const doc of cursor) {
+    const { _id, ...rest } = doc;
+    const newId = randomUUID();
+    await collection.insertOne({ _id: newId, ...rest } as Document);
+    await collection.deleteOne({ _id });
+    migrated += 1;
+  }
+
+  if (migrated > 0) {
+    console.log(`[mongo] Migrated participant_intents _id ObjectId → string UUID (${migrated} docs)`);
+  }
+};
+
+const backfillParticipantSlotsUsed = async (db: Db): Promise<void> => {
+  const activities = db.collection<{ _id: string; participantSlotsUsed?: number }>(COLLECTIONS.ACTIVITIES);
+  const participants = db.collection<{ activityId: string }>(COLLECTIONS.ACTIVITY_PARTICIPANTS);
+
+  const counts = await participants
+    .aggregate<{ _id: string; count: number }>([{ $group: { _id: '$activityId', count: { $sum: 1 } } }])
+    .toArray();
+
+  let updated = 0;
+  for (const row of counts) {
+    const result = await activities.updateOne(
+      { _id: row._id },
+      { $set: { participantSlotsUsed: row.count } }
+    );
+    if (result.modifiedCount > 0) updated += 1;
+  }
+
+  const zeroResult = await activities.updateMany(
+    { participantSlotsUsed: { $exists: false } },
+    { $set: { participantSlotsUsed: 0 } }
+  );
+
+  if (updated > 0 || zeroResult.modifiedCount > 0) {
+    console.log(
+      `[mongo] Backfilled participantSlotsUsed (${updated} from participants, ${zeroResult.modifiedCount} set to 0)`
+    );
+  }
+};
+
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENTS, COLLECTIONS.ACTIVITIES);
@@ -271,6 +543,10 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateActivityJoinModeFromRequirements(db);
   await migrateLegacyParticipantIntentTitles(db);
   await backfillMerchantProfileTenantLinks(db);
+  await provisionShopTenantsForOrphanMerchants(db);
   await dedupeMerchantProfileTenantIds(db);
+  await backfillParticipantSlotsUsed(db);
+  await collapseOrderLineItemsIntoShopOrders(db);
+  await migrateParticipantIntentIdsToString(db);
   await migrateActivityTerminologyValues(db);
 };

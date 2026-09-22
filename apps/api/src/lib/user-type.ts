@@ -21,16 +21,44 @@ type UserTypeInput = {
   memberships?: { role: string; tenant: { type: TenantType; name: string } }[];
 };
 
+export type AdminUserListFilters = {
+  role?: UserRole | UserRole[];
+  tenantOwnerType?: TenantType;
+};
+
 export const resolveAdminUserType = (user: UserTypeInput): AdminUserType => {
   if (user.role === UserRole.PLATFORM_ADMIN) return 'platform_admin';
   if (user.role === UserRole.TENANT_OWNER) {
-    const tenantType = user.ownedTenants?.[0]?.type ?? user.memberships?.find((m) => m.role === 'TENANT_OWNER')?.tenant.type;
+    const owned = user.ownedTenants ?? [];
+    if (owned.some((tenant) => tenant.type === TenantType.COMPANY)) return 'business_host';
+    if (owned.some((tenant) => tenant.type === TenantType.GUIDE_OWNED)) return 'guide_host';
+    const tenantType = owned[0]?.type ?? user.memberships?.find((m) => m.role === 'TENANT_OWNER')?.tenant.type;
     return tenantType === TenantType.COMPANY ? 'business_host' : 'guide_host';
   }
   if (user.role === UserRole.TENANT_ADMIN || user.role === UserRole.TENANT_GUIDE) {
     return 'host_staff';
   }
   return 'participant';
+};
+
+export const resolveAdminUserListFilters = (userType?: string): AdminUserListFilters => {
+  switch (userType) {
+    case 'participant':
+      return { role: UserRole.PARTICIPANT };
+    case 'platform_admin':
+      return { role: UserRole.PLATFORM_ADMIN };
+    case 'host_staff':
+    case 'organizer_staff':
+      return { role: [UserRole.TENANT_ADMIN, UserRole.TENANT_GUIDE] };
+    case 'business_host':
+    case 'business_organizer':
+      return { role: UserRole.TENANT_OWNER, tenantOwnerType: TenantType.COMPANY };
+    case 'guide_host':
+    case 'guide_organizer':
+      return { role: UserRole.TENANT_OWNER, tenantOwnerType: TenantType.GUIDE_OWNED };
+    default:
+      return {};
+  }
 };
 
 export const isBusinessHostById = async (userId: string): Promise<boolean> => {
@@ -40,28 +68,17 @@ export const isBusinessHostById = async (userId: string): Promise<boolean> => {
   return tenant?.type === TenantType.COMPANY;
 };
 
+/** @deprecated Prisma-shaped filter — use resolveAdminUserListFilters for Mongo queries. */
 export const adminUserTypeFilter = (userType: string): Record<string, unknown> | null => {
-  switch (userType) {
-    case 'participant':
-      return { role: UserRole.PARTICIPANT };
-    case 'platform_admin':
-      return { role: UserRole.PLATFORM_ADMIN };
-    case 'host_staff':
-    case 'organizer_staff':
-      return { role: { in: [UserRole.TENANT_ADMIN, UserRole.TENANT_GUIDE] } };
-    case 'business_host':
-    case 'business_organizer':
-      return {
-        role: UserRole.TENANT_OWNER,
-        ownedTenants: { some: { type: TenantType.COMPANY } }
-      };
-    case 'guide_host':
-    case 'guide_organizer':
-      return {
-        role: UserRole.TENANT_OWNER,
-        ownedTenants: { some: { type: TenantType.GUIDE_OWNED } }
-      };
-    default:
-      return null;
+  const filters = resolveAdminUserListFilters(userType);
+  if (!filters.role) return null;
+  if (filters.tenantOwnerType) {
+    return {
+      role: filters.role,
+      ownedTenants: {
+        some: { type: filters.tenantOwnerType }
+      }
+    };
   }
+  return { role: filters.role };
 };

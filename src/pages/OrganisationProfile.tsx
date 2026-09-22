@@ -45,7 +45,7 @@ export const OrganisationProfile = () => {
   if (tenant && isShop) {
     return (
       <Navigate
-        to={shopPublicPath({ merchantId: tenant.shopId ?? tenant.merchantId, slug: tenant.slug })}
+        to={shopPublicPath({ merchantId: tenant.shopId, slug: tenant.slug })}
         replace
       />
     );

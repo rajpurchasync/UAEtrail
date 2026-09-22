@@ -46,10 +46,14 @@ const buildUserQuery = (input: {
   role?: AuthUserRecord['role'] | AuthUserRecord['role'][];
   status?: AuthUserRecord['status'];
   search?: string;
+  userIds?: string[];
 }): Record<string, unknown> => {
   const query: Record<string, unknown> = {};
   if (input.role) query.role = Array.isArray(input.role) ? { $in: input.role } : input.role;
   if (input.status) query.status = input.status;
+  if (input.userIds !== undefined) {
+    query._id = input.userIds.length > 0 ? { $in: input.userIds } : { $in: ['__none__'] };
+  }
   if (input.search) {
     query.$or = [
       { email: { $regex: input.search, $options: 'i' } },
@@ -83,6 +87,7 @@ export const listAuthUsers = async (input: {
   role?: AuthUserRecord['role'] | AuthUserRecord['role'][];
   status?: AuthUserRecord['status'];
   search?: string;
+  userIds?: string[];
   skip?: number;
   take?: number;
 }): Promise<AuthUserRecord[]> => {
@@ -99,6 +104,7 @@ export const countAuthUsers = async (input: {
   role?: AuthUserRecord['role'] | AuthUserRecord['role'][];
   status?: AuthUserRecord['status'];
   search?: string;
+  userIds?: string[];
 }): Promise<number> => usersCollection().countDocuments(buildUserQuery(input));
 
 export const findAuthUsersByIds = async (ids: string[]): Promise<AuthUserRecord[]> => {

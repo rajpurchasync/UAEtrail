@@ -3,11 +3,12 @@ import { Bell, Mountain, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { EXPLORE_MAP_PATH } from '../../config/platform';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
 
-const headerIconSlot = 'flex h-10 w-10 shrink-0 items-center justify-center';
+const headerIconSlot = 'touch-target-icon flex shrink-0 items-center justify-center';
 
-/** Explore map — white bar: profile (left), logo (center), notifications (right). */
+/** Explore map — profile, brand, notifications. */
 export const MobileExploreHeader = () => {
   const { user } = useAuth();
   const { pathname, search } = useLocation();
@@ -34,9 +35,9 @@ export const MobileExploreHeader = () => {
         </Link>
 
         <Link
-          to="/"
+          to={EXPLORE_MAP_PATH}
           className="flex min-w-0 items-center justify-center gap-1.5 justify-self-center"
-          aria-label="UAE Trail home"
+          aria-label="Explore map"
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-700">
             <Mountain className="h-4 w-4 text-white" strokeWidth={2.25} />
@@ -58,7 +59,7 @@ export const MobileExploreHeader = () => {
             )}
           </Link>
         ) : (
-          <span className="h-10 w-10 shrink-0 justify-self-end" aria-hidden />
+          <span className="touch-target-icon shrink-0 justify-self-end" aria-hidden />
         )}
       </div>
     </header>

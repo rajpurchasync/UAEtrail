@@ -2,7 +2,7 @@ import type { Db } from 'mongodb';
 import { COLLECTIONS } from './collections.js';
 
 export const ensureMongoIndexes = async (db: Db): Promise<void> => {
-  const userFavorites = db.collection('user_favorites');
+  const userFavorites = db.collection(COLLECTIONS.USER_FAVORITES);
   let existingFavoriteIndexes: Awaited<ReturnType<typeof userFavorites.indexes>> = [];
   try {
     existingFavoriteIndexes = await userFavorites.indexes();
@@ -28,31 +28,35 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
   );
 
   await Promise.all([
-    db.collection('auth_users').createIndexes([
+    db.collection(COLLECTIONS.AUTH_USERS).createIndexes([
       { key: { email: 1 }, unique: true },
       { key: { googleId: 1 }, unique: true, sparse: true },
       { key: { referralCode: 1 }, unique: true }
     ]),
-    db.collection('auth_refresh_tokens').createIndexes([
+    db.collection(COLLECTIONS.AUTH_REFRESH_TOKENS).createIndexes([
       { key: { tokenHash: 1, userId: 1 } },
       { key: { userId: 1 } }
     ]),
-    db.collection('auth_email_verification_tokens').createIndexes([{ key: { token: 1 } }]),
-    db.collection('auth_email_change_tokens').createIndexes([
+    db.collection(COLLECTIONS.AUTH_EMAIL_VERIFICATION_TOKENS).createIndexes([{ key: { token: 1 } }]),
+    db.collection(COLLECTIONS.AUTH_EMAIL_CHANGE_TOKENS).createIndexes([
       { key: { userId: 1, usedAt: 1 } },
       { key: { newEmail: 1, usedAt: 1 } }
     ]),
-    db.collection('auth_password_reset_tokens').createIndexes([{ key: { token: 1 } }]),
-    db.collection('tenant_memberships').createIndexes([
+    db.collection(COLLECTIONS.AUTH_PASSWORD_RESET_TOKENS).createIndexes([{ key: { token: 1 } }]),
+    db.collection(COLLECTIONS.TENANT_MEMBERSHIPS).createIndexes([
       { key: { tenantId: 1, userId: 1 }, unique: true },
       { key: { userId: 1 } }
     ]),
-    db.collection('locations').createIndexes([
+    db.collection(COLLECTIONS.LOCATIONS).createIndexes([
       { key: { status: 1, featured: -1, createdAt: -1 } },
       { key: { submittedById: 1, createdAt: -1 } },
       { key: { geo: '2dsphere' } }
     ]),
-    db.collection('notifications').createIndexes([{ key: { userId: 1, createdAt: -1 } }]),
+    db.collection(COLLECTIONS.LOCATION_UNLOCKS).createIndexes([
+      { key: { userId: 1, locationId: 1 }, unique: true },
+      { key: { locationId: 1 } }
+    ]),
+    db.collection(COLLECTIONS.NOTIFICATIONS).createIndexes([{ key: { userId: 1, createdAt: -1 } }]),
     userFavorites.createIndexes([
       { key: { userId: 1, createdAt: -1 } },
       {
@@ -92,25 +96,26 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
         partialFilterExpression: { profileUserId: { $type: 'string' } }
       }
     ]),
-    db.collection('reward_ledgers').createIndexes([{ key: { userId: 1, action: 1 } }]),
-    db.collection('user_badges').createIndexes([{ key: { userId: 1 } }]),
+    db.collection(COLLECTIONS.REWARD_LEDGERS).createIndexes([{ key: { userId: 1, action: 1 } }]),
+    db.collection(COLLECTIONS.USER_BADGES).createIndexes([{ key: { userId: 1 } }]),
     db.collection(COLLECTIONS.ACTIVITIES).createIndexes([
       { key: { tenantId: 1, startAt: 1 } },
       { key: { status: 1, startAt: 1 } },
       { key: { locationId: 1 } },
       { key: { featured: 1, status: 1, startAt: 1 } }
     ]),
-    db.collection('push_subscriptions').createIndexes([{ key: { userId: 1 } }]),
-    db.collection('tenants').createIndexes([
+    db.collection(COLLECTIONS.PUSH_SUBSCRIPTIONS).createIndexes([{ key: { userId: 1 } }]),
+    db.collection(COLLECTIONS.TENANTS).createIndexes([
       { key: { slug: 1 }, unique: true },
       { key: { ownerId: 1 } },
-      { key: { status: 1 } }
+      { key: { status: 1 } },
+      { key: { type: 1, ownerId: 1 } }
     ]),
     db.collection(COLLECTIONS.HOST_APPLICATIONS).createIndexes([
       { key: { status: 1 } },
       { key: { applicantId: 1, createdAt: -1 } }
     ]),
-    db.collection('participant_intents').createIndexes([
+    db.collection(COLLECTIONS.PARTICIPANT_INTENTS).createIndexes([
       { key: { userId: 1, createdAt: -1 } },
       { key: { status: 1, createdAt: -1 } }
     ]),
@@ -125,64 +130,85 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { userId: 1 } },
       { key: { requestId: 1 } }
     ]),
-    db.collection('chat_messages').createIndexes([
+    db.collection(COLLECTIONS.CHAT_MESSAGES).createIndexes([
       { key: { senderId: 1, receiverId: 1, createdAt: -1 } },
       { key: { receiverId: 1, readAt: 1 } }
     ]),
-    db.collection('social_reviews').createIndexes([
+    db.collection(COLLECTIONS.SOCIAL_REVIEWS).createIndexes([
       { key: { targetType: 1, targetId: 1, createdAt: -1 } },
       { key: { userId: 1, createdAt: -1 } }
     ]),
-    db.collection('social_posts').createIndexes([
+    db.collection(COLLECTIONS.SOCIAL_POSTS).createIndexes([
       { key: { category: 1, createdAt: -1 } },
       { key: { authorId: 1, createdAt: -1 } }
     ]),
-    db.collection('social_post_replies').createIndexes([
+    db.collection(COLLECTIONS.SOCIAL_POST_REPLIES).createIndexes([
       { key: { postId: 1, createdAt: 1 } },
       { key: { authorId: 1 } }
     ]),
-    db.collection('social_post_reply_likes').createIndexes([
+    db.collection(COLLECTIONS.SOCIAL_POST_REPLY_LIKES).createIndexes([
       { key: { postId: 1, replyId: 1, userId: 1 }, unique: true },
       { key: { userId: 1 } }
     ]),
-    db.collection('social_post_likes').createIndexes([
+    db.collection(COLLECTIONS.SOCIAL_POST_LIKES).createIndexes([
       { key: { postId: 1, userId: 1 }, unique: true },
       { key: { userId: 1 } }
     ]),
-    db.collection('shop_orders').createIndexes([
+    db.collection(COLLECTIONS.SHOP_ORDERS).createIndexes([
       { key: { userId: 1, createdAt: -1 } },
       { key: { status: 1, createdAt: -1 } },
-      { key: { stripeSessionId: 1 }, sparse: true }
+      { key: { stripeSessionId: 1 }, sparse: true },
+      { key: { 'items.id': 1 }, sparse: true },
+      { key: { 'items.productId': 1 }, sparse: true },
     ]),
-    db.collection('products').createIndexes([
+    db.collection(COLLECTIONS.PRODUCTS).createIndexes([
       { key: { merchantId: 1, status: 1, createdAt: -1 } }
     ]),
-    db.collection('merchant_profiles').createIndexes([
+    db.collection(COLLECTIONS.MERCHANT_PROFILES).createIndexes([
       { key: { adminIds: 1 } },
       { key: { tenantId: 1 }, sparse: true, unique: true },
     ]),
-    db.collection('social_groups').createIndexes([
+    db.collection(COLLECTIONS.ORDER_LINE_ITEMS).createIndexes([
+      { key: { orderId: 1, createdAt: -1 } },
+      { key: { productId: 1 } },
+      { key: { status: 1, createdAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.PRODUCT_CLICKS).createIndexes([
+      { key: { productId: 1, createdAt: -1 } },
+      { key: { userId: 1, createdAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.MEDIA_ASSETS).createIndexes([
+      { key: { uploadedById: 1, createdAt: -1 } },
+      { key: { tenantId: 1, createdAt: -1 }, sparse: true },
+      { key: { key: 1 }, unique: true, sparse: true }
+    ]),
+    db.collection(COLLECTIONS.AUDIT_LOGS).createIndexes([
+      { key: { actorId: 1, createdAt: -1 } },
+      { key: { entityType: 1, entityId: 1, createdAt: -1 } },
+      { key: { tenantId: 1, createdAt: -1 }, sparse: true }
+    ]),
+    db.collection(COLLECTIONS.SOCIAL_GROUPS).createIndexes([
       { key: { adminUserId: 1, createdAt: -1 } },
       { key: { activityId: 1 }, unique: true, sparse: true }
     ]),
-    db.collection('social_group_members').createIndexes([
+    db.collection(COLLECTIONS.SOCIAL_GROUP_MEMBERS).createIndexes([
       { key: { groupId: 1, userId: 1 }, unique: true, partialFilterExpression: { userId: { $type: 'string' } } },
       { key: { userId: 1, createdAt: -1 } },
       { key: { groupId: 1, createdAt: 1 } }
     ]),
-    db.collection('social_group_invites').createIndexes([
+    db.collection(COLLECTIONS.SOCIAL_GROUP_INVITES).createIndexes([
       { key: { groupId: 1, email: 1, status: 1 } },
       { key: { token: 1 }, unique: true },
       { key: { email: 1, status: 1 } }
     ]),
-    db.collection('social_group_wall').createIndexes([
+    db.collection(COLLECTIONS.SOCIAL_GROUP_WALL).createIndexes([
       { key: { groupId: 1, createdAt: -1 } }
     ]),
-    db.collection('social_group_wall_reactions').createIndexes([
+    db.collection(COLLECTIONS.SOCIAL_GROUP_WALL_REACTIONS).createIndexes([
       { key: { messageId: 1, userId: 1, kind: 1 }, unique: true },
       { key: { groupId: 1, messageId: 1 } }
     ]),
-    db.collection('buddy_requests').createIndexes([
+    db.collection(COLLECTIONS.BUDDY_REQUESTS).createIndexes([
       { key: { fromUserId: 1, toUserId: 1, status: 1 } },
       { key: { toUserId: 1, status: 1, createdAt: -1 } },
       { key: { fromUserId: 1, status: 1, createdAt: -1 } },
@@ -193,7 +219,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
         partialFilterExpression: { status: 'pending' }
       }
     ]),
-    db.collection('buddy_pairs').createIndexes([
+    db.collection(COLLECTIONS.BUDDY_PAIRS).createIndexes([
       { key: { userIds: 1 } },
       { key: { createdAt: -1 } }
     ])

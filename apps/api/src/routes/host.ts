@@ -11,7 +11,12 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { hashPassword } from '../lib/password.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
-import { requireMembershipRole, requireTenantContext } from '../middleware/tenant.js';
+import { requireOrgRole, requireTenantContext } from '../middleware/tenant.js';
+import {
+  ORG_ACTIVITY_EDIT_ROLES,
+  ORG_ACTIVITY_PUBLISH_ROLES,
+  ORG_TEAM_MANAGE_ROLES,
+} from '../lib/org-permissions.js';
 import { notifyRequestDecision, sendPasswordResetEmail } from '../lib/email.js';
 import { validate } from '../middleware/validate.js';
 import { awardPoints } from '../services/rewards.js';
@@ -221,7 +226,7 @@ tenantActivitiesRouter.get('/', async (req, res, next) => {
   }
 });
 
-tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (req, res, next) => {
+tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate({ body: eventCreateSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const platformAdmin = Boolean(req.tenantContext!.actingAsPlatformAdmin);
@@ -326,7 +331,7 @@ tenantActivitiesRouter.post('/', validate({ body: eventCreateSchema }), async (r
   }
 });
 
-tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eventPatchSchema }), async (req, res, next) => {
+tenantActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate({ params: idParamSchema, body: eventPatchSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const platformAdmin = Boolean(req.tenantContext!.actingAsPlatformAdmin);
@@ -486,7 +491,7 @@ tenantActivitiesRouter.patch('/:id', validate({ params: idParamSchema, body: eve
   }
 });
 
-tenantActivitiesRouter.delete('/:id', validate({ params: idParamSchema }), async (req, res, next) => {
+tenantActivitiesRouter.delete('/:id', requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES), validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
@@ -539,7 +544,7 @@ tenantActivitiesRouter.delete('/:id', validate({ params: idParamSchema }), async
   }
 });
 
-tenantActivitiesRouter.post('/:id/duplicate', validate({ params: idParamSchema }), async (req, res, next) => {
+tenantActivitiesRouter.post('/:id/duplicate', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
@@ -558,7 +563,7 @@ tenantActivitiesRouter.post('/:id/duplicate', validate({ params: idParamSchema }
   }
 });
 
-tenantActivitiesRouter.post('/:id/publish', validate({ params: idParamSchema }), async (req, res, next) => {
+tenantActivitiesRouter.post('/:id/publish', requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES), validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
@@ -634,7 +639,7 @@ hostRouter.get('/requests', async (req, res, next) => {
   }
 });
 
-hostRouter.patch('/requests/:id', validate({ params: idParamSchema, body: requestDecisionSchema }), async (req, res, next) => {
+hostRouter.patch('/requests/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate({ params: idParamSchema, body: requestDecisionSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id } = req.params as z.infer<typeof idParamSchema>;
@@ -748,7 +753,7 @@ hostRouter.get('/team', async (req, res, next) => {
 
 hostRouter.post(
   '/team',
-  requireMembershipRole([MembershipRole.TENANT_OWNER, MembershipRole.TENANT_ADMIN]),
+  requireOrgRole(ORG_TEAM_MANAGE_ROLES),
   validate({ body: teamCreateSchema }),
   async (req, res, next) => {
     try {
@@ -805,7 +810,7 @@ hostRouter.post(
 
 hostRouter.patch(
   '/team/:membershipId',
-  requireMembershipRole([MembershipRole.TENANT_OWNER, MembershipRole.TENANT_ADMIN]),
+  requireOrgRole(ORG_TEAM_MANAGE_ROLES),
   validate({ params: membershipIdSchema, body: teamPatchSchema }),
   async (req, res, next) => {
     try {
@@ -859,7 +864,7 @@ hostRouter.patch(
 
 hostRouter.delete(
   '/team/:membershipId',
-  requireMembershipRole([MembershipRole.TENANT_OWNER, MembershipRole.TENANT_ADMIN]),
+  requireOrgRole(ORG_TEAM_MANAGE_ROLES),
   validate({ params: membershipIdSchema }),
   async (req, res, next) => {
     try {
@@ -934,7 +939,7 @@ tenantActivitiesRouter.get('/:id/participants', validate({ params: idParamSchema
   }
 });
 
-tenantActivitiesRouter.post('/:id/participants/:participantId/checkin', validate({ params: participantIdSchema }), async (req, res, next) => {
+tenantActivitiesRouter.post('/:id/participants/:participantId/checkin', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate({ params: participantIdSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
@@ -955,7 +960,7 @@ tenantActivitiesRouter.post('/:id/participants/:participantId/checkin', validate
   }
 });
 
-tenantActivitiesRouter.delete('/:id/participants/:participantId/checkin', validate({ params: participantIdSchema }), async (req, res, next) => {
+tenantActivitiesRouter.delete('/:id/participants/:participantId/checkin', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate({ params: participantIdSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
     const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
@@ -993,7 +998,7 @@ registerPlaceAlias(hostRouter, 'get', '/locations', async (req, res, next) => {
   }
 });
 
-registerPlaceAlias(hostRouter, 'post', '/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
+registerPlaceAlias(hostRouter, 'post', '/locations', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof locationSubmitBodySchema>;
 
@@ -1058,6 +1063,7 @@ const fulfillIntentBodySchema = z.object({
 
 hostRouter.post(
   '/participant-intents/:intentId/fulfill',
+  requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
   validate({ params: intentIdParamSchema, body: fulfillIntentBodySchema }),
   async (req, res, next) => {
     try {

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { registerActivityRoute } from '../lib/activity-routes.js';
 import { registerPlaceAlias } from '../lib/route-place-alias.js';
 import { ApiError } from '../lib/api-error.js';
-import { toLocationDto, buildActivityDto, toParticipantPreviews, toSharedRole } from '../lib/mappers.js';
+import { toLocationDto, buildActivityDto, toParticipantPreviews, toSharedRole, mapTenantBusinessMode, mapTenantType } from '../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { optionalAuth } from '../middleware/optional-auth.js';
@@ -608,8 +608,8 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
         id: tenant.id,
         name: tenant.name,
         slug: tenant.slug,
-        type: tenant.type,
-        businessMode: tenant.businessMode ?? null,
+        type: mapTenantType(tenant.type),
+        businessMode: mapTenantBusinessMode(tenant.businessMode),
         description: tenant.description ?? null,
         website: tenant.website ?? null,
         region: tenant.region ?? null,
@@ -620,9 +620,7 @@ userRouter.get('/tenants/:slug', async (req, res, next) => {
         ownerAvatar: ownerProfile?.avatarUrl ?? null,
         ownerBio: ownerProfile?.bio ?? null,
         hostDetails,
-        organizerDetails: hostDetails,
         shopId: merchantId,
-        merchantId,
         shopProducts,
         memberCount: tenant.memberships.length,
         team: tenant.memberships.map((m) => ({
@@ -2118,7 +2116,7 @@ userRouter.patch(
       }
 
       const details = parseHostDetails(application.metadata);
-      res.json({ data: { ...details, hostDetails: details, organizerDetails: details } });
+      res.json({ data: { ...details, hostDetails: details } });
     } catch (error) {
       next(error);
     }

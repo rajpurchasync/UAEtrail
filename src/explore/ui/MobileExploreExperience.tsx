@@ -11,7 +11,6 @@ import {
 import type { ActivityDTO, ExploreMapItemDTO, MyActivityRequestDTO, ActivityParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
 import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
-import { mapActivityToListing } from '../../api/public';
 import { describeExploreMapLoadError } from '../../utils/exploreMapErrors';
 import { PageMeta } from '../../components/seo/PageMeta';
 import { JoinRequestModal } from '../../components/ui/JoinRequestModal';
@@ -38,12 +37,10 @@ import {
 import {
   EXPLORE_FLOATING_CONTROL,
   EXPLORE_LIST_FILTER_INACTIVE,
-  EXPLORE_MAP_FILTER_INACTIVE,
   EXPLORE_MOBILE_MAP_CHROME,
   EXPLORE_SHEET,
   EXPLORE_Z,
   exploreActivityListFilterActiveClass,
-  exploreMapFilterActiveClass,
   exploreVenueListFilterActiveClass,
 } from '../../config/exploreTheme';
 import { buildExploreCardModel } from '../exploreCardModel';
@@ -53,6 +50,12 @@ import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturn
 import { activityHostUserId } from '../../utils/hostLabels';
 import { resolveJoinRequestUiState, withdrawModalVariant, type JoinRequestUiState } from '../../utils/joinRequestUi';
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
+import { ExploreGuestJoinBanner } from './ExploreGuestJoinBanner';
+import { ExploreGuestJoinSheet } from './ExploreGuestJoinSheet';
+import { ExploreCoachMarks } from './ExploreCoachMarks';
+import { ExploreMapFilterBar } from './ExploreMapFilterBar';
+import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
+import { ExploreListSkeleton } from './ExploreListSkeleton';
 import { ExploreItemSheet } from './ExploreItemSheet';
 import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
 import { MobileExploreHeader } from './MobileExploreHeader';
@@ -81,22 +84,11 @@ import {
 } from '../../utils/exploreRouting';
 import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
+import { MAP_FILTER_PILLS, mapFilterLabel } from '../../config/exploreMapFilters';
 
 const PlacesMap = lazy(() =>
   import('../../components/ui/PlacesMap').then((m) => ({ default: m.PlacesMap }))
 );
-
-const MAP_FILTER_PILLS: Array<{ key: MapFilterKey; label: string }> = [
-  { key: 'all', label: 'All' },
-  { key: 'hiking', label: 'Hiking' },
-  { key: 'camping', label: 'Camping' },
-  { key: 'carpool', label: 'Rideshare' },
-  { key: 'others', label: 'Others' },
-  { key: 'shops', label: 'Shops' },
-];
-
-const mapFilterLabel = (filter: MapFilterKey): string =>
-  MAP_FILTER_PILLS.find((pill) => pill.key === filter)?.label ?? 'All';
 
 const ACTIVITY_LIST_FILTERS: Array<{ key: ActivityListFilterKey; label: string }> = [
   { key: 'all', label: 'All' },
@@ -344,6 +336,8 @@ export const MobileExploreExperience = () => {
   const [contributeOpen, setContributeOpen] = useState(false);
   const [contributeFlowOpen, setContributeFlowOpen] = useState(false);
   const [contributeKind, setContributeKind] = useState<ContributeVenueKind>('hiking');
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
+  const [guestJoinSheetOpen, setGuestJoinSheetOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [fulfillIntentPrefill, setFulfillIntentPrefill] = useState<{
     draft: MobileCreateDraft;
@@ -632,6 +626,11 @@ export const MobileExploreExperience = () => {
     return MAP_FILTER_PILLS.filter((pill) => allowed.includes(pill.key));
   }, [isDesktop, desktopBrowseTab]);
 
+  const desktopFilterKeys = useMemo(
+    () => contextualMapFilters.map((pill) => pill.key),
+    [contextualMapFilters]
+  );
+
   const filtered = useMemo(() => {
     let result = items.filter((item) => matchesMapFilter(item, mapFilter));
     if (isDesktop) {
@@ -903,7 +902,7 @@ export const MobileExploreExperience = () => {
     }
     if (!selected?.activity) return;
     if (!user) {
-      navigate(signInHref);
+      setGuestJoinSheetOpen(true);
       return;
     }
     if (joinUiState.kind !== 'open') return;
@@ -1253,7 +1252,9 @@ export const MobileExploreExperience = () => {
       )}
 
       <div className={`${EXPLORE_SHEET.browseList} lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pb-8`}>
-        {listItems.length === 0 && (
+        {loading && listItems.length === 0 ? (
+          <ExploreListSkeleton rows={isDesktop ? 8 : 5} />
+        ) : listItems.length === 0 ? (
           <p className="py-10 text-center text-sm text-gray-500">
             {isDesktop
               ? desktopBrowseTab === 'venues'
@@ -1265,8 +1266,8 @@ export const MobileExploreExperience = () => {
                   ? 'No gear shops listed yet.'
                   : 'Nothing here with these filters — try another type or date.'}
           </p>
-        )}
-        {shopListSections ? (
+        ) : null}
+        {listItems.length > 0 && shopListSections ? (
           <>
             {shopListSections.physical.length > 0 && (
               <>
@@ -1358,31 +1359,18 @@ export const MobileExploreExperience = () => {
             </Suspense>
           </div>
 
+          <ExploreGuestJoinBanner />
+          {!listOpen && !isDesktop ? <ExploreCoachMarks /> : null}
+
           {(!listOpen || isDesktop) && (
-            <div
-              className={`pointer-events-none absolute top-3 max-lg:left-4 max-lg:right-4 lg:left-4 lg:right-4 lg:top-4 ${EXPLORE_MOBILE_MAP_CHROME.filterTop} ${EXPLORE_Z.mapFilters}`}
-            >
-              <div className="pointer-events-auto flex items-start gap-3">
-                <div className="flex min-w-0 flex-1 flex-nowrap gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-none py-1">
-                  {contextualMapFilters.map((option) => {
-                    const active = mapFilter === option.key;
-                    return (
-                      <button
-                        key={option.key}
-                        type="button"
-                        onClick={() => applyMapFilter(option.key)}
-                        className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold shadow-[0_2px_10px_rgba(15,23,42,.12)] transition ${
-                          active ? exploreMapFilterActiveClass(option.key) : EXPLORE_MAP_FILTER_INACTIVE
-                        }`}
-                      >
-                        <ExploreFilterIcon filter={option.key} />
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <ExploreMapFilterBar
+              mapFilter={mapFilter}
+              onFilterChange={applyMapFilter}
+              isDesktop={isDesktop}
+              allowedKeys={isDesktop ? desktopFilterKeys : undefined}
+              moreOpen={moreFiltersOpen}
+              onMoreOpenChange={setMoreFiltersOpen}
+            />
           )}
 
       {venueNotice && (
@@ -1430,11 +1418,7 @@ export const MobileExploreExperience = () => {
         </div>
       )}
 
-      {loading && (
-        <div className="absolute left-1/2 top-1/2 z-[1100] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow">
-          Loading map…
-        </div>
-      )}
+      {loading ? <ExploreMapLoadingSkeleton /> : null}
 
       {!listOpen && isDesktop ? (
         <button
@@ -1448,7 +1432,7 @@ export const MobileExploreExperience = () => {
       ) : null}
 
       {!listOpen ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--safe-bottom)+12px)] z-[1100] flex items-end justify-between gap-3 px-4 lg:hidden">
+        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--safe-bottom)+0.75rem)] z-[1100] flex items-end justify-between gap-3 px-4 lg:hidden">
           <button
             type="button"
             onClick={openBrowse}
@@ -1607,7 +1591,7 @@ export const MobileExploreExperience = () => {
         <JoinRequestModal
           open={joinOpen}
           onClose={closeJoinModal}
-          activity={mapActivityToListing(joinActivity)}
+          activity={joinActivity}
           overlayClassName="z-[6000]"
           onSuccess={handleJoinSuccess}
         />
@@ -1624,6 +1608,12 @@ export const MobileExploreExperience = () => {
           onConfirm={handleWithdraw}
         />
       )}
+
+      <ExploreGuestJoinSheet
+        open={guestJoinSheetOpen}
+        onClose={() => setGuestJoinSheetOpen(false)}
+        activityTitle={selected?.activity?.title || selected?.activity?.locationName}
+      />
 
     </div>
   );

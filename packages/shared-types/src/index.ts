@@ -362,7 +362,14 @@ export interface ChatMessageDTO {
 
 export type ProductStatusType = 'draft' | 'active' | 'inactive';
 
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderStatus =
+  | 'pending'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'paid'
+  | 'cancelled'
+  | 'refunded';
 
 export interface ProductDTO {
   id: string;
@@ -702,6 +709,60 @@ export interface TenantListDTO {
   activityCount: number;
 }
 
+export interface OrganisationHostDetailsDTO {
+  experience?: string;
+  languages?: string;
+  age?: number;
+  certificates?: string;
+  notableHikes?: string;
+  nationality?: string;
+  residence?: string;
+}
+
+export interface TenantPublicProductDTO {
+  id: string;
+  name: string;
+  description: string | null;
+  images: string[];
+  priceAed: number;
+  discountPercent: number | null;
+}
+
+export interface TenantPublicTeamMemberDTO {
+  role: string;
+  displayName: string;
+  avatarUrl: string | null;
+}
+
+/** Public organisation profile — wire shape for `GET /tenants/:slug`. */
+export interface TenantPublicDTO {
+  id: string;
+  name: string;
+  slug: string;
+  type: TenantType | string;
+  businessMode?: string | null;
+  description?: string | null;
+  website?: string | null;
+  region?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  ownerId: string;
+  ownerName: string;
+  ownerAvatar: string | null;
+  ownerBio: string | null;
+  hostDetails?: OrganisationHostDetailsDTO;
+  /** @deprecated Use hostDetails — kept for legacy clients. */
+  organizerDetails?: OrganisationHostDetailsDTO;
+  memberCount: number;
+  team: TenantPublicTeamMemberDTO[];
+  activities: ActivityDTO[];
+  /** Preferred shop public id when tenant is a shop. Wire: merchant_profiles._id */
+  shopId?: string | null;
+  /** @deprecated Use shopId */
+  merchantId?: string | null;
+  shopProducts?: TenantPublicProductDTO[];
+}
+
 // ─── Participant DTO ────────────────────────────────────────────────────────
 
 export interface ParticipantDTO {
@@ -926,3 +987,28 @@ export {
   type ActivityPricingInput,
   type ActivityPricingMode,
 } from './activity-pricing.js';
+
+export {
+  deriveActivityAvailability,
+  isActivityFull,
+  type ActivityAvailabilityInput,
+  type ActivityAvailabilityStatus,
+} from './activity-availability.js';
+
+export {
+  EXPLORE_SHOPS_LIST_PATH,
+  EXPLORE_SHOPS_PATH,
+  activityDetailPath,
+  memberProfilePath,
+  normalizePlaceActivityType,
+  organisationProfilePath,
+  parseEntityRefFromPathname,
+  placeDetailPath,
+  resolveEntityPath,
+  resolveOrganisationProfilePath,
+  shopPublicPath,
+  type EntityKind,
+  type EntityRef,
+  type PlaceVenueKind,
+  type ResolveEntityPathOptions,
+} from './entity-path.js';

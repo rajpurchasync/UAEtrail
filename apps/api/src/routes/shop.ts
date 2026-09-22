@@ -11,7 +11,6 @@ import { validate } from '../middleware/validate.js';
 import {
   createMerchantProduct,
   createMerchantProfileForUser,
-  linkMerchantProfileToShopTenant,
   createShopOrderWithItems,
   deactivateMerchantProductById,
   findActiveProductById,
@@ -30,6 +29,7 @@ import {
   updateMerchantProductById,
   updateManagedMerchantProfileById,
   syncShopTenantFromMerchantProfile,
+  userCanCreateShopProfile,
 } from '../lib/shop-store.js';
 import { invalidateExploreMapCache } from '../lib/explore-map-cache.js';
 
@@ -473,13 +473,17 @@ shopOrganisationManagePrefixes.forEach((prefix) => {
 shopOrganisationManagePrefixes.forEach((prefix) => {
   shopRouter.post(`${prefix}/profile`, requireAuth, requireVerifiedEmail, validate({ body: merchantProfileSchema }), async (req, res, next) => {
     try {
-      if (req.auth!.role !== UserRole.MERCHANT_ADMIN && req.auth!.role !== UserRole.PLATFORM_ADMIN) {
-        throw new ApiError(403, 'forbidden', 'Shop accounts are provisioned by a platform administrator.');
-      }
       const userId = req.auth!.userId;
+      if (!(await userCanCreateShopProfile(userId, req.auth!.role))) {
+        throw new ApiError(
+          403,
+          'forbidden',
+          'Shop profiles are created when your host application is approved, or by a platform administrator.'
+        );
+      }
       const body = req.body as z.infer<typeof merchantProfileSchema>;
       const profile = await createMerchantProfileForUser(userId, body);
-      await linkMerchantProfileToShopTenant(profile.id, userId);
+      await syncShopTenantFromMerchantProfile(userId, profile);
 
       res.status(201).json({
         data: serializeMerchantProfile(profile)

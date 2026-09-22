@@ -1,4 +1,10 @@
-import { ActivityDTO, ActivityDetailDTO, TenantListDTO, TenantType } from '@uaetrail/shared-types';
+import {
+  ActivityDetailDTO,
+  OrganisationHostDetailsDTO,
+  TenantListDTO,
+  TenantPublicDTO,
+  TenantType,
+} from '@uaetrail/shared-types';
 
 export interface HostApplication {
   id: string;
@@ -313,51 +319,11 @@ export interface TenantDetail {
   activities: Array<{ id: string; title: string; locationName: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number; guideName: string | null }>;
 }
 
-export interface HostDetails {
-  experience?: string;
-  languages?: string;
-  age?: number;
-  certificates?: string;
-  notableHikes?: string;
-  nationality?: string;
-  residence?: string;
-}
+/** @deprecated Use OrganisationHostDetailsDTO from @uaetrail/shared-types */
+export type HostDetails = OrganisationHostDetailsDTO;
 
 /** Domain alias — public organisation profile fields on guide/agency tenants. */
-export type OrganisationDetails = HostDetails;
+export type OrganisationDetails = OrganisationHostDetailsDTO;
 
-export interface TenantProfile {
-  id: string;
-  name: string;
-  slug: string;
-  type: string;
-  businessMode?: string | null;
-  description?: string | null;
-  website?: string | null;
-  region?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  ownerId: string;
-  ownerName: string;
-  ownerAvatar: string | null;
-  ownerBio: string | null;
-  /** Preferred — public host profile fields (guide/agency). */
-  hostDetails?: HostDetails;
-  /** @deprecated Use hostDetails — kept for legacy clients. */
-  organizerDetails?: HostDetails;
-  memberCount: number;
-  team: { role: string; displayName: string; avatarUrl: string | null }[];
-  activities: ActivityDTO[];
-  /** Preferred shop public id when tenant is a shop. Wire: merchant_profiles._id */
-  shopId?: string | null;
-  /** @deprecated Use shopId */
-  merchantId?: string | null;
-  shopProducts?: Array<{
-    id: string;
-    name: string;
-    description: string | null;
-    images: string[];
-    priceAed: number;
-    discountPercent: number | null;
-  }>;
-}
+/** @deprecated Import TenantPublicDTO from @uaetrail/shared-types */
+export type TenantProfile = TenantPublicDTO;

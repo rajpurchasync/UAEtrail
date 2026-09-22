@@ -11,6 +11,8 @@ import {
   LocationDTO,
   resolveActivityDisplayCoordinates,
   resolveHostPersonDisplayName,
+  TenantBusinessMode,
+  TenantType,
   UserRole as SharedUserRole
 } from '@uaetrail/shared-types';
 
@@ -22,6 +24,19 @@ const enumMap = <T extends string>(value: string | null | undefined): T =>
   (typeof value === 'string' ? value.toLowerCase() : '') as T;
 
 export const toSharedRole = (role: UserRole): SharedUserRole => enumMap<SharedUserRole>(role);
+
+export const mapTenantType = (type: string): TenantType => enumMap<TenantType>(type);
+
+export const mapTenantBusinessMode = (mode: string | null | undefined): TenantBusinessMode | null =>
+  mode ? enumMap<TenantBusinessMode>(mode) : null;
+
+const resolveSlotsAvailable = (event: Activity & { participantSlotsUsed?: number; participants?: Array<unknown> }): number => {
+  const used =
+    typeof event.participantSlotsUsed === 'number'
+      ? event.participantSlotsUsed
+      : (event.participants?.length ?? 0);
+  return Math.max(event.capacity - used, 0);
+};
 
 const mapActivity = (activityType: ActivityType | string): ActivityDTO['activityType'] => {
   const value = String(activityType).toUpperCase();
@@ -50,6 +65,7 @@ export const toParticipantPreviews = (participants: ParticipantWithUser[]) =>
   }));
 
 type ActivityWithRelations = Activity & {
+  participantSlotsUsed?: number;
   location: Location;
   tenant: { slug: string; name: string; countryCode?: string; ownerId: string };
   guide?: { profile?: { displayName?: string | null; avatarUrl?: string | null; bio?: string | null } | null } | null;
@@ -80,10 +96,7 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
     locationName: event.location.name,
     activityType: resolveActivityDtoType(event, event.location),
     region: event.location.region,
-    slotsAvailable: Math.max(
-      event.capacity - (event.participants?.length ?? 0),
-      0
-    ),
+    slotsAvailable: resolveSlotsAvailable(event),
     hostName,
     hostUserId,
     hostAvatar,

@@ -12,10 +12,9 @@ import {
   Star,
   Users,
 } from 'lucide-react';
-import { ReviewDTO } from '@uaetrail/shared-types';
+import { ReviewDTO, type ActivityDTO, type TenantPublicDTO } from '@uaetrail/shared-types';
 import { NAV_ICONS } from '../../config/navIcons';
-import { api, OrganisationDetails, TenantProfile } from '../../api/services';
-import { mapActivityToListing } from '../../api/public';
+import { api, OrganisationDetails } from '../../api/services';
 import { ActivityCard } from '../ui/ActivityCard';
 import { ReviewSection } from '../ui/ReviewSection';
 import { SecureAvatar } from '../ui/SecureAvatar';
@@ -64,8 +63,8 @@ export const OrganisationPublicProfile = ({
   const { user } = useAuth();
   const isOwner = mode === 'owner';
 
-  const [tenant, setTenant] = useState<TenantProfile | null>(null);
-  const [activities, setActivities] = useState<ReturnType<typeof mapActivityToListing>[]>([]);
+  const [tenant, setTenant] = useState<TenantPublicDTO | null>(null);
+  const [activities, setActivities] = useState<ActivityDTO[]>([]);
   const [reviews, setReviews] = useState<ReviewDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +83,7 @@ export const OrganisationPublicProfile = ({
       .getOrganisationProfile(slug)
       .then(async (tenantRes) => {
         setTenant(tenantRes.data);
-        setActivities(tenantRes.data.activities.map(mapActivityToListing));
+        setActivities(tenantRes.data.activities);
         setEditBio(tenantRes.data.ownerBio ?? '');
         setEditDetails(tenantRes.data.hostDetails ?? tenantRes.data.organizerDetails ?? {});
         const reviewsRes = await api.getReviews('tenant', tenantRes.data.id).catch(() => ({ data: [] }));

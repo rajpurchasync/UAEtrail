@@ -23,7 +23,6 @@ export const Layout = ({ children }: LayoutProps) => {
   const isExploreMap = location.pathname === '/explore';
   const hideChrome = isConsumerChromeHidden(location.pathname);
   const showConsumerChrome = !hideChrome && !isExploreMap;
-  const useDesktopShell = showConsumerChrome;
 
   if (isExploreMap) {
     return (
@@ -34,7 +33,7 @@ export const Layout = ({ children }: LayoutProps) => {
             <div className="hidden shrink-0 lg:block">
               <Header />
             </div>
-            <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+            <div className="relative min-h-0 flex-1 overflow-hidden">{children}</div>
           </div>
         </MobileMenuProvider>
       </ComposeRailProvider>
@@ -53,7 +52,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const siteFooter =
     showConsumerChrome && (
-      <div className={`shrink-0 ${location.pathname === '/explore' ? 'hidden md:block' : ''}`}>
+      <div className="shrink-0">
         <Footer />
       </div>
     );
@@ -69,7 +68,7 @@ export const Layout = ({ children }: LayoutProps) => {
               <Header />
             </div>
           )}
-          {useDesktopShell ? (
+          {showConsumerChrome ? (
             <div className="flex flex-1 min-h-0 w-full md:flex-row">
               <div className="flex flex-1 min-w-0 flex-col min-h-0">
                 {main}

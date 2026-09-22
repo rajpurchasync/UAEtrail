@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Globe } from 'lucide-react';
+import { Facebook, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
 
@@ -20,17 +20,32 @@ const externalLinkProps = {
   rel: 'noopener noreferrer',
 };
 
-const footerLinkClass =
-  'hover:text-emerald-500 transition-colors text-xs sm:text-sm';
+const footerLinkClass = 'hover:text-emerald-500 transition-colors text-xs sm:text-sm';
 
 export const Footer = () => (
   <footer className="bg-gray-900 text-gray-300 pb-safe">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+    <div className="md:hidden border-t border-gray-800 px-4 py-4">
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <Link to={EXPLORE_MAP_PATH} className={footerLinkClass}>
+          Map
+        </Link>
+        <Link to="/faq" className={footerLinkClass}>
+          FAQ
+        </Link>
+        <a href={SOCIAL_LINKS.instagram} {...externalLinkProps} className={footerLinkClass} aria-label="Instagram">
+          Instagram
+        </a>
+        <a href="mailto:support@uaetrail.com" className={footerLinkClass}>
+          Contact
+        </a>
+      </div>
+      <p className="mt-3 text-center text-[11px] text-gray-500">&copy; 2026 UAE Trail</p>
+    </div>
+
+    <div className="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:block md:py-10">
       <div className="grid grid-cols-3 gap-6 md:gap-10">
         <div>
-          <h3 className="text-white font-semibold mb-3 text-xs sm:text-sm uppercase tracking-wide">
-            Quick Links
-          </h3>
+          <h3 className="text-white font-semibold mb-3 text-xs sm:text-sm uppercase tracking-wide">Quick Links</h3>
           <ul className="space-y-2">
             <li>
               <Link to="/" className={footerLinkClass}>
@@ -87,14 +102,6 @@ export const Footer = () => (
               aria-label="UAE Trail on WhatsApp"
             >
               <WhatsAppIcon className="w-5 h-5" />
-            </a>
-            <a
-              href={SOCIAL_LINKS.website}
-              {...externalLinkProps}
-              className="hover:text-emerald-500 transition-colors"
-              aria-label="UAE Trail website"
-            >
-              <Globe className="w-5 h-5" />
             </a>
           </div>
         </div>

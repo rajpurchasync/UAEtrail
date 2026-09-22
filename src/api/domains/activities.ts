@@ -1,5 +1,6 @@
 import { ActivityDTO, JoinRequestDTO, MyActivityDTO, ParticipantDTO, WithdrawReason } from '@uaetrail/shared-types';
 import { apiRequest, getStoredSession } from '../client';
+import { organisationRequestHeaders } from '../orgHeaders';
 import type { ActivityDetail, ActivityRequestView } from '../types';
 
 export const activitiesApi = {
@@ -75,14 +76,14 @@ export const activitiesApi = {
     listHostActivities: (tenantId: string) =>
     apiRequest<{ data: ActivityDTO[] }>('/host/activities?pageSize=100', {
       auth: true,
-      headers: { 'x-tenant-id': tenantId }
+      headers: organisationRequestHeaders(tenantId)
     }),
 
     createHostActivity: (tenantId: string, payload: Record<string, unknown>) =>
     apiRequest<{ data: ActivityDTO }>('/host/activities', {
       method: 'POST',
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify(payload)
     }),
 
@@ -90,7 +91,7 @@ export const activitiesApi = {
     apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}`, {
       method: 'PATCH',
       auth: true,
-      headers: { 'x-tenant-id': tenantId },
+      headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify(payload)
     }),
 
@@ -98,7 +99,7 @@ export const activitiesApi = {
     apiRequest(`/host/activities/${activityId}/publish`, {
       method: 'POST',
       auth: true,
-      headers: { 'x-tenant-id': tenantId }
+      headers: organisationRequestHeaders(tenantId)
     }),
 
     fulfillParticipantIntent: (tenantId: string, intentId: string, activityId: string) =>
@@ -107,7 +108,7 @@ export const activitiesApi = {
       {
         method: 'POST',
         auth: true,
-        headers: { 'x-tenant-id': tenantId },
+        headers: organisationRequestHeaders(tenantId),
         body: JSON.stringify({ activityId })
       }
     ),
@@ -116,39 +117,39 @@ export const activitiesApi = {
     apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}/duplicate`, {
       method: 'POST',
       auth: true,
-      headers: { 'x-tenant-id': tenantId }
+      headers: organisationRequestHeaders(tenantId)
     }),
 
     cancelHostActivity: (tenantId: string, activityId: string) =>
     apiRequest(`/host/activities/${activityId}`, {
       method: 'DELETE',
       auth: true,
-      headers: { 'x-tenant-id': tenantId }
+      headers: organisationRequestHeaders(tenantId)
     }),
 
     getActivityParticipants: (tenantId: string, activityId: string) =>
     apiRequest<{ data: { activityId: string; activityTitle: string; capacity: number; participants: ParticipantDTO[] } }>(
       `/host/activities/${activityId}/participants`,
-      { auth: true, headers: { 'x-tenant-id': tenantId } }
+      { auth: true, headers: organisationRequestHeaders(tenantId) }
     ),
 
     checkinParticipant: (tenantId: string, activityId: string, participantId: string) =>
     apiRequest(`/host/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'POST',
       auth: true,
-      headers: { 'x-tenant-id': tenantId }
+      headers: organisationRequestHeaders(tenantId)
     }),
 
     undoCheckin: (tenantId: string, activityId: string, participantId: string) =>
     apiRequest(`/host/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'DELETE',
       auth: true,
-      headers: { 'x-tenant-id': tenantId }
+      headers: organisationRequestHeaders(tenantId)
     }),
 
     getActivityHistory: (tenantId: string) =>
     apiRequest<{ data: Array<{ id: string; title: string; locationName: string; activityType: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number }> }>(
       '/host/activities/history',
-      { auth: true, headers: { 'x-tenant-id': tenantId } }
+      { auth: true, headers: organisationRequestHeaders(tenantId) }
     )
 } as const;
