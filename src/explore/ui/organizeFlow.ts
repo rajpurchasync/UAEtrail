@@ -3,6 +3,10 @@ import { api } from '../../api/services';
 import { HOME_HERO_IMAGE_JPEG } from '../../config/seo';
 import { type ActivityType } from '../../config/activityTypes';
 import { formatCoord } from '../../utils/coords';
+import {
+  buildHostActivityPublishPayload,
+  buildParticipationRequirementLines,
+} from '../../utils/activityPublishPayload';
 import { OFFLINE_PAYMENT_NOTE } from '../explorePriceLabel';
 import type { ParticipationMode } from '../compose';
 
@@ -378,18 +382,12 @@ const defaultDescription = (kind: CreateActivityKind): string => {
 };
 
 const buildRequirements = (draft: CreateActivityDraft): string[] => {
-  const requirements: string[] = [];
-  if (draft.participationMode === 'rsvp') {
-    requirements.push('Open RSVP — tap I\'m going to join');
-  } else {
-    requirements.push('Host approval required to join');
-  }
-  if (draft.joinMode === 'private') {
-    requirements.push('Private: group or invite only — approval required');
-  } else {
-    if (draft.participationMode === 'approval') {
-      requirements.push('Open: anyone can request to join');
-    }
+  const requirements = buildParticipationRequirementLines({
+    participationMode: draft.participationMode,
+    joinMode: draft.joinMode,
+  });
+
+  if (draft.joinMode !== 'private') {
     if (draft.audienceAccess === 'women_only') {
       requirements.push('Women only');
     } else if (draft.audienceAccess === 'others') {
@@ -501,8 +499,9 @@ export const publishCreateActivity = async (input: {
   const isPaid = draft.priceMode === 'paid';
   const isShared = draft.priceMode === 'shared';
   const priceAmount = Math.max(0, draft.priceAmount);
+  const requirements = buildRequirements(draft);
 
-  const payload: Record<string, unknown> = {
+  const payload = buildHostActivityPublishPayload({
     activityType,
     locationId: locationRes.data.id,
     title: resolveActivityTitle(draft),
@@ -513,34 +512,38 @@ export const publishCreateActivity = async (input: {
         ? '09:00'
         : draft.meetingTime.trim() || draft.time,
     capacity: draft.capacity,
-    price: isPaid ? priceAmount : 0,
-    pricingMode: isPaid ? 'paid' : isShared ? 'shared' : 'free',
-    meetingPoint: draft.meetingPointInfo.trim()
-      ? `${fromLabel} — ${draft.meetingPointInfo.trim()}`
-      : fromLabel,
-    meetingLat: lat,
-    meetingLng: lng,
-    startPoint: toLabel,
-    startLat: toLat,
-    startLng: toLng,
-    requirements: buildRequirements(draft),
+    pricing: {
+      pricingMode: isPaid ? 'paid' : isShared ? 'shared' : 'free',
+      price: isPaid ? priceAmount : 0,
+      paymentTerms: null,
+    },
+    location: {
+      meetingPoint: draft.meetingPointInfo.trim()
+        ? `${fromLabel} — ${draft.meetingPointInfo.trim()}`
+        : fromLabel,
+      meetingLat: lat,
+      meetingLng: lng,
+      startPoint: toLabel,
+      startLat: toLat,
+      startLng: toLng,
+    },
+    requirements,
     joinMode: draft.joinMode,
     participationMode: draft.participationMode,
     images: [HOME_HERO_IMAGE_JPEG],
     hostId: userId,
-  };
+    carpool: isCarpool
+      ? {
+          carPoolFree: !isShared && !isPaid,
+          carPoolPriceAed: isShared || isPaid ? priceAmount : null,
+          carPoolSeats: draft.capacity,
+          carPoolDetails: 'Carpool — confirm pickup and drop-off details after joining.',
+        }
+      : undefined,
+  });
 
-  if (isCarpool) {
-    payload.carPoolFree = !isShared && !isPaid;
-    payload.carPoolPriceAed = isShared || isPaid ? priceAmount : null;
-    payload.carPoolSeats = draft.capacity;
-    payload.carPoolDetails = 'Carpool — confirm pickup and drop-off details after joining.';
-  }
-
-  payload.paymentTerms = null;
-
-  const created = await api.createOrganisationActivity(tenantId, payload);
-  await api.publishOrganisationActivity(tenantId, created.data.id);
+  const created = await api.createHostActivity(tenantId, payload);
+  await api.publishHostActivity(tenantId, created.data.id);
 
   if (participantIntentId) {
     await api.fulfillParticipantIntent(tenantId, participantIntentId, created.data.id);

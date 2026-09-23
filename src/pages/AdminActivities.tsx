@@ -132,7 +132,7 @@ export const AdminActivities = () => {
   const publish = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      await api.publishOrganisationActivity(event.tenantId, event.id);
+      await api.publishHostActivity(event.tenantId, event.id);
       await reloadExploreMap();
       await loadEvents();
     } catch (err) {
@@ -191,7 +191,7 @@ export const AdminActivities = () => {
     if (!event.tenantId) return;
     setPreviewPublishing(true);
     try {
-      await api.publishOrganisationActivity(event.tenantId, event.id);
+      await api.publishHostActivity(event.tenantId, event.id);
       await reloadExploreMap();
       setPreviewActivity(null);
       await loadEvents();

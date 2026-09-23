@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { GlassCard } from '../components/mobile/GlassCard';
+import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/ConsumerFeedback';
 import { NotificationBellPopover } from '../components/layout/NotificationBellPopover';
 import {
   AccountAvatarModal,
@@ -323,12 +324,7 @@ export const Profile = () => {
       action={<NotificationBellPopover />}
     >
       {error && !loading && (
-        <GlassCard padding className="mb-3 border-red-200/50 bg-red-50/50">
-          <p className="text-sm text-red-600">{error}</p>
-          <button type="button" onClick={() => void reload()} className="mt-2 text-sm font-semibold text-emerald-600">
-            Retry
-          </button>
-        </GlassCard>
+        <ConsumerErrorCard message={error} onRetry={() => void reload()} className="mb-3" />
       )}
 
       <PullToRefresh onRefresh={handleRefresh} disabled={loading}>
@@ -371,9 +367,7 @@ export const Profile = () => {
             <GlassCard padding className="space-y-3">
               <AccountSectionHeader title="Hosting" actionTo="/host/overview" actionLabel="Host console" />
               {host.loading ? (
-                <div className="flex justify-center py-6">
-                  <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-                </div>
+                <ConsumerLoadingSpinner className="py-6" />
               ) : (
                 <OrganisationHubSections
                   activitiesCount={host.activities.length}

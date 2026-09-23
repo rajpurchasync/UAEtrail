@@ -1,28 +1,17 @@
 import { lazy, Suspense, useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  List,
-  PanelLeftClose,
-  Plus,
-  Search,
-  X,
-} from 'lucide-react';
-import type { ActivityDTO, ExploreMapItemDTO, MyActivityRequestDTO, ActivityParticipationDTO, WithdrawReason } from '@uaetrail/shared-types';
+import { List, Plus, X } from 'lucide-react';
+import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import { describeExploreMapLoadError } from '../../utils/exploreMapErrors';
-import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
 import { PageMeta } from '../../components/seo/PageMeta';
-import { JoinRequestModal } from '../../components/ui/JoinRequestModal';
-import { WithdrawRequestModal } from '../../components/ui/WithdrawRequestModal';
 import type { PlaceMapPin, MapPinKind } from '../../components/ui/PlacesMap';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { useExploreMap, reloadExploreMap } from '../../hooks/useExploreMap';
-import { CreateActivityFlow } from './CreateActivityFlow';
-import { CreateDemandFlow } from './CreateDemandFlow';
-import { CreateIntentSheet } from './CreateIntentSheet';
+import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import {
   clearExploreComposeParams,
   isAddWizard,
@@ -33,9 +22,11 @@ import {
   setExploreComposeParam,
   type ExploreCompose,
 } from '../compose';
-import { CreateContributeFlow } from './CreateContributeFlow';
 import type { ContributeSubmitResult } from './contributeFlow';
+import type { DemandSubmitResult } from './demandFlow';
 import { createDraftFromDemand, type CreateActivityDraft } from './organizeFlow';
+import { ExploreComposeHost } from './ExploreComposeHost';
+import { ExploreJoinOverlays } from './ExploreJoinOverlays';
 import { getMapBounds } from '../../config/regions';
 import {
   EXPLORE_MAP_STYLE_STORAGE_KEY,
@@ -46,32 +37,32 @@ import {
 } from '../../config/platform';
 import {
   EXPLORE_FLOATING_CONTROL,
-  EXPLORE_LIST_FILTER_INACTIVE,
   EXPLORE_MOBILE_MAP_CHROME,
   EXPLORE_SHEET,
   EXPLORE_Z,
-  exploreActivityListFilterActiveClass,
-  exploreVenueListFilterActiveClass,
 } from '../../config/exploreTheme';
 import { buildExploreCardModel } from '../exploreCardModel';
 import { resolveExploreItemSource } from '../exploreCopy';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
 import { activityHostUserId } from '../../utils/hostLabels';
-import { resolveJoinRequestUiState, withdrawModalVariant, type JoinRequestUiState } from '../../utils/joinRequestUi';
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
 import { ExploreGuestJoinBanner } from './ExploreGuestJoinBanner';
-import { ExploreGuestJoinSheet } from './ExploreGuestJoinSheet';
 import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreMapFilterBar } from './ExploreMapFilterBar';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
-import { ExploreListSkeleton } from './ExploreListSkeleton';
 import { ExploreItemSheet } from './ExploreItemSheet';
 import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
 import { ExploreHeader } from './ExploreHeader';
-import { ExploreListRow } from './ExploreListRow';
-import { ExploreFilterIcon } from './ExploreFilterIcon';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
+import { ExploreBrowsePanel } from './ExploreBrowsePanel';
+import {
+  ACTIVITY_LIST_FILTERS,
+  MAP_FILTERS_BY_BROWSE_TAB,
+  parseDesktopBrowseTab,
+  type DesktopBrowseTab,
+  VENUE_LIST_FILTERS,
+} from './exploreBrowsePanelCopy';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import {
   parseMapFilter,
@@ -90,7 +81,7 @@ import {
   type ExplorePanel,
   type MapFilterKey,
   type VenueListFilterKey,
-} from '../../utils/exploreRouting';
+} from '../routing';
 import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import { MAP_FILTER_PILLS, mapFilterLabel } from '../../config/exploreMapFilters';
@@ -98,43 +89,6 @@ import { MAP_FILTER_PILLS, mapFilterLabel } from '../../config/exploreMapFilters
 const PlacesMap = lazy(() =>
   import('../../components/ui/PlacesMap').then((m) => ({ default: m.PlacesMap }))
 );
-
-const ACTIVITY_LIST_FILTERS: Array<{ key: ActivityListFilterKey; label: string }> = [
-  { key: 'all', label: 'All' },
-  { key: 'hiking', label: 'Hiking' },
-  { key: 'camping', label: 'Camping' },
-  { key: 'carpool', label: 'Rideshare' },
-  { key: 'event', label: 'Events' },
-];
-
-const VENUE_LIST_FILTERS: Array<{ key: VenueListFilterKey; label: string }> = [
-  { key: 'all', label: 'All' },
-  { key: 'hiking', label: 'Hiking' },
-  { key: 'camping', label: 'Camping' },
-  { key: 'event', label: 'Events' },
-  { key: 'shop', label: 'Shop' },
-];
-
-const PANEL_TABS: Array<{ key: ExplorePanel; label: string }> = [
-  { key: 'activities', label: 'Activities' },
-  { key: 'venues', label: 'Venues' },
-  { key: 'shops', label: 'Shops' },
-];
-
-type DesktopBrowseTab = 'activities' | 'venues';
-
-const DESKTOP_BROWSE_TABS: Array<{ key: DesktopBrowseTab; label: string }> = [
-  { key: 'activities', label: 'Activities' },
-  { key: 'venues', label: 'Venues' },
-];
-
-const MAP_FILTERS_BY_BROWSE_TAB: Record<DesktopBrowseTab, MapFilterKey[]> = {
-  activities: ['all', 'hiking', 'camping', 'carpool', 'others'],
-  venues: ['all', 'hiking', 'camping', 'others', 'shops'],
-};
-
-const parseDesktopBrowseTab = (panel: ExplorePanel): DesktopBrowseTab =>
-  panel === 'venues' ? 'venues' : 'activities';
 
 /** `list=1` open, `list=0` closed; default closed (map first). */
 const parseListOpen = (listParam: string | null): boolean => {
@@ -163,43 +117,6 @@ const useMinWidthLg = (): boolean => {
 
   return matches;
 };
-
-const listItemLabel = (activityFilter: ActivityListFilterKey, count: number): string => {
-  if (activityFilter === 'carpool') return `${count} rideshare${count === 1 ? '' : 's'} in your area`;
-  if (activityFilter === 'event') return `${count} event${count === 1 ? '' : 's'} in your area`;
-  if (activityFilter === 'hiking') return `${count} hike${count === 1 ? '' : 's'} in your area`;
-  if (activityFilter === 'camping') return `${count} camp${count === 1 ? '' : 's'} in your area`;
-  return `${count} activit${count === 1 ? 'y' : 'ies'} in your area`;
-};
-
-const venueListLabel = (venueFilter: VenueListFilterKey, count: number): string => {
-  if (venueFilter === 'hiking') return `${count} hiking venue${count === 1 ? '' : 's'} in your area`;
-  if (venueFilter === 'camping') return `${count} camping spot${count === 1 ? '' : 's'} in your area`;
-  if (venueFilter === 'event') return `${count} event venue${count === 1 ? '' : 's'} in your area`;
-  if (venueFilter === 'shop') return `${count} shop${count === 1 ? '' : 's'} in your area`;
-  return `${count} venue${count === 1 ? '' : 's'} in your area`;
-};
-
-const panelListTitle = (
-  panel: ExplorePanel,
-  count: number,
-  activityFilter: ActivityListFilterKey,
-  venueFilter: VenueListFilterKey
-): string => {
-  if (panel === 'venues') return venueListLabel(venueFilter, count);
-  if (panel === 'shops') return 'Gear shops & partners';
-  return listItemLabel(activityFilter, count);
-};
-
-const desktopBrowseListTitle = (tab: DesktopBrowseTab, count: number, mapFilter: MapFilterKey): string => {
-  if (tab === 'activities') {
-    return listItemLabel(mapFilterToActivityListFilter(mapFilter), count);
-  }
-  return venueListLabel(mapFilterToVenueListFilter(mapFilter), count);
-};
-
-const desktopSearchPlaceholder = (tab: DesktopBrowseTab): string =>
-  tab === 'venues' ? 'Search venues…' : 'Search activities…';
 
 const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueListFilterKey): boolean => {
   if (venueFilter === 'all') return true;
@@ -313,12 +230,6 @@ const pinLayerOrder = (source?: ExploreMapItemDTO['source']): number => {
   return 2;
 };
 
-const panelSearchPlaceholder = (panel: ExplorePanel): string => {
-  if (panel === 'venues') return 'Search places…';
-  if (panel === 'shops') return 'Search shops…';
-  return 'Search activities…';
-};
-
 export const ExploreExperience = () => {
   const { user } = useAuth();
   const { canPublish, loading: hostGateLoading, tenantId } = useOrganisationGate({
@@ -365,7 +276,6 @@ export const ExploreExperience = () => {
     setComposeRoute(null);
   }, [setComposeRoute]);
 
-  const [guestJoinSheetOpen, setGuestJoinSheetOpen] = useState(false);
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [fulfillIntentPrefill, setFulfillIntentPrefill] = useState<{
     draft: CreateActivityDraft;
@@ -374,16 +284,6 @@ export const ExploreExperience = () => {
   const organizeWizardOpen = Boolean(organizeRoute) || Boolean(fulfillIntentPrefill);
   const findWizardOpen = Boolean(findRoute);
   const addWizardOpen = Boolean(addRoute);
-  const [joinOpen, setJoinOpen] = useState(false);
-  const [joinActivity, setJoinActivity] = useState<ActivityDTO | null>(null);
-  const [joinUiState, setJoinUiState] = useState<JoinRequestUiState>({ kind: 'open' });
-  const [joinContext, setJoinContext] = useState<{
-    myRequest: MyActivityRequestDTO | null;
-    participation: ActivityParticipationDTO | null;
-  } | null>(null);
-  const [joinStateLoading, setJoinStateLoading] = useState(false);
-  const [showWithdraw, setShowWithdraw] = useState(false);
-  const [withdrawing, setWithdrawing] = useState(false);
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '');
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueFilter, setVenueFilter] = useState<VenueListFilterKey>('all');
@@ -723,38 +623,27 @@ export const ExploreExperience = () => {
     };
   }, [selected, user, tenantId]);
 
-  const loadJoinContext = async (activityId: string) => {
-    if (!user) {
-      setJoinContext(null);
-      setJoinUiState({ kind: 'open' });
-      return;
-    }
-    setJoinStateLoading(true);
-    try {
-      const res = await api.getPublicActivityDetail(activityId);
-      const nextContext = {
-        myRequest: res.data.myRequest ?? null,
-        participation: res.data.myParticipation ?? null,
-      };
-      setJoinContext(nextContext);
-      setJoinUiState(resolveJoinRequestUiState(nextContext));
-    } catch {
-      setJoinContext(null);
-      setJoinUiState({ kind: 'open' });
-    } finally {
-      setJoinStateLoading(false);
-    }
-  };
+  const joinContextEnabled = Boolean(selected?.activity?.id && !selectedCard?.showHostActions && user);
+  const {
+    context: joinContext,
+    uiState: joinUiState,
+    loading: joinStateLoading,
+    reload: reloadJoinContext,
+  } = useActivityJoinContext({
+    activityId: selected?.activity?.id,
+    enabled: joinContextEnabled,
+    userId: user?.id,
+  });
 
-  useEffect(() => {
-    if (!selected?.activity?.id || selectedCard?.showHostActions || !user) {
-      setJoinContext(null);
-      setJoinUiState({ kind: 'open' });
-      setJoinStateLoading(false);
-      return;
-    }
-    void loadJoinContext(selected.activity.id);
-  }, [selected?.activity?.id, selectedCard?.showHostActions, user?.id]);
+  const joinActions = useActivityJoinActions({
+    activity: selected?.activity ?? null,
+    uiState: joinUiState,
+    requestIdFallback: joinContext?.myRequest?.id ?? null,
+    onReload: reloadJoinContext,
+    onMessage: setDemandNotice,
+    onError: setDemandNotice,
+  });
+
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
   const reloadMap = () => {
     void reloadExploreMap(queryClient);
@@ -868,43 +757,11 @@ export const ExploreExperience = () => {
     }
     if (!selected?.activity) return;
     if (!user) {
-      setGuestJoinSheetOpen(true);
+      joinActions.openGuestSheet();
       return;
     }
     if (joinUiState.kind !== 'open') return;
-    setJoinActivity(selected.activity);
-    setJoinOpen(true);
-  };
-
-  const handleJoinSuccess = (message: string) => {
-    setDemandNotice(message);
-    if (selected?.activity?.id) {
-      void loadJoinContext(selected.activity.id);
-    }
-  };
-
-  const handleWithdraw = async (payload: { reason: WithdrawReason; message?: string }) => {
-    const activity = selected?.activity ?? joinActivity;
-    const requestId =
-      joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed'
-        ? joinUiState.requestId
-        : joinContext?.myRequest?.id;
-    if (!activity || !requestId) return;
-
-    setWithdrawing(true);
-    try {
-      await api.cancelJoinRequest(activity.id, requestId, payload);
-      setShowWithdraw(false);
-      setDemandNotice(
-        joinUiState.kind === 'confirmed' ? 'You have withdrawn from this activity.' : 'Join request cancelled.'
-      );
-      await loadJoinContext(activity.id);
-    } catch (err) {
-      setDemandNotice(err instanceof Error ? err.message : 'Could not withdraw');
-      setShowWithdraw(false);
-    } finally {
-      setWithdrawing(false);
-    }
+    joinActions.openJoinModal();
   };
 
   const clearFulfillIntentParam = useCallback(() => {
@@ -1028,260 +885,64 @@ export const ExploreExperience = () => {
     navigate(`/activities?tab=hosted&checkin=${encodeURIComponent(activity.id)}`);
   };
 
-  const closeJoinModal = () => {
-    setJoinOpen(false);
-    setJoinActivity(null);
-  };
-
-  const renderListPanelContent = () => (
-    <>
-      <div className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
-
-      {isDesktop ? (
-        <>
-          <div className="mb-3 flex shrink-0 items-center gap-2 border-b border-neutral-200">
-            <div className="flex min-w-0 flex-1">
-              {DESKTOP_BROWSE_TABS.map((tab) => {
-                const active = desktopBrowseTab === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => applyDesktopBrowseTab(tab.key)}
-                    className={`shrink-0 border-b-2 px-3 py-2.5 text-sm font-semibold transition ${
-                      active
-                        ? 'border-emerald-600 text-emerald-700'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex shrink-0 items-center gap-1 pb-1">
-              <button
-                type="button"
-                onClick={() => setSearchExpanded((open) => !open)}
-                className={`rounded-full p-2 ${
-                  searchExpanded || query.trim()
-                    ? 'bg-neutral-100 text-gray-900'
-                    : 'text-gray-500 hover:bg-neutral-50'
-                }`}
-                aria-label={searchExpanded ? 'Close search' : 'Search'}
-                aria-expanded={searchExpanded}
-              >
-                <Search className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={closeListPanel}
-                className="rounded-full p-2 text-gray-500 hover:bg-neutral-50 hover:text-gray-800"
-                aria-label="Collapse list panel"
-              >
-                <PanelLeftClose className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-          {(searchExpanded || query.trim()) && (
-            <label className="mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-neutral-100 px-3 py-2.5">
-              <Search className="h-4 w-4 shrink-0 text-gray-400" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onBlur={() => syncExploreUrl({ q: query })}
-                placeholder={desktopSearchPlaceholder(desktopBrowseTab)}
-                className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-                autoFocus
-              />
-              {query.trim() ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery('');
-                    syncExploreUrl({ q: '' });
-                  }}
-                  className="shrink-0 rounded-full p-0.5 text-gray-500 hover:text-gray-700"
-                  aria-label="Clear search"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              ) : null}
-            </label>
-          )}
-          <h2 className="mb-3 shrink-0 text-lg font-bold text-gray-900 lg:text-xl">
-            {desktopBrowseListTitle(desktopBrowseTab, listItems.length, mapFilter)}
-          </h2>
-        </>
-      ) : (
-        <>
-          <div className="mb-4 flex shrink-0 items-start justify-between gap-3 border-b border-neutral-200/80 pb-3">
-            <div className="min-w-0">
-              <h2 className="text-lg font-bold tracking-tight text-gray-900">
-                {panelListTitle(sidebarPanel, listItems.length, activityFilter, venueFilter)}
-              </h2>
-              <p className="mt-0.5 text-xs font-medium text-gray-500">
-                {listItems.length === 1 ? '1 result' : `${listItems.length} results`}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={closeListPanel}
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm ring-1 ring-neutral-200/80"
-              aria-label="Close browse panel"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="mb-3 flex shrink-0 gap-2 overflow-x-auto scrollbar-none pb-0.5">
-            {PANEL_TABS.map((tab) => {
-              const active = panel === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => applyPanel(tab.key)}
-                  className={`inline-flex shrink-0 items-center rounded-full px-3.5 py-1.5 text-sm font-semibold shadow-sm transition ${
-                    active
-                      ? 'bg-emerald-600 text-white shadow-emerald-600/20'
-                      : 'bg-white text-gray-700 ring-1 ring-neutral-200/80'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-          {browseFilterHint && (
-            <p className="mb-3 shrink-0 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-xs leading-relaxed text-emerald-900">
-              {browseFilterHint}
-            </p>
-          )}
-          <label className="mb-3 flex shrink-0 items-center gap-2 rounded-2xl border border-neutral-200/80 bg-white px-3 py-2.5 shadow-sm">
-            <Search className="h-4 w-4 shrink-0 text-gray-400" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onBlur={() => syncExploreUrl({ q: query })}
-              placeholder={panelSearchPlaceholder(sidebarPanel)}
-              className="w-full bg-transparent text-sm outline-none placeholder:text-gray-400"
-            />
-          </label>
-          {sidebarPanel === 'venues' && (
-            <div className="mb-3 shrink-0">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Filter list</p>
-              <div className="flex flex-wrap gap-2">
-                {VENUE_LIST_FILTERS.map((option) => {
-                  const active = venueFilter === option.key;
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      onClick={() => applyVenueFilter(option.key)}
-                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${
-                        active ? exploreVenueListFilterActiveClass(option.key) : EXPLORE_LIST_FILTER_INACTIVE
-                      }`}
-                    >
-                      <ExploreFilterIcon filter={option.key === 'shop' ? 'shops' : option.key === 'all' ? 'all' : option.key} />
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          {sidebarPanel === 'activities' && (
-            <div className="mb-3 shrink-0">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Filter list</p>
-              <div className="flex flex-wrap gap-2">
-                {ACTIVITY_LIST_FILTERS.map((option) => {
-                  const active = activityFilter === option.key;
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      onClick={() => applyActivityFilter(option.key)}
-                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${
-                        active ? exploreActivityListFilterActiveClass(option.key) : EXPLORE_LIST_FILTER_INACTIVE
-                      }`}
-                    >
-                      <ExploreFilterIcon filter={option.key} />
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      <div className={`${EXPLORE_SHEET.browseList} lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pb-8`}>
-        {loading && listItems.length === 0 ? (
-          <ExploreListSkeleton rows={isDesktop ? 8 : 5} />
-        ) : listItems.length === 0 ? (
-          <p className="py-10 text-center text-sm text-gray-500">
-            {isDesktop
-              ? desktopBrowseTab === 'venues'
-                ? 'No venues match this filter yet.'
-                : PRODUCT_EXPLORE_EMPTY_FILTERS
-              : sidebarPanel === 'venues'
-                ? 'No venues match this filter yet.'
-                : sidebarPanel === 'shops'
-                  ? 'No gear shops listed yet.'
-                  : PRODUCT_EXPLORE_EMPTY_FILTERS}
-          </p>
-        ) : null}
-        {listItems.length > 0 && shopListSections ? (
-          <>
-            {shopListSections.physical.length > 0 && (
-              <>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  On the map ({shopListSections.physical.length})
-                </p>
-                {shopListSections.physical.map((item) => (
-                  <ExploreListRow
-                    key={item.id}
-                    item={item}
-                    card={buildExploreCardModel(item)}
-                    onClick={() => openItem(item)}
-                    onFocusMapLocation={handleFocusMapLocation}
-                  />
-                ))}
-              </>
-            )}
-            {shopListSections.online.length > 0 && (
-              <>
-                <p className={`mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 ${shopListSections.physical.length > 0 ? 'mt-6' : ''}`}>
-                  Online partners ({shopListSections.online.length})
-                </p>
-                {shopListSections.online.map((item) => (
-                  <ExploreListRow
-                    key={item.id}
-                    item={item}
-                    card={buildExploreCardModel(item)}
-                    onClick={() => openItem(item)}
-                    onFocusMapLocation={handleFocusMapLocation}
-                  />
-                ))}
-              </>
-            )}
-          </>
-        ) : (
-          listItems.map((item) => (
-            <ExploreListRow
-              key={item.id}
-              item={item}
-              card={buildExploreCardModel(item)}
-              onClick={() => openItem(item)}
-              onFocusMapLocation={handleFocusMapLocation}
-            />
-          ))
-        )}
-      </div>
-    </>
+  const handleDemandSubmitted = useCallback(
+    (result: DemandSubmitResult) => {
+      void reloadExploreMap(queryClient);
+      if (!result.visibleOnMap) {
+        setDemandNotice(
+          'Request posted. Add a map pin next time to show on Explore — nearby hosts can still message you.'
+        );
+      } else {
+        setDemandNotice(
+          'Request posted on the map. Nearby hosts and guides can message you or propose a matching activity.'
+        );
+      }
+    },
+    [queryClient]
   );
 
+  const handleContributeSubmitted = useCallback((result: ContributeSubmitResult) => {
+    void reloadExploreMap(queryClient);
+    if (result.kind === 'shop') {
+      setVenueNotice('Shop submitted for review. We\'ll notify you once it\'s on the map.');
+    } else {
+      setVenueNotice(
+        `"${result.location.name}" submitted for admin review. You'll see it on the map once published.`
+      );
+    }
+  }, [queryClient]);
+
+  const browsePanel = (
+    <ExploreBrowsePanel
+      isDesktop={isDesktop}
+      loading={loading}
+      listItems={listItems}
+      shopListSections={shopListSections}
+      desktopBrowseTab={desktopBrowseTab}
+      mapFilter={mapFilter}
+      searchExpanded={searchExpanded}
+      onSearchExpandedChange={setSearchExpanded}
+      onDesktopBrowseTabChange={applyDesktopBrowseTab}
+      panel={panel}
+      sidebarPanel={sidebarPanel}
+      activityFilter={activityFilter}
+      venueFilter={venueFilter}
+      browseFilterHint={browseFilterHint}
+      onPanelChange={applyPanel}
+      onActivityFilterChange={applyActivityFilter}
+      onVenueFilterChange={applyVenueFilter}
+      query={query}
+      onQueryChange={setQuery}
+      onQuerySync={() => syncExploreUrl({ q: query })}
+      onClearQuery={() => {
+        setQuery('');
+        syncExploreUrl({ q: '' });
+      }}
+      onClose={closeListPanel}
+      onOpenItem={openItem}
+      onFocusMapLocation={handleFocusMapLocation}
+    />
+  );
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
@@ -1294,7 +955,7 @@ export const ExploreExperience = () => {
       <div className="relative flex min-h-0 flex-1 lg:flex-row">
         {showListPanel && isDesktop && (
           <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:border-r lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300">
-            {renderListPanelContent()}
+            {browsePanel}
           </aside>
         )}
 
@@ -1448,7 +1109,7 @@ export const ExploreExperience = () => {
           onFulfillIntent={canFulfillParticipantIntent ? handleFulfillIntent : undefined}
           onManage={selectedCard.showHostActions ? handleHostManage : undefined}
           joinUiState={selectedCard.showHostActions ? undefined : joinUiState}
-          onWithdraw={() => setShowWithdraw(true)}
+          onWithdraw={() => joinActions.setShowWithdraw(true)}
           joinStateLoading={joinStateLoading}
           onFocusMapLocation={handleFocusMapLocation}
         />
@@ -1466,109 +1127,43 @@ export const ExploreExperience = () => {
               showHandle={false}
               panelClassName={`${EXPLORE_SHEET.browseHeight} px-4 pt-2 lg:px-5 lg:pt-3`}
             >
-              {renderListPanelContent()}
+              {browsePanel}
             </ExploreResponsiveSheet>
           </>
         )}
       </div>
       </div>
 
-      {composeMenuOpen && (
-        <CreateIntentSheet
-          route={exploreCompose}
-          onRouteChange={handleComposeRouteChange}
-          onClose={closeCompose}
-        />
-      )}
-
-      {addWizardOpen && addRoute && (
-        <CreateContributeFlow
-          open={addWizardOpen}
-          kind={addRoute.kind}
-          onClose={closeCompose}
-          onBackToIntent={() => setComposeRoute({ surface: 'menu', intent: 'add' })}
-          onSubmitted={(result: ContributeSubmitResult) => {
-            reloadMap();
-            if (result.kind === 'shop') {
-              setVenueNotice('Shop submitted for review. We\'ll notify you once it\'s on the map.');
-            } else {
-              setVenueNotice(
-                `"${result.location.name}" submitted for admin review. You'll see it on the map once published.`
-              );
-            }
-          }}
-          signInHref={signInHref}
-        />
-      )}
-
-      {organizeWizardOpen && (
-        <CreateActivityFlow
-          open={organizeWizardOpen}
-          onClose={closeCreateFlow}
-          organizeKind={organizeRoute?.kind ?? null}
-          demandPrefill={fulfillIntentPrefill}
-          onBackToIntent={() => {
-            setFulfillIntentPrefill(null);
-            setComposeRoute({ surface: 'menu', intent: 'organize' });
-          }}
-          onPublished={handleActivityPublished}
-          onOpenHostApplication={() => {
-            closeCreateFlow();
-            navigate('/become-host');
-          }}
-          signInHref={signInHref}
-        />
-      )}
-
-      {findWizardOpen && (
-        <CreateDemandFlow
-          open={findWizardOpen}
-          onClose={closeCompose}
-          findKind={findRoute?.kind ?? null}
-          onBackToIntent={() => setComposeRoute({ surface: 'menu', intent: 'find' })}
-          onSubmitted={(result) => {
-            reloadMap();
-            if (!result.visibleOnMap) {
-              setDemandNotice(
-                'Request posted. Add a map pin next time to show on Explore — nearby hosts can still message you.'
-              );
-            } else {
-              setDemandNotice(
-                'Request posted on the map. Nearby hosts and guides can message you or propose a matching activity.'
-              );
-            }
-          }}
-          signInHref={signInHref}
-        />
-      )}
-
-      {joinOpen && joinActivity && (
-        <JoinRequestModal
-          open={joinOpen}
-          onClose={closeJoinModal}
-          activity={joinActivity}
-          overlayClassName="z-[6000]"
-          onSuccess={handleJoinSuccess}
-        />
-      )}
-
-      {(selected?.activity ?? joinActivity) && (
-        <WithdrawRequestModal
-          open={showWithdraw}
-          onClose={() => setShowWithdraw(false)}
-          activityTitle={(selected?.activity ?? joinActivity)?.title ?? 'this activity'}
-          activityDate={(selected?.activity ?? joinActivity)?.date}
-          variant={withdrawModalVariant(joinUiState)}
-          submitting={withdrawing}
-          onConfirm={handleWithdraw}
-        />
-      )}
-
-      <ExploreGuestJoinSheet
-        open={guestJoinSheetOpen}
-        onClose={() => setGuestJoinSheetOpen(false)}
-        activityTitle={selected?.activity?.title || selected?.activity?.locationName}
+      <ExploreComposeHost
+        exploreCompose={exploreCompose}
+        composeMenuOpen={composeMenuOpen}
+        organizeWizardOpen={organizeWizardOpen}
+        findWizardOpen={findWizardOpen}
+        addWizardOpen={addWizardOpen}
+        organizeKind={organizeRoute?.kind ?? null}
+        findKind={findRoute?.kind}
+        addKind={addRoute?.kind ?? null}
+        fulfillIntentPrefill={fulfillIntentPrefill}
+        signInHref={signInHref}
+        onComposeRouteChange={handleComposeRouteChange}
+        onCloseCompose={closeCompose}
+        onCloseCreateFlow={closeCreateFlow}
+        onOrganizeBackToIntent={() => {
+          setFulfillIntentPrefill(null);
+          setComposeRoute({ surface: 'menu', intent: 'organize' });
+        }}
+        onFindBackToIntent={() => setComposeRoute({ surface: 'menu', intent: 'find' })}
+        onAddBackToIntent={() => setComposeRoute({ surface: 'menu', intent: 'add' })}
+        onActivityPublished={handleActivityPublished}
+        onOpenHostApplication={() => {
+          closeCreateFlow();
+          navigate('/become-host');
+        }}
+        onContributeSubmitted={handleContributeSubmitted}
+        onDemandSubmitted={handleDemandSubmitted}
       />
+
+      <ExploreJoinOverlays activity={selected?.activity} joinActions={joinActions} />
 
     </div>
   );

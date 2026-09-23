@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { joinAuthPath } from '../../config/platform';
+import { guestJoinBannerBody } from '../../content/guestJoinCopy';
+import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
 import { hasSeenExploreCoach } from '../../explore/exploreOnboarding';
 import { useAuth } from '../../context/AuthContext';
 
@@ -37,14 +39,12 @@ export const ExploreGuestJoinBanner = () => {
       <div className="flex items-start gap-3 rounded-2xl border border-emerald-200/80 bg-white/95 px-4 py-3 shadow-lg shadow-emerald-900/10 backdrop-blur-md">
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold text-neutral-900">Join to connect and go together</p>
-          <p className="mt-0.5 text-[12px] leading-snug text-neutral-500">
-            Browse free. Sign up to join outings or post what you&apos;re looking for.
-          </p>
+          <p className="mt-0.5 text-[12px] leading-snug text-neutral-500">{guestJoinBannerBody()}</p>
           <Link
             to={joinHref}
             className="mt-2 inline-flex min-h-[36px] items-center rounded-xl bg-emerald-600 px-3.5 text-[13px] font-semibold text-white active:bg-emerald-700"
           >
-            Join free
+            {PRODUCT_JOIN_CTA}
           </Link>
         </div>
         <button

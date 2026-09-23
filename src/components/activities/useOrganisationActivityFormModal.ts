@@ -385,7 +385,7 @@ export const useOrganisationActivityFormModal = ({
       return res.data;
     }
 
-    const res = await api.createOrganisationActivity(activeTenant, payload);
+    const res = await api.createHostActivity(activeTenant, payload);
     setDraftActivityId(res.data.id);
     return res.data;
   };
@@ -408,7 +408,7 @@ export const useOrganisationActivityFormModal = ({
 
       if (mode === 'publish' && activityId && saved.status === 'draft') {
         const publishTenant = await resolveActiveTenantId();
-        await api.publishOrganisationActivity(publishTenant, activityId);
+        await api.publishHostActivity(publishTenant, activityId);
         await reloadExploreMap();
       }
 

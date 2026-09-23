@@ -47,6 +47,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
     <ExploreResponsiveSheet
       open
       onClose={onClose}
+      title={intent ? composeIntentTitle(intent) : COMPOSE_MENU_TITLE}
       maxWidthClass="lg:max-w-md"
       panelClassName="px-4 pb-[calc(var(--safe-bottom)+1.25rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
     >

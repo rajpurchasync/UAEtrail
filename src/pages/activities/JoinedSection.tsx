@@ -4,12 +4,17 @@ import type { MyActivityDTO } from '@uaetrail/shared-types';
 import { api, ActivityRequestView } from '../../api/services';
 import { ActivityHubEmptyState } from '../../components/mobile/ActivityHubEmptyState';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
-import { GlassCard } from '../../components/mobile/GlassCard';
+import {
+  ConsumerErrorCard,
+  ConsumerInlineEmpty,
+  ConsumerLoadingSpinner,
+} from '../../components/mobile/ConsumerFeedback';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
 import {
   PRODUCT_EXPLORE_CTA,
   PRODUCT_JOINED_UPCOMING_EMPTY_BODY,
   PRODUCT_JOINED_UPCOMING_EMPTY_TITLE,
+  PRODUCT_LOAD_ERROR,
 } from '../../content/productNorthStar';
 import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import { formatActivityType } from '../../utils/activityIdentity';
@@ -22,16 +27,8 @@ import {
   requestRecordMeta,
   type JoinedSubTab,
 } from '../../utils/activityHubSections';
-import { requestStatusLabel } from '../../utils/joinRequestUi';
+import { requestStatusClassName, requestStatusLabel } from '../../utils/joinRequestUi';
 import { getRequestEventDate } from '../../utils/activityDates';
-
-const requestStatusStyle: Record<string, string> = {
-  pending: 'bg-amber-500/15 text-amber-700',
-  waitlisted: 'bg-sky-500/15 text-sky-700',
-  approved: 'bg-emerald-500/15 text-emerald-700',
-  rejected: 'bg-red-500/15 text-red-600',
-  cancelled: 'bg-neutral-500/10 text-neutral-500',
-};
 
 const formatActivityMeta = (activity: MyActivityDTO) => {
   const parts = [formatActivityType(activity.activityType), activity.date];
@@ -63,7 +60,7 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
         setActivities(activitiesRes.data);
         setRequests(requestsRes.data);
       })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Couldn\'t load your activities — try again.'))
+      .catch((err) => setError(err instanceof Error ? err.message : PRODUCT_LOAD_ERROR))
       .finally(() => setLoading(false));
   }, [refreshKey]);
 
@@ -81,18 +78,12 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
 
   return (
     <div className="space-y-3">
-      {error && (
-        <GlassCard padding className="border-red-200/50 bg-red-50/50">
-          <p className="text-sm text-red-600">{error}</p>
-        </GlassCard>
-      )}
+      {error && <ConsumerErrorCard message={error} />}
 
       <AppSegmented segments={segments} value={subTab} onChange={setSubTab} />
 
       {loading ? (
-        <div className="flex justify-center py-10">
-          <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <ConsumerLoadingSpinner />
       ) : subTab === 'upcoming' ? (
         upcomingRows.length === 0 ? (
           <ActivityHubEmptyState
@@ -123,9 +114,7 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
                   meta={[row.date, row.request.activity.time].filter(Boolean).join(' · ')}
                   badge={
                     <span
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full capitalize shrink-0 ${
-                        requestStatusStyle[row.request.status] ?? requestStatusStyle.pending
-                      }`}
+                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full capitalize shrink-0 ${requestStatusClassName(row.request.status)}`}
                     >
                       {requestStatusLabel(row.request.status)}
                     </span>
@@ -164,9 +153,7 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
         )
       ) : subTab === 'cancelled' ? (
         cancelled.length === 0 ? (
-          <GlassCard padding>
-            <p className="text-sm text-neutral-600">No cancelled requests here.</p>
-          </GlassCard>
+          <ConsumerInlineEmpty message="No cancelled requests here." />
         ) : (
           <div className="space-y-2">
             {cancelled.map((request) => (
@@ -185,9 +172,7 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
           </div>
         )
       ) : rejected.length === 0 ? (
-        <GlassCard padding>
-          <p className="text-sm text-neutral-600">No declined requests — you&apos;re all clear.</p>
-        </GlassCard>
+        <ConsumerInlineEmpty message="No declined requests — you're all clear." />
       ) : (
         <div className="space-y-2">
           {rejected.map((request) => (

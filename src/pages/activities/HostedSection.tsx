@@ -12,9 +12,15 @@ import { OrganisationActivityCheckInPanel } from '../../components/organisation-
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
 import { useOrganisationHubData } from '../../hooks/useOrganisationHubData';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
+import { exploreOrganizePath } from '../../utils/exploreRouting';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { AppButton } from '../../components/mobile/AppButton';
+import {
+  ConsumerErrorCard,
+  ConsumerInlineEmpty,
+  ConsumerLoadingSpinner,
+} from '../../components/mobile/ConsumerFeedback';
 import { Dialog } from '../../components/ui/Dialog';
 import { formatActivityType } from '../../utils/activityIdentity';
 
@@ -121,7 +127,7 @@ export const HostedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
     setError(null);
     setBusyActivityId(event.id);
     try {
-      await api.publishOrganisationActivity(host.tenantId, event.id);
+      await api.publishHostActivity(host.tenantId, event.id);
       await reloadExploreMap();
       await host.reload();
     } catch (err) {
@@ -159,11 +165,7 @@ export const HostedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
   };
 
   if (host.loading) {
-    return (
-      <div className="flex justify-center py-10">
-        <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <ConsumerLoadingSpinner />;
   }
 
   if (!host.tenantId) {
@@ -179,11 +181,7 @@ export const HostedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
 
   return (
     <div className="space-y-4">
-      {error && (
-        <GlassCard padding className="border-red-200/50 bg-red-50/50">
-          <p className="text-sm text-red-600">{error}</p>
-        </GlassCard>
-      )}
+      {error && <ConsumerErrorCard message={error} />}
 
       {host.pendingRequests.length > 0 && (
         <section className="space-y-2">
@@ -217,7 +215,7 @@ export const HostedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
           onChange={setActivityTab}
         />
         <Link
-          to="/host/activities/new"
+          to={exploreOrganizePath()}
           className="shrink-0 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
         >
           + New
@@ -225,14 +223,13 @@ export const HostedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       </div>
 
       {visibleActivities.length === 0 ? (
-        <GlassCard padding>
-          <p className="text-sm text-neutral-600">
-            {activityTab === 'upcoming' ? 'No upcoming hosted activities.' : 'No past hosted activities yet.'}
-          </p>
-          <Link to="/host/activities/new" className="mt-2 inline-block text-sm font-semibold text-emerald-700">
-            Create activity
-          </Link>
-        </GlassCard>
+        <ConsumerInlineEmpty
+          message={
+            activityTab === 'upcoming' ? 'No upcoming hosted activities.' : 'No past hosted activities yet.'
+          }
+          actionLabel="Create activity"
+          actionTo={exploreOrganizePath()}
+        />
       ) : (
         <div className="space-y-2">
           {visibleActivities.map((event) => (

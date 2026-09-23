@@ -11,7 +11,7 @@ import { Home } from './pages/Home';
 import { Membership } from './pages/Membership';
 import { ExploreExperience } from './explore';
 import { EXPLORE_MAP_PATH } from './config/platform';
-import { discoveryToExploreSearch, explorePath, parseActivityListFilter } from './utils/exploreRouting';
+import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter } from './utils/exploreRouting';
 import { organisationManagePath } from './utils/organisationPaths';
 
 const LegacyHostPathRedirect = () => {
@@ -38,7 +38,11 @@ const DiscoveryRedirect = () => {
 const ActivitiesBrowseRoute = () => {
   const [searchParams] = useSearchParams();
   const tab = searchParams.get('tab');
-  if (tab === 'joined' || tab === 'hosted' || searchParams.get('create') || searchParams.get('checkin')) {
+  const legacyCreatePath = legacyCreateParamToOrganizePath(searchParams.get('create'));
+  if (legacyCreatePath) {
+    return <Navigate to={legacyCreatePath} replace />;
+  }
+  if (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin')) {
     return (
       <Suspense fallback={<PageLoader />}>
         <Activities />

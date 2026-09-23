@@ -16,6 +16,7 @@ import { resolveOrganisationProfilePath } from '../../utils/organisationLinks';
 import { activityDetailEyebrow } from '../../config/activityTypes';
 import { detailBackPath } from '../../utils/exploreRouting';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
+import { buildGoogleDriveUrl, buildGoogleMapsSearchUrl, buildWazeDriveUrl } from '../../utils/mapLinks';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import {
   ShareButton,
@@ -60,15 +61,6 @@ const WazeIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const buildGoogleDriveUrl = (lat: number, lng: number): string =>
-  `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-
-const buildGoogleMapsSearchUrl = (lat: number, lng: number): string =>
-  `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-
-const buildWazeDriveUrl = (lat: number, lng: number): string =>
-  `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-
 export interface ActivityDetailViewProps {
   activity: ActivityDetailDTO;
   previewMode?: boolean;
@@ -82,6 +74,12 @@ export interface ActivityDetailViewProps {
   onWithdraw?: () => void;
   footerOverride?: ReactNode;
   sidebarJoinOverride?: ReactNode;
+  /** Shown above check-in when user is a confirmed participant (e.g. chat, push). */
+  confirmedExtras?: ReactNode;
+  confirmedSidebarExtras?: ReactNode;
+  selectedPackageIndex?: number;
+  onSelectedPackageIndexChange?: (index: number) => void;
+  joinDisabled?: boolean;
 }
 
 export const ActivityDetailView = ({
@@ -97,14 +95,27 @@ export const ActivityDetailView = ({
   onWithdraw,
   footerOverride,
   sidebarJoinOverride,
+  confirmedExtras,
+  confirmedSidebarExtras,
+  selectedPackageIndex: controlledPackageIndex,
+  onSelectedPackageIndexChange,
+  joinDisabled,
 }: ActivityDetailViewProps) => {
-  const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
+  const [internalPackageIndex, setInternalPackageIndex] = useState(0);
+  const selectedPackageIndex = controlledPackageIndex ?? internalPackageIndex;
+  const setSelectedPackageIndex = (index: number) => {
+    if (controlledPackageIndex === undefined) {
+      setInternalPackageIndex(index);
+    }
+    onSelectedPackageIndexChange?.(index);
+  };
 
   const pricePackages = activity.pricePackages?.filter((p) => p.label.trim()) ?? [];
   const hasMultiplePackages = pricePackages.length > 1;
   const pricingMode = inferActivityPricingMode(activity);
   const pricingBadge = activityPricingBadge(activity);
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
+  const joinActionDisabled = joinDisabled ?? !packageSelected;
 
   const heroImage =
     activity.images?.[0] ??
@@ -169,6 +180,7 @@ export const ActivityDetailView = ({
   const checkInFooter =
     participation ? (
       <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg space-y-2">
+        {confirmedExtras}
         <ActivityCheckInPanel participation={participation} />
         {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw && (
           <JoinRequestActions
@@ -204,6 +216,7 @@ export const ActivityDetailView = ({
               isFull={isFull}
               onJoin={handleJoinClick}
               onWithdraw={onWithdraw}
+              joinDisabled={joinActionDisabled}
               joinButtonClassName="ios-btn shadow-lg"
             />
           </div>
@@ -217,6 +230,7 @@ export const ActivityDetailView = ({
       </p>
     ) : participation ? (
       <>
+        {confirmedSidebarExtras ?? confirmedExtras}
         <ActivityCheckInPanel participation={participation} />
         {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw && (
           <JoinRequestActions
@@ -238,7 +252,7 @@ export const ActivityDetailView = ({
       <button
         type="button"
         onClick={handleJoinClick}
-        disabled={!packageSelected}
+        disabled={joinActionDisabled}
         className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
           isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
         }`}

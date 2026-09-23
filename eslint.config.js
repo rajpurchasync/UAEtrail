@@ -28,5 +28,25 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
     },
+  },
+  {
+    files: ['src/explore/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '../../utils/exploreRouting',
+              message: 'Import from ../routing (or src/explore/routing) — exploreRouting is a deprecated shim.',
+            },
+            {
+              name: '../utils/exploreRouting',
+              message: 'Import from ../explore/routing — exploreRouting is a deprecated shim.',
+            },
+          ],
+        },
+      ],
+    },
   }
 );

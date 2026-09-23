@@ -1,3 +1,4 @@
+import type { OrganizeComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import type { ContributeVenueKind } from './contributeTypes';
 import { formatComposeQuery, type ExploreCompose } from './compose';
@@ -258,12 +259,6 @@ export const explorePlacesPath = (options?: {
   list?: boolean;
 }): string => explorePath({ panel: 'venues', ...options });
 
-/** @deprecated Use explorePlacesPath */
-export const exploreVenuesPath = explorePlacesPath;
-
-/** @deprecated Use explorePlacesPath */
-export const exploreLocationsPath = explorePlacesPath;
-
 /** Entity kinds that map to a consistent explore back target. */
 export type DetailBackKind =
   | 'activity'
@@ -297,6 +292,31 @@ export const detailBackPath = (kind: DetailBackKind): string => {
 /** Personal activities hub — joined/hosted tabs only (not public browse). */
 export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
   `/activities?tab=${tab}`;
+
+/** Consumer create flow — explore compose organize menu or a specific kind. */
+export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>
+  kind
+    ? explorePath({ compose: { intent: 'organize', kind } })
+    : explorePath({ compose: { surface: 'menu', intent: 'organize' } });
+
+/** Map legacy `/activities?create=` values onto explore compose organize routes. */
+export const legacyCreateParamToOrganizePath = (createParam: string | null): string | null => {
+  if (!createParam) return null;
+  if (createParam === 'hiking' || createParam === 'camping' || createParam === 'event') {
+    return exploreOrganizePath(createParam);
+  }
+  if (
+    createParam === 'community_activity' ||
+    createParam === 'COMMUNITY_ACTIVITY' ||
+    createParam === 'EVENT'
+  ) {
+    return exploreOrganizePath('event');
+  }
+  if (createParam === 'activity') {
+    return exploreOrganizePath('activity');
+  }
+  return null;
+};
 
 /** Map legacy discovery query params onto explore search params. */
 export const discoveryToExploreSearch = (search: string): string => {

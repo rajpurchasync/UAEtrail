@@ -105,6 +105,31 @@ Signed-in members tap **+** on `/explore` to compose. **Guests** → sign-in, th
 | Host profile | `'host'` | `/explore` |
 | Generic / 404 | `'explore'` | `/explore` |
 
+## Legacy redirects (`App.tsx`)
+
+Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do not add new links to these.
+
+| Legacy path | Redirect target | Removal target |
+|-------------|-----------------|----------------|
+| `/map` | `/explore` | 2026-Q4 |
+| `/discovery` | `/explore` (+ param transform) | 2026-Q4 |
+| `/calendar` | `/explore` | 2026-Q4 |
+| `/shop` (bare) | `/explore?panel=shops` | 2026-Q4 |
+| `/activities` (no tab) | `/explore?panel=activities` | 2026-Q4 |
+| `/activities?create=*` | `/explore?compose=organize:*` | 2026-Q4 |
+| `/rewards` | `/trail-points` | 2026-Q4 |
+| `/organizer/*` | `/host/*` | 2026-Q4 |
+| `/become-organizer` | `/become-host` | 2026-Q4 |
+| `/dashboard/*` | role-based redirect | 2026-Q4 |
+| `/admin/organizers` | `/admin/hosts` | 2026-Q4 |
+| `/admin/locations` | `/admin/places` | 2026-Q4 |
+| `/host/locations` | `/host/places` | 2026-Q4 |
+| `/event-spot/:id`, `/community-activity/:id` | `/event/:id` | 2026-Q4 |
+| `/merchant/:id` | legacy merchant page | TBD |
+| `/sign-up`, `/sign-in` | auth aliases | keep |
+
+Personal hub tabs (`/activities?tab=joined|hosted`) remain until Phase 4 route rename (`/my-activities` or `/profile/plans`).
+
 ## Auth redirects
 
 - Gated actions → always `buildSignInRedirect()` or `signInPathForReturn(returnPath)`.

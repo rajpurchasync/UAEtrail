@@ -28,6 +28,12 @@ export const PRODUCT_EXPLORE_CTA = 'Explore the map';
 /** Join CTA label. */
 export const PRODUCT_JOIN_CTA = 'Join free';
 
+/** Generic load failure — consumer hub sections. */
+export const PRODUCT_LOAD_ERROR = "Couldn't load — try again.";
+
+/** Retry action for failed loads. */
+export const PRODUCT_RETRY_LABEL = 'Try again';
+
 /** Auth screens */
 export const PRODUCT_AUTH_SIGNUP_SUBLINE = 'Find your crew and get outside together — free to join.';
 export const PRODUCT_AUTH_SIGNIN_SUBLINE = 'Pick up where you left off with your crew and plans.';

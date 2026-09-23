@@ -2,17 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useActivityFormSession } from '../context/ActivityFormSessionContext';
-import { getActiveTenantId } from '../api/tenant';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ACTIVITIES_PATH } from '../constants';
+import { EXPLORE_MAP_PATH } from '../config/platform';
 import { isHostRole } from '../utils/roles';
-import { parseActivityTypeParam } from '../config/activityTypes';
-import { exploreActivitiesPath } from '../utils/exploreRouting';
+import { exploreActivitiesPath, exploreOrganizePath } from '../utils/exploreRouting';
+import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 import { parseTabParam, type PageTab } from './activities/shared';
 import { JoinedSection } from './activities/JoinedSection';
 import { HostedSection } from './activities/HostedSection';
@@ -23,25 +22,7 @@ export const Activities = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<PageTab>(() => parseTabParam(searchParams.get('tab'), user));
   const [refreshKey, setRefreshKey] = useState(0);
-  const { openCreate, setOnSaved } = useActivityFormSession();
   const canHost = isHostRole(user?.role);
-
-  useEffect(() => {
-    setOnSaved(() => () => {
-      setActiveTab('hosted');
-      const next = new URLSearchParams(searchParams);
-      next.set('tab', 'hosted');
-      setSearchParams(next, { replace: true });
-    });
-    return () => setOnSaved(null);
-  }, [searchParams, setSearchParams, setOnSaved]);
-
-  useEffect(() => {
-    const createType = parseActivityTypeParam(searchParams.get('create'));
-    if (createType) {
-      openCreate({ tenantId: getActiveTenantId() ?? '', initialActivityType: createType });
-    }
-  }, [searchParams, openCreate]);
 
   useEffect(() => {
     setActiveTab(parseTabParam(searchParams.get('tab'), user));
@@ -76,11 +57,11 @@ export const Activities = () => {
 
   const handleHostCta = useCallback(() => {
     if (canHost) {
-      openCreate({ tenantId: getActiveTenantId() ?? '' });
+      navigate(exploreOrganizePath());
       return;
     }
     navigate('/become-host');
-  }, [canHost, navigate, openCreate]);
+  }, [canHost, navigate]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshKey((key) => key + 1);
@@ -91,7 +72,7 @@ export const Activities = () => {
       layout="stack"
       title="My activities"
       showJourney={false}
-      back={{ fallbackTo: '/', label: 'Home' }}
+      back={{ fallbackTo: EXPLORE_MAP_PATH, label: 'Explore' }}
       toolbar={
         navOptions.length > 1 ? (
           <FilterChips options={navOptions} value={activeTab} onChange={setTab} />
@@ -110,7 +91,7 @@ export const Activities = () => {
             to={exploreActivitiesPath()}
             className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700"
           >
-            Browse map
+            {PRODUCT_EXPLORE_CTA}
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>

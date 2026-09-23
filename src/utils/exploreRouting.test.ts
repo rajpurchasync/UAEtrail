@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   detailBackPath,
   exploreActivitiesPath,
+  exploreOrganizePath,
   explorePath,
   explorePlacesPath,
   exploreShopsPath,
+  legacyCreateParamToOrganizePath,
   myActivitiesPath,
   parseFulfillIntentMapItemId,
 } from './exploreRouting';
@@ -41,5 +43,17 @@ describe('exploreRouting navigation contract', () => {
   it('myActivitiesPath targets personal hub tabs', () => {
     expect(myActivitiesPath()).toBe('/activities?tab=joined');
     expect(myActivitiesPath('hosted')).toBe('/activities?tab=hosted');
+  });
+
+  it('exploreOrganizePath opens compose organize menu or kind wizard', () => {
+    expect(exploreOrganizePath()).toBe('/explore?compose=organize');
+    expect(exploreOrganizePath('hiking')).toBe('/explore?compose=organize%3Ahiking');
+    expect(exploreOrganizePath('activity')).toBe('/explore?compose=organize%3Aactivity');
+  });
+
+  it('legacyCreateParamToOrganizePath redirects old activity create URLs', () => {
+    expect(legacyCreateParamToOrganizePath('hiking')).toBe('/explore?compose=organize%3Ahiking');
+    expect(legacyCreateParamToOrganizePath('EVENT')).toBe('/explore?compose=organize%3Aevent');
+    expect(legacyCreateParamToOrganizePath(null)).toBeNull();
   });
 });

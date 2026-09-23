@@ -5,7 +5,7 @@ import { EXPLORE_COACH_SEEN_KEY } from '../exploreOnboarding';
 const STEPS = [
   { title: 'See what’s on', detail: 'Outings near you — hikes, camps, runs, and more across the UAE.' },
   { title: 'Tap to connect', detail: 'Open a plan, see who’s going, and chat with the group.' },
-  { title: 'Go together', detail: 'Join free to request a spot or post what you’re looking for.' },
+  { title: 'Go together', detail: 'Sign up free to request a spot or post what you’re looking for.' },
 ] as const;
 
 /** One-time lightweight coach for first map visit. */

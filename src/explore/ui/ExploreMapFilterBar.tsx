@@ -1,5 +1,5 @@
 import { SlidersHorizontal } from 'lucide-react';
-import type { MapFilterKey } from '../../utils/exploreRouting';
+import type { MapFilterKey } from '../routing';
 import {
   EXPLORE_MAP_FILTER_INACTIVE,
   EXPLORE_MOBILE_MAP_CHROME,

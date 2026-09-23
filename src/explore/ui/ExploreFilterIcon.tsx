@@ -6,7 +6,7 @@ import {
   Tent,
   type LucideIcon,
 } from 'lucide-react';
-import type { ActivityListFilterKey, MapFilterKey, VenueListFilterKey } from '../../utils/exploreRouting';
+import type { ActivityListFilterKey, MapFilterKey, VenueListFilterKey } from '../routing';
 
 type ExploreFilterKey = MapFilterKey | ActivityListFilterKey | VenueListFilterKey | 'others' | 'shops';
 

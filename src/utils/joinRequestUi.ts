@@ -55,3 +55,21 @@ export const requestStatusLabel = (status: string): string => {
 
 export const withdrawModalVariant = (uiState: JoinRequestUiState): 'request' | 'activity' =>
   uiState.kind === 'confirmed' ? 'activity' : 'request';
+
+/** Tailwind badge classes for join request status chips. */
+export const requestStatusClassName = (status: string): string => {
+  switch (status) {
+    case 'pending':
+      return 'bg-amber-500/15 text-amber-700';
+    case 'waitlisted':
+      return 'bg-sky-500/15 text-sky-700';
+    case 'approved':
+      return 'bg-emerald-500/15 text-emerald-700';
+    case 'rejected':
+      return 'bg-red-500/15 text-red-600';
+    case 'cancelled':
+      return 'bg-neutral-500/10 text-neutral-500';
+    default:
+      return 'bg-amber-500/15 text-amber-700';
+  }
+};

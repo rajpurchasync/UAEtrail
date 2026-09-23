@@ -1,744 +1,219 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import {
-  Calendar,
-  Clock,
-  Users,
-  ChevronRight,
-  CheckCircle2,
-  Car,
-  Lock
-} from 'lucide-react';
-import { ActivityDetailDTO, ActivityParticipationDTO, MyActivityRequestDTO, WithdrawReason, activityJoinCtaLabel } from '@uaetrail/shared-types';
-import { api } from '../api/services';
-import { formatDate } from '../utils';
-import {
-  formatPackagePrice,
-  inferActivityPricingMode,
-  activityPriceLabel,
-  activityPricingBadge,
-  activityPricingModeLabel,
-} from '../utils/activityPricing';
-import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../utils/hostLabels';
-import { resolveOrganisationProfilePath } from '../utils/organisationLinks';
-import { detailBackPath } from '../utils/exploreRouting';
-import { signInPathForReturn } from '../utils/authReturnContext';
-import {
-  extractJoinInstructionLines,
-  extractNonJoinRequirements,
-  MANDATORY_INSTRUCTIONS_LABEL,
-} from '../utils/joinInstructions';
-import { useAuth } from '../context/AuthContext';
-import { PARTICIPANT_PRIVACY } from '../config/platform';
-import { PageMeta } from '../components/seo/PageMeta';
-import { JsonLd } from '../components/seo/JsonLd';
-import { activityEventSchema } from '../components/seo/schemas';
-import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
-import {
-  ShareButton,
-  MeetingPointMap,
-  ParticipantPreview,
-  HostMessageButton,
-  ActivityCheckInPanel,
-  WithdrawRequestModal,
-  JoinRequestModal,
-  JoinRequestActions,
-  SecureAvatar
-} from '../components/ui';
-import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
-import { PushEnableBanner } from '../components/ui/PushEnableBanner';
-import { resolveJoinRequestUiState, withdrawModalVariant } from '../utils/joinRequestUi';
-
-const GoogleMapsIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden>
-    <path d="M12 2.2C8.2 2.2 5.1 5.3 5.1 9.1c0 4.8 6.9 12.7 6.9 12.7s6.9-7.9 6.9-12.7c0-3.8-3.1-6.9-6.9-6.9Z" fill="#EA4335" />
-    <path d="M12 2.2v19.6s6.9-7.9 6.9-12.7c0-3.8-3.1-6.9-6.9-6.9Z" fill="#FBBC05" />
-    <path d="M12 2.2C8.2 2.2 5.1 5.3 5.1 9.1c0 4.8 6.9 12.7 6.9 12.7V2.2Z" fill="#34A853" />
-    <circle cx="12" cy="9.1" r="3" fill="#4285F4" />
-  </svg>
-);
-
-const WazeIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden>
-    <path
-      d="M12.2 3.2c-4.4 0-8 3.4-8 7.6 0 2.3.9 4.1 2.5 5.5.3.2.3.7.1 1l-.7 1.3c-.2.3 0 .8.4.8h5.2c4.7 0 8.5-3.6 8.5-8.1 0-4.5-3.6-8.1-8-8.1Z"
-      fill="#ffffff"
-      stroke="#2F3A45"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle cx="9.4" cy="10" r="1" fill="#2F3A45" />
-    <circle cx="14" cy="10" r="1" fill="#2F3A45" />
-    <path d="M8.5 12.8c.9.9 2 1.3 3.1 1.3 1.2 0 2.2-.4 3.1-1.3" fill="none" stroke="#2F3A45" strokeWidth="1.3" strokeLinecap="round" />
-    <circle cx="8.4" cy="18.2" r="1.8" fill="#ffffff" stroke="#2F3A45" strokeWidth="1.5" />
-    <circle cx="14.7" cy="18.2" r="1.8" fill="#ffffff" stroke="#2F3A45" strokeWidth="1.5" />
-  </svg>
-);
-
-const buildGoogleDriveUrl = (lat: number, lng: number): string =>
-  `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-
-const buildGoogleMapsSearchUrl = (lat: number, lng: number): string =>
-  `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-
-const buildWazeDriveUrl = (lat: number, lng: number): string =>
-  `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-
-export const ActivityDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [activity, setActivity] = useState<ActivityDetailDTO | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [participation, setParticipation] = useState<ActivityParticipationDTO | null | undefined>(undefined);
-  const [myRequest, setMyRequest] = useState<MyActivityRequestDTO | null | undefined>(undefined);
-  const [withdrawing, setWithdrawing] = useState(false);
-  const [showWithdraw, setShowWithdraw] = useState(false);
-  const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
-
-  const loadActivity = () => {
-    if (!id) return;
-    setLoading(true);
-    setParticipation(undefined);
-    setMyRequest(undefined);
-    api
-      .getPublicActivityDetail(id)
-      .then((res) => {
-        setActivity(res.data);
-        setParticipation(res.data.myParticipation ?? null);
-        setMyRequest(res.data.myRequest ?? null);
-      })
-      .catch((loadError) =>
-        setError(loadError instanceof Error ? loadError.message : 'Couldn\'t load this activity — try again.')
-      )
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    loadActivity();
-  }, [id]);
-
-  const pricePackages = activity?.pricePackages?.filter((p) => p.label.trim()) ?? [];
-  const hasMultiplePackages = pricePackages.length > 1;
-  const pricingMode = activity ? inferActivityPricingMode(activity) : 'free';
-  const pricingBadge = activity ? activityPricingBadge(activity) : null;
-
-  const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
-
-  const openJoinModal = () => {
-    if (!id || !activity) return;
-    if (!user) {
-      navigate(signInPathForReturn(`/activity/${id}`));
-      return;
-    }
-    if (!packageSelected) {
-      setError('Please select a package option.');
-      return;
-    }
-    setError(null);
-    setShowJoinModal(true);
-  };
-
-  const handleJoinSuccess = (successMessage: string) => {
-    setMessage(successMessage);
-    loadActivity();
-  };
-
-  if (loading) {
-    return (
-      <>
-        <PageMeta title="Loading activity" path={id ? `/activity/${id}` : undefined} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-        </div>
-      </>
-    );
-  }
-
-  if (!activity) {
-    return (
-      <>
-        <PageMeta title="Activity not found" noIndex path={id ? `/activity/${id}` : undefined} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center px-4">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">We couldn&apos;t find this activity</h1>
-            <Link to={detailBackPath('activity')} className="text-emerald-600 hover:text-emerald-700 font-medium">
-              View all activities
-            </Link>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  if (activity.visibilityState === 'private') {
-    return (
-      <>
-        <PageMeta title="Private activity" noIndex path={id ? `/activity/${id}` : undefined} />
-        <MobileDetailShell
-          backTo={detailBackPath('activity')}
-          backLabel="Explore"
-        >
-          <div className="max-w-lg mx-auto px-4 py-16 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
-              <Lock className="h-7 w-7 text-neutral-500" />
-            </div>
-            <h1 className="mt-4 text-xl font-bold text-neutral-900">Private activity</h1>
-            <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
-              {activity.message ?? 'This activity is private — only invited members can view it.'}
-            </p>
-            {!user && (
-              <Link
-                to={signInPathForReturn(`/activity/${activity.id}`)}
-                className="mt-4 inline-block text-sm font-semibold text-emerald-700"
-              >
-                Log in if you were invited
-              </Link>
-            )}
-          </div>
-        </MobileDetailShell>
-      </>
-    );
-  }
-
-  const heroImage =
-    activity.images?.[0] ??
-    activity.location?.images?.[0] ??
-    (activity.activityType === 'camping'
-      ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600'
-      : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
-
-  const participants = activity.participants ?? [];
-  const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
-  const hostPath = resolveOrganisationProfilePath({
-    tenantSlug: activity.tenantSlug,
-    hostUserId: activityHostUserId(activity),
-  });
-  const hostProfileHint = activity.tenantSlug
-    ? 'Runs this activity · view host profile'
-    : 'Runs this activity · view profile';
-  const isFull = activity.slotsAvailable <= 0;
-  const accessLat = activity.startLat ?? activity.meetingLat ?? activity.parkingLat ?? activity.location?.latitude ?? null;
-  const accessLng = activity.startLng ?? activity.meetingLng ?? activity.parkingLng ?? activity.location?.longitude ?? null;
-  const hasAccessCoordinates = accessLat != null && accessLng != null;
-  const openInGoogleMapsUrl =
-    activity.location?.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
-
-  const dateRangeLabel = activity.endDate
-    ? `${formatDate(activity.date)} – ${formatDate(activity.endDate)}`
-    : formatDate(activity.date);
-
-  const joinLabel = activityJoinCtaLabel({
-    participationMode: activity.participationMode,
-    requirements: activity.requirements,
-    isFull,
-  });
-  const joinUiState = resolveJoinRequestUiState({ myRequest: myRequest ?? null, participation: participation ?? null });
-
-  const handleWithdraw = async (payload: { reason: WithdrawReason; message?: string }) => {
-    if (!activity || (joinUiState.kind !== 'pending' && joinUiState.kind !== 'confirmed')) return;
-    setWithdrawing(true);
-    setError(null);
-    try {
-      await api.cancelJoinRequest(activity.id, joinUiState.requestId, payload);
-      setShowWithdraw(false);
-      setMessage(
-        joinUiState.kind === 'confirmed'
-          ? 'You have withdrawn from this activity.'
-          : 'Join request cancelled.'
-      );
-      loadActivity();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Couldn\'t withdraw — try again.');
-      setShowWithdraw(false);
-    } finally {
-      setWithdrawing(false);
-    }
-  };
-
-  const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
-
-  const checkInFooter = participation ? (
-    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg space-y-2">
-      {isConfirmedParticipant && id && <ActivityChatCallout activityId={id} />}
-      {isConfirmedParticipant && <PushEnableBanner context="join" />}
-      <ActivityCheckInPanel participation={participation} />
-      {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && (
-        <JoinRequestActions
-          uiState={joinUiState}
-          joinLabel={joinLabel}
-          isFull={isFull}
-          onWithdraw={() => setShowWithdraw(true)}
-          joinButtonClassName="ios-btn shadow-lg"
-        />
-      )}
-    </div>
-  ) : joinUiState.kind !== 'open' ? (
-    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-      <JoinRequestActions
-        uiState={joinUiState}
-        joinLabel={joinLabel}
-        isFull={isFull}
-        onWithdraw={() => setShowWithdraw(true)}
-        joinButtonClassName="ios-btn shadow-lg"
-      />
-    </div>
-  ) : null;
-
-  const joinButton = checkInFooter ?? (
-    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-      <JoinRequestActions
-        uiState={joinUiState}
-        joinLabel={joinLabel}
-        isFull={isFull}
-        onJoin={openJoinModal}
-        onWithdraw={() => setShowWithdraw(true)}
-        joinDisabled={!packageSelected}
-        joinButtonClassName="ios-btn shadow-lg"
-      />
-    </div>
-  );
-
-  const sidebarJoin = participation ? (
-    <>
-      {isConfirmedParticipant && id && <ActivityChatCallout activityId={id} className="mb-4" />}
-      {isConfirmedParticipant && <PushEnableBanner context="join" className="mb-4" />}
-      <ActivityCheckInPanel participation={participation} />
-      {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && (
-        <JoinRequestActions
-          uiState={joinUiState}
-          joinLabel={joinLabel}
-          isFull={isFull}
-          onWithdraw={() => setShowWithdraw(true)}
-        />
-      )}
-    </>
-  ) : joinUiState.kind !== 'open' ? (
-    <JoinRequestActions
-      uiState={joinUiState}
-      joinLabel={joinLabel}
-      isFull={isFull}
-      onWithdraw={() => setShowWithdraw(true)}
-    />
-  ) : (
-    <button
-      onClick={openJoinModal}
-      disabled={!packageSelected}
-      className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
-        isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
-      }`}
-    >
-      {joinLabel}
-    </button>
-  );
-
-  return (
-    <MobileDetailShell
-      backTo={detailBackPath('activity')}
-      backLabel="Explore"
-      footer={joinButton}
-      banner={{
-        src: heroImage,
-        alt: activity.title || activity.locationName,
-        title: activity.title || activity.locationName,
-        eyebrow: activity.activityType === 'hiking' ? 'Hiking activity' : 'Camping activity',
-      }}
-    >
-      <PageMeta
-        title={activity.title || activity.locationName}
-        description={activity.description?.slice(0, 160) ?? `Join this ${activity.activityType} activity in the UAE on UAE Trail`}
-        path={`/activity/${activity.id}`}
-        image={heroImage}
-        imageAlt={activity.title || activity.locationName}
-      />
-      <JsonLd data={activityEventSchema(activity)} id={`activity-${activity.id}`} />
-      <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">About this activity</h2>
-            <p className="text-gray-600 leading-relaxed">{activity.description}</p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-              <div className="bg-gray-50 rounded-xl p-3">
-                <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
-                <p className="text-xs text-gray-500">Start</p>
-                <p className="text-sm font-semibold text-gray-900">{formatDate(activity.date)}</p>
-              </div>
-              {activity.endDate && (
-                <div className="bg-gray-50 rounded-xl p-3">
-                  <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
-                  <p className="text-xs text-gray-500">End</p>
-                  <p className="text-sm font-semibold text-gray-900">{formatDate(activity.endDate)}</p>
-                </div>
-              )}
-              <div className="bg-gray-50 rounded-xl p-3">
-                <Clock className="w-4 h-4 text-emerald-600 mb-1" />
-                <p className="text-xs text-gray-500">Time</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {activity.time}
-                  {activity.endTime ? ` – ${activity.endTime}` : ''}
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <Users className="w-4 h-4 text-emerald-600 mb-1" />
-                <p className="text-xs text-gray-500">Spots</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {activity.slotsAvailable}/{activity.slotsTotal} left
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-500 mb-1">Pricing</p>
-                {activity && pricingBadge && (
-                  <>
-                    <p className={`text-sm font-semibold inline-flex px-2 py-0.5 rounded-lg ${pricingBadge.bg} ${pricingBadge.text}`}>
-                      {activityPricingModeLabel(activity)}
-                    </p>
-                    {pricingMode !== 'free' && (
-                      <p className="text-sm font-semibold text-gray-900 mt-1">{activityPriceLabel(activity)}</p>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            {pricePackages.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Join options</h3>
-                <div className="space-y-2">
-                  {pricePackages.map((pkg, index) => (
-                    <label
-                      key={`${pkg.label}-${index}`}
-                      className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${
-                        hasMultiplePackages && selectedPackageIndex === index
-                          ? 'border-emerald-500 bg-emerald-50'
-                          : hasMultiplePackages
-                            ? 'border-gray-200 hover:border-gray-300'
-                            : 'border-gray-100 bg-gray-50'
-                      }`}
-                    >
-                      {hasMultiplePackages ? (
-                        <>
-                          <span className="flex items-center gap-3 min-w-0">
-                            <input
-                              type="radio"
-                              name="activity-package"
-                              checked={selectedPackageIndex === index}
-                              onChange={() => setSelectedPackageIndex(index)}
-                              className="text-emerald-600 focus:ring-emerald-500"
-                            />
-                            <span className="text-sm text-gray-800">{pkg.label}</span>
-                          </span>
-                          <span className="text-sm font-semibold text-gray-900 shrink-0">
-                            {formatPackagePrice(pkg)}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-sm text-gray-800">{pkg.label}</span>
-                          <span className="text-sm font-semibold text-gray-900">{formatPackagePrice(pkg)}</span>
-                        </>
-                      )}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {(activity.startPoint || activity.meetingPoint || activity.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
-              <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <div className="flex items-start gap-3">
-                  <Car className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-gray-900">Access details</p>
-                    {(activity.startPoint || activity.meetingPoint || activity.parkingPoint) && (
-                      <div className="space-y-1 text-sm text-gray-700">
-                        {activity.startPoint && <p><span className="font-medium text-gray-900">Hike start point:</span> {activity.startPoint}</p>}
-                        {activity.meetingPoint && (
-                          <p>
-                            <span className="font-medium text-gray-900">Meeting point:</span> {activity.meetingPoint}
-                            <span className="block text-xs font-normal text-gray-500 mt-0.5">
-                              Information only — not a join requirement.
-                            </span>
-                          </p>
-                        )}
-                        {activity.parkingPoint && <p><span className="font-medium text-gray-900">Parking:</span> {activity.parkingPoint}</p>}
-                      </div>
-                    )}
-                    {hasAccessCoordinates && (
-                      <MeetingPointMap
-                        lat={accessLat}
-                        lng={accessLng}
-                        label={activity.meetingPoint ?? activity.parkingPoint ?? activity.locationName ?? activity.location?.name ?? undefined}
-                        hideExternalLink
-                      />
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      {openInGoogleMapsUrl && (
-                        <a
-                          href={openInGoogleMapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100"
-                        >
-                          <GoogleMapsIcon className="h-4 w-4" />
-                          Open with Google Maps
-                        </a>
-                      )}
-                      {hasAccessCoordinates && (
-                        <>
-                          <a
-                            href={buildGoogleDriveUrl(accessLat, accessLng)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100"
-                          >
-                            <GoogleMapsIcon className="h-4 w-4" />
-                            Drive with Google Maps
-                          </a>
-                          <a
-                            href={buildWazeDriveUrl(accessLat, accessLng)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-100"
-                          >
-                            <WazeIcon className="h-4 w-4" />
-                            Drive with Waze
-                          </a>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activity.carPoolEnabled && (
-              <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
-                <div className="flex items-start gap-2 text-sm text-gray-700">
-                  <Car className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900">Carpool available</p>
-                    <p className="mt-1">
-                      {activity.carPoolSeats != null && activity.carPoolSeats > 0
-                        ? `${activity.carPoolSeats} seat${activity.carPoolSeats === 1 ? '' : 's'} · `
-                        : ''}
-                      {activity.carPoolFree
-                        ? 'Free shared ride'
-                        : activity.carPoolPriceAed != null
-                          ? `AED ${activity.carPoolPriceAed} per seat`
-                          : 'Shared ride'}
-                    </p>
-                    {activity.carPoolDetails && (
-                      <p className="text-gray-600 mt-1 whitespace-pre-line">{activity.carPoolDetails}</p>
-                    )}
-                    {activity.linkedCarpool && (
-                      <div className="mt-3 rounded-xl border border-sky-200 bg-white px-3 py-2.5">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
-                          Linked carpool listing
-                        </p>
-                        <p className="mt-1 text-sm text-gray-800">
-                          {activity.linkedCarpool.meetingPoint && activity.linkedCarpool.startPoint
-                            ? `${activity.linkedCarpool.meetingPoint} → ${activity.linkedCarpool.startPoint}`
-                            : activity.linkedCarpool.title}
-                        </p>
-                        <Link
-                          to={`/activity/${activity.linkedCarpool.id}`}
-                          className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
-                        >
-                          View carpool details
-                          <ChevronRight className="h-4 w-4" />
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activity.linkedParentActivity && (
-              <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-gray-700">
-                <p className="font-medium text-gray-900">Linked activity</p>
-                <p className="mt-1">
-                  This carpool is offered for{' '}
-                  <Link
-                    to={`/activity/${activity.linkedParentActivity.id}`}
-                    className="font-semibold text-emerald-700 hover:text-emerald-800"
-                  >
-                    {activity.linkedParentActivity.title}
-                  </Link>
-                  .
-                </p>
-              </div>
-            )}
-
-          </div>
-
-
-          {activity.itinerary && activity.itinerary.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Itinerary</h2>
-              <ul className="space-y-2">
-                {activity.itinerary.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {(() => {
-            const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
-            const otherRequirements = extractNonJoinRequirements(activity.requirements);
-            return (
-              <>
-                {mandatoryInstructions.length > 0 && (
-                  <div className="bg-white rounded-2xl border border-amber-100 p-5 sm:p-6">
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">{MANDATORY_INSTRUCTIONS_LABEL}</h2>
-                    <p className="text-xs text-gray-500 mb-3">Joiners must agree to these when requesting a spot.</p>
-                    <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-                      {mandatoryInstructions.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {otherRequirements.length > 0 && (
-                  <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-                    <h2 className="text-lg font-bold text-gray-900 mb-3">Activity details</h2>
-                    <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-                      {otherRequirements.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </>
-            );
-          })()}
-
-          {activity.images && activity.images.length > 1 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Photos</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {activity.images.map((img, i) => (
-                  <img key={i} src={img} alt="" className="rounded-xl aspect-video object-cover" />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-20">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{activityPriceLabel(activity)}</p>
-                <p className="text-sm text-gray-500">{pricePackages.length > 1 ? 'options available' : 'per person'}</p>
-              </div>
-              <div className="hidden md:block">
-                <ShareButton
-                  title={activity.title || activity.locationName}
-                  text={`${dateRangeLabel} · Join this ${activity.activityType} activity on UAE Trails`}
-                  path={`/activity/${activity.id}`}
-                />
-              </div>
-            </div>
-
-            {sidebarJoin}
-
-            {message && <p className="mt-3 text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">{message}</p>}
-            {error && <p className="mt-3 text-sm text-amber-800 bg-amber-50 px-3 py-2 rounded-lg">{error}</p>}
-
-            <div className="mt-5 pt-5 border-t border-gray-100">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Host</p>
-              <div className="flex items-center gap-2">
-                {hostPath ? (
-                  <Link to={hostPath} className="flex items-center gap-3 group flex-1 min-w-0">
-                    <SecureAvatar
-                      src={activityHostAvatar(activity)}
-                      name={activityHostName(activity)}
-                      className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 group-hover:text-emerald-700 truncate">
-                        {activityHostName(activity)}
-                      </p>
-                      {showTenantBrand(activity) && activity.tenantName && (
-                        <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
-                      )}
-                      <p className="text-xs text-gray-500">{hostProfileHint}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
-                  </Link>
-                ) : (
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <SecureAvatar
-                      src={activityHostAvatar(activity)}
-                      name={activityHostName(activity)}
-                      className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 truncate">{activityHostName(activity)}</p>
-                      {showTenantBrand(activity) && activity.tenantName && (
-                        <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-                <HostMessageButton
-                  hostUserId={activityHostUserId(activity)}
-                  activityId={activity.id}
-                  size="md"
-                />
-              </div>
-              {activity.hostBio && (
-                <p className="mt-3 text-sm text-gray-600 leading-relaxed">{activity.hostBio}</p>
-              )}
-            </div>
-
-            {PARTICIPANT_PRIVACY.showPreJoin && (
-              <div className="mt-5 pt-5 border-t border-gray-100">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Who&apos;s going ({participants.length})
-                </p>
-                <ParticipantPreview
-                  participants={previewParticipants}
-                  size="md"
-                  showNames
-                  linkToProfile
-                  emptyLabel="No confirmed participants yet — be the first to join!"
-                />
-                {previewParticipants.length > 0 && (
-                  <p className="mt-2 text-[11px] text-gray-400">Tap a name to view profile</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      <WithdrawRequestModal
-        open={showWithdraw}
-        onClose={() => setShowWithdraw(false)}
-        activityTitle={activity.title || activity.locationName}
-        activityDate={activity.date}
-        variant={withdrawModalVariant(joinUiState)}
-        submitting={withdrawing}
-        onConfirm={handleWithdraw}
-      />
-      <JoinRequestModal
-        open={showJoinModal}
-        onClose={() => setShowJoinModal(false)}
-        activity={activity}
-        isFull={isFull}
-        selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
-        onSuccess={handleJoinSuccess}
-      />
-    </MobileDetailShell>
-  );
-};
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Lock } from 'lucide-react';
+import type {
+  ActivityDetailDTO,
+  ActivityParticipationDTO,
+  MyActivityRequestDTO,
+} from '@uaetrail/shared-types';
+import { api } from '../api/services';
+import { detailBackPath } from '../utils/exploreRouting';
+import { signInPathForReturn } from '../utils/authReturnContext';
+import { useAuth } from '../context/AuthContext';
+import { useActivityJoinActions } from '../hooks/useActivityJoinFlow';
+import { PageMeta } from '../components/seo/PageMeta';
+import { JsonLd } from '../components/seo/JsonLd';
+import { activityEventSchema } from '../components/seo/schemas';
+import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
+import { JoinRequestModal, WithdrawRequestModal } from '../components/ui';
+import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
+import { PushEnableBanner } from '../components/ui/PushEnableBanner';
+import { ActivityDetailView } from '../components/activity/ActivityDetailView';
+import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
+
+export const ActivityDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [activity, setActivity] = useState<ActivityDetailDTO | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [participation, setParticipation] = useState<ActivityParticipationDTO | null | undefined>(undefined);
+  const [myRequest, setMyRequest] = useState<MyActivityRequestDTO | null | undefined>(undefined);
+  const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
+
+  const loadActivity = useCallback(() => {
+    if (!id) return;
+    setLoading(true);
+    setParticipation(undefined);
+    setMyRequest(undefined);
+    api
+      .getPublicActivityDetail(id)
+      .then((res) => {
+        setActivity(res.data);
+        setParticipation(res.data.myParticipation ?? null);
+        setMyRequest(res.data.myRequest ?? null);
+      })
+      .catch((loadError) =>
+        setError(loadError instanceof Error ? loadError.message : 'Couldn\'t load this activity — try again.')
+      )
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  useEffect(() => {
+    loadActivity();
+  }, [loadActivity]);
+
+  const joinUiState = resolveJoinRequestUiState({
+    myRequest: myRequest ?? null,
+    participation: participation ?? null,
+  });
+
+  const joinActions = useActivityJoinActions({
+    activity,
+    uiState: joinUiState,
+    requestIdFallback: myRequest?.id ?? null,
+    onReload: loadActivity,
+    onMessage: setMessage,
+    onError: setError,
+  });
+
+  const pricePackages = useMemo(
+    () => activity?.pricePackages?.filter((pkg) => pkg.label.trim()) ?? [],
+    [activity?.pricePackages]
+  );
+  const hasMultiplePackages = pricePackages.length > 1;
+  const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
+  const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
+
+  const openJoinModal = () => {
+    if (!id || !activity) return;
+    if (!user) {
+      navigate(signInPathForReturn(`/activity/${id}`));
+      return;
+    }
+    if (!packageSelected) {
+      setError('Please select a package option.');
+      return;
+    }
+    setError(null);
+    joinActions.openJoinModal();
+  };
+
+  if (loading) {
+    return (
+      <>
+        <PageMeta title="Loading activity" path={id ? `/activity/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
+        </div>
+      </>
+    );
+  }
+
+  if (!activity) {
+    return (
+      <>
+        <PageMeta title="Activity not found" noIndex path={id ? `/activity/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center px-4">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">We couldn&apos;t find this activity</h1>
+            <Link to={detailBackPath('activity')} className="text-emerald-600 hover:text-emerald-700 font-medium">
+              View all activities
+            </Link>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (activity.visibilityState === 'private') {
+    return (
+      <>
+        <PageMeta title="Private activity" noIndex path={id ? `/activity/${id}` : undefined} />
+        <MobileDetailShell backTo={detailBackPath('activity')} backLabel="Explore">
+          <div className="max-w-lg mx-auto px-4 py-16 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
+              <Lock className="h-7 w-7 text-neutral-500" />
+            </div>
+            <h1 className="mt-4 text-xl font-bold text-neutral-900">Private activity</h1>
+            <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
+              {activity.message ?? 'This activity is private — only invited members can view it.'}
+            </p>
+            {!user && (
+              <Link
+                to={signInPathForReturn(`/activity/${activity.id}`)}
+                className="mt-4 inline-block text-sm font-semibold text-emerald-700"
+              >
+                Log in if you were invited
+              </Link>
+            )}
+          </div>
+        </MobileDetailShell>
+      </>
+    );
+  }
+
+  const heroImage =
+    activity.images?.[0] ??
+    activity.location?.images?.[0] ??
+    (activity.activityType === 'camping'
+      ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600'
+      : activity.activityType === 'event'
+        ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
+        : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
+
+  const confirmedFooterExtras =
+    isConfirmedParticipant && id ? (
+      <>
+        <ActivityChatCallout activityId={id} />
+        <PushEnableBanner context="join" />
+      </>
+    ) : null;
+
+  const confirmedSidebarExtras =
+    isConfirmedParticipant && id ? (
+      <>
+        <ActivityChatCallout activityId={id} className="mb-4" />
+        <PushEnableBanner context="join" className="mb-4" />
+      </>
+    ) : null;
+
+  return (
+    <>
+      <PageMeta
+        title={activity.title || activity.locationName}
+        description={
+          activity.description?.slice(0, 160) ?? `Join this ${activity.activityType} activity in the UAE on UAE Trail`
+        }
+        path={`/activity/${activity.id}`}
+        image={heroImage}
+        imageAlt={activity.title || activity.locationName}
+      />
+      <JsonLd data={activityEventSchema(activity)} id={`activity-${activity.id}`} />
+      <ActivityDetailView
+        activity={activity}
+        participation={participation ?? null}
+        myRequest={myRequest ?? null}
+        message={message}
+        error={error}
+        onJoin={openJoinModal}
+        onWithdraw={() => joinActions.setShowWithdraw(true)}
+        confirmedExtras={confirmedFooterExtras}
+        confirmedSidebarExtras={confirmedSidebarExtras}
+        selectedPackageIndex={selectedPackageIndex}
+        onSelectedPackageIndexChange={setSelectedPackageIndex}
+        joinDisabled={!packageSelected}
+      />
+      <WithdrawRequestModal
+        open={joinActions.showWithdraw}
+        onClose={() => joinActions.setShowWithdraw(false)}
+        activityTitle={activity.title || activity.locationName}
+        activityDate={activity.date}
+        variant={joinActions.withdrawVariant}
+        submitting={joinActions.withdrawing}
+        onConfirm={joinActions.handleWithdraw}
+      />
+      <JoinRequestModal
+        open={joinActions.joinModalOpen}
+        onClose={joinActions.closeJoinModal}
+        activity={activity}
+        isFull={activity.slotsAvailable <= 0}
+        selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
+        onSuccess={joinActions.handleJoinSuccess}
+      />
+    </>
+  );
+};
+

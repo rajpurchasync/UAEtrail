@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { Calendar, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import type { ChatConversationDTO } from '@uaetrail/shared-types';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
 import {
@@ -7,20 +7,13 @@ import {
   PRODUCT_PROFILE_UP_NEXT_EMPTY_BODY,
   PRODUCT_PROFILE_UP_NEXT_EMPTY_TITLE,
 } from '../../content/productNorthStar';
-import { AppButtonLink } from '../mobile/AppButton';
-import { GlassCard } from '../mobile/GlassCard';
+import { ActivityHubEmptyState } from '../mobile/ActivityHubEmptyState';
+import { ActivityHubListRow } from '../mobile/ActivityHubListRow';
+import { ConsumerLoadingSkeleton } from '../mobile/ConsumerFeedback';
 import { AccountSectionHeader } from '../account/AccountSectionHeader';
 import { myActivitiesPath } from '../../utils/exploreRouting';
 import type { UpcomingPlanRow } from '../../utils/activityHubSections';
-import { requestStatusLabel } from '../../utils/joinRequestUi';
-
-const requestStatusStyle: Record<string, string> = {
-  pending: 'bg-amber-500/15 text-amber-700',
-  waitlisted: 'bg-sky-500/15 text-sky-700',
-  approved: 'bg-emerald-500/15 text-emerald-700',
-  rejected: 'bg-red-500/15 text-red-600',
-  cancelled: 'bg-neutral-500/10 text-neutral-500',
-};
+import { requestStatusClassName, requestStatusLabel } from '../../utils/joinRequestUi';
 
 const formatActivityDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -42,6 +35,7 @@ export const ProfileUpNextSection = ({
   conversations,
   loading = false,
 }: ProfileUpNextSectionProps) => {
+  const navigate = useNavigate();
   const unreadConversations = conversations.filter((c) => (c.unreadCount ?? 0) > 0).slice(0, 1);
   const planRows = upcomingPlans.slice(0, MAX_PLAN_ROWS);
   const hasContent = planRows.length > 0 || unreadConversations.length > 0;
@@ -50,10 +44,7 @@ export const ProfileUpNextSection = ({
     return (
       <section aria-label="Up next">
         <AccountSectionHeader title="Up next" />
-        <GlassCard padding className="animate-pulse space-y-3">
-          <div className="h-12 rounded-xl bg-neutral-100" />
-          <div className="h-12 rounded-xl bg-neutral-100" />
-        </GlassCard>
+        <ConsumerLoadingSkeleton />
       </section>
     );
   }
@@ -62,16 +53,13 @@ export const ProfileUpNextSection = ({
     return (
       <section aria-label="Up next">
         <AccountSectionHeader title="Up next" />
-        <GlassCard padding className="text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-2xl" aria-hidden>
-            🌄
-          </div>
-          <p className="mt-3 text-sm font-bold text-neutral-900">{PRODUCT_PROFILE_UP_NEXT_EMPTY_TITLE}</p>
-          <p className="mt-1 text-[13px] leading-snug text-neutral-500">{PRODUCT_PROFILE_UP_NEXT_EMPTY_BODY}</p>
-          <AppButtonLink to={EXPLORE_MAP_PATH} fullWidth className="mt-4">
-            {PRODUCT_EXPLORE_CTA}
-          </AppButtonLink>
-        </GlassCard>
+        <ActivityHubEmptyState
+          emoji="🌄"
+          title={PRODUCT_PROFILE_UP_NEXT_EMPTY_TITLE}
+          description={PRODUCT_PROFILE_UP_NEXT_EMPTY_BODY}
+          actionLabel={PRODUCT_EXPLORE_CTA}
+          actionTo={EXPLORE_MAP_PATH}
+        />
       </section>
     );
   }
@@ -86,47 +74,31 @@ export const ProfileUpNextSection = ({
       <div className="space-y-2">
         {planRows.map((row) =>
           row.kind === 'confirmed' ? (
-            <Link
+            <ActivityHubListRow
               key={`confirmed-${row.activity.id}`}
-              to={`/activity/${row.activity.id}`}
-              className="glass-card-interactive flex items-center gap-3 p-3.5"
-            >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/12">
-                <Calendar className="h-4 w-4 text-emerald-600" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-neutral-900">
-                  {row.activity.title || row.activity.locationName}
-                </p>
-                <p className="text-xs text-neutral-500">
-                  {formatActivityDate(row.activity.date)} · You&apos;re going
-                </p>
-              </div>
-              <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
-            </Link>
+              title={row.activity.title || row.activity.locationName}
+              meta={`${formatActivityDate(row.activity.date)} · You're going`}
+              badge={
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700">
+                  Joined
+                </span>
+              }
+              onClick={() => navigate(`/activity/${row.activity.id}`)}
+            />
           ) : (
-            <Link
+            <ActivityHubListRow
               key={`request-${row.request.id}`}
-              to={`/my-requests/${row.request.id}`}
-              className="glass-card-interactive flex items-center gap-3 p-3.5"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-neutral-900">
-                  {row.request.activity.title || row.request.activity.locationName}
-                </p>
-                <p className="text-xs text-neutral-500">
-                  {formatActivityDate(row.date)} · {requestStatusLabel(row.request.status)}
-                </p>
-              </div>
-              <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold capitalize ${
-                  requestStatusStyle[row.request.status] ?? requestStatusStyle.cancelled
-                }`}
-              >
-                {row.request.status}
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
-            </Link>
+              title={row.request.activity.title || row.request.activity.locationName}
+              meta={`${formatActivityDate(row.date)} · ${requestStatusLabel(row.request.status)}`}
+              badge={
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold capitalize ${requestStatusClassName(row.request.status)}`}
+                >
+                  {requestStatusLabel(row.request.status)}
+                </span>
+              }
+              onClick={() => navigate(`/my-requests/${row.request.id}`)}
+            />
           )
         )}
 

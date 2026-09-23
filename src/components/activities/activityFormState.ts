@@ -1,7 +1,12 @@
-import type { ActivityDTO, ActivityJoinMode } from '@uaetrail/shared-types';
-import { inferJoinModeFromRequirements } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityJoinMode, ParticipationMode } from '@uaetrail/shared-types';
+import { inferJoinModeFromRequirements, inferParticipationModeFromRequirements } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
 import { derivePriceAed, inferActivityPricingMode, type ActivityPricePackage } from '../../utils/activityPricing';
+import {
+  buildHostActivityPublishPayload,
+  defaultParticipationModeForActivityType,
+  mergeParticipationRequirements,
+} from '../../utils/activityPublishPayload';
 import { parseCoord } from '../ui/MeetingPointMap';
 
 export type PricingMode = 'free' | 'shared' | 'paid';
@@ -57,6 +62,7 @@ export type ActivityFormState = {
   eventHostName: string;
   hostUserId: string;
   joinMode: ActivityJoinMode;
+  participationMode?: ParticipationMode;
 };
 
 const emptyPin = (): LocationPinForm => ({ label: '', mapsUrl: '', lat: '', lng: '' });
@@ -238,6 +244,8 @@ export const activityToForm = (activity: ActivityDTO): ActivityFormState => {
     eventHostName: instructionFields.eventHostName ?? '',
     hostUserId: activity.hostId ?? activity.hostUserId ?? '',
     joinMode: activity.joinMode ?? inferJoinModeFromRequirements(activity.requirements),
+    participationMode:
+      activity.participationMode ?? inferParticipationModeFromRequirements(activity.requirements),
   };
 };
 
@@ -293,39 +301,51 @@ export const buildHostActivityPayload = (form: ActivityFormState): Record<string
     price = derivePriceAed(pricePackages, form.price);
   }
 
-  return {
+  const participationMode =
+    form.participationMode ?? defaultParticipationModeForActivityType(form.activityType);
+  const requirements = mergeParticipationRequirements(buildRequirementsFromForm(form), {
+    participationMode,
+    joinMode: form.joinMode,
+  });
+
+  return buildHostActivityPublishPayload({
     activityType: form.activityType,
     locationId: form.locationId,
-    title: form.title.trim(),
-    description: form.description.trim(),
+    title: form.title,
+    description: form.description,
     date: form.date,
     time: form.time,
     capacity: form.capacity,
-    price,
-    pricePackages,
-    paymentTerms: null,
-    startPoint: resolvePinText(form.start),
-    startLat: parseCoord(form.start.lat),
-    startLng: parseCoord(form.start.lng),
-    meetingPoint: resolvePinText(form.meeting),
-    meetingLat: parseCoord(form.meeting.lat),
-    meetingLng: parseCoord(form.meeting.lng),
-    parkingPoint: resolvePinText(form.parking),
-    parkingLat: parseCoord(form.parking.lat),
-    parkingLng: parseCoord(form.parking.lng),
-    meetingDifferent: Boolean(
-      resolvePinText(form.meeting) &&
-        resolvePinText(form.start) &&
-        resolvePinText(form.meeting) !== resolvePinText(form.start)
-    ),
-    requirements: buildRequirementsFromForm(form),
+    pricing: {
+      pricingMode: form.pricingMode,
+      price,
+      pricePackages,
+      paymentTerms: null,
+    },
+    location: {
+      startPoint: resolvePinText(form.start),
+      startLat: parseCoord(form.start.lat),
+      startLng: parseCoord(form.start.lng),
+      meetingPoint: resolvePinText(form.meeting),
+      meetingLat: parseCoord(form.meeting.lat),
+      meetingLng: parseCoord(form.meeting.lng),
+      parkingPoint: resolvePinText(form.parking),
+      parkingLat: parseCoord(form.parking.lat),
+      parkingLng: parseCoord(form.parking.lng),
+      meetingDifferent: Boolean(
+        resolvePinText(form.meeting) &&
+          resolvePinText(form.start) &&
+          resolvePinText(form.meeting) !== resolvePinText(form.start)
+      ),
+    },
+    requirements,
     joinMode: form.joinMode,
+    participationMode,
     images: form.images.slice(0, 1),
     bannerUrl: null,
     signupUrl: form.signupUrl.trim() || null,
     hostId: form.hostUserId || undefined,
-    pricingMode: form.pricingMode,
-  };
+  });
 };
 
 export const FORM_INPUT =

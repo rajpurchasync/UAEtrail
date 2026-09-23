@@ -28,6 +28,7 @@ import {
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { faqPageSchema } from '../components/seo/schemas';
+import { PRODUCT_JOIN_CTA } from '../content/productNorthStar';
 
 const EARN_ICONS: Record<string, typeof MapPin> = {
   'Welcome bonus': Gift,
@@ -52,7 +53,7 @@ export const TrailPointsAbout = () => {
   const quickWins = TRAIL_POINTS_QUICK_WINS.filter((w) => !('guestOnly' in w && w.guestOnly && user));
   const primaryCta = user
     ? { path: '/my-rewards', label: 'Open my wallet' }
-    : { path: '/signup', label: 'Join free — +25 pts' };
+    : { path: '/signup', label: `${PRODUCT_JOIN_CTA} — +25 pts` };
 
   const resolveEarnCta = (item: (typeof TRAIL_POINTS_EXTRA_EARN)[number]) => {
     if ('authRequired' in item && item.authRequired && !user) {

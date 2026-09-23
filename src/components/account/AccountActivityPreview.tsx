@@ -4,11 +4,13 @@ import { ActivityDTO, ChatConversationDTO } from '@uaetrail/shared-types';
 import { ActivityRequestView } from '../../api/services';
 import { AccountSectionHeader } from './AccountSectionHeader';
 
+import { requestStatusClassName } from '../../utils/joinRequestUi';
+
 const requestStatusStyle: Record<string, string> = {
-  pending: 'bg-amber-500/15 text-amber-700',
-  approved: 'bg-emerald-500/15 text-emerald-700',
-  rejected: 'bg-red-500/15 text-red-600',
-  cancelled: 'bg-neutral-500/10 text-neutral-500',
+  pending: requestStatusClassName('pending'),
+  approved: requestStatusClassName('approved'),
+  rejected: requestStatusClassName('rejected'),
+  cancelled: requestStatusClassName('cancelled'),
 };
 
 const formatActivityDate = (dateStr?: string) => {
