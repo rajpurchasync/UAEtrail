@@ -9,7 +9,7 @@ import {
   Car,
   Lock
 } from 'lucide-react';
-import { ActivityDetailDTO, ActivityParticipationDTO, MyActivityRequestDTO, WithdrawReason } from '@uaetrail/shared-types';
+import { ActivityDetailDTO, ActivityParticipationDTO, MyActivityRequestDTO, WithdrawReason, activityJoinCtaLabel } from '@uaetrail/shared-types';
 import { api } from '../api/services';
 import { formatDate } from '../utils';
 import {
@@ -232,7 +232,11 @@ export const ActivityDetail = () => {
     ? `${formatDate(activity.date)} – ${formatDate(activity.endDate)}`
     : formatDate(activity.date);
 
-  const joinLabel = isFull ? 'Join Waitlist' : 'Request to Join';
+  const joinLabel = activityJoinCtaLabel({
+    participationMode: activity.participationMode,
+    requirements: activity.requirements,
+    isFull,
+  });
   const joinUiState = resolveJoinRequestUiState({ myRequest: myRequest ?? null, participation: participation ?? null });
 
   const handleWithdraw = async (payload: { reason: WithdrawReason; message?: string }) => {

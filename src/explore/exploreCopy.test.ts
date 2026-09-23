@@ -377,6 +377,24 @@ describe('buildExploreCardModel', () => {
     expect(card.sections.listGoing).toBe('12 going');
   });
 
+  it('uses I\'m going CTA and headline for RSVP events', () => {
+    const rsvpEvent: ExploreMapItemDTO = {
+      ...hikingActivity,
+      id: 'activity:2',
+      kind: 'event',
+      title: 'Sunrise Run',
+      activity: {
+        ...hikingActivity.activity!,
+        activityType: 'event',
+        title: 'Sunrise Run',
+        participationMode: 'rsvp',
+      },
+    };
+    const card = buildExploreCardModel(rsvpEvent);
+    expect(card.primaryCta).toBe("I'm going");
+    expect(card.headline).toContain("I'm going ·");
+  });
+
   it('builds one-line demand card', () => {
     const demand: ExploreMapItemDTO = {
       id: 'demand:1',
@@ -405,7 +423,7 @@ describe('buildExploreCardModel', () => {
       'Alex is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)'
     );
     expect(card.routeLabel).toBe('Dubai to Fujairah');
-    expect(card.secondaryCta).toBe('Message');
+    expect(card.secondaryCta).toBe('View details');
     expect(buildExploreListMeta(card)).toContain('Dubai to Fujairah');
     expect(card.sections.highlightName).toBe('Alex');
     expect(card.sections.listTitle).toBe('Rideshare · Alex');

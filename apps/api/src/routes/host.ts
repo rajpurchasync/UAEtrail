@@ -137,6 +137,7 @@ const eventCreateSchema = z.object({
   itinerary: z.array(z.string()).default([]),
   requirements: z.array(z.string()).default([]),
   joinMode: z.enum(['open', 'private']).optional(),
+  participationMode: z.enum(['rsvp', 'approval']).optional(),
   price: z.number().int().min(0).default(0),
   pricePackages: activityPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
@@ -182,6 +183,7 @@ import {
 import { assertActivityPricingAllowed } from '../domain/activity-pricing.js';
 import { assertActivityJoinInstructions } from '../domain/activity-join-instructions.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
+import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 
 const buildHostActivityResponse = async (event: ActivityWithTenantRelations): Promise<ActivityDTO> => {
   const dto = buildActivityDto(event);
@@ -304,6 +306,7 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
       itinerary: body.itinerary,
       requirements: body.requirements,
       joinMode: resolveJoinMode(body.joinMode, body.requirements),
+      participationMode: resolveParticipationMode(body.participationMode, body.requirements),
       images: body.images,
       bannerUrl: body.bannerUrl ?? null,
       signupUrl: body.signupUrl ?? null,
@@ -439,6 +442,12 @@ tenantActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), va
           ? resolveJoinMode(body.joinMode, body.requirements ?? existing.requirements)
           : body.requirements !== undefined
             ? resolveJoinMode(existing.joinMode, body.requirements)
+            : undefined,
+      participationMode:
+        body.participationMode !== undefined
+          ? resolveParticipationMode(body.participationMode, body.requirements ?? existing.requirements)
+          : body.requirements !== undefined
+            ? resolveParticipationMode(existing.participationMode, body.requirements)
             : undefined,
       images: body.images,
       bannerUrl: body.bannerUrl,

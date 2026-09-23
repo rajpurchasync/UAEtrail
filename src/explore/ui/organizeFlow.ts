@@ -176,9 +176,9 @@ export const createFlowStepTitle = (
   if (step === 'information') return kind === 'hiking' ? 'Information & rules' : 'Information';
   if (step === 'carpool') return 'Carpool';
   if (step === 'transportation') return 'Transportation';
-  if (step === 'where') return kind === 'camping' ? 'Camp location' : 'Meeting point';
+  if (step === 'where') return kind === 'camping' ? 'Camp location' : 'Going from';
   if (step === 'instructions') {
-    return usesVenueHostFlow(kind) || kind === 'carpool' ? 'Instructions' : 'Mandatory instructions';
+    return usesVenueHostFlow(kind) || kind === 'carpool' ? 'Instructions' : 'Before they join';
   }
   if (step === 'spots') return kind === 'carpool' ? 'Seats' : 'Spots';
   return 'Preview & publish';
@@ -525,6 +525,7 @@ export const publishCreateActivity = async (input: {
     startLng: toLng,
     requirements: buildRequirements(draft),
     joinMode: draft.joinMode,
+    participationMode: draft.participationMode,
     images: [HOME_HERO_IMAGE_JPEG],
     hostId: userId,
   };
@@ -585,7 +586,7 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: CreateActivityD
     return 'Choose at least one spot.';
   }
   if (step === 'instructions' && draft.kind === 'carpool' && !draft.description.trim()) {
-    return 'Add mandatory ride instructions joiners must agree to.';
+    return 'Add what riders need to know before they join.';
   }
   if (step === 'transportation' && draft.kind === 'carpool' && draft.capacity < 1) {
     return 'Choose at least one seat.';
@@ -594,10 +595,10 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: CreateActivityD
     return 'Drop a destination pin on the map.';
   }
   if (step === 'information' && draft.kind === 'hiking' && !draft.additionalInstructions.trim()) {
-    return 'Add mandatory instructions joiners must agree to.';
+    return 'Add what joiners need to know before they request a spot.';
   }
   if (step === 'instructions' && usesVenueHostFlow(draft.kind) && !draft.additionalInstructions.trim()) {
-    return 'Add mandatory instructions joiners must agree to.';
+    return 'Add what joiners need to know before they request a spot.';
   }
   if (step === 'when' && draft.timeMode === 'specific' && !draft.time) {
     return 'Choose a start time.';
@@ -615,9 +616,9 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: CreateActivityD
     }
     if (!draft.title.trim()) return 'Enter a title.';
     if (draft.kind === 'carpool') {
-      if (!draft.description.trim()) return 'Add ride instructions joiners must agree to.';
+      if (!draft.description.trim()) return 'Add what riders need to know before they join.';
     } else if (!draft.genericBuddy && !draft.additionalInstructions.trim()) {
-      return 'Add mandatory instructions joiners must agree to.';
+      return 'Add what joiners need to know before they request a spot.';
     }
     if (draft.priceMode === 'paid' && draft.priceAmount <= 0) return 'Enter a price amount.';
     if (draft.priceMode === 'shared' && draft.priceAmount <= 0) return 'Enter a shared cost amount.';

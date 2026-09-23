@@ -11,6 +11,7 @@ import {
   ExploreCardRequirementBadges,
 } from './ExploreCardPresentation';
 import { ExploreMapPeekCard } from './ExploreMapPeekCard';
+import { ORGANIZE_DEMAND_PREFILL_TITLE } from '../createFlowCopy';
 
 interface ExploreItemSheetProps {
   card: ExploreCardModel;
@@ -71,7 +72,7 @@ export const ExploreItemSheet = ({
             onClick={onFulfillIntent}
             className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
           >
-            Host this activity
+            {ORGANIZE_DEMAND_PREFILL_TITLE}
           </button>
           {onMessage ? (
             <button

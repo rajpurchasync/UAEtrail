@@ -6,6 +6,11 @@ import {
   type ExploreMapPersonDTO,
 } from './explore-person.js';
 import { isGenericDemandPlanTitle, type DemandTitleKind } from './demand-titles.js';
+import {
+  activityJoinCtaLabel,
+  resolveParticipationMode,
+  type ParticipationMode,
+} from './activity-participation-mode.js';
 
 export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
 export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'carpool' | 'shop' | 'agency';
@@ -39,8 +44,12 @@ export type ExplorePresentationBuildInput = {
     time?: string | null;
     activityType?: string;
     requirements?: string[] | null;
+    participationMode?: ParticipationMode | null;
   } | null;
 };
+
+const itemParticipationMode = (item: ExplorePresentationBuildInput): ParticipationMode =>
+  resolveParticipationMode(item.activity?.participationMode, item.activity?.requirements);
 
 const getFirstName = (name?: string | null): string => {
   if (name?.trim()) return name.trim().split(/\s+/)[0];
@@ -159,6 +168,7 @@ interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
   slotsAvailable?: number;
   slotsTotal?: number;
   participantCount?: number;
+  activity?: ExplorePresentationBuildInput['activity'];
 }
 
 const joinExploreParts = (...parts: (string | null | undefined)[]): string =>
@@ -437,6 +447,17 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
     return joinExploreParts(`${host} is offering Rideshare${day ?? ''}`, route, when);
   }
 
+  if (
+    input.source === 'activity' &&
+    input.kind === 'event' &&
+    resolveParticipationMode(input.activity?.participationMode, input.activity?.requirements) === 'rsvp'
+  ) {
+    const when = buildExploreWhenSegment(input.date, input.time, null);
+    if (when) return `I'm going · ${when}`;
+    const day = formatExploreDayForHeadline(input.date);
+    return day ? `I'm going${day}` : "I'm going";
+  }
+
   const host = exploreHeadlinePersonLabel(input);
   const day = formatExploreDayForHeadline(input.date);
   const spots =
@@ -583,11 +604,19 @@ export const exploreSpotsLabel = (item: ExplorePresentationBuildInput): string |
   return buildExploreSpotsSegment(item.slotsAvailable, item.slotsTotal);
 };
 
-export const explorePrimaryCtaLabel = (source: ExploreCardSource): string => {
+export const explorePrimaryCtaLabel = (
+  source: ExploreCardSource,
+  options?: { participationMode?: ParticipationMode | null; requirements?: string[] | null }
+): string => {
   if (source === 'demand') return 'Join this plan';
   if (source === 'shop') return 'View shop';
   if (source === 'agency') return 'View agency';
-  if (source === 'activity') return 'Request to join';
+  if (source === 'activity') {
+    return activityJoinCtaLabel({
+      participationMode: options?.participationMode,
+      requirements: options?.requirements,
+    });
+  }
   return 'View details';
 };
 
@@ -705,7 +734,10 @@ export const buildExploreCardPresentation = (
     subtitle,
     spotsLabel: exploreSpotsLabel(item),
     venueHint: exploreVenueHint(source, kind, item.shopPresence),
-    primaryCta: explorePrimaryCtaLabel(source),
+    primaryCta: explorePrimaryCtaLabel(source, {
+      participationMode: itemParticipationMode(item),
+      requirements: activity?.requirements,
+    }),
     secondaryCta: exploreSecondaryCtaLabel(source, { websiteUrl: item.websiteUrl }),
     shareText: [routeLabel, whenLabel].filter(Boolean).join(' · ') || item.subtitle || null,
     routeLabel,

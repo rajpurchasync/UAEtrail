@@ -1,6 +1,7 @@
 import type { ExploreCardPresentationDTO } from './explore-presentation.js';
 import type { ExploreMapPersonDTO } from './explore-person.js';
 import type { ActivityJoinMode } from './activity-join-mode.js';
+import type { ParticipationMode } from './activity-participation-mode.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -166,6 +167,8 @@ export interface ActivityDTO {
   requirements?: string[] | null;
   /** Who can discover this activity on the explore map (`open`) vs link-only (`private`). */
   joinMode?: ActivityJoinMode;
+  /** How members join: instant RSVP (`rsvp`) vs host approval queue (`approval`). */
+  participationMode?: ParticipationMode;
   images?: string[];
   /** Wide hero banner (outdoor events) */
   bannerUrl?: string | null;
@@ -956,6 +959,15 @@ export {
   PRIVATE_JOIN_REQUIREMENT_PREFIX,
   type ActivityJoinMode,
 } from './activity-join-mode.js';
+
+export {
+  APPROVAL_PARTICIPATION_REQUIREMENT,
+  RSVP_PARTICIPATION_REQUIREMENT,
+  activityJoinCtaLabel,
+  inferParticipationModeFromRequirements,
+  resolveParticipationMode,
+  type ParticipationMode,
+} from './activity-participation-mode.js';
 
 export {
   buildExploreActivityDisplay,

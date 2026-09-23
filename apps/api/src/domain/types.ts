@@ -202,6 +202,7 @@ export interface Activity {
   itinerary: string[];
   requirements: string[];
   joinMode?: 'open' | 'private' | null;
+  participationMode?: 'rsvp' | 'approval' | null;
   images: string[];
   bannerUrl: string | null;
   signupUrl: string | null;

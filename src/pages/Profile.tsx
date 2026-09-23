@@ -46,10 +46,9 @@ export const Profile = () => {
     groups,
     buddies,
     incomingBuddyRequests,
-    pendingRequests,
     activities,
     upcomingActivitiesCount,
-    upcomingActivity,
+    upcomingPlans,
     unreadMessages,
     loading,
     error,
@@ -352,8 +351,7 @@ export const Profile = () => {
 
           <ProfileUpNextSection
             messagesPath={messagesPath}
-            upcomingActivity={upcomingActivity}
-            pendingRequests={pendingRequests}
+            upcomingPlans={upcomingPlans}
             conversations={conversations}
             loading={loading}
           />

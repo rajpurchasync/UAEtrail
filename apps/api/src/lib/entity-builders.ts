@@ -82,6 +82,7 @@ export type ActivityCreateInput = {
   itinerary?: string[];
   requirements?: string[];
   joinMode?: 'open' | 'private' | null;
+  participationMode?: 'rsvp' | 'approval' | null;
   images?: string[];
   bannerUrl?: string | null;
   signupUrl?: string | null;
@@ -121,6 +122,7 @@ export type ActivityUpdateInput = {
   itinerary?: string[];
   requirements?: string[];
   joinMode?: 'open' | 'private' | null;
+  participationMode?: 'rsvp' | 'approval' | null;
   images?: string[];
   bannerUrl?: string | null;
   signupUrl?: string | null;
@@ -218,6 +220,7 @@ export type MongoActivityDoc = {
   itinerary: string[];
   requirements: string[];
   joinMode?: 'open' | 'private' | null;
+  participationMode?: 'rsvp' | 'approval' | null;
   images: string[];
   bannerUrl: string | null;
   signupUrl: string | null;
@@ -267,6 +270,7 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     itinerary: asStringArray(data.itinerary),
     requirements: asStringArray(data.requirements),
     joinMode: data.joinMode ?? null,
+    participationMode: data.participationMode ?? null,
     images: asStringArray(data.images),
     bannerUrl: data.bannerUrl?.trim() || null,
     signupUrl: data.signupUrl?.trim() || null,

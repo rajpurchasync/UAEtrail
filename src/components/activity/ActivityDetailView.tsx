@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Users, ChevronRight, CheckCircle2, Car } from 'lucide-react';
 import type { ActivityDetailDTO, MyActivityRequestDTO, ActivityParticipationDTO } from '@uaetrail/shared-types';
+import { activityJoinCtaLabel } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
 import {
   formatPackagePrice,
@@ -143,9 +144,11 @@ export const ActivityDetailView = ({
 
   const joinLabel = usesExternalSignup
     ? 'Sign up / Join'
-    : isFull
-      ? 'Join Waitlist'
-      : 'Request to Join';
+    : activityJoinCtaLabel({
+        participationMode: activity.participationMode,
+        requirements: activity.requirements,
+        isFull,
+      });
 
   const handleJoinClick = () => {
     if (usesExternalSignup && externalSignupUrl) {

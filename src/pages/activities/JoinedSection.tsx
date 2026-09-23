@@ -15,12 +15,11 @@ import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import { formatActivityType } from '../../utils/activityIdentity';
 import {
   attendedActivities,
+  buildUpcomingPlanRows,
   cancelledRequests,
   parseJoinedSubTab,
   rejectedRequests,
   requestRecordMeta,
-  upcomingConfirmedActivities,
-  upcomingOpenRequests,
   type JoinedSubTab,
 } from '../../utils/activityHubSections';
 import { requestStatusLabel } from '../../utils/joinRequestUi';
@@ -68,27 +67,10 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       .finally(() => setLoading(false));
   }, [refreshKey]);
 
-  const upcomingActivities = useMemo(() => upcomingConfirmedActivities(activities), [activities]);
   const attended = useMemo(() => attendedActivities(activities), [activities]);
-  const openRequests = useMemo(() => upcomingOpenRequests(activities, requests), [activities, requests]);
+  const upcomingRows = useMemo(() => buildUpcomingPlanRows(activities, requests), [activities, requests]);
   const cancelled = useMemo(() => cancelledRequests(requests), [requests]);
   const rejected = useMemo(() => rejectedRequests(requests), [requests]);
-
-  type UpcomingRow =
-    | { kind: 'confirmed'; date: string; activity: MyActivityDTO }
-    | { kind: 'requested'; date: string; request: ActivityRequestView };
-
-  const upcomingRows = useMemo<UpcomingRow[]>(() => {
-    const rows: UpcomingRow[] = [
-      ...upcomingActivities.map((activity) => ({ kind: 'confirmed' as const, date: activity.date, activity })),
-      ...openRequests.map((request) => ({
-        kind: 'requested' as const,
-        date: getRequestEventDate(request),
-        request,
-      })),
-    ];
-    return rows.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [openRequests, upcomingActivities]);
 
   const segments = [
     { key: 'upcoming' as const, label: `Upcoming (${upcomingRows.length})` },

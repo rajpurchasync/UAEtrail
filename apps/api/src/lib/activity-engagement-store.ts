@@ -21,6 +21,7 @@ import { getMongoClient } from './mongo.js';
 import { parseStoredPricePackages } from './activity-pricing.js';
 import { dispatchNotification } from '../services/notifications.js';
 import { addParticipantToActivityGroupChat, removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
+import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 
 const ACTIVE_STATUSES: RequestStatus[] = ['PENDING', 'APPROVED', 'WAITLISTED'];
 
@@ -128,6 +129,9 @@ const loadPublishedEventForJoin = async (activityId: string) => {
     id: doc._id,
     capacity: doc.capacity,
     pricePackages: doc.pricePackages,
+    participationMode: resolveParticipationMode(doc.participationMode, doc.requirements),
+    hostId: doc.hostId,
+    createdById: doc.createdById,
     participants: Array.from({ length: participantCount }, (_, index) => ({ id: String(index) }))
   };
 };
@@ -157,6 +161,18 @@ export async function createJoinOrWaitlistRequest(opts: {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
     throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+  }
+
+  if (event.participationMode === 'rsvp') {
+    throw new ApiError(
+      400,
+      'use_rsvp_endpoint',
+      'This activity uses open RSVP. Tap I\'m going instead.'
+    );
+  }
+
+  if (event.hostId === opts.userId || event.createdById === opts.userId) {
+    throw new ApiError(400, 'host_cannot_join', 'Hosts cannot join their own activity.');
   }
 
   const packages = parseStoredPricePackages(event.pricePackages);
@@ -211,6 +227,128 @@ export async function createJoinOrWaitlistRequest(opts: {
   }
 
   return { request: toActivityRequestRecord(mongoRow), waitlisted };
+}
+
+export async function createRsvpParticipation(opts: {
+  activityId: string;
+  userId: string;
+  selectedPackageIndex?: number;
+}) {
+  const event = await loadPublishedEventForJoin(opts.activityId);
+  if (!event) {
+    throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+  }
+
+  if (event.participationMode !== 'rsvp') {
+    throw new ApiError(
+      400,
+      'approval_required',
+      'This activity requires host approval. Submit a join request instead.'
+    );
+  }
+
+  if (event.hostId === opts.userId || event.createdById === opts.userId) {
+    throw new ApiError(400, 'host_cannot_join', 'Hosts cannot RSVP to their own activity.');
+  }
+
+  const existingParticipant = await findActivityParticipantByEventAndUser(opts.activityId, opts.userId);
+  if (existingParticipant) {
+    throw new ApiError(409, 'already_joined', 'You are already going to this activity.');
+  }
+
+  const packages = parseStoredPricePackages(event.pricePackages);
+  if (packages.length > 1) {
+    if (opts.selectedPackageIndex === undefined) {
+      throw new ApiError(400, 'package_required', 'Select a package option to join this activity.');
+    }
+    if (opts.selectedPackageIndex < 0 || opts.selectedPackageIndex >= packages.length) {
+      throw new ApiError(400, 'invalid_package', 'Selected package is not valid for this activity.');
+    }
+  }
+
+  const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
+  if (existing && existing.status === RequestStatus.APPROVED) {
+    throw new ApiError(409, 'already_joined', 'You are already going to this activity.');
+  }
+
+  if (isActivityFull(event.capacity, event.participants.length)) {
+    throw new ApiError(400, 'activity_full', 'This activity is full.');
+  }
+
+  const reserved = await tryReserveActivityParticipantSlot(opts.activityId, ActivityStatus.PUBLISHED);
+  if (!reserved) {
+    throw new ApiError(400, 'activity_full', 'This activity is full.');
+  }
+
+  const requestId = existing?.id ?? newEntityId();
+  const participantId = newEntityId();
+  const now = new Date();
+  const reviewerId = event.hostId ?? event.createdById;
+
+  try {
+    await activityRequestsCollection().updateOne(
+      { _id: requestId },
+      {
+        $set: {
+          activityId: opts.activityId,
+          userId: opts.userId,
+          status: RequestStatus.APPROVED,
+          note: existing?.note ?? null,
+          organizerNote: null,
+          cancelReason: null,
+          cancelMessage: null,
+          cancelledAt: null,
+          selectedPackageIndex:
+            opts.selectedPackageIndex !== undefined
+              ? opts.selectedPackageIndex
+              : existing?.selectedPackageIndex ?? null,
+          reviewedAt: now,
+          reviewedById: reviewerId,
+          updatedAt: now,
+          createdAt: existing?.createdAt ?? now
+        }
+      },
+      { upsert: true }
+    );
+
+    await activityParticipantsCollection().updateOne(
+      { _id: participantId },
+      {
+        $set: {
+          activityId: opts.activityId,
+          requestId,
+          userId: opts.userId,
+          approvedById: reviewerId,
+          checkedInAt: null,
+          createdAt: now
+        }
+      },
+      { upsert: true }
+    );
+  } catch (error) {
+    await releaseActivityParticipantSlot(opts.activityId);
+    throw error;
+  }
+
+  void addParticipantToActivityGroupChat({
+    activityId: opts.activityId,
+    userId: opts.userId
+  }).catch(() => undefined);
+
+  const mongoRow = await activityRequestsCollection().findOne({ _id: requestId });
+  if (!mongoRow) {
+    throw new ApiError(500, 'request_persist_failed', 'Failed to persist RSVP.');
+  }
+
+  const participant = await findActivityParticipantByEventAndUser(opts.activityId, opts.userId);
+  if (!participant) {
+    throw new ApiError(500, 'participation_persist_failed', 'Failed to persist RSVP participation.');
+  }
+
+  return {
+    request: toActivityRequestRecord(mongoRow),
+    participation: participant
+  };
 }
 
 /** Promote oldest waitlisted request to pending when a slot opens. */

@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BuddyRequestDTO, BuddySummaryDTO, ChatConversationDTO, MyActivityDTO } from '@uaetrail/shared-types';
 import { api, ActivityRequestView, UserProfile, SocialGroupView } from '../api/services';
 import { useAuth } from '../context/AuthContext';
-import { isUpcomingActivity, todayStart, upcomingActivitiesTotal } from '../utils/activityDates';
+import { isUpcomingActivity, upcomingActivitiesTotal } from '../utils/activityDates';
+import { buildUpcomingPlanRows } from '../utils/activityHubSections';
 
 const participantHubKey = (userId: string) => ['participant-hub', userId] as const;
 
@@ -81,12 +82,15 @@ export const useParticipantHubData = () => {
     [activities, requests]
   );
 
-  const upcomingActivity = useMemo(() => {
-    const today = todayStart();
-    return activities
-      .filter((a) => new Date(a.date) >= today)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
-  }, [activities]);
+  const upcomingPlans = useMemo(
+    () => buildUpcomingPlanRows(activities, requests),
+    [activities, requests]
+  );
+
+  const upcomingActivity = useMemo(
+    () => upcomingPlans.find((row) => row.kind === 'confirmed')?.activity,
+    [upcomingPlans]
+  );
 
   const unreadMessages = useMemo(
     () => conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0),
@@ -108,6 +112,7 @@ export const useParticipantHubData = () => {
     pendingRequests,
     pastActivitiesCount,
     upcomingActivitiesCount,
+    upcomingPlans,
     upcomingActivity,
     unreadMessages,
     groups,

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { ActivityDetailDTO, type ActivityDTO } from '@uaetrail/shared-types';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityDetailDTO, activityJoinCtaLabel, resolveParticipationMode, type ActivityDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
 import { formatPackagePrice } from '../../utils/activityPricing';
 import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
@@ -28,6 +28,7 @@ type JoinableActivity = Pick<
   | 'pricePackages'
   | 'tenantName'
   | 'hostName'
+  | 'participationMode'
 >;
 
 interface JoinRequestModalProps {
@@ -55,6 +56,11 @@ export const JoinRequestModal = ({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const participationMode = useMemo(
+    () => resolveParticipationMode(activity.participationMode, activity.requirements),
+    [activity.participationMode, activity.requirements]
+  );
+  const isRsvp = participationMode === 'rsvp';
   const instructions = extractJoinInstructionLines(activity.requirements);
   const hasInstructions = instructions.length > 0;
   const full = isFull ?? activity.slotsAvailable <= 0;
@@ -71,6 +77,12 @@ export const JoinRequestModal = ({
     price: activity.price,
   });
 
+  const dialogTitle = activityJoinCtaLabel({
+    participationMode,
+    requirements: activity.requirements,
+    isFull: full,
+  });
+
   useEffect(() => {
     if (!open) return;
     setNote('');
@@ -82,7 +94,9 @@ export const JoinRequestModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasInstructions) {
+    if (full) return;
+
+    if (!isRsvp && !hasInstructions) {
       setError('This activity is missing mandatory instructions — contact the host before joining.');
       return;
     }
@@ -94,11 +108,25 @@ export const JoinRequestModal = ({
     setSubmitting(true);
     setError(null);
     try {
-      const res = await api.createJoinRequest(
-        activity.id,
-        note.trim() || undefined,
-        selectedPackageIndex != null && selectedPackageIndex >= 0 ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined
-      );
+      const packageIndex =
+        selectedPackageIndex != null && selectedPackageIndex >= 0
+          ? selectedPackageIndex
+          : pricePackages.length === 1
+            ? 0
+            : undefined;
+
+      if (isRsvp) {
+        await api.rsvpActivity(activity.id, packageIndex);
+        const successMessage = "You're going! It's on your Up next list.";
+        setSubmitted(true);
+        onSuccess?.(successMessage);
+        setTimeout(() => {
+          onClose();
+        }, 1500);
+        return;
+      }
+
+      const res = await api.createJoinRequest(activity.id, note.trim() || undefined, packageIndex);
       const successMessage =
         res.data.waitlisted || res.data.status === 'waitlisted'
           ? 'Added to the waitlist — we\'ll let you know when a spot opens.'
@@ -109,20 +137,24 @@ export const JoinRequestModal = ({
         onClose();
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'We couldn\'t send your request — sign in and try again.');
+      setError(err instanceof Error ? err.message : 'We couldn\'t complete that — sign in and try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
   const hostName = activityHostName(activity);
-  const submitLabel = submitting ? 'Sending…' : full ? 'Join waitlist' : 'Send request to host';
+  const submitLabel = submitting
+    ? isRsvp
+      ? 'Saving…'
+      : 'Sending…'
+    : activityJoinCtaLabel({ participationMode, requirements: activity.requirements, isFull: full });
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      title={full ? 'Join the waitlist' : 'Request to join'}
+      title={dialogTitle}
       className="max-w-md"
       overlayClassName={overlayClassName ?? 'z-50'}
     >
@@ -161,20 +193,24 @@ export const JoinRequestModal = ({
             {hasInstructions ? (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-sm font-semibold text-amber-900 mb-1">{MANDATORY_INSTRUCTIONS_LABEL}</p>
-                <p className="text-xs text-amber-900/80 mb-2">You must agree to these before requesting to join.</p>
+                <p className="text-xs text-amber-900/80 mb-2">
+                  {isRsvp
+                    ? 'Please read these before confirming.'
+                    : 'You must agree to these before requesting to join.'}
+                </p>
                 <ul className="text-sm text-amber-900/90 list-disc list-inside space-y-1.5">
                   {instructions.map((item, i) => (
                     <li key={i}>{item}</li>
                   ))}
                 </ul>
               </div>
-            ) : (
+            ) : !isRsvp ? (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-sm text-amber-900">
                   This activity does not have mandatory instructions yet. Contact the host before requesting to join.
                 </p>
               </div>
-            )}
+            ) : null}
 
             {activity.meetingPoint && (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
@@ -184,18 +220,20 @@ export const JoinRequestModal = ({
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Note to host (optional)</label>
-              <textarea
-                rows={3}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="e.g. I have prior hiking experience, dietary needs, etc."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
-              />
-            </div>
+            {!isRsvp && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Note to host (optional)</label>
+                <textarea
+                  rows={3}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="e.g. I have prior hiking experience, dietary needs, etc."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                />
+              </div>
+            )}
 
-            {needsAgreement && (
+            {hasInstructions && (
               <label className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -217,12 +255,14 @@ export const JoinRequestModal = ({
 
             <button
               type="submit"
-              disabled={submitting || !hasInstructions || (needsAgreement && !agreed)}
+              disabled={submitting || full || (!isRsvp && !hasInstructions) || (hasInstructions && !agreed)}
               className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-60"
             >
               {submitLabel}
             </button>
-            <p className="text-xs text-gray-500 text-center">The host will review your request</p>
+            <p className="text-xs text-gray-500 text-center">
+              {isRsvp ? 'You\'ll show up in Up next right away.' : 'The host will review your request'}
+            </p>
           </form>
         </>
       ) : (
@@ -232,8 +272,12 @@ export const JoinRequestModal = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Request sent!</h3>
-          <p className="text-gray-600">We&apos;ll let you know as soon as the host replies.</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            {isRsvp ? "You're going!" : 'Request sent!'}
+          </h3>
+          <p className="text-gray-600">
+            {isRsvp ? "It's on your Up next list." : 'We\'ll let you know as soon as the host replies.'}
+          </p>
         </div>
       )}
     </Dialog>

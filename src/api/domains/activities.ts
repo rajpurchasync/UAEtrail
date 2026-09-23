@@ -30,6 +30,18 @@ export const activitiesApi = {
       })
     }),
 
+    rsvpActivity: (activityId: string, selectedPackageIndex?: number) =>
+    apiRequest<{ data: { request: JoinRequestDTO; participation: MyActivityDTO['participation'] } }>(
+      `/activities/${activityId}/rsvp`,
+      {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify({
+          ...(selectedPackageIndex !== undefined ? { selectedPackageIndex } : {})
+        })
+      }
+    ),
+
     cancelJoinRequest: (
     activityId: string,
     requestId: string,

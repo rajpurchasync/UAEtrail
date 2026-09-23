@@ -48,6 +48,27 @@ import {
   type VehicleAccess,
 } from './organizeFlow';
 import { organizePublishSeed, PARTICIPATION_TOGGLE_QUESTION, type OrganizeComposeKind } from '../compose';
+import {
+  CARPOOL_PICKUP_HINT,
+  CAMP_LOCATION_LABEL,
+  EXTRA_DIRECTIONS_LABEL,
+  fromLocationLabel,
+  GOING_FROM_HINT,
+  GOING_FROM_LABEL,
+  GOING_FROM_NOTES_PREVIEW_LABEL,
+  GOING_FROM_WITH_TIME_HINT,
+  JOIN_RULES_LABEL,
+  JOIN_RULES_PREVIEW_LABEL,
+  ORGANIZE_DEMAND_PREFILL_TITLE,
+  ORGANIZE_HOST_PROFILE_ERROR,
+  ORGANIZE_INTRO_PROMPT,
+  ORGANIZE_TYPE_SHEET_TITLE,
+  PICKUP_POINT_LABEL,
+  RIDE_RULES_LABEL,
+  TO_LOCATION_LABEL,
+  WHERE_STEP_CAMP_HINT,
+  WHERE_STEP_HINT,
+} from '../createFlowCopy';
 import { MAP_CONFIG } from '../../config/platform';
 
 const CreatePlacePicker = lazy(() =>
@@ -306,7 +327,7 @@ export const CreateActivityFlow = ({
     }
 
     if (!tenantId) {
-      setError('Almost there — finish your host profile so you can share this activity.');
+      setError(ORGANIZE_HOST_PROFILE_ERROR);
       return;
     }
 
@@ -399,7 +420,7 @@ export const CreateActivityFlow = ({
   const stepTitle =
     step === 'type' || !kind
       ? demandPrefill
-        ? 'Host this activity'
+        ? ORGANIZE_DEMAND_PREFILL_TITLE
         : 'Organize'
       : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);
 
@@ -419,7 +440,7 @@ export const CreateActivityFlow = ({
         <span className="flex items-center gap-2 text-gray-800">
           <MapPin className={`h-5 w-5 ${isTo ? 'text-sky-500' : 'text-emerald-600'}`} />
           <span>
-            <span className="block text-sm font-bold">{isTo ? 'To location' : 'From location'}</span>
+            <span className="block text-sm font-bold">{isTo ? TO_LOCATION_LABEL : fromLocationLabel('carpool')}</span>
             <span className="text-xs text-gray-500">
               {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
             </span>
@@ -438,7 +459,7 @@ export const CreateActivityFlow = ({
     >
         {step === 'type' && !demandPrefill && !organizeKind && (
           <>
-            <SheetHeader title="I am hosting" showBack onBack={goBack} onClose={handleClose} />
+            <SheetHeader title={ORGANIZE_TYPE_SHEET_TITLE} showBack onBack={goBack} onClose={handleClose} />
             <div className="grid grid-cols-2 gap-3">
               {TYPE_OPTIONS.map((option) => {
                 const active = selectedKind === option.key;
@@ -513,7 +534,7 @@ export const CreateActivityFlow = ({
             <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
             {kind === 'carpool' ? (
               <>
-                <p className="mb-4 text-sm text-gray-600">Set the pickup meeting point on the map.</p>
+                <p className="mb-4 text-sm text-gray-600">{CARPOOL_PICKUP_HINT}</p>
                 <button
                   type="button"
                   onClick={() => setWhereMapOpen(true)}
@@ -522,7 +543,7 @@ export const CreateActivityFlow = ({
                   <span className="flex items-center gap-2 text-gray-800">
                     <MapPin className="h-5 w-5 text-emerald-600" />
                     <span>
-                      <span className="block text-sm font-bold">Meeting point pin</span>
+                      <span className="block text-sm font-bold">{PICKUP_POINT_LABEL}</span>
                       <span className="text-xs text-gray-500">
                         {hasFromPin
                           ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
@@ -535,7 +556,7 @@ export const CreateActivityFlow = ({
               </>
             ) : draft.genericBuddy ? (
               <>
-                <p className="mb-4 text-sm text-gray-600">Drop a pin for where you&apos;re starting from.</p>
+                <p className="mb-4 text-sm text-gray-600">{GOING_FROM_HINT}</p>
                 <button
                   type="button"
                   onClick={() => setWhereMapOpen(true)}
@@ -544,7 +565,7 @@ export const CreateActivityFlow = ({
                   <span className="flex items-center gap-2 text-gray-800">
                     <MapPin className="h-5 w-5 text-emerald-600" />
                     <span>
-                      <span className="block text-sm font-bold">Going from</span>
+                      <span className="block text-sm font-bold">{GOING_FROM_LABEL}</span>
                       <span className="text-xs text-gray-500">
                         {hasFromPin
                           ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
@@ -557,9 +578,7 @@ export const CreateActivityFlow = ({
               </>
             ) : (
               <>
-                <p className="mb-4 text-sm text-gray-600">
-                  Set where you&apos;re starting from and an optional meet time.
-                </p>
+                <p className="mb-4 text-sm text-gray-600">{GOING_FROM_WITH_TIME_HINT}</p>
                 <button
                   type="button"
                   onClick={() => setWhereMapOpen(true)}
@@ -568,7 +587,7 @@ export const CreateActivityFlow = ({
                   <span className="flex items-center gap-2 text-gray-800">
                     <MapPin className="h-5 w-5 text-emerald-600" />
                     <span>
-                      <span className="block text-sm font-bold">Going from</span>
+                      <span className="block text-sm font-bold">{GOING_FROM_LABEL}</span>
                       <span className="text-xs text-gray-500">
                         {hasFromPin
                           ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
@@ -580,7 +599,7 @@ export const CreateActivityFlow = ({
                 </button>
 
                 <label className="mt-4 block">
-                  <span className="mb-1 block text-sm font-medium text-gray-700">Extra directions</span>
+                  <span className="mb-1 block text-sm font-medium text-gray-700">{EXTRA_DIRECTIONS_LABEL}</span>
                   <textarea
                     value={draft.meetingPointInfo}
                     onChange={(event) => patchDraft({ meetingPointInfo: event.target.value })}
@@ -651,9 +670,7 @@ export const CreateActivityFlow = ({
           <>
             <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
             <p className="mb-4 text-sm text-gray-600">
-              {kind === 'camping'
-                ? 'Choose where campers will meet or set up.'
-                : 'Choose where participants should meet before the activity starts.'}
+              {kind === 'camping' ? WHERE_STEP_CAMP_HINT : WHERE_STEP_HINT}
             </p>
             <button
               type="button"
@@ -664,7 +681,7 @@ export const CreateActivityFlow = ({
                 <MapPin className="h-5 w-5 text-emerald-600" />
                 <span>
                   <span className="block text-sm font-bold">
-                    {kind === 'camping' ? 'Camp location' : 'Meeting point'}
+                    {kind === 'camping' ? CAMP_LOCATION_LABEL : GOING_FROM_LABEL}
                   </span>
                   <span className="text-xs text-gray-500">
                     {hasFromPin
@@ -705,7 +722,7 @@ export const CreateActivityFlow = ({
                   />
                 </label>
                 <label className="mt-4 block">
-                  <span className="mb-2 block text-sm font-medium text-gray-700">Mandatory instructions *</span>
+                  <span className="mb-2 block text-sm font-medium text-gray-700">{JOIN_RULES_LABEL}</span>
                   <textarea
                     value={draft.additionalInstructions}
                     onChange={(event) => patchDraft({ additionalInstructions: event.target.value })}
@@ -743,7 +760,7 @@ export const CreateActivityFlow = ({
                   Riders must read and agree to these instructions before requesting a seat.
                 </p>
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-gray-700">Mandatory ride instructions *</span>
+                  <span className="mb-2 block text-sm font-medium text-gray-700">{RIDE_RULES_LABEL}</span>
                   <textarea
                     value={draft.description}
                     onChange={(event) => patchDraft({ description: event.target.value })}
@@ -1195,7 +1212,7 @@ export const CreateActivityFlow = ({
             </label>
             {kind === 'hiking' && (
               <label className="mt-4 block">
-                <span className="mb-2 block text-sm font-medium text-gray-700">Mandatory instructions *</span>
+                <span className="mb-2 block text-sm font-medium text-gray-700">{JOIN_RULES_LABEL}</span>
                 <textarea
                   value={draft.additionalInstructions}
                   onChange={(event) => patchDraft({ additionalInstructions: event.target.value })}
@@ -1282,7 +1299,7 @@ export const CreateActivityFlow = ({
               </p>
               {draft.meetingPointInfo.trim() && (
                 <p className="mt-2 line-clamp-2 text-xs text-gray-600">
-                  <span className="font-semibold text-gray-700">Meeting info: </span>
+                  <span className="font-semibold text-gray-700">{GOING_FROM_NOTES_PREVIEW_LABEL}</span>
                   {draft.meetingPointInfo}
                 </p>
               )}
@@ -1294,7 +1311,7 @@ export const CreateActivityFlow = ({
               )}
               {(draft.additionalInstructions.trim() || (kind === 'carpool' && draft.description.trim())) && (
                 <p className="mt-2 line-clamp-3 text-xs text-gray-600">
-                  <span className="font-semibold text-gray-700">Mandatory: </span>
+                  <span className="font-semibold text-gray-700">{JOIN_RULES_PREVIEW_LABEL}</span>
                   {kind === 'carpool' ? draft.description : draft.additionalInstructions}
                 </p>
               )}
@@ -1332,7 +1349,7 @@ export const CreateActivityFlow = ({
 
             {!canPublish && !hostGateLoading && (
               <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-                Almost there — a quick intro first so people know who&apos;s hosting. We&apos;ll walk you through it.
+                {ORGANIZE_INTRO_PROMPT}
               </p>
             )}
 

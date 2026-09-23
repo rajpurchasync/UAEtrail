@@ -1,6 +1,7 @@
 import type { Collection } from 'mongodb';
 import type { Location } from '../domain/types.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
+import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
 import {
   buildActivityFromCreateInput,
@@ -130,6 +131,7 @@ export const updateActivityDetailed = async (
   if (data.itinerary !== undefined) patch.itinerary = data.itinerary;
   if (data.requirements !== undefined) patch.requirements = data.requirements;
   if (data.joinMode !== undefined) patch.joinMode = data.joinMode;
+  if (data.participationMode !== undefined) patch.participationMode = data.participationMode;
   if (data.images !== undefined) patch.images = data.images;
   if (data.bannerUrl !== undefined) patch.bannerUrl = data.bannerUrl?.trim() || null;
   if (data.signupUrl !== undefined) patch.signupUrl = data.signupUrl?.trim() || null;
@@ -239,6 +241,7 @@ export const duplicateTenantActivity = async (
     itinerary: source.itinerary ?? [],
     requirements: source.requirements ?? [],
     joinMode: resolveJoinMode(source.joinMode, source.requirements),
+    participationMode: resolveParticipationMode(source.participationMode, source.requirements),
     images: source.images ?? [],
     bannerUrl: source.bannerUrl ?? null,
     signupUrl: source.signupUrl ?? null,

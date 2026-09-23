@@ -1,5 +1,6 @@
 import type { Activity, Location } from '../domain/types.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
+import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 import {
   ActivityType,
   ActivityStatus,
@@ -252,6 +253,7 @@ const toEventDto = ({
   itinerary: event.itinerary,
   requirements: event.requirements,
   joinMode: resolveJoinMode(event.joinMode, event.requirements),
+  participationMode: resolveParticipationMode(event.participationMode, event.requirements),
   images: event.images ?? [],
   bannerUrl: event.bannerUrl ?? null,
   signupUrl: event.signupUrl ?? null,

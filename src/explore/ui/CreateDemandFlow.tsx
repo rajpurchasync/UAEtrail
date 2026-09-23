@@ -47,6 +47,7 @@ import {
 } from './demandFlow';
 import type { LocationPrecision, TimeMode } from './organizeFlow';
 import type { FindComposeKind } from '../compose';
+import { fromLocationLabel, GOING_FROM_LABEL, TO_LOCATION_LABEL } from '../createFlowCopy';
 
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -324,7 +325,7 @@ export const CreateDemandFlow = ({
         <span className="flex items-center gap-2 text-gray-800">
           <MapPin className={`h-5 w-5 ${isTo ? 'text-sky-500' : 'text-emerald-500'}`} />
           <span>
-            <span className="block text-sm font-bold">{isTo ? 'To location' : 'From location'}</span>
+            <span className="block text-sm font-bold">{isTo ? TO_LOCATION_LABEL : fromLocationLabel(kind === 'carpool' ? 'carpool' : 'default')}</span>
             <span className="text-xs text-gray-500">
               {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
             </span>
@@ -351,11 +352,11 @@ export const CreateDemandFlow = ({
       step === 'to'
         ? 'Going to'
         : step === 'from' && kind === 'carpool'
-          ? 'Leaving from'
+          ? GOING_FROM_LABEL
           : isToStep
-            ? 'To location'
+            ? TO_LOCATION_LABEL
             : isFromStep
-              ? 'From location'
+              ? GOING_FROM_LABEL
               : 'Where would you like to go?';
 
     return (
@@ -910,7 +911,7 @@ export const CreateDemandFlow = ({
               {usesCarpoolDemandFlow(kind) && draft.fromPinPlaced && (
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
                   <MapPin className="h-3.5 w-3.5 text-emerald-500" />
-                  Leaving from: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
+                  {GOING_FROM_LABEL}: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
               {draft.date && (

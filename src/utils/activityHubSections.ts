@@ -4,6 +4,10 @@ import { getRequestEventDate, isUpcomingActivity } from './activityDates';
 
 export type JoinedSubTab = 'upcoming' | 'attended' | 'cancelled' | 'rejected';
 
+export type UpcomingPlanRow =
+  | { kind: 'confirmed'; date: string; activity: MyActivityDTO }
+  | { kind: 'requested'; date: string; request: ActivityRequestView };
+
 export const parseJoinedSubTab = (value: string | null): JoinedSubTab => {
   if (value === 'attended' || value === 'cancelled' || value === 'rejected') return value;
   return 'upcoming';
@@ -29,6 +33,27 @@ export const upcomingOpenRequests = (activities: MyActivityDTO[], requests: Acti
     const date = getRequestEventDate(request);
     return Boolean(date && new Date(date) >= new Date(new Date().toDateString()));
   });
+};
+
+/** Confirmed plans + open join requests — one sorted feed for profile Up next and joined tab. */
+export const buildUpcomingPlanRows = (
+  activities: MyActivityDTO[],
+  requests: ActivityRequestView[]
+): UpcomingPlanRow[] => {
+  const rows: UpcomingPlanRow[] = [
+    ...upcomingConfirmedActivities(activities).map((activity) => ({
+      kind: 'confirmed' as const,
+      date: activity.date,
+      activity,
+    })),
+    ...upcomingOpenRequests(activities, requests).map((request) => ({
+      kind: 'requested' as const,
+      date: getRequestEventDate(request),
+      request,
+    })),
+  ];
+
+  return rows.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 };
 
 export const cancelledRequests = (requests: ActivityRequestView[]) =>

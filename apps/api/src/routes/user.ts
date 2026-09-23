@@ -1,4 +1,4 @@
-import { ActivityType, LocationUnlockSource, MembershipRole, NotificationType, HostApplicationStatus, RequestStatus, RewardAction, TenantBusinessMode, TenantStatus, TenantType, UserRole } from '../domain/enums.js';
+import { ActivityStatus, ActivityType, LocationUnlockSource, MembershipRole, NotificationType, HostApplicationStatus, RequestStatus, RewardAction, TenantBusinessMode, TenantStatus, TenantType, UserRole } from '../domain/enums.js';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { registerActivityRoute } from '../lib/activity-routes.js';
@@ -11,7 +11,7 @@ import { optionalAuth } from '../middleware/optional-auth.js';
 import { viewLimiter, sensitiveDataLimiter } from '../middleware/rate-limit-instances.js';
 import { validate } from '../middleware/validate.js';
 import { slugify } from '../lib/slug.js';
-import { createJoinOrWaitlistRequest } from '../services/join-request.js';
+import { createJoinOrWaitlistRequest, createRsvpParticipation } from '../services/join-request.js';
 import { buildParticipationDto } from '../services/checkin.js';
 import { canWithdrawRequest, withdrawReasonSchema } from '../lib/withdraw-reasons.js';
 import { getVapidPublicKey } from '../lib/push.js';
@@ -156,6 +156,10 @@ const requestIdParamSchema = z.object({ id: z.string().min(1), requestId: z.stri
 
 const createRequestSchema = z.object({
   note: z.string().max(300).optional(),
+  selectedPackageIndex: z.number().int().min(0).max(11).optional()
+});
+
+const rsvpSchema = z.object({
   selectedPackageIndex: z.number().int().min(0).max(11).optional()
 });
 
@@ -796,6 +800,53 @@ registerActivityRoute(
           organizerNote: request.organizerNote,
           createdAt: request.createdAt,
           updatedAt: request.updatedAt
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+registerActivityRoute(
+  userRouter,
+  'post',
+  '/:id/rsvp',
+  requireAuth,
+  requireVerifiedEmail,
+  validate({ params: eventIdParamSchema, body: rsvpSchema }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+      const { selectedPackageIndex } = req.body as z.infer<typeof rsvpSchema>;
+
+      const { request, participation } = await createRsvpParticipation({
+        activityId: id,
+        userId: req.auth!.userId,
+        selectedPackageIndex
+      });
+
+      const eventDoc = await findActivityDocInMongo(id);
+      const participationDto = eventDoc
+        ? buildParticipationDto(eventDoc, participation)
+        : buildParticipationDto(
+            { startAt: new Date(), endAt: null, status: ActivityStatus.PUBLISHED },
+            participation
+          );
+
+      res.status(201).json({
+        data: {
+          request: {
+            id: request.id,
+            activityId: request.activityId,
+            userId: request.userId,
+            status: request.status.toLowerCase(),
+            note: request.note,
+            organizerNote: request.organizerNote,
+            createdAt: request.createdAt,
+            updatedAt: request.updatedAt
+          },
+          participation: participationDto
         }
       });
     } catch (error) {

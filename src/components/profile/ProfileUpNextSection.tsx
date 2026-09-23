@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Calendar, ChevronRight } from 'lucide-react';
-import type { ActivityDTO, ChatConversationDTO } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../../api/services';
+import type { ChatConversationDTO } from '@uaetrail/shared-types';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
 import {
   PRODUCT_EXPLORE_CTA,
@@ -11,9 +10,13 @@ import {
 import { AppButtonLink } from '../mobile/AppButton';
 import { GlassCard } from '../mobile/GlassCard';
 import { AccountSectionHeader } from '../account/AccountSectionHeader';
+import { myActivitiesPath } from '../../utils/exploreRouting';
+import type { UpcomingPlanRow } from '../../utils/activityHubSections';
+import { requestStatusLabel } from '../../utils/joinRequestUi';
 
 const requestStatusStyle: Record<string, string> = {
   pending: 'bg-amber-500/15 text-amber-700',
+  waitlisted: 'bg-sky-500/15 text-sky-700',
   approved: 'bg-emerald-500/15 text-emerald-700',
   rejected: 'bg-red-500/15 text-red-600',
   cancelled: 'bg-neutral-500/10 text-neutral-500',
@@ -24,24 +27,24 @@ const formatActivityDate = (dateStr?: string) => {
   return new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 };
 
+const MAX_PLAN_ROWS = 3;
+
 interface ProfileUpNextSectionProps {
   messagesPath: string;
-  upcomingActivity?: ActivityDTO;
-  pendingRequests: ActivityRequestView[];
+  upcomingPlans: UpcomingPlanRow[];
   conversations: ChatConversationDTO[];
   loading?: boolean;
 }
 
 export const ProfileUpNextSection = ({
   messagesPath,
-  upcomingActivity,
-  pendingRequests,
+  upcomingPlans,
   conversations,
   loading = false,
 }: ProfileUpNextSectionProps) => {
   const unreadConversations = conversations.filter((c) => (c.unreadCount ?? 0) > 0).slice(0, 1);
-  const pending = pendingRequests.slice(0, 2);
-  const hasContent = Boolean(upcomingActivity) || pending.length > 0 || unreadConversations.length > 0;
+  const planRows = upcomingPlans.slice(0, MAX_PLAN_ROWS);
+  const hasContent = planRows.length > 0 || unreadConversations.length > 0;
 
   if (loading) {
     return (
@@ -75,48 +78,57 @@ export const ProfileUpNextSection = ({
 
   return (
     <section aria-label="Up next">
-      <AccountSectionHeader title="Up next" />
+      <AccountSectionHeader
+        title="Up next"
+        actionTo={upcomingPlans.length > 0 ? myActivitiesPath('joined') : undefined}
+        actionLabel={upcomingPlans.length > 0 ? 'All plans' : undefined}
+      />
       <div className="space-y-2">
-        {upcomingActivity && (
-          <Link
-            to={`/activity/${upcomingActivity.id}`}
-            className="glass-card-interactive flex items-center gap-3 p-3.5"
-          >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/12">
-              <Calendar className="h-4 w-4 text-emerald-600" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-neutral-900">
-                {upcomingActivity.title || upcomingActivity.locationName}
-              </p>
-              <p className="text-xs text-neutral-500">{formatActivityDate(upcomingActivity.date)}</p>
-            </div>
-            <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
-          </Link>
-        )}
-
-        {pending.map((req) => (
-          <Link
-            key={req.id}
-            to={`/my-requests/${req.id}`}
-            className="glass-card-interactive flex items-center gap-3 p-3.5"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-neutral-900">
-                {req.activity.title || req.activity.locationName}
-              </p>
-              <p className="text-xs text-neutral-500">Awaiting host response</p>
-            </div>
-            <span
-              className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold capitalize ${
-                requestStatusStyle[req.status] ?? requestStatusStyle.cancelled
-              }`}
+        {planRows.map((row) =>
+          row.kind === 'confirmed' ? (
+            <Link
+              key={`confirmed-${row.activity.id}`}
+              to={`/activity/${row.activity.id}`}
+              className="glass-card-interactive flex items-center gap-3 p-3.5"
             >
-              {req.status}
-            </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
-          </Link>
-        ))}
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/12">
+                <Calendar className="h-4 w-4 text-emerald-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-neutral-900">
+                  {row.activity.title || row.activity.locationName}
+                </p>
+                <p className="text-xs text-neutral-500">
+                  {formatActivityDate(row.activity.date)} · You&apos;re going
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
+            </Link>
+          ) : (
+            <Link
+              key={`request-${row.request.id}`}
+              to={`/my-requests/${row.request.id}`}
+              className="glass-card-interactive flex items-center gap-3 p-3.5"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-neutral-900">
+                  {row.request.activity.title || row.request.activity.locationName}
+                </p>
+                <p className="text-xs text-neutral-500">
+                  {formatActivityDate(row.date)} · {requestStatusLabel(row.request.status)}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold capitalize ${
+                  requestStatusStyle[row.request.status] ?? requestStatusStyle.cancelled
+                }`}
+              >
+                {row.request.status}
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
+            </Link>
+          )
+        )}
 
         {unreadConversations.map((conv) => (
           <Link
