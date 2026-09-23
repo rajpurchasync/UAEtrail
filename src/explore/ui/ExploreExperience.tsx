@@ -20,13 +20,22 @@ import type { PlaceMapPin, MapPinKind } from '../../components/ui/PlacesMap';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { useExploreMap, reloadExploreMap } from '../../hooks/useExploreMap';
-import { MobileCreateActivityFlow } from './MobileCreateActivityFlow';
-import { MobileCreateDemandFlow } from './MobileCreateDemandFlow';
-import { MobileCreateIntentSheet, type ComposeIntentChoice } from './MobileCreateIntentSheet';
-import { MobileCreateContributeFlow } from './MobileCreateContributeFlow';
-import type { ContributeSubmitResult } from './mobileContributeFlow';
-import { MobileContributeTypeSheet, type ContributeVenueKind } from './MobileContributeTypeSheet';
-import { createDraftFromDemand, type MobileCreateDraft } from './mobileCreateFlow';
+import { CreateActivityFlow } from './CreateActivityFlow';
+import { CreateDemandFlow } from './CreateDemandFlow';
+import { CreateIntentSheet } from './CreateIntentSheet';
+import {
+  clearExploreComposeParams,
+  isAddWizard,
+  isComposeMenu,
+  isFindWizard,
+  isOrganizeWizard,
+  parseExploreCompose,
+  setExploreComposeParam,
+  type ExploreCompose,
+} from '../compose';
+import { CreateContributeFlow } from './CreateContributeFlow';
+import type { ContributeSubmitResult } from './contributeFlow';
+import { createDraftFromDemand, type CreateActivityDraft } from './organizeFlow';
 import { getMapBounds } from '../../config/regions';
 import {
   EXPLORE_MAP_STYLE_STORAGE_KEY,
@@ -59,7 +68,7 @@ import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreListSkeleton } from './ExploreListSkeleton';
 import { ExploreItemSheet } from './ExploreItemSheet';
 import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
-import { MobileExploreHeader } from './MobileExploreHeader';
+import { ExploreHeader } from './ExploreHeader';
 import { ExploreListRow } from './ExploreListRow';
 import { ExploreFilterIcon } from './ExploreFilterIcon';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
@@ -73,7 +82,6 @@ import {
   mapFilterToVenueListFilter,
   activityFilterToMapFilter,
   venueFilterToMapFilter,
-  parseContributeParam,
   explorePath,
   parseFulfillIntentMapItemId,
   clearFulfillIntentMapItemParams,
@@ -311,7 +319,7 @@ const panelSearchPlaceholder = (panel: ExplorePanel): string => {
   return 'Search activities…';
 };
 
-export const MobileExploreExperience = () => {
+export const ExploreExperience = () => {
   const { user } = useAuth();
   const { canPublish, loading: hostGateLoading, tenantId } = useOrganisationGate({
     enabled: Boolean(user),
@@ -333,18 +341,39 @@ export const MobileExploreExperience = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [recenterTo, setRecenterTo] = useState<{ lat: number; lng: number } | null>(null);
   const [listOpen, setListOpen] = useState(() => parseListOpen(searchParams.get('list')));
-  const [composeOpen, setComposeOpen] = useState(false);
-  const [contributeOpen, setContributeOpen] = useState(false);
-  const [contributeFlowOpen, setContributeFlowOpen] = useState(false);
-  const [contributeKind, setContributeKind] = useState<ContributeVenueKind>('hiking');
-  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
+  const exploreCompose = useMemo(() => parseExploreCompose(searchParams), [searchParams]);
+
+  const composeMenuOpen = isComposeMenu(exploreCompose);
+  const organizeRoute = isOrganizeWizard(exploreCompose) ? exploreCompose : null;
+  const findRoute = isFindWizard(exploreCompose) ? exploreCompose : null;
+  const addRoute = isAddWizard(exploreCompose) ? exploreCompose : null;
+
+  const setComposeRoute = useCallback(
+    (route: ExploreCompose | null) => {
+      const params = new URLSearchParams(searchParams);
+      if (!route) {
+        clearExploreComposeParams(params);
+      } else {
+        setExploreComposeParam(params, route);
+      }
+      setSearchParams(params, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
+
+  const closeCompose = useCallback(() => {
+    setComposeRoute(null);
+  }, [setComposeRoute]);
+
   const [guestJoinSheetOpen, setGuestJoinSheetOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [fulfillIntentPrefill, setFulfillIntentPrefill] = useState<{
-    draft: MobileCreateDraft;
+    draft: CreateActivityDraft;
     participantIntentId: string;
   } | null>(null);
-  const [demandOpen, setDemandOpen] = useState(false);
+  const organizeWizardOpen = Boolean(organizeRoute) || Boolean(fulfillIntentPrefill);
+  const findWizardOpen = Boolean(findRoute);
+  const addWizardOpen = Boolean(addRoute);
   const [joinOpen, setJoinOpen] = useState(false);
   const [joinActivity, setJoinActivity] = useState<ActivityDTO | null>(null);
   const [joinUiState, setJoinUiState] = useState<JoinRequestUiState>({ kind: 'open' });
@@ -432,70 +461,27 @@ export const MobileExploreExperience = () => {
   );
 
   useEffect(() => {
-    if (searchParams.get('addLocation') !== '1') return;
-    if (!user) {
-      navigate(signInPathForReturn(explorePath({ panel: 'venues', addLocation: true })));
-      return;
-    }
-    setPanel('venues');
-    setListOpen(false);
-    setContributeOpen(true);
+    const hasLegacy =
+      searchParams.has('request') ||
+      searchParams.has('contribute') ||
+      searchParams.get('addLocation') === '1';
+    if (!hasLegacy) return;
+    const parsed = parseExploreCompose(searchParams);
+    if (!parsed) return;
     const params = new URLSearchParams(searchParams);
-    params.delete('addLocation');
+    setExploreComposeParam(params, parsed);
     setSearchParams(params, { replace: true });
-  }, [searchParams, setSearchParams, user, navigate]);
-
-  useEffect(() => {
-    const contributeParam = searchParams.get('contribute');
-    if (!contributeParam) return;
-    const parsed = parseContributeParam(contributeParam);
-    if (!parsed.openTypeSheet && !parsed.kind) return;
-    if (!user) {
-      navigate(
-        signInPathForReturn(
-          explorePath({
-            panel: 'venues',
-            contribute: parsed.kind ?? true,
-          })
-        )
-      );
-      return;
-    }
-    if (parsed.kind) {
-      setContributeKind(parsed.kind);
-      setContributeFlowOpen(true);
-    } else {
-      setContributeOpen(true);
-    }
-    const params = new URLSearchParams(searchParams);
-    params.delete('contribute');
-    setSearchParams(params, { replace: true });
-  }, [searchParams, setSearchParams, user, navigate]);
-
-  useEffect(() => {
-    if (searchParams.get('request') !== '1') return;
-    if (!user) {
-      navigate(signInPathForReturn(explorePath({ request: true })));
-      return;
-    }
-    setDemandOpen(true);
-    const params = new URLSearchParams(searchParams);
-    params.delete('request');
-    setSearchParams(params, { replace: true });
-  }, [searchParams, setSearchParams, user, navigate]);
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (searchParams.get('compose') !== '1') return;
     if (!user) {
-      navigate(signInPathForReturn(explorePath({ compose: true })));
+      navigate(signInPathForReturn(explorePath({ compose: 'menu' })));
       return;
     }
     setSelectedId(null);
-    setComposeOpen(true);
-    const params = new URLSearchParams(searchParams);
-    params.delete('compose');
-    setSearchParams(params, { replace: true });
-  }, [searchParams, setSearchParams, user, navigate]);
+    setComposeRoute({ surface: 'menu' });
+  }, [searchParams, user, navigate, setComposeRoute]);
 
   useEffect(() => {
     const nextMapFilter = parseMapFilter(searchParams.get('filter'));
@@ -775,13 +761,11 @@ export const MobileExploreExperience = () => {
   };
 
   const openItem = useCallback((item: ExploreMapItemDTO) => {
-    setComposeOpen(false);
-    setCreateOpen(false);
+    closeCompose();
     setFulfillIntentPrefill(null);
-    setDemandOpen(false);
     setSelectedId(item.id);
     setListOpen(false);
-  }, []);
+  }, [closeCompose]);
 
   const handleFocusMapLocation = useCallback((coords: { lat: number; lng: number }) => {
     setRecenterTo(null);
@@ -834,11 +818,11 @@ export const MobileExploreExperience = () => {
   const handleCreateTap = () => {
     setSelectedId(null);
     if (!user) {
-      navigate(signInHref);
+      navigate(signInPathForReturn(explorePath({ compose: 'menu' })));
       return;
     }
     if (hostGateLoading) return;
-    setComposeOpen(true);
+    setComposeRoute({ surface: 'menu' });
   };
 
   const handlePrimaryFab = () => {
@@ -847,42 +831,23 @@ export const MobileExploreExperience = () => {
 
   const primaryFabLabel = 'Add New';
 
-  const handleComposeChoice = (choice: ComposeIntentChoice) => {
-    setComposeOpen(false);
-    if (!user) {
-      const redirect =
-        choice === 'contribute'
-          ? explorePath({ panel: 'venues', contribute: true })
-          : choice === 'request'
-            ? explorePath({ request: true })
-            : explorePath({ compose: true });
-      navigate(signInPathForReturn(redirect));
-      return;
-    }
-    if (choice === 'host') {
+  const handleComposeRouteChange = (route: ExploreCompose | null) => {
+    if (route && isOrganizeWizard(route)) {
+      if (!user) {
+        navigate(signInPathForReturn(explorePath({ compose: route })));
+        return;
+      }
       if (hostGateLoading) return;
       if (!canPublish) {
         navigate('/become-host');
         return;
       }
-      setCreateOpen(true);
+    }
+    if (route && (isFindWizard(route) || isAddWizard(route)) && !user) {
+      navigate(signInPathForReturn(explorePath({ compose: route })));
       return;
     }
-    if (choice === 'request') {
-      setDemandOpen(true);
-      return;
-    }
-    setContributeOpen(true);
-  };
-
-  const handleContributeChoice = (kind: ContributeVenueKind) => {
-    if (!user) {
-      navigate(signInPathForReturn(explorePath({ panel: 'venues', contribute: kind })));
-      return;
-    }
-    setContributeOpen(false);
-    setContributeKind(kind);
-    setContributeFlowOpen(true);
+    setComposeRoute(route);
   };
 
   const respondToDemand = (item: ExploreMapItemDTO) => {
@@ -956,7 +921,6 @@ export const MobileExploreExperience = () => {
       participantIntentId: item.participantIntentId,
     });
     setSelectedId(null);
-    setCreateOpen(true);
   }, []);
 
   useEffect(() => {
@@ -1026,7 +990,7 @@ export const MobileExploreExperience = () => {
   };
 
   const closeCreateFlow = () => {
-    setCreateOpen(false);
+    closeCompose();
     setFulfillIntentPrefill(null);
   };
 
@@ -1335,7 +1299,7 @@ export const MobileExploreExperience = () => {
         )}
 
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <MobileExploreHeader />
+          <ExploreHeader />
 
           <div className="relative min-h-0 flex-1">
           <div className="absolute inset-0 z-0">
@@ -1509,32 +1473,20 @@ export const MobileExploreExperience = () => {
       </div>
       </div>
 
-      {composeOpen && (
-        <MobileCreateIntentSheet
-          open={composeOpen}
-          onClose={() => setComposeOpen(false)}
-          onChoose={handleComposeChoice}
+      {composeMenuOpen && (
+        <CreateIntentSheet
+          route={exploreCompose}
+          onRouteChange={handleComposeRouteChange}
+          onClose={closeCompose}
         />
       )}
 
-      {contributeOpen && (
-        <MobileContributeTypeSheet
-          open={contributeOpen}
-          onClose={() => setContributeOpen(false)}
-          onBack={() => {
-            setContributeOpen(false);
-            setComposeOpen(true);
-          }}
-          onChoose={handleContributeChoice}
-        />
-      )}
-
-      {contributeFlowOpen && (
-        <MobileCreateContributeFlow
-          open={contributeFlowOpen}
-          kind={contributeKind}
-          onClose={() => setContributeFlowOpen(false)}
-          onBackToIntent={() => setContributeOpen(true)}
+      {addWizardOpen && addRoute && (
+        <CreateContributeFlow
+          open={addWizardOpen}
+          kind={addRoute.kind}
+          onClose={closeCompose}
+          onBackToIntent={() => setComposeRoute({ surface: 'menu', intent: 'add' })}
           onSubmitted={(result: ContributeSubmitResult) => {
             reloadMap();
             if (result.kind === 'shop') {
@@ -1549,14 +1501,15 @@ export const MobileExploreExperience = () => {
         />
       )}
 
-      {createOpen && (
-        <MobileCreateActivityFlow
-          open={createOpen}
+      {organizeWizardOpen && (
+        <CreateActivityFlow
+          open={organizeWizardOpen}
           onClose={closeCreateFlow}
+          organizeKind={organizeRoute?.kind ?? null}
           demandPrefill={fulfillIntentPrefill}
           onBackToIntent={() => {
             setFulfillIntentPrefill(null);
-            setComposeOpen(true);
+            setComposeRoute({ surface: 'menu', intent: 'organize' });
           }}
           onPublished={handleActivityPublished}
           onOpenHostApplication={() => {
@@ -1567,11 +1520,12 @@ export const MobileExploreExperience = () => {
         />
       )}
 
-      {demandOpen && (
-        <MobileCreateDemandFlow
-          open={demandOpen}
-          onClose={() => setDemandOpen(false)}
-          onBackToIntent={() => setComposeOpen(true)}
+      {findWizardOpen && (
+        <CreateDemandFlow
+          open={findWizardOpen}
+          onClose={closeCompose}
+          findKind={findRoute?.kind ?? null}
+          onBackToIntent={() => setComposeRoute({ surface: 'menu', intent: 'find' })}
           onSubmitted={(result) => {
             reloadMap();
             if (!result.visibleOnMap) {

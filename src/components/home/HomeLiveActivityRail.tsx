@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, MapPin, Users } from 'lucide-react';
+import { ArrowRight, Clock, MapPin } from 'lucide-react';
 import { resolveActivityTypeCoverImage } from '../../config/activityCoverImages';
 import type { HomeLandingActivity } from '../../content/homeLanding';
 import { HOME_LIVE_SECTION } from '../../content/homeLanding';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
+import { activityPricingBadge } from '../../utils/activityPricing';
 import { LandingShell } from './LandingShell';
 
 interface HomeLiveActivityRailProps {
@@ -17,6 +18,7 @@ const ActivityCard = ({ activity }: { activity: HomeLandingActivity }) => {
     activityId: activity.id,
   });
   const href = activity.path.startsWith('/') ? activity.path : `/activity/${activity.id}`;
+  const pricingBadge = activityPricingBadge(activity);
 
   return (
     <Link to={href} className="landing-activity-card group block w-full">
@@ -36,18 +38,17 @@ const ActivityCard = ({ activity }: { activity: HomeLandingActivity }) => {
       </div>
       <div className="flex flex-col p-4">
         <p className="text-[15px] font-semibold leading-snug text-neutral-900">{activity.title}</p>
-        <p className="mt-1.5 flex items-center gap-1.5 text-[12px] text-neutral-500">
-          <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          {activity.date}
+        <p className="mt-2 flex items-center gap-1.5 text-[12px] text-neutral-500">
+          <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          {activity.whenLabel}
         </p>
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1 text-[12px] font-medium text-emerald-800">
-            <Users className="h-3.5 w-3.5" aria-hidden />
-            {activity.slotsAvailable > 0
-              ? `${activity.slotsAvailable} spot${activity.slotsAvailable === 1 ? '' : 's'} left`
-              : 'Waitlist'}
+        <div className="mt-3 flex items-end justify-between gap-2">
+          <span
+            className={`inline-flex max-w-[calc(100%-1.5rem)] rounded-lg px-2 py-0.5 text-[11px] font-bold leading-snug ${pricingBadge.bg} ${pricingBadge.text}`}
+          >
+            {pricingBadge.label}
           </span>
-          <ArrowRight className="h-4 w-4 text-neutral-300" aria-hidden />
+          <ArrowRight className="h-4 w-4 shrink-0 text-neutral-300" aria-hidden />
         </div>
       </div>
     </Link>
@@ -59,7 +60,7 @@ export const HomeLiveActivityRail = ({
   loading = false,
   fromLiveApi = false,
 }: HomeLiveActivityRailProps) => (
-  <section className="home-landing-sheet bg-white pb-6 pt-5 md:py-14" aria-label="Activities on the map">
+  <section className="bg-white pb-6 pt-5 md:py-14" aria-label="Activities on the map">
     <LandingShell>
       <header className="min-w-0 flex-1 text-center md:text-left">
         <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 md:justify-start">

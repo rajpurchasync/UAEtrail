@@ -86,7 +86,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md). Goal: converge **frontend symbols and f
 | `MapLocationPicker.tsx` | `MapPlacePicker.tsx` (or keep — map picker is generic) |
 | `ActivityLocationPinField.tsx` | `ActivityPlacePinField.tsx` |
 | `ExploreLocationMapPreview.tsx` | `ExplorePlaceMapPreview.tsx` |
-| `MobileCreateLocationPicker.tsx` | `MobileCreatePlacePicker.tsx` |
+| `CreatePlacePicker.tsx` | explore compose map pin picker |
 
 **Also**
 

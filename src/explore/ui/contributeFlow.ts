@@ -3,8 +3,8 @@ import { api } from '../../api/services';
 import { DEFAULT_COUNTRY } from '../../config/regions';
 import { MAP_CONFIG } from '../../config/platform';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
-import { ACTIVITY_DIFFICULTY_OPTIONS, type ActivityDifficulty } from './mobileCreateFlow';
-import type { ContributeVenueKind } from './MobileContributeTypeSheet';
+import { ACTIVITY_DIFFICULTY_OPTIONS, type ActivityDifficulty } from './organizeFlow';
+import type { ContributeVenueKind } from '../contributeTypes';
 import { isValidNationalPhone } from '../../utils/phone';
 
 export type ContributeFlowStepId =
@@ -17,7 +17,7 @@ export type ContributeFlowStepId =
   | 'contact'
   | 'review';
 
-export type MobileContributeDraft = {
+export type ContributeDraft = {
   kind: ContributeVenueKind | null;
   title: string;
   latitude: number | null;
@@ -130,7 +130,7 @@ export const contributeDescriptionPlaceholder = (kind: ContributeVenueKind): str
   return 'Describe the place and why outdoor lovers should know about it…';
 };
 
-export const emptyMobileContributeDraft = (): MobileContributeDraft => ({
+export const emptyContributeDraft = (): ContributeDraft => ({
   kind: null,
   title: '',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
@@ -152,7 +152,7 @@ const toApiDifficulty = (value: ActivityDifficulty): 'easy' | 'moderate' | 'hard
 
 export const validateContributeStep = (
   step: ContributeFlowStepId,
-  draft: MobileContributeDraft
+  draft: ContributeDraft
 ): string | null => {
   const kind = draft.kind;
   if (!kind) return 'Choose what you are contributing.';
@@ -194,7 +194,7 @@ export const validateContributeStep = (
   }
 };
 
-export const validateContributeDraft = (draft: MobileContributeDraft): string | null => {
+export const validateContributeDraft = (draft: ContributeDraft): string | null => {
   if (!draft.kind) return 'Choose what you are contributing.';
   for (const step of getContributeFlowSteps(draft.kind)) {
     if (step === 'review') continue;
@@ -204,8 +204,8 @@ export const validateContributeDraft = (draft: MobileContributeDraft): string | 
   return null;
 };
 
-export const publishMobileContributeVenue = async (
-  draft: MobileContributeDraft
+export const publishContributeVenue = async (
+  draft: ContributeDraft
 ): Promise<ContributeSubmitResult> => {
   const validation = validateContributeDraft(draft);
   if (validation) throw new Error(validation);

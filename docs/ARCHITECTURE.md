@@ -1,6 +1,6 @@
 # UAE Trail — System Architecture
 
-**Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — who we serve, what problem we solve, and how surfaces should feel. Implementation follows that doc; this file describes system shape.
+**Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — who we serve, what problem we solve, and how surfaces should feel. **Create / FAB:** [`CREATE_FLOW.md`](./CREATE_FLOW.md). Implementation follows those docs; this file describes system shape.
 
 ## Overview
 

@@ -20,7 +20,7 @@ export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 export const ACTIVITY_PRODUCT_SINGULAR = 'Activity';
 
 /** Umbrella product name for scheduled listings (plural). */
-const ACTIVITY_PRODUCT_PLURAL = 'Activities';
+export const ACTIVITY_PRODUCT_PLURAL = 'Activities';
 
 /** Short summary of scheduled listing kinds — use in blurbs and empty states. */
 export const ACTIVITY_KINDS_SUMMARY = 'Hikes, camps, runs, and group outings';

@@ -1,20 +1,8 @@
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import type { ContributeVenueKind } from './contributeTypes';
+import { formatComposeQuery, type ExploreCompose } from './compose';
 
 export type ExplorePanel = 'activities' | 'venues' | 'shops';
-
-export const CONTRIBUTE_VENUE_KINDS = ['hiking', 'camping', 'shop', 'event'] as const satisfies readonly ContributeVenueKind[];
-
-export const parseContributeParam = (
-  value: string | null
-): { openTypeSheet: boolean; kind: ContributeVenueKind | null } => {
-  if (!value) return { openTypeSheet: false, kind: null };
-  if (value === '1') return { openTypeSheet: true, kind: null };
-  if ((CONTRIBUTE_VENUE_KINDS as readonly string[]).includes(value)) {
-    return { openTypeSheet: false, kind: value as ContributeVenueKind };
-  }
-  return { openTypeSheet: false, kind: null };
-};
 
 /** Map overlay filter — controls which pins appear on the map. */
 export type MapFilterKey = 'all' | 'hiking' | 'camping' | 'carpool' | 'others' | 'shops';
@@ -137,11 +125,12 @@ export const explorePath = (options?: {
   /** Selected venue states/emirates (multi-select). */
   regions?: string[];
   addLocation?: boolean;
-  compose?: boolean;
-  /** Open contribute type sheet (`true`) or a specific contribute wizard step. */
-  contribute?: boolean | ContributeVenueKind;
-  /** Open the participant-intent (“I want to go”) request wizard. */
+  /** Compose menu or wizard route (`menu`, `organize:hiking`, …). */
+  compose?: ExploreCompose | 'menu';
+  /** @deprecated Prefer `compose` — open find wizard. */
   request?: boolean;
+  /** @deprecated Prefer `compose: { intent: 'add', kind }`. */
+  contribute?: boolean | ContributeVenueKind;
   /**
    * Explore map item id for a {@link ParticipantIntent} (`source=demand`) — resume Activity publish.
    * Prefer this over legacy `hostDemand`.
@@ -169,19 +158,18 @@ export const explorePath = (options?: {
   } else if (options?.region) {
     params.set('region', options.region);
   }
-  if (options?.addLocation) {
-    params.set('addLocation', '1');
-  }
   if (options?.compose) {
-    params.set('compose', '1');
-  }
-  if (options?.contribute === true) {
-    params.set('contribute', '1');
+    const route: ExploreCompose =
+      options.compose === 'menu' ? { surface: 'menu' } : options.compose;
+    params.set('compose', formatComposeQuery(route));
+  } else if (options?.addLocation) {
+    params.set('compose', 'add');
+  } else if (options?.request) {
+    params.set('compose', 'find');
+  } else if (options?.contribute === true) {
+    params.set('compose', 'add');
   } else if (options?.contribute) {
-    params.set('contribute', options.contribute);
-  }
-  if (options?.request) {
-    params.set('request', '1');
+    params.set('compose', formatComposeQuery({ intent: 'add', kind: options.contribute }));
   }
   const fulfillIntentId = options?.fulfillIntent ?? options?.hostDemand;
   if (fulfillIntentId) {

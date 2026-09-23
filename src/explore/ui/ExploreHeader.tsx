@@ -9,7 +9,7 @@ import { SecureAvatar } from '../../components/ui/SecureAvatar';
 const headerIconSlot = 'touch-target-icon flex shrink-0 items-center justify-center';
 
 /** Explore map — profile, brand, notifications. */
-export const MobileExploreHeader = () => {
+export const ExploreHeader = () => {
   const { user } = useAuth();
   const { pathname, search } = useLocation();
   const unreadCount = useNotificationUnreadCount();

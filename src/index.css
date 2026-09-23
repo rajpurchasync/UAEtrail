@@ -447,6 +447,26 @@
     }
   }
 
+  .landing-hero-btn {
+    width: 85%;
+    max-width: 100%;
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .landing-hero-btn {
+      width: auto;
+      min-height: 3rem;
+      padding-left: 1.7rem;
+      padding-right: 1.7rem;
+      font-size: 1rem;
+      line-height: 1.25rem;
+    }
+  }
+
   /* ── Home marketing — MOBILE ONLY (max-md). Never apply to desktop. ── */
   @media (max-width: 767px) {
     .home-launch {
@@ -483,14 +503,8 @@
     .landing-hero-copy .landing-hero-actions {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .landing-hero-copy .landing-hero-btn {
-      min-height: 2.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 0.8125rem;
-      line-height: 1.25rem;
+      align-items: center;
+      gap: 0.625rem;
     }
 
     .home-proof-stat-label {

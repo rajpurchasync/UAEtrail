@@ -2,7 +2,7 @@
 
 **Canonical product concept.** All user-facing copy, surface design, and feature decisions should align with this document before shipping.
 
-Companion docs: [`NAVIGATION.md`](./NAVIGATION.md) (where things live), [`LANDING.md`](./LANDING.md) (guest funnel), [`ARCHITECTURE.md`](./ARCHITECTURE.md) (implementation), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) (explore card copy).
+Companion docs: [`NAVIGATION.md`](./NAVIGATION.md) (where things live), [`LANDING.md`](./LANDING.md) (guest funnel), [`ARCHITECTURE.md`](./ARCHITECTURE.md) (implementation), [`CREATE_FLOW.md`](./CREATE_FLOW.md) (FAB + organize/find/add), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) (explore card copy).
 
 Code mirror (short strings for UI): `src/content/productNorthStar.ts`.
 
@@ -91,8 +91,8 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 | Surface | Route | North-star job |
 |---------|-------|----------------|
 | **Marketing** | `/` | Emotional promise + trust + proof → **Explore the map** or **Join free** |
-| **Browse** | `/explore` | **Find people and plans** — map/list of what's on + way to post demand |
-| **Entity detail** | `/activity`, `/trail`, … | **Understand the plan** → connect → request/join |
+| **Browse** | `/explore` | **Find people and plans** — map/list of what's on + FAB to organize, find, or add |
+| **Entity detail** | `/activity`, `/trail`, … | **Understand the plan** → **I'm going** or **request to join** (see [`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
 | **Personal hub** | `/profile` | **Your crew & what's next** — up next, messages, repeat outings |
 | **Host console** | `/host/*` | **Enable others to go together** (secondary audience; not landing lead) |
 
@@ -132,7 +132,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 2. Ask: does this help someone **find people and get outside together**?  
 3. Update `src/content/productNorthStar.ts` if canonical strings change  
 4. Update surface copy (`homeLanding.ts`, auth, profile empty states, explore coach, FAQs, SEO, store listings) in the same PR  
-5. Update `LANDING.md` / `explore-ux-spec.md` if section jobs or tone shift  
+5. Update `LANDING.md` / `CREATE_FLOW.md` / `explore-ux-spec.md` if section jobs, FAB, or participation tone shift  
 
 ## Surface copy index
 
@@ -143,7 +143,8 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 | SEO defaults | `src/config/seo.ts` |
 | Auth | `SignUp.tsx`, `SignIn.tsx`, `WelcomeSignup.tsx` |
 | Profile empty | `ProfileUpNextSection.tsx`, `JoinedSection.tsx` |
-| Explore | `ExploreCoachMarks.tsx`, `ExploreGuestJoinBanner.tsx`, `MobileExploreExperience.tsx`, `mobileDemandFlow.ts` |
+| Explore FAB + wizards | `CreateIntentSheet.tsx`, `organizeFlow.ts`, `demandFlow.ts`, `contributeFlow.ts` · spec: [`CREATE_FLOW.md`](./CREATE_FLOW.md) |
+| Explore chrome | `ExploreCoachMarks.tsx`, `ExploreGuestJoinBanner.tsx`, `ExploreExperience.tsx` |
 | Explore cards | `packages/shared-types/src/explore-presentation.ts` |
 | Activity blurbs | `src/config/activityTypes.ts` |
 | FAQs | `src/content/platformFaqs.ts` |
@@ -159,4 +160,5 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 | [`NAVIGATION.md`](./NAVIGATION.md) | Routes and redirects |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | System shape |
 | [`DOMAIN.md`](./DOMAIN.md) | Entity glossary |
+| [`CREATE_FLOW.md`](./CREATE_FLOW.md) | FAB, organize/find/add, Event vs Activity, participation |
 | [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) | Explore card templates |

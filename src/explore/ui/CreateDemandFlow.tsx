@@ -29,9 +29,9 @@ import {
   demandFlowStepTitle,
   demandGoingFromPlaceholder,
   demandTitlePlaceholder,
-  emptyMobileDemandDraft,
+  emptyDemandDraft,
   getDemandFlowSteps,
-  publishMobileDemandRequest,
+  publishDemandRequest,
   usesStructuredDemandFlow,
   usesEventDemandFlow,
   usesOutdoorActivityDemandFlow,
@@ -42,23 +42,25 @@ import {
   type DemandFlowStepId,
   type DemandFitnessLevel,
   type DemandSubmitResult,
-  type MobileDemandDraft,
-  type MobileDemandKind,
-} from './mobileDemandFlow';
-import type { LocationPrecision, TimeMode } from './mobileCreateFlow';
+  type DemandDraft,
+  type DemandKind,
+} from './demandFlow';
+import type { LocationPrecision, TimeMode } from './organizeFlow';
+import type { FindComposeKind } from '../compose';
 
-const MobileCreatePlacePicker = lazy(() =>
-  import('./MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
+const CreatePlacePicker = lazy(() =>
+  import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
 );
 
 type FlowStep = 'type' | DemandFlowStepId;
 
-interface MobileCreateDemandFlowProps {
+interface CreateDemandFlowProps {
   open: boolean;
   onClose: () => void;
   onBackToIntent?: () => void;
   onSubmitted?: (result: DemandSubmitResult) => void;
   signInHref: string;
+  findKind?: FindComposeKind | null;
 }
 
 const SheetHeader = ({
@@ -119,7 +121,7 @@ const REVIEW_EDIT_LABELS: Partial<Record<DemandFlowStepId, string>> = {
   title: 'Title',
   area: 'Location',
   when: 'When',
-  from: 'Leaving from',
+  from: 'Going from',
   to: 'Going to',
   route: 'Route',
   persons: 'People',
@@ -130,19 +132,20 @@ const REVIEW_EDIT_LABELS: Partial<Record<DemandFlowStepId, string>> = {
   comment: 'Comment',
 };
 
-export const MobileCreateDemandFlow = ({
+export const CreateDemandFlow = ({
   open,
   onClose,
   onBackToIntent,
   onSubmitted,
   signInHref,
-}: MobileCreateDemandFlowProps) => {
+  findKind = null,
+}: CreateDemandFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const [step, setStep] = useState<FlowStep>('type');
-  const [draft, setDraft] = useState<MobileDemandDraft>(emptyMobileDemandDraft);
-  const [selectedKind, setSelectedKind] = useState<MobileDemandKind | null>(null);
+  const [draft, setDraft] = useState<DemandDraft>(emptyDemandDraft);
+  const [selectedKind, setSelectedKind] = useState<DemandKind | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
@@ -156,14 +159,25 @@ export const MobileCreateDemandFlow = ({
 
   const headerTitle =
     step === 'type' || !kind
-      ? 'I want to go'
+      ? 'Find'
       : demandFlowStepTitle(step as DemandFlowStepId, kind);
 
   useEffect(() => {
     if (!open) {
       setStep('type');
-      setDraft(emptyMobileDemandDraft());
+      setDraft(emptyDemandDraft());
       setSelectedKind(null);
+      setError(null);
+      setSubmitting(false);
+      setShowMonthView(false);
+      setAreaMapOpen(false);
+      setRouteMapTarget(null);
+      return;
+    }
+    if (findKind) {
+      setDraft({ ...emptyDemandDraft(), kind: findKind });
+      setSelectedKind(findKind);
+      setStep(getDemandFlowSteps(findKind)[0]);
       setError(null);
       setSubmitting(false);
       setShowMonthView(false);
@@ -175,9 +189,9 @@ export const MobileCreateDemandFlow = ({
       navigate(signInHref);
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose]);
+  }, [open, user, navigate, signInHref, onClose, findKind]);
 
-  const patchDraft = useCallback((patch: Partial<MobileDemandDraft>) => {
+  const patchDraft = useCallback((patch: Partial<DemandDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
@@ -247,7 +261,7 @@ export const MobileCreateDemandFlow = ({
     setSubmitting(true);
     setError(null);
     try {
-      const result = await publishMobileDemandRequest({ ...draft, kind: draft.kind ?? selectedKind });
+      const result = await publishDemandRequest({ ...draft, kind: draft.kind ?? selectedKind });
       onSubmitted?.(result);
       onClose();
     } catch (err) {
@@ -347,7 +361,7 @@ export const MobileCreateDemandFlow = ({
     return (
       <div className="absolute inset-0 z-[1400] bg-neutral-100">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <MobileCreatePlacePicker
+          <CreatePlacePicker
             precision={draft.locationPrecision}
             latitude={lat}
             longitude={lng}
@@ -392,7 +406,7 @@ export const MobileCreateDemandFlow = ({
       onClose={handleClose}
       panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
     >
-        {step === 'type' && (
+        {step === 'type' && !findKind && (
           <>
             <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
             <div className="grid grid-cols-2 gap-3">

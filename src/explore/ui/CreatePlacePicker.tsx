@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { ChevronLeft, MapPin, Navigation, X } from 'lucide-react';
 import { MAP_CONFIG } from '../../config/platform';
 import { MapTileLayers } from '../../components/ui/MapTileLayers';
-import type { LocationPrecision } from './mobileCreateFlow';
+import type { LocationPrecision } from './organizeFlow';
 
 const MapFlyTo = ({ center, zoom }: { center: [number, number] | null; zoom: number }) => {
   const map = useMap();
@@ -66,7 +66,7 @@ const MapLocate = ({
   return null;
 };
 
-interface MobileCreatePlacePickerProps {
+interface CreatePlacePickerProps {
   precision: LocationPrecision;
   latitude: number;
   longitude: number;
@@ -82,7 +82,7 @@ interface MobileCreatePlacePickerProps {
   initialZoom?: number;
 }
 
-export const MobileCreatePlacePicker = ({
+export const CreatePlacePicker = ({
   precision,
   latitude,
   longitude,
@@ -95,7 +95,7 @@ export const MobileCreatePlacePicker = ({
   confirmLabel = 'Confirm location',
   hint,
   initialZoom = 15,
-}: MobileCreatePlacePickerProps) => {
+}: CreatePlacePickerProps) => {
   const [mapReady, setMapReady] = useState(false);
   const [locating, setLocating] = useState(false);
   const [flyTo, setFlyTo] = useState<[number, number] | null>(null);
@@ -249,6 +249,3 @@ export const MobileCreatePlacePicker = ({
     </div>
   );
 };
-
-/** @deprecated Use MobileCreatePlacePicker */
-export const MobileCreateLocationPicker = MobileCreatePlacePicker;

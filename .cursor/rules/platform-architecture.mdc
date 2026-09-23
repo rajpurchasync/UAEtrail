@@ -7,7 +7,7 @@ alwaysApply: true
 
 **Product north star:** `docs/NORTHSTAR.md` — find people, get outside together (residents, expats, visitors; hikes, camps, runs, and more). Architecture and copy must serve that, not trail-inventory or host-console framing for consumers.
 
-Canonical detail: **`docs/NORTHSTAR.md`**, **`docs/NAVIGATION.md`**, **`docs/ARCHITECTURE.md`**, **`docs/LANDING.md`**.
+Canonical detail: **`docs/NORTHSTAR.md`**, **`docs/NAVIGATION.md`**, **`docs/CREATE_FLOW.md`**, **`docs/ARCHITECTURE.md`**, **`docs/LANDING.md`**.
 
 ## Surfaces (where users go)
 
@@ -31,13 +31,14 @@ Canonical detail: **`docs/NORTHSTAR.md`**, **`docs/NAVIGATION.md`**, **`docs/ARC
 
 ## Core entity
 
-- **Activity** — scheduled outing; public join via request + host approval  
+- **Activity** — scheduled outing; join via **I'm going** (RSVP) or **request to join** (approval) — see `docs/CREATE_FLOW.md`
 - **Explore map payload** — activities, venue places, shops, participant demand (see `apps/api/src/lib/explore-map.ts`)
 
 ## Layer boundaries
 
 - **Hosting UI** → `/host/*` only — not on `/explore` browse chrome or `/` marketing  
 - **Explore copy** → `src/explore/exploreCopy.ts` + `docs/experiment/explore-ux-spec.md`  
+- **Create / FAB** → `docs/CREATE_FLOW.md` + `src/explore/ui/*Create*`  
 - **Landing copy** → `src/content/homeLanding.ts` + `docs/LANDING.md` + `docs/NORTHSTAR.md`  
 - **Canonical voice strings** → `src/content/productNorthStar.ts`  
 - Avoid legacy route names in new UI: bare `/activities` as browse, OrganizerActivitiesPath, Trips page

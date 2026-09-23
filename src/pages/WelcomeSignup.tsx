@@ -213,7 +213,7 @@ export const WelcomeSignup = () => {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => navigate(explorePath({ compose: true }), { replace: true })}
+                onClick={() => navigate(explorePath({ compose: 'menu' }), { replace: true })}
                 className="w-full flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3.5 text-left hover:bg-emerald-100/80 transition-colors"
               >
                 <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-emerald-600">

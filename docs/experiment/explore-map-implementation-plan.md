@@ -1,5 +1,7 @@
 # Explore Map — Detailed Implementation Plan
 
+> **Superseded naming (2026-09):** This plan predates the unified compose stack. Current code lives under `src/explore/` — see **`docs/CREATE_FLOW.md`** for the file map (`ExploreExperience.tsx`, `organizeFlow.ts`, `compose.ts`, etc.). References below to `Mobile*` / `mobileCreateFlow` are historical.
+
 **Branch:** `experiment/new-ui`  
 **Remote:** `purchasync/UAEtrail` (`git push purchasync experiment/new-ui`)  
 **Not in scope for:** `uaetrail/main` until explicit merge approval  

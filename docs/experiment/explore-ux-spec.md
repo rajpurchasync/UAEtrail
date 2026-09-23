@@ -5,6 +5,8 @@
 
 **Product north star:** [`../NORTHSTAR.md`](../NORTHSTAR.md) — explore is where users **find people and plans to get outside together**. Card copy should feel social and actionable (“{Name} is going…”, “{Name} wants to go…”), not like a trail database.
 
+**Create / FAB spec:** [`../CREATE_FLOW.md`](../CREATE_FLOW.md) — canonical for + button, organize/find/add, Event vs Activity, participation modes, Going from.
+
 This document is the **single source of truth** for visitor-facing copy, emojis, badges, and CTAs on the mobile explore map. Code must implement via `src/explore/exploreCopy.ts` (Phase P0) — not ad-hoc strings in components.
 
 ---
@@ -68,13 +70,18 @@ This document is the **single source of truth** for visitor-facing copy, emojis,
 
 | Item type | Primary | Secondary |
 |-----------|---------|-----------|
-| Hiking / Camping / Event activity | Request to join | View details |
+| Hiking / Camping activity (`approval`) | Request to join | View details |
+| Event activity (`approval`) | Request to join | View details |
+| Event activity (`rsvp`) | **I'm going** | View details |
+| Generic buddy activity (`approval`) | Request to join | View details |
 | Carpool activity | Request to join | View details |
 | Hiking / Camping venue | View details | — |
 | Shop | View shop | — |
 | Tour agency | View agency | — |
 | Demand post | Join this plan | View details |
 | Activity/demand group (member) | Open group chat | — |
+
+**Participation modes:** See [`../CREATE_FLOW.md`](../CREATE_FLOW.md). When `participationMode: rsvp`, primary CTA is **I'm going** (no host approve queue). When `approval`, use **Request to join** (current behavior).
 
 ---
 
@@ -86,7 +93,23 @@ List sheet (Activities button): activities + demand only; no shop on list by def
 
 ---
 
-## FAB (+) chooser (Phase P5+)
+## FAB (+) chooser
+
+**Canonical spec:** [`../CREATE_FLOW.md`](../CREATE_FLOW.md). Summary:
+
+**Header:** `I would like to…`
+
+| Level 1 | Level 2 |
+|---------|---------|
+| **Organize** | Hiking · Camping · Event · Activity |
+| **Find** | Rideshare · Hiking · Camping · Activities |
+| **Add** | Camping Spots · Hiking Trails · Shops · Others |
+
+- **Organize** → host create flow (approved host). **Activity** = generic buddy (free-text run/jog/…); **Event** = default RSVP.
+- **Find** → demand create flow (any signed-in member).
+- **Add** → place contribute flow (location pin, not Going from).
+
+### Legacy (pre-2026-09 — remove when FAB PR ships)
 
 1. **Host an activity** → host create flow (requires approved Become a Host profile)
 2. **I want to go** → demand create flow (any signed-in participant)

@@ -3,16 +3,19 @@
 export const HOME_HERO_EYEBROW = 'Outdoor community · UAE & GCC';
 
 /** Compact eyebrow for mobile hero — avoids crowded all-caps tracking. */
-export const HOME_HERO_EYEBROW_MOBILE = 'UAE & GCC · get outside together';
+export const HOME_HERO_EYEBROW_MOBILE = 'UAE & GCC outdoors';
 
-export const HOME_HERO_HEADLINE = 'Find your people for whatever gets you outside in the UAE';
+export const HOME_HERO_HEADLINE = 'Find your next hike, camp, or outdoor crew in the UAE';
 
 export const HOME_HERO_SUBLINE =
-  'Residents, visitors, same vibe — discover outings near you, connect with like-minded people, chat, and go together.';
+  'Discover trails and group outings on a live map, request to join with a verified host, and show up with people who actually follow through.';
 
 /** Shorter hero copy for mobile — headline carries the main message. */
 export const HOME_HERO_SUBLINE_MOBILE =
-  'Hikes, camps, runs, and more — find your crew and get outside together.';
+  'Trails, camps, and crew on a live map — join with a verified host.';
+
+export const HOME_HERO_PRIMARY_CTA = 'Open Map';
+export const HOME_HERO_JOIN_CTA = 'Join free';
 
 export const HOME_PROOF_STATS = [
   {
@@ -36,30 +39,29 @@ export const HOME_PROOF_PILLS = HOME_PROOF_STATS.map((s) => ({
 }));
 
 export const HOME_VALUE_SECTION = {
-  eyebrow: 'What you can do',
+  eyebrow: 'Why UAE Trail',
   title: 'Find your people. Get outside. Go together.',
-  subtitle:
-    'See what’s on, say what you want, connect and chat — then show up with a crew that keeps going.',
+  subtitle: 'Less scrolling group chats. More real plans on the map.',
 } as const;
 
 export const HOME_VALUE_PROPS = [
   {
-    title: 'See what’s on near you',
-    tagline: 'Hikes, camps, runs, and group outings on the map.',
+    title: 'Real plans on the map',
+    tagline: 'Hikes, camps, and runs with date, time, price, and a named host.',
     description:
-      'Real plans near you — filter by emirate and date, then tap in when something fits.',
+      'Filter by emirate, read the full plan, then decide — not a vague “we should go sometime”.',
   },
   {
-    title: 'Say what you’re looking for',
-    tagline: 'Post your plan and find like-minded people.',
+    title: 'Join one or post yours',
+    tagline: 'Request to join a plan, or post what you want if nothing fits today.',
     description:
-      'Weekend camp, trail run, early jog — connect with others heading out or hosts who can lead.',
+      'The host approves who joins. Group chat opens so you know who you are meeting.',
   },
   {
-    title: 'Connect and go together',
-    tagline: 'Chat, meet up, keep the same crew.',
+    title: 'Same crew, next time',
+    tagline: 'Buddies and group chat make the next outing one tap away.',
     description:
-      'Group chat and buddies make the next outing easy — show up together, stay connected.',
+      'Meet people you want to hike, camp, or run with again — not one-off strangers.',
   },
 ] as const;
 
@@ -76,9 +78,12 @@ export type HomeLandingActivity = {
   id: string;
   title: string;
   region: string;
-  date: string;
+  whenLabel: string;
   activityType: 'hiking' | 'camping' | 'event' | 'carpool';
-  slotsAvailable: number;
+  price: number;
+  pricePackages?: { label: string; amount: number; currency: string }[];
+  paymentTerms?: string | null;
+  pricingMode?: 'free' | 'shared' | 'paid' | null;
   path: string;
 };
 
@@ -88,27 +93,31 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
     id: 'fallback-jais',
     title: 'Jebel Jais sunrise hike',
     region: 'RAK',
-    date: 'Sat',
+    whenLabel: 'Sat at 5:30 AM',
     activityType: 'hiking',
-    slotsAvailable: 4,
+    price: 0,
+    pricingMode: 'free',
     path: '/explore',
   },
   {
     id: 'fallback-wadi',
     title: 'Wadi Shawka family camp',
     region: 'RAK',
-    date: 'Fri',
+    whenLabel: 'Fri at 4:00 PM',
     activityType: 'camping',
-    slotsAvailable: 6,
+    price: 45,
+    pricingMode: 'shared',
     path: '/explore',
   },
   {
     id: 'fallback-dam',
     title: 'Hatta dam loop',
     region: 'Dubai',
-    date: 'Sun',
+    whenLabel: 'Sun at 7:00 AM',
     activityType: 'hiking',
-    slotsAvailable: 8,
+    price: 120,
+    pricingMode: 'paid',
+    pricePackages: [{ label: 'Standard', amount: 120, currency: 'AED' }],
     path: '/explore',
   },
 ];
@@ -120,25 +129,25 @@ export const HOME_LIVE_SECTION = {
 
 export const HOME_DAY_TIMELINE = {
   title: 'How it works',
-  subtitle: 'From browsing to showing up with your crew.',
+  subtitle: 'Find a plan on the map, connect with the group, get outside.',
   steps: [
     {
       step: '01',
-      title: 'Browse what’s on',
-      line: 'Outings near you on the map.',
-      detail: 'Hikes, camps, runs, and group plans across the UAE — filter and tap in.',
+      title: 'Open the map',
+      line: 'See hikes, camps, and runs near you — with date, time, and price.',
+      detail: 'Filter by emirate, tap a pin, and read the full plan before you commit.',
     },
     {
       step: '02',
-      title: 'Join or post your plan',
-      line: 'Request a spot or say what you want.',
-      detail: 'Connect in group chat once you’re in — hosts approve who joins.',
+      title: 'Join or post yours',
+      line: 'Request to join a plan, or post what you’re looking for.',
+      detail: 'The host approves who joins. Group chat opens so you can align before go-day.',
     },
     {
       step: '03',
-      title: 'Show up together',
-      line: 'Meet your crew outdoors.',
-      detail: 'Same people, next outing easier — buddies and group chat keep you going.',
+      title: 'Meet up outdoors',
+      line: 'Show up on the day with the same people.',
+      detail: 'Add buddies and keep the group chat — your next outing is a tap away.',
     },
   ],
 } as const;

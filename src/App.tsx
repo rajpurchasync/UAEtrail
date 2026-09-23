@@ -9,7 +9,7 @@ import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authRetur
 import { ActivityFormSessionProvider } from './context/ActivityFormSessionContext';
 import { Home } from './pages/Home';
 import { Membership } from './pages/Membership';
-import { MobileExploreExperience } from './explore';
+import { ExploreExperience } from './explore';
 import { EXPLORE_MAP_PATH } from './config/platform';
 import { discoveryToExploreSearch, explorePath, parseActivityListFilter } from './utils/exploreRouting';
 import { organisationManagePath } from './utils/organisationPaths';
@@ -238,7 +238,7 @@ function App() {
           <Route path="/map" element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route
             path="/explore"
-            element={<MobileExploreExperience />}
+            element={<ExploreExperience />}
           />
           <Route path="/discovery" element={<DiscoveryRedirect />} />
           <Route path="/trail/:id" element={<TrailDetail />} />

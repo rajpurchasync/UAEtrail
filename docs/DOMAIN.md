@@ -4,19 +4,32 @@ This glossary maps **product concepts** to **code and routes**. Use it when nami
 
 **Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — people finding company outdoors; code entities below are *how* the product delivers that.
 
-See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing rules.
+See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing rules and [`CREATE_FLOW.md`](./CREATE_FLOW.md) for FAB / organize / find / add.
 
 ## Core objects
 
 | Domain | What it is | Code / storage | Public URL | Explore map |
 |--------|------------|----------------|------------|-------------|
 | **Place** | A physical venue: trail, camp, or event location | `locations`, `PlaceDTO` | `/trail/:id`, `/camp/:id`, `/event/:id` | Yes (venue pins) |
-| **Activity** | A scheduled trip hosted at a place | `activities`, `ActivityDTO` | `/activity/:id` | Yes |
+| **Activity** | A scheduled outing hosted at a place | `activities`, `ActivityDTO` | `/activity/:id` | Yes |
+| **Event (organize)** | Public outdoor happening (run, marathon, group race) — default **I’m going** RSVP | Same as Activity row | `/activity/:id` | Yes |
+| **Activity (organize — buddy)** | Generic “I want to run / jog / …” plan; free-text title; default **request to join** | Same row; `activityType: event` + user title in v1 | `/activity/:id` | Yes |
 | **Host** (publishing) | Anyone who publishes trips and may have a public profile — **guide**, **agency**, or **shop** | `tenants`, `TenantProfile`, `merchant_profiles` (shops) | Guide/agency: `/operator/:slug` · Shop: `/shop/:id` | Physical shops only |
 | **Person** | A member's public identity on the platform | `users` (profile fields), `/member/:id` | `/profile`, `/member/:id` | Via demand cards |
 | **User** | Auth account (login, roles, suspension) | `users`, `UserDTO`, `AuthContext` | `/signin`, `/signup` | — |
 
 **Participation** links **Person ↔ Activity ↔ Place**. **Publishing** links **Host (tenant) ↔ Activity**. Shops also link **featured outbound picks**.
+
+### Participation modes (planned — see [`CREATE_FLOW.md`](./CREATE_FLOW.md))
+
+| Mode | Member action | Host |
+|------|---------------|------|
+| **`rsvp`** | **I’m going** — instant; adds to Up next | See who’s going |
+| **`approval`** | **Request to join** — host approves | Approve / reject queue |
+
+**Not** the same as `joinMode` (`open` \| `private`), which controls map visibility only.
+
+**Organize defaults:** Event → `rsvp`; Hiking, Camping, generic Activity → `approval`. Creator can toggle on all organize paths.
 
 ## Host vs Organisation in copy
 
@@ -102,5 +115,6 @@ Shop identity: **tenant** (become-host) + **merchant profile** (ShopManage), lin
 3. No agency/guide map pins.
 4. Shop public path `/shop/:id`; affiliate featured picks, not in-app checkout.
 5. API paths may say `locations` / `merchant`; product copy says place / shop.
+6. FAB compose taxonomy and participation — [`CREATE_FLOW.md`](./CREATE_FLOW.md).
 
 **Adoption roadmap:** [`DOMAIN_ADOPTION_PLAN.md`](./DOMAIN_ADOPTION_PLAN.md) — frontend migration complete. Deferred: Phase 6b tenant/merchant collapse.

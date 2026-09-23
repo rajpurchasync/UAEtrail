@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
+import { buildExploreWhenSegment } from '@uaetrail/shared-types';
 import { fetchApiActivities } from '../api/public';
 import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
 
@@ -10,21 +11,27 @@ export interface HomeLandingActivitiesState {
   fromLiveApi: boolean;
 }
 
+const resolveWhenSuffix = (activity: ActivityDTO): 'flexible' | 'fixed' | null => {
+  if (activity.activityType === 'carpool') return 'fixed';
+  const requirements = activity.requirements ?? [];
+  if (requirements.some((line) => /flexible time/i.test(line))) return 'flexible';
+  return null;
+};
+
 const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
   id: activity.id,
   title: activity.title || activity.locationName,
   region: activity.region ?? 'UAE',
-  date: formatShortDate(activity.date),
+  whenLabel:
+    buildExploreWhenSegment(activity.date, activity.time, resolveWhenSuffix(activity)) ??
+    activity.date,
   activityType: activity.activityType,
-  slotsAvailable: activity.slotsAvailable,
+  price: activity.price,
+  pricePackages: activity.pricePackages,
+  paymentTerms: activity.paymentTerms,
+  pricingMode: activity.pricingMode,
   path: `/activity/${activity.id}`,
 });
-
-const formatShortDate = (dateStr: string): string => {
-  const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-};
 
 /** Public upcoming activities for marketing landing — falls back to curated cards. */
 export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
@@ -41,7 +48,7 @@ export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
     void fetchApiActivities('upcoming')
       .then((listings) => {
         if (cancelled) return;
-        const upcoming = listings.filter((item) => item.slotsAvailable > 0).slice(0, 6);
+        const upcoming = listings.slice(0, 6);
         if (upcoming.length === 0) {
           setState({
             activities: HOME_LANDING_FALLBACK_ACTIVITIES,

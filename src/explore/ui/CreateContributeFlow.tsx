@@ -6,28 +6,28 @@ import { MAP_CONFIG } from '../../config/platform';
 import { ImageUpload } from '../../components/ui/ImageUpload';
 import { PhoneInput } from '../../components/ui/PhoneInput';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-import type { ContributeVenueKind } from './MobileContributeTypeSheet';
+import type { ContributeVenueKind } from '../contributeTypes';
 import {
   ACTIVITY_DIFFICULTY_OPTIONS,
   contributeDescriptionPlaceholder,
   contributeFlowStepTitle,
   contributeTitlePlaceholder,
-  emptyMobileContributeDraft,
+  emptyContributeDraft,
   getContributeFlowSteps,
-  publishMobileContributeVenue,
+  publishContributeVenue,
   validateContributeStep,
   type ContributeFlowStepId,
   type ContributeSubmitResult,
-  type MobileContributeDraft,
-} from './mobileContributeFlow';
-import type { LocationPrecision, ActivityDifficulty } from './mobileCreateFlow';
+  type ContributeDraft,
+} from './contributeFlow';
+import type { LocationPrecision, ActivityDifficulty } from './organizeFlow';
 import { formatOrganisationPhonePreview } from '../../components/organisation-console/becomeOrganisationForm';
 
-const MobileCreatePlacePicker = lazy(() =>
-  import('./MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
+const CreatePlacePicker = lazy(() =>
+  import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
 );
 
-interface MobileCreateContributeFlowProps {
+interface CreateContributeFlowProps {
   open: boolean;
   kind: ContributeVenueKind;
   onClose: () => void;
@@ -107,20 +107,20 @@ const NextButton = ({
   </button>
 );
 
-export const MobileCreateContributeFlow = ({
+export const CreateContributeFlow = ({
   open,
   kind,
   onClose,
   onBackToIntent,
   onSubmitted,
   signInHref,
-}: MobileCreateContributeFlowProps) => {
+}: CreateContributeFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const [step, setStep] = useState<ContributeFlowStepId>('title');
-  const [draft, setDraft] = useState<MobileContributeDraft>(() => ({
-    ...emptyMobileContributeDraft(),
+  const [draft, setDraft] = useState<ContributeDraft>(() => ({
+    ...emptyContributeDraft(),
     kind,
   }));
   const [submitting, setSubmitting] = useState(false);
@@ -138,7 +138,7 @@ export const MobileCreateContributeFlow = ({
   useEffect(() => {
     if (!open) {
       setStep('title');
-      setDraft({ ...emptyMobileContributeDraft(), kind });
+      setDraft({ ...emptyContributeDraft(), kind });
       setError(null);
       setSubmitting(false);
       setLocationMapOpen(false);
@@ -151,7 +151,7 @@ export const MobileCreateContributeFlow = ({
     }
   }, [open, user, navigate, signInHref, onClose, kind]);
 
-  const patchDraft = useCallback((patch: Partial<MobileContributeDraft>) => {
+  const patchDraft = useCallback((patch: Partial<ContributeDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
@@ -212,7 +212,7 @@ export const MobileCreateContributeFlow = ({
       if (kind === 'shop' && draft.contactEmail.trim()) {
         submitDraft.description = `${draft.description.trim()}\n\nEmail: ${draft.contactEmail.trim()}`;
       }
-      const result = await publishMobileContributeVenue(submitDraft);
+      const result = await publishContributeVenue(submitDraft);
       onSubmitted?.(result);
       onClose();
     } catch (err) {
@@ -263,7 +263,7 @@ export const MobileCreateContributeFlow = ({
     return (
       <div className="absolute inset-0 z-[1400] bg-neutral-100">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <MobileCreatePlacePicker
+          <CreatePlacePicker
             precision={mapPrecision}
             latitude={lat}
             longitude={lng}

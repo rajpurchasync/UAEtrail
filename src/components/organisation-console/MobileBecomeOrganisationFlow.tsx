@@ -36,8 +36,8 @@ import {
 } from './becomeOrganisationFlow';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 
-const MobileCreatePlacePicker = lazy(() =>
-  import('../../explore/ui/MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
+const CreatePlacePicker = lazy(() =>
+  import('../../explore/ui/CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
 );
 
 const fieldClass =
@@ -329,7 +329,7 @@ export const MobileBecomeOrganisationFlow = ({
     step === 'location' && locationMapOpen && profileType && profileType !== 'individual' ? (
       <div className={`${overlayClass} z-[1500] bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <MobileCreatePlacePicker
+          <CreatePlacePicker
             precision={mapPrecision}
             latitude={form.latitude ?? MAP_CONFIG.defaultCenter.lat}
             longitude={form.longitude ?? MAP_CONFIG.defaultCenter.lng}

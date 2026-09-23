@@ -26,8 +26,8 @@ Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTH
 
 - **Guests only** — signed-in users redirect to `/explore` (`src/pages/Home.tsx`).
 - **Not the product home** — members always land on and live on `/explore`.
-- **Goal:** convert visitors via **Explore the map** (primary) and **Join free** (secondary); post-auth → `/explore`.
-- **Guest hero:** headline + subline + **Explore the map** (primary CTA) + **Join free** (secondary). Desktop header: Log in pill.
+- **Goal:** convert visitors via **Open Map** (primary button) and **Join free** (underlined text link); post-auth → `/explore`.
+- **Guest hero:** headline + subline + **Open Map** + **Join free** link. Desktop header: Log in pill.
 - **Scroll order** (matches `Home.tsx`):
   1. Hero (`HomeMobileLaunch` / `HomeDesktopHero`)
   2. Proof strip (`HomeProofStrip`)
@@ -64,6 +64,34 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, `/shop`, bare `/activitie
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
 - Pass `list: true` to `explorePath()` only when opening the browse sheet intentionally.
 - Filter/panel query params select map context; they do not imply list mode.
+
+## Explore FAB (+)
+
+Full spec: **[`CREATE_FLOW.md`](./CREATE_FLOW.md)**.
+
+Signed-in members tap **+** on `/explore` to compose. **Guests** → sign-in, then return to explore.
+
+### Level 1 — `I would like to…`
+
+| Choice | Wizard |
+|--------|--------|
+| **Organize** | Host publish (`CreateActivityFlow`) — requires approved host |
+| **Find** | Demand post (`CreateDemandFlow`) — any signed-in member |
+| **Add** | Place catalog (`CreateContributeFlow`) |
+
+### Level 2 sub-options (same sheet, back navigation)
+
+| Branch | Options |
+|--------|---------|
+| Organize | Hiking · Camping · Event · Activity |
+| Find | Rideshare · Hiking · Camping · Activities |
+| Add | Camping Spots · Hiking Trails · Shops · Others |
+
+**Organize → Activity:** generic buddy flow — free-text “what” (run, jog, …); **no** hike/camp sub-picker. See CREATE_FLOW § Organize → Activity.
+
+**Going from:** required map pin on all Organize and Find **activity** flows; Add uses place location pin only.
+
+**Components:** `CreateIntentSheet.tsx`, `ExploreExperience.tsx` (compose URL via `parseExploreCompose`).
 
 ## Back navigation
 

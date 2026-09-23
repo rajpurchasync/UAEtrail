@@ -28,8 +28,8 @@ Enforced in `src/pages/Home.tsx` (`Navigate` when `user` is set). Post-auth fall
 
 Convert anonymous visitors in one visit:
 
-1. **Primary:** Explore the map (`EXPLORE_MAP_PATH`) — browse before or after signup
-2. **Secondary:** Join free (`joinAuthPath(EXPLORE_MAP_PATH)`) — account → land on map
+1. **Primary:** Open Map (`EXPLORE_MAP_PATH`) — browse before or after signup
+2. **Secondary:** Join free (`joinAuthPath(EXPLORE_MAP_PATH)`) — underlined link → account → land on map
 
 Do **not** use Home to onboard signed-in users or document the full app.
 
@@ -85,8 +85,8 @@ Top-of-file comment in `homeLanding.ts` must stay: *visitors convert here; membe
 
 ## Hero CTAs (current)
 
-- **Primary:** Explore the map → `/explore`  
-- **Secondary:** Join free → auth with return to `/explore`  
+- **Primary:** Open Map → `/explore` (`HOME_HERO_PRIMARY_CTA` in `homeLanding.ts`)
+- **Secondary:** Join free → auth with return to `/explore` (underlined text link, not a second button)
 - Desktop header: Log in pill → sign-in with return  
 
 ## Responsive rules

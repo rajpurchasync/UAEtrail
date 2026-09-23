@@ -10,6 +10,7 @@ Do **not** treat these docs as canonical for `uaetrail/main` until an explicit m
 |-----|---------|
 | [explore-map-implementation-plan.md](./explore-map-implementation-plan.md) | Full phased implementation plan (UX, API, data model, tasks) |
 | [explore-ux-spec.md](./explore-ux-spec.md) | Locked copy, emojis, CTAs, and alignment checklist |
+| [../CREATE_FLOW.md](../CREATE_FLOW.md) | **Canonical** FAB, organize/find/add, Event vs Activity, participation (main docs) |
 
 ## Branch & remotes
 

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../../config/seo';
-import { HOME_HERO_EYEBROW, HOME_HERO_HEADLINE, HOME_HERO_SUBLINE } from '../../content/homeLanding';
+import { HOME_HERO_EYEBROW, HOME_HERO_HEADLINE, HOME_HERO_JOIN_CTA, HOME_HERO_PRIMARY_CTA, HOME_HERO_SUBLINE } from '../../content/homeLanding';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
 import { AppButtonLink } from '../mobile/AppButton';
 
@@ -48,17 +48,16 @@ export const HomeDesktopHero = ({ joinHref, signInHref }: HomeDesktopHeroProps) 
         </h1>
         <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/90">{HOME_HERO_SUBLINE}</p>
 
-        <div className="mt-9 flex flex-wrap items-center gap-3">
-          <AppButtonLink to={EXPLORE_MAP_PATH} className="min-h-[3rem] px-8 text-base shadow-lg shadow-black/25">
-            Explore the map
+        <div className="mt-9 flex flex-col items-start gap-3">
+          <AppButtonLink to={EXPLORE_MAP_PATH} className="landing-hero-btn shadow-lg shadow-black/25">
+            {HOME_HERO_PRIMARY_CTA}
           </AppButtonLink>
-          <AppButtonLink
+          <Link
             to={joinHref}
-            variant="inverse"
-            className="min-h-[3rem] border border-white/30 !bg-white/10 px-8 text-base !text-white backdrop-blur-sm hover:!bg-white/20 active:!bg-white/15"
+            className="text-[15px] font-semibold text-white underline underline-offset-2 hover:text-white/90"
           >
-            Join free
-          </AppButtonLink>
+            {HOME_HERO_JOIN_CTA}
+          </Link>
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import type { ParticipantIntentKind } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
 import { MAP_CONFIG } from '../../config/platform';
-import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } from './mobileCreateFlow';
+import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } from './organizeFlow';
 
-export type MobileDemandKind = ParticipantIntentKind;
+export type DemandKind = ParticipantIntentKind;
 
 export type DemandFlowStepId =
   | 'title'
@@ -22,8 +22,8 @@ export type DemandFlowStepId =
 
 export type DemandFitnessLevel = 'beginner' | 'medium' | 'goat';
 
-export type MobileDemandDraft = {
-  kind: MobileDemandKind | null;
+export type DemandDraft = {
+  kind: DemandKind | null;
   title: string;
   date: string;
   time: string;
@@ -49,7 +49,7 @@ export type MobileDemandDraft = {
 };
 
 export const DEMAND_TYPE_OPTIONS: Array<{
-  key: MobileDemandKind;
+  key: DemandKind;
   title: string;
   subtitle: string;
   emoji: string;
@@ -57,7 +57,7 @@ export const DEMAND_TYPE_OPTIONS: Array<{
   { key: 'hiking', title: 'Hiking', subtitle: 'Find a crew for the trail', emoji: '🥾' },
   { key: 'camping', title: 'Camping', subtitle: 'Camp with the right people', emoji: '⛺' },
   { key: 'carpool', title: 'Rideshare', subtitle: 'Share a ride to the trailhead', emoji: '🚗' },
-  { key: 'event', title: 'Other outdoors', subtitle: 'Runs, jogs, meetups & more', emoji: '✨' },
+  { key: 'event', title: 'Activities', subtitle: 'Runs, jogs, meetups & more', emoji: '✨' },
 ];
 
 export const DEMAND_PARTY_PRESETS = [1, 2, 3, 4, 6, 8] as const;
@@ -114,20 +114,20 @@ const EVENT_DEMAND_STEPS: DemandFlowStepId[] = [
   'review',
 ];
 
-export const usesStructuredDemandFlow = (kind: MobileDemandKind | null): boolean =>
+export const usesStructuredDemandFlow = (kind: DemandKind | null): boolean =>
   kind === 'hiking' || kind === 'camping';
 
-export const usesEventDemandFlow = (kind: MobileDemandKind | null): boolean => kind === 'event';
+export const usesEventDemandFlow = (kind: DemandKind | null): boolean => kind === 'event';
 
-export const usesOutdoorActivityDemandFlow = (kind: MobileDemandKind | null): boolean =>
+export const usesOutdoorActivityDemandFlow = (kind: DemandKind | null): boolean =>
   usesStructuredDemandFlow(kind) || usesEventDemandFlow(kind);
 
-export const usesCarpoolDemandFlow = (kind: MobileDemandKind | null): boolean => kind === 'carpool';
+export const usesCarpoolDemandFlow = (kind: DemandKind | null): boolean => kind === 'carpool';
 
-export const usesGuidedDemandFlow = (kind: MobileDemandKind | null): boolean =>
+export const usesGuidedDemandFlow = (kind: DemandKind | null): boolean =>
   usesOutdoorActivityDemandFlow(kind) || usesCarpoolDemandFlow(kind);
 
-export const emptyMobileDemandDraft = (): MobileDemandDraft => ({
+export const emptyDemandDraft = (): DemandDraft => ({
   kind: null,
   title: '',
   date: todayIso(),
@@ -153,7 +153,7 @@ export const emptyMobileDemandDraft = (): MobileDemandDraft => ({
   toPinPlaced: false,
 });
 
-export const getDemandFlowSteps = (kind: MobileDemandKind): DemandFlowStepId[] => {
+export const getDemandFlowSteps = (kind: DemandKind): DemandFlowStepId[] => {
   switch (kind) {
     case 'hiking':
       return HIKING_DEMAND_STEPS;
@@ -173,7 +173,7 @@ export const getDemandFlowSteps = (kind: MobileDemandKind): DemandFlowStepId[] =
 };
 
 /** Sheet heading for each step (shown under the header). */
-export const demandFlowStepTitle = (step: DemandFlowStepId, kind: MobileDemandKind): string => {
+export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): string => {
   if (usesCarpoolDemandFlow(kind)) {
     switch (step) {
       case 'title':
@@ -183,7 +183,7 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: MobileDemandKi
       case 'to':
         return 'Going to';
       case 'from':
-        return 'Leaving from';
+        return 'Going from';
       case 'persons':
         return 'No of people';
       case 'requirements':
@@ -263,7 +263,7 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: MobileDemandKi
   }
 };
 
-export const demandTitlePlaceholder = (kind: MobileDemandKind): string => {
+export const demandTitlePlaceholder = (kind: DemandKind): string => {
   switch (kind) {
     case 'hiking':
       return 'e.g. Easy-moderate hike near Hatta this weekend, happy to carpool';
@@ -280,13 +280,13 @@ export const demandTitlePlaceholder = (kind: MobileDemandKind): string => {
   }
 };
 
-export const demandAreaFieldLabel = (kind: MobileDemandKind): string => {
+export const demandAreaFieldLabel = (kind: DemandKind): string => {
   if (kind === 'event') return 'What would you like to do?';
   if (kind === 'guide') return 'What are you looking for?';
   return 'Where would you like to go?';
 };
 
-export const demandAreaPlaceholder = (kind: MobileDemandKind): string => {
+export const demandAreaPlaceholder = (kind: DemandKind): string => {
   switch (kind) {
     case 'hiking':
       return 'e.g. Hatta, Jebel Jais, Wadi Shawka';
@@ -303,18 +303,18 @@ export const demandAreaPlaceholder = (kind: MobileDemandKind): string => {
   }
 };
 
-export const demandAreaUsesMap = (kind: MobileDemandKind): boolean =>
+export const demandAreaUsesMap = (kind: DemandKind): boolean =>
   kind === 'camping' || kind === 'guide' || kind === 'other';
 
-export const demandAreaTextRequired = (kind: MobileDemandKind): boolean =>
+export const demandAreaTextRequired = (kind: DemandKind): boolean =>
   kind === 'hiking' || kind === 'guide';
 
-export const demandGoingFromPlaceholder = (kind: MobileDemandKind): string => {
+export const demandGoingFromPlaceholder = (kind: DemandKind): string => {
   if (kind === 'camping') return 'e.g. Dubai, Sharjah, Abu Dhabi';
   return 'e.g. Dubai Marina, Business Bay, JLT';
 };
 
-export const demandAdditionalInfoPlaceholder = (kind: MobileDemandKind): string => {
+export const demandAdditionalInfoPlaceholder = (kind: DemandKind): string => {
   if (kind === 'carpool') {
     return 'Luggage, pickup flexibility, preferred departure window…';
   }
@@ -330,7 +330,7 @@ export const demandAdditionalInfoPlaceholder = (kind: MobileDemandKind): string 
 const fitnessLevelLabel = (level: DemandFitnessLevel): string =>
   DEMAND_FITNESS_OPTIONS.find((option) => option.value === level)?.title ?? level;
 
-export const buildDemandComment = (draft: MobileDemandDraft): string => {
+export const buildDemandComment = (draft: DemandDraft): string => {
   if (draft.kind === 'carpool') {
     const parts: string[] = [];
     if (draft.womenOnly) parts.push('Women only');
@@ -360,7 +360,7 @@ export const buildDemandComment = (draft: MobileDemandDraft): string => {
   return combined.length >= 3 ? combined : 'Open to matching plans nearby.';
 };
 
-export const validateDemandStep = (step: DemandFlowStepId, draft: MobileDemandDraft): string | null => {
+export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): string | null => {
   const kind = draft.kind;
   if (!kind) return 'Choose what you are looking for.';
 
@@ -437,7 +437,7 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: MobileDemandDr
   }
 };
 
-export const validateDemandDraft = (draft: MobileDemandDraft): string | null => {
+export const validateDemandDraft = (draft: DemandDraft): string | null => {
   const kind = draft.kind;
   if (!kind) return 'Choose what you are looking for.';
 
@@ -453,7 +453,7 @@ export type DemandSubmitResult = {
   visibleOnMap: boolean;
 };
 
-export const publishMobileDemandRequest = async (draft: MobileDemandDraft): Promise<DemandSubmitResult> => {
+export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSubmitResult> => {
   if (!draft.kind) throw new Error('Choose what you are looking for.');
 
   const comment = usesGuidedDemandFlow(draft.kind)

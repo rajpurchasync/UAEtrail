@@ -23,7 +23,7 @@ import {
   createFlowStepTitle,
   createTitlePlaceholder,
   defaultCapacityForKind,
-  emptyMobileCreateDraft,
+  emptyCreateActivityDraft,
   formatCapacityLabel,
   getCreateFlowSteps,
   locationPickerConfirmLabel,
@@ -32,7 +32,7 @@ import {
   OFFLINE_PRICE_NOTE,
   priceModeLabel,
   priceModeOptions,
-  publishMobileQuickActivity,
+  publishCreateActivity,
   ACTIVITY_DIFFICULTY_OPTIONS,
   usesVenueHostFlow,
   VEHICLE_ACCESS_OPTIONS,
@@ -41,22 +41,23 @@ import {
   type CreateFlowStepId,
   type JoinMode,
   type LocationPrecision,
-  type MobileCreateDraft,
-  type MobileCreateKind,
+  type CreateActivityDraft,
+  type CreateActivityKind,
   type TimeMode,
   type ActivityDifficulty,
   type VehicleAccess,
-} from './mobileCreateFlow';
+} from './organizeFlow';
+import { organizePublishSeed, PARTICIPATION_TOGGLE_QUESTION, type OrganizeComposeKind } from '../compose';
 import { MAP_CONFIG } from '../../config/platform';
 
-const MobileCreatePlacePicker = lazy(() =>
-  import('./MobileCreatePlacePicker').then((m) => ({ default: m.MobileCreatePlacePicker }))
+const CreatePlacePicker = lazy(() =>
+  import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
 );
 
 type FlowStep = 'type' | CreateFlowStepId;
 
 const TYPE_OPTIONS: Array<{
-  key: MobileCreateKind;
+  key: CreateActivityKind;
   title: string;
   subtitle: string;
   emoji: string;
@@ -67,15 +68,16 @@ const TYPE_OPTIONS: Array<{
   { key: 'event', title: 'Other Outdoors', subtitle: 'Runs, meetups & more', emoji: '✨' },
 ];
 
-interface MobileCreateActivityFlowProps {
+interface CreateActivityFlowProps {
   open: boolean;
   onClose: () => void;
   onPublished?: (activity: ActivityDTO) => void | Promise<void>;
   onOpenHostApplication?: () => void;
   onBackToIntent?: () => void;
   signInHref: string;
+  organizeKind?: OrganizeComposeKind | null;
   demandPrefill?: {
-    draft: MobileCreateDraft;
+    draft: CreateActivityDraft;
     participantIntentId: string;
   } | null;
 }
@@ -132,22 +134,23 @@ const NextButton = ({
   </button>
 );
 
-export const MobileCreateActivityFlow = ({
+export const CreateActivityFlow = ({
   open,
   onClose,
   onPublished,
   onOpenHostApplication,
   onBackToIntent,
   signInHref,
+  organizeKind = null,
   demandPrefill = null,
-}: MobileCreateActivityFlowProps) => {
+}: CreateActivityFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { canPublish, canHostPaidActivities, tenantId, loading: hostGateLoading } = useOrganisationGate({ enabled: open && Boolean(user) });
 
   const [step, setStep] = useState<FlowStep>('type');
-  const [draft, setDraft] = useState<MobileCreateDraft>(emptyMobileCreateDraft);
-  const [selectedKind, setSelectedKind] = useState<MobileCreateKind | null>(null);
+  const [draft, setDraft] = useState<CreateActivityDraft>(emptyCreateActivityDraft);
+  const [selectedKind, setSelectedKind] = useState<CreateActivityKind | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
@@ -155,13 +158,20 @@ export const MobileCreateActivityFlow = ({
   const [whereMapOpen, setWhereMapOpen] = useState(false);
 
   const kind = draft.kind ?? selectedKind;
-  const flowSteps = useMemo(() => (kind ? getCreateFlowSteps(kind) : []), [kind]);
+  const flowSteps = useMemo(
+    () => (kind ? getCreateFlowSteps(kind, draft.genericBuddy) : []),
+    [kind, draft.genericBuddy]
+  );
+  const stepTitleOptions = useMemo(
+    () => ({ genericBuddy: draft.genericBuddy }),
+    [draft.genericBuddy]
+  );
   const dateOptions = useMemo(() => buildDateOptions(), []);
 
   useEffect(() => {
     if (!open) {
       setStep('type');
-      setDraft(emptyMobileCreateDraft());
+      setDraft(emptyCreateActivityDraft());
       setSelectedKind(null);
       setError(null);
       setSubmitting(false);
@@ -175,7 +185,29 @@ export const MobileCreateActivityFlow = ({
       const prefillKind = demandPrefill.draft.kind;
       setDraft(demandPrefill.draft);
       setSelectedKind(prefillKind);
-      setStep(getCreateFlowSteps(prefillKind)[0]);
+      setStep(getCreateFlowSteps(prefillKind, demandPrefill.draft.genericBuddy)[0]);
+      setError(null);
+      setSubmitting(false);
+      setShowMonthView(false);
+      setRouteMapTarget(null);
+      setWhereMapOpen(false);
+      return;
+    }
+
+    if (organizeKind) {
+      const seed = organizePublishSeed(organizeKind);
+      const createKind = seed.activityType;
+      const nextDraft: CreateActivityDraft = {
+        ...emptyCreateActivityDraft(),
+        kind: createKind,
+        genericBuddy: seed.genericBuddy,
+        participationMode: seed.participationMode,
+        capacity: defaultCapacityForKind(createKind),
+        joinMode: 'open',
+      };
+      setDraft(nextDraft);
+      setSelectedKind(createKind);
+      setStep(getCreateFlowSteps(createKind, seed.genericBuddy)[0]);
       setError(null);
       setSubmitting(false);
       setShowMonthView(false);
@@ -188,9 +220,9 @@ export const MobileCreateActivityFlow = ({
       navigate(signInHref);
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, demandPrefill]);
+  }, [open, user, navigate, signInHref, onClose, demandPrefill, organizeKind]);
 
-  const patchDraft = useCallback((patch: Partial<MobileCreateDraft>) => {
+  const patchDraft = useCallback((patch: Partial<CreateActivityDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
@@ -287,7 +319,7 @@ export const MobileCreateActivityFlow = ({
     setSubmitting(true);
     setError(null);
     try {
-      const activity = await publishMobileQuickActivity({
+      const activity = await publishCreateActivity({
         draft: { ...draft, kind: draft.kind ?? selectedKind },
         tenantId,
         userId: user.id,
@@ -328,11 +360,11 @@ export const MobileCreateActivityFlow = ({
     return (
       <div className="absolute inset-0 z-[1400] bg-neutral-100">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <MobileCreatePlacePicker
+          <CreatePlacePicker
             precision={draft.locationPrecision}
             latitude={lat}
             longitude={lng}
-            headerTitle={locationPickerTitle(mapStep, kind, mapEndpoint)}
+            headerTitle={locationPickerTitle(mapStep, kind, mapEndpoint, stepTitleOptions)}
             confirmLabel={locationPickerConfirmLabel(kind, mapStep, mapEndpoint)}
             hint={locationPickerHint(kind, draft.locationPrecision)}
             onPrecisionChange={(locationPrecision: LocationPrecision) => patchDraft({ locationPrecision })}
@@ -368,8 +400,8 @@ export const MobileCreateActivityFlow = ({
     step === 'type' || !kind
       ? demandPrefill
         ? 'Host this activity'
-        : 'I am hosting'
-      : createFlowStepTitle(step as CreateFlowStepId, kind);
+        : 'Organize'
+      : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);
 
   const renderRoutePicker = (endpoint: 'from' | 'to') => {
     const isTo = endpoint === 'to';
@@ -404,7 +436,7 @@ export const MobileCreateActivityFlow = ({
       onClose={handleClose}
       panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
     >
-        {step === 'type' && !demandPrefill && (
+        {step === 'type' && !demandPrefill && !organizeKind && (
           <>
             <SheetHeader title="I am hosting" showBack onBack={goBack} onClose={handleClose} />
             <div className="grid grid-cols-2 gap-3">
@@ -455,13 +487,15 @@ export const MobileCreateActivityFlow = ({
           <>
             <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">
-                {kind === 'event' ? 'Event title' : kind === 'carpool' ? 'Title' : 'Activity title'}
-              </span>
+              {!draft.genericBuddy && (
+                <span className="mb-2 block text-sm font-medium text-gray-700">
+                  {kind === 'event' ? 'Event title' : kind === 'carpool' ? 'Title' : 'Activity title'}
+                </span>
+              )}
               <input
                 value={draft.title}
                 onChange={(event) => patchDraft({ title: event.target.value })}
-                placeholder={createTitlePlaceholder(kind)}
+                placeholder={createTitlePlaceholder(kind, stepTitleOptions)}
                 className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                 maxLength={120}
                 autoFocus
@@ -499,11 +533,32 @@ export const MobileCreateActivityFlow = ({
                   <span className="text-xs font-semibold text-emerald-700">{hasFromPin ? 'Edit' : 'Map'}</span>
                 </button>
               </>
+            ) : draft.genericBuddy ? (
+              <>
+                <p className="mb-4 text-sm text-gray-600">Drop a pin for where you&apos;re starting from.</p>
+                <button
+                  type="button"
+                  onClick={() => setWhereMapOpen(true)}
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
+                >
+                  <span className="flex items-center gap-2 text-gray-800">
+                    <MapPin className="h-5 w-5 text-emerald-600" />
+                    <span>
+                      <span className="block text-sm font-bold">Going from</span>
+                      <span className="text-xs text-gray-500">
+                        {hasFromPin
+                          ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
+                          : 'Tap to choose on map'}
+                      </span>
+                    </span>
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-700">{hasFromPin ? 'Edit' : 'Map'}</span>
+                </button>
+              </>
             ) : (
               <>
                 <p className="mb-4 text-sm text-gray-600">
-                  Set where people meet, optional directions, and the meeting time. Meeting point information is
-                  for reference only — mandatory rules are added later.
+                  Set where you&apos;re starting from and an optional meet time.
                 </p>
                 <button
                   type="button"
@@ -513,7 +568,7 @@ export const MobileCreateActivityFlow = ({
                   <span className="flex items-center gap-2 text-gray-800">
                     <MapPin className="h-5 w-5 text-emerald-600" />
                     <span>
-                      <span className="block text-sm font-bold">Meeting point pin</span>
+                      <span className="block text-sm font-bold">Going from</span>
                       <span className="text-xs text-gray-500">
                         {hasFromPin
                           ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
@@ -525,7 +580,7 @@ export const MobileCreateActivityFlow = ({
                 </button>
 
                 <label className="mt-4 block">
-                  <span className="mb-1 block text-sm font-medium text-gray-700">Meeting point information</span>
+                  <span className="mb-1 block text-sm font-medium text-gray-700">Extra directions</span>
                   <textarea
                     value={draft.meetingPointInfo}
                     onChange={(event) => patchDraft({ meetingPointInfo: event.target.value })}
@@ -534,11 +589,11 @@ export const MobileCreateActivityFlow = ({
                     className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                     maxLength={500}
                   />
-                  <span className="mt-1 block text-xs text-gray-500">Optional — helps people find the spot. Not a join requirement.</span>
+                  <span className="mt-1 block text-xs text-gray-500">Optional — helps people find the spot.</span>
                 </label>
 
                 <label className="mt-4 block">
-                  <span className="mb-1 block text-sm font-medium text-gray-700">Meeting time</span>
+                  <span className="mb-1 block text-sm font-medium text-gray-700">Meet time</span>
                   <input
                     type="time"
                     value={draft.meetingTime}
@@ -553,7 +608,10 @@ export const MobileCreateActivityFlow = ({
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton
-                disabled={!hasFromPin || (kind !== 'carpool' && !draft.meetingTime.trim())}
+                disabled={
+                  !hasFromPin ||
+                  (kind !== 'carpool' && !draft.genericBuddy && !draft.meetingTime.trim())
+                }
                 onClick={goNext}
               />
             </div>
@@ -893,7 +951,31 @@ export const MobileCreateActivityFlow = ({
         {step === 'audience' && kind && (
           <>
             <SheetHeader title={stepTitle} showBack onBack={goBack} onClose={handleClose} />
-            {kind !== 'carpool' && (
+            <div className="mb-4">
+              <p className="mb-2 text-sm font-semibold text-gray-900">{PARTICIPATION_TOGGLE_QUESTION}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { key: 'approval' as const, title: 'Yes', subtitle: 'They request — you OK' },
+                  { key: 'rsvp' as const, title: 'No', subtitle: 'Open — I\'m going' },
+                ]).map((option) => {
+                  const active = draft.participationMode === option.key;
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => patchDraft({ participationMode: option.key })}
+                      className={`rounded-2xl border-2 px-3 py-3 text-left ${
+                        active ? 'border-emerald-600 bg-emerald-50/50' : 'border-neutral-200 bg-white'
+                      }`}
+                    >
+                      <p className="text-sm font-bold text-gray-900">{option.title}</p>
+                      <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {!draft.genericBuddy && kind !== 'carpool' && (
               <div className="grid grid-cols-2 gap-3">
                 {([
                   { key: 'open' as JoinMode, title: 'Public', subtitle: 'Listed on the explore map', icon: Users },
@@ -919,7 +1001,7 @@ export const MobileCreateActivityFlow = ({
               </div>
             )}
 
-            {(draft.joinMode === 'open' || kind === 'carpool') && (
+            {!draft.genericBuddy && (draft.joinMode === 'open' || kind === 'carpool') && (
               <div className={`space-y-3 ${kind !== 'carpool' ? 'mt-4' : ''}`}>
                 {kind === 'carpool' && (
                   <p className="text-sm text-gray-600">Who can request a seat in your ride?</p>

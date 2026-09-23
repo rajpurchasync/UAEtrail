@@ -1,8 +1,11 @@
+import { Link } from 'react-router-dom';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../../config/seo';
 import {
   HOME_HERO_EYEBROW_MOBILE,
   HOME_HERO_HEADLINE,
+  HOME_HERO_JOIN_CTA,
+  HOME_HERO_PRIMARY_CTA,
   HOME_HERO_SUBLINE_MOBILE,
 } from '../../content/homeLanding';
 import { AppButtonLink } from '../mobile/AppButton';
@@ -37,17 +40,15 @@ export const HomeMobileLaunch = ({ joinHref }: HomeMobileLaunchProps) => (
           </div>
 
           <div className="landing-hero-actions mt-5">
-            <AppButtonLink to={EXPLORE_MAP_PATH} fullWidth className="landing-hero-btn shadow-lg shadow-black/25">
-              Explore the map
+            <AppButtonLink to={EXPLORE_MAP_PATH} className="landing-hero-btn shadow-lg shadow-black/25">
+              {HOME_HERO_PRIMARY_CTA}
             </AppButtonLink>
-            <AppButtonLink
+            <Link
               to={joinHref}
-              variant="inverse"
-              fullWidth
-              className="landing-hero-btn !bg-white/10 !text-white border border-white/30 shadow-none backdrop-blur-sm active:!bg-white/20"
+              className="text-[13px] font-semibold text-white underline underline-offset-2"
             >
-              Join free
-            </AppButtonLink>
+              {HOME_HERO_JOIN_CTA}
+            </Link>
           </div>
         </div>
       </div>
