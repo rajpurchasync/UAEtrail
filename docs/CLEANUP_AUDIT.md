@@ -37,6 +37,7 @@ Legacy method names (`getPublicLocations`, `getHostTeam`, …) remain on `api` u
 
 - `apps/api/src/lib/host-display-details.ts` — shared host public metadata parsing (was duplicated in `user.ts`).
 - `apps/api/src/routes/user/registerHostApplicationRoutes.ts` — `/me/host-details`, `/me/host-application` (removed mid-file imports from `user.ts`).
+- `apps/api/src/routes/user/registerPublicPlaceRoutes.ts` — `/explore/map`, public `/locations/*` (premium, list, view).
 
 Route map unchanged: `routes/index.ts` mounts `user`, `host`, `admin`, `shop`, `social`, `chat`, `media`, `auth`.
 
