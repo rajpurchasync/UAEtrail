@@ -40,12 +40,16 @@ Legacy method names (`getPublicLocations`, `getHostTeam`, …) remain on `api` u
 - `apps/api/src/routes/user/registerPublicPlaceRoutes.ts` — `/explore/map`, public `/locations/*` (premium, list, view).
 - `apps/api/src/routes/user/registerPublicActivityRoutes.ts` — public `/activities` browse, detail, join, RSVP.
 - `apps/api/src/routes/user/registerMeEngagementRoutes.ts` — `/me/requests`, `/me/activities`, group chat, push, host-status, user search.
+- `apps/api/src/routes/user/registerPublicTenantRoutes.ts`, `registerPublicRewardsRoutes.ts`, `registerPublicMemberRoutes.ts` — public org, Trail Points, member profiles.
+- `apps/api/src/routes/user/registerAccountLifecycleRoutes.ts` — export + delete account.
+- `apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts`, `registerMeRewardsRoutes.ts` — `/me/locations`, demand intents, `/me/rewards`.
+- `apps/api/src/routes/user.ts` — thin composer (~50 lines) wiring the modules above + profile/buddy/group modules.
 
 Route map unchanged: `routes/index.ts` mounts `user`, `host`, `admin`, `shop`, `social`, `chat`, `media`, `auth`.
 
-## Backend — still monolithic (next extractions)
+## Backend — next (not user router)
 
-`apps/api/src/routes/user.ts` (~400 lines) still owns public tenant profile, rewards catalog, public member profiles, account deletion, `/me/locations` submit, participant intents.
+Frontend **`api` alias burn-down** per `DOMAIN_ADOPTION_PLAN.md` — migrate call sites from `getHostTeam` / `getPublicLocations` to domain names, then shrink `services.ts` aliases.
 
 ## Intentionally kept (not stale)
 

@@ -82,7 +82,7 @@
 ## Phase 5 — done (initial)
 
 - [x] Split `user.ts` (2,370 → ~1,510 lines): schemas + profile, notifications, buddies, groups modules under `apps/api/src/routes/user/`
-- [x] Host application routes → `registerHostApplicationRoutes.ts`; host display parsing → `lib/host-display-details.ts`
+- [x] `user.ts` reduced to route composer; modules under `routes/user/register*.ts`
 - [x] Frontend dead-file pass — `docs/CLEANUP_AUDIT.md`; unified client entry `src/api/index.ts`
 - [x] Removed deprecated `organizerDetailsSchema` alias (use `hostDetailsSchema`)
 - [x] Removed unused `exploreVenuesPath` / `exploreLocationsPath` re-exports
