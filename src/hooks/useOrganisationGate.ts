@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { HostStatusDTO } from '@uaetrail/shared-types';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { setActiveTenantId } from '../api/tenant';
 import { useAuth } from '../context/AuthContext';
 

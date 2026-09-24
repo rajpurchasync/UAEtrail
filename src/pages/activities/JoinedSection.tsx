@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { MyActivityDTO } from '@uaetrail/shared-types';
-import { api, ActivityRequestView } from '../../api/services';
+import { api, ActivityRequestView } from '../../api/index';
 import { ActivityHubEmptyState } from '../../components/mobile/ActivityHubEmptyState';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import {

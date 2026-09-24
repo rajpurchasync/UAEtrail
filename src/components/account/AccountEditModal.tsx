@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UserProfile } from '../../api/services';
+import { UserProfile } from '../../api/index';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
 import type { UserCountryCode, UserGender } from '../../constants/userProfileOptions';
 import { AppButton } from '../mobile/AppButton';

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Mail, Lock, Mountain, X } from 'lucide-react';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { setActiveTenantId } from '../api/tenant';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';

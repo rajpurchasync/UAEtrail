@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ExternalLink, Package, Store, Trash2 } from 'lucide-react';
 import type { ProductDTO, ShopOrganisationDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { shopPublicPath } from '../../utils/shopPaths';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';

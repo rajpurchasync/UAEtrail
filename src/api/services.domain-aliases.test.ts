@@ -31,8 +31,10 @@ describe('api domain aliases (Phase 1)', () => {
 
   it('exposes place review aliases alongside legacy location review methods', () => {
     expect(typeof api.getPlaceReviews).toBe('function');
+    expect(typeof api.getOrganisationReviews).toBe('function');
     expect(typeof api.getReviews).toBe('function');
     expect(typeof api.createPlaceReview).toBe('function');
+    expect(typeof api.createOrganisationReview).toBe('function');
     expect(typeof api.createReview).toBe('function');
     expect(typeof api.getMyReviews).toBe('function');
     expect(typeof api.updateMyReview).toBe('function');
@@ -40,7 +42,9 @@ describe('api domain aliases (Phase 1)', () => {
 
   it('exposes host place submission aliases alongside legacy methods', () => {
     expect(typeof api.submitPlace).toBe('function');
+    expect(typeof api.submitOrganisationPlace).toBe('function');
     expect(typeof api.submitLocation).toBe('function');
+    expect(typeof api.getOrganisationSubmittedPlaces).toBe('function');
     expect(typeof api.getHostSubmittedPlaces).toBe('function');
     expect(typeof api.getHostSubmittedLocations).toBe('function');
     expect(typeof api.submitUserPlace).toBe('function');
@@ -51,6 +55,7 @@ describe('api domain aliases (Phase 1)', () => {
     expect(typeof api.getOrganisationProfile).toBe('function');
     expect(typeof api.getTenantProfile).toBe('function');
     expect(typeof api.getShopOrganisationProfile).toBe('function');
+    expect(typeof api.getShopOrganisationProfileById).toBe('function');
     expect(typeof api.getMerchantProfileById).toBe('function');
     expect(typeof api.getShopOrganisationStores).toBe('function');
     expect(typeof api.createShopOrganisationProfile).toBe('function');
@@ -90,6 +95,7 @@ describe('api domain aliases (Phase 1)', () => {
 
   it('exposes shop public alias alongside legacy merchant public method', () => {
     expect(typeof api.getShopPublic).toBe('function');
+    expect(typeof api.getShopOrganisationPublic).toBe('function');
     expect(typeof api.getMerchantPublic).toBe('function');
   });
 

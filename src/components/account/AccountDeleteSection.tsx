@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, AccountDeletionInfo } from '../../api/services';
+import { api, AccountDeletionInfo } from '../../api/index';
 import { AppButton } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
 

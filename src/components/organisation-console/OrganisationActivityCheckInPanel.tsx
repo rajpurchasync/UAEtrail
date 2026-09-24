@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ParticipantDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { SecureAvatar } from '../ui';
 
 interface OrganisationActivityCheckInPanelProps {

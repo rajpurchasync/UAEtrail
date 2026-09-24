@@ -40,7 +40,7 @@ export const fetchEntity = async (ref: EntityRef): Promise<EntityFetchResult> =>
       return { kind: 'activity', activity: response.data };
     }
     case 'organisation': {
-      const response = await api.getTenantProfile(ref.slug);
+      const response = await api.getOrganisationProfile(ref.slug);
       return { kind: 'organisation', tenant: response.data };
     }
     case 'shop': {
@@ -52,7 +52,7 @@ export const fetchEntity = async (ref: EntityRef): Promise<EntityFetchResult> =>
       return { kind: 'shop', shop: response.data };
     }
     case 'person': {
-      const response = await api.getUserPublicProfile(ref.userId);
+      const response = await api.getPersonPublicProfile(ref.userId);
       return { kind: 'person', profile: response.data };
     }
     default: {

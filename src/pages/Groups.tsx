@@ -18,7 +18,7 @@ import {
   SocialGroupMemberView,
   SocialGroupView,
   SocialGroupWallMessageView,
-} from '../api/services';
+} from '../api/index';
 import {
   GROUP_WALL_REACTION_EMOJI,
   GROUP_WALL_REACTION_KINDS,

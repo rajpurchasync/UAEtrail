@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Download } from 'lucide-react';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { AppButton } from '../mobile/AppButton';
 
 export const AccountDataExportSection = () => {

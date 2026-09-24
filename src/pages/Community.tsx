@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Search, MessageSquare, ThumbsUp, Plus, X, MapPin, CheckCircle2, Users } from 'lucide-react';
 import { PostDTO } from '@uaetrail/shared-types';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { ImageUpload } from '../components/ui/ImageUpload';
 import { AppSelect } from '../components/ui/AppSelect';

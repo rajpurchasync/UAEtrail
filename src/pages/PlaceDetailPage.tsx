@@ -17,7 +17,7 @@ import { getDifficultyColor, capitalize } from '../utils';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { Place } from '../types/place';
 import { fetchPlaceDetail } from '../api/public';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { activitiesBrowsePath } from '../config/activityTypes';
 import { detailBackPath } from '../utils/exploreRouting';
 import { hasPositiveNumber, isDefaultVenueSeason } from '../utils/venueDetailDisplay';

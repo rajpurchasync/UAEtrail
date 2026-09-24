@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { api, ActivityRequestView } from '../api/services';
+import { api, ActivityRequestView } from '../api/index';
 import { getActiveTenantId } from '../api/tenant';
 import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
 import { OrganisationJoinRequestCard } from '../components/organisation-console/OrganisationJoinRequestCard';

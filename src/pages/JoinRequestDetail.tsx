@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Calendar, MapPin, MessageCircle } from 'lucide-react';
 import { activityHostName, activityHostUserId } from '../utils/hostLabels';
 import { WithdrawReason, withdrawReasonLabel } from '@uaetrail/shared-types';
-import { api, ActivityRequestView } from '../api/services';
+import { api, ActivityRequestView } from '../api/index';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';

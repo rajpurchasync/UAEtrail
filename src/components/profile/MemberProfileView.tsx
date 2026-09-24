@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
-import type { PersonPublicProfileDTO } from '../../api/services';
+import type { PersonPublicProfileDTO } from '../../api/index';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { ProfileStampsRow } from './ProfileStampsRow';

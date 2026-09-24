@@ -59,6 +59,9 @@ export const shopApi = {
       { auth: true }
     ),
 
+    getShopOrganisationProfileById: (merchantId: string) =>
+    apiRequest<{ data: MerchantProfileDTO }>(`/shop/merchant/profile?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
+    /** @deprecated Use {@link shopApi.getShopOrganisationProfileById} */
     getMerchantProfileById: (merchantId: string) =>
     apiRequest<{ data: MerchantProfileDTO }>(`/shop/merchant/profile?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
 
@@ -133,7 +136,7 @@ export const shopApi = {
       `/shop/merchant/products?shopId=${encodeURIComponent(shopId)}`,
       { auth: true }
     ),
-
+    /** @deprecated Use {@link shopApi.getShopOrganisationProducts} — pass shop id as `shopId`. */
     getMerchantProducts: (merchantId: string) =>
     apiRequest<{ data: (ProductDTO & { createdAt: string })[] }>(`/shop/merchant/products?merchantId=${encodeURIComponent(merchantId)}`, { auth: true }),
 
@@ -164,6 +167,13 @@ export const shopApi = {
       body: JSON.stringify(payload)
     }),
 
+    updateShopOrganisationProduct: (id: string, payload: Partial<{ name: string; description?: string; images?: string[]; priceAed: number; stockQuantity: number; lowStockThreshold: number; discountPercent?: number; packagingInfo?: string; category: string; status?: 'draft' | 'active' }>) =>
+    apiRequest<{ data: ProductDTO }>(`/shop/merchant/products/${id}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload)
+    }),
+    /** @deprecated Use {@link shopApi.updateShopOrganisationProduct} */
     updateMerchantProduct: (id: string, payload: Partial<{ name: string; description?: string; images?: string[]; priceAed: number; stockQuantity: number; lowStockThreshold: number; discountPercent?: number; packagingInfo?: string; category: string; status?: 'draft' | 'active' }>) =>
     apiRequest<{ data: ProductDTO }>(`/shop/merchant/products/${id}`, {
       method: 'PATCH',
@@ -171,6 +181,12 @@ export const shopApi = {
       body: JSON.stringify(payload)
     }),
 
+    deleteShopOrganisationProduct: (id: string) =>
+    apiRequest(`/shop/merchant/products/${id}`, {
+      method: 'DELETE',
+      auth: true
+    }),
+    /** @deprecated Use {@link shopApi.deleteShopOrganisationProduct} */
     deleteMerchantProduct: (id: string) =>
     apiRequest(`/shop/merchant/products/${id}`, {
       method: 'DELETE',
@@ -216,6 +232,9 @@ export const shopApi = {
       body: JSON.stringify(payload)
     }),
 
+    getShopOrganisationPublic: (id: string) =>
+    apiRequest<{ data: MerchantPublicDTO }>(`/shop/merchants/${id}`),
+    /** @deprecated Use {@link shopApi.getShopPublic} for `/shop/*` pages or {@link shopApi.getShopOrganisationPublic} for legacy merchant ids. */
     getMerchantPublic: (id: string) =>
     apiRequest<{ data: MerchantPublicDTO }>(`/shop/merchants/${id}`),
 

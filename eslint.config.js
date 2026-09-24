@@ -30,6 +30,23 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/api/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/api/services', '**/api/services.ts'],
+              message: 'Import from the canonical API surface: same-depth `../api/index` or `../api` (see src/api/index.ts).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['src/explore/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
@@ -43,6 +60,12 @@ export default tseslint.config(
             {
               name: '../utils/exploreRouting',
               message: 'Import from ../explore/routing — exploreRouting is a deprecated shim.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['**/api/services', '**/api/services.ts'],
+              message: 'Import from the canonical API surface: `../../api/index` (see src/api/index.ts).',
             },
           ],
         },

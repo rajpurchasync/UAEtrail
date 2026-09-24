@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { setStoredSession } from '../api/client';
 import { getActiveTenantId } from '../api/tenant';
 import { useAuth } from '../context/AuthContext';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, TeamMember } from '../../api/services';
+import { api, TeamMember } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import { AppSelect } from './AppSelect';
 

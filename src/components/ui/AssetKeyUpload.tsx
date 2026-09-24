@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Upload, Loader2, FileText } from 'lucide-react';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { getStoredSession } from '../../api/client';
 import { formatEnvironmentUrl } from '../../utils/formatEnvironmentUrl';
 

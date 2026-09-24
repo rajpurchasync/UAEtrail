@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AdminUserType } from '@uaetrail/shared-types';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { AdminUserDetail, AdminUserDetailPanel } from '../components/admin/AdminUserDetailPanel';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
@@ -97,7 +97,7 @@ export const AdminMembers = () => {
     }
     setActionLoading(true);
     try {
-      await api.updateAdminUserStatus(
+      await api.updateAdminMemberStatus(
         confirmTarget.id,
         newStatus,
         newStatus === 'suspended' ? suspendComment.trim() : undefined
@@ -114,7 +114,7 @@ export const AdminMembers = () => {
 
   const openDetail = async (id: string) => {
     try {
-      const res = await api.getAdminUserDetail(id);
+      const res = await api.getAdminMemberDetail(id);
       setSelectedUser(res.data as unknown as AdminUserDetail);
       setDetailOpen(true);
     } catch (e) {

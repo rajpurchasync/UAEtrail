@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { ActivityDTO } from '@uaetrail/shared-types';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { getActiveTenantId } from '../api/tenant';
 import { parseActivityTypeParam, ActivityActionsMenu, ActivityListPreview, buildHostActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
@@ -78,7 +78,7 @@ export const OrganisationActivities = () => {
   const publish = async (activityId: string) => {
     if (!tenantId) return;
     try {
-      await api.publishHostActivity(tenantId, activityId);
+      await api.publishOrganisationActivity(tenantId, activityId);
       await reloadExploreMap();
       await loadEvents(tenantId);
     } catch (err) {
@@ -133,7 +133,7 @@ export const OrganisationActivities = () => {
     if (!tenantId) return;
     setPreviewPublishing(true);
     try {
-      await api.publishHostActivity(tenantId, event.id);
+      await api.publishOrganisationActivity(tenantId, event.id);
       await reloadExploreMap();
       setPreviewActivity(null);
       await loadEvents(tenantId);

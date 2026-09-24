@@ -1,5 +1,5 @@
 import { ActivityDTO } from '@uaetrail/shared-types';
-import { ActivityRequestView } from '../api/services';
+import { ActivityRequestView } from '../api/index';
 
 export const todayStart = () => new Date(new Date().toDateString());
 

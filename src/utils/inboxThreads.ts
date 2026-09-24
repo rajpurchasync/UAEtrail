@@ -1,6 +1,6 @@
 import type { ChatConversationDTO } from '@uaetrail/shared-types';
-import type { SocialGroupView } from '../api/services';
-import { api } from '../api/services';
+import type { SocialGroupView } from '../api/index';
+import { api } from '../api/index';
 
 export type InboxFilter = 'all' | 'unread' | 'groups' | 'outings';
 

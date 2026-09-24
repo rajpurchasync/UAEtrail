@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, AdminSocialGroupDetail, AdminSocialGroupListItem } from '../api/services';
+import { api, AdminSocialGroupDetail, AdminSocialGroupListItem } from '../api/index';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';

@@ -10,6 +10,9 @@ import type {
 export const accountApi = {
     getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
 
+    getPersonPublicProfile: (userId: string) =>
+    apiRequest<{ data: PublicMemberProfileDTO }>(`/users/${userId}/public-profile`),
+    /** @deprecated Use {@link accountApi.getPersonPublicProfile} */
     getUserPublicProfile: (userId: string) =>
     apiRequest<{ data: PublicMemberProfileDTO }>(`/users/${userId}/public-profile`),
 

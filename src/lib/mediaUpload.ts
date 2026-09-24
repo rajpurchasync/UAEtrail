@@ -1,4 +1,4 @@
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { getStoredSession } from '../api/client';
 import { formatEnvironmentUrl } from '../utils/formatEnvironmentUrl';
 import { formatMediaUrl } from '../utils/formatMediaUrl';

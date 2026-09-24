@@ -28,7 +28,7 @@
 | **2** | Explore shell | Split `ExploreExperience`, sheet a11y |
 | **3** | Publish contract | One payload builder (explore + host) |
 | **4** | Routing hygiene | Signed-in home → `/explore`, single compose create |
-| **5** | API cleanup | Split `user.ts`, burn `@deprecated` aliases — see [`CLEANUP_AUDIT.md`](./CLEANUP_AUDIT.md) |
+| **5** | API cleanup | Split `user.ts`, domain `api` aliases, thin `user` composer |
 | **6** | Design system | Copy lint, list rows, loading/error patterns |
 
 ---
@@ -83,10 +83,11 @@
 
 - [x] Split `user.ts` (2,370 → ~1,510 lines): schemas + profile, notifications, buddies, groups modules under `apps/api/src/routes/user/`
 - [x] `user.ts` reduced to route composer; modules under `routes/user/register*.ts`
-- [x] Frontend dead-file pass — `docs/CLEANUP_AUDIT.md`; unified client entry `src/api/index.ts`
+- [x] Frontend dead-file pass; unified client entry `src/api/index.ts`
 - [x] Removed deprecated `organizerDetailsSchema` alias (use `hostDetailsSchema`)
 - [x] Removed unused `exploreVenuesPath` / `exploreLocationsPath` re-exports
-- [x] Activity publish call sites use canonical `createHostActivity` / `publishHostActivity`
+- [x] Frontend `api` call sites use domain names (`createOrganisationActivity`, `getOrganisationProfile`, …); legacy symbols kept on `api` only for compat — `src/api/apiLegacyGuard.test.ts`
+- [x] Canonical methods live on `src/api/domains/*`; `services.ts` spreads domains + `submitPlace` helper only
 
 ---
 
@@ -155,3 +156,4 @@
 | 2026-09-23 | Split `user.ts` into `routes/user/*` modules (schemas, profile, social) |
 | 2026-09-23 | Shared consumer feedback + copy guard for hub sections (Phase 6) |
 | 2026-09-24 | Member signup profile wizard + profile/settings alignment + route gate (Phase 8) |
+| 2026-09-24 | Frontend API alias burn-down: domain methods on `domains/*`, `apiLegacyGuard`, slim `services.ts` |

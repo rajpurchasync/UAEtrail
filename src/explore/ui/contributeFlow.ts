@@ -1,5 +1,5 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { DEFAULT_COUNTRY } from '../../config/regions';
 import { MAP_CONFIG } from '../../config/platform';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';

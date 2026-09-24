@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { getActiveTenantId } from '../api/tenant';
 
 const organisationHubKey = (tenantId: string) => ['organisation-hub', tenantId] as const;

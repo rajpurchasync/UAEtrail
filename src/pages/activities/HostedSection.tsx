@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import {
   ActivityActionsMenu,
   buildHostActivityMenuItems,
@@ -142,7 +142,7 @@ export const HostedSection = ({
     setError(null);
     setBusyActivityId(event.id);
     try {
-      await api.publishHostActivity(host.tenantId, event.id);
+      await api.publishOrganisationActivity(host.tenantId, event.id);
       await reloadExploreMap();
       await host.reload();
     } catch (err) {

@@ -5,7 +5,7 @@ import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import { isConsumerChromeHidden, MOBILE_DRAWER_MENU, MOBILE_LANDING_USER_MENU, EXPLORE_MAP_PATH } from '../../config/platform';
 import { ADMIN_LINKS, HOST_CONSOLE_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { setStoredSession } from '../../api/client';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect } from '../../utils/authReturnContext';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, type TeamMember } from '../../api/services';
+import { api, type TeamMember } from '../../api/index';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { ReviewDTO, type ActivityDTO, type TenantPublicDTO } from '@uaetrail/shared-types';
 import { NAV_ICONS } from '../../config/navIcons';
-import { api, OrganisationDetails } from '../../api/services';
+import { api, OrganisationDetails } from '../../api/index';
 import { ActivityCard } from '../ui/ActivityCard';
 import { ReviewSection } from '../ui/ReviewSection';
 import { SecureAvatar } from '../ui/SecureAvatar';
@@ -86,7 +86,7 @@ export const OrganisationPublicProfile = ({
         setActivities(tenantRes.data.activities);
         setEditBio(tenantRes.data.ownerBio ?? '');
         setEditDetails(tenantRes.data.hostDetails ?? tenantRes.data.organizerDetails ?? {});
-        const reviewsRes = await api.getReviews('tenant', tenantRes.data.id).catch(() => ({ data: [] }));
+        const reviewsRes = await api.getOrganisationReviews(tenantRes.data.id).catch(() => ({ data: [] }));
         setReviews(reviewsRes.data);
       })
       .catch(() => setError(`We couldn't find this ${hostProfileLabel(null).toLowerCase()}`))

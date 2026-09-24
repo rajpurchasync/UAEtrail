@@ -1,0 +1,21 @@
+---
+description: experiment-ui is a standalone experiment — not merged into uaetrail/main
+alwaysApply: true
+---
+
+# experiment-ui branch (standalone)
+
+This workspace line of work on **`experiment-ui`** is a **separate experiment**, not the canonical `uaetrail/main` product line.
+
+## Git policy
+
+- **Work branch:** `experiment-ui` only (unless the user names another experiment branch).
+- **Push:** `git push origin experiment-ui` when the user asks to push.
+- **Do not merge** into `main`, `origin/main`, or open PRs targeting `uaetrail/main` unless the user **explicitly** requests a merge or main PR.
+- **Do not suggest** “merge to main”, “ship to production main”, or “open PR on uaetrail/main” as default next steps.
+- **Do not commit or push** until the user asks.
+
+## Other remotes
+
+- **`purchasync`** mirror: only when the user explicitly asks (see `git-remotes.mdc`).
+- **`origin/main`**: do not fast-forward or merge experiment work there without explicit user instruction.

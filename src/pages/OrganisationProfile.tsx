@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { OrganisationPublicProfile } from '../components/organisation-console/OrganisationPublicProfile';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
-import { api, TenantProfile } from '../api/services';
+import { api, TenantProfile } from '../api/index';
 import { shopPublicPath } from '../utils/shopPaths';
 import { detailBackPath } from '../utils/exploreRouting';
 

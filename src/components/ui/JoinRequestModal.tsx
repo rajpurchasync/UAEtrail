@@ -10,7 +10,7 @@ import {
   MEETING_POINT_LABEL,
   MANDATORY_INSTRUCTIONS_LABEL,
 } from '../../utils/joinInstructions';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { Dialog } from './Dialog';
 
 type JoinableActivity = Pick<

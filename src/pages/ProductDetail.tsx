@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { exploreShopsPath } from '../utils/exploreRouting';
 import { shopPublicPath } from '../utils/shopPaths';
 import { PageMeta } from '../components/seo/PageMeta';

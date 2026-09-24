@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Bell, X } from 'lucide-react';
 import { NotificationDTO } from '@uaetrail/shared-types';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';

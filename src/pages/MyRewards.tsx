@@ -11,7 +11,7 @@ import {
   Users,
 } from 'lucide-react';
 import type { RewardLeaderboardEntryDTO, RewardSummaryDTO } from '@uaetrail/shared-types';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';

@@ -5,7 +5,7 @@ import { ActivityType, LocationPremiumSummaryDTO, PremiumAccessReason } from '@u
 import { MeetingPointMap } from './MeetingPointMap';
 import { capitalize } from '../../utils';
 import { useAuth } from '../../context/AuthContext';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { AppButton } from '../mobile/AppButton';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (

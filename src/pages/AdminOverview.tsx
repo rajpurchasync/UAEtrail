@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, AdminMetrics, HostApplication, AuditLogEntry } from '../api/services';
+import { api, AdminMetrics, HostApplication, AuditLogEntry } from '../api/index';
 import { DashboardLayout } from '../components/layout';
 import { ActivityDTO } from '@uaetrail/shared-types';
 import { ADMIN_LINKS } from '../constants';
@@ -19,7 +19,7 @@ export const AdminOverview = () => {
     Promise.all([
       api.getAdminMetrics(),
       api.getAdminActivities(),
-      api.getAdminApplications(),
+      api.getAdminOrganisationApplications(),
       api.getAdminAuditLogs({ pageSize: 10 }).catch(() => ({ data: [] as AuditLogEntry[] }))
     ])
       .then(([metricsRes, eventsRes, appsRes, auditRes]) => {

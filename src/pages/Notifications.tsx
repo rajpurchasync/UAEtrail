@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { NotificationDTO } from '@uaetrail/shared-types';
 import { Bell, ChevronRight, Sparkles, Trophy } from 'lucide-react';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { ShareButton } from '../components/ui/ShareButton';
@@ -78,10 +78,6 @@ export const Notifications = () => {
     void invalidateNotificationUnreadBadge(queryClient, user.id);
   };
 
-  if (user?.role === 'platform_admin') {
-    return <Navigate to="/admin/notifications" replace />;
-  }
-
   const load = async () => {
     setLoading(true);
     setError(null);
@@ -98,8 +94,12 @@ export const Notifications = () => {
 
   useEffect(() => {
     if (user?.role === 'platform_admin') return;
-    load();
+    void load();
   }, [user?.role]);
+
+  if (user?.role === 'platform_admin') {
+    return <Navigate to="/admin/notifications" replace />;
+  }
 
   const markRead = async (id: string) => {
     await api.markNotificationRead(id).catch(() => undefined);

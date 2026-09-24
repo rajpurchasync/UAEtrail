@@ -14,7 +14,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { RewardStatsDTO } from '@uaetrail/shared-types';
 import { MEMBERSHIP_TIERS } from '../constants/membershipTiers';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';

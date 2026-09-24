@@ -1,7 +1,7 @@
 import { UserRole } from '@uaetrail/shared-types';
 import { useQuery } from '@tanstack/react-query';
 import { Navigate, useLocation } from 'react-router-dom';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import { isSignupProfileComplete } from '../../constants/userProfileOptions';
 import { accountRouteByRole } from '../../utils/authRouting';

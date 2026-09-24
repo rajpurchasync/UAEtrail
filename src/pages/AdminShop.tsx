@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ProductDTO } from '@uaetrail/shared-types';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';

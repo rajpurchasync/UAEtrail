@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { AppButton } from '../mobile/AppButton';
 import { GlassCard } from '../mobile/GlassCard';
 import { Dialog } from '../ui/Dialog';

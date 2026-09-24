@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { KeyRound, ShieldCheck, Smartphone, Eye, Lock, Download, Trash2, UserRound } from 'lucide-react';
-import { api, type UserProfile } from '../api/services';
+import { api, type UserProfile } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { AccountDataExportSection, AccountDeleteSection } from '../components/account';
 import { PageMeta } from '../components/seo/PageMeta';

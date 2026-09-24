@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import type { UserCountryCode, UserGender } from '../../constants/userProfileOptions';
 import {

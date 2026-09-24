@@ -1,4 +1,4 @@
-import { api } from '../api/services';
+import { api } from '../api/index';
 
 const SW_PATH = '/sw.js';
 

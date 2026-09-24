@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 
 const inboxUnreadKey = (userId: string) => ['inbox-unread', userId] as const;

@@ -2,7 +2,7 @@ import { ActivityDetailDTO, ProductDTO, ReviewDTO } from '@uaetrail/shared-types
 import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
 import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types/place';
 import { placeDetailPath } from '../../utils/placePaths';
-import type { TenantProfile } from '../../api/services';
+import type { TenantProfile } from '../../api/index';
 import { activityHostName } from '../../utils/hostLabels';
 import { explorePlacesPath } from '../../utils/exploreRouting';
 

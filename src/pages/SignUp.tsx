@@ -8,7 +8,7 @@ import { defaultRouteByRole } from '../utils/authRouting';
 import { navigateAuthBack, navigateAuthClose, resolveAuthRedirect } from '../utils/authRedirect';
 import { getPasswordValidationError } from '../utils/passwordPolicy';
 import { PageMeta } from '../components/seo/PageMeta';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
 import { PRODUCT_AUTH_SIGNUP_SUBLINE } from '../content/productNorthStar';
 

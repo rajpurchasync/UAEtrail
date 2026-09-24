@@ -1,5 +1,5 @@
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { HOME_HERO_IMAGE_JPEG } from '../../config/seo';
 import { type ActivityType } from '../../config/activityTypes';
 import { formatCoord } from '../../utils/coords';
@@ -542,8 +542,8 @@ export const publishCreateActivity = async (input: {
       : undefined,
   });
 
-  const created = await api.createHostActivity(tenantId, payload);
-  await api.publishHostActivity(tenantId, created.data.id);
+  const created = await api.createOrganisationActivity(tenantId, payload);
+  await api.publishOrganisationActivity(tenantId, created.data.id);
 
   if (participantIntentId) {
     await api.fulfillParticipantIntent(tenantId, participantIntentId, created.data.id);

@@ -1,5 +1,5 @@
 import type { ActivityFormState } from '../components/activities/activityFormState';
-import { api } from '../api/services';
+import { api } from '../api/index';
 
 const padVenueDescription = (detail: string, state: string, emirate: string): string => {
   const trimmed = detail.trim();

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, ActivityRequestView } from '../api/services';
+import { api, ActivityRequestView } from '../api/index';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { AppSelect } from '../components/ui/AppSelect';
 

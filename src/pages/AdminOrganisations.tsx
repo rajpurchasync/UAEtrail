@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TenantListDTO } from '@uaetrail/shared-types';
-import { api, OrganisationApplication, TenantDetail } from '../api/services';
+import { api, OrganisationApplication, TenantDetail } from '../api/index';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
@@ -27,7 +27,7 @@ export const AdminOrganisations = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [appRes, tenantRes] = await Promise.all([api.getAdminApplications(), api.getAdminTenants()]);
+      const [appRes, tenantRes] = await Promise.all([api.getAdminOrganisationApplications(), api.getAdminTenants()]);
       setApplications(appRes.data);
       setTenants(tenantRes.data);
     } catch (err) {

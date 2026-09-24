@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronDown, MapPin, Plus, Search } from 'lucide-react';
 import { PlaceDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 
 interface PlaceSelectProps {
   value: string;
@@ -57,7 +57,7 @@ export const PlaceSelect = ({
     try {
       const [publicRes, pendingRes] = await Promise.all([
         api.getPublicPlaces(),
-        tenantId ? api.getHostSubmittedPlaces(tenantId) : Promise.resolve({ data: [] as PlaceDTO[] }),
+        tenantId ? api.getOrganisationSubmittedPlaces(tenantId) : Promise.resolve({ data: [] as PlaceDTO[] }),
       ]);
       setActiveLocations(publicRes.data);
       setPendingLocations(pendingRes.data.filter((l) => l.status === 'draft'));

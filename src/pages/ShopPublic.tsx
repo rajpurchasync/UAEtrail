@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { api, TenantProfile } from '../api/services';
+import { api, TenantProfile } from '../api/index';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ShopPublicPage, type ShopPublicView } from '../components/shop/ShopPublicPage';
 import { explorePath } from '../utils/exploreRouting';

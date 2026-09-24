@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { List, LocateFixed, Plus, X } from 'lucide-react';
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { describeExploreMapLoadError } from '../../utils/exploreMapErrors';
 import { PageMeta } from '../../components/seo/PageMeta';
 import type { PlaceMapPin, MapPinKind } from '../../components/ui/PlacesMap';

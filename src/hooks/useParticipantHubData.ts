@@ -1,7 +1,7 @@
 import { useCallback, useMemo, type SetStateAction } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BuddyRequestDTO, BuddySummaryDTO, ChatConversationDTO, MyActivityDTO } from '@uaetrail/shared-types';
-import { api, ActivityRequestView, UserProfile, SocialGroupView } from '../api/services';
+import { api, ActivityRequestView, UserProfile, SocialGroupView } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { isUpcomingActivity, upcomingActivitiesTotal } from '../utils/activityDates';
 import { buildUpcomingPlanRows } from '../utils/activityHubSections';

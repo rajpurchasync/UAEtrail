@@ -4,7 +4,7 @@ import { Building2, ChevronLeft, MapPin, ShoppingBag, User, X } from 'lucide-rea
 import type { HostProfileType } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { setActiveTenantId } from '../../api/tenant';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { COUNTRIES } from '../../constants';
 import { DEFAULT_COUNTRY, getRegionsForCountry } from '../../config/regions';
 import { MAP_CONFIG } from '../../config/platform';

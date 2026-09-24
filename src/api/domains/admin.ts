@@ -12,6 +12,9 @@ import type {
 export const adminApi = {
     getAdminMetrics: () => apiRequest<{ data: AdminMetrics }>('/admin/metrics', { auth: true }),
 
+    getAdminOrganisationApplications: () =>
+    apiRequest<{ data: HostApplication[] }>('/admin/host-applications', { auth: true }),
+    /** @deprecated Use {@link adminApi.getAdminOrganisationApplications} */
     getAdminApplications: () =>
     apiRequest<{ data: HostApplication[] }>('/admin/host-applications', { auth: true }),
 
@@ -22,6 +25,21 @@ export const adminApi = {
       body: JSON.stringify({ status, reviewerNote })
     }),
 
+    getAdminMembers: (filters?: { role?: string; userType?: string; status?: string; search?: string; page?: number; pageSize?: number }) => {
+    const params = new URLSearchParams();
+    if (filters?.role) params.set('role', filters.role);
+    if (filters?.userType) params.set('userType', filters.userType);
+    if (filters?.status) params.set('status', filters.status);
+    if (filters?.search) params.set('search', filters.search);
+    if (filters?.page) params.set('page', String(filters.page));
+    if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
+    const qs = params.toString();
+    return apiRequest<{ data: UserListDTO[]; total: number; page: number; pageSize: number }>(
+      `/admin/users${qs ? `?${qs}` : ''}`,
+      { auth: true }
+    );
+  },
+    /** @deprecated Use {@link adminApi.getAdminMembers} */
     getAdminUsers: (filters?: { role?: string; userType?: string; status?: string; search?: string; page?: number; pageSize?: number }) => {
     const params = new URLSearchParams();
     if (filters?.role) params.set('role', filters.role);
@@ -37,9 +55,19 @@ export const adminApi = {
     );
   },
 
+    getAdminMemberDetail: (id: string) =>
+    apiRequest<{ data: Record<string, unknown> }>(`/admin/users/${id}`, { auth: true }),
+    /** @deprecated Use {@link adminApi.getAdminMemberDetail} */
     getAdminUserDetail: (id: string) =>
     apiRequest<{ data: Record<string, unknown> }>(`/admin/users/${id}`, { auth: true }),
 
+    updateAdminMemberStatus: (id: string, status: 'active' | 'suspended', comment?: string) =>
+    apiRequest(`/admin/users/${id}/status`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ status, comment })
+    }),
+    /** @deprecated Use {@link adminApi.updateAdminMemberStatus} */
     updateAdminUserStatus: (id: string, status: 'active' | 'suspended', comment?: string) =>
     apiRequest(`/admin/users/${id}/status`, {
       method: 'PATCH',

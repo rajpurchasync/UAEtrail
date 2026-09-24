@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO, ActivityDetailDTO, PlaceDTO, TenantListDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
 import { useAuth } from '../../context/AuthContext';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
@@ -293,7 +293,7 @@ export const useOrganisationActivityFormModal = ({
     void Promise.all([
       api.getPublicPlaces(),
       hostTenantId
-        ? api.getHostSubmittedPlaces(hostTenantId)
+        ? api.getOrganisationSubmittedPlaces(hostTenantId)
         : Promise.resolve({ data: [] as PlaceDTO[] }),
     ])
       .then(([publicRes, pendingRes]) => {
@@ -385,7 +385,7 @@ export const useOrganisationActivityFormModal = ({
       return res.data;
     }
 
-    const res = await api.createHostActivity(activeTenant, payload);
+    const res = await api.createOrganisationActivity(activeTenant, payload);
     setDraftActivityId(res.data.id);
     return res.data;
   };
@@ -408,7 +408,7 @@ export const useOrganisationActivityFormModal = ({
 
       if (mode === 'publish' && activityId && saved.status === 'draft') {
         const publishTenant = await resolveActiveTenantId();
-        await api.publishHostActivity(publishTenant, activityId);
+        await api.publishOrganisationActivity(publishTenant, activityId);
         await reloadExploreMap();
       }
 

@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { FilterChips } from '../mobile/FilterChips';
@@ -35,7 +35,7 @@ export const OrganisationConsoleShell = ({ title, children, cta, headerExtra }: 
   useEffect(() => {
     const tenantId = getActiveTenantId();
     if (!tenantId) return;
-    api.getReviews('tenant', tenantId)
+    api.getOrganisationReviews(tenantId)
       .then((res) => {
         const reviews = res.data;
         setReviewCount(reviews.length);

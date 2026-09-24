@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, TeamMember } from '../api/services';
+import { api, TeamMember } from '../api/index';
 import { getActiveTenantId } from '../api/tenant';
 import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
 import { AppSelect } from '../components/ui/AppSelect';

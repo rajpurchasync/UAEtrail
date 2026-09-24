@@ -6,7 +6,7 @@ import type {
   MyActivityRequestDTO,
   WithdrawReason,
 } from '@uaetrail/shared-types';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import {
   resolveJoinRequestUiState,
   withdrawModalVariant,

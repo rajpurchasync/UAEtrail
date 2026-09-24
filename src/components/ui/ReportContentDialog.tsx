@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Flag } from 'lucide-react';
-import { api, ContentReportReason, ContentReportTargetType } from '../../api/services';
+import { api, ContentReportReason, ContentReportTargetType } from '../../api/index';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from './AppSelect';
 import { Dialog } from '../ui/Dialog';

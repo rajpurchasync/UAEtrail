@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { ChatMessageDTO } from '@uaetrail/shared-types';
 import { API_BASE_URL } from '../api/client';
-import { api } from '../api/services';
+import { api } from '../api/index';
 
 const FALLBACK_POLL_MS = 60_000;
 const MAX_RETRY_MS = 30_000;

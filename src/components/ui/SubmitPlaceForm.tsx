@@ -5,7 +5,7 @@ import { MapPinFields, parseCoord } from './MeetingPointMap';
 import { ImageUpload } from './ImageUpload';
 import { AssetKeyUpload } from './AssetKeyUpload';
 import { AppSelect } from './AppSelect';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { DEFAULT_COUNTRY } from '../../config/regions';
 import { UAE_EMIRATES, getStatesForEmirate } from '../../config/uaeRegions';
 import {

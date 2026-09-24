@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
-import { api, TenantMembershipView } from '../../api/services';
+import { api, TenantMembershipView } from '../../api/index';
 import { AppSelect } from './AppSelect';
 
 export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => void }) => {

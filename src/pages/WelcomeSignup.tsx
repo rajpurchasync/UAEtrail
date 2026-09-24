@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { SignupProfileWizard } from '../components/signup/SignupProfileWizard';
 import { PageMeta } from '../components/seo/PageMeta';
 import { EXPLORE_MAP_PATH } from '../config/platform';

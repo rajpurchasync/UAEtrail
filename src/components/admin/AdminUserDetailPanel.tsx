@@ -5,7 +5,7 @@ import {
   AdminSocialGroupDetail,
   api,
   TenantDetail
-} from '../../api/services';
+} from '../../api/index';
 import { USER_TYPE_BADGE, USER_TYPE_LABELS, isBusinessHostUserType } from '../../constants/userTypes';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { activityHostName } from '../../utils/hostLabels';

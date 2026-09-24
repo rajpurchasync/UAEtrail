@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Loader2, Lock } from 'lucide-react';
 import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
-import { api, type PersonPublicProfileDTO } from '../api/services';
+import { api, type PersonPublicProfileDTO } from '../api/index';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { MemberProfileView } from '../components/profile/MemberProfileView';

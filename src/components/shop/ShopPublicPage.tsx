@@ -11,7 +11,7 @@ import { ReviewSection } from '../ui/ReviewSection';
 import { CatalogRatingSummary, DetailReviewFooter, scrollToReviewAnchor } from '../ui/DetailReviewChrome';
 import { explorePath } from '../../utils/exploreRouting';
 import { shopPublicPath } from '../../utils/shopPaths';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 
 export type ShopFeaturedPick = {
@@ -63,7 +63,7 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
       return;
     }
     api
-      .getReviews('tenant', reviewTargetId)
+      .getOrganisationReviews(reviewTargetId)
       .then((res) => setReviews(res.data))
       .catch(() => setReviews([]));
   }, [reviewTargetId]);

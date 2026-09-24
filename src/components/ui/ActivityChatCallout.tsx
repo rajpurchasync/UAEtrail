@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 
 interface ActivityChatCalloutProps {

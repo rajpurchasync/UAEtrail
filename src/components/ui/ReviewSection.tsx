@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import { MembershipTierBadge } from '../ui/MembershipTierBadge';
 import { ReportContentButton } from './ReportContentDialog';
@@ -80,12 +80,19 @@ export const ReviewSection = ({
     setSubmitting(true);
     setError(null);
     try {
-      const res = await api.createReview({
-        targetType: reviewWireTargetType(targetType),
-        targetId,
-        rating,
-        comment: comment.trim(),
-      });
+      const wireTarget = reviewWireTargetType(targetType);
+      const res =
+        wireTarget === 'tenant'
+          ? await api.createOrganisationReview({
+              organisationId: targetId,
+              rating,
+              comment: comment.trim(),
+            })
+          : await api.createPlaceReview({
+              placeId: targetId,
+              rating,
+              comment: comment.trim(),
+            });
       onReviewSubmitted(res.data);
       setComment('');
       setSuccess(true);

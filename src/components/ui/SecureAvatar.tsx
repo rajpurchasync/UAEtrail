@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { extractMediaKey } from '../../lib/mediaKey';
 import { formatEnvironmentUrl } from '../../utils/formatEnvironmentUrl';
 import { InitialsAvatar } from './InitialsAvatar';

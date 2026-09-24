@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { MyActivityDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import { FormTabBar } from '../../components/ui/FormTabBar';
 import {

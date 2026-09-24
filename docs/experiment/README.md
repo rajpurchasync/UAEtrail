@@ -1,6 +1,14 @@
 # Experiment branch documentation
 
-This folder is the **source of truth** for work on the `experiment/new-ui` branch pushed to **`purchasync/UAEtrail`** only.
+This folder describes **experiment branches** — not canonical `uaetrail/main` product docs unless explicitly merged later.
+
+## Active experiment: `experiment-ui`
+
+Mobile hub, API route split, frontend domain aliases, stale-file removal. **Standalone — do not merge to `main` without explicit decision.** Push: `origin experiment-ui`.
+
+## Legacy experiment: `experiment/new-ui`
+
+Source of truth for explore UX specs on **`purchasync/UAEtrail`** (`git push purchasync experiment/new-ui`).
 
 Do **not** treat these docs as canonical for `uaetrail/main` until an explicit merge decision.
 
@@ -14,9 +22,9 @@ Do **not** treat these docs as canonical for `uaetrail/main` until an explicit m
 
 ## Branch & remotes
 
-- **Work branch:** `experiment/new-ui`
-- **Push target:** `git push purchasync experiment/new-ui`
-- **Canonical product repo (later merge):** `origin` → `uaetrail/main`
+- **experiment-ui (current):** push `origin experiment-ui` — no merge to `main`
+- **experiment/new-ui:** `git push purchasync experiment/new-ui`
+- **`origin/main`:** canonical product line for uaetrail — **not** the default target for experiment-ui work
 
 ## Status tracking
 

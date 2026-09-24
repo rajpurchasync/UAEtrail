@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ChevronRight, Loader2, Star } from 'lucide-react';
 import type { MyReviewDTO } from '@uaetrail/shared-types';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { useAuth } from '../context/AuthContext';
+import { EXPLORE_MAP_PATH } from '../config/platform';
+import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
@@ -211,8 +213,8 @@ export const ProfileReviews = () => {
           {!loading && !error && reviews.length === 0 && (
             <GlassCard padding className="text-center">
               <p className="text-sm text-neutral-600">You haven&apos;t rated any places or shops yet.</p>
-              <Link to="/explore" className="mt-3 inline-block text-sm font-semibold text-emerald-700">
-                Explore the map
+              <Link to={EXPLORE_MAP_PATH} className="mt-3 inline-block text-sm font-semibold text-emerald-700">
+                {PRODUCT_EXPLORE_CTA}
               </Link>
             </GlassCard>
           )}

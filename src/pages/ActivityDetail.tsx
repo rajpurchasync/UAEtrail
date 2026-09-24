@@ -6,7 +6,7 @@ import type {
   ActivityParticipationDTO,
   MyActivityRequestDTO,
 } from '@uaetrail/shared-types';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { detailBackPath } from '../utils/exploreRouting';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';

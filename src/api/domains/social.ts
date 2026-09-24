@@ -167,6 +167,23 @@ export const socialApi = {
       }
     ),
 
+  getOrganisationReviews: (organisationId: string, page = 1) =>
+    apiRequest<{ data: ReviewDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
+      `/reviews?targetType=tenant&targetId=${organisationId}&page=${page}&pageSize=20`
+    ),
+
+  createOrganisationReview: (payload: { organisationId: string; rating: number; comment: string }) =>
+    apiRequest<{ data: ReviewDTO }>('/reviews', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify({
+        targetType: 'tenant',
+        targetId: payload.organisationId,
+        rating: payload.rating,
+        comment: payload.comment,
+      }),
+    }),
+
     getReviews: (targetType: 'location' | 'tenant', targetId: string, page = 1) =>
     apiRequest<{ data: ReviewDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
       `/reviews?targetType=${targetType}&targetId=${targetId}&page=${page}&pageSize=20`

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { api } from '../../api/services';
+import { api } from '../../api/index';
 import type { UserProfile } from '../../api/types';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { PullToRefresh } from '../mobile/PullToRefresh';

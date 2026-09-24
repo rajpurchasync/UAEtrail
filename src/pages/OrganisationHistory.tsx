@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api/services';
+import { api } from '../api/index';
 import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
 import { formatActivityType } from '../utils/activityIdentity';
 
