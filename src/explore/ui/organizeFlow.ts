@@ -4,7 +4,7 @@ import { HOME_HERO_IMAGE_JPEG } from '../../config/seo';
 import { type ActivityType } from '../../config/activityTypes';
 import { formatCoord } from '../../utils/coords';
 import {
-  buildHostActivityPublishPayload,
+  buildOrganisationActivityPublishPayload,
   buildParticipationRequirementLines,
 } from '../../utils/activityPublishPayload';
 import { OFFLINE_PAYMENT_NOTE } from '../explorePriceLabel';
@@ -501,7 +501,7 @@ export const publishCreateActivity = async (input: {
   const priceAmount = Math.max(0, draft.priceAmount);
   const requirements = buildRequirements(draft);
 
-  const payload = buildHostActivityPublishPayload({
+  const payload = buildOrganisationActivityPublishPayload({
     activityType,
     locationId: locationRes.data.id,
     title: resolveActivityTitle(draft),

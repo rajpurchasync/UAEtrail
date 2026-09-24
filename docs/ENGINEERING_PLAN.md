@@ -62,7 +62,7 @@
 
 ## Phase 3 — done
 
-- [x] `src/utils/activityPublishPayload.ts` — canonical `buildHostActivityPublishPayload` + participation requirement helpers
+- [x] `src/utils/activityPublishPayload.ts` — canonical `buildOrganisationActivityPublishPayload` (+ deprecated `buildHostActivityPublishPayload` alias)
 - [x] Explore compose (`organizeFlow.ts`) and host console (`activityFormState.ts`) use shared builder
 - [x] Host saves now send `participationMode` (events default RSVP; others approval)
 - [x] `activityPublishPayload.test.ts` — payload + requirement contract tests
@@ -86,8 +86,10 @@
 - [x] Frontend dead-file pass; unified client entry `src/api/index.ts`
 - [x] Removed deprecated `organizerDetailsSchema` alias (use `hostDetailsSchema`)
 - [x] Removed unused `exploreVenuesPath` / `exploreLocationsPath` re-exports
-- [x] Frontend `api` call sites use domain names (`createOrganisationActivity`, `getOrganisationProfile`, …); legacy symbols kept on `api` only for compat — `src/api/apiLegacyGuard.test.ts`
-- [x] Canonical methods live on `src/api/domains/*`; `services.ts` spreads domains + `submitPlace` helper only
+- [x] Frontend `api` call sites use domain names (`createOrganisationActivity`, `getOrganisationProfile`, …); legacy symbols on `api` via `src/api/legacyApi.ts` — `src/api/apiLegacyGuard.test.ts`
+- [x] Canonical methods live on `src/api/domains/*`; `services.ts` spreads domains + `legacyApi` + `submitPlace` helper
+- [x] Organisation console builders: `buildOrganisationActivityPayload` / `buildOrganisationActivityMenuItems` (deprecated Host-named aliases retained)
+- [x] Removed unused `recharts` dependency (no imports in `src/`)
 
 ---
 
@@ -156,4 +158,5 @@
 | 2026-09-23 | Split `user.ts` into `routes/user/*` modules (schemas, profile, social) |
 | 2026-09-23 | Shared consumer feedback + copy guard for hub sections (Phase 6) |
 | 2026-09-24 | Member signup profile wizard + profile/settings alignment + route gate (Phase 8) |
-| 2026-09-24 | Frontend API alias burn-down: domain methods on `domains/*`, `apiLegacyGuard`, slim `services.ts` |
+| 2026-09-24 | Frontend API alias burn-down: domain methods on `domains/*`, `legacyApi.ts`, `apiLegacyGuard`, slim domain modules |
+| 2026-09-24 | Organisation activity payload/menu canonical names; deprecated Host export shims for knip/compat |

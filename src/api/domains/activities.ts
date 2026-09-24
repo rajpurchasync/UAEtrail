@@ -90,22 +90,8 @@ export const activitiesApi = {
       auth: true,
       headers: organisationRequestHeaders(tenantId)
     }),
-    /** @deprecated Use {@link activitiesApi.listOrganisationActivities} */
-    listHostActivities: (tenantId: string) =>
-    apiRequest<{ data: ActivityDTO[] }>('/host/activities?pageSize=100', {
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
 
     createOrganisationActivity: (tenantId: string, payload: Record<string, unknown>) =>
-    apiRequest<{ data: ActivityDTO }>('/host/activities', {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify(payload)
-    }),
-    /** @deprecated Use {@link activitiesApi.createOrganisationActivity} */
-    createHostActivity: (tenantId: string, payload: Record<string, unknown>) =>
     apiRequest<{ data: ActivityDTO }>('/host/activities', {
       method: 'POST',
       auth: true,
@@ -120,23 +106,8 @@ export const activitiesApi = {
       headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify(payload)
     }),
-    /** @deprecated Use {@link activitiesApi.updateOrganisationActivity} */
-    updateHostActivity: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
-    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}`, {
-      method: 'PATCH',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify(payload)
-    }),
 
     publishOrganisationActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/host/activities/${activityId}/publish`, {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
-    /** @deprecated Use {@link activitiesApi.publishOrganisationActivity} */
-    publishHostActivity: (tenantId: string, activityId: string) =>
     apiRequest(`/host/activities/${activityId}/publish`, {
       method: 'POST',
       auth: true,
@@ -160,22 +131,8 @@ export const activitiesApi = {
       auth: true,
       headers: organisationRequestHeaders(tenantId)
     }),
-    /** @deprecated Use {@link activitiesApi.duplicateOrganisationActivity} */
-    duplicateHostActivity: (tenantId: string, activityId: string) =>
-    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}/duplicate`, {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
 
     cancelOrganisationActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/host/activities/${activityId}`, {
-      method: 'DELETE',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
-    /** @deprecated Use {@link activitiesApi.cancelOrganisationActivity} */
-    cancelHostActivity: (tenantId: string, activityId: string) =>
     apiRequest(`/host/activities/${activityId}`, {
       method: 'DELETE',
       auth: true,

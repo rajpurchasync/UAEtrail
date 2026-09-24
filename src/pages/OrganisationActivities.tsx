@@ -3,7 +3,7 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { ActivityDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { getActiveTenantId } from '../api/tenant';
-import { parseActivityTypeParam, ActivityActionsMenu, ActivityListPreview, buildHostActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
+import { parseActivityTypeParam, ActivityActionsMenu, ActivityListPreview, buildOrganisationActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
 import { useActivityFormSession } from '../context/ActivityFormSessionContext';
 import { useReloadExploreMap } from '../hooks/useReloadExploreMap';
 import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
@@ -245,7 +245,7 @@ export const OrganisationActivities = () => {
                             />
                           )}
                           <ActivityActionsMenu
-                            items={buildHostActivityMenuItems(event, {
+                            items={buildOrganisationActivityMenuItems(event, {
                               onPreview: openPreview,
                               onEdit: openEditActivity,
                               onPublish: (e) => publish(e.id),

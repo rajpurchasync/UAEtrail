@@ -2,6 +2,8 @@ export { CreateActivityModal, parseActivityTypeParam } from './CreateActivityMod
 export {
   ActivityActionsMenu,
   buildAdminActivityMenuItems,
+  buildOrganisationActivityMenuItems,
+  /** @deprecated Use buildOrganisationActivityMenuItems */
   buildHostActivityMenuItems,
 } from './ActivityActionsMenu';
 export { ActivityListPreview, openPublishedActivityPreview } from './ActivityListPreview';

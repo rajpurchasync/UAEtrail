@@ -13,7 +13,7 @@ import { isBusinessHostOrg, isPlatformAdmin } from '../../utils/hostPermissions'
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
 import {
   activityToForm,
-  buildHostActivityPayload,
+  buildOrganisationActivityPayload,
   emptyActivityForm,
   type ActivityFormState,
 } from './activityFormState';
@@ -371,7 +371,7 @@ export const useOrganisationActivityFormModal = ({
     }
 
     const payload = {
-      ...buildHostActivityPayload({
+      ...buildOrganisationActivityPayload({
         ...formForSave,
         hostUserId: formForSave.hostUserId || user?.id || '',
       }),

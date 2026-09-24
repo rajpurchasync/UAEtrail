@@ -13,6 +13,8 @@ import {
   mediaApi,
 } from './domains';
 
+import { legacyApi } from './legacyApi';
+
 export * from './types';
 
 export const api = {
@@ -27,6 +29,7 @@ export const api = {
   ...adminApi,
   ...chatApi,
   ...mediaApi,
+  ...legacyApi,
 
   /** Alias for {@link placeApi.submitOrganisationPlace} — used by compose / submit-place flows. */
   submitPlace(tenantId: string, payload: Partial<PlaceDTO>) {

@@ -106,7 +106,7 @@ export const mergeParticipationRequirements = (
 ];
 
 /** Build the POST/PATCH body for `/host/activities`. */
-export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Record<string, unknown> => {
+export const buildOrganisationActivityPublishPayload = (input: ActivityPublishInput): Record<string, unknown> => {
   const isCarpool = input.activityType === 'carpool';
   const carpool = input.carpool ?? {};
   const { pricing, location } = input;
@@ -155,3 +155,6 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
 
   return payload;
 };
+
+/** @deprecated Use {@link buildOrganisationActivityPublishPayload} */
+export const buildHostActivityPublishPayload = buildOrganisationActivityPublishPayload;

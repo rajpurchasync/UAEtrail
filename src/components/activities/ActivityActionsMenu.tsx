@@ -160,7 +160,7 @@ type HostMenuHandlers = {
   onCheckin?: (activity: ActivityDTO) => void;
 };
 
-export const buildHostActivityMenuItems = (
+export const buildOrganisationActivityMenuItems = (
   activity: ActivityDTO,
   handlers: HostMenuHandlers
 ): ActivityMenuItem[] => {
@@ -225,7 +225,7 @@ export const buildAdminActivityMenuItems = (
   activity: ActivityDTO,
   handlers: AdminMenuHandlers
 ): ActivityMenuItem[] => [
-  ...buildHostActivityMenuItems(activity, handlers),
+  ...buildOrganisationActivityMenuItems(activity, handlers),
   {
     id: 'feature',
     label: activity.featured ? 'Remove featured' : 'Feature on home',
@@ -249,3 +249,6 @@ export const buildAdminActivityMenuItems = (
       handlers.canSuspend?.(activity) === false,
   },
 ];
+/** @deprecated Use {@link buildOrganisationActivityMenuItems} */
+export const buildHostActivityMenuItems = buildOrganisationActivityMenuItems;
+

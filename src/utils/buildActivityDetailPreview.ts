@@ -1,6 +1,6 @@
 import type { ActivityDetailDTO, ActivityDTO, LocationDTO, AuthUser, ActivityType as SharedActivityType } from '@uaetrail/shared-types';
 import type { ActivityFormState } from '../components/activities/activityFormState';
-import { buildHostActivityPayload, buildRequirementsFromForm } from '../components/activities/activityFormState';
+import { buildOrganisationActivityPayload, buildRequirementsFromForm } from '../components/activities/activityFormState';
 import { derivePriceAed } from './activityPricing';
 
 const fallbackLocation = (
@@ -49,7 +49,7 @@ export const buildActivityDetailPreview = (
   user: AuthUser | null,
   tenantName?: string
 ): ActivityDetailDTO => {
-  const payload = buildHostActivityPayload(form);
+  const payload = buildOrganisationActivityPayload(form);
   const pricePackages =
     (payload.pricePackages as ActivityDTO['pricePackages']) ??
     (saved.pricePackages?.length ? saved.pricePackages : []);

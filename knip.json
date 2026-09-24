@@ -16,6 +16,16 @@
   },
   "ignoreDependencies": ["@capacitor/android", "@capacitor/ios"],
   "ignoreIssues": {
-    "apps/api/src/app.ts": ["exports"]
+    "apps/api/src/app.ts": ["exports"],
+    "src/pages/BecomeOrganisation.tsx": ["exports"],
+    "src/pages/OrganisationPlaces.tsx": ["exports"],
+    "src/pages/AdminOrganisations.tsx": ["exports"],
+    "src/components/organisation-console/OrganisationConsoleShell.tsx": ["exports"],
+    "src/components/organisation-console/MobileBecomeOrganisationFlow.tsx": ["exports"],
+    "src/components/organisation-console/becomeOrganisationForm.ts": ["exports"],
+    "src/components/activities/ActivityActionsMenu.tsx": ["exports"],
+    "src/components/activities/activityFormState.ts": ["exports"],
+    "src/components/activities/index.ts": ["exports"],
+    "src/utils/activityPublishPayload.ts": ["exports"]
   }
 }

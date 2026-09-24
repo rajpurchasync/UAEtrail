@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { api } from './services';
 
-/** Phase 1 — domain aliases must exist and delegate without removing legacy names. */
+/** Legacy `api.*` names live in `legacyApi.ts`; domain modules stay canonical-only. */
 describe('api domain aliases (Phase 1)', () => {
   it('exposes place admin aliases alongside legacy location methods', () => {
     expect(typeof api.getAdminPlaces).toBe('function');

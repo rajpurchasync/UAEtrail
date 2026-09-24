@@ -4,7 +4,7 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/index';
 import {
   ActivityActionsMenu,
-  buildHostActivityMenuItems,
+  buildOrganisationActivityMenuItems,
   openPublishedActivityPreview,
 } from '../../components/activities';
 import { OrganisationJoinRequestCard } from '../../components/organisation-console/OrganisationJoinRequestCard';
@@ -271,7 +271,7 @@ export const HostedSection = ({
                 {event.status}
               </span>
               <ActivityActionsMenu
-                items={buildHostActivityMenuItems(event, {
+                items={buildOrganisationActivityMenuItems(event, {
                   onPreview: (activity) => {
                     if (activity.status === 'published') openPublishedActivityPreview(activity.id);
                   },

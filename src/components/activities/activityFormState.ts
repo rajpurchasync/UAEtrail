@@ -3,7 +3,7 @@ import { inferJoinModeFromRequirements, inferParticipationModeFromRequirements }
 import type { ActivityType } from '../../config/activityTypes';
 import { derivePriceAed, inferActivityPricingMode, type ActivityPricePackage } from '../../utils/activityPricing';
 import {
-  buildHostActivityPublishPayload,
+  buildOrganisationActivityPublishPayload,
   defaultParticipationModeForActivityType,
   mergeParticipationRequirements,
 } from '../../utils/activityPublishPayload';
@@ -285,7 +285,7 @@ const resolvePinText = (pin: LocationPinForm): string | undefined => {
   return label || url || undefined;
 };
 
-export const buildHostActivityPayload = (form: ActivityFormState): Record<string, unknown> => {
+export const buildOrganisationActivityPayload = (form: ActivityFormState): Record<string, unknown> => {
   let price = 0;
   let pricePackages: ActivityPricePackage[] = [];
 
@@ -308,7 +308,7 @@ export const buildHostActivityPayload = (form: ActivityFormState): Record<string
     joinMode: form.joinMode,
   });
 
-  return buildHostActivityPublishPayload({
+  return buildOrganisationActivityPublishPayload({
     activityType: form.activityType,
     locationId: form.locationId,
     title: form.title,
@@ -347,6 +347,9 @@ export const buildHostActivityPayload = (form: ActivityFormState): Record<string
     hostId: form.hostUserId || undefined,
   });
 };
+
+/** @deprecated Use {@link buildOrganisationActivityPayload} */
+export const buildHostActivityPayload = buildOrganisationActivityPayload;
 
 export const FORM_INPUT =
   'block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
