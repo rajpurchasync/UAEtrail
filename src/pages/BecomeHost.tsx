@@ -11,8 +11,8 @@ import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
 import { PageMeta } from '../components/seo/PageMeta';
-import { MobileBecomeOrganisationFlow } from '../components/organisation-console/MobileBecomeOrganisationFlow';
-import { parseOrganisationFlowIntent } from '../components/organisation-console/becomeOrganisationFlow';
+import { BecomeHostFlow } from '../components/organisation-console/BecomeHostFlow';
+import { parseHostFlowIntent } from '../components/organisation-console/hostWizardFlow';
 import { useOrganisationGate } from '../hooks/useOrganisationGate';
 import { resolveAuthRedirect } from '../utils/authRedirect';
 import { EXPLORE_MAP_PATH } from '../config/platform';
@@ -23,12 +23,12 @@ const setupSteps = [
   { emoji: '🏕️', title: 'Invite people along', detail: 'Post hikes, camps, carpools, and meetups when you\'re ready.' },
 ];
 
-/** Become a host — guide, agency, or shop. Route: /become-host (alias /become-organizer). */
-export const BecomeOrganisation = () => {
+/** Become a host — guide, agency, or shop. Routes: `/become-host`, `/become-organizer`. */
+export const BecomeHost = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const intent = parseOrganisationFlowIntent(searchParams.get('intent'));
+  const intent = parseHostFlowIntent(searchParams.get('intent'));
   const returnTo =
     resolveAuthRedirect(null, searchParams.get('redirect')) ?? EXPLORE_MAP_PATH;
   const {
@@ -108,7 +108,11 @@ export const BecomeOrganisation = () => {
 
   const handleHostSubmitted = async (_tenantId: string | null) => {
     setHostFlowOpen(false);
-    setJustBecameHost(true);
+    if (intent === 'become-host') {
+      setJustBecameHost(true);
+    } else {
+      navigate(returnTo, { replace: true });
+    }
     await refreshHostGate();
   };
 
@@ -150,7 +154,7 @@ export const BecomeOrganisation = () => {
       <PageMeta
         title={pageTitle}
         description="Join the UAE Trail community — share hikes, camps, and outdoor meetups as a guide, agency, or shop."
-        path="/become-organizer"
+        path="/become-host"
       />
       <ConsumerShell
         layout="stack"
@@ -246,7 +250,7 @@ export const BecomeOrganisation = () => {
         </div>
 
         {hostFlowOpen && (
-          <MobileBecomeOrganisationFlow
+          <BecomeHostFlow
             open={hostFlowOpen}
             onClose={() => setHostFlowOpen(false)}
             onSubmitted={handleHostSubmitted}
@@ -258,6 +262,3 @@ export const BecomeOrganisation = () => {
     </>
   );
 };
-
-/** @deprecated Import {@link BecomeOrganisation} — route `/become-host` unchanged. */
-export const BecomeHost = BecomeOrganisation;

@@ -12,7 +12,7 @@
 |----------|-----|
 | Strong product docs | Implementation mid-migration — parallel paths |
 | `packages/shared-types` | Requirements strings still used as protocol |
-| Explore compose URL contract | `ExploreExperience.tsx` still large (~1.4k lines) — splitting in progress |
+| Explore compose URL contract | `ExploreExperience.tsx` ~860 lines — map stage + browse list extracted; URL/fulfill hook split still optional |
 | API integration tests on join/RSVP | Frontend ~4.5% test coverage on wizards |
 
 **Root cause:** Spec and shims outpaced consolidation. Two ways to create activities, two detail renderers, alias sprawl.
@@ -134,7 +134,10 @@
 - [x] Seed: `visitor@` / `shop@` have complete member details; `visitor2@` stays incomplete for wizard QA
 - [x] Signup gate query invalidated from Profile edit save
 - [x] copyGuard scans signup/account surfaces; bans legacy “Confirm your profile”
-- [ ] Manual smoke: incomplete member → `/welcome` → explore location prompt → settings edit
+- [x] Explore shell: `ExploreMapStage`, `useExploreBrowseList`, `exploreMapPinModel` extracted from `ExploreExperience.tsx`
+- [x] Become-host: canonical `BecomeHost` page + `BecomeHostFlow`; profile chips route to `/become-host?intent=…` (no duplicate modal wizard)
+- [x] Host wizard modules: `becomeHostForm.ts`, `hostWizardFlow.ts` (UI: `BecomeHostFlow.tsx`)
+- [ ] Manual smoke: incomplete member → `/welcome` → explore location prompt → settings edit — [`experiment/PHASE9_MANUAL_SMOKE.md`](./experiment/PHASE9_MANUAL_SMOKE.md)
 
 ---
 

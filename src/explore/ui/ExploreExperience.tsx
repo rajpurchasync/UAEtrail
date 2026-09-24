@@ -1,13 +1,12 @@
-import { lazy, Suspense, useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { List, LocateFixed, Plus, X } from 'lucide-react';
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
 import { api } from '../../api/index';
 import { describeExploreMapLoadError } from '../../utils/exploreMapErrors';
 import { PageMeta } from '../../components/seo/PageMeta';
-import type { PlaceMapPin, MapPinKind } from '../../components/ui/PlacesMap';
+import type { PlaceMapPin } from '../../components/ui/PlacesMap';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { useExploreMap, reloadExploreMap } from '../../hooks/useExploreMap';
@@ -27,7 +26,8 @@ import type { DemandSubmitResult } from './demandFlow';
 import { createDraftFromDemand, type CreateActivityDraft } from './organizeFlow';
 import { ExploreComposeHost } from './ExploreComposeHost';
 import { ExploreJoinOverlays } from './ExploreJoinOverlays';
-import { getMapBounds } from '../../config/regions';
+import { ExploreBrowsePanel } from './ExploreBrowsePanel';
+import { ExploreMapStage } from './ExploreMapStage';
 import {
   EXPLORE_MAP_STYLE_STORAGE_KEY,
   getExploreMapTiles,
@@ -35,37 +35,21 @@ import {
   readExploreMapStyle,
   type ExploreMapStyle,
 } from '../../config/platform';
-import {
-  EXPLORE_FLOATING_CONTROL,
-  EXPLORE_MOBILE_MAP_CHROME,
-  EXPLORE_SHEET,
-  EXPLORE_Z,
-} from '../../config/exploreTheme';
 import { buildExploreCardModel } from '../exploreCardModel';
-import { resolveExploreItemSource } from '../exploreCopy';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
 import { activityHostUserId } from '../../utils/hostLabels';
 import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
-import { ExploreGuestJoinBanner } from './ExploreGuestJoinBanner';
-import { ExploreCoachMarks } from './ExploreCoachMarks';
-import { ExploreMapFilterBar } from './ExploreMapFilterBar';
-import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { useExploreDeviceLocation } from '../../hooks/useExploreDeviceLocation';
+import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { shouldShowExploreLocationPrompt } from '../../utils/exploreMapLocationPreference';
-import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
-import { ExploreItemSheet } from './ExploreItemSheet';
-import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
-import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
-import { ExploreBrowsePanel } from './ExploreBrowsePanel';
+import { mapFilterToPanel, parseListOpen, readInitialListOpen } from './exploreListPanelUrl';
+import { useExploreBrowseList } from './useExploreBrowseList';
 import {
-  ACTIVITY_LIST_FILTERS,
   MAP_FILTERS_BY_BROWSE_TAB,
   parseDesktopBrowseTab,
   type DesktopBrowseTab,
-  VENUE_LIST_FILTERS,
 } from './exploreBrowsePanelCopy';
-import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import {
   parseMapFilter,
   parseExplorePanel,
@@ -84,159 +68,7 @@ import {
   type MapFilterKey,
   type VenueListFilterKey,
 } from '../routing';
-import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
-import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
-import { MAP_FILTER_PILLS, mapFilterLabel } from '../../config/exploreMapFilters';
-
-const PlacesMap = lazy(() =>
-  import('../../components/ui/PlacesMap').then((m) => ({ default: m.PlacesMap }))
-);
-
-/** `list=1` open, `list=0` closed; desktop defaults to list open. */
-const parseListOpen = (listParam: string | null, isDesktop: boolean): boolean => {
-  if (listParam === '1') return true;
-  if (listParam === '0') return false;
-  return isDesktop;
-};
-
-const readInitialListOpen = (listParam: string | null): boolean => {
-  const isDesktop =
-    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false;
-  return parseListOpen(listParam, isDesktop);
-};
-
-const mapFilterToPanel = (filter: MapFilterKey): ExplorePanel => {
-  if (filter === 'shops') return 'shops';
-  return 'activities';
-};
-
-const useMinWidthLg = (): boolean => {
-  const [matches, setMatches] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)');
-    const onChange = () => setMatches(mq.matches);
-    onChange();
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-
-  return matches;
-};
-
-const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueListFilterKey): boolean => {
-  if (venueFilter === 'all') return true;
-  if (venueFilter === 'shop') return item.kind === 'shop';
-  if (venueFilter === 'hiking') return item.kind === 'hiking';
-  if (venueFilter === 'camping') return item.kind === 'camping';
-  if (venueFilter === 'event') return item.kind === 'event' && item.source === 'venue';
-  return true;
-};
-
-const isShopListItem = (item: ExploreMapItemDTO): boolean =>
-  item.source === 'shop' && item.kind === 'shop' && !item.id.startsWith('product:');
-
-const isPhysicalShopItem = (item: ExploreMapItemDTO): boolean =>
-  isShopListItem(item) && item.shopPresence !== 'online' && item.latitude != null && item.longitude != null;
-
-const isOnlineShopItem = (item: ExploreMapItemDTO): boolean =>
-  isShopListItem(item) && (item.shopPresence === 'online' || item.latitude == null || item.longitude == null);
-
-/** @deprecated Use isShopListItem */
-const isShopMapItem = isShopListItem;
-
-const isMapPin = (item: ExploreMapItemDTO): boolean => {
-  if (item.latitude == null || item.longitude == null) return false;
-  if (!isShopMapItem(item) && item.source === 'shop' && item.id.startsWith('product:')) return false;
-  return true;
-};
-
-const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKey): boolean => {
-  if (mapFilter === 'all') return true;
-  if (mapFilter === 'shops') return isShopMapItem(item) || item.kind === 'shop';
-
-  const kind = item.kind;
-
-  if (mapFilter === 'hiking') {
-    return kind === 'hiking' && (item.source === 'activity' || item.source === 'demand' || item.source === 'venue');
-  }
-  if (mapFilter === 'camping') {
-    return kind === 'camping' && (item.source === 'activity' || item.source === 'demand' || item.source === 'venue');
-  }
-  if (mapFilter === 'carpool') {
-    return kind === 'carpool' && (item.source === 'activity' || item.source === 'demand');
-  }
-  if (mapFilter === 'others') {
-    return kind === 'event' && (item.source === 'activity' || item.source === 'demand' || item.source === 'venue');
-  }
-
-  return false;
-};
-
-const matchesActivityFilter = (item: ExploreMapItemDTO, activityFilter: ActivityListFilterKey): boolean => {
-  if (item.source !== 'activity' && item.source !== 'demand') return false;
-  if (activityFilter === 'all') return true;
-  if (activityFilter === 'carpool') return item.kind === 'carpool';
-  if (item.kind === 'carpool') return false;
-  return item.kind === activityFilter;
-};
-
-const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
-  if (item.source === 'demand') return item.kind === 'carpool' ? 'carpool' : (item.kind as MapPinKind);
-  if (item.kind === 'shop') return 'shop';
-  if (item.kind === 'carpool') return 'carpool';
-  return item.kind as MapPinKind;
-};
-
-const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
-  const pins: PlaceMapPin[] = [];
-
-  for (const item of items.filter(isMapPin)) {
-    const hasDistinctTo =
-      item.toLatitude != null &&
-      item.toLongitude != null &&
-      (Math.abs(item.toLatitude - item.latitude!) > 0.00001 ||
-        Math.abs(item.toLongitude - item.longitude!) > 0.00001);
-
-    pins.push({
-      id: item.id,
-      exploreItemId: item.id,
-      name: item.title,
-      latitude: item.latitude as number,
-      longitude: item.longitude as number,
-      activityType: mapPinKind(item),
-      path: item.path,
-      hostAvatar: item.hostAvatar,
-      source: resolveExploreItemSource(item),
-      carpoolEndpoint: hasDistinctTo ? 'from' : undefined,
-    });
-
-    if (hasDistinctTo) {
-      pins.push({
-        id: `${item.id}:to`,
-        exploreItemId: item.id,
-        name: item.title,
-        latitude: item.toLatitude as number,
-        longitude: item.toLongitude as number,
-        activityType: 'carpool',
-        path: item.path,
-        hostAvatar: item.hostAvatar,
-        source: resolveExploreItemSource(item),
-        carpoolEndpoint: 'to',
-      });
-    }
-  }
-
-  return pins.sort((a, b) => pinLayerOrder(a.source) - pinLayerOrder(b.source));
-};
-
-const pinLayerOrder = (source?: ExploreMapItemDTO['source']): number => {
-  if (source === 'venue') return 0;
-  if (source === 'shop') return 1;
-  return 2;
-};
+import { MAP_FILTER_PILLS } from '../../config/exploreMapFilters';
 
 export const ExploreExperience = () => {
   const { user } = useAuth();
@@ -541,91 +373,17 @@ export const ExploreExperience = () => {
     [contextualMapFilters]
   );
 
-  const filtered = useMemo(() => {
-    let result = items.filter((item) => matchesMapFilter(item, mapFilter));
-    if (isDesktop) {
-      if (desktopBrowseTab === 'activities') {
-        result = result.filter((item) => item.source === 'activity' || item.source === 'demand');
-      } else if (desktopBrowseTab === 'venues') {
-        result = result.filter((item) => item.source === 'venue' || isShopMapItem(item));
-      }
-    }
-    return result;
-  }, [items, mapFilter, isDesktop, desktopBrowseTab]);
-
-  const mapPins = useMemo((): PlaceMapPin[] => expandMapPins(filtered), [filtered]);
-
-  const listItems = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const matchesQuery = (item: ExploreMapItemDTO) => {
-      if (!q) return true;
-      return `${item.title} ${item.subtitle ?? ''} ${item.featuredPerson?.displayName ?? item.hostName ?? ''}`.toLowerCase().includes(q);
-    };
-
-    if (isDesktop) {
-      if (desktopBrowseTab === 'activities') {
-        return sortExploreActivities(
-          items
-            .filter((item) => item.source === 'activity' || item.source === 'demand')
-            .filter((item) => matchesMapFilter(item, mapFilter))
-            .filter(matchesQuery)
-        );
-      }
-      return sortExploreVenues(
-        items
-          .filter((item) => item.source === 'venue' || isShopMapItem(item))
-          .filter((item) => matchesMapFilter(item, mapFilter))
-          .filter((item) => venueItemMatchesRegions(item, venueRegions))
-          .filter(matchesQuery)
-      );
-    }
-
-    if (sidebarPanel === 'venues') {
-      return sortExploreVenues(
-        items
-          .filter((item) => item.source === 'venue')
-          .filter((item) => matchesVenueFilter(item, venueFilter))
-          .filter((item) => venueItemMatchesRegions(item, venueRegions))
-          .filter(matchesQuery)
-      );
-    }
-
-    if (sidebarPanel === 'shops') {
-      return sortExploreVenues(items.filter(isShopListItem).filter(matchesQuery));
-    }
-
-    return sortExploreActivities(
-      items
-        .filter((item) => item.source === 'activity' || item.source === 'demand')
-        .filter((item) => matchesActivityFilter(item, activityFilter))
-        .filter(matchesQuery)
-    );
-  }, [items, activityFilter, venueFilter, venueRegions, query, sidebarPanel, isDesktop, desktopBrowseTab, mapFilter]);
-
-  const shopListSections = useMemo(() => {
-    const showShopsPanel =
-      sidebarPanel === 'shops' || (isDesktop && (mapFilter === 'shops' || desktopBrowseTab === 'venues' && listItems.some(isShopListItem)));
-    if (!showShopsPanel || !listItems.some(isShopListItem)) return null;
-    const physical = sortExploreVenues(listItems.filter(isPhysicalShopItem));
-    const online = sortExploreVenues(listItems.filter(isOnlineShopItem));
-    return { physical, online };
-  }, [listItems, sidebarPanel, isDesktop, desktopBrowseTab, mapFilter]);
-
-  const browseFilterHint = useMemo(() => {
-    const parts: string[] = [];
-    if (mapFilter !== 'all') {
-      parts.push(`Map: ${mapFilterLabel(mapFilter)}`);
-    }
-    if (sidebarPanel === 'activities' && activityFilter !== 'all') {
-      const listLabel = ACTIVITY_LIST_FILTERS.find((option) => option.key === activityFilter)?.label ?? 'All';
-      parts.push(`List: ${listLabel}`);
-    }
-    if (sidebarPanel === 'venues' && venueFilter !== 'all') {
-      const listLabel = VENUE_LIST_FILTERS.find((option) => option.key === venueFilter)?.label ?? 'All';
-      parts.push(`List: ${listLabel}`);
-    }
-    return parts.length > 0 ? parts.join(' · ') : null;
-  }, [mapFilter, sidebarPanel, activityFilter, venueFilter]);
+  const { mapPins, listItems, shopListSections, browseFilterHint } = useExploreBrowseList({
+    items,
+    mapFilter,
+    activityFilter,
+    venueFilter,
+    venueRegions,
+    query,
+    sidebarPanel,
+    isDesktop,
+    desktopBrowseTab,
+  });
 
   const selected = items.find((item) => item.id === selectedId) ?? null;
   const selectedCard = useMemo(() => {
@@ -1016,205 +774,55 @@ export const ExploreExperience = () => {
           </aside>
         )}
 
-        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <div className="relative min-h-0 flex-1">
-          <div className="absolute inset-0 z-0">
-            <Suspense fallback={<div className="h-full w-full animate-pulse bg-[#eef2f6]" />}>
-              <PlacesMap
-                key={exploreMapStyle}
-                pins={mapPins}
-                bounds={getMapBounds()}
-                fill
-                allowEmpty
-                exploreMode
-                showLegend={false}
-                selectedExploreItemId={selectedId ?? undefined}
-                tileUrl={exploreMapTiles.tileUrl}
-                tileAttribution={MAP_CONFIG.exploreTileAttribution}
-                labelTileUrl={exploreMapTiles.labelTileUrl}
-                onPinClick={handleMapPinClick}
-                recenterTo={recenterTo}
-                exploreMapCenter={exploreMapCenter}
-                className="h-full w-full"
-                minHeight={0}
-              />
-            </Suspense>
-          </div>
-
-          <ExploreGuestJoinBanner />
-          {!listOpen && !isDesktop ? <ExploreCoachMarks /> : null}
-
-          {(!listOpen || isDesktop) && (
-            <ExploreMapFilterBar
-              mapFilter={mapFilter}
-              onFilterChange={applyMapFilter}
-              allowedKeys={isDesktop ? desktopFilterKeys : undefined}
-            />
-          )}
-
-          {user && !listOpen ? (
-            <ExploreMapLocationPrompt
-              open={locationPromptOpen}
-              loading={locatingDevice}
-              onAllow={handleAllowMapLocation}
-              onDismiss={() => {
-                dismissLocationPrompt();
-                setLocationPromptOpen(false);
-              }}
-            />
-          ) : null}
-
-      {venueNotice && (
-        <div className={`absolute left-4 right-4 top-3 z-[1100] rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900 shadow lg:top-4 ${EXPLORE_MOBILE_MAP_CHROME.noticeTop}`}>
-          <div className="flex items-start justify-between gap-3">
-            <p>{venueNotice}</p>
-            <button
-              type="button"
-              onClick={() => setVenueNotice(null)}
-              className="shrink-0 text-emerald-700"
-              aria-label="Dismiss"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {demandNotice && (
-        <div className={`absolute left-4 right-4 top-3 z-[1100] rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900 shadow lg:top-4 ${EXPLORE_MOBILE_MAP_CHROME.noticeTop}`}>
-          <div className="flex items-start justify-between gap-3">
-            <p>{demandNotice}</p>
-            <button
-              type="button"
-              onClick={() => setDemandNotice(null)}
-              className="shrink-0 text-emerald-700"
-              aria-label="Dismiss"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {loadError && (
-        <div className="absolute left-4 right-4 top-32 z-[1100] rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-xs font-medium text-amber-900 shadow">
-          <p>{loadError}</p>
-          <button
-            type="button"
-            onClick={() => reloadMap()}
-            className="mt-2 rounded-lg bg-amber-100 px-3 py-1.5 text-[11px] font-semibold text-amber-950 hover:bg-amber-200"
-          >
-            Retry map
-          </button>
-        </div>
-      )}
-
-      {loading ? <ExploreMapLoadingSkeleton /> : null}
-
-      {!listOpen && isDesktop ? (
-        <button
-          type="button"
-          onClick={openBrowse}
-          className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto absolute left-0 top-1/2 z-[1100] hidden -translate-y-1/2 rounded-l-none border-l-0 px-2.5 py-3 lg:inline-flex`}
-          aria-label="Show activities list"
-        >
-          <List className="h-4 w-4" aria-hidden />
-        </button>
-      ) : null}
-
-      {!listOpen ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+0.75rem)] z-[1100] flex items-end justify-between gap-3 px-4 lg:hidden">
-          <button
-            type="button"
-            onClick={openBrowse}
-            className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto inline-flex gap-2 px-4 py-2.5 text-sm font-semibold text-gray-900`}
-          >
-            <List className="h-4 w-4" aria-hidden />
-            List
-          </button>
-          <div className="pointer-events-auto flex flex-col items-center gap-3">
-            <button
-              type="button"
-              onClick={handleLocateMe}
-              disabled={locatingDevice}
-              className={`${EXPLORE_FLOATING_CONTROL} inline-flex h-11 w-11 items-center justify-center text-emerald-700 disabled:opacity-60`}
-              aria-label="Center map on my location"
-            >
-              <LocateFixed className="h-5 w-5" strokeWidth={2.25} />
-            </button>
-            <ExploreMapStyleToggle style={exploreMapStyle} onToggle={toggleExploreMapStyle} />
-            <button
-              type="button"
-              onClick={handlePrimaryFab}
-              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
-              aria-label={primaryFabLabel}
-            >
-              <Plus className="h-6 w-6 shrink-0" strokeWidth={2.5} aria-hidden />
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="pointer-events-none absolute bottom-6 right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-center lg:gap-3">
-        <button
-          type="button"
-          onClick={handleLocateMe}
-          disabled={locatingDevice}
-          className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto inline-flex h-11 w-11 items-center justify-center text-emerald-700 disabled:opacity-60`}
-          aria-label="Center map on my location"
-        >
-          <LocateFixed className="h-5 w-5" strokeWidth={2.25} />
-        </button>
-        <ExploreMapStyleToggle style={exploreMapStyle} onToggle={toggleExploreMapStyle} />
-        <button
-          type="button"
-          onClick={handlePrimaryFab}
-          className="pointer-events-auto inline-flex shrink-0 items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 text-base font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
-          aria-label={primaryFabLabel}
-        >
-          <Plus className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />
-          {primaryFabLabel}
-        </button>
-      </div>
-
-      {selectedCard && selected?.source === 'venue' && selected ? (
-        <ExplorePlaceMapPreview
-          item={selected}
-          onClose={() => setSelectedId(null)}
-          onFocusMapLocation={handleFocusMapLocation}
-        />
-      ) : selectedCard ? (
-        <ExploreItemSheet
-          card={selectedCard}
-          onClose={() => setSelectedId(null)}
-          onJoin={handleJoin}
-          onMessage={selectedCard.showHostActions ? handleHostMessage : handleDemandMessage}
-          onFulfillIntent={canFulfillParticipantIntent ? handleFulfillIntent : undefined}
-          onManage={selectedCard.showHostActions ? handleHostManage : undefined}
-          joinUiState={selectedCard.showHostActions ? undefined : joinUiState}
-          onWithdraw={() => joinActions.setShowWithdraw(true)}
+        <ExploreMapStage
+          isDesktop={isDesktop}
+          listOpen={listOpen}
+          showListPanel={showListPanel}
+          mapFilter={mapFilter}
+          desktopFilterKeys={desktopFilterKeys}
+          onMapFilterChange={applyMapFilter}
+          exploreMapStyle={exploreMapStyle}
+          exploreMapTiles={exploreMapTiles}
+          onToggleMapStyle={toggleExploreMapStyle}
+          mapPins={mapPins}
+          selectedId={selectedId}
+          recenterTo={recenterTo}
+          exploreMapCenter={exploreMapCenter}
+          onPinClick={handleMapPinClick}
+          loading={loading}
+          loadError={loadError}
+          onReloadMap={reloadMap}
+          venueNotice={venueNotice}
+          onDismissVenueNotice={() => setVenueNotice(null)}
+          demandNotice={demandNotice}
+          onDismissDemandNotice={() => setDemandNotice(null)}
+          user={user}
+          locationPromptOpen={locationPromptOpen}
+          locatingDevice={locatingDevice}
+          onAllowMapLocation={handleAllowMapLocation}
+          onDismissLocationPrompt={() => {
+            dismissLocationPrompt();
+            setLocationPromptOpen(false);
+          }}
+          onOpenBrowse={openBrowse}
+          onLocateMe={handleLocateMe}
+          onPrimaryFab={handlePrimaryFab}
+          primaryFabLabel={primaryFabLabel}
+          selected={selected}
+          selectedCard={selectedCard}
+          joinUiState={selectedCard?.showHostActions ? undefined : joinUiState}
           joinStateLoading={joinStateLoading}
+          canFulfillParticipantIntent={canFulfillParticipantIntent}
+          onCloseSelection={() => setSelectedId(null)}
+          onJoin={handleJoin}
+          onMessage={selectedCard?.showHostActions ? handleHostMessage : handleDemandMessage}
+          onFulfillIntent={handleFulfillIntent}
+          onManage={selectedCard?.showHostActions ? handleHostManage : undefined}
+          onWithdraw={() => joinActions.setShowWithdraw(true)}
           onFocusMapLocation={handleFocusMapLocation}
+          onCloseMobileBrowse={closeListPanel}
+          mobileBrowseSheet={browsePanel}
         />
-      ) : null}
-
-        </div>
-
-        {showListPanel && !isDesktop && (
-          <>
-            <ExploreResponsiveSheet
-              open
-              onClose={closeListPanel}
-              zClass={EXPLORE_Z.browseSheet}
-              maxWidthClass="lg:max-w-lg"
-              showHandle={false}
-              panelClassName={`${EXPLORE_SHEET.browseHeight} px-4 pt-2 lg:px-5 lg:pt-3`}
-            >
-              {browsePanel}
-            </ExploreResponsiveSheet>
-          </>
-        )}
-      </div>
       </div>
 
       <ExploreComposeHost

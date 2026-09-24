@@ -21,7 +21,7 @@ import {
   type ContributeDraft,
 } from './contributeFlow';
 import type { LocationPrecision, ActivityDifficulty } from './organizeFlow';
-import { formatOrganisationPhonePreview } from '../../components/organisation-console/becomeOrganisationForm';
+import { formatHostPhonePreview } from '../../components/organisation-console/becomeHostForm';
 
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -509,7 +509,7 @@ export const CreateContributeFlow = ({
             )}
             {kind === 'shop' && draft.phone.trim() && (
               <p className="mt-1 text-xs text-gray-500">
-                Contact: {formatOrganisationPhonePreview(draft.phoneCountryCode, draft.phone)}
+                Contact: {formatHostPhonePreview(draft.phoneCountryCode, draft.phone)}
                 {draft.contactEmail.trim() ? ` · ${draft.contactEmail.trim()}` : ''}
               </p>
             )}

@@ -76,8 +76,8 @@ const CampDetail = lazy(() => import('./pages/CampDetail').then((m) => ({ defaul
 const EventDetail = lazy(() => import('./pages/EventDetail').then((m) => ({ default: m.EventDetail })));
 
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
-const BecomeOrganisation = lazy(() =>
-  import('./pages/BecomeOrganisation').then((m) => ({ default: m.BecomeOrganisation }))
+const BecomeHost = lazy(() =>
+  import('./pages/BecomeHost').then((m) => ({ default: m.BecomeHost }))
 );
 /** Legacy redirect — canonical public shop URL is `/shop/:id`. */
 const LegacyMerchantPublicRedirect = lazy(() =>
@@ -346,8 +346,8 @@ function App() {
           />
           <Route path="/operator/:id" element={<OrganisationProfile />} />
           <Route path="/member/:userId" element={<MemberProfile />} />
-          <Route path="/become-organizer" element={<BecomeOrganisation />} />
-          <Route path="/become-host" element={<BecomeOrganisation />} />
+          <Route path="/become-organizer" element={<BecomeHost />} />
+          <Route path="/become-host" element={<BecomeHost />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/shop" element={<ShopBrowseRoute />} />
           <Route path="/shop/:id" element={<ShopPublic />} />

@@ -1,6 +1,6 @@
 import type { HostProfileType } from '@uaetrail/shared-types';
 import { isValidNationalPhone } from '../../utils/phone';
-import type { BecomeOrganisationFormState } from './becomeOrganisationForm';
+import type { BecomeHostFormState } from './becomeHostForm';
 
 export type HostFlowStepId =
   | 'name'
@@ -43,7 +43,7 @@ export const PROFILE_TYPE_OPTIONS: Array<{
   { key: 'shop', title: 'Shop', subtitle: 'Physical store or online gear partner', emoji: '🛍️' },
 ];
 
-export const getHostFlowSteps = (profileType: HostProfileType, form?: BecomeOrganisationFormState): HostFlowStepId[] => {
+export const getHostFlowSteps = (profileType: HostProfileType, form?: BecomeHostFormState): HostFlowStepId[] => {
   switch (profileType) {
     case 'individual':
       return ['name', 'about', 'photo', 'contact', 'details', 'review'];
@@ -113,7 +113,7 @@ export const hostFlowPickSubtitle = (intent: HostFlowIntent): string => {
 
 export const validateHostFlowStep = (
   step: HostFlowStepId,
-  form: BecomeOrganisationFormState
+  form: BecomeHostFormState
 ): string | null => {
   const profileType = form.hostProfileType;
   if (!profileType) return 'Pick how you\'d like to show up — guide, agency, or shop.';

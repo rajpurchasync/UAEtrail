@@ -14,26 +14,26 @@ import { ImageUpload } from '../ui/ImageUpload';
 import { AppButton } from '../mobile/AppButton';
 import type { LocationPrecision } from '../../explore';
 import {
-  buildBecomeOrganisationFormPrefill,
+  buildBecomeHostFormPrefill,
   buildHostApplicationPayload,
-  emptyBecomeOrganisationForm,
-  formatOrganisationPhonePreview,
-  type BecomeOrganisationFormState,
-} from './becomeOrganisationForm';
+  emptyBecomeHostForm,
+  formatHostPhonePreview,
+  type BecomeHostFormState,
+} from './becomeHostForm';
 import {
-  getOrganisationFlowSteps,
+  getHostFlowSteps,
   hostFlowIntentProfileType,
-  organisationFlowPickSubtitle,
-  organisationFlowStepTitle,
-  organisationFlowSubmitLabel,
-  organisationFlowTitle,
+  hostFlowPickSubtitle,
+  hostFlowStepTitle,
+  hostFlowSubmitLabel,
+  hostFlowTitle,
   locationPickerTitle,
   PROFILE_TYPE_OPTIONS,
-  validateOrganisationFlowStep,
-  type OrganisationFlowIntent,
-  type OrganisationFlowStep,
-  type OrganisationFlowStepId,
-} from './becomeOrganisationFlow';
+  validateHostFlowStep,
+  type HostFlowIntent,
+  type HostFlowStep,
+  type HostFlowStepId,
+} from './hostWizardFlow';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 
 const CreatePlacePicker = lazy(() =>
@@ -95,27 +95,24 @@ const FlowHeader = ({
   </div>
 );
 
-interface MobileBecomeOrganisationFlowProps {
+interface BecomeHostFlowProps {
   open: boolean;
   onClose: () => void;
   onSubmitted?: (tenantId: string | null) => void;
   signInHref: string;
-  initialForm?: BecomeOrganisationFormState;
-  /** Use absolute positioning when nested inside explore map shell. */
-  overlay?: 'fixed' | 'absolute';
-  /** How the flow was opened — activity gate uses become-host; menu uses add-shop / add-agency. */
-  intent?: OrganisationFlowIntent;
+  initialForm?: BecomeHostFormState;
+  /** How the flow was opened — activity gate uses become-host; profile chips use add-shop / add-agency / add-guide. */
+  intent?: HostFlowIntent;
 }
 
-export const MobileBecomeOrganisationFlow = ({
+export const BecomeHostFlow = ({
   open,
   onClose,
   onSubmitted,
   signInHref,
   initialForm,
-  overlay = 'fixed',
   intent = 'become-host',
-}: MobileBecomeOrganisationFlowProps) => {
+}: BecomeHostFlowProps) => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const { hasGuideProfile, hasAgencyProfile, hasShopProfile } = useOrganisationGate({
@@ -133,9 +130,9 @@ export const MobileBecomeOrganisationFlow = ({
     [hasGuideProfile, hasAgencyProfile, hasShopProfile]
   );
 
-  const [step, setStep] = useState<OrganisationFlowStep>('pick');
+  const [step, setStep] = useState<HostFlowStep>('pick');
   const [selectedType, setSelectedType] = useState<HostProfileType | null>(null);
-  const [form, setForm] = useState<BecomeOrganisationFormState>(emptyBecomeOrganisationForm);
+  const [form, setForm] = useState<BecomeHostFormState>(emptyBecomeHostForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapPrecision, setMapPrecision] = useState<LocationPrecision>('specific');
@@ -145,13 +142,13 @@ export const MobileBecomeOrganisationFlow = ({
   const lockedProfileType = hostFlowIntentProfileType(intent);
   const profileType = form.hostProfileType ?? selectedType ?? lockedProfileType;
   const flowSteps = useMemo(
-    () => (profileType ? getOrganisationFlowSteps(profileType, form) : []),
+    () => (profileType ? getHostFlowSteps(profileType, form) : []),
     [profileType, form.shopPresence]
   );
   const currentStepIndex =
-    step !== 'pick' && profileType ? flowSteps.indexOf(step as OrganisationFlowStepId) : -1;
+    step !== 'pick' && profileType ? flowSteps.indexOf(step as HostFlowStepId) : -1;
 
-  const patchForm = useCallback((patch: Partial<BecomeOrganisationFormState>) => {
+  const patchForm = useCallback((patch: Partial<BecomeHostFormState>) => {
     setForm((prev) => ({ ...prev, ...patch }));
   }, []);
 
@@ -159,7 +156,7 @@ export const MobileBecomeOrganisationFlow = ({
     if (!open) {
       setStep('pick');
       setSelectedType(null);
-      setForm(emptyBecomeOrganisationForm());
+      setForm(emptyBecomeHostForm());
       setError(null);
       setSubmitting(false);
       setMapPrecision('specific');
@@ -175,18 +172,18 @@ export const MobileBecomeOrganisationFlow = ({
 
     if (lockedProfileType) {
       setSelectedType(lockedProfileType);
-      setForm((prev) => ({ ...emptyBecomeOrganisationForm(), ...prev, hostProfileType: lockedProfileType }));
-      setStep(getOrganisationFlowSteps(lockedProfileType)[0]);
+      setForm((prev) => ({ ...emptyBecomeHostForm(), ...prev, hostProfileType: lockedProfileType }));
+      setStep(getHostFlowSteps(lockedProfileType)[0]);
     }
 
     if (initialForm) {
       setForm(initialForm);
       if (initialForm.hostProfileType) {
         setSelectedType(initialForm.hostProfileType);
-        setStep(getOrganisationFlowSteps(initialForm.hostProfileType)[0] ?? 'pick');
+        setStep(getHostFlowSteps(initialForm.hostProfileType)[0] ?? 'pick');
       } else if (lockedProfileType) {
         setSelectedType(lockedProfileType);
-        setStep(getOrganisationFlowSteps(lockedProfileType)[0]);
+        setStep(getHostFlowSteps(lockedProfileType)[0]);
       }
       return;
     }
@@ -196,7 +193,7 @@ export const MobileBecomeOrganisationFlow = ({
     Promise.all([api.getMeProfile(), api.getMyOrganisationApplication()])
       .then(([profileRes, appRes]) => {
         if (disposed) return;
-        const prefill = buildBecomeOrganisationFormPrefill({
+        const prefill = buildBecomeHostFormPrefill({
           displayName: profileRes.data.displayName,
           bio: profileRes.data.bio,
           phone: profileRes.data.phone,
@@ -209,18 +206,18 @@ export const MobileBecomeOrganisationFlow = ({
         setForm(prefill);
         if (lockedProfileType) {
           setSelectedType(lockedProfileType);
-          setStep(getOrganisationFlowSteps(lockedProfileType)[0]);
+          setStep(getHostFlowSteps(lockedProfileType)[0]);
         } else if (prefill.hostProfileType) {
           setSelectedType(prefill.hostProfileType);
         }
       })
       .catch(() => {
         if (disposed) return;
-        const fallback = buildBecomeOrganisationFormPrefill({ displayName: user.displayName });
+        const fallback = buildBecomeHostFormPrefill({ displayName: user.displayName });
         if (lockedProfileType) {
           fallback.hostProfileType = lockedProfileType;
           setSelectedType(lockedProfileType);
-          setStep(getOrganisationFlowSteps(lockedProfileType)[0]);
+          setStep(getHostFlowSteps(lockedProfileType)[0]);
         }
         setForm(fallback);
       })
@@ -241,7 +238,7 @@ export const MobileBecomeOrganisationFlow = ({
   const goToFirstStep = () => {
     if (!selectedType) return;
     patchForm({ hostProfileType: selectedType });
-    setStep(getOrganisationFlowSteps(selectedType)[0]);
+    setStep(getHostFlowSteps(selectedType)[0]);
     setError(null);
   };
 
@@ -251,7 +248,7 @@ export const MobileBecomeOrganisationFlow = ({
       setError(null);
       return;
     }
-    if (lockedProfileType && step === getOrganisationFlowSteps(lockedProfileType)[0]) {
+    if (lockedProfileType && step === getHostFlowSteps(lockedProfileType)[0]) {
       onClose();
       setError(null);
       return;
@@ -265,7 +262,7 @@ export const MobileBecomeOrganisationFlow = ({
     setError(null);
   };
 
-  const goToStep = (target: OrganisationFlowStepId) => {
+  const goToStep = (target: HostFlowStepId) => {
     setLocationMapOpen(false);
     setStep(target);
     setError(null);
@@ -273,7 +270,7 @@ export const MobileBecomeOrganisationFlow = ({
 
   const goNext = () => {
     if (!profileType || step === 'pick') return;
-    const validation = validateOrganisationFlowStep(step as OrganisationFlowStepId, form);
+    const validation = validateHostFlowStep(step as HostFlowStepId, form);
     if (validation) {
       setError(validation);
       return;
@@ -311,10 +308,9 @@ export const MobileBecomeOrganisationFlow = ({
 
   if (!open) return null;
 
-  const overlayClass = overlay === 'absolute' ? 'absolute inset-0 z-[1400]' : 'fixed inset-0 z-[1400]';
-  const flowTitle = organisationFlowTitle(intent, step);
+  const flowTitle = hostFlowTitle(intent, step);
   const stepHeading =
-    step !== 'pick' && profileType ? organisationFlowStepTitle(step as OrganisationFlowStepId, profileType) : flowTitle;
+    step !== 'pick' && profileType ? hostFlowStepTitle(step as HostFlowStepId, profileType) : flowTitle;
   const showPickStep = step === 'pick' && !lockedProfileType;
   const stepCounter =
     step !== 'pick' && profileType && currentStepIndex >= 0
@@ -327,7 +323,7 @@ export const MobileBecomeOrganisationFlow = ({
 
   const locationMapOverlay =
     step === 'location' && locationMapOpen && profileType && profileType !== 'individual' ? (
-      <div className={`${overlayClass} z-[1500] bg-neutral-100`}>
+      <div className="fixed inset-0 z-[1500] bg-neutral-100">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
             precision={mapPrecision}
@@ -350,7 +346,7 @@ export const MobileBecomeOrganisationFlow = ({
     <>
       {locationMapOverlay}
       {!locationMapOpen && (
-      <div className={`${overlayClass} flex flex-col bg-neutral-50`}>
+      <div className="fixed inset-0 z-[1400] flex flex-col bg-neutral-50">
         {(showPickStep || step !== 'pick' || lockedProfileType) && (
           <FlowHeader
             title={flowTitle}
@@ -370,7 +366,7 @@ export const MobileBecomeOrganisationFlow = ({
 
         {!prefillLoading && showPickStep && (
           <>
-            <p className="mb-4 text-sm leading-relaxed text-neutral-600">{organisationFlowPickSubtitle(intent)}</p>
+            <p className="mb-4 text-sm leading-relaxed text-neutral-600">{hostFlowPickSubtitle(intent)}</p>
             <div className="space-y-3">
               {availableProfileOptions.map((option) => {
                 const active = selectedType === option.key;
@@ -503,7 +499,7 @@ export const MobileBecomeOrganisationFlow = ({
                   disabled={submitting}
                 />
                 <p className="mt-2 text-xs text-neutral-500">
-                  Saved as {formatOrganisationPhonePreview(form.phoneCountryCode, form.phone)}.
+                  Saved as {formatHostPhonePreview(form.phoneCountryCode, form.phone)}.
                 </p>
               </div>
               {profileType !== 'individual' && (
@@ -784,7 +780,7 @@ export const MobileBecomeOrganisationFlow = ({
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5">
               <AppButton fullWidth disabled={submitting} onClick={handleSubmit}>
-                {submitting ? 'Submitting…' : organisationFlowSubmitLabel(intent)}
+                {submitting ? 'Submitting…' : hostFlowSubmitLabel(intent)}
               </AppButton>
             </div>
           </>
@@ -796,5 +792,3 @@ export const MobileBecomeOrganisationFlow = ({
   );
 };
 
-/** @deprecated Use MobileBecomeOrganisationFlow */
-export const MobileBecomeHostFlow = MobileBecomeOrganisationFlow;

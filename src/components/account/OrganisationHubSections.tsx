@@ -13,7 +13,7 @@ interface OrganisationHubSectionsProps {
   upcomingActivities: ActivityDTO[];
 }
 
-const buildHostStats = ({
+const buildOrganisationStats = ({
   activitiesCount,
   pendingJoinRequests,
   upcomingActivitiesCount,
@@ -43,7 +43,7 @@ export const OrganisationHubSections = ({
   pastActivitiesCount,
   upcomingActivities,
 }: OrganisationHubSectionsProps) => {
-  const stats = buildHostStats({
+  const stats = buildOrganisationStats({
     activitiesCount,
     pendingJoinRequests,
     upcomingActivitiesCount,

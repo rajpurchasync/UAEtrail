@@ -49,7 +49,7 @@ Helpers: `src/utils/hostCopy.ts` — `hostConsoleLabel()`, `hostProfileLabel()`,
 | Prefer in new code | Deprecated alias | Notes |
 |--------------------|------------------|-------|
 | `hostTenants`, `canPickHostTenant`, `eventHostName` | `hostOrganizations`, `canPickHostOrganization`, `eventHostOrganization` | Activity publish forms |
-| `BecomeOrganisationFormState` | `BecomeHostFormState` | Become-host wizard |
+| `BecomeHostFormState` | `BecomeOrganisationFormState` (deprecated) | Become-host wizard |
 | `HOST_CONSOLE_LINKS` | `ORGANISATION_CONSOLE_LINKS` | Console nav constant |
 | `resolveProfileHostKind()` | `resolveProfileOrganisationKind()` | Profile hub |
 | `hostName` (signup) | `organizationName` | Wire field on `/auth/register` |
@@ -102,7 +102,7 @@ Shop identity: **tenant** (become-host) + **merchant profile** (ShopManage), lin
 |---------------|-------|-------|
 | `OrganisationProfile` | `/operator/:id` | Public guide/agency host profile |
 | `OrganisationConsoleOverview` | `/host/overview` | **Host console** in UI |
-| `BecomeOrganisation` | `/become-host` | User copy: **become a host**; legacy export `BecomeHost` |
+| `BecomeHost` | `/become-host`, `/become-organizer` | User copy: **become a host** (guide, agency, shop) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
 | `AdminOrganisations` | `/admin/hosts` | Admin copy: **Hosts** |
 
