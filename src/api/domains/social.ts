@@ -6,6 +6,7 @@ import {
   PostDTO,
   PostReplyDTO,
   ReviewDTO,
+  MyReviewDTO,
 } from '@uaetrail/shared-types';
 import { apiRequest, getStoredSession } from '../client';
 import type {
@@ -182,6 +183,19 @@ export const socialApi = {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
+    }),
+
+    getMyReviews: (page = 1, pageSize = 50) =>
+    apiRequest<{ data: MyReviewDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
+      `/me/reviews?page=${page}&pageSize=${pageSize}`,
+      { auth: true }
+    ),
+
+    updateMyReview: (reviewId: string, payload: { rating: number; comment: string }) =>
+    apiRequest<{ data: MyReviewDTO }>(`/me/reviews/${encodeURIComponent(reviewId)}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload),
     }),
 
   createPlaceReview: (payload: { placeId: string; rating: number; comment: string }) =>

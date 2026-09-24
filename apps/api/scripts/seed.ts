@@ -52,6 +52,328 @@ import {
   type TenantRecord
 } from '../src/lib/tenant-store.js';
 import { DEMO_ACCOUNTS } from '../src/lib/demo-accounts.js';
+import {
+  createGroupWallMessage,
+  createSocialGroup,
+  ensureGroupMember,
+  type GroupWallReactionKind,
+} from '../src/lib/social-groups-store.js';
+import { ensureActivityGroupChat } from '../src/services/activity-group-chat.js';
+
+const seedChatThread = async (
+  messages: Array<{
+    senderId: string;
+    receiverId: string;
+    content: string;
+    activityId?: string;
+    unreadForReceiver?: boolean;
+  }>
+) => {
+  if (messages.length === 0) return;
+
+  const pairs = new Set<string>();
+  for (const message of messages) {
+    pairs.add([message.senderId, message.receiverId].sort().join(':'));
+  }
+
+  await db().collection('chat_messages').deleteMany({
+    $or: [...pairs].flatMap((key) => {
+      const [a, b] = key.split(':');
+      return [
+        { senderId: a, receiverId: b },
+        { senderId: b, receiverId: a },
+      ];
+    }),
+  });
+
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
+    const createdAt = new Date();
+    createdAt.setMinutes(createdAt.getMinutes() - (messages.length - i) * 45);
+    const isLast = i === messages.length - 1;
+    const receiverUnread = Boolean(message.unreadForReceiver && isLast);
+    await db().collection('chat_messages').insertOne({
+      _id: crypto.randomUUID(),
+      senderId: message.senderId,
+      receiverId: message.receiverId,
+      content: message.content,
+      activityId: message.activityId ?? null,
+      createdAt,
+      readAt: receiverUnread ? null : createdAt,
+    });
+  }
+};
+
+const seedGroupWallReaction = async (input: {
+  groupId: string;
+  messageId: string;
+  userId: string;
+  kind: GroupWallReactionKind;
+}) => {
+  await db().collection('social_group_wall_reactions').updateOne(
+    { groupId: input.groupId, messageId: input.messageId, userId: input.userId, kind: input.kind },
+    {
+      $setOnInsert: {
+        _id: crypto.randomUUID(),
+        groupId: input.groupId,
+        messageId: input.messageId,
+        userId: input.userId,
+        kind: input.kind,
+        createdAt: new Date(),
+      },
+    },
+    { upsert: true }
+  );
+};
+
+const resetDemoFriendsGroup = async (participantId: string) => {
+  const existing = await db()
+    .collection('social_groups')
+    .find({ adminUserId: participantId, name: 'Weekend Hikers UAE', type: 'friends' })
+    .toArray();
+  for (const group of existing) {
+    await db().collection('social_group_wall_reactions').deleteMany({ groupId: group._id });
+    await db().collection('social_group_wall').deleteMany({ groupId: group._id });
+    await db().collection('social_group_members').deleteMany({ groupId: group._id });
+    await db().collection('social_groups').deleteOne({ _id: group._id });
+  }
+};
+
+const clearGroupWall = async (groupId: string) => {
+  await db().collection('social_group_wall_reactions').deleteMany({ groupId });
+  await db().collection('social_group_wall').deleteMany({ groupId });
+};
+
+const seedMobileInboxDemo = async (input: {
+  participantId: string;
+  agencyOwnerId: string;
+  agencyGuideId: string;
+  individualHostId: string;
+  jaisActivityId: string;
+  fossilCampActivityId: string;
+  shawkaActivityId: string;
+}) => {
+  await seedParticipant(input.shawkaActivityId, input.participantId, input.agencyOwnerId);
+
+  await db().collection('activity_requests').updateOne(
+    { activityId: input.fossilCampActivityId, userId: input.participantId },
+    {
+      $set: {
+        status: RequestStatus.PENDING,
+        note: 'Happy to bring my own tent — any tips for first-timers?',
+        updatedAt: new Date(),
+      },
+      $setOnInsert: {
+        _id: crypto.randomUUID(),
+        organizerNote: null,
+        cancelReason: null,
+        cancelMessage: null,
+        cancelledAt: null,
+        selectedPackageIndex: null,
+        reviewedAt: null,
+        reviewedById: null,
+        createdAt: new Date(),
+      },
+    },
+    { upsert: true }
+  );
+
+  await seedChatThread([
+    {
+      senderId: input.participantId,
+      receiverId: input.agencyGuideId,
+      content: 'Still looking for a Hatta crew this Friday — are you around?',
+    },
+    {
+      senderId: input.agencyGuideId,
+      receiverId: input.participantId,
+      content: 'Yes! Wadi Shawka loop is on — join the free hike on the map if you want in.',
+    },
+    {
+      senderId: input.participantId,
+      receiverId: input.agencyGuideId,
+      content: 'Perfect — I can do an early start. Anything I should pack besides water?',
+    },
+    {
+      senderId: input.agencyGuideId,
+      receiverId: input.participantId,
+      content: 'Trail shoes, light layer, and snacks 🥾 Sun is up fast after 7.',
+      unreadForReceiver: true,
+    },
+    {
+      senderId: input.participantId,
+      receiverId: input.individualHostId,
+      content: 'Hey — is Fossil Rock camp beginner-friendly? First desert overnight for me.',
+      activityId: input.fossilCampActivityId,
+    },
+    {
+      senderId: input.individualHostId,
+      receiverId: input.participantId,
+      content: 'Totally — we go over setup together. Request a spot and I will approve you in the group chat.',
+      activityId: input.fossilCampActivityId,
+    },
+    {
+      senderId: input.participantId,
+      receiverId: input.individualHostId,
+      content: 'Amazing, just sent the request. Can I borrow a mat if mine is too thin?',
+      activityId: input.fossilCampActivityId,
+    },
+    {
+      senderId: input.individualHostId,
+      receiverId: input.participantId,
+      content: 'Mats are fine — we have a few spares in the SUV if you need one.',
+      activityId: input.fossilCampActivityId,
+      unreadForReceiver: true,
+    },
+    {
+      senderId: input.participantId,
+      receiverId: input.agencyOwnerId,
+      content: 'Hi Khalid — quick question on the Jebel Jais meet point tomorrow.',
+      activityId: input.jaisActivityId,
+    },
+    {
+      senderId: input.agencyOwnerId,
+      receiverId: input.participantId,
+      content:
+        'Great to have you! Bring at least 2L of water, hiking shoes, and sun protection. We start early!',
+      activityId: input.jaisActivityId,
+    },
+    {
+      senderId: input.participantId,
+      receiverId: input.agencyOwnerId,
+      content: 'Perfect, thanks! Should I bring my own headlamp?',
+      activityId: input.jaisActivityId,
+    },
+    {
+      senderId: input.agencyOwnerId,
+      receiverId: input.participantId,
+      content: 'Yes, a headlamp is recommended since we start before sunrise. See you there! 🌄',
+      activityId: input.jaisActivityId,
+      unreadForReceiver: true,
+    },
+  ]);
+
+  await resetDemoFriendsGroup(input.participantId);
+
+  const friendsGroup = await createSocialGroup({
+    creatorUserId: input.participantId,
+    type: 'friends',
+    name: 'Weekend Hikers UAE',
+    slogan: 'Hatta · Shawka · early starts',
+  });
+  await ensureGroupMember({
+    groupId: friendsGroup.id,
+    userId: input.agencyGuideId,
+    role: 'buddy',
+    createdByUserId: input.participantId,
+  });
+
+  const groupWallPosts = [
+    { authorUserId: input.participantId, body: 'Who is in for a 5:30am meet at Hatta Dam this Saturday?' },
+    { authorUserId: input.agencyGuideId, body: 'I am — bringing an extra headlamp for whoever needs one 🔦' },
+    { authorUserId: input.agencyGuideId, body: 'Forecast looks clear. Pack 2L water minimum.' },
+    { authorUserId: input.participantId, body: 'Reply here if you want to carpool from Dubai Marina 🚗' },
+  ];
+  const friendsWallIds: string[] = [];
+  for (const post of groupWallPosts) {
+    const created = await createGroupWallMessage({
+      groupId: friendsGroup.id,
+      authorUserId: post.authorUserId,
+      body: post.body,
+    });
+    friendsWallIds.push(created.id);
+  }
+
+  if (friendsWallIds[1]) {
+    await seedGroupWallReaction({
+      groupId: friendsGroup.id,
+      messageId: friendsWallIds[1],
+      userId: input.participantId,
+      kind: 'heart',
+    });
+    await seedGroupWallReaction({
+      groupId: friendsGroup.id,
+      messageId: friendsWallIds[1],
+      userId: input.participantId,
+      kind: 'like',
+    });
+  }
+  if (friendsWallIds[2]) {
+    await seedGroupWallReaction({
+      groupId: friendsGroup.id,
+      messageId: friendsWallIds[2],
+      userId: input.participantId,
+      kind: 'mountain',
+    });
+    await seedGroupWallReaction({
+      groupId: friendsGroup.id,
+      messageId: friendsWallIds[2],
+      userId: input.agencyGuideId,
+      kind: 'happy',
+    });
+    await seedGroupWallReaction({
+      groupId: friendsGroup.id,
+      messageId: friendsWallIds[2],
+      userId: input.agencyOwnerId,
+      kind: 'laugh',
+    });
+  }
+
+  const jaisGroupId = await ensureActivityGroupChat(input.jaisActivityId);
+  if (jaisGroupId) {
+    await clearGroupWall(jaisGroupId);
+    const outingPosts = [
+      {
+        authorUserId: input.agencyOwnerId,
+        body: 'Meet at Jebel Jais base parking at 5:45 AM — look for the UAE Adventure flag.',
+      },
+      {
+        authorUserId: input.participantId,
+        body: 'Got it. Bringing 2L water and a headlamp ⛰️',
+      },
+      {
+        authorUserId: input.agencyOwnerId,
+        body: 'Perfect. Weather looks clear — dress warm for the summit.',
+      },
+      {
+        authorUserId: input.agencyGuideId,
+        body: 'I will bring the first-aid kit and spare poles for anyone who needs them.',
+      },
+    ];
+    const outingWallIds: string[] = [];
+    for (const post of outingPosts) {
+      const created = await createGroupWallMessage({
+        groupId: jaisGroupId,
+        authorUserId: post.authorUserId,
+        body: post.body,
+      });
+      outingWallIds.push(created.id);
+    }
+
+    if (outingWallIds[1]) {
+      await seedGroupWallReaction({
+        groupId: jaisGroupId,
+        messageId: outingWallIds[1],
+        userId: input.agencyOwnerId,
+        kind: 'like',
+      });
+      await seedGroupWallReaction({
+        groupId: jaisGroupId,
+        messageId: outingWallIds[1],
+        userId: input.agencyGuideId,
+        kind: 'heart',
+      });
+    }
+    if (outingWallIds[2]) {
+      await seedGroupWallReaction({
+        groupId: jaisGroupId,
+        messageId: outingWallIds[2],
+        userId: input.participantId,
+        kind: 'camping',
+      });
+    }
+  }
+};
 
 const db = () => getMongoClient()!.db();
 
@@ -239,7 +561,8 @@ const upsertMerchantProfile = async (
     latitude?: number | null;
     longitude?: number | null;
     region?: string | null;
-  }
+  },
+  options?: { tenantId?: string | null; linkShopTenant?: boolean }
 ) => {
   const existing = await db().collection('merchant_profiles').findOne({ shopName: data.shopName });
   if (existing) {
@@ -264,7 +587,7 @@ const upsertMerchantProfile = async (
     return (await findManagedMerchantProfileById(adminIds[0]!, existing._id as string))!;
   }
 
-  const created = await createMerchantProfileForUser(adminIds[0]!, data);
+  const created = await createMerchantProfileForUser(adminIds[0]!, data, options);
   await db().collection('merchant_profiles').updateOne(
     { _id: created.id },
     {
@@ -596,6 +919,42 @@ const isSeedDataEnabled = (): boolean => {
   });
 };
 
+const isMobileInboxSeedEnabled = (): boolean => {
+  const value = String(process.env.SEED_MOBILE_INBOX ?? '').trim().toLowerCase();
+  return value === 'true' || value === '1' || value === 'yes';
+};
+
+const runMobileInboxDemoSeed = async (): Promise<boolean> => {
+  const participant = await findAuthUserByEmail('visitor@uaetrails.app');
+  const agencyOwner = await findAuthUserByEmail('organizer@uaetrails.app');
+  const agencyGuide = await findAuthUserByEmail('guide@uaetrails.app');
+  const individualHost = await findAuthUserByEmail('host@uaetrails.app');
+  const jaisEvent = await findActivityDocInMongo(SEED_MARKER_EVENT_ID);
+
+  if (!participant || !agencyOwner || !agencyGuide || !individualHost || !jaisEvent) {
+    console.warn(
+      '[seed] SEED_MOBILE_INBOX skipped — run full seed first (missing demo users or Jebel Jais activity)'
+    );
+    return false;
+  }
+
+  await seedMobileInboxDemo({
+    participantId: participant._id,
+    agencyOwnerId: agencyOwner._id,
+    agencyGuideId: agencyGuide._id,
+    individualHostId: individualHost._id,
+    jaisActivityId: jaisEvent._id,
+    fossilCampActivityId: 'seed-event-fossil-camp',
+    shawkaActivityId: 'seed-event-shawka-free',
+  });
+
+  console.log('[seed] Mobile inbox demo seeded for visitor@uaetrails.app');
+  console.log(
+    'Inbox demo: DMs (Fatima, Omar, Khalid), friends wall + emoji reactions, Jebel Jais outing chat + reactions'
+  );
+  return true;
+};
+
 const hasExistingSeedData = async (): Promise<boolean> => {
   const existingAdmin = await findAuthUserByEmail(SEED_MARKER_EMAIL);
   if (existingAdmin) return true;
@@ -645,6 +1004,9 @@ async function main() {
   }
 
   if (!(await shouldRunSeed())) {
+    if (isMobileInboxSeedEnabled()) {
+      await runMobileInboxDemoSeed();
+    }
     return;
   }
 
@@ -697,7 +1059,12 @@ async function main() {
 
   await updateAuthUserProfile(participant._id, {
     bio: 'Weekend hiker exploring Hatta, Wadi Shawka, and Dubai trail groups.',
-    phone: '+971508887766'
+    phone: '+971508887766',
+    dateOfBirth: '1992-03-10',
+    gender: 'female',
+    countryCode: 'AE',
+    city: 'dubai',
+    languages: 'English, Hindi',
   });
 
   await updateAuthUserProfile(pendingParticipant._id, {
@@ -845,7 +1212,12 @@ async function main() {
 
   await updateAuthUserProfile(shopOwner._id, {
     bio: 'Outdoor gear shop on the map — trail shoes, tents, and hydration for UAE hikers and campers.',
-    phone: '+971501100221'
+    phone: '+971501100221',
+    dateOfBirth: '1988-11-20',
+    gender: 'female',
+    countryCode: 'AE',
+    city: 'dubai',
+    languages: 'English, Malayalam',
   });
 
   await upsertHostApplication({
@@ -1340,27 +1712,35 @@ Share your live location and carry extra water in summer months.`
     { upsert: true }
   );
 
-  const nikeMerchantProfile = await upsertMerchantProfile([shopOwner._id], {
-    shopName: 'Desert Trail Outfitters — Marina',
-    description: 'Performance footwear, hydration, and trail apparel for UAE runners.',
-    logo: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
-    contactEmail: 'nike-uae@uaetrails.app',
-    contactPhone: '+971-50-1100221',
-    latitude: 25.1972,
-    longitude: 55.2744,
-    region: 'Dubai'
-  });
+  const nikeMerchantProfile = await upsertMerchantProfile(
+    [shopOwner._id],
+    {
+      shopName: 'Desert Trail Outfitters — Marina',
+      description: 'Performance footwear, hydration, and trail apparel for UAE runners.',
+      logo: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
+      contactEmail: 'nike-uae@uaetrails.app',
+      contactPhone: '+971-50-1100221',
+      latitude: 25.1972,
+      longitude: 55.2744,
+      region: 'Dubai',
+    },
+    { tenantId: shopTenant.id }
+  );
 
-  const adidasMerchantProfile = await upsertMerchantProfile([shopOwner._id], {
-    shopName: 'Desert Trail Outfitters — Abu Dhabi',
-    description: 'Trail gear and expedition essentials curated for Gulf conditions.',
-    logo: 'https://images.unsplash.com/photo-1514996937319-344454492b37?w=400',
-    contactEmail: 'adidas-gcc@uaetrails.app',
-    contactPhone: '+971-50-2200332',
-    latitude: 24.4539,
-    longitude: 54.3773,
-    region: 'Abu Dhabi'
-  });
+  const adidasMerchantProfile = await upsertMerchantProfile(
+    [shopOwner._id],
+    {
+      shopName: 'Desert Trail Outfitters — Abu Dhabi',
+      description: 'Trail gear and expedition essentials curated for Gulf conditions.',
+      logo: 'https://images.unsplash.com/photo-1514996937319-344454492b37?w=400',
+      contactEmail: 'adidas-gcc@uaetrails.app',
+      contactPhone: '+971-50-2200332',
+      latitude: 24.4539,
+      longitude: 54.3773,
+      region: 'Abu Dhabi',
+    },
+    { linkShopTenant: false }
+  );
 
   const seedProducts = [
     {
@@ -1489,55 +1869,15 @@ Share your live location and carry extra water in summer months.`
     meta: { activityId: event._id }
   });
 
-  const chatMessages = [
-    {
-      senderId: participant._id,
-      receiverId: agencyOwner._id,
-      content: 'Hi! I signed up for the Jebel Jais hike. What should I bring?',
-      activityId: event._id
-    },
-    {
-      senderId: agencyOwner._id,
-      receiverId: participant._id,
-      content:
-        'Great to have you! Bring at least 2L of water, hiking shoes, and sun protection. We start early!',
-      activityId: event._id
-    },
-    {
-      senderId: participant._id,
-      receiverId: agencyOwner._id,
-      content: 'Perfect, thanks! Should I bring my own headlamp?',
-      activityId: event._id
-    },
-    {
-      senderId: agencyOwner._id,
-      receiverId: participant._id,
-      content: 'Yes, a headlamp is recommended since we start before sunrise. See you there!',
-      activityId: event._id
-    }
-  ];
-
-  await db().collection('chat_messages').deleteMany({
-    $or: [
-      { senderId: participant._id, receiverId: agencyOwner._id },
-      { senderId: agencyOwner._id, receiverId: participant._id }
-    ]
+  await seedMobileInboxDemo({
+    participantId: participant._id,
+    agencyOwnerId: agencyOwner._id,
+    agencyGuideId: agencyGuide._id,
+    individualHostId: individualHost._id,
+    jaisActivityId: event._id,
+    fossilCampActivityId: 'seed-event-fossil-camp',
+    shawkaActivityId: 'seed-event-shawka-free',
   });
-
-  for (let i = 0; i < chatMessages.length; i++) {
-    const msg = chatMessages[i];
-    const createdAt = new Date();
-    createdAt.setMinutes(createdAt.getMinutes() - (chatMessages.length - i) * 30);
-    await db().collection('chat_messages').insertOne({
-      _id: crypto.randomUUID(),
-      senderId: msg.senderId,
-      receiverId: msg.receiverId,
-      content: msg.content,
-      activityId: msg.activityId,
-      createdAt,
-      readAt: i < chatMessages.length - 1 ? createdAt : null
-    });
-  }
 
   const participantRecord = await db().collection('activity_participants').findOne({
     activityId: event._id,
@@ -1703,7 +2043,7 @@ Share your live location and carry extra water in summer months.`
   console.log(`Agency owner: organizer@uaetrails.app (${agencyOwner.profile?.displayName ?? demoAccount('organizer@uaetrails.app').displayName}) / ${demoAccount('organizer@uaetrails.app').password}`);
   console.log(`Agency guide: guide@uaetrails.app (${agencyGuide.profile?.displayName ?? demoAccount('guide@uaetrails.app').displayName}) / ${demoAccount('guide@uaetrails.app').password}`);
   console.log(`Shop owner: shop@uaetrails.app (${shopOwner.profile?.displayName ?? demoAccount('shop@uaetrails.app').displayName}) / ${demoAccount('shop@uaetrails.app').password}`);
-  console.log(`Pending participant: visitor2@uaetrails.app (${pendingParticipant.profile?.displayName ?? demoAccount('visitor2@uaetrails.app').displayName}) / ${demoAccount('visitor2@uaetrails.app').password}`);
+  console.log(`Pending participant: visitor2@uaetrails.app (${pendingParticipant.profile?.displayName ?? demoAccount('visitor2@uaetrails.app').displayName}) / ${demoAccount('visitor2@uaetrails.app').password} — incomplete signup profile (welcome wizard demo)`);
   console.log(`Suspended: suspended@uaetrails.app / ${suspendedDemo.password}`);
   console.log(`Agency tenant: ${agencyTenant.id} — ${agencyTenant.slug} (${agencyTenant.businessMode})`);
   console.log(`Individual host tenant: ${individualHostTenant.id} — ${individualHostTenant.slug}`);
@@ -1712,7 +2052,10 @@ Share your live location and carry extra water in summer months.`
   console.log(`Seeded by admin id: ${admin._id}`);
   console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName} (${seedProducts.length} products)`);
   console.log('Explore map demo pins: supply (hiking, camping, event, rideshare) + demand (all four types) + shops + agency');
-  console.log(`Chat messages: ${chatMessages.length} seeded`);
+  console.log(`Chat messages: mobile inbox demo (DMs, friends wall, outing chat) seeded`);
+  console.log(
+    'Inbox demo (visitor@): DMs with Fatima, Omar, Khalid; friends group + reactions; Jebel Jais outing chat + reactions'
+  );
 }
 
 main()

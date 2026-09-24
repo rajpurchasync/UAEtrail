@@ -1,7 +1,7 @@
-import { lazy, Suspense, useEffect, useMemo, useState, useCallback } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { List, Plus, X } from 'lucide-react';
+import { List, LocateFixed, Plus, X } from 'lucide-react';
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
 import { api } from '../../api/services';
@@ -50,10 +50,12 @@ import { useActivityFormSession } from '../../context/ActivityFormSessionContext
 import { ExploreGuestJoinBanner } from './ExploreGuestJoinBanner';
 import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreMapFilterBar } from './ExploreMapFilterBar';
+import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
+import { useExploreDeviceLocation } from '../../hooks/useExploreDeviceLocation';
+import { shouldShowExploreLocationPrompt } from '../../utils/exploreMapLocationPreference';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreItemSheet } from './ExploreItemSheet';
 import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
-import { ExploreHeader } from './ExploreHeader';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
 import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import {
@@ -90,11 +92,17 @@ const PlacesMap = lazy(() =>
   import('../../components/ui/PlacesMap').then((m) => ({ default: m.PlacesMap }))
 );
 
-/** `list=1` open, `list=0` closed; default closed (map first). */
-const parseListOpen = (listParam: string | null): boolean => {
+/** `list=1` open, `list=0` closed; desktop defaults to list open. */
+const parseListOpen = (listParam: string | null, isDesktop: boolean): boolean => {
   if (listParam === '1') return true;
   if (listParam === '0') return false;
-  return false;
+  return isDesktop;
+};
+
+const readInitialListOpen = (listParam: string | null): boolean => {
+  const isDesktop =
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false;
+  return parseListOpen(listParam, isDesktop);
 };
 
 const mapFilterToPanel = (filter: MapFilterKey): ExplorePanel => {
@@ -239,7 +247,7 @@ export const ExploreExperience = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const { pathname, search } = useLocation();
+  const { pathname, search, state: locationState } = useLocation();
   const isDesktop = useMinWidthLg();
   const { data: items = [], isLoading: loading, error: mapError } = useExploreMap();
   const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
@@ -251,7 +259,16 @@ export const ExploreExperience = () => {
   const [panel, setPanel] = useState<ExplorePanel>(() => parseExplorePanel(searchParams.get('panel')));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [recenterTo, setRecenterTo] = useState<{ lat: number; lng: number } | null>(null);
-  const [listOpen, setListOpen] = useState(() => parseListOpen(searchParams.get('list')));
+  const [locationPromptOpen, setLocationPromptOpen] = useState(false);
+  const mapCenteredRef = useRef(false);
+  const {
+    deviceFix,
+    pending: locatingDevice,
+    enableDeviceLocation,
+    dismissLocationPrompt,
+    requestDeviceLocation,
+  } = useExploreDeviceLocation();
+  const [listOpen, setListOpen] = useState(() => readInitialListOpen(searchParams.get('list')));
   const exploreCompose = useMemo(() => parseExploreCompose(searchParams), [searchParams]);
 
   const composeMenuOpen = isComposeMenu(exploreCompose);
@@ -276,7 +293,6 @@ export const ExploreExperience = () => {
     setComposeRoute(null);
   }, [setComposeRoute]);
 
-  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [fulfillIntentPrefill, setFulfillIntentPrefill] = useState<{
     draft: CreateActivityDraft;
     participantIntentId: string;
@@ -390,7 +406,7 @@ export const ExploreExperience = () => {
     setActivityFilter(parseActivityListFilter(searchParams.get('activity')));
     setVenueFilter(mapFilterToVenueListFilter(nextMapFilter));
     setPanel(nextPanel);
-    setListOpen(parseListOpen(searchParams.get('list')));
+    setListOpen(parseListOpen(searchParams.get('list'), isDesktop));
     setQuery(searchParams.get('q') ?? '');
     setVenueRegions(parseVenueRegionsParam(searchParams));
     if (isDesktop) {
@@ -398,6 +414,13 @@ export const ExploreExperience = () => {
       if (searchParams.get('q')?.trim()) setSearchExpanded(true);
     }
   }, [searchParams, isDesktop]);
+
+  useEffect(() => {
+    if (!isDesktop) return;
+    const listParam = searchParams.get('list');
+    if (listParam === '0' || listParam === '1') return;
+    syncExploreUrl({ list: true });
+  }, [isDesktop, searchParams, syncExploreUrl]);
 
   const applyMapFilter = (next: MapFilterKey) => {
     setMapFilter(next);
@@ -653,8 +676,10 @@ export const ExploreExperience = () => {
     closeCompose();
     setFulfillIntentPrefill(null);
     setSelectedId(item.id);
-    setListOpen(false);
-  }, [closeCompose]);
+    if (!isDesktop) {
+      setListOpen(false);
+    }
+  }, [closeCompose, isDesktop]);
 
   const handleFocusMapLocation = useCallback((coords: { lat: number; lng: number }) => {
     setRecenterTo(null);
@@ -662,6 +687,38 @@ export const ExploreExperience = () => {
       setRecenterTo(coords);
     });
   }, []);
+
+  const exploreMapCenter = useMemo(() => {
+    if (deviceFix) return deviceFix;
+    return MAP_CONFIG.exploreDefaultCenter;
+  }, [deviceFix]);
+
+  useEffect(() => {
+    if (mapCenteredRef.current) return;
+    mapCenteredRef.current = true;
+    handleFocusMapLocation(exploreMapCenter);
+  }, [exploreMapCenter, handleFocusMapLocation]);
+
+  useEffect(() => {
+    const navState = locationState as { showExploreLocationPrompt?: boolean } | null;
+    if (user && navState?.showExploreLocationPrompt && shouldShowExploreLocationPrompt()) {
+      setLocationPromptOpen(true);
+      navigate({ pathname, search }, { replace: true, state: null });
+    }
+  }, [user, locationState, navigate, pathname, search]);
+
+  const handleAllowMapLocation = () => {
+    void enableDeviceLocation().then((fix) => {
+      setLocationPromptOpen(false);
+      if (fix) handleFocusMapLocation(fix);
+    });
+  };
+
+  const handleLocateMe = () => {
+    void requestDeviceLocation().then((fix) => {
+      if (fix) handleFocusMapLocation(fix);
+    });
+  };
 
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
@@ -960,8 +1017,6 @@ export const ExploreExperience = () => {
         )}
 
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <ExploreHeader />
-
           <div className="relative min-h-0 flex-1">
           <div className="absolute inset-0 z-0">
             <Suspense fallback={<div className="h-full w-full animate-pulse bg-[#eef2f6]" />}>
@@ -979,6 +1034,7 @@ export const ExploreExperience = () => {
                 labelTileUrl={exploreMapTiles.labelTileUrl}
                 onPinClick={handleMapPinClick}
                 recenterTo={recenterTo}
+                exploreMapCenter={exploreMapCenter}
                 className="h-full w-full"
                 minHeight={0}
               />
@@ -992,12 +1048,21 @@ export const ExploreExperience = () => {
             <ExploreMapFilterBar
               mapFilter={mapFilter}
               onFilterChange={applyMapFilter}
-              isDesktop={isDesktop}
               allowedKeys={isDesktop ? desktopFilterKeys : undefined}
-              moreOpen={moreFiltersOpen}
-              onMoreOpenChange={setMoreFiltersOpen}
             />
           )}
+
+          {user && !listOpen ? (
+            <ExploreMapLocationPrompt
+              open={locationPromptOpen}
+              loading={locatingDevice}
+              onAllow={handleAllowMapLocation}
+              onDismiss={() => {
+                dismissLocationPrompt();
+                setLocationPromptOpen(false);
+              }}
+            />
+          ) : null}
 
       {venueNotice && (
         <div className={`absolute left-4 right-4 top-3 z-[1100] rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900 shadow lg:top-4 ${EXPLORE_MOBILE_MAP_CHROME.noticeTop}`}>
@@ -1058,7 +1123,7 @@ export const ExploreExperience = () => {
       ) : null}
 
       {!listOpen ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--safe-bottom)+0.75rem)] z-[1100] flex items-end justify-between gap-3 px-4 lg:hidden">
+        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+0.75rem)] z-[1100] flex items-end justify-between gap-3 px-4 lg:hidden">
           <button
             type="button"
             onClick={openBrowse}
@@ -1067,7 +1132,16 @@ export const ExploreExperience = () => {
             <List className="h-4 w-4" aria-hidden />
             List
           </button>
-          <div className="pointer-events-auto flex flex-col items-center gap-4">
+          <div className="pointer-events-auto flex flex-col items-center gap-3">
+            <button
+              type="button"
+              onClick={handleLocateMe}
+              disabled={locatingDevice}
+              className={`${EXPLORE_FLOATING_CONTROL} inline-flex h-11 w-11 items-center justify-center text-emerald-700 disabled:opacity-60`}
+              aria-label="Center map on my location"
+            >
+              <LocateFixed className="h-5 w-5" strokeWidth={2.25} />
+            </button>
             <ExploreMapStyleToggle style={exploreMapStyle} onToggle={toggleExploreMapStyle} />
             <button
               type="button"
@@ -1081,7 +1155,16 @@ export const ExploreExperience = () => {
         </div>
       ) : null}
 
-      <div className="pointer-events-none absolute bottom-6 right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-center lg:gap-4">
+      <div className="pointer-events-none absolute bottom-6 right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-center lg:gap-3">
+        <button
+          type="button"
+          onClick={handleLocateMe}
+          disabled={locatingDevice}
+          className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto inline-flex h-11 w-11 items-center justify-center text-emerald-700 disabled:opacity-60`}
+          aria-label="Center map on my location"
+        >
+          <LocateFixed className="h-5 w-5" strokeWidth={2.25} />
+        </button>
         <ExploreMapStyleToggle style={exploreMapStyle} onToggle={toggleExploreMapStyle} />
         <button
           type="button"

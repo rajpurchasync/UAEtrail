@@ -9,7 +9,7 @@ import { navigateAuthBack, navigateAuthClose, resolveAuthRedirect } from '../uti
 import { getPasswordValidationError } from '../utils/passwordPolicy';
 import { PageMeta } from '../components/seo/PageMeta';
 import { api } from '../api/services';
-import { isSignupProfileComplete } from '../constants/userProfileOptions';
+import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
 import { PRODUCT_AUTH_SIGNUP_SUBLINE } from '../content/productNorthStar';
 
 export const SignUp = () => {
@@ -44,7 +44,7 @@ export const SignUp = () => {
     try {
       const user = await signInWithGoogle(idToken, referralCode, groupInviteToken);
       const profile = await api.getMeProfile().catch(() => null);
-      if (profile && !isSignupProfileComplete(profile.data)) {
+      if (profile && shouldForceSignupWelcome(user.role, profile.data)) {
         navigate('/welcome', { replace: true, state: { redirectTo } });
         return;
       }

@@ -6,6 +6,7 @@ interface ProfileCompletionCardProps {
   items: ProfileCompletionItem[];
   onEditProfile: () => void;
   onEditAvatar: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const ProfileCompletionCard = ({
@@ -13,6 +14,7 @@ export const ProfileCompletionCard = ({
   items,
   onEditProfile,
   onEditAvatar,
+  onOpenSettings,
 }: ProfileCompletionCardProps) => {
   if (percent >= 100) return null;
 
@@ -23,6 +25,7 @@ export const ProfileCompletionCard = ({
 
   const handleClick = () => {
     if (nextItem.action === 'avatar') onEditAvatar();
+    else if (nextItem.action === 'settings') onOpenSettings?.();
     else onEditProfile();
   };
 

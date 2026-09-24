@@ -35,7 +35,7 @@ export const ExploreGuestJoinBanner = () => {
   const joinHref = joinAuthPath(`${location.pathname}${location.search}`);
 
   return (
-    <div className="pointer-events-auto absolute inset-x-4 bottom-[calc(var(--safe-bottom)+4.75rem)] z-[1100] lg:hidden">
+    <div className="pointer-events-auto absolute inset-x-4 bottom-[calc(var(--explore-float-base)+4.75rem)] z-[1100] lg:hidden">
       <div className="flex items-start gap-3 rounded-2xl border border-emerald-200/80 bg-white/95 px-4 py-3 shadow-lg shadow-emerald-900/10 backdrop-blur-md">
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold text-neutral-900">Join to connect and go together</p>

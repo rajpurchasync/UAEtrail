@@ -35,6 +35,8 @@ router.get('/me/profile', async (req, res, next) => {
         dateOfBirth: user.profile?.dateOfBirth ?? null,
         gender: user.profile?.gender ?? null,
         city: user.profile?.city ?? null,
+        countryCode: user.profile?.countryCode ?? null,
+        languages: user.profile?.languages ?? null,
         signupProfileComplete: isSignupProfileComplete(user.profile),
       }
     });
@@ -59,6 +61,8 @@ router.patch('/me/profile', validate({ body: updateProfileSchema }), async (req,
       dateOfBirth: data.dateOfBirth ?? undefined,
       gender: data.gender ?? undefined,
       city: data.city ?? undefined,
+      countryCode: data.countryCode ?? undefined,
+      languages: data.languages ?? undefined,
     });
     const user = await findAuthUserById(req.auth!.userId);
     res.json({
@@ -71,6 +75,8 @@ router.patch('/me/profile', validate({ body: updateProfileSchema }), async (req,
         dateOfBirth: user?.profile?.dateOfBirth ?? data.dateOfBirth ?? null,
         gender: user?.profile?.gender ?? data.gender ?? null,
         city: user?.profile?.city ?? data.city ?? null,
+        countryCode: user?.profile?.countryCode ?? data.countryCode ?? null,
+        languages: user?.profile?.languages ?? data.languages ?? null,
         signupProfileComplete: isSignupProfileComplete(user?.profile),
       }
     });
@@ -92,7 +98,8 @@ router.patch(
         data: {
           dateOfBirth: user?.profile?.dateOfBirth ?? data.dateOfBirth,
           gender: user?.profile?.gender ?? data.gender,
-          city: user?.profile?.city ?? data.city,
+          countryCode: user?.profile?.countryCode ?? data.countryCode,
+          languages: user?.profile?.languages ?? data.languages,
           signupProfileComplete: isSignupProfileComplete(user?.profile),
         }
       });

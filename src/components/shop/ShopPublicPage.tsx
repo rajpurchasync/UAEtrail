@@ -1,12 +1,18 @@
+import { useEffect, useMemo, useState } from 'react';
 import { ExternalLink, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import type { ReviewDTO } from '@uaetrail/shared-types';
 import { PageMeta } from '../seo/PageMeta';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import { ShopContactSection } from './ShopContactSection';
 import { ShopFeaturedPicksSection } from './ShopFeaturedPicksSection';
 import { ShareButton } from '../ui/ShareButton';
+import { ReviewSection } from '../ui/ReviewSection';
+import { CatalogRatingSummary, DetailReviewFooter, scrollToReviewAnchor } from '../ui/DetailReviewChrome';
 import { explorePath } from '../../utils/exploreRouting';
 import { shopPublicPath } from '../../utils/shopPaths';
+import { api } from '../../api/services';
+import { useAuth } from '../../context/AuthContext';
 
 export type ShopFeaturedPick = {
   id: string;
@@ -20,6 +26,8 @@ export type ShopFeaturedPick = {
 
 export type ShopPublicView = {
   id: string;
+  /** Tenant id — community reviews are keyed on tenant, not merchant id. */
+  reviewTargetId?: string | null;
   shopName: string;
   description?: string | null;
   logo?: string | null;
@@ -42,15 +50,45 @@ interface ShopPublicPageProps {
 
 /** Unified public gear-shop page — intro, contact, and outbound featured picks. */
 export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
+  const { user } = useAuth();
   const publicPath = shopPublicPath({ merchantId: shop.id });
   const mapBack = explorePath({ panel: 'shops', filter: 'shops' });
   const website = shop.websiteUrl?.trim() || null;
+  const reviewTargetId = shop.reviewTargetId?.trim() || null;
+  const [reviews, setReviews] = useState<ReviewDTO[]>([]);
+
+  useEffect(() => {
+    if (!reviewTargetId) {
+      setReviews([]);
+      return;
+    }
+    api
+      .getReviews('tenant', reviewTargetId)
+      .then((res) => setReviews(res.data))
+      .catch(() => setReviews([]));
+  }, [reviewTargetId]);
+
+  useEffect(() => {
+    if (!reviewTargetId) return;
+    const hash = window.location.hash;
+    if (hash === '#reviews' || hash.startsWith('#review-')) {
+      requestAnimationFrame(() => scrollToReviewAnchor(hash));
+    }
+  }, [reviewTargetId, reviews.length]);
+
+  const userReview = useMemo(
+    () => (user ? reviews.find((review) => review.userId === user.id) : undefined),
+    [reviews, user]
+  );
+
+  const reviewFooter = reviewTargetId ? <DetailReviewFooter userReview={userReview} accent="amber" /> : undefined;
 
   return (
     <MobileDetailShell
       backTo={mapBack}
       backLabel="Explore"
       showMenu={false}
+      footer={reviewFooter}
       headerAction={
         <ShareButton
           title={shop.shopName}
@@ -92,6 +130,7 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
             <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
               {shop.presence === 'online' ? 'Online gear partner' : 'Gear shop'}
             </p>
+            {reviewTargetId && <CatalogRatingSummary reviews={reviews} className="mt-2" />}
           </div>
           <ShareButton
             title={shop.shopName}
@@ -144,6 +183,22 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
             contactPersonUserId: shop.contactPersonUserId ?? undefined,
           }}
         />
+
+        {reviewTargetId && (
+          <ReviewSection
+            targetType="tenant"
+            targetId={reviewTargetId}
+            reviews={reviews}
+            accent="amber"
+            onReviewSubmitted={(review) => setReviews((prev) => [review, ...prev])}
+          />
+        )}
+
+        {reviewTargetId && (
+          <div className="mt-8 hidden md:block">
+            <DetailReviewFooter userReview={userReview} accent="amber" />
+          </div>
+        )}
 
         <Link
           to={mapBack}

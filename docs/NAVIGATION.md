@@ -11,14 +11,33 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
 | **Personal hub** | `/profile`, `/profile/settings`, `/activities?tab=joined\|hosted` | Account hub, settings stack, activity lists |
+| **Mobile tabs (signed-in)** | `/explore`, `/activities`, `/messages` | Map · My Activities · Messages bottom nav (`md:hidden`); same bar on **`/profile`** and **`/profile/settings`** |
 | **Entity detail** | `/trail`, `/camp`, `/event`, `/activity`, `/shop`, `/operator` | Single place, trip, or host |
 
 ### Profile hub (`/profile`)
 
-- **Priority order:** Hero → **Up next** (activity, requests, messages) → profile completion → quick actions → hosting (hosts only) → collapsible stamps → settings link.
+- **Priority order:** Hero → bio & languages → profile completion → quick actions → hosting (hosts only) → **My Badges** → settings → sign out.
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Empty “Up next”:** single CTA → Explore map.
-- **Settings stack:** `/profile/settings` — languages, host profiles, password, email, sign out (not on main hub).
+- **Settings stack:** `/profile/settings` — member details (DOB, gender, based in, languages), password, email, sign out (not on main hub).
+
+### Post-auth member details (`/welcome`)
+
+After sign-up, sign-in, or OTP verify, **participants** and **shop members** (`merchant_admin`) with incomplete profile fields are sent to **`/welcome`** — **finish signing up**, not “confirm profile”.
+
+| Step | Field | Stored on |
+|------|--------|-----------|
+| 1 | Date of birth | `profile.dateOfBirth` |
+| 2 | Gender | `profile.gender` |
+| 3 | Languages you speak | `profile.languages` |
+| 4 | Where you're based (country) | `profile.countryCode` |
+
+- One question per screen; saves on **Finish** via `PATCH /me/profile/signup-details`.
+- After **Finish** → **`/explore`** (optional map location prompt). No host/invite chooser.
+- First explore visit may prompt **center map on you**; default map view is **upper UAE** until GPS is allowed.
+- **Edit anytime:** Profile → Edit profile, or Settings → **Member details** (same fields).
+- **`ProtectedRoute`** blocks other routes until complete (except `/welcome`).
+- **Demo accounts:** `visitor@` / `shop@` skip the gate after reseed; `visitor2@` is intentionally incomplete for wizard QA.
 
 ### Home (`/`) — marketing only
 
@@ -58,8 +77,10 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, `/shop`, bare `/activitie
 
 ## Browse defaults
 
-- Landing on `/explore` without `list=1` → **map view** (list panel closed).
-- **Mobile map filters:** primary row shows All · Hiking · Camping; Rideshare · Others · Shops live under **More**.
+- **Desktop (`lg+`):** browse **list panel open** by default (`list=1` synced to URL). Mobile: map-first (`list=0` unless opened).
+- **Map framing:** upper-UAE overview (zoom ~8); optional GPS / **Locate** recenters at the same regional zoom (not street-level).
+- Landing on `/explore` without `list` → desktop opens list; mobile stays map-only.
+- **Mobile map filters:** horizontal scroll — All · Hiking · Camping · Rideshare · Activities · Shops (no “More” sheet).
 - **Guest join:** tapping Join on an activity opens a signup sheet (returns to map after auth).
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
 - Pass `list: true` to `explorePath()` only when opening the browse sheet intentionally.
@@ -128,7 +149,19 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/merchant/:id` | legacy merchant page | TBD |
 | `/sign-up`, `/sign-in` | auth aliases | keep |
 
-Personal hub tabs (`/activities?tab=joined|hosted`) remain until Phase 4 route rename (`/my-activities` or `/profile/plans`).
+Personal hub tabs (`/activities?tab=joined|hosted`) remain for Past, Scheduled, and Hosted sub-views. Default `/activities?tab=joined` is the Activities hub (Upcoming + Suggested).
+
+## Mobile tab shell (signed-in, `md:hidden`)
+
+| Tab | Route | Chrome |
+|-----|-------|--------|
+| **Map** | `/explore` | Unified tab header (avatar · brand · notifications) |
+| **Profile** | `/profile` | Same header (avatar · title · notifications) |
+| **Activities** | `/activities?tab=joined` | Same header (avatar · title · create) |
+| **Messages** | `/messages` | Same header (avatar · title · compose); search + pills below |
+
+- One mobile header component in Layout for all four bottom-nav roots; sub-routes (e.g. `/profile/settings`, message threads) use their own back chrome.
+- User groups and activity outing chats appear in Messages inbox (Groups / Outings pills).
 
 ## Auth redirects
 

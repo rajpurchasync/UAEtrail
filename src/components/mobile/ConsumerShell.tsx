@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { MobileBackButton } from './MobileBackButton';
+import { MobileProfileHeaderLink } from './MobileProfileHeaderLink';
 import { ConsumerPageHeading } from './ConsumerPageHeading';
 import { ConsumerTabBanner } from './ConsumerTabBanner';
 import { ConsumerHeroBanner } from './ConsumerHeroBanner';
@@ -20,6 +21,10 @@ interface ConsumerShellProps {
   flush?: boolean;
   maxWidth?: '4xl' | '7xl';
   back?: { fallbackTo?: string; label?: string };
+  /** Hide mobile sticky title row — use Layout MobileTabHeader on bottom-nav tabs. */
+  suppressMobileHeader?: boolean;
+  /** @deprecated Use Layout MobileTabHeader leading slot. */
+  leading?: 'profile';
   showJourney?: boolean;
   journey?: { fallbackTo?: string; label?: string };
 }
@@ -42,6 +47,8 @@ export const ConsumerShell = ({
   flush = false,
   maxWidth = '7xl',
   back,
+  suppressMobileHeader = false,
+  leading,
   showJourney = true,
   journey,
 }: ConsumerShellProps) => {
@@ -52,7 +59,8 @@ export const ConsumerShell = ({
   const showTabActionInStrip = layout === 'tab' && action && !banner;
   const mobileUnifiedTitle = title ?? navTitle;
   const showMobileUnifiedHeader =
-    Boolean(mobileUnifiedTitle || back || showJourney || action) &&
+    !suppressMobileHeader &&
+    Boolean(mobileUnifiedTitle || back || leading || showJourney || action) &&
     (Boolean(banner) || layout === 'tab' || layout === 'editorial' || layout === 'stack');
   const hasTabSticky =
     layout === 'tab' && Boolean((toolbar && !banner) || showTabTitleStrip || showTabActionInStrip);
@@ -102,7 +110,9 @@ export const ConsumerShell = ({
               <div className="md:hidden">
                 <div className="grid grid-cols-[minmax(72px,auto)_1fr_minmax(44px,auto)] items-center gap-1 pt-safe-plus-2 pb-2 min-h-[44px]">
                   <div className="justify-self-start">
-                    {(showJourney || back) ? (
+                    {leading === 'profile' ? (
+                      <MobileProfileHeaderLink activeOnProfile={mobileUnifiedTitle === 'Profile'} />
+                    ) : (showJourney || back) ? (
                       <MobileBackButton
                         fallbackTo={back?.fallbackTo ?? journeyFallbackTo}
                         label={back?.label ?? journeyLabel}

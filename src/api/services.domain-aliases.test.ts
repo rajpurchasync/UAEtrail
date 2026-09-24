@@ -34,6 +34,8 @@ describe('api domain aliases (Phase 1)', () => {
     expect(typeof api.getReviews).toBe('function');
     expect(typeof api.createPlaceReview).toBe('function');
     expect(typeof api.createReview).toBe('function');
+    expect(typeof api.getMyReviews).toBe('function');
+    expect(typeof api.updateMyReview).toBe('function');
   });
 
   it('exposes host place submission aliases alongside legacy methods', () => {

@@ -21,6 +21,8 @@ interface ExploreMapPeekCardProps {
   onFocusMapLocation?: (coords: MapFocusCoords) => void;
   /** Keep footer CTAs visible; scroll body only (desktop item sheet). */
   pinFooter?: boolean;
+  /** Inline rail / list — hide dismiss controls on the card chrome. */
+  embedMode?: boolean;
 }
 
 /** Unified floating peek card above map chrome — venues, activities, shops. */
@@ -31,6 +33,7 @@ export const ExploreMapPeekCard = ({
   children,
   onFocusMapLocation,
   pinFooter = false,
+  embedMode = false,
 }: ExploreMapPeekCardProps) => {
   const shellClass = pinFooter
     ? `${EXPLORE_PEEK.shell} lg:flex lg:max-h-[min(85vh,640px)] lg:min-h-0 lg:flex-col lg:overflow-hidden`
@@ -52,14 +55,16 @@ export const ExploreMapPeekCard = ({
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10" />
           <ExploreVenueImageBadges card={card} />
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
-            aria-label="Close"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          {!embedMode ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -73,7 +78,7 @@ export const ExploreMapPeekCard = ({
             iconOnly
             light={!card.coverImage}
           />
-          {!card.coverImage && (
+          {!card.coverImage && !embedMode && (
             <button
               type="button"
               onClick={onClose}

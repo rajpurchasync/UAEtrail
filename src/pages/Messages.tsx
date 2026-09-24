@@ -1,13 +1,30 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
+import type { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
 import { api } from '../api/services';
-import { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
+import type { SocialGroupView } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { MobileScreen } from '../components/layout/MobileScreen';
+import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
+import { MessagesInboxList } from '../components/messages/MessagesInboxList';
+import { MessagesInboxToolbar } from '../components/messages/MessagesInboxToolbar';
+import {
+  ConversationListPanel,
+  MessageThreadPanel,
+  NewChatModal,
+} from '../components/messages/MessagePanels';
 import { useChatStream } from '../hooks/useChatStream';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
-import { ConversationListPanel, MessageThreadPanel, NewChatModal } from '../components/messages/MessagePanels';
+import {
+  filterInboxThreads,
+  loadGroupThreadPreviews,
+  sortInboxThreads,
+  toDirectThread,
+  type InboxFilter,
+  type InboxThread,
+} from '../utils/inboxThreads';
 
 interface SearchUser {
   id: string;
@@ -18,12 +35,26 @@ interface SearchUser {
 const userLabel = (u: Pick<SearchUser, 'displayName' | 'id'>) =>
   u.displayName?.trim() || `User ${u.id.slice(0, 8)}`;
 
+const formatTime = (dateStr: string) => {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return d.toLocaleDateString([], { weekday: 'short' });
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+};
+
 export const Messages = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const location = useLocation();
   const isHostMessages = location.pathname === '/host/messages';
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
+  const [groupThreads, setGroupThreads] = useState<InboxThread[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('to'));
   const [contextActivityId, setContextActivityId] = useState<string | null>(searchParams.get('activity'));
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
@@ -33,12 +64,14 @@ export const Messages = () => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [composeQuery, setComposeQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [searching, setSearching] = useState(false);
   const [mobileShowThread, setMobileShowThread] = useState(!!searchParams.get('to'));
   const [partnerBrief, setPartnerBrief] = useState<{ displayName: string; avatarUrl?: string | null } | null>(null);
   const [showReport, setShowReport] = useState(false);
+  const [inboxQuery, setInboxQuery] = useState('');
+  const [inboxFilter, setInboxFilter] = useState<InboxFilter>('all');
 
   const selectedUserIdRef = useRef<string | null>(selectedUserId);
 
@@ -46,12 +79,16 @@ export const Messages = () => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
-  const loadConversations = useCallback(async () => {
+  const loadInbox = useCallback(async () => {
     try {
-      const res = await api.getConversations();
-      setConversations(res.data);
+      const [convRes, groupsRes] = await Promise.all([
+        api.getConversations(),
+        api.getMeGroups().catch(() => ({ data: [] as SocialGroupView[] })),
+      ]);
+      setConversations(convRes.data);
+      setGroupThreads(await loadGroupThreadPreviews(groupsRes.data));
     } catch {
-      // silent — polling fallback
+      /* stream / retry fallback */
     } finally {
       setLoading(false);
     }
@@ -63,18 +100,23 @@ export const Messages = () => {
       const res = await api.getMessages(userId, 1, 100);
       setMessages(res.data.reverse());
       setConversations((prev) =>
-        prev.map((c) => (c.userId === userId ? { ...c, unreadCount: 0 } : c))
+        prev.map((conversation) =>
+          conversation.userId === userId ? { ...conversation, unreadCount: 0 } : conversation
+        )
       );
+      if (user?.id) {
+        void queryClient.invalidateQueries({ queryKey: ['inbox-unread', user.id] });
+      }
     } catch (e) {
       if (!silent) setError(e instanceof Error ? e.message : 'Failed to load messages');
     } finally {
       setLoadingMessages(false);
     }
-  }, []);
+  }, [queryClient, user?.id]);
 
   useEffect(() => {
-    void loadConversations();
-  }, [loadConversations]);
+    void loadInbox();
+  }, [loadInbox]);
 
   useEffect(() => {
     if (selectedUserId) {
@@ -109,7 +151,7 @@ export const Messages = () => {
       setPartnerBrief(null);
       return;
     }
-    const conv = conversations.find((c) => c.userId === selectedUserId);
+    const conv = conversations.find((conversation) => conversation.userId === selectedUserId);
     if (conv) {
       setPartnerBrief({ displayName: conv.displayName, avatarUrl: conv.avatarUrl });
       return;
@@ -134,7 +176,7 @@ export const Messages = () => {
         const partner = message.senderId === user?.id ? message.receiverId : message.senderId;
         const existing = prev.find((conversation) => conversation.userId === partner);
         if (!existing) {
-          void loadConversations();
+          void loadInbox();
           return prev;
         }
 
@@ -160,21 +202,21 @@ export const Messages = () => {
       });
     },
     onReconnect: () => {
-      void loadConversations();
+      void loadInbox();
       const partnerId = selectedUserIdRef.current;
       if (partnerId) void loadMessages(partnerId, true);
     },
   });
 
   useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2) {
+    if (!composeQuery.trim() || composeQuery.length < 2) {
       setSearchResults([]);
       return;
     }
     const timer = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await api.searchUsers(searchQuery);
+        const res = await api.searchUsers(composeQuery);
         setSearchResults(res.data);
       } catch {
         setSearchResults([]);
@@ -183,7 +225,17 @@ export const Messages = () => {
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [composeQuery]);
+
+  const threads = useMemo(
+    () => sortInboxThreads([...conversations.map(toDirectThread), ...groupThreads]),
+    [conversations, groupThreads]
+  );
+
+  const visibleThreads = useMemo(
+    () => filterInboxThreads(threads, inboxFilter, inboxQuery),
+    [threads, inboxFilter, inboxQuery]
+  );
 
   const handleSend = async () => {
     if (!user || !selectedUserId || !newMessage.trim()) return;
@@ -197,7 +249,7 @@ export const Messages = () => {
       });
       setNewMessage('');
       setMessages((prev) => [...prev, res.data]);
-      void loadConversations();
+      void loadInbox();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
@@ -213,10 +265,10 @@ export const Messages = () => {
     setSelectedUserId(userResult.id);
     setMobileShowThread(true);
     setShowNewChat(false);
-    setSearchQuery('');
+    setComposeQuery('');
     setSearchResults([]);
     setConversations((prev) => {
-      if (prev.find((c) => c.userId === userResult.id)) return prev;
+      if (prev.find((conversation) => conversation.userId === userResult.id)) return prev;
       return [
         {
           userId: userResult.id,
@@ -236,6 +288,10 @@ export const Messages = () => {
     setMobileShowThread(true);
   };
 
+  const openGroupThread = (groupId: string) => {
+    navigate(`/groups?group=${encodeURIComponent(groupId)}`);
+  };
+
   const backToList = () => {
     setMobileShowThread(false);
     setSelectedUserId(null);
@@ -244,32 +300,119 @@ export const Messages = () => {
   };
 
   const inThread = mobileShowThread && !!selectedUserId;
-  const selectedConversation = conversations.find((c) => c.userId === selectedUserId);
+
+  const selectedConversation = conversations.find((conversation) => conversation.userId === selectedUserId);
   const threadPartnerName = selectedConversation?.displayName ?? partnerBrief?.displayName ?? 'User';
   const threadPartnerAvatar = selectedConversation?.avatarUrl ?? partnerBrief?.avatarUrl ?? undefined;
 
-  const formatTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return d.toLocaleDateString([], { weekday: 'short' });
-    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-  };
+  const newChatModal = (
+    <NewChatModal
+      open={showNewChat}
+      searchQuery={composeQuery}
+      searching={searching}
+      searchResults={searchResults}
+      onClose={() => {
+        setShowNewChat(false);
+        setComposeQuery('');
+        setSearchResults([]);
+      }}
+      onSearchChange={setComposeQuery}
+      onSelectUser={startConversation}
+      userLabel={userLabel}
+    />
+  );
+
+  const reportDialog =
+    selectedUserId ? (
+      <ReportContentDialog
+        open={showReport}
+        onClose={() => setShowReport(false)}
+        targetType="user"
+        targetId={selectedUserId}
+        title="Report user"
+      />
+    ) : null;
+
+  if (isHostMessages) {
+    return (
+      <MobileScreen
+        title="Messages"
+        backTo="/host/overview"
+        backLabel="Host console"
+        hideHeader={inThread}
+        showBanner={false}
+      >
+        <div className={`flex min-h-0 flex-1 flex-col ${inThread ? 'px-0 -mx-1' : ''}`}>
+          {error && (
+            <div className="mb-3 flex shrink-0 items-center justify-between rounded-ios border border-red-200 bg-red-50 p-3">
+              <p className="text-sm text-red-700">{error}</p>
+              <button
+                type="button"
+                onClick={() => setError(null)}
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center text-red-400"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          <div
+            className={`flex min-h-0 flex-1 overflow-hidden rounded-ios-lg border bg-white shadow-ios-sm ${
+              inThread ? '' : 'border-neutral-200'
+            }`}
+          >
+            <ConversationListPanel
+              mobileShowThread={mobileShowThread}
+              loading={loading}
+              conversations={conversations}
+              selectedUserId={selectedUserId}
+              onNewChat={() => setShowNewChat(true)}
+              onSelect={selectConversation}
+              formatTime={formatTime}
+            />
+            <MessageThreadPanel
+              mobileShowThread={mobileShowThread}
+              selectedUserId={selectedUserId}
+              threadPartnerName={threadPartnerName}
+              threadPartnerAvatar={threadPartnerAvatar}
+              loadingMessages={loadingMessages}
+              messages={messages}
+              newMessage={newMessage}
+              sending={sending}
+              onBack={backToList}
+              onReport={() => setShowReport(true)}
+              onMessageChange={setNewMessage}
+              onSend={handleSend}
+            />
+          </div>
+          {newChatModal}
+          {reportDialog}
+        </div>
+      </MobileScreen>
+    );
+  }
 
   return (
-    <MobileScreen
-      title="Messages"
-      backTo={isHostMessages ? '/host/overview' : '/profile'}
-      backLabel={isHostMessages ? 'Host console' : 'Back'}
-      hideHeader={inThread}
-      showBanner={false}
-    >
-      <div className={`flex min-h-0 flex-1 flex-col ${inThread ? 'px-0 -mx-1' : ''}`}>
-        {error && (
-          <div className="mb-3 flex shrink-0 items-center justify-between rounded-ios border border-red-200 bg-red-50 p-3">
+    <div className="min-h-screen consumer-bg md:bg-gray-50">
+      {!inThread ? (
+        <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
+          <MessagesInboxToolbar
+            query={inboxQuery}
+            filter={inboxFilter}
+            onQueryChange={setInboxQuery}
+            onFilterChange={setInboxFilter}
+            onCompose={() => setShowNewChat(true)}
+          />
+        </div>
+      ) : null}
+
+      <div
+        className={`mx-auto w-full max-w-4xl px-4 sm:px-6 ${
+          inThread ? 'fixed inset-0 z-[1300] flex max-w-none flex-col bg-white px-0 sm:px-0' : 'pb-bottom-nav-safe md:pb-8'
+        }`}
+      >
+        {error && !inThread && <ConsumerErrorCard message={error} className="mb-3" />}
+        {error && inThread && (
+          <div className="mb-3 flex shrink-0 items-center justify-between border-b border-red-200 bg-red-50 p-3">
             <p className="text-sm text-red-700">{error}</p>
             <button
               type="button"
@@ -280,20 +423,8 @@ export const Messages = () => {
             </button>
           </div>
         )}
-        <div
-          className={`flex min-h-0 flex-1 overflow-hidden rounded-ios-lg border bg-white shadow-ios-sm ${
-            inThread ? '' : 'border-neutral-200'
-          }`}
-        >
-          <ConversationListPanel
-            mobileShowThread={mobileShowThread}
-            loading={loading}
-            conversations={conversations}
-            selectedUserId={selectedUserId}
-            onNewChat={() => setShowNewChat(true)}
-            onSelect={selectConversation}
-            formatTime={formatTime}
-          />
+
+        {inThread ? (
           <MessageThreadPanel
             mobileShowThread={mobileShowThread}
             selectedUserId={selectedUserId}
@@ -308,31 +439,21 @@ export const Messages = () => {
             onMessageChange={setNewMessage}
             onSend={handleSend}
           />
-        </div>
-        <NewChatModal
-          open={showNewChat}
-          searchQuery={searchQuery}
-          searching={searching}
-          searchResults={searchResults}
-          onClose={() => {
-            setShowNewChat(false);
-            setSearchQuery('');
-            setSearchResults([]);
-          }}
-          onSearchChange={setSearchQuery}
-          onSelectUser={startConversation}
-          userLabel={userLabel}
-        />
-        {selectedUserId && (
-          <ReportContentDialog
-            open={showReport}
-            onClose={() => setShowReport(false)}
-            targetType="user"
-            targetId={selectedUserId}
-            title="Report user"
+        ) : (
+          <MessagesInboxList
+            threads={visibleThreads}
+            loading={loading}
+            selectedDirectId={selectedUserId}
+            onSelectDirect={selectConversation}
+            onSelectGroup={openGroupThread}
+            onCompose={() => setShowNewChat(true)}
+            formatTime={formatTime}
           />
         )}
       </div>
-    </MobileScreen>
+
+      {newChatModal}
+      {reportDialog}
+    </div>
   );
 };

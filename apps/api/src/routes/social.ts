@@ -12,6 +12,7 @@ import { findAuthUserById, findAuthUsersByIds, getAuthUserMembershipTier } from 
 import { createUserFavorite, deleteUserFavoriteById, findUserFavorite, listUserFavoritesWithDetails } from '../lib/favorites-store.js';
 import { createSocialPost, createSocialReply, createSocialReview, getSocialPostById, listSocialPosts, listSocialReviews, setAcceptedSocialReply, toggleSocialPostLike, toggleSocialReplyLike } from '../lib/social-data.js';
 import { sanitizeUserGeneratedText } from '../lib/content-moderation.js';
+import { listMyReviews, updateMyReview } from '../services/my-reviews.js';
 
 type SocialAuthor = {
   _id: string;
@@ -122,6 +123,52 @@ const reviewCreateSchema = z.object({
   rating: z.number().int().min(1).max(5),
   comment: z.string().min(10).max(1000)
 });
+
+const reviewUpdateSchema = z.object({
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().min(10).max(1000),
+});
+
+socialRouter.get('/me/reviews', requireAuth, requireVerifiedEmail, validate({ query: paginationSchema }), async (req, res, next) => {
+  try {
+    const { page, pageSize } = req.query as unknown as z.infer<typeof paginationSchema>;
+    const skip = (page - 1) * pageSize;
+    const { items, total } = await listMyReviews({
+      userId: req.auth!.userId,
+      skip,
+      take: pageSize,
+    });
+    res.json(paginatedResponse(items, total, { page, pageSize }));
+  } catch (error) {
+    next(error);
+  }
+});
+
+socialRouter.patch(
+  '/me/reviews/:id',
+  requireAuth,
+  requireVerifiedEmail,
+  validate({ params: idParamSchema, body: reviewUpdateSchema }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as z.infer<typeof idParamSchema>;
+      const body = req.body as z.infer<typeof reviewUpdateSchema>;
+      const sanitizedComment = sanitizeUserGeneratedText(body.comment).trim();
+      if (sanitizedComment.length < 10) {
+        throw new ApiError(400, 'invalid_comment_content', 'Comment cannot contain only links or phone numbers.');
+      }
+      const data = await updateMyReview({
+        userId: req.auth!.userId,
+        reviewId: id,
+        rating: body.rating,
+        comment: sanitizedComment,
+      });
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 socialRouter.get('/reviews', validate({ query: reviewListSchema }), async (req, res, next) => {
   try {

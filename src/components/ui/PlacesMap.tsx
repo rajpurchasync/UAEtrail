@@ -10,7 +10,7 @@ import { formatActivityType } from '../../utils/activityIdentity';
 import { MAP_CONFIG } from '../../config/platform';
 import { exploreMapPinRingColor } from '../../config/exploreTheme';
 import { HIKING_VENUE_EMOJI, CAMPING_VENUE_EMOJI, CAMPING_ACTIVITY_EMOJI, MAP_FILTER_EMOJI } from '../../explore/exploreCopy';
-import { resolveMapPinIconSvg } from '../../explore/mapPinIcons';
+import { resolveMapPinIconSvg, buildMapClusterIconHtml, resolveDominantMapPinKind, resolveDominantMapPinSource } from '../../explore/mapPinIcons';
 import { MapTileLayers } from './MapTileLayers';
 import type { MapPinKind, MapPinSource } from './mapPinTypes';
 
@@ -112,6 +112,18 @@ const pinIcon = (
     iconAnchor: [size / 2, size / 2],
     popupAnchor: [0, -size / 2 - 4],
   });
+};
+
+type MarkerWithPin = L.Marker & { options: L.MarkerOptions & { uaetrailPin?: PlaceMapPin } };
+
+const pinsFromCluster = (cluster: L.MarkerCluster): PlaceMapPin[] => {
+  const childMarkers = cluster.getAllChildMarkers() as MarkerWithPin[];
+  const collected: PlaceMapPin[] = [];
+  for (const marker of childMarkers) {
+    const pin = marker.options.uaetrailPin;
+    if (pin) collected.push(pin);
+  }
+  return collected;
 };
 
 const markerZIndex = (pin: PlaceMapPin, selectedExploreItemId?: string): number => {
@@ -231,13 +243,20 @@ const MapResize = () => {
   return null;
 };
 
-const RecenterMap = ({ target }: { target: { lat: number; lng: number } | null }) => {
+const RecenterMap = ({
+  target,
+  zoom,
+}: {
+  target: { lat: number; lng: number } | null;
+  zoom?: number;
+}) => {
   const map = useMap();
 
   useEffect(() => {
     if (!target) return;
-    map.flyTo([target.lat, target.lng], Math.max(map.getZoom(), 13), { duration: 0.55 });
-  }, [map, target]);
+    const targetZoom = zoom ?? Math.max(map.getZoom(), 13);
+    map.flyTo([target.lat, target.lng], targetZoom, { duration: 0.55 });
+  }, [map, target, zoom]);
 
   return null;
 };
@@ -319,9 +338,16 @@ const ClusteredMarkers = ({
         disableClusteringAtZoom: 15,
         iconCreateFunction: (cluster) => {
           const count = cluster.getChildCount();
-          const size = count >= 10 ? 46 : count >= 4 ? 42 : 38;
+          const clusterPins = pinsFromCluster(cluster);
+          const kinds = clusterPins.map((pin) => pin.activityType);
+          const dominantKind = resolveDominantMapPinKind(kinds);
+          const dominantSource = resolveDominantMapPinSource(clusterPins, (pin) =>
+            resolvePinSource(pin)
+          );
+          const ringColor = exploreMapPinRingColor(dominantKind, dominantSource);
+          const size = 48;
           return L.divIcon({
-            html: `<span class="uaetrail-map-cluster" style="width:${size}px;height:${size}px;">${count}</span>`,
+            html: buildMapClusterIconHtml(dominantKind, dominantSource, ringColor, count),
             className: 'uaetrail-map-cluster-wrap',
             iconSize: [size, size],
             iconAnchor: [size / 2, size / 2],
@@ -338,7 +364,8 @@ const ClusteredMarkers = ({
             pin.carpoolEndpoint
           ),
           zIndexOffset: markerZIndex(pin, selectedExploreItemId),
-        });
+        }) as MarkerWithPin;
+        marker.options.uaetrailPin = pin;
         marker.on('click', () => onPinClickRef.current?.(pin));
         group.addLayer(marker);
       }
@@ -380,6 +407,8 @@ interface PlacesMapProps {
   labelTileUrl?: string | null;
   recenterTo?: { lat: number; lng: number } | null;
   exploreMode?: boolean;
+  /** Overrides explore default center — device fix or regional UAE framing. */
+  exploreMapCenter?: { lat: number; lng: number } | null;
   onZoomChange?: (zoom: number) => void;
   tileAttribution?: string;
   minZoom?: number;
@@ -401,16 +430,16 @@ export const PlacesMap = ({
   labelTileUrl,
   recenterTo = null,
   exploreMode = false,
+  exploreMapCenter = null,
   onZoomChange,
   tileAttribution,
   minZoom,
 }: PlacesMapProps) => {
   const mapBounds = useMemo(() => boundsFromPins(pins, bounds), [pins, bounds]);
   const pinsKeyValue = useMemo(() => pinsKey(pins), [pins]);
-  const exploreCenter: [number, number] = [
-    MAP_CONFIG.exploreDefaultCenter.lat,
-    MAP_CONFIG.exploreDefaultCenter.lng,
-  ];
+  const exploreCenter: [number, number] = exploreMapCenter
+    ? [exploreMapCenter.lat, exploreMapCenter.lng]
+    : [MAP_CONFIG.exploreDefaultCenter.lat, MAP_CONFIG.exploreDefaultCenter.lng];
 
   if (pins.length === 0 && !allowEmpty) {
     return (
@@ -493,7 +522,10 @@ export const PlacesMap = ({
           <FitMapBounds mapBounds={mapBounds} maxZoom={14} pinCount={pins.length} pinsKeyValue={pinsKeyValue} />
         )}
         <MapResize />
-        <RecenterMap target={recenterTo} />
+        <RecenterMap
+          target={recenterTo}
+          zoom={exploreMode ? MAP_CONFIG.exploreDefaultZoom : undefined}
+        />
         <MapZoomReporter onZoomChange={onZoomChange} />
         <FlyToSelectedPin pins={pins} selectedExploreItemId={activeSelection} />
         {exploreMode ? (

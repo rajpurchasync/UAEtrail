@@ -33,17 +33,22 @@ const computeAgeFromDateOfBirth = (dateOfBirth: string): number | null => {
   return age >= 0 ? age : null;
 };
 
-const parseMemberDetails = (metadata: unknown, profileDateOfBirth: string | null) => {
+const parseMemberDetails = (
+  metadata: unknown,
+  profileDateOfBirth: string | null,
+  profileLanguages: string | null
+) => {
   if (!metadata || typeof metadata !== 'object') {
     return {
       age: profileDateOfBirth ? computeAgeFromDateOfBirth(profileDateOfBirth) : null,
-      languages: null as string | null,
+      languages: profileLanguages?.trim() ? profileLanguages.trim() : null,
     };
   }
   const meta = metadata as Record<string, unknown>;
   const legacyDateOfBirth = typeof meta.dateOfBirth === 'string' ? meta.dateOfBirth : null;
   const dateOfBirth = profileDateOfBirth ?? legacyDateOfBirth;
-  const languages = typeof meta.languages === 'string' && meta.languages.trim() ? meta.languages.trim() : null;
+  const metaLanguages = typeof meta.languages === 'string' && meta.languages.trim() ? meta.languages.trim() : null;
+  const languages = profileLanguages?.trim() ? profileLanguages.trim() : metaLanguages;
   return {
     age: dateOfBirth ? computeAgeFromDateOfBirth(dateOfBirth) : null,
     languages,
@@ -173,7 +178,11 @@ export async function buildPublicMemberProfile(
   const isHost = user.role !== UserRole.PARTICIPANT || ownedTenants.length > 0 || activitiesHosted > 0;
   const isGuideStaff = user.role === UserRole.TENANT_GUIDE;
 
-  const memberDetails = parseMemberDetails(hostApplication?.metadata, user.profile?.dateOfBirth ?? null);
+  const memberDetails = parseMemberDetails(
+    hostApplication?.metadata,
+    user.profile?.dateOfBirth ?? null,
+    user.profile?.languages ?? null
+  );
   const showBio = canViewProfileField(visibility, access, 'bio');
   const showAge = canViewProfileField(visibility, access, 'age');
   const showCity = canViewProfileField(visibility, access, 'city');

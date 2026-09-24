@@ -8,3 +8,18 @@ export const parseTabParam = (value: string | null, user: AuthUser | null): Page
   if (value === 'hosted' || value === 'organized') return 'hosted';
   return 'joined';
 };
+
+export const joinedSubViewTitle = (sub: string | null): string | null => {
+  switch (sub) {
+    case 'attended':
+      return 'Past';
+    case 'upcoming':
+      return 'Scheduled';
+    case 'cancelled':
+      return 'Cancelled';
+    case 'rejected':
+      return 'Not this time';
+    default:
+      return null;
+  }
+};

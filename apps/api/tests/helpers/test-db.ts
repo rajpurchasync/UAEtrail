@@ -30,6 +30,12 @@ export const resolveTestMongoUri = (): string =>
   process.env.TEST_MONGODB_URI?.trim() || DEFAULT_TEST_MONGODB_URI;
 
 export const configureTestMongoUri = (): void => {
+  const existing = process.env.MONGODB_URI?.trim();
+  if (existing) {
+    assertTestDatabaseName(existing);
+    process.env.TEST_MONGODB_URI = process.env.TEST_MONGODB_URI?.trim() || existing;
+    return;
+  }
   const uri = resolveTestMongoUri();
   assertTestDatabaseName(uri);
   process.env.MONGODB_URI = uri;

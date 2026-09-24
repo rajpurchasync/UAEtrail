@@ -33,7 +33,7 @@ export const ExploreCoachMarks = () => {
   const isLast = step === STEPS.length - 1;
 
   return (
-    <div className="pointer-events-auto absolute inset-x-4 bottom-[calc(var(--safe-bottom)+5.5rem)] z-[1100] lg:hidden">
+    <div className="pointer-events-auto absolute inset-x-4 bottom-[calc(var(--explore-float-base)+5.5rem)] z-[1100] lg:hidden">
       <div className="rounded-2xl border border-emerald-200/80 bg-white/95 p-4 shadow-lg shadow-emerald-900/10 backdrop-blur-md">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

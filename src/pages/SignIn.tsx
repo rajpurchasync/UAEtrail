@@ -19,8 +19,8 @@ import {
   saveAuthReturnContext
 } from '../utils/authReturnContext';
 import { PageMeta } from '../components/seo/PageMeta';
-import { isSignupProfileComplete } from '../constants/userProfileOptions';
 import { PRODUCT_AUTH_SIGNIN_SUBLINE } from '../content/productNorthStar';
+import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
 
 export const SignIn = () => {
   const { signIn, signInDemo, signInWithGoogle, loading } = useAuth();
@@ -78,6 +78,22 @@ export const SignIn = () => {
       redirectToVerify(signedInUser);
       return;
     }
+
+    const profileRes = await api.getMeProfile().catch(() => null);
+    const postAuthDefault =
+      signedInUser.role === 'participant'
+        ? defaultRouteByRole(signedInUser.role)
+        : accountRouteByRole(signedInUser.role);
+    const welcomeRedirectTo = from && canReturnAfterAuth(from, signedInUser.role) ? from : postAuthDefault;
+
+    if (profileRes && shouldForceSignupWelcome(signedInUser.role, profileRes.data)) {
+      navigate('/welcome', {
+        replace: true,
+        state: { redirectTo: welcomeRedirectTo },
+      });
+      return;
+    }
+
     if (from && canReturnAfterAuth(from, signedInUser.role)) {
       const context = parseAuthReturnContextFromSearch(searchParams, from);
       if (context) {
@@ -90,17 +106,6 @@ export const SignIn = () => {
     }
 
     clearAuthReturnContext();
-
-    if (signedInUser.role === 'participant') {
-      const profile = await api.getMeProfile().catch(() => null);
-      if (profile && !isSignupProfileComplete(profile.data)) {
-        navigate('/welcome', {
-          replace: true,
-          state: { redirectTo: from ?? defaultRouteByRole(signedInUser.role) },
-        });
-        return;
-      }
-    }
 
     if (
       signedInUser.role === 'tenant_owner' ||

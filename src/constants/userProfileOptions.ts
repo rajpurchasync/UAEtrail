@@ -1,5 +1,7 @@
 export type UserGender = 'male' | 'female' | 'prefer_not_to_say';
 
+export type UserCountryCode = 'AE' | 'SA' | 'OM' | 'QA' | 'BH' | 'KW';
+
 export type UserCity =
   | 'dubai'
   | 'sharjah'
@@ -15,6 +17,19 @@ export const USER_GENDER_OPTIONS: Array<{ value: UserGender; label: string }> = 
   { value: 'female', label: 'Female' },
   { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ];
+
+export const USER_COUNTRY_OPTIONS: Array<{ value: UserCountryCode; label: string }> = [
+  { value: 'AE', label: 'United Arab Emirates' },
+  { value: 'SA', label: 'Saudi Arabia' },
+  { value: 'OM', label: 'Oman' },
+  { value: 'QA', label: 'Qatar' },
+  { value: 'BH', label: 'Bahrain' },
+  { value: 'KW', label: 'Kuwait' },
+];
+
+export const USER_COUNTRY_LABELS = Object.fromEntries(
+  USER_COUNTRY_OPTIONS.map((option) => [option.value, option.label])
+) as Record<UserCountryCode, string>;
 
 export const USER_CITY_OPTIONS: Array<{ value: UserCity; label: string }> = [
   { value: 'dubai', label: 'Dubai' },
@@ -37,12 +52,5 @@ export const maxDateOfBirthForMember = (): string => {
   return cutoff.toISOString().slice(0, 10);
 };
 
-export const isSignupProfileComplete = (profile: {
-  dateOfBirth?: string | null;
-  gender?: UserGender | null;
-  city?: UserCity | null;
-  signupProfileComplete?: boolean;
-} | null | undefined): boolean => {
-  if (profile?.signupProfileComplete) return true;
-  return Boolean(profile?.dateOfBirth?.trim() && profile?.gender && profile?.city);
-};
+export { isSignupProfileComplete, firstIncompleteSignupStep, SIGNUP_PROFILE_STEP_COUNT } from '../utils/signupProfileSteps';
+export type { SignupProfileStep } from '../utils/signupProfileSteps';

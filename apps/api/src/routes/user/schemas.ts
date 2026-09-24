@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { UserRole } from '../../domain/enums.js';
-import { completeSignupProfileSchema } from '../../domain/user-profile.js';
+import { completeSignupProfileSchema, USER_CITIES } from '../../domain/user-profile.js';
 import { GROUP_WALL_REACTION_KINDS } from '../../lib/social-groups-store.js';
 export const eventIdParamSchema = z.object({ id: z.string().min(1) });
 export const requestIdParamSchema = z.object({ id: z.string().min(1), requestId: z.string().min(1) });
@@ -36,7 +36,9 @@ export const updateProfileSchema = z.object({
   profileVisibility: z.enum(['public', 'group_members', 'private']).optional(),
   dateOfBirth: completeSignupProfileSchema.shape.dateOfBirth.optional(),
   gender: completeSignupProfileSchema.shape.gender.optional(),
-  city: completeSignupProfileSchema.shape.city.optional(),
+  city: z.enum(USER_CITIES).optional(),
+  countryCode: completeSignupProfileSchema.shape.countryCode.optional(),
+  languages: completeSignupProfileSchema.shape.languages.optional(),
 });
 
 export const requestEmailChangeSchema = z.object({

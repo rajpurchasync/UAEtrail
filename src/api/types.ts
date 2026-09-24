@@ -120,6 +120,8 @@ export interface UserProfile {
     | 'ajman'
     | 'umm_al_quwain'
     | null;
+  languages?: string | null;
+  countryCode?: 'AE' | 'SA' | 'OM' | 'QA' | 'BH' | 'KW' | null;
   signupProfileComplete?: boolean;
 }
 

@@ -98,7 +98,7 @@ export const EXPLORE_Z = {
 /** Compact map peek card — same silhouette for venues and activities. */
 export const EXPLORE_PEEK = {
   position:
-    `pointer-events-none absolute inset-x-0 bottom-0 ${EXPLORE_Z.peekCard} px-4 pb-[calc(var(--safe-bottom)+88px)] lg:px-6 lg:pb-6`,
+    `pointer-events-none absolute inset-x-0 bottom-0 ${EXPLORE_Z.peekCard} px-4 pb-[calc(var(--explore-float-base)+88px)] lg:px-6 lg:pb-6`,
   inner: 'pointer-events-auto mx-auto w-full max-w-md',
   shell:
     'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5',

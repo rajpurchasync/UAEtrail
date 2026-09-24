@@ -1,8 +1,16 @@
 import { UserRole } from '@uaetrail/shared-types';
+import { useQuery } from '@tanstack/react-query';
 import { Navigate, useLocation } from 'react-router-dom';
+import { api } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
+import { isSignupProfileComplete } from '../../constants/userProfileOptions';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
+import {
+  isSignupProfileGateExemptPath,
+  meProfileSignupGateKey,
+  needsSignupProfileGate,
+} from '../../utils/signupProfileGate';
 
 interface ProtectedRouteProps {
   roles?: UserRole[];
@@ -12,6 +20,21 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   const { user, initializing } = useAuth();
   const location = useLocation();
+
+  const gateEnabled =
+    user != null &&
+    needsSignupProfileGate(user.role) &&
+    !isSignupProfileGateExemptPath(location.pathname);
+
+  const { data: signupComplete, isLoading: signupGateLoading } = useQuery({
+    queryKey: user ? meProfileSignupGateKey(user.id) : ['me-profile-signup-gate', 'anonymous'],
+    queryFn: async () => {
+      const res = await api.getMeProfile();
+      return isSignupProfileComplete(res.data);
+    },
+    enabled: gateEnabled,
+    staleTime: 30_000,
+  });
 
   if (initializing) {
     return (
@@ -34,6 +57,25 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
 
   if (roles && !roles.includes(user.role)) {
     return <Navigate to={accountRouteByRole(user.role)} replace />;
+  }
+
+  if (gateEnabled) {
+    if (signupGateLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
+        </div>
+      );
+    }
+    if (signupComplete === false) {
+      return (
+        <Navigate
+          to="/welcome"
+          replace
+          state={{ redirectTo: location.pathname + location.search }}
+        />
+      );
+    }
   }
 
   return children;

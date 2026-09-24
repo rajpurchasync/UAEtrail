@@ -50,6 +50,9 @@ export const ADD_COMPOSE_OPTIONS: Array<{ kind: ContributeVenueKind; label: stri
 
 export const COMPOSE_MENU_TITLE = 'I would like to…';
 
+/** Short north-star kicker under the compose menu title. */
+export const COMPOSE_MENU_KICKER = 'Find your people · get outside · go together';
+
 export const BUDDY_TITLE_PLACEHOLDER = 'Run, jog, trail run — whatever gets you outside.';
 
 export const PARTICIPATION_TOGGLE_QUESTION = 'Do people need my OK to join?';

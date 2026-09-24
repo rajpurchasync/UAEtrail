@@ -6,29 +6,7 @@ import { GlassCard } from '../mobile/GlassCard';
 import { Dialog } from '../ui/Dialog';
 import { formatLanguages, parseLanguagesList } from '../../utils/profileLanguages';
 
-const LANGUAGE_SUGGESTIONS = [
-  'English',
-  'Arabic',
-  'Hindi',
-  'Urdu',
-  'Malayalam',
-  'Tagalog',
-  'Bengali',
-  'Tamil',
-  'French',
-  'Russian',
-  'Chinese',
-  'Spanish',
-  'Persian',
-  'Turkish',
-  'Nepali',
-  'German',
-  'Italian',
-  'Portuguese',
-  'Japanese',
-  'Korean',
-] as const;
-
+import { LANGUAGE_SUGGESTIONS } from '../../constants/languageSuggestions';
 const isLanguageSelected = (languages: string[], language: string): boolean =>
   languages.some((item) => item.toLowerCase() === language.toLowerCase());
 
@@ -112,7 +90,7 @@ export const ProfileLanguagesCard = ({
     setError(null);
     try {
       const formatted = formatLanguages(selected);
-      await api.updateOrganisationDetails({ languages: formatted });
+      await api.updateMeProfile({ languages: formatted });
       onUpdated(formatted);
       setOpen(false);
     } catch (err) {

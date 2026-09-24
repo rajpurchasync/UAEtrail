@@ -1,7 +1,6 @@
 /** Explore map UI — components, sheets, and create flows. */
 export * from './ExploreExperience';
 export * from './ExploreMapStyleToggle';
-export * from './ExploreHeader';
 export * from './ExploreCardPresentation';
 export * from './ExploreResponsiveSheet';
 export * from './ExploreListRow';

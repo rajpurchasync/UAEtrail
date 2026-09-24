@@ -205,6 +205,33 @@ export const listSocialReviews = async (input: {
   return { items: items.map(mapReview), total };
 };
 
+export const listSocialReviewsByUserId = async (input: {
+  userId: string;
+  skip: number;
+  take: number;
+}): Promise<{ items: SocialReview[]; total: number }> => {
+  const query = { userId: input.userId };
+  const [items, total] = await Promise.all([
+    reviewsCollection().find(query).sort({ createdAt: -1 }).skip(input.skip).limit(input.take).toArray(),
+    reviewsCollection().countDocuments(query),
+  ]);
+  return { items: items.map(mapReview), total };
+};
+
+export const updateSocialReviewForUser = async (input: {
+  reviewId: string;
+  userId: string;
+  rating: number;
+  comment: string;
+}): Promise<SocialReview | null> => {
+  const updated = await reviewsCollection().findOneAndUpdate(
+    { _id: input.reviewId, userId: input.userId },
+    { $set: { rating: input.rating, comment: input.comment } },
+    { returnDocument: 'after' }
+  );
+  return updated ? mapReview(updated) : null;
+};
+
 export type ReviewStats = {
   averageRating: number;
   reviewCount: number;

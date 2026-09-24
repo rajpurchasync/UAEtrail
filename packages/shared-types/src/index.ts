@@ -410,6 +410,12 @@ export interface ReviewDTO {
   createdAt: string;
 }
 
+/** Signed-in member's review with resolved place / shop / host label and link. */
+export interface MyReviewDTO extends ReviewDTO {
+  targetLabel: string;
+  targetPath: string;
+}
+
 export type PostCategory = 'questions' | 'activity-reports' | 'photos' | 'tips';
 
 export interface PostReplyDTO {

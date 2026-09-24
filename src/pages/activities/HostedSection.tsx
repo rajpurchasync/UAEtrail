@@ -23,6 +23,7 @@ import {
 } from '../../components/mobile/ConsumerFeedback';
 import { Dialog } from '../../components/ui/Dialog';
 import { formatActivityType } from '../../utils/activityIdentity';
+import { matchesActivitySearch } from '../../utils/activitySearch';
 
 type ActivityTab = 'upcoming' | 'past';
 
@@ -40,7 +41,13 @@ const formatEventMeta = (event: ActivityDTO) => {
   return parts.filter(Boolean).join(' · ');
 };
 
-export const HostedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
+export const HostedSection = ({
+  refreshKey = 0,
+  searchQuery = '',
+}: {
+  refreshKey?: number;
+  searchQuery?: string;
+}) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const host = useOrganisationHubData();
@@ -74,6 +81,14 @@ export const HostedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
   );
 
   const visibleActivities = activityTab === 'upcoming' ? upcomingActivities : pastActivities;
+
+  const filteredActivities = useMemo(
+    () =>
+      visibleActivities.filter((event) =>
+        matchesActivitySearch(searchQuery, event.title, event.locationName)
+      ),
+    [searchQuery, visibleActivities]
+  );
 
   useEffect(() => {
     if (!refreshKey) return;
@@ -230,9 +245,11 @@ export const HostedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
           actionLabel="Create activity"
           actionTo={exploreOrganizePath()}
         />
+      ) : filteredActivities.length === 0 ? (
+        <ConsumerInlineEmpty message="No hosted activities match your search." />
       ) : (
         <div className="space-y-2">
-          {visibleActivities.map((event) => (
+          {filteredActivities.map((event) => (
             <div key={event.id} className="glass-card-interactive flex items-center gap-1 p-1 pl-3.5">
               <div className="min-w-0 flex-1">
                 <button

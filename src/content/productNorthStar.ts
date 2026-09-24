@@ -36,6 +36,19 @@ export const PRODUCT_RETRY_LABEL = 'Try again';
 
 /** Auth screens */
 export const PRODUCT_AUTH_SIGNUP_SUBLINE = 'Find your crew and get outside together — free to join.';
+
+/** Signup profile wizard — finish signing up after auth. */
+export const PRODUCT_SIGNUP_FINISH_TITLE = 'Finish signing up';
+export const PRODUCT_SIGNUP_FINISH_SUBLINE = 'A few details so your crew and plans fit you.';
+export const PRODUCT_SIGNUP_STEP_DOB = 'Date of birth';
+export const PRODUCT_SIGNUP_STEP_GENDER = 'Gender';
+export const PRODUCT_SIGNUP_STEP_LOCATION = 'Where are you based?';
+export const PRODUCT_SIGNUP_STEP_LANGUAGES = 'Languages you speak';
+export const PRODUCT_SIGNUP_LOCATION_HINT = 'Country you live in or visit most for outdoor plans.';
+export const PRODUCT_SIGNUP_LANGUAGES_HINT = 'Pick at least one — tap to add or remove.';
+export const PRODUCT_EXPLORE_LOCATION_PROMPT_TITLE = 'Center the map on you?';
+export const PRODUCT_EXPLORE_LOCATION_PROMPT_BODY =
+  'See plans and people near you. You can change this anytime from the map.';
 export const PRODUCT_AUTH_SIGNIN_SUBLINE = 'Pick up where you left off with your crew and plans.';
 
 /** Profile — Up next empty */

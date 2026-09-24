@@ -11,6 +11,7 @@ const resolvePresence = (latitude?: number | null, longitude?: number | null): S
 
 const tenantToShopView = (tenant: TenantProfile): ShopPublicView => ({
   id: tenant.shopId ?? tenant.merchantId ?? tenant.slug,
+  reviewTargetId: tenant.id,
   shopName: tenant.name,
   description: tenant.description ?? tenant.ownerBio ?? null,
   logo: null,
@@ -49,6 +50,7 @@ export const ShopPublic = () => {
         const merchant = res.data;
         setShop({
           id: merchant.id,
+          reviewTargetId: merchant.tenantId ?? null,
           shopName: merchant.shopName,
           description: merchant.description ?? null,
           logo: merchant.logo ?? null,

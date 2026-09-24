@@ -1,6 +1,6 @@
 import { ObjectId, type Collection } from 'mongodb';
 import { MembershipTier } from '../domain/enums.js';
-import type { UserCity, UserGender } from '../domain/user-profile.js';
+import type { UserCity, UserCountryCode, UserGender } from '../domain/user-profile.js';
 import { getMongoClient } from './mongo.js';
 import { invalidateExploreMapCache } from './explore-map-cache.js';
 
@@ -23,6 +23,8 @@ export type AuthUserRecord = {
     dateOfBirth?: string | null;
     gender?: UserGender | null;
     city?: UserCity | null;
+    countryCode?: UserCountryCode | null;
+    languages?: string | null;
     profileVisibility?: 'public' | 'group_members' | 'private';
     switchedFromRole?: 'PLATFORM_ADMIN' | 'MERCHANT_ADMIN' | 'TENANT_OWNER' | 'TENANT_ADMIN' | 'TENANT_GUIDE' | null;
     rewardPoints?: number;
@@ -176,6 +178,8 @@ export const updateAuthUserProfile = async (
   if (patch.dateOfBirth !== undefined) setFields['profile.dateOfBirth'] = patch.dateOfBirth ?? null;
   if (patch.gender !== undefined) setFields['profile.gender'] = patch.gender ?? null;
   if (patch.city !== undefined) setFields['profile.city'] = patch.city ?? null;
+  if (patch.countryCode !== undefined) setFields['profile.countryCode'] = patch.countryCode ?? null;
+  if (patch.languages !== undefined) setFields['profile.languages'] = patch.languages ?? null;
   if (patch.profileVisibility !== undefined) {
     setFields['profile.profileVisibility'] = patch.profileVisibility;
   }

@@ -61,7 +61,7 @@ Shop identity is split between **tenant** (become-host signup: website, optional
 ```
 pages/          Route-level views (lazy-loaded in App.tsx)
 components/     layout/, ui/, seo/, explore/, host/, shop/
-api/            client.ts → services.ts → public.ts mappers
+api/            client.ts → domains/* → services.ts (`api` facade) — see `src/api/index.ts`
 config/         platform.ts, regions.ts, exploreTheme.ts
 context/        AuthContext
 utils/          authRouting, exploreRouting, shopPaths

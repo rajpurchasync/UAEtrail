@@ -594,10 +594,12 @@ export const createMerchantProfileForUser = async (
     longitude?: number | null;
     region?: string | null;
   },
-  options?: { tenantId?: string | null }
+  options?: { tenantId?: string | null; linkShopTenant?: boolean }
 ) => {
-  let tenantId = options?.tenantId ?? null;
-  if (!tenantId) {
+  let tenantId: string | null = null;
+  if (options && 'tenantId' in options) {
+    tenantId = options.tenantId ?? null;
+  } else if (options?.linkShopTenant !== false) {
     const shopTenant = await findShopTenantForOwner(userId);
     tenantId = shopTenant?.id ?? null;
   }

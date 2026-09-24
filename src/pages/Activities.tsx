@@ -1,18 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronRight, Plus } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ConsumerShell } from '../components/mobile/ConsumerShell';
-import { FilterChips } from '../components/mobile/FilterChips';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
+import { TabPageSearchRow } from '../components/mobile/TabPageSearchRow';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ACTIVITIES_PATH } from '../constants';
-import { EXPLORE_MAP_PATH } from '../config/platform';
+import { explorePath } from '../explore/routing';
 import { isHostRole } from '../utils/roles';
-import { exploreActivitiesPath, exploreOrganizePath } from '../utils/exploreRouting';
-import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
-import { parseTabParam, type PageTab } from './activities/shared';
+import { signInPathForReturn } from '../utils/authReturnContext';import { joinedSubViewTitle, parseTabParam, type PageTab } from './activities/shared';
+import { ActivitiesHubView } from './activities/ActivitiesHubView';
 import { JoinedSection } from './activities/JoinedSection';
 import { HostedSection } from './activities/HostedSection';
 
@@ -22,7 +20,10 @@ export const Activities = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<PageTab>(() => parseTabParam(searchParams.get('tab'), user));
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activitySearchQuery, setActivitySearchQuery] = useState('');
   const canHost = isHostRole(user?.role);
+  const joinedSub = searchParams.get('sub');
+  const showHub = activeTab === 'joined' && !joinedSub;
 
   useEffect(() => {
     setActiveTab(parseTabParam(searchParams.get('tab'), user));
@@ -39,69 +40,68 @@ export const Activities = () => {
     }
   }, [user, searchParams, setSearchParams]);
 
-  const setTab = (tab: PageTab) => {
-    setActiveTab(tab);
-    const next = new URLSearchParams(searchParams);
-    next.set('tab', tab);
-    if (tab !== 'joined') next.delete('sub');
-    setSearchParams(next, { replace: true });
-  };
-
-  const navOptions = useMemo(() => {
-    if (!user) return [];
-    return [
-      { key: 'joined' as PageTab, label: 'Joined' },
-      ...(canHost ? [{ key: 'hosted' as PageTab, label: 'Hosted' }] : []),
-    ];
-  }, [user, canHost]);
-
-  const handleHostCta = useCallback(() => {
-    if (canHost) {
-      navigate(exploreOrganizePath());
-      return;
-    }
-    navigate('/become-host');
-  }, [canHost, navigate]);
-
   const handleRefresh = useCallback(async () => {
     setRefreshKey((key) => key + 1);
   }, []);
 
+  const goHub = useCallback(() => {
+    navigate('/activities?tab=joined');
+  }, [navigate]);
+
+  const handleOpenCompose = useCallback(() => {
+    const composePath = explorePath({ compose: 'menu' });
+    if (!user) {
+      navigate(signInPathForReturn(composePath));
+      return;
+    }
+    navigate(composePath);
+  }, [navigate, user]);
+  const showActivitiesSubNav = activeTab === 'hosted' || Boolean(joinedSubViewTitle(joinedSub));
+
   return (
-    <ConsumerShell
-      layout="stack"
-      title="My activities"
-      showJourney={false}
-      back={{ fallbackTo: EXPLORE_MAP_PATH, label: 'Explore' }}
-      toolbar={
-        navOptions.length > 1 ? (
-          <FilterChips options={navOptions} value={activeTab} onChange={setTab} />
-        ) : undefined
-      }
-    >
+    <div className="min-h-screen consumer-bg md:bg-gray-50">
       <PageMeta
         title="My activities — joined and hosted"
-        description="Activities you have joined or host on UAE Trail."
+        description="Your upcoming outings, past trips, and hosted activities on UAE Trail."
         path={ACTIVITIES_PATH}
       />
 
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="mb-4">
-          <Link
-            to={exploreActivitiesPath()}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700"
-          >
-            {PRODUCT_EXPLORE_CTA}
-            <ChevronRight className="h-4 w-4" />
-          </Link>
-        </div>
-
-        <div className="pb-24 md:pb-8">
-          {activeTab === 'joined' && user && <JoinedSection refreshKey={refreshKey} />}
-          {activeTab === 'hosted' && user && canHost && <HostedSection refreshKey={refreshKey} />}
+        <div className="mx-auto w-full max-w-4xl px-4 pb-bottom-nav-safe sm:px-6 md:pb-8">
+          {user ? (
+            <TabPageSearchRow
+              value={activitySearchQuery}
+              onChange={setActivitySearchQuery}
+              placeholder="Search activities"
+            />
+          ) : null}
+          {showHub && user ? (
+            <ActivitiesHubView
+              refreshKey={refreshKey}
+              canHost={canHost}
+              searchQuery={activitySearchQuery}
+            />
+          ) : null}
+          {showActivitiesSubNav && (
+            <button
+              type="button"
+              onClick={goHub}
+              className="mb-3 text-sm font-semibold text-emerald-700"
+            >
+              ← All activities
+            </button>
+          )}
+          {activeTab === 'joined' && joinedSub && user ? (
+            <JoinedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} />
+          ) : null}
+          {activeTab === 'hosted' && user && canHost ? (
+            <HostedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} />
+          ) : null}
           {activeTab === 'hosted' && user && !canHost && (
             <div className="glass-card p-6 text-center">
-              <p className="text-sm text-neutral-600 mb-3">Host activities on the map to share them with the community.</p>
+              <p className="mb-3 text-sm text-neutral-600">
+                Host activities on the map to share them with the community.
+              </p>
               <button
                 type="button"
                 onClick={() => navigate('/become-host')}
@@ -114,15 +114,13 @@ export const Activities = () => {
         </div>
       </PullToRefresh>
 
-      {user && activeTab === 'hosted' && canHost && (
+      {showHub && user ? (
         <FloatingActionButton
-          extended
-          icon={<Plus className="w-5 h-5 shrink-0" strokeWidth={2.5} />}
-          text="New activity"
-          label="New activity"
-          onClick={handleHostCta}
-        />
-      )}
-    </ConsumerShell>
+          icon={<Plus className="h-6 w-6" strokeWidth={2.5} aria-hidden />}
+          label="Add New"
+          onClick={handleOpenCompose}
+          className="md:hidden"
+        />      ) : null}
+    </div>
   );
 };

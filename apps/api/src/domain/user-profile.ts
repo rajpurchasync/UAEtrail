@@ -33,18 +33,38 @@ export const USER_GENDER_LABELS: Record<UserGender, string> = {
   prefer_not_to_say: 'Prefer not to say',
 };
 
+export const USER_COUNTRY_CODES = ['AE', 'SA', 'OM', 'QA', 'BH', 'KW'] as const;
+export type UserCountryCode = (typeof USER_COUNTRY_CODES)[number];
+
+export const USER_COUNTRY_LABELS: Record<UserCountryCode, string> = {
+  AE: 'United Arab Emirates',
+  SA: 'Saudi Arabia',
+  OM: 'Oman',
+  QA: 'Qatar',
+  BH: 'Bahrain',
+  KW: 'Kuwait',
+};
+
 export const dateOfBirthSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter a valid date of birth.');
 
 export const completeSignupProfileSchema = z.object({
   dateOfBirth: dateOfBirthSchema,
   gender: z.enum(USER_GENDERS),
-  city: z.enum(USER_CITIES),
+  countryCode: z.enum(USER_COUNTRY_CODES),
+  languages: z.string().trim().min(1, 'Add at least one language.').max(300),
 });
 
 export type SignupProfileFields = {
   dateOfBirth?: string | null;
   gender?: UserGender | null;
   city?: UserCity | null;
+  countryCode?: UserCountryCode | null;
+  languages?: string | null;
+};
+
+const hasSignupLocation = (profile: SignupProfileFields | null | undefined): boolean => {
+  if (profile?.countryCode && USER_COUNTRY_CODES.includes(profile.countryCode)) return true;
+  return Boolean(profile?.city && USER_CITIES.includes(profile.city));
 };
 
 export const isSignupProfileComplete = (profile: SignupProfileFields | null | undefined): boolean =>
@@ -52,8 +72,8 @@ export const isSignupProfileComplete = (profile: SignupProfileFields | null | un
     profile?.dateOfBirth?.trim() &&
       profile?.gender &&
       USER_GENDERS.includes(profile.gender) &&
-      profile?.city &&
-      USER_CITIES.includes(profile.city)
+      hasSignupLocation(profile) &&
+      profile?.languages?.trim()
   );
 
 export const computeAgeFromDateOfBirth = (dateOfBirth: string): number | null => {

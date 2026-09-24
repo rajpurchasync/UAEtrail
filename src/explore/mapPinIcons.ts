@@ -70,3 +70,54 @@ export const resolveMapPinIconSvg = (
   const key = resolveMapPinIconKey(kind, source);
   return svgIcon(ICON_PATHS[key], color, size);
 };
+
+export const resolveDominantMapPinKind = (kinds: MapPinKind[]): MapPinKind => {
+  if (kinds.length === 0) return 'event';
+  const counts = new Map<MapPinKind, number>();
+  for (const kind of kinds) {
+    counts.set(kind, (counts.get(kind) ?? 0) + 1);
+  }
+  let dominant: MapPinKind = kinds[0]!;
+  let max = 0;
+  for (const [kind, count] of counts) {
+    if (count > max) {
+      dominant = kind;
+      max = count;
+    }
+  }
+  return dominant;
+};
+
+export const resolveDominantMapPinSource = (
+  pins: Array<{ activityType: MapPinKind; source?: MapPinSource; id: string }>,
+  resolveSource: (pin: { id: string; source?: MapPinSource }) => MapPinSource
+): MapPinSource => {
+  if (pins.length === 0) return 'activity';
+  const counts = new Map<MapPinSource, number>();
+  for (const pin of pins) {
+    const source = resolveSource(pin);
+    counts.set(source, (counts.get(source) ?? 0) + 1);
+  }
+  let dominant: MapPinSource = resolveSource(pins[0]!);
+  let max = 0;
+  for (const [source, count] of counts) {
+    if (count > max) {
+      dominant = source;
+      max = count;
+    }
+  }
+  return dominant;
+};
+
+/** Cluster marker: activity icon primary, count as a small badge (not a number-only blob). */
+export const buildMapClusterIconHtml = (
+  kind: MapPinKind,
+  source: MapPinSource,
+  ringColor: string,
+  count: number
+): string => {
+  const size = 44;
+  const iconSvg = resolveMapPinIconSvg(kind, source, ringColor, 18);
+  const countLabel = count > 99 ? '99+' : String(count);
+  return `<span class="uaetrail-map-pin-marker uaetrail-map-cluster-marker" style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face" style="border:2.5px solid ${ringColor};"><span class="uaetrail-map-pin-icon">${iconSvg}</span></span><span class="uaetrail-map-cluster-badge" aria-hidden="true">${countLabel}</span></span>`;
+};

@@ -1,10 +1,10 @@
-import type { UserCity } from '../constants/userProfileOptions';
+import type { UserCountryCode, UserGender } from '../constants/userProfileOptions';
 
 export type ProfileCompletionItem = {
   key: string;
   label: string;
   done: boolean;
-  action: 'edit' | 'avatar';
+  action: 'edit' | 'avatar' | 'settings';
 };
 
 export const buildProfileCompletion = (input: {
@@ -13,7 +13,10 @@ export const buildProfileCompletion = (input: {
   bio?: string | null;
   phone?: string | null;
   dateOfBirth?: string | null;
-  city?: UserCity | null;
+  gender?: UserGender | null;
+  countryCode?: UserCountryCode | null;
+  city?: import('../constants/userProfileOptions').UserCity | null;
+  languages?: string | null;
 }): { items: ProfileCompletionItem[]; percent: number } => {
   const items: ProfileCompletionItem[] = [
     {
@@ -35,10 +38,22 @@ export const buildProfileCompletion = (input: {
       action: 'edit',
     },
     {
-      key: 'city',
-      label: 'Add your city',
-      done: Boolean(input.city),
+      key: 'gender',
+      label: 'Add your gender',
+      done: Boolean(input.gender),
       action: 'edit',
+    },
+    {
+      key: 'country',
+      label: "Add where you're based",
+      done: Boolean(input.countryCode || input.city),
+      action: 'edit',
+    },
+    {
+      key: 'languages',
+      label: 'Add languages you speak',
+      done: Boolean(input.languages?.trim()),
+      action: 'settings',
     },
     {
       key: 'bio',

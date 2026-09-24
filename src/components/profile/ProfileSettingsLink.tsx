@@ -11,8 +11,8 @@ export const ProfileSettingsLink = () => (
           <Settings className="h-5 w-5 text-neutral-600" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-neutral-900">Account settings</p>
-          <p className="text-xs text-neutral-500">Password, email, languages, sign out</p>
+          <p className="text-sm font-semibold text-neutral-900">Settings</p>
+          <p className="text-xs text-neutral-500">Member details, password, and email</p>
         </div>
         <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
       </div>

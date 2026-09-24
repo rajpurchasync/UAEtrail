@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/ConsumerFeedback';
-import { NotificationBellPopover } from '../components/layout/NotificationBellPopover';
 import {
   AccountAvatarModal,
   AccountEditModal,
   AccountSectionHeader,
+  AccountSignOutButton,
   OrganisationHubSections,
 } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
@@ -23,9 +24,9 @@ import { ProfileHeroSection } from '../components/profile/ProfileHeroSection';
 import { ProfileQuickActions, type ProfileQuickAction } from '../components/profile/ProfileQuickActions';
 import { ProfileStampsRow } from '../components/profile/ProfileStampsRow';
 import { ProfileCompletionCard } from '../components/profile/ProfileCompletionCard';
-import { ProfileMoreSection } from '../components/profile/ProfileMoreSection';
+import { ProfileBioCard } from '../components/profile/ProfileBioCard';
+import { ProfileLanguagesCard } from '../components/profile/ProfileLanguagesCard';
 import { ProfileSettingsLink } from '../components/profile/ProfileSettingsLink';
-import { ProfileUpNextSection } from '../components/profile/ProfileUpNextSection';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
 import { buildProfileStamps } from '../utils/profileStamps';
@@ -35,21 +36,21 @@ import { resolveProfileHostKind, resolveProfileRoleLabel } from '../utils/profil
 import type { AccountEditSavePayload } from '../components/account/AccountEditModal';
 import { attendedActivities } from '../utils/activityHubSections';
 import { isHostRole } from '../utils/roles';
+import { meProfileSignupGateKey } from '../utils/signupProfileGate';
 
 export const Profile = () => {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, signOut } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
   const {
     profile,
     setProfile,
-    conversations,
     groups,
     buddies,
     incomingBuddyRequests,
     activities,
     upcomingActivitiesCount,
-    upcomingPlans,
     unreadMessages,
     loading,
     error,
@@ -130,9 +131,22 @@ export const Profile = () => {
         bio: profile.bio,
         phone: profile.phone,
         dateOfBirth: profile.dateOfBirth,
+        gender: profile.gender,
+        countryCode: profile.countryCode,
         city: profile.city,
+        languages: profile.languages,
       }),
-    [avatarUrl, displayName, profile.bio, profile.city, profile.dateOfBirth, profile.phone]
+    [
+      avatarUrl,
+      displayName,
+      profile.bio,
+      profile.countryCode,
+      profile.city,
+      profile.dateOfBirth,
+      profile.gender,
+      profile.languages,
+      profile.phone,
+    ]
   );
 
   const sharePath = useMemo(
@@ -199,6 +213,13 @@ export const Profile = () => {
         badge: groups.length,
         accent: 'bg-indigo-50',
       },
+      {
+        key: 'reviews',
+        label: 'Reviews',
+        to: '/profile/reviews',
+        emoji: '⭐',
+        accent: 'bg-amber-50',
+      },
     ];
 
     if (trailPointsEligible) {
@@ -254,6 +275,9 @@ export const Profile = () => {
     try {
       await api.updateMeProfile(payload);
       await refreshUser();
+      if (user?.id) {
+        await queryClient.invalidateQueries({ queryKey: meProfileSignupGateKey(user.id) });
+      }
       setMessage('Profile saved.');
       setShowEdit(false);
       await reload();
@@ -320,8 +344,7 @@ export const Profile = () => {
       layout="stack"
       title="Profile"
       showJourney={false}
-      back={{ fallbackTo: '/', label: 'Back' }}
-      action={<NotificationBellPopover />}
+      suppressMobileHeader
     >
       {error && !loading && (
         <ConsumerErrorCard message={error} onRetry={() => void reload()} className="mb-3" />
@@ -345,11 +368,16 @@ export const Profile = () => {
             extra={heroExtra}
           />
 
-          <ProfileUpNextSection
-            messagesPath={messagesPath}
-            upcomingPlans={upcomingPlans}
-            conversations={conversations}
-            loading={loading}
+          <ProfileBioCard
+            bio={profile.bio}
+            canEdit
+            onUpdated={(bio) => setProfile((prev) => ({ ...prev, bio }))}
+          />
+
+          <ProfileLanguagesCard
+            languages={profile.languages ?? null}
+            canEdit
+            onUpdated={(languages) => setProfile((prev) => ({ ...prev, languages }))}
           />
 
           {!loading && completion.percent < 100 && (
@@ -358,6 +386,7 @@ export const Profile = () => {
               items={completion.items}
               onEditProfile={openEdit}
               onEditAvatar={openAvatarEdit}
+              onOpenSettings={() => navigate('/profile/settings')}
             />
           )}
 
@@ -381,14 +410,14 @@ export const Profile = () => {
           )}
 
           {!loading && profileStamps.length > 0 && (
-            <ProfileMoreSection>
-              <GlassCard padding className="!py-4">
-                <ProfileStampsRow stamps={profileStamps} />
-              </GlassCard>
-            </ProfileMoreSection>
+            <GlassCard padding className="!py-4">
+              <ProfileStampsRow stamps={profileStamps} />
+            </GlassCard>
           )}
 
           <ProfileSettingsLink />
+
+          <AccountSignOutButton onSignOut={() => void signOut()} />
         </div>
       </PullToRefresh>
 

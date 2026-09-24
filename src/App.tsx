@@ -7,6 +7,7 @@ import { DashboardRedirect } from './components/auth/DashboardRedirect';
 import { NativeDeepLinkHandler } from './components/NativeDeepLinkHandler';
 import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
 import { ActivityFormSessionProvider } from './context/ActivityFormSessionContext';
+import { useAuth } from './context/AuthContext';
 import { Home } from './pages/Home';
 import { Membership } from './pages/Membership';
 import { ExploreExperience } from './explore';
@@ -36,6 +37,7 @@ const DiscoveryRedirect = () => {
 };
 
 const ActivitiesBrowseRoute = () => {
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const tab = searchParams.get('tab');
   const legacyCreatePath = legacyCreateParamToOrganizePath(searchParams.get('create'));
@@ -48,6 +50,9 @@ const ActivitiesBrowseRoute = () => {
         <Activities />
       </Suspense>
     );
+  }
+  if (user) {
+    return <Navigate to="/activities?tab=joined" replace />;
   }
   const activity = parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter'));
   return (
@@ -134,6 +139,7 @@ const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ de
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
+const ProfileReviews = lazy(() => import('./pages/ProfileReviews').then((m) => ({ default: m.ProfileReviews })));
 const JoinRequestDetail = lazy(() =>
   import('./pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
 );
@@ -252,6 +258,14 @@ function App() {
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
           <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
           <Route path="/activities" element={<ActivitiesBrowseRoute />} />
+          <Route
+            path="/profile/reviews"
+            element={
+              <ProtectedRoute>
+                <ProfileReviews />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/profile/settings"
             element={

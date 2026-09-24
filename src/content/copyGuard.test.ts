@@ -6,6 +6,8 @@ const SCAN_ROOTS = [
   join(process.cwd(), 'src/pages'),
   join(process.cwd(), 'src/components/home'),
   join(process.cwd(), 'src/components/profile'),
+  join(process.cwd(), 'src/components/signup'),
+  join(process.cwd(), 'src/components/account'),
   join(process.cwd(), 'src/explore/ui'),
 ];
 
@@ -15,6 +17,10 @@ const BANNED_LITERALS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /Open Map/i, hint: 'Use HOME_HERO_PRIMARY_CTA or PRODUCT_EXPLORE_CTA' },
   { pattern: /Explore the map/, hint: 'Use PRODUCT_EXPLORE_CTA from productNorthStar.ts' },
   { pattern: /(?<![\w-])Join free(?![\w-])/, hint: 'Use PRODUCT_JOIN_CTA from productNorthStar.ts' },
+  {
+    pattern: /Confirm your profile/i,
+    hint: 'Use PRODUCT_SIGNUP_FINISH_TITLE — finish signing up, not confirm profile',
+  },
 ];
 
 const ALLOWLIST = new Set([

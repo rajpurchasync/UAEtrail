@@ -26,7 +26,9 @@ import {
   rejectedRequests,
   requestRecordMeta,
   type JoinedSubTab,
+  type UpcomingPlanRow,
 } from '../../utils/activityHubSections';
+import { matchesActivitySearch } from '../../utils/activitySearch';
 import { requestStatusClassName, requestStatusLabel } from '../../utils/joinRequestUi';
 import { getRequestEventDate } from '../../utils/activityDates';
 
@@ -36,7 +38,23 @@ const formatActivityMeta = (activity: MyActivityDTO) => {
   return parts.filter(Boolean).join(' · ');
 };
 
-export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
+const filterUpcomingRows = (rows: UpcomingPlanRow[], query: string) =>
+  rows.filter((row) => {
+    if (row.kind === 'confirmed') {
+      const activity = row.activity;
+      return matchesActivitySearch(query, activity.title, activity.locationName);
+    }
+    const activity = row.request.activity;
+    return matchesActivitySearch(query, activity.title, activity.locationName);
+  });
+
+export const JoinedSection = ({
+  refreshKey = 0,
+  searchQuery = '',
+}: {
+  refreshKey?: number;
+  searchQuery?: string;
+}) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const subTab = parseJoinedSubTab(searchParams.get('sub'));
@@ -69,6 +87,32 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
   const cancelled = useMemo(() => cancelledRequests(requests), [requests]);
   const rejected = useMemo(() => rejectedRequests(requests), [requests]);
 
+  const filteredUpcoming = useMemo(
+    () => filterUpcomingRows(upcomingRows, searchQuery),
+    [searchQuery, upcomingRows]
+  );
+  const filteredAttended = useMemo(
+    () =>
+      attended.filter((activity) =>
+        matchesActivitySearch(searchQuery, activity.title, activity.locationName)
+      ),
+    [attended, searchQuery]
+  );
+  const filteredCancelled = useMemo(
+    () =>
+      cancelled.filter((request) =>
+        matchesActivitySearch(searchQuery, request.activity.title, request.activity.locationName)
+      ),
+    [cancelled, searchQuery]
+  );
+  const filteredRejected = useMemo(
+    () =>
+      rejected.filter((request) =>
+        matchesActivitySearch(searchQuery, request.activity.title, request.activity.locationName)
+      ),
+    [rejected, searchQuery]
+  );
+
   const segments = [
     { key: 'upcoming' as const, label: `Upcoming (${upcomingRows.length})` },
     { key: 'attended' as const, label: `Attended (${attended.length})` },
@@ -92,9 +136,11 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
             actionLabel={PRODUCT_EXPLORE_CTA}
             actionTo={EXPLORE_MAP_PATH}
           />
+        ) : filteredUpcoming.length === 0 ? (
+          <ConsumerInlineEmpty message="No upcoming plans match your search." />
         ) : (
           <div className="space-y-2">
-            {upcomingRows.map((row) =>
+            {filteredUpcoming.map((row) =>
               row.kind === 'confirmed' ? (
                 <ActivityHubListRow
                   key={row.activity.id}
@@ -134,9 +180,11 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
             actionLabel={PRODUCT_EXPLORE_CTA}
             actionTo={EXPLORE_MAP_PATH}
           />
+        ) : filteredAttended.length === 0 ? (
+          <ConsumerInlineEmpty message="No attended outings match your search." />
         ) : (
           <div className="space-y-2">
-            {attended.map((activity) => (
+            {filteredAttended.map((activity) => (
               <ActivityHubListRow
                 key={activity.id}
                 title={activity.title || activity.locationName}
@@ -154,9 +202,11 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       ) : subTab === 'cancelled' ? (
         cancelled.length === 0 ? (
           <ConsumerInlineEmpty message="No cancelled requests here." />
+        ) : filteredCancelled.length === 0 ? (
+          <ConsumerInlineEmpty message="No cancelled requests match your search." />
         ) : (
           <div className="space-y-2">
-            {cancelled.map((request) => (
+            {filteredCancelled.map((request) => (
               <ActivityHubListRow
                 key={request.id}
                 title={request.activity.title || request.activity.locationName}
@@ -173,9 +223,11 @@ export const JoinedSection = ({ refreshKey = 0 }: { refreshKey?: number }) => {
         )
       ) : rejected.length === 0 ? (
         <ConsumerInlineEmpty message="No declined requests — you're all clear." />
+      ) : filteredRejected.length === 0 ? (
+        <ConsumerInlineEmpty message="No declined requests match your search." />
       ) : (
         <div className="space-y-2">
-          {rejected.map((request) => (
+          {filteredRejected.map((request) => (
             <ActivityHubListRow
               key={request.id}
               title={request.activity.title || request.activity.locationName}

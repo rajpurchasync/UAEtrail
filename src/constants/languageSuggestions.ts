@@ -1,0 +1,23 @@
+/** Common languages for UAE & GCC outdoor community — signup + profile. */
+export const LANGUAGE_SUGGESTIONS = [
+  'English',
+  'Arabic',
+  'Hindi',
+  'Urdu',
+  'Malayalam',
+  'Tagalog',
+  'Bengali',
+  'Tamil',
+  'French',
+  'Russian',
+  'Chinese',
+  'Spanish',
+  'Persian',
+  'Turkish',
+  'Nepali',
+  'German',
+  'Italian',
+  'Portuguese',
+  'Japanese',
+  'Korean',
+] as const;

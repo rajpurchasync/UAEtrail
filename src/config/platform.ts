@@ -168,9 +168,9 @@ export const MAP_CONFIG = {
   provider: 'esri' as const,
   defaultCenter: { lat: 24.4539, lng: 54.3773 },
   defaultZoom: 8,
-  /** Mobile explore — start on Dubai metro at city zoom. */
-  exploreDefaultCenter: { lat: 25.2048, lng: 55.2708 },
-  exploreDefaultZoom: 11,
+  /** Explore browse — upper UAE / Emirates overview (not city street zoom). */
+  exploreDefaultCenter: { lat: 25.42, lng: 55.72 },
+  exploreDefaultZoom: 8,
   /** Explore / detail maps — light base + label overlay. */
   tileUrl:
     envTileUrl ||
@@ -296,3 +296,30 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
   CONSUMER_SELF_HEADER_EXACT.includes(pathname as (typeof CONSUMER_SELF_HEADER_EXACT)[number]) ||
   CONSUMER_SELF_HEADER_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
   isMobileDetailRoute(pathname);
+
+/** Signed-in mobile tab shell — Map · Activities · Messages. */
+export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/activities', '/messages'] as const;
+
+export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number];
+
+export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBottomNavTabPath =>
+  (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname);
+
+/** Personal hub routes that keep the mobile tab bar visible (profile is not a tab). */
+export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = ['/profile', '/profile/settings'] as const;
+
+const isMobileBottomNavProfilePath = (pathname: string): boolean =>
+  pathname === '/profile' || pathname.startsWith('/profile/');
+
+/** Mobile bottom nav — signed-in root tabs + profile hub; hidden in message threads. */
+export const shouldShowMobileBottomNav = (
+  pathname: string,
+  search: string,
+  signedIn: boolean
+): boolean => {
+  if (!signedIn || isConsumerChromeHidden(pathname)) return false;
+  if (pathname === '/messages' && new URLSearchParams(search).get('to')) return false;
+  if (isMobileBottomNavTabPath(pathname)) return true;
+  if (isMobileBottomNavProfilePath(pathname)) return true;
+  return false;
+};

@@ -23,9 +23,15 @@ export const accountApi = {
     completeSignupProfile: (payload: {
     dateOfBirth: string;
     gender: NonNullable<UserProfile['gender']>;
-    city: NonNullable<UserProfile['city']>;
+    countryCode: NonNullable<UserProfile['countryCode']>;
+    languages: string;
   }) =>
-    apiRequest<{ data: Pick<UserProfile, 'dateOfBirth' | 'gender' | 'city' | 'signupProfileComplete'> }>(
+    apiRequest<{
+      data: Pick<
+        UserProfile,
+        'dateOfBirth' | 'gender' | 'countryCode' | 'languages' | 'signupProfileComplete'
+      >;
+    }>(
       '/me/profile/signup-details',
       {
         method: 'PATCH',

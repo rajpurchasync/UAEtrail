@@ -2,24 +2,27 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UserProfile } from '../../api/services';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
-import {
-  USER_CITY_OPTIONS,
-  maxDateOfBirthForMember,
-  type UserCity,
-} from '../../constants/userProfileOptions';
+import type { UserCountryCode, UserGender } from '../../constants/userProfileOptions';
 import { AppButton } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
 import { PhoneInput } from '../ui/PhoneInput';
 import { buildProfileCompletion } from '../../utils/profileCompletion';
-import { computeAgeFromDateOfBirth, formatMemberAge } from '../../utils/profileAge';
 import { formatE164Phone, isValidNationalPhone, splitStoredPhone } from '../../utils/phone';
+import { formatLanguages, parseLanguagesList } from '../../utils/profileLanguages';
+import {
+  MemberDetailsEditFields,
+  validateMemberDetailsForm,
+  type MemberDetailsFormValue,
+} from '../profile/MemberDetailsEditFields';
 
 export interface AccountEditSavePayload {
   displayName: string;
   bio?: string;
   phone?: string;
-  dateOfBirth?: string;
-  city?: UserCity;
+  dateOfBirth: string;
+  gender: UserGender;
+  countryCode: UserCountryCode;
+  languages: string;
 }
 
 interface AccountEditModalProps {
@@ -54,8 +57,12 @@ export const AccountEditModal = ({
   const currentEmail = profile.email ?? email;
   const [phoneDial, setPhoneDial] = useState(DEFAULT_PHONE_DIAL);
   const [phoneNational, setPhoneNational] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [city, setCity] = useState<UserCity | ''>('');
+  const [memberDetails, setMemberDetails] = useState<MemberDetailsFormValue>({
+    dateOfBirth: '',
+    gender: '',
+    countryCode: '',
+    languages: [],
+  });
   const [formError, setFormError] = useState<string | null>(null);
 
   const completion = useMemo(
@@ -65,15 +72,21 @@ export const AccountEditModal = ({
         avatarUrl: profile.avatarUrl,
         bio: profile.bio,
         phone: profile.phone,
-        dateOfBirth,
-        city: city || null,
+        dateOfBirth: memberDetails.dateOfBirth,
+        gender: memberDetails.gender || null,
+        countryCode: memberDetails.countryCode || null,
+        languages: memberDetails.languages.length > 0 ? formatLanguages(memberDetails.languages) : null,
       }),
-    [city, dateOfBirth, profile.avatarUrl, profile.bio, profile.displayName, profile.phone]
-  );
-
-  const previewAge = useMemo(
-    () => (dateOfBirth ? computeAgeFromDateOfBirth(dateOfBirth) : null),
-    [dateOfBirth]
+    [
+      memberDetails.countryCode,
+      memberDetails.dateOfBirth,
+      memberDetails.gender,
+      memberDetails.languages,
+      profile.avatarUrl,
+      profile.bio,
+      profile.displayName,
+      profile.phone,
+    ]
   );
 
   useEffect(() => {
@@ -81,10 +94,14 @@ export const AccountEditModal = ({
     const parts = splitStoredPhone(profile.phone);
     setPhoneDial(parts.dial);
     setPhoneNational(parts.national);
-    setDateOfBirth(profile.dateOfBirth ?? '');
-    setCity(profile.city ?? '');
+    setMemberDetails({
+      dateOfBirth: profile.dateOfBirth ?? '',
+      gender: profile.gender ?? '',
+      countryCode: profile.countryCode ?? (profile.city ? 'AE' : ''),
+      languages: parseLanguagesList(profile.languages),
+    });
     setFormError(null);
-  }, [open, profile.city, profile.dateOfBirth, profile.phone]);
+  }, [open, profile.city, profile.countryCode, profile.dateOfBirth, profile.gender, profile.languages, profile.phone]);
 
   const handleProfileSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -93,12 +110,10 @@ export const AccountEditModal = ({
       setFormError('Name must be at least 2 characters.');
       return;
     }
-    if (!dateOfBirth) {
-      setFormError('Select your date of birth.');
-      return;
-    }
-    if (!city) {
-      setFormError('Select your city.');
+
+    const memberError = validateMemberDetailsForm(memberDetails);
+    if (memberError) {
+      setFormError(memberError);
       return;
     }
 
@@ -112,12 +127,15 @@ export const AccountEditModal = ({
     }
 
     setFormError(null);
+    const languages = formatLanguages(memberDetails.languages);
     const payload: AccountEditSavePayload = {
       displayName,
       bio: profile.bio?.trim() || undefined,
       phone,
-      dateOfBirth,
-      city,
+      dateOfBirth: memberDetails.dateOfBirth,
+      gender: memberDetails.gender as UserGender,
+      countryCode: memberDetails.countryCode as UserCountryCode,
+      languages,
     };
     setProfile((prev) => ({ ...prev, ...payload }));
     await onSave(payload);
@@ -159,46 +177,16 @@ export const AccountEditModal = ({
                 autoComplete="name"
               />
             </div>
+          </section>
 
-            <div>
-              <FieldLabel>Date of birth</FieldLabel>
-              <input
-                type="date"
-                className="ios-input w-full text-[15px]"
-                value={dateOfBirth}
-                max={maxDateOfBirthForMember()}
-                onChange={(event) => setDateOfBirth(event.target.value)}
-                disabled={saving}
-                required
-              />
-              {formatMemberAge(previewAge) && (
-                <p className="mt-1.5 text-xs font-medium text-emerald-700">{formatMemberAge(previewAge)}</p>
-              )}
-            </div>
-
-            <div>
-              <FieldLabel>City</FieldLabel>
-              <div className="grid grid-cols-2 gap-2">
-                {USER_CITY_OPTIONS.map((option) => {
-                  const active = city === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setCity(option.value)}
-                      disabled={saving}
-                      className={`rounded-2xl px-3 py-2.5 text-left text-sm font-semibold transition-colors ${
-                        active
-                          ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
-                          : 'bg-neutral-100 text-neutral-800 ring-1 ring-neutral-200/80'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+          <section className="space-y-3">
+            <SectionTitle>Member details</SectionTitle>
+            <p className="text-xs text-neutral-500">Same details you added when signing up.</p>
+            <MemberDetailsEditFields
+              value={memberDetails}
+              onChange={(patch) => setMemberDetails((prev) => ({ ...prev, ...patch }))}
+              disabled={saving}
+            />
           </section>
 
           <section className="space-y-3">

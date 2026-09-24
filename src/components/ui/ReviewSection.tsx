@@ -8,6 +8,7 @@ import { MembershipTierBadge } from '../ui/MembershipTierBadge';
 import { ReportContentButton } from './ReportContentDialog';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { myReviewElementId, scrollToReviewAnchor, myReviewHash } from './DetailReviewChrome';
 
 interface ReviewSectionProps {
   targetType: 'location' | 'tenant' | 'place';
@@ -150,8 +151,21 @@ export const ReviewSection = ({
         </p>
       )}
 
-      {(existingReview || success) && (
-        <p className="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2 mb-4">
+      {existingReview && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-emerald-50 px-3 py-2">
+          <p className="text-sm font-medium text-emerald-800">You&apos;ve rated this — thanks for sharing.</p>
+          <button
+            type="button"
+            onClick={() => scrollToReviewAnchor(myReviewHash(existingReview.id))}
+            className="text-sm font-semibold text-emerald-700 underline-offset-2 hover:underline"
+          >
+            View my rating
+          </button>
+        </div>
+      )}
+
+      {success && !existingReview && (
+        <p className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
           Thanks — your review has been submitted.
         </p>
       )}
@@ -162,8 +176,15 @@ export const ReviewSection = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {reviews.map((review) => (
-            <div key={review.id} className="bg-white rounded-lg shadow-sm p-6">
+          {reviews.map((review) => {
+            const isMine = user?.id === review.userId;
+            return (
+            <div
+              key={review.id}
+              id={myReviewElementId(review.id)}
+              tabIndex={isMine ? -1 : undefined}
+              className={`bg-white rounded-lg shadow-sm p-6 scroll-mt-28 ${isMine ? 'ring-2 ring-emerald-500/40' : ''}`}
+            >
               <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="font-semibold text-gray-900">{review.userName}</div>
@@ -194,7 +215,8 @@ export const ReviewSection = ({
                 )}
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </section>
