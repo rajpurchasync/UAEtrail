@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { MAP_CONFIG, readExploreMapStyle, EXPLORE_MAP_STYLE_STORAGE_KEY, type ExploreMapStyle } from '../../config/platform';
 import { useExploreDeviceLocation } from '../../hooks/useExploreDeviceLocation';
-import { shouldShowExploreLocationPrompt } from '../../utils/exploreMapLocationPreference';
+import { shouldOpenExploreLocationPromptFromWelcome } from '../../utils/exploreWelcomeNavigation';
 
 type UseExploreMapViewportArgs = {
   user: { id: string } | null | undefined;
@@ -63,8 +63,7 @@ export const useExploreMapViewport = ({
   }, [exploreMapCenter, handleFocusMapLocation]);
 
   useEffect(() => {
-    const navState = locationState as { showExploreLocationPrompt?: boolean } | null;
-    if (user && navState?.showExploreLocationPrompt && shouldShowExploreLocationPrompt()) {
+    if (user && shouldOpenExploreLocationPromptFromWelcome(locationState)) {
       setLocationPromptOpen(true);
       navigate({ pathname, search }, { replace: true, state: null });
     }

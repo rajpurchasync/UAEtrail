@@ -12,6 +12,7 @@ import {
   PRODUCT_SIGNUP_FINISH_SUBLINE,
   PRODUCT_SIGNUP_FINISH_TITLE,
 } from '../content/productNorthStar';
+import { EXPLORE_WELCOME_FINISH_STATE } from '../utils/exploreWelcomeNavigation';
 
 type WelcomeLocationState = {
   redirectTo?: string;
@@ -32,7 +33,7 @@ export const WelcomeSignup = () => {
   } | null>(null);
 
   const goToMap = () => {
-    navigate(redirectTo, { replace: true, state: { showExploreLocationPrompt: true } });
+    navigate(redirectTo, { replace: true, state: EXPLORE_WELCOME_FINISH_STATE });
   };
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export const WelcomeSignup = () => {
       .getMeProfile()
       .then((res) => {
         if (isSignupProfileComplete(res.data)) {
-          navigate(redirectTo, { replace: true, state: { showExploreLocationPrompt: true } });
+          navigate(redirectTo, { replace: true, state: EXPLORE_WELCOME_FINISH_STATE });
           return;
         }
         setProfileDraft(res.data);

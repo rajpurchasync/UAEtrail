@@ -163,3 +163,5 @@
 | 2026-09-24 | Member signup profile wizard + profile/settings alignment + route gate (Phase 8) |
 | 2026-09-24 | Frontend API alias burn-down: domain methods on `domains/*`, `legacyApi.ts`, `apiLegacyGuard`, slim domain modules |
 | 2026-09-24 | Organisation activity payload/menu canonical names; deprecated Host export shims for knip/compat |
+| 2026-09-25 | Explore shell hooks: compose route, map viewport, selection/join; `ExploreExperience` ~280 lines |
+| 2026-09-25 | Welcome → explore location prompt: `exploreWelcomeNavigation` helper + unit tests |

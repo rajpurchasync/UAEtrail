@@ -12,7 +12,7 @@ Run on **`experiment-ui`** with local API + seed (`npm run dev:local` or `dev:al
 1. Sign in as incomplete member (e.g. `visitor2@` / seed password).
 2. Confirm redirect to **`/welcome`** (signup profile wizard), not `/explore`.
 3. Complete all wizard steps (DOB, gender, emirate, languages) and finish.
-4. Confirm landing on **`/explore`** with **location prompt** (allow/dismiss) when preference allows — see `shouldShowExploreLocationPrompt()` and welcome → explore navigation state.
+4. Confirm landing on **`/explore`** with **location prompt** (allow/dismiss) when preference allows — contract: `EXPLORE_WELCOME_FINISH_STATE` + `shouldOpenExploreLocationPromptFromWelcome()` (see `exploreWelcomeNavigation.test.ts`).
 5. Open **Profile → Settings** (member details) and edit one field (e.g. languages); save.
 6. Confirm no forced return to `/welcome` after save (signup gate query invalidated).
 
