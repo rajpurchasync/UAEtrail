@@ -150,6 +150,26 @@ export const parseExploreCompose = (
   return null;
 };
 
+export const hasLegacyExploreComposeParams = (searchParams: URLSearchParams): boolean =>
+  searchParams.has('request') ||
+  searchParams.has('contribute') ||
+  searchParams.get('addLocation') === '1';
+
+/**
+ * Rewrite legacy `request` / `contribute` / `addLocation` into canonical `compose=`.
+ * Returns null when no migration is needed or params are not parseable.
+ */
+export const migrateLegacyExploreComposeParams = (
+  searchParams: URLSearchParams
+): URLSearchParams | null => {
+  if (!hasLegacyExploreComposeParams(searchParams)) return null;
+  const parsed = parseExploreCompose(searchParams);
+  if (!parsed) return null;
+  const params = new URLSearchParams(searchParams);
+  setExploreComposeParam(params, parsed);
+  return params;
+};
+
 export const setExploreComposeParam = (params: URLSearchParams, route: ExploreCompose): void => {
   params.set(COMPOSE_QUERY_KEY, formatComposeQuery(route));
   params.delete('request');

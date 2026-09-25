@@ -7,6 +7,7 @@ import {
   isComposeMenu,
   isFindWizard,
   isOrganizeWizard,
+  migrateLegacyExploreComposeParams,
   parseExploreCompose,
   setExploreComposeParam,
   type ExploreCompose,
@@ -58,16 +59,9 @@ export const useExploreComposeRoute = ({
   }, [setComposeRoute]);
 
   useEffect(() => {
-    const hasLegacy =
-      searchParams.has('request') ||
-      searchParams.has('contribute') ||
-      searchParams.get('addLocation') === '1';
-    if (!hasLegacy) return;
-    const parsed = parseExploreCompose(searchParams);
-    if (!parsed) return;
-    const params = new URLSearchParams(searchParams);
-    setExploreComposeParam(params, parsed);
-    setSearchParams(params, { replace: true });
+    const migrated = migrateLegacyExploreComposeParams(searchParams);
+    if (!migrated) return;
+    setSearchParams(migrated, { replace: true });
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {

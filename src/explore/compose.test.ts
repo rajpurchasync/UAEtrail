@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   clearExploreComposeParams,
   formatComposeQuery,
+  migrateLegacyExploreComposeParams,
   parseExploreCompose,
   setExploreComposeParam,
 } from './compose';
@@ -48,5 +49,15 @@ describe('explore compose routing', () => {
 
     clearExploreComposeParams(params);
     expect(params.toString()).toBe('');
+  });
+
+  it('migrateLegacyExploreComposeParams canonicalizes legacy keys', () => {
+    expect(migrateLegacyExploreComposeParams(new URLSearchParams('filter=all'))).toBeNull();
+
+    const migrated = migrateLegacyExploreComposeParams(new URLSearchParams('request=1&q=hike'));
+    expect(migrated).not.toBeNull();
+    expect(migrated!.get('compose')).toBe('find');
+    expect(migrated!.has('request')).toBe(false);
+    expect(migrated!.get('q')).toBe('hike');
   });
 });
