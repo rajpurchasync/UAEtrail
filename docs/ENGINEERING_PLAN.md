@@ -168,3 +168,4 @@
 | 2026-09-25 | Explore compose route auth: `exploreComposeRouteGuard` + `hostWizardFlow` step tests |
 | 2026-09-25 | Phase 9 manual smoke doc maps manual steps → frontend unit tests |
 | 2026-09-25 | Legacy explore compose query keys migrate via `migrateLegacyExploreComposeParams` |
+| 2026-09-25 | `becomeHostSurfaceGuard.test.ts` — block duplicate BecomeOrganisation page/wizard modules |

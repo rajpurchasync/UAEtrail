@@ -338,6 +338,7 @@ Rename **folder** (optional, one PR):
 - [x] Deleted `components/host/` duplicate tree and unrouted legacy pages (`Host*`, `OperatorProfile`, `AdminLocations`, `MerchantDashboard`).
 - [x] Removed zero-import shims (`hostLinks`, `useHostGate`, `useHostHubData`, `useHostActivityFormModal`, `becomeHostFlow/Form` files, account `HostHubSections` shim).
 - [x] Canonical page file: `BecomeOrganisation.tsx` (routes `/become-host`, `/become-organizer` unchanged).
+- [x] **experiment-ui (2026-09):** Consumer surface is `BecomeHost.tsx` + `BecomeHostFlow.tsx`; duplicate Organisation page/mobile wizard removed (`becomeHostSurfaceGuard.test.ts`).
 - [x] Console nav constant: `HOST_CONSOLE_LINKS` (deprecated alias `ORGANISATION_CONSOLE_LINKS`).
 - [x] UI residue sweep: `TenantSwitcher`, activity forms, admin panels, privacy/FAQs.
 
@@ -351,6 +352,7 @@ Rename **folder** (optional, one PR):
 
 - [x] Activity forms: `hostTenants`, `canPickHostTenant`, `pickerHostTenants`, `eventHostName`.
 - [x] Become-host form: canonical `BecomeOrganisationFormState`, `buildBecomeOrganisationFormPrefill`.
+- [x] **experiment-ui:** canonical `BecomeHostFormState` in `becomeHostForm.ts` (Organisation names deprecated aliases only).
 - [x] Auth signup: `hostName` param (wire: `organizationName`).
 - [x] Menu/auth utils: `isHostConsoleRole`, `hostConsoleRoles`, `askHost`.
 - [x] Profile helpers: canonical `resolveProfileHostKind`.
