@@ -11,6 +11,7 @@ import {
   setExploreComposeParam,
   type ExploreCompose,
 } from '../compose';
+import { resolveComposeRouteChange } from '../exploreComposeRouteGuard';
 import { explorePath } from '../routing';
 
 type UseExploreComposeRouteArgs = {
@@ -90,22 +91,17 @@ export const useExploreComposeRoute = ({
 
   const handleComposeRouteChange = useCallback(
     (route: ExploreCompose | null) => {
-      if (route && isOrganizeWizard(route)) {
-        if (!user) {
-          navigate(signInPathForReturn(explorePath({ compose: route })));
-          return;
-        }
-        if (hostGateLoading) return;
-        if (!canPublish) {
-          navigate('/become-host');
-          return;
-        }
-      }
-      if (route && (isFindWizard(route) || isAddWizard(route)) && !user) {
-        navigate(signInPathForReturn(explorePath({ compose: route })));
+      const decision = resolveComposeRouteChange(route, { user, hostGateLoading, canPublish });
+      if (decision.type === 'sign-in') {
+        navigate(decision.href);
         return;
       }
-      setComposeRoute(route);
+      if (decision.type === 'become-host') {
+        navigate('/become-host');
+        return;
+      }
+      if (decision.type === 'blocked') return;
+      setComposeRoute(decision.route);
     },
     [user, hostGateLoading, canPublish, navigate, setComposeRoute]
   );
