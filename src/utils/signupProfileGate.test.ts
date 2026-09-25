@@ -17,6 +17,20 @@ describe('signupProfileGate', () => {
   it('exempts welcome path only', () => {
     expect(isSignupProfileGateExemptPath(SIGNUP_PROFILE_WELCOME_PATH)).toBe(true);
     expect(isSignupProfileGateExemptPath('/explore')).toBe(false);
+    expect(isSignupProfileGateExemptPath('/profile/settings')).toBe(false);
+  });
+
+  it('does not re-force welcome when profile stays complete after an edit', () => {
+    const complete = {
+      dateOfBirth: '1990-01-01',
+      gender: 'male' as const,
+      city: 'dubai',
+      languages: 'English',
+    };
+    expect(shouldForceSignupWelcome('participant', complete)).toBe(false);
+    expect(
+      shouldForceSignupWelcome('participant', { ...complete, languages: 'English, Arabic' })
+    ).toBe(false);
   });
 
   it('forces welcome when gated role profile is incomplete', () => {

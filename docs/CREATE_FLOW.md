@@ -228,9 +228,10 @@ Do **not** ship Event organize with RSVP marketing until Phase C exists.
 | Concern | File(s) |
 |---------|---------|
 | Copy + route contract | `src/explore/compose.ts` |
+| Compose auth gates | `src/explore/exploreComposeRouteGuard.ts` |
 | Explore URL helpers | `src/explore/routing.ts` (`explorePath`, `compose=â€¦`) |
 | FAB entry | `CreateIntentSheet.tsx` |
-| Shell | `ExploreExperience.tsx` â€” reads `parseExploreCompose(searchParams)` |
+| Shell | `ExploreExperience.tsx` â€” orchestration; hooks `useExploreComposeRoute`, `useExploreMapViewport`, `useExploreSelectionActions` |
 | Organize wizard | `CreateActivityFlow.tsx`, `organizeFlow.ts` |
 | Find wizard | `CreateDemandFlow.tsx`, `demandFlow.ts` |
 | Add wizard | `CreateIntentSheet.tsx` (submenu), `CreateContributeFlow.tsx`, `contributeFlow.ts` |

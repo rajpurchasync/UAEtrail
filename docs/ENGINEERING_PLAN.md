@@ -137,7 +137,7 @@
 - [x] Explore shell: `ExploreMapStage`, `useExploreBrowseList`, `exploreMapPinModel`, `useExploreBrowseUrlState`, `useExploreFulfillIntent`, `useExploreComposeRoute`, `useExploreMapViewport`, `useExploreSelectionActions`
 - [x] Become-host: canonical `BecomeHost` page + `BecomeHostFlow`; profile chips route to `/become-host?intent=…` (no duplicate modal wizard)
 - [x] Host wizard modules: `becomeHostForm.ts`, `hostWizardFlow.ts` (UI: `BecomeHostFlow.tsx`)
-- [ ] Manual smoke: incomplete member → `/welcome` → explore location prompt → settings edit — [`experiment/PHASE9_MANUAL_SMOKE.md`](./experiment/PHASE9_MANUAL_SMOKE.md)
+- [ ] Manual smoke: incomplete member → `/welcome` → explore location prompt → settings edit — [`experiment/PHASE9_MANUAL_SMOKE.md`](./experiment/PHASE9_MANUAL_SMOKE.md) (automated contracts in same doc § CI)
 
 ---
 
@@ -166,3 +166,4 @@
 | 2026-09-25 | Explore shell hooks: compose route, map viewport, selection/join; `ExploreExperience` ~280 lines |
 | 2026-09-25 | Welcome → explore location prompt: `exploreWelcomeNavigation` helper + unit tests |
 | 2026-09-25 | Explore compose route auth: `exploreComposeRouteGuard` + `hostWizardFlow` step tests |
+| 2026-09-25 | Phase 9 manual smoke doc maps manual steps → frontend unit tests |

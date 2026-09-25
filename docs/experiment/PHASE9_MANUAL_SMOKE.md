@@ -23,3 +23,17 @@ Run on **`experiment-ui`** with local API + seed (`npm run dev:local` or `dev:al
 - Settings edit does not re-lock the app on `/welcome`.
 
 Mark complete in `docs/ENGINEERING_PLAN.md` Phase 9 when this checklist passes in QA.
+
+## Automated coverage (CI)
+
+Run `npm run test:frontend`. These tests guard the contracts below; they do **not** replace the browser pass above.
+
+| Manual step | Contract | Test file |
+|-------------|----------|-----------|
+| 2 — gate to `/welcome` | `needsSignupProfileGate`, `shouldForceSignupWelcome`, exempt paths | `signupProfileGate.test.ts` |
+| 3 — wizard completeness | `isSignupProfileComplete`, step order | `signupProfileSteps.test.ts` |
+| 4 — explore location prompt | `EXPLORE_WELCOME_FINISH_STATE`, prefs | `exploreWelcomeNavigation.test.ts`, `exploreMapLocationPreference.test.ts` |
+| 6 — settings save stays unlocked | Complete profile does not re-force welcome | `signupProfileGate.test.ts` |
+| Explore compose (regression) | Organize sign-in / become-host gates | `exploreComposeRouteGuard.test.ts` |
+
+Gate query invalidation after profile save is implemented in `ProfileMemberDetailsCard`, `SignupProfileWizard`, and `Profile.tsx` via `meProfileSignupGateKey` — verify step 6 manually.
