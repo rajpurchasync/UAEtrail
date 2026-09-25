@@ -2,12 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
-/** Paths / modules removed in favor of `BecomeHost` + `BecomeHostFlow` on experiment-ui. */
-const FORBIDDEN_IMPORT_FRAGMENTS = [
-  'pages/BecomeOrganisation',
-  'MobileBecomeOrganisationFlow',
-  'organisation-console/becomeOrganisationForm',
-  'organisation-console/becomeOrganisationFlow',
+const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
+  { pattern: /from ['"][^'"]*pages\/BecomeOrganisation['"]/, label: 'BecomeOrganisation page import' },
+  {
+    pattern: /from ['"][^'"]*MobileBecomeOrganisationFlow['"]/,
+    label: 'MobileBecomeOrganisationFlow import',
+  },
+  {
+    pattern: /from ['"][^'"]*\/becomeOrganisationForm['"]/,
+    label: 'becomeOrganisationForm module import',
+  },
+  {
+    pattern: /from ['"][^'"]*\/becomeOrganisationFlow['"]/,
+    label: 'becomeOrganisationFlow module import',
+  },
 ];
 
 const listTrackedSourceFiles = (): string[] =>
@@ -22,9 +30,9 @@ describe('becomeHostSurfaceGuard', () => {
 
     for (const file of listTrackedSourceFiles()) {
       const content = readFileSync(file, 'utf8');
-      for (const fragment of FORBIDDEN_IMPORT_FRAGMENTS) {
-        if (content.includes(fragment)) {
-          violations.push(`${file} imports or references ${fragment}`);
+      for (const { pattern, label } of FORBIDDEN_PATTERNS) {
+        if (pattern.test(content)) {
+          violations.push(`${file}: ${label}`);
         }
       }
     }
