@@ -9,6 +9,7 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getTenantProfile\b/, hint: 'Use api.getOrganisationProfile' },
   { pattern: /\bapi\.getUserPublicProfile\b/, hint: 'Use api.getPersonPublicProfile' },
   { pattern: /\bapi\.getHostSubmittedPlaces\b/, hint: 'Use api.getOrganisationSubmittedPlaces' },
+  { pattern: /\bapi\.getHostSubmittedLocations\b/, hint: 'Use api.getOrganisationSubmittedPlaces' },
   { pattern: /\bapi\.(create|publish|list|update|cancel|duplicate)HostActivity\b/, hint: 'Use *OrganisationActivity' },
   { pattern: /\bapi\.(getHostRequests|decideHostRequest|getHostTeam)\b/, hint: 'Use Organisation* join/team methods' },
   { pattern: /\bapi\.(getMyHostStatus|getMyHostApplication|submitHostApplication)\b/, hint: 'Use getMyOrganisation* / submitOrganisationApplication' },

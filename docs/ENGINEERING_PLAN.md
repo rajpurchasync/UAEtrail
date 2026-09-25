@@ -38,6 +38,7 @@
 - [x] `docs/ENGINEERING_PLAN.md` (this file)
 - [x] Legacy redirect table in `NAVIGATION.md`
 - [x] ESLint: `src/explore/**` must not import `utils/exploreRouting` shim
+- [x] `src/explore/exploreModuleBoundary.test.ts` — same rule in CI
 - [x] `src/content/copyGuard.test.ts` — block hardcoded guest CTAs in consumer surfaces
 
 ---
@@ -169,3 +170,4 @@
 | 2026-09-25 | Phase 9 manual smoke doc maps manual steps → frontend unit tests |
 | 2026-09-25 | Legacy explore compose query keys migrate via `migrateLegacyExploreComposeParams` |
 | 2026-09-25 | `becomeHostSurfaceGuard.test.ts` — block duplicate BecomeOrganisation page/wizard modules |
+| 2026-09-25 | Explore boundary + activity payload legacy guards in frontend tests |
