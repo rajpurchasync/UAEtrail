@@ -79,7 +79,7 @@ export const MemberDateOfBirthField = ({
         } disabled:opacity-60`}
       >
         <span className={display ? 'font-semibold text-neutral-900' : 'text-neutral-400'}>
-          {display ?? 'Select your date of birth'}
+          {display ?? PRODUCT_SIGNUP_STEP_DOB}
         </span>
         <CalendarDays className="h-5 w-5 shrink-0 text-emerald-600" strokeWidth={2.25} aria-hidden />
       </button>

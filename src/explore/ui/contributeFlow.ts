@@ -20,6 +20,7 @@ export type ContributeFlowStepId =
 export type ContributeDraft = {
   kind: ContributeVenueKind | null;
   title: string;
+  emirate: string;
   latitude: number | null;
   longitude: number | null;
   locationPinPlaced: boolean;
@@ -133,6 +134,7 @@ export const contributeDescriptionPlaceholder = (kind: ContributeVenueKind): str
 export const emptyContributeDraft = (): ContributeDraft => ({
   kind: null,
   title: '',
+  emirate: 'Dubai',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
   longitude: MAP_CONFIG.exploreDefaultCenter.lng,
   locationPinPlaced: false,
@@ -162,6 +164,7 @@ export const validateContributeStep = (
       if (!draft.title.trim()) return 'Enter a title.';
       return null;
     case 'location':
+      if (!draft.emirate.trim()) return 'Choose the emirate / state.';
       if (!draft.locationPinPlaced || draft.latitude == null || draft.longitude == null) {
         return kind === 'hiking' ? 'Pin the trail start on the map.' : 'Pin the location on the map.';
       }
@@ -230,8 +233,8 @@ export const publishContributeVenue = async (
   const payload: Record<string, unknown> = {
     name: draft.title.trim(),
     countryCode: DEFAULT_COUNTRY,
-    emirate: 'Dubai',
-    region: 'Dubai',
+    emirate: draft.emirate.trim(),
+    region: draft.emirate.trim(),
     activityType,
     description: draft.description.trim(),
     latitude: draft.latitude ?? undefined,

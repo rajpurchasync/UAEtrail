@@ -62,20 +62,21 @@ export const HomeLiveActivityRail = ({
 }: HomeLiveActivityRailProps) => (
   <section className="bg-white pb-6 pt-5 md:py-14" aria-label="Activities on the map">
     <LandingShell>
-      <header className="min-w-0 flex-1 text-center md:text-left">
-        <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 md:justify-start">
+      <header className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 text-center md:text-left">
           <h2 className="landing-section-title">{HOME_LIVE_SECTION.title}</h2>
-          {fromLiveApi && !loading ? (
-            <span className="landing-live-badge shrink-0" aria-label="Live listings">
-              Live
-            </span>
-          ) : null}
+          <p className={`landing-section-lead ${fromLiveApi ? 'hidden md:block' : ''}`}>
+            {fromLiveApi
+              ? HOME_LIVE_SECTION.subtitle
+              : 'Sample outings — open the map for live listings.'}
+          </p>
         </div>
-        <p className={`landing-section-lead ${fromLiveApi ? 'hidden md:block' : ''}`}>
-          {fromLiveApi
-            ? HOME_LIVE_SECTION.subtitle
-            : 'Sample outings — open the map for live listings.'}
-        </p>
+        <Link
+          to={EXPLORE_MAP_PATH}
+          className="landing-text-cta shrink-0 pt-0.5 md:pt-1"
+        >
+          {HOME_LIVE_SECTION.viewAllLabel}
+        </Link>
       </header>
 
       {loading ? (
@@ -93,11 +94,6 @@ export const HomeLiveActivityRail = ({
           ))}
         </div>
       )}
-
-      <Link to={EXPLORE_MAP_PATH} className="landing-text-cta mx-auto mt-4 flex items-center gap-1 md:mx-0 md:mt-5 md:inline-flex">
-        See everything on the map
-        <ArrowRight className="h-4 w-4" aria-hidden />
-      </Link>
     </LandingShell>
   </section>
 );

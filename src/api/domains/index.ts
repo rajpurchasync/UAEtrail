@@ -1,4 +1,5 @@
 export { placeApi } from './places';
+export { fetchPlaceRegistry, type PlaceRegistryQuery } from './placeRegistry';
 export { exploreApi } from './explore';
 export { rewardsApi } from './rewards';
 export { activitiesApi } from './activities';

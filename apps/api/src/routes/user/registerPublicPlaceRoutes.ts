@@ -15,6 +15,8 @@ import { listActiveLocations } from '../../lib/location-query.js';
 import { buildActivityDto, toLocationDto } from '../../lib/mappers.js';
 import { paginatedResponse } from '../../lib/pagination.js';
 import { registerPlaceAlias } from '../../lib/route-place-alias.js';
+import { buildPlaceRegistry } from '../../services/place-registry.js';
+import { UserRole } from '../../domain/enums.js';
 import { getStripe, isStripeConfigured } from '../../lib/stripe.js';
 import {
   assertPremiumAccess,
@@ -28,7 +30,7 @@ import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { optionalAuth } from '../../middleware/optional-auth.js';
 import { viewLimiter } from '../../middleware/rate-limit-instances.js';
 import { validate } from '../../middleware/validate.js';
-import { eventIdParamSchema, listFilterSchema } from './schemas.js';
+import { eventIdParamSchema, listFilterSchema, placeRegistryQuerySchema } from './schemas.js';
 
 const locationDetailPath = (location: { id: string; activityType: ActivityType }) => {
   if (location.activityType === ActivityType.CAMPING) return `/camp/${location.id}`;
@@ -78,6 +80,29 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
       next(error);
     }
   });
+
+  registerPlaceAlias(
+    router,
+    'get',
+    '/places/registry',
+    optionalAuth,
+    validate({ query: placeRegistryQuerySchema }),
+    async (req, res, next) => {
+      try {
+        const filters = req.query as z.infer<typeof placeRegistryQuerySchema>;
+        const platformAdmin = req.auth?.role === UserRole.PLATFORM_ADMIN;
+        const data = await buildPlaceRegistry({
+          activityType: filters.activityType,
+          countryCode: filters.countryCode,
+          userId: req.auth?.userId ?? null,
+          platformAdmin,
+        });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
 
   registerPlaceAlias(router, 'get', '/locations/popular', async (req, res, next) => {
     try {

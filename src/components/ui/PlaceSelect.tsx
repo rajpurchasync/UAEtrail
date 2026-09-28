@@ -55,12 +55,11 @@ export const PlaceSelect = ({
       return;
     }
     try {
-      const [publicRes, pendingRes] = await Promise.all([
-        api.getPublicPlaces(),
-        tenantId ? api.getOrganisationSubmittedPlaces(tenantId) : Promise.resolve({ data: [] as PlaceDTO[] }),
-      ]);
-      setActiveLocations(publicRes.data);
-      setPendingLocations(pendingRes.data.filter((l) => l.status === 'draft'));
+      const merged = await api.fetchPlaceRegistry({
+        placeType: activityType,
+      });
+      setActiveLocations(merged.filter((place) => place.status !== 'draft'));
+      setPendingLocations(merged.filter((place) => place.status === 'draft'));
     } catch {
       /* non-critical */
     }

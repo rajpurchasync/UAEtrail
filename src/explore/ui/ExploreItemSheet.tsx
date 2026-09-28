@@ -14,7 +14,9 @@ interface ExploreItemSheetProps {
   joinUiState?: JoinRequestUiState;
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
-  onFocusMapLocation?: (coords: { lat: number; lng: number }) => void;
+  showCarpoolLink?: boolean;
+  onLinkCarpool?: () => void;
+  carpoolLinkLoading?: boolean;
 }
 
 export const ExploreItemSheet = ({
@@ -27,7 +29,9 @@ export const ExploreItemSheet = ({
   joinUiState,
   onWithdraw,
   joinStateLoading = false,
-  onFocusMapLocation,
+  showCarpoolLink = false,
+  onLinkCarpool,
+  carpoolLinkLoading = false,
 }: ExploreItemSheetProps) => (
   <div
     className={`${EXPLORE_PEEK.position} lg:fixed lg:inset-0 ${EXPLORE_Z.peekCard} lg:flex lg:items-center lg:justify-center ${EXPLORE_SHEET.scrim} lg:p-6 lg:pb-6`}
@@ -42,7 +46,6 @@ export const ExploreItemSheet = ({
       <ExploreMapPeekCard
         card={card}
         onClose={onClose}
-        onFocusMapLocation={onFocusMapLocation}
         pinFooter
         footer={
           <ExploreItemPeekFooter
@@ -52,6 +55,9 @@ export const ExploreItemSheet = ({
             onMessage={onMessage}
             onFulfillIntent={onFulfillIntent}
             onManage={onManage}
+            showCarpoolLink={showCarpoolLink}
+            onLinkCarpool={onLinkCarpool}
+            carpoolLinkLoading={carpoolLinkLoading}
             joinUiState={joinUiState}
             onWithdraw={onWithdraw}
             joinStateLoading={joinStateLoading}

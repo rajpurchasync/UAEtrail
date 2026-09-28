@@ -522,6 +522,34 @@ const backfillParticipantSlotsUsed = async (db: Db): Promise<void> => {
   }
 };
 
+/** Mark legacy map-pin rows as activity anchors; default missing field to catalog-listed. */
+const backfillLocationRegistryListed = async (db: Db): Promise<void> => {
+  const locations = db.collection('locations');
+
+  const anchorResult = await locations.updateMany(
+    {
+      registryListed: { $exists: false },
+      $or: [
+        { name: { $regex: /^Map spot /i } },
+        { description: { $regex: /Pinned .* location on the UAE Trail map/i } },
+        { description: { $regex: /^Activity location for /i } },
+      ],
+    },
+    { $set: { registryListed: false } }
+  );
+
+  const catalogResult = await locations.updateMany(
+    { registryListed: { $exists: false } },
+    { $set: { registryListed: true } }
+  );
+
+  if (anchorResult.modifiedCount > 0 || catalogResult.modifiedCount > 0) {
+    console.log(
+      `[mongo] Backfilled registryListed (${anchorResult.modifiedCount} activity anchors, ${catalogResult.modifiedCount} catalog defaults)`
+    );
+  }
+};
+
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENTS, COLLECTIONS.ACTIVITIES);
@@ -549,4 +577,5 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await collapseOrderLineItemsIntoShopOrders(db);
   await migrateParticipantIntentIdsToString(db);
   await migrateActivityTerminologyValues(db);
+  await backfillLocationRegistryListed(db);
 };

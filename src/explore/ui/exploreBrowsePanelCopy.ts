@@ -28,18 +28,17 @@ export const VENUE_LIST_FILTERS: Array<{ key: VenueListFilterKey; label: string 
 
 export const PANEL_TABS: Array<{ key: ExplorePanel; label: string }> = [
   { key: 'activities', label: 'Activities' },
-  { key: 'venues', label: 'Venues' },
-  { key: 'shops', label: 'Shops' },
+  { key: 'venues', label: 'Places' },
 ];
 
 export const DESKTOP_BROWSE_TABS: Array<{ key: DesktopBrowseTab; label: string }> = [
   { key: 'activities', label: 'Activities' },
-  { key: 'venues', label: 'Venues' },
+  { key: 'venues', label: 'Places' },
 ];
 
 export const MAP_FILTERS_BY_BROWSE_TAB: Record<DesktopBrowseTab, MapFilterKey[]> = {
-  activities: ['all', 'hiking', 'camping', 'carpool', 'others', 'shops'],
-  venues: ['all', 'hiking', 'camping', 'others', 'shops'],
+  activities: ['all', 'hiking', 'camping', 'carpool', 'others'],
+  venues: ['all', 'hiking', 'camping', 'shops'],
 };
 
 export const parseDesktopBrowseTab = (panel: ExplorePanel): DesktopBrowseTab =>
@@ -54,11 +53,11 @@ const listItemLabel = (activityFilter: ActivityListFilterKey, count: number): st
 };
 
 const venueListLabel = (venueFilter: VenueListFilterKey, count: number): string => {
-  if (venueFilter === 'hiking') return `${count} hiking venue${count === 1 ? '' : 's'} in your area`;
-  if (venueFilter === 'camping') return `${count} camping spot${count === 1 ? '' : 's'} in your area`;
+  if (venueFilter === 'hiking') return `${count} trail${count === 1 ? '' : 's'}`;
+  if (venueFilter === 'camping') return `${count} spot${count === 1 ? '' : 's'}`;
+  if (venueFilter === 'shop') return `${count} shop${count === 1 ? '' : 's'}`;
   if (venueFilter === 'event') return `${count} event venue${count === 1 ? '' : 's'} in your area`;
-  if (venueFilter === 'shop') return `${count} shop${count === 1 ? '' : 's'} in your area`;
-  return `${count} venue${count === 1 ? '' : 's'} in your area`;
+  return `${count} place${count === 1 ? '' : 's'}`;
 };
 
 export const panelListTitle = (
@@ -80,7 +79,7 @@ export const desktopBrowseListTitle = (tab: DesktopBrowseTab, count: number, map
 };
 
 export const desktopSearchPlaceholder = (tab: DesktopBrowseTab): string =>
-  tab === 'venues' ? 'Search venues…' : 'Search activities…';
+  tab === 'venues' ? 'Search places & shops…' : 'Search outings…';
 
 export const panelSearchPlaceholder = (panel: ExplorePanel): string => {
   if (panel === 'venues') return 'Search places…';
@@ -101,9 +100,9 @@ export const browseListEmptyMessage = (input: {
 }): string => {
   const { isDesktop, desktopBrowseTab, sidebarPanel, emptyFiltersCopy } = input;
   if (isDesktop) {
-    return desktopBrowseTab === 'venues' ? 'No venues match this filter yet.' : emptyFiltersCopy;
+    return desktopBrowseTab === 'venues' ? 'No places match this filter yet.' : emptyFiltersCopy;
   }
-  if (sidebarPanel === 'venues') return 'No venues match this filter yet.';
-  if (sidebarPanel === 'shops') return 'No gear shops listed yet.';
+  if (sidebarPanel === 'venues') return 'No places match this filter yet.';
+  if (sidebarPanel === 'shops') return 'No shops match this filter yet.';
   return emptyFiltersCopy;
 };

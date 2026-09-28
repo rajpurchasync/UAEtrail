@@ -39,6 +39,7 @@ export type LocationCreateData = {
   guideMarkdown: string | null;
   season: string[];
   status: LocationStatus;
+  registryListed: boolean;
   submittedBy: { connect: { id: string } };
 };
 
@@ -70,6 +71,7 @@ export const buildLocationCreateData = (
   guidePdfKey: body.guidePdfKey ?? null,
   guideMarkdown: body.guideMarkdown ?? null,
   season: ['year-round'],
-  status: body.mapPin ? LocationStatus.ACTIVE : LocationStatus.DRAFT,
+  status: body.mapPin || body.activityAnchor ? LocationStatus.ACTIVE : LocationStatus.DRAFT,
+  registryListed: body.mapPin || body.activityAnchor ? false : false,
   submittedBy: { connect: { id: submittedById } }
 });

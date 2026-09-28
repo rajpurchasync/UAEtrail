@@ -129,6 +129,12 @@ export const listFilterSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20).optional()
 });
 
+/** Venue picker registry — published places plus caller-specific drafts/admin rows. */
+export const placeRegistryQuerySchema = listFilterSchema.pick({
+  activityType: true,
+  countryCode: true,
+});
+
 export const userBriefParamSchema = z.object({ userId: z.string().min(1) });
 
 export const pushSubscriptionSchema = z.object({

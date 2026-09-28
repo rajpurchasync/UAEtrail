@@ -45,6 +45,7 @@ export type ExplorePresentationBuildInput = {
     activityType?: string;
     requirements?: string[] | null;
     participationMode?: ParticipationMode | null;
+    carPoolEnabled?: boolean;
   } | null;
 };
 
@@ -83,7 +84,7 @@ const resolveExploreHostLabel = (options: {
 export const HIKING_ACTIVITY_EMOJI = '🥾';
 
 /** Trail & hiking locations on the map. */
-export const HIKING_VENUE_EMOJI = '🧗';
+export const HIKING_VENUE_EMOJI = '⛰️';
 
 /** Scheduled camping activities on the map. */
 export const CAMPING_ACTIVITY_EMOJI = '🏕️';
@@ -91,18 +92,27 @@ export const CAMPING_ACTIVITY_EMOJI = '🏕️';
 /** Camping locations on the map. */
 export const CAMPING_VENUE_EMOJI = '⛺';
 
+/** “Looking for” / participant demand pins (hand raised). */
+export const DEMAND_EMOJI = '🙋';
+
+/** Scheduled rideshare activities and ride requests. */
+export const RIDESHARE_EMOJI = '🚗';
+
+/** Shop listings on the map. */
+export const SHOP_MAP_EMOJI = '🛍️';
+
 export const MAP_FILTER_EMOJI = {
   hiking: HIKING_ACTIVITY_EMOJI,
   camping: CAMPING_ACTIVITY_EMOJI,
   event: '🏃',
-  shop: '🛍️',
+  shop: SHOP_MAP_EMOJI,
   agency: '🏢',
-  carpool: '🚗',
+  carpool: RIDESHARE_EMOJI,
 } as const;
 
 export const MAP_LAYER_FILTER_EMOJI = {
   others: '🏃',
-  shops: '🛍️',
+  shops: SHOP_MAP_EMOJI,
 } as const;
 
 /** Resolve map item source; falls back to id prefix when source is missing from cache/API. */
@@ -126,6 +136,18 @@ export const resolveExploreItemSource = (
   return 'activity';
 };
 
+/** Map pin emoji source — id prefix wins so venues/demand are never mis-tagged. */
+export const resolveMapPinItemSource = (
+  item: Pick<ExplorePresentationBuildInput, 'id' | 'source'>
+): ExploreCardSource => {
+  const { id } = item;
+  if (id.startsWith('venue:')) return 'venue';
+  if (id.startsWith('demand:')) return 'demand';
+  if (id.startsWith('shop:')) return 'shop';
+  if (id.startsWith('agency:')) return 'agency';
+  return resolveExploreItemSource(item);
+};
+
 export const resolveMapPinEmoji = (
   kind: ExploreCardKind,
   source: ExploreCardSource = 'activity',
@@ -138,15 +160,18 @@ export const resolveMapPinEmoji = (
     return '📍';
   }
 
-  if (source === 'shop') return '🛍️';
+  if (source === 'shop') return SHOP_MAP_EMOJI;
   if (source === 'agency') return '🏢';
-  if (source === 'demand') return '🙋';
+  if (source === 'demand') {
+    if (kind === 'carpool') return RIDESHARE_EMOJI;
+    return DEMAND_EMOJI;
+  }
 
-  if (kind === 'carpool') return '🚗';
+  if (kind === 'carpool') return RIDESHARE_EMOJI;
   if (kind === 'hiking') return HIKING_ACTIVITY_EMOJI;
   if (kind === 'camping') return CAMPING_ACTIVITY_EMOJI;
   if (kind === 'event') return '🏃';
-  if (kind === 'shop') return '🛍️';
+  if (kind === 'shop') return SHOP_MAP_EMOJI;
   if (kind === 'agency') return '🏢';
   return '📍';
 };
@@ -570,6 +595,9 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
   push('location', location);
   push('time', when);
   push('spots', spots);
+  if (input.source === 'activity' && input.activity?.carPoolEnabled) {
+    push('route', 'Carpool available');
+  }
   if (activityTitle && !isLegacyAutoTitle(activityTitle, input.kind)) {
     push('route', activityTitle);
   }

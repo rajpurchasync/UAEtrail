@@ -30,12 +30,29 @@ export const createParticipantIntentSchema = z
     if ((body.kind === 'hiking' || body.kind === 'camping') && !body.preferredArea?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: body.kind === 'camping' ? 'Enter where you are going from.' : 'Enter a preferred area.',
+        message: 'Pick a preferred destination.',
         path: ['preferredArea'],
+      });
+    }
+    if (
+      (body.kind === 'hiking' || body.kind === 'camping') &&
+      (body.latitude == null || body.longitude == null)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Drop a going-from pin on the map.',
+        path: ['latitude'],
       });
     }
     if (body.kind !== 'other' && !body.date) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Pick a date.', path: ['date'] });
+    }
+    if (body.kind === 'event' && (body.latitude == null || body.longitude == null)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Drop a location pin on the map.',
+        path: ['latitude'],
+      });
     }
     if (body.kind === 'carpool') {
       if (body.latitude == null || body.longitude == null) {

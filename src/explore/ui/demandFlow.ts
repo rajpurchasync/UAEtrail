@@ -8,19 +8,28 @@ export type DemandKind = ParticipantIntentKind;
 export type DemandFlowStepId =
   | 'title'
   | 'when'
+  | 'destination'
   | 'to'
   | 'from'
   | 'area'
   | 'route'
   | 'persons'
+  | 'audience'
   | 'fitness'
   | 'requirements'
   | 'info'
+  | 'transport'
   | 'carpool'
   | 'comment'
   | 'review';
 
 export type DemandFitnessLevel = 'beginner' | 'medium' | 'goat';
+
+export type DemandVisibility = 'public' | 'private';
+
+export type DemandTransportMode = 'self' | 'carpool';
+
+export type DemandVehicleType = 'sedan' | 'suv' | '4x4' | 'van';
 
 export type DemandDraft = {
   kind: DemandKind | null;
@@ -28,6 +37,7 @@ export type DemandDraft = {
   date: string;
   time: string;
   timeMode: TimeMode;
+  /** Preferred emirate / region (hiking & camping). */
   preferredArea: string;
   latitude: number | null;
   longitude: number | null;
@@ -39,7 +49,14 @@ export type DemandDraft = {
   additionalInfo: string;
   carPoolNeeded: boolean;
   womenOnly: boolean;
+  childrenAllowed: boolean;
   petsAllowed: boolean;
+  visibility: DemandVisibility;
+  transportMode: DemandTransportMode | null;
+  selfVehicleType: DemandVehicleType | null;
+  carpoolSeatsNeeded: number;
+  destinationTimeMode: TimeMode;
+  destinationTime: string;
   requirementsOther: boolean;
   requirementsOtherNote: string;
   comment: string;
@@ -72,34 +89,44 @@ export const DEMAND_FITNESS_OPTIONS: Array<{
   { value: 'goat', title: 'GOAT', subtitle: 'Hard trails, fast pace' },
 ];
 
+export const DEMAND_SELF_VEHICLE_OPTIONS: Array<{ value: DemandVehicleType; title: string }> = [
+  { value: 'sedan', title: 'Sedan' },
+  { value: 'suv', title: 'SUV' },
+  { value: '4x4', title: '4x4' },
+  { value: 'van', title: 'Van' },
+];
+
 const HIKING_DEMAND_STEPS: DemandFlowStepId[] = [
   'title',
   'when',
-  'from',
+  'destination',
   'persons',
-  'fitness',
+  'audience',
+  'from',
   'info',
-  'carpool',
+  'transport',
   'review',
 ];
 
 const CAMPING_DEMAND_STEPS: DemandFlowStepId[] = [
   'title',
   'when',
-  'from',
+  'destination',
   'persons',
+  'audience',
+  'from',
   'info',
-  'carpool',
+  'transport',
   'review',
 ];
 
 const CARPOOL_DEMAND_STEPS: DemandFlowStepId[] = [
   'title',
   'when',
-  'to',
   'from',
+  'to',
   'persons',
-  'requirements',
+  'audience',
   'info',
   'review',
 ];
@@ -110,9 +137,15 @@ const EVENT_DEMAND_STEPS: DemandFlowStepId[] = [
   'area',
   'persons',
   'info',
-  'carpool',
   'review',
 ];
+
+export const usesHikingDemandFlow = (kind: DemandKind | null): boolean => kind === 'hiking';
+
+export const usesCampingDemandFlow = (kind: DemandKind | null): boolean => kind === 'camping';
+
+export const demandWhenShowsTime = (kind: DemandKind | null): boolean =>
+  kind === 'carpool' || kind === 'event';
 
 export const usesStructuredDemandFlow = (kind: DemandKind | null): boolean =>
   kind === 'hiking' || kind === 'camping';
@@ -144,7 +177,14 @@ export const emptyDemandDraft = (): DemandDraft => ({
   additionalInfo: '',
   carPoolNeeded: false,
   womenOnly: false,
+  childrenAllowed: false,
   petsAllowed: false,
+  visibility: 'public',
+  transportMode: null,
+  selfVehicleType: null,
+  carpoolSeatsNeeded: 2,
+  destinationTimeMode: 'flexible',
+  destinationTime: '09:00',
   requirementsOther: false,
   requirementsOtherNote: '',
   comment: '',
@@ -174,24 +214,26 @@ export const getDemandFlowSteps = (kind: DemandKind): DemandFlowStepId[] => {
 
 /** Sheet heading for each step (shown under the header). */
 export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): string => {
+  if (step === 'destination') return 'Preferred destination';
+  if (step === 'audience') return 'Looking for';
+  if (step === 'transport') return 'Transport';
+
   if (usesCarpoolDemandFlow(kind)) {
     switch (step) {
       case 'title':
         return 'Title';
       case 'when':
-        return 'Activity date & time';
+        return 'Preferred date & time';
       case 'to':
-        return 'Going to';
+        return 'Destination';
       case 'from':
         return 'Going from';
       case 'persons':
         return 'No of people';
-      case 'requirements':
-        return 'Special requirements';
       case 'info':
-        return 'Additional information';
+        return 'Additional info';
       case 'review':
-        return 'Preview & publish';
+        return 'Review & submit';
       default:
         return 'Request';
     }
@@ -204,38 +246,32 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): s
       case 'when':
         return 'Preferred date & time';
       case 'area':
-        return 'Location';
+        return 'Where';
       case 'persons':
         return 'No of people';
       case 'info':
         return 'Additional info';
-      case 'carpool':
-        return 'Carpool needed';
       case 'review':
-        return 'Preview & publish';
+        return 'Review & submit';
       default:
         return 'Request';
     }
   }
 
-  if (usesStructuredDemandFlow(kind)) {
+  if (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) {
     switch (step) {
       case 'title':
         return 'Title';
       case 'when':
-        return 'Preferred date & time';
+        return 'Preferred date';
       case 'from':
         return 'Going from';
       case 'persons':
         return 'No of people';
-      case 'fitness':
-        return 'Fitness level';
       case 'info':
         return 'Additional info';
-      case 'carpool':
-        return 'Carpool needed';
       case 'review':
-        return 'Preview & publish';
+        return 'Review & submit';
       default:
         return 'Request';
     }
@@ -330,32 +366,42 @@ export const demandAdditionalInfoPlaceholder = (kind: DemandKind): string => {
 const fitnessLevelLabel = (level: DemandFitnessLevel): string =>
   DEMAND_FITNESS_OPTIONS.find((option) => option.value === level)?.title ?? level;
 
-export const buildDemandComment = (draft: DemandDraft): string => {
-  if (draft.kind === 'carpool') {
-    const parts: string[] = [];
-    if (draft.womenOnly) parts.push('Women only');
-    if (draft.petsAllowed) parts.push('Pets allowed');
-    if (draft.requirementsOther && draft.requirementsOtherNote.trim()) {
-      parts.push(`Requirements: ${draft.requirementsOtherNote.trim()}`);
-    } else if (draft.requirementsOther) {
-      parts.push('Custom requirements');
-    }
-    if (draft.additionalInfo.trim()) parts.push(draft.additionalInfo.trim());
-    const combined = parts.filter(Boolean).join('\n').trim();
-    return combined.length >= 3 ? combined : 'Looking for a shared ride.';
-  }
+const vehicleLabel = (value: DemandVehicleType | null): string =>
+  DEMAND_SELF_VEHICLE_OPTIONS.find((option) => option.value === value)?.title ?? value ?? '';
 
+export const buildDemandComment = (draft: DemandDraft): string => {
   const parts: string[] = [];
-  if (draft.fitnessLevel) {
+
+  parts.push(draft.visibility === 'private' ? 'Private request' : 'Public request');
+
+  if (draft.womenOnly) parts.push('Women only');
+  if (draft.childrenAllowed) parts.push('Children in group');
+  if (draft.petsAllowed) parts.push('Traveling with pets');
+
+  if (draft.kind === 'hiking' && draft.fitnessLevel) {
     parts.push(`Fitness level: ${fitnessLevelLabel(draft.fitnessLevel)}`);
   }
+
+  if (draft.kind === 'carpool') {
+    if (draft.destinationTimeMode === 'flexible') {
+      parts.push('Destination time: flexible');
+    } else if (draft.destinationTime) {
+      parts.push(`Destination time: ${draft.destinationTime}`);
+    }
+  }
+
+  if (draft.kind === 'hiking' || draft.kind === 'camping') {
+    if (draft.transportMode === 'self' && draft.selfVehicleType) {
+      parts.push(`Transport: Self (${vehicleLabel(draft.selfVehicleType)})`);
+    } else if (draft.transportMode === 'carpool') {
+      parts.push(`Transport: Carpool needed (${draft.carpoolSeatsNeeded} people)`);
+    }
+  }
+
   if (draft.additionalInfo.trim()) {
     parts.push(draft.additionalInfo.trim());
   }
-  parts.push(draft.carPoolNeeded ? 'Carpool needed' : 'No carpool needed');
-  if (draft.comment.trim() && !usesOutdoorActivityDemandFlow(draft.kind)) {
-    parts.unshift(draft.comment.trim());
-  }
+
   const combined = parts.filter(Boolean).join('\n').trim();
   return combined.length >= 3 ? combined : 'Open to matching plans nearby.';
 };
@@ -371,19 +417,35 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
       }
       if (draft.title.trim().length < 3) return 'Please add a few more details (at least 3 characters).';
       return null;
-    case 'to':
-      if (!draft.toPinPlaced || draft.toLatitude == null || draft.toLongitude == null) {
-        return 'Choose a destination on the map.';
-      }
+    case 'destination':
+      if (!draft.preferredArea.trim()) return 'Choose a preferred destination.';
       return null;
     case 'from':
-      if (kind === 'carpool') {
+      if (kind === 'carpool' || usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) {
         if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
-          return 'Choose a leaving-from point on the map.';
+          return 'Drop a going-from pin on the map.';
         }
         return null;
       }
       if (!draft.preferredArea.trim()) return 'Enter where you are going from.';
+      return null;
+    case 'audience':
+      if (kind === 'hiking' && !draft.fitnessLevel) return 'Choose a fitness level.';
+      return null;
+    case 'transport':
+      if (!draft.transportMode) return 'Choose how you will get there.';
+      if (draft.transportMode === 'self' && !draft.selfVehicleType) return 'Choose your vehicle type.';
+      if (draft.transportMode === 'carpool' && draft.carpoolSeatsNeeded < 1) {
+        return 'Choose how many seats you need.';
+      }
+      return null;
+    case 'to':
+      if (!draft.toPinPlaced || draft.toLatitude == null || draft.toLongitude == null) {
+        return 'Choose a destination on the map.';
+      }
+      if (draft.destinationTimeMode === 'specific' && !draft.destinationTime) {
+        return 'Choose an arrival time.';
+      }
       return null;
     case 'requirements':
       if (draft.requirementsOther && !draft.requirementsOtherNote.trim()) {
@@ -413,7 +475,9 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
     }
     case 'when':
       if (!draft.date) return 'Pick a date.';
-      if (draft.timeMode === 'specific' && !draft.time) return 'Pick a time.';
+      if (demandWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time) {
+        return 'Pick a time.';
+      }
       return null;
     case 'route':
       if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
@@ -456,18 +520,21 @@ export type DemandSubmitResult = {
 export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSubmitResult> => {
   if (!draft.kind) throw new Error('Choose what you are looking for.');
 
-  const comment = usesGuidedDemandFlow(draft.kind)
-    ? buildDemandComment(draft)
-    : draft.comment.trim();
+  const comment = buildDemandComment(draft);
 
   const payload = {
     kind: draft.kind,
     title: draft.title.trim(),
     date: draft.kind === 'other' ? null : draft.date,
-    time: draft.kind === 'other' || draft.timeMode === 'flexible' ? null : draft.time,
+    time:
+      draft.kind === 'other' || !demandWhenShowsTime(draft.kind) || draft.timeMode === 'flexible'
+        ? null
+        : draft.time,
     preferredArea: draft.preferredArea.trim() || null,
-    latitude: draft.fromPinPlaced ? draft.latitude : draft.areaPinPlaced ? draft.latitude : null,
-    longitude: draft.fromPinPlaced ? draft.longitude : draft.areaPinPlaced ? draft.longitude : null,
+    latitude:
+      draft.fromPinPlaced || draft.areaPinPlaced ? draft.latitude : null,
+    longitude:
+      draft.fromPinPlaced || draft.areaPinPlaced ? draft.longitude : null,
     locationPrecision: draft.areaPinPlaced || draft.fromPinPlaced ? draft.locationPrecision : undefined,
     toLatitude: draft.toPinPlaced ? draft.toLatitude : null,
     toLongitude: draft.toPinPlaced ? draft.toLongitude : null,

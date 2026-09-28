@@ -11,6 +11,7 @@ import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/platform';
 import { buildSignInRedirect } from '../utils/authReturnContext';
 import { HomeDayTimeline } from '../components/home/HomeDayTimeline';
 import { HomeDesktopHero } from '../components/home/HomeDesktopHero';
+import { HomeHeroPreload } from '../components/home/HomeHeroPreload';
 import { HomeFounderStory } from '../components/home/HomeFounderStory';
 import { HomeLiveActivityRail } from '../components/home/HomeLiveActivityRail';
 import { HomeMarketingClose } from '../components/home/HomeMarketingClose';
@@ -46,6 +47,7 @@ export const Home = () => {
         image={DEFAULT_OG_IMAGE}
       />
       <JsonLd data={websiteSchema()} id="website" />
+      <HomeHeroPreload />
 
       <HomeMobileLaunch joinHref={joinHref} />
       <HomeDesktopHero joinHref={joinHref} signInHref={signInHref} />

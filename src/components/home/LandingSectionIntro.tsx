@@ -19,7 +19,11 @@ export const LandingSectionIntro = ({
 }: LandingSectionIntroProps) => (
   <header className={`text-center md:text-left ${className}`.trim()}>
     {eyebrow ? (
-      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700 md:hidden">{eyebrow}</p>
+      mobileTitleHidden ? (
+        <h2 className="landing-section-title md:hidden">{eyebrow}</h2>
+      ) : (
+        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700 md:hidden">{eyebrow}</p>
+      )
     ) : null}
     <h2 className={`landing-section-title ${mobileTitleHidden ? 'hidden md:block' : ''}`.trim()}>{title}</h2>
     {subtitle ? (

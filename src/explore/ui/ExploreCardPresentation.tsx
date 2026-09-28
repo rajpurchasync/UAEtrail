@@ -1,13 +1,12 @@
-import type { SyntheticEvent } from 'react';
-import { ChevronRight, Clock, MapPin, Route, Star, Tag, Users } from 'lucide-react';
+import { explorePersonRoleLabel, resolveParticipationMode } from '@uaetrail/shared-types';
+import { ChevronRight, Clock, MapPin, Navigation, Route, Star, Tag, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel, ExploreCardTone } from '../exploreCardModel';
 import { exploreCardToneTextClass } from '../exploreCardModel';
 import type { ExploreCardDetail, ExploreCardDetailIcon, ExploreCardSections } from '../exploreCopy';
 import { personProfilePath, resolveOrganisationProfilePath } from '../../utils/organisationLinks';
-import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
+import { buildGoogleDriveUrl } from '../../utils/mapLinks';
 import { capitalize } from '../../utils';
-import { explorePersonRoleLabel } from '@uaetrail/shared-types';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { ParticipantPreview } from '../../components/ui/ParticipantPreview';
 import { ExploreCardTypeIcon } from './ExploreCardTypeIcon';
@@ -101,21 +100,17 @@ export const ExploreCardRatingRow = ({
   );
 };
 
-export type MapFocusCoords = { lat: number; lng: number };
-
-/** Location label — city name plus a map action to the pinned spot. */
+/** Location label — city/area plus Google Maps directions when pinned. */
 export const ExploreCardLocationLink = ({
   label,
   latitude,
   longitude,
-  onFocusMap,
   className = '',
   iconClassName = 'h-4 w-4 shrink-0 text-gray-400',
 }: {
   label: string;
   latitude?: number | null;
   longitude?: number | null;
-  onFocusMap?: (coords: MapFocusCoords) => void;
   className?: string;
   iconClassName?: string;
 }) => {
@@ -123,40 +118,19 @@ export const ExploreCardLocationLink = ({
   const linkClass =
     'inline-flex items-center gap-1 font-medium text-emerald-700 underline decoration-emerald-700/30 underline-offset-2 hover:text-emerald-800 hover:decoration-emerald-800';
 
-  const focusMap = (event: SyntheticEvent) => {
-    event.stopPropagation();
-    if (latitude == null || longitude == null) return;
-    onFocusMap?.({ lat: latitude, lng: longitude });
-  };
-
-  const viewLocationAction =
-    hasCoords && onFocusMap ? (
-      <span
-        role="link"
-        tabIndex={0}
-        onClick={focusMap}
-        onKeyDown={(event) => {
-          if (event.key !== 'Enter' && event.key !== ' ') return;
-          event.preventDefault();
-          focusMap(event);
-        }}
-        className={`${linkClass} cursor-pointer`}
-      >
-        <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        View location
-      </span>
-    ) : hasCoords ? (
-      <a
-        href={buildGoogleMapsSearchUrl(latitude, longitude)}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(event) => event.stopPropagation()}
-        className={linkClass}
-      >
-        <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        View location
-      </a>
-    ) : null;
+  const directionsAction = hasCoords ? (
+    <a
+      href={buildGoogleDriveUrl(latitude, longitude)}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(event) => event.stopPropagation()}
+      onPointerDown={(event) => event.stopPropagation()}
+      className={linkClass}
+    >
+      <Navigation className="h-3.5 w-3.5 shrink-0" aria-hidden />
+      Get Directions
+    </a>
+  ) : null;
 
   return (
     <span className={`inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 ${className}`}>
@@ -164,12 +138,12 @@ export const ExploreCardLocationLink = ({
         <MapPin className={iconClassName} aria-hidden />
         <span className="font-medium text-gray-700">{label}</span>
       </span>
-      {viewLocationAction ? (
+      {directionsAction ? (
         <>
           <span className="text-gray-300" aria-hidden>
             ·
           </span>
-          {viewLocationAction}
+          {directionsAction}
         </>
       ) : null}
     </span>
@@ -182,13 +156,11 @@ export const ExploreCardDetailList = ({
   compact = false,
   mapLatitude,
   mapLongitude,
-  onFocusMap,
 }: {
   details: ExploreCardDetail[];
   compact?: boolean;
   mapLatitude?: number | null;
   mapLongitude?: number | null;
-  onFocusMap?: (coords: MapFocusCoords) => void;
 }) => {
   if (details.length === 0) return null;
 
@@ -200,7 +172,6 @@ export const ExploreCardDetailList = ({
           label={locationDetail.label}
           latitude={mapLatitude}
           longitude={mapLongitude}
-          onFocusMap={onFocusMap}
           className="mt-2 text-sm text-gray-600"
         />
       );
@@ -228,7 +199,6 @@ export const ExploreCardDetailList = ({
                 label={detail.label}
                 latitude={mapLatitude}
                 longitude={mapLongitude}
-                onFocusMap={onFocusMap}
                 className="items-start"
                 iconClassName="mt-0.5 h-4 w-4 shrink-0 text-gray-400"
               />
@@ -249,7 +219,7 @@ export const ExploreCardRequirementBadges = ({ badges }: { badges: string[] }) =
   if (badges.length === 0) return null;
 
   return (
-    <div className="mt-3 flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-1.5">
       {badges.map((badge) => (
         <span
           key={badge}
@@ -258,6 +228,42 @@ export const ExploreCardRequirementBadges = ({ badges }: { badges: string[] }) =
           {badge}
         </span>
       ))}
+    </div>
+  );
+};
+
+/** Join mode + restriction chips + price — map peek and activity sheets. */
+export const ExploreActivityPeekMeta = ({ card }: { card: ExploreCardModel }) => {
+  if (card.source !== 'activity') return null;
+
+  const participationMode = resolveParticipationMode(
+    card.activity?.participationMode,
+    card.activity?.requirements
+  );
+  const joinModeLabel =
+    participationMode === 'rsvp' ? "Open RSVP · tap I'm going" : 'Host approval to join';
+  const joinChipClass =
+    participationMode === 'rsvp'
+      ? 'bg-emerald-50 text-emerald-800'
+      : 'bg-amber-50 text-amber-900';
+
+  return (
+    <div className="mt-3 space-y-2">
+      <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${joinChipClass}`}>
+        {joinModeLabel}
+      </span>
+      {card.requirementBadges && card.requirementBadges.length > 0 ? (
+        <ExploreCardRequirementBadges badges={card.requirementBadges} />
+      ) : null}
+      {card.price ? (
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+            card.price.kind === 'free' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'
+          }`}
+        >
+          {card.price.badge}
+        </span>
+      ) : null}
     </div>
   );
 };
@@ -345,7 +351,15 @@ export const ExploreCardTypeBadge = ({
 }: {
   card: ExploreCardModel;
   size?: 'sm' | 'md';
-}) => <ExploreCardTypeIcon tone={card.tone} source={card.source} kind={card.kind} size={size} />;
+}) => (
+  <ExploreCardTypeIcon
+    tone={card.tone}
+    source={card.source}
+    kind={card.kind}
+    emoji={card.emoji}
+    size={size}
+  />
+);
 
 /** Venue image overlays — kids friendly (left), difficulty or surface type (right). */
 export const ExploreVenueImageBadges = ({ card }: { card: ExploreCardModel }) => {

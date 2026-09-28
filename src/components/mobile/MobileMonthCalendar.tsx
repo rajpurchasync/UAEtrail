@@ -6,6 +6,8 @@ interface MobileMonthCalendarProps {
   selectedDate: string;
   onSelectDate: (iso: string) => void;
   minDate?: string;
+  /** ISO dates (YYYY-MM-DD) with scheduled map activities — subtle marker on day cells. */
+  markedDates?: ReadonlySet<string>;
 }
 
 const toIso = (year: number, month: number, day: number): string =>
@@ -21,6 +23,7 @@ export const MobileMonthCalendar = ({
   selectedDate,
   onSelectDate,
   minDate = todayIso(),
+  markedDates,
 }: MobileMonthCalendarProps) => {
   const initial = parseIso(selectedDate);
   const [viewYear, setViewYear] = useState(initial.year);
@@ -85,13 +88,14 @@ export const MobileMonthCalendar = ({
         {cells.map((cell, index) => {
           if (!cell) return <span key={`empty-${index}`} />;
           const active = cell.iso === selectedDate;
+          const marked = markedDates?.has(cell.iso);
           return (
             <button
               key={cell.iso}
               type="button"
               disabled={cell.disabled}
               onClick={() => onSelectDate(cell.iso)}
-              className={`flex h-9 items-center justify-center rounded-xl text-sm font-semibold ${
+              className={`relative flex h-9 flex-col items-center justify-center rounded-xl text-sm font-semibold ${
                 active
                   ? 'bg-emerald-600 text-white'
                   : cell.disabled
@@ -100,6 +104,9 @@ export const MobileMonthCalendar = ({
               }`}
             >
               {cell.day}
+              {marked && !active ? (
+                <span className="absolute bottom-1 h-1 w-1 rounded-full bg-emerald-500" aria-hidden />
+              ) : null}
             </button>
           );
         })}

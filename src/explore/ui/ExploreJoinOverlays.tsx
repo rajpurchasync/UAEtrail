@@ -7,10 +7,15 @@ import { ExploreGuestJoinSheet } from './ExploreGuestJoinSheet';
 interface ExploreJoinOverlaysProps {
   activity: ActivityDTO | null | undefined;
   joinActions: ActivityJoinActions;
+  guestPlaceTitle?: string | null;
 }
 
 /** Join / withdraw modals and guest sign-up sheet for explore map selection. */
-export const ExploreJoinOverlays = ({ activity, joinActions }: ExploreJoinOverlaysProps) => (
+export const ExploreJoinOverlays = ({
+  activity,
+  joinActions,
+  guestPlaceTitle,
+}: ExploreJoinOverlaysProps) => (
   <>
     {joinActions.joinModalOpen && activity && (
       <JoinRequestModal
@@ -37,7 +42,12 @@ export const ExploreJoinOverlays = ({ activity, joinActions }: ExploreJoinOverla
     <ExploreGuestJoinSheet
       open={joinActions.guestSheetOpen}
       onClose={joinActions.closeGuestSheet}
-      activityTitle={activity?.title || activity?.locationName}
+      intent={joinActions.guestSheetIntent}
+      activityTitle={
+        joinActions.guestSheetIntent === 'place'
+          ? guestPlaceTitle ?? undefined
+          : activity?.title || activity?.locationName || undefined
+      }
       participationMode={activity?.participationMode}
       requirements={activity?.requirements}
     />

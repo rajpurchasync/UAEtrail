@@ -1,22 +1,22 @@
-import { ChevronLeft, ChevronRight, MapPinned, Mountain, UsersRound, X } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { ChevronRight, X } from 'lucide-react';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
+import { FlowSheetBackButton } from './ExploreFlowSheetChrome';
 import {
   ADD_COMPOSE_OPTIONS,
-  COMPOSE_MENU_KICKER,
   COMPOSE_MENU_OPTIONS,
+  COMPOSE_MENU_THINKING_EMOJI,
   COMPOSE_MENU_TITLE,
   FIND_COMPOSE_OPTIONS,
   ORGANIZE_COMPOSE_OPTIONS,
   composeIntentTitle,
   isComposeMenu,
-  type ComposeIntent,
   type ExploreCompose,
   type FindComposeKind,
   type OrganizeComposeKind,
 } from '../compose';
 import type { ContributeVenueKind } from '../contributeTypes';
-import { EXPLORE_INTENT } from '../../config/exploreTheme';
+import { EXPLORE_COMPOSE, EXPLORE_FLOW, EXPLORE_Z } from '../../config/exploreTheme';
+import { exploreFlowKindTileClass } from './exploreFlowUi';
 
 interface CreateIntentSheetProps {
   route: ExploreCompose | null;
@@ -24,16 +24,40 @@ interface CreateIntentSheetProps {
   onClose: () => void;
 }
 
-const COMPOSE_INTENT_VISUAL: Record<
-  ComposeIntent,
-  { Icon: LucideIcon; theme: (typeof EXPLORE_INTENT)[keyof typeof EXPLORE_INTENT] }
-> = {
-  organize: { Icon: Mountain, theme: EXPLORE_INTENT.host },
-  find: { Icon: UsersRound, theme: EXPLORE_INTENT.request },
-  add: { Icon: MapPinned, theme: EXPLORE_INTENT.contribute },
-};
+const menuGroupClass =
+  'overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_8px_rgba(15,23,42,.06)]';
 
-const intentThemeFor = (intent: ComposeIntent) => COMPOSE_INTENT_VISUAL[intent].theme;
+const ComposeSheetCloseButton = ({ onClose, className = '' }: { onClose: () => void; className?: string }) => (
+  <button
+    type="button"
+    onClick={onClose}
+    className={`rounded-full p-2.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 ${className}`}
+    aria-label="Close"
+  >
+    <X className="h-5 w-5" />
+  </button>
+);
+
+const ComposeMenuHero = ({ onClose }: { onClose: () => void }) => (
+  <header className={`${EXPLORE_FLOW.stepHeaderShell} mb-5`}>
+    <ComposeSheetCloseButton onClose={onClose} className="absolute right-0 top-2 -mr-2" />
+    <div className={EXPLORE_FLOW.stepTitleBlock}>
+      <span className="mb-3 text-[2.5rem] font-emoji leading-none" aria-hidden>
+        {COMPOSE_MENU_THINKING_EMOJI}
+      </span>
+      <h2 className={EXPLORE_FLOW.stepTitle}>{COMPOSE_MENU_TITLE}</h2>
+    </div>
+  </header>
+);
+
+const ComposeSheetHeader = ({ title, onClose }: { title: string; onClose: () => void }) => (
+  <header className={EXPLORE_FLOW.stepHeaderShell}>
+    <ComposeSheetCloseButton onClose={onClose} className="absolute right-0 top-2 -mr-2" />
+    <div className={EXPLORE_FLOW.stepTitleBlock}>
+      <h2 className={EXPLORE_FLOW.stepTitle}>{title}</h2>
+    </div>
+  </header>
+);
 
 export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateIntentSheetProps) => {
   const open = isComposeMenu(route);
@@ -58,7 +82,6 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
           ? ADD_COMPOSE_OPTIONS
           : null;
 
-  const activeTheme = intent ? intentThemeFor(intent) : null;
   const headerTitle = intent ? composeIntentTitle(intent) : COMPOSE_MENU_TITLE;
 
   return (
@@ -67,123 +90,80 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
       onClose={onClose}
       title={headerTitle}
       maxWidthClass="lg:max-w-md"
-      panelClassName="overflow-hidden px-0 pb-[calc(var(--safe-bottom)+1.25rem)] pt-0 lg:pb-6 lg:pt-0"
+      zClass={EXPLORE_Z.composeFlow}
+      overlayFixed
+      panelClassName="overflow-hidden px-0 pb-[calc(var(--safe-bottom)+1.5rem)] pt-0 lg:pb-8 lg:pt-3"
     >
-      <div
-        className={`relative px-4 pb-4 pt-1 lg:px-6 lg:pb-0 lg:pt-2 ${
-          intent
-            ? 'border-b border-neutral-100/80 bg-gradient-to-br from-white via-white to-neutral-50'
-            : 'border-b border-emerald-100/80 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/40'
-        }`}
-      >
+      <div className="px-5 pt-2 lg:px-6 lg:pt-0">
         {!intent ? (
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600"
-            aria-hidden
-          />
-        ) : null}
+          <>
+            <ComposeMenuHero onClose={onClose} />
 
-        <div className="relative mb-3 flex items-center justify-between gap-3 lg:mb-4">
-          {intent ? (
-            <button
-              type="button"
-              onClick={handleBack}
-              className="-ml-1 inline-flex items-center gap-0.5 rounded-full px-1 py-1.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
-            >
-              <ChevronLeft className="h-5 w-5" />
-              Back
-            </button>
-          ) : (
-            <span className="inline-flex w-14 items-center gap-1.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-700 shadow-sm shadow-emerald-600/25">
-                <Mountain className="h-3.5 w-3.5 text-white" strokeWidth={2.25} />
-              </span>
-            </span>
-          )}
-          <div className="absolute left-1/2 max-w-[72%] -translate-x-1/2 text-center">
-            <h2 className="text-base font-bold tracking-tight text-neutral-900 lg:text-xl">{headerTitle}</h2>
-            {!intent ? (
-              <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700/85">
-                {COMPOSE_MENU_KICKER}
-              </p>
-            ) : activeTheme ? (
-              <p className={`mt-0.5 text-xs font-medium ${activeTheme.label}`}>Pick a type to continue</p>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="-mr-1 rounded-full p-2 text-neutral-400 hover:bg-neutral-100"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-
-      <div className="px-4 pt-3 lg:px-6 lg:pt-4">
-        {!intent ? (
-          <div className="space-y-2.5">
-            {COMPOSE_MENU_OPTIONS.map((option) => {
-              const { Icon, theme } = COMPOSE_INTENT_VISUAL[option.intent];
-              return (
+            <div className={`${menuGroupClass} divide-y divide-neutral-100`}>
+              {COMPOSE_MENU_OPTIONS.map((option) => (
                 <button
                   key={option.intent}
                   type="button"
                   onClick={() => onRouteChange({ surface: 'menu', intent: option.intent })}
-                  className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition active:scale-[0.99] lg:px-4 lg:py-3.5 ${theme.card}`}
+                  className="flex w-full items-center gap-4 px-4 py-4 text-left transition active:bg-emerald-50/40 lg:px-5 lg:py-[1.125rem]"
                 >
                   <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${theme.iconWrap}`}
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl font-emoji leading-none ${EXPLORE_COMPOSE.menuIconWrap}`}
+                    aria-hidden
                   >
-                    <Icon className="h-5 w-5" strokeWidth={2.25} aria-hidden />
+                    {option.emoji}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className={`block text-[15px] font-bold lg:text-base ${theme.label}`}>
-                      {option.label}
-                    </span>
-                    <span className="mt-0.5 block text-xs leading-snug text-neutral-600 lg:text-sm">
-                      {option.hint}
-                    </span>
+                    <span className={`block ${EXPLORE_FLOW.menuRowTitle}`}>{option.label}</span>
+                    <span className={`block ${EXPLORE_FLOW.choiceCardSubtitle} mt-1`}>{option.hint}</span>
                   </span>
-                  <ChevronRight className={`h-4 w-4 shrink-0 opacity-60 ${theme.label}`} aria-hidden />
+                  <ChevronRight className="h-5 w-5 shrink-0 text-emerald-600/35" aria-hidden />
                 </button>
-              );
-            })}
-          </div>
-        ) : kindOptions && activeTheme ? (
-          <div className="grid grid-cols-2 gap-2">
-            {kindOptions.map((option) => (
-              <button
-                key={option.kind}
-                type="button"
-                onClick={() => {
-                  if (intent === 'organize') {
-                    onRouteChange({ intent: 'organize', kind: option.kind as OrganizeComposeKind });
-                    return;
-                  }
-                  if (intent === 'find') {
-                    onRouteChange({ intent: 'find', kind: option.kind as FindComposeKind });
-                    return;
-                  }
-                  onRouteChange({ intent: 'add', kind: option.kind as ContributeVenueKind });
-                }}
-                className={`rounded-2xl border px-3 py-3 text-left transition active:scale-[0.98] lg:py-3.5 ${activeTheme.card}`}
-              >
-                <span className={`inline-flex h-9 w-9 items-center justify-center rounded-xl text-xl ${activeTheme.iconWrap}`}>
-                  {option.emoji}
-                </span>
-                <p className={`mt-2 text-sm font-bold leading-snug ${activeTheme.label}`}>{option.label}</p>
-              </button>
-            ))}
-          </div>
-        ) : null}
+              ))}
+            </div>
 
-        {!intent ? (
-          <p className="mt-4 text-center text-[11px] font-medium text-neutral-400">
-            Free to post · UAE &amp; GCC outdoors
-          </p>
-        ) : null}
+            <p className="mt-5 px-1 text-center text-xs leading-relaxed text-neutral-400">
+              Free to post · UAE &amp; GCC outdoors
+            </p>
+          </>
+        ) : (
+          <>
+            <ComposeSheetHeader title={headerTitle} onClose={onClose} />
+
+            {kindOptions ? (
+              <div className={EXPLORE_FLOW.choiceGrid2}>
+                {kindOptions.map((option) => (
+                  <button
+                    key={option.kind}
+                    type="button"
+                    onClick={() => {
+                      if (intent === 'organize') {
+                        onRouteChange({ intent: 'organize', kind: option.kind as OrganizeComposeKind });
+                        return;
+                      }
+                      if (intent === 'find') {
+                        onRouteChange({ intent: 'find', kind: option.kind as FindComposeKind });
+                        return;
+                      }
+                      onRouteChange({ intent: 'add', kind: option.kind as ContributeVenueKind });
+                    }}
+                    className={exploreFlowKindTileClass(false)}
+                  >
+                    <span
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl text-xl font-emoji leading-none ${EXPLORE_COMPOSE.kindIconWrap}`}
+                      aria-hidden
+                    >
+                      {option.emoji}
+                    </span>
+                    <p className={`mt-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{option.label}</p>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            <FlowSheetBackButton onBack={handleBack} />
+          </>
+        )}
       </div>
     </ExploreResponsiveSheet>
   );

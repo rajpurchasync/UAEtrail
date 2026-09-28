@@ -3,12 +3,12 @@ import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { MapPin, TrendingUp, Clock, Mountain, Baby, Car, ChevronRight } from 'lucide-react';
 import { ReviewDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import {
-  ActivityCard,
   ShareButton,
   PlaceDetailTabs,
   toPlaceDetailData,
   ReviewSection,
 } from '../components/ui';
+import { ProfileActivityListRow } from '../components/profile/ProfileActivityListRow';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { placeSchema } from '../components/seo/schemas';
@@ -314,9 +314,9 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="mx-auto max-w-2xl space-y-2">
                 {activities.map((activity) => (
-                  <ActivityCard key={activity.id} activity={activity} />
+                  <ProfileActivityListRow key={activity.id} activity={activity} />
                 ))}
               </div>
             )}

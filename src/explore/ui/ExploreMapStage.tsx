@@ -34,8 +34,14 @@ export type ExploreMapStageProps = {
   listOpen: boolean;
   showListPanel: boolean;
   mapFilter: MapFilterKey;
-  desktopFilterKeys?: MapFilterKey[];
+  browseFilterKeys?: MapFilterKey[];
+  placesMode?: boolean;
   onMapFilterChange: (next: MapFilterKey) => void;
+  activityDate: string | null;
+  onActivityDateChange: (iso: string | null) => void;
+  scheduledDates?: readonly string[];
+  venueRegions?: string[];
+  onVenueRegionsChange?: (regions: string[]) => void;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
@@ -71,7 +77,9 @@ export type ExploreMapStageProps = {
   onFulfillIntent?: () => void;
   onManage?: () => void;
   onWithdraw: () => void;
-  onFocusMapLocation: (coords: { lat: number; lng: number }) => void;
+  showCarpoolLink?: boolean;
+  onLinkCarpool?: () => void;
+  carpoolLinkLoading?: boolean;
   onCloseMobileBrowse: () => void;
   mobileBrowseSheet: ReactNode;
 };
@@ -81,8 +89,14 @@ export const ExploreMapStage = ({
   listOpen,
   showListPanel,
   mapFilter,
-  desktopFilterKeys,
+  browseFilterKeys,
+  placesMode = false,
   onMapFilterChange,
+  activityDate,
+  onActivityDateChange,
+  scheduledDates,
+  venueRegions = [],
+  onVenueRegionsChange,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -118,7 +132,9 @@ export const ExploreMapStage = ({
   onFulfillIntent,
   onManage,
   onWithdraw,
-  onFocusMapLocation,
+  showCarpoolLink = false,
+  onLinkCarpool,
+  carpoolLinkLoading = false,
   onCloseMobileBrowse,
   mobileBrowseSheet,
 }: ExploreMapStageProps) => (
@@ -154,7 +170,15 @@ export const ExploreMapStage = ({
         <ExploreMapFilterBar
           mapFilter={mapFilter}
           onFilterChange={onMapFilterChange}
-          allowedKeys={isDesktop ? desktopFilterKeys : undefined}
+          activityDate={activityDate}
+          onActivityDateChange={onActivityDateChange}
+          scheduledDates={scheduledDates}
+          allowedKeys={browseFilterKeys}
+          filterEmojiContext={placesMode ? 'venue' : 'activity'}
+          showDateFilter={!placesMode}
+          showStateFilter={placesMode}
+          venueRegions={venueRegions}
+          onVenueRegionsChange={onVenueRegionsChange}
         />
       )}
 
@@ -260,7 +284,6 @@ export const ExploreMapStage = ({
         <ExplorePlaceMapPreview
           item={selected}
           onClose={onCloseSelection}
-          onFocusMapLocation={onFocusMapLocation}
         />
       ) : selectedCard ? (
         <ExploreItemSheet
@@ -270,10 +293,12 @@ export const ExploreMapStage = ({
           onMessage={onMessage}
           onFulfillIntent={canFulfillParticipantIntent ? onFulfillIntent : undefined}
           onManage={onManage}
+          showCarpoolLink={showCarpoolLink}
+          onLinkCarpool={onLinkCarpool}
+          carpoolLinkLoading={carpoolLinkLoading}
           joinUiState={selectedCard.showHostActions ? undefined : joinUiState}
           onWithdraw={onWithdraw}
           joinStateLoading={joinStateLoading}
-          onFocusMapLocation={onFocusMapLocation}
         />
       ) : null}
     </div>

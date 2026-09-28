@@ -1,3 +1,10 @@
+/**
+ * Canonical host/organize activity publish payload (join rules, pricing, location refs).
+ *
+ * Entry points:
+ * - Explore FAB: `src/services/organizeActivityPublish.ts` → `buildOrganizeActivityPublishInput` / `publishOrganizeActivity`
+ * - Host console: `src/components/activities/activityFormState.ts` → `buildOrganisationActivityPayload`
+ */
 import type { ActivityJoinMode, ParticipationMode } from '@uaetrail/shared-types';
 import {
   APPROVAL_PARTICIPATION_REQUIREMENT,
@@ -9,6 +16,11 @@ import type { ActivityPricePackage } from './activityPricing';
 export const OPEN_JOIN_REQUIREMENT = 'Open: anyone can request to join';
 
 export const PRIVATE_JOIN_REQUIREMENT = `${PRIVATE_JOIN_REQUIREMENT_PREFIX} — approval required`;
+
+export const privateJoinRequirementLine = (participationMode: ParticipationMode): string =>
+  participationMode === 'rsvp'
+    ? `${PRIVATE_JOIN_REQUIREMENT_PREFIX} — invite link only`
+    : PRIVATE_JOIN_REQUIREMENT;
 
 export type ActivityPublishPricing = {
   pricingMode: 'free' | 'shared' | 'paid';
@@ -46,6 +58,8 @@ export type ActivityPublishInput = {
   description: string;
   date: string;
   time: string;
+  endDate?: string;
+  endTime?: string;
   capacity: number;
   pricing: ActivityPublishPricing;
   location: ActivityPublishLocation;
@@ -75,7 +89,7 @@ export const buildParticipationRequirementLines = (input: {
   ];
 
   if (input.joinMode === 'private') {
-    lines.push(PRIVATE_JOIN_REQUIREMENT);
+    lines.push(privateJoinRequirementLine(input.participationMode));
   } else if (input.includeOpenJoinHint !== false && input.participationMode === 'approval') {
     lines.push(OPEN_JOIN_REQUIREMENT);
   }
@@ -111,6 +125,8 @@ export const buildOrganisationActivityPublishPayload = (input: ActivityPublishIn
   const carpool = input.carpool ?? {};
   const { pricing, location } = input;
 
+  const paymentTerms = pricing.paymentTerms?.trim() ?? '';
+
   const payload: Record<string, unknown> = {
     activityType: input.activityType,
     locationId: input.locationId,
@@ -118,10 +134,12 @@ export const buildOrganisationActivityPublishPayload = (input: ActivityPublishIn
     description: input.description.trim(),
     date: input.date,
     time: input.time,
+    ...(input.endDate ? { endDate: input.endDate } : {}),
+    ...(input.endTime ? { endTime: input.endTime } : {}),
     capacity: input.capacity,
-    price: pricing.price,
+    price: Math.round(Math.max(0, pricing.price)),
     pricingMode: pricing.pricingMode,
-    paymentTerms: pricing.paymentTerms ?? null,
+    ...(paymentTerms ? { paymentTerms } : {}),
     meetingPoint: location.meetingPoint,
     meetingLat: location.meetingLat,
     meetingLng: location.meetingLng,

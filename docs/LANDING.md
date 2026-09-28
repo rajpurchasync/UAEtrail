@@ -85,15 +85,17 @@ Top-of-file comment in `homeLanding.ts` must stay: *visitors convert here; membe
 
 ## Hero CTAs (current)
 
-- **Primary:** Open Map → `/explore` (`HOME_HERO_PRIMARY_CTA` in `homeLanding.ts`)
-- **Secondary:** Join free → auth with return to `/explore` (underlined text link, not a second button)
+- **Mobile:** Open Map (primary button) + Join free (underlined text link) — `HOME_HERO_PRIMARY_CTA`, `HOME_HERO_JOIN_CTA`
+- **Desktop primary:** View on Map → `/explore` (`HOME_HERO_PRIMARY_CTA_DESKTOP`)
+- **Desktop secondary:** Join Free → auth with return to `/explore` (glass pill button, not underlined — `HOME_HERO_JOIN_CTA_DESKTOP`)
 - Desktop header: Log in pill → sign-in with return  
 
 ## Responsive rules
 
-- **Mobile:** compact hero, centered copy, smaller CTAs, hide redundant subtitles, cap live rail to 2 cards, hide product preview when live API is healthy  
+- **Mobile hero:** minimum height `--home-launch-min: max(22rem, min(52svh, 52dvh))` — uses **svh** for stable mobile browser chrome; the block **may grow taller** if headline/CTAs wrap (large text, long copy). Flex column: brand on top, copy/CTAs `margin-top: auto` with safe-area foot padding. No negative-margin overlap hacks. **Short screens** (`max-height: 720px` / `520px`) and **narrow** (`@container max-width: 360px`) tighten type and CTA width. Headline `HOME_HERO_HEADLINE`, subline `HOME_HERO_SUBLINE_MOBILE`.  
+- **Mobile (rest):** cap live rail to 2 cards; hide product preview when live API is healthy  
 - **Desktop:** left-aligned hero copy, full section subtitles, founder story visible  
-- Shared hero image overlays: `.landing-hero-overlay-r`, `.landing-hero-overlay-t` in `src/index.css`  
+- Shared hero image overlays on **mobile and desktop:** `.landing-hero-overlay-r` (left scrim), `.landing-hero-overlay-t` (top/bottom). Same crop: `object-position: center 30%`.  
 
 ## Before changing Home
 

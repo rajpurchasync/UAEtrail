@@ -18,6 +18,9 @@ Do **not** treat these docs as canonical for `uaetrail/main` until an explicit m
 |-----|---------|
 | [explore-map-implementation-plan.md](./explore-map-implementation-plan.md) | Full phased implementation plan (UX, API, data model, tasks) |
 | [explore-ux-spec.md](./explore-ux-spec.md) | Locked copy, emojis, CTAs, and alignment checklist |
+| [flows/README.md](./flows/README.md) | **FAB → publish** flow confirmations (one at a time) |
+| [explore-backend-alignment.md](./explore-backend-alignment.md) | **API / DB / DTO gate** before browse + FAB unification |
+| [explore-flow-registry.md](./explore-flow-registry.md) | Flow IDs → wizards, validation families, endpoints |
 | [../CREATE_FLOW.md](../CREATE_FLOW.md) | **Canonical** FAB, organize/find/add, Event vs Activity, participation (main docs) |
 
 ## Branch & remotes

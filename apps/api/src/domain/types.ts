@@ -154,6 +154,8 @@ export interface Location {
   guidePreview: string | null;
   unlockPriceAed: number;
   submittedById: string | null;
+  /** When false, place exists for activity linkage only — not in public venue catalog. */
+  registryListed?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

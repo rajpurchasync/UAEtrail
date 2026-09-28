@@ -1,11 +1,14 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, MapPin, Mountain, ShoppingBag, Sparkles, Tent, X } from 'lucide-react';
+import { MapPin, Mountain, ShoppingBag, Sparkles, Tent } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { MAP_CONFIG } from '../../config/platform';
+import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ImageUpload } from '../../components/ui/ImageUpload';
 import { PhoneInput } from '../../components/ui/PhoneInput';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
+import { FlowSheetChrome } from './ExploreFlowSheetChrome';
+import { FlowStepTextInput } from './useFlowSheetPrimaryFieldFocus';
 import type { ContributeVenueKind } from '../contributeTypes';
 import {
   ACTIVITY_DIFFICULTY_OPTIONS,
@@ -22,6 +25,7 @@ import {
 } from './contributeFlow';
 import type { LocationPrecision, ActivityDifficulty } from './organizeFlow';
 import { formatHostPhonePreview } from '../../components/organisation-console/becomeHostForm';
+import { getVenueStateFilterOptions } from '../../config/regions';
 
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -52,39 +56,6 @@ const REVIEW_EDIT_LABELS: Partial<Record<ContributeFlowStepId, string>> = {
   parking: 'Parking',
   contact: 'Contact',
 };
-
-const SheetHeader = ({
-  title,
-  onBack,
-  onClose,
-  showBack,
-}: {
-  title: string;
-  onBack?: () => void;
-  onClose: () => void;
-  showBack?: boolean;
-}) => (
-  <div className="relative mb-3 flex items-center justify-between">
-    {showBack ? (
-      <button
-        type="button"
-        onClick={onBack}
-        className="inline-flex items-center gap-0.5 text-sm font-semibold text-gray-700"
-      >
-        <ChevronLeft className="h-5 w-5" />
-        Back
-      </button>
-    ) : (
-      <span className="w-14" />
-    )}
-    <h2 className="absolute left-1/2 max-w-[72%] -translate-x-1/2 truncate text-base font-bold text-gray-900">
-      {title}
-    </h2>
-    <button type="button" onClick={onClose} className="rounded-full p-1.5 text-gray-500" aria-label="Close">
-      <X className="h-5 w-5" />
-    </button>
-  </div>
-);
 
 const NextButton = ({
   label = 'Next',
@@ -261,7 +232,7 @@ export const CreateContributeFlow = ({
       : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
 
     return (
-      <div className="absolute inset-0 z-[1400] bg-neutral-100">
+      <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
             precision={mapPrecision}
@@ -306,31 +277,44 @@ export const CreateContributeFlow = ({
     <ExploreResponsiveSheet
       open
       onClose={handleClose}
-      panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
+      zClass={EXPLORE_Z.composeFlow}
+      overlayFixed
+      panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+3rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
     >
       {step === 'title' && (
-        <>
-          <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
           <label className="block">
-            <input
+            <FlowStepTextInput
               value={draft.title}
               onChange={(event) => patchDraft({ title: event.target.value })}
               placeholder={contributeTitlePlaceholder(kind)}
               className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
               maxLength={120}
-              autoFocus
             />
           </label>
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">
             <NextButton disabled={!draft.title.trim()} onClick={goNext} />
           </div>
-        </>
+        </FlowSheetChrome>
       )}
 
       {step === 'location' && (
-        <>
-          <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <label className="mb-4 block">
+            <span className="mb-1.5 block text-sm font-semibold text-gray-800">Emirate / state</span>
+            <select
+              value={draft.emirate}
+              onChange={(event) => patchDraft({ emirate: event.target.value })}
+              className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+            >
+              {getVenueStateFilterOptions().map((option) => (
+                <option key={option.key} value={option.key}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <p className="mb-4 text-sm text-gray-600">
             {kind === 'hiking'
               ? 'Pin where the trail starts.'
@@ -347,14 +331,13 @@ export const CreateContributeFlow = ({
           )}
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.locationPinPlaced} onClick={goNext} />
+            <NextButton disabled={!draft.locationPinPlaced || !draft.emirate.trim()} onClick={goNext} />
           </div>
-        </>
+        </FlowSheetChrome>
       )}
 
       {step === 'image' && (
-        <>
-          <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
           <ImageUpload
             images={draft.images}
             onChange={(urls) => patchDraft({ images: urls })}
@@ -368,12 +351,11 @@ export const CreateContributeFlow = ({
           <div className="mt-5 pb-2">
             <NextButton disabled={!draft.images.length} onClick={goNext} />
           </div>
-        </>
+        </FlowSheetChrome>
       )}
 
       {step === 'description' && (
-        <>
-          <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
           <textarea
             value={draft.description}
             onChange={(event) => patchDraft({ description: event.target.value })}
@@ -388,12 +370,11 @@ export const CreateContributeFlow = ({
           <div className="mt-5 pb-2">
             <NextButton disabled={draft.description.trim().length < 20} onClick={goNext} />
           </div>
-        </>
+        </FlowSheetChrome>
       )}
 
       {step === 'difficulty' && kind === 'hiking' && (
-        <>
-          <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
           <div className="grid grid-cols-1 gap-3">
             {ACTIVITY_DIFFICULTY_OPTIONS.map((option) => {
               const active = draft.difficulty === option.value;
@@ -416,12 +397,11 @@ export const CreateContributeFlow = ({
           <div className="mt-5 pb-2">
             <NextButton disabled={!draft.difficulty} onClick={goNext} />
           </div>
-        </>
+        </FlowSheetChrome>
       )}
 
       {step === 'parking' && kind !== 'shop' && (
-        <>
-          <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
           <p className="mb-4 text-sm text-gray-600">Where should people park before heading in?</p>
           {renderPinButton(
             draft.parkingPinPlaced,
@@ -434,12 +414,11 @@ export const CreateContributeFlow = ({
           <div className="mt-5 pb-2">
             <NextButton disabled={!draft.parkingPinPlaced} onClick={goNext} />
           </div>
-        </>
+        </FlowSheetChrome>
       )}
 
       {step === 'contact' && kind === 'shop' && (
-        <>
-          <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
           <div className="space-y-4">
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-gray-700">Mobile number</span>
@@ -466,12 +445,11 @@ export const CreateContributeFlow = ({
           <div className="mt-5 pb-2">
             <NextButton disabled={!draft.phone.trim()} onClick={goNext} />
           </div>
-        </>
+        </FlowSheetChrome>
       )}
 
       {step === 'review' && (
-        <>
-          <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
           <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-gray-700">
             <p className="flex items-center gap-2 font-semibold text-gray-900">
               <KindIcon className="h-4 w-4 text-emerald-600" />
@@ -539,7 +517,7 @@ export const CreateContributeFlow = ({
           <div className="mt-5 pb-2">
             <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
           </div>
-        </>
+        </FlowSheetChrome>
       )}
     </ExploreResponsiveSheet>
   );

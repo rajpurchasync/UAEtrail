@@ -27,8 +27,14 @@ describe('resolveMapPinEmoji', () => {
   });
 
   it('uses venue emojis', () => {
-    expect(resolveMapPinEmoji('hiking', 'venue')).toBe('🧗');
+    expect(resolveMapPinEmoji('hiking', 'venue')).toBe('⛰️');
     expect(resolveMapPinEmoji('camping', 'venue')).toBe('⛺');
+  });
+
+  it('uses shop and demand emojis', () => {
+    expect(resolveMapPinEmoji('shop', 'shop')).toBe('🛍️');
+    expect(resolveMapPinEmoji('hiking', 'demand')).toBe('🙋');
+    expect(resolveMapPinEmoji('carpool', 'demand')).toBe('🚗');
   });
 
   it('resolves source from id prefix when source is missing', () => {
@@ -309,6 +315,12 @@ describe('extractExploreRequirementBadges', () => {
       ])
     ).toEqual(['Women only', 'Ages 18–45', 'No pets']);
   });
+
+  it('maps structured hiking minimum age lines', () => {
+    expect(extractExploreRequirementBadges(['Minimum age: 21', 'Women only']).sort()).toEqual(
+      ['Ages 21+', 'Women only'].sort()
+    );
+  });
 });
 
 describe('resolveExplorePrice', () => {
@@ -393,6 +405,78 @@ describe('buildExploreCardModel', () => {
     const card = buildExploreCardModel(rsvpEvent);
     expect(card.primaryCta).toBe("I'm going");
     expect(card.headline).toContain("I'm going ·");
+  });
+
+  it('uses Request to join for default approval hiking and camping activities', () => {
+    const camping: ExploreMapItemDTO = {
+      ...hikingActivity,
+      id: 'activity:camp',
+      kind: 'camping',
+      title: 'Stargazing camp',
+      activity: {
+        ...hikingActivity.activity!,
+        activityType: 'camping',
+        title: 'Stargazing camp',
+        participationMode: 'approval',
+      },
+    };
+    expect(buildExploreCardModel(hikingActivity).primaryCta).toBe('Request to join');
+    expect(buildExploreCardModel(camping).primaryCta).toBe('Request to join');
+  });
+
+  it('uses I\'m going for RSVP hiking and camping when stored on the activity', () => {
+    const rsvpHike: ExploreMapItemDTO = {
+      ...hikingActivity,
+      activity: { ...hikingActivity.activity!, participationMode: 'rsvp' },
+    };
+    const rsvpCamp: ExploreMapItemDTO = {
+      ...hikingActivity,
+      id: 'activity:camp-rsvp',
+      kind: 'camping',
+      activity: {
+        ...hikingActivity.activity!,
+        activityType: 'camping',
+        participationMode: 'rsvp',
+      },
+    };
+    expect(buildExploreCardModel(rsvpHike).primaryCta).toBe("I'm going");
+    expect(buildExploreCardModel(rsvpCamp).primaryCta).toBe("I'm going");
+  });
+
+  it('surfaces carpool available badge on linked hiking and camping activities', () => {
+    const withCarpool: ExploreMapItemDTO = {
+      ...hikingActivity,
+      activity: { ...hikingActivity.activity!, carPoolEnabled: true },
+    };
+    const campingCarpool: ExploreMapItemDTO = {
+      ...hikingActivity,
+      id: 'activity:carpool-camp',
+      kind: 'camping',
+      activity: {
+        ...hikingActivity.activity!,
+        activityType: 'camping',
+        carPoolEnabled: true,
+      },
+    };
+    expect(buildExploreCardModel(withCarpool).requirementBadges).toContain('Carpool available');
+    expect(buildExploreCardModel(campingCarpool).requirementBadges).toContain('Carpool available');
+  });
+
+  it('extracts structured participant restriction badges on activity cards', () => {
+    const limited: ExploreMapItemDTO = {
+      ...hikingActivity,
+      activity: {
+        ...hikingActivity.activity!,
+        requirements: [
+          'Host approval required to join',
+          'Open: anyone can request to join',
+          'Women only',
+          'No pets',
+          'What to bring: Headlamp',
+        ],
+      },
+    };
+    expect(buildExploreCardModel(limited).requirementBadges).toEqual(['Women only', 'No pets']);
   });
 
   it('builds one-line demand card', () => {

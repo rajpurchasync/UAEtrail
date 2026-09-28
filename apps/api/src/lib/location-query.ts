@@ -36,7 +36,8 @@ export const locationDocForMongo = (location: Location): MongoLocationDoc => {
 
 const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown> => {
   const query: Record<string, unknown> = {
-    status: LocationStatus.ACTIVE
+    status: LocationStatus.ACTIVE,
+    registryListed: { $ne: false },
   };
   if (filters.activityType) {
     query.activityType =

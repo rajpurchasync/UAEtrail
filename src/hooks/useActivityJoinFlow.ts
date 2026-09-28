@@ -93,6 +93,7 @@ export const useActivityJoinActions = ({
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [guestSheetOpen, setGuestSheetOpen] = useState(false);
+  const [guestSheetIntent, setGuestSheetIntent] = useState<'activity' | 'place'>('activity');
 
   const openJoinModal = useCallback(() => {
     if (uiState.kind !== 'open') return;
@@ -103,12 +104,14 @@ export const useActivityJoinActions = ({
     setJoinModalOpen(false);
   }, []);
 
-  const openGuestSheet = useCallback(() => {
+  const openGuestSheet = useCallback((intent: 'activity' | 'place' = 'activity') => {
+    setGuestSheetIntent(intent);
     setGuestSheetOpen(true);
   }, []);
 
   const closeGuestSheet = useCallback(() => {
     setGuestSheetOpen(false);
+    setGuestSheetIntent('activity');
   }, []);
 
   const handleJoinSuccess = useCallback(
@@ -157,6 +160,7 @@ export const useActivityJoinActions = ({
     setShowWithdraw,
     withdrawing,
     guestSheetOpen,
+    guestSheetIntent,
     openJoinModal,
     closeJoinModal,
     openGuestSheet,

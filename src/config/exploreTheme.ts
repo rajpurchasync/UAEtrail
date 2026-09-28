@@ -51,6 +51,38 @@ export const exploreMapFilterActiveClass = (key: MapFilterKey): string => {
 export const EXPLORE_MAP_FILTER_INACTIVE =
   'bg-white/95 text-gray-800 border-neutral-200/80 shadow-[0_2px_10px_rgba(15,23,42,.12)] backdrop-blur-sm';
 
+/** Compose FAB sheet — emerald brand (Organize · Find · Add). */
+export const EXPLORE_COMPOSE = {
+  menuIconWrap: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20',
+  kindTile:
+    'rounded-2xl border border-emerald-100/90 bg-gradient-to-br from-emerald-50/80 to-white active:border-emerald-300 lg:hover:border-emerald-200',
+  kindIconWrap: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/25',
+} as const;
+
+/** Create / organize / find / add wizard — shared step titles and choice cards. */
+export const EXPLORE_FLOW = {
+  stepTitle: 'text-xl font-bold leading-snug text-neutral-900',
+  /** Vertical rhythm around centered step / sheet main title */
+  stepHeaderShell: 'relative pt-3 pb-4 mb-3 lg:pt-4 lg:pb-5 lg:mb-4',
+  stepTitleBlock: 'flex flex-col items-center px-8 py-1 text-center',
+  stepBackRow: 'mt-2 flex justify-start border-t border-neutral-100/90 pt-2',
+  stepBackButton:
+    'inline-flex items-center gap-0.5 rounded-full py-1 pl-1 pr-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-100',
+  choiceCardBase: 'w-full rounded-2xl border-2 px-4 py-3.5 text-left transition active:scale-[0.99]',
+  choiceCardActive: 'border-emerald-600 bg-emerald-50/50',
+  choiceCardInactive: 'border-neutral-200 bg-white',
+  choiceCardTitle: 'text-sm font-bold text-neutral-900',
+  choiceCardSubtitle: 'mt-0.5 text-xs leading-snug text-neutral-500',
+  choiceGrid2: 'grid grid-cols-2 gap-3',
+  kindTile:
+    'rounded-2xl border-2 px-3 py-4 text-left transition active:scale-[0.99] sm:px-4',
+  kindTileActive: 'border-emerald-600 bg-emerald-50/60 shadow-sm',
+  kindTileIdle: 'border-neutral-200 bg-white',
+  menuRowTitle: 'text-base font-bold leading-snug text-neutral-900 lg:text-[17px]',
+  mapPinCard:
+    'flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left transition hover:border-emerald-300 active:scale-[0.99]',
+} as const;
+
 /** Create intent — distinct affordances for supply vs demand vs venues. */
 export const EXPLORE_INTENT = {
   host: {
@@ -82,7 +114,7 @@ export const EXPLORE_FLOATING_CONTROL =
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {
   filterTop: 'max-lg:top-3',
-  noticeTop: 'max-lg:top-14',
+  noticeTop: 'max-lg:top-[5.25rem]',
 } as const;
 
 /** Explore map stacking — keep in sync across peek cards, filters, and sheets. */
@@ -93,6 +125,10 @@ export const EXPLORE_Z = {
   peekCard: 'z-[4000]',
   /** Browse list sheet */
   browseSheet: 'z-[5500]',
+  /** Guest sign-in / join prompt above peek card */
+  guestJoinSheet: 'z-[6200]',
+  /** FAB compose menu + organize / find / add wizards (above map filters & browse sheet) */
+  composeFlow: 'z-[6500]',
 } as const;
 
 /** Compact map peek card — same silhouette for venues and activities. */

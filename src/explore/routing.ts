@@ -83,6 +83,23 @@ export const parseMapFilter = (value: string | null): MapFilterKey => {
   return 'all';
 };
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Map activity date filter (`?date=YYYY-MM-DD`). */
+export const parseExploreActivityDate = (value: string | null): string | null => {
+  if (!value || !ISO_DATE.test(value)) return null;
+  const parsed = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return value;
+};
+
+export const formatExploreActivityDateLabel = (iso: string): string =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+
 export const parseActivityListFilter = (
   activityParam: string | null,
   legacyFilterParam: string | null = null
@@ -140,6 +157,8 @@ export const explorePath = (options?: {
   /** @deprecated Use {@link explorePath} `fulfillIntent` — legacy query key. */
   hostDemand?: string;
   q?: string;
+  /** Scheduled activity day on the map (`YYYY-MM-DD`). */
+  date?: string | null;
 }): string => {
   const params = new URLSearchParams();
   if (options?.filter && options.filter !== 'all') {
@@ -178,6 +197,11 @@ export const explorePath = (options?: {
   }
   if (options?.q) {
     params.set('q', options.q);
+  }
+  if (options?.date === null) {
+    params.delete('date');
+  } else if (options?.date && parseExploreActivityDate(options.date)) {
+    params.set('date', options.date);
   }
   const qs = params.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
@@ -251,7 +275,7 @@ export const exploreActivitiesPath = (options?: {
     activity: options?.activity,
   });
 
-/** Places (trails, camps, events) on the explore map — URL panel stays `venues`. */
+/** Places (trails, spots, shops) on the explore map — URL panel stays `venues`. */
 export const explorePlacesPath = (options?: {
   region?: string;
   addLocation?: boolean;

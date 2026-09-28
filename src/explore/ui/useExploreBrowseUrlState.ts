@@ -8,6 +8,7 @@ import {
   mapFilterToVenueListFilter,
   parseActivityListFilter,
   parseExplorePanel,
+  parseExploreActivityDate,
   parseMapFilter,
   parseVenueRegionsParam,
   venueFilterToMapFilter,
@@ -26,6 +27,7 @@ type SyncPatch = {
   list?: boolean;
   q?: string;
   venueRegions?: string[];
+  activityDate?: string | null;
 };
 
 type UseExploreBrowseUrlStateArgs = {
@@ -54,6 +56,9 @@ export const useExploreBrowseUrlState = ({
     parseDesktopBrowseTab(parseExplorePanel(searchParams.get('panel')))
   );
   const [searchExpanded, setSearchExpanded] = useState(() => Boolean(searchParams.get('q')?.trim()));
+  const [activityDate, setActivityDate] = useState<string | null>(() =>
+    parseExploreActivityDate(searchParams.get('date'))
+  );
 
   const syncExploreUrl = useCallback(
     (next: SyncPatch) => {
@@ -64,6 +69,7 @@ export const useExploreBrowseUrlState = ({
       const listValue = next.list ?? listOpen;
       const queryValue = next.q ?? query;
       const regionValue = next.venueRegions ?? venueRegions;
+      const dateValue = next.activityDate !== undefined ? next.activityDate : activityDate;
 
       if (filterValue === 'all') params.delete('filter');
       else params.set('filter', filterValue);
@@ -79,6 +85,9 @@ export const useExploreBrowseUrlState = ({
 
       if (queryValue.trim()) params.set('q', queryValue.trim());
       else params.delete('q');
+
+      if (dateValue && parseExploreActivityDate(dateValue)) params.set('date', dateValue);
+      else params.delete('date');
 
       if (regionValue.length > 0) {
         params.set('regions', regionValue.join(','));
@@ -96,12 +105,23 @@ export const useExploreBrowseUrlState = ({
 
       setSearchParams(params, { replace: true });
     },
-    [mapFilter, activityFilter, panel, listOpen, query, venueRegions, searchParams, setSearchParams]
+    [mapFilter, activityFilter, panel, listOpen, query, venueRegions, activityDate, searchParams, setSearchParams]
   );
 
   useEffect(() => {
-    const nextMapFilter = parseMapFilter(searchParams.get('filter'));
+    const nextMapFilterRaw = parseMapFilter(searchParams.get('filter'));
     const nextPanel = parseExplorePanel(searchParams.get('panel'));
+    const nextBrowseTab = parseDesktopBrowseTab(nextPanel);
+    const allowedForPlaces = MAP_FILTERS_BY_BROWSE_TAB.venues;
+    const allowedForActivities = MAP_FILTERS_BY_BROWSE_TAB.activities;
+    const inPlacesContext = isDesktop ? nextBrowseTab === 'venues' : nextPanel === 'venues';
+    const inActivitiesContext = !inPlacesContext;
+    let nextMapFilter = nextMapFilterRaw;
+    if (inPlacesContext && !allowedForPlaces.includes(nextMapFilterRaw)) {
+      nextMapFilter = 'all';
+    } else if (inActivitiesContext && !allowedForActivities.includes(nextMapFilterRaw)) {
+      nextMapFilter = 'all';
+    }
     setMapFilter(nextMapFilter);
     setActivityFilter(parseActivityListFilter(searchParams.get('activity')));
     setVenueFilter(mapFilterToVenueListFilter(nextMapFilter));
@@ -109,6 +129,7 @@ export const useExploreBrowseUrlState = ({
     setListOpen(parseListOpen(searchParams.get('list'), isDesktop));
     setQuery(searchParams.get('q') ?? '');
     setVenueRegions(parseVenueRegionsParam(searchParams));
+    setActivityDate(parseExploreActivityDate(searchParams.get('date')));
     if (isDesktop) {
       setDesktopBrowseTab(parseDesktopBrowseTab(nextPanel));
       if (searchParams.get('q')?.trim()) setSearchExpanded(true);
@@ -127,11 +148,16 @@ export const useExploreBrowseUrlState = ({
     clearSelection();
     const syncedActivity = mapFilterToActivityListFilter(next);
     const syncedVenue = mapFilterToVenueListFilter(next);
+    const inPlaces = isDesktop ? desktopBrowseTab === 'venues' : panel === 'venues';
     const syncedPanel = isDesktop
-      ? desktopBrowseTab === 'venues'
+      ? inPlaces
         ? 'venues'
         : 'activities'
-      : mapFilterToPanel(next);
+      : inPlaces && MAP_FILTERS_BY_BROWSE_TAB.venues.includes(next)
+        ? 'venues'
+        : !inPlaces && MAP_FILTERS_BY_BROWSE_TAB.activities.includes(next)
+          ? 'activities'
+          : mapFilterToPanel(next);
     setActivityFilter(syncedActivity);
     setVenueFilter(syncedVenue);
     setPanel(syncedPanel);
@@ -181,7 +207,23 @@ export const useExploreBrowseUrlState = ({
   const applyPanel = (next: ExplorePanel) => {
     setPanel(next);
     clearSelection();
-    syncExploreUrl({ panel: next, list: true });
+    const tab = parseDesktopBrowseTab(next);
+    const allowed = MAP_FILTERS_BY_BROWSE_TAB[tab];
+    const nextFilter = allowed.includes(mapFilter) ? mapFilter : 'all';
+    if (nextFilter !== mapFilter) {
+      setMapFilter(nextFilter);
+      setActivityFilter(mapFilterToActivityListFilter(nextFilter));
+      setVenueFilter(mapFilterToVenueListFilter(nextFilter));
+    }
+    if (isDesktop) {
+      setDesktopBrowseTab(tab);
+    }
+    syncExploreUrl({
+      panel: next,
+      list: true,
+      filter: nextFilter,
+      activityFilter: mapFilterToActivityListFilter(nextFilter),
+    });
     setListOpen(true);
   };
 
@@ -215,6 +257,13 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ list: listOpen });
   };
 
+  const applyActivityDate = (next: string | null) => {
+    const parsed = next ? parseExploreActivityDate(next) : null;
+    setActivityDate(parsed);
+    clearSelection();
+    syncExploreUrl({ activityDate: parsed, list: listOpen });
+  };
+
   const showListPanel = listOpen;
   const sidebarPanel: ExplorePanel = isDesktop
     ? panel === 'venues'
@@ -223,15 +272,33 @@ export const useExploreBrowseUrlState = ({
     : panel;
 
   const contextualMapFilters = useMemo(() => {
-    if (!isDesktop) return MAP_FILTER_PILLS;
-    const allowed = MAP_FILTERS_BY_BROWSE_TAB[desktopBrowseTab];
+    const tab = isDesktop
+      ? desktopBrowseTab
+      : panel === 'venues'
+        ? 'venues'
+        : 'activities';
+    const allowed = MAP_FILTERS_BY_BROWSE_TAB[tab];
     return MAP_FILTER_PILLS.filter((pill) => allowed.includes(pill.key));
-  }, [isDesktop, desktopBrowseTab]);
+  }, [isDesktop, desktopBrowseTab, panel]);
 
   const desktopFilterKeys = useMemo(
     () => contextualMapFilters.map((pill) => pill.key),
     [contextualMapFilters]
   );
+
+  const browseFilterKeys = useMemo((): MapFilterKey[] => {
+    if (isDesktop) return desktopFilterKeys;
+    const tab = panel === 'venues' ? 'venues' : 'activities';
+    return [...MAP_FILTERS_BY_BROWSE_TAB[tab]];
+  }, [isDesktop, desktopFilterKeys, panel]);
+
+  const applyVenueRegions = (next: string[]) => {
+    setVenueRegions(next);
+    clearSelection();
+    syncExploreUrl({ venueRegions: next, list: listOpen });
+  };
+
+  const placesMode = isDesktop ? desktopBrowseTab === 'venues' : panel === 'venues';
 
   return {
     mapFilter,
@@ -248,6 +315,8 @@ export const useExploreBrowseUrlState = ({
     desktopBrowseTab,
     searchExpanded,
     setSearchExpanded,
+    activityDate,
+    applyActivityDate,
     syncExploreUrl,
     applyMapFilter,
     applyDesktopBrowseTab,
@@ -259,5 +328,8 @@ export const useExploreBrowseUrlState = ({
     showListPanel,
     sidebarPanel,
     desktopFilterKeys,
+    browseFilterKeys,
+    placesMode,
+    applyVenueRegions,
   };
 };

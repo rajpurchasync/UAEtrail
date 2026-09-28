@@ -14,5 +14,16 @@ describe('guestJoinCopy', () => {
   it('uses approval tone by default', () => {
     expect(guestJoinSheetHeadline({ activityTitle: 'Sunrise hike' })).toContain('Request to join');
     expect(guestJoinSheetBody({ activityTitle: 'Sunrise hike' })).toContain('request');
+    expect(guestJoinSheetHeadline({ activityTitle: 'Weekend camp' })).toContain('Request to join');
+    expect(guestJoinSheetBody({ activityTitle: 'Weekend camp' })).toContain('request');
+  });
+
+  it('uses RSVP tone for hiking and camping when host chose open RSVP', () => {
+    expect(
+      guestJoinSheetHeadline({ participationMode: 'rsvp', activityTitle: 'Sunrise hike' })
+    ).toContain("you're going");
+    expect(
+      guestJoinSheetBody({ participationMode: 'rsvp', activityTitle: 'Desert camp' })
+    ).toContain("I'm going");
   });
 });

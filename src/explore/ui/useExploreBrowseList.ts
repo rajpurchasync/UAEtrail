@@ -1,23 +1,22 @@
 import { useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { mapFilterLabel } from '../../config/exploreMapFilters';
 import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import type { ActivityListFilterKey, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import {
-  ACTIVITY_LIST_FILTERS,
   type DesktopBrowseTab,
-  VENUE_LIST_FILTERS,
 } from './exploreBrowsePanelCopy';
 import {
   expandMapPins,
+  layoutColocatedMapPins,
   isPhysicalShopItem,
   isOnlineShopItem,
   isShopListItem,
-  isShopMapItem,
-  matchesActivityFilter,
-  matchesMapFilter,
-  matchesVenueFilter,
+  isPlacesMapItem,
+  isBuddyMapItem,
+  matchesActivityDateFilter,
+  matchesBuddyMapFilter,
+  matchesPlacesMapFilter,
 } from './exploreMapPinModel';
 
 type UseExploreBrowseListArgs = {
@@ -27,6 +26,7 @@ type UseExploreBrowseListArgs = {
   venueFilter: VenueListFilterKey;
   venueRegions: string[];
   query: string;
+  activityDate: string | null;
   sidebarPanel: ExplorePanel;
   isDesktop: boolean;
   desktopBrowseTab: DesktopBrowseTab;
@@ -39,23 +39,37 @@ export const useExploreBrowseList = ({
   venueFilter,
   venueRegions,
   query,
+  activityDate,
   sidebarPanel,
   isDesktop,
   desktopBrowseTab,
 }: UseExploreBrowseListArgs) => {
+  const placesMode = isDesktop ? desktopBrowseTab === 'venues' : sidebarPanel === 'venues';
+  const buddyMode = !placesMode;
+
   const filtered = useMemo(() => {
-    let result = items.filter((item) => matchesMapFilter(item, mapFilter));
-    if (isDesktop) {
-      if (desktopBrowseTab === 'activities') {
-        result = result.filter((item) => item.source === 'activity' || item.source === 'demand');
-      } else if (desktopBrowseTab === 'venues') {
-        result = result.filter((item) => item.source === 'venue' || isShopMapItem(item));
-      }
+    const matchFilter = (item: ExploreMapItemDTO) =>
+      placesMode
+        ? matchesPlacesMapFilter(item, mapFilter)
+        : matchesBuddyMapFilter(item, mapFilter);
+
+    let result = items.filter(matchFilter);
+    if (buddyMode) {
+      result = result.filter((item) => matchesActivityDateFilter(item, activityDate));
+    }
+    if (placesMode) {
+      result = result.filter(isPlacesMapItem);
+      result = result.filter((item) => venueItemMatchesRegions(item, venueRegions));
+    } else {
+      result = result.filter(isBuddyMapItem);
     }
     return result;
-  }, [items, mapFilter, isDesktop, desktopBrowseTab]);
+  }, [items, mapFilter, activityDate, placesMode, venueRegions]);
 
-  const mapPins = useMemo(() => expandMapPins(filtered), [filtered]);
+  const mapPins = useMemo(
+    () => layoutColocatedMapPins(expandMapPins(filtered)),
+    [filtered]
+  );
 
   const listItems = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -70,15 +84,16 @@ export const useExploreBrowseList = ({
       if (desktopBrowseTab === 'activities') {
         return sortExploreActivities(
           items
-            .filter((item) => item.source === 'activity' || item.source === 'demand')
-            .filter((item) => matchesMapFilter(item, mapFilter))
+            .filter(isBuddyMapItem)
+            .filter((item) => matchesBuddyMapFilter(item, mapFilter))
+            .filter((item) => matchesActivityDateFilter(item, activityDate))
             .filter(matchesQuery)
         );
       }
       return sortExploreVenues(
         items
-          .filter((item) => item.source === 'venue' || isShopMapItem(item))
-          .filter((item) => matchesMapFilter(item, mapFilter))
+          .filter(isPlacesMapItem)
+          .filter((item) => matchesPlacesMapFilter(item, mapFilter))
           .filter((item) => venueItemMatchesRegions(item, venueRegions))
           .filter(matchesQuery)
       );
@@ -87,8 +102,8 @@ export const useExploreBrowseList = ({
     if (sidebarPanel === 'venues') {
       return sortExploreVenues(
         items
-          .filter((item) => item.source === 'venue')
-          .filter((item) => matchesVenueFilter(item, venueFilter))
+          .filter(isPlacesMapItem)
+          .filter((item) => matchesPlacesMapFilter(item, mapFilter))
           .filter((item) => venueItemMatchesRegions(item, venueRegions))
           .filter(matchesQuery)
       );
@@ -100,8 +115,9 @@ export const useExploreBrowseList = ({
 
     return sortExploreActivities(
       items
-        .filter((item) => item.source === 'activity' || item.source === 'demand')
-        .filter((item) => matchesActivityFilter(item, activityFilter))
+        .filter(isBuddyMapItem)
+        .filter((item) => matchesBuddyMapFilter(item, mapFilter))
+        .filter((item) => matchesActivityDateFilter(item, activityDate))
         .filter(matchesQuery)
     );
   }, [
@@ -114,37 +130,16 @@ export const useExploreBrowseList = ({
     isDesktop,
     desktopBrowseTab,
     mapFilter,
+    activityDate,
   ]);
 
   const shopListSections = useMemo(() => {
-    const showShopsPanel =
-      sidebarPanel === 'shops' ||
-      (isDesktop &&
-        (mapFilter === 'shops' ||
-          (desktopBrowseTab === 'venues' && listItems.some(isShopListItem))));
+    const showShopsPanel = sidebarPanel === 'shops' || mapFilter === 'shops';
     if (!showShopsPanel || !listItems.some(isShopListItem)) return null;
     const physical = sortExploreVenues(listItems.filter(isPhysicalShopItem));
     const online = sortExploreVenues(listItems.filter(isOnlineShopItem));
     return { physical, online };
-  }, [listItems, sidebarPanel, isDesktop, desktopBrowseTab, mapFilter]);
+  }, [listItems, sidebarPanel, mapFilter]);
 
-  const browseFilterHint = useMemo(() => {
-    const parts: string[] = [];
-    if (mapFilter !== 'all') {
-      parts.push(`Map: ${mapFilterLabel(mapFilter)}`);
-    }
-    if (sidebarPanel === 'activities' && activityFilter !== 'all') {
-      const listLabel =
-        ACTIVITY_LIST_FILTERS.find((option) => option.key === activityFilter)?.label ?? 'All';
-      parts.push(`List: ${listLabel}`);
-    }
-    if (sidebarPanel === 'venues' && venueFilter !== 'all') {
-      const listLabel =
-        VENUE_LIST_FILTERS.find((option) => option.key === venueFilter)?.label ?? 'All';
-      parts.push(`List: ${listLabel}`);
-    }
-    return parts.length > 0 ? parts.join(' · ') : null;
-  }, [mapFilter, sidebarPanel, activityFilter, venueFilter]);
-
-  return { filtered, mapPins, listItems, shopListSections, browseFilterHint };
+  return { filtered, mapPins, listItems, shopListSections };
 };

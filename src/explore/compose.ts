@@ -1,4 +1,4 @@
-import type { ActivityType } from '../config/activityTypes';
+import type { CreateActivityKind } from './ui/organizeFlow';
 import type { ContributeVenueKind } from './contributeTypes';
 
 /** FAB level-1 intent — matches product spec (Organize · Find · Add). */
@@ -21,17 +21,37 @@ export type ExploreCompose =
 
 export const COMPOSE_QUERY_KEY = 'compose';
 
-export const COMPOSE_MENU_OPTIONS: Array<{ intent: ComposeIntent; label: string; hint: string }> = [
-  { intent: 'organize', label: 'Organize', hint: 'Put a plan on the map for others to join' },
-  { intent: 'find', label: 'Find', hint: 'Looking for people, a ride, or a crew' },
-  { intent: 'add', label: 'Add', hint: 'Trail, camp, shop, or place on the map' },
+export const COMPOSE_MENU_OPTIONS: Array<{
+  intent: ComposeIntent;
+  label: string;
+  hint: string;
+  emoji: string;
+}> = [
+  {
+    intent: 'organize',
+    label: 'Organize',
+    hint: 'Put a plan on the map for others to join',
+    emoji: '✨',
+  },
+  {
+    intent: 'find',
+    label: 'Find',
+    hint: 'Looking for people, a ride, or a crew',
+    emoji: '🙋',
+  },
+  {
+    intent: 'add',
+    label: 'Add',
+    hint: 'Trail, camp, shop, or place on the map',
+    emoji: '📍',
+  },
 ];
 
 export const ORGANIZE_COMPOSE_OPTIONS: Array<{ kind: OrganizeComposeKind; label: string; emoji: string }> = [
-  { kind: 'hiking', label: 'Hiking', emoji: '🥾' },
-  { kind: 'camping', label: 'Camping', emoji: '⛺' },
-  { kind: 'event', label: 'Event', emoji: '🏃' },
-  { kind: 'activity', label: 'Activity', emoji: '✨' },
+  { kind: 'hiking', label: 'Hiking Trips', emoji: '🥾' },
+  { kind: 'camping', label: 'Camping Plan', emoji: '⛺' },
+  { kind: 'event', label: 'Outdoor Event', emoji: '🏃' },
+  { kind: 'activity', label: 'Other Activities', emoji: '✨' },
 ];
 
 export const FIND_COMPOSE_OPTIONS: Array<{ kind: FindComposeKind; label: string; emoji: string }> = [
@@ -50,8 +70,8 @@ export const ADD_COMPOSE_OPTIONS: Array<{ kind: ContributeVenueKind; label: stri
 
 export const COMPOSE_MENU_TITLE = 'I would like to…';
 
-/** Short north-star kicker under the compose menu title. */
-export const COMPOSE_MENU_KICKER = 'Find your people · get outside · go together';
+/** Centered hero on the compose menu sheet — “what’s your plan?” */
+export const COMPOSE_MENU_THINKING_EMOJI = '✨';
 
 export const BUDDY_TITLE_PLACEHOLDER = 'Run, jog, trail run — whatever gets you outside.';
 
@@ -66,24 +86,24 @@ export const defaultParticipationForOrganizeKind = (kind: OrganizeComposeKind): 
   kind === 'event' ? 'rsvp' : 'approval';
 
 export type OrganizePublishSeed = {
-  activityType: ActivityType;
+  createKind: CreateActivityKind;
   genericBuddy: boolean;
   participationMode: ParticipationMode;
 };
 
-export const organizePublishSeed = (kind: OrganizeComposeKind): OrganizePublishSeed => {
-  if (kind === 'activity') {
-    return { activityType: 'event', genericBuddy: true, participationMode: 'approval' };
-  }
-  return {
-    activityType: kind,
-    genericBuddy: false,
-    participationMode: defaultParticipationForOrganizeKind(kind),
-  };
-};
+export const organizeCreateActivityKind = (kind: OrganizeComposeKind): CreateActivityKind =>
+  kind === 'activity' ? 'activity' : kind;
+
+export const organizePublishSeed = (kind: OrganizeComposeKind): OrganizePublishSeed => ({
+  createKind: organizeCreateActivityKind(kind),
+  genericBuddy: false,
+  participationMode: defaultParticipationForOrganizeKind(kind),
+});
+
+export const COMPOSE_ORGANIZE_KIND_TITLE = 'What are you hosting?';
 
 export const composeIntentTitle = (intent: ComposeIntent): string => {
-  if (intent === 'organize') return 'Organize';
+  if (intent === 'organize') return COMPOSE_ORGANIZE_KIND_TITLE;
   if (intent === 'find') return 'Find';
   return 'Add';
 };

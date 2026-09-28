@@ -3,22 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import {
   CalendarDays,
   Car,
-  ChevronLeft,
   Clock3,
   MapPin,
   Mountain,
   Tent,
   Users,
-  X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { MobileMonthCalendar } from '../../components/mobile/MobileMonthCalendar';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
+import { FlowSheetChrome } from './ExploreFlowSheetChrome';
+import { FlowStepTextArea, FlowStepTextInput } from './useFlowSheetPrimaryFieldFocus';
+import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { MAP_CONFIG } from '../../config/platform';
+import { EXPLORE_Z } from '../../config/exploreTheme';
 import {
   buildDateOptions,
   buildDemandComment,
-  DEMAND_FITNESS_OPTIONS,
   DEMAND_PARTY_PRESETS,
   DEMAND_TYPE_OPTIONS,
   demandAdditionalInfoPlaceholder,
@@ -27,20 +28,19 @@ import {
   demandAreaTextRequired,
   demandAreaUsesMap,
   demandFlowStepTitle,
-  demandGoingFromPlaceholder,
   demandTitlePlaceholder,
+  demandWhenShowsTime,
   emptyDemandDraft,
   getDemandFlowSteps,
   publishDemandRequest,
-  usesStructuredDemandFlow,
+  usesCampingDemandFlow,
+  usesHikingDemandFlow,
   usesEventDemandFlow,
-  usesOutdoorActivityDemandFlow,
   usesCarpoolDemandFlow,
   usesGuidedDemandFlow,
   validateDemandDraft,
   validateDemandStep,
   type DemandFlowStepId,
-  type DemandFitnessLevel,
   type DemandSubmitResult,
   type DemandDraft,
   type DemandKind,
@@ -48,6 +48,13 @@ import {
 import type { LocationPrecision, TimeMode } from './organizeFlow';
 import type { FindComposeKind } from '../compose';
 import { fromLocationLabel, GOING_FROM_LABEL, TO_LOCATION_LABEL } from '../createFlowCopy';
+import {
+  DemandCarpoolDestinationStepBody,
+  DemandDestinationStepBody,
+  DemandTransportStepBody,
+  DemandVisibilityStepBody,
+} from './demandWizardSteps';
+import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
 
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -63,39 +70,6 @@ interface CreateDemandFlowProps {
   signInHref: string;
   findKind?: FindComposeKind | null;
 }
-
-const SheetHeader = ({
-  title,
-  onBack,
-  onClose,
-  showBack,
-}: {
-  title: string;
-  onBack?: () => void;
-  onClose: () => void;
-  showBack?: boolean;
-}) => (
-  <div className="relative mb-3 flex items-center justify-between">
-    {showBack ? (
-      <button
-        type="button"
-        onClick={onBack}
-        className="inline-flex items-center gap-0.5 text-sm font-semibold text-gray-700"
-      >
-        <ChevronLeft className="h-5 w-5" />
-        Back
-      </button>
-    ) : (
-      <span className="w-14" />
-    )}
-    <h2 className="absolute left-1/2 max-w-[72%] -translate-x-1/2 truncate text-base font-bold text-gray-900">
-      {title}
-    </h2>
-    <button type="button" onClick={onClose} className="rounded-full p-1.5 text-gray-500" aria-label="Close">
-      <X className="h-5 w-5" />
-    </button>
-  </div>
-);
 
 const NextButton = ({
   label = 'Next',
@@ -120,14 +94,17 @@ const NextButton = ({
 
 const REVIEW_EDIT_LABELS: Partial<Record<DemandFlowStepId, string>> = {
   title: 'Title',
-  area: 'Location',
+  destination: 'Destination',
+  area: 'Where',
   when: 'When',
   from: 'Going from',
-  to: 'Going to',
+  to: 'Destination',
   route: 'Route',
   persons: 'People',
+  audience: 'Looking for',
   fitness: 'Fitness',
   requirements: 'Requirements',
+  transport: 'Transport',
   info: 'Details',
   carpool: 'Carpool',
   comment: 'Comment',
@@ -227,9 +204,8 @@ export const CreateDemandFlow = ({
       return;
     }
     if (step === 'type' || currentStepIndex <= 0) {
-      if (step === 'type') {
+      if (step === 'type' || findKind) {
         onBackToIntent?.();
-        onClose();
         return;
       }
       setStep('type');
@@ -275,7 +251,7 @@ export const CreateDemandFlow = ({
   const isMapOverlay =
     (step === 'area' && areaMapOpen) ||
     (step === 'route' && routeMapTarget !== null) ||
-    ((step === 'to' || (step === 'from' && kind === 'carpool')) && routeMapTarget !== null);
+    ((step === 'to' || step === 'from') && routeMapTarget !== null);
 
   const renderMapPinPicker = (
     endpoint: 'from' | 'to',
@@ -360,7 +336,7 @@ export const CreateDemandFlow = ({
               : 'Where would you like to go?';
 
     return (
-      <div className="absolute inset-0 z-[1400] bg-neutral-100">
+      <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
             precision={draft.locationPrecision}
@@ -405,11 +381,12 @@ export const CreateDemandFlow = ({
     <ExploreResponsiveSheet
       open
       onClose={handleClose}
-      panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+4.5rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
+      zClass={EXPLORE_Z.composeFlow}
+      overlayFixed
+      panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+3rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
     >
         {step === 'type' && !findKind && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <div className="grid grid-cols-2 gap-3">
               {DEMAND_TYPE_OPTIONS.map((option) => {
                 const active = selectedKind === option.key;
@@ -428,7 +405,7 @@ export const CreateDemandFlow = ({
                     <p className={`mt-2 text-sm font-bold ${active ? 'text-emerald-600' : 'text-gray-900'}`}>
                       {option.title}
                     </p>
-                    <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
+                    <p className={EXPLORE_FLOW.choiceCardSubtitle}>{option.subtitle}</p>
                   </button>
                 );
               })}
@@ -436,34 +413,34 @@ export const CreateDemandFlow = ({
             <div className="mt-5 pb-2">
               <NextButton disabled={!selectedKind} onClick={goToFirstStep} />
             </div>
-          </>
+          </FlowSheetChrome>
         )}
 
         {step === 'title' && kind && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">
-                {usesGuidedDemandFlow(kind) ? 'Title' : 'Share a few details so others know what you need'}
-              </span>
+              {!usesGuidedDemandFlow(kind) ? (
+                <span className="mb-2 block text-sm font-medium text-gray-700">
+                  Share a few details so others know what you need
+                </span>
+              ) : null}
               {usesGuidedDemandFlow(kind) ? (
-                <input
+                <FlowStepTextInput
                   value={draft.title}
                   onChange={(event) => patchDraft({ title: event.target.value })}
                   placeholder={demandTitlePlaceholder(kind)}
+                  aria-label={demandTitlePlaceholder(kind)}
                   className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
                   maxLength={120}
-                  autoFocus
                 />
               ) : (
-                <textarea
+                <FlowStepTextArea
                   value={draft.title}
                   onChange={(event) => patchDraft({ title: event.target.value })}
                   placeholder={demandTitlePlaceholder(kind)}
                   rows={4}
                   className="w-full resize-none rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
                   maxLength={120}
-                  autoFocus
                 />
               )}
             </label>
@@ -471,57 +448,90 @@ export const CreateDemandFlow = ({
             <div className="mt-5 pb-2">
               <NextButton disabled={!draft.title.trim()} onClick={goNext} />
             </div>
-          </>
+          </FlowSheetChrome>
+        )}
+
+        {step === 'destination' && kind && (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && (
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+            <DemandDestinationStepBody draft={draft} patchDraft={patchDraft} />
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={!draft.preferredArea.trim()} onClick={goNext} />
+            </div>
+          </FlowSheetChrome>
         )}
 
         {step === 'to' && kind === 'carpool' && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-4 text-sm text-gray-600">Pin where you want to go.</p>
-            {renderMapPinPicker('to', { title: 'Destination pin', accent: 'sky' })}
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+            <DemandCarpoolDestinationStepBody
+              draft={draft}
+              patchDraft={patchDraft}
+              onOpenMap={() => setRouteMapTarget('to')}
+            />
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
-              <NextButton disabled={!draft.toPinPlaced} onClick={goNext} />
+              <NextButton
+                disabled={
+                  !draft.toPinPlaced ||
+                  (draft.destinationTimeMode === 'specific' && !draft.destinationTime)
+                }
+                onClick={goNext}
+              />
             </div>
-          </>
+          </FlowSheetChrome>
         )}
 
         {step === 'from' && kind === 'carpool' && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Pin where you are leaving from.</p>
             {renderMapPinPicker('from', { title: 'Pickup pin', accent: 'emerald' })}
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton disabled={!draft.fromPinPlaced} onClick={goNext} />
             </div>
-          </>
+          </FlowSheetChrome>
         )}
 
-        {step === 'from' && kind && usesStructuredDemandFlow(kind) && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">Going from</span>
-              <input
-                value={draft.preferredArea}
-                onChange={(event) => patchDraft({ preferredArea: event.target.value })}
-                placeholder={demandGoingFromPlaceholder(kind)}
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
-                maxLength={200}
-                autoFocus
-              />
-            </label>
+        {step === 'from' && kind && (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && (
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+            <p className="mb-4 text-sm text-gray-600">Pin where you are leaving from.</p>
+            {renderMapPinPicker('from', { title: 'Going from', accent: 'emerald' })}
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
-              <NextButton disabled={!draft.preferredArea.trim()} onClick={goNext} />
+              <NextButton disabled={!draft.fromPinPlaced} onClick={goNext} />
             </div>
-          </>
+          </FlowSheetChrome>
+        )}
+
+        {step === 'audience' && kind && (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind) || kind === 'carpool') && (
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+            <DemandVisibilityStepBody draft={draft} patchDraft={patchDraft} kind={kind} />
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton disabled={kind === 'hiking' && !draft.fitnessLevel} onClick={goNext} />
+            </div>
+          </FlowSheetChrome>
+        )}
+
+        {step === 'transport' && kind && (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && (
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+            <DemandTransportStepBody draft={draft} patchDraft={patchDraft} />
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton
+                disabled={
+                  !draft.transportMode ||
+                  (draft.transportMode === 'self' && !draft.selfVehicleType) ||
+                  (draft.transportMode === 'carpool' && draft.carpoolSeatsNeeded < 1)
+                }
+                onClick={goNext}
+              />
+            </div>
+          </FlowSheetChrome>
         )}
 
         {step === 'area' && kind && usesEventDemandFlow(kind) && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Pin where you want this event to happen.</p>
             <button
               type="button"
@@ -545,12 +555,11 @@ export const CreateDemandFlow = ({
             <div className="mt-5 pb-2">
               <NextButton disabled={!draft.areaPinPlaced} onClick={goNext} />
             </div>
-          </>
+          </FlowSheetChrome>
         )}
 
         {step === 'area' && kind && !usesEventDemandFlow(kind) && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <label className="block">
               <input
                 value={draft.preferredArea}
@@ -591,12 +600,11 @@ export const CreateDemandFlow = ({
                 onClick={goNext}
               />
             </div>
-          </>
+          </FlowSheetChrome>
         )}
 
         {step === 'when' && kind && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {dateOptions.map((option) => {
                 const active = draft.date === option.iso;
@@ -628,29 +636,31 @@ export const CreateDemandFlow = ({
               </div>
             )}
             <div className="mt-4 grid grid-cols-2 gap-3">
-              {([
-                { key: 'flexible' as TimeMode, title: 'Flexible', subtitle: 'Anytime', icon: CalendarDays },
-                { key: 'specific' as TimeMode, title: 'Set time', subtitle: 'Exact time', icon: Clock3 },
-              ]).map((option) => {
-                const active = draft.timeMode === option.key;
-                const Icon = option.icon;
-                return (
-                  <button
-                    key={option.key}
-                    type="button"
-                    onClick={() => patchDraft({ timeMode: option.key })}
-                    className={`rounded-2xl border-2 px-3 py-4 text-left ${
-                      active ? 'border-emerald-500 bg-emerald-50/50' : 'border-neutral-200 bg-white'
-                    }`}
-                  >
-                    <Icon className={`h-5 w-5 ${active ? 'text-emerald-500' : 'text-gray-500'}`} />
-                    <p className="mt-2 text-sm font-bold text-gray-900">{option.title}</p>
-                    <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
-                  </button>
-                );
-              })}
+              {demandWhenShowsTime(kind)
+                ? ([
+                    { key: 'flexible' as TimeMode, title: 'Flexible', subtitle: 'Rough window', icon: CalendarDays },
+                    { key: 'specific' as TimeMode, title: 'Set time', subtitle: 'Exact time', icon: Clock3 },
+                  ] as const).map((option) => {
+                    const active = draft.timeMode === option.key;
+                    const Icon = option.icon;
+                    return (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => patchDraft({ timeMode: option.key })}
+                        className={`rounded-2xl border-2 px-3 py-4 text-left ${
+                          active ? 'border-emerald-500 bg-emerald-50/50' : 'border-neutral-200 bg-white'
+                        }`}
+                      >
+                        <Icon className={`h-5 w-5 ${active ? 'text-emerald-500' : 'text-gray-500'}`} />
+                        <p className="mt-2 text-sm font-bold text-gray-900">{option.title}</p>
+                        <p className={EXPLORE_FLOW.choiceCardSubtitle}>{option.subtitle}</p>
+                      </button>
+                    );
+                  })
+                : null}
             </div>
-            {draft.timeMode === 'specific' && (
+            {demandWhenShowsTime(kind) && draft.timeMode === 'specific' && (
               <label className="mt-4 block">
                 <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Time</span>
                 <input
@@ -663,14 +673,21 @@ export const CreateDemandFlow = ({
             )}
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-4 pb-2">
-              <NextButton disabled={draft.timeMode === 'specific' && !draft.time} onClick={goNext} />
+              <NextButton
+                disabled={demandWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time}
+                onClick={() => {
+                  if (!demandWhenShowsTime(kind)) {
+                    patchDraft({ timeMode: 'flexible', time: '' });
+                  }
+                  goNext();
+                }}
+              />
             </div>
-          </>
+          </FlowSheetChrome>
         )}
 
         {step === 'route' && kind === 'carpool' && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Set both pickup and destination on the map.</p>
             <div className="space-y-3">
               {renderRoutePicker('from')}
@@ -683,12 +700,11 @@ export const CreateDemandFlow = ({
                 onClick={goNext}
               />
             </div>
-          </>
+          </FlowSheetChrome>
         )}
 
         {step === 'persons' && kind && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-3 text-sm text-gray-600">Including yourself</p>
             <div className="flex flex-wrap gap-2">
               {DEMAND_PARTY_PRESETS.map((value) => {
@@ -711,150 +727,29 @@ export const CreateDemandFlow = ({
             <div className="mt-5 pb-2">
               <NextButton onClick={goNext} />
             </div>
-          </>
-        )}
-
-        {step === 'fitness' && kind === 'hiking' && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
-            <div className="space-y-3">
-              {DEMAND_FITNESS_OPTIONS.map((option) => {
-                const active = draft.fitnessLevel === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => patchDraft({ fitnessLevel: option.value as DemandFitnessLevel })}
-                    className={`w-full rounded-2xl border-2 px-4 py-4 text-left ${
-                      active ? 'border-emerald-500 bg-emerald-50/50' : 'border-neutral-200 bg-white'
-                    }`}
-                  >
-                    <p className="text-sm font-bold text-gray-900">{option.title}</p>
-                    <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
-                  </button>
-                );
-              })}
-            </div>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton disabled={!draft.fitnessLevel} onClick={goNext} />
-            </div>
-          </>
+          </FlowSheetChrome>
         )}
 
         {step === 'info' && kind && usesGuidedDemandFlow(kind) && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-gray-700">Additional info</span>
-              <textarea
-                value={draft.additionalInfo}
-                onChange={(event) => patchDraft({ additionalInfo: event.target.value })}
-                rows={4}
-                placeholder={demandAdditionalInfoPlaceholder(kind)}
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
-                maxLength={1000}
-              />
-            </label>
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+            <textarea
+              value={draft.additionalInfo}
+              onChange={(event) => patchDraft({ additionalInfo: event.target.value })}
+              rows={4}
+              placeholder={demandAdditionalInfoPlaceholder(kind)}
+              aria-label={demandAdditionalInfoPlaceholder(kind)}
+              className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+              maxLength={1000}
+            />
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton onClick={goNext} />
             </div>
-          </>
-        )}
-
-        {step === 'requirements' && kind === 'carpool' && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-4 text-sm text-gray-600">Optional — tell drivers if you have any preferences.</p>
-            <div className="space-y-3">
-              <label className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-3">
-                <input
-                  type="checkbox"
-                  checked={draft.womenOnly}
-                  onChange={(event) => patchDraft({ womenOnly: event.target.checked })}
-                  className="rounded border-gray-300 text-emerald-600"
-                />
-                <span className="text-sm text-gray-800">Women only</span>
-              </label>
-              <label className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-3">
-                <input
-                  type="checkbox"
-                  checked={draft.petsAllowed}
-                  onChange={(event) => patchDraft({ petsAllowed: event.target.checked })}
-                  className="rounded border-gray-300 text-emerald-600"
-                />
-                <span className="text-sm text-gray-800">Pets allowed</span>
-              </label>
-              <label className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-3">
-                <input
-                  type="checkbox"
-                  checked={draft.requirementsOther}
-                  onChange={(event) =>
-                    patchDraft({
-                      requirementsOther: event.target.checked,
-                      requirementsOtherNote: event.target.checked ? draft.requirementsOtherNote : '',
-                    })
-                  }
-                  className="rounded border-gray-300 text-emerald-600"
-                />
-                <span className="text-sm text-gray-800">Others</span>
-              </label>
-              {draft.requirementsOther && (
-                <input
-                  value={draft.requirementsOtherNote}
-                  onChange={(event) => patchDraft({ requirementsOtherNote: event.target.value })}
-                  placeholder="e.g. Non-smoking, child seat needed…"
-                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm text-gray-900 outline-none focus:border-emerald-400"
-                  maxLength={120}
-                />
-              )}
-            </div>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton
-                disabled={draft.requirementsOther && !draft.requirementsOtherNote.trim()}
-                onClick={goNext}
-              />
-            </div>
-          </>
-        )}
-
-        {step === 'carpool' && kind && usesOutdoorActivityDemandFlow(kind) && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
-            <p className="mb-4 text-sm text-gray-600">Do you need a carpool to join this activity?</p>
-            <div className="grid grid-cols-2 gap-3">
-              {([
-                { value: true, title: 'Yes', subtitle: 'Need a ride' },
-                { value: false, title: 'No', subtitle: 'Have transport' },
-              ] as const).map((option) => {
-                const active = draft.carPoolNeeded === option.value;
-                return (
-                  <button
-                    key={option.title}
-                    type="button"
-                    onClick={() => patchDraft({ carPoolNeeded: option.value })}
-                    className={`rounded-2xl border-2 px-3 py-4 text-left ${
-                      active ? 'border-emerald-500 bg-emerald-50/50' : 'border-neutral-200 bg-white'
-                    }`}
-                  >
-                    <p className="text-sm font-bold text-gray-900">{option.title}</p>
-                    <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
-                  </button>
-                );
-              })}
-            </div>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton onClick={goNext} />
-            </div>
-          </>
+          </FlowSheetChrome>
         )}
 
         {step === 'comment' && kind && !usesGuidedDemandFlow(kind) && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <label className="block">
               <textarea
                 value={draft.comment}
@@ -869,12 +764,11 @@ export const CreateDemandFlow = ({
             <div className="mt-5 pb-2">
               <NextButton onClick={goNext} />
             </div>
-          </>
+          </FlowSheetChrome>
         )}
 
         {step === 'review' && kind && (
-          <>
-            <SheetHeader title={headerTitle} showBack onBack={goBack} onClose={handleClose} />
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-gray-700">
               <p className="flex items-center gap-2 font-semibold text-gray-900">
                 {kind === 'carpool' ? (
@@ -890,22 +784,29 @@ export const CreateDemandFlow = ({
               </p>
               {draft.title && (
                 <p className="mt-2 text-xs text-gray-600">
-                  <span className="font-semibold text-gray-700">
-                    {usesGuidedDemandFlow(kind) ? 'Title: ' : 'Looking for: '}
-                  </span>
+                  <span className="font-semibold text-gray-700">Title: </span>
                   {draft.title}
                 </p>
               )}
-              {usesStructuredDemandFlow(kind) && draft.preferredArea && (
+              {(usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && draft.preferredArea && (
                 <p className="mt-2 text-xs text-gray-600">
-                  <span className="font-semibold text-gray-700">Going from: </span>
-                  {draft.preferredArea}
+                  <span className="font-semibold text-gray-700">Destination: </span>
+                  {EXPLORE_REGION_PILL_LABELS[draft.preferredArea] ?? draft.preferredArea}
+                </p>
+              )}
+              {(usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && draft.fromPinPlaced && (
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
+                  <MapPin className="h-3.5 w-3.5 text-emerald-500" />
+                  Going from: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
               {usesCarpoolDemandFlow(kind) && draft.toPinPlaced && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600">
                   <MapPin className="h-3.5 w-3.5 text-sky-500" />
-                  Going to: {draft.toLatitude?.toFixed(4)}, {draft.toLongitude?.toFixed(4)}
+                  Destination: {draft.toLatitude?.toFixed(4)}, {draft.toLongitude?.toFixed(4)}
+                  {draft.destinationTimeMode === 'specific' && draft.destinationTime
+                    ? ` · ${draft.destinationTime}`
+                    : ' · flexible arrival'}
                 </p>
               )}
               {usesCarpoolDemandFlow(kind) && draft.fromPinPlaced && (
@@ -917,60 +818,25 @@ export const CreateDemandFlow = ({
               {draft.date && (
                 <p className="mt-1 text-xs text-gray-500">
                   {draft.date}
-                  {draft.timeMode === 'specific' && draft.time ? ` · ${draft.time}` : ' · flexible time'}
-                </p>
-              )}
-              {kind === 'hiking' && draft.fitnessLevel && (
-                <p className="mt-1 text-xs text-gray-500">
-                  Fitness: {DEMAND_FITNESS_OPTIONS.find((option) => option.value === draft.fitnessLevel)?.title}
+                  {demandWhenShowsTime(kind) && draft.timeMode === 'specific' && draft.time
+                    ? ` · ${draft.time}`
+                    : demandWhenShowsTime(kind)
+                      ? ' · flexible time'
+                      : ''}
                 </p>
               )}
               {usesEventDemandFlow(kind) && draft.areaPinPlaced && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600">
                   <MapPin className="h-3.5 w-3.5 text-emerald-500" />
-                  Location: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
+                  Where: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
-              {usesOutdoorActivityDemandFlow(kind) && draft.additionalInfo.trim() && (
-                <p className="mt-2 line-clamp-3 text-xs text-gray-600">{draft.additionalInfo}</p>
+              {(usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind) || usesCarpoolDemandFlow(kind) || usesEventDemandFlow(kind)) && (
+                <p className="mt-1 text-xs text-gray-500">{draft.partySize} people</p>
               )}
-              {usesOutdoorActivityDemandFlow(kind) && (
-                <p className="mt-1 text-xs text-gray-500">
-                  Carpool: {draft.carPoolNeeded ? 'Yes' : 'No'}
-                </p>
-              )}
-              {usesCarpoolDemandFlow(kind) && (draft.womenOnly || draft.petsAllowed || draft.requirementsOther) && (
-                <p className="mt-1 text-xs text-gray-500">
-                  {draft.womenOnly ? 'Women only' : ''}
-                  {draft.womenOnly && draft.petsAllowed ? ' · ' : ''}
-                  {draft.petsAllowed ? 'Pets allowed' : ''}
-                  {draft.requirementsOther && draft.requirementsOtherNote.trim()
-                    ? `${draft.womenOnly || draft.petsAllowed ? ' · ' : ''}${draft.requirementsOtherNote.trim()}`
-                    : ''}
-                </p>
-              )}
-              {usesCarpoolDemandFlow(kind) && draft.additionalInfo.trim() && (
-                <p className="mt-2 line-clamp-3 text-xs text-gray-600">{draft.additionalInfo}</p>
-              )}
-              {draft.areaPinPlaced && !usesCarpoolDemandFlow(kind) && !usesEventDemandFlow(kind) && !usesStructuredDemandFlow(kind) && (
-                <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
-                  <MapPin className="h-3.5 w-3.5" />
-                  Map pin: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
-                </p>
-              )}
-              {draft.preferredArea && !usesStructuredDemandFlow(kind) && !usesCarpoolDemandFlow(kind) && (
-                <p className="mt-2 text-xs text-gray-600">
-                  <span className="font-semibold text-gray-700">{demandAreaFieldLabel(kind)}: </span>
-                  {draft.preferredArea}
-                </p>
-              )}
-              <p className="mt-1 text-xs text-gray-500">{draft.partySize} people</p>
-              {!usesGuidedDemandFlow(kind) && (
-                <p className="mt-2 line-clamp-4 text-xs text-gray-600">{draft.comment}</p>
-              )}
-              {usesOutdoorActivityDemandFlow(kind) && (
-                <p className="mt-2 line-clamp-4 text-xs text-gray-600">{buildDemandComment(draft)}</p>
-              )}
+              <p className="mt-2 line-clamp-6 whitespace-pre-line text-xs text-gray-600">
+                {buildDemandComment(draft)}
+              </p>
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
@@ -978,17 +844,11 @@ export const CreateDemandFlow = ({
                 .filter((target) => target !== 'review')
                 .map((target) => {
                   const editLabel =
-                    target === 'area'
-                      ? usesEventDemandFlow(kind)
-                        ? 'Location'
-                        : kind === 'event'
-                          ? 'Activity'
-                          : kind === 'guide'
-                            ? 'Details'
-                            : kind === 'carpool'
-                              ? 'Route details'
-                              : 'Location'
-                      : REVIEW_EDIT_LABELS[target] ?? target;
+                    target === 'destination'
+                      ? 'Destination'
+                      : target === 'area'
+                        ? 'Where'
+                        : REVIEW_EDIT_LABELS[target] ?? target;
                   return (
                     <button
                       key={target}
@@ -1008,9 +868,9 @@ export const CreateDemandFlow = ({
             </p>
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
-              <NextButton label={usesGuidedDemandFlow(kind) ? 'Publish' : 'Post request'} loading={submitting} onClick={handleSubmit} />
+              <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
             </div>
-          </>
+          </FlowSheetChrome>
         )}
     </ExploreResponsiveSheet>
   );

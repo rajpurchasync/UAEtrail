@@ -9,8 +9,8 @@ import {
   ExploreCardHeadline,
   ExploreCardRatingRow,
   ExploreCardTypeBadge,
+  ExploreActivityPeekMeta,
   ExploreVenueImageBadges,
-  type MapFocusCoords,
 } from './ExploreCardPresentation';
 
 interface ExploreMapPeekCardProps {
@@ -18,7 +18,6 @@ interface ExploreMapPeekCardProps {
   onClose: () => void;
   footer: ReactNode;
   children?: ReactNode;
-  onFocusMapLocation?: (coords: MapFocusCoords) => void;
   /** Keep footer CTAs visible; scroll body only (desktop item sheet). */
   pinFooter?: boolean;
   /** Inline rail / list — hide dismiss controls on the card chrome. */
@@ -31,7 +30,6 @@ export const ExploreMapPeekCard = ({
   onClose,
   footer,
   children,
-  onFocusMapLocation,
   pinFooter = false,
   embedMode = false,
 }: ExploreMapPeekCardProps) => {
@@ -99,13 +97,13 @@ export const ExploreMapPeekCard = ({
         }
       >
         <ExploreCardHeadline sections={card.sections} size="lg" tone={card.tone} />
+        {card.source === 'activity' ? <ExploreActivityPeekMeta card={card} /> : null}
         <ExploreCardRatingRow card={card} />
         <ExploreCardDetailList
           details={card.sections.details}
           compact
           mapLatitude={card.mapLatitude}
           mapLongitude={card.mapLongitude}
-          onFocusMap={onFocusMapLocation}
         />
         {children}
       </div>

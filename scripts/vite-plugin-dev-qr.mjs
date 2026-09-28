@@ -113,6 +113,7 @@ async function refreshQrArtifacts(server, { force = false } = {}) {
   const target = resolveMobileTarget(server);
   if (!target?.url) {
     console.log('\n  ⚠️  No reachable LAN URL found — phone cannot use localhost.\n');
+    server.__devQrLastUrl = null;
     return null;
   }
 
@@ -123,11 +124,12 @@ async function refreshQrArtifacts(server, { force = false } = {}) {
 
   const primary = target.url;
   const pngPath = resolve(process.cwd(), 'dev-mobile-qr.png');
-  await qrcode.toFile(pngPath, primary, { margin: 4, width: 512 });
+  await qrcode.toFile(pngPath, primary, { margin: 4, width: 512, errorCorrectionLevel: 'M' });
 
   const qrPage = `${primary.replace(/\/$/, '')}${QR_PAGE}`;
   console.log(`\n  📱 Mobile URL (scan this) → ${primary}`);
   console.log(`  📱 QR page (live)         → ${qrPage}`);
+  console.log(`  📱 QR image (live)        → ${primary.replace(/\/$/, '')}/__dev/mobile-qr.png`);
   console.log(`  📱 QR image file          → dev-mobile-qr.png`);
   console.log(`     (picked ${target.source})\n`);
 
@@ -149,6 +151,26 @@ async function refreshQrArtifacts(server, { force = false } = {}) {
   return target;
 }
 
+async function sendQrPng(server, res) {
+  const target = await refreshQrArtifacts(server);
+  if (!target?.url) {
+    res.statusCode = 503;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    res.end('No LAN URL — start dev with npm run dev and use the Network URL from the terminal.');
+    return;
+  }
+  const buffer = await qrcode.toBuffer(target.url, {
+    margin: 4,
+    width: 512,
+    errorCorrectionLevel: 'M',
+  });
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'image/png');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(buffer);
+}
+
 function scheduleRefresh(server) {
   const tryRefresh = (attempt = 0) => {
     const hasLan = pickBestMobileUrl([], server.config.server.port ?? 5175);
@@ -166,6 +188,10 @@ export function devQrPlugin() {
     name: 'dev-qr',
     apply: 'serve',
     configureServer(server) {
+      server.middlewares.use('/__dev/mobile-qr.png', (req, res) => {
+        void sendQrPng(server, res);
+      });
+
       server.middlewares.use(DEV_URL_PATH, (_req, res) => {
         void refreshQrArtifacts(server).then((target) => {
           res.setHeader('Content-Type', 'application/json');

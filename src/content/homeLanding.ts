@@ -7,15 +7,22 @@ export const HOME_HERO_EYEBROW_MOBILE = 'UAE & GCC outdoors';
 
 export const HOME_HERO_HEADLINE = 'Find your next hike, camp, or outdoor crew in the UAE';
 
+/** Mobile hero — short, emotional; fits one viewport without wrapping into a wall of text. */
+export const HOME_HERO_HEADLINE_MOBILE = 'Find your people. Get outside. Go together.';
+
 export const HOME_HERO_SUBLINE =
   'Discover trails and group outings on a live map, request to join with a verified host, and show up with people who actually follow through.';
 
-/** Shorter hero copy for mobile — headline carries the main message. */
+/** Shorter hero copy for mobile — outcome first; map/hosts live in sections below. */
 export const HOME_HERO_SUBLINE_MOBILE =
-  'Trails, camps, and crew on a live map — join with a verified host.';
+  'Find company for hikes, camps, and outdoor plans near you.';
 
 export const HOME_HERO_PRIMARY_CTA = 'Open Map';
+/** Desktop hero only — mobile keeps `HOME_HERO_PRIMARY_CTA`. */
+export const HOME_HERO_PRIMARY_CTA_DESKTOP = 'View on Map';
 export const HOME_HERO_JOIN_CTA = 'Join free';
+/** Desktop hero secondary button label (title case). */
+export const HOME_HERO_JOIN_CTA_DESKTOP = 'Join Free';
 
 export const HOME_PROOF_STATS = [
   {
@@ -123,8 +130,9 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
 ];
 
 export const HOME_LIVE_SECTION = {
-  title: 'Outings happening this week',
+  title: 'Activities near you',
   subtitle: 'Real group plans posted by hosts and members — join from the map or say what you want.',
+  viewAllLabel: 'View all',
 } as const;
 
 export const HOME_DAY_TIMELINE = {

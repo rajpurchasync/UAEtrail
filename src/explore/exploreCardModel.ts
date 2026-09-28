@@ -6,7 +6,7 @@ import {
   type ExploreCardSections,
 } from './exploreCopy';
 import { resolveExplorePrice, type ExplorePriceInfo } from './explorePriceLabel';
-import { extractExploreRequirementBadges } from './exploreRequirementBadges';
+import { enrichExploreActivityRequirementBadges } from './exploreRequirementBadges';
 
 export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
 export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
@@ -157,7 +157,10 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     childFriendly: item.locationCard?.childFriendly ?? false,
     difficulty: item.locationCard?.difficulty ?? null,
     surfaceTypes: item.locationCard?.surfaceType ?? [],
-    requirementBadges: extractExploreRequirementBadges(activity?.requirements),
+    requirementBadges: enrichExploreActivityRequirementBadges(activity?.requirements, {
+      kind,
+      carPoolEnabled: Boolean(activity?.carPoolEnabled),
+    }),
     mapLatitude: item.latitude ?? null,
     mapLongitude: item.longitude ?? null,
   };

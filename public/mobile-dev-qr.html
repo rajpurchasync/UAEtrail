@@ -35,8 +35,14 @@
       padding: 16px;
       display: inline-block;
       margin-bottom: 16px;
+      min-height: 280px;
+      min-width: 280px;
     }
-    canvas { display: block; }
+    .qr-wrap img {
+      display: block;
+      width: 280px;
+      height: 280px;
+    }
     a { color: #38bdf8; word-break: break-all; font-size: 0.95rem; }
     .hint { margin-top: 20px; font-size: 0.8rem; color: #64748b; }
   </style>
@@ -45,17 +51,21 @@
   <main>
     <h1>Open on your phone</h1>
     <p id="lead">Scan this code on the same Wi‑Fi as your laptop.</p>
-    <div class="qr-wrap"><canvas id="qr"></canvas></div>
+    <div class="qr-wrap">
+      <img id="qr" alt="" width="280" height="280" hidden />
+    </div>
     <a id="url" href="#"></a>
-    <p class="hint">Run <code>npm run dev:all</code> so the API is available too.</p>
+    <p class="hint">
+      Run <code>npm run dev:all</code> so the API is available. If the page does not load on your phone, allow Node/Vite
+      through Windows Firewall on port 5175.
+    </p>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script>
     const host = window.location.hostname;
     const isLocal = host === 'localhost' || host === '127.0.0.1';
     const link = document.getElementById('url');
     const lead = document.getElementById('lead');
-    const canvas = document.getElementById('qr');
+    const qrImg = document.getElementById('qr');
 
     async function resolveTarget() {
       if (!isLocal) {
@@ -84,21 +94,23 @@
           '<code>http://192.168.x.x:5175/mobile-dev-qr.html</code></span>';
         link.textContent = 'Waiting for dev server…';
         link.removeAttribute('href');
+        qrImg.hidden = true;
         return;
-      }
-
-      if (target === lastTarget) return;
-      lastTarget = target;
-
-      if (isLocal) {
-        lead.textContent = 'Using your Wi‑Fi address (not localhost). Scan on the same network.';
       }
 
       link.href = target;
       link.textContent = target;
-      if (typeof QRCode !== 'undefined') {
-        QRCode.toCanvas(canvas, target, { width: 280, margin: 4 });
+
+      if (target !== lastTarget) {
+        lastTarget = target;
+        if (isLocal) {
+          lead.textContent = 'Using your Wi‑Fi address (not localhost). Scan on the same network.';
+        }
       }
+
+      qrImg.hidden = false;
+      qrImg.alt = 'QR code: ' + target;
+      qrImg.src = '/__dev/mobile-qr.png?t=' + Date.now();
     }
 
     void render();

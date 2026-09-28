@@ -78,6 +78,8 @@ Any signed-in member â€” no host approval to post demand.
 
 **Add uses â€œpin on the mapâ€ / location** â€” not **Going from** (places are not trips).
 
+**Organize venue pick:** Hiking/camping use **`GET /places/registry`** (see `DOMAIN.md` § Place registry). Publish: `src/services/organizeActivityPublish.ts` (payload shape: `src/utils/activityPublishPayload.ts`; host console uses the same builder via `activityFormState.ts`).
+
 ---
 
 ## Organize â†’ Activity (generic buddy)

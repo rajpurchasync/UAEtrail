@@ -5,7 +5,7 @@ import { LandingShell } from './LandingShell';
 const STAT_ICONS = [ShieldCheck, Users, UserPlus] as const;
 
 export const HomeProofStrip = () => (
-  <div className="border-y border-neutral-100 bg-neutral-50 py-5 max-md:-mt-px md:py-10">
+  <div className="border-y border-neutral-100 bg-neutral-50 py-5 max-md:-mt-px max-md:rounded-t-[1.25rem] max-md:border-t-0 md:py-10">
     <LandingShell>
       <ul className="grid grid-cols-3 gap-3 md:gap-8">
         {HOME_PROOF_STATS.map((stat, index) => {

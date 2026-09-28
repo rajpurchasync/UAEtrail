@@ -138,8 +138,15 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
   }
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { error?: ApiError } | null;
-    const message = body?.error?.message ?? `Request failed with status ${response.status}`;
+    const body = (await response.json().catch(() => null)) as {
+      error?: ApiError & { details?: { issues?: Array<{ path: (string | number)[]; message: string }> } };
+    } | null;
+    let message = body?.error?.message ?? `Request failed with status ${response.status}`;
+    if (body?.error?.code === 'validation_error' && body.error.details?.issues?.length) {
+      const first = body.error.details.issues[0];
+      const field = first.path?.length ? first.path.join('.') : 'field';
+      message = `${message} (${field}: ${first.message})`;
+    }
     const error = new Error(message) as Error & { status: number; code?: string };
     error.status = response.status;
     error.code = body?.error?.code;

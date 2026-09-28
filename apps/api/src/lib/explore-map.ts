@@ -131,8 +131,21 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     const event = activityEvents[index];
     if (resolveJoinMode(event.joinMode, event.requirements) === 'private') continue;
     const carpool = isCarpoolActivity(activity);
-    const fromCoords = resolveFromCoords(activity, event.location);
-    const toCoords = carpool ? resolveToCoords(activity) : null;
+    const hikingDual =
+      !carpool &&
+      activity.meetingDifferent === true &&
+      activity.startLat != null &&
+      activity.startLng != null &&
+      activity.meetingLat != null &&
+      activity.meetingLng != null;
+    const fromCoords = hikingDual
+      ? { latitude: activity.startLat as number, longitude: activity.startLng as number }
+      : resolveFromCoords(activity, event.location);
+    const toCoords = carpool
+      ? resolveToCoords(activity)
+      : hikingDual
+        ? { latitude: activity.meetingLat as number, longitude: activity.meetingLng as number }
+        : null;
     const display = buildExploreActivityDisplay(activity);
     items.push({
       id: `activity:${activity.id}`,
@@ -161,7 +174,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       slotsTotal: activity.slotsTotal,
       participantPreviews: activity.participantPreviews,
       image: activity.images?.[0] ?? activity.bannerUrl ?? null,
-      carPoolEnabled: carpool,
+      carPoolEnabled: carpool || Boolean(activity.carPoolEnabled),
       priceLabel: display.priceLabel,
       priceDisplay: display.priceDisplay,
       fromLabel: display.fromLabel,

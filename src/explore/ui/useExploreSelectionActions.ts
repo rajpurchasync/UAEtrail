@@ -11,6 +11,11 @@ import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useA
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
+import {
+  canLinkCarpoolToActivity,
+  linkActivityCarpoolOffer,
+} from '../linkActivityCarpoolOffer';
+import { ORGANIZE_CARPOOL_LINKED_NOTICE } from '../createFlowCopy';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
@@ -54,6 +59,8 @@ export const useExploreSelectionActions = ({
 }: UseExploreSelectionActionsArgs) => {
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
+  const [carpoolLinkActivityId, setCarpoolLinkActivityId] = useState<string | null>(null);
+  const [carpoolLinkLoading, setCarpoolLinkLoading] = useState(false);
 
   const selected = items.find((item) => item.id === selectedId) ?? null;
 
@@ -197,7 +204,9 @@ export const useExploreSelectionActions = ({
         setSelectedId(`activity:${activity.id}`);
       }
 
-      setVenueNotice('Activity published — it is now on the map.');
+      if (canLinkCarpoolToActivity(activity)) {
+        setCarpoolLinkActivityId(activity.id);
+      }
     },
     [
       queryClient,
@@ -208,6 +217,34 @@ export const useExploreSelectionActions = ({
       setSelectedId,
     ]
   );
+
+  const handleLinkCarpool = useCallback(async () => {
+    const activity = selected?.activity;
+    if (!activity || !tenantId || !canLinkCarpoolToActivity(activity)) return;
+
+    setCarpoolLinkLoading(true);
+    try {
+      await linkActivityCarpoolOffer(tenantId, activity);
+      await reloadExploreMap(queryClient);
+      setCarpoolLinkActivityId(null);
+      setVenueNotice(ORGANIZE_CARPOOL_LINKED_NOTICE);
+    } catch (err) {
+      setVenueNotice(err instanceof Error ? err.message : 'Could not link carpool. Try again.');
+    } finally {
+      setCarpoolLinkLoading(false);
+    }
+  }, [selected?.activity, tenantId, queryClient]);
+
+  const showCarpoolLinkOnPeek = Boolean(
+    selected?.activity &&
+      carpoolLinkActivityId === selected.activity.id &&
+      canLinkCarpoolToActivity(selected.activity)
+  );
+
+  const handleCloseSelection = useCallback(() => {
+    setSelectedId(null);
+    setCarpoolLinkActivityId(null);
+  }, [setSelectedId]);
 
   const handleDemandSubmitted = useCallback(
     (result: DemandSubmitResult) => {
@@ -255,6 +292,10 @@ export const useExploreSelectionActions = ({
     handleHostMessage,
     handleHostManage,
     handleActivityPublished,
+    handleLinkCarpool,
+    showCarpoolLinkOnPeek,
+    carpoolLinkLoading,
+    handleCloseSelection,
     handleDemandSubmitted,
     handleContributeSubmitted,
   };

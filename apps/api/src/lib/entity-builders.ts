@@ -47,6 +47,7 @@ export type LocationCreateInput = {
   guidePreview?: string | null;
   unlockPriceAed?: number;
   submittedBy?: RelationConnect;
+  registryListed?: boolean;
 };
 
 export type ActivityCreateInput = {
@@ -182,6 +183,7 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     guidePreview: data.guidePreview ?? null,
     unlockPriceAed: data.unlockPriceAed ?? 29,
     submittedById: extractConnectedId(data.submittedBy),
+    registryListed: data.registryListed !== false,
     createdAt: now,
     updatedAt: now
   };

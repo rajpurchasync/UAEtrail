@@ -108,6 +108,18 @@ Shop identity: **tenant** (become-host) + **merchant profile** (ShopManage), lin
 
 **Code folder:** `src/components/organisation-console/` (implementation name). **UI:** host / guide / agency / shop per `hostCopy.ts`.
 
+## Place registry vs activity anchors
+
+| Concept | Meaning | API | On venue map? | In organize picker? |
+|---------|---------|-----|---------------|---------------------|
+| **Registry place** | Admin-published or member-contributed venue (approved) | `GET /places`, `GET /places/registry` | Yes (`source: venue`) | Yes |
+| **Pending contribution** | Member/host submitted, awaiting admin | `status: draft` | No | Yes (caller’s drafts in registry) |
+| **Activity anchor** | `locationId` for custom outing label only | Created with `activityAnchor: true` | **No** (`registryListed: false`) | No |
+
+**Organize hiking/camping** picks a **registry place** (`registryPlaceId`) or uses a **custom label** + **activity anchor** row. **Shops** are not places — separate tenant at `/shop/:id`.
+
+**Publish pipeline (frontend):** `src/services/organizeActivityPublish.ts` → `POST /host/activities` via `buildOrganisationActivityPublishPayload`. Host console modals use the same payload builder with `form.locationId`.
+
 ## Product rules (stable)
 
 1. Typed place URLs — `/trail`, `/camp`, `/event`.

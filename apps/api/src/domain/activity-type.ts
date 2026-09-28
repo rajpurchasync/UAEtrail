@@ -64,7 +64,7 @@ const hasLegacyLinkedCarpoolRouteFields = (body: {
   Boolean(body.carPoolFromPoint?.trim()) ||
   Boolean(body.carPoolToPoint?.trim());
 
-/** Reject linked carpool on hiking/camping/events — use standalone `activityType: 'carpool'`. */
+/** Reject legacy linked carpool *route* fields on hiking/camping/events — not `carPoolEnabled` ride offers. */
 export const assertNoLegacyLinkedCarpoolFields = (
   activityType: SharedActivityType | string | undefined,
   body: {
@@ -79,11 +79,11 @@ export const assertNoLegacyLinkedCarpoolFields = (
 ): void => {
   if (String(activityType ?? '').toLowerCase() === 'carpool') return;
 
-  if (body.carPoolEnabled === true || hasLegacyLinkedCarpoolRouteFields(body)) {
+  if (hasLegacyLinkedCarpoolRouteFields(body)) {
     throw new ApiError(
       400,
       'linked_carpool_deprecated',
-      'Linked carpool on hiking, camping, or events is no longer supported. Create a standalone carpool activity instead.'
+      'Legacy linked carpool routes are no longer supported. Offer carpool from your activity or create a standalone rideshare.'
     );
   }
 };

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Loader2, Lock } from 'lucide-react';
-import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import { api, type PersonPublicProfileDTO } from '../api/index';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
@@ -27,6 +27,7 @@ export const MemberProfile = () => {
   const [buddyMessage, setBuddyMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hostedActivities, setHostedActivities] = useState<ActivityDTO[]>([]);
 
   useEffect(() => {
     if (!userId) return;
@@ -38,6 +39,24 @@ export const MemberProfile = () => {
       .catch((err) => setError(err instanceof Error ? err.message : 'We couldn\'t find this profile'))
       .finally(() => setLoading(false));
   }, [userId]);
+
+  useEffect(() => {
+    const hostPath =
+      profile && profile.visibilityState === 'full' ? profile.hostProfilePath : null;
+    if (!hostPath?.startsWith('/operator/')) {
+      setHostedActivities([]);
+      return;
+    }
+    const slug = hostPath.slice('/operator/'.length);
+    if (!slug) {
+      setHostedActivities([]);
+      return;
+    }
+    void api
+      .getOrganisationProfile(slug)
+      .then((res) => setHostedActivities(res.data.activities ?? []))
+      .catch(() => setHostedActivities([]));
+  }, [profile]);
 
   const loadBuddyRelationship = () => {
     if (!userId || !user || user.id === userId) return;
@@ -188,6 +207,7 @@ export const MemberProfile = () => {
           onAcceptBuddyRequest={() => void handleAcceptBuddyRequest()}
           onDeclineBuddyRequest={() => void handleDeclineBuddyRequest()}
           onMessage={() => navigate(messagesRouteForRole(user!.role, fullProfile.id))}
+          hostedActivities={hostedActivities}
         />
       ) : null}
     </ConsumerShell>

@@ -105,6 +105,44 @@ export const openApiSpec = swaggerJsdoc({
           }
         }
       },
+      '/places/registry': {
+        get: {
+          tags: ['Places', 'Explore'],
+          summary: 'Venue registry for organize/host pickers',
+          description:
+            'Merged list for trail/camp/event pickers: published registry places (`registryListed`), the caller’s draft submissions when authenticated, and the full admin catalog for platform admins. Filter with `activityType` (hiking, camping, event). Legacy browse list remains `GET /places` (paginated, registry-listed venues only).',
+          security: [{ bearerAuth: [] }, {}],
+          parameters: [
+            {
+              name: 'activityType',
+              in: 'query',
+              schema: { type: 'string', enum: ['hiking', 'camping', 'event'] },
+              description: 'Venue kind on the place record.'
+            },
+            {
+              name: 'countryCode',
+              in: 'query',
+              schema: { type: 'string', minLength: 2, maxLength: 2 },
+              description: 'ISO country filter (default AE catalog).'
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Deduped place rows sorted by name.',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      data: { type: 'array', items: { type: 'object' } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       '/shop/organisation/profile': {
         get: {
           tags: ['Shop', 'Host'],

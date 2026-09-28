@@ -31,6 +31,15 @@ describe('buildParticipationRequirementLines', () => {
       buildParticipationRequirementLines({ participationMode: 'approval', joinMode: 'private' })
     ).toEqual([APPROVAL_PARTICIPATION_REQUIREMENT, PRIVATE_JOIN_REQUIREMENT]);
   });
+
+  it('writes private RSVP line without approval suffix', () => {
+    expect(
+      buildParticipationRequirementLines({ participationMode: 'rsvp', joinMode: 'private' })
+    ).toEqual([
+      RSVP_PARTICIPATION_REQUIREMENT,
+      'Private: group or invite only — invite link only',
+    ]);
+  });
 });
 
 describe('mergeParticipationRequirements', () => {
@@ -64,6 +73,7 @@ describe('defaultParticipationModeForActivityType', () => {
   it('defaults events to RSVP and other types to approval', () => {
     expect(defaultParticipationModeForActivityType('event')).toBe('rsvp');
     expect(defaultParticipationModeForActivityType('hiking')).toBe('approval');
+    expect(defaultParticipationModeForActivityType('camping')).toBe('approval');
   });
 });
 
@@ -103,6 +113,26 @@ describe('buildHostActivityPublishPayload', () => {
       pricingMode: 'free',
       price: 0,
     });
+    expect(payload).not.toHaveProperty('paymentTerms');
+    expect(payload).not.toHaveProperty('carPoolEnabled');
+  });
+
+  it('omits paymentTerms when empty so API zod validation passes', () => {
+    const payload = buildHostActivityPublishPayload({
+      activityType: 'camping',
+      locationId: 'loc-c',
+      title: 'Weekend camp out',
+      description: 'Overnight camp with gear check.',
+      date: '2026-09-24',
+      time: '18:00',
+      capacity: 6,
+      pricing: { pricingMode: 'free', price: 0, paymentTerms: null },
+      location: { meetingPoint: 'Meet', meetingLat: 25, meetingLng: 55, startLat: 25, startLng: 55 },
+      requirements: [],
+      joinMode: 'open',
+      participationMode: 'approval',
+    });
+    expect(payload.paymentTerms).toBeUndefined();
   });
 
   it('adds carpool fields for carpool activity type', () => {

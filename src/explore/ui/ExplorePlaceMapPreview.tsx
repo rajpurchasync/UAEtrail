@@ -7,11 +7,10 @@ import { ExploreMapPeekCard, ExploreMapPeekPosition } from './ExploreMapPeekCard
 interface ExplorePlaceMapPreviewProps {
   item: ExploreMapItemDTO;
   onClose: () => void;
-  onFocusMapLocation?: (coords: { lat: number; lng: number }) => void;
 }
 
 /** Map pin preview — unified peek card floating above the map. */
-export const ExplorePlaceMapPreview = ({ item, onClose, onFocusMapLocation }: ExplorePlaceMapPreviewProps) => {
+export const ExplorePlaceMapPreview = ({ item, onClose }: ExplorePlaceMapPreviewProps) => {
   const card = buildExploreCardModel(item);
   const accent =
     card.kind === 'camping' ? 'amber' : card.kind === 'event' ? 'violet' : 'emerald';
@@ -21,7 +20,6 @@ export const ExplorePlaceMapPreview = ({ item, onClose, onFocusMapLocation }: Ex
       <ExploreMapPeekCard
         card={card}
         onClose={onClose}
-        onFocusMapLocation={onFocusMapLocation}
         footer={
           card.reviewPath ? (
             <PlaceCardActions

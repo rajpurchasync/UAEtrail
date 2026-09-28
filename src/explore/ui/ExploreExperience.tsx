@@ -16,6 +16,7 @@ import { ExploreJoinOverlays } from './ExploreJoinOverlays';
 import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
 import { useExploreBrowseList } from './useExploreBrowseList';
+import { resolveExploreItemScheduleDate } from './exploreMapPinModel';
 import { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
@@ -109,17 +110,27 @@ export const ExploreExperience = () => {
     };
   }, []);
 
-  const { mapPins, listItems, shopListSections, browseFilterHint } = useExploreBrowseList({
+  const { mapPins, listItems, shopListSections } = useExploreBrowseList({
     items,
     mapFilter: browse.mapFilter,
     activityFilter: browse.activityFilter,
     venueFilter: browse.venueFilter,
     venueRegions: browse.venueRegions,
     query: browse.query,
+    activityDate: browse.activityDate,
     sidebarPanel: browse.sidebarPanel,
     isDesktop,
     desktopBrowseTab: browse.desktopBrowseTab,
   });
+
+  const scheduledDates = useMemo(() => {
+    const dates = new Set<string>();
+    for (const item of items) {
+      const iso = resolveExploreItemScheduleDate(item);
+      if (iso) dates.add(iso);
+    }
+    return [...dates].sort();
+  }, [items]);
 
   const exploreMapTiles = useMemo(
     () => getExploreMapTiles(viewport.exploreMapStyle),
@@ -132,11 +143,13 @@ export const ExploreExperience = () => {
 
   const handleMapPinClick = useCallback(
     (pin: PlaceMapPin) => {
-      const itemId = pin.exploreItemId ?? pin.id;
+      const stack = pin.stackExploreItemIds;
+      const itemId =
+        (stack?.find((id) => id === selectedId) ?? stack?.[0]) ?? pin.exploreItemId ?? pin.id;
       const item = items.find((entry) => entry.id === itemId);
       if (item) selection.openItem(item);
     },
-    [items, selection]
+    [items, selectedId, selection]
   );
 
   const closeCreateFlow = () => {
@@ -152,17 +165,18 @@ export const ExploreExperience = () => {
       shopListSections={shopListSections}
       desktopBrowseTab={browse.desktopBrowseTab}
       mapFilter={browse.mapFilter}
-      searchExpanded={browse.searchExpanded}
-      onSearchExpandedChange={browse.setSearchExpanded}
+      browseFilterKeys={browse.browseFilterKeys}
+      placesMode={browse.placesMode}
+      onMapFilterChange={browse.applyMapFilter}
+      activityDate={browse.activityDate}
+      onActivityDateChange={browse.applyActivityDate}
+      scheduledDates={scheduledDates}
+      venueRegions={browse.venueRegions}
+      onVenueRegionsChange={browse.applyVenueRegions}
       onDesktopBrowseTabChange={browse.applyDesktopBrowseTab}
       panel={browse.panel}
       sidebarPanel={browse.sidebarPanel}
-      activityFilter={browse.activityFilter}
-      venueFilter={browse.venueFilter}
-      browseFilterHint={browseFilterHint}
       onPanelChange={browse.applyPanel}
-      onActivityFilterChange={browse.applyActivityFilter}
-      onVenueFilterChange={browse.applyVenueFilter}
       query={browse.query}
       onQueryChange={browse.setQuery}
       onQuerySync={() => browse.syncExploreUrl({ q: browse.query })}
@@ -172,7 +186,6 @@ export const ExploreExperience = () => {
       }}
       onClose={browse.closeListPanel}
       onOpenItem={selection.openItem}
-      onFocusMapLocation={viewport.handleFocusMapLocation}
     />
   );
 
@@ -188,7 +201,7 @@ export const ExploreExperience = () => {
 
       <div className="relative flex min-h-0 flex-1 lg:flex-row">
         {browse.showListPanel && isDesktop && (
-          <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:border-r lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300">
+          <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-r lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300">
             {browsePanel}
           </aside>
         )}
@@ -198,8 +211,14 @@ export const ExploreExperience = () => {
           listOpen={browse.listOpen}
           showListPanel={browse.showListPanel}
           mapFilter={browse.mapFilter}
-          desktopFilterKeys={browse.desktopFilterKeys}
+          browseFilterKeys={browse.browseFilterKeys}
+          placesMode={browse.placesMode}
           onMapFilterChange={browse.applyMapFilter}
+          activityDate={browse.activityDate}
+          onActivityDateChange={browse.applyActivityDate}
+          scheduledDates={scheduledDates}
+          venueRegions={browse.venueRegions}
+          onVenueRegionsChange={browse.applyVenueRegions}
           exploreMapStyle={viewport.exploreMapStyle}
           exploreMapTiles={exploreMapTiles}
           onToggleMapStyle={viewport.toggleExploreMapStyle}
@@ -229,7 +248,7 @@ export const ExploreExperience = () => {
           joinUiState={selection.selectedCard?.showHostActions ? undefined : selection.joinUiState}
           joinStateLoading={selection.joinStateLoading}
           canFulfillParticipantIntent={fulfill.canFulfillParticipantIntent}
-          onCloseSelection={() => setSelectedId(null)}
+          onCloseSelection={selection.handleCloseSelection}
           onJoin={selection.handleJoin}
           onMessage={
             selection.selectedCard?.showHostActions
@@ -238,8 +257,10 @@ export const ExploreExperience = () => {
           }
           onFulfillIntent={fulfill.handleFulfillIntent}
           onManage={selection.selectedCard?.showHostActions ? selection.handleHostManage : undefined}
+          showCarpoolLink={selection.showCarpoolLinkOnPeek}
+          onLinkCarpool={selection.handleLinkCarpool}
+          carpoolLinkLoading={selection.carpoolLinkLoading}
           onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
-          onFocusMapLocation={viewport.handleFocusMapLocation}
           onCloseMobileBrowse={browse.closeListPanel}
           mobileBrowseSheet={browsePanel}
         />

@@ -1,4 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { getRegionsForCountry } from '../config/regions';
+import { resolveVenueItemRegion } from './venueRegionFilter';
 
 const GCC_OFFSET: Record<string, string> = {
   AE: '+04:00',
@@ -52,9 +54,25 @@ const venuePopularityScore = (item: ExploreMapItemDTO): number => {
   return reviewCount * 1000 + averageRating * 100 + featured * 10;
 };
 
-/** Venues and shops ranked by reviews and rating, then featured catalog entries. */
+const venueRegionSortIndex = (item: ExploreMapItemDTO): number => {
+  const raw = resolveVenueItemRegion(item);
+  if (!raw?.trim()) return 999;
+  const normalized = raw.trim().toLowerCase();
+  const order = getRegionsForCountry('AE');
+  const idx = order.findIndex(
+    (region) =>
+      normalized === region.toLowerCase() ||
+      normalized.includes(region.toLowerCase()) ||
+      region.toLowerCase().includes(normalized)
+  );
+  return idx === -1 ? 998 : idx;
+};
+
+/** Places & shops — group by emirate/state, then name (not distance). */
 export const sortExploreVenues = (items: ExploreMapItemDTO[]): ExploreMapItemDTO[] =>
   [...items].sort((left, right) => {
+    const regionDiff = venueRegionSortIndex(left) - venueRegionSortIndex(right);
+    if (regionDiff !== 0) return regionDiff;
     const scoreDiff = venuePopularityScore(right) - venuePopularityScore(left);
     if (scoreDiff !== 0) return scoreDiff;
     return left.title.localeCompare(right.title);

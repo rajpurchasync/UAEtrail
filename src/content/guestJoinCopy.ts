@@ -3,18 +3,28 @@ import {
   type ParticipationMode,
 } from '@uaetrail/shared-types';
 
+export type GuestJoinSheetIntent = 'activity' | 'place';
+
 export type GuestJoinCopyInput = {
+  intent?: GuestJoinSheetIntent;
   participationMode?: ParticipationMode | null;
   requirements?: string[] | null;
   activityTitle?: string | null;
 };
 
 export const guestJoinSheetHeadline = (input: GuestJoinCopyInput): string => {
+  if (input.intent === 'place') return 'View details — join free';
   const mode = resolveParticipationMode(input.participationMode, input.requirements);
   return mode === 'rsvp' ? "Say you're going — join free" : 'Request to join — sign up free';
 };
 
 export const guestJoinSheetBody = (input: GuestJoinCopyInput): string => {
+  if (input.intent === 'place') {
+    const title = input.activityTitle?.trim();
+    return title
+      ? `Create a free account to open "${title}" — trail info, photos, and reviews from the community.`
+      : 'Create a free account to view trail and camp locations on UAE Trail.';
+  }
   const mode = resolveParticipationMode(input.participationMode, input.requirements);
   const title = input.activityTitle?.trim();
   if (mode === 'rsvp') {

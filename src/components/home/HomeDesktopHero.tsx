@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../../config/seo';
-import { HOME_HERO_EYEBROW, HOME_HERO_HEADLINE, HOME_HERO_JOIN_CTA, HOME_HERO_PRIMARY_CTA, HOME_HERO_SUBLINE } from '../../content/homeLanding';
+import { HOME_HERO_EYEBROW, HOME_HERO_HEADLINE, HOME_HERO_JOIN_CTA_DESKTOP, HOME_HERO_PRIMARY_CTA_DESKTOP, HOME_HERO_SUBLINE } from '../../content/homeLanding';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
 import { AppButtonLink } from '../mobile/AppButton';
 
@@ -18,6 +18,7 @@ export const HomeDesktopHero = ({ joinHref, signInHref }: HomeDesktopHeroProps) 
         src={HOME_HERO_IMAGE_JPEG}
         alt=""
         decoding="async"
+        fetchPriority="high"
         className="landing-hero-image"
       />
     </picture>
@@ -48,15 +49,12 @@ export const HomeDesktopHero = ({ joinHref, signInHref }: HomeDesktopHeroProps) 
         </h1>
         <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/90">{HOME_HERO_SUBLINE}</p>
 
-        <div className="mt-9 flex flex-col items-start gap-3">
+        <div className="landing-hero-desktop-ctas mt-9">
           <AppButtonLink to={EXPLORE_MAP_PATH} className="landing-hero-btn shadow-lg shadow-black/25">
-            {HOME_HERO_PRIMARY_CTA}
+            {HOME_HERO_PRIMARY_CTA_DESKTOP}
           </AppButtonLink>
-          <Link
-            to={joinHref}
-            className="text-[15px] font-semibold text-white underline underline-offset-2 hover:text-white/90"
-          >
-            {HOME_HERO_JOIN_CTA}
+          <Link to={joinHref} className="ios-btn landing-hero-btn landing-hero-btn-secondary">
+            {HOME_HERO_JOIN_CTA_DESKTOP}
           </Link>
         </div>
       </div>

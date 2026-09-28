@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
-import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import type { PersonPublicProfileDTO } from '../../api/index';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { ProfileStampsRow } from './ProfileStampsRow';
+import { PublicProfileSectionHeading } from './PublicProfileSectionHeading';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { MembershipTierBadge } from '../ui/MembershipTierBadge';
+import { ShareButton } from '../ui/ShareButton';
+import { ProfileActivityListRow } from './ProfileActivityListRow';
+import { AccountSectionHeader } from '../account/AccountSectionHeader';
 import type { ProfileStamp } from '../../utils/profileStamps';
 import { formatMemberAge } from '../../utils/profileAge';
 import { parseLanguagesList } from '../../utils/profileLanguages';
@@ -14,9 +18,7 @@ import { resolvePublicMemberRoleLabel } from '../../utils/profileRoleLabel';
 
 export type FullMemberProfile = Extract<PersonPublicProfileDTO, { visibilityState: 'full' }>;
 
-const SectionHeading = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-neutral-400">{children}</h2>
-);
+const SectionHeading = PublicProfileSectionHeading;
 
 const StatBlock = ({ label, value }: { label: string; value: number }) => (
   <div className="px-4 py-4 text-center">
@@ -58,13 +60,14 @@ interface MemberProfileViewProps {
   onAcceptBuddyRequest: () => void;
   onDeclineBuddyRequest: () => void;
   onMessage: () => void;
+  hostedActivities?: ActivityDTO[];
 }
 
 export const MemberProfileView = ({
   profile,
   stamps,
   isSelf,
-  userId: _userId,
+  userId,
   userLoggedIn,
   buddyRel,
   buddyBusy,
@@ -73,6 +76,7 @@ export const MemberProfileView = ({
   onAcceptBuddyRequest,
   onDeclineBuddyRequest,
   onMessage,
+  hostedActivities = [],
 }: MemberProfileViewProps) => {
   const roleLabel = resolvePublicMemberRoleLabel(profile);
   const languages = parseLanguagesList(profile.languages);
@@ -83,6 +87,15 @@ export const MemberProfileView = ({
     <div className="space-y-3 pb-nav-safe animate-fade-up">
       <GlassCard padding className="!p-0 overflow-hidden">
         <div className="relative bg-gradient-to-b from-emerald-50/90 to-white px-5 pb-5 pt-6 text-center">
+          <div className="absolute right-3 top-3 flex items-center gap-1">
+            <ShareButton
+              title={`${profile.displayName} on UAE Trail`}
+              text={`${profile.displayName} on UAE Trail — find hikes, camps, and outdoor activities across the UAE.`}
+              path={`/member/${userId}`}
+              iconOnly
+              light
+            />
+          </div>
           <SecureAvatar
             src={profile.avatarUrl}
             name={profile.displayName}
@@ -151,6 +164,21 @@ export const MemberProfileView = ({
       {stamps.length > 0 && (
         <GlassCard padding>
           <ProfileStampsRow stamps={stamps} title="Badges" align="start" />
+        </GlassCard>
+      )}
+
+      {hostedActivities.length > 0 && (
+        <GlassCard padding className="space-y-3">
+          <AccountSectionHeader
+            title="Activities hosted"
+            actionTo={profile.hostProfilePath ?? undefined}
+            actionLabel={profile.hostProfilePath ? 'Host profile' : undefined}
+          />
+          <div className="space-y-2">
+            {hostedActivities.map((activity) => (
+              <ProfileActivityListRow key={activity.id} activity={activity} />
+            ))}
+          </div>
         </GlassCard>
       )}
 

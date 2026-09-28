@@ -14,6 +14,7 @@ describe('api domain aliases (Phase 1)', () => {
 
   it('exposes public place browse aliases alongside legacy location methods', () => {
     expect(typeof api.getPublicPlaces).toBe('function');
+    expect(typeof api.fetchPlaceRegistry).toBe('function');
     expect(typeof api.getPublicLocations).toBe('function');
     expect(typeof api.getPublicPlaceDetail).toBe('function');
     expect(typeof api.getPublicLocationDetail).toBe('function');

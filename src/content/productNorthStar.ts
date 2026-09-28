@@ -40,7 +40,7 @@ export const PRODUCT_AUTH_SIGNUP_SUBLINE = 'Find your crew and get outside toget
 /** Signup profile wizard — finish signing up after auth. */
 export const PRODUCT_SIGNUP_FINISH_TITLE = 'Finish signing up';
 export const PRODUCT_SIGNUP_FINISH_SUBLINE = 'A few details so your crew and plans fit you.';
-export const PRODUCT_SIGNUP_STEP_DOB = 'Date of birth';
+export const PRODUCT_SIGNUP_STEP_DOB = 'Date of Birth';
 export const PRODUCT_SIGNUP_STEP_GENDER = 'Gender';
 export const PRODUCT_SIGNUP_STEP_LOCATION = 'Where are you based?';
 export const PRODUCT_SIGNUP_STEP_LANGUAGES = 'Languages you speak';

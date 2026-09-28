@@ -1,9 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
 import type { ParticipationMode } from '@uaetrail/shared-types';
 import { joinAuthPath } from '../../config/platform';
-import { guestJoinSheetBody, guestJoinSheetHeadline } from '../../content/guestJoinCopy';
+import {
+  guestJoinSheetBody,
+  guestJoinSheetHeadline,
+  type GuestJoinSheetIntent,
+} from '../../content/guestJoinCopy';
 import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { EXPLORE_Z } from '../../config/exploreTheme';
 import { AppButtonLink } from '../../components/mobile/AppButton';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 
@@ -11,6 +16,7 @@ interface ExploreGuestJoinSheetProps {
   open: boolean;
   onClose: () => void;
   activityTitle?: string;
+  intent?: GuestJoinSheetIntent;
   participationMode?: ParticipationMode | null;
   requirements?: string[] | null;
 }
@@ -20,16 +26,23 @@ export const ExploreGuestJoinSheet = ({
   open,
   onClose,
   activityTitle,
+  intent = 'activity',
   participationMode,
   requirements,
 }: ExploreGuestJoinSheetProps) => {
   const location = useLocation();
   const joinHref = joinAuthPath(`${location.pathname}${location.search}`);
   const { href: signInHref } = buildSignInRedirect(location);
-  const copyInput = { participationMode, requirements, activityTitle };
+  const copyInput = { intent, participationMode, requirements, activityTitle };
 
   return (
-    <ExploreResponsiveSheet open={open} onClose={onClose} maxWidthClass="lg:max-w-md">
+    <ExploreResponsiveSheet
+      open={open}
+      onClose={onClose}
+      maxWidthClass="lg:max-w-md"
+      zClass={EXPLORE_Z.guestJoinSheet}
+      overlayFixed
+    >
       <div className="px-4 pb-[calc(var(--safe-bottom)+16px)] pt-1 lg:px-6 lg:pb-6">
         <h2 className="text-lg font-bold text-neutral-900">{guestJoinSheetHeadline(copyInput)}</h2>
         <p className="mt-2 text-sm leading-relaxed text-neutral-600">{guestJoinSheetBody(copyInput)}</p>

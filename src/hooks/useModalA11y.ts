@@ -18,9 +18,19 @@ export const useModalA11y = (open: boolean, onClose: () => void, panelRef: RefOb
     previousFocus.current = document.activeElement as HTMLElement | null;
     const panel = panelRef.current;
 
+    let focusDelayId: number | undefined;
     const focusFirst = () => {
+      const preferred = panel?.querySelector<HTMLElement>('[data-flow-primary-field]');
       const nodes = panel?.querySelectorAll<HTMLElement>(FOCUSABLE);
-      nodes?.[0]?.focus();
+      const target = preferred ?? nodes?.[0];
+      if (!target) return;
+
+      const run = () => target.focus({ preventScroll: true });
+      if (preferred && window.matchMedia('(pointer: coarse)').matches) {
+        focusDelayId = window.setTimeout(run, 80);
+        return;
+      }
+      run();
     };
     const timer = window.setTimeout(focusFirst, 0);
 
@@ -50,6 +60,7 @@ export const useModalA11y = (open: boolean, onClose: () => void, panelRef: RefOb
 
     return () => {
       window.clearTimeout(timer);
+      if (focusDelayId !== undefined) window.clearTimeout(focusDelayId);
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = '';
       previousFocus.current?.focus();

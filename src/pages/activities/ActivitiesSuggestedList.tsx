@@ -28,7 +28,6 @@ export const ActivitiesSuggestedList = ({ items, searchQuery = '' }: ActivitiesS
         return (
           <ExploreListRow
             key={item.id}
-            item={item}
             card={card}
             onClick={() => navigate(card.path)}
           />

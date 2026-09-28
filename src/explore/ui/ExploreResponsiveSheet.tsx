@@ -9,6 +9,8 @@ interface ExploreResponsiveSheetProps {
   panelClassName?: string;
   maxWidthClass?: string;
   zClass?: string;
+  /** Full-viewport overlay (needed above map peek z-index when rendered outside map stage). */
+  overlayFixed?: boolean;
   showHandle?: boolean;
   /** Visible title wired to `aria-labelledby`. */
   title?: string;
@@ -24,6 +26,7 @@ export const ExploreResponsiveSheet = ({
   panelClassName = '',
   maxWidthClass = 'lg:max-w-lg',
   zClass = 'z-[1400]',
+  overlayFixed = false,
   showHandle = true,
   title,
   ariaLabel = 'Panel',
@@ -34,9 +37,11 @@ export const ExploreResponsiveSheet = ({
 
   if (!open) return null;
 
+  const overlayPosition = overlayFixed ? 'fixed' : 'absolute';
+
   return (
     <div
-      className={`absolute inset-0 ${zClass} flex flex-col justify-end ${EXPLORE_SHEET.scrim} lg:fixed lg:items-center lg:justify-center lg:p-6`}
+      className={`${overlayPosition} inset-0 ${zClass} flex flex-col justify-end ${EXPLORE_SHEET.scrim} lg:items-center lg:justify-center lg:p-6 ${overlayFixed ? '' : 'lg:fixed'}`}
     >
       <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
       <div

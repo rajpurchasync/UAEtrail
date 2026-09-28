@@ -30,8 +30,10 @@ export const locationSubmitBodySchema = z.object({
   guidePdfKey: z.string().max(500).optional().nullable(),
   guideMarkdown: z.string().max(50000).optional().nullable(),
   premiumImages: z.array(mediaUrlSchema).default([]),
-  /** When true, publish the pin immediately on the explore map (mobile quick-create). */
-  mapPin: z.boolean().optional()
+  /** When true, publish the pin immediately (legacy mobile quick-create). */
+  mapPin: z.boolean().optional(),
+  /** Activity-only anchor — not listed in the public place registry or venue map pins. */
+  activityAnchor: z.boolean().optional()
 });
 
 export type LocationSubmitBody = z.infer<typeof locationSubmitBodySchema>;

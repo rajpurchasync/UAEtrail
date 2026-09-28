@@ -275,30 +275,13 @@ export const useOrganisationActivityFormModal = ({
       setPlaces(injectedPlaceOptions);
       return;
     }
-    if (canPickHostTenant) {
-      let disposed = false;
-      void api
-        .getAdminPlaces()
-        .then((res) => {
-          if (!disposed) setPlaces(res.data);
-        })
-        .catch(() => {
-          if (!disposed) setPlaces([]);
-        });
-      return () => {
-        disposed = true;
-      };
-    }
     let disposed = false;
-    void Promise.all([
-      api.getPublicPlaces(),
-      hostTenantId
-        ? api.getOrganisationSubmittedPlaces(hostTenantId)
-        : Promise.resolve({ data: [] as PlaceDTO[] }),
-    ])
-      .then(([publicRes, pendingRes]) => {
-        if (disposed) return;
-        setPlaces([...publicRes.data, ...pendingRes.data.filter((l) => l.status === 'draft')]);
+    void api
+      .fetchPlaceRegistry({
+        placeType: activityType,
+      })
+      .then((data) => {
+        if (!disposed) setPlaces(data);
       })
       .catch(() => {
         if (!disposed) setPlaces([]);
@@ -306,7 +289,7 @@ export const useOrganisationActivityFormModal = ({
     return () => {
       disposed = true;
     };
-  }, [open, hostTenantId, injectedPlaceOptions, canPickHostTenant]);
+  }, [open, hostTenantId, injectedPlaceOptions, canPickHostTenant, activityType]);
 
   const placeCenter = useMemo(() => {
     const place = places.find((v) => v.id === form.locationId);

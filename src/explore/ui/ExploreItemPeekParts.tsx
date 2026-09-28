@@ -1,10 +1,10 @@
-import { ExternalLink } from 'lucide-react';
+import { Car, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { PlaceCardActions } from '../../components/ui/PlaceCardActions';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import { ORGANIZE_DEMAND_PREFILL_TITLE } from '../createFlowCopy';
+import { ORGANIZE_DEMAND_PREFILL_TITLE, ORGANIZE_LINK_CARPOOL_HINT, ORGANIZE_LINK_CARPOOL_LABEL } from '../createFlowCopy';
 import {
   ExploreCardCapacityRow,
   ExploreCardPeopleRow,
@@ -21,6 +21,9 @@ export interface ExploreItemPeekFooterProps {
   joinUiState?: JoinRequestUiState;
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
+  showCarpoolLink?: boolean;
+  onLinkCarpool?: () => void;
+  carpoolLinkLoading?: boolean;
 }
 
 /** Map peek card footer — join, host, shop, and demand actions. */
@@ -34,6 +37,9 @@ export const ExploreItemPeekFooter = ({
   joinUiState,
   onWithdraw,
   joinStateLoading = false,
+  showCarpoolLink = false,
+  onLinkCarpool,
+  carpoolLinkLoading = false,
 }: ExploreItemPeekFooterProps) => {
   const isShop = card.source === 'shop';
   const isDemand = card.source === 'demand';
@@ -43,6 +49,21 @@ export const ExploreItemPeekFooter = ({
     <>
       {card.showHostActions && onMessage && onManage ? (
         <>
+          {showCarpoolLink && onLinkCarpool ? (
+            <div className="mb-3 rounded-2xl border border-sky-100 bg-sky-50/80 px-3 py-3">
+              <p className="text-sm font-semibold text-gray-900">{ORGANIZE_LINK_CARPOOL_LABEL}</p>
+              <p className="mt-1 text-xs leading-relaxed text-gray-600">{ORGANIZE_LINK_CARPOOL_HINT}</p>
+              <button
+                type="button"
+                disabled={carpoolLinkLoading}
+                onClick={onLinkCarpool}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+              >
+                <Car className="h-4 w-4" aria-hidden />
+                {carpoolLinkLoading ? 'Linking…' : ORGANIZE_LINK_CARPOOL_LABEL}
+              </button>
+            </div>
+          ) : null}
           <button
             type="button"
             onClick={onMessage}
@@ -86,13 +107,23 @@ export const ExploreItemPeekFooter = ({
           {card.primaryCta}
         </button>
       ) : card.showJoinActions && joinUiState && !joinStateLoading ? (
-        <JoinRequestActions
-          uiState={joinUiState}
-          joinLabel={card.primaryCta}
-          isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
-          onJoin={onJoin}
-          onWithdraw={onWithdraw}
-        />
+        <>
+          <JoinRequestActions
+            uiState={joinUiState}
+            joinLabel={card.primaryCta}
+            isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
+            onJoin={onJoin}
+            onWithdraw={onWithdraw}
+          />
+          {card.secondaryCta && card.source === 'activity' ? (
+            <Link
+              to={card.path}
+              className="block w-full py-2.5 text-center text-sm font-semibold text-gray-600"
+            >
+              {card.secondaryCta}
+            </Link>
+          ) : null}
+        </>
       ) : card.showJoinActions && joinStateLoading ? (
         <div className="flex justify-center py-3">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
@@ -188,10 +219,10 @@ export const ExploreItemPeekBody = ({ card }: { card: ExploreCardModel }) => {
         <p className="mt-3 text-sm leading-relaxed text-gray-600">{card.sections.aboutLine}</p>
       )}
       <ExploreCardCapacityRow card={card} />
-      {card.requirementBadges && card.requirementBadges.length > 0 && (
+      {card.source !== 'activity' && card.requirementBadges && card.requirementBadges.length > 0 && (
         <ExploreCardRequirementBadges badges={card.requirementBadges} />
       )}
-      {card.price && card.source === 'activity' && (
+      {card.price && card.source !== 'activity' && (
         <p className="mt-3">
           <span
             className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${

@@ -299,6 +299,7 @@ adminPlaceItemPaths.forEach((path) => {
       images: body.images,
       featured: body.featured,
       status: nextStatus,
+      ...(activating ? { registryListed: true } : {}),
       distance: body.distance,
       duration: body.duration,
       elevation: body.elevation,

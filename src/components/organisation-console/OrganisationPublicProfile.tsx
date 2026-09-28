@@ -3,21 +3,17 @@ import { Link } from 'react-router-dom';
 import {
   Award,
   ExternalLink,
-  Globe,
   Loader2,
   MapPin,
-  Mountain,
   Pencil,
   ShieldCheck,
-  Star,
   Users,
 } from 'lucide-react';
 import { ReviewDTO, type ActivityDTO, type TenantPublicDTO } from '@uaetrail/shared-types';
-import { NAV_ICONS } from '../../config/navIcons';
 import { api, OrganisationDetails } from '../../api/index';
-import { ActivityCard } from '../ui/ActivityCard';
 import { ReviewSection } from '../ui/ReviewSection';
 import { SecureAvatar } from '../ui/SecureAvatar';
+import { ShareButton } from '../ui/ShareButton';
 import { PageMeta } from '../seo/PageMeta';
 import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
@@ -25,6 +21,9 @@ import { HostMessageButton } from '../ui/HostMessageButton';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';
+import { ProfileActivityListRow } from '../profile/ProfileActivityListRow';
+import { PublicProfileSectionHeading } from '../profile/PublicProfileSectionHeading';
+import { AccountSectionHeader } from '../account/AccountSectionHeader';
 import { useAuth } from '../../context/AuthContext';
 import { COUNTRIES } from '../../constants';
 import { hostNotFoundLabel, hostProfileLabel, hostPublicProfileLabel, normalizeHostKind } from '../../utils/hostCopy';
@@ -192,51 +191,67 @@ export const OrganisationPublicProfile = ({
         </GlassCard>
       )}
 
-      <GlassCard padding className="!p-5">
-        <div className="flex items-start gap-4">
-          <SecureAvatar src={tenant.ownerAvatar} name={tenant.ownerName} className="h-20 w-20 text-2xl shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900">{tenant.name}</h1>
-              <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden />
-            </div>
-            <p className="mt-0.5 text-sm text-neutral-500">{tenant.ownerName}</p>
-            {tenant.ownerBio && !editing && (
-              <p className="mt-2 text-sm leading-relaxed text-neutral-600">{tenant.ownerBio}</p>
-            )}
+      <GlassCard padding className="!p-0 overflow-hidden">
+        <div className="relative bg-gradient-to-b from-emerald-50/90 to-white px-5 pb-5 pt-6 text-center">
+          <div className="absolute right-3 top-3 flex items-center gap-1">
+            <ShareButton
+              title={tenant.name}
+              text={`Check out ${tenant.name} on UAE Trail — hikes, camps, and outdoor activities in the UAE.`}
+              path={`/operator/${slug}`}
+              iconOnly
+              light
+            />
           </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
-            <Users className="h-3.5 w-3.5" /> {tenant.memberCount} team
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
-            <NAV_ICONS.activities className="h-3.5 w-3.5" strokeWidth={2} /> {activities.length} upcoming
-          </span>
-          {avgRating && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900">
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {avgRating} ({reviews.length})
-            </span>
+          <SecureAvatar
+            src={tenant.ownerAvatar}
+            name={tenant.ownerName}
+            className="mx-auto h-24 w-24 text-2xl ring-4 ring-white shadow-md"
+          />
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">{tenant.name}</h1>
+            <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" aria-hidden />
+          </div>
+          <p className="mt-1 text-sm font-medium text-neutral-500">{tenant.ownerName}</p>
+          {tenant.ownerBio && !editing && (
+            <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-neutral-600">{tenant.ownerBio}</p>
           )}
         </div>
 
+        <div className="grid grid-cols-3 divide-x divide-neutral-100 border-t border-neutral-100">
+          <div className="px-2 py-4 text-center">
+            <p className="text-xl font-bold tabular-nums text-neutral-900">{tenant.memberCount}</p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Team</p>
+          </div>
+          <div className="px-2 py-4 text-center">
+            <p className="text-xl font-bold tabular-nums text-neutral-900">{activities.length}</p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Upcoming</p>
+          </div>
+          <div className="px-2 py-4 text-center">
+            <p className="text-xl font-bold tabular-nums text-neutral-900">{avgRating ?? '—'}</p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+              {avgRating ? `Rating (${reviews.length})` : 'Rating'}
+            </p>
+          </div>
+        </div>
+
         {!isOwner && user?.id !== tenant.ownerId && (
-          <div className="mt-4">
-            <HostMessageButton hostUserId={tenant.ownerId} size="md" className="w-full sm:w-auto" />
+          <div className="border-t border-neutral-100 px-4 py-4">
+            <HostMessageButton hostUserId={tenant.ownerId} size="md" className="w-full" />
           </div>
         )}
 
         {isOwner && (
-          <AppButton
-            type="button"
-            variant="tint"
-            className="mt-4 w-full sm:w-auto"
-            onClick={() => setEditing((open) => !open)}
-          >
-            <Pencil className="mr-1.5 inline h-4 w-4" />
-            {editing ? 'Close editor' : 'Edit public profile'}
-          </AppButton>
+          <div className="border-t border-neutral-100 px-4 py-4">
+            <AppButton
+              type="button"
+              variant="tint"
+              className="w-full"
+              onClick={() => setEditing((open) => !open)}
+            >
+              <Pencil className="mr-1.5 inline h-4 w-4" />
+              {editing ? 'Close editor' : 'Edit public profile'}
+            </AppButton>
+          </div>
         )}
       </GlassCard>
 
@@ -343,9 +358,7 @@ export const OrganisationPublicProfile = ({
 
       {!editing && detailItems.length > 0 && (
         <GlassCard padding>
-          <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-neutral-900">
-            <Globe className="h-4 w-4 text-emerald-600" /> About
-          </h2>
+          <PublicProfileSectionHeading>About</PublicProfileSectionHeading>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {detailItems.map((item) => (
               <div key={item.label}>
@@ -402,22 +415,19 @@ export const OrganisationPublicProfile = ({
         </GlassCard>
       )}
 
-      <GlassCard padding>
-        <div className="mb-3 flex items-center gap-2">
-          <Mountain className="h-4 w-4 text-emerald-600" />
-          <h2 className="text-base font-bold text-neutral-900">Activities hosted</h2>
-        </div>
+      <GlassCard padding className="space-y-3">
+        <AccountSectionHeader title="Activities hosted" />
         {activities.length === 0 ? (
-          <p className="py-6 text-center text-sm text-neutral-500">No upcoming activities scheduled.</p>
+          <p className="py-4 text-center text-sm text-neutral-500">No upcoming activities scheduled.</p>
         ) : (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="space-y-2">
             {activities.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity} />
+              <ProfileActivityListRow key={activity.id} activity={activity} />
             ))}
           </div>
         )}
         {isOwner && (
-          <Link to="/host/activities" className="mt-3 inline-block text-sm font-semibold text-emerald-700">
+          <Link to="/host/activities" className="inline-block text-sm font-semibold text-emerald-700">
             Manage events →
           </Link>
         )}

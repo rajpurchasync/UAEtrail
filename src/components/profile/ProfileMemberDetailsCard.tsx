@@ -9,6 +9,7 @@ import { GlassCard } from '../mobile/GlassCard';
 import { Dialog } from '../ui/Dialog';
 import { formatLanguages, parseLanguagesList } from '../../utils/profileLanguages';
 import { formatMemberAge, computeAgeFromDateOfBirth } from '../../utils/profileAge';
+import { PRODUCT_SIGNUP_STEP_DOB } from '../../content/productNorthStar';
 import { meProfileSignupGateKey } from '../../utils/signupProfileGate';
 import {
   MemberDetailsEditFields,
@@ -107,7 +108,7 @@ export const ProfileMemberDetailsCard = ({ profile, onUpdated }: ProfileMemberDe
           </div>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between gap-3">
-              <dt className="text-neutral-500">Date of birth</dt>
+              <dt className="text-neutral-500">{PRODUCT_SIGNUP_STEP_DOB}</dt>
               <dd className="font-semibold text-neutral-900 text-right">
                 {profile.dateOfBirth ? (ageLabel ?? profile.dateOfBirth) : '—'}
               </dd>

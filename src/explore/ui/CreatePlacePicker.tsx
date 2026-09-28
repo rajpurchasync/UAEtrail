@@ -180,16 +180,7 @@ export const CreatePlacePicker = ({
       </div>
 
       <header className="absolute inset-x-0 top-0 z-[600] px-4 pt-safe-plus-2">
-        <div className="flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="inline-flex items-center gap-0.5 rounded-full bg-white/95 px-3 py-2 text-sm font-semibold text-gray-800 shadow-md"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back
-          </button>
-
+        <div className="relative flex items-center justify-center">
           <div className="flex rounded-full bg-white/95 p-1 shadow-md">
             {(['general', 'specific'] as LocationPrecision[]).map((mode) => {
               const active = precision === mode;
@@ -211,7 +202,7 @@ export const CreatePlacePicker = ({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-md"
+            className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-md"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -229,21 +220,31 @@ export const CreatePlacePicker = ({
         </div>
       </header>
 
-      <div className="absolute bottom-[calc(var(--safe-bottom)+16px)] left-4 right-4 z-[600] flex items-end justify-between gap-3">
+      <div className="absolute bottom-[calc(var(--safe-bottom)+16px)] left-4 right-4 z-[600] space-y-3">
+        <div className="flex items-end justify-between gap-3">
+          <button
+            type="button"
+            onClick={handleLocate}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg"
+            aria-label="My location"
+          >
+            <Navigation className={`h-5 w-5 text-gray-800 ${locating ? 'animate-pulse' : ''}`} />
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 rounded-2xl bg-emerald-600 py-4 text-center text-base font-bold text-white shadow-lg shadow-emerald-600/30"
+          >
+            {confirmLabel}
+          </button>
+        </div>
         <button
           type="button"
-          onClick={handleLocate}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg"
-          aria-label="My location"
+          onClick={onBack}
+          className="-ml-1 inline-flex items-center gap-0.5 rounded-full py-2 pl-2 pr-3 text-sm font-semibold text-white drop-shadow-md"
         >
-          <Navigation className={`h-5 w-5 text-gray-800 ${locating ? 'animate-pulse' : ''}`} />
-        </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          className="flex-1 rounded-2xl bg-emerald-600 py-4 text-center text-base font-bold text-white shadow-lg shadow-emerald-600/30"
-        >
-          {confirmLabel}
+          <ChevronLeft className="h-5 w-5" aria-hidden />
+          Back
         </button>
       </div>
     </div>
