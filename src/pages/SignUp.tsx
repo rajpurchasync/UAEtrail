@@ -11,6 +11,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { api } from '../api/index';
 import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
 import { PRODUCT_AUTH_SIGNUP_SUBLINE } from '../content/productNorthStar';
+import { PERSON_NAME_MAX, PERSON_NAME_MIN, sanitizePersonNameInput, validatePersonName } from '../utils/personName';
 
 export const SignUp = () => {
   const { register, signInWithGoogle, loading } = useAuth();
@@ -24,7 +25,8 @@ export const SignUp = () => {
     searchParams.get('redirect')
   );
   const [formData, setFormData] = useState({
-    displayName: '',
+    givenName: '',
+    surname: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -62,6 +64,17 @@ export const SignUp = () => {
       return;
     }
 
+    const givenNameError = validatePersonName(formData.givenName, 'Name');
+    if (givenNameError) {
+      setError(givenNameError);
+      return;
+    }
+    const surnameError = validatePersonName(formData.surname, 'Surname');
+    if (surnameError) {
+      setError(surnameError);
+      return;
+    }
+
     const passwordError = getPasswordValidationError(formData.password);
     if (passwordError) {
       setError(passwordError);
@@ -77,7 +90,8 @@ export const SignUp = () => {
       const response = await register({
         email: formData.email,
         password: formData.password,
-        displayName: formData.displayName,
+        givenName: formData.givenName.trim(),
+        surname: formData.surname.trim(),
         accountType: 'participant',
         referralCode,
         groupInviteToken,
@@ -169,15 +183,33 @@ export const SignUp = () => {
 
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Full Name</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Name</label>
             <input
               className={fieldClass}
-              placeholder="Your full name"
-              value={formData.displayName}
-              onChange={(e) => setFormData((c) => ({ ...c, displayName: e.target.value }))}
+              placeholder="First name"
+              value={formData.givenName}
+              onChange={(e) =>
+                setFormData((c) => ({ ...c, givenName: sanitizePersonNameInput(e.target.value) }))
+              }
               required
-              minLength={2}
-              maxLength={80}
+              minLength={PERSON_NAME_MIN}
+              maxLength={PERSON_NAME_MAX}
+              autoComplete="given-name"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Surname</label>
+            <input
+              className={fieldClass}
+              placeholder="Surname"
+              value={formData.surname}
+              onChange={(e) =>
+                setFormData((c) => ({ ...c, surname: sanitizePersonNameInput(e.target.value) }))
+              }
+              required
+              minLength={PERSON_NAME_MIN}
+              maxLength={PERSON_NAME_MAX}
+              autoComplete="family-name"
             />
           </div>
           <div>

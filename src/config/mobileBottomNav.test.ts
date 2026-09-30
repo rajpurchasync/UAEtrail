@@ -15,7 +15,9 @@ describe('shouldShowMobileBottomNav', () => {
   });
 
   it('hides for guests and other routes', () => {
-    expect(shouldShowMobileBottomNav('/explore', '', false)).toBe(false);
+    expect(shouldShowMobileBottomNav('/explore', '', false)).toBe(true);
+    expect(shouldShowMobileBottomNav('/activities', '', false)).toBe(true);
+    expect(shouldShowMobileBottomNav('/messages', '', false)).toBe(true);
     expect(shouldShowMobileBottomNav('/profile', '', false)).toBe(false);
     expect(shouldShowMobileBottomNav('/activity/abc', '', true)).toBe(false);
   });

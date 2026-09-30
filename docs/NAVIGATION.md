@@ -19,6 +19,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Priority order:** Hero → bio & languages → profile completion → quick actions → hosting (hosts only) → **My Badges** → settings → sign out.
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Empty “Up next”:** single CTA → Explore map.
+- **Saved map (wishlist):** `/profile/wishlist` — starred places/plans from explore; hub quick action **Saved**; Settings → **Saved map & alerts**. In-app match notifications (E11) — not host console.
 - **Settings stack:** `/profile/settings` — member details (DOB, gender, based in, languages), password, email, sign out (not on main hub).
 
 ### Post-auth member details (`/welcome`)
@@ -29,8 +30,9 @@ After sign-up, sign-in, or OTP verify, **participants** and **shop members** (`m
 |------|--------|-----------|
 | 1 | Date of birth | `profile.dateOfBirth` |
 | 2 | Gender | `profile.gender` |
-| 3 | Languages you speak | `profile.languages` |
-| 4 | Where you're based (country) | `profile.countryCode` |
+| 3 | Where you're based (country) | `profile.countryCode` |
+
+**Languages** are added later from **Profile → Edit profile** or Settings → Member details (`PATCH /me/profile`), not during `/welcome`.
 
 - One question per screen; saves on **Finish** via `PATCH /me/profile/signup-details`.
 - After **Finish** → **`/explore`** (optional map location prompt). No host/invite chooser.
@@ -85,6 +87,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, `/shop`, bare `/activitie
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
 - Pass `list: true` to `explorePath()` only when opening the browse sheet intentionally.
 - Filter/panel query params select map context; they do not imply list mode.
+- **Others drill-down (Activities tab):** `filter=others` → optional `subtype=events|activities`; when `subtype=activities`, optional `outingTopic` (`climbing`, `trail_run`, `workshop`, `community`, …). Helpers: `explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })`.
 
 ## Explore FAB (+)
 
@@ -172,6 +175,29 @@ Personal hub tabs (`/activities?tab=joined|hosted`) remain for Past, Scheduled, 
 ## Copy
 
 User-facing label for map browse: **Explore** (nav, drawer, CTAs). Internal URL panel name `venues` stays in query strings only.
+
+## Connections QA (local / staging seed)
+
+Buddy, follow, and group flows for manual QA use demo users from the main seed.
+
+| Command | When |
+|---------|------|
+| `cd apps/api && SEED_DATA=true npm run seed` | Full reset + `seedConnectionsDemo` (with demo users) |
+| `cd apps/api && SEED_CONNECTIONS=true npm run seed` | Refresh buddy/follow data only (demo users must already exist) |
+
+**Primary tester:** `visitor@uaetrails.app` / `Visitor@12345` (see root `README.md`).
+
+After seed, the API logs a **Connections QA** playbook (buddies, incoming/outgoing requests, follow notifications, friends group). UI entry points:
+
+| Scenario | Where |
+|----------|--------|
+| Accept / decline incoming | `/buddies`, `/member/:id` |
+| Cancel outgoing pending | `/buddies` (Sent), `/member/:id` (Cancel request) |
+| Unfriend | `/buddies`, member profile |
+| Follow alerts | Notifications → **Connections** |
+| Leave friends/family group | `/groups` → **Leave group** (non-owner members) |
+
+API integration coverage: `apps/api/tests/connections-flow.test.ts`.
 
 ## Adding new links
 

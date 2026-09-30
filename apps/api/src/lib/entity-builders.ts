@@ -95,6 +95,8 @@ export type ActivityCreateInput = {
   status?: ActivityStatus | string;
   featured?: boolean;
   publishedAt?: Date | null;
+  outingCategory?: string | null;
+  outingTopic?: string | null;
 };
 
 export type ActivityUpdateInput = {
@@ -137,6 +139,8 @@ export type ActivityUpdateInput = {
   publishedAt?: Date | null;
   host?: RelationConnect;
   location?: RelationConnect;
+  outingCategory?: string | null;
+  outingTopic?: string | null;
 };
 
 const extractConnectedId = (relation?: RelationConnect): string | null => {
@@ -237,6 +241,8 @@ export type MongoActivityDoc = {
   status: ActivityStatus;
   featured: boolean;
   publishedAt: Date | null;
+  outingCategory?: string | null;
+  outingTopic?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -287,6 +293,8 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     status: (data.status as ActivityStatus) ?? ActivityStatus.DRAFT,
     featured: data.featured ?? false,
     publishedAt: data.publishedAt ?? null,
+    outingCategory: data.outingCategory ?? null,
+    outingTopic: data.outingTopic ?? null,
     createdAt: now,
     updatedAt: now
   };

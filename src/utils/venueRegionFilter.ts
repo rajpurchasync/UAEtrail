@@ -3,7 +3,7 @@ import { EXPLORE_REGION_PILL_LABELS } from '../config/regions';
 
 const VENUE_REGION_ALIASES: Record<string, string[]> = {
   Dubai: ['dubai'],
-  RAK: ['rak', 'ras al khaimah'],
+  RAK: ['rak', 'ras al khaimah', 'ras al khaima', 'rask al khaimah', 'rask'],
   Fujairah: ['fujairah'],
   'Abu Dhabi': ['abu dhabi'],
   'Al Ain': ['al ain', 'alain'],

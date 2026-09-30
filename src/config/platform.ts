@@ -23,11 +23,12 @@ export const HOST_LOCATIONS_PATH = HOST_PLACES_PATH;
 export const DOMAIN_GLOSSARY = {
   Place: {
     product: 'Place',
-    description: 'Trail, camp, or event venue (single entity, typed by activityType).',
+    description:
+      'One map/catalog POI (trail, camp, shop, outdoor spot; future toilet, gas, …) — typed by PlaceKind; stored in locations.',
     storage: 'Location',
     api: '/places',
     legacyApi: '/locations',
-    publicRoutes: ['/trail/:id', '/camp/:id', '/event/:id'],
+    publicRoutes: ['/trail/:id', '/camp/:id', '/event/:id', '/shop/:id'],
     adminRoute: ADMIN_PLACES_PATH,
     hostRoute: HOST_PLACES_PATH,
   },
@@ -78,8 +79,9 @@ export const DESKTOP_NAV_LINKS = [
   { to: '/faq', label: 'Help' },
 ] as const;
 
+/** Sign-up URL with post-auth return path (Join free / create account). */
 export const joinAuthPath = (redirect: string = PARTICIPANT_JOIN_REDIRECT): string =>
-  `/signin?redirect=${encodeURIComponent(redirect)}`;
+  `/signup?redirect=${encodeURIComponent(redirect)}`;
 
 /** Right-side user menu on landing (mobile/PWA) — Explore, Join, Contact only. */
 export const MOBILE_LANDING_USER_MENU = [
@@ -311,14 +313,15 @@ export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = ['/profile', '/profile/settings']
 const isMobileBottomNavProfilePath = (pathname: string): boolean =>
   pathname === '/profile' || pathname.startsWith('/profile/');
 
-/** Mobile bottom nav — signed-in root tabs + profile hub; hidden in message threads. */
+/** Mobile bottom nav — map tab for everyone; other tabs + profile when signed in. */
 export const shouldShowMobileBottomNav = (
   pathname: string,
   search: string,
   signedIn: boolean
 ): boolean => {
-  if (!signedIn || isConsumerChromeHidden(pathname)) return false;
+  if (isConsumerChromeHidden(pathname)) return false;
   if (pathname === '/messages' && new URLSearchParams(search).get('to')) return false;
+  if (!signedIn) return isMobileBottomNavTabPath(pathname);
   if (isMobileBottomNavTabPath(pathname)) return true;
   if (isMobileBottomNavProfilePath(pathname)) return true;
   return false;

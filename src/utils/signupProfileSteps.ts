@@ -1,15 +1,10 @@
 import type { UserCountryCode, UserGender } from '../constants/userProfileOptions';
 
-export const SIGNUP_PROFILE_STEP_COUNT = 4;
+export const SIGNUP_PROFILE_STEP_COUNT = 3;
 
-export type SignupProfileStep = 'dateOfBirth' | 'gender' | 'languages' | 'countryCode';
+export type SignupProfileStep = 'dateOfBirth' | 'gender' | 'countryCode';
 
-export const SIGNUP_PROFILE_STEPS: SignupProfileStep[] = [
-  'dateOfBirth',
-  'gender',
-  'languages',
-  'countryCode',
-];
+export const SIGNUP_PROFILE_STEPS: SignupProfileStep[] = ['dateOfBirth', 'gender', 'countryCode'];
 
 export type SignupProfileDraft = {
   dateOfBirth: string;
@@ -38,7 +33,6 @@ export const firstIncompleteSignupStep = (profile: {
 } | null | undefined): SignupProfileStep => {
   if (!profile?.dateOfBirth?.trim()) return 'dateOfBirth';
   if (!profile?.gender) return 'gender';
-  if (!profile?.languages?.trim()) return 'languages';
   if (!hasSignupLocation(profile)) return 'countryCode';
   return 'countryCode';
 };
@@ -52,10 +46,5 @@ export const isSignupProfileComplete = (profile: {
   signupProfileComplete?: boolean;
 } | null | undefined): boolean => {
   if (profile?.signupProfileComplete) return true;
-  return Boolean(
-    profile?.dateOfBirth?.trim() &&
-      profile?.gender &&
-      profile?.languages?.trim() &&
-      hasSignupLocation(profile)
-  );
+  return Boolean(profile?.dateOfBirth?.trim() && profile?.gender && hasSignupLocation(profile));
 };

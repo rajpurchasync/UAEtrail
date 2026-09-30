@@ -6,6 +6,14 @@ import {
   parseExploreActivityDatePreset,
   serializeExploreActivityDatePreset,
 } from './exploreActivityDateFilter';
+import {
+  serializeExploreBuddySubtype,
+  type ExploreBuddySubtypeKey,
+} from './exploreBuddySubtype';
+import {
+  serializeExploreOutingTopic,
+  type ExploreOutingTopicKey,
+} from './exploreOutingTopic';
 
 export type ExplorePanel = 'activities' | 'venues' | 'shops';
 
@@ -49,10 +57,56 @@ const LEGACY_ACTIVITY_FROM_FILTER: Record<string, ActivityListFilterKey> = {
 
 const EXPLORE_PANELS = new Set<ExplorePanel>(['activities', 'venues', 'shops']);
 
+/** Open a specific explore map item (peek card), e.g. `demand:uuid` or `venue:uuid`. */
+export const EXPLORE_PIN_QUERY_KEY = 'pin';
+
+export const parseExplorePinMapItemId = (searchParams: Pick<URLSearchParams, 'get'>): string | null =>
+  searchParams.get(EXPLORE_PIN_QUERY_KEY)?.trim() || null;
+
+/** Deep link from Profile wishlist or notifications → map peek. */
+export const exploreSavedPinPath = (mapItemId: string): string =>
+  explorePath({ pin: mapItemId, panel: 'activities', list: true });
+
+/** Share link for map items — opens explore peek (guests and members). */
+export const exploreMapItemSharePath = (mapItemId: string): string =>
+  explorePath({ pin: mapItemId.trim() });
+
 /** Resume publishing an {@link Activity} for a map {@link ParticipantIntent} after auth/onboarding. */
 export const FULFILL_INTENT_QUERY_KEY = 'fulfillIntent';
 /** @deprecated Legacy query key — parsed for backward compatibility. */
 export const LEGACY_FULFILL_INTENT_QUERY_KEY = 'hostDemand';
+
+/** Prefill explore organize wizard from a prior activity (new id on publish). */
+export const ORGANIZE_FROM_ACTIVITY_QUERY_KEY = 'organizeFrom';
+
+export const parseOrganizeFromActivityId = (
+  searchParams: Pick<URLSearchParams, 'get'>
+): string | null => searchParams.get(ORGANIZE_FROM_ACTIVITY_QUERY_KEY)?.trim() || null;
+
+export const clearOrganizeFromActivityParams = (params: URLSearchParams): void => {
+  params.delete(ORGANIZE_FROM_ACTIVITY_QUERY_KEY);
+};
+
+/** Deep link: reorganize a past outing via FAB wizard (not server duplicate). */
+export const exploreReorganizeActivityPath = (
+  activityId: string,
+  kind: OrganizeComposeKind
+): string =>
+  explorePath({
+    compose: { intent: 'organize', kind },
+    organizeFrom: activityId,
+  });
+
+export const exploreReorganizeActivityReturnPath = (
+  activityId: string,
+  currentSearch: URLSearchParams,
+  pathname: string = EXPLORE_MAP_PATH
+): string => {
+  const params = new URLSearchParams(currentSearch);
+  params.set(ORGANIZE_FROM_ACTIVITY_QUERY_KEY, activityId);
+  if (!params.has('list')) params.set('list', '1');
+  return `${pathname}?${params.toString()}`;
+};
 
 export const parseFulfillIntentMapItemId = (
   searchParams: Pick<URLSearchParams, 'get'>
@@ -170,6 +224,14 @@ export const explorePath = (options?: {
   q?: string;
   /** Scheduled activity day on the map (`YYYY-MM-DD`). */
   date?: string | null;
+  /** Drill-down within `filter=others` on Activities (events vs activities). */
+  subtype?: ExploreBuddySubtypeKey;
+  /** Drill-down within `filter=others` + `subtype=activities` (climb, run, …). */
+  outingTopic?: ExploreOutingTopicKey;
+  /** Explore map item id to open on load (`activity:…`, `demand:…`, `venue:…`). */
+  pin?: string;
+  /** Prefill organize wizard from an existing activity id (creates a new activity on publish). */
+  organizeFrom?: string;
 }): string => {
   const params = new URLSearchParams();
   if (options?.filter && options.filter !== 'all') {
@@ -216,6 +278,22 @@ export const explorePath = (options?: {
     const serialized = serializeExploreActivityDatePreset(preset);
     if (serialized) params.set('date', serialized);
     else params.delete('date');
+  }
+  const filterKey = (options?.filter ?? 'all') as MapFilterKey;
+  const buddySubtype = options?.subtype ?? 'all';
+  const serializedSubtype = options?.subtype
+    ? serializeExploreBuddySubtype(options.subtype, filterKey)
+    : null;
+  if (serializedSubtype) params.set('subtype', serializedSubtype);
+  const serializedTopic = options?.outingTopic
+    ? serializeExploreOutingTopic(options.outingTopic, filterKey, buddySubtype)
+    : null;
+  if (serializedTopic) params.set('outingTopic', serializedTopic);
+  if (options?.pin?.trim()) {
+    params.set(EXPLORE_PIN_QUERY_KEY, options.pin.trim());
+  }
+  if (options?.organizeFrom?.trim()) {
+    params.set(ORGANIZE_FROM_ACTIVITY_QUERY_KEY, options.organizeFrom.trim());
   }
   const qs = params.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
@@ -352,6 +430,9 @@ export const legacyCreateParamToOrganizePath = (createParam: string | null): str
   }
   if (createParam === 'activity') {
     return exploreOrganizePath('activity');
+  }
+  if (createParam === 'carpool' || createParam === 'CARPOOL') {
+    return exploreOrganizePath('carpool');
   }
   return null;
 };

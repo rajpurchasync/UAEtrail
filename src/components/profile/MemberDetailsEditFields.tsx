@@ -126,7 +126,6 @@ export const MemberDetailsEditFields = ({
   if (layout === 'step' && step) {
     if (step === 'dateOfBirth') return <div>{dobField}</div>;
     if (step === 'gender') return <div>{genderField}</div>;
-    if (step === 'languages') return <div>{languagesField}</div>;
     if (step === 'countryCode') return <div>{countryField}</div>;
     return null;
   }

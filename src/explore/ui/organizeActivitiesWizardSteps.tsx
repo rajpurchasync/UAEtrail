@@ -46,7 +46,7 @@ export const ActivityInstructionsStepBody = ({
 }) => (
   <>
     <p className="mb-3 text-sm text-gray-600">
-      Gear, rules, and anything joiners should know before they request a spot.
+      Optional — gear, rules, and anything joiners should know before they request a spot.
     </p>
     <label className="block">
       <span className="mb-2 block text-sm font-medium text-gray-700">{JOIN_RULES_LABEL}</span>

@@ -1,4 +1,10 @@
-import type { ExploreMapItemDTO, ExploreMapPersonDTO, ParticipantPreviewDTO } from '@uaetrail/shared-types';
+import type {
+  ExploreMapItemDTO,
+  ExploreMapPersonDTO,
+  ExplorePlanComposeIntent,
+  OutingCategory,
+  ParticipantPreviewDTO,
+} from '@uaetrail/shared-types';
 import { buildExploreCardPresentation, resolveExploreFeaturedPerson } from '@uaetrail/shared-types';
 import {
   buildExploreRouteLabel,
@@ -7,6 +13,7 @@ import {
 } from './exploreCopy';
 import { resolveExplorePrice, type ExplorePriceInfo } from './explorePriceLabel';
 import { enrichExploreActivityRequirementBadges } from './exploreRequirementBadges';
+import { exploreMapItemSharePath } from './routing';
 
 export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
 export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
@@ -35,6 +42,7 @@ export interface ExploreCardModel {
   websiteUrl?: string | null;
   contactPhone?: string | null;
   shareTitle: string;
+  /** Map peek deep link (`/explore?pin=…`) — safe to share as a guest. */
   sharePath: string;
   shareText?: string | null;
   requesterUserId?: string | null;
@@ -49,6 +57,10 @@ export interface ExploreCardModel {
   reviewCount?: number;
   reviewPath?: string | null;
   locationId?: string | null;
+  activityId?: string | null;
+  participantIntentId?: string | null;
+  outingCategory?: OutingCategory | null;
+  composeIntent?: ExplorePlanComposeIntent | null;
   merchantId?: string | null;
   tenantId?: string | null;
   profileUserId?: string | null;
@@ -68,12 +80,22 @@ const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
   item.activity?.images?.[0] ??
   null;
 
-/** Compact second line for list rows. */
+const LIST_META_ICONS = new Set(['location', 'time', 'spots']);
+const LIST_META_ROUTE_SOURCES = new Set<ExploreCardModel['source']>(['demand']);
+
+/** Compact second line for list rows (where · when · spots — not duplicate activity title). */
 export const buildExploreListMeta = (card: ExploreCardModel): string | null => {
   if (card.source === 'shop' || card.source === 'agency' || card.source === 'venue') {
     return null;
   }
-  const labels = card.sections.details.map((detail) => detail.label).filter(Boolean);
+  const allowRoute = LIST_META_ROUTE_SOURCES.has(card.source) || card.kind === 'carpool';
+  const labels = card.sections.details
+    .filter(
+      (detail) =>
+        LIST_META_ICONS.has(detail.icon) || (allowRoute && detail.icon === 'route' && detail.label !== 'Carpool available')
+    )
+    .map((detail) => detail.label)
+    .filter(Boolean);
   if (labels.length > 0) return labels.join(' · ');
   return null;
 };
@@ -136,7 +158,7 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     websiteUrl: item.websiteUrl ?? null,
     contactPhone: item.contactPhone ?? null,
     shareTitle: headline,
-    sharePath: item.path,
+    sharePath: exploreMapItemSharePath(item.id),
     shareText: presentation.shareText,
     requesterUserId: featuredPerson?.userId ?? item.requesterUserId ?? null,
     routeLabel,
@@ -150,6 +172,10 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     reviewCount: item.reviewCount ?? 0,
     reviewPath: catalogSource ? `${item.path}#reviews` : null,
     locationId: item.locationCard?.id ?? null,
+    activityId: item.activity?.id ?? null,
+    participantIntentId: item.participantIntentId ?? null,
+    outingCategory: item.outingCategory ?? null,
+    composeIntent: item.composeIntent ?? null,
     merchantId: item.merchantId ?? null,
     tenantId: item.tenantId ?? null,
     profileUserId: featuredPerson?.userId ?? item.requesterUserId ?? item.activity?.hostUserId ?? null,
@@ -167,37 +193,70 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
 };
 
 export const exploreCardToneClass: Record<ExploreCardTone, string> = {
-  hiking: 'bg-emerald-50 text-emerald-700',
-  camping: 'bg-amber-50 text-amber-700',
-  event: 'bg-violet-50 text-violet-700',
-  shop: 'bg-rose-50 text-rose-700',
-  agency: 'bg-indigo-50 text-indigo-700',
-  carpool: 'bg-sky-50 text-sky-700',
+  hiking: 'bg-emerald-50 text-emerald-900',
+  camping: 'bg-amber-50 text-amber-900',
+  event: 'bg-violet-50 text-violet-900',
+  shop: 'bg-rose-50 text-rose-900',
+  agency: 'bg-indigo-50 text-indigo-900',
+  carpool: 'bg-sky-50 text-sky-900',
 };
 
 export const exploreCardToneTextClass: Record<ExploreCardTone, string> = {
-  hiking: 'text-emerald-700',
-  camping: 'text-amber-700',
-  event: 'text-violet-700',
-  shop: 'text-rose-700',
-  agency: 'text-indigo-700',
-  carpool: 'text-sky-700',
+  hiking: 'text-emerald-800',
+  camping: 'text-amber-800',
+  event: 'text-violet-800',
+  shop: 'text-rose-800',
+  agency: 'text-indigo-800',
+  carpool: 'text-sky-800',
 };
+
+export const exploreCardHasMapCoords = (card: ExploreCardModel): boolean =>
+  card.mapLatitude != null && card.mapLongitude != null;
+
+/** Peek body already shows “Get Directions” on the location row. */
+export const exploreCardShowsInlineDirections = (card: ExploreCardModel): boolean =>
+  exploreCardHasMapCoords(card) &&
+  card.sections.details.some((detail) => detail.icon === 'location');
 
 export type ExploreFavoriteTarget = {
   locationId?: string;
+  activityId?: string;
+  participantIntentId?: string;
   merchantId?: string;
   tenantId?: string;
   profileUserId?: string;
+  alertOnMatch?: boolean;
+  watchOutingCategory?: OutingCategory | null;
+  watchLatitude?: number | null;
+  watchLongitude?: number | null;
 };
+
+const outingCategoryFromCardKind = (card: ExploreCardModel): OutingCategory | null => {
+  if (card.outingCategory) return card.outingCategory;
+  if (card.kind === 'carpool') return 'rideshare';
+  if (card.kind === 'hiking' || card.kind === 'camping') return card.kind;
+  if (card.kind === 'event') return card.source === 'venue' ? 'events' : 'events';
+  return null;
+};
+
+const watchMetaFromCard = (card: ExploreCardModel) => ({
+  alertOnMatch: true,
+  watchOutingCategory: outingCategoryFromCardKind(card),
+  watchLatitude: card.mapLatitude ?? null,
+  watchLongitude: card.mapLongitude ?? null,
+});
 
 /** Resolve which favorite key applies to this explore card. */
 export const resolveExploreFavoriteTarget = (card: ExploreCardModel): ExploreFavoriteTarget | null => {
-  if (card.source === 'venue' && card.locationId) return { locationId: card.locationId };
-  if (card.source === 'shop') {
-    if (card.merchantId) return { merchantId: card.merchantId };
-    if (card.tenantId) return { tenantId: card.tenantId };
+  const watch = watchMetaFromCard(card);
+  if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
+  if (card.source === 'demand' && card.participantIntentId) {
+    return { participantIntentId: card.participantIntentId, ...watch };
   }
-  if (card.profileUserId) return { profileUserId: card.profileUserId };
+  if (card.source === 'venue' && card.locationId) return { locationId: card.locationId, ...watch };
+  if (card.source === 'shop' || card.source === 'agency') {
+    if (card.merchantId) return { merchantId: card.merchantId, ...watch };
+    if (card.tenantId) return { tenantId: card.tenantId, ...watch };
+  }
   return null;
 };

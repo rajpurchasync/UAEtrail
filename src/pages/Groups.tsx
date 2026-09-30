@@ -10,6 +10,7 @@ import {
   UserPlus,
   Trash2,
   AlertTriangle,
+  LogOut,
 } from 'lucide-react';
 import { ChatComposeBar } from '../components/ui/ChatComposeBar';
 import {
@@ -83,6 +84,7 @@ export const Groups = () => {
     () => searchParams.get('create') === '1' || searchParams.get('create') === 'true'
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [groupForm, setGroupForm] = useState(emptyGroupForm);
   const [inviteForm, setInviteForm] = useState({ email: '', role: 'buddy' as 'buddy' | 'admin' });
@@ -397,6 +399,25 @@ export const Groups = () => {
       await loadGroups();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not delete group');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    if (!detail?.group.id) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await api.removeMeGroupMember(detail.group.id, detail.membership.id);
+      setShowLeaveModal(false);
+      setDetail(null);
+      setSelectedGroupId(null);
+      setWall([]);
+      setSuccess(`You left ${detail.group.name}.`);
+      await loadGroups();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not leave group');
     } finally {
       setSaving(false);
     }
@@ -830,6 +851,31 @@ export const Groups = () => {
                   {activeTab === 'chat' && renderChatTab()}
                   {activeTab === 'members' && renderMembersTab()}
                   {activeTab === 'manage' && renderManageTab()}
+
+                  {!isCreator && detail.group.type !== 'activity' && (
+                    <GlassCard padding className="border-neutral-200">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
+                          <LogOut className="h-5 w-5 text-neutral-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-sm font-semibold text-neutral-900">Leave group</h3>
+                          <p className="mt-1 text-xs leading-relaxed text-neutral-500">
+                            You will lose access to this group&apos;s chat and member list. You can rejoin if an admin
+                            invites you again.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setShowLeaveModal(true)}
+                            className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            Leave group
+                          </button>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  )}
                 </>
               )}
             </div>
@@ -886,6 +932,34 @@ export const Groups = () => {
             className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
           >
             {saving ? 'Creating…' : 'Create group'}
+          </button>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={showLeaveModal}
+        onClose={() => !saving && setShowLeaveModal(false)}
+        title="Leave this group?"
+      >
+        <p className="text-sm text-neutral-600 leading-relaxed mb-5">
+          You will no longer see <strong>{detail?.group.name}</strong> in your groups or its chat history.
+        </p>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => setShowLeaveModal(false)}
+            disabled={saving}
+            className="flex-1 rounded-xl border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-700"
+          >
+            Stay
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void handleLeaveGroup()}
+            className="flex-1 rounded-xl bg-neutral-900 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {saving ? 'Leaving…' : 'Leave group'}
           </button>
         </div>
       </Dialog>

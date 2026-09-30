@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ActivityDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { getActiveTenantId } from '../api/tenant';
@@ -18,10 +18,12 @@ import {
   resolveActivityLocationState,
   resolveActivityTitle,
 } from '../utils/activityIdentity';
+import { navigateToReorganizeActivity } from '../explore/navigateReorganizeActivity';
 
 type ViewMode = 'list' | 'checkin';
 
 export const OrganisationActivities = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tenantId, setTenantId] = useState(getActiveTenantId());
@@ -119,6 +121,10 @@ export const OrganisationActivities = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to duplicate activity');
     }
+  };
+
+  const reorganizeActivity = (event: ActivityDTO) => {
+    navigateToReorganizeActivity(navigate, event);
   };
 
   const openPreview = (event: ActivityDTO) => {
@@ -250,6 +256,7 @@ export const OrganisationActivities = () => {
                               onEdit: openEditActivity,
                               onPublish: (e) => publish(e.id),
                               onDuplicate: duplicateActivity,
+                              onReorganize: reorganizeActivity,
                               onDelete: setConfirmDelete,
                               onCancel: setConfirmCancel,
                               onCheckin: openCheckin,

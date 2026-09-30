@@ -17,6 +17,7 @@ interface ExploreItemSheetProps {
   showCarpoolLink?: boolean;
   onLinkCarpool?: () => void;
   carpoolLinkLoading?: boolean;
+  onGuestGatedAction?: () => void;
 }
 
 export const ExploreItemSheet = ({
@@ -32,6 +33,7 @@ export const ExploreItemSheet = ({
   showCarpoolLink = false,
   onLinkCarpool,
   carpoolLinkLoading = false,
+  onGuestGatedAction,
 }: ExploreItemSheetProps) => (
   <div
     className={`${EXPLORE_PEEK.position} lg:fixed lg:inset-0 ${EXPLORE_Z.peekCard} lg:flex lg:items-center lg:justify-center ${EXPLORE_SHEET.scrim} lg:p-6 lg:pb-6`}
@@ -61,10 +63,11 @@ export const ExploreItemSheet = ({
             joinUiState={joinUiState}
             onWithdraw={onWithdraw}
             joinStateLoading={joinStateLoading}
+            onGuestGatedAction={onGuestGatedAction}
           />
         }
       >
-        <ExploreItemPeekBody card={card} />
+        <ExploreItemPeekBody card={card} onGuestGatedAction={onGuestGatedAction} />
       </ExploreMapPeekCard>
     </div>
   </div>

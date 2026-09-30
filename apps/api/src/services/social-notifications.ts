@@ -33,6 +33,26 @@ export const notifyGroupInvite = async (input: {
   }).catch(() => undefined);
 };
 
+export const notifyMemberFollowed = async (input: {
+  followerUserId: string;
+  followingUserId: string;
+}): Promise<void> => {
+  const follower = await findAuthUserById(input.followerUserId);
+  const followerName = follower?.profile?.displayName ?? follower?.email?.split('@')[0] ?? 'Someone';
+
+  await dispatchNotification({
+    userId: input.followingUserId,
+    title: 'New follower',
+    body: `${followerName} started following you — you will show up in their map updates.`,
+    type: NotificationType.SYSTEM,
+    meta: {
+      kind: 'connection_member_followed',
+      followerUserId: input.followerUserId,
+      path: `/member/${input.followerUserId}`,
+    },
+  }).catch(() => undefined);
+};
+
 export const notifyGroupWallPost = async (input: {
   groupId: string;
   messageId: string;

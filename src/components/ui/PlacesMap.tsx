@@ -119,15 +119,19 @@ const pinIcon = (
   >,
   _carpoolEndpoint?: 'from' | 'to',
   selectedExploreItemId?: string,
-  mapZoom: number = MAP_CONFIG.exploreDefaultZoom
+  mapZoom: number = MAP_CONFIG.exploreDefaultZoom,
+  highlightedExploreItemId?: string
 ): L.DivIcon => {
   if (pin.colocatedEntries && pin.colocatedEntries.length > 0) {
     const entries = pin.colocatedEntries.map((entry) => {
       const source = entry.source ?? 'activity';
       const entrySelected =
-        Boolean(selectedExploreItemId) &&
-        (entry.stackExploreItemIds?.includes(selectedExploreItemId!) ||
-          entry.exploreItemId === selectedExploreItemId);
+        (Boolean(selectedExploreItemId) &&
+          (entry.stackExploreItemIds?.includes(selectedExploreItemId!) ||
+            entry.exploreItemId === selectedExploreItemId)) ||
+        (Boolean(highlightedExploreItemId) &&
+          (entry.stackExploreItemIds?.includes(highlightedExploreItemId!) ||
+            entry.exploreItemId === highlightedExploreItemId));
       return {
         kind: entry.activityType,
         source,
@@ -238,21 +242,31 @@ const resolvePinClick = (pin: PlaceMapPin, event?: L.LeafletMouseEvent): PlaceMa
   return pin;
 };
 
-const markerZIndex = (pin: PlaceMapPin, selectedExploreItemId?: string): number => {
-  const selected = pinMatchesSelection(pin, selectedExploreItemId);
-  if (selected) return 1000;
+const markerZIndex = (
+  pin: PlaceMapPin,
+  selectedExploreItemId?: string,
+  highlightedExploreItemId?: string
+): number => {
+  if (pinMatchesSelection(pin, selectedExploreItemId)) return 1000;
+  if (highlightedExploreItemId && pinMatchesSelection(pin, highlightedExploreItemId)) return 800;
   if (pin.source === 'activity') return 500;
   if (pin.source === 'shop' || pin.source === 'agency') return 250;
   return 0;
 };
 
-const isPinSelected = (pin: PlaceMapPin, selectedExploreItemId?: string): boolean =>
-  pinMatchesSelection(pin, selectedExploreItemId);
+const isPinEmphasized = (
+  pin: PlaceMapPin,
+  selectedExploreItemId?: string,
+  highlightedExploreItemId?: string
+): boolean =>
+  pinMatchesSelection(pin, selectedExploreItemId) ||
+  (highlightedExploreItemId != null && pinMatchesSelection(pin, highlightedExploreItemId));
 
 /** Sum indicative counts per map icon (type + source) for cluster / badge rendering. */
 const aggregateClusterPinEntries = (
   clusterPins: PlaceMapPin[],
-  selectedExploreItemId?: string
+  selectedExploreItemId?: string,
+  highlightedExploreItemId?: string
 ): ColocatedPinIconEntry[] => {
   type Bucket = ColocatedPinIconEntry & { count: number };
   const buckets = new Map<string, Bucket>();
@@ -288,9 +302,12 @@ const aggregateClusterPinEntries = (
         const source = entry.source ?? 'activity';
         const count = entry.stackCount ?? 1;
         const entrySelected =
-          Boolean(selectedExploreItemId) &&
-          (entry.stackExploreItemIds?.includes(selectedExploreItemId!) ||
-            entry.exploreItemId === selectedExploreItemId);
+          (Boolean(selectedExploreItemId) &&
+            (entry.stackExploreItemIds?.includes(selectedExploreItemId!) ||
+              entry.exploreItemId === selectedExploreItemId)) ||
+          (Boolean(highlightedExploreItemId) &&
+            (entry.stackExploreItemIds?.includes(highlightedExploreItemId!) ||
+              entry.exploreItemId === highlightedExploreItemId));
         add(entry.activityType, source, entry.exploreItemId, count, entrySelected);
       }
       continue;
@@ -303,7 +320,7 @@ const aggregateClusterPinEntries = (
       source,
       pin.exploreItemId ?? pin.id,
       count,
-      isPinSelected(pin, selectedExploreItemId)
+      isPinEmphasized(pin, selectedExploreItemId, highlightedExploreItemId)
     );
   }
 
@@ -482,10 +499,12 @@ const FlyToSelectedPin = ({
 const ClusteredMarkers = ({
   pins,
   selectedExploreItemId,
+  highlightedExploreItemId,
   onPinClick,
 }: {
   pins: PlaceMapPin[];
   selectedExploreItemId?: string;
+  highlightedExploreItemId?: string;
   onPinClick?: (pin: PlaceMapPin) => void;
 }) => {
   const map = useMap();
@@ -517,7 +536,11 @@ const ClusteredMarkers = ({
         disableClusteringAtZoom: 18,
         iconCreateFunction: (cluster) => {
           const clusterPins = pinsFromCluster(cluster);
-          const entries = aggregateClusterPinEntries(clusterPins, selectedExploreItemId);
+          const entries = aggregateClusterPinEntries(
+            clusterPins,
+            selectedExploreItemId,
+            highlightedExploreItemId
+          );
 
           if (entries.length > 1) {
             const { html, size } = buildMapColocatedPinIconHtml(entries);
@@ -559,13 +582,14 @@ const ClusteredMarkers = ({
         const marker = L.marker([pin.latitude, pin.longitude], {
           icon: pinIcon(
             pin.activityType,
-            isPinSelected(pin, selectedExploreItemId),
+            isPinEmphasized(pin, selectedExploreItemId, highlightedExploreItemId),
             pin,
             pin.carpoolEndpoint,
             selectedExploreItemId,
-            mapZoom
+            mapZoom,
+            highlightedExploreItemId
           ),
-          zIndexOffset: markerZIndex(pin, selectedExploreItemId) + index,
+          zIndexOffset: markerZIndex(pin, selectedExploreItemId, highlightedExploreItemId) + index,
         }) as MarkerWithPin;
         marker.options.uaetrailPin = pin;
         marker.on('click', (event) => onPinClickRef.current?.(resolvePinClick(pin, event)));
@@ -589,7 +613,7 @@ const ClusteredMarkers = ({
         // Map may already be torn down during route changes / StrictMode.
       }
     };
-  }, [map, pins, pinsKeyValue, selectedExploreItemId, mapZoom]);
+  }, [map, pins, pinsKeyValue, selectedExploreItemId, highlightedExploreItemId, mapZoom]);
 
   return null;
 };
@@ -603,6 +627,8 @@ interface PlacesMapProps {
   allowEmpty?: boolean;
   selectedPinId?: string;
   selectedExploreItemId?: string;
+  /** List hover preview — same pin emphasis as selection, without fly-to. */
+  highlightedExploreItemId?: string;
   onPinClick?: (pin: PlaceMapPin) => void;
   showLegend?: boolean;
   tileUrl?: string;
@@ -626,6 +652,7 @@ export const PlacesMap = ({
   allowEmpty = false,
   selectedPinId,
   selectedExploreItemId,
+  highlightedExploreItemId,
   onPinClick,
   showLegend = true,
   tileUrl,
@@ -663,12 +690,14 @@ export const PlacesMap = ({
       position={[pin.latitude, pin.longitude]}
       icon={pinIcon(
         pin.activityType,
-        isPinSelected(pin, activeSelection),
+        isPinEmphasized(pin, activeSelection, highlightedExploreItemId),
         pin,
         pin.carpoolEndpoint,
-        activeSelection
+        activeSelection,
+        MAP_CONFIG.exploreDefaultZoom,
+        highlightedExploreItemId
       )}
-      zIndexOffset={markerZIndex(pin, activeSelection)}
+      zIndexOffset={markerZIndex(pin, activeSelection, highlightedExploreItemId)}
       eventHandlers={
         onPinClick
           ? {
@@ -732,7 +761,12 @@ export const PlacesMap = ({
         <MapZoomReporter onZoomChange={onZoomChange} />
         <FlyToSelectedPin pins={pins} selectedExploreItemId={activeSelection} />
         {exploreMode ? (
-          <ClusteredMarkers pins={pins} selectedExploreItemId={activeSelection} onPinClick={onPinClick} />
+          <ClusteredMarkers
+            pins={pins}
+            selectedExploreItemId={activeSelection}
+            highlightedExploreItemId={highlightedExploreItemId}
+            onPinClick={onPinClick}
+          />
         ) : (
           pins.map(renderMarker)
         )}

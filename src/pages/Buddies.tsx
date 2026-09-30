@@ -21,6 +21,7 @@ export const Buddies = () => {
   const [error, setError] = useState<string | null>(null);
   const [buddies, setBuddies] = useState<BuddySummaryDTO[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<BuddyRequestDTO[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<BuddyRequestDTO[]>([]);
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [unfriendingBuddy, setUnfriendingBuddy] = useState<BuddySummaryDTO | null>(null);
   const [unfriendBusy, setUnfriendBusy] = useState(false);
@@ -31,12 +32,14 @@ export const Buddies = () => {
     setLoading(true);
     setError(null);
     try {
-      const [buddiesRes, requestsRes] = await Promise.all([
+      const [buddiesRes, incomingRes, outgoingRes] = await Promise.all([
         api.getMeBuddies(),
         api.getMeBuddyRequests('incoming'),
+        api.getMeBuddyRequests('outgoing'),
       ]);
       setBuddies(buddiesRes.data);
-      setIncomingRequests(requestsRes.data.filter((request) => request.status === 'pending'));
+      setIncomingRequests(incomingRes.data.filter((request) => request.status === 'pending'));
+      setOutgoingRequests(outgoingRes.data.filter((request) => request.status === 'pending'));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load buddies');
     } finally {
@@ -74,6 +77,19 @@ export const Buddies = () => {
     }
   };
 
+  const handleCancelRequest = async (request: BuddyRequestDTO) => {
+    setBusyRequestId(request.id);
+    setError(null);
+    try {
+      await api.cancelBuddyRequest(request.id);
+      setOutgoingRequests((prev) => prev.filter((item) => item.id !== request.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not cancel buddy request');
+    } finally {
+      setBusyRequestId(null);
+    }
+  };
+
   const handleUnfriend = async () => {
     if (!unfriendingBuddy) return;
     setUnfriendBusy(true);
@@ -90,8 +106,8 @@ export const Buddies = () => {
   };
 
   const emptyState = useMemo(
-    () => !loading && buddies.length === 0 && incomingRequests.length === 0,
-    [buddies.length, incomingRequests.length, loading]
+    () => !loading && buddies.length === 0 && incomingRequests.length === 0 && outgoingRequests.length === 0,
+    [buddies.length, incomingRequests.length, outgoingRequests.length, loading]
   );
 
   return (
@@ -155,6 +171,51 @@ export const Buddies = () => {
                             className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 disabled:opacity-60"
                           >
                             Decline
+                          </button>
+                        </div>
+                      </GlassCard>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {outgoingRequests.length > 0 && (
+              <section>
+                <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                  Sent
+                </p>
+                <div className="space-y-2">
+                  {outgoingRequests.map((request) => {
+                    const recipient = request.toUser;
+                    const displayName = recipient?.displayName ?? 'Member';
+                    return (
+                      <GlassCard key={request.id} padding className="!p-3">
+                        <div className="flex items-center gap-3">
+                          <SecureAvatar
+                            src={recipient?.avatarUrl}
+                            name={displayName}
+                            className="h-11 w-11 text-sm"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-semibold text-neutral-900">{displayName}</p>
+                            <p className="text-xs text-neutral-500">Waiting for them to respond</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex gap-2">
+                          <Link
+                            to={`/member/${request.toUserId}`}
+                            className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-center text-sm font-semibold text-neutral-700"
+                          >
+                            View profile
+                          </Link>
+                          <button
+                            type="button"
+                            disabled={busyRequestId === request.id}
+                            onClick={() => void handleCancelRequest(request)}
+                            className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 disabled:opacity-60"
+                          >
+                            Cancel
                           </button>
                         </div>
                       </GlassCard>

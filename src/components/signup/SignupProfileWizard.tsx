@@ -4,18 +4,16 @@ import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import type { UserCountryCode, UserGender } from '../../constants/userProfileOptions';
 import {
-  PRODUCT_SIGNUP_LANGUAGES_HINT,
   PRODUCT_SIGNUP_LOCATION_HINT,
   PRODUCT_SIGNUP_STEP_DOB,
   PRODUCT_SIGNUP_STEP_GENDER,
-  PRODUCT_SIGNUP_STEP_LANGUAGES,
   PRODUCT_SIGNUP_STEP_LOCATION,
 } from '../../content/productNorthStar';
 import {
   MemberDetailsEditFields,
   type MemberDetailsFormValue,
 } from '../profile/MemberDetailsEditFields';
-import { formatLanguages, parseLanguagesList } from '../../utils/profileLanguages';
+import { parseLanguagesList } from '../../utils/profileLanguages';
 import {
   SIGNUP_PROFILE_STEPS,
   firstIncompleteSignupStep,
@@ -39,7 +37,6 @@ interface SignupProfileWizardProps {
 const STEP_SHELL: Record<SignupProfileStep, { title: string; hint?: string }> = {
   dateOfBirth: { title: PRODUCT_SIGNUP_STEP_DOB },
   gender: { title: PRODUCT_SIGNUP_STEP_GENDER },
-  languages: { title: PRODUCT_SIGNUP_STEP_LANGUAGES, hint: PRODUCT_SIGNUP_LANGUAGES_HINT },
   countryCode: { title: PRODUCT_SIGNUP_STEP_LOCATION, hint: PRODUCT_SIGNUP_LOCATION_HINT },
 };
 
@@ -88,7 +85,6 @@ export const SignupProfileWizard = ({ initialProfile, onComplete }: SignupProfil
   const continueDisabled = useMemo(() => {
     if (step === 'dateOfBirth') return !form.dateOfBirth;
     if (step === 'gender') return !form.gender;
-    if (step === 'languages') return form.languages.length === 0;
     if (step === 'countryCode') return !form.countryCode;
     return false;
   }, [step, form.dateOfBirth, form.gender, form.countryCode, form.languages.length]);
@@ -101,10 +97,6 @@ export const SignupProfileWizard = ({ initialProfile, onComplete }: SignupProfil
     }
     if (step === 'gender' && !form.gender) {
       setError('Select how you identify.');
-      return;
-    }
-    if (step === 'languages' && form.languages.length === 0) {
-      setError('Add at least one language.');
       return;
     }
     if (step !== 'countryCode') {
@@ -123,7 +115,6 @@ export const SignupProfileWizard = ({ initialProfile, onComplete }: SignupProfil
         dateOfBirth: form.dateOfBirth,
         gender: form.gender as UserGender,
         countryCode: form.countryCode,
-        languages: formatLanguages(form.languages),
       });
       if (user?.id) {
         await queryClient.invalidateQueries({ queryKey: meProfileSignupGateKey(user.id) });

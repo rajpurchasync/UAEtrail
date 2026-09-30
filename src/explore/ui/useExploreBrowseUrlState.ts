@@ -19,8 +19,44 @@ import {
   type VenueListFilterKey,
   type ExploreActivityDatePreset,
 } from '../routing';
+import {
+  parseExploreBuddySubtype,
+  serializeExploreBuddySubtype,
+  type ExploreBuddySubtypeKey,
+} from '../exploreBuddySubtype';
+import {
+  parseExploreOutingTopic,
+  serializeExploreOutingTopic,
+  type ExploreOutingTopicKey,
+} from '../exploreOutingTopic';
 import { MAP_FILTERS_BY_BROWSE_TAB, parseDesktopBrowseTab, type DesktopBrowseTab } from './exploreBrowsePanelCopy';
 import { mapFilterToPanel, parseListOpen, readInitialListOpen } from './exploreListPanelUrl';
+import {
+  desktopBrowseTabForSearchScope,
+  explorePanelForSearchScope,
+  parseExploreMapFilterPillsParam,
+  parseExploreSearchScope,
+  pinKindForSearchScope,
+  serializeExploreMapFilterPillsParam,
+  serializeExploreSearchScope,
+  toggleExploreMapFilterPill,
+  type ExploreMapFilterPillKey,
+  type ExploreSearchScopeKey,
+} from '../exploreBrowseTaxonomy';
+import {
+  parseExplorePinKindFilter,
+  serializeExplorePinKindFilter,
+  type ExplorePinKindFilter,
+} from '../explorePinKindFilter';
+
+export type ExploreBrowseListMode = 'default' | 'whosGoing';
+
+export type WhosGoingSegment = 'people' | 'trips';
+
+const parseWhosGoingSegment = (value: string | null): WhosGoingSegment =>
+  value === 'trips' ? 'trips' : 'people';
+
+export const UNIFIED_MAP_FILTER_KEYS: MapFilterKey[] = MAP_FILTER_PILLS.map((pill) => pill.key);
 
 type SyncPatch = {
   filter?: MapFilterKey;
@@ -30,6 +66,13 @@ type SyncPatch = {
   q?: string;
   venueRegions?: string[];
   activityDatePreset?: ExploreActivityDatePreset;
+  buddySubtype?: ExploreBuddySubtypeKey;
+  outingTopic?: ExploreOutingTopicKey;
+  pinKind?: ExplorePinKindFilter;
+  topicPills?: ExploreMapFilterPillKey[];
+  listMode?: ExploreBrowseListMode;
+  searchScope?: ExploreSearchScopeKey | null;
+  whosGoingSegment?: WhosGoingSegment;
 };
 
 type UseExploreBrowseUrlStateArgs = {
@@ -61,6 +104,31 @@ export const useExploreBrowseUrlState = ({
   const [activityDatePreset, setActivityDatePreset] = useState<ExploreActivityDatePreset>(() =>
     parseExploreActivityDatePreset(searchParams.get('date'))
   );
+  const [buddySubtype, setBuddySubtype] = useState<ExploreBuddySubtypeKey>(() =>
+    parseExploreBuddySubtype(searchParams.get('subtype'), parseMapFilter(searchParams.get('filter')))
+  );
+  const [outingTopic, setOutingTopic] = useState<ExploreOutingTopicKey>(() =>
+    parseExploreOutingTopic(
+      searchParams.get('outingTopic'),
+      parseMapFilter(searchParams.get('filter')),
+      parseExploreBuddySubtype(searchParams.get('subtype'), parseMapFilter(searchParams.get('filter')))
+    )
+  );
+  const [pinKind, setPinKind] = useState<ExplorePinKindFilter>(() =>
+    parseExplorePinKindFilter(searchParams.get('pinKind'))
+  );
+  const [topicPills, setTopicPills] = useState<ExploreMapFilterPillKey[]>(() =>
+    parseExploreMapFilterPillsParam(searchParams.get('topics'))
+  );
+  const [listMode, setListMode] = useState<ExploreBrowseListMode>(() =>
+    searchParams.get('view') === 'going' ? 'whosGoing' : 'default'
+  );
+  const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(() =>
+    parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
+  );
+  const [whosGoingSegment, setWhosGoingSegment] = useState<WhosGoingSegment>(() =>
+    parseWhosGoingSegment(searchParams.get('goingTab'))
+  );
 
   const syncExploreUrl = useCallback(
     (next: SyncPatch) => {
@@ -72,6 +140,12 @@ export const useExploreBrowseUrlState = ({
       const queryValue = next.q ?? query;
       const regionValue = next.venueRegions ?? venueRegions;
       const dateValue = next.activityDatePreset !== undefined ? next.activityDatePreset : activityDatePreset;
+      const subtypeValue = next.buddySubtype ?? buddySubtype;
+      const topicValue = next.outingTopic ?? outingTopic;
+      const pinKindValue = next.pinKind ?? pinKind;
+      const topicPillsValue = next.topicPills ?? topicPills;
+      const listModeValue = next.listMode ?? listMode;
+      const searchScopeValue = next.searchScope !== undefined ? next.searchScope : searchScope;
 
       if (filterValue === 'all') params.delete('filter');
       else params.set('filter', filterValue);
@@ -92,6 +166,37 @@ export const useExploreBrowseUrlState = ({
       if (serializedDate) params.set('date', serializedDate);
       else params.delete('date');
 
+      const serializedSubtype = serializeExploreBuddySubtype(subtypeValue, filterValue);
+      if (serializedSubtype) params.set('subtype', serializedSubtype);
+      else params.delete('subtype');
+
+      const serializedTopic = serializeExploreOutingTopic(topicValue, filterValue, subtypeValue);
+      if (serializedTopic) params.set('outingTopic', serializedTopic);
+      else params.delete('outingTopic');
+
+      const serializedPinKind = serializeExplorePinKindFilter(pinKindValue);
+      if (serializedPinKind) params.set('pinKind', serializedPinKind);
+      else params.delete('pinKind');
+
+      const serializedTopics = serializeExploreMapFilterPillsParam(topicPillsValue);
+      if (serializedTopics) params.set('topics', serializedTopics);
+      else params.delete('topics');
+
+      const whosGoingSegmentValue = next.whosGoingSegment ?? whosGoingSegment;
+      if (listModeValue === 'whosGoing') {
+        params.set('view', 'going');
+        if (whosGoingSegmentValue === 'trips') params.set('goingTab', 'trips');
+        else params.delete('goingTab');
+      } else {
+        params.delete('view');
+        params.delete('goingTab');
+      }
+
+      const serializedSearchScope = serializeExploreSearchScope(searchScopeValue);
+      if (serializedSearchScope) params.set('searchScope', serializedSearchScope);
+      else params.delete('searchScope');
+      params.delete('searchFocus');
+
       if (regionValue.length > 0) {
         params.set('regions', regionValue.join(','));
         params.delete('region');
@@ -108,7 +213,24 @@ export const useExploreBrowseUrlState = ({
 
       setSearchParams(params, { replace: true });
     },
-    [mapFilter, activityFilter, panel, listOpen, query, venueRegions, activityDatePreset, searchParams, setSearchParams]
+    [
+      mapFilter,
+      activityFilter,
+      panel,
+      listOpen,
+      query,
+      venueRegions,
+      activityDatePreset,
+      buddySubtype,
+      outingTopic,
+      pinKind,
+      topicPills,
+      listMode,
+      searchScope,
+      whosGoingSegment,
+      searchParams,
+      setSearchParams,
+    ]
   );
 
   useEffect(() => {
@@ -133,6 +255,18 @@ export const useExploreBrowseUrlState = ({
     setQuery(searchParams.get('q') ?? '');
     setVenueRegions(parseVenueRegionsParam(searchParams));
     setActivityDatePreset(parseExploreActivityDatePreset(searchParams.get('date')));
+    const nextSubtype = parseExploreBuddySubtype(searchParams.get('subtype'), nextMapFilter);
+    setBuddySubtype(nextSubtype);
+    setOutingTopic(
+      parseExploreOutingTopic(searchParams.get('outingTopic'), nextMapFilter, nextSubtype)
+    );
+    setPinKind(parseExplorePinKindFilter(searchParams.get('pinKind')));
+    setTopicPills(parseExploreMapFilterPillsParam(searchParams.get('topics')));
+    setListMode(searchParams.get('view') === 'going' ? 'whosGoing' : 'default');
+    setSearchScope(
+      parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
+    );
+    setWhosGoingSegment(parseWhosGoingSegment(searchParams.get('goingTab')));
     if (isDesktop) {
       setDesktopBrowseTab(parseDesktopBrowseTab(nextPanel));
       if (searchParams.get('q')?.trim()) setSearchExpanded(true);
@@ -148,28 +282,92 @@ export const useExploreBrowseUrlState = ({
 
   const applyMapFilter = (next: MapFilterKey) => {
     setMapFilter(next);
+    const nextSubtype = next === 'others' ? buddySubtype : 'all';
+    const nextTopic = next === 'others' && nextSubtype === 'activities' ? outingTopic : 'all';
+    if (next !== 'others') {
+      setBuddySubtype('all');
+      setOutingTopic('all');
+    }
     clearSelection();
     const syncedActivity = mapFilterToActivityListFilter(next);
     const syncedVenue = mapFilterToVenueListFilter(next);
-    const inPlaces = isDesktop ? desktopBrowseTab === 'venues' : panel === 'venues';
-    const syncedPanel = isDesktop
-      ? inPlaces
-        ? 'venues'
-        : 'activities'
-      : inPlaces && MAP_FILTERS_BY_BROWSE_TAB.venues.includes(next)
-        ? 'venues'
-        : !inPlaces && MAP_FILTERS_BY_BROWSE_TAB.activities.includes(next)
-          ? 'activities'
-          : mapFilterToPanel(next);
     setActivityFilter(syncedActivity);
     setVenueFilter(syncedVenue);
-    setPanel(syncedPanel);
     syncExploreUrl({
       filter: next,
-      panel: syncedPanel,
       activityFilter: syncedActivity,
+      buddySubtype: nextSubtype,
+      outingTopic: nextTopic,
       list: listOpen,
     });
+  };
+
+  const applyPinKindFilter = (next: ExplorePinKindFilter) => {
+    setPinKind(next);
+    clearSelection();
+    syncExploreUrl({ pinKind: next, list: listOpen });
+  };
+
+  const toggleMapTopicPill = (key: ExploreMapFilterPillKey) => {
+    const next = toggleExploreMapFilterPill(topicPills, key);
+    setTopicPills(next);
+    clearSelection();
+    syncExploreUrl({ topicPills: next, list: listOpen });
+  };
+
+  const clearMapTopicPills = () => {
+    setTopicPills([]);
+    clearSelection();
+    syncExploreUrl({ topicPills: [], list: listOpen });
+  };
+
+  const openWhosGoingList = () => {
+    clearSelection();
+    setListMode('whosGoing');
+    setWhosGoingSegment('people');
+    setPanel('activities');
+    setDesktopBrowseTab('activities');
+    if (isDesktop) {
+      syncExploreUrl({ listMode: 'whosGoing', whosGoingSegment: 'people', panel: 'activities' });
+      return;
+    }
+    setListOpen(true);
+    syncExploreUrl({ listMode: 'whosGoing', whosGoingSegment: 'people', panel: 'activities', list: true });
+  };
+
+  const closeWhosGoingPanel = () => {
+    setListMode('default');
+    clearSelection();
+    syncExploreUrl({ listMode: 'default' });
+  };
+
+  const applyWhosGoingSegment = (segment: WhosGoingSegment) => {
+    setWhosGoingSegment(segment);
+    syncExploreUrl({ whosGoingSegment: segment, list: listOpen });
+  };
+
+  const closeListPanel = () => {
+    setListOpen(false);
+    if (!isDesktop && listMode === 'whosGoing') {
+      setListMode('default');
+      syncExploreUrl({ list: false, listMode: 'default' });
+      return;
+    }
+    syncExploreUrl({ list: false });
+  };
+
+  const applyBuddySubtype = (next: ExploreBuddySubtypeKey) => {
+    setBuddySubtype(next);
+    const nextTopic = next === 'activities' ? outingTopic : 'all';
+    if (next !== 'activities') setOutingTopic('all');
+    clearSelection();
+    syncExploreUrl({ buddySubtype: next, outingTopic: nextTopic, list: listOpen });
+  };
+
+  const applyOutingTopic = (next: ExploreOutingTopicKey) => {
+    setOutingTopic(next);
+    clearSelection();
+    syncExploreUrl({ outingTopic: next, list: listOpen });
   };
 
   const applyDesktopBrowseTab = (next: DesktopBrowseTab) => {
@@ -180,9 +378,13 @@ export const useExploreBrowseUrlState = ({
     setVenueFilter('all');
     const syncedPanel = next === 'venues' ? 'venues' : 'activities';
     setPanel(syncedPanel);
+    setBuddySubtype('all');
+    setOutingTopic('all');
     syncExploreUrl({
       filter: 'all',
       activityFilter: 'all',
+      buddySubtype: 'all',
+      outingTopic: 'all',
       panel: syncedPanel,
       list: listOpen,
     });
@@ -234,11 +436,6 @@ export const useExploreBrowseUrlState = ({
     clearSelection();
     setListOpen(true);
     syncExploreUrl({ list: true, panel });
-  };
-
-  const closeListPanel = () => {
-    setListOpen(false);
-    syncExploreUrl({ list: false });
   };
 
   const applyVenueFilter = (next: VenueListFilterKey) => {
@@ -300,6 +497,34 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ venueRegions: next, list: listOpen });
   };
 
+  const commitMapSearch = (scope?: ExploreSearchScopeKey | null) => {
+    if (scope === 'facilities') return;
+    clearSelection();
+    setListMode('default');
+    const resolved = scope !== undefined ? scope : searchScope;
+    setSearchScope(resolved);
+    if (resolved) {
+      const syncedPanel = explorePanelForSearchScope(resolved);
+      const syncedTab = desktopBrowseTabForSearchScope(resolved);
+      const syncedPinKind = pinKindForSearchScope(resolved);
+      setPanel(syncedPanel);
+      setDesktopBrowseTab(syncedTab);
+      setPinKind(syncedPinKind);
+      syncExploreUrl({
+        q: query,
+        list: true,
+        listMode: 'default',
+        panel: syncedPanel,
+        pinKind: syncedPinKind,
+        searchScope: resolved,
+      });
+      setListOpen(true);
+      return;
+    }
+    syncExploreUrl({ q: query, list: true, listMode: 'default', searchScope: null });
+    setListOpen(true);
+  };
+
   const placesMode = isDesktop ? desktopBrowseTab === 'venues' : panel === 'venues';
 
   return {
@@ -333,5 +558,22 @@ export const useExploreBrowseUrlState = ({
     browseFilterKeys,
     placesMode,
     applyVenueRegions,
+    buddySubtype,
+    applyBuddySubtype,
+    outingTopic,
+    applyOutingTopic,
+    searchScope,
+    commitMapSearch,
+    pinKind,
+    applyPinKindFilter,
+    mapFilterKeys: UNIFIED_MAP_FILTER_KEYS,
+    topicPills,
+    toggleMapTopicPill,
+    clearMapTopicPills,
+    openWhosGoingList,
+    closeWhosGoingPanel,
+    whosGoingSegment,
+    applyWhosGoingSegment,
+    listMode,
   };
 };

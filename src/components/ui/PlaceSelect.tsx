@@ -69,15 +69,6 @@ export const PlaceSelect = ({
     void loadLocations();
   }, [tenantId, injectedPlaces]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [open]);
-
   const { active, pending } = useMemo(() => {
     const matchType = (l: PlaceDTO) => !activityType || l.activityType === activityType;
     const matchQuery = (l: PlaceDTO) => {
@@ -100,14 +91,38 @@ export const PlaceSelect = ({
     setQuery('');
   };
 
+  const openPanel = () => {
+    setOpen(true);
+    if (selected) setQuery('');
+  };
+
+  const closePanel = () => {
+    setOpen(false);
+    setQuery('');
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) closePanel();
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  /** After a pick, only show options again when the user types in the search field. */
+  const showOptions = open && (!selected || query.trim().length > 0);
+
   const listEmpty = active.length === 0 && pending.length === 0;
 
   return (
     <div ref={rootRef} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => (open ? closePanel() : openPanel())}
         className="ios-input flex w-full items-center justify-between gap-2 rounded-2xl text-left"
+        aria-expanded={open}
+        aria-haspopup="listbox"
       >
         <span className={selected ? 'text-gray-900 truncate' : 'text-gray-400'}>
           {selected ? `${selected.name} (${selected.region})` : placeholder}
@@ -126,24 +141,29 @@ export const PlaceSelect = ({
       )}
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-lg shadow-neutral-900/10">
-          <div className="p-2 border-b border-gray-100 bg-white sticky top-0 z-10">
+        <div className="absolute z-[7000] mt-1 w-full overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-lg shadow-neutral-900/10">
+          <div className="border-b border-gray-100 bg-white p-2 sticky top-0 z-10">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search venues…"
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                placeholder={selected ? 'Type to find another venue…' : 'Search venues…'}
+                className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm focus:border-transparent focus:ring-2 focus:ring-emerald-500"
                 autoFocus
               />
             </div>
           </div>
 
-          <ul className="max-h-52 overflow-y-auto py-1">
+          {!showOptions ? (
+            <p className="px-3 py-3 text-sm text-gray-500">Type in the box above to see venues.</p>
+          ) : null}
+
+          {showOptions ? (
+          <ul className="max-h-52 overflow-y-auto py-1" role="listbox">
             {listEmpty && (
-              <li className="px-3 py-4 text-sm text-gray-500 text-center space-y-2">
+              <li className="space-y-2 px-3 py-4 text-center text-sm text-gray-500">
                 <p>No venues match your search.</p>
                 {emptyHelp}
               </li>
@@ -183,6 +203,7 @@ export const PlaceSelect = ({
               </li>
             ))}
           </ul>
+          ) : null}
 
           {addNewHref && (
             <div className="border-t border-gray-100 p-2 bg-gray-50">

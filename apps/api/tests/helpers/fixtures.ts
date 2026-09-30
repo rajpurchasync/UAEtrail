@@ -212,7 +212,8 @@ export const registerVerifiedVisitor = async (
     .send({
       email,
       password,
-      displayName: 'Join Test Visitor',
+      givenName: 'Join',
+      surname: 'Visitor',
       accountType: 'participant'
     });
 

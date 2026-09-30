@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
+import { MemberFollowControls } from './MemberFollowControls';
 import type { PersonPublicProfileDTO } from '../../api/index';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
@@ -56,9 +57,11 @@ interface MemberProfileViewProps {
   buddyRel: BuddyRelationshipDTO | null;
   buddyBusy: boolean;
   buddyMessage: string | null;
+  onBuddyMessage: (message: string | null) => void;
   onSendBuddyRequest: () => void;
   onAcceptBuddyRequest: () => void;
   onDeclineBuddyRequest: () => void;
+  onCancelBuddyRequest: () => void;
   onMessage: () => void;
   hostedActivities?: ActivityDTO[];
 }
@@ -72,9 +75,11 @@ export const MemberProfileView = ({
   buddyRel,
   buddyBusy,
   buddyMessage,
+  onBuddyMessage,
   onSendBuddyRequest,
   onAcceptBuddyRequest,
   onDeclineBuddyRequest,
+  onCancelBuddyRequest,
   onMessage,
   hostedActivities = [],
 }: MemberProfileViewProps) => {
@@ -197,6 +202,11 @@ export const MemberProfileView = ({
 
           {showConnectActions && (
             <>
+              <MemberFollowControls
+                targetUserId={userId}
+                onStatusMessage={onBuddyMessage}
+              />
+
               <AppButton type="button" fullWidth onClick={onMessage}>
                 Message
               </AppButton>
@@ -219,13 +229,28 @@ export const MemberProfileView = ({
                   </AppButton>
                 </div>
               ) : buddyRel?.outgoingRequest ? (
-                <p className="text-center text-sm font-semibold text-neutral-600">Buddy request sent</p>
+                <div className="space-y-2">
+                  <p className="text-center text-sm font-semibold text-neutral-600">Buddy request sent</p>
+                  <AppButton
+                    type="button"
+                    variant="secondary"
+                    fullWidth
+                    disabled={buddyBusy}
+                    onClick={onCancelBuddyRequest}
+                  >
+                    Cancel request
+                  </AppButton>
+                </div>
               ) : buddyRel?.canSendRequest ? (
                 <AppButton type="button" variant="secondary" fullWidth disabled={buddyBusy} onClick={onSendBuddyRequest}>
                   <UserPlus className="mr-2 inline h-4 w-4" />
                   Add buddy
                 </AppButton>
               ) : null}
+
+              <p className="text-center text-xs text-neutral-500">
+                Buddies can message and see each other in Who&apos;s going.
+              </p>
 
               {buddyMessage && <p className="text-center text-xs text-neutral-600">{buddyMessage}</p>}
             </>

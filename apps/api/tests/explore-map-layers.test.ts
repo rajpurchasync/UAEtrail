@@ -19,6 +19,8 @@ type ExploreMapItem = {
   id: string;
   kind: string;
   source: string;
+  composeIntent?: string | null;
+  outingCategory?: string | null;
 };
 
 describe('GET /api/v1/explore/map layer separation', () => {
@@ -68,8 +70,12 @@ describe('GET /api/v1/explore/map layer separation', () => {
 
     expect(activity?.source).toBe('activity');
     expect(activity?.kind).toBe('hiking');
+    expect(activity?.composeIntent).toBe('organize');
+    expect(activity?.outingCategory).toBe('hiking');
     expect(venueItem?.source).toBe('venue');
     expect(venueItem?.kind).toBe('hiking');
+    expect(venueItem?.composeIntent).toBeNull();
+    expect(venueItem?.outingCategory).toBeNull();
   });
 
   it('refreshes explore map after a new active location without manual cache clear', async () => {

@@ -31,12 +31,22 @@ describe('GET /api/v1/explore/map golden path', () => {
     const response = await request(app).get('/api/v1/explore/map');
     expect(response.status).toBe(200);
 
-    const items = response.body.data.items as Array<{ id: string; latitude: number | null; longitude: number | null }>;
+    const items = response.body.data.items as Array<{
+      id: string;
+      latitude: number | null;
+      longitude: number | null;
+      composeIntent?: string | null;
+      outingCategory?: string | null;
+      participationMode?: string | null;
+    }>;
     const pin = items.find((item) => item.id === `activity:${fixture.activityId}`);
 
     expect(pin).toBeDefined();
     expect(pin?.latitude).toBe(25.118);
     expect(pin?.longitude).toBe(55.201);
+    expect(pin?.composeIntent).toBe('organize');
+    expect(pin?.outingCategory).toBe('hiking');
+    expect(pin?.participationMode).toMatch(/^(rsvp|approval)$/);
   });
 
   it('excludes private published activities from the explore map', async () => {

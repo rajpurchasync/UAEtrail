@@ -27,7 +27,6 @@ type UseExploreSelectionActionsArgs = {
   user: { id: string; role?: string } | null | undefined;
   tenantId: string | null | undefined;
   navigate: NavigateFunction;
-  signInHref: string;
   queryClient: QueryClient;
   browse: BrowseState;
   isDesktop: boolean;
@@ -46,7 +45,6 @@ export const useExploreSelectionActions = ({
   user,
   tenantId,
   navigate,
-  signInHref,
   queryClient,
   browse,
   isDesktop,
@@ -120,14 +118,21 @@ export const useExploreSelectionActions = ({
       const requesterId = item.requesterUserId;
       if (!requesterId) return;
       if (!user) {
-        navigate(signInHref);
+        joinActions.openGuestSheet('activity');
         return;
       }
       navigate(messagesRouteForRole((user.role ?? 'participant') as UserRole, requesterId));
       setSelectedId(null);
     },
-    [user, navigate, signInHref, setSelectedId]
+    [user, navigate, joinActions, setSelectedId]
   );
+
+  const handleGuestGatedAction = useCallback(() => {
+    if (user) return;
+    const intent =
+      selected?.source === 'venue' || selected?.source === 'shop' ? 'place' : 'activity';
+    joinActions.openGuestSheet(intent);
+  }, [user, selected?.source, joinActions]);
 
   const handleJoin = useCallback(() => {
     if (selected?.source === 'demand') {
@@ -136,7 +141,7 @@ export const useExploreSelectionActions = ({
     }
     if (!selected?.activity) return;
     if (!user) {
-      joinActions.openGuestSheet();
+      joinActions.openGuestSheet('activity');
       return;
     }
     if (joinUiState.kind !== 'open') return;
@@ -287,6 +292,7 @@ export const useExploreSelectionActions = ({
     setDemandNotice,
     setVenueNotice,
     openItem,
+    handleGuestGatedAction,
     handleJoin,
     handleDemandMessage,
     handleHostMessage,

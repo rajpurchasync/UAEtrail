@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
@@ -13,14 +13,22 @@ import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { getExploreMapTiles } from '../../config/platform';
 import { ExploreComposeHost } from './ExploreComposeHost';
 import { ExploreJoinOverlays } from './ExploreJoinOverlays';
+import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
+import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
+import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
 import { useExploreBrowseList } from './useExploreBrowseList';
+import { useWhosGoingFriends } from './useWhosGoingFriends';
 import { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
+import { useExploreOrganizeFromActivity } from './useExploreOrganizeFromActivity';
+import type { OrganizeWizardPrefill } from './organizeWizardPrefill';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
+import { parseExplorePinMapItemId, parseOrganizeFromActivityId } from '../routing';
+import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 
 export const ExploreExperience = () => {
   const { user } = useAuth();
@@ -37,6 +45,7 @@ export const ExploreExperience = () => {
   const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hoveredListItemId, setHoveredListItemId] = useState<string | null>(null);
   const clearSelection = useCallback(() => setSelectedId(null), []);
 
   const browse = useExploreBrowseUrlState({
@@ -80,6 +89,35 @@ export const ExploreExperience = () => {
     selected,
   });
 
+  const organizeFrom = useExploreOrganizeFromActivity({
+    user,
+    tenantId,
+    hostGateLoading,
+    canPublish,
+    navigate,
+    pathname,
+    searchParams,
+    setSearchParams,
+    setComposeRoute: compose.setComposeRoute,
+    organizeKind: compose.organizeRoute?.kind ?? null,
+  });
+
+  const organizeWizardPrefill = useMemo((): OrganizeWizardPrefill | null => {
+    if (fulfill.fulfillIntentPrefill) {
+      return {
+        draft: fulfill.fulfillIntentPrefill.draft,
+        participantIntentId: fulfill.fulfillIntentPrefill.participantIntentId,
+      };
+    }
+    if (organizeFrom.organizeFromPrefill) {
+      return {
+        draft: organizeFrom.organizeFromPrefill.draft,
+        sourceActivityId: organizeFrom.organizeFromPrefill.sourceActivityId,
+      };
+    }
+    return null;
+  }, [fulfill.fulfillIntentPrefill, organizeFrom.organizeFromPrefill]);
+
   const selection = useExploreSelectionActions({
     items,
     selectedId,
@@ -87,7 +125,6 @@ export const ExploreExperience = () => {
     user,
     tenantId,
     navigate,
-    signInHref: buildSignInRedirect({ pathname, search }).href,
     queryClient,
     browse,
     isDesktop,
@@ -99,7 +136,30 @@ export const ExploreExperience = () => {
     handleFocusMapLocation: viewport.handleFocusMapLocation,
   });
 
-  const organizeWizardOpen = Boolean(compose.organizeRoute) || Boolean(fulfill.fulfillIntentPrefill);
+  const organizeFromPending = Boolean(parseOrganizeFromActivityId(searchParams));
+  const organizeWizardOpen =
+    Boolean(organizeWizardPrefill) ||
+    (Boolean(compose.organizeRoute) && !organizeFromPending);
+
+  const deepLinkPinId = parseExplorePinMapItemId(searchParams);
+  const openedDeepLinkPinRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!deepLinkPinId || loading) return;
+    if (openedDeepLinkPinRef.current === deepLinkPinId) return;
+    const item = items.find((entry) => entry.id === deepLinkPinId);
+    if (!item) return;
+    openedDeepLinkPinRef.current = deepLinkPinId;
+    selection.openItem(item);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('pin');
+        return next;
+      },
+      { replace: true }
+    );
+  }, [deepLinkPinId, loading, items, selection.openItem, setSearchParams]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -109,18 +169,50 @@ export const ExploreExperience = () => {
     };
   }, []);
 
-  const { mapPins, listItems, shopListSections } = useExploreBrowseList({
-    items,
-    mapFilter: browse.mapFilter,
-    activityFilter: browse.activityFilter,
-    venueFilter: browse.venueFilter,
-    venueRegions: browse.venueRegions,
-    query: browse.query,
+  const whosGoingFriends = useWhosGoingFriends({
+    enabled: Boolean(user) && browse.listMode === 'whosGoing',
+    userId: user?.id,
+    mapItems: items,
     activityDatePreset: browse.activityDatePreset,
-    sidebarPanel: browse.sidebarPanel,
-    isDesktop,
-    desktopBrowseTab: browse.desktopBrowseTab,
   });
+
+  const {
+    mapPins,
+    listItems,
+    shopListSections,
+    whosGoingPreview,
+    searchScopeCounts,
+    whosGoingTripsCount,
+    whosGoingListItems,
+  } =
+    useExploreBrowseList({
+      items,
+      mapFilter: browse.mapFilter,
+      venueRegions: browse.venueRegions,
+      query: browse.query,
+      activityDatePreset: browse.activityDatePreset,
+      topicPills: browse.topicPills,
+      listMode: browse.listMode,
+      whosGoingSegment: browse.whosGoingSegment,
+      searchScope: browse.searchScope,
+      friendIds: user ? whosGoingFriends.friendIds : undefined,
+      sidebarPanel: browse.sidebarPanel,
+      isDesktop,
+      desktopBrowseTab: browse.desktopBrowseTab,
+      buddySubtype: browse.buddySubtype,
+      outingTopic: browse.outingTopic,
+    });
+
+  const whosGoingFriendRowsFiltered = useMemo(() => {
+    const q = browse.query.trim().toLowerCase();
+    if (!q) return whosGoingFriends.friendRows;
+    return whosGoingFriends.friendRows.filter((row) => {
+      const name = row.buddy.displayName.toLowerCase();
+      const hosting = row.hosting?.title.toLowerCase() ?? '';
+      const joining = row.joining?.title.toLowerCase() ?? '';
+      return name.includes(q) || hosting.includes(q) || joining.includes(q);
+    });
+  }, [whosGoingFriends.friendRows, browse.query]);
 
   const exploreMapTiles = useMemo(
     () => getExploreMapTiles(viewport.exploreMapStyle),
@@ -145,36 +237,91 @@ export const ExploreExperience = () => {
   const closeCreateFlow = () => {
     compose.closeCompose();
     fulfill.setFulfillIntentPrefill(null);
+    organizeFrom.clearOrganizeFromPrefill();
   };
 
-  const browsePanel = (
+  const [searchFocusNonce, setSearchFocusNonce] = useState(0);
+  const handleMapSearchCommit = (scope?: ExploreSearchScopeKey | null) => {
+    browse.commitMapSearch(scope);
+    setSearchFocusNonce((n) => n + 1);
+  };
+
+  const browsePanelShared = {
+    isDesktop,
+    loading,
+    shopListSections,
+    desktopBrowseTab: browse.desktopBrowseTab,
+    mapFilter: browse.mapFilter,
+    browseFilterKeys: browse.browseFilterKeys,
+    placesMode: browse.placesMode,
+    onMapFilterChange: browse.applyMapFilter,
+    activityDatePreset: browse.activityDatePreset,
+    onActivityDatePresetChange: browse.applyActivityDatePreset,
+    venueRegions: browse.venueRegions,
+    onVenueRegionsChange: browse.applyVenueRegions,
+    onDesktopBrowseTabChange: browse.applyDesktopBrowseTab,
+    panel: browse.panel,
+    sidebarPanel: browse.sidebarPanel,
+    onPanelChange: browse.applyPanel,
+    buddySubtype: browse.buddySubtype,
+    onBuddySubtypeChange: browse.applyBuddySubtype,
+    outingTopic: browse.outingTopic,
+    onOutingTopicChange: browse.applyOutingTopic,
+    query: browse.query,
+    onQueryChange: browse.setQuery,
+    onQuerySync: () => browse.syncExploreUrl({ q: browse.query }),
+    onClearQuery: () => {
+      browse.setQuery('');
+      browse.syncExploreUrl({ q: '' });
+    },
+    onOpenItem: selection.openItem,
+    searchScopeCounts,
+    onSearchScopePick: handleMapSearchCommit,
+    searchFocusNonce,
+    whosGoingSegment: browse.whosGoingSegment,
+    onWhosGoingSegmentChange: browse.applyWhosGoingSegment,
+    whosGoingTripsCount,
+    whosGoingPeopleCount: whosGoingFriends.friendsOnTrips.length,
+    whosGoingFriendRows: whosGoingFriendRowsFiltered,
+    whosGoingFriendsLoading: whosGoingFriends.loading,
+    whosGoingFriendsError: whosGoingFriends.error,
+    isSignedIn: Boolean(user),
+    userRole: user?.role,
+    friendUserIds: user ? whosGoingFriends.friendIds : undefined,
+  };
+
+  const desktopBrowsePanel = (
     <ExploreBrowsePanel
-      isDesktop={isDesktop}
-      loading={loading}
+      {...browsePanelShared}
       listItems={listItems}
-      shopListSections={shopListSections}
-      desktopBrowseTab={browse.desktopBrowseTab}
-      mapFilter={browse.mapFilter}
-      browseFilterKeys={browse.browseFilterKeys}
-      placesMode={browse.placesMode}
-      onMapFilterChange={browse.applyMapFilter}
-      activityDatePreset={browse.activityDatePreset}
-      onActivityDatePresetChange={browse.applyActivityDatePreset}
-      venueRegions={browse.venueRegions}
-      onVenueRegionsChange={browse.applyVenueRegions}
-      onDesktopBrowseTabChange={browse.applyDesktopBrowseTab}
-      panel={browse.panel}
-      sidebarPanel={browse.sidebarPanel}
-      onPanelChange={browse.applyPanel}
-      query={browse.query}
-      onQueryChange={browse.setQuery}
-      onQuerySync={() => browse.syncExploreUrl({ q: browse.query })}
-      onClearQuery={() => {
-        browse.setQuery('');
-        browse.syncExploreUrl({ q: '' });
-      }}
       onClose={browse.closeListPanel}
-      onOpenItem={selection.openItem}
+      listMode="default"
+      onListItemHover={(id) => setHoveredListItemId(id)}
+      onListItemHoverEnd={() => setHoveredListItemId(null)}
+    />
+  );
+
+  const desktopWhosGoingPanel = (
+    <ExploreBrowsePanel
+      {...browsePanelShared}
+      listItems={whosGoingListItems}
+      onClose={browse.closeWhosGoingPanel}
+      closePanelAriaLabel="Close Who's going panel"
+      closeButtonVariant="dismiss"
+      listMode="whosGoing"
+    />
+  );
+
+  const mobileBrowsePanel = (
+    <ExploreBrowsePanel
+      {...browsePanelShared}
+      listItems={
+        browse.listMode === 'whosGoing' && browse.whosGoingSegment === 'trips'
+          ? whosGoingListItems
+          : listItems
+      }
+      onClose={browse.closeListPanel}
+      listMode={browse.listMode}
     />
   );
 
@@ -191,7 +338,7 @@ export const ExploreExperience = () => {
       <div className="relative flex min-h-0 flex-1 lg:flex-row">
         {browse.showListPanel && isDesktop && (
           <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-r lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300">
-            {browsePanel}
+            {desktopBrowsePanel}
           </aside>
         )}
 
@@ -199,19 +346,22 @@ export const ExploreExperience = () => {
           isDesktop={isDesktop}
           listOpen={browse.listOpen}
           showListPanel={browse.showListPanel}
-          mapFilter={browse.mapFilter}
-          browseFilterKeys={browse.browseFilterKeys}
-          placesMode={browse.placesMode}
-          onMapFilterChange={browse.applyMapFilter}
-          activityDatePreset={browse.activityDatePreset}
-          onActivityDatePresetChange={browse.applyActivityDatePreset}
-          venueRegions={browse.venueRegions}
-          onVenueRegionsChange={browse.applyVenueRegions}
+          topicPills={browse.topicPills}
+          onTopicPillToggle={browse.toggleMapTopicPill}
+          onWhosGoing={browse.openWhosGoingList}
+          whosGoingAvatars={whosGoingPreview.avatars}
+          whosGoingExtraCount={whosGoingPreview.extraCount}
+          whosGoingTotalJoining={whosGoingPreview.totalJoining}
+          searchQuery={browse.query}
+          onSearchQueryChange={browse.setQuery}
+          onSearchCommit={handleMapSearchCommit}
+          searchScopeCounts={searchScopeCounts}
           exploreMapStyle={viewport.exploreMapStyle}
           exploreMapTiles={exploreMapTiles}
           onToggleMapStyle={viewport.toggleExploreMapStyle}
           mapPins={mapPins}
           selectedId={selectedId}
+          highlightedExploreItemId={isDesktop ? hoveredListItemId : null}
           recenterTo={viewport.recenterTo}
           exploreMapCenter={viewport.exploreMapCenter}
           onPinClick={handleMapPinClick}
@@ -228,7 +378,6 @@ export const ExploreExperience = () => {
           onAllowMapLocation={viewport.handleAllowMapLocation}
           onDismissLocationPrompt={viewport.dismissLocationPromptUi}
           onOpenBrowse={browse.openBrowse}
-          onLocateMe={viewport.handleLocateMe}
           onPrimaryFab={compose.handleCreateTap}
           primaryFabLabel={primaryFabLabel}
           selected={selection.selected}
@@ -250,8 +399,17 @@ export const ExploreExperience = () => {
           carpoolLinkLoading={selection.carpoolLinkLoading}
           onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
           onCloseMobileBrowse={browse.closeListPanel}
-          mobileBrowseSheet={browsePanel}
+          mobileBrowseSheet={mobileBrowsePanel}
+          onGuestGatedAction={selection.handleGuestGatedAction}
         />
+
+        {isDesktop && browse.listMode === 'whosGoing' ? (
+          <aside
+            className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-l lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300"
+          >
+            {desktopWhosGoingPanel}
+          </aside>
+        ) : null}
       </div>
 
       <ExploreComposeHost
@@ -263,13 +421,14 @@ export const ExploreExperience = () => {
         organizeKind={compose.organizeRoute?.kind ?? null}
         findKind={compose.findRoute?.kind}
         addKind={compose.addRoute?.kind ?? null}
-        fulfillIntentPrefill={fulfill.fulfillIntentPrefill}
+        fulfillIntentPrefill={organizeWizardPrefill}
         signInHref={buildSignInRedirect({ pathname, search }).href}
         onComposeRouteChange={compose.handleComposeRouteChange}
         onCloseCompose={compose.closeCompose}
         onCloseCreateFlow={closeCreateFlow}
         onOrganizeBackToIntent={() => {
           fulfill.setFulfillIntentPrefill(null);
+          organizeFrom.clearOrganizeFromPrefill();
           compose.setComposeRoute({ surface: 'menu', intent: 'organize' });
         }}
         onFindBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'find' })}
@@ -284,6 +443,29 @@ export const ExploreExperience = () => {
       />
 
       <ExploreJoinOverlays activity={selection.selected?.activity} joinActions={selection.joinActions} />
+
+      <ExploreResponsiveSheet
+        open={compose.guestComposeSignInOpen}
+        onClose={compose.closeGuestComposeSignIn}
+        maxWidthClass="max-w-md"
+        zClass={EXPLORE_Z.guestJoinSheet}
+        overlayFixed
+        layout="centered"
+        showCloseButton
+        showHandle={false}
+        ariaLabel="Sign in to continue"
+      >
+        <div className="px-4 pb-5 pt-8 sm:px-6 sm:pb-6">
+          <ExploreGuestSignInCard intent="peek-details" compact />
+          <button
+            type="button"
+            onClick={compose.closeGuestComposeSignIn}
+            className="mt-2 block w-full py-2 text-center text-sm font-medium text-neutral-400"
+          >
+            Keep browsing
+          </button>
+        </div>
+      </ExploreResponsiveSheet>
     </div>
   );
 };

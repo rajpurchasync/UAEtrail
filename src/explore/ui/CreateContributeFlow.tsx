@@ -43,7 +43,7 @@ interface CreateContributeFlowProps {
 const KIND_LABELS: Record<ContributeVenueKind, { title: string; icon: typeof Mountain }> = {
   hiking: { title: 'Hiking Trails', icon: Mountain },
   camping: { title: 'Camping Spots', icon: Tent },
-  shop: { title: 'Outdoor shops', icon: ShoppingBag },
+  shop: { title: 'Shops', icon: ShoppingBag },
   event: { title: 'Others', icon: Sparkles },
 };
 

@@ -1,5 +1,6 @@
 import type { PlaceDTO } from '@uaetrail/shared-types';
 import type { ActivityDifficulty, CreateActivityDraft } from './organizeFlow';
+import type { OrganizeCatalogFlow } from './organizeFlows';
 
 export const mapRegistryPlaceDifficulty = (
   difficulty?: PlaceDTO['difficulty'] | null
@@ -8,6 +9,10 @@ export const mapRegistryPlaceDifficulty = (
   if (difficulty === 'hard') return 'hard';
   return 'easy';
 };
+
+/** Whether this catalog flow loads venue rows from the place registry on destination. */
+export const organizeFlowUsesPlaceRegistry = (flow: OrganizeCatalogFlow): boolean =>
+  Boolean(flow.registryVenue);
 
 /** Apply a registry venue place onto the organize activity draft. */
 export const applyRegistryPlaceToOrganizeDraft = (

@@ -104,6 +104,8 @@ export interface UserProfile {
   role?: string;
   switchedFromRole?: string | null;
   displayName?: string;
+  givenName?: string | null;
+  surname?: string | null;
   phone?: string;
   bio?: string;
   avatarUrl?: string;

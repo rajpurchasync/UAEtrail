@@ -1,5 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { type ActivityType } from '../../config/activityTypes';
+import { getOrganizeCatalogFlowSteps, validateOrganizeCatalogStep } from './organizeFlows';
 import {
   buildParticipationRequirementLines,
 } from '../../utils/activityPublishPayload';
@@ -144,69 +145,6 @@ export const isRideshareOrganizeFlow = (
   genericBuddy = false
 ): boolean => kind === 'carpool' && !genericBuddy;
 
-/** Organize · hiking — confirmed product flow (13 steps incl. difficulty + transportation). */
-const HIKING_HOST_STEPS: CreateFlowStepId[] = [
-  'title',
-  'when',
-  'meeting',
-  'audience',
-  'spots',
-  'price',
-  'destination',
-  'difficulty',
-  'about_trail',
-  'meeting_point',
-  'join_kit',
-  'transportation',
-  'publish',
-];
-
-/** Organize · camping — aligned with FLOW-01 (12 steps incl. transportation). */
-const CAMPING_HOST_STEPS: CreateFlowStepId[] = [
-  'title',
-  'when',
-  'meeting',
-  'audience',
-  'spots',
-  'price',
-  'destination',
-  'about_trail',
-  'meeting_point',
-  'join_kit',
-  'transportation',
-  'publish',
-];
-
-/** Organize · general activity (FLOW-05) — meet pin early, going-from later, carpool on publish. */
-const ACTIVITY_HOST_STEPS: CreateFlowStepId[] = [
-  'activity_type',
-  'title',
-  'when',
-  'meeting_point',
-  'spots',
-  'audience',
-  'price',
-  'instructions',
-  'meeting',
-  'transportation',
-  'publish',
-];
-
-/** Organize · event — structured; no going-from step; no offer-carpool on publish. */
-const EVENT_HOST_STEPS: CreateFlowStepId[] = [
-  'title',
-  'when',
-  'audience',
-  'spots',
-  'price',
-  'destination',
-  'about_trail',
-  'meeting_point',
-  'join_kit',
-  'transportation',
-  'publish',
-];
-
 export const isHikingOrganizeFlow = (
   kind: CreateActivityKind | null,
   genericBuddy = false
@@ -245,38 +183,20 @@ export const usesGoingFromOrganizeStep = (
   isCampingOrganizeFlow(kind, genericBuddy) ||
   isActivityOrganizeFlow(kind, genericBuddy);
 
-const RIDESHARE_HOST_STEPS: CreateFlowStepId[] = [
-  'title',
-  'when',
-  'meeting',
-  'to',
-  'audience',
-  'spots',
-  'price',
-  'instructions',
-  'transportation',
-  'publish',
-];
+export { usesRegistryCatalogVenue } from './organizeFlows/registry';
 
-const BUDDY_HOST_STEPS: CreateFlowStepId[] = ['title', 'when', 'meeting', 'audience', 'price', 'publish'];
+export type CreateFlowStepsOptions = Pick<CreateActivityDraft, 'placeLabelSource' | 'registryPlaceId'>;
 
-export const getCreateFlowSteps = (kind: CreateActivityKind, genericBuddy = false): CreateFlowStepId[] => {
-  if (genericBuddy) return BUDDY_HOST_STEPS;
-  switch (kind) {
-    case 'carpool':
-      return RIDESHARE_HOST_STEPS;
-    case 'camping':
-      return CAMPING_HOST_STEPS;
-    case 'event':
-      return EVENT_HOST_STEPS;
-    case 'activity':
-      return ACTIVITY_HOST_STEPS;
-    case 'hiking':
-      return HIKING_HOST_STEPS;
-    default:
-      return HIKING_HOST_STEPS;
-  }
-};
+export const getCreateFlowSteps = (
+  kind: CreateActivityKind,
+  genericBuddy = false,
+  options?: CreateFlowStepsOptions
+): CreateFlowStepId[] =>
+  getOrganizeCatalogFlowSteps(kind, genericBuddy, {
+    placeLabelSource: options?.placeLabelSource ?? 'custom',
+    registryPlaceId: options?.registryPlaceId ?? null,
+    genericBuddy,
+  });
 
 export const usesVenueHostFlow = (kind: CreateActivityKind | null): boolean => kind === 'camping';
 
@@ -671,206 +591,13 @@ export const buildOrganizeActivityRequirements = (draft: CreateActivityDraft): s
   return requirements;
 };
 
-export { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 
 export const validateDraftStep = (step: CreateFlowStepId, draft: CreateActivityDraft): string | null => {
-  const hiking = isHikingOrganizeFlow(draft.kind, draft.genericBuddy);
-  const event = isEventOrganizeFlow(draft.kind, draft.genericBuddy);
-  const activity = isActivityOrganizeFlow(draft.kind, draft.genericBuddy);
-  const goingFrom = usesGoingFromOrganizeStep(draft.kind, draft.genericBuddy);
-  const structured = isStructuredOrganizeFlow(draft.kind, draft.genericBuddy);
-  const titleTrimmed = draft.title.trim();
-  const aboutTrimmed = draft.aboutTrail.trim();
-
-  if (step === 'activity_type' && activity && !draft.activityTopic) {
-    return 'Choose an activity type.';
+  if (!draft.kind) return null;
+  if (draft.genericBuddy && step === 'title' && !draft.title.trim()) {
+    return 'Tell us what you want to do.';
   }
-  if (step === 'title' && !titleTrimmed) {
-    if (draft.genericBuddy) return 'Tell us what you want to do.';
-    if (structured || activity) return 'Give your outing a title.';
-    if (draft.kind === 'event') return 'Enter an event title.';
-    if (draft.kind === 'carpool') return 'Enter a title.';
-    return 'Enter an activity title.';
-  }
-  if (step === 'title' && titleTrimmed.length < 4) {
-    return 'Title must be at least 4 characters.';
-  }
-  if (step === 'audience') {
-    if (
-      draft.audienceAccess === 'others' &&
-      !draft.audienceOtherNote.trim()
-    ) {
-      return 'Describe who can attend.';
-    }
-  }
-  if (step === 'route') {
-    if (draft.latitude == null || draft.longitude == null) {
-      return 'Choose a starting point on the map.';
-    }
-    if (draft.toLatitude == null || draft.toLongitude == null) {
-      return 'Choose a destination on the map.';
-    }
-  }
-  if ((step === 'where' || step === 'meeting') && (draft.latitude == null || draft.longitude == null)) {
-    if (step === 'meeting' && activity && draft.meetingLatitude != null && draft.meetingLongitude != null) {
-      return null;
-    }
-    return 'Drop a pin on the map.';
-  }
-  if (step === 'meeting' && draft.kind !== 'carpool' && !draft.genericBuddy && !structured && draft.timeMode === 'specific' && !draft.meetingTime.trim()) {
-    return 'Choose a meeting time.';
-  }
-  if (
-    step === 'instructions' &&
-    draft.kind === 'event' &&
-    draft.capacity < 1
-  ) {
-    return 'Choose at least one spot.';
-  }
-  if (step === 'instructions' && draft.kind === 'carpool' && !draft.description.trim()) {
-    return 'Add what riders need to know before they join.';
-  }
-  if (step === 'transportation' && draft.kind === 'carpool') {
-    return null;
-  }
-  if (step === 'spots' && draft.kind === 'carpool' && draft.capacity < 1) {
-    return 'Choose at least one seat.';
-  }
-  if (step === 'spots' && draft.kind === 'carpool' && draft.capacity > 10) {
-    return 'Maximum 10 seats.';
-  }
-  if (
-    step === 'audience' &&
-    draft.kind === 'carpool' &&
-    !draft.participantsOpenToAll &&
-    !draft.limitedWomenOnly &&
-    !draft.limitedMinAgeEnabled
-  ) {
-    return 'Select at least one restriction under Limited.';
-  }
-  if (step === 'audience' && draft.kind === 'carpool' && !draft.participantsOpenToAll && draft.limitedMinAgeEnabled && draft.ageMin < 1) {
-    return 'Enter a minimum age.';
-  }
-  if (step === 'to' && (draft.toLatitude == null || draft.toLongitude == null)) {
-    return 'Drop a destination pin on the map.';
-  }
-  if (step === 'information' && draft.kind === 'hiking' && !hiking && !draft.additionalInstructions.trim()) {
-    return 'Add what joiners need to know before they request a spot.';
-  }
-  if (step === 'instructions' && activity && !draft.joinKit.trim()) {
-    return 'Add what joiners need to know before they join.';
-  }
-  if (step === 'instructions' && draft.kind === 'event' && !draft.additionalInstructions.trim()) {
-    return 'Add what joiners need to know before they request a spot.';
-  }
-  if (step === 'when' && draft.timeMode === 'specific' && !draft.time) {
-    return 'Choose a start time.';
-  }
-  if (step === 'when' && hiking && draft.timeMode === 'specific' && !draft.endTime.trim()) {
-    return 'Choose an approximate end time.';
-  }
-  if (step === 'when' && hiking && draft.timeMode === 'specific' && draft.endTime <= (draft.meetingTime || draft.time)) {
-    return 'End time should be after the start time.';
-  }
-  if (step === 'spots' && (structured || activity) && draft.capacity < 1) {
-    return 'Choose at least one spot.';
-  }
-  if (step === 'spots' && (structured || activity) && !draft.participantsOpenToAll) {
-    if (!draft.limitedWomenOnly && !draft.limitedMinAgeEnabled) {
-      return 'Select at least one restriction under Limited.';
-    }
-    if (draft.limitedMinAgeEnabled && draft.ageMin < 1) {
-      return 'Enter a minimum age.';
-    }
-  }
-  if (step === 'destination' && structured) {
-    if (draft.placeLabelSource === 'custom') {
-      if (!draft.trailName.trim()) {
-        if (draft.kind === 'camping') return 'Name the camp or area.';
-        if (draft.kind === 'event') return 'Name the venue or area.';
-        return 'Name the trail or where you are going.';
-      }
-    } else if (!draft.registryPlaceId) {
-      if (draft.kind === 'camping') return 'Choose a camp from the registry.';
-      if (draft.kind === 'event') return 'Choose a venue from the registry.';
-      return 'Choose a trail from the registry.';
-    }
-  }
-  if (step === 'about_trail' && structured && !aboutTrimmed) {
-    if (draft.kind === 'camping') return 'Tell joiners about the camp.';
-    if (draft.kind === 'event') return 'Tell joiners about the event.';
-    return 'Tell joiners about the trail.';
-  }
-  if (step === 'about_trail' && structured && aboutTrimmed.length < 20) {
-    return 'Description must be at least 20 characters.';
-  }
-  if (step === 'meeting_point' && (structured || activity) && (draft.meetingLatitude == null || draft.meetingLongitude == null)) {
-    return 'Drop a meeting point pin on the map.';
-  }
-  if (step === 'join_kit' && structured && !draft.joinKit.trim()) {
-    return 'Add what joiners must bring or know.';
-  }
-  if (step === 'spots' && !structured && draft.capacity < 1) return 'Choose at least one spot.';
-  if (step === 'information' && draft.capacity < 1) return 'Choose at least one spot.';
-  if (step === 'price') {
-    if (draft.priceMode === 'paid' && draft.priceAmount <= 0) return 'Enter a price amount.';
-    if (draft.priceMode === 'shared' && draft.priceAmount <= 0) return 'Enter a shared cost amount.';
-  }
-  if (step === 'publish') {
-    const effectiveFromLat = draft.latitude ?? draft.meetingLatitude;
-    const effectiveFromLng = draft.longitude ?? draft.meetingLongitude;
-    if (goingFrom && (effectiveFromLat == null || effectiveFromLng == null)) {
-      return 'Drop a going-from pin on the map.';
-    }
-    if (event && (draft.meetingLatitude == null || draft.meetingLongitude == null)) {
-      return 'Drop a meeting point pin on the map.';
-    }
-    if (activity && (draft.meetingLatitude == null || draft.meetingLongitude == null)) {
-      return 'Drop a meeting point pin on the map.';
-    }
-    if (!event && !activity && !goingFrom && draft.latitude == null && draft.longitude == null) {
-      return 'Drop a pin on the map.';
-    }
-    if (goingFrom && structured && (draft.meetingLatitude == null || draft.meetingLongitude == null)) {
-      return 'Drop a meeting point pin on the map.';
-    }
-    if (draft.kind === 'carpool' && (draft.toLatitude == null || draft.toLongitude == null)) {
-      return 'Drop a destination pin on the map.';
-    }
-    if (!draft.title.trim()) return 'Enter a title.';
-    if (titleTrimmed.length < 4) return 'Title must be at least 4 characters.';
-    if (structured) {
-      if (!aboutTrimmed) {
-        if (draft.kind === 'camping') return 'Tell joiners about the camp.';
-        if (draft.kind === 'event') return 'Tell joiners about the event.';
-        return 'Tell joiners about the trail.';
-      }
-      if (aboutTrimmed.length < 20) {
-        return 'Description must be at least 20 characters.';
-      }
-      if (!draft.joinKit.trim()) return 'Add what joiners must bring or know.';
-      if (draft.placeLabelSource === 'custom' && !draft.trailName.trim()) {
-        if (draft.kind === 'camping') return 'Name the camp or area.';
-        if (draft.kind === 'event') return 'Name the venue or area.';
-        return 'Name the trail or where you are going.';
-      }
-      if (draft.placeLabelSource === 'registry' && !draft.registryPlaceId) {
-        if (draft.kind === 'camping') return 'Choose a camp from the registry.';
-        if (draft.kind === 'event') return 'Choose a venue from the registry.';
-        return 'Choose a trail from the registry.';
-      }
-    } else if (activity) {
-      if (!draft.activityTopic) return 'Choose an activity type.';
-      if (!draft.joinKit.trim()) return 'Add instructions for joiners.';
-    } else if (draft.kind === 'carpool') {
-      if (!draft.description.trim()) return 'Add what riders need to know before they join.';
-    } else if (!draft.genericBuddy && !draft.additionalInstructions.trim()) {
-      return 'Add what joiners need to know before they request a spot.';
-    }
-    if (draft.priceMode === 'paid' && draft.priceAmount <= 0) return 'Enter a price amount.';
-    if (draft.priceMode === 'shared' && draft.priceAmount <= 0) return 'Enter a shared cost amount.';
-  }
-  return null;
+  return validateOrganizeCatalogStep(draft.kind, step, draft);
 };
 
 export const ACTIVITY_ORGANIZE_TOPIC_OPTIONS: Array<{

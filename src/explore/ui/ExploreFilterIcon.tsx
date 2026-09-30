@@ -7,6 +7,8 @@ import {
   MAP_LAYER_FILTER_EMOJI,
 } from '../exploreCopy';
 import type { ActivityListFilterKey, MapFilterKey, VenueListFilterKey } from '../routing';
+import type { ExploreMapFilterPillKey } from '../exploreBrowseTaxonomy';
+import { DEMAND_EMOJI } from '../exploreCopy';
 
 type ExploreFilterKey = MapFilterKey | ActivityListFilterKey | VenueListFilterKey | 'others' | 'shops';
 
@@ -37,6 +39,36 @@ interface ExploreFilterIconProps {
   context?: ExploreFilterEmojiContext;
   className?: string;
 }
+
+/** Emoji for map filter pills (Trips, Spots, …). */
+export const ExploreMapFilterPillIcon = ({
+  pill,
+  className = 'text-base leading-none',
+}: {
+  pill: ExploreMapFilterPillKey;
+  className?: string;
+}) => {
+  if (pill === 'looking') {
+    return (
+      <span className={`font-emoji shrink-0 ${className}`} aria-hidden>
+        {DEMAND_EMOJI}
+      </span>
+    );
+  }
+  const asFilter: ExploreFilterKey =
+    pill === 'trips'
+      ? 'hiking'
+      : pill === 'spots'
+        ? 'hiking'
+        : pill === 'shops'
+          ? 'shops'
+          : 'others';
+  const context: ExploreFilterEmojiContext = pill === 'spots' ? 'venue' : 'activity';
+  return <ExploreFilterIcon filter={asFilter} context={context} className={className} />;
+};
+
+/** @deprecated Use ExploreMapFilterPillIcon */
+export const ExploreMapTopicPillIcon = ExploreMapFilterPillIcon;
 
 /** Emoji chip for explore map/list filter pills — matches map pin emoji set. */
 export const ExploreFilterIcon = ({

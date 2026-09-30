@@ -6,7 +6,12 @@ import { PlaceCardActions } from '../../components/ui/PlaceCardActions';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ORGANIZE_DEMAND_PREFILL_TITLE, ORGANIZE_LINK_CARPOOL_HINT, ORGANIZE_LINK_CARPOOL_LABEL } from '../createFlowCopy';
 import {
+  exploreCardHasMapCoords,
+  exploreCardShowsInlineDirections,
+} from '../exploreCardModel';
+import {
   ExploreCardCapacityRow,
+  ExploreCardDirectionsButton,
   ExploreCardPeopleRow,
   ExploreCardRequirementBadges,
 } from './ExploreCardPresentation';
@@ -24,6 +29,8 @@ export interface ExploreItemPeekFooterProps {
   showCarpoolLink?: boolean;
   onLinkCarpool?: () => void;
   carpoolLinkLoading?: boolean;
+  /** Guests — detail, join-adjacent, and profile navigation show sign-up instead. */
+  onGuestGatedAction?: () => void;
 }
 
 /** Map peek card footer — join, host, shop, and demand actions. */
@@ -40,10 +47,23 @@ export const ExploreItemPeekFooter = ({
   showCarpoolLink = false,
   onLinkCarpool,
   carpoolLinkLoading = false,
+  onGuestGatedAction,
 }: ExploreItemPeekFooterProps) => {
   const isShop = card.source === 'shop';
   const isDemand = card.source === 'demand';
   const externalUrl = card.websiteUrl?.trim() || null;
+  const gate = onGuestGatedAction;
+
+  const detailLink = (to: string, label: string, className: string) =>
+    gate ? (
+      <button type="button" onClick={gate} className={className}>
+        {label}
+      </button>
+    ) : (
+      <Link to={to} className={className}>
+        {label}
+      </Link>
+    );
 
   return (
     <>
@@ -56,7 +76,7 @@ export const ExploreItemPeekFooter = ({
               <button
                 type="button"
                 disabled={carpoolLinkLoading}
-                onClick={onLinkCarpool}
+                onClick={gate ?? onLinkCarpool}
                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 py-2.5 text-sm font-bold text-white disabled:opacity-60"
               >
                 <Car className="h-4 w-4" aria-hidden />
@@ -66,14 +86,14 @@ export const ExploreItemPeekFooter = ({
           ) : null}
           <button
             type="button"
-            onClick={onMessage}
+            onClick={gate ?? onMessage}
             className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
           >
             Message
           </button>
           <button
             type="button"
-            onClick={onManage}
+            onClick={gate ?? onManage}
             className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
           >
             {card.activity?.status === 'published' ? 'Check in attendees' : 'Manage'}
@@ -83,7 +103,7 @@ export const ExploreItemPeekFooter = ({
         <>
           <button
             type="button"
-            onClick={onFulfillIntent}
+            onClick={gate ?? onFulfillIntent}
             className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
           >
             {ORGANIZE_DEMAND_PREFILL_TITLE}
@@ -91,7 +111,7 @@ export const ExploreItemPeekFooter = ({
           {onMessage ? (
             <button
               type="button"
-              onClick={onMessage}
+              onClick={gate ?? onMessage}
               className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
             >
               Message
@@ -101,7 +121,7 @@ export const ExploreItemPeekFooter = ({
       ) : isDemand && onMessage ? (
         <button
           type="button"
-          onClick={onMessage}
+          onClick={gate ?? onMessage}
           className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
         >
           {card.primaryCta}
@@ -112,16 +132,15 @@ export const ExploreItemPeekFooter = ({
             uiState={joinUiState}
             joinLabel={card.primaryCta}
             isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
-            onJoin={onJoin}
+            onJoin={gate ?? onJoin}
             onWithdraw={onWithdraw}
           />
           {card.secondaryCta && card.source === 'activity' ? (
-            <Link
-              to={card.path}
-              className="block w-full py-2.5 text-center text-sm font-semibold text-gray-600"
-            >
-              {card.secondaryCta}
-            </Link>
+            detailLink(
+              card.path,
+              card.secondaryCta,
+              'block w-full py-2.5 text-center text-sm font-semibold text-gray-600'
+            )
           ) : null}
         </>
       ) : card.showJoinActions && joinStateLoading ? (
@@ -132,7 +151,7 @@ export const ExploreItemPeekFooter = ({
         <>
           <button
             type="button"
-            onClick={onJoin}
+            onClick={gate ?? onJoin}
             className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
           >
             {card.primaryCta}
@@ -140,18 +159,17 @@ export const ExploreItemPeekFooter = ({
           {card.secondaryCta && isDemand && onMessage ? (
             <button
               type="button"
-              onClick={onMessage}
+              onClick={gate ?? onMessage}
               className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
             >
               {card.secondaryCta}
             </button>
           ) : card.secondaryCta && card.source === 'activity' ? (
-            <Link
-              to={card.path}
-              className="block w-full py-2.5 text-center text-sm font-semibold text-gray-600"
-            >
-              {card.secondaryCta}
-            </Link>
+            detailLink(
+              card.path,
+              card.secondaryCta,
+              'block w-full py-2.5 text-center text-sm font-semibold text-gray-600'
+            )
           ) : null}
         </>
       ) : isDemand ? (
@@ -164,15 +182,23 @@ export const ExploreItemPeekFooter = ({
         </button>
       ) : isShop ? (
         card.reviewPath ? (
-          <PlaceCardActions detailPath={card.path} reviewPath={card.reviewPath} accent="emerald" embedded />
+          <PlaceCardActions
+            detailPath={card.path}
+            reviewPath={card.reviewPath}
+            accent="emerald"
+            embedded
+            onGuestGatedAction={gate}
+            mapLatitude={card.mapLatitude}
+            mapLongitude={card.mapLongitude}
+            showGuestDirections={!exploreCardShowsInlineDirections(card)}
+          />
         ) : (
           <>
-            <Link
-              to={card.path}
-              className="block w-full rounded-2xl bg-emerald-500 py-3.5 text-center text-base font-bold text-white"
-            >
-              {card.primaryCta}
-            </Link>
+            {detailLink(
+              card.path,
+              card.primaryCta,
+              'block w-full rounded-2xl bg-emerald-500 py-3.5 text-center text-base font-bold text-white'
+            )}
             {externalUrl ? (
               <a
                 href={externalUrl}
@@ -195,18 +221,33 @@ export const ExploreItemPeekFooter = ({
           </>
         )
       ) : (
-        <Link
-          to={card.path}
-          className="block w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
-        >
-          {card.primaryCta}
-        </Link>
+        <>
+          {gate &&
+          exploreCardHasMapCoords(card) &&
+          !exploreCardShowsInlineDirections(card) ? (
+            <ExploreCardDirectionsButton
+              latitude={card.mapLatitude}
+              longitude={card.mapLongitude}
+            />
+          ) : null}
+          {detailLink(
+            card.path,
+            card.primaryCta,
+            'block w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white'
+          )}
+        </>
       )}
     </>
   );
 };
 
-export const ExploreItemPeekBody = ({ card }: { card: ExploreCardModel }) => {
+export const ExploreItemPeekBody = ({
+  card,
+  onGuestGatedAction,
+}: {
+  card: ExploreCardModel;
+  onGuestGatedAction?: () => void;
+}) => {
   const isShop = card.source === 'shop';
   const showPeopleRow =
     card.source === 'activity' ||
@@ -233,7 +274,7 @@ export const ExploreItemPeekBody = ({ card }: { card: ExploreCardModel }) => {
           </span>
         </p>
       )}
-      {showPeopleRow && <ExploreCardPeopleRow card={card} />}
+      {showPeopleRow && <ExploreCardPeopleRow card={card} onGuestGatedAction={onGuestGatedAction} />}
       {card.venueHint && isShop && (
         <p className="mt-3 text-xs leading-relaxed text-slate-500">{card.venueHint}</p>
       )}

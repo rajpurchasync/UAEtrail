@@ -78,7 +78,7 @@ export const PARTICIPANTS_WHO_CAN_JOIN = 'Who can join?';
 
 export const PARTICIPANTS_MIN_AGE_LABEL = 'Minimum age';
 
-export const ORGANIZE_VENUE_REGISTRY_LABEL = 'Pick a venue from the place registry';
+export const ORGANIZE_VENUE_REGISTRY_LABEL = 'Select venue';
 
 export const ORGANIZE_VENUE_CUSTOM_NAME_TOGGLE = "Can't find it? Enter the venue name";
 
@@ -96,7 +96,7 @@ export const ORGANIZE_DESTINATION_MANUAL_BACK = ORGANIZE_VENUE_CUSTOM_NAME_BACK;
 export const ORGANIZE_PUBLISH_SUCCESS_TITLE = 'You\u2019re live';
 
 export const ORGANIZE_PUBLISH_SUCCESS_BODY =
-  'Your plan is published. Take people to the map pin or link an optional carpool from there.';
+  'Your plan is published. You can offer carpool below, then take people to the map pin.';
 
 export const ORGANIZE_PUBLISH_VIEW_ON_MAP = 'View on map';
 

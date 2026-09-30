@@ -65,15 +65,16 @@ export type DemandDraft = {
   toPinPlaced: boolean;
 };
 
+/** Same order and labels as FAB `FIND_COMPOSE_OPTIONS` / compose catalog `find.*`. */
 export const DEMAND_TYPE_OPTIONS: Array<{
   key: DemandKind;
   title: string;
   subtitle: string;
   emoji: string;
 }> = [
+  { key: 'carpool', title: 'Rideshare', subtitle: 'Share a ride to the trailhead', emoji: '🚗' },
   { key: 'hiking', title: 'Hiking', subtitle: 'Find a crew for the trail', emoji: '🥾' },
   { key: 'camping', title: 'Camping', subtitle: 'Camp with the right people', emoji: '⛺' },
-  { key: 'carpool', title: 'Rideshare', subtitle: 'Share a ride to the trailhead', emoji: '🚗' },
   { key: 'event', title: 'Activities', subtitle: 'Runs, jogs, meetups & more', emoji: '✨' },
 ];
 

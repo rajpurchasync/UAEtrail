@@ -8,6 +8,7 @@ export type ActivityMenuActionId =
   | 'edit'
   | 'publish'
   | 'duplicate'
+  | 'reorganize'
   | 'delete'
   | 'cancel'
   | 'checkin'
@@ -155,6 +156,8 @@ type HostMenuHandlers = {
   onEdit: (activity: ActivityDTO) => void;
   onPublish?: (activity: ActivityDTO) => void;
   onDuplicate: (activity: ActivityDTO) => void;
+  /** Explore organize wizard prefill — new activity id on publish. */
+  onReorganize?: (activity: ActivityDTO) => void;
   onDelete?: (activity: ActivityDTO) => void;
   onCancel?: (activity: ActivityDTO) => void;
   onCheckin?: (activity: ActivityDTO) => void;
@@ -190,6 +193,12 @@ export const buildOrganisationActivityMenuItems = (
       id: 'duplicate',
       label: 'Duplicate',
       onClick: () => handlers.onDuplicate(activity),
+    },
+    {
+      id: 'reorganize',
+      label: 'Reorganize on map',
+      onClick: () => handlers.onReorganize?.(activity),
+      hidden: !handlers.onReorganize,
     },
     {
       id: 'checkin',

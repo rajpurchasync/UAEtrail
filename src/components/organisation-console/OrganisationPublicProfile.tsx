@@ -18,6 +18,7 @@ import { PageMeta } from '../seo/PageMeta';
 import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
 import { HostMessageButton } from '../ui/HostMessageButton';
+import { MemberFollowControls } from '../profile/MemberFollowControls';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';
@@ -211,7 +212,16 @@ export const OrganisationPublicProfile = ({
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900">{tenant.name}</h1>
             <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" aria-hidden />
           </div>
-          <p className="mt-1 text-sm font-medium text-neutral-500">{tenant.ownerName}</p>
+          {tenant.ownerId && !isOwner ? (
+            <Link
+              to={`/member/${tenant.ownerId}`}
+              className="mt-1 inline-block text-sm font-semibold text-emerald-700 hover:underline"
+            >
+              {tenant.ownerName} · member profile
+            </Link>
+          ) : (
+            <p className="mt-1 text-sm font-medium text-neutral-500">{tenant.ownerName}</p>
+          )}
           {tenant.ownerBio && !editing && (
             <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-neutral-600">{tenant.ownerBio}</p>
           )}
@@ -234,8 +244,19 @@ export const OrganisationPublicProfile = ({
           </div>
         </div>
 
-        {!isOwner && user?.id !== tenant.ownerId && (
-          <div className="border-t border-neutral-100 px-4 py-4">
+        {!isOwner && user?.id !== tenant.ownerId && tenant.ownerId && (
+          <div className="space-y-3 border-t border-neutral-100 px-4 py-4">
+            {user ? (
+              <MemberFollowControls targetUserId={tenant.ownerId} />
+            ) : (
+              <Link
+                to="/signin"
+                state={{ from: `/operator/${slug}` }}
+                className="block text-center text-sm font-semibold text-emerald-700"
+              >
+                Log in to follow for map updates
+              </Link>
+            )}
             <HostMessageButton hostUserId={tenant.ownerId} size="md" className="w-full" />
           </div>
         )}

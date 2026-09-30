@@ -103,6 +103,16 @@ const optionalHttpUrlSchema = z
     { message: 'Must be a valid http(s) URL' }
   );
 
+const outingCategorySchema = z.enum(['hiking', 'camping', 'events', 'rideshare', 'activities']);
+const outingTopicSchema = z.enum([
+  'climbing',
+  'trail_run',
+  'road_run',
+  'swim',
+  'workshop',
+  'community',
+]);
+
 const eventCreateSchema = z.object({
   activityType: sharedActivityTypeSchema,
   locationId: z.string().min(1),
@@ -145,7 +155,10 @@ const eventCreateSchema = z.object({
   bannerUrl: optionalHttpUrlSchema,
   signupUrl: optionalHttpUrlSchema,
   hostId: z.string().optional(),
-  pricingMode: z.enum(['free', 'shared', 'paid']).optional()
+  pricingMode: z.enum(['free', 'shared', 'paid']).optional(),
+  outingCategory: outingCategorySchema.optional(),
+  outingTopic: outingTopicSchema.optional(),
+  clonedFromActivityId: z.string().uuid().optional(),
 });
 
 const eventPatchSchema = eventCreateSchema.partial();
@@ -313,7 +326,9 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
       priceAed: pricing.priceAed,
       pricePackages: pricing.pricePackages,
       pricingMode: pricing.pricingMode,
-      capacity: body.capacity
+      capacity: body.capacity,
+      outingCategory: body.outingCategory ?? null,
+      outingTopic: body.outingTopic ?? null,
     });
 
     await createAuditLog({
@@ -321,7 +336,8 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
       action: 'activity.create',
       entityType: 'activity',
       entityId: created.id,
-      tenantId
+      tenantId,
+      metadata: body.clonedFromActivityId ? { sourceActivityId: body.clonedFromActivityId } : undefined,
     });
 
     const refreshed = await findTenantActivityForEdit(created.id, tenantId);
@@ -463,7 +479,9 @@ tenantActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), va
           : {}),
       ...(body.pricingMode !== undefined ? { pricingMode: body.pricingMode } : {}),
       capacity: body.capacity,
-      host: body.hostId ? { connect: { id: body.hostId } } : body.hostId === null ? { disconnect: true } : undefined
+      host: body.hostId ? { connect: { id: body.hostId } } : body.hostId === null ? { disconnect: true } : undefined,
+      outingCategory: body.outingCategory,
+      outingTopic: body.outingTopic,
     });
 
     await createAuditLog({

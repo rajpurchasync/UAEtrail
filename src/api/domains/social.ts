@@ -2,6 +2,8 @@ import {
   BuddyRelationshipDTO,
   BuddyRequestDTO,
   BuddySummaryDTO,
+  MemberFollowStateDTO,
+  MemberFollowSummaryDTO,
   FavoriteDTO,
   PostDTO,
   PostReplyDTO,
@@ -70,6 +72,24 @@ export const socialApi = {
       method: 'POST',
       auth: true,
     }),
+
+    getMeFollowing: () =>
+      apiRequest<{ data: MemberFollowSummaryDTO[] }>('/me/following', { auth: true }),
+
+    getMemberFollowState: (userId: string) =>
+      apiRequest<{ data: MemberFollowStateDTO }>(`/me/follow-state/${userId}`, { auth: true }),
+
+    followMember: (userId: string) =>
+      apiRequest<{ data: MemberFollowStateDTO }>(`/me/following/${userId}`, {
+        method: 'POST',
+        auth: true,
+      }),
+
+    unfollowMember: (userId: string) =>
+      apiRequest<{ data: MemberFollowStateDTO }>(`/me/following/${userId}`, {
+        method: 'DELETE',
+        auth: true,
+      }),
 
     getMeGroups: () => apiRequest<{ data: SocialGroupView[] }>('/me/groups', { auth: true }),
 
@@ -286,6 +306,7 @@ export const socialApi = {
     checkFavorite: (target: {
     locationId?: string;
     activityId?: string;
+    participantIntentId?: string;
     productId?: string;
     merchantId?: string;
     tenantId?: string;
@@ -294,6 +315,7 @@ export const socialApi = {
     const params = new URLSearchParams();
     if (target.locationId) params.set('locationId', target.locationId);
     if (target.activityId) params.set('activityId', target.activityId);
+    if (target.participantIntentId) params.set('participantIntentId', target.participantIntentId);
     if (target.productId) params.set('productId', target.productId);
     if (target.merchantId) params.set('merchantId', target.merchantId);
     if (target.tenantId) params.set('tenantId', target.tenantId);
@@ -307,10 +329,15 @@ export const socialApi = {
     addFavorite: (payload: {
     locationId?: string;
     activityId?: string;
+    participantIntentId?: string;
     productId?: string;
     merchantId?: string;
     tenantId?: string;
     profileUserId?: string;
+    alertOnMatch?: boolean;
+    watchOutingCategory?: string | null;
+    watchLatitude?: number | null;
+    watchLongitude?: number | null;
   }) =>
     apiRequest<{ data: FavoriteDTO }>('/me/favorites', {
       method: 'POST',
@@ -319,5 +346,12 @@ export const socialApi = {
     }),
 
     removeFavorite: (id: string) =>
-    apiRequest(`/me/favorites/${id}`, { method: 'DELETE', auth: true })
+    apiRequest(`/me/favorites/${id}`, { method: 'DELETE', auth: true }),
+
+    patchFavoriteAlerts: (id: string, alertOnMatch: boolean) =>
+    apiRequest<{ data: { id: string; alertOnMatch: boolean } }>(`/me/favorites/${id}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ alertOnMatch }),
+    }),
 } as const;

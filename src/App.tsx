@@ -14,6 +14,7 @@ import { ExploreExperience } from './explore';
 import { EXPLORE_MAP_PATH } from './config/platform';
 import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter } from './utils/exploreRouting';
 import { organisationManagePath } from './utils/organisationPaths';
+import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
 
 const LegacyHostPathRedirect = () => {
   const { pathname, search, hash } = useLocation();
@@ -44,11 +45,20 @@ const ActivitiesBrowseRoute = () => {
   if (legacyCreatePath) {
     return <Navigate to={legacyCreatePath} replace />;
   }
-  if (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin')) {
+  if (user && (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin'))) {
     return (
       <Suspense fallback={<PageLoader />}>
         <Activities />
       </Suspense>
+    );
+  }
+  if (!user && (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || !tab)) {
+    return (
+      <GuestTabPlaceholder
+        title="My activities"
+        description="Sign in to see what you're joining, hosting, and check-in."
+        intent="explore-browse"
+      />
     );
   }
   if (user) {
@@ -58,7 +68,6 @@ const ActivitiesBrowseRoute = () => {
   return (
     <Navigate
       to={explorePath({
-        panel: 'activities',
         activity: activity !== 'all' ? activity : undefined,
       })}
       replace
@@ -130,6 +139,7 @@ const OrganisationHistory = lazy(() =>
 );
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
+const MessagesGate = lazy(() => import('./pages/Messages').then((m) => ({ default: m.MessagesGate })));
 const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} replace />;
 const OrganisationManage = lazy(() =>
   import('./pages/OrganisationManage').then((m) => ({ default: m.OrganisationManage }))
@@ -140,6 +150,7 @@ const Activities = lazy(() => import('./pages/Activities').then((m) => ({ defaul
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
 const ProfileReviews = lazy(() => import('./pages/ProfileReviews').then((m) => ({ default: m.ProfileReviews })));
+const ProfileWishlist = lazy(() => import('./pages/ProfileWishlist').then((m) => ({ default: m.ProfileWishlist })));
 const JoinRequestDetail = lazy(() =>
   import('./pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
 );
@@ -251,9 +262,30 @@ function App() {
             element={<ExploreExperience />}
           />
           <Route path="/discovery" element={<DiscoveryRedirect />} />
-          <Route path="/trail/:id" element={<TrailDetail />} />
-          <Route path="/camp/:id" element={<CampDetail />} />
-          <Route path="/event/:id" element={<EventDetail />} />
+          <Route
+            path="/trail/:id"
+            element={
+              <ProtectedRoute>
+                <TrailDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/camp/:id"
+            element={
+              <ProtectedRoute>
+                <CampDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/event/:id"
+            element={
+              <ProtectedRoute>
+                <EventDetail />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
           <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
@@ -263,6 +295,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProfileReviews />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/wishlist"
+            element={
+              <ProtectedRoute>
+                <ProfileWishlist />
               </ProtectedRoute>
             }
           />
@@ -311,9 +351,9 @@ function App() {
           <Route
             path="/messages"
             element={
-              <ProtectedRoute>
-                <Messages />
-              </ProtectedRoute>
+              <Suspense fallback={<PageLoader />}>
+                <MessagesGate />
+              </Suspense>
             }
           />
           <Route
@@ -342,16 +382,48 @@ function App() {
           />
           <Route
             path="/activity/:id"
-            element={<ActivityDetail />}
+            element={
+              <ProtectedRoute>
+                <ActivityDetail />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/operator/:id" element={<OrganisationProfile />} />
-          <Route path="/member/:userId" element={<MemberProfile />} />
+          <Route
+            path="/operator/:id"
+            element={
+              <ProtectedRoute>
+                <OrganisationProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/member/:userId"
+            element={
+              <ProtectedRoute>
+                <MemberProfile />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/become-organizer" element={<BecomeHost />} />
           <Route path="/become-host" element={<BecomeHost />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/shop" element={<ShopBrowseRoute />} />
-          <Route path="/shop/:id" element={<ShopPublic />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route
+            path="/shop/:id"
+            element={
+              <ProtectedRoute>
+                <ShopPublic />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/product/:id"
+            element={
+              <ProtectedRoute>
+                <ProductDetail />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/merchant/:id" element={<LegacyMerchantPublicRedirect />} />
           <Route path="/community" element={<Community />} />
           <Route path="/signup" element={<SignUp />} />

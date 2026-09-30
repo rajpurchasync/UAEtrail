@@ -1,14 +1,12 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { ExploreCompose, FindComposeKind, OrganizeComposeKind } from '../compose';
 import type { ContributeVenueKind } from '../contributeTypes';
-import { CreateActivityFlow } from './CreateActivityFlow';
+import { CreateOrganizeFlowHost } from './createOrganize/CreateOrganizeFlowHost';
 import { CreateContributeFlow } from './CreateContributeFlow';
 import type { ContributeSubmitResult } from './contributeFlow';
 import { CreateDemandFlow } from './CreateDemandFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import { CreateIntentSheet } from './CreateIntentSheet';
-import type { CreateActivityDraft } from './organizeFlow';
-
 interface ExploreComposeHostProps {
   exploreCompose: ExploreCompose | null;
   composeMenuOpen: boolean;
@@ -18,10 +16,7 @@ interface ExploreComposeHostProps {
   organizeKind: OrganizeComposeKind | null;
   findKind: FindComposeKind | null | undefined;
   addKind: ContributeVenueKind | null;
-  fulfillIntentPrefill: {
-    draft: CreateActivityDraft;
-    participantIntentId: string;
-  } | null;
+  fulfillIntentPrefill: import('./organizeWizardPrefill').OrganizeWizardPrefill | null;
   signInHref: string;
   onComposeRouteChange: (route: ExploreCompose | null) => void;
   onCloseCompose: () => void;
@@ -79,7 +74,7 @@ export const ExploreComposeHost = ({
     )}
 
     {organizeWizardOpen && (
-      <CreateActivityFlow
+      <CreateOrganizeFlowHost
         open={organizeWizardOpen}
         onClose={onCloseCreateFlow}
         organizeKind={organizeKind}

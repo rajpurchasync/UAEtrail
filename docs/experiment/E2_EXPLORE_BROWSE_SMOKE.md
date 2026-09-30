@@ -2,7 +2,7 @@
 
 Run on **`experiment-ui`** with API + seed (`npm run dev:all` or `dev:local`).
 
-**Automated:** `npm run test:api -- explore-map-layers` and frontend `exploreMapPinModel` tests.
+**Automated:** `npm run test:explore-alignment` (bundles API + browse/FAB tests). Reseed before manual pass if Others/topic pins are missing.
 
 ## Preconditions
 
@@ -16,6 +16,13 @@ Run on **`experiment-ui`** with API + seed (`npm run dev:all` or `dev:local`).
 3. Apply **Hiking** filter — only `source: activity` (and demand if seeded) hiking items; **no** catalog trail chips.
 4. Apply **date** preset (e.g. This week) — list and map stay aligned; past outings drop off when filtered.
 5. Tap an activity pin — peek/card opens outing detail path (`/activity/...`).
+
+## Others drill-down (Activities layer)
+
+1. Filter **Others** (`?filter=others`) — events + general activities (not hiking/camping/rideshare).
+2. Sub-pills **Events** vs **Activities** (`subtype=events` | `subtype=activities`); map and list stay aligned after refresh.
+3. With **Activities** selected, topic pills (**Climb**, **Run**, **Workshop**, **Social**) set `outingTopic=`; only matching `outingCategory: activities` + `outingTopic` pins remain.
+4. Switching away from Others clears `subtype` / `outingTopic` from the URL.
 
 ## Places tab (catalog layer)
 

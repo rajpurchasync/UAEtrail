@@ -92,6 +92,8 @@ const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
   status: doc.status,
   featured: doc.featured,
   publishedAt: doc.publishedAt,
+  outingCategory: doc.outingCategory ?? null,
+  outingTopic: doc.outingTopic ?? null,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
 });

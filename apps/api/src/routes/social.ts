@@ -9,7 +9,13 @@ import { validate } from '../middleware/validate.js';
 import { awardPoints } from '../services/rewards.js';
 import { tierEnumToDisplay } from '../lib/rewards-config.js';
 import { findAuthUserById, findAuthUsersByIds, getAuthUserMembershipTier } from '../lib/auth-users.js';
-import { createUserFavorite, deleteUserFavoriteById, findUserFavorite, listUserFavoritesWithDetails } from '../lib/favorites-store.js';
+import {
+  createUserFavorite,
+  deleteUserFavoriteById,
+  findUserFavorite,
+  listUserFavoritesWithDetails,
+  updateUserFavorite,
+} from '../lib/favorites-store.js';
 import { createSocialPost, createSocialReply, createSocialReview, getSocialPostById, listSocialPosts, listSocialReviews, setAcceptedSocialReply, toggleSocialPostLike, toggleSocialReplyLike } from '../lib/social-data.js';
 import { sanitizeUserGeneratedText } from '../lib/content-moderation.js';
 import { listMyReviews, updateMyReview } from '../services/my-reviews.js';
@@ -444,18 +450,35 @@ socialRouter.post('/posts/:id/replies/:replyId/accept', requireAuth, requireVeri
 
 // ─── Favorites (auth) ───────────────────────────────────────────────────────
 
-const favoriteCreateSchema = z.object({
-  locationId: z.string().optional(),
-  activityId: z.string().optional(),
-  productId: z.string().optional(),
-  merchantId: z.string().optional(),
-  tenantId: z.string().optional(),
-  profileUserId: z.string().optional()
-}).refine(
-  (d) =>
-    [d.locationId, d.activityId, d.productId, d.merchantId, d.tenantId, d.profileUserId].filter(Boolean).length === 1,
-  { message: 'Exactly one favorite target id is required.' }
-);
+const outingCategorySchema = z.enum(['hiking', 'camping', 'events', 'rideshare', 'activities']);
+
+const favoriteCreateSchema = z
+  .object({
+    locationId: z.string().optional(),
+    activityId: z.string().optional(),
+    participantIntentId: z.string().optional(),
+    productId: z.string().optional(),
+    merchantId: z.string().optional(),
+    tenantId: z.string().optional(),
+    profileUserId: z.string().optional(),
+    alertOnMatch: z.boolean().optional(),
+    watchOutingCategory: outingCategorySchema.optional(),
+    watchLatitude: z.number().min(-90).max(90).optional(),
+    watchLongitude: z.number().min(-180).max(180).optional(),
+  })
+  .refine(
+    (d) =>
+      [
+        d.locationId,
+        d.activityId,
+        d.participantIntentId,
+        d.productId,
+        d.merchantId,
+        d.tenantId,
+        d.profileUserId,
+      ].filter(Boolean).length === 1,
+    { message: 'Exactly one favorite target id is required.' }
+  );
 
 socialRouter.get('/me/favorites', requireAuth, requireVerifiedEmail, async (req, res, next) => {
   try {
@@ -465,6 +488,11 @@ socialRouter.get('/me/favorites', requireAuth, requireVerifiedEmail, async (req,
         id: f.id,
         locationId: f.locationId,
         activityId: f.activityId,
+        participantIntentId: f.participantIntentId,
+        alertOnMatch: f.alertOnMatch,
+        watchOutingCategory: f.watchOutingCategory,
+        watchLatitude: f.watchLatitude,
+        watchLongitude: f.watchLongitude,
         productId: f.productId,
         merchantId: f.merchantId,
         tenantId: f.tenantId,
@@ -472,6 +500,7 @@ socialRouter.get('/me/favorites', requireAuth, requireVerifiedEmail, async (req,
         createdAt: f.createdAt.toISOString(),
         location: f.location ? { id: f.location.id, name: f.location.name, images: f.location.images } : null,
         activity: f.activity ? { id: f.activity.id, title: f.activity.title, locationName: f.activity.locationName } : null,
+        participantIntent: f.participantIntent,
         merchant: f.merchant
           ? { id: f.merchant.id, shopName: f.merchant.shopName, logo: f.merchant.logo }
           : null,
@@ -507,20 +536,30 @@ socialRouter.post('/me/favorites', requireAuth, requireVerifiedEmail, validate({
       userId: req.auth!.userId,
       locationId: body.locationId,
       activityId: body.activityId,
+      participantIntentId: body.participantIntentId,
       productId: body.productId,
       merchantId: body.merchantId,
       tenantId: body.tenantId,
-      profileUserId: body.profileUserId
+      profileUserId: body.profileUserId,
+      alertOnMatch: body.alertOnMatch,
+      watchOutingCategory: body.watchOutingCategory ?? null,
+      watchLatitude: body.watchLatitude ?? null,
+      watchLongitude: body.watchLongitude ?? null,
     });
     res.status(201).json({
       data: {
         id: favorite.id,
         locationId: favorite.locationId,
         activityId: favorite.activityId,
+        participantIntentId: favorite.participantIntentId,
         productId: favorite.productId,
         merchantId: favorite.merchantId,
         tenantId: favorite.tenantId,
         profileUserId: favorite.profileUserId,
+        alertOnMatch: favorite.alertOnMatch,
+        watchOutingCategory: favorite.watchOutingCategory,
+        watchLatitude: favorite.watchLatitude,
+        watchLongitude: favorite.watchLongitude,
         createdAt: favorite.createdAt.toISOString()
       }
     });
@@ -528,6 +567,39 @@ socialRouter.post('/me/favorites', requireAuth, requireVerifiedEmail, validate({
     next(error);
   }
 });
+
+const favoritePatchSchema = z.object({
+  alertOnMatch: z.boolean(),
+});
+
+socialRouter.patch(
+  '/me/favorites/:id',
+  requireAuth,
+  requireVerifiedEmail,
+  validate({ params: idParamSchema, body: favoritePatchSchema }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as z.infer<typeof idParamSchema>;
+      const body = req.body as z.infer<typeof favoritePatchSchema>;
+      const updated = await updateUserFavorite({
+        id,
+        userId: req.auth!.userId,
+        alertOnMatch: body.alertOnMatch,
+      });
+      if (!updated) {
+        throw new ApiError(404, 'favorite_not_found', 'Saved item not found.');
+      }
+      res.json({
+        data: {
+          id: updated.id,
+          alertOnMatch: updated.alertOnMatch,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 socialRouter.delete('/me/favorites/:id', requireAuth, requireVerifiedEmail, validate({ params: idParamSchema }), async (req, res, next) => {
   try {
@@ -543,6 +615,7 @@ socialRouter.get('/me/favorites/check', requireAuth, requireVerifiedEmail, async
   try {
     const locationId = req.query.locationId as string | undefined;
     const activityId = req.query.activityId as string | undefined;
+    const participantIntentId = req.query.participantIntentId as string | undefined;
     const productId = req.query.productId as string | undefined;
     const merchantId = req.query.merchantId as string | undefined;
     const tenantId = req.query.tenantId as string | undefined;
@@ -551,6 +624,7 @@ socialRouter.get('/me/favorites/check', requireAuth, requireVerifiedEmail, async
       userId: req.auth!.userId,
       locationId,
       activityId,
+      participantIntentId,
       productId,
       merchantId,
       tenantId,

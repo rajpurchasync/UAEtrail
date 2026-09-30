@@ -139,6 +139,8 @@ export const updateActivityDetailed = async (
   if (data.linkedActivityId !== undefined) patch.linkedActivityId = data.linkedActivityId;
   if (data.linkedCarpoolActivityId !== undefined) patch.linkedCarpoolActivityId = data.linkedCarpoolActivityId;
   if (data.publishedAt !== undefined) patch.publishedAt = data.publishedAt;
+  if (data.outingCategory !== undefined) patch.outingCategory = data.outingCategory;
+  if (data.outingTopic !== undefined) patch.outingTopic = data.outingTopic;
   if (data.host !== undefined) {
     patch.hostId =
       'disconnect' in data.host && data.host.disconnect ? null : data.host.connect?.id ?? null;
@@ -263,6 +265,15 @@ export const publishActivityById = async (activityId: string) => {
     throw new Error('Failed to publish event.');
   }
   await invalidateExploreMapCache();
+  const { notifyWishlistForPublishedActivity } = await import('../services/wishlist-alerts.js');
+  void notifyWishlistForPublishedActivity(activityId);
+  const actorUserId = mongoDoc.hostId ?? mongoDoc.createdById;
+  const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
+  void notifyMemberPublishSubscribers(actorUserId, {
+    publishType: 'activity',
+    activityId,
+    title: mongoDoc.title,
+  });
   return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.PUBLISHED, publishedAt });
 };
 

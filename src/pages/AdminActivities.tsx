@@ -1,4 +1,5 @@
 import { useEffect, useState, Fragment } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
@@ -15,10 +16,12 @@ import {
   resolveActivityLocationState,
   resolveActivityTitle,
 } from '../utils/activityIdentity';
+import { navigateToReorganizeActivity } from '../explore/navigateReorganizeActivity';
 
 type Tab = 'active' | 'past';
 
 export const AdminActivities = () => {
+  const navigate = useNavigate();
   const [events, setEvents] = useState<ActivityDTO[]>([]);
   const [locations, setLocations] = useState<LocationDTO[]>([]);
   const [tenants, setTenants] = useState<TenantListDTO[]>([]);
@@ -153,6 +156,10 @@ export const AdminActivities = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to duplicate activity');
     }
+  };
+
+  const reorganizeActivity = (event: ActivityDTO) => {
+    navigateToReorganizeActivity(navigate, event);
   };
 
   const deleteDraft = async () => {
@@ -302,6 +309,7 @@ export const AdminActivities = () => {
                           onEdit: openEditActivity,
                           onPublish: publish,
                           onDuplicate: duplicateActivity,
+                          onReorganize: reorganizeActivity,
                           onDelete: setConfirmDelete,
                           onCancel: setConfirmCancel,
                           onFeature: () => toggleFeatured(event.id),

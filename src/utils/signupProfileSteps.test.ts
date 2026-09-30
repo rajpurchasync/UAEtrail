@@ -5,22 +5,26 @@ describe('signupProfileSteps', () => {
   it('detects incomplete steps in order', () => {
     expect(firstIncompleteSignupStep(null)).toBe('dateOfBirth');
     expect(firstIncompleteSignupStep({ dateOfBirth: '1990-01-01' })).toBe('gender');
-    expect(firstIncompleteSignupStep({ dateOfBirth: '1990-01-01', gender: 'female' })).toBe('languages');
     expect(
       firstIncompleteSignupStep({
         dateOfBirth: '1990-01-01',
         gender: 'female',
-        languages: 'English',
+      })
+    ).toBe('countryCode');
+    expect(
+      firstIncompleteSignupStep({
+        dateOfBirth: '1990-01-01',
+        gender: 'female',
+        countryCode: 'AE',
       })
     ).toBe('countryCode');
   });
 
-  it('requires languages and country for signup complete', () => {
+  it('requires DOB, gender, and based-in country for signup complete (not languages)', () => {
     expect(
       isSignupProfileComplete({
         dateOfBirth: '1990-01-01',
         gender: 'male',
-        countryCode: 'AE',
       })
     ).toBe(false);
     expect(
@@ -28,7 +32,6 @@ describe('signupProfileSteps', () => {
         dateOfBirth: '1990-01-01',
         gender: 'male',
         countryCode: 'AE',
-        languages: 'English, Arabic',
       })
     ).toBe(true);
     expect(
@@ -36,7 +39,6 @@ describe('signupProfileSteps', () => {
         dateOfBirth: '1990-01-01',
         gender: 'male',
         city: 'dubai',
-        languages: 'English',
       })
     ).toBe(true);
   });

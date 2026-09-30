@@ -24,7 +24,6 @@ export const accountApi = {
     dateOfBirth: string;
     gender: NonNullable<UserProfile['gender']>;
     countryCode: NonNullable<UserProfile['countryCode']>;
-    languages: string;
   }) =>
     apiRequest<{
       data: Pick<

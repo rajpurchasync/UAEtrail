@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const listExploreSourceFiles = (): string[] =>
   execSync('git ls-files "src/explore/**/*.ts" "src/explore/**/*.tsx"', { encoding: 'utf8' })
@@ -13,6 +13,7 @@ describe('explore module boundary', () => {
     const violations: string[] = [];
 
     for (const file of listExploreSourceFiles()) {
+      if (!existsSync(file)) continue;
       const content = readFileSync(file, 'utf8');
       if (/utils\/exploreRouting/.test(content)) {
         violations.push(file);

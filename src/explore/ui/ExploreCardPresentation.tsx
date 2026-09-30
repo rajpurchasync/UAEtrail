@@ -1,8 +1,9 @@
-import { explorePersonRoleLabel, resolveParticipationMode } from '@uaetrail/shared-types';
+import { explorePersonRoleLabel } from '@uaetrail/shared-types';
 import { ChevronRight, Clock, MapPin, Navigation, Route, Star, Tag, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel, ExploreCardTone } from '../exploreCardModel';
 import { exploreCardToneTextClass } from '../exploreCardModel';
+import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ExploreCardDetail, ExploreCardDetailIcon, ExploreCardSections } from '../exploreCopy';
 import { personProfilePath, resolveOrganisationProfilePath } from '../../utils/organisationLinks';
 import { buildGoogleDriveUrl } from '../../utils/mapLinks';
@@ -42,22 +43,22 @@ export const ExploreCardHeadline = ({
   const highlightClass = exploreCardToneTextClass[tone];
 
   if (sections.plainTitle) {
-    return <p className={`text-gray-900 ${textClass}`}>{sections.plainTitle}</p>;
+    return <p className={`${EXPLORE_TYPE.title} ${textClass}`}>{sections.plainTitle}</p>;
   }
 
   if (sections.titleText && sections.hostName) {
     return (
-      <p className={`text-gray-900 ${textClass}`}>
+      <p className={`${EXPLORE_TYPE.title} ${textClass}`}>
         {sections.titleText}
-        <span className="font-normal text-gray-500"> · </span>
-        <span className="font-semibold text-gray-700">{sections.hostName}</span>
+        <span className={`font-normal ${EXPLORE_TYPE.caption}`}> · </span>
+        <span className={`font-bold ${EXPLORE_TYPE.body}`}>{sections.hostName}</span>
       </p>
     );
   }
 
   if (sections.highlightName) {
     return (
-      <p className={`text-gray-900 ${textClass}`}>
+      <p className={`${EXPLORE_TYPE.title} ${textClass}`}>
         <span>{sections.highlightName}</span>
         {sections.suffix && <span>{sections.suffix}</span>}
         {sections.activityHighlight && (
@@ -85,7 +86,7 @@ export const ExploreCardRatingRow = ({
 
   if (!card.reviewCount) {
     return (
-      <p className={`${spacing} flex items-center gap-1.5 text-sm font-medium text-gray-500`}>
+      <p className={`${spacing} flex items-center gap-1.5 text-sm font-semibold ${EXPLORE_TYPE.muted}`}>
         <Star className="h-4 w-4 text-amber-300" aria-hidden />
         No reviews yet
       </p>
@@ -93,10 +94,36 @@ export const ExploreCardRatingRow = ({
   }
 
   return (
-    <p className={`${spacing} flex items-center gap-1.5 text-sm font-semibold text-gray-800`}>
+    <p className={`${spacing} flex items-center gap-1.5 text-sm font-bold ${EXPLORE_TYPE.body}`}>
       <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
       {card.averageRating?.toFixed(1)} · {card.reviewCount} review{card.reviewCount === 1 ? '' : 's'}
     </p>
+  );
+};
+
+/** Full-width directions CTA — never gated (guests can navigate to the pin). */
+export const ExploreCardDirectionsButton = ({
+  latitude,
+  longitude,
+  className = 'flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white',
+}: {
+  latitude?: number | null;
+  longitude?: number | null;
+  className?: string;
+}) => {
+  if (latitude == null || longitude == null) return null;
+  return (
+    <a
+      href={buildGoogleDriveUrl(latitude, longitude)}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(event) => event.stopPropagation()}
+      onPointerDown={(event) => event.stopPropagation()}
+      className={className}
+    >
+      <Navigation className="h-4 w-4 shrink-0" aria-hidden />
+      Get directions
+    </a>
   );
 };
 
@@ -136,7 +163,7 @@ export const ExploreCardLocationLink = ({
     <span className={`inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 ${className}`}>
       <span className="inline-flex items-center gap-1.5">
         <MapPin className={iconClassName} aria-hidden />
-        <span className="font-medium text-gray-700">{label}</span>
+        <span className={`font-semibold ${EXPLORE_TYPE.body}`}>{label}</span>
       </span>
       {directionsAction ? (
         <>
@@ -172,13 +199,13 @@ export const ExploreCardDetailList = ({
           label={locationDetail.label}
           latitude={mapLatitude}
           longitude={mapLongitude}
-          className="mt-2 text-sm text-gray-600"
+          className={`mt-2 text-sm ${EXPLORE_TYPE.body}`}
         />
       );
     }
 
     return (
-      <p className="mt-2 text-sm font-medium leading-relaxed text-gray-600">
+      <p className={`mt-2 text-sm font-semibold leading-relaxed ${EXPLORE_TYPE.body}`}>
         {details.map((detail) => detail.label).join(' · ')}
       </p>
     );
@@ -192,7 +219,7 @@ export const ExploreCardDetailList = ({
         return (
           <li
             key={`${detail.icon}-${detail.label}`}
-            className="flex items-start gap-2.5 text-sm leading-snug text-gray-600"
+            className={`flex items-start gap-2.5 text-sm font-medium leading-snug ${EXPLORE_TYPE.body}`}
           >
             {isLocation && mapLatitude != null && mapLongitude != null ? (
               <ExploreCardLocationLink
@@ -223,7 +250,7 @@ export const ExploreCardRequirementBadges = ({ badges }: { badges: string[] }) =
       {badges.map((badge) => (
         <span
           key={badge}
-          className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold text-gray-700"
+          className={`inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-bold ${EXPLORE_TYPE.body}`}
         >
           {badge}
         </span>
@@ -232,29 +259,17 @@ export const ExploreCardRequirementBadges = ({ badges }: { badges: string[] }) =
   );
 };
 
-/** Join mode + restriction chips + price — map peek and activity sheets. */
+/** Restriction chips + price on map peek — join mode is conveyed by the primary CTA only. */
 export const ExploreActivityPeekMeta = ({ card }: { card: ExploreCardModel }) => {
   if (card.source !== 'activity') return null;
 
-  const participationMode = resolveParticipationMode(
-    card.activity?.participationMode,
-    card.activity?.requirements
-  );
-  const joinModeLabel =
-    participationMode === 'rsvp' ? "Open RSVP · tap I'm going" : 'Host approval to join';
-  const joinChipClass =
-    participationMode === 'rsvp'
-      ? 'bg-emerald-50 text-emerald-800'
-      : 'bg-amber-50 text-amber-900';
+  const hasBadges = (card.requirementBadges?.length ?? 0) > 0;
+  const hasPrice = Boolean(card.price);
+  if (!hasBadges && !hasPrice) return null;
 
   return (
-    <div className="mt-3 space-y-2">
-      <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${joinChipClass}`}>
-        {joinModeLabel}
-      </span>
-      {card.requirementBadges && card.requirementBadges.length > 0 ? (
-        <ExploreCardRequirementBadges badges={card.requirementBadges} />
-      ) : null}
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {hasBadges ? <ExploreCardRequirementBadges badges={card.requirementBadges!} /> : null}
       {card.price ? (
         <span
           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
@@ -268,7 +283,13 @@ export const ExploreActivityPeekMeta = ({ card }: { card: ExploreCardModel }) =>
   );
 };
 
-export const ExploreCardPeopleRow = ({ card }: { card: ExploreCardModel }) => {
+export const ExploreCardPeopleRow = ({
+  card,
+  onGuestGatedAction,
+}: {
+  card: ExploreCardModel;
+  onGuestGatedAction?: () => void;
+}) => {
   const participants = card.participantPreviews ?? [];
   const person = card.featuredPerson;
   const hostName = card.listHost ?? person?.displayName ?? card.sections.hostName ?? card.sections.highlightName;
@@ -289,7 +310,7 @@ export const ExploreCardPeopleRow = ({ card }: { card: ExploreCardModel }) => {
   if (!showHostRow && participants.length === 0) return null;
 
   const hostRow = showHostRow && hostName ? (
-    hostPath ? (
+    hostPath && !onGuestGatedAction ? (
       <Link
         to={hostPath}
         className="flex items-center gap-3 group rounded-xl -mx-1 px-1 py-1 hover:bg-neutral-50 transition-colors"
@@ -301,7 +322,7 @@ export const ExploreCardPeopleRow = ({ card }: { card: ExploreCardModel }) => {
         />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-gray-900 group-hover:text-emerald-700 truncate">{hostName}</p>
-          <p className="text-xs text-gray-500">
+          <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
             {personRoleLabel
               ? `${personRoleLabel} · view profile`
               : card.source === 'demand'
@@ -313,6 +334,31 @@ export const ExploreCardPeopleRow = ({ card }: { card: ExploreCardModel }) => {
         </div>
         <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
       </Link>
+    ) : hostPath && onGuestGatedAction ? (
+      <button
+        type="button"
+        onClick={onGuestGatedAction}
+        className="flex w-full items-center gap-3 rounded-xl -mx-1 px-1 py-1 text-left hover:bg-neutral-50 transition-colors"
+      >
+        <SecureAvatar
+          src={card.hostAvatar}
+          name={hostName}
+          className="h-10 w-10 text-sm ring-2 ring-white shrink-0"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-gray-900 truncate">{hostName}</p>
+          <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
+            {personRoleLabel
+              ? `${personRoleLabel} · view profile`
+              : card.source === 'demand'
+                ? 'Posted this request · view profile'
+                : card.source === 'shop'
+                  ? 'Shop contact · view profile'
+                  : 'Host · view profile'}
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+      </button>
     ) : (
       <div className="flex items-center gap-3">
         <SecureAvatar
@@ -322,7 +368,7 @@ export const ExploreCardPeopleRow = ({ card }: { card: ExploreCardModel }) => {
         />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{hostName}</p>
-          <p className="text-xs text-gray-500">
+          <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
             {personRoleLabel ?? (card.source === 'demand' ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Host')}
           </p>
         </div>
@@ -335,10 +381,15 @@ export const ExploreCardPeopleRow = ({ card }: { card: ExploreCardModel }) => {
       {hostRow}
       {participants.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          <p className={`mb-2 text-xs font-bold uppercase tracking-wider ${EXPLORE_TYPE.muted}`}>
             Who&apos;s going ({participants.length})
           </p>
-          <ParticipantPreview participants={participants} size="md" linkToProfile />
+          <ParticipantPreview
+            participants={participants}
+            size="md"
+            linkToProfile={!onGuestGatedAction}
+            onGuestProfileClick={onGuestGatedAction}
+          />
         </div>
       )}
     </div>
@@ -382,7 +433,7 @@ export const ExploreVenueImageBadges = ({ card }: { card: ExploreCardModel }) =>
         </span>
       ) : null}
       {rightBadge ? (
-        <span className="absolute right-14 top-3 max-w-[55%] truncate rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-gray-800 backdrop-blur-sm">
+        <span className={`absolute right-14 top-3 max-w-[55%] truncate rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold ${EXPLORE_TYPE.title} backdrop-blur-sm`}>
           {rightBadge}
         </span>
       ) : null}
@@ -395,7 +446,7 @@ export const ExploreCardCapacityRow = ({ card }: { card: ExploreCardModel }) => 
   if (!label) return null;
 
   return (
-    <p className="mt-3 text-sm text-gray-600">
+    <p className={`mt-3 text-sm font-medium ${EXPLORE_TYPE.body}`}>
       <span className="font-medium">{label}</span>
     </p>
   );

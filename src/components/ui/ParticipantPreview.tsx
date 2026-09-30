@@ -15,6 +15,7 @@ interface ParticipantPreviewProps {
   showNames?: boolean;
   emptyLabel?: string;
   linkToProfile?: boolean;
+  onGuestProfileClick?: () => void;
 }
 
 const sizeClasses = {
@@ -29,6 +30,7 @@ export const ParticipantPreview = ({
   showNames = false,
   emptyLabel = 'No one confirmed yet',
   linkToProfile = false,
+  onGuestProfileClick,
 }: ParticipantPreviewProps) => {
   const styles = sizeClasses[size];
   const preview = participants.slice(0, max);
@@ -52,7 +54,20 @@ export const ParticipantPreview = ({
               <span className={`${styles.name} font-medium text-gray-700 truncate max-w-[120px]`}>{p.name}</span>
             </div>
           );
-          return linkToProfile ? (
+          return onGuestProfileClick ? (
+            <button
+              key={p.id}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onGuestProfileClick();
+              }}
+              className="hover:opacity-90"
+              aria-label={`View ${p.name}'s profile`}
+            >
+              {chip}
+            </button>
+          ) : linkToProfile ? (
             <Link
               key={p.id}
               to={`/member/${p.id}`}
@@ -84,7 +99,20 @@ export const ParticipantPreview = ({
             className={`${styles.avatar} ${styles.text} border-2 border-white`}
           />
         );
-        return linkToProfile ? (
+        return onGuestProfileClick ? (
+          <button
+            key={p.id}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onGuestProfileClick();
+            }}
+            className="relative hover:z-10 hover:scale-105 transition-transform"
+            aria-label={`View ${p.name}'s profile`}
+          >
+            {avatar}
+          </button>
+        ) : linkToProfile ? (
           <Link
             key={p.id}
             to={`/member/${p.id}`}

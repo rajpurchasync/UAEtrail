@@ -11,6 +11,8 @@ interface OrganisationHubSectionsProps {
   upcomingActivitiesCount: number;
   pastActivitiesCount: number;
   upcomingActivities: ActivityDTO[];
+  /** Host console shortcuts — omitted on `/profile` (use Host console entry instead). */
+  showConsoleLinks?: boolean;
 }
 
 const buildOrganisationStats = ({
@@ -42,6 +44,7 @@ export const OrganisationHubSections = ({
   upcomingActivitiesCount,
   pastActivitiesCount,
   upcomingActivities,
+  showConsoleLinks = true,
 }: OrganisationHubSectionsProps) => {
   const stats = buildOrganisationStats({
     activitiesCount,
@@ -109,39 +112,41 @@ export const OrganisationHubSections = ({
         </Link>
       ) : null}
 
-      <AccountLinkList
-        items={[
-          {
-            to: '/host/profile',
-            icon: <UserCircle className="w-4 h-4" />,
-            label: 'Public host profile',
-            accent: 'emerald',
-          },
-          {
-            to: '/host/activities/new',
-            icon: <Plus className="w-4 h-4" />,
-            label: 'Add activity',
-          },
-          {
-            to: '/host/requests',
-            icon: <Users className="w-4 h-4" />,
-            label: 'Join requests',
-            badge: pendingJoinRequests || undefined,
-            accent: 'amber',
-          },
-          {
-            to: '/host/places',
-            icon: <MapPin className="w-4 h-4" />,
-            label: 'Submit a place',
-            accent: 'blue',
-          },
-          {
-            to: '/host/team',
-            icon: <UsersRound className="w-4 h-4" />,
-            label: 'Manage team',
-          },
-        ]}
-      />
+      {showConsoleLinks ? (
+        <AccountLinkList
+          items={[
+            {
+              to: '/host/profile',
+              icon: <UserCircle className="w-4 h-4" />,
+              label: 'Public host profile',
+              accent: 'emerald',
+            },
+            {
+              to: '/host/activities/new',
+              icon: <Plus className="w-4 h-4" />,
+              label: 'Add activity',
+            },
+            {
+              to: '/host/requests',
+              icon: <Users className="w-4 h-4" />,
+              label: 'Join requests',
+              badge: pendingJoinRequests || undefined,
+              accent: 'amber',
+            },
+            {
+              to: '/host/places',
+              icon: <MapPin className="w-4 h-4" />,
+              label: 'Submit a place',
+              accent: 'blue',
+            },
+            {
+              to: '/host/team',
+              icon: <UsersRound className="w-4 h-4" />,
+              label: 'Manage team',
+            },
+          ]}
+        />
+      ) : null}
     </>
   );
 };

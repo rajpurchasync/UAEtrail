@@ -4,6 +4,7 @@ import { Car, MapPin, Mountain, TrendingUp, Clock, Map, Download, Lock, Loader2 
 import { ActivityType, LocationPremiumSummaryDTO, PremiumAccessReason } from '@uaetrail/shared-types';
 import { MeetingPointMap } from './MeetingPointMap';
 import { capitalize } from '../../utils';
+import { splitPlacePracticalTags } from '../../utils/placePracticalInfo';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/index';
 import { AppButton } from '../mobile/AppButton';
@@ -160,6 +161,8 @@ export const PlaceDetailTabs = ({
     (hasParkingCoordinates ? buildGoogleMapsSearchUrl(parkingLat, parkingLng) : null);
   const venuePinLabel =
     data.activityType === 'hiking' ? 'Trail start' : data.activityType === 'camping' ? 'Camp location' : 'Event location';
+  const practicalTags = splitPlacePracticalTags(data.tags);
+  const displayTags = practicalTags.browseTags;
 
   const tabClass = (tab: LocationTab) =>
     `py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
@@ -183,7 +186,9 @@ export const PlaceDetailTabs = ({
     hasParkingCoordinates ||
     Boolean(data.parkingLink) ||
     (data.accessibleBy && data.accessibleBy.length > 0) ||
-    (data.tags && data.tags.length > 0);
+    displayTags.length > 0 ||
+    practicalTags.facilities.length > 0 ||
+    practicalTags.nearby.length > 0;
 
   useEffect(() => {
     if (unlockNotice?.toLowerCase().includes('unlocked')) {
@@ -552,11 +557,36 @@ export const PlaceDetailTabs = ({
                 </div>
               )}
 
-              {data.tags && data.tags.length > 0 && (
+              {(practicalTags.facilities.length > 0 || practicalTags.nearby.length > 0) && (
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-3">
+                  <h3 className="text-sm font-semibold text-neutral-900">Facilities &amp; nearby</h3>
+                  {practicalTags.facilities.length > 0 && (
+                    <ul className="space-y-1.5 text-sm text-neutral-700">
+                      {practicalTags.facilities.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {practicalTags.nearby.length > 0 && (
+                    <div>
+                      {practicalTags.facilities.length > 0 ? (
+                        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1.5">Nearby</p>
+                      ) : null}
+                      <ul className="space-y-1.5 text-sm text-neutral-700">
+                        {practicalTags.nearby.map((line) => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {displayTags.length > 0 && (
                 <div>
                   <h3 className="text-sm font-semibold text-neutral-900 mb-2">Tags</h3>
                   <div className="flex flex-wrap gap-2">
-                    {data.tags.map((tag) => (
+                    {displayTags.map((tag) => (
                       <span key={tag} className="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 text-xs font-medium">
                         {capitalize(tag)}
                       </span>

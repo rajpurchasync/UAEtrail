@@ -5,7 +5,7 @@ import type { ContributeVenueKind } from './contributeTypes';
 export type ComposeIntent = 'organize' | 'find' | 'add';
 
 /** Organize sub-kind on the compose route (`activity` = generic buddy plan). */
-export type OrganizeComposeKind = 'hiking' | 'camping' | 'event' | 'activity';
+export type OrganizeComposeKind = 'hiking' | 'camping' | 'event' | 'carpool' | 'activity';
 
 /** Find sub-kind — subset of {@link ParticipantIntentKind} exposed in the FAB. */
 export type FindComposeKind = 'carpool' | 'hiking' | 'camping' | 'event';
@@ -51,6 +51,7 @@ export const ORGANIZE_COMPOSE_OPTIONS: Array<{ kind: OrganizeComposeKind; label:
   { kind: 'hiking', label: 'Hiking Trips', emoji: '🥾' },
   { kind: 'camping', label: 'Camping Plan', emoji: '⛺' },
   { kind: 'event', label: 'Outdoor Event', emoji: '🏃' },
+  { kind: 'carpool', label: 'Rideshare', emoji: '🚗' },
   { kind: 'activity', label: 'Other Activities', emoji: '✨' },
 ];
 
@@ -77,7 +78,13 @@ export const BUDDY_TITLE_PLACEHOLDER = 'Run, jog, trail run — whatever gets yo
 
 export const PARTICIPATION_TOGGLE_QUESTION = 'Do people need my OK to join?';
 
-const ORGANIZE_COMPOSE_KINDS = new Set<OrganizeComposeKind>(['hiking', 'camping', 'event', 'activity']);
+const ORGANIZE_COMPOSE_KINDS = new Set<OrganizeComposeKind>([
+  'hiking',
+  'camping',
+  'event',
+  'carpool',
+  'activity',
+]);
 const FIND_COMPOSE_KINDS = new Set<FindComposeKind>(['carpool', 'hiking', 'camping', 'event']);
 const ADD_COMPOSE_KINDS = new Set<ContributeVenueKind>(['hiking', 'camping', 'shop', 'event']);
 const COMPOSE_INTENTS = new Set<ComposeIntent>(['organize', 'find', 'add']);

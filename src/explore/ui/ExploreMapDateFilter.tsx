@@ -10,17 +10,33 @@ import {
 interface ExploreMapDateFilterProps {
   activityDatePreset: ExploreActivityDatePreset;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
+  /** Map chrome omits “Anyday”; default state shows as “When”. */
+  includeAnyday?: boolean;
+  /** Browse toolbar — calendar icon only (label in aria-label / title). */
+  iconOnly?: boolean;
 }
 
-/** Map date preset — Anyday, Today, Tomorrow, This week, This month. */
+/** Map date preset — Today, Tomorrow, This week, This month (optional Anyday on list). */
 export const ExploreMapDateFilter = ({
   activityDatePreset,
   onActivityDatePresetChange,
+  includeAnyday = true,
+  iconOnly = false,
 }: ExploreMapDateFilterProps) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
-  const buttonLabel = exploreActivityDatePresetLabel(activityDatePreset);
+  const buttonLabel =
+    !includeAnyday && activityDatePreset === 'anyday'
+      ? 'When'
+      : exploreActivityDatePresetLabel(activityDatePreset);
+
+  const options = includeAnyday
+    ? EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS
+    : [
+        ...EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS.filter((option) => option.value !== 'anyday'),
+        { value: 'anyday' as const, label: 'Any date' },
+      ];
 
   useEffect(() => {
     if (!open) return;
@@ -49,9 +65,9 @@ export const ExploreMapDateFilter = ({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className={`${EXPLORE_FLOATING_CONTROL} touch-target-inline h-11 items-center justify-center gap-1.5 px-3 text-emerald-800 ${
-          active ? 'ring-2 ring-emerald-500/40' : ''
-        }`}
+        className={`${EXPLORE_FLOATING_CONTROL} inline-flex h-10 items-center justify-center text-emerald-950 ${
+          iconOnly ? 'w-10 shrink-0 px-0' : 'gap-1.5 px-3 text-sm font-bold leading-snug'
+        } ${active ? 'ring-2 ring-emerald-500/40' : ''}`}
         aria-expanded={open}
         aria-controls={panelId}
         aria-haspopup="listbox"
@@ -59,7 +75,9 @@ export const ExploreMapDateFilter = ({
         title={buttonLabel}
       >
         <CalendarDays className="h-5 w-5 shrink-0" strokeWidth={2.25} aria-hidden />
-        <span className="max-w-[6.5rem] truncate text-xs font-bold">{buttonLabel}</span>
+        {!iconOnly && (buttonLabel !== 'When' || active) ? (
+          <span className="max-w-[6.5rem] truncate text-xs font-bold">{buttonLabel}</span>
+        ) : null}
       </button>
 
       {open ? (
@@ -70,7 +88,7 @@ export const ExploreMapDateFilter = ({
           className="absolute right-0 top-[calc(100%+0.5rem)] z-[3100] min-w-[11.5rem]"
         >
           <div className="overflow-hidden rounded-2xl border border-neutral-200/90 bg-white py-1 shadow-[0_12px_40px_rgba(15,23,42,.18)]">
-            {EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS.map((option) => {
+            {options.map((option) => {
               const selected = option.value === activityDatePreset;
               return (
                 <button
@@ -80,7 +98,7 @@ export const ExploreMapDateFilter = ({
                   aria-selected={selected}
                   onClick={() => handleSelect(option.value)}
                   className={`flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-sm font-semibold transition-colors ${
-                    selected ? 'bg-emerald-50 text-emerald-900' : 'text-neutral-800 hover:bg-neutral-50'
+                    selected ? 'bg-emerald-50 text-emerald-950' : 'text-neutral-950 hover:bg-neutral-50'
                   }`}
                 >
                   <span>{option.label}</span>

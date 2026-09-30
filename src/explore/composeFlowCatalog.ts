@@ -3,6 +3,9 @@
  * Architecture “Demand” = compose intent `find` → `participant_intents`.
  * Confirm each flow in docs/experiment/flows/ before locking copy/steps.
  */
+import type { OutingCategory } from '@uaetrail/shared-types';
+
+export type { OutingCategory };
 import type { ActivityType } from '../config/activityTypes';
 import type {
   ComposeIntent,
@@ -12,11 +15,20 @@ import type {
   ParticipationMode,
 } from './compose';
 import type { ContributeVenueKind } from './contributeTypes';
+import type { ContributeFlowStepId } from './ui/contributeFlow';
+import { getContributeFlowSteps } from './ui/contributeFlow';
+import type { DemandFlowStepId, DemandKind } from './ui/demandFlow';
+import { getDemandFlowSteps } from './ui/demandFlow';
 import type { CreateFlowStepId } from './ui/organizeFlow';
-import { getCreateFlowSteps } from './ui/organizeFlow';
+import {
+  organizeActivitiesFlow,
+  organizeCampingFlow,
+  organizeEventsFlow,
+  organizeHikingFlow,
+  organizeRideshareFlow,
+} from './ui/organizeFlows';
 
-/** Hiking, camping, events, rideshare, activities — shared by Organize + Find. */
-export type OutingCategory = 'hiking' | 'camping' | 'events' | 'rideshare' | 'activities';
+export const findComposeKindToDemandKind = (kind: FindComposeKind): DemandKind => kind;
 
 export type ComposeFlowId =
   | 'organize.hiking'
@@ -46,6 +58,8 @@ export type ComposeFlowSpec = {
   defaultParticipation: ParticipationMode | null;
   wizard: ComposeWizardModule;
   organizeSteps?: readonly CreateFlowStepId[];
+  demandSteps?: readonly DemandFlowStepId[];
+  contributeSteps?: readonly ContributeFlowStepId[];
   /** Host publish API activity type when applicable (rideshare uses carpool). */
   activityType?: ActivityType | 'carpool';
   confirmationDoc?: string;
@@ -61,7 +75,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: true,
     defaultParticipation: 'approval',
     wizard: 'organizeFlow',
-    organizeSteps: getCreateFlowSteps('hiking', false),
+    organizeSteps: organizeHikingFlow.defaultSteps,
     activityType: 'hiking',
     confirmationDoc: 'docs/experiment/flows/FLOW-01-organize-hiking.md',
   },
@@ -74,7 +88,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: true,
     defaultParticipation: 'approval',
     wizard: 'organizeFlow',
-    organizeSteps: getCreateFlowSteps('camping', false),
+    organizeSteps: organizeCampingFlow.defaultSteps,
     activityType: 'camping',
     confirmationDoc: 'docs/experiment/flows/FLOW-02-organize-camping.md',
   },
@@ -87,7 +101,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: true,
     defaultParticipation: 'rsvp',
     wizard: 'organizeFlow',
-    organizeSteps: getCreateFlowSteps('event', false),
+    organizeSteps: organizeEventsFlow.defaultSteps,
     activityType: 'event',
     confirmationDoc: 'docs/experiment/flows/FLOW-03-organize-events.md',
   },
@@ -100,7 +114,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: true,
     defaultParticipation: 'approval',
     wizard: 'organizeFlow',
-    organizeSteps: getCreateFlowSteps('activity', false),
+    organizeSteps: organizeActivitiesFlow.defaultSteps,
     activityType: 'event',
     confirmationDoc: 'docs/experiment/flows/FLOW-05-organize-activities.md',
   },
@@ -113,7 +127,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: true,
     defaultParticipation: 'approval',
     wizard: 'organizeFlow',
-    organizeSteps: getCreateFlowSteps('carpool', false),
+    organizeSteps: organizeRideshareFlow.defaultSteps,
     activityType: 'carpool',
     confirmationDoc: 'docs/experiment/flows/FLOW-04-organize-rideshare.md',
   },
@@ -126,6 +140,8 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: false,
     defaultParticipation: null,
     wizard: 'demandFlow',
+    demandSteps: getDemandFlowSteps('hiking'),
+    confirmationDoc: 'docs/experiment/flows/FLOW-06-find-hiking.md',
   },
   'find.camping': {
     id: 'find.camping',
@@ -136,6 +152,8 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: false,
     defaultParticipation: null,
     wizard: 'demandFlow',
+    demandSteps: getDemandFlowSteps('camping'),
+    confirmationDoc: 'docs/experiment/flows/FLOW-07-find-camping.md',
   },
   'find.event': {
     id: 'find.event',
@@ -146,6 +164,8 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: false,
     defaultParticipation: null,
     wizard: 'demandFlow',
+    demandSteps: getDemandFlowSteps('event'),
+    confirmationDoc: 'docs/experiment/flows/FLOW-09-find-activity.md',
   },
   'find.carpool': {
     id: 'find.carpool',
@@ -156,6 +176,8 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: false,
     defaultParticipation: null,
     wizard: 'demandFlow',
+    demandSteps: getDemandFlowSteps('carpool'),
+    confirmationDoc: 'docs/experiment/flows/FLOW-08-find-rideshare.md',
   },
   'add.trail': {
     id: 'add.trail',
@@ -166,6 +188,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: false,
     defaultParticipation: null,
     wizard: 'contributeFlow',
+    contributeSteps: getContributeFlowSteps('hiking'),
   },
   'add.camp': {
     id: 'add.camp',
@@ -176,6 +199,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: false,
     defaultParticipation: null,
     wizard: 'contributeFlow',
+    contributeSteps: getContributeFlowSteps('camping'),
   },
   'add.shop': {
     id: 'add.shop',
@@ -186,6 +210,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: false,
     defaultParticipation: null,
     wizard: 'contributeFlow',
+    contributeSteps: getContributeFlowSteps('shop'),
   },
   'add.spot': {
     id: 'add.spot',
@@ -196,6 +221,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: false,
     defaultParticipation: null,
     wizard: 'contributeFlow',
+    contributeSteps: getContributeFlowSteps('event'),
   },
 };
 
@@ -205,8 +231,12 @@ const ORGANIZE_KIND_TO_ID: Record<OrganizeComposeKind, ComposeFlowId> = {
   hiking: 'organize.hiking',
   camping: 'organize.camping',
   event: 'organize.events',
+  carpool: 'organize.rideshare',
   activity: 'organize.activities',
 };
+
+export const composeFlowSpecForOrganizeKind = (kind: OrganizeComposeKind): ComposeFlowSpec =>
+  composeFlowSpec(ORGANIZE_KIND_TO_ID[kind]);
 
 const FIND_KIND_TO_ID: Record<FindComposeKind, ComposeFlowId> = {
   hiking: 'find.hiking',
@@ -234,4 +264,12 @@ export const composeFlowIdFromRoute = (route: ExploreCompose | null): ComposeFlo
 export const composeFlowSpecFromRoute = (route: ExploreCompose | null): ComposeFlowSpec | null => {
   const id = composeFlowIdFromRoute(route);
   return id ? composeFlowSpec(id) : null;
+};
+
+/** Default participation for an open organize wizard — catalog wins over compose helpers. */
+export const defaultParticipationForOrganizeRoute = (
+  kind: OrganizeComposeKind
+): ParticipationMode | null => {
+  const spec = composeFlowSpecFromRoute({ intent: 'organize', kind });
+  return spec?.defaultParticipation ?? null;
 };

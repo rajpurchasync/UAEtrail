@@ -68,7 +68,7 @@ export const OrganizeVenuePlaceField = ({
               activityType={placeType}
               places={registryPlaces}
               required={false}
-              placeholder="Search the place registry…"
+              placeholder="Select venue…"
             />
           </label>
           {selectedPlace ? (

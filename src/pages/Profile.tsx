@@ -220,6 +220,13 @@ export const Profile = () => {
         emoji: '⭐',
         accent: 'bg-amber-50',
       },
+      {
+        key: 'wishlist',
+        label: 'Saved',
+        to: '/profile/wishlist',
+        emoji: '📍',
+        accent: 'bg-teal-50',
+      },
     ];
 
     if (trailPointsEligible) {
@@ -404,6 +411,7 @@ export const Profile = () => {
                   upcomingActivitiesCount={host.upcomingActivitiesCount}
                   pastActivitiesCount={host.pastActivitiesCount}
                   upcomingActivities={host.upcomingActivities}
+                  showConsoleLinks={false}
                 />
               )}
             </GlassCard>

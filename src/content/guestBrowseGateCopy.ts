@@ -1,0 +1,49 @@
+import {
+  GUEST_GATE_OOPS_TITLE,
+  guestJoinSheetBody,
+  guestJoinSheetHeadline,
+  type GuestJoinCopyInput,
+} from './guestJoinCopy';
+
+/** Where a guest hit a members-only surface. */
+export type GuestBrowseGateIntent =
+  | 'explore-browse'
+  | 'whos-going'
+  | 'peek-details'
+  | 'join-activity';
+
+type GateCopy = { title: string; body: string };
+
+const GATE_COPY: Record<Exclude<GuestBrowseGateIntent, 'join-activity'>, GateCopy> = {
+  'explore-browse': {
+    title: GUEST_GATE_OOPS_TITLE,
+    body:
+      'Join the community today to search the list, use filters, and open full details on every plan near you.',
+  },
+  'whos-going': {
+    title: GUEST_GATE_OOPS_TITLE,
+    body:
+      "Join the community today to see who's heading out — friends, buddies, and people you follow on upcoming trips.",
+  },
+  'peek-details': {
+    title: GUEST_GATE_OOPS_TITLE,
+    body:
+      'Join the community today to meet hosts, say you’re going, save places you love, and message your crew before you head outside.',
+  },
+};
+
+export const guestBrowseGateCopy = (
+  intent: GuestBrowseGateIntent,
+  joinInput?: GuestJoinCopyInput
+): GateCopy => {
+  if (intent === 'join-activity' && joinInput) {
+    return {
+      title: guestJoinSheetHeadline(joinInput),
+      body: guestJoinSheetBody(joinInput),
+    };
+  }
+  if (intent === 'join-activity') {
+    return GATE_COPY['peek-details'];
+  }
+  return GATE_COPY[intent];
+};

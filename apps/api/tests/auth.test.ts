@@ -25,7 +25,8 @@ describe('auth integration', () => {
       .send({
         email,
         password,
-        displayName: 'Auth Test User',
+        givenName: 'Auth',
+        surname: 'Tester',
         accountType: 'participant'
       });
 
@@ -65,7 +66,8 @@ describe('auth integration', () => {
       .send({
         email: pendingEmail,
         password: pendingPassword,
-        displayName: 'Pending User',
+        givenName: 'Pending',
+        surname: 'User',
         accountType: 'participant'
       });
 
@@ -135,7 +137,8 @@ describe('auth integration', () => {
       .send({
         email: switchEmail,
         password: switchPassword,
-        displayName: 'Role Switch User',
+        givenName: 'Role',
+        surname: 'Switch',
         accountType: 'participant'
       });
 

@@ -17,6 +17,8 @@ export type AuthUserRecord = {
   referralCode: string;
   profile: {
     displayName: string | null;
+    givenName?: string | null;
+    surname?: string | null;
     phone: string | null;
     bio: string | null;
     avatarUrl: string | null;
@@ -172,6 +174,8 @@ export const updateAuthUserProfile = async (
 ): Promise<void> => {
   const setFields: Record<string, unknown> = { updatedAt: new Date() };
   if (patch.displayName !== undefined) setFields['profile.displayName'] = patch.displayName ?? null;
+  if (patch.givenName !== undefined) setFields['profile.givenName'] = patch.givenName ?? null;
+  if (patch.surname !== undefined) setFields['profile.surname'] = patch.surname ?? null;
   if (patch.phone !== undefined) setFields['profile.phone'] = patch.phone ?? null;
   if (patch.bio !== undefined) setFields['profile.bio'] = patch.bio ?? null;
   if (patch.avatarUrl !== undefined) setFields['profile.avatarUrl'] = patch.avatarUrl ?? null;
@@ -184,7 +188,7 @@ export const updateAuthUserProfile = async (
     setFields['profile.profileVisibility'] = patch.profileVisibility;
   }
   await usersCollection().updateOne({ _id: userId }, { $set: setFields });
-  if (patch.displayName !== undefined) {
+  if (patch.displayName !== undefined || patch.givenName !== undefined || patch.surname !== undefined) {
     await invalidateExploreMapCache();
   }
 };

@@ -118,6 +118,8 @@ After seeding with `SEED_DATA=true` (or `FORCE_SEED=1`), the team can log in wit
 
 Additional demo accounts: agency guide staff `guide@uaetrails.app` / `Guide@12345`, pending participant `visitor2@uaetrails.app` / `Visitor2@12345`.
 
+**Connections QA (buddies, follows, pending requests):** after demo users exist, run `cd apps/api && SEED_CONNECTIONS=true npm run seed` (included automatically on full `SEED_DATA=true` seed). Log in as `visitor@` and follow the playbook printed in the seed output. See `docs/NAVIGATION.md` § Connections QA.
+
 ## Feature Flags (Frontend)
 Add in root `.env`:
 ```bash

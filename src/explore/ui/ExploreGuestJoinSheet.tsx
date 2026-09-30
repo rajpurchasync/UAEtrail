@@ -1,16 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
 import type { ParticipationMode } from '@uaetrail/shared-types';
-import { joinAuthPath } from '../../config/platform';
-import {
-  guestJoinSheetBody,
-  guestJoinSheetHeadline,
-  type GuestJoinSheetIntent,
-} from '../../content/guestJoinCopy';
-import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
-import { buildSignInRedirect } from '../../utils/authReturnContext';
+import type { GuestJoinSheetIntent } from '../../content/guestJoinCopy';
 import { EXPLORE_Z } from '../../config/exploreTheme';
-import { AppButtonLink } from '../../components/mobile/AppButton';
-import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
+import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
+import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 
 interface ExploreGuestJoinSheetProps {
   open: boolean;
@@ -21,7 +13,7 @@ interface ExploreGuestJoinSheetProps {
   requirements?: string[] | null;
 }
 
-/** Bottom sheet when a guest taps Join on an activity — softer than hard redirect. */
+/** Centered sign-in modal when a guest taps Join — uses shared sign-in card. */
 export const ExploreGuestJoinSheet = ({
   open,
   onClose,
@@ -29,43 +21,34 @@ export const ExploreGuestJoinSheet = ({
   intent = 'activity',
   participationMode,
   requirements,
-}: ExploreGuestJoinSheetProps) => {
-  const location = useLocation();
-  const joinHref = joinAuthPath(`${location.pathname}${location.search}`);
-  const { href: signInHref } = buildSignInRedirect(location);
-  const copyInput = { intent, participationMode, requirements, activityTitle };
-
-  return (
-    <ExploreResponsiveSheet
-      open={open}
-      onClose={onClose}
-      maxWidthClass="lg:max-w-md"
-      zClass={EXPLORE_Z.guestJoinSheet}
-      overlayFixed
-    >
-      <div className="px-4 pb-[calc(var(--safe-bottom)+16px)] pt-1 lg:px-6 lg:pb-6">
-        <h2 className="text-lg font-bold text-neutral-900">{guestJoinSheetHeadline(copyInput)}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-neutral-600">{guestJoinSheetBody(copyInput)}</p>
-        <div className="mt-5 space-y-2">
-          <AppButtonLink to={joinHref} fullWidth onClick={onClose}>
-            {PRODUCT_JOIN_CTA}
-          </AppButtonLink>
-          <Link
-            to={signInHref}
-            className="block py-2 text-center text-sm font-medium text-neutral-500"
-            onClick={onClose}
-          >
-            Already have an account? Log in
-          </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            className="block w-full py-2 text-center text-sm font-medium text-neutral-400"
-          >
-            Keep browsing
-          </button>
-        </div>
-      </div>
-    </ExploreResponsiveSheet>
-  );
-};
+}: ExploreGuestJoinSheetProps) => (
+  <ExploreResponsiveSheet
+    open={open}
+    onClose={onClose}
+    maxWidthClass="max-w-md"
+    zClass={EXPLORE_Z.guestJoinSheet}
+    overlayFixed
+    layout="centered"
+    showCloseButton
+    showHandle={false}
+    ariaLabel="Sign in to join"
+  >
+    <div className="px-4 pb-5 pt-8 sm:px-6 sm:pb-6">
+      <ExploreGuestSignInCard
+        intent="join-activity"
+        joinIntent={intent}
+        activityTitle={activityTitle}
+        participationMode={participationMode}
+        requirements={requirements}
+        compact
+      />
+      <button
+        type="button"
+        onClick={onClose}
+        className="mt-2 block w-full py-2 text-center text-sm font-medium text-neutral-400"
+      >
+        Keep browsing
+      </button>
+    </div>
+  </ExploreResponsiveSheet>
+);

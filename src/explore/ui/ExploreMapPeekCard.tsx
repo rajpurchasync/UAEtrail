@@ -4,6 +4,9 @@ import type { ExploreCardModel } from '../exploreCardModel';
 import { EXPLORE_PEEK } from '../../config/exploreTheme';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../components/ui/ShareButton';
+import { ExploreSaveButton } from './ExploreSaveButton';
+import { exploreCardHasMapCoords, exploreCardShowsInlineDirections } from '../exploreCardModel';
+import { PlaceDirectionLinks } from '../../components/ui/PlaceDirectionLinks';
 import {
   ExploreCardDetailList,
   ExploreCardHeadline,
@@ -69,6 +72,7 @@ export const ExploreMapPeekCard = ({
       <div className={`flex shrink-0 items-start justify-between gap-3 px-4 ${card.coverImage ? 'pt-3' : 'pt-4'}`}>
         <ExploreCardTypeBadge card={card} size="sm" />
         <div className="flex items-center gap-1.5">
+          <ExploreSaveButton card={card} light={!card.coverImage} />
           <ShareButton
             title={card.shareTitle}
             text={card.shareText ?? undefined}
@@ -105,6 +109,13 @@ export const ExploreMapPeekCard = ({
           mapLatitude={card.mapLatitude}
           mapLongitude={card.mapLongitude}
         />
+        {exploreCardHasMapCoords(card) && !exploreCardShowsInlineDirections(card) ? (
+          <PlaceDirectionLinks
+            lat={card.mapLatitude as number}
+            lng={card.mapLongitude as number}
+            className="mt-3"
+          />
+        ) : null}
         {children}
       </div>
 

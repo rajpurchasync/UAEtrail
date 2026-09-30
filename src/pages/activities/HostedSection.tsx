@@ -13,6 +13,7 @@ import { useActivityFormSession } from '../../context/ActivityFormSessionContext
 import { useOrganisationHubData } from '../../hooks/useOrganisationHubData';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { exploreOrganizePath } from '../../utils/exploreRouting';
+import { navigateToReorganizeActivity } from '../../explore/navigateReorganizeActivity';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { AppButton } from '../../components/mobile/AppButton';
@@ -135,6 +136,10 @@ export const HostedSection = ({
     } finally {
       setBusyActivityId(null);
     }
+  };
+
+  const reorganizeActivity = (event: ActivityDTO) => {
+    navigateToReorganizeActivity(navigate, event);
   };
 
   const publishActivity = async (event: ActivityDTO) => {
@@ -278,6 +283,7 @@ export const HostedSection = ({
                   onEdit: (activity) => openEdit(activity, { tenantId: host.tenantId! }),
                   onPublish: publishActivity,
                   onDuplicate: duplicateActivity,
+                  onReorganize: reorganizeActivity,
                   onDelete: (activity) => setConfirmAction({ type: 'delete', activity }),
                   onCancel: (activity) => setConfirmAction({ type: 'cancel', activity }),
                   onCheckin: (activity) => setCheckinActivity(activity),

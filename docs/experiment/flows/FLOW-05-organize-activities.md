@@ -1,21 +1,21 @@
 # FLOW-05 — Organize · Activity (`organize.activities`)
 
-**Status:** Implemented (2026-09-27) — `organize:activity` → `ACTIVITY_HOST_STEPS`  
+**Status:** Implemented — `organize:activity` → catalog `organize.activities`  
 **Catalog:** `src/explore/composeFlowCatalog.ts` → `organize.activities`  
-**Target code:** `CreateActivityFlow` + `organizeFlow.ts` + `organizeActivitiesWizardSteps.tsx` (new)
+**Target code:** `CreateOrganizeActivitiesFlow` · `organizeFlows/activities.ts` · step shells `organizeWizard/steps/*` · bodies `organizeActivitiesWizardSteps.tsx`
 
 ---
 
 ## Summary
 
-Signed-in **host** (`canPublish`) publishes a **general outdoor activity** on the explore map — runs, climbs, workshops, group outings, etc. Host picks an **activity type** first, then a **shorter wizard** than hiking: one **where people meet** pin early, **capacity**, **public/private + who can join**, **going from** later, and optional **carpool on publish** (linked rideshare — see FLOW-04).
+Signed-in **host** (`canPublish`) publishes a **general outdoor activity** on the explore map — runs, climbs, workshops, group outings, etc. Host picks an **activity type** first, then a **shorter wizard** than hiking: one **where people meet** pin early, **capacity**, **public/private + who can join**, **going from** later, and optional **carpool after publish** on the success screen (see FLOW-04 link API).
 
 | Field | Value |
 |-------|--------|
 | Compose intent | Organize |
 | Outing category | `activities` |
 | Storage | `activities` |
-| Explore map | `source: activity`, `kind: event` (or future `activity` topic field) |
+| Explore map | `source: activity`, `outingCategory: activities`, `outingTopic` from activity-type chip |
 | Default join style | **Host approval** — host may switch to **RSVP** in audience step |
 | Host required | Yes (`canPublish`) |
 | **Not** | Rideshare compose (FLOW-04) · full hiking trail wizard (FLOW-01) · event wizard without going-from (FLOW-03) |
@@ -32,7 +32,7 @@ Same as FLOW-01: signed in, host profile complete, tenant loaded on publish.
 
 Tap **+** → **Organize** → **✨ Activity**  
 **URL:** `/explore?compose=organize:activity` (alias → `organize.activities` in catalog)  
-**UI:** **`CreateActivityFlow`** with dedicated **`ACTIVITY_HOST_STEPS`** (below).
+**UI:** **`CreateOrganizeActivitiesFlow`** (`composeFlowCatalog` → `organize.activities`) with **`organizeActivitiesFlow.defaultSteps`** (below).
 
 ---
 
@@ -42,17 +42,18 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 
 | # | Step ID | Screen title | What user does |
 |---|---------|--------------|----------------|
-| 0 | *(compose)* | **Activity type** | Pick type chip — e.g. run, climb, yoga, social hike, other (topic stored on activity; does not change API `activityType` until product adds one) |
+| 0 | *(compose)* | **Activity type** | Pick type chip — e.g. run, climb, yoga, social (maps to `outingTopic` on publish + requirements line for legacy rows) |
 | 1 | `title` | **Give it a title** | Plan title |
 | 2 | `when` | **When are you going?** | Date · flexible or start time |
-| 3 | `meeting_point` | **Where (meeting)** | **Map pin where people meet** · optional label · directions — primary explore pin for the outing |
+| 3 | `meeting_point` | **Where (meeting)** | **Map pin where people meet** · extra directions — primary explore pin for the outing |
 | 4 | `spots` | **Participants** | Capacity presets · **Anyone vs Limited** (women only, min age) · **Children allowed** · **Pets allowed** |
 | 5 | `audience` | **Who can join?** | **Public vs private** (map vs link-only) · **Approval vs RSVP** when public (same cards as hiking) · private → approval only |
 | 6 | `price` | **Price** | Free · shared · paid |
 | 7 | `instructions` | **Instructions** | What joiners should know before they come (single text — gear, rules, meet-up notes) |
 | 8 | `meeting` | **Going from** | Optional **going-from** pin when departure ≠ meeting place · directions (`goingFromNotes`) |
 | 9 | `transportation` | **Transportation** | **Reachable by sedan** vs **4x4 required** (venue access) |
-| 10 | `publish` | **Preview and publish** | Summary · optional **Offer carpool** checkbox · **Publish** |
+| 10 | `publish` | **Preview and publish** | Summary · **Publish** |
+| *(success)* | — | **Published** | Optional **Offer carpool** · **View on map** |
 
 **Step 0** may live on the Organize sub-row (type chip) or as the first wizard screen — product choice; both count as “activity type” in this flow.
 
@@ -62,7 +63,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 
 **Participation:** Step 5 sets `participationMode`. Default **approval** for `organize.activities`.
 
-**Carpool:** Step 10 only — optional **Offer carpool** spawns / links a **FLOW-04** rideshare (`linkedActivityId` target). Interim: `carPoolEnabled` + host peek until link UI ships.
+**Carpool:** On **publish success** (not the publish step) when `postPublishCarpool` — optional **Offer carpool** links a **FLOW-04** rideshare (`linkedActivityId` target).
 
 ---
 
@@ -101,7 +102,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 
 ## Implementation checklist (engineering)
 
-- [x] `ACTIVITY_HOST_STEPS` in `organizeFlow.ts` matching table above
+- [x] Step list in `organizeFlows/activities.ts` (`defaultSteps` / `getSteps`) matching table above
 - [x] `isActivityOrganizeFlow()` + step titles in `createFlowStepTitle`
 - [x] `organizeActivitiesWizardSteps.tsx` step bodies
 - [x] Wire `composeFlowCatalog` `organize.activities.organizeSteps` + `confirmationDoc`

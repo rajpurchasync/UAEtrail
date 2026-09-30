@@ -25,6 +25,7 @@ type NotificationSection =
   | 'Messages'
   | 'Group chat'
   | 'Buddy requests'
+  | 'Connections'
   | 'Comments approved'
   | 'Comments liked'
   | 'Other';
@@ -35,6 +36,7 @@ const sectionOrder: NotificationSection[] = [
   'Messages',
   'Group chat',
   'Buddy requests',
+  'Connections',
   'Comments approved',
   'Comments liked',
   'Other'
@@ -45,8 +47,10 @@ const inferSection = (notif: NotificationDTO): NotificationSection => {
   const kind = typeof meta?.kind === 'string' ? meta.kind.toLowerCase() : '';
   const text = `${notif.title} ${notif.body}`.toLowerCase();
 
+  if (kind === 'wishlist_match') return 'Activity updates';
   if (kind.startsWith('join_request') || kind === 'request_withdrawal') return 'Activity updates';
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') return 'Buddy requests';
+  if (kind === 'connection_member_followed') return 'Connections';
   if (kind === 'group_invite' || kind === 'group_invite_accepted' || text.includes('group invite')) return 'Group chat';
   if (kind.includes('group_message') || text.includes('new message in')) return 'Group chat';
   if (kind.includes('comment_approved') || text.includes('comment approved')) return 'Comments approved';
@@ -57,6 +61,12 @@ const inferSection = (notif: NotificationDTO): NotificationSection => {
   if (kind.includes('reminder') || text.includes('reminder')) return 'Reminders';
   if (notif.type === 'activity' || text.includes('request update')) return 'Activity updates';
   return 'Other';
+};
+
+const wishlistMatchPathFromMeta = (notif: NotificationDTO): string | null => {
+  const meta = notif.meta as Record<string, unknown> | null | undefined;
+  if (!meta || meta.kind !== 'wishlist_match') return null;
+  return typeof meta.path === 'string' ? meta.path : null;
 };
 
 const inviteTokenFromMeta = (notif: NotificationDTO): string | null => {
@@ -213,6 +223,24 @@ export const Notifications = () => {
                           className="ml-auto"
                         />
                       )}
+                  </div>
+                )}
+                {wishlistMatchPathFromMeta(notif) && (
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100/80 pl-5">
+                    <Link
+                      to={wishlistMatchPathFromMeta(notif)!}
+                      onClick={() => !notif.isRead && markRead(notif.id)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+                    >
+                      View on map
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                    <Link
+                      to="/profile/wishlist"
+                      className="text-xs font-medium text-neutral-600"
+                    >
+                      Saved map
+                    </Link>
                   </div>
                 )}
                 {inferSection(notif) === 'Buddy requests' && inviteTokenFromMeta(notif) && (

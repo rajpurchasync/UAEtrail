@@ -2,12 +2,16 @@ import type { ActivityDTO, ExploreMapItemDTO, ShopPresence } from '@uaetrail/sha
 import {
   buildExploreCardPresentation,
   buildExploreFeaturedPerson,
+  buildExploreMapPlanProjection,
+  exploreMapKindToPlanMapKind,
   EXPLORE_SHOPS_LIST_PATH,
   placeDetailPath,
   resolveActivityHostAvatar,
   resolveActivityHostDisplayName,
   resolveActivityHostUserId,
   resolveEntityPath,
+  resolveActivityOutingTopic,
+  resolveParticipationMode,
   shopPublicPath,
 } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
@@ -279,6 +283,37 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
   }
 
   items.push(...demandItems);
+
+  for (const item of items) {
+    if (item.source === 'activity' && item.activity) {
+      Object.assign(
+        item,
+        buildExploreMapPlanProjection({
+          source: 'activity',
+          mapKind: exploreMapKindToPlanMapKind(item.kind),
+          participationMode: resolveParticipationMode(
+            item.activity.participationMode,
+            item.activity.requirements
+          ),
+          storedOutingCategory: item.activity.outingCategory ?? null,
+          storedOutingTopic: resolveActivityOutingTopic(
+            item.activity.outingTopic,
+            item.activity.requirements
+          ),
+        })
+      );
+      continue;
+    }
+    if (item.source === 'venue' || item.source === 'shop') {
+      Object.assign(
+        item,
+        buildExploreMapPlanProjection({
+          source: item.source,
+          mapKind: exploreMapKindToPlanMapKind(item.kind),
+        })
+      );
+    }
+  }
 
   const locationIds = items
     .filter((item) => item.source === 'venue')

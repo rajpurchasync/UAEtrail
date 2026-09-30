@@ -33,6 +33,7 @@ import {
   extractNonJoinRequirements,
   MANDATORY_INSTRUCTIONS_LABEL,
 } from '../../utils/joinInstructions';
+import { activityRegistryPlacePath } from '../../utils/activityRegistryPlacePath';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden>
@@ -146,6 +147,8 @@ export const ActivityDetailView = ({
   const accessLng =
     activity.startLng ?? activity.meetingLng ?? activity.parkingLng ?? activity.location?.longitude ?? null;
   const hasAccessCoordinates = accessLat != null && accessLng != null;
+  const registryPlacePath = previewMode ? null : activityRegistryPlacePath(activity);
+  const registryPlaceName = activity.location?.name?.trim() || activity.locationName?.trim() || null;
   const openInGoogleMapsUrl =
     activity.location?.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
 
@@ -282,6 +285,21 @@ export const ActivityDetailView = ({
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-3">About this {activity.activityType === 'event' ? 'event' : 'activity'}</h2>
             <p className="text-gray-600 leading-relaxed whitespace-pre-line">{activity.description}</p>
+
+            {registryPlacePath && registryPlaceName && (
+              <Link
+                to={registryPlacePath}
+                className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left transition hover:bg-gray-100"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{registryPlaceName}</p>
+                  <p className="mt-0.5 text-xs text-gray-600">
+                    Venue details — toilets, fuel, shops, access
+                  </p>
+                </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-gray-400" aria-hidden />
+              </Link>
+            )}
 
             {externalSignupUrl && (
               <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50 px-4 py-3">

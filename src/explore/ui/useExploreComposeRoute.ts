@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import { signInPathForReturn } from '../../utils/authReturnContext';
 import {
   clearExploreComposeParams,
   isAddWizard,
@@ -13,7 +12,6 @@ import {
   type ExploreCompose,
 } from '../compose';
 import { resolveComposeRouteChange } from '../exploreComposeRouteGuard';
-import { explorePath } from '../routing';
 
 type UseExploreComposeRouteArgs = {
   user: { id: string } | null | undefined;
@@ -35,6 +33,7 @@ export const useExploreComposeRoute = ({
   hostGateLoading,
 }: UseExploreComposeRouteArgs) => {
   const exploreCompose = useMemo(() => parseExploreCompose(searchParams), [searchParams]);
+  const [guestComposeSignInOpen, setGuestComposeSignInOpen] = useState(false);
 
   const composeMenuOpen = isComposeMenu(exploreCompose);
   const organizeRoute = isOrganizeWizard(exploreCompose) ? exploreCompose : null;
@@ -56,6 +55,7 @@ export const useExploreComposeRoute = ({
 
   const closeCompose = useCallback(() => {
     setComposeRoute(null);
+    setGuestComposeSignInOpen(false);
   }, [setComposeRoute]);
 
   useEffect(() => {
@@ -66,27 +66,23 @@ export const useExploreComposeRoute = ({
 
   useEffect(() => {
     if (searchParams.get('compose') !== '1') return;
-    if (!user) {
-      navigate(signInPathForReturn(explorePath({ compose: 'menu' })));
-      return;
-    }
     onOpenComposeMenu();
     setComposeRoute({ surface: 'menu' });
-  }, [searchParams, user, navigate, setComposeRoute, onOpenComposeMenu]);
+  }, [searchParams, setComposeRoute, onOpenComposeMenu]);
 
   const handleCreateTap = useCallback(() => {
-    if (!user) {
-      navigate(signInPathForReturn(explorePath({ compose: 'menu' })));
-      return;
-    }
-    if (hostGateLoading) return;
+    if (hostGateLoading && user) return;
     setComposeRoute({ surface: 'menu' });
-  }, [user, hostGateLoading, navigate, setComposeRoute]);
+  }, [user, hostGateLoading, setComposeRoute]);
 
   const handleComposeRouteChange = useCallback(
     (route: ExploreCompose | null) => {
       const decision = resolveComposeRouteChange(route, { user, hostGateLoading, canPublish });
       if (decision.type === 'sign-in') {
+        if (!user) {
+          setGuestComposeSignInOpen(true);
+          return;
+        }
         navigate(decision.href);
         return;
       }
@@ -100,6 +96,10 @@ export const useExploreComposeRoute = ({
     [user, hostGateLoading, canPublish, navigate, setComposeRoute]
   );
 
+  const closeGuestComposeSignIn = useCallback(() => {
+    setGuestComposeSignInOpen(false);
+  }, []);
+
   return {
     exploreCompose,
     composeMenuOpen,
@@ -110,5 +110,7 @@ export const useExploreComposeRoute = ({
     closeCompose,
     handleCreateTap,
     handleComposeRouteChange,
+    guestComposeSignInOpen,
+    closeGuestComposeSignIn,
   };
 };

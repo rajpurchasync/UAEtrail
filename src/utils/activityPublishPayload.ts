@@ -5,7 +5,7 @@
  * - Explore FAB: `src/services/organizeActivityPublish.ts` → `buildOrganizeActivityPublishInput` / `publishOrganizeActivity`
  * - Host console: `src/components/activities/activityFormState.ts` → `buildOrganisationActivityPayload`
  */
-import type { ActivityJoinMode, ParticipationMode } from '@uaetrail/shared-types';
+import type { ActivityJoinMode, OutingCategory, OutingTopic, ParticipationMode } from '@uaetrail/shared-types';
 import {
   APPROVAL_PARTICIPATION_REQUIREMENT,
   PRIVATE_JOIN_REQUIREMENT_PREFIX,
@@ -71,6 +71,10 @@ export type ActivityPublishInput = {
   signupUrl?: string | null;
   hostId?: string;
   carpool?: ActivityPublishCarpool;
+  outingCategory?: OutingCategory | null;
+  outingTopic?: OutingTopic | null;
+  /** Optional lineage when reorganizing from a prior activity (audit only). */
+  clonedFromActivityId?: string | null;
 };
 
 export const defaultParticipationModeForActivityType = (activityType: string): ParticipationMode =>
@@ -158,6 +162,16 @@ export const buildOrganisationActivityPublishPayload = (input: ActivityPublishIn
     signupUrl: input.signupUrl ?? null,
     hostId: input.hostId,
   };
+
+  if (input.outingCategory) {
+    payload.outingCategory = input.outingCategory;
+  }
+  if (input.outingTopic) {
+    payload.outingTopic = input.outingTopic;
+  }
+  if (input.clonedFromActivityId?.trim()) {
+    payload.clonedFromActivityId = input.clonedFromActivityId.trim();
+  }
 
   if (pricing.pricePackages && pricing.pricePackages.length > 0) {
     payload.pricePackages = pricing.pricePackages;

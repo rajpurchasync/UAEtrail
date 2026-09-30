@@ -1,4 +1,4 @@
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { activityOrganizeTopicToOutingTopic, type ActivityDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { HOME_HERO_OG_PATH } from '../config/seo';
 import {
@@ -6,6 +6,7 @@ import {
   type ActivityPublishInput,
 } from '../utils/activityPublishPayload';
 import type { CreateActivityDraft } from '../explore/ui/organizeFlow';
+import { composeFlowSpecForOrganizeKind } from '../explore/composeFlowCatalog';
 import {
   buildOrganizeActivityRequirements,
   defaultDescription,
@@ -142,6 +143,7 @@ export const buildOrganizeActivityPublishInput = (
   const requirements = buildOrganizeActivityRequirements(draft);
   const startTime =
     draft.timeMode === 'flexible' ? '09:00' : draft.meetingTime.trim() || draft.time;
+  const planSpec = composeFlowSpecForOrganizeKind(kind);
 
   return {
     activityType,
@@ -178,6 +180,11 @@ export const buildOrganizeActivityPublishInput = (
     requirements,
     joinMode: draft.kind === 'carpool' ? 'open' : draft.joinMode,
     participationMode: draft.kind === 'carpool' ? 'approval' : draft.participationMode,
+    outingCategory: planSpec.outingCategory,
+    outingTopic:
+      kind === 'activity' && draft.activityTopic
+        ? activityOrganizeTopicToOutingTopic(draft.activityTopic)
+        : null,
     images: [HOME_HERO_OG_PATH],
     hostId: userId,
     carpool: isCarpool
@@ -202,8 +209,9 @@ export const publishOrganizeActivity = async (input: {
   tenantId: string;
   userId: string;
   participantIntentId?: string | null;
+  sourceActivityId?: string | null;
 }): Promise<ActivityDTO> => {
-  const { draft, tenantId, userId, participantIntentId } = input;
+  const { draft, tenantId, userId, participantIntentId, sourceActivityId } = input;
   if (!draft.kind) throw new Error('Choose an activity type.');
   const structured = isStructuredOrganizeFlow(draft.kind, draft.genericBuddy);
   const event = isEventOrganizeFlow(draft.kind, draft.genericBuddy);
@@ -236,10 +244,11 @@ export const publishOrganizeActivity = async (input: {
   const ctx: OrganizePublishContext = { draft, tenantId, userId };
   const locationId = await resolveOrganizeActivityLocationId(ctx);
   const payload = buildOrganizeActivityPublishInput({ ...ctx, locationId });
-  const created = await api.createOrganisationActivity(
-    tenantId,
-    buildOrganisationActivityPublishPayload(payload)
-  );
+  const publishBody = buildOrganisationActivityPublishPayload({
+    ...payload,
+    clonedFromActivityId: sourceActivityId?.trim() || null,
+  });
+  const created = await api.createOrganisationActivity(tenantId, publishBody);
   await api.publishOrganisationActivity(tenantId, created.data.id);
 
   if (participantIntentId) {

@@ -6,7 +6,7 @@
  *   ├── Camping
  *   └── Event
  *
- * Locations (trails, camps, event locations) are a separate catalog — see LOCATION_TYPE_LABELS.
+ * Places (trails, camps, shops, …) are a separate catalog — one Place entity, `PlaceKind` in `@uaetrail/shared-types`.
  */
 
 import { explorePath } from '../utils/exploreRouting';

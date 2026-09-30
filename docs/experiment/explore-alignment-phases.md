@@ -120,18 +120,19 @@ Phases are **sequential gates**. Later phases may start UI spikes only if they d
 
 ---
 
-### E5 — Backend write path (optional persistence + per-flow validation)
+### E5 — Backend write path (optional persistence + per-flow validation) — v1 done
 
 **Align:** Each flow keeps its endpoint; validation schemas split by `flowId`.
 
-| Work | Owner |
+| Work | Status |
 |------|--------|
-| Mongo optional `outingCategory`, `outingTopic` | migrations |
-| Per-flow Zod: `organizeHikingCreateSchema`, `demandCarpoolCreateSchema`, … | domain modules |
-| Tighten `locationSubmitBodySchema` — drop carpool/legacy enums on place submit | location-submit |
-| Registry table ↔ schema names documented | `explore-flow-registry.md` |
+| Mongo optional `outingCategory`, `outingTopic` on activities | Done — `entity-builders.ts`, host create/update Zod |
+| Organize publish sends category + topic | Done — `organizeActivityPublish.ts`, `composeFlowCatalog` |
+| Per-flow Zod: `organizeHikingCreateSchema`, `demandCarpoolCreateSchema`, … | Open |
+| Tighten `locationSubmitBodySchema` — drop carpool/legacy enums on place submit | Open |
+| Registry table ↔ schema names documented | Open — `explore-flow-registry.md` |
 
-**Exit:** New posts can store family/topic explicitly; each flow has a named schema; no unified create body.
+**Exit (v1):** New organize posts store `outingCategory` / `outingTopic`; map read prefers stored fields.
 
 **Depends on:** E3 (E4 can ship before E5 if derive-on-read is enough for browse).
 
@@ -154,43 +155,43 @@ Phases are **sequential gates**. Later phases may start UI spikes only if they d
 
 ---
 
-### E7 — Wizard completeness (separate blocks & lifecycles)
+### E7 — Wizard completeness (separate blocks & lifecycles) ✅ (v1)
 
 **Align:** Each flowId owns steps, draft, submit, lifecycle — step kits reused only as UI blocks.
 
-| Flow group | Files | Gaps to close |
-|------------|-------|----------------|
-| `organize.*` | `organizeFlow.ts` | Rideshare; activities submenu; participation toggle all flows |
-| `demand.*` | `demandFlow.ts` | Outdoor categories; **later:** `demand.goods.*` separate |
-| `place.add.*` | `contributeFlow.ts`, `CreateContributeFlow.tsx` | Labels Trails/Spots/Shops/Others; shop path unchanged |
-| Convert seeking → published | `useExploreFulfillIntent.ts`, host prefill | Keep separate lifecycle; document in CREATE_FLOW |
+| Flow group | Status |
+|------------|--------|
+| `organize.*` | Done — rideshare + activity (FLOW-05) wizards; audience step on all kinds; catalog ↔ `getCreateFlowSteps` tests |
+| `demand.*` | Done — FAB-aligned `DEMAND_TYPE_OPTIONS`; `demandFlow.test.ts` |
+| `place.add.*` | Done — Trails/Spots/Shops/Others labels; `contributeFlow.test.ts` |
+| Fulfill demand → organize | Done — `useExploreFulfillIntent`; documented in `CREATE_FLOW` + registry |
 
-| Cross-cutting | |
-|---------------|--|
-| Step kits | Extract/shared: when step, map pin, review shell — **no** shared draft reducer across flows |
-| Publish payload | Already unified builder (`activityPublishPayload.ts`) — passes `participationMode` from **that flow’s** draft |
-| Tests | Extend `organizeFlow.test.ts`, demand/contribute tests per flow family |
+| Cross-cutting | Status |
+|---------------|--------|
+| Publish payload | Done — `organizeActivityPublish.ts` + `outingCategory` / `outingTopic` |
+| Per-flow Zod split | Open (E5 optional) |
+| Step kit extraction | Open — no shared draft reducer (by design) |
 
-**Exit:** No menu item is a stub; participation is host-selected on every publish flow; seek/place lifecycles unchanged.
+**Exit (v1):** Every FAB item maps to a non-stub wizard; participation on audience step (rideshare locked approval).
 
 **Depends on:** E6.
 
 ---
 
-### E8 — Subtype browse (Activities Others / topics)
+### E8 — Subtype browse (Activities Others / topics) ✅ (v1)
 
-**Align:** Pills and URL `subtype` filter on **PlanFamily** + **PlanTopic** — not title guessing.
+**Align:** Pills and URL `subtype` + `outingTopic` on **OutingCategory** + **OutingTopic** — not title guessing.
 
-| Work | Owner |
+| Work | Status |
 |------|--------|
-| URL state: optional `subtype` for Activities panel only | `useExploreBrowseUrlState.ts` |
-| Pin/list filter on `outingCategory` + `outingTopic` | `exploreMapPinModel.ts` |
-| Sub-pill row UI (climbing, run, workshop, …) | `ExploreFilterPillsRow.tsx` |
-| Emoji/map labels | `exploreCopy.ts`, `mapPinIcons.ts` |
+| URL `subtype` (events vs activities) under `filter=others` | Done — `exploreBuddySubtype.ts`, `useExploreBrowseUrlState.ts` |
+| URL `outingTopic` under others + activities | Done — `exploreOutingTopic.ts`, `explorePath()` |
+| Pin/list filter | Done — `exploreMapPinModel.ts`, `useExploreBrowseList.ts` |
+| Sub-pill rows | Done — `ExploreBuddySubtypePillsRow`, `ExploreOutingTopicPillsRow`, `ExploreBrowseFilterChrome` |
 
-**Exit:** Others drill-down works on live data.
+**Exit:** Others → Events/Activities → topic pills filter map + list on projected fields.
 
-**Depends on:** E4 minimum; **E5 strongly recommended** for accurate `planTopic` on create.
+**Depends on:** E4; E5 for persisted `outingTopic` on new publishes (legacy still derives from requirements).
 
 ---
 
@@ -211,16 +212,27 @@ Phases are **sequential gates**. Later phases may start UI spikes only if they d
 
 ---
 
-### E10 — QA gate & merge readiness (experiment-ui)
+### E10 — QA gate & merge readiness (experiment-ui) — in progress
 
-| Work | |
-|------|--|
-| [`PHASE9_MANUAL_SMOKE.md`](./PHASE9_MANUAL_SMOKE.md) + explore browse smoke | |
-| API explore-map + intent + publish contract tests | |
-| `copyGuard` / `exploreModuleBoundary` CI | |
-| Seed data: one pin per PlanFamily × PlanSide for map QA | `apps/api/scripts/seed.ts` |
+| Work | Status |
+|------|--------|
+| Gate doc + `npm run test:explore-alignment` | Done — [`E10_EXPLORE_QA_GATE.md`](./E10_EXPLORE_QA_GATE.md) |
+| Manual: Phase 9 + E2 smoke | Open — QA sign-off table in E10 doc |
+| Seed: outing category / topic on featured activities | Done — `seed.ts` (+ boulder `activities` / `climbing`) |
+| `copyGuard` / `exploreModuleBoundary` in alignment script | Done |
 
-**Exit:** Checklist signed; ready for product call on merge to `main` (separate decision per experiment-ui policy).
+**Exit:** Automated gate green + manual checklists signed; product call on merge to `main` (separate decision per experiment-ui policy).
+
+---
+
+### E11 — Saved map / wishlist + in-app match alerts
+
+**Align:** Google-style **save on the map**; **manage under Profile** (`/profile/wishlist`, Settings link). **In-app** notifications when new **Organize** or **Demand** pins match saved intent. Demand remains on the public map.
+
+| Doc | [`WISHLIST_MAP_ALERTS.md`](./WISHLIST_MAP_ALERTS.md) · [`flows/FLOW-11-profile-wishlist.md`](./flows/FLOW-11-profile-wishlist.md) |
+| Depends on | E4/E5 plan fields; notification plumbing |
+
+**Exit:** Save from explore; list/remove on `/profile/wishlist`; publish/intent fan-out + in-app notify (v1).
 
 ---
 
@@ -263,9 +275,14 @@ flowchart LR
 | Phase | Summary |
 |-------|---------|
 | **E1** | Done |
-| **E2** | ~90% — close-out checklist |
-| **E3–E5** | Not started (backend gate) |
-| **E6–E8** | Not started (FAB + wizards + subtypes) |
-| **E9–E10** | Not started |
+| **E2** | ~95% — automated suite + smoke doc (Others drill-down); manual QA pass open |
+| **E3–E4** | Done (shared plan projection + explore map read path) |
+| **E5** | v1 done — `outingCategory` / `outingTopic` on host create; per-flow Zod split still optional |
+| **E6** | Mostly done — FAB **Rideshare** (`organize:carpool`), catalog tests, wizard seeds from catalog |
+| **E7** | Done (v1) — catalog step parity tests; fulfill demand documented |
+| **E8** | Done (v1) — `subtype` + `outingTopic` URL, pills, map/list filter |
+| **E9** | Mostly done — `DOMAIN`, `NAVIGATION`, `CREATE_FLOW`, registry, `explore-ux-spec` browse pills |
+| **E10** | In progress — automated script + seed QA pins; manual smoke sign-off open |
+| **E11** | Done (v1) — profile saved map, explore save, match notify, `?pin=` deep links |
 
-**Recommended next work:** Finish **E2 close-out**, then **E3 → E4** so browse and future subtype filters share a single contract before **E6** FAB registry.
+**Recommended next work:** Run **`npm run test:explore-alignment`** in CI locally; complete **E2** + **Phase 9** manual rows in [`E10_EXPLORE_QA_GATE.md`](./E10_EXPLORE_QA_GATE.md).

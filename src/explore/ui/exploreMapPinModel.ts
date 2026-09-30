@@ -2,8 +2,15 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { MapPinKind } from '../../components/ui/mapPinTypes';
 import type { ColocatedMapPinEntry, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { resolveMapPinItemSource, resolveMapPinEmoji, type ExploreCardKind } from '../exploreCopy';
-import type { ActivityListFilterKey, MapFilterKey, VenueListFilterKey } from '../routing';
+import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
+import { isBuddyOthersMapItem, matchesBuddyOthersSubtype } from '../exploreBuddySubtype';
+import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
+import { matchesOutingTopicFilter } from '../exploreOutingTopic';
+import type { ActivityListFilterKey, ExploreActivityDatePreset, MapFilterKey, VenueListFilterKey } from '../routing';
 import { mapFilterToVenueListFilter } from '../routing';
+import type { ExplorePinKindFilter } from '../explorePinKindFilter';
+import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
+import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
 export const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueListFilterKey): boolean => {
   if (venueFilter === 'all') return true;
@@ -53,7 +60,12 @@ export const matchesPlacesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFi
 };
 
 /** Buddy up map/list — activities and demand only (no venue catalog). */
-export const matchesBuddyMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKey): boolean => {
+export const matchesBuddyMapFilter = (
+  item: ExploreMapItemDTO,
+  mapFilter: MapFilterKey,
+  othersSubtype: ExploreBuddySubtypeKey = 'all',
+  outingTopic: ExploreOutingTopicKey = 'all'
+): boolean => {
   if (!isBuddyMapItem(item)) return false;
   if (mapFilter === 'all') return true;
   if (mapFilter === 'shops') return false;
@@ -63,14 +75,77 @@ export const matchesBuddyMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFil
   if (mapFilter === 'hiking') return kind === 'hiking';
   if (mapFilter === 'camping') return kind === 'camping';
   if (mapFilter === 'carpool') return kind === 'carpool';
-  if (mapFilter === 'others') return kind === 'event';
+  if (mapFilter === 'others') {
+    if (!isBuddyOthersMapItem(item)) return false;
+    if (!matchesBuddyOthersSubtype(item, othersSubtype)) return false;
+    return matchesOutingTopicFilter(item, outingTopic);
+  }
 
   return false;
 };
 
+export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: ExplorePinKindFilter): boolean => {
+  if (pinKind === 'all') return true;
+  if (pinKind === 'trips') return item.source === 'activity';
+  if (pinKind === 'looking') return item.source === 'demand';
+  if (pinKind === 'places') return isPlacesMapItem(item) && !isShopListItem(item);
+  if (pinKind === 'shops') return isShopListItem(item);
+  return true;
+};
+
+/** Topic chip — same hiking/camping/… axis for hosted trips, demand, and catalog places. */
+export const matchesUnifiedTopicFilter = (
+  item: ExploreMapItemDTO,
+  mapFilter: MapFilterKey,
+  buddySubtype: ExploreBuddySubtypeKey = 'all',
+  outingTopic: ExploreOutingTopicKey = 'all'
+): boolean => {
+  if (mapFilter === 'all') return true;
+  if (isBuddyMapItem(item)) {
+    return matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic);
+  }
+  if (isPlacesMapItem(item) || isShopListItem(item)) {
+    return matchesPlacesMapFilter(item, mapFilter);
+  }
+  return false;
+};
+
+export type UnifiedExploreMapFilterInput = {
+  mapFilter: MapFilterKey;
+  pinKind: ExplorePinKindFilter;
+  buddySubtype?: ExploreBuddySubtypeKey;
+  outingTopic?: ExploreOutingTopicKey;
+  activityDatePreset?: ExploreActivityDatePreset;
+  venueRegions?: string[];
+};
+
+/** Map + unified browse — topic row + pin-kind row (see explore-browse-ia.md). */
+export const matchesUnifiedExploreMapItem = (
+  item: ExploreMapItemDTO,
+  input: UnifiedExploreMapFilterInput
+): boolean => {
+  const buddySubtype = input.buddySubtype ?? 'all';
+  const outingTopic = input.outingTopic ?? 'all';
+  const activityDatePreset = input.activityDatePreset ?? 'anyday';
+  const venueRegions = input.venueRegions ?? [];
+
+  if (!matchesExplorePinKindFilter(item, input.pinKind)) return false;
+  if (!matchesUnifiedTopicFilter(item, input.mapFilter, buddySubtype, outingTopic)) return false;
+
+  if (isBuddyMapItem(item) && !matchesActivityDateFilter(item, activityDatePreset)) {
+    return false;
+  }
+
+  if (isPlacesMapItem(item) && !isShopListItem(item)) {
+    if (!venueItemMatchesRegions(item, venueRegions)) return false;
+  }
+
+  return true;
+};
+
 /**
- * Mixed Activities + Places filter — do not use for browse map/list.
- * @deprecated Use {@link matchesBuddyMapFilter} or {@link matchesPlacesMapFilter}.
+ * Mixed Activities + Places filter — topic only (no pin-kind / date / region).
+ * @deprecated Prefer {@link matchesUnifiedExploreMapItem} on the map.
  */
 export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKey): boolean => {
   if (mapFilter === 'all') return true;

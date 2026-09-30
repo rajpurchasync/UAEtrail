@@ -46,21 +46,24 @@ import { createHostApplicationRecord } from '../lib/host-applications-store.js';
 import { processSignupRewards } from '../services/rewards.js';
 import { acceptGroupInviteByToken, acceptPendingGroupInvitesForEmail } from '../lib/social-groups-store.js';
 import { DEMO_LOGIN_EMAILS, getDemoAccount } from '../lib/demo-accounts.js';
+import { formatDisplayNameFromParts, personNameFieldsSchema } from '../domain/person-name.js';
 
-const registerSchema = z.object({
-  email: z.string().email(),
-  password: z
-    .string()
-    .min(8)
-    .regex(/[A-Z]/, 'Must include at least one uppercase letter')
-    .regex(/[a-z]/, 'Must include at least one lowercase letter')
-    .regex(/[0-9]/, 'Must include at least one number'),
-  displayName: z.string().min(2).max(80),
-  accountType: z.enum(['participant', 'company', 'guide']).default('participant'),
-  organizationName: z.string().min(2).max(120).optional(),
-  referralCode: z.string().min(4).max(12).optional(),
-  groupInviteToken: z.string().min(20).optional()
-});
+const registerSchema = z
+  .object({
+    email: z.string().email(),
+    password: z
+      .string()
+      .min(8)
+      .regex(/[A-Z]/, 'Must include at least one uppercase letter')
+      .regex(/[a-z]/, 'Must include at least one lowercase letter')
+      .regex(/[0-9]/, 'Must include at least one number'),
+    givenName: personNameFieldsSchema.shape.givenName,
+    surname: personNameFieldsSchema.shape.surname,
+    accountType: z.enum(['participant', 'company', 'guide']).default('participant'),
+    organizationName: z.string().min(2).max(120).optional(),
+    referralCode: z.string().min(4).max(12).optional(),
+    groupInviteToken: z.string().min(20).optional(),
+  });
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -251,7 +254,9 @@ export const authRouter = Router();
 
 authRouter.post('/register', validate({ body: registerSchema }), async (req, res, next) => {
   try {
-    const { email, password, displayName, accountType, organizationName, referralCode, groupInviteToken } = req.body as z.infer<typeof registerSchema>;
+    const { email, password, givenName, surname, accountType, organizationName, referralCode, groupInviteToken } =
+      req.body as z.infer<typeof registerSchema>;
+    const displayName = formatDisplayNameFromParts(givenName, surname);
     const existing = await findAuthUserByEmail(email);
 
     if (existing?.emailVerifiedAt) {
@@ -267,7 +272,7 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
         );
       }
 
-      await updateAuthUserProfile(existing._id, { displayName });
+      await updateAuthUserProfile(existing._id, { displayName, givenName, surname });
       const verification = await issueEmailVerificationOtp({
         userId: existing._id,
         email: existing.email,
@@ -296,7 +301,7 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       emailVerifiedAt: null,
       lastActiveAt: null,
       referralCode: userReferralCode,
-      profile: { displayName, phone: null, bio: null, avatarUrl: null }
+      profile: { displayName, givenName, surname, phone: null, bio: null, avatarUrl: null }
     });
 
     if (accountType !== 'participant') {

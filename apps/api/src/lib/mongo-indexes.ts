@@ -228,6 +228,11 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.BUDDY_PAIRS).createIndexes([
       { key: { userIds: 1 } },
       { key: { createdAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.USER_FOLLOWS).createIndexes([
+      { key: { followerId: 1, followingId: 1 }, unique: true },
+      { key: { followingId: 1, createdAt: -1 } },
+      { key: { followerId: 1, createdAt: -1 } }
     ])
   ]);
 };

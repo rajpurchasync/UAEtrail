@@ -106,12 +106,28 @@ describe('access management', () => {
     expect(createGroupRes.status).toBe(201);
     const groupId = createGroupRes.body.data.id;
 
+    const inviteRes = await request(app)
+      .post(`/api/v1/me/groups/${groupId}/invites`)
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({ email: member.email, role: 'buddy' });
+    expect(inviteRes.status).toBe(201);
+
+    const acceptRes = await request(app)
+      .post('/api/v1/me/group-invites/accept')
+      .set('Authorization', `Bearer ${member.accessToken}`)
+      .send({ token: inviteRes.body.data.token });
+    expect(acceptRes.status).toBe(200);
+
     const detailRes = await request(app)
       .get(`/api/v1/me/groups/${groupId}`)
       .set('Authorization', `Bearer ${admin.accessToken}`);
 
     expect(detailRes.status).toBe(200);
-    const membershipId = String(detailRes.body.data.membership.id);
+    const memberMembership = detailRes.body.data.members.find(
+      (item: { userId?: string }) => item.userId === memberUser._id
+    );
+    expect(memberMembership).toBeTruthy();
+    const membershipId = String(memberMembership.id);
 
     const disableRes = await request(app)
       .patch(`/api/v1/me/groups/${groupId}/members/${membershipId}`)

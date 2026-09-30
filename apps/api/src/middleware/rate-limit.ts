@@ -47,6 +47,7 @@ export const createRateLimiters = async (): Promise<RateLimiters> => {
       standardHeaders: true,
       legacyHeaders: false,
       store: store('auth'),
+      skip: () => process.env.NODE_ENV === 'test',
       message: {
         error: {
           code: 'rate_limit_exceeded',

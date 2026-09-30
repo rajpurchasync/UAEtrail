@@ -2,7 +2,7 @@
 
 **Status:** Confirmed (2026-09-27) — 13-step wizard  
 **Catalog:** `src/explore/composeFlowCatalog.ts` → `organize.hiking`  
-**Code:** `compose.ts` → `CreateActivityFlow` + `organizeFlow.ts` + `organizeHikingWizardSteps.tsx` (+ shared audience/participants kits with camping)
+**Code:** `compose.ts` → `CreateOrganizeHikingFlow` · `organizeFlows/hiking.ts` · `organizeHikingWizardSteps.tsx` (+ shared audience/participants kits with camping)
 
 ---
 
@@ -34,7 +34,7 @@ Signed-in **host** (complete host profile / `canPublish`) publishes a **hiking**
 
 Tap **+** on explore → **Organize** → **🥾 Hiking**  
 **URL:** `/explore?compose=organize:hiking`  
-**UI:** Intent sheet closes; **`CreateActivityFlow`** opens with `kind: hiking` (no type picker).
+**UI:** Intent sheet closes; **`CreateOrganizeHikingFlow`** opens (no type picker).
 
 ---
 
@@ -50,13 +50,14 @@ Each step: back chevron, title from `createFlowStepTitle`, **Next** (or map conf
 | 4 | `audience` | **Who can join?** | **Public vs private event** first · if **public**, **approval to join** (Yes — I need to approve / No — they can just come) · private → approval only (link-only) |
 | 5 | `spots` | **Participants** | Capacity · Anyone vs Limited (women only, min age) · pets |
 | 6 | `price` | **Price** | Free / shared / paid |
-| 7 | `destination` | **Where are you going?** | Trail or area from registry or custom name (no difficulty here) |
-| 8 | `difficulty` | **How difficult is the hike?** | Easy / Medium / Hard for **this outing** (prefilled from registry trail when picked) |
-| 9 | `about_trail` | **About the trail** | Description (activity body) |
-| 10 | `meeting_point` | **Meeting point** | Second pin if different from going-from · label · directions |
-| 11 | `join_kit` | **What joiners should bring or know** | Required gear/rules text |
+| 7 | `destination` | **Where are you going?** | Trail from **place registry** or custom name · registry applies difficulty + description via `organizePlaceRegistryDraft` |
+| 8 | `difficulty` | **How difficult is the hike?** | Skipped when registry trail selected (data on venue) |
+| 9 | `about_trail` | **About the trail** | Skipped when registry trail selected |
+| 10 | `meeting_point` | **Meeting point** | Map pin (if different from going-from) · **extra directions** only — no optional label field |
+| 11 | `join_kit` | **What joiners should bring or know** | Optional gear/rules text |
 | 12 | `transportation` | **Transportation** | Sedan vs **4x4 required** (trailhead access) |
-| 13 | `publish` | **Preview and publish** | Summary · optional **Offer carpool** · **Publish** |
+| 13 | `publish` | **Preview and publish** | Summary · **Publish** |
+| *(success)* | — | **Published** | Optional **Offer carpool** · **View on map** |
 
 **Map pins on explore:** Primary pin = going-from (`startLat`/`startLng`); second pin = meeting point when coords differ (`meetingDifferent`).
 
@@ -73,7 +74,7 @@ Each step: back chevron, title from `createFlowStepTitle`, **Next** (or map conf
 | **Validate** | `validateDraftStep('publish', draft)` — both pins, title, trail, about, join kit, price, transportation |
 | **API sequence** | `submitPlace` → `createOrganisationActivity` → `publishOrganisationActivity` |
 | **Payload** | `startLat/Lng` = going-from; `meetingLat/Lng` = meeting point; `meetingDifferent`; `aboutTrail` → description; `joinKit` → requirements; vehicle access in requirements |
-| **Carpool flag** | Optional on publish: spawns / links a **FLOW-04 rideshare** activity (target). Interim: `carPoolEnabled` + host peek link — see FLOW-04 § Linked rides |
+| **Carpool flag** | Optional **after publish** on success sheet (`linkActivityCarpoolOffer`) — not on review step |
 | **Success** | `onPublished(activity)` · compose cleared · map refreshes |
 
 ---

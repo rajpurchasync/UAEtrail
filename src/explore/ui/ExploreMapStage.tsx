@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { List, LocateFixed, Plus } from 'lucide-react';
+import { List, Plus } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
@@ -13,15 +13,18 @@ import type { ExploreCardModel } from '../exploreCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
-import { ExploreGuestJoinBanner } from './ExploreGuestJoinBanner';
 import { ExploreItemSheet } from './ExploreItemSheet';
-import { ExploreMapFilterBar } from './ExploreMapFilterBar';
+import { ExploreMapChromeBar } from './ExploreMapChromeBar';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
 import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-import type { ExploreActivityDatePreset, MapFilterKey } from '../routing';
+import type {
+  ExploreMapFilterPillKey,
+  ExploreSearchScopeCounts,
+  ExploreSearchScopeKey,
+} from '../exploreBrowseTaxonomy';
 
 type ExploreMapTiles = ReturnType<typeof getExploreMapTiles>;
 
@@ -33,19 +36,22 @@ export type ExploreMapStageProps = {
   isDesktop: boolean;
   listOpen: boolean;
   showListPanel: boolean;
-  mapFilter: MapFilterKey;
-  browseFilterKeys?: MapFilterKey[];
-  placesMode?: boolean;
-  onMapFilterChange: (next: MapFilterKey) => void;
-  activityDatePreset: ExploreActivityDatePreset;
-  onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
-  venueRegions?: string[];
-  onVenueRegionsChange?: (regions: string[]) => void;
+  searchQuery?: string;
+  onSearchQueryChange?: (value: string) => void;
+  onSearchCommit?: (scope?: ExploreSearchScopeKey | null) => void;
+  searchScopeCounts?: ExploreSearchScopeCounts;
+  topicPills: readonly ExploreMapFilterPillKey[];
+  onTopicPillToggle: (key: ExploreMapFilterPillKey) => void;
+  onWhosGoing: () => void;
+  whosGoingAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
+  whosGoingExtraCount?: number;
+  whosGoingTotalJoining?: number;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
   mapPins: PlaceMapPin[];
   selectedId: string | null;
+  highlightedExploreItemId?: string | null;
   recenterTo: { lat: number; lng: number } | null;
   exploreMapCenter: { lat: number; lng: number };
   onPinClick: (pin: PlaceMapPin) => void;
@@ -62,7 +68,6 @@ export type ExploreMapStageProps = {
   onAllowMapLocation: () => void;
   onDismissLocationPrompt: () => void;
   onOpenBrowse: () => void;
-  onLocateMe: () => void;
   onPrimaryFab: () => void;
   primaryFabLabel: string;
   selected: ExploreMapItemDTO | null;
@@ -81,25 +86,29 @@ export type ExploreMapStageProps = {
   carpoolLinkLoading?: boolean;
   onCloseMobileBrowse: () => void;
   mobileBrowseSheet: ReactNode;
+  onGuestGatedAction?: () => void;
 };
 
 export const ExploreMapStage = ({
   isDesktop,
   listOpen,
   showListPanel,
-  mapFilter,
-  browseFilterKeys,
-  placesMode = false,
-  onMapFilterChange,
-  activityDatePreset,
-  onActivityDatePresetChange,
-  venueRegions = [],
-  onVenueRegionsChange,
+  searchQuery,
+  onSearchQueryChange,
+  onSearchCommit,
+  searchScopeCounts,
+  topicPills,
+  onTopicPillToggle,
+  onWhosGoing,
+  whosGoingAvatars,
+  whosGoingExtraCount,
+  whosGoingTotalJoining,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
   mapPins,
   selectedId,
+  highlightedExploreItemId = null,
   recenterTo,
   exploreMapCenter,
   onPinClick,
@@ -116,7 +125,6 @@ export const ExploreMapStage = ({
   onAllowMapLocation,
   onDismissLocationPrompt,
   onOpenBrowse,
-  onLocateMe,
   onPrimaryFab,
   primaryFabLabel,
   selected,
@@ -135,7 +143,11 @@ export const ExploreMapStage = ({
   carpoolLinkLoading = false,
   onCloseMobileBrowse,
   mobileBrowseSheet,
-}: ExploreMapStageProps) => (
+  onGuestGatedAction,
+}: ExploreMapStageProps) => {
+  const guestGatedAction = user ? undefined : onGuestGatedAction;
+
+  return (
   <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
     <div className="relative min-h-0 flex-1">
       <div className="absolute inset-0 z-0">
@@ -149,6 +161,7 @@ export const ExploreMapStage = ({
             exploreMode
             showLegend={false}
             selectedExploreItemId={selectedId ?? undefined}
+            highlightedExploreItemId={highlightedExploreItemId ?? undefined}
             tileUrl={exploreMapTiles.tileUrl}
             tileAttribution={MAP_CONFIG.exploreTileAttribution}
             labelTileUrl={exploreMapTiles.labelTileUrl}
@@ -161,23 +174,20 @@ export const ExploreMapStage = ({
         </Suspense>
       </div>
 
-      <ExploreGuestJoinBanner />
-      {!listOpen && !isDesktop ? <ExploreCoachMarks /> : null}
+      {!listOpen && !isDesktop && user ? <ExploreCoachMarks /> : null}
 
-      {(!listOpen || isDesktop) && (
-        <ExploreMapFilterBar
-          mapFilter={mapFilter}
-          onFilterChange={onMapFilterChange}
-          activityDatePreset={activityDatePreset}
-          onActivityDatePresetChange={onActivityDatePresetChange}
-          allowedKeys={browseFilterKeys}
-          filterEmojiContext={placesMode ? 'venue' : 'activity'}
-          showDateFilter={!placesMode}
-          showStateFilter={placesMode}
-          venueRegions={venueRegions}
-          onVenueRegionsChange={onVenueRegionsChange}
-        />
-      )}
+      <ExploreMapChromeBar
+        topicPills={topicPills}
+        onTopicPillToggle={onTopicPillToggle}
+        onWhosGoing={onWhosGoing}
+        whosGoingAvatars={whosGoingAvatars}
+        whosGoingExtraCount={whosGoingExtraCount}
+        whosGoingTotalJoining={whosGoingTotalJoining}
+        searchQuery={searchQuery}
+        onSearchQueryChange={onSearchQueryChange}
+        onSearchCommit={onSearchCommit}
+        searchScopeCounts={searchScopeCounts}
+      />
 
       {user && !listOpen ? (
         <ExploreMapLocationPrompt
@@ -224,24 +234,17 @@ export const ExploreMapStage = ({
 
       {!listOpen ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+0.75rem)] z-[1100] flex items-end justify-between gap-3 px-4 lg:hidden">
-          <button
-            type="button"
-            onClick={onOpenBrowse}
-            className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto inline-flex gap-2 px-4 py-2.5 text-sm font-semibold text-gray-900`}
-          >
-            <List className="h-4 w-4" aria-hidden />
-            List
-          </button>
-          <div className="pointer-events-auto flex flex-col items-center gap-3">
+          <div className="pointer-events-auto flex items-center gap-2">
             <button
               type="button"
-              onClick={onLocateMe}
-              disabled={locatingDevice}
-              className={`${EXPLORE_FLOATING_CONTROL} inline-flex h-11 w-11 items-center justify-center text-emerald-700 disabled:opacity-60`}
-              aria-label="Center map on my location"
+              onClick={onOpenBrowse}
+              className={`${EXPLORE_FLOATING_CONTROL} inline-flex gap-2 px-4 py-2.5 text-sm font-semibold text-gray-900`}
             >
-              <LocateFixed className="h-5 w-5" strokeWidth={2.25} />
+              <List className="h-4 w-4" aria-hidden />
+              List
             </button>
+          </div>
+          <div className="pointer-events-auto flex flex-col items-center gap-3">
             <ExploreMapStyleToggle style={exploreMapStyle} onToggle={onToggleMapStyle} />
             <button
               type="button"
@@ -256,15 +259,6 @@ export const ExploreMapStage = ({
       ) : null}
 
       <div className="pointer-events-none absolute bottom-6 right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-center lg:gap-3">
-        <button
-          type="button"
-          onClick={onLocateMe}
-          disabled={locatingDevice}
-          className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto inline-flex h-11 w-11 items-center justify-center text-emerald-700 disabled:opacity-60`}
-          aria-label="Center map on my location"
-        >
-          <LocateFixed className="h-5 w-5" strokeWidth={2.25} />
-        </button>
         <ExploreMapStyleToggle style={exploreMapStyle} onToggle={onToggleMapStyle} />
         <button
           type="button"
@@ -281,11 +275,13 @@ export const ExploreMapStage = ({
         <ExplorePlaceMapPreview
           item={selected}
           onClose={onCloseSelection}
+          onGuestGatedAction={guestGatedAction}
         />
       ) : selectedCard ? (
         <ExploreItemSheet
           card={selectedCard}
           onClose={onCloseSelection}
+          onGuestGatedAction={guestGatedAction}
           onJoin={onJoin}
           onMessage={onMessage}
           onFulfillIntent={canFulfillParticipantIntent ? onFulfillIntent : undefined}
@@ -307,10 +303,11 @@ export const ExploreMapStage = ({
         zClass={EXPLORE_Z.browseSheet}
         maxWidthClass="lg:max-w-lg"
         showHandle={false}
-        panelClassName={`${EXPLORE_SHEET.browseHeight} px-4 pt-2 lg:px-5 lg:pt-3`}
+        panelClassName={`${EXPLORE_SHEET.browseHeight} px-3 pt-1.5 lg:px-5 lg:pt-3`}
       >
         {mobileBrowseSheet}
       </ExploreResponsiveSheet>
     ) : null}
   </div>
-);
+  );
+};

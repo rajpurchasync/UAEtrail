@@ -82,26 +82,20 @@ Any signed-in member â€” no host approval to post demand.
 
 ---
 
-## Organize â†’ Activity (generic buddy)
+## Organize â†’ Activity (general outdoors)
 
-**Intent:** â€œI want company for something outdoors â€” user names it.â€
+**Intent:** runs, climbs, workshops, social outings â€” fifth **outing category** (`activities`), not hiking/camp/event/rideshare.
 
-**No type sub-picker.** After tapping **Organize â†’ Activity**, go straight to a **generic buddy wizard**:
+**Wizard:** `organize:activity` â†’ **FLOW-05** (step order in `organizeFlows/activities.ts`, UI in `organizeWizard/steps/`):
 
-1. **What do you want to do?** â€” free text (e.g. *Morning jog*, *Sunset run*, *Beach walk*). Placeholder: *Run, jog, trail run â€” whatever gets you outside.*
-2. **When** â€” date + time (or flexible)
-3. **Going from** â€” map pin + label (**required**)
-4. **Do people need my OK to join?** â€” default **Yes** (approval). Optional **No** â†’ open RSVP
-5. **Price** â€” Free Â· Cost shared Â· Paid (same as today)
-6. **Publish** â€” friendly review
+1. **Activity type** â€” chip (run, climb, yoga, social, â€¦) â†’ `outingTopic` on publish
+2. **Title** â†’ **When** â†’ **Where (meeting)** pin early
+3. **Participants** (capacity + limits) â†’ **Who can join?** (public/private + approval vs RSVP)
+4. **Price** â†’ instructions â†’ **Going from** â†’ transportation â†’ **Publish**
 
-**Storage (v1):**
+**Storage (v1):** `activityType: event`, `outingCategory: activities`, `outingTopic` from type chip, `participationMode` default `approval`.
 
-- `activityType`: `event` (general scheduled outing bucket)
-- `title`: userâ€™s free text
-- `participationMode`: default `approval` (see below)
-
-Hiking / Camping / **Event** (marathon, trail run as *event*) remain **separate** organize branches with their own defaults.
+Hiking / Camping / **Event** / **Rideshare** remain **separate** organize branches (see [`FLOW-05`](./experiment/flows/FLOW-05-organize-activities.md)).
 
 ---
 
@@ -111,7 +105,7 @@ Hiking / Camping / **Event** (marathon, trail run as *event*) remain **separate*
 |---|-----------|-------------------------------|
 | **Examples** | Trail run, marathon, group race, outdoor festival | â€œI want to runâ€, â€œneed a jog buddyâ€, casual crew |
 | **Organize entry** | Organize â†’ **Event** | Organize â†’ **Activity** |
-| **Type picker** | Event wizard (title, when, â€¦) | **None** â€” free-text â€œwhatâ€ first |
+| **Type picker** | Event wizard (title, when, â€¦) | **Activity type** chips (run, climb, â€¦) |
 | **Default join** | **Iâ€™m going** (RSVP, no host queue) | **Request to join** (host approves) |
 | **Creator toggle** | Can require approval | Can allow open RSVP |
 
@@ -121,15 +115,15 @@ Both use the same creator question:
 > - **No** â†’ **Iâ€™m going** (engagement; adds to profile Up next)  
 > - **Yes** â†’ **Request to join** â†’ host approves â†’ Up next  
 
-Toggle applies to **all organize kinds** (Hiking, Camping, Event, Activity) â€” defaults differ.
+Toggle applies to **all organize kinds** (Hiking, Camping, Event, Activity) on the **audience** step â€” **Rideshare** is always approval. Defaults differ.
 
 ---
 
 ## Participation model
 
-**Separate from map visibility.** Today `joinMode: open | private` only controls **map vs link-only**. Do not overload it for RSVP vs approval.
+**Separate from map visibility.** `joinMode: open | private` controls **map vs link-only**; do not overload it for RSVP vs approval.
 
-### New field (planned)
+### Field (shipped)
 
 ```ts
 participationMode: 'rsvp' | 'approval'
@@ -149,14 +143,30 @@ participationMode: 'rsvp' | 'approval'
 | Event | `rsvp` |
 | Activity (generic) | `approval` |
 
-### Detail / explore CTAs (when implemented)
+### Detail / explore CTAs
 
 | `participationMode` | Primary CTA | Secondary |
 |---------------------|-------------|-----------|
 | `rsvp` | **Iâ€™m going** | View details |
 | `approval` | **Request to join** | View details |
 
-Update [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) when shipped.
+---
+
+## Fulfill demand (host converts seeking â†’ published plan)
+
+Approved host on a **demand** pin: **Host this** or deep link `?fulfillIntent=demand:{id}` â†’ explore opens **Organize** wizard with draft prefilled from the intent (`useExploreFulfillIntent`, `createDraftFromDemand`). Submit creates a **new** activity; demand row stays until explicitly fulfilled in product lifecycle.
+
+Registry: [`experiment/explore-flow-registry.md`](./experiment/explore-flow-registry.md) Â§ Demand â†’ Organize.
+
+---
+
+## Reorganize a past outing (host)
+
+From **Activities** hub or host console: **Reorganize on map** opens explore with the matching organize wizard prefilled from the prior row (`organizeFromActivity.ts`). **Publish always creates a new activity id** (audit lineage via optional `clonedFromActivityId` on create).
+
+**Duplicate** in the host console still creates a **server draft** for the legacy activity form — same source outing, different UX.
+
+Deep link: `exploreReorganizeActivityPath(activityId, kind)` in `src/explore/routing.ts`.
 
 ---
 
@@ -190,6 +200,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Going from label (organize + find) | âœ… | âœ… |
 | Profile Up next unified feed | âœ… | âœ… |
 | Warm copy pass in wizards | âœ… | âœ… |
+| `outingCategory` / `outingTopic` on organize publish | âœ… | âœ… (host create; map projection + Others browse filters) |
 
 **Current code:** One compose route on `/explore?compose=â€¦` (menu, `organize:hiking`, `find:carpool`, `add:shop`). Legacy `request`, `contribute`, and `addLocation` params are parsed into the same contract. Desktop and mobile share the same URL + wizard components.
 

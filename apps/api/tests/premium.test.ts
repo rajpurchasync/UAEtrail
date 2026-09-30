@@ -36,7 +36,8 @@ beforeAll(async () => {
     .send({
       email,
       password: 'TestPass1',
-      displayName: 'Premium Test',
+      givenName: 'Prem',
+      surname: 'Test',
       accountType: 'participant'
     });
 

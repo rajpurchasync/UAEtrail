@@ -3,12 +3,15 @@ import {
   detailBackPath,
   exploreActivitiesPath,
   exploreOrganizePath,
+  exploreReorganizeActivityPath,
   explorePath,
   explorePlacesPath,
   exploreShopsPath,
   legacyCreateParamToOrganizePath,
   myActivitiesPath,
   parseFulfillIntentMapItemId,
+  exploreSavedPinPath,
+  parseExplorePinMapItemId,
 } from './exploreRouting';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 
@@ -30,6 +33,19 @@ describe('exploreRouting navigation contract', () => {
     expect(exploreActivitiesPath({ list: true })).toBe('/explore?list=1');
   });
 
+  it('encodes outingTopic with others activities drill-down', () => {
+    expect(
+      explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })
+    ).toBe('/explore?filter=others&subtype=activities&outingTopic=climbing');
+    expect(explorePath({ filter: 'others', outingTopic: 'climbing' })).toBe('/explore?filter=others');
+  });
+
+  it('encodes pin deep link for saved map items', () => {
+    expect(exploreSavedPinPath('demand:abc')).toBe('/explore?list=1&pin=demand%3Aabc');
+    const params = new URLSearchParams('pin=venue%3Ax');
+    expect(parseExplorePinMapItemId(params)).toBe('venue:x');
+  });
+
   it('fulfillIntent query param supersedes legacy hostDemand', () => {
     expect(explorePath({ fulfillIntent: 'demand:abc' })).toBe('/explore?fulfillIntent=demand%3Aabc');
     expect(explorePath({ hostDemand: 'demand:legacy' })).toBe('/explore?fulfillIntent=demand%3Alegacy');
@@ -49,11 +65,19 @@ describe('exploreRouting navigation contract', () => {
     expect(exploreOrganizePath()).toBe('/explore?compose=organize');
     expect(exploreOrganizePath('hiking')).toBe('/explore?compose=organize%3Ahiking');
     expect(exploreOrganizePath('activity')).toBe('/explore?compose=organize%3Aactivity');
+    expect(exploreOrganizePath('carpool')).toBe('/explore?compose=organize%3Acarpool');
+  });
+
+  it('exploreReorganizeActivityPath deep-links organize wizard prefill', () => {
+    expect(exploreReorganizeActivityPath('act-uuid', 'event')).toBe(
+      '/explore?compose=organize%3Aevent&organizeFrom=act-uuid'
+    );
   });
 
   it('legacyCreateParamToOrganizePath redirects old activity create URLs', () => {
     expect(legacyCreateParamToOrganizePath('hiking')).toBe('/explore?compose=organize%3Ahiking');
     expect(legacyCreateParamToOrganizePath('EVENT')).toBe('/explore?compose=organize%3Aevent');
+    expect(legacyCreateParamToOrganizePath('carpool')).toBe('/explore?compose=organize%3Acarpool');
     expect(legacyCreateParamToOrganizePath(null)).toBeNull();
   });
 });

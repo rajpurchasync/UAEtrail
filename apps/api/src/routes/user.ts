@@ -3,6 +3,7 @@ import { getVapidPublicKey } from '../lib/push.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { registerAccountLifecycleRoutes } from './user/registerAccountLifecycleRoutes.js';
 import { registerBuddyRoutes } from './user/registerBuddyRoutes.js';
+import { registerFollowRoutes } from './user/registerFollowRoutes.js';
 import { registerGroupRoutes } from './user/registerGroupRoutes.js';
 import { registerHostApplicationRoutes } from './user/registerHostApplicationRoutes.js';
 import {
@@ -40,6 +41,7 @@ registerMeActivityParticipationRoutes(userRouter);
 registerProfileRoutes(userRouter);
 registerNotificationRoutes(userRouter);
 registerBuddyRoutes(userRouter);
+registerFollowRoutes(userRouter);
 registerGroupRoutes(userRouter);
 registerHostApplicationRoutes(userRouter);
 

@@ -1,8 +1,8 @@
 # FLOW-04 — Organize · Rideshare (`organize.rideshare`)
 
-**Status:** Confirmed (2026-09-27)  
+**Status:** Implemented — FAB `compose=organize:carpool` · catalog `organize.rideshare` (2026-09-30)  
 **Catalog:** `src/explore/composeFlowCatalog.ts` → `organize.rideshare`  
-**Code:** `CreateActivityFlow` + `organizeFlow.ts` + `organizeRideshareWizardSteps.tsx`
+**Code:** `createOrganize/CreateOrganizeFlowHost.tsx` · `organizeFlows/rideshare.ts` · `organizeWizard/steps/*` · bodies `organizeRideshareWizardSteps.tsx` · shell `CreateActivityFlow.tsx`
 
 ---
 

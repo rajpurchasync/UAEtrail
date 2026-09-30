@@ -8,10 +8,15 @@ type MongoFavorite = {
   userId: string;
   locationId: string | null;
   activityId: string | null;
+  participantIntentId: string | null;
   productId: string | null;
   merchantId: string | null;
   tenantId: string | null;
   profileUserId: string | null;
+  alertOnMatch?: boolean;
+  watchOutingCategory?: string | null;
+  watchLatitude?: number | null;
+  watchLongitude?: number | null;
   createdAt: Date;
 };
 
@@ -49,16 +54,22 @@ export type FavoriteRecord = {
   userId: string;
   locationId: string | null;
   activityId: string | null;
+  participantIntentId: string | null;
   productId: string | null;
   merchantId: string | null;
   tenantId: string | null;
   profileUserId: string | null;
+  alertOnMatch: boolean;
+  watchOutingCategory: string | null;
+  watchLatitude: number | null;
+  watchLongitude: number | null;
   createdAt: Date;
 };
 
 export type FavoriteWithDetails = FavoriteRecord & {
   location: { id: string; name: string; images: string[] } | null;
   activity: { id: string; title: string; locationName: string | null } | null;
+  participantIntent: { id: string; title: string } | null;
   merchant: { id: string; shopName: string; logo: string | null } | null;
   tenant: { id: string; name: string; slug: string; logoUrl: string | null } | null;
   profile: { id: string; displayName: string; avatarUrl: string | null } | null;
@@ -102,10 +113,15 @@ const mapFavorite = (doc: MongoFavorite): FavoriteRecord => ({
   userId: doc.userId,
   locationId: doc.locationId,
   activityId: doc.activityId,
+  participantIntentId: doc.participantIntentId ?? null,
   productId: doc.productId,
   merchantId: doc.merchantId ?? null,
   tenantId: doc.tenantId ?? null,
   profileUserId: doc.profileUserId ?? null,
+  alertOnMatch: doc.alertOnMatch !== false,
+  watchOutingCategory: doc.watchOutingCategory ?? null,
+  watchLatitude: doc.watchLatitude ?? null,
+  watchLongitude: doc.watchLongitude ?? null,
   createdAt: doc.createdAt
 });
 
@@ -113,6 +129,7 @@ const buildFavoriteSelector = (input: {
   userId: string;
   locationId?: string;
   activityId?: string;
+  participantIntentId?: string;
   productId?: string;
   merchantId?: string;
   tenantId?: string;
@@ -120,6 +137,9 @@ const buildFavoriteSelector = (input: {
 }): Record<string, string> | null => {
   if (input.locationId) return { userId: input.userId, locationId: input.locationId };
   if (input.activityId) return { userId: input.userId, activityId: input.activityId };
+  if (input.participantIntentId) {
+    return { userId: input.userId, participantIntentId: input.participantIntentId };
+  }
   if (input.productId) return { userId: input.userId, productId: input.productId };
   if (input.merchantId) return { userId: input.userId, merchantId: input.merchantId };
   if (input.tenantId) return { userId: input.userId, tenantId: input.tenantId };
@@ -136,10 +156,15 @@ export const createUserFavorite = async (input: {
   userId: string;
   locationId?: string;
   activityId?: string;
+  participantIntentId?: string;
   productId?: string;
   merchantId?: string;
   tenantId?: string;
   profileUserId?: string;
+  alertOnMatch?: boolean;
+  watchOutingCategory?: string | null;
+  watchLatitude?: number | null;
+  watchLongitude?: number | null;
 }): Promise<FavoriteRecord> => {
   const selector = buildFavoriteSelector(input);
 
@@ -157,10 +182,15 @@ export const createUserFavorite = async (input: {
     userId: input.userId,
     locationId: input.locationId ?? null,
     activityId: input.activityId ?? null,
+    participantIntentId: input.participantIntentId ?? null,
     productId: input.productId ?? null,
     merchantId: input.merchantId ?? null,
     tenantId: input.tenantId ?? null,
     profileUserId: input.profileUserId ?? null,
+    alertOnMatch: input.alertOnMatch !== false,
+    watchOutingCategory: input.watchOutingCategory ?? null,
+    watchLatitude: input.watchLatitude ?? null,
+    watchLongitude: input.watchLongitude ?? null,
     createdAt: new Date()
   };
   await favoritesCollection().insertOne(doc);
@@ -171,10 +201,30 @@ export const deleteUserFavoriteById = async (input: { id: string; userId: string
   await favoritesCollection().deleteMany({ _id: input.id, userId: input.userId });
 };
 
+export const updateUserFavorite = async (input: {
+  id: string;
+  userId: string;
+  alertOnMatch?: boolean;
+}): Promise<FavoriteRecord | null> => {
+  const patch: Partial<MongoFavorite> = {};
+  if (input.alertOnMatch !== undefined) patch.alertOnMatch = input.alertOnMatch;
+  if (Object.keys(patch).length === 0) {
+    const existing = await favoritesCollection().findOne({ _id: input.id, userId: input.userId });
+    return existing ? mapFavorite(existing) : null;
+  }
+  const result = await favoritesCollection().findOneAndUpdate(
+    { _id: input.id, userId: input.userId },
+    { $set: patch },
+    { returnDocument: 'after' }
+  );
+  return result ? mapFavorite(result) : null;
+};
+
 export const findUserFavorite = async (input: {
   userId: string;
   locationId?: string;
   activityId?: string;
+  participantIntentId?: string;
   productId?: string;
   merchantId?: string;
   tenantId?: string;
@@ -183,6 +233,7 @@ export const findUserFavorite = async (input: {
   if (
     !input.locationId &&
     !input.activityId &&
+    !input.participantIntentId &&
     !input.productId &&
     !input.merchantId &&
     !input.tenantId &&
@@ -206,17 +257,29 @@ export const listUserFavoritesWithDetails = async (userId: string): Promise<Favo
 
   const locationIds = [...new Set(favorites.map((f) => f.locationId).filter((id): id is string => Boolean(id)))];
   const activityIds = [...new Set(favorites.map((f) => f.activityId).filter((id): id is string => Boolean(id)))];
+  const participantIntentIds = [
+    ...new Set(favorites.map((f) => f.participantIntentId).filter((id): id is string => Boolean(id))),
+  ];
   const productIds = [...new Set(favorites.map((f) => f.productId).filter((id): id is string => Boolean(id)))];
   const merchantIds = [...new Set(favorites.map((f) => f.merchantId).filter((id): id is string => Boolean(id)))];
   const tenantIds = [...new Set(favorites.map((f) => f.tenantId).filter((id): id is string => Boolean(id)))];
   const profileUserIds = [...new Set(favorites.map((f) => f.profileUserId).filter((id): id is string => Boolean(id)))];
 
-  const [locationDocs, activityDocs, productDocs, merchantDocs, tenantDocs, profileDocs] = await Promise.all([
+  const participantIntentsCollection = () =>
+    getMongoClient()!.db().collection<{ _id: string; title: string }>('participant_intents');
+
+  const [locationDocs, activityDocs, intentDocs, productDocs, merchantDocs, tenantDocs, profileDocs] =
+    await Promise.all([
     locationIds.length > 0
       ? locationsCollection().find({ _id: { $in: locationIds } }, { projection: { name: 1, images: 1 } }).toArray()
       : Promise.resolve([]),
     activityIds.length > 0
       ? activitiesCollection().find({ _id: { $in: activityIds } }, { projection: { title: 1, locationId: 1 } }).toArray()
+      : Promise.resolve([]),
+    participantIntentIds.length > 0
+      ? participantIntentsCollection()
+          .find({ _id: { $in: participantIntentIds } }, { projection: { title: 1 } })
+          .toArray()
       : Promise.resolve([]),
     productIds.length > 0
       ? productsCollection()
@@ -248,6 +311,7 @@ export const listUserFavoritesWithDetails = async (userId: string): Promise<Favo
       : [];
   const activityLocationMap = new Map(activityLocationDocs.map((location) => [location._id, location.name]));
   const activityMap = new Map(activityDocs.map((activity) => [activity._id, activity]));
+  const intentMap = new Map(intentDocs.map((intent) => [intent._id, intent]));
   const productMap = new Map(productDocs.map((product) => [product._id, product]));
   const savedMerchantMap = new Map(merchantDocs.map((merchant) => [merchant._id, merchant]));
   const tenantMap = new Map(tenantDocs.map((tenant) => [tenant._id, tenant]));
@@ -279,6 +343,12 @@ export const listUserFavoritesWithDetails = async (userId: string): Promise<Favo
                 locationName: activityLocationMap.get(activity.locationId) ?? null
               }
             : null;
+        })()
+      : null,
+    participantIntent: favorite.participantIntentId
+      ? (() => {
+          const intent = intentMap.get(favorite.participantIntentId!);
+          return intent ? { id: intent._id, title: intent.title } : null;
         })()
       : null,
     merchant: favorite.merchantId
@@ -336,4 +406,23 @@ export const listUserFavoritesWithDetails = async (userId: string): Promise<Favo
 
 export const deleteUserFavoritesByUser = async (userId: string): Promise<void> => {
   await favoritesCollection().deleteMany({ userId });
+};
+
+/** Favorites that opted into geographic/category wishlist alerts. */
+export const listWishlistWatchCandidates = async () => {
+  const rows = await favoritesCollection()
+    .find({
+      alertOnMatch: { $ne: false },
+      watchOutingCategory: { $exists: true, $ne: null },
+    })
+    .toArray();
+
+  return rows.map((doc) => ({
+    userId: doc.userId,
+    favoriteId: doc._id,
+    alertOnMatch: doc.alertOnMatch !== false,
+    watchOutingCategory: doc.watchOutingCategory as import('@uaetrail/shared-types').OutingCategory | null,
+    watchLatitude: doc.watchLatitude ?? null,
+    watchLongitude: doc.watchLongitude ?? null,
+  }));
 };

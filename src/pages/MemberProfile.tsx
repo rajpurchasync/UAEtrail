@@ -131,6 +131,21 @@ export const MemberProfile = () => {
     }
   };
 
+  const handleCancelBuddyRequest = async () => {
+    if (!buddyRel?.outgoingRequest || buddyBusy) return;
+    setBuddyBusy(true);
+    setBuddyMessage(null);
+    try {
+      await api.cancelBuddyRequest(buddyRel.outgoingRequest.id);
+      setBuddyMessage('Buddy request cancelled.');
+      loadBuddyRelationship();
+    } catch (err) {
+      setBuddyMessage(err instanceof Error ? err.message : 'Could not cancel request.');
+    } finally {
+      setBuddyBusy(false);
+    }
+  };
+
   const fullProfile = profile && isFullProfile(profile) ? profile : null;
 
   const stamps = fullProfile
@@ -203,9 +218,11 @@ export const MemberProfile = () => {
           buddyRel={buddyRel}
           buddyBusy={buddyBusy}
           buddyMessage={buddyMessage}
+          onBuddyMessage={setBuddyMessage}
           onSendBuddyRequest={() => void handleSendBuddyRequest()}
           onAcceptBuddyRequest={() => void handleAcceptBuddyRequest()}
           onDeclineBuddyRequest={() => void handleDeclineBuddyRequest()}
+          onCancelBuddyRequest={() => void handleCancelBuddyRequest()}
           onMessage={() => navigate(messagesRouteForRole(user!.role, fullProfile.id))}
           hostedActivities={hostedActivities}
         />

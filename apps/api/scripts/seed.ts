@@ -59,6 +59,7 @@ import {
   type GroupWallReactionKind,
 } from '../src/lib/social-groups-store.js';
 import { ensureActivityGroupChat } from '../src/services/activity-group-chat.js';
+import { logConnectionsDemoPlaybook, seedConnectionsDemo } from './seedConnectionsDemo.js';
 
 const seedChatThread = async (
   messages: Array<{
@@ -924,6 +925,36 @@ const isMobileInboxSeedEnabled = (): boolean => {
   return value === 'true' || value === '1' || value === 'yes';
 };
 
+const isSeedConnectionsEnabled = (): boolean => {
+  const value = String(process.env.SEED_CONNECTIONS ?? '').trim().toLowerCase();
+  return value === 'true' || value === '1' || value === 'yes';
+};
+
+const runConnectionsDemoSeed = async (): Promise<boolean> => {
+  const participant = await findAuthUserByEmail('visitor@uaetrails.app');
+  const visitor2 = await findAuthUserByEmail('visitor2@uaetrails.app');
+  const guide = await findAuthUserByEmail('guide@uaetrails.app');
+  const host = await findAuthUserByEmail('host@uaetrails.app');
+  const organizer = await findAuthUserByEmail('organizer@uaetrails.app');
+  const shop = await findAuthUserByEmail('shop@uaetrails.app');
+
+  if (!participant || !visitor2 || !guide || !host || !organizer || !shop) {
+    console.warn('[seed] SEED_CONNECTIONS skipped — run full seed first (missing demo users)');
+    return false;
+  }
+
+  await seedConnectionsDemo({
+    visitorId: participant._id,
+    visitor2Id: visitor2._id,
+    guideId: guide._id,
+    hostId: host._id,
+    organizerId: organizer._id,
+    shopOwnerId: shop._id,
+  });
+  logConnectionsDemoPlaybook();
+  return true;
+};
+
 const runMobileInboxDemoSeed = async (): Promise<boolean> => {
   const participant = await findAuthUserByEmail('visitor@uaetrails.app');
   const agencyOwner = await findAuthUserByEmail('organizer@uaetrails.app');
@@ -1006,6 +1037,9 @@ async function main() {
   if (!(await shouldRunSeed())) {
     if (isMobileInboxSeedEnabled()) {
       await runMobileInboxDemoSeed();
+    }
+    if (isSeedConnectionsEnabled()) {
+      await runConnectionsDemoSeed();
     }
     return;
   }
@@ -1331,7 +1365,13 @@ Your unlock includes access to our guide support line during your hike window (s
         longitude: 56.12,
         highlights: ['Natural pools', 'Canyon views', 'Family friendly', 'Dam viewpoint'],
         surfaceType: ['sand', 'rocky'],
-        tags: ['wadi', 'family', 'pools'],
+        tags: [
+          'wadi',
+          'family',
+          'pools',
+          'facility:Toilet at dam car park',
+          'nearby:Fuel & shop ~10 km toward Kalba (plan a stop)',
+        ],
         accessibleBy: ['car', '4x4'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Wadi+Shawka+Dam',
         gpxKey: 'locations/wadi-shawka-loop.gpx',
@@ -1520,7 +1560,8 @@ Share your live location and carry extra water in summer months.`
     status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     itinerary: ['Meet at 6:00 AM', 'Summit climb', 'Return by noon'],
-    requirements: ['Water 2L', 'Hiking shoes', 'Cap and sunscreen']
+    requirements: ['Water 2L', 'Hiking shoes', 'Cap and sunscreen'],
+    outingCategory: 'hiking',
   });
 
   const start2 = new Date();
@@ -1551,7 +1592,8 @@ Share your live location and carry extra water in summer months.`
       'Stargazing session',
       'Sunrise photography'
     ],
-    requirements: ['Sleeping bag', 'Warm jacket', 'Camera (optional)', 'Water 3L']
+    requirements: ['Sleeping bag', 'Warm jacket', 'Camera (optional)', 'Water 3L'],
+    outingCategory: 'camping',
   });
 
   const freeHikeStart = new Date();
@@ -1577,7 +1619,8 @@ Share your live location and carry extra water in summer months.`
     status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     itinerary: ['Meet at 7:00 AM', 'Loop trail through the wadi', 'Return by 11:00 AM'],
-    requirements: ['Water 1.5L', 'Trail shoes', 'Sun protection']
+    requirements: ['Water 1.5L', 'Trail shoes', 'Sun protection'],
+    outingCategory: 'hiking',
   });
 
   const freeCampStart = new Date();
@@ -1608,7 +1651,9 @@ Share your live location and carry extra water in summer months.`
       'Campfire & stargazing intro',
       'Wrap up by 9 PM'
     ],
-    requirements: ['Chair or mat', 'Warm layer', 'Snacks & water']
+    requirements: ['Chair or mat', 'Warm layer', 'Snacks & water'],
+    outingCategory: 'events',
+    participationMode: 'rsvp',
   });
 
   const eventRunStart = new Date();
@@ -1633,7 +1678,9 @@ Share your live location and carry extra water in summer months.`
     status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     itinerary: ['Warm-up 6:30 AM', '5K out-and-back', 'Stretch & coffee'],
-    requirements: ['Running shoes', 'Water bottle', 'High-vis top']
+    requirements: ['Running shoes', 'Water bottle', 'High-vis top'],
+    outingCategory: 'events',
+    participationMode: 'rsvp',
   });
 
   const carpoolStart = new Date();
@@ -1664,7 +1711,36 @@ Share your live location and carry extra water in summer months.`
     status: ActivityStatus.PUBLISHED,
     publishedAt: new Date(),
     itinerary: ['Depart Marina 5:00 AM', 'Arrive Jebel Jais ~7:00 AM'],
-    requirements: ['Be on time', 'Share fuel cost at pickup', 'Max 1 bag per seat']
+    requirements: ['Be on time', 'Share fuel cost at pickup', 'Max 1 bag per seat'],
+    outingCategory: 'rideshare',
+  });
+
+  const boulderStart = new Date();
+  boulderStart.setDate(boulderStart.getDate() + 9);
+  boulderStart.setHours(17, 0, 0, 0);
+
+  await upsertEvent('seed-event-boulder-session', {
+    tenant: { connect: { id: agencyTenant.id } },
+    location: { connect: { id: 'hatta-dam-loop' } },
+    createdBy: { connect: { id: agencyOwner._id } },
+    host: { connect: { id: agencyGuide._id } },
+    activityType: ActivityType.EVENT,
+    outingCategory: 'activities',
+    outingTopic: 'climbing',
+    title: 'Evening boulder session (Hatta)',
+    description: 'Outdoor bouldering meetup — all levels welcome; crash pads shared.',
+    startAt: boulderStart,
+    meetingPoint: 'Hatta Wadi Hub parking',
+    meetingLat: 24.82,
+    meetingLng: 56.13,
+    priceAed: 0,
+    capacity: 10,
+    featured: true,
+    status: ActivityStatus.PUBLISHED,
+    publishedAt: new Date(),
+    itinerary: ['Meet 5 PM', 'Warm-up problems', 'Wrap by 8 PM'],
+    requirements: ['Activity type: Climb', 'Climbing shoes', 'Water'],
+    participationMode: 'approval',
   });
 
   await seedParticipant(event._id, participant._id, agencyOwner._id);
@@ -1879,6 +1955,16 @@ Share your live location and carry extra water in summer months.`
     shawkaActivityId: 'seed-event-shawka-free',
   });
 
+  await seedConnectionsDemo({
+    visitorId: participant._id,
+    visitor2Id: pendingParticipant._id,
+    guideId: agencyGuide._id,
+    hostId: individualHost._id,
+    organizerId: agencyOwner._id,
+    shopOwnerId: shopOwner._id,
+  });
+  logConnectionsDemoPlaybook();
+
   const participantRecord = await db().collection('activity_participants').findOne({
     activityId: event._id,
     userId: participant._id
@@ -2056,6 +2142,7 @@ Share your live location and carry extra water in summer months.`
   console.log(
     'Inbox demo (visitor@): DMs with Fatima, Omar, Khalid; friends group + reactions; Jebel Jais outing chat + reactions'
   );
+  console.log('Connections demo: see playbook above (buddies / pending / follow notifications)');
 }
 
 main()

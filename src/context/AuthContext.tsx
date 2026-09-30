@@ -18,7 +18,8 @@ interface AuthContextValue {
   register: (payload: {
     email: string;
     password: string;
-    displayName: string;
+    givenName: string;
+    surname: string;
     accountType: 'participant' | 'company' | 'guide';
     hostName?: string;
     referralCode?: string;
@@ -208,7 +209,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async ({
     email,
     password,
-    displayName,
+    givenName,
+    surname,
     accountType,
     hostName,
     referralCode,
@@ -216,7 +218,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }: {
     email: string;
     password: string;
-    displayName: string;
+    givenName: string;
+    surname: string;
     accountType: 'participant' | 'company' | 'guide';
     /** Display name for agency/shop host profile at signup. Wire: `organizationName`. */
     hostName?: string;
@@ -235,7 +238,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({
           email,
           password,
-          displayName,
+          givenName,
+          surname,
           accountType,
           organizationName: hostName,
           referralCode,

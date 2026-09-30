@@ -7,6 +7,7 @@ import { PullToRefresh } from '../mobile/PullToRefresh';
 import { ProfileAccountSettingsSections } from './ProfileAccountSettingsSections';
 import { ProfileMemberDetailsCard } from './ProfileMemberDetailsCard';
 import { ProfileMapPresenceSection } from './ProfileMapPresenceSection';
+import { ProfileWishlistSettingsLink } from './ProfileWishlistSettingsLink';
 
 interface ProfileSettingsViewProps {
   onSignOut: () => void;
@@ -49,6 +50,8 @@ export const ProfileSettingsView = ({ onSignOut }: ProfileSettingsViewProps) => 
           ) : null}
 
           <ProfileMapPresenceSection />
+
+          <ProfileWishlistSettingsLink />
 
           <ProfileAccountSettingsSections
             email={user?.email ?? ''}

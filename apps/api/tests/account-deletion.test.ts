@@ -22,7 +22,8 @@ describe('account deletion', () => {
       .send({
         email,
         password,
-        displayName: 'Delete Test User',
+        givenName: 'Delete',
+        surname: 'Tester',
         accountType: 'participant'
       });
 
@@ -81,7 +82,8 @@ describe('data export', () => {
       .send({
         email,
         password,
-        displayName: 'Export Test User',
+        givenName: 'Export',
+        surname: 'Tester',
         accountType: 'participant'
       });
 
@@ -115,7 +117,8 @@ describe('content reports', () => {
       .send({
         email,
         password,
-        displayName: 'Report Test User',
+        givenName: 'Report',
+        surname: 'Tester',
         accountType: 'participant'
       });
 

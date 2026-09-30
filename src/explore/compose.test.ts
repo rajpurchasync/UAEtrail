@@ -12,6 +12,7 @@ describe('explore compose routing', () => {
     expect(formatComposeQuery({ surface: 'menu' })).toBe('1');
     expect(formatComposeQuery({ surface: 'menu', intent: 'organize' })).toBe('organize');
     expect(formatComposeQuery({ intent: 'organize', kind: 'hiking' })).toBe('organize:hiking');
+    expect(formatComposeQuery({ intent: 'organize', kind: 'carpool' })).toBe('organize:carpool');
     expect(formatComposeQuery({ intent: 'find', kind: 'carpool' })).toBe('find:carpool');
     expect(formatComposeQuery({ intent: 'find' })).toBe('find');
     expect(formatComposeQuery({ intent: 'add', kind: 'shop' })).toBe('add:shop');

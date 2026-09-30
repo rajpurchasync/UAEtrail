@@ -41,3 +41,7 @@ Gate query invalidation after profile save is implemented in `ProfileMemberDetai
 ## Related: E2 explore browse
 
 Places vs Activities separation: [`E2_EXPLORE_BROWSE_SMOKE.md`](./E2_EXPLORE_BROWSE_SMOKE.md) (API: `explore-map-layers` tests).
+
+## E10 gate
+
+Automated + manual bundle: [`E10_EXPLORE_QA_GATE.md`](./E10_EXPLORE_QA_GATE.md) · `npm run test:explore-alignment`.

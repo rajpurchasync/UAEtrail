@@ -7,7 +7,6 @@ import {
   type MapFilterKey,
   type VenueListFilterKey,
 } from '../routing';
-
 export type DesktopBrowseTab = 'activities' | 'venues';
 
 export const ACTIVITY_LIST_FILTERS: Array<{ key: ActivityListFilterKey; label: string }> = [

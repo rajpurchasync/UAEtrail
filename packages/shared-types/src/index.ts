@@ -2,6 +2,11 @@ import type { ExploreCardPresentationDTO } from './explore-presentation.js';
 import type { ExploreMapPersonDTO } from './explore-person.js';
 import type { ActivityJoinMode } from './activity-join-mode.js';
 import type { ParticipationMode } from './activity-participation-mode.js';
+import type {
+  ExplorePlanComposeIntent,
+  OutingCategory,
+  OutingTopic,
+} from './explore-plan-projection.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -33,10 +38,15 @@ export interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+/**
+ * **Place** — single map/catalog entity (`locations` collection).
+ * Typed by {@link PlaceKind}; wire field `activityType` is legacy for hiking/camping/event rows.
+ */
 export interface LocationDTO {
   id: string;
   name: string;
   region: string;
+  /** @deprecated Prefer {@link PlaceKind} in new code — persisted as `activityType` on Mongo today. */
   activityType: ActivityType;
   description: string;
   difficulty?: 'easy' | 'moderate' | 'hard';
@@ -200,6 +210,9 @@ export interface ActivityDTO {
   /** Canonical map pin — resolved at mapper time from meeting/start/parking/venue. */
   displayLatitude?: number | null;
   displayLongitude?: number | null;
+  /** Browse/match family when distinct from legacy `activityType` (e.g. generic activity wizard). */
+  outingCategory?: OutingCategory | null;
+  outingTopic?: OutingTopic | null;
 }
 
 
@@ -254,6 +267,8 @@ export type {
   BuddySummaryDTO,
   BuddyUserPreviewDTO,
 } from './buddy-connection.js';
+
+export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
 
 export type HostApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
@@ -458,12 +473,20 @@ export interface FavoriteDTO {
   id: string;
   locationId?: string | null;
   activityId?: string | null;
+  participantIntentId?: string | null;
+  alertOnMatch?: boolean;
+  watchOutingCategory?: OutingCategory | null;
+  watchLatitude?: number | null;
+  watchLongitude?: number | null;
   productId?: string | null;
   merchantId?: string | null;
   tenantId?: string | null;
   profileUserId?: string | null;
   location?: { id: string; name: string; images: string[] } | null;
+  /** @deprecated Prefer `activity` — API returns `activity`. */
   event?: { id: string; title: string; locationName: string | null } | null;
+  activity?: { id: string; title: string; locationName: string | null } | null;
+  participantIntent?: { id: string; title: string } | null;
   merchant?: { id: string; shopName: string; logo?: string | null } | null;
   tenant?: { id: string; name: string; logoUrl?: string | null; slug?: string | null } | null;
   profile?: { id: string; displayName: string; avatarUrl?: string | null } | null;
@@ -619,6 +642,14 @@ export interface ExploreMapItemDTO {
   tenantId?: string | null;
   /** Gear shop map presence — physical stores get pins; online partners are list-only. */
   shopPresence?: ShopPresence | null;
+  /** Plan browse projection (organize vs demand). Null for venue/shop catalog rows. */
+  composeIntent?: ExplorePlanComposeIntent | null;
+  /** Buddy/activities browse family. Null for venue/shop. */
+  outingCategory?: OutingCategory | null;
+  /** Optional subtype within `outingCategory` (derive-on-read until E5 persistence). */
+  outingTopic?: OutingTopic | null;
+  /** Join mode for published organize plans only. */
+  participationMode?: ParticipationMode | null;
 }
 
 export interface ProductClick {
@@ -957,6 +988,25 @@ export {
 } from './explore-presentation.js';
 
 export {
+  activityOrganizeTopicToOutingTopic,
+  activityTypeToOutingCategory,
+  buildExploreMapPlanProjection,
+  deriveOutingTopicFromRequirements,
+  exploreMapKindToPlanMapKind,
+  exploreMapSourceToComposeIntent,
+  participantIntentKindToOutingCategory,
+  resolveActivityOutingTopic,
+  type ExploreMapKindForPlan,
+  type ExploreMapPlanActivityKind,
+  type ExploreMapPlanProjection,
+  type ExploreMapPlanSource,
+  type ExplorePlanComposeIntent,
+  type OutingCategory,
+  type OutingTopic,
+  type ParticipantIntentKindForPlan,
+} from './explore-plan-projection.js';
+
+export {
   VENUE_NAME_AR_TAG_PREFIX,
   VENUE_NAME_EN_TAG_PREFIX,
   readVenueArabicNameFromTags,
@@ -1043,3 +1093,19 @@ export {
   type PlaceVenueKind,
   type ResolveEntityPathOptions,
 } from './entity-path.js';
+
+export {
+  PLACE_KINDS,
+  PLACE_KIND_LABELS,
+  PLACE_STORAGE_COLLECTION,
+  isLocationActivityTypeWire,
+  isPlaceKind,
+  locationActivityTypeForPlaceKind,
+  placeDetailRouteKindFromPlaceKind,
+  placeKindFromContributeVenueKind,
+  placeKindFromLocationRow,
+  tagsForPlaceKind,
+  type LocationActivityTypeWire,
+  type PlaceDetailRouteKind,
+  type PlaceKind,
+} from './place-kind.js';

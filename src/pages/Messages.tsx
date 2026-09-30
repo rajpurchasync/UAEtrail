@@ -6,6 +6,7 @@ import type { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types
 import { api } from '../api/index';
 import type { SocialGroupView } from '../api/index';
 import { useAuth } from '../context/AuthContext';
+import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { MessagesInboxList } from '../components/messages/MessagesInboxList';
@@ -44,6 +45,27 @@ const formatTime = (dateStr: string) => {
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return d.toLocaleDateString([], { weekday: 'short' });
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+};
+
+export const MessagesGate = () => {
+  const { user, initializing } = useAuth();
+  if (initializing) {
+    return (
+      <div className="flex min-h-[40dvh] items-center justify-center pb-bottom-nav-safe">
+        <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-emerald-600" />
+      </div>
+    );
+  }
+  if (!user) {
+    return (
+      <GuestTabPlaceholder
+        title="Messages"
+        description="Sign in to chat with hosts and your crew."
+        intent="peek-details"
+      />
+    );
+  }
+  return <Messages />;
 };
 
 export const Messages = () => {

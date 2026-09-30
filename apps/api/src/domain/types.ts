@@ -3,6 +3,7 @@
  * Use instead of `@prisma/client` model types in store layers.
  */
 
+import type { OutingCategory, OutingTopic } from '@uaetrail/shared-types';
 import type {
   Accessibility,
   ActivityType,
@@ -219,6 +220,8 @@ export interface Activity {
   status: ActivityStatus;
   featured: boolean;
   publishedAt: Date | null;
+  outingCategory?: OutingCategory | null;
+  outingTopic?: OutingTopic | null;
   createdAt: Date;
   updatedAt: Date;
 }

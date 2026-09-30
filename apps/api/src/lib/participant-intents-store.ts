@@ -1,6 +1,11 @@
 import { randomUUID } from 'crypto';
 import type { ExploreMapItemDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { buildExploreFeaturedPerson, demandFallbackTitle } from '@uaetrail/shared-types';
+import {
+  buildExploreFeaturedPerson,
+  buildExploreMapPlanProjection,
+  exploreMapKindToPlanMapKind,
+  demandFallbackTitle,
+} from '@uaetrail/shared-types';
 import { ObjectId, type Filter } from 'mongodb';
 import type { CreateParticipantIntentInput, ParticipantIntentKind } from '../domain/participant-intent.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
@@ -116,6 +121,14 @@ export const createParticipantIntent = async (
 
   await collection().insertOne(doc);
   await invalidateExploreMapCache();
+  const { notifyWishlistForNewDemand } = await import('../services/wishlist-alerts.js');
+  void notifyWishlistForNewDemand(doc._id, userId);
+  const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
+  void notifyMemberPublishSubscribers(userId, {
+    publishType: 'demand',
+    intentId: doc._id,
+    title: input.title.trim(),
+  });
   const user = await findAuthUserById(userId);
   return mapDto(doc, user);
 };
@@ -197,10 +210,16 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
       const user = userMap.get(doc.userId);
       const route = buildDemandRouteLabels(doc);
       const planTitle = resolveStoredDemandTitle(doc);
+      const mapKind = mapExploreKind(doc.kind);
       return {
         id: `demand:${doc._id}`,
-        kind: mapExploreKind(doc.kind),
+        kind: mapKind,
         source: 'demand' as const,
+        ...buildExploreMapPlanProjection({
+          source: 'demand',
+          mapKind: exploreMapKindToPlanMapKind(mapKind),
+          demandIntentKind: doc.kind,
+        }),
         title: planTitle,
         subtitle:
           doc.kind === 'carpool' && route.fromLabel && route.toLabel

@@ -226,9 +226,35 @@ router.patch('/me/groups/:groupId/members/:membershipId', validate({ params: gro
 router.delete('/me/groups/:groupId/members/:membershipId', validate({ params: groupMembershipIdParamSchema }), async (req, res, next) => {
   try {
     const { groupId, membershipId } = req.params as z.infer<typeof groupMembershipIdParamSchema>;
-    const membership = await getGroupMembership(groupId, req.auth!.userId);
-    if (!membership || membership.role !== 'admin') {
-      throw new ApiError(403, 'forbidden', 'Only group admins can remove members.');
+    const actorMembership = await getGroupMembership(groupId, req.auth!.userId);
+    if (!actorMembership) {
+      throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
+    }
+
+    const target = await findGroupMemberById(groupId, membershipId);
+    if (!target) {
+      throw new ApiError(404, 'member_not_found', 'Group member not found.');
+    }
+
+    const isSelfLeave =
+      actorMembership.id === membershipId && target.userId === req.auth!.userId;
+
+    if (isSelfLeave) {
+      const group = await findGroupById(groupId);
+      if (group?.adminUserId === req.auth!.userId) {
+        throw new ApiError(
+          403,
+          'group_owner_cannot_leave',
+          'Group owners must delete the group or transfer ownership before leaving.'
+        );
+      }
+      const result = await removeGroupMembership(membershipId);
+      res.json({ data: result });
+      return;
+    }
+
+    if (actorMembership.role !== 'admin') {
+      throw new ApiError(403, 'forbidden', 'Only group admins can remove other members.');
     }
 
     const result = await removeGroupMembership(membershipId);

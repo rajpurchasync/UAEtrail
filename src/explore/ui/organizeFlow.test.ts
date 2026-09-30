@@ -9,6 +9,7 @@ import {
   createFlowStepTitle,
   emptyCreateActivityDraft,
   getCreateFlowSteps,
+  usesRegistryCatalogVenue,
   isCampingOrganizeFlow,
   isHikingOrganizeFlow,
   isStructuredOrganizeFlow,
@@ -16,6 +17,28 @@ import {
 } from '../ui/organizeFlow';
 
 describe('organizeFlow', () => {
+  it('skips difficulty and about_trail when a registry venue is selected', () => {
+    const options = {
+      placeLabelSource: 'registry' as const,
+      registryPlaceId: 'place-1',
+    };
+    expect(usesRegistryCatalogVenue(options)).toBe(true);
+    expect(getCreateFlowSteps('hiking', false, options)).toEqual([
+      'title',
+      'when',
+      'meeting',
+      'audience',
+      'spots',
+      'price',
+      'destination',
+      'meeting_point',
+      'join_kit',
+      'transportation',
+      'publish',
+    ]);
+    expect(getCreateFlowSteps('camping', false, options)).not.toContain('about_trail');
+  });
+
   it('organize hiking uses thirteen confirmed steps incl. difficulty and transportation', () => {
     expect(getCreateFlowSteps('hiking', false)).toHaveLength(13);
     expect(getCreateFlowSteps('hiking', false)).toEqual([
@@ -54,7 +77,7 @@ describe('organizeFlow', () => {
     expect(validateDraftStep('meeting', draft)).toBe('Drop a pin on the map.');
   });
 
-  it('validateDraftStep requires join kit on hiking join_kit step', () => {
+  it('validateDraftStep allows empty join kit on hiking join_kit step', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
       kind: 'hiking' as const,
@@ -63,7 +86,7 @@ describe('organizeFlow', () => {
       longitude: 55.2,
       joinKit: '',
     };
-    expect(validateDraftStep('join_kit', draft)).toBe('Add what joiners must bring or know.');
+    expect(validateDraftStep('join_kit', draft)).toBeNull();
   });
 
   it('organize camping uses twelve structured steps (aligned with hiking)', () => {
@@ -150,6 +173,12 @@ describe('organizeFlow', () => {
     expect(validateDraftStep('join_kit', draft)).toBeNull();
   });
 
+  it('every organize kind includes audience step (participation / visibility)', () => {
+    for (const kind of ['hiking', 'camping', 'event', 'carpool', 'activity'] as const) {
+      expect(getCreateFlowSteps(kind, false)).toContain('audience');
+    }
+  });
+
   it('organize activity uses FLOW-05 steps', () => {
     expect(getCreateFlowSteps('activity', false)).toEqual([
       'activity_type',
@@ -179,7 +208,7 @@ describe('organizeFlow', () => {
     expect(validateDraftStep('title', draft)).toBe('Title must be at least 4 characters.');
   });
 
-  it('validateDraftStep requires a limited restriction on Participants step', () => {
+  it('validateDraftStep allows Limited without a sub-restriction on Participants step', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
       kind: 'hiking' as const,
@@ -188,7 +217,7 @@ describe('organizeFlow', () => {
       limitedWomenOnly: false,
       limitedMinAgeEnabled: false,
     };
-    expect(validateDraftStep('spots', draft)).toBe('Select at least one restriction under Limited.');
+    expect(validateDraftStep('spots', draft)).toBeNull();
   });
 
   it('validateDraftStep accepts limited women-only on Participants step', () => {
@@ -200,6 +229,27 @@ describe('organizeFlow', () => {
       limitedWomenOnly: true,
     };
     expect(validateDraftStep('spots', draft)).toBeNull();
+  });
+
+  it('validateDraftStep skips about_trail when registry venue is selected', () => {
+    const draft = {
+      ...emptyCreateActivityDraft(),
+      kind: 'hiking' as const,
+      placeLabelSource: 'registry' as const,
+      registryPlaceId: 'trail-1',
+      aboutTrail: '',
+    };
+    expect(validateDraftStep('about_trail', draft)).toBeNull();
+    expect(
+      validateDraftStep('publish', {
+        ...draft,
+        title: 'Registry hike',
+        latitude: 25.1,
+        longitude: 55.2,
+        meetingLatitude: 25.1,
+        meetingLongitude: 55.2,
+      })
+    ).toBeNull();
   });
 
   it('validateDraftStep enforces about_trail minimum length for hiking and camping', () => {
@@ -251,7 +301,6 @@ describe('organizeFlow', () => {
       placeLabelSource: 'registry' as const,
       trailName: 'Wadi loop',
       aboutTrail: 'Moderate sunrise loop with steady elevation.',
-      joinKit: 'Water, hat, and sturdy shoes.',
       capacity: 8,
     };
     expect(validateDraftStep('publish', draft)).toBeNull();
@@ -291,5 +340,19 @@ describe('organizeFlow', () => {
       joinMode: 'open' as const,
     };
     expect(buildOrganizeActivityRequirements(draft)).toContain(RSVP_PARTICIPATION_REQUIREMENT);
+  });
+
+  it('buildOrganizeActivityRequirements forces approval for rideshare even if draft says rsvp', () => {
+    const draft = {
+      ...emptyCreateActivityDraft(),
+      kind: 'carpool' as const,
+      participationMode: 'rsvp' as const,
+      joinMode: 'open' as const,
+      vehicleAccess: 'sedan' as const,
+      description: 'Meet at mall entrance B.',
+    };
+    const requirements = buildOrganizeActivityRequirements(draft);
+    expect(requirements).toContain(APPROVAL_PARTICIPATION_REQUIREMENT);
+    expect(requirements).not.toContain(RSVP_PARTICIPATION_REQUIREMENT);
   });
 });

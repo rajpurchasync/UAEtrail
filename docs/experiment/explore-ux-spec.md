@@ -85,11 +85,15 @@ This document is the **single source of truth** for visitor-facing copy, emojis,
 
 ---
 
-## Filter pills (order)
+## Filter pills (Activities layer)
 
-`All` · `Hiking` · `Camping` · `Events` · `Carpool` · `Shop` · `Looking` (demand — Phase P5)
+**Map + list (same model):** `All` · `Hiking` · `Camping` · `Rideshare` · `Others` · `Shops` (shops filter switches panel context — see [`NAVIGATION.md`](../NAVIGATION.md)).
 
-List sheet (Activities button): activities + demand only; no shop on list by default.
+**Others drill-down (E8):** sub-pills **Events** vs **Activities** (`subtype` URL). When **Activities** is selected, topic pills (**Climb**, **Run**, **Workshop**, **Social**) filter on `outingCategory: activities` + `outingTopic` — not title search.
+
+**Places layer:** Trails · Spots · Shops — venue catalog only; no scheduled activity pins.
+
+List sheet: Organize + Demand on Activities; venues/shops on Places per panel.
 
 ---
 
@@ -101,7 +105,7 @@ List sheet (Activities button): activities + demand only; no shop on list by def
 
 | Level 1 | Level 2 |
 |---------|---------|
-| **Organize** | Hiking · Camping · Event · Activity |
+| **Organize** | Hiking · Camping · Event · Rideshare · Activity |
 | **Find** | Rideshare · Hiking · Camping · Activities |
 | **Add** | Camping Spots · Hiking Trails · Shops · Others |
 

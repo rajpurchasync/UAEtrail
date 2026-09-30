@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { UserRole } from '../../domain/enums.js';
-import { completeSignupProfileSchema, USER_CITIES } from '../../domain/user-profile.js';
+import { personNameSchema } from '../../domain/person-name.js';
+import { completeSignupProfileSchema, profileLanguagesSchema, USER_CITIES } from '../../domain/user-profile.js';
 import { GROUP_WALL_REACTION_KINDS } from '../../lib/social-groups-store.js';
 export const eventIdParamSchema = z.object({ id: z.string().min(1) });
 export const requestIdParamSchema = z.object({ id: z.string().min(1), requestId: z.string().min(1) });
@@ -19,8 +20,10 @@ const mediaUrlSchema = z.string().min(1).refine(
   { message: 'Invalid media URL' }
 );
 
-export const updateProfileSchema = z.object({
-  displayName: z.string().min(2).max(80).optional(),
+export const updateProfileSchema = z
+  .object({
+  givenName: personNameSchema.optional(),
+  surname: personNameSchema.optional(),
   phone: z.preprocess(
     (value) => (value === '' || value === null ? undefined : value),
     z.string().max(30).optional()
@@ -38,8 +41,14 @@ export const updateProfileSchema = z.object({
   gender: completeSignupProfileSchema.shape.gender.optional(),
   city: z.enum(USER_CITIES).optional(),
   countryCode: completeSignupProfileSchema.shape.countryCode.optional(),
-  languages: completeSignupProfileSchema.shape.languages.optional(),
-});
+  languages: profileLanguagesSchema.optional(),
+})
+  .refine(
+    (body) =>
+      (body.givenName === undefined && body.surname === undefined) ||
+      (body.givenName !== undefined && body.surname !== undefined),
+    { message: 'Provide both name and surname.' }
+  );
 
 export const requestEmailChangeSchema = z.object({
   newEmail: z.string().email()

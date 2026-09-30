@@ -14,8 +14,18 @@ import {
   validateMemberDetailsForm,
   type MemberDetailsFormValue,
 } from '../profile/MemberDetailsEditFields';
+import {
+  PERSON_NAME_MAX,
+  PERSON_NAME_MIN,
+  formatDisplayNameFromParts,
+  sanitizePersonNameInput,
+  splitLegacyDisplayName,
+  validatePersonName,
+} from '../../utils/personName';
 
 export interface AccountEditSavePayload {
+  givenName: string;
+  surname: string;
   displayName: string;
   bio?: string;
   phone?: string;
@@ -64,6 +74,8 @@ export const AccountEditModal = ({
     languages: [],
   });
   const [formError, setFormError] = useState<string | null>(null);
+  const [givenName, setGivenName] = useState('');
+  const [surname, setSurname] = useState('');
 
   const completion = useMemo(
     () =>
@@ -100,16 +112,40 @@ export const AccountEditModal = ({
       countryCode: profile.countryCode ?? (profile.city ? 'AE' : ''),
       languages: parseLanguagesList(profile.languages),
     });
+    const names = profile.givenName && profile.surname
+      ? { givenName: profile.givenName, surname: profile.surname }
+      : splitLegacyDisplayName(profile.displayName);
+    setGivenName(names.givenName);
+    setSurname(names.surname);
     setFormError(null);
-  }, [open, profile.city, profile.countryCode, profile.dateOfBirth, profile.gender, profile.languages, profile.phone]);
+  }, [
+    open,
+    profile.city,
+    profile.countryCode,
+    profile.dateOfBirth,
+    profile.displayName,
+    profile.gender,
+    profile.givenName,
+    profile.languages,
+    profile.phone,
+    profile.surname,
+  ]);
 
   const handleProfileSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const displayName = profile.displayName?.trim() ?? '';
-    if (displayName.length < 2) {
-      setFormError('Name must be at least 2 characters.');
+    const givenNameError = validatePersonName(givenName, 'Name');
+    if (givenNameError) {
+      setFormError(givenNameError);
       return;
     }
+    const surnameError = validatePersonName(surname, 'Surname');
+    if (surnameError) {
+      setFormError(surnameError);
+      return;
+    }
+    const trimmedGiven = givenName.trim();
+    const trimmedSurname = surname.trim();
+    const displayName = formatDisplayNameFromParts(trimmedGiven, trimmedSurname);
 
     const memberError = validateMemberDetailsForm(memberDetails);
     if (memberError) {
@@ -129,6 +165,8 @@ export const AccountEditModal = ({
     setFormError(null);
     const languages = formatLanguages(memberDetails.languages);
     const payload: AccountEditSavePayload = {
+      givenName: trimmedGiven,
+      surname: trimmedSurname,
       displayName,
       bio: profile.bio?.trim() || undefined,
       phone,
@@ -137,7 +175,12 @@ export const AccountEditModal = ({
       countryCode: memberDetails.countryCode as UserCountryCode,
       languages,
     };
-    setProfile((prev) => ({ ...prev, ...payload }));
+    setProfile((prev) => ({
+      ...prev,
+      ...payload,
+      givenName: trimmedGiven,
+      surname: trimmedSurname,
+    }));
     await onSave(payload);
   };
 
@@ -170,11 +213,26 @@ export const AccountEditModal = ({
               <FieldLabel>Name</FieldLabel>
               <input
                 className="ios-input text-[15px]"
-                value={profile.displayName ?? ''}
-                onChange={(event) => setProfile((prev) => ({ ...prev, displayName: event.target.value }))}
-                placeholder="Your name"
+                value={givenName}
+                onChange={(event) => setGivenName(sanitizePersonNameInput(event.target.value))}
+                placeholder="First name"
                 disabled={saving}
-                autoComplete="name"
+                minLength={PERSON_NAME_MIN}
+                maxLength={PERSON_NAME_MAX}
+                autoComplete="given-name"
+              />
+            </div>
+            <div>
+              <FieldLabel>Surname</FieldLabel>
+              <input
+                className="ios-input text-[15px]"
+                value={surname}
+                onChange={(event) => setSurname(sanitizePersonNameInput(event.target.value))}
+                placeholder="Surname"
+                disabled={saving}
+                minLength={PERSON_NAME_MIN}
+                maxLength={PERSON_NAME_MAX}
+                autoComplete="family-name"
               />
             </div>
           </section>

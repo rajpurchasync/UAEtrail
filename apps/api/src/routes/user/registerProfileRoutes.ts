@@ -10,6 +10,7 @@ import { sendVerificationEmail } from '../../lib/email.js';
 import { isValidE164Phone } from '../../lib/phone.js';
 import { signAccessToken } from '../../lib/jwt.js';
 import { toSharedRole } from '../../lib/mappers.js';
+import { formatDisplayNameFromParts, resolveProfilePersonNames } from '../../domain/person-name.js';
 import { assertSignupProfileAge, completeSignupProfileSchema, isSignupProfileComplete } from '../../domain/user-profile.js';
 import { confirmEmailChangeSchema, requestEmailChangeSchema, roleSwitchSchema, SWITCHABLE_PRIVILEGED_ROLES, updateProfileSchema } from './schemas.js';
 import type { Router } from 'express';
@@ -21,6 +22,7 @@ router.get('/me/profile', async (req, res, next) => {
     if (!user) {
       throw new ApiError(404, 'user_not_found', 'User not found.');
     }
+    const personNames = resolveProfilePersonNames(user.profile ?? {});
     res.json({
       data: {
         id: user._id,
@@ -28,6 +30,8 @@ router.get('/me/profile', async (req, res, next) => {
         role: user.role.toLowerCase(),
         switchedFromRole: user.profile?.switchedFromRole?.toLowerCase() ?? null,
         displayName: user.profile?.displayName,
+        givenName: personNames.givenName || null,
+        surname: personNames.surname || null,
         phone: user.profile?.phone,
         bio: user.profile?.bio,
         avatarUrl: user.profile?.avatarUrl,
@@ -54,8 +58,17 @@ router.patch('/me/profile', validate({ body: updateProfileSchema }), async (req,
     if (data.dateOfBirth) {
       assertSignupProfileAge(data.dateOfBirth);
     }
+    const namePatch =
+      data.givenName !== undefined && data.surname !== undefined
+        ? {
+            givenName: data.givenName,
+            surname: data.surname,
+            displayName: formatDisplayNameFromParts(data.givenName, data.surname),
+          }
+        : {};
     await updateAuthUserProfile(req.auth!.userId, {
       ...data,
+      ...namePatch,
       phone: data.phone ?? null,
       bio: data.bio ?? null,
       dateOfBirth: data.dateOfBirth ?? undefined,
@@ -67,7 +80,9 @@ router.patch('/me/profile', validate({ body: updateProfileSchema }), async (req,
     const user = await findAuthUserById(req.auth!.userId);
     res.json({
       data: {
-        displayName: user?.profile?.displayName ?? data.displayName ?? null,
+        displayName: user?.profile?.displayName ?? namePatch.displayName ?? null,
+        givenName: user?.profile?.givenName ?? data.givenName ?? null,
+        surname: user?.profile?.surname ?? data.surname ?? null,
         phone: user?.profile?.phone ?? data.phone ?? null,
         bio: user?.profile?.bio ?? data.bio ?? null,
         avatarUrl: user?.profile?.avatarUrl ?? data.avatarUrl ?? null,
@@ -99,7 +114,7 @@ router.patch(
           dateOfBirth: user?.profile?.dateOfBirth ?? data.dateOfBirth,
           gender: user?.profile?.gender ?? data.gender,
           countryCode: user?.profile?.countryCode ?? data.countryCode,
-          languages: user?.profile?.languages ?? data.languages,
+          languages: user?.profile?.languages ?? null,
           signupProfileComplete: isSignupProfileComplete(user?.profile),
         }
       });

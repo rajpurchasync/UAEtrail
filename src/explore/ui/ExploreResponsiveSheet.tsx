@@ -1,4 +1,5 @@
 import { type ReactNode, useId, useRef } from 'react';
+import { X } from 'lucide-react';
 import { EXPLORE_SHAPE, EXPLORE_SHEET, exploreSheetPanelClass } from '../../config/exploreTheme';
 import { useModalA11y } from '../../hooks/useModalA11y';
 
@@ -12,6 +13,10 @@ interface ExploreResponsiveSheetProps {
   /** Full-viewport overlay (needed above map peek z-index when rendered outside map stage). */
   overlayFixed?: boolean;
   showHandle?: boolean;
+  /** Bottom sheet on small screens; centered dialog on lg+. */
+  layout?: 'responsive' | 'centered';
+  /** Top-right dismiss control (recommended with `layout="centered"`). */
+  showCloseButton?: boolean;
   /** Visible title wired to `aria-labelledby`. */
   title?: string;
   /** Fallback accessible name when `title` is omitted. */
@@ -28,6 +33,8 @@ export const ExploreResponsiveSheet = ({
   zClass = 'z-[1400]',
   overlayFixed = false,
   showHandle = true,
+  layout = 'responsive',
+  showCloseButton = false,
   title,
   ariaLabel = 'Panel',
 }: ExploreResponsiveSheetProps) => {
@@ -38,10 +45,14 @@ export const ExploreResponsiveSheet = ({
   if (!open) return null;
 
   const overlayPosition = overlayFixed ? 'fixed' : 'absolute';
+  const centered = layout === 'centered';
+  const shellClass = centered
+    ? `items-center justify-center p-4 sm:p-6`
+    : `flex-col justify-end lg:items-center lg:justify-center lg:p-6`;
 
   return (
     <div
-      className={`${overlayPosition} inset-0 ${zClass} flex flex-col justify-end ${EXPLORE_SHEET.scrim} lg:items-center lg:justify-center lg:p-6 ${overlayFixed ? '' : 'lg:fixed'}`}
+      className={`${overlayPosition} inset-0 ${zClass} flex ${shellClass} ${EXPLORE_SHEET.scrim} ${overlayFixed ? '' : 'lg:fixed'}`}
     >
       <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
       <div
@@ -50,7 +61,11 @@ export const ExploreResponsiveSheet = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : ariaLabel}
-        className={`relative w-full overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] lg:shadow-2xl`}
+        className={`relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
+          centered
+            ? 'rounded-2xl shadow-2xl'
+            : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] lg:shadow-2xl'
+        }`}
         onClick={(event) => event.stopPropagation()}
       >
         {title ? (
@@ -58,7 +73,17 @@ export const ExploreResponsiveSheet = ({
             {title}
           </h2>
         ) : null}
-        {showHandle && <div className={`mb-2 mt-3 lg:hidden ${EXPLORE_SHAPE.sheetHandle}`} />}
+        {showCloseButton ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-3 top-3 z-10 rounded-full p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" aria-hidden />
+          </button>
+        ) : null}
+        {showHandle && !centered ? <div className={`mb-2 mt-3 lg:hidden ${EXPLORE_SHAPE.sheetHandle}`} /> : null}
         {children}
       </div>
     </div>

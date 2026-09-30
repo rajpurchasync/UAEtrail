@@ -46,6 +46,7 @@ export const COLLECTIONS = {
   SOCIAL_GROUP_WALL_REACTIONS: 'social_group_wall_reactions',
   BUDDY_REQUESTS: 'buddy_requests',
   BUDDY_PAIRS: 'buddy_pairs',
+  USER_FOLLOWS: 'user_follows',
 
   // User data
   USER_FAVORITES: 'user_favorites',

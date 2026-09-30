@@ -71,6 +71,21 @@ export const inferNotificationPath = (
     if (buddyUserId) return `/member/${buddyUserId}`;
     return '/buddies';
   }
+  if (kind === 'connection_member_followed') {
+    const followerUserId = toStringValue(meta?.followerUserId);
+    if (followerUserId) return `/member/${followerUserId}`;
+    return '/profile';
+  }
+  if (kind === 'member_published' || kind === 'friend_published' || kind === 'friend_activity_published') {
+    if (activityId) return `/activity/${activityId}`;
+    const intentId = toStringValue(meta?.intentId);
+    if (intentId) {
+      return `/explore?pin=demand:${encodeURIComponent(intentId)}&list=1&panel=activities`;
+    }
+    const actorUserId = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.hostUserId);
+    if (actorUserId) return `/member/${actorUserId}`;
+    return explorePath({ list: true });
+  }
   // Legacy mislabeled group invites stored before kind fix.
   if (kind === 'buddy_request' && toStringValue(meta?.groupId)) {
     const inviteToken = toStringValue(meta?.inviteToken);

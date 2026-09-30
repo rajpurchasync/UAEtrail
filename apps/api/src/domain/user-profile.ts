@@ -47,12 +47,14 @@ export const USER_COUNTRY_LABELS: Record<UserCountryCode, string> = {
 
 export const dateOfBirthSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter a valid date of birth.');
 
+/** Post-auth `/welcome` gate — languages are edited on profile, not signup. */
 export const completeSignupProfileSchema = z.object({
   dateOfBirth: dateOfBirthSchema,
   gender: z.enum(USER_GENDERS),
   countryCode: z.enum(USER_COUNTRY_CODES),
-  languages: z.string().trim().min(1, 'Add at least one language.').max(300),
 });
+
+export const profileLanguagesSchema = z.string().trim().min(1, 'Add at least one language.').max(300);
 
 export type SignupProfileFields = {
   dateOfBirth?: string | null;
@@ -72,8 +74,7 @@ export const isSignupProfileComplete = (profile: SignupProfileFields | null | un
     profile?.dateOfBirth?.trim() &&
       profile?.gender &&
       USER_GENDERS.includes(profile.gender) &&
-      hasSignupLocation(profile) &&
-      profile?.languages?.trim()
+      hasSignupLocation(profile)
   );
 
 export const computeAgeFromDateOfBirth = (dateOfBirth: string): number | null => {

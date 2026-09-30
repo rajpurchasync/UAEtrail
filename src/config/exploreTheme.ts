@@ -25,9 +25,9 @@ export const EXPLORE_SHEET = {
 
 export const exploreSheetPanelClass = `${EXPLORE_SHAPE.sheetTop} ${EXPLORE_SHAPE.sheetDesktop} ${EXPLORE_SHEET.panel} ${EXPLORE_SHEET.maxHeight}`;
 
-/** Primary chrome — brand actions, default filters. */
+/** Primary chrome — brand actions, default filters (Nomadtable-style: darker, higher contrast). */
 export const EXPLORE_BRAND_ACTIVE =
-  'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/15';
+  'bg-emerald-700 text-white border-emerald-800 shadow-sm shadow-emerald-900/20';
 
 /** Map filter pill when active — type color where it helps scanning. */
 export const exploreMapFilterActiveClass = (key: MapFilterKey): string => {
@@ -36,20 +36,62 @@ export const exploreMapFilterActiveClass = (key: MapFilterKey): string => {
     case 'hiking':
       return EXPLORE_BRAND_ACTIVE;
     case 'camping':
-      return 'bg-amber-600 text-white border-amber-600 shadow-sm shadow-amber-600/15';
+      return 'bg-amber-700 text-white border-amber-800 shadow-sm shadow-amber-900/20';
     case 'carpool':
-      return 'bg-sky-600 text-white border-sky-600 shadow-sm shadow-sky-600/15';
+      return 'bg-sky-700 text-white border-sky-800 shadow-sm shadow-sky-900/20';
     case 'others':
-      return 'bg-violet-600 text-white border-violet-600 shadow-sm shadow-violet-600/15';
+      return 'bg-violet-700 text-white border-violet-800 shadow-sm shadow-violet-900/20';
     case 'shops':
-      return 'bg-rose-600 text-white border-rose-600 shadow-sm shadow-rose-600/15';
+      return 'bg-rose-700 text-white border-rose-800 shadow-sm shadow-rose-900/20';
     default:
       return EXPLORE_BRAND_ACTIVE;
   }
 };
 
 export const EXPLORE_MAP_FILTER_INACTIVE =
-  'bg-white/95 text-gray-800 border-neutral-200/80 shadow-[0_2px_10px_rgba(15,23,42,.12)] backdrop-blur-sm';
+  'border-neutral-300 bg-white text-neutral-950 shadow-[0_2px_10px_rgba(15,23,42,.16)] backdrop-blur-sm';
+
+/** Shared pill shells — map chrome (no 44px touch min-height; medium height). */
+export const EXPLORE_FILTER_PILL = {
+  map:
+    'inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-bold leading-snug shadow-[0_2px_10px_rgba(15,23,42,.14)] transition',
+  mapTopic:
+    'inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-bold leading-snug shadow-[0_2px_10px_rgba(15,23,42,.14)] transition',
+  sub:
+    'inline-flex shrink-0 snap-start items-center rounded-full border px-3 py-1 text-[13px] font-bold leading-snug shadow-sm transition',
+  subList:
+    'inline-flex shrink-0 snap-start items-center rounded-full border px-3 py-1 text-[13px] font-bold leading-snug shadow-sm transition',
+  list:
+    'inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-bold leading-snug shadow-sm transition',
+} as const;
+
+/** Explore copy hierarchy — avoid washed-out gray on map and browse. */
+export const EXPLORE_TYPE = {
+  title: 'text-neutral-950',
+  body: 'text-neutral-800',
+  muted: 'text-neutral-700',
+  caption: 'text-neutral-600',
+} as const;
+
+/** Horizontal pill rows in the browse list panel — visible scrollbar (map keeps scrollbar-none). */
+export const EXPLORE_LIST_PILLS_SCROLL =
+  'min-w-0 overflow-x-auto scroll-smooth snap-x snap-mandatory desktop-scrollbar-x pb-1 [-webkit-overflow-scrolling:touch]';
+
+/** Browse list panel — underline tabs (not floating map pills). */
+export const EXPLORE_BROWSE_PANEL_TAB = {
+  row: 'mb-2 flex gap-1 border-b border-neutral-200',
+  tab:
+    'shrink-0 px-2.5 pb-2 pt-0.5 text-sm font-semibold transition [-webkit-tap-highlight-color:transparent]',
+  active: 'text-emerald-800 decoration-emerald-600 underline decoration-2 underline-offset-[10px]',
+  inactive: 'text-neutral-500 hover:text-neutral-800',
+} as const;
+
+/** Who's going list — People | Trips (same panel tab chrome). */
+export const EXPLORE_BROWSE_SEGMENT_TAB = {
+  row: `${EXPLORE_BROWSE_PANEL_TAB.row} gap-3`,
+  active: `${EXPLORE_BROWSE_PANEL_TAB.tab} ${EXPLORE_BROWSE_PANEL_TAB.active}`,
+  inactive: `${EXPLORE_BROWSE_PANEL_TAB.tab} ${EXPLORE_BROWSE_PANEL_TAB.inactive}`,
+} as const;
 
 /** Compose FAB sheet — emerald brand (Organize · Find · Add). */
 export const EXPLORE_COMPOSE = {
@@ -108,13 +150,18 @@ export const EXPLORE_INTENT = {
   },
 } as const;
 
+/** Date / secondary map chips — slightly stronger edge than toolbar search & Who's going. */
 export const EXPLORE_FLOATING_CONTROL =
+  'inline-flex items-center rounded-full border border-neutral-200/90 bg-white text-neutral-950 shadow-[0_2px_12px_rgba(15,23,42,.16)] backdrop-blur-sm';
+
+/** Search + Who's going on the map — original frosted pill (unchanged with filter pill styling). */
+export const EXPLORE_MAP_TOOLBAR_FLOATING =
   'inline-flex items-center rounded-full bg-white/95 shadow-[0_2px_12px_rgba(15,23,42,.14)] backdrop-blur-sm';
 
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {
-  filterTop: 'max-lg:top-3',
-  noticeTop: 'max-lg:top-[5.25rem]',
+  filterTop: 'max-lg:top-0',
+  noticeTop: 'max-lg:top-[7.5rem]',
 } as const;
 
 /** Explore map stacking — keep in sync across peek cards, filters, and sheets. */
@@ -125,10 +172,10 @@ export const EXPLORE_Z = {
   peekCard: 'z-[4000]',
   /** Browse list sheet */
   browseSheet: 'z-[5500]',
-  /** Guest sign-in / join prompt above peek card */
-  guestJoinSheet: 'z-[6200]',
   /** FAB compose menu + organize / find / add wizards (above map filters & browse sheet) */
   composeFlow: 'z-[6500]',
+  /** Guest sign-in / join modal — above compose menu & peek (FAB, join, browse gates) */
+  guestJoinSheet: 'z-[6600]',
 } as const;
 
 /** Compact map peek card — same silhouette for venues and activities. */
@@ -140,16 +187,17 @@ export const EXPLORE_PEEK = {
     'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5',
 } as const;
 
-export const EXPLORE_LIST_FILTER_INACTIVE = 'bg-white text-gray-700 ring-1 ring-neutral-200';
+export const EXPLORE_LIST_FILTER_INACTIVE =
+  'bg-white text-neutral-950 ring-1 ring-neutral-300 font-bold';
 
 export const exploreActivityListFilterActiveClass = (key: ActivityListFilterKey): string => {
   switch (key) {
     case 'camping':
-      return 'bg-amber-600 text-white shadow-sm shadow-amber-600/15';
+      return 'bg-amber-700 text-white shadow-sm shadow-amber-900/20';
     case 'carpool':
-      return 'bg-sky-600 text-white shadow-sm shadow-sky-600/15';
+      return 'bg-sky-700 text-white shadow-sm shadow-sky-900/20';
     case 'event':
-      return 'bg-violet-600 text-white shadow-sm shadow-violet-600/15';
+      return 'bg-violet-700 text-white shadow-sm shadow-violet-900/20';
     default:
       return EXPLORE_BRAND_ACTIVE;
   }
@@ -158,11 +206,11 @@ export const exploreActivityListFilterActiveClass = (key: ActivityListFilterKey)
 export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): string => {
   switch (key) {
     case 'camping':
-      return 'bg-amber-600 text-white shadow-sm shadow-amber-600/15';
+      return 'bg-amber-700 text-white shadow-sm shadow-amber-900/20';
     case 'event':
-      return 'bg-violet-600 text-white shadow-sm shadow-violet-600/15';
+      return 'bg-violet-700 text-white shadow-sm shadow-violet-900/20';
     case 'shop':
-      return 'bg-rose-600 text-white shadow-sm shadow-rose-600/15';
+      return 'bg-rose-700 text-white shadow-sm shadow-rose-900/20';
     default:
       return EXPLORE_BRAND_ACTIVE;
   }
