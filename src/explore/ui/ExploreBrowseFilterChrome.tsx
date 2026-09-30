@@ -1,4 +1,4 @@
-import type { MapFilterKey } from '../routing';
+import type { MapFilterKey, ExploreActivityDatePreset } from '../routing';
 import type { ExploreFilterEmojiContext } from './ExploreFilterIcon';
 import { ExploreFilterPillsRow } from './ExploreFilterPillsRow';
 import { ExploreMapDateFilter } from './ExploreMapDateFilter';
@@ -11,9 +11,8 @@ export type ExploreBrowseFilterChromeProps = {
   filterEmojiContext?: ExploreFilterEmojiContext;
   layout: 'map' | 'list';
   showDateFilter?: boolean;
-  activityDate?: string | null;
-  onActivityDateChange?: (iso: string | null) => void;
-  scheduledDates?: readonly string[];
+  activityDatePreset?: ExploreActivityDatePreset;
+  onActivityDatePresetChange?: (preset: ExploreActivityDatePreset) => void;
   showStateFilter?: boolean;
   venueRegions?: string[];
   onVenueRegionsChange?: (regions: string[]) => void;
@@ -25,31 +24,28 @@ const SecondaryFilters = ({
   showDateFilter,
   venueRegions,
   onVenueRegionsChange,
-  activityDate,
-  onActivityDateChange,
-  scheduledDates,
+  activityDatePreset,
+  onActivityDatePresetChange,
 }: Pick<
   ExploreBrowseFilterChromeProps,
   | 'showStateFilter'
   | 'showDateFilter'
   | 'venueRegions'
   | 'onVenueRegionsChange'
-  | 'activityDate'
-  | 'onActivityDateChange'
-  | 'scheduledDates'
+  | 'activityDatePreset'
+  | 'onActivityDatePresetChange'
 >) => {
   if (!showDateFilter && !showStateFilter) return null;
 
   return (
-    <div className="flex shrink-0 items-center justify-start gap-2">
+    <div className="flex shrink-0 items-center justify-end gap-2">
       {showStateFilter && onVenueRegionsChange ? (
         <VenueStateFilterMenu selected={venueRegions ?? []} onChange={onVenueRegionsChange} />
       ) : null}
-      {showDateFilter && onActivityDateChange ? (
+      {showDateFilter && onActivityDatePresetChange ? (
         <ExploreMapDateFilter
-          activityDate={activityDate ?? null}
-          onActivityDateChange={onActivityDateChange}
-          scheduledDates={scheduledDates}
+          activityDatePreset={activityDatePreset ?? 'anyday'}
+          onActivityDatePresetChange={onActivityDatePresetChange}
         />
       ) : null}
     </div>
@@ -64,9 +60,8 @@ export const ExploreBrowseFilterChrome = ({
   filterEmojiContext = 'activity',
   layout,
   showDateFilter = false,
-  activityDate = null,
-  onActivityDateChange,
-  scheduledDates,
+  activityDatePreset = 'anyday',
+  onActivityDatePresetChange,
   showStateFilter = false,
   venueRegions = [],
   onVenueRegionsChange,
@@ -88,15 +83,14 @@ export const ExploreBrowseFilterChrome = ({
       showDateFilter={showDateFilter}
       venueRegions={venueRegions}
       onVenueRegionsChange={onVenueRegionsChange}
-      activityDate={activityDate}
-      onActivityDateChange={onActivityDateChange}
-      scheduledDates={scheduledDates}
+      activityDatePreset={activityDatePreset}
+      onActivityDatePresetChange={onActivityDatePresetChange}
     />
   );
 
   const mobileShell =
     layout === 'map'
-      ? 'max-lg:sticky max-lg:top-0 max-lg:z-10 max-lg:rounded-2xl max-lg:bg-white/92 max-lg:px-1 max-lg:py-1 max-lg:shadow-[0_2px_12px_rgba(15,23,42,.08)] max-lg:backdrop-blur-sm'
+      ? 'max-lg:min-w-0'
       : 'max-lg:sticky max-lg:top-0 max-lg:z-20 max-lg:-mx-1 max-lg:bg-[#f8fafb]/95 max-lg:px-1 max-lg:pb-2 max-lg:pt-0.5 max-lg:backdrop-blur-sm';
 
   return (
@@ -113,11 +107,18 @@ export const ExploreBrowseFilterChrome = ({
         {layout === 'map' ? secondary : showStateFilter ? secondary : null}
       </div>
 
-      {/* Mobile — pills, then calendar/state aligned right (sticky with shell) */}
-      <div className="flex flex-col gap-1.5 lg:hidden">
-        {pills}
-        {secondary}
-      </div>
+      {/* Mobile map — pills full width; calendar/state on row below, right-aligned */}
+      {layout === 'map' ? (
+        <div className="flex flex-col gap-1.5 lg:hidden">
+          {pills}
+          {secondary ? <div className="flex w-full justify-end pr-0.5">{secondary}</div> : null}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1.5 lg:hidden">
+          {pills}
+          <div className="flex justify-start">{secondary}</div>
+        </div>
+      )}
     </div>
   );
 };

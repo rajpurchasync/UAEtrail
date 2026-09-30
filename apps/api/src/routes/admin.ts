@@ -19,6 +19,12 @@ import { mountActivityRoutes } from '../lib/activity-routes.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { toLocationDto, buildActivityDto } from '../lib/mappers.js';
+import { invalidateExploreMapCache } from '../lib/explore-map-cache.js';
+import {
+  locationHasCatalogImportTag,
+  withCatalogAdminEditedTag,
+  VENUE_CATALOG_EXTERNAL_SOURCE,
+} from '../lib/venue-catalog.js';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { revokeRefreshTokensByUser } from '../lib/auth-tokens.js';
 import { resolveAdminUserListFilters, resolveAdminUserType } from '../lib/user-type.js';
@@ -230,6 +236,7 @@ adminPlaceCollectionPaths.forEach((path) => {
       entityType: 'location',
       entityId: created.id
     });
+    await invalidateExploreMapCache();
     res.status(201).json({ data: toLocationDto(created, { admin: true }) });
   } catch (error) {
     next(error);
@@ -285,6 +292,13 @@ adminPlaceItemPaths.forEach((path) => {
       }
     }
 
+    const isCatalogVenue =
+      existing.externalSource === VENUE_CATALOG_EXTERNAL_SOURCE || locationHasCatalogImportTag(existing.tags);
+    const tagsForUpdate =
+      isCatalogVenue
+        ? withCatalogAdminEditedTag(body.tags ?? existing.tags)
+        : body.tags;
+
     const updated = await updateAdminLocation(id, {
       name: body.name,
       region: body.region,
@@ -308,7 +322,7 @@ adminPlaceItemPaths.forEach((path) => {
       longitude: body.longitude,
       highlights: body.highlights,
       surfaceType: body.surfaceType,
-      tags: body.tags,
+      tags: tagsForUpdate,
       parkingLink: body.parkingLink,
       accessibleBy: body.accessibleBy,
       gpxKey: body.gpxKey,
@@ -317,6 +331,8 @@ adminPlaceItemPaths.forEach((path) => {
       guidePreview: body.guidePreview,
       unlockPriceAed: body.unlockPriceAed
     });
+
+    await invalidateExploreMapCache();
 
     await createAuditLog({
       actorId: req.auth!.userId,
@@ -1059,6 +1075,7 @@ adminPlaceItemPaths.forEach((path) => {
       entityId: id
     });
 
+    await invalidateExploreMapCache();
     res.json({ message: 'Location deleted.' });
   } catch (error) {
     next(error);

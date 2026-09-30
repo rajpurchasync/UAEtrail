@@ -22,6 +22,7 @@ import { activitiesBrowsePath } from '../config/activityTypes';
 import { detailBackPath } from '../utils/exploreRouting';
 import { hasPositiveNumber, isDefaultVenueSeason } from '../utils/venueDetailDisplay';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind, type PlaceDetailKindConfig } from './placeDetailConfig';
+import { readPlaceArabicName, resolvePlaceDisplayTitle } from '../utils/venueDetailDisplay';
 
 const jsonLdForPlace = (_kind: PlaceDetailKind, place: Place) => placeSchema(place);
 
@@ -154,9 +155,22 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
       place.childFriendly);
   const browsePath = activitiesBrowsePath(config.activityType);
   const accentLink = linkClassForAccent(config.accent);
+  const placeDisplayName = resolvePlaceDisplayTitle(place.name, place.tags);
+  const placeNameAr =
+    readPlaceArabicName(place.tags) ||
+    (placeDisplayName !== place.name.trim() ? place.name.trim() : null);
+  const heroImage = place.images[0] ?? null;
 
   return (
-    <MobileDetailShell backTo={detailBackPath(backKind)} backLabel={config.backLabel} banner={{ src: place.images[0], alt: place.name, title: place.name }}>
+    <MobileDetailShell
+      backTo={detailBackPath(backKind)}
+      backLabel={config.backLabel}
+      banner={
+        heroImage
+          ? { src: heroImage, alt: place.name, title: place.name }
+          : undefined
+      }
+    >
       <div className="min-h-screen bg-ios-bg md:bg-gray-50">
         <PageMeta
           title={place.name}
@@ -175,11 +189,24 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
                 <div className="relative mb-4">
+                  {heroImage ? (
                   <img src={place.images[selectedImage]} alt={place.name} className="w-full h-96 object-cover rounded-lg" />
+                  ) : (
+                    <div className="flex h-96 w-full flex-col items-center justify-center rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 px-6 text-center text-slate-600">
+                      <MapPin className="mb-3 h-10 w-10 text-slate-400" aria-hidden />
+                      <p className="font-medium text-slate-700">Map pin only — photos coming soon</p>
+                      {place.latitude != null && place.longitude != null && (
+                        <p className="mt-1 text-xs text-slate-500">
+                          {place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div className="absolute top-3 right-3 z-10">
                     <ShareButton title={place.name} text={shareText} path={detailPath!} compact />
                   </div>
                 </div>
+                {place.images.length > 0 && (
                 <div className="grid grid-cols-4 gap-2">
                   {place.images.map((image, index) => (
                     <button
@@ -192,6 +219,7 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
                     </button>
                   ))}
                 </div>
+                )}
               </div>
 
               <div>
@@ -202,7 +230,12 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
                         {config.typeBadge}
                       </span>
                     ) : null}
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{place.name}</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{placeDisplayName}</h1>
+                    {placeNameAr && placeNameAr !== placeDisplayName ? (
+                      <p className="mb-2 text-lg text-gray-600 font-arabic" dir="rtl" lang="ar">
+                        {placeNameAr}
+                      </p>
+                    ) : null}
                     <div className="flex items-center text-gray-600">
                       <MapPin className="w-5 h-5 mr-1" />
                       <span>{place.region}</span>

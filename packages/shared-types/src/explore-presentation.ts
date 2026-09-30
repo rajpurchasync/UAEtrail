@@ -83,7 +83,7 @@ const resolveExploreHostLabel = (options: {
 /** Hosted / scheduled hikes and hiking map filter. */
 export const HIKING_ACTIVITY_EMOJI = '🥾';
 
-/** Trail & hiking locations on the map. */
+/** Trail & hiking locations in lists and legend (map uses SVG venue chips, not this emoji). */
 export const HIKING_VENUE_EMOJI = '⛰️';
 
 /** Scheduled camping activities on the map. */

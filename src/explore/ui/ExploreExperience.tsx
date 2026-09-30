@@ -16,7 +16,6 @@ import { ExploreJoinOverlays } from './ExploreJoinOverlays';
 import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
 import { useExploreBrowseList } from './useExploreBrowseList';
-import { resolveExploreItemScheduleDate } from './exploreMapPinModel';
 import { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
@@ -117,20 +116,11 @@ export const ExploreExperience = () => {
     venueFilter: browse.venueFilter,
     venueRegions: browse.venueRegions,
     query: browse.query,
-    activityDate: browse.activityDate,
+    activityDatePreset: browse.activityDatePreset,
     sidebarPanel: browse.sidebarPanel,
     isDesktop,
     desktopBrowseTab: browse.desktopBrowseTab,
   });
-
-  const scheduledDates = useMemo(() => {
-    const dates = new Set<string>();
-    for (const item of items) {
-      const iso = resolveExploreItemScheduleDate(item);
-      if (iso) dates.add(iso);
-    }
-    return [...dates].sort();
-  }, [items]);
 
   const exploreMapTiles = useMemo(
     () => getExploreMapTiles(viewport.exploreMapStyle),
@@ -168,9 +158,8 @@ export const ExploreExperience = () => {
       browseFilterKeys={browse.browseFilterKeys}
       placesMode={browse.placesMode}
       onMapFilterChange={browse.applyMapFilter}
-      activityDate={browse.activityDate}
-      onActivityDateChange={browse.applyActivityDate}
-      scheduledDates={scheduledDates}
+      activityDatePreset={browse.activityDatePreset}
+      onActivityDatePresetChange={browse.applyActivityDatePreset}
       venueRegions={browse.venueRegions}
       onVenueRegionsChange={browse.applyVenueRegions}
       onDesktopBrowseTabChange={browse.applyDesktopBrowseTab}
@@ -214,9 +203,8 @@ export const ExploreExperience = () => {
           browseFilterKeys={browse.browseFilterKeys}
           placesMode={browse.placesMode}
           onMapFilterChange={browse.applyMapFilter}
-          activityDate={browse.activityDate}
-          onActivityDateChange={browse.applyActivityDate}
-          scheduledDates={scheduledDates}
+          activityDatePreset={browse.activityDatePreset}
+          onActivityDatePresetChange={browse.applyActivityDatePreset}
           venueRegions={browse.venueRegions}
           onVenueRegionsChange={browse.applyVenueRegions}
           exploreMapStyle={viewport.exploreMapStyle}

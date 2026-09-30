@@ -2,7 +2,7 @@ import { PanelLeftClose, Search, X } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
 import { EXPLORE_SHEET } from '../../config/exploreTheme';
-import type { ExplorePanel, MapFilterKey } from '../routing';
+import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
 import { buildExploreCardModel } from '../exploreCardModel';
 import { ExploreBrowseFilterChrome } from './ExploreBrowseFilterChrome';
 import { ExploreMapDateFilter } from './ExploreMapDateFilter';
@@ -30,9 +30,8 @@ export interface ExploreBrowsePanelProps {
   browseFilterKeys: readonly MapFilterKey[];
   placesMode: boolean;
   onMapFilterChange: (filter: MapFilterKey) => void;
-  activityDate: string | null;
-  onActivityDateChange: (iso: string | null) => void;
-  scheduledDates?: readonly string[];
+  activityDatePreset: ExploreActivityDatePreset;
+  onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   venueRegions: string[];
   onVenueRegionsChange: (regions: string[]) => void;
   onDesktopBrowseTabChange: (tab: DesktopBrowseTab) => void;
@@ -74,9 +73,8 @@ export const ExploreBrowsePanel = ({
   browseFilterKeys,
   placesMode,
   onMapFilterChange,
-  activityDate,
-  onActivityDateChange,
-  scheduledDates,
+  activityDatePreset,
+  onActivityDatePresetChange,
   venueRegions,
   onVenueRegionsChange,
   onDesktopBrowseTabChange,
@@ -208,9 +206,8 @@ export const ExploreBrowsePanel = ({
           </label>
           {isDesktop && !placesMode ? (
             <ExploreMapDateFilter
-              activityDate={activityDate}
-              onActivityDateChange={onActivityDateChange}
-              scheduledDates={scheduledDates}
+              activityDatePreset={activityDatePreset}
+              onActivityDatePresetChange={onActivityDatePresetChange}
             />
           ) : null}
         </div>
@@ -222,9 +219,8 @@ export const ExploreBrowsePanel = ({
           filterEmojiContext={filterEmojiContext}
           layout="list"
           showDateFilter={!placesMode && !isDesktop}
-          activityDate={activityDate}
-          onActivityDateChange={onActivityDateChange}
-          scheduledDates={scheduledDates}
+          activityDatePreset={activityDatePreset}
+          onActivityDatePresetChange={onActivityDatePresetChange}
           showStateFilter={placesMode}
           venueRegions={venueRegions}
           onVenueRegionsChange={onVenueRegionsChange}

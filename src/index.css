@@ -943,6 +943,88 @@
     border: none !important;
   }
 
+  .uaetrail-map-venue-pin-wrap {
+    overflow: visible !important;
+  }
+
+  .uaetrail-map-venue-chip {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    pointer-events: auto;
+    cursor: pointer;
+    line-height: 1.1;
+    filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.28));
+  }
+
+  .uaetrail-map-venue-chip--colocated,
+  .uaetrail-map-venue-chip--cluster {
+    position: relative;
+  }
+
+  .uaetrail-map-venue-chip--colocated {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .uaetrail-map-venue-pin-badge {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1.5px solid rgba(51, 65, 85, 0.35);
+    box-sizing: border-box;
+  }
+
+  .uaetrail-map-venue-pin-badge--hiking {
+    color: #047857;
+  }
+
+  .uaetrail-map-venue-pin-badge--camping {
+    color: #b45309;
+  }
+
+  .uaetrail-map-venue-pin-badge--default {
+    color: #475569;
+  }
+
+  .uaetrail-map-venue-pin-badge .uaetrail-venue-glyph {
+    display: block;
+  }
+
+  .uaetrail-map-venue-pin-label {
+    max-width: 9.5rem;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(51, 65, 85, 0.22);
+    color: #1e293b;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .uaetrail-map-venue-pin--selected .uaetrail-map-venue-pin-badge {
+    border-color: #059669;
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.25);
+    transform: scale(1.06);
+  }
+
+  .uaetrail-map-venue-pin--selected .uaetrail-map-venue-pin-label {
+    border-color: rgba(5, 150, 105, 0.4);
+  }
+
   .uaetrail-map-pin-marker {
     position: relative;
     display: block;
@@ -972,7 +1054,6 @@
     background: #fff;
     line-height: 1;
     box-shadow:
-      inset 0 0 0 1px rgba(148, 163, 184, 0.45),
       0 4px 14px rgba(15, 23, 42, 0.16),
       0 1px 3px rgba(15, 23, 42, 0.08);
   }

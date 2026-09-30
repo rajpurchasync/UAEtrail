@@ -21,7 +21,7 @@ import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
 import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-import type { MapFilterKey } from '../routing';
+import type { ExploreActivityDatePreset, MapFilterKey } from '../routing';
 
 type ExploreMapTiles = ReturnType<typeof getExploreMapTiles>;
 
@@ -37,9 +37,8 @@ export type ExploreMapStageProps = {
   browseFilterKeys?: MapFilterKey[];
   placesMode?: boolean;
   onMapFilterChange: (next: MapFilterKey) => void;
-  activityDate: string | null;
-  onActivityDateChange: (iso: string | null) => void;
-  scheduledDates?: readonly string[];
+  activityDatePreset: ExploreActivityDatePreset;
+  onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   venueRegions?: string[];
   onVenueRegionsChange?: (regions: string[]) => void;
   exploreMapStyle: ExploreMapStyle;
@@ -92,9 +91,8 @@ export const ExploreMapStage = ({
   browseFilterKeys,
   placesMode = false,
   onMapFilterChange,
-  activityDate,
-  onActivityDateChange,
-  scheduledDates,
+  activityDatePreset,
+  onActivityDatePresetChange,
   venueRegions = [],
   onVenueRegionsChange,
   exploreMapStyle,
@@ -170,9 +168,8 @@ export const ExploreMapStage = ({
         <ExploreMapFilterBar
           mapFilter={mapFilter}
           onFilterChange={onMapFilterChange}
-          activityDate={activityDate}
-          onActivityDateChange={onActivityDateChange}
-          scheduledDates={scheduledDates}
+          activityDatePreset={activityDatePreset}
+          onActivityDatePresetChange={onActivityDatePresetChange}
           allowedKeys={browseFilterKeys}
           filterEmojiContext={placesMode ? 'venue' : 'activity'}
           showDateFilter={!placesMode}

@@ -37,6 +37,11 @@ packages/shared-types/src/*.js.map
 # Local API uploads (dev fallback storage)
 apps/api/uploads/
 
+# Local debug dumps (explore payload, one-off stats)
+.tmp-*.json
+tmp-*.txt
+tmp-osm-stats.txt
+
 # Capacitor signing secrets (never commit)
 android/keystore.properties
 android/*.keystore

@@ -30,8 +30,13 @@ const mapMongoLocation = (item: MongoLocationDoc): Location => {
 };
 
 export const locationDocForMongo = (location: Location): MongoLocationDoc => {
-  const { id, ...rest } = location;
-  return withLocationGeoFields({ _id: id, ...rest }) as MongoLocationDoc;
+  const { id, externalSource, externalId, ...rest } = location;
+  const doc: MongoLocationDoc = { _id: id, ...rest };
+  if (externalSource != null && externalId != null) {
+    doc.externalSource = externalSource;
+    doc.externalId = externalId;
+  }
+  return withLocationGeoFields(doc) as MongoLocationDoc;
 };
 
 const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown> => {

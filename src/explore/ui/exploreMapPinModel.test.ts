@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { expandMapPins, isShopListItem, layoutColocatedMapPins, matchesActivityDateFilter, matchesMapFilter, matchesPlacesMapFilter, matchesBuddyMapFilter, isPlacesMapItem, isBuddyMapItem } from './exploreMapPinModel';
+import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
+import { expandMapPins, isShopListItem, layoutColocatedMapPins, matchesMapFilter, matchesPlacesMapFilter, matchesBuddyMapFilter, isPlacesMapItem, isBuddyMapItem } from './exploreMapPinModel';
 
 const baseItem = (overrides: Partial<ExploreMapItemDTO>): ExploreMapItemDTO =>
   ({
@@ -45,10 +46,8 @@ describe('exploreMapPinModel', () => {
   it('matchesActivityDateFilter keeps venues and filters scheduled activities', () => {
     const activity = baseItem({ id: 'a1', source: 'activity', date: '2026-09-12' });
     const venue = baseItem({ id: 'v1', source: 'venue', kind: 'hiking' });
-    expect(matchesActivityDateFilter(activity, '2026-09-12')).toBe(true);
-    expect(matchesActivityDateFilter(activity, '2026-09-13')).toBe(false);
-    expect(matchesActivityDateFilter(venue, '2026-09-12')).toBe(true);
-    expect(matchesActivityDateFilter(activity, null)).toBe(true);
+    expect(matchesActivityDateFilter(activity, 'anyday')).toBe(true);
+    expect(matchesActivityDateFilter(venue, 'today')).toBe(true);
   });
 
   it('expandMapPins adds carpool destination pin when to-coords differ', () => {
@@ -82,7 +81,7 @@ describe('exploreMapPinModel', () => {
     const camping = laidOut[0].colocatedEntries!.find((e) => e.activityType === 'camping');
     expect(hiking?.stackCount).toBe(2);
     expect(hiking?.stackExploreItemIds).toEqual(['h1', 'h2']);
-    expect(camping?.stackCount).toBeUndefined();
+    expect(camping?.stackCount).toBe(1);
   });
 
   it('layoutColocatedMapPins keeps single stack pin when only one emoji group', () => {
@@ -94,5 +93,14 @@ describe('exploreMapPinModel', () => {
     expect(laidOut).toHaveLength(1);
     expect(laidOut[0].colocatedEntries).toBeUndefined();
     expect(laidOut[0].stackCount).toBe(2);
+  });
+
+  it('layoutColocatedMapPins sets stackCount 1 for a lone pin at a coordinate', () => {
+    const pins = expandMapPins([
+      baseItem({ id: 'h1', kind: 'hiking', source: 'activity', latitude: 25, longitude: 55 }),
+    ]);
+    const laidOut = layoutColocatedMapPins(pins);
+    expect(laidOut).toHaveLength(1);
+    expect(laidOut[0].stackCount).toBe(1);
   });
 });

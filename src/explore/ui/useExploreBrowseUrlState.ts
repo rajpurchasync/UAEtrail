@@ -8,7 +8,8 @@ import {
   mapFilterToVenueListFilter,
   parseActivityListFilter,
   parseExplorePanel,
-  parseExploreActivityDate,
+  parseExploreActivityDatePreset,
+  serializeExploreActivityDatePreset,
   parseMapFilter,
   parseVenueRegionsParam,
   venueFilterToMapFilter,
@@ -16,6 +17,7 @@ import {
   type ExplorePanel,
   type MapFilterKey,
   type VenueListFilterKey,
+  type ExploreActivityDatePreset,
 } from '../routing';
 import { MAP_FILTERS_BY_BROWSE_TAB, parseDesktopBrowseTab, type DesktopBrowseTab } from './exploreBrowsePanelCopy';
 import { mapFilterToPanel, parseListOpen, readInitialListOpen } from './exploreListPanelUrl';
@@ -27,7 +29,7 @@ type SyncPatch = {
   list?: boolean;
   q?: string;
   venueRegions?: string[];
-  activityDate?: string | null;
+  activityDatePreset?: ExploreActivityDatePreset;
 };
 
 type UseExploreBrowseUrlStateArgs = {
@@ -56,8 +58,8 @@ export const useExploreBrowseUrlState = ({
     parseDesktopBrowseTab(parseExplorePanel(searchParams.get('panel')))
   );
   const [searchExpanded, setSearchExpanded] = useState(() => Boolean(searchParams.get('q')?.trim()));
-  const [activityDate, setActivityDate] = useState<string | null>(() =>
-    parseExploreActivityDate(searchParams.get('date'))
+  const [activityDatePreset, setActivityDatePreset] = useState<ExploreActivityDatePreset>(() =>
+    parseExploreActivityDatePreset(searchParams.get('date'))
   );
 
   const syncExploreUrl = useCallback(
@@ -69,7 +71,7 @@ export const useExploreBrowseUrlState = ({
       const listValue = next.list ?? listOpen;
       const queryValue = next.q ?? query;
       const regionValue = next.venueRegions ?? venueRegions;
-      const dateValue = next.activityDate !== undefined ? next.activityDate : activityDate;
+      const dateValue = next.activityDatePreset !== undefined ? next.activityDatePreset : activityDatePreset;
 
       if (filterValue === 'all') params.delete('filter');
       else params.set('filter', filterValue);
@@ -86,7 +88,8 @@ export const useExploreBrowseUrlState = ({
       if (queryValue.trim()) params.set('q', queryValue.trim());
       else params.delete('q');
 
-      if (dateValue && parseExploreActivityDate(dateValue)) params.set('date', dateValue);
+      const serializedDate = serializeExploreActivityDatePreset(dateValue);
+      if (serializedDate) params.set('date', serializedDate);
       else params.delete('date');
 
       if (regionValue.length > 0) {
@@ -105,7 +108,7 @@ export const useExploreBrowseUrlState = ({
 
       setSearchParams(params, { replace: true });
     },
-    [mapFilter, activityFilter, panel, listOpen, query, venueRegions, activityDate, searchParams, setSearchParams]
+    [mapFilter, activityFilter, panel, listOpen, query, venueRegions, activityDatePreset, searchParams, setSearchParams]
   );
 
   useEffect(() => {
@@ -129,7 +132,7 @@ export const useExploreBrowseUrlState = ({
     setListOpen(parseListOpen(searchParams.get('list'), isDesktop));
     setQuery(searchParams.get('q') ?? '');
     setVenueRegions(parseVenueRegionsParam(searchParams));
-    setActivityDate(parseExploreActivityDate(searchParams.get('date')));
+    setActivityDatePreset(parseExploreActivityDatePreset(searchParams.get('date')));
     if (isDesktop) {
       setDesktopBrowseTab(parseDesktopBrowseTab(nextPanel));
       if (searchParams.get('q')?.trim()) setSearchExpanded(true);
@@ -257,11 +260,10 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ list: listOpen });
   };
 
-  const applyActivityDate = (next: string | null) => {
-    const parsed = next ? parseExploreActivityDate(next) : null;
-    setActivityDate(parsed);
+  const applyActivityDatePreset = (next: ExploreActivityDatePreset) => {
+    setActivityDatePreset(next);
     clearSelection();
-    syncExploreUrl({ activityDate: parsed, list: listOpen });
+    syncExploreUrl({ activityDatePreset: next, list: listOpen });
   };
 
   const showListPanel = listOpen;
@@ -315,8 +317,8 @@ export const useExploreBrowseUrlState = ({
     desktopBrowseTab,
     searchExpanded,
     setSearchExpanded,
-    activityDate,
-    applyActivityDate,
+    activityDatePreset,
+    applyActivityDatePreset,
     syncExploreUrl,
     applyMapFilter,
     applyDesktopBrowseTab,

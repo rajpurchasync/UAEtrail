@@ -1,0 +1,431 @@
+{
+  "version": 2,
+  "venues": [
+    {
+      "id": "jebel-jais-summit-trail",
+      "name": "Jebel Jais Summit Trail",
+      "nameAr": "مسار قمة جبل جيس",
+      "activityType": "hiking",
+      "region": "RAK",
+      "latitude": 25.9545,
+      "longitude": 56.273,
+      "featured": true,
+      "description": "Demanding summit route in the UAE's highest peak area — panoramic Hajar views."
+    },
+    {
+      "id": "jebel-jais-left-trail",
+      "name": "Jebel Jais Left Trail (Stairway to Heaven)",
+      "nameAr": "مسار جبل جيس الأيسر — سلم إلى الجنة",
+      "activityType": "hiking",
+      "region": "RAK",
+      "latitude": 25.938,
+      "longitude": 56.168,
+      "featured": true,
+      "description": "Steep ridge hike on the left flank of Jebel Jais — often called Stairway to Heaven. Start from the lower Jais road pull-offs."
+    },
+    {
+      "id": "jebel-jais-right-trail",
+      "name": "Jebel Jais Right Trail (Stairway to Heaven)",
+      "nameAr": "مسار جبل جيس الأيمن — سلم إلى الجنة",
+      "activityType": "hiking",
+      "region": "RAK",
+      "latitude": 25.932,
+      "longitude": 56.182,
+      "featured": true,
+      "description": "Classic Jais ridge route on the right side — same Stairway to Heaven name locals use for both flanks. Exposed sections; go early in winter."
+    },
+    {
+      "id": "wadi-shawka-loop",
+      "name": "Wadi Shawka Loop",
+      "nameAr": "حلقة وادي شوكة",
+      "activityType": "hiking",
+      "region": "RAK",
+      "latitude": 25.34,
+      "longitude": 56.12,
+      "featured": true,
+      "description": "Popular wadi loop with pools, dam views, and family-friendly sections."
+    },
+    {
+      "id": "wadi-shawka-dam-trail",
+      "name": "Wadi Shawka Dam Trail",
+      "nameAr": "مسار سد وادي شوكة",
+      "activityType": "hiking",
+      "region": "RAK",
+      "latitude": 25.335,
+      "longitude": 56.115,
+      "description": "Out-and-back from Shawka Dam parking — pools and canyon walls in the main wadi bed."
+    },
+    {
+      "id": "wadi-shawka-pools-trail",
+      "name": "Wadi Shawka Pools Trail",
+      "nameAr": "مسار برك وادي شوكة",
+      "activityType": "hiking",
+      "region": "RAK",
+      "latitude": 25.348,
+      "longitude": 56.128,
+      "description": "Shorter hike to seasonal pools upstream of the dam — busy after winter rain."
+    },
+    {
+      "id": "wadi-shawka-mountain-trail",
+      "name": "Wadi Shawka Mountain Trail",
+      "nameAr": "مسار جبل وادي شوكة",
+      "activityType": "hiking",
+      "region": "RAK",
+      "latitude": 25.352,
+      "longitude": 56.105,
+      "description": "Higher ridge and saddle routes above Shawka — moderate to hard; carry extra water."
+    },
+    {
+      "id": "hatta-dam-loop",
+      "name": "Hatta Dam Loop",
+      "nameAr": "حلقة سد حتا",
+      "activityType": "hiking",
+      "region": "Dubai",
+      "latitude": 24.7847,
+      "longitude": 56.1136,
+      "featured": true,
+      "description": "Easy lakeside loop around Hatta Dam with mountain backdrop."
+    },
+    {
+      "id": "fossil-rock-trail",
+      "name": "Fossil Rock",
+      "nameAr": "صخرة الفوسيل",
+      "activityType": "hiking",
+      "region": "Sharjah",
+      "latitude": 25.1428,
+      "longitude": 55.8339,
+      "featured": true,
+      "description": "Classic Sharjah desert hike to the Fossil Rock formation — a weekend favourite."
+    },
+    {
+      "id": "al-rabi-hiking-trail",
+      "name": "Al Rabi Hiking Trail",
+      "nameAr": "مسار الرابي",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.3762,
+      "longitude": 56.3561,
+      "featured": true,
+      "description": "Coastal ridge trail above Khor Fakkan with sea and mountain views."
+    },
+    {
+      "id": "al-rafisah-dam-walk",
+      "name": "Al Rafisah Dam — The Walk",
+      "nameAr": "سد الرافيسة — الممشى",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.3074,
+      "longitude": 56.3402,
+      "description": "Scenic dam and lakeside walk popular with families near Khor Fakkan."
+    },
+    {
+      "id": "rafisah-dam-summit",
+      "name": "Rafisah Dam Hike Summit",
+      "nameAr": "قمة مسار سد الرافيسة",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.312,
+      "longitude": 56.345,
+      "description": "Upper viewpoint loop above Al Rafisah Dam."
+    },
+    {
+      "id": "wadi-naqab-trailhead",
+      "name": "Wadi Naqab Hiking Starting Point",
+      "nameAr": "نقطة انطلاق وادي ناقب",
+      "activityType": "hiking",
+      "region": "RAK",
+      "latitude": 25.923,
+      "longitude": 56.178,
+      "description": "Marked wadi hike with cave sections — common northern RAK trailhead."
+    },
+    {
+      "id": "wadi-al-abadilah",
+      "name": "Wadi Al Abadilah",
+      "nameAr": "وادي العبادلة",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.452,
+      "longitude": 56.351,
+      "featured": true,
+      "description": "Green wadi hike on the east coast — pools and farms between the mountains."
+    },
+    {
+      "id": "wadi-shees",
+      "name": "Wadi Shees",
+      "nameAr": "وادي شيس",
+      "activityType": "hiking",
+      "region": "Sharjah",
+      "latitude": 25.088,
+      "longitude": 56.245,
+      "description": "Oasis and pool wadi near Kalba — short hikes and picnic spots."
+    },
+    {
+      "id": "wadi-shah",
+      "name": "Wadi Shah",
+      "nameAr": "وادي شاه",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.336,
+      "longitude": 56.367,
+      "description": "East-coast wadi hikes between Khor Fakkan and the mountains — pools and farms in season."
+    },
+    {
+      "id": "wadi-sah",
+      "name": "Wadi Sah",
+      "nameAr": "وادي ساح",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.298,
+      "longitude": 56.352,
+      "description": "Green wadi and village trails inland from the Fujairah coast — often grouped with nearby Shah and Helo hikes."
+    },
+    {
+      "id": "wadi-al-helo",
+      "name": "Wadi Al Helo",
+      "nameAr": "وادي الحلو",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.047,
+      "longitude": 56.198,
+      "featured": true,
+      "description": "Historic wadi with fort ruins and canyon walks — Kalba / Fujairah border area."
+    },
+    {
+      "id": "rainbow-valley-hiking",
+      "name": "Rainbow Valley Hiking",
+      "nameAr": "وادي قوس قزح",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.654,
+      "longitude": 56.389,
+      "description": "Colourful mineral slopes and wadi paths north of Dibba."
+    },
+    {
+      "id": "fujairah-adventures-dibba-trail",
+      "name": "Fujairah Adventures — Dibba Hiking Trail",
+      "nameAr": "مغامرات الفجيرة — مسار دبا",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.619,
+      "longitude": 56.272,
+      "description": "Operator-marked coastal mountain trail in the Dibba area."
+    },
+    {
+      "id": "fujairah-adventure-al-dahir",
+      "name": "Fujairah Adventure — Al Dahir Trekking",
+      "nameAr": "مغامرات الفجيرة — الظاهر",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.48,
+      "longitude": 56.32,
+      "description": "Mountain trekking routes in the Al Dahir area inland from the coast."
+    },
+    {
+      "id": "green-mountains-dhadna",
+      "name": "Green Mountains Dhadna",
+      "nameAr": "الجبال الخضراء — ضدنا",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.52,
+      "longitude": 56.36,
+      "description": "Terraced farms and green slopes above Dhadna — gentle to moderate hikes."
+    },
+    {
+      "id": "wadi-sena",
+      "name": "Wadi Sena",
+      "nameAr": "وادي سنا",
+      "activityType": "hiking",
+      "region": "Fujairah",
+      "latitude": 25.41,
+      "longitude": 56.29,
+      "description": "Wadi hiking and camp access between Fujairah mountain villages."
+    },
+    {
+      "id": "hatta-hiking-trails",
+      "name": "Hatta Hiking Trail Network",
+      "nameAr": "شبكة مسارات حتا",
+      "activityType": "hiking",
+      "region": "Dubai",
+      "latitude": 24.8,
+      "longitude": 56.15,
+      "featured": true,
+      "description": "Signposted colour trails (green, blue, red, black) around Hatta Wadi Hub."
+    },
+    {
+      "id": "hatta-sign-hike",
+      "name": "Hatta Sign Hike",
+      "nameAr": "مسار علامة حتا",
+      "activityType": "hiking",
+      "region": "Dubai",
+      "latitude": 24.818,
+      "longitude": 56.142,
+      "featured": true,
+      "description": "Ridge hike to the iconic Hatta sign viewpoint — steep climb with wide dam and mountain views."
+    },
+    {
+      "id": "jebel-hafeet-summit",
+      "name": "Jebel Hafeet Summit Road Hike",
+      "nameAr": "جبل حفيت",
+      "activityType": "hiking",
+      "region": "Al Ain",
+      "latitude": 24.057,
+      "longitude": 55.776,
+      "description": "Summit road and ridge walks on Al Ain's iconic mountain."
+    },
+    {
+      "id": "al-aqur-wadi",
+      "name": "Wadi Al Aqr",
+      "nameAr": "وادي العقر",
+      "activityType": "hiking",
+      "region": "RAK",
+      "latitude": 25.28,
+      "longitude": 56.08,
+      "description": "Desert–mountain wadi hikes on the RAK–Sharjah border."
+    },
+    {
+      "id": "fossil-rock-desert-camp",
+      "name": "Fossil Rock Desert Camp",
+      "nameAr": "مخيم صخرة الفوسيل",
+      "activityType": "camping",
+      "region": "Sharjah",
+      "latitude": 25.22,
+      "longitude": 55.85,
+      "featured": true,
+      "description": "Group desert camping near Fossil Rock — stargazing and sunrise hikes."
+    },
+    {
+      "id": "dibba-beach-camp",
+      "name": "Dibba Beach Camp",
+      "nameAr": "تخييم شاطئ دبا",
+      "activityType": "camping",
+      "region": "Fujairah",
+      "latitude": 25.6197,
+      "longitude": 56.2728,
+      "featured": true,
+      "description": "Beach camping on the Gulf of Oman below the Hajar Mountains."
+    },
+    {
+      "id": "wadi-kub-camp",
+      "name": "Wadi Kub Camp Spot",
+      "nameAr": "مخيم وادي كوب",
+      "activityType": "camping",
+      "region": "Fujairah",
+      "latitude": 25.38,
+      "longitude": 56.28,
+      "description": "Mountain wadi camp spot — check access and weather before overnight stays."
+    },
+    {
+      "id": "kalba-kingfisher-camp",
+      "name": "Kalba Kingfisher Lodge Camp",
+      "nameAr": "مخيم كلباء كينغفيشر",
+      "activityType": "camping",
+      "region": "Sharjah",
+      "latitude": 25.068,
+      "longitude": 56.356,
+      "description": "Mangrove and mountain-edge camping near Kalba."
+    },
+    {
+      "id": "sharjah-east-wild-camp",
+      "name": "Sharjah East — Wild Camp Views",
+      "nameAr": "تخييم برية الشرقية",
+      "activityType": "camping",
+      "region": "Sharjah",
+      "latitude": 25.12,
+      "longitude": 56.25,
+      "description": "Wild camp spots with wadi and mountain views east of Sharjah city."
+    },
+    {
+      "id": "al-qudra-lakes-camp",
+      "name": "Al Qudra Lakes Camping",
+      "nameAr": "تخييم بحيرات القدرة",
+      "activityType": "camping",
+      "region": "Dubai",
+      "latitude": 24.836,
+      "longitude": 55.367,
+      "featured": true,
+      "description": "Designated lakeside camping between Al Qudra and Love Lake — popular Dubai weekend spot; book where required."
+    },
+    {
+      "id": "al-qudra-love-lake",
+      "name": "Love Lake — Al Qudra",
+      "nameAr": "بحيرة الحب — القدرة",
+      "activityType": "camping",
+      "region": "Dubai",
+      "latitude": 24.843,
+      "longitude": 55.382,
+      "description": "Heart-shaped lake area in the Al Qudra desert — day visits and nearby camp zones."
+    },
+    {
+      "id": "al-qudra-last-exit-camp",
+      "name": "Al Qudra — Last Exit Camp Area",
+      "nameAr": "منطقة تخييم آخر مخرج القدرة",
+      "activityType": "camping",
+      "region": "Dubai",
+      "latitude": 24.865,
+      "longitude": 55.335,
+      "description": "Desert camping access off the Al Qudra / Bab Al Shams road corridor — check current access rules."
+    },
+    {
+      "id": "hatta-wadi-hub-camp",
+      "name": "Hatta Wadi Hub Camping",
+      "nameAr": "تخييم وادي حتا",
+      "activityType": "camping",
+      "region": "Dubai",
+      "latitude": 24.802,
+      "longitude": 56.148,
+      "featured": true,
+      "description": "Mountain camping and glamping near Hatta trailheads and the dam."
+    },
+    {
+      "id": "wadi-shawka-camp",
+      "name": "Wadi Shawka Camp Spot",
+      "nameAr": "مخيم وادي شوكة",
+      "activityType": "camping",
+      "region": "RAK",
+      "latitude": 25.328,
+      "longitude": 56.118,
+      "description": "Weekend camp spots near Shawka Dam — combine with day hikes in the wadi."
+    },
+    {
+      "id": "jebel-jais-base-camp",
+      "name": "Jebel Jais Viewing Deck Camp",
+      "nameAr": "تخييم منصة جبل جيس",
+      "activityType": "camping",
+      "region": "RAK",
+      "latitude": 25.943,
+      "longitude": 56.245,
+      "description": "High-altitude camping and stargazing near Jais viewing areas — cold nights in winter."
+    },
+    {
+      "id": "liwa-desert-camp",
+      "name": "Liwa Desert Camping",
+      "nameAr": "تخييم ليوا",
+      "activityType": "camping",
+      "region": "Abu Dhabi",
+      "latitude": 23.133,
+      "longitude": 53.778,
+      "featured": true,
+      "description": "Empty Quarter edge dunes — organised camps and self-drive spots south of Abu Dhabi."
+    },
+    {
+      "id": "al-badayer-desert-camp",
+      "name": "Al Badayer Desert Camp",
+      "nameAr": "تخييم البداير",
+      "activityType": "camping",
+      "region": "Sharjah",
+      "latitude": 24.92,
+      "longitude": 55.72,
+      "description": "Red dune desert camping near Big Red / Al Badayer — 4×4 recommended."
+    },
+    {
+      "id": "mleiha-desert-camp",
+      "name": "Mleiha Desert Camp",
+      "nameAr": "تخييم مليحة",
+      "activityType": "camping",
+      "region": "Sharjah",
+      "latitude": 25.089,
+      "longitude": 55.806,
+      "description": "Desert camps and fossil dune access in the Mleiha area — stargazing and dune walks."
+    }
+  ]
+}

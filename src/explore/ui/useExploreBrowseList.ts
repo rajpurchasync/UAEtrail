@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
-import type { ActivityListFilterKey, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
+import type { ActivityListFilterKey, ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import {
   type DesktopBrowseTab,
 } from './exploreBrowsePanelCopy';
@@ -14,10 +14,10 @@ import {
   isShopListItem,
   isPlacesMapItem,
   isBuddyMapItem,
-  matchesActivityDateFilter,
   matchesBuddyMapFilter,
   matchesPlacesMapFilter,
 } from './exploreMapPinModel';
+import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 
 type UseExploreBrowseListArgs = {
   items: ExploreMapItemDTO[];
@@ -26,7 +26,7 @@ type UseExploreBrowseListArgs = {
   venueFilter: VenueListFilterKey;
   venueRegions: string[];
   query: string;
-  activityDate: string | null;
+  activityDatePreset: ExploreActivityDatePreset;
   sidebarPanel: ExplorePanel;
   isDesktop: boolean;
   desktopBrowseTab: DesktopBrowseTab;
@@ -39,7 +39,7 @@ export const useExploreBrowseList = ({
   venueFilter,
   venueRegions,
   query,
-  activityDate,
+  activityDatePreset,
   sidebarPanel,
   isDesktop,
   desktopBrowseTab,
@@ -55,7 +55,7 @@ export const useExploreBrowseList = ({
 
     let result = items.filter(matchFilter);
     if (buddyMode) {
-      result = result.filter((item) => matchesActivityDateFilter(item, activityDate));
+      result = result.filter((item) => matchesActivityDateFilter(item, activityDatePreset));
     }
     if (placesMode) {
       result = result.filter(isPlacesMapItem);
@@ -64,7 +64,7 @@ export const useExploreBrowseList = ({
       result = result.filter(isBuddyMapItem);
     }
     return result;
-  }, [items, mapFilter, activityDate, placesMode, venueRegions]);
+  }, [items, mapFilter, activityDatePreset, placesMode, venueRegions]);
 
   const mapPins = useMemo(
     () => layoutColocatedMapPins(expandMapPins(filtered)),
@@ -86,7 +86,7 @@ export const useExploreBrowseList = ({
           items
             .filter(isBuddyMapItem)
             .filter((item) => matchesBuddyMapFilter(item, mapFilter))
-            .filter((item) => matchesActivityDateFilter(item, activityDate))
+            .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
             .filter(matchesQuery)
         );
       }
@@ -117,7 +117,7 @@ export const useExploreBrowseList = ({
       items
         .filter(isBuddyMapItem)
         .filter((item) => matchesBuddyMapFilter(item, mapFilter))
-        .filter((item) => matchesActivityDateFilter(item, activityDate))
+        .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
         .filter(matchesQuery)
     );
   }, [
@@ -130,7 +130,7 @@ export const useExploreBrowseList = ({
     isDesktop,
     desktopBrowseTab,
     mapFilter,
-    activityDate,
+    activityDatePreset,
   ]);
 
   const shopListSections = useMemo(() => {

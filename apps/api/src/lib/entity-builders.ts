@@ -48,6 +48,8 @@ export type LocationCreateInput = {
   unlockPriceAed?: number;
   submittedBy?: RelationConnect;
   registryListed?: boolean;
+  externalSource?: 'catalog' | 'osm' | null;
+  externalId?: string | null;
 };
 
 export type ActivityCreateInput = {
@@ -184,6 +186,8 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     unlockPriceAed: data.unlockPriceAed ?? 29,
     submittedById: extractConnectedId(data.submittedBy),
     registryListed: data.registryListed !== false,
+    externalSource: data.externalSource ?? null,
+    externalId: data.externalId ?? null,
     createdAt: now,
     updatedAt: now
   };

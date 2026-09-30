@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
+    "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.json",
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "seed": "tsx scripts/seed.ts",
     "bump-activity-dates": "tsx scripts/bump-activity-dates.ts",
+    "import-venue-catalog": "tsx scripts/import-venue-catalog.ts",
     "cleanup:test-users": "node scripts/cleanup-test-users.mjs",
     "test": "vitest run"
   },

@@ -2,6 +2,10 @@ import type { OrganizeComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import type { ContributeVenueKind } from './contributeTypes';
 import { formatComposeQuery, type ExploreCompose } from './compose';
+import {
+  parseExploreActivityDatePreset,
+  serializeExploreActivityDatePreset,
+} from './exploreActivityDateFilter';
 
 export type ExplorePanel = 'activities' | 'venues' | 'shops';
 
@@ -85,13 +89,20 @@ export const parseMapFilter = (value: string | null): MapFilterKey => {
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Map activity date filter (`?date=YYYY-MM-DD`). */
+/** @deprecated Prefer parseExploreActivityDatePreset — kept for legacy `YYYY-MM-DD` links. */
 export const parseExploreActivityDate = (value: string | null): string | null => {
   if (!value || !ISO_DATE.test(value)) return null;
   const parsed = new Date(`${value}T12:00:00`);
   if (Number.isNaN(parsed.getTime())) return null;
   return value;
 };
+
+export {
+  parseExploreActivityDatePreset,
+  exploreActivityDatePresetLabel,
+  serializeExploreActivityDatePreset,
+  type ExploreActivityDatePreset,
+} from './exploreActivityDateFilter';
 
 export const formatExploreActivityDateLabel = (iso: string): string =>
   new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, {
@@ -200,8 +211,11 @@ export const explorePath = (options?: {
   }
   if (options?.date === null) {
     params.delete('date');
-  } else if (options?.date && parseExploreActivityDate(options.date)) {
-    params.set('date', options.date);
+  } else if (options?.date) {
+    const preset = parseExploreActivityDatePreset(options.date);
+    const serialized = serializeExploreActivityDatePreset(preset);
+    if (serialized) params.set('date', serialized);
+    else params.delete('date');
   }
   const qs = params.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;

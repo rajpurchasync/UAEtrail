@@ -32,6 +32,8 @@ import {
   readExploreMapMemoryCache,
   writeExploreMapMemoryCache,
 } from './explore-map-cache.js';
+import { resolveVenueExploreLabels } from './venue-display-names.js';
+import { isWithinUaeFocusArea } from './uae-bbox.js';
 
 export { invalidateExploreMapCache };
 
@@ -116,7 +118,7 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
 const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
   const [activityEvents, locationsResult, shopTenants, demandItems] = await Promise.all([
     listPublishedActivitiesForExploreMap(250),
-    listActiveLocations({ page: 1, pageSize: 250 }),
+    listActiveLocations({ page: 1, pageSize: 1200 }),
     listPublicShopTenantsForExplore(250),
     listActiveParticipantIntentsForMap(200)
   ]);
@@ -190,13 +192,22 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     const kind = venueKind(dto.activityType);
     const latitude = dto.latitude ?? null;
     const longitude = dto.longitude ?? null;
+    if (
+      latitude != null &&
+      longitude != null &&
+      !isWithinUaeFocusArea(latitude, longitude)
+    ) {
+      continue;
+    }
+
+    const venueLabels = resolveVenueExploreLabels(dto.name, location.tags, dto.region);
 
     items.push({
       id: `venue:${dto.id}`,
       kind,
       source: 'venue',
-      title: dto.name,
-      subtitle: dto.region,
+      title: venueLabels.title,
+      subtitle: venueLabels.subtitle,
       latitude,
       longitude,
       path: placeDetailPath(dto.activityType, dto.id),

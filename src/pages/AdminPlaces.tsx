@@ -56,6 +56,9 @@ const emptyForm: Partial<PlaceDTO> = {
 
 /* ─── Component ──────────────────────────────────────────────────────────── */
 
+const isCatalogMapPlace = (loc: Pick<PlaceDTO, 'tags'>): boolean =>
+  loc.tags?.includes('catalog-import') ?? false;
+
 /** Admin console for places (trails, camps, event venues). Canonical route: `/admin/places`. */
 export const AdminPlaces = () => {
   const [places, setPlaces] = useState<PlaceDTO[]>([]);
@@ -211,6 +214,10 @@ export const AdminPlaces = () => {
   return (
     <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
       <div className="space-y-4">
+        <p className="text-sm text-gray-600 max-w-3xl">
+          Curated explore pins can be corrected here — open <strong>Edit</strong>, move the map pin, and update name,
+          region, and description. Saves refresh the map and are kept when the JSON catalog is re-imported.
+        </p>
         {/* Tabs + Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
@@ -278,6 +285,11 @@ export const AdminPlaces = () => {
                         </div>
                       )}
                       <span className="font-medium text-gray-900">{loc.name}</span>
+                      {isCatalogMapPlace(loc) && (
+                        <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-900">
+                          Map catalog
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-700">{loc.region}</td>
@@ -702,6 +714,12 @@ export const AdminPlaces = () => {
                       Featured
                     </label>
                   </div>
+                  {editingId && isCatalogMapPlace(form) && (
+                    <p className="text-sm text-sky-900 bg-sky-50 border border-sky-100 rounded-lg px-3 py-2">
+                      This pin is on the explore map catalog. Drag the marker to the real trailhead or camp spot, then
+                      save — your coordinates won&apos;t be overwritten by a catalog import.
+                    </p>
+                  )}
                   <MapPinPicker latitude={form.latitude} longitude={form.longitude} onChange={handleMapChange} />
                 </fieldset>
 

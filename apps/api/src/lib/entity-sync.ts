@@ -42,6 +42,16 @@ export const patchActivityInMongo = async (
 export const findActivityDocInMongo = async (activityId: string): Promise<MongoActivityDoc | null> =>
   activitiesCollection().findOne({ _id: activityId });
 
+export const findLocationByExternalRef = async (
+  externalSource: NonNullable<Location['externalSource']>,
+  externalId: string
+): Promise<Location | null> => {
+  const doc = await locationsCollection().findOne({ externalSource, externalId });
+  if (!doc) return null;
+  const { _id, ...rest } = doc;
+  return { id: _id, ...rest };
+};
+
 export const deleteActivityDocInMongo = async (activityId: string): Promise<boolean> => {
   const result = await activitiesCollection().deleteOne({ _id: activityId });
   return result.deletedCount > 0;

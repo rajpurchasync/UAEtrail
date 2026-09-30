@@ -156,6 +156,10 @@ export interface Location {
   submittedById: string | null;
   /** When false, place exists for activity linkage only — not in public venue catalog. */
   registryListed?: boolean;
+  /** Provenance for imported venue catalogs (`catalog`) or legacy OSM rows. */
+  externalSource?: 'catalog' | 'osm' | null;
+  /** Provider-stable id, e.g. `node/12345`. */
+  externalId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

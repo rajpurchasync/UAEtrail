@@ -63,7 +63,7 @@ export const placeApi = {
   getPopularPlaces: (limit = 6) => apiRequest<{ data: LocationDTO[] }>(`/places/popular?limit=${limit}`),
   trackPlaceView: (id: string) => apiRequest('/places/' + id + '/view', { method: 'POST' }),
 
-  getAdminPlaces: () => apiRequest<{ data: LocationDTO[] }>('/admin/places?pageSize=100', { auth: true }),
+  getAdminPlaces: () => apiRequest<{ data: LocationDTO[] }>('/admin/places?pageSize=250', { auth: true }),
   createAdminPlace: (payload: Partial<PlaceDTO>) =>
     apiRequest<{ data: PlaceDTO }>('/admin/places', {
       method: 'POST',

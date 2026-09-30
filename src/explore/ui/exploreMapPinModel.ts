@@ -104,13 +104,6 @@ export const resolveExploreItemScheduleDate = (item: ExploreMapItemDTO): string 
   return raw.slice(0, 10);
 };
 
-/** When set, scheduled activities/demand must match; venues and shops stay visible. */
-export const matchesActivityDateFilter = (item: ExploreMapItemDTO, activityDate: string | null): boolean => {
-  if (!activityDate) return true;
-  if (item.source === 'venue' || item.source === 'shop' || item.source === 'agency') return true;
-  return resolveExploreItemScheduleDate(item) === activityDate;
-};
-
 const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
   if (item.source === 'demand') return item.kind === 'carpool' ? 'carpool' : (item.kind as MapPinKind);
   if (item.kind === 'shop') return 'shop';
@@ -167,7 +160,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
   return pins.sort((a, b) => pinLayerOrder(a.source) - pinLayerOrder(b.source));
 };
 
-const COORD_PRECISION = 5;
+const COORD_PRECISION = 4;
 
 export const mapPinLocationKey = (pin: PlaceMapPin): string => {
   const lat = pin.latitude.toFixed(COORD_PRECISION);
@@ -176,9 +169,12 @@ export const mapPinLocationKey = (pin: PlaceMapPin): string => {
   return `${lat},${lng},${endpoint}`;
 };
 
-/** Group by map emoji — same emoji at one spot stacks with a count badge. */
+/** Group pins at one coordinate — catalog venues by kind; activities by map emoji. */
 export const mapPinEmojiGroupKey = (pin: PlaceMapPin): string => {
   const source = pin.source ?? 'activity';
+  if (source === 'venue' && (pin.activityType === 'hiking' || pin.activityType === 'camping')) {
+    return `venue:${pin.activityType}`;
+  }
   return resolveMapPinEmoji(pin.activityType as ExploreCardKind, source);
 };
 
@@ -196,7 +192,7 @@ const buildColocatedEntry = (groupPins: PlaceMapPin[]): ColocatedMapPinEntry => 
     source: lead.source,
     exploreItemId: stackIds[0]!,
     stackExploreItemIds: stackIds.length > 1 ? stackIds : undefined,
-    stackCount: stackIds.length > 1 ? stackIds.length : undefined,
+    stackCount: stackIds.length,
   };
 };
 
@@ -236,8 +232,8 @@ export const layoutColocatedMapPins = (pins: PlaceMapPin[]): PlaceMapPin[] => {
       const entry = buildColocatedEntry(groupPins);
       const lead = groupPins[0]!;
 
-      if ((entry.stackCount ?? 0) <= 1) {
-        laidOut.push({ ...lead, latitude: centerLat, longitude: centerLng });
+      if ((entry.stackCount ?? 1) <= 1) {
+        laidOut.push({ ...lead, latitude: centerLat, longitude: centerLng, stackCount: entry.stackCount ?? 1 });
         continue;
       }
 
