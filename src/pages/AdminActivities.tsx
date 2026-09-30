@@ -30,6 +30,28 @@ export const AdminActivities = () => {
   const [tab, setTab] = useState<Tab>('active');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [engagementByActivityId, setEngagementByActivityId] = useState<
+    Record<
+      string,
+      {
+        participants: Array<{
+          id: string;
+          userId: string;
+          checkedInAt: string | null;
+          displayName: string | null;
+          email: string;
+        }>;
+        joinRequests: Array<{
+          id: string;
+          status: string;
+          displayName: string | null;
+          email: string;
+          note: string | null;
+        }>;
+      }
+    >
+  >({});
+  const [engagementLoadingId, setEngagementLoadingId] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<{ activity: ActivityDTO; action: 'suspend' | 'unsuspend' } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
   const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
@@ -65,6 +87,28 @@ export const AdminActivities = () => {
   };
 
   useEffect(() => { loadEvents(); loadRefs(); }, []);
+
+  const loadEngagement = async (activityId: string) => {
+    if (engagementByActivityId[activityId]) return;
+    setEngagementLoadingId(activityId);
+    try {
+      const res = await api.getAdminActivityEngagement(activityId);
+      setEngagementByActivityId((prev) => ({ ...prev, [activityId]: res.data }));
+    } catch {
+      setEngagementByActivityId((prev) => ({
+        ...prev,
+        [activityId]: { participants: [], joinRequests: [] },
+      }));
+    } finally {
+      setEngagementLoadingId(null);
+    }
+  };
+
+  const toggleExpanded = (activityId: string) => {
+    const next = expandedId === activityId ? null : activityId;
+    setExpandedId(next);
+    if (next) void loadEngagement(next);
+  };
 
   const executeModerate = async () => {
     if (!confirmTarget) return;
@@ -280,7 +324,7 @@ export const AdminActivities = () => {
                         openEditActivity(event);
                         return;
                       }
-                      setExpandedId(expandedId === event.id ? null : event.id);
+                      toggleExpanded(event.id);
                     }}
                   >
                     <td className="px-4 py-3">
@@ -371,6 +415,51 @@ export const AdminActivities = () => {
                             <p className="text-xs text-gray-500 uppercase font-medium">Tenant ID</p>
                             <p className="text-gray-700 break-all text-xs mt-0.5">{event.tenantId}</p>
                           </div>
+                        </div>
+                        <div className="mt-4 border-t border-gray-200 pt-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Participation
+                          </p>
+                          {engagementLoadingId === event.id ? (
+                            <p className="mt-2 text-xs text-gray-500">Loading roster…</p>
+                          ) : (
+                            <div className="mt-2 grid gap-4 md:grid-cols-2">
+                              <div>
+                                <p className="text-xs font-medium text-gray-700">
+                                  Joined ({engagementByActivityId[event.id]?.participants.length ?? 0})
+                                </p>
+                                <ul className="mt-1 max-h-40 space-y-1 overflow-y-auto text-xs text-gray-600">
+                                  {(engagementByActivityId[event.id]?.participants ?? []).map((p) => (
+                                    <li key={p.id}>
+                                      {p.displayName || p.email}
+                                      {p.checkedInAt ? (
+                                        <span className="ml-1 text-emerald-700">· checked in</span>
+                                      ) : null}
+                                    </li>
+                                  ))}
+                                  {(engagementByActivityId[event.id]?.participants.length ?? 0) === 0 && (
+                                    <li className="text-gray-400">No participants yet</li>
+                                  )}
+                                </ul>
+                              </div>
+                              <div>
+                                <p className="text-xs font-medium text-gray-700">
+                                  Join requests ({engagementByActivityId[event.id]?.joinRequests.length ?? 0})
+                                </p>
+                                <ul className="mt-1 max-h-40 space-y-1 overflow-y-auto text-xs text-gray-600">
+                                  {(engagementByActivityId[event.id]?.joinRequests ?? []).map((r) => (
+                                    <li key={r.id}>
+                                      {r.displayName || r.email}
+                                      <span className="ml-1 text-gray-500">· {r.status}</span>
+                                    </li>
+                                  ))}
+                                  {(engagementByActivityId[event.id]?.joinRequests.length ?? 0) === 0 && (
+                                    <li className="text-gray-400">No requests</li>
+                                  )}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>

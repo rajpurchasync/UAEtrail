@@ -1,15 +1,17 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import type { NavigateFunction } from 'react-router-dom';
 import type { ActivityDTO, ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
 import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
+import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../privateActivityExploreItem';
 import { api } from '../../api/index';
 import { buildExploreCardModel } from '../exploreCardModel';
 import { resolveLinkedRideshareRows } from '../linkedRideshareExplore';
+import { canOfferCarpoolForDemandItem } from '../linkActivityCarpoolOffer';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { activityHostUserId } from '../../utils/hostLabels';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
-import { reloadExploreMap } from '../../hooks/useExploreMap';
+import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
@@ -31,6 +33,7 @@ type UseExploreSelectionActionsArgs = {
   fulfillIntentPrefill: unknown;
   clearFulfillAfterPublish: () => void;
   handleFocusMapLocation: (coords: { lat: number; lng: number }) => void;
+  setLinkOnlyPeekItems: Dispatch<SetStateAction<ExploreMapItemDTO[]>>;
 };
 
 export const useExploreSelectionActions = ({
@@ -48,11 +51,14 @@ export const useExploreSelectionActions = ({
   fulfillIntentPrefill,
   clearFulfillAfterPublish,
   handleFocusMapLocation,
+  setLinkOnlyPeekItems,
 }: UseExploreSelectionActionsArgs) => {
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
   const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
   const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
+  const [demandRemoveIntentId, setDemandRemoveIntentId] = useState<string | null>(null);
+  const [demandRemoveBusy, setDemandRemoveBusy] = useState(false);
 
   const selected = items.find((item) => item.id === selectedId) ?? null;
 
@@ -78,9 +84,23 @@ export const useExploreSelectionActions = ({
       activity,
       linkedRideshares: linkedRideshares.length > 0 ? linkedRideshares : undefined,
     };
-    const activity = selected.activity;
     const hostUserId = activity ? activityHostUserId(activity) : null;
     const isOwnActivity = Boolean(user && activity && hostUserId === user.id);
+    const isOwnDemand = Boolean(
+      user &&
+        selected.source === 'demand' &&
+        selected.requesterUserId === user.id &&
+        selected.participantIntentId &&
+        !selected.convertedActivityId
+    );
+    if (isOwnDemand) {
+      return {
+        ...card,
+        showJoinActions: false,
+        showDemandOwnerActions: true,
+        showDemandLinkCarpool: canOfferCarpoolForDemandItem(selected),
+      };
+    }
     if (!isOwnActivity) return card;
     return {
       ...card,
@@ -193,6 +213,28 @@ export const useExploreSelectionActions = ({
     setHostRemoveConfirm(activity);
   }, [selected?.activity]);
 
+  const requestDemandRemove = useCallback(() => {
+    const intentId = selected?.participantIntentId;
+    if (!intentId || selected?.source !== 'demand') return;
+    setDemandRemoveIntentId(intentId);
+  }, [selected]);
+
+  const confirmDemandRemove = useCallback(async () => {
+    if (!demandRemoveIntentId) return;
+    setDemandRemoveBusy(true);
+    try {
+      await api.cancelParticipantIntent(demandRemoveIntentId);
+      setDemandRemoveIntentId(null);
+      setSelectedId(null);
+      await reloadExploreMap(queryClient);
+      setDemandNotice('Request removed from the map.');
+    } catch (err) {
+      setDemandNotice(err instanceof Error ? err.message : 'Could not remove this request.');
+    } finally {
+      setDemandRemoveBusy(false);
+    }
+  }, [demandRemoveIntentId, queryClient, setSelectedId]);
+
   const confirmHostRemove = useCallback(async () => {
     if (!hostRemoveConfirm || !tenantId) return;
     setHostRemoveBusy(true);
@@ -219,8 +261,18 @@ export const useExploreSelectionActions = ({
 
       if (activity.joinMode === 'private') {
         await reloadExploreMap(queryClient);
+        const peekItem = buildExploreMapItemFromActivity(activity);
+        setLinkOnlyPeekItems((prev) => {
+          const rest = prev.filter((entry) => entry.id !== peekItem.id);
+          return [...rest, peekItem];
+        });
+        const { latitude, longitude } = resolveActivityDisplayCoordinates(activity);
+        if (latitude != null && longitude != null) {
+          handleFocusMapLocation({ lat: latitude, lng: longitude });
+        }
+        setSelectedId(peekItem.id);
         setVenueNotice(
-          'Activity published privately — share the link with your group. It will not appear on the public map.'
+          'Private plan published — share the link with your group. It won’t appear on the public map.'
         );
         return;
       }
@@ -245,6 +297,60 @@ export const useExploreSelectionActions = ({
       fulfillIntentPrefill,
       clearFulfillAfterPublish,
       setSelectedId,
+      setLinkOnlyPeekItems,
+    ]
+  );
+
+  type ActivityPinDeepLinkResult = 'opened' | 'not_activity' | 'auth_required' | 'denied' | 'error';
+
+  const tryOpenActivityPinDeepLink = useCallback(
+    async (mapItemId: string): Promise<ActivityPinDeepLinkResult> => {
+      const existing = items.find((entry) => entry.id === mapItemId);
+      if (existing) {
+        openItem(existing);
+        return 'opened';
+      }
+
+      const activityId = parseActivityMapItemId(mapItemId);
+      if (!activityId) return 'not_activity';
+      if (!user) return 'auth_required';
+
+      try {
+        const res = await api.getPublicActivityDetail(activityId);
+        if (res.data.visibilityState === 'private') {
+          setDemandNotice(
+            res.data.message ?? 'This private plan is only available to signed-in members with the link.'
+          );
+          return 'denied';
+        }
+        const peekItem = buildExploreMapItemFromActivity(res.data);
+        setLinkOnlyPeekItems((prev) => {
+          const rest = prev.filter((entry) => entry.id !== peekItem.id);
+          return [...rest, peekItem];
+        });
+        const { latitude, longitude } = resolveActivityDisplayCoordinates(res.data);
+        if (latitude != null && longitude != null) {
+          handleFocusMapLocation({ lat: latitude, lng: longitude });
+        }
+        setSelectedId(peekItem.id);
+        if (!isDesktop) {
+          browse.setListOpen(false);
+        }
+        return 'opened';
+      } catch {
+        setDemandNotice('Could not open this plan — check the link or try again.');
+        return 'error';
+      }
+    },
+    [
+      items,
+      openItem,
+      user,
+      setLinkOnlyPeekItems,
+      handleFocusMapLocation,
+      setSelectedId,
+      isDesktop,
+      browse,
     ]
   );
 
@@ -253,31 +359,30 @@ export const useExploreSelectionActions = ({
   }, [setSelectedId]);
 
   const handleDemandSubmitted = useCallback(
-    (result: DemandSubmitResult) => {
-      void reloadExploreMap(queryClient);
+    async (result: DemandSubmitResult) => {
+      await reloadExploreMap(queryClient);
       if (!result.visibleOnMap) {
-        setDemandNotice(
-          'Request posted. Add a map pin next time to show on Explore — nearby hosts can still message you.'
-        );
-      } else {
-        setDemandNotice(
-          'Request posted on the map. Nearby hosts and guides can message you or propose a matching activity.'
-        );
+        return;
+      }
+      const mapItems = queryClient.getQueryData<ExploreMapItemDTO[]>(exploreMapQueryKey);
+      const pin = mapItems?.find((item) => item.id === result.mapItemId);
+      if (pin?.latitude != null && pin?.longitude != null) {
+        handleFocusMapLocation({ lat: pin.latitude, lng: pin.longitude });
+      }
+      setSelectedId(result.mapItemId);
+      if (!isDesktop) {
+        browse.setListOpen(false);
       }
     },
-    [queryClient]
+    [queryClient, setSelectedId, handleFocusMapLocation, isDesktop, browse]
   );
 
   const handleContributeSubmitted = useCallback(
     (result: ContributeSubmitResult) => {
       void reloadExploreMap(queryClient);
-      if (result.kind === 'shop') {
-        setVenueNotice('Shop submitted for review. We\'ll notify you once it\'s on the map.');
-      } else {
-        setVenueNotice(
-          `"${result.location.name}" submitted for admin review. You'll see it on the map once published.`
-        );
-      }
+      setVenueNotice(
+        `"${result.location.name}" submitted for review. You'll see it on the map once it's published.`
+      );
     },
     [queryClient]
   );
@@ -303,7 +408,13 @@ export const useExploreSelectionActions = ({
     setHostRemoveConfirm,
     confirmHostRemove,
     hostRemoveBusy,
+    demandRemoveIntentId,
+    setDemandRemoveIntentId,
+    requestDemandRemove,
+    confirmDemandRemove,
+    demandRemoveBusy,
     handleActivityPublished,
+    tryOpenActivityPinDeepLink,
     handleCloseSelection,
     handleDemandSubmitted,
     handleContributeSubmitted,

@@ -25,8 +25,6 @@ export type DemandFlowStepId =
 
 export type DemandFitnessLevel = 'beginner' | 'medium' | 'goat';
 
-export type DemandVisibility = 'public' | 'private';
-
 export type DemandTransportMode = 'self' | 'carpool';
 
 export type DemandVehicleType = 'sedan' | 'suv' | '4x4' | 'van';
@@ -51,7 +49,6 @@ export type DemandDraft = {
   womenOnly: boolean;
   childrenAllowed: boolean;
   petsAllowed: boolean;
-  visibility: DemandVisibility;
   transportMode: DemandTransportMode | null;
   selfVehicleType: DemandVehicleType | null;
   carpoolSeatsNeeded: number;
@@ -137,6 +134,7 @@ const EVENT_DEMAND_STEPS: DemandFlowStepId[] = [
   'when',
   'area',
   'persons',
+  'audience',
   'info',
   'review',
 ];
@@ -180,7 +178,6 @@ export const emptyDemandDraft = (): DemandDraft => ({
   womenOnly: false,
   childrenAllowed: false,
   petsAllowed: false,
-  visibility: 'public',
   transportMode: null,
   selfVehicleType: null,
   carpoolSeatsNeeded: 2,
@@ -373,8 +370,6 @@ const vehicleLabel = (value: DemandVehicleType | null): string =>
 export const buildDemandComment = (draft: DemandDraft): string => {
   const parts: string[] = [];
 
-  parts.push(draft.visibility === 'private' ? 'Private request' : 'Public request');
-
   if (draft.womenOnly) parts.push('Women only');
   if (draft.childrenAllowed) parts.push('Children in group');
   if (draft.petsAllowed) parts.push('Traveling with pets');
@@ -516,6 +511,8 @@ export const validateDemandDraft = (draft: DemandDraft): string | null => {
 
 export type DemandSubmitResult = {
   visibleOnMap: boolean;
+  participantIntentId: string;
+  mapItemId: string;
 };
 
 export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSubmitResult> => {
@@ -543,10 +540,12 @@ export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSu
     comment,
   };
 
-  await api.createParticipantIntent(payload);
+  const created = await api.createParticipantIntent(payload);
 
   return {
     visibleOnMap: payload.latitude != null && payload.longitude != null,
+    participantIntentId: created.data.id,
+    mapItemId: `demand:${created.data.id}`,
   };
 };
 

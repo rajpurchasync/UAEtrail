@@ -14,6 +14,7 @@ export type ActivityViewerAccessLevel =
   | 'participant'
   | 'join_request'
   | 'activity_group_member'
+  | 'link_holder'
   | 'public'
   | 'denied';
 
@@ -98,5 +99,6 @@ export const resolveActivityViewerAccess = async (
     }
   }
 
-  return { level: 'denied', canViewFullActivity: false, joinMode };
+  // Link-only private plans: any signed-in member with the URL can view and RSVP (not on public map).
+  return { level: 'link_holder', canViewFullActivity: true, joinMode };
 };

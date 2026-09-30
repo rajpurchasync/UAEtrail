@@ -24,8 +24,8 @@ import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
 import { useExploreOrganizeFromActivity } from './useExploreOrganizeFromActivity';
 import type { OrganizeWizardPrefill } from './organizeWizardPrefill';
-import { buildRideshareDraftFromParentActivity } from '../linkCarpoolPrefill';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkCarpoolPrefill';
+import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
 import { parseExplorePinMapItemId, parseOrganizeFromActivityId } from '../routing';
@@ -47,7 +47,9 @@ export const ExploreExperience = () => {
   const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [linkOnlyPeekItems, setLinkOnlyPeekItems] = useState<ExploreMapItemDTO[]>([]);
   const [carpoolLinkParent, setCarpoolLinkParent] = useState<ActivityDTO | null>(null);
+  const [carpoolLinkDemand, setCarpoolLinkDemand] = useState<ExploreMapItemDTO | null>(null);
   const [hoveredListItemId, setHoveredListItemId] = useState<string | null>(null);
   const clearSelection = useCallback(() => setSelectedId(null), []);
 
@@ -76,7 +78,13 @@ export const ExploreExperience = () => {
     hostGateLoading,
   });
 
-  const selected = items.find((item) => item.id === selectedId) ?? null;
+  const selectionItems = useMemo(() => {
+    const ids = new Set(items.map((entry) => entry.id));
+    const extra = linkOnlyPeekItems.filter((entry) => !ids.has(entry.id));
+    return extra.length > 0 ? [...items, ...extra] : items;
+  }, [items, linkOnlyPeekItems]);
+
+  const selected = selectionItems.find((item) => item.id === selectedId) ?? null;
 
   const fulfill = useExploreFulfillIntent({
     items,
@@ -107,6 +115,7 @@ export const ExploreExperience = () => {
 
   const handleCreateLinkedRideshare = useCallback(
     (parent: ActivityDTO) => {
+      setCarpoolLinkDemand(null);
       setCarpoolLinkParent(parent);
       setSelectedId(null);
       compose.setComposeRoute({ intent: 'organize', kind: 'carpool' });
@@ -114,11 +123,46 @@ export const ExploreExperience = () => {
     [compose.setComposeRoute]
   );
 
+  const handleOfferRideshareForDemand = useCallback(() => {
+    if (!selected || selected.source !== 'demand') return;
+
+    const returnPath = `${pathname}${search}`;
+
+    if (!user) {
+      navigate(`/signup?redirect=${encodeURIComponent(returnPath)}`);
+      return;
+    }
+    if (hostGateLoading) return;
+    if (!canPublish) {
+      navigate(`/become-host?redirect=${encodeURIComponent(returnPath)}`);
+      return;
+    }
+
+    setCarpoolLinkParent(null);
+    setCarpoolLinkDemand(selected);
+    setSelectedId(null);
+    compose.setComposeRoute({ intent: 'organize', kind: 'carpool' });
+  }, [
+    selected,
+    pathname,
+    search,
+    user,
+    hostGateLoading,
+    canPublish,
+    navigate,
+    compose.setComposeRoute,
+  ]);
+
   const organizeWizardPrefill = useMemo((): OrganizeWizardPrefill | null => {
     if (carpoolLinkParent) {
       return {
         draft: buildRideshareDraftFromParentActivity(carpoolLinkParent),
         linkToParentActivityId: carpoolLinkParent.id,
+      };
+    }
+    if (carpoolLinkDemand) {
+      return {
+        draft: buildRideshareDraftFromDemandMapItem(carpoolLinkDemand),
       };
     }
     if (fulfill.fulfillIntentPrefill) {
@@ -134,10 +178,10 @@ export const ExploreExperience = () => {
       };
     }
     return null;
-  }, [carpoolLinkParent, fulfill.fulfillIntentPrefill, organizeFrom.organizeFromPrefill]);
+  }, [carpoolLinkParent, carpoolLinkDemand, fulfill.fulfillIntentPrefill, organizeFrom.organizeFromPrefill]);
 
   const selection = useExploreSelectionActions({
-    items,
+    items: selectionItems,
     selectedId,
     setSelectedId,
     user,
@@ -151,6 +195,7 @@ export const ExploreExperience = () => {
     fulfillIntentPrefill: fulfill.fulfillIntentPrefill,
     clearFulfillAfterPublish: () => fulfill.setFulfillIntentPrefill(null),
     handleFocusMapLocation: viewport.handleFocusMapLocation,
+    setLinkOnlyPeekItems,
   });
 
   const organizeFromPending = Boolean(parseOrganizeFromActivityId(searchParams));
@@ -164,19 +209,46 @@ export const ExploreExperience = () => {
   useEffect(() => {
     if (!deepLinkPinId || loading) return;
     if (openedDeepLinkPinRef.current === deepLinkPinId) return;
-    const item = items.find((entry) => entry.id === deepLinkPinId);
-    if (!item) return;
-    openedDeepLinkPinRef.current = deepLinkPinId;
-    selection.openItem(item);
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete('pin');
-        return next;
-      },
-      { replace: true }
-    );
-  }, [deepLinkPinId, loading, items, selection.openItem, setSearchParams]);
+
+    const clearPinParam = () => {
+      openedDeepLinkPinRef.current = deepLinkPinId;
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete('pin');
+          return next;
+        },
+        { replace: true }
+      );
+    };
+
+    const item = selectionItems.find((entry) => entry.id === deepLinkPinId);
+    if (item) {
+      selection.openItem(item);
+      clearPinParam();
+      return;
+    }
+
+    void selection.tryOpenActivityPinDeepLink(deepLinkPinId).then((result) => {
+      if (result === 'opened') {
+        clearPinParam();
+        return;
+      }
+      if (result === 'auth_required') {
+        navigate(buildSignInRedirect({ pathname, search }).href);
+      }
+    });
+  }, [
+    deepLinkPinId,
+    loading,
+    selectionItems,
+    selection.openItem,
+    selection.tryOpenActivityPinDeepLink,
+    setSearchParams,
+    navigate,
+    pathname,
+    search,
+  ]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -204,6 +276,7 @@ export const ExploreExperience = () => {
   } =
     useExploreBrowseList({
       items,
+      ephemeralMapItems: linkOnlyPeekItems,
       mapFilter: browse.mapFilter,
       venueRegions: browse.venueRegions,
       query: browse.query,
@@ -245,10 +318,10 @@ export const ExploreExperience = () => {
       const stack = pin.stackExploreItemIds;
       const itemId =
         (stack?.find((id) => id === selectedId) ?? stack?.[0]) ?? pin.exploreItemId ?? pin.id;
-      const item = items.find((entry) => entry.id === itemId);
+      const item = selectionItems.find((entry) => entry.id === itemId);
       if (item) selection.openItem(item);
     },
-    [items, selectedId, selection]
+    [selectionItems, selectedId, selection]
   );
 
   const closeCreateFlow = () => {
@@ -415,8 +488,14 @@ export const ExploreExperience = () => {
           linkCarpoolTenantId={tenantId}
           onCreateLinkedRideshare={handleCreateLinkedRideshare}
           onHostRemove={selection.selectedCard?.showHostActions ? selection.requestHostRemove : undefined}
+          onDemandRemove={
+            selection.selectedCard?.showDemandOwnerActions ? selection.requestDemandRemove : undefined
+          }
+          onDemandLinkCarpool={
+            selection.selectedCard?.showDemandLinkCarpool ? handleOfferRideshareForDemand : undefined
+          }
           onOpenExploreItem={(exploreItemId) => {
-            const item = items.find((entry) => entry.id === exploreItemId);
+            const item = selectionItems.find((entry) => entry.id === exploreItemId);
             if (item) selection.openItem(item);
           }}
           onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
@@ -452,6 +531,7 @@ export const ExploreExperience = () => {
           fulfill.setFulfillIntentPrefill(null);
           organizeFrom.clearOrganizeFromPrefill();
           setCarpoolLinkParent(null);
+          setCarpoolLinkDemand(null);
           compose.setComposeRoute({ surface: 'menu', intent: 'organize' });
         }}
         onFindBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'find' })}
@@ -460,6 +540,9 @@ export const ExploreExperience = () => {
           await selection.handleActivityPublished(activity);
           if (carpoolLinkParent && activity.activityType === 'carpool') {
             setCarpoolLinkParent(null);
+          }
+          if (carpoolLinkDemand && activity.activityType === 'carpool') {
+            setCarpoolLinkDemand(null);
           }
         }}
         onCreateLinkedRideshare={handleCreateLinkedRideshare}
@@ -498,6 +581,33 @@ export const ExploreExperience = () => {
             onClick={() => void selection.confirmHostRemove()}
           >
             {selection.hostRemoveConfirm?.status === 'draft' ? 'Delete' : 'Cancel activity'}
+          </AppButton>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(selection.demandRemoveIntentId)}
+        onClose={() => selection.setDemandRemoveIntentId(null)}
+        title="Delete request?"
+      >
+        <p className="mb-4 text-sm text-neutral-600">
+          This deletes your looking-for post from the map. Hosts who saved it will stop seeing it on Explore.
+        </p>
+        <div className="flex justify-end gap-2">
+          <AppButton
+            type="button"
+            variant="secondary"
+            onClick={() => selection.setDemandRemoveIntentId(null)}
+          >
+            Keep
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="destructive"
+            disabled={selection.demandRemoveBusy}
+            onClick={() => void selection.confirmDemandRemove()}
+          >
+            Delete
           </AppButton>
         </div>
       </Dialog>

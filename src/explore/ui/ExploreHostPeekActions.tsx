@@ -1,4 +1,5 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
+import { activityHasJoinedParticipants } from '@uaetrail/shared-types';
 import { ORGANIZE_LINK_CARPOOL_LABEL } from '../createFlowCopy';
 import { canLinkCarpoolToActivity } from '../linkActivityCarpoolOffer';
 import type { ExploreCardModel } from '../exploreCardModel';
@@ -36,7 +37,10 @@ export const ExploreHostPeekActions = ({
       canLinkCarpoolToActivity(activity)
   );
 
-  const showCheckIn = activity?.status === 'published' && Boolean(onManage);
+  const showCheckIn =
+    activity?.status === 'published' &&
+    Boolean(onManage) &&
+    activityHasJoinedParticipants(activity);
 
   const runGated = (action: () => void) => {
     if (gate) {

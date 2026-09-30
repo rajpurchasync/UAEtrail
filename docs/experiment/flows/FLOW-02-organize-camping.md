@@ -43,7 +43,7 @@ Each step: back, title from `createFlowStepTitle`, **Next**. Validation via `val
 | 1 | `title` | **Give it a title** | Camp / trip title |
 | 2 | `when` | **When are you going?** | Date · flexible or start time |
 | 3 | `meeting` | **Where are you going from?** | Going-from pin · optional directions |
-| 4 | `audience` | **Who can join?** | Public vs private · if public, approval vs RSVP (same kit as hiking) |
+| 4 | `audience` | **Who can join?** | Public vs private · if public, approval vs RSVP · **private → RSVP only** ([PRIVATE-ORGANIZE-PLANS](./PRIVATE-ORGANIZE-PLANS.md)) |
 | 5 | `spots` | **Participants** | Capacity presets · Anyone vs Limited restrictions · pets |
 | 6 | `price` | **Price** | Free / shared / paid |
 | 7 | `destination` | **Where are you camping?** | Camp or area name |
@@ -53,7 +53,7 @@ Each step: back, title from `createFlowStepTitle`, **Next**. Validation via `val
 | 11 | `transportation` | **Transportation** | Sedan vs **4x4 required** |
 | 12 | `publish` | **Preview and publish** | Summary · **Publish** |
 
-**Participation & visibility:** Same as FLOW-01 step 4.
+**Participation & visibility:** Same as FLOW-01 step 4 · private link-only rules in [PRIVATE-ORGANIZE-PLANS](./PRIVATE-ORGANIZE-PLANS.md).
 
 ---
 

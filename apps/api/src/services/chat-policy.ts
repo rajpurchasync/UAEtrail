@@ -36,6 +36,9 @@ export async function assertChatRateLimit(senderId: string): Promise<void> {
 /**
  * Users may message when they are accepted buddies or share an active activity / request relationship.
  * A past DM thread alone does not grant access — unfriended buddies cannot keep messaging.
+ *
+ * Platform admins have no bypass: they cannot read private DMs or group chat unless they are
+ * participants with the same relationship rules as any other member.
  */
 export async function canMessageUser(
   senderId: string,

@@ -334,6 +334,25 @@ export const findActiveLocationById = async (locationId: string) => {
   return item ? mapMongoLocation(item) : null;
 };
 
+/** Active venues for everyone; draft venues for submitter or platform admin (pending preview). */
+export const findLocationForDetailView = async (
+  locationId: string,
+  viewerUserId?: string | null,
+  viewerRole?: string | null
+) => {
+  const active = await findActiveLocationById(locationId);
+  if (active) return active;
+
+  const item = await findLocationInMongo(locationId);
+  if (!item || item.status !== LocationStatus.DRAFT) return null;
+
+  const isAdmin = viewerRole === 'ADMIN' || viewerRole === 'PLATFORM_ADMIN';
+  if (viewerUserId && (item.submittedById === viewerUserId || isAdmin)) {
+    return item;
+  }
+  return null;
+};
+
 export const incrementActiveLocationViewCount = async (locationId: string) => {
   const updated = await locationsCollection().updateOne(
     { _id: locationId, status: LocationStatus.ACTIVE },

@@ -47,7 +47,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 | 2 | `when` | **When are you going?** | Date · flexible or start time |
 | 3 | `meeting_point` | **Where (meeting)** | **Map pin where people meet** · extra directions — primary explore pin for the outing |
 | 4 | `spots` | **Participants** | Capacity presets · **Anyone vs Limited** (women only, min age) · **Children allowed** · **Pets allowed** |
-| 5 | `audience` | **Who can join?** | **Public vs private** (map vs link-only) · **Approval vs RSVP** when public (same cards as hiking) · private → approval only |
+| 5 | `audience` | **Who can join?** | **Public vs private** (map vs link-only) · **Approval vs RSVP** when public (same cards as hiking) · private → **RSVP only** (I’m going — no approval queue) |
 | 6 | `price` | **Price** | Free · shared · paid |
 | 7 | `instructions` | **Instructions** | What joiners should know before they come (single text — gear, rules, meet-up notes) |
 | 8 | `meeting` | **Going from** | Optional **going-from** pin when departure ≠ meeting place · directions (`goingFromNotes`) |
@@ -59,7 +59,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 
 **Map pins:** Meet pin from step 3 (`meetingLat`/`meetingLng` or primary `start` when no separate going-from). Step 8 sets **going-from** (`startLat`/`startLng`); when coords differ, show **dual pins** on explore (same rules as FLOW-01).
 
-**Visibility:** Step 5 `joinMode` — private outings hidden from public explore map.
+**Visibility:** Step 5 `joinMode` — private outings hidden from public explore map · [PRIVATE-ORGANIZE-PLANS](./PRIVATE-ORGANIZE-PLANS.md).
 
 **Participation:** Step 5 sets `participationMode`. Default **approval** for `organize.activities`.
 

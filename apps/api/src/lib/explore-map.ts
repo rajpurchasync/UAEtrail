@@ -244,6 +244,32 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     if (String(location.activityType).toUpperCase() === 'CARPOOL') continue;
 
     const dto = toLocationDto(location);
+    if (dto.activityType === 'shop') {
+      const latitude = dto.latitude ?? null;
+      const longitude = dto.longitude ?? null;
+      if (
+        latitude != null &&
+        longitude != null &&
+        !isWithinUaeFocusArea(latitude, longitude)
+      ) {
+        continue;
+      }
+
+      items.push({
+        id: `venue:${dto.id}`,
+        kind: 'shop',
+        source: 'venue',
+        title: dto.name,
+        subtitle: dto.region ?? null,
+        latitude,
+        longitude,
+        path: placeDetailPath(dto.activityType, dto.id),
+        image: dto.images?.[0] ?? null,
+        about: dto.description,
+      });
+      continue;
+    }
+
     const kind = venueKind(dto.activityType);
     if (kind !== 'hiking' && kind !== 'camping') continue;
 

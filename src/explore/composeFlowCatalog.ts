@@ -189,6 +189,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     defaultParticipation: null,
     wizard: 'contributeFlow',
     contributeSteps: getContributeFlowSteps('hiking'),
+    confirmationDoc: 'docs/experiment/flows/FLOW-10-add-hiking-trail.md',
   },
   'add.camp': {
     id: 'add.camp',
@@ -200,6 +201,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     defaultParticipation: null,
     wizard: 'contributeFlow',
     contributeSteps: getContributeFlowSteps('camping'),
+    confirmationDoc: 'docs/experiment/flows/FLOW-12-add-camping.md',
   },
   'add.shop': {
     id: 'add.shop',
@@ -211,6 +213,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     defaultParticipation: null,
     wizard: 'contributeFlow',
     contributeSteps: getContributeFlowSteps('shop'),
+    confirmationDoc: 'docs/experiment/flows/FLOW-13-add-shop.md',
   },
   'add.spot': {
     id: 'add.spot',

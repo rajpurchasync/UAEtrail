@@ -133,6 +133,16 @@ describe('resolveActivityViewerAccess', () => {
     expect(access.level).toBe('activity_group_member');
   });
 
+  it('allows any signed-in member with the link to view a private activity', async () => {
+    const access = await resolveActivityViewerAccess({
+      viewerUserId: 'member-with-link-1',
+      activity,
+    });
+
+    expect(access.canViewFullActivity).toBe(true);
+    expect(access.level).toBe('link_holder');
+  });
+
   it('allows tenant staff to view a private activity', async () => {
     vi.mocked(findTenantMembershipContext).mockResolvedValue({
       role: MembershipRole.TENANT_ADMIN,

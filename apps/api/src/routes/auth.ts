@@ -43,6 +43,7 @@ import {
   updateAuthUserCore
 } from '../lib/auth-users.js';
 import { createHostApplicationRecord } from '../lib/host-applications-store.js';
+import { notifyAdminsMemberRegistered } from '../services/platform-admin-events.js';
 import { processSignupRewards } from '../services/rewards.js';
 import { acceptGroupInviteByToken, acceptPendingGroupInvitesForEmail } from '../lib/social-groups-store.js';
 import { DEMO_LOGIN_EMAILS, getDemoAccount } from '../lib/demo-accounts.js';
@@ -320,6 +321,11 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
     });
 
     void processSignupRewards(created._id, referralCode).catch(() => undefined);
+    notifyAdminsMemberRegistered({
+      userId: created._id,
+      email: created.email,
+      displayName: displayName,
+    });
     if (groupInviteToken) {
       void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
         () => undefined
@@ -702,6 +708,11 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
       user = { id: created._id, email: created.email, role: created.role, status: created.status };
 
       void processSignupRewards(created._id, referralCode).catch(() => undefined);
+      notifyAdminsMemberRegistered({
+        userId: created._id,
+        email: created.email,
+        displayName: profile.displayName,
+      });
       if (groupInviteToken) {
         void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
           () => undefined

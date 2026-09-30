@@ -92,7 +92,18 @@ const shopApplicationSchema = z.object({
   shopPresence: z.enum(['physical', 'online']),
   latitude: z.number().min(-90).max(90).nullable().optional(),
   longitude: z.number().min(-180).max(180).nullable().optional(),
-  region: z.string().min(2).max(80).optional()
+  region: z.string().min(2).max(80).optional(),
+  productsServices: z.string().min(2).max(2000).optional(),
+  searchKeywords: z.string().min(2).max(500).optional(),
+  deliveryOffered: z.boolean().optional(),
+  deliveryRadiusKm: z.number().positive().max(1000).optional(),
+  contactEmail: z
+    .string()
+    .email()
+    .max(120)
+    .optional()
+    .or(z.literal(''))
+    .transform((value) => (value?.trim() ? value.trim() : undefined)),
 });
 
 export const hostApplicationBodySchema = z
@@ -116,6 +127,13 @@ export const hostApplicationBodySchema = z
         code: z.ZodIssueCode.custom,
         message: 'Pin your shop on the map.',
         path: ['latitude']
+      });
+    }
+    if (body.deliveryOffered === true && body.deliveryRadiusKm == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Choose a delivery distance.',
+        path: ['deliveryRadiusKm']
       });
     }
   });
@@ -158,6 +176,11 @@ export const buildHostApplicationMetadata = (
       latitude: body.shopPresence === 'online' ? null : body.latitude ?? null,
       longitude: body.shopPresence === 'online' ? null : body.longitude ?? null,
       region: body.region ?? null,
+      productsServices: body.productsServices ?? '',
+      searchKeywords: body.searchKeywords ?? '',
+      deliveryOffered: body.deliveryOffered ?? false,
+      deliveryRadiusKm: body.deliveryRadiusKm ?? null,
+      contactEmail: body.contactEmail ?? '',
     };
   }
 

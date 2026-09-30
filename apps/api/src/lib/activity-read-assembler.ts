@@ -1,3 +1,4 @@
+import type { OutingCategory, OutingTopic } from '@uaetrail/shared-types';
 import type { Collection } from 'mongodb';
 import type { Activity, ActivityParticipant, Location } from '../domain/types.js';
 import { resolveJoinMode, shouldHideActivityFromExploreMap } from '../domain/activity-join-mode.js';
@@ -92,8 +93,8 @@ const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
   status: doc.status,
   featured: doc.featured,
   publishedAt: doc.publishedAt,
-  outingCategory: doc.outingCategory ?? null,
-  outingTopic: doc.outingTopic ?? null,
+  outingCategory: (doc.outingCategory as OutingCategory | null | undefined) ?? null,
+  outingTopic: (doc.outingTopic as OutingTopic | null | undefined) ?? null,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
 });

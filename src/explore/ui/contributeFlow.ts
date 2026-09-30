@@ -5,16 +5,26 @@ import { MAP_CONFIG } from '../../config/platform';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
 import { ACTIVITY_DIFFICULTY_OPTIONS, type ActivityDifficulty } from './organizeFlow';
 import type { ContributeVenueKind } from '../contributeTypes';
-import { isValidNationalPhone } from '../../utils/phone';
+import { formatE164Phone, isValidNationalPhone } from '../../utils/phone';
+import { getOutdoorContributeFlowSteps, getShopContributeFlowSteps } from './contributeFlows/registry';
 
 export type ContributeFlowStepId =
   | 'title'
   | 'location'
   | 'image'
   | 'description'
+  | 'about'
+  | 'trail_stats'
+  | 'transport'
+  | 'surface'
   | 'difficulty'
   | 'parking'
   | 'contact'
+  | 'shop_products'
+  | 'shop_keywords'
+  | 'shop_delivery'
+  | 'shop_phone'
+  | 'shop_email'
   | 'review';
 
 export type ContributeDraft = {
@@ -33,39 +43,20 @@ export type ContributeDraft = {
   phoneCountryCode: string;
   phone: string;
   contactEmail: string;
+  /** Trail distance in kilometres (hiking add flow). */
+  trailDistanceKm: number | null;
+  /** Summit / gain in metres (hiking add flow). */
+  trailElevationM: number | null;
+  transportSedan: boolean;
+  transport4x4: boolean;
+  surfaceTypes: string[];
+  shopProductsServices: string;
+  shopSearchKeywords: string;
+  shopDeliveryOffered: boolean | null;
+  shopDeliveryRadiusKm: number | null;
 };
 
-export type ContributeSubmitResult =
-  | { kind: 'location'; location: LocationDTO }
-  | { kind: 'shop' };
-
-const HIKING_CONTRIBUTE_STEPS: ContributeFlowStepId[] = [
-  'title',
-  'location',
-  'image',
-  'description',
-  'difficulty',
-  'parking',
-  'review',
-];
-
-const CAMPING_CONTRIBUTE_STEPS: ContributeFlowStepId[] = [
-  'title',
-  'location',
-  'image',
-  'description',
-  'parking',
-  'review',
-];
-
-const SHOP_CONTRIBUTE_STEPS: ContributeFlowStepId[] = [
-  'title',
-  'location',
-  'image',
-  'description',
-  'contact',
-  'review',
-];
+export type ContributeSubmitResult = { kind: 'location'; location: LocationDTO };
 
 const EVENT_CONTRIBUTE_STEPS: ContributeFlowStepId[] = [
   'title',
@@ -79,15 +70,14 @@ const EVENT_CONTRIBUTE_STEPS: ContributeFlowStepId[] = [
 export const getContributeFlowSteps = (kind: ContributeVenueKind): ContributeFlowStepId[] => {
   switch (kind) {
     case 'hiking':
-      return HIKING_CONTRIBUTE_STEPS;
     case 'camping':
-      return CAMPING_CONTRIBUTE_STEPS;
+      return getOutdoorContributeFlowSteps(kind);
     case 'shop':
-      return SHOP_CONTRIBUTE_STEPS;
+      return getShopContributeFlowSteps();
     case 'event':
       return EVENT_CONTRIBUTE_STEPS;
     default:
-      return CAMPING_CONTRIBUTE_STEPS;
+      return getOutdoorContributeFlowSteps('camping');
   }
 };
 
@@ -99,19 +89,40 @@ export const contributeFlowStepTitle = (
     case 'title':
       return 'Title';
     case 'location':
-      return kind === 'hiking' ? 'Pin start location' : 'Pin location';
+      if (kind === 'hiking') return 'Starting point';
+      if (kind === 'camping') return 'Camp location';
+      if (kind === 'shop') return 'Location pin';
+      return 'Pin location';
     case 'image':
-      return 'Add image';
+      return kind === 'hiking' || kind === 'camping' ? 'Photos' : kind === 'shop' ? 'Image' : 'Add image';
+    case 'shop_products':
+      return 'Product / service';
+    case 'shop_keywords':
+      return 'Search keywords';
+    case 'shop_delivery':
+      return 'Delivery';
+    case 'shop_phone':
+      return 'Phone';
+    case 'shop_email':
+      return 'Email';
+    case 'surface':
+      return 'Surface type';
     case 'description':
       return 'Description';
+    case 'about':
+      return 'About';
+    case 'trail_stats':
+      return 'Trail distance & elevation';
+    case 'transport':
+      return 'Transport accessible';
     case 'difficulty':
-      return 'Difficulty level';
+      return kind === 'hiking' ? 'Difficulty' : 'Difficulty level';
     case 'parking':
       return 'Pin parking location';
     case 'contact':
       return 'Add contact';
     case 'review':
-      return 'Preview & submit';
+      return kind === 'hiking' || kind === 'camping' || kind === 'shop' ? 'Preview' : 'Preview & submit';
     default:
       return 'Contribute';
   }
@@ -125,7 +136,7 @@ export const contributeTitlePlaceholder = (kind: ContributeVenueKind): string =>
 };
 
 export const contributeDescriptionPlaceholder = (kind: ContributeVenueKind): string => {
-  if (kind === 'shop') return 'What gear or services do you offer hikers and campers?';
+  if (kind === 'shop') return 'What should people know about this shop? Gear, hours, or why it is useful nearby.';
   if (kind === 'hiking') return 'Trail highlights, distance, best season, and anything hikers should know…';
   if (kind === 'camping') return 'What makes this spot good for camping? Access, facilities, and tips…';
   return 'Describe the place and why outdoor lovers should know about it…';
@@ -147,7 +158,26 @@ export const emptyContributeDraft = (): ContributeDraft => ({
   phoneCountryCode: DEFAULT_PHONE_DIAL,
   phone: '',
   contactEmail: '',
+  trailDistanceKm: null,
+  trailElevationM: null,
+  transportSedan: false,
+  transport4x4: false,
+  surfaceTypes: [],
+  shopProductsServices: '',
+  shopSearchKeywords: '',
+  shopDeliveryOffered: null,
+  shopDeliveryRadiusKm: null,
 });
+
+export const buildVenueAccessibleBy = (draft: ContributeDraft): string[] => {
+  const values: string[] = [];
+  if (draft.transportSedan) values.push('car');
+  if (draft.transport4x4) values.push('4x4');
+  return values;
+};
+
+/** @deprecated Use buildVenueAccessibleBy */
+export const buildHikingAccessibleBy = buildVenueAccessibleBy;
 
 const toApiDifficulty = (value: ActivityDifficulty): 'easy' | 'moderate' | 'hard' =>
   value === 'medium' ? 'moderate' : value;
@@ -166,23 +196,71 @@ export const validateContributeStep = (
     case 'location':
       if (!draft.emirate.trim()) return 'Choose the emirate / state.';
       if (!draft.locationPinPlaced || draft.latitude == null || draft.longitude == null) {
-        return kind === 'hiking' ? 'Pin the trail start on the map.' : 'Pin the location on the map.';
+        if (kind === 'hiking') return 'Pin the trail start on the map.';
+        if (kind === 'camping') return 'Pin the camp location on the map.';
+        if (kind === 'shop') return 'Pin your shop on the map.';
+        return 'Pin the location on the map.';
       }
       return null;
     case 'image':
       if (!draft.images.length) return 'Add at least one photo.';
+      if (draft.images.length > 5) return 'You can add up to 5 photos.';
+      return null;
+    case 'about':
+      if (draft.description.trim().length < 20) return 'About must be at least 20 characters.';
+      return null;
+    case 'trail_stats':
+      if (draft.trailDistanceKm == null || draft.trailDistanceKm <= 0) {
+        return 'Enter trail distance in km.';
+      }
+      if (draft.trailElevationM == null || draft.trailElevationM < 0) {
+        return 'Enter elevation gain in metres.';
+      }
+      return null;
+    case 'transport':
+      if (!draft.transportSedan && !draft.transport4x4) {
+        return 'Choose at least one transport option.';
+      }
+      return null;
+    case 'surface':
+      if (!draft.surfaceTypes.length) return 'Choose at least one surface type.';
       return null;
     case 'description':
       if (draft.description.trim().length < 20) return 'Description must be at least 20 characters.';
       return null;
     case 'difficulty':
-      if (!draft.difficulty) return 'Choose a difficulty level.';
+      if (!draft.difficulty) return 'Choose Easy, Medium, or Hard.';
       return null;
     case 'parking':
       if (!draft.parkingPinPlaced || draft.parkingLat == null || draft.parkingLng == null) {
         return 'Pin the parking spot on the map.';
       }
       return null;
+    case 'shop_products':
+      if (draft.shopProductsServices.trim().length < 10) {
+        return 'Describe what you sell or offer (at least 10 characters).';
+      }
+      return null;
+    case 'shop_keywords':
+      if (draft.shopSearchKeywords.trim().length < 3) {
+        return 'Add keywords so explorers can find you (at least 3 characters).';
+      }
+      return null;
+    case 'shop_delivery':
+      if (draft.shopDeliveryOffered === null) return 'Choose whether you offer delivery.';
+      if (draft.shopDeliveryOffered && draft.shopDeliveryRadiusKm == null) {
+        return 'Choose how far you deliver.';
+      }
+      return null;
+    case 'shop_phone':
+      if (!isValidNationalPhone(draft.phone)) return 'Add a valid mobile number.';
+      return null;
+    case 'shop_email': {
+      const email = draft.contactEmail.trim();
+      if (!email) return 'Enter your shop email.';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email address.';
+      return null;
+    }
     case 'contact':
       if (!isValidNationalPhone(draft.phone)) return 'Add a valid mobile number.';
       if (draft.contactEmail.trim()) {
@@ -214,22 +292,8 @@ export const publishContributeVenue = async (
   if (validation) throw new Error(validation);
   if (!draft.kind) throw new Error('Choose what you are contributing.');
 
-  if (draft.kind === 'shop') {
-    const phone = draft.phone.trim();
-    await api.submitOrganisationApplication({
-      hostProfileType: 'shop',
-      requestedName: draft.title.trim(),
-      bio: draft.description.trim(),
-      phoneCountryCode: draft.phoneCountryCode,
-      phone,
-      profilePhoto: draft.images[0] ?? '',
-      latitude: draft.latitude,
-      longitude: draft.longitude,
-    });
-    return { kind: 'shop' };
-  }
-
-  const activityType = draft.kind === 'event' ? 'event' : draft.kind;
+  const activityType =
+    draft.kind === 'event' ? 'event' : draft.kind === 'shop' ? 'shop' : draft.kind;
   const payload: Record<string, unknown> = {
     name: draft.title.trim(),
     countryCode: DEFAULT_COUNTRY,
@@ -246,6 +310,29 @@ export const publishContributeVenue = async (
 
   if (draft.kind === 'hiking' && draft.difficulty) {
     payload.difficulty = toApiDifficulty(draft.difficulty);
+  }
+
+  if (draft.kind === 'hiking') {
+    if (draft.trailDistanceKm != null) payload.distance = draft.trailDistanceKm;
+    if (draft.trailElevationM != null) payload.elevation = Math.round(draft.trailElevationM);
+    payload.accessibleBy = buildVenueAccessibleBy(draft);
+  }
+
+  if (draft.kind === 'camping') {
+    payload.surfaceType = draft.surfaceTypes;
+    payload.accessibleBy = buildVenueAccessibleBy(draft);
+  }
+
+  if (draft.kind === 'shop') {
+    if (!draft.images[0]) throw new Error('Add a shop image.');
+    payload.shopProductsServices = draft.shopProductsServices.trim();
+    payload.shopSearchKeywords = draft.shopSearchKeywords.trim();
+    payload.shopDeliveryOffered = draft.shopDeliveryOffered === true;
+    if (draft.shopDeliveryOffered === true) {
+      payload.shopDeliveryRadiusKm = draft.shopDeliveryRadiusKm ?? undefined;
+    }
+    payload.shopContactEmail = draft.contactEmail.trim();
+    payload.shopContactPhoneE164 = formatE164Phone(draft.phoneCountryCode, draft.phone.trim());
   }
 
   const res = await api.submitUserLocation(payload as Partial<LocationDTO>);

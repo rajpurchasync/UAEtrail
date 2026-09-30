@@ -84,6 +84,8 @@ export type ExploreMapStageProps = {
   linkCarpoolTenantId?: string | null;
   onCreateLinkedRideshare?: (parent: import('@uaetrail/shared-types').ActivityDTO) => void;
   onHostRemove?: () => void;
+  onDemandRemove?: () => void;
+  onDemandLinkCarpool?: () => void;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onCloseMobileBrowse: () => void;
   mobileBrowseSheet: ReactNode;
@@ -142,6 +144,8 @@ export const ExploreMapStage = ({
   linkCarpoolTenantId = null,
   onCreateLinkedRideshare,
   onHostRemove,
+  onDemandRemove,
+  onDemandLinkCarpool,
   onOpenExploreItem,
   onCloseMobileBrowse,
   mobileBrowseSheet,
@@ -291,6 +295,8 @@ export const ExploreMapStage = ({
           linkCarpoolTenantId={linkCarpoolTenantId}
           onCreateLinkedRideshare={onCreateLinkedRideshare}
           onHostRemove={onHostRemove}
+          onDemandRemove={onDemandRemove}
+          onDemandLinkCarpool={onDemandLinkCarpool}
           onOpenExploreItem={onOpenExploreItem}
           joinUiState={selectedCard.showHostActions ? undefined : joinUiState}
           onWithdraw={onWithdraw}

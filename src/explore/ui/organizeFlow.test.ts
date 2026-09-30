@@ -350,6 +350,19 @@ describe('organizeFlow', () => {
     );
   });
 
+  it('buildOrganizeActivityRequirements forces RSVP for private plans (all parent organize kinds)', () => {
+    for (const kind of ['hiking', 'camping', 'event', 'activity'] as const) {
+      const requirements = buildOrganizeActivityRequirements({
+        ...emptyCreateActivityDraft(),
+        kind,
+        joinMode: 'private',
+        participationMode: 'approval',
+      });
+      expect(requirements).toContain(RSVP_PARTICIPATION_REQUIREMENT);
+      expect(requirements).not.toContain(APPROVAL_PARTICIPATION_REQUIREMENT);
+    }
+  });
+
   it('buildOrganizeActivityRequirements uses RSVP lines when participationMode is rsvp', () => {
     const draft = {
       ...emptyCreateActivityDraft(),

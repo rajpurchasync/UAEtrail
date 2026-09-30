@@ -29,6 +29,8 @@ import { countExploreSearchScopes, exploreItemMatchesQuery } from '../exploreSea
 
 type UseExploreBrowseListArgs = {
   items: ExploreMapItemDTO[];
+  /** Link-only activities — show on map for peek, not in public browse lists. */
+  ephemeralMapItems?: ExploreMapItemDTO[];
   mapFilter: MapFilterKey;
   venueRegions: string[];
   query: string;
@@ -69,6 +71,7 @@ const listFromPool = (pool: ExploreMapItemDTO[], matchesQuery: (item: ExploreMap
 
 export const useExploreBrowseList = ({
   items,
+  ephemeralMapItems = [],
   mapFilter,
   venueRegions,
   query,
@@ -88,7 +91,12 @@ export const useExploreBrowseList = ({
   const mapTopicPills = isDesktop ? [] : topicPills;
 
   const mapItems = useMemo(() => {
-    let pool = items.filter((item) => mapItemMatchesFilterPills(item, mapTopicPills));
+    const itemIds = new Set(items.map((entry) => entry.id));
+    const merged = [
+      ...items,
+      ...ephemeralMapItems.filter((entry) => !itemIds.has(entry.id)),
+    ];
+    let pool = merged.filter((item) => mapItemMatchesFilterPills(item, mapTopicPills));
     if (isDesktop) {
       if (desktopBrowseTab === 'venues') {
         pool = pool.filter(isPlacesMapItem);
@@ -100,7 +108,7 @@ export const useExploreBrowseList = ({
       pool = pool.filter((item) => exploreItemMatchesQuery(item, query));
     }
     return pool;
-  }, [items, mapTopicPills, query, isDesktop, desktopBrowseTab]);
+  }, [items, ephemeralMapItems, mapTopicPills, query, isDesktop, desktopBrowseTab]);
 
   const browseListMode: ExploreBrowseListMode = isDesktop ? 'default' : listMode;
 

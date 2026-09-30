@@ -1,5 +1,5 @@
 /** Public venue kinds that map to place detail routes. */
-export type PlaceVenueKind = 'hiking' | 'camping' | 'event';
+export type PlaceVenueKind = 'hiking' | 'camping' | 'event' | 'shop';
 
 export type EntityKind = 'place' | 'activity' | 'organisation' | 'shop' | 'person';
 
@@ -19,6 +19,7 @@ export const EXPLORE_SHOPS_LIST_PATH = '/explore?filter=shops&panel=shops&list=1
 /** Normalise trail / camp / event activity type strings. */
 export const normalizePlaceActivityType = (activityType: string): PlaceVenueKind => {
   const kind = activityType.toLowerCase();
+  if (kind === 'shop') return 'shop';
   if (kind === 'camping') return 'camping';
   if (kind === 'event' || kind === 'community_activity') return 'event';
   return 'hiking';
@@ -27,6 +28,7 @@ export const normalizePlaceActivityType = (activityType: string): PlaceVenueKind
 /** Public URL for a place (trail, camp, or event venue). */
 export const placeDetailPath = (activityType: string, placeId: string): string => {
   const kind = normalizePlaceActivityType(activityType);
+  if (kind === 'shop') return `/shop/${placeId}`;
   if (kind === 'camping') return `/camp/${placeId}`;
   if (kind === 'event') return `/event/${placeId}`;
   return `/trail/${placeId}`;

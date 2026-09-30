@@ -41,7 +41,7 @@ Tap **+** → **Organize** → **🏃 Event**
 |---|---------|--------------|----------------|
 | 1 | `title` | **Give it a title** | Event name |
 | 2 | `when` | **When are you going?** | Date · flexible or start time |
-| 3 | `audience` | **Who can join?** | Public vs private · approval vs RSVP (same cards as hiking) |
+| 3 | `audience` | **Who can join?** | Public vs private · approval vs RSVP when public · **private → RSVP only** ([PRIVATE-ORGANIZE-PLANS](./PRIVATE-ORGANIZE-PLANS.md)) |
 | 4 | `spots` | **Participants** | Capacity · Anyone vs Limited · **Children allowed** · pets |
 | 5 | `price` | **Price** | Free / shared / paid |
 | 6 | `destination` | **Where is it happening?** | Registry `activityType=event` or custom venue name |
@@ -55,7 +55,7 @@ Tap **+** → **Organize** → **🏃 Event**
 
 **Map pin:** Meeting point coordinates only — venue registry coords used as `startPoint` / location ref when applicable.
 
-**Visibility:** Private outings hidden from public explore map (same as FLOW-01).
+**Visibility:** Private outings hidden from public explore map · link-only peek ([PRIVATE-ORGANIZE-PLANS](./PRIVATE-ORGANIZE-PLANS.md)).
 
 ---
 

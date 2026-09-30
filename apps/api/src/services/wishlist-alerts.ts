@@ -98,9 +98,13 @@ export const notifyWishlistForNewDemand = async (intentId: string, requesterUser
   try {
     const doc = await getMongoClient()!
       .db()
-      .collection<{ kind: string; title: string; latitude: number | null; longitude: number | null }>(
-        COLLECTIONS.PARTICIPANT_INTENTS
-      )
+      .collection<{
+        _id: string;
+        kind: string;
+        title: string;
+        latitude: number | null;
+        longitude: number | null;
+      }>(COLLECTIONS.PARTICIPANT_INTENTS)
       .findOne({ _id: intentId });
 
     if (!doc) return;

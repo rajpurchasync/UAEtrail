@@ -336,7 +336,9 @@ export const AdminOrganisations = () => {
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Host application</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {applicationDetail.metadata?.hostProfileType === 'shop' ? 'Shop application' : 'Host application'}
+                </h2>
                 <p className="text-sm text-gray-500">{applicationDetail.requestedName} · {applicationDetail.requestedType.replace(/_/g, ' ')}</p>
               </div>
               <button onClick={() => setApplicationDetail(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
@@ -377,6 +379,25 @@ export const AdminOrganisations = () => {
               {metaField('Bio', applicationDetail.metadata?.bio)}
               {metaField('Website', applicationDetail.metadata?.website)}
               {metaField('Services', applicationDetail.metadata?.services)}
+              {metaField('Products & services', applicationDetail.metadata?.productsServices)}
+              {metaField('Search keywords', applicationDetail.metadata?.searchKeywords)}
+              {metaField('Shop email', applicationDetail.metadata?.contactEmail)}
+              {metaField(
+                'Shop presence',
+                applicationDetail.metadata?.shopPresence === 'physical'
+                  ? 'Physical (map pin)'
+                  : applicationDetail.metadata?.shopPresence === 'online'
+                    ? 'Online only'
+                    : null
+              )}
+              {metaField(
+                'Delivery',
+                applicationDetail.metadata?.deliveryOffered
+                  ? `Yes — up to ${applicationDetail.metadata?.deliveryRadiusKm ?? '?'} km`
+                  : applicationDetail.metadata?.deliveryOffered === false
+                    ? 'No'
+                    : null
+              )}
               {metaField('Languages', applicationDetail.metadata?.languages)}
               {metaField('Interests', applicationDetail.metadata?.interests)}
               {metaField('Nationality', applicationDetail.metadata?.nationality)}

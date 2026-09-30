@@ -23,4 +23,10 @@ export const exploreApi = {
       body: JSON.stringify(payload),
       auth: true,
     }),
+
+  cancelParticipantIntent: (intentId: string) =>
+    apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentDTO }>(
+      `/me/participant-intents/${intentId}/cancel`,
+      { method: 'POST', auth: true }
+    ),
 } as const;

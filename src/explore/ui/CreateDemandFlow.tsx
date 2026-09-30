@@ -52,8 +52,9 @@ import {
   DemandCarpoolDestinationStepBody,
   DemandDestinationStepBody,
   DemandTransportStepBody,
-  DemandVisibilityStepBody,
+  DemandAudienceStepBody,
 } from './demandWizardSteps';
+import { DemandSubmitSuccessSheet } from './DemandSubmitSuccessSheet';
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
 
 const CreatePlacePicker = lazy(() =>
@@ -125,6 +126,7 @@ export const CreateDemandFlow = ({
   const [draft, setDraft] = useState<DemandDraft>(emptyDemandDraft);
   const [selectedKind, setSelectedKind] = useState<DemandKind | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState<DemandSubmitResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
   const [areaMapOpen, setAreaMapOpen] = useState(false);
@@ -147,6 +149,7 @@ export const CreateDemandFlow = ({
       setSelectedKind(null);
       setError(null);
       setSubmitting(false);
+      setSubmitResult(null);
       setShowMonthView(false);
       setAreaMapOpen(false);
       setRouteMapTarget(null);
@@ -158,6 +161,7 @@ export const CreateDemandFlow = ({
       setStep(getDemandFlowSteps(findKind)[0]);
       setError(null);
       setSubmitting(false);
+      setSubmitResult(null);
       setShowMonthView(false);
       setAreaMapOpen(false);
       setRouteMapTarget(null);
@@ -239,8 +243,7 @@ export const CreateDemandFlow = ({
     setError(null);
     try {
       const result = await publishDemandRequest({ ...draft, kind: draft.kind ?? selectedKind });
-      onSubmitted?.(result);
-      onClose();
+      setSubmitResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not post your request.');
     } finally {
@@ -313,6 +316,28 @@ export const CreateDemandFlow = ({
   };
 
   if (!open) return null;
+
+  const submittedKind = draft.kind ?? selectedKind;
+
+  const handleSuccessPrimary = async () => {
+    if (submitResult) {
+      await onSubmitted?.(submitResult);
+    }
+    onClose();
+  };
+
+  if (submitResult && submittedKind) {
+    return (
+      <DemandSubmitSuccessSheet
+        open={open}
+        onClose={onClose}
+        kind={submittedKind}
+        draft={{ ...draft, kind: submittedKind }}
+        visibleOnMap={submitResult.visibleOnMap}
+        onPrimaryAction={handleSuccessPrimary}
+      />
+    );
+  }
 
   if (isMapOverlay && kind) {
     const isToStep = routeMapTarget === 'to';
@@ -503,9 +528,14 @@ export const CreateDemandFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'audience' && kind && (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind) || kind === 'carpool') && (
+        {step === 'audience' &&
+          kind &&
+          (usesHikingDemandFlow(kind) ||
+            usesCampingDemandFlow(kind) ||
+            usesEventDemandFlow(kind) ||
+            kind === 'carpool') && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
-            <DemandVisibilityStepBody draft={draft} patchDraft={patchDraft} kind={kind} />
+            <DemandAudienceStepBody draft={draft} patchDraft={patchDraft} kind={kind} />
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton disabled={kind === 'hiking' && !draft.fitnessLevel} onClick={goNext} />

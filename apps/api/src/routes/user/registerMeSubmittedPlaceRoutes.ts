@@ -9,6 +9,9 @@ import { registerPlaceAlias } from '../../lib/route-place-alias.js';
 import { validate } from '../../middleware/validate.js';
 import { buildLocationCreateData } from '../../services/location-submit.js';
 import { awardPoints } from '../../services/rewards.js';
+import { notifyAdminsLocationSubmitted } from '../../services/platform-admin-events.js';
+import { findAuthUserById } from '../../lib/auth-users.js';
+import { fromPrismaActivityType } from '../../domain/activity-type.js';
 
 /** Signed-in place submission (`/me/locations`). Requires prior auth middleware. */
 export const registerMeSubmittedPlaceRoutes = (router: Router): void => {
@@ -40,6 +43,16 @@ export const registerMeSubmittedPlaceRoutes = (router: Router): void => {
         referenceId: created.id,
         label: `Submitted location: ${created.name}`,
       }).catch(() => undefined);
+
+      const submitter = await findAuthUserById(req.auth!.userId);
+      const submitterLabel =
+        submitter?.profile?.displayName?.trim() || submitter?.email || 'A member';
+      notifyAdminsLocationSubmitted({
+        locationId: created.id,
+        name: created.name,
+        activityType: fromPrismaActivityType(created.activityType),
+        submitterLabel,
+      });
 
       res.status(201).json({ data: toLocationDto(created) });
     } catch (error) {

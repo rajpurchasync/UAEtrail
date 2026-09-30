@@ -6,6 +6,7 @@ import { env } from '../../config/env.js';
 import { ApiError } from '../../lib/api-error.js';
 import {
   findActiveLocationById,
+  findLocationForDetailView,
   incrementActiveLocationViewCount,
   listPopularActiveLocations,
   listPublishedUpcomingActivitiesByLocation,
@@ -33,6 +34,7 @@ import { validate } from '../../middleware/validate.js';
 import { eventIdParamSchema, listFilterSchema, placeRegistryQuerySchema } from './schemas.js';
 
 const locationDetailPath = (location: { id: string; activityType: ActivityType }) => {
+  if (location.activityType === ActivityType.SHOP) return `/shop/${location.id}`;
   if (location.activityType === ActivityType.CAMPING) return `/camp/${location.id}`;
   if (location.activityType === ActivityType.EVENT || location.activityType === ActivityType.COMMUNITY_ACTIVITY) {
     return `/event/${location.id}`;
@@ -125,7 +127,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
   registerPlaceAlias(router, 'get', '/locations/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-      const location = await findActiveLocationById(id);
+      const location = await findLocationForDetailView(id, req.auth?.userId ?? null, req.auth?.role ?? null);
       if (!location) {
         throw new ApiError(404, 'location_not_found', 'Location not found.');
       }

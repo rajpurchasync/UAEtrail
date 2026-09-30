@@ -40,7 +40,7 @@ export const PLACE_STORAGE_COLLECTION = 'locations';
 const PLACE_KIND_TAG_PREFIX = 'place-kind:';
 
 /** Legacy API / DTO field on `locations` rows (outdoor catalog). */
-export type LocationActivityTypeWire = 'hiking' | 'camping' | 'event';
+export type LocationActivityTypeWire = 'hiking' | 'camping' | 'event' | 'shop';
 
 const LOCATION_WIRE_SET = new Set<string>(['hiking', 'camping', 'event']);
 
@@ -88,6 +88,7 @@ export const placeKindFromLocationRow = (input: {
   const wire = input.activityType.toLowerCase();
   if (wire === 'hiking') return 'hiking';
   if (wire === 'camping') return 'camping';
+  if (wire === 'shop') return 'shop';
   if (wire === 'event') {
     if (input.tags?.includes('outdoor-other')) return 'outdoor_other';
     return 'event';
@@ -99,6 +100,7 @@ export const placeKindFromLocationRow = (input: {
 export const locationActivityTypeForPlaceKind = (kind: PlaceKind): LocationActivityTypeWire => {
   if (kind === 'hiking') return 'hiking';
   if (kind === 'camping') return 'camping';
+  if (kind === 'shop') return 'shop';
   return 'event';
 };
 

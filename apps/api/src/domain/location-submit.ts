@@ -11,7 +11,16 @@ export const locationSubmitBodySchema = z.object({
   countryCode: z.string().length(2).default('AE'),
   emirate: z.string().min(2).max(80).optional(),
   region: z.string().min(2).max(80),
-  activityType: z.enum(['hiking', 'camping', 'event', 'carpool', 'EVENT', 'COMMUNITY_ACTIVITY', 'community_activity']),
+  activityType: z.enum([
+    'hiking',
+    'camping',
+    'event',
+    'shop',
+    'carpool',
+    'EVENT',
+    'COMMUNITY_ACTIVITY',
+    'community_activity',
+  ]),
   description: z.string().min(20).max(3000),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
   distance: z.number().positive().optional(),
@@ -33,7 +42,30 @@ export const locationSubmitBodySchema = z.object({
   /** When true, publish the pin immediately (legacy mobile quick-create). */
   mapPin: z.boolean().optional(),
   /** Activity-only anchor — not listed in the public place registry or venue map pins. */
-  activityAnchor: z.boolean().optional()
+  activityAnchor: z.boolean().optional(),
+  /** Community shop pin — encoded into highlights/tags on submit. */
+  shopProductsServices: z.string().min(2).max(2000).optional(),
+  shopSearchKeywords: z.string().min(2).max(500).optional(),
+  shopDeliveryOffered: z.boolean().optional(),
+  shopDeliveryRadiusKm: z.number().positive().max(1000).optional(),
+  shopContactEmail: z.string().email().max(120).optional(),
+  shopContactPhoneE164: z.string().min(8).max(24).optional(),
+}).superRefine((body, ctx) => {
+  if (body.activityType.toLowerCase() !== 'shop') return;
+  if (body.latitude == null || body.longitude == null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Pin the shop on the map.',
+      path: ['latitude'],
+    });
+  }
+  if (body.shopDeliveryOffered === true && body.shopDeliveryRadiusKm == null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Choose a delivery distance.',
+      path: ['shopDeliveryRadiusKm'],
+    });
+  }
 });
 
 export type LocationSubmitBody = z.infer<typeof locationSubmitBodySchema>;

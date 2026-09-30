@@ -138,6 +138,28 @@ export const createParticipantIntent = async (
   return mapDto(doc, user);
 };
 
+export const cancelParticipantIntent = async (
+  userId: string,
+  intentId: string
+): Promise<ParticipantIntentDTO | null> => {
+  const lookupFilter: Record<string, unknown> =
+    /^[a-f0-9]{24}$/i.test(intentId) && ObjectId.isValid(intentId)
+      ? { $or: [{ _id: intentId }, { _id: new ObjectId(intentId) }] }
+      : { _id: intentId };
+
+  const updated = await collection().findOneAndUpdate(
+    { ...lookupFilter, userId, status: 'active' } as Filter<MongoParticipantIntent>,
+    { $set: { status: 'cancelled', updatedAt: new Date() } },
+    { returnDocument: 'after' }
+  );
+
+  if (!updated) return null;
+
+  await invalidateExploreMapCache();
+  const user = await findAuthUserById(updated.userId);
+  return mapDto(updated, user);
+};
+
 export const fulfillParticipantIntent = async (
   intentId: string,
   activityId: string

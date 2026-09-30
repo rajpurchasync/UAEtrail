@@ -37,5 +37,6 @@ export const mapLocationToPlace = (location: LocationDTO): Place => ({
   featured: location.featured,
   latitude: location.latitude,
   longitude: location.longitude,
+  status: location.status,
   ...mapLocationFields(location),
 });

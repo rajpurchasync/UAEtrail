@@ -95,6 +95,48 @@ export const ORGANIZE_DESTINATION_MANUAL_BACK = ORGANIZE_VENUE_CUSTOM_NAME_BACK;
 
 export const ORGANIZE_PUBLISH_SUCCESS_TITLE = 'You\u2019re live';
 
+export const DEMAND_SUBMIT_SUCCESS_TITLE = 'Request posted';
+
+export const DEMAND_SUBMIT_SUCCESS_BODY_ON_MAP =
+  'You\u2019re on the map. Hosts and explorers nearby can message you or propose a matching plan.';
+
+export const DEMAND_SUBMIT_SUCCESS_BODY_OFF_MAP =
+  'We saved your request. Add a map pin next time to show on Explore \u2014 hosts can still reach you when you message or get matched.';
+
+export const DEMAND_SUBMIT_VIEW_CTA = 'View';
+
+export const CONTRIBUTE_SUBMIT_SUCCESS_TITLE = 'Submitted for review';
+
+export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_TRAIL =
+  'Thanks for sharing this trail. We will review it and let you know when it is live on Explore for everyone.';
+
+export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_CAMP =
+  'Thanks for sharing this camp spot. We will review it and let you know when it is live on Explore for everyone.';
+
+export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_SHOP =
+  'Thanks for sharing this shop. We will review it so others can find gear nearby on Explore.';
+
+export const CONTRIBUTE_PENDING_NOTE_LOCATION = 'Pending review';
+
+export const CONTRIBUTE_REVIEW_FOOTER_TRAIL =
+  'Submit sends this trail for review. After submit, use View pending to see your preview.';
+
+export const CONTRIBUTE_REVIEW_FOOTER_CAMP =
+  'Submit sends this camp spot for review. After submit, use View pending to see your preview.';
+
+export const CONTRIBUTE_REVIEW_FOOTER_SHOP =
+  'Submit shares this shop as map info for the community. After submit, use View pending to preview your pin.';
+
+export const CONTRIBUTE_PLACE_PENDING_BANNER_TITLE = 'Pending review';
+
+export const CONTRIBUTE_PLACE_PENDING_BANNER_BODY =
+  'Only you and admins can see this page until it is approved and published on Explore.';
+
+export const CONTRIBUTE_SUBMIT_VIEW_CTA = 'View pending';
+
+export const ORGANIZE_PUBLISH_SUCCESS_BODY_PRIVATE =
+  'Share the link with your group. They’ll need to sign in to view and RSVP — this plan won’t show on the public map.';
+
 export const ORGANIZE_PUBLISH_SUCCESS_BODY =
   'Your plan is published. View it on the map or offer a rideshare for your crew.';
 

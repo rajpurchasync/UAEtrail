@@ -36,6 +36,10 @@ interface ExploreItemSheetProps {
 
   onHostRemove?: () => void;
 
+  onDemandRemove?: () => void;
+
+  onDemandLinkCarpool?: () => void;
+
   onGuestGatedAction?: () => void;
 
   onOpenExploreItem?: (exploreItemId: string) => void;
@@ -69,6 +73,10 @@ export const ExploreItemSheet = ({
   onCreateLinkedRideshare,
 
   onHostRemove,
+
+  onDemandRemove,
+
+  onDemandLinkCarpool,
 
   onGuestGatedAction,
 
@@ -125,6 +133,10 @@ export const ExploreItemSheet = ({
             onCreateLinkedRideshare={onCreateLinkedRideshare}
 
             onHostRemove={onHostRemove}
+
+            onDemandRemove={onDemandRemove}
+
+            onDemandLinkCarpool={onDemandLinkCarpool}
 
             joinUiState={joinUiState}
 

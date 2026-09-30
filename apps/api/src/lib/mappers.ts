@@ -39,7 +39,16 @@ const resolveSlotsAvailable = (event: Activity & { participantSlotsUsed?: number
   return Math.max(event.capacity - used, 0);
 };
 
-const mapActivity = (activityType: ActivityType | string): ActivityDTO['activityType'] => {
+const mapPlaceActivityType = (activityType: ActivityType | string): LocationDTO['activityType'] => {
+  const value = String(activityType).toUpperCase();
+  if (value === 'HIKING') return 'hiking';
+  if (value === 'CAMPING') return 'camping';
+  if (value === 'SHOP') return 'shop';
+  if (value === 'CARPOOL') return 'carpool';
+  return 'event';
+};
+
+const mapScheduledActivityType = (activityType: ActivityType | string): ActivityDTO['activityType'] => {
   const value = String(activityType).toUpperCase();
   if (value === 'HIKING') return 'hiking';
   if (value === 'CAMPING') return 'camping';
@@ -118,7 +127,7 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
   id: location.id,
   name: location.name,
   region: location.region,
-  activityType: mapActivity(location.activityType),
+  activityType: mapPlaceActivityType(location.activityType),
   description: location.description,
   difficulty: location.difficulty ? enumMap<'easy' | 'moderate' | 'hard'>(location.difficulty) : undefined,
   season: location.season,
@@ -219,7 +228,7 @@ const toEventDto = ({
   locationId: event.locationId,
   locationName,
   region,
-  activityType: mapActivity(activityType),
+  activityType: mapScheduledActivityType(activityType),
   title: event.title,
   description: event.description,
   date: local.date,

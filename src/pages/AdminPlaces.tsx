@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { PlaceDTO } from '@uaetrail/shared-types';
+import { PlaceDTO, placeDetailPath } from '@uaetrail/shared-types';
+import { Link } from 'react-router-dom';
 import { api } from '../api/index';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
@@ -36,12 +37,14 @@ const isTrailLike = (type?: PlaceDTO['activityType']) =>
 const activityTypeLabel = (type: PlaceDTO['activityType']) => {
   if (type === 'hiking') return `🥾 ${VENUE_TYPE_LABELS.hiking}`;
   if (type === 'event') return `🏃 ${VENUE_TYPE_LABELS.event}`;
+  if (type === 'shop') return '🛍️ Shop (community pin)';
   return `⛺ ${VENUE_TYPE_LABELS.camping}`;
 };
 
 const activityTypeBadgeClass = (type: PlaceDTO['activityType']) => {
   if (type === 'hiking') return 'bg-emerald-50 text-emerald-700';
   if (type === 'event') return 'bg-violet-50 text-violet-700';
+  if (type === 'shop') return 'bg-orange-50 text-orange-800';
   return 'bg-amber-50 text-amber-700';
 };
 
@@ -329,6 +332,18 @@ export const AdminPlaces = () => {
             {previewLoc.images?.[0] && (
               <img src={previewLoc.images[0]} alt="" className="w-full h-48 object-cover rounded-t-lg" />
             )}
+            {(previewLoc.images?.length ?? 0) > 1 && (
+              <div className="flex gap-2 overflow-x-auto px-4 py-2 border-b bg-gray-50">
+                {previewLoc.images!.map((src, index) => (
+                  <img
+                    key={`${src}-${index}`}
+                    src={src}
+                    alt=""
+                    className="h-16 w-24 shrink-0 rounded object-cover border border-gray-200"
+                  />
+                ))}
+              </div>
+            )}
             <div className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">{previewLoc.name}</h2>
@@ -342,6 +357,14 @@ export const AdminPlaces = () => {
                 {previewLoc.difficulty && <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 capitalize">{previewLoc.difficulty}</span>}
               </div>
               <p className="text-sm text-gray-500">{previewLoc.region}</p>
+              {previewLoc.latitude != null && previewLoc.longitude != null && (
+                <p className="text-xs text-gray-500">
+                  Map pin: {previewLoc.latitude.toFixed(5)}, {previewLoc.longitude.toFixed(5)}
+                </p>
+              )}
+              {previewLoc.submittedById && (
+                <p className="text-xs text-gray-500">Submitted by member: {previewLoc.submittedById}</p>
+              )}
               <p className="text-sm text-gray-700 whitespace-pre-line">{previewLoc.description}</p>
               {isTrailLike(previewLoc.activityType) && (
                 <div className="grid grid-cols-3 gap-3 text-sm">
@@ -362,7 +385,15 @@ export const AdminPlaces = () => {
               {previewLoc.parkingLink && (
                 <div><p className="text-xs text-gray-500 mb-1">Parking</p><a href={previewLoc.parkingLink} target="_blank" rel="noreferrer" className="text-sm text-emerald-600 hover:underline">View on Google Maps →</a></div>
               )}
-              <div className="flex gap-3 pt-2 border-t">
+              <div className="flex flex-wrap gap-3 pt-2 border-t">
+                <Link
+                  to={placeDetailPath(previewLoc.activityType, previewLoc.id)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50 text-emerald-800 font-medium"
+                >
+                  Open as submitter preview ↗
+                </Link>
                 <button onClick={() => { setPreviewLoc(null); openEdit(previewLoc); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Edit</button>
                 <button onClick={() => setPreviewLoc(null)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Close</button>
               </div>

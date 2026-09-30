@@ -47,7 +47,7 @@ Each step: back chevron, title from `createFlowStepTitle`, **Next** (or map conf
 | 1 | `title` | **Give it a title** | Hike title |
 | 2 | `when` | **When are you going?** | Date; flexible or start + approximate end time |
 | 3 | `meeting` | **Going from** | Drop **going-from** pin; optional directions (`goingFromNotes`) |
-| 4 | `audience` | **Who can join?** | **Public vs private event** first · if **public**, **approval to join** (Yes — I need to approve / No — they can just come) · private → approval only (link-only) |
+| 4 | `audience` | **Who can join?** | **Public vs private** first · if **public**, **approval vs RSVP** · **private → RSVP only** (link-only — see [PRIVATE-ORGANIZE-PLANS](./PRIVATE-ORGANIZE-PLANS.md)) |
 | 5 | `spots` | **Participants** | Capacity · Anyone vs Limited (women only, min age) · pets |
 | 6 | `price` | **Price** | Free / shared / paid |
 | 7 | `destination` | **Where are you going?** | Trail from **place registry** or custom name · registry applies difficulty + description via `organizePlaceRegistryDraft` |
@@ -63,7 +63,7 @@ Each step: back chevron, title from `createFlowStepTitle`, **Next** (or map conf
 
 **Participation:** Step 4 sets `participationMode`. Default **approval**; host may switch to RSVP before publish.
 
-**Map visibility:** Public / Private sets `joinMode`. Private outings are excluded from public explore map payload.
+**Map visibility:** Public / Private sets `joinMode`. Private outings are excluded from public explore map payload; host and link holders get peek via [PRIVATE-ORGANIZE-PLANS](./PRIVATE-ORGANIZE-PLANS.md).
 
 ---
 

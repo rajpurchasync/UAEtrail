@@ -825,6 +825,14 @@ export const cancelUserActivityRequestAndPromoteWaitlist = async (input: {
   await promoteNextWaitlisted(input.activityId);
 };
 
+export const listActivityRequestsForActivity = async (activityId: string): Promise<ActivityRequest[]> => {
+  const rows = await activityRequestsCollection()
+    .find({ activityId })
+    .sort({ createdAt: -1 })
+    .toArray();
+  return rows.map(toActivityRequestRecord);
+};
+
 export const listActivityParticipantsWithUsers = async (activityId: string) => {
   const participants = await activityParticipantsCollection()
     .find({ activityId })

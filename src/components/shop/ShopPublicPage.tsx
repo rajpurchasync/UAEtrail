@@ -13,6 +13,10 @@ import { explorePath } from '../../utils/exploreRouting';
 import { shopPublicPath } from '../../utils/shopPaths';
 import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
+import {
+  CONTRIBUTE_PLACE_PENDING_BANNER_BODY,
+  CONTRIBUTE_PLACE_PENDING_BANNER_TITLE,
+} from '../../explore/createFlowCopy';
 
 export type ShopFeaturedPick = {
   id: string;
@@ -42,6 +46,13 @@ export type ShopPublicView = {
   contactPersonUserId?: string | null;
   products: ShopFeaturedPick[];
   presence: 'physical' | 'online';
+  /** Community map contribution — not a merchant tenant. */
+  communityInfo?: {
+    keywordTags: string[];
+    deliveryOffered: boolean;
+    deliveryRadiusKm: number | null;
+    status?: 'draft' | 'active' | 'inactive';
+  };
 };
 
 interface ShopPublicPageProps {
@@ -108,6 +119,12 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
       />
 
       <div className="mx-auto max-w-3xl px-4 py-6 md:py-8">
+        {shop.communityInfo?.status === 'draft' ? (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            <p className="font-semibold">{CONTRIBUTE_PLACE_PENDING_BANNER_TITLE}</p>
+            <p className="mt-1 text-amber-900/90">{CONTRIBUTE_PLACE_PENDING_BANNER_BODY}</p>
+          </div>
+        ) : null}
         <section className="flex items-start gap-4">
           {shop.logo ? (
             <img src={shop.logo} alt="" className="h-16 w-16 rounded-2xl object-cover" />
@@ -128,7 +145,11 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
               <p className="mt-1 text-sm text-gray-500">Online partner · ships to UAE</p>
             )}
             <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
-              {shop.presence === 'online' ? 'Online gear partner' : 'Gear shop'}
+              {shop.communityInfo
+                ? 'Community map info'
+                : shop.presence === 'online'
+                  ? 'Online gear partner'
+                  : 'Gear shop'}
             </p>
             {reviewTargetId && <CatalogRatingSummary reviews={reviews} className="mt-2" />}
           </div>

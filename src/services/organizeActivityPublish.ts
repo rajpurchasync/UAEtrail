@@ -180,7 +180,12 @@ export const buildOrganizeActivityPublishInput = (
     },
     requirements,
     joinMode: draft.kind === 'carpool' ? 'open' : draft.joinMode,
-    participationMode: draft.kind === 'carpool' ? 'approval' : draft.participationMode,
+    participationMode:
+      draft.kind === 'carpool'
+        ? 'approval'
+        : draft.joinMode === 'private'
+          ? 'rsvp'
+          : draft.participationMode,
     outingCategory: planSpec.outingCategory,
     outingTopic:
       kind === 'activity' && draft.activityTopic

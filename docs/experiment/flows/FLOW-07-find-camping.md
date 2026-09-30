@@ -10,7 +10,7 @@
 | 2 | `when` | Preferred date (**no time**) |
 | 3 | `destination` | Preferred destination (emirate) |
 | 4 | `persons` | No of people |
-| 5 | `audience` | Public / private · women-only · children · pets |
+| 5 | `audience` | Women-only · children · pets (no public/private toggle) |
 | 6 | `from` | Going from pin |
 | 7 | `info` | Additional info |
 | 8 | `transport` | Self transport or carpool needed |

@@ -5,11 +5,12 @@ describe('contributeFlow steps', () => {
   it('add trail matches hiking place wizard', () => {
     expect(getContributeFlowSteps('hiking')).toEqual([
       'title',
-      'location',
       'image',
-      'description',
+      'location',
+      'trail_stats',
       'difficulty',
-      'parking',
+      'about',
+      'transport',
       'review',
     ]);
   });
@@ -17,21 +18,26 @@ describe('contributeFlow steps', () => {
   it('add camp matches camping place wizard', () => {
     expect(getContributeFlowSteps('camping')).toEqual([
       'title',
-      'location',
       'image',
-      'description',
-      'parking',
+      'location',
+      'surface',
+      'about',
+      'transport',
       'review',
     ]);
   });
 
-  it('add shop includes contact step', () => {
+  it('add shop matches shop wizard', () => {
     expect(getContributeFlowSteps('shop')).toEqual([
       'title',
       'location',
+      'about',
+      'shop_products',
+      'shop_keywords',
       'image',
-      'description',
-      'contact',
+      'shop_delivery',
+      'shop_phone',
+      'shop_email',
       'review',
     ]);
   });

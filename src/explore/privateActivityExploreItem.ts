@@ -1,0 +1,79 @@
+import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  buildExploreActivityDisplay,
+  buildExploreFeaturedPerson,
+  resolveActivityDisplayCoordinates,
+  resolveActivityDestinationCoordinates,
+  resolveActivityHostAvatar,
+  resolveActivityHostDisplayName,
+  resolveActivityHostUserId,
+  resolveEntityPath,
+} from '@uaetrail/shared-types';
+
+const isCarpoolActivity = (activity: ActivityDTO): boolean => activity.activityType === 'carpool';
+
+/** Map peek row for link-only (`joinMode: private`) activities — not on public explore payload. */
+export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreMapItemDTO => {
+  const carpool = isCarpoolActivity(activity);
+  const hikingDual =
+    !carpool &&
+    activity.meetingDifferent === true &&
+    activity.startLat != null &&
+    activity.startLng != null &&
+    activity.meetingLat != null &&
+    activity.meetingLng != null;
+
+  const fromCoords = hikingDual
+    ? { latitude: activity.startLat as number, longitude: activity.startLng as number }
+    : resolveActivityDisplayCoordinates(activity);
+
+  const toCoords = carpool
+    ? resolveActivityDestinationCoordinates(activity)
+    : hikingDual
+      ? { latitude: activity.meetingLat as number, longitude: activity.meetingLng as number }
+      : { latitude: null, longitude: null };
+
+  const display = buildExploreActivityDisplay(activity);
+
+  return {
+    id: `activity:${activity.id}`,
+    kind: carpool ? 'carpool' : activity.activityType,
+    source: 'activity',
+    title: activity.title,
+    subtitle: carpool
+      ? [display.fromLabel, display.toLabel].filter(Boolean).join(' → ') || activity.locationName
+      : activity.locationName,
+    latitude: fromCoords.latitude,
+    longitude: fromCoords.longitude,
+    toLatitude: toCoords.latitude,
+    toLongitude: toCoords.longitude,
+    path: resolveEntityPath({ kind: 'activity', id: activity.id }),
+    featuredPerson: buildExploreFeaturedPerson({
+      userId: resolveActivityHostUserId(activity),
+      displayName: resolveActivityHostDisplayName(activity),
+      avatarUrl: resolveActivityHostAvatar(activity),
+      role: 'host',
+    }),
+    hostName: activity.hostName ?? null,
+    hostAvatar: resolveActivityHostAvatar(activity),
+    date: activity.date,
+    time: activity.time,
+    slotsAvailable: activity.slotsAvailable,
+    slotsTotal: activity.slotsTotal,
+    participantPreviews: activity.participantPreviews,
+    image: activity.images?.[0] ?? activity.bannerUrl ?? null,
+    carPoolEnabled: carpool || Boolean(activity.carPoolEnabled),
+    priceLabel: display.priceLabel,
+    priceDisplay: display.priceDisplay,
+    fromLabel: display.fromLabel,
+    toLabel: display.toLabel,
+    activity,
+  };
+};
+
+export const parseActivityMapItemId = (mapItemId: string): string | null => {
+  const trimmed = mapItemId.trim();
+  if (!trimmed.startsWith('activity:')) return null;
+  const id = trimmed.slice('activity:'.length).trim();
+  return id.length > 0 ? id : null;
+};

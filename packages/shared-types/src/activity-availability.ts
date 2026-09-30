@@ -17,3 +17,18 @@ export const deriveActivityAvailability = (activity: ActivityAvailabilityInput):
 
 export const isActivityFull = (activity: Pick<ActivityAvailabilityInput, 'slotsAvailable'>): boolean =>
   activity.slotsAvailable <= 0;
+
+export type ActivityJoinCountInput = {
+  slotsAvailable?: number | null;
+  slotsTotal?: number | null;
+  participantPreviews?: readonly unknown[] | null;
+};
+
+/** Confirmed/waitlisted joiners excluding the host — used for host check-in affordances. */
+export const activityHasJoinedParticipants = (activity: ActivityJoinCountInput | null | undefined): boolean => {
+  if (!activity) return false;
+  if (activity.slotsTotal != null && activity.slotsAvailable != null) {
+    return activity.slotsAvailable < activity.slotsTotal;
+  }
+  return (activity.participantPreviews?.length ?? 0) > 0;
+};

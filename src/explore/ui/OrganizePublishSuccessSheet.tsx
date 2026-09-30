@@ -9,6 +9,7 @@ import {
   ORGANIZE_LINK_CARPOOL_LABEL,
   ORGANIZE_LINK_CARPOOL_PASTE_CTA,
   ORGANIZE_PUBLISH_SUCCESS_BODY,
+  ORGANIZE_PUBLISH_SUCCESS_BODY_PRIVATE,
   ORGANIZE_PUBLISH_SUCCESS_TITLE,
   ORGANIZE_PUBLISH_VIEW_CTA,
 } from '../createFlowCopy';
@@ -85,7 +86,9 @@ export const OrganizePublishSuccessSheet = ({
             {ORGANIZE_PUBLISH_SUCCESS_TITLE}
           </h2>
           <p className="mt-2 max-w-[18rem] text-pretty text-sm leading-relaxed text-neutral-600">
-            {ORGANIZE_PUBLISH_SUCCESS_BODY}
+            {publishedActivity.joinMode === 'private'
+              ? ORGANIZE_PUBLISH_SUCCESS_BODY_PRIVATE
+              : ORGANIZE_PUBLISH_SUCCESS_BODY}
           </p>
         </div>
 

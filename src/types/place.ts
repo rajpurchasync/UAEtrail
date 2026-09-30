@@ -36,6 +36,7 @@ export interface Place {
   surfaceType?: string[];
   tags?: string[];
   accessibleBy?: string[];
+  status?: 'draft' | 'active' | 'inactive';
 }
 
 /** @deprecated Use Place — hiking venue view slice. */

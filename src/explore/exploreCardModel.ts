@@ -41,6 +41,10 @@ export interface ExploreCardModel {
   secondaryCta: string | null;
   showJoinActions: boolean;
   showHostActions?: boolean;
+  /** Requester viewing their own active demand pin. */
+  showDemandOwnerActions?: boolean;
+  /** Hiking / camping / activity demand — host can publish a linked rideshare offer. */
+  showDemandLinkCarpool?: boolean;
   websiteUrl?: string | null;
   contactPhone?: string | null;
   shareTitle: string;
@@ -162,7 +166,10 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     websiteUrl: item.websiteUrl ?? null,
     contactPhone: item.contactPhone ?? null,
     shareTitle: headline,
-    sharePath: exploreMapItemSharePath(item.id),
+    sharePath:
+      activity?.joinMode === 'private' && activity.id
+        ? `/activity/${activity.id}`
+        : exploreMapItemSharePath(item.id),
     shareText: presentation.shareText,
     requesterUserId: featuredPerson?.userId ?? item.requesterUserId ?? null,
     routeLabel,

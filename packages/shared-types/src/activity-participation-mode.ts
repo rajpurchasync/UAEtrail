@@ -1,3 +1,5 @@
+import type { ActivityJoinMode } from './activity-join-mode.js';
+
 export type ParticipationMode = 'rsvp' | 'approval';
 
 /** Written by explore compose publish until `participationMode` is stored on the activity. */
@@ -27,6 +29,16 @@ export const resolveParticipationMode = (
 ): ParticipationMode => {
   if (stored === 'rsvp' || stored === 'approval') return stored;
   return inferParticipationModeFromRequirements(requirements);
+};
+
+/** Private (link-only) plans always RSVP — no approval queue. */
+export const resolveParticipationModeForJoinMode = (input: {
+  joinMode: ActivityJoinMode;
+  participationMode?: ParticipationMode | null;
+  requirements?: string[] | null;
+}): ParticipationMode => {
+  if (input.joinMode === 'private') return 'rsvp';
+  return resolveParticipationMode(input.participationMode, input.requirements);
 };
 
 /** Primary join CTA on activity detail and explore cards. */

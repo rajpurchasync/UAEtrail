@@ -4,16 +4,17 @@ import { ApiError } from '../lib/api-error.js';
 import type { Activity, Location } from './types.js';
 
 export const sharedActivityTypeSchema = z
-  .enum(['hiking', 'camping', 'event', 'community_activity', 'carpool'])
+  .enum(['hiking', 'camping', 'event', 'community_activity', 'carpool', 'shop'])
   .transform((value): SharedActivityType => (value === 'community_activity' ? 'event' : value));
 
-export type SharedActivityType = 'hiking' | 'camping' | 'event' | 'carpool';
+export type SharedActivityType = 'hiking' | 'camping' | 'event' | 'carpool' | 'shop';
 
 export const toPrismaActivityType = (activityType: string): ActivityType => {
   const normalized = activityType.toLowerCase();
   if (normalized === 'hiking') return ActivityType.HIKING;
   if (normalized === 'camping') return ActivityType.CAMPING;
   if (normalized === 'carpool') return ActivityType.CARPOOL;
+  if (normalized === 'shop') return ActivityType.SHOP;
   return ActivityType.EVENT;
 };
 
@@ -22,6 +23,7 @@ export const fromPrismaActivityType = (activityType: ActivityType | string): Sha
   if (normalized === 'HIKING') return 'hiking';
   if (normalized === 'CAMPING') return 'camping';
   if (normalized === 'CARPOOL') return 'carpool';
+  if (normalized === 'SHOP') return 'shop';
   return 'event';
 };
 

@@ -1,4 +1,3 @@
-import { Lock, Users } from 'lucide-react';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
@@ -40,7 +39,8 @@ export const DemandDestinationStepBody = ({
   </>
 );
 
-export const DemandVisibilityStepBody = ({
+/** Audience restrictions for find/demand — no public/private toggle (always on map when pinned). */
+export const DemandAudienceStepBody = ({
   draft,
   patchDraft,
   kind,
@@ -50,28 +50,9 @@ export const DemandVisibilityStepBody = ({
   kind: DemandKind;
 }) => (
   <>
-    <p className={`mb-2 ${EXPLORE_FLOW.choiceCardTitle}`}>Looking for</p>
-    <div className={`mb-4 ${EXPLORE_FLOW.choiceGrid2}`}>
-      {([
-        { key: 'public' as const, title: 'Public', subtitle: 'Anyone on the map can respond', icon: Users },
-        { key: 'private' as const, title: 'Private', subtitle: 'Only people you connect with', icon: Lock },
-      ]).map((option) => {
-        const active = draft.visibility === option.key;
-        const Icon = option.icon;
-        return (
-          <button
-            key={option.key}
-            type="button"
-            onClick={() => patchDraft({ visibility: option.key })}
-            className={exploreFlowChoiceCardClass(active)}
-          >
-            <Icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-gray-500'}`} />
-            <p className={`mt-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{option.title}</p>
-            <p className={EXPLORE_FLOW.choiceCardSubtitle}>{option.subtitle}</p>
-          </button>
-        );
-      })}
-    </div>
+    <p className="mb-3 text-sm text-gray-600">
+      Optional filters so hosts know who you&apos;re looking for. Your post is public on the map when you add a pin.
+    </p>
     <div className="space-y-2">
       <label className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-3">
         <input

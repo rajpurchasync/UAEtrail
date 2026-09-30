@@ -503,7 +503,12 @@ export const defaultDescription = (kind: CreateActivityKind): string => {
 };
 
 export const buildOrganizeActivityRequirements = (draft: CreateActivityDraft): string[] => {
-  const participationMode = draft.kind === 'carpool' ? 'approval' : draft.participationMode;
+  const participationMode =
+    draft.kind === 'carpool'
+      ? 'approval'
+      : draft.joinMode === 'private'
+        ? 'rsvp'
+        : draft.participationMode;
   const joinMode = draft.kind === 'carpool' ? 'open' : draft.joinMode;
   const requirements = buildParticipationRequirementLines({
     participationMode,

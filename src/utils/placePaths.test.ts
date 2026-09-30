@@ -11,6 +11,7 @@ describe('placePaths', () => {
     expect(placeDetailPath('hiking', 'abc')).toBe('/trail/abc');
     expect(placeDetailPath('camping', 'abc')).toBe('/camp/abc');
     expect(placeDetailPath('event', 'abc')).toBe('/event/abc');
+    expect(placeDetailPath('shop', 'abc')).toBe('/shop/abc');
   });
 
   it('keeps legacy location and venue aliases in sync', () => {

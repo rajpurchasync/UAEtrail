@@ -20,6 +20,8 @@ import {
 import { notifyRequestDecision, sendPasswordResetEmail } from '../lib/email.js';
 import { validate } from '../middleware/validate.js';
 import { awardPoints } from '../services/rewards.js';
+import { notifyAdminsActivityPublished } from '../services/platform-admin-events.js';
+import { findAuthUserById } from '../lib/auth-users.js';
 import { ensureActivityGroupChat } from '../services/activity-group-chat.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
 import { performParticipantCheckIn } from '../services/checkin.js';
@@ -198,7 +200,7 @@ import {
 import { assertActivityPricingAllowed } from '../domain/activity-pricing.js';
 import { assertActivityJoinInstructions } from '../domain/activity-join-instructions.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
-import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
+import { resolveParticipationModeForJoinMode } from '@uaetrail/shared-types';
 
 const buildHostActivityResponse = async (event: ActivityWithTenantRelations): Promise<ActivityDTO> => {
   const dto = buildActivityDto(event);
@@ -321,7 +323,11 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
       itinerary: body.itinerary,
       requirements: body.requirements,
       joinMode: resolveJoinMode(body.joinMode, body.requirements),
-      participationMode: resolveParticipationMode(body.participationMode, body.requirements),
+      participationMode: resolveParticipationModeForJoinMode({
+        joinMode: resolveJoinMode(body.joinMode, body.requirements),
+        participationMode: body.participationMode,
+        requirements: body.requirements,
+      }),
       images: body.images,
       bannerUrl: body.bannerUrl ?? null,
       signupUrl: body.signupUrl ?? null,
@@ -463,12 +469,33 @@ tenantActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), va
           : body.requirements !== undefined
             ? resolveJoinMode(existing.joinMode, body.requirements)
             : undefined,
-      participationMode:
-        body.participationMode !== undefined
-          ? resolveParticipationMode(body.participationMode, body.requirements ?? existing.requirements)
-          : body.requirements !== undefined
-            ? resolveParticipationMode(existing.participationMode, body.requirements)
-            : undefined,
+      participationMode: (() => {
+        const nextJoinMode =
+          body.joinMode !== undefined
+            ? resolveJoinMode(body.joinMode, body.requirements ?? existing.requirements)
+            : body.requirements !== undefined
+              ? resolveJoinMode(existing.joinMode, body.requirements)
+              : resolveJoinMode(existing.joinMode, existing.requirements);
+        const nextRequirements = body.requirements ?? existing.requirements;
+        const storedParticipation =
+          body.participationMode !== undefined
+            ? body.participationMode
+            : body.requirements !== undefined
+              ? existing.participationMode
+              : undefined;
+        if (
+          body.participationMode === undefined &&
+          body.joinMode === undefined &&
+          body.requirements === undefined
+        ) {
+          return undefined;
+        }
+        return resolveParticipationModeForJoinMode({
+          joinMode: nextJoinMode,
+          participationMode: storedParticipation,
+          requirements: nextRequirements,
+        });
+      })(),
       images: body.images,
       bannerUrl: body.bannerUrl,
       signupUrl: body.signupUrl,
@@ -624,6 +651,13 @@ tenantActivitiesRouter.post('/:id/publish', requireOrgRole(ORG_ACTIVITY_PUBLISH_
       referenceId: updated.id,
       label: `Published activity: ${updated.title}`
     }).catch(() => undefined);
+    const hostUser = hostUserId ? await findAuthUserById(hostUserId) : null;
+    const hostLabel = hostUser?.profile?.displayName?.trim() || hostUser?.email || 'A host';
+    notifyAdminsActivityPublished({
+      activityId: updated.id,
+      title: updated.title,
+      hostLabel,
+    });
     res.json({ message: 'Activity published.', activityId: updated.id });
   } catch (error) {
     next(error);

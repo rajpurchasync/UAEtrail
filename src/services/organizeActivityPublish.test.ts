@@ -28,4 +28,28 @@ describe('buildOrganizeActivityPublishInput', () => {
     expect(input.pricing.price).toBe(35);
     expect(input.pricing.paymentTerms).toBe('Fuel split');
   });
+
+  it('forces RSVP participation when joinMode is private', () => {
+    const draft = {
+      ...emptyCreateActivityDraft(),
+      kind: 'camping' as const,
+      title: 'Private camp',
+      joinMode: 'private' as const,
+      participationMode: 'approval' as const,
+      latitude: 23.1,
+      longitude: 54.2,
+      meetingLatitude: 23.11,
+      meetingLongitude: 54.21,
+    };
+
+    const input = buildOrganizeActivityPublishInput({
+      draft,
+      tenantId: 'tenant-1',
+      userId: 'user-1',
+      locationId: 'loc-1',
+    });
+
+    expect(input.joinMode).toBe('private');
+    expect(input.participationMode).toBe('rsvp');
+  });
 });

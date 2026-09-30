@@ -68,10 +68,17 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
           ? `Ages ${draft.ageMin}+`
           : 'Public · anyone';
 
+  const joinStyleLabel =
+    draft.joinMode === 'private'
+      ? "I'm going (link-only RSVP)"
+      : draft.participationMode === 'approval'
+        ? 'request to join'
+        : "I'm going";
+
   const audienceExtras = [
     !draft.childrenAllowed ? 'no children' : null,
     !draft.petsAllowed ? 'no pets' : null,
-    draft.participationMode === 'approval' ? 'request to join' : "I'm going",
+    joinStyleLabel,
   ]
     .filter(Boolean)
     .join(' · ');

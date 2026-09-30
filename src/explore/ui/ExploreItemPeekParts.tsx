@@ -1,6 +1,7 @@
 import { ExternalLink } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { ExploreHostPeekActions } from './ExploreHostPeekActions';
+import { ExploreDemandOwnerPeekActions } from './ExploreDemandOwnerPeekActions';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
@@ -35,6 +36,8 @@ export interface ExploreItemPeekFooterProps {
   linkCarpoolTenantId?: string | null;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
   onHostRemove?: () => void;
+  onDemandRemove?: () => void;
+  onDemandLinkCarpool?: () => void;
   /** Guests — detail, join-adjacent, and profile navigation show sign-up instead. */
   onGuestGatedAction?: () => void;
 }
@@ -53,6 +56,8 @@ export const ExploreItemPeekFooter = ({
   linkCarpoolTenantId = null,
   onCreateLinkedRideshare,
   onHostRemove,
+  onDemandRemove,
+  onDemandLinkCarpool,
   onGuestGatedAction,
 }: ExploreItemPeekFooterProps) => {
   const isShop = card.source === 'shop';
@@ -73,7 +78,14 @@ export const ExploreItemPeekFooter = ({
 
   return (
     <>
-      {card.showHostActions && onMessage && onHostRemove ? (
+      {card.showDemandOwnerActions && onDemandRemove ? (
+        <ExploreDemandOwnerPeekActions
+          onDelete={onDemandRemove}
+          showLinkCarpool={card.showDemandLinkCarpool}
+          onLinkCarpool={onDemandLinkCarpool}
+          onGuestGatedAction={gate}
+        />
+      ) : card.showHostActions && onMessage && onHostRemove ? (
         <ExploreHostPeekActions
           card={card}
           linkCarpoolTenantId={linkCarpoolTenantId}

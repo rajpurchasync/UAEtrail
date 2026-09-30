@@ -1,4 +1,4 @@
-import { NotificationDTO } from '@uaetrail/shared-types';
+import { NotificationDTO, placeDetailPath } from '@uaetrail/shared-types';
 import { ADMIN_PLACES_PATH } from '../config/platform';
 import { explorePath } from '../utils/exploreRouting';
 
@@ -93,12 +93,19 @@ export const inferNotificationPath = (
     return '/groups';
   }
   if (kind === 'location_approved') {
+    const locationId = toStringValue(meta?.locationId);
+    const activityType = toStringValue(meta?.activityType);
+    if (locationId && activityType) {
+      return placeDetailPath(activityType, locationId);
+    }
     return explorePath({ panel: 'venues' });
   }
   if (kind === 'host_application_submitted' || kind === 'organizer_application_submitted') {
     return '/admin/hosts';
   }
   if (kind === 'host_application_approved' || kind === 'organizer_application_approved') {
+    const shopPath = toStringValue(meta?.path);
+    if (shopPath && shopPath.startsWith('/shop/')) return shopPath;
     return '/host/overview';
   }
   if (kind === 'host_application_rejected' || kind === 'organizer_application_rejected') {
@@ -115,6 +122,15 @@ export const inferNotificationPath = (
   }
 
   if (options?.preferAdminRoutes) {
+    if (kind === 'location_submitted' && toStringValue(meta?.locationId)) {
+      return ADMIN_PLACES_PATH;
+    }
+    if (kind === 'user_registered' && toStringValue(meta?.userId)) {
+      return '/admin/users';
+    }
+    if (kind === 'activity_published' && toStringValue(meta?.activityId)) {
+      return '/admin/activities';
+    }
     if (
       kind === 'host_application_submitted' ||
       kind === 'organizer_application_submitted' ||

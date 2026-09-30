@@ -19,7 +19,14 @@ export type UserRole =
 export type TenantType = 'company' | 'guide_owned';
 export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
 
-export type ActivityType = 'hiking' | 'camping' | 'event' | 'carpool';
+/** Scheduled listings on the map (host activities, carpools). */
+export type ScheduledActivityType = 'hiking' | 'camping' | 'event' | 'carpool';
+
+/** Wire `activityType` on place/location rows (includes community shop pins). */
+export type PlaceActivityType = ScheduledActivityType | 'shop';
+
+/** @deprecated Prefer {@link ScheduledActivityType} or {@link PlaceActivityType} by context. */
+export type ActivityType = PlaceActivityType;
 export type LocationStatus = 'draft' | 'active' | 'inactive';
 export type ActivityStatus = 'draft' | 'published' | 'cancelled' | 'suspended';
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | 'waitlisted';
@@ -47,7 +54,7 @@ export interface LocationDTO {
   name: string;
   region: string;
   /** @deprecated Prefer {@link PlaceKind} in new code — persisted as `activityType` on Mongo today. */
-  activityType: ActivityType;
+  activityType: PlaceActivityType;
   description: string;
   difficulty?: 'easy' | 'moderate' | 'hard';
   season: string[];
@@ -140,7 +147,7 @@ export interface ActivityDTO {
   locationId: string;
   locationName: string;
   region?: string;
-  activityType: ActivityType;
+  activityType: ScheduledActivityType;
   title: string;
   description: string;
   date: string;
@@ -1050,6 +1057,7 @@ export {
   activityJoinCtaLabel,
   inferParticipationModeFromRequirements,
   resolveParticipationMode,
+  resolveParticipationModeForJoinMode,
   type ParticipationMode,
 } from './activity-participation-mode.js';
 
@@ -1085,10 +1093,12 @@ export {
 } from './activity-pricing.js';
 
 export {
+  activityHasJoinedParticipants,
   deriveActivityAvailability,
   isActivityFull,
   type ActivityAvailabilityInput,
   type ActivityAvailabilityStatus,
+  type ActivityJoinCountInput,
 } from './activity-availability.js';
 
 export {
@@ -1124,3 +1134,11 @@ export {
   type PlaceDetailRouteKind,
   type PlaceKind,
 } from './place-kind.js';
+
+export {
+  COMMUNITY_SHOP_TAG,
+  decodeShopContributeTags,
+  encodeShopContributeTags,
+  type DecodedShopContributeTags,
+  type ShopContributeTagInput,
+} from './shop-contribute.js';

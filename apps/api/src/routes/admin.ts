@@ -13,6 +13,7 @@ import {
   UserRole,
   UserStatus
 } from '../domain/enums.js';
+import { placeDetailPath, shopPublicPath } from '@uaetrail/shared-types';
 import { Router } from 'express';
 import { z } from 'zod';
 import { mountActivityRoutes } from '../lib/activity-routes.js';
@@ -62,13 +63,21 @@ import {
 import {
   countActivityParticipants,
   countPendingActivityRequests,
+  listActivityParticipantsWithUsers,
+  listActivityRequestsForActivity,
   listUserActivityParticipantsBasic,
   listUserActivityRequestsBasic
 } from '../lib/activity-engagement-store.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { requireRole } from '../middleware/rbac.js';
 import { validate } from '../middleware/validate.js';
-import { countAuthUsers, findAuthUserById, listAuthUsers, updateAuthUserStatus } from '../lib/auth-users.js';
+import {
+  countAuthUsers,
+  findAuthUserById,
+  findAuthUsersByIds,
+  listAuthUsers,
+  updateAuthUserStatus
+} from '../lib/auth-users.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
 import {
   approveHostApplicationAndProvisionTenant,
@@ -91,7 +100,7 @@ import {
 const locationCreateSchema = z.object({
   name: z.string().min(2),
   region: z.string().min(2),
-  activityType: z.enum(['hiking', 'camping', 'event', 'EVENT', 'community_activity', 'COMMUNITY_ACTIVITY']),
+  activityType: z.enum(['hiking', 'camping', 'event', 'shop', 'EVENT', 'community_activity', 'COMMUNITY_ACTIVITY']),
   description: z.string().min(20),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
   season: z.array(z.string()).min(1),
@@ -155,6 +164,7 @@ const toPrismaActivityType = (activityType: string): ActivityType => {
   const normalized = activityType.toLowerCase();
   if (normalized === 'hiking') return ActivityType.HIKING;
   if (normalized === 'camping') return ActivityType.CAMPING;
+  if (normalized === 'shop') return ActivityType.SHOP;
   return ActivityType.EVENT;
 };
 
@@ -273,21 +283,29 @@ adminPlaceItemPaths.forEach((path) => {
       const latitude = body.latitude !== undefined ? body.latitude : existing.latitude;
       const longitude = body.longitude !== undefined ? body.longitude : existing.longitude;
 
-      if (
-        (activityType === ActivityType.HIKING || activityType === ActivityType.EVENT) &&
-        !difficulty
-      ) {
+      if (activityType !== ActivityType.SHOP) {
+        if (
+          (activityType === ActivityType.HIKING || activityType === ActivityType.EVENT) &&
+          !difficulty
+        ) {
+          throw new ApiError(
+            400,
+            'difficulty_required',
+            'Trail and community event locations require a difficulty level before approval.'
+          );
+        }
+        if (!parkingLink && (latitude == null || longitude == null)) {
+          throw new ApiError(
+            400,
+            'parking_required',
+            'Add a parking link or map coordinates before approving this location.'
+          );
+        }
+      } else if (latitude == null || longitude == null) {
         throw new ApiError(
           400,
-          'difficulty_required',
-          'Trail and community event locations require a difficulty level before approval.'
-        );
-      }
-      if (!parkingLink && (latitude == null || longitude == null)) {
-        throw new ApiError(
-          400,
-          'parking_required',
-          'Add a parking link or map coordinates before approving this location.'
+          'coords_required',
+          'Community shop pins need a map location before approval.'
         );
       }
     }
@@ -342,12 +360,39 @@ adminPlaceItemPaths.forEach((path) => {
     });
 
     if (activating && updated.submittedById) {
+      const locationDto = toLocationDto(updated, { admin: true });
+      const activityTypeWire = locationDto.activityType;
+      const publicPath = placeDetailPath(activityTypeWire, updated.id);
+      const venueLabel =
+        activityTypeWire === 'shop'
+          ? 'shop pin'
+          : activityTypeWire === 'camping'
+            ? 'camp spot'
+            : activityTypeWire === 'event'
+              ? 'venue'
+              : 'trail';
+      const venueTitle =
+        activityTypeWire === 'shop'
+          ? 'Shop pin approved'
+          : venueLabel === 'trail'
+            ? 'Trail'
+            : venueLabel === 'camp spot'
+              ? 'Camp spot'
+              : 'Venue';
       await dispatchNotification({
         userId: updated.submittedById,
-        title: 'Location approved',
-        body: `"${updated.name}" is now live. You can use it when creating activities.`,
+        title: activityTypeWire === 'shop' ? venueTitle : `${venueTitle} approved`,
+        body:
+          activityTypeWire === 'shop'
+            ? `"${updated.name}" is live on Explore so others can find this shop nearby.`
+            : `"${updated.name}" is live on Explore. Open your ${venueLabel} page or use it when you organize a plan.`,
         type: NotificationType.SYSTEM,
-        meta: { locationId: updated.id, kind: 'location_approved' }
+        meta: {
+          locationId: updated.id,
+          activityType: activityTypeWire,
+          kind: 'location_approved',
+          path: publicPath,
+        },
       });
       void awardPoints({
         userId: updated.submittedById,
@@ -425,23 +470,38 @@ adminRouter.patch(
       }
 
       if (status === 'approved') {
+        const appMeta = (application.metadata as Record<string, unknown> | null) ?? {};
+        const hostProfileType = String(appMeta.hostProfileType ?? '').toLowerCase();
+        const isShop = hostProfileType === 'shop';
+
         await approveHostApplicationAndProvisionTenant({
           applicationId: application.id,
           reviewerId: req.auth!.userId,
           reviewerNote
         });
+
+        const approvedPath = isShop
+          ? shopPublicPath({ slug: application.requestedSlug })
+          : '/host/overview';
+        const approvedTitle = isShop ? 'Shop approved' : 'Host application approved';
+        const approvedBody = isShop
+          ? reviewerNote
+            ? `"${application.requestedName}" is on Explore. Note from reviewer: ${reviewerNote}`
+            : `"${application.requestedName}" is approved. Explorers can find your shop on the map.`
+          : reviewerNote
+            ? `You can now post activities. Note from reviewer: ${reviewerNote}`
+            : 'Your host profile was approved. You can now post activities and welcome participants.';
+
         await notifyUserAdminAction({
           userId: application.applicantId,
-          title: 'Host application approved',
-          body: reviewerNote
-            ? `You can now post activities. Note from reviewer: ${reviewerNote}`
-            : 'Your host profile was approved. You can now post activities and welcome participants.',
+          title: approvedTitle,
+          body: approvedBody,
           reason: reviewerNote,
           meta: {
             kind: 'host_application_approved',
             applicationId: application.id,
-            path: '/host/overview'
-          }
+            path: approvedPath,
+          },
         });
       } else {
         await markHostApplicationRejected({
@@ -494,6 +554,52 @@ adminActivitiesRouter.get('/moderation', async (req, res, next) => {
       total,
       pg
     ));
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminActivitiesRouter.get('/:id/engagement', validate({ params: idParamSchema }), async (req, res, next) => {
+  try {
+    const { id } = req.params as z.infer<typeof idParamSchema>;
+    const event = await findAdminEventById(id);
+    if (!event) {
+      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+    }
+
+    const [participants, requests] = await Promise.all([
+      listActivityParticipantsWithUsers(id),
+      listActivityRequestsForActivity(id),
+    ]);
+
+    const requestUserIds = [...new Set(requests.map((r) => r.userId))];
+    const requestUsers = requestUserIds.length > 0 ? await findAuthUsersByIds(requestUserIds) : [];
+    const requestUserMap = new Map(requestUsers.map((u) => [u._id, u]));
+
+    res.json({
+      data: {
+        participants: participants.map((p) => ({
+          id: p.id,
+          userId: p.userId,
+          checkedInAt: p.checkedInAt?.toISOString() ?? null,
+          createdAt: p.createdAt.toISOString(),
+          displayName: p.user.profile?.displayName ?? null,
+          email: p.user.email,
+        })),
+        joinRequests: requests.map((r) => {
+          const user = requestUserMap.get(r.userId);
+          return {
+            id: r.id,
+            userId: r.userId,
+            status: r.status.toLowerCase(),
+            note: r.note ?? null,
+            createdAt: r.createdAt.toISOString(),
+            displayName: user?.profile.displayName ?? null,
+            email: user?.email ?? '',
+          };
+        }),
+      },
+    });
   } catch (error) {
     next(error);
   }

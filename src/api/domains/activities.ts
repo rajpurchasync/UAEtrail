@@ -72,6 +72,29 @@ export const activitiesApi = {
     getAdminActivityDetail: (id: string) =>
     apiRequest<{ data: ActivityDTO }>(`/admin/activities/${id}`, { auth: true }),
 
+    getAdminActivityEngagement: (id: string) =>
+      apiRequest<{
+        data: {
+          participants: Array<{
+            id: string;
+            userId: string;
+            checkedInAt: string | null;
+            createdAt: string;
+            displayName: string | null;
+            email: string;
+          }>;
+          joinRequests: Array<{
+            id: string;
+            userId: string;
+            status: string;
+            note: string | null;
+            createdAt: string;
+            displayName: string | null;
+            email: string;
+          }>;
+        };
+      }>(`/admin/activities/${id}/engagement`, { auth: true }),
+
     moderateActivity: (id: string, action: 'suspend' | 'unsuspend', comment?: string) =>
     apiRequest(`/admin/activities/moderation/${id}`, {
       method: 'PATCH',

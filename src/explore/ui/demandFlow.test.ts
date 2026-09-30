@@ -49,6 +49,7 @@ describe('demandFlow steps', () => {
       'when',
       'area',
       'persons',
+      'audience',
       'info',
       'review',
     ]);

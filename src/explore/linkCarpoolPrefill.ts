@@ -1,5 +1,5 @@
-import type { ActivityDTO } from '@uaetrail/shared-types';
-import { emptyCreateActivityDraft, type CreateActivityDraft } from './ui/organizeFlow';
+import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { emptyCreateActivityDraft, todayIso, type CreateActivityDraft } from './ui/organizeFlow';
 
 /** Seed a rideshare organize draft from a parent hike/camp/event/activity. */
 export const buildRideshareDraftFromParentActivity = (parent: ActivityDTO): CreateActivityDraft => ({
@@ -20,3 +20,29 @@ export const buildRideshareDraftFromParentActivity = (parent: ActivityDTO): Crea
   priceMode: 'free',
   priceAmount: 0,
 });
+
+/** Seed FLOW-04 from a requester's own demand pin (standalone rideshare on the map). */
+export const buildRideshareDraftFromDemandMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
+  const label = item.title?.trim() || 'your plan';
+  const timeStr = item.time?.trim() || '09:00';
+  return {
+    ...emptyCreateActivityDraft(),
+    kind: 'carpool',
+    title: `Ride for ${label}`.slice(0, 120),
+    date: item.date?.trim() || todayIso(),
+    time: timeStr,
+    timeMode: item.time?.trim() ? 'specific' : 'flexible',
+    meetingTime: timeStr,
+    latitude: item.latitude,
+    longitude: item.longitude,
+    fromLabel: item.fromLabel?.trim() || '',
+    toLatitude: item.toLatitude ?? null,
+    toLongitude: item.toLongitude ?? null,
+    toLabel: item.toLabel?.trim() || '',
+    capacity: Math.min(4, Math.max(1, item.slotsTotal ?? 2)),
+    joinMode: 'open',
+    participationMode: 'approval',
+    priceMode: 'free',
+    priceAmount: 0,
+  };
+};

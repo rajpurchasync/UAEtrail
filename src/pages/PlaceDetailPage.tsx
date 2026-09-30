@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { MapPin, TrendingUp, Clock, Mountain, Baby, Car, ChevronRight } from 'lucide-react';
 import { ReviewDTO, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
 import {
@@ -23,6 +24,10 @@ import { detailBackPath } from '../utils/exploreRouting';
 import { hasPositiveNumber, isDefaultVenueSeason } from '../utils/venueDetailDisplay';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind, type PlaceDetailKindConfig } from './placeDetailConfig';
 import { readPlaceArabicName, resolvePlaceDisplayTitle } from '../utils/venueDetailDisplay';
+import {
+  CONTRIBUTE_PLACE_PENDING_BANNER_BODY,
+  CONTRIBUTE_PLACE_PENDING_BANNER_TITLE,
+} from '../explore/createFlowCopy';
 
 const jsonLdForPlace = (_kind: PlaceDetailKind, place: Place) => placeSchema(place);
 
@@ -60,6 +65,7 @@ interface PlaceDetailPageProps {
 /** Unified place detail — trails, camps, and event venues share one page shell. */
 export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
   const config = PLACE_DETAIL_CONFIG[kind];
+  const { user } = useAuth();
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [place, setPlace] = useState<Place | null>(null);
@@ -160,6 +166,8 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
     readPlaceArabicName(place.tags) ||
     (placeDisplayName !== place.name.trim() ? place.name.trim() : null);
   const heroImage = place.images[0] ?? null;
+  const isPendingDraft = place.status === 'draft';
+  const isAdmin = user?.role === 'platform_admin';
 
   return (
     <MobileDetailShell
@@ -182,6 +190,17 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
         <JsonLd data={jsonLdForPlace(kind, place)} id={`${kind}-${place.id}`} />
         <div className="bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {isPendingDraft ? (
+              <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                <p className="font-semibold">{CONTRIBUTE_PLACE_PENDING_BANNER_TITLE}</p>
+                <p className="mt-1 text-amber-900/90">{CONTRIBUTE_PLACE_PENDING_BANNER_BODY}</p>
+                {isAdmin ? (
+                  <Link to="/admin/places" className="mt-2 inline-block font-semibold text-amber-950 underline underline-offset-2">
+                    Review in admin
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
             <div className="flex items-center justify-end mb-4 hidden md:flex">
               <ShareButton title={place.name} text={shareText} path={detailPath!} />
             </div>

@@ -5,6 +5,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { ShopPublicPage, type ShopPublicView } from '../components/shop/ShopPublicPage';
 import { explorePath } from '../utils/exploreRouting';
 import { shopPublicPath } from '../utils/shopPaths';
+import { communityShopPlaceToView } from '../utils/communityShopPlace';
 
 const resolvePresence = (latitude?: number | null, longitude?: number | null): ShopPublicView['presence'] =>
   latitude != null && longitude != null ? 'physical' : 'online';
@@ -79,7 +80,12 @@ export const ShopPublic = () => {
         api
           .getOrganisationProfile(id)
           .then((res) => setShop(tenantToShopView(res.data)))
-          .catch(() => setShop(null))
+          .catch(() =>
+            api
+              .getPublicPlaceDetail(id)
+              .then((res) => setShop(communityShopPlaceToView(res.data)))
+              .catch(() => setShop(null))
+          )
       )
       .finally(() => setLoading(false));
   }, [id]);

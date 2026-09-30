@@ -1,4 +1,4 @@
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 
 /** Parse `/activity/:id` or a bare UUID from user paste. */
@@ -65,4 +65,12 @@ export const canLinkCarpoolToActivity = (activity: ActivityDTO | null | undefine
     activity.activityType === 'camping' ||
     activity.activityType === 'event'
   );
+};
+
+/** Own-demand peek — offer a rideshare alongside a looking-for pin (not rideshare demands). */
+export const canOfferCarpoolForDemandItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
+  if (!item || item.source !== 'demand') return false;
+  if (item.convertedActivityId) return false;
+  if (item.kind === 'carpool') return false;
+  return item.kind === 'hiking' || item.kind === 'camping' || item.kind === 'event';
 };
