@@ -51,6 +51,9 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     if (titleErr) return titleErr;
     const venueErr = validateStructuredPublishVenue(draft);
     if (venueErr) return venueErr;
+    if (draft.joinMode !== 'private' && !draft.joinKit.trim()) {
+      return 'Add what joiners should know before joining.';
+    }
     return validateOrganizePrice(draft);
   }
   return null;
@@ -61,7 +64,7 @@ export const organizeEventsFlow: OrganizeCatalogFlow = {
   createKind: 'event',
   defaultSteps: DEFAULT_STEPS,
   registryVenue: { placeType: 'event', omitWhenRegistry: REGISTRY_OMIT },
-  postPublishCarpool: false,
+  postPublishCarpool: true,
   getSteps: (draft) => applyRegistryVenueStepOmit(DEFAULT_STEPS, REGISTRY_OMIT, draft),
   validateStep,
 };

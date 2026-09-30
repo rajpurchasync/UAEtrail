@@ -6,6 +6,7 @@ import {
 import { OPEN_JOIN_REQUIREMENT } from '../../utils/activityPublishPayload';
 import {
   buildOrganizeActivityRequirements,
+  formatOrganizePricePreview,
   createFlowStepTitle,
   emptyCreateActivityDraft,
   getCreateFlowSteps,
@@ -248,6 +249,7 @@ describe('organizeFlow', () => {
         longitude: 55.2,
         meetingLatitude: 25.1,
         meetingLongitude: 55.2,
+        joinKit: 'Bring water and sturdy shoes.',
       })
     ).toBeNull();
   });
@@ -302,8 +304,24 @@ describe('organizeFlow', () => {
       trailName: 'Wadi loop',
       aboutTrail: 'Moderate sunrise loop with steady elevation.',
       capacity: 8,
+      joinKit: 'Water 2 L minimum.',
     };
     expect(validateDraftStep('publish', draft)).toBeNull();
+  });
+
+  it('formatOrganizePricePreview shows AED for shared and paid modes', () => {
+    expect(
+      formatOrganizePricePreview(
+        { priceMode: 'free', priceAmount: 0, sharedCostNote: '' },
+        'hiking'
+      )
+    ).toBe('Free');
+    expect(
+      formatOrganizePricePreview(
+        { priceMode: 'shared', priceAmount: 40, sharedCostNote: 'Fuel' },
+        'hiking'
+      )
+    ).toBe('AED 40 shared — Fuel');
   });
 
   it('buildOrganizeActivityRequirements merges approval join lines and participant limits', () => {
@@ -327,7 +345,7 @@ describe('organizeFlow', () => {
         'Women only',
         'Minimum age: 18',
         'No pets',
-        'What to bring: Headlamp',
+        'Instructions: Headlamp',
       ])
     );
   });

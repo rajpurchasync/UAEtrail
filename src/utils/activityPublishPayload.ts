@@ -75,6 +75,8 @@ export type ActivityPublishInput = {
   outingTopic?: OutingTopic | null;
   /** Optional lineage when reorganizing from a prior activity (audit only). */
   clonedFromActivityId?: string | null;
+  /** Parent hike/camp/event when publishing a linked rideshare. */
+  linkedActivityId?: string | null;
 };
 
 export const defaultParticipationModeForActivityType = (activityType: string): ParticipationMode =>
@@ -171,6 +173,9 @@ export const buildOrganisationActivityPublishPayload = (input: ActivityPublishIn
   }
   if (input.clonedFromActivityId?.trim()) {
     payload.clonedFromActivityId = input.clonedFromActivityId.trim();
+  }
+  if (input.linkedActivityId?.trim()) {
+    payload.linkedActivityId = input.linkedActivityId.trim();
   }
 
   if (pricing.pricePackages && pricing.pricePackages.length > 0) {

@@ -289,6 +289,8 @@ export const HikingDestinationStepBody = ({
     placeType="hiking"
     customNameLabel="Trail or area"
     customNamePlaceholder="e.g. Wadi Shawka loop"
+    showDifficulty={Boolean(draft.registryPlaceId)}
+    registryDifficultyHint
   />
 );
 

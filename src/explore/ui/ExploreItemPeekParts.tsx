@@ -1,10 +1,16 @@
-import { Car, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
+import type { ActivityDTO } from '@uaetrail/shared-types';
+import { ExploreHostPeekActions } from './ExploreHostPeekActions';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { PlaceCardActions } from '../../components/ui/PlaceCardActions';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import { ORGANIZE_DEMAND_PREFILL_TITLE, ORGANIZE_LINK_CARPOOL_HINT, ORGANIZE_LINK_CARPOOL_LABEL } from '../createFlowCopy';
+import {
+  EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX,
+  EXPLORE_LINKED_RIDESHARES_PEEK_TITLE,
+  ORGANIZE_DEMAND_PREFILL_TITLE,
+} from '../createFlowCopy';
 import {
   exploreCardHasMapCoords,
   exploreCardShowsInlineDirections,
@@ -26,9 +32,9 @@ export interface ExploreItemPeekFooterProps {
   joinUiState?: JoinRequestUiState;
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
-  showCarpoolLink?: boolean;
-  onLinkCarpool?: () => void;
-  carpoolLinkLoading?: boolean;
+  linkCarpoolTenantId?: string | null;
+  onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
+  onHostRemove?: () => void;
   /** Guests — detail, join-adjacent, and profile navigation show sign-up instead. */
   onGuestGatedAction?: () => void;
 }
@@ -44,9 +50,9 @@ export const ExploreItemPeekFooter = ({
   joinUiState,
   onWithdraw,
   joinStateLoading = false,
-  showCarpoolLink = false,
-  onLinkCarpool,
-  carpoolLinkLoading = false,
+  linkCarpoolTenantId = null,
+  onCreateLinkedRideshare,
+  onHostRemove,
   onGuestGatedAction,
 }: ExploreItemPeekFooterProps) => {
   const isShop = card.source === 'shop';
@@ -67,38 +73,16 @@ export const ExploreItemPeekFooter = ({
 
   return (
     <>
-      {card.showHostActions && onMessage && onManage ? (
-        <>
-          {showCarpoolLink && onLinkCarpool ? (
-            <div className="mb-3 rounded-2xl border border-sky-100 bg-sky-50/80 px-3 py-3">
-              <p className="text-sm font-semibold text-gray-900">{ORGANIZE_LINK_CARPOOL_LABEL}</p>
-              <p className="mt-1 text-xs leading-relaxed text-gray-600">{ORGANIZE_LINK_CARPOOL_HINT}</p>
-              <button
-                type="button"
-                disabled={carpoolLinkLoading}
-                onClick={gate ?? onLinkCarpool}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 py-2.5 text-sm font-bold text-white disabled:opacity-60"
-              >
-                <Car className="h-4 w-4" aria-hidden />
-                {carpoolLinkLoading ? 'Linking…' : ORGANIZE_LINK_CARPOOL_LABEL}
-              </button>
-            </div>
-          ) : null}
-          <button
-            type="button"
-            onClick={gate ?? onMessage}
-            className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
-          >
-            Message
-          </button>
-          <button
-            type="button"
-            onClick={gate ?? onManage}
-            className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
-          >
-            {card.activity?.status === 'published' ? 'Check in attendees' : 'Manage'}
-          </button>
-        </>
+      {card.showHostActions && onMessage && onHostRemove ? (
+        <ExploreHostPeekActions
+          card={card}
+          linkCarpoolTenantId={linkCarpoolTenantId}
+          onCreateLinkedRideshare={onCreateLinkedRideshare}
+          onMessage={onMessage}
+          onHostRemove={onHostRemove}
+          onManage={onManage}
+          onGuestGatedAction={gate}
+        />
       ) : isDemand && onFulfillIntent ? (
         <>
           <button
@@ -244,9 +228,11 @@ export const ExploreItemPeekFooter = ({
 export const ExploreItemPeekBody = ({
   card,
   onGuestGatedAction,
+  onOpenExploreItem,
 }: {
   card: ExploreCardModel;
   onGuestGatedAction?: () => void;
+  onOpenExploreItem?: (exploreItemId: string) => void;
 }) => {
   const isShop = card.source === 'shop';
   const showPeopleRow =
@@ -275,6 +261,40 @@ export const ExploreItemPeekBody = ({
         </p>
       )}
       {showPeopleRow && <ExploreCardPeopleRow card={card} onGuestGatedAction={onGuestGatedAction} />}
+      {card.kind === 'carpool' && card.activity?.linkedParentActivity ? (
+        <div className="mt-4 border-t border-neutral-100 pt-3">
+          <button
+            type="button"
+            onClick={() => onOpenExploreItem?.(`activity:${card.activity!.linkedParentActivity!.id}`)}
+            className="text-sm font-semibold text-sky-800 underline underline-offset-2"
+          >
+            {EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX} {card.activity.linkedParentActivity.title}
+          </button>
+        </div>
+      ) : null}
+      {card.linkedRideshares && card.linkedRideshares.length > 0 ? (
+        <div className="mt-4 border-t border-neutral-100 pt-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            {EXPLORE_LINKED_RIDESHARES_PEEK_TITLE}
+          </p>
+          <ul className="mt-2 space-y-2">
+            {card.linkedRideshares.map((ride) => (
+              <li key={ride.exploreItemId}>
+                <button
+                  type="button"
+                  onClick={() => onOpenExploreItem?.(ride.exploreItemId)}
+                  className="w-full text-left text-sm font-semibold text-sky-800 underline underline-offset-2"
+                >
+                  {ride.title}
+                </button>
+                {ride.subtitle ? (
+                  <p className="mt-0.5 text-xs text-neutral-500 line-clamp-2">{ride.subtitle}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       {card.venueHint && isShop && (
         <p className="mt-3 text-xs leading-relaxed text-slate-500">{card.venueHint}</p>
       )}

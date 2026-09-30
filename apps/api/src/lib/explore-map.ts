@@ -84,6 +84,57 @@ const resolveToCoords = (activity: ActivityDTO): { latitude: number; longitude: 
   return { latitude: activity.startLat, longitude: activity.startLng };
 };
 
+/** Link rides ↔ parent plans on explore payload (badges, peek, bidirectional navigation). */
+const attachLinkedRideshareMetadata = (items: ExploreMapItemDTO[]): void => {
+  const byParent = new Map<string, ExploreMapItemDTO['linkedRideshareActivities']>();
+
+  for (const item of items) {
+    if (item.source !== 'activity' || item.kind !== 'carpool') continue;
+    const parentId = item.activity?.linkedActivityId;
+    const activityId = item.activity?.id;
+    if (!parentId || !activityId) continue;
+
+    const row = {
+      activityId,
+      exploreItemId: item.id,
+      title: item.title,
+      path: item.path,
+      subtitle: item.subtitle ?? null,
+    };
+    const bucket = byParent.get(parentId) ?? [];
+    bucket.push(row);
+    byParent.set(parentId, bucket);
+  }
+
+  for (const item of items) {
+    if (item.source !== 'activity' || item.kind === 'carpool') continue;
+    const parentId = item.activity?.id;
+    if (!parentId) continue;
+
+    const linked = byParent.get(parentId);
+    if (!linked?.length) continue;
+
+    item.linkedRideshareActivities = linked;
+    item.carPoolEnabled = true;
+  }
+
+  for (const item of items) {
+    if (item.source !== 'activity' || item.kind !== 'carpool' || !item.activity) continue;
+    const parentId = item.activity.linkedActivityId;
+    if (!parentId) continue;
+    const parentItem = items.find((entry) => entry.activity?.id === parentId);
+    if (!parentItem?.activity) continue;
+    item.activity = {
+      ...item.activity,
+      linkedParentActivity: {
+        id: parentItem.activity.id,
+        title: parentItem.title,
+        activityType: parentItem.activity.activityType,
+      },
+    };
+  }
+};
+
 export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
   const now = Date.now();
   const memoryCached = readExploreMapMemoryCache<{ items: ExploreMapItemDTO[] }>(now);
@@ -283,6 +334,8 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
   }
 
   items.push(...demandItems);
+
+  attachLinkedRideshareMetadata(items);
 
   for (const item of items) {
     if (item.source === 'activity' && item.activity) {

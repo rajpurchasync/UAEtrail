@@ -15,7 +15,7 @@ describe('createFlowCopy (organize hiking/camping)', () => {
   it('describes post-publish map focus and optional carpool', () => {
     expect(ORGANIZE_PUBLISH_SUCCESS_TITLE).toBeTruthy();
     expect(ORGANIZE_PUBLISH_SUCCESS_BODY).toMatch(/map/i);
-    expect(ORGANIZE_PUBLISH_SUCCESS_BODY).toMatch(/carpool/i);
+    expect(ORGANIZE_PUBLISH_SUCCESS_BODY).toMatch(/rideshare|carpool/i);
     expect(ORGANIZE_PUBLISH_VIEW_ON_MAP).toBe('View on map');
     expect(ORGANIZE_LINK_CARPOOL_LABEL).toBe('Link carpool');
   });

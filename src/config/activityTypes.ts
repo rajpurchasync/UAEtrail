@@ -9,7 +9,7 @@
  * Places (trails, camps, shops, …) are a separate catalog — one Place entity, `PlaceKind` in `@uaetrail/shared-types`.
  */
 
-import { explorePath } from '../utils/exploreRouting';
+import { EXPLORE_MAP_PATH } from './platform';
 import { PRODUCT_ACTIVITIES_EXPLORE_BLURB } from '../content/productNorthStar';
 
 export const ACTIVITY_TYPES = ['hiking', 'camping', 'event'] as const;
@@ -110,11 +110,11 @@ export const browseAllActivitiesOfTypeLabel = (type: ActivityType): string => {
 };
 
 /** Public browse page for scheduled activities, optionally filtered by type. */
-export const activitiesBrowsePath = (activityType?: ActivityType | null): string =>
-  explorePath({
-    panel: 'activities',
-    activity: activityType ?? undefined,
-  });
+export const activitiesBrowsePath = (activityType?: ActivityType | null): string => {
+  if (!activityType) return EXPLORE_MAP_PATH;
+  const params = new URLSearchParams({ activity: activityType });
+  return `${EXPLORE_MAP_PATH}?${params.toString()}`;
+};
 
 export const locationPathForActivity = (activityType: ActivityType, id: string): string => {
   if (activityType === 'camping') return `/camp/${id}`;

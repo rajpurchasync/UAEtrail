@@ -96,13 +96,28 @@ export const ORGANIZE_DESTINATION_MANUAL_BACK = ORGANIZE_VENUE_CUSTOM_NAME_BACK;
 export const ORGANIZE_PUBLISH_SUCCESS_TITLE = 'You\u2019re live';
 
 export const ORGANIZE_PUBLISH_SUCCESS_BODY =
-  'Your plan is published. You can offer carpool below, then take people to the map pin.';
+  'Your plan is published. View it on the map or offer a rideshare for your crew.';
 
 export const ORGANIZE_PUBLISH_VIEW_ON_MAP = 'View on map';
 
+/** Post-publish success sheet — short primary CTA. */
+export const ORGANIZE_PUBLISH_VIEW_CTA = 'View';
+
 export const ORGANIZE_LINK_CARPOOL_LABEL = 'Link carpool';
 
-export const ORGANIZE_LINK_CARPOOL_HINT =
-  'Optional — let joiners know shared rides are available. You can coordinate in chat.';
+export const ORGANIZE_LINK_CARPOOL_CREATE = 'Create a rideshare';
 
-export const ORGANIZE_CARPOOL_LINKED_NOTICE = 'Carpool linked — joiners will see it on your plan.';
+export const ORGANIZE_LINK_CARPOOL_PASTE_CTA = 'Paste rideshare link';
+
+export const ORGANIZE_LINK_CARPOOL_PASTE_LABEL = 'Or paste your rideshare link';
+
+export const ORGANIZE_LINK_CARPOOL_PASTE_PLACEHOLDER = 'https://uaetrail.com/activity/…';
+
+export const ORGANIZE_LINK_CARPOOL_HINT =
+  'Publish a rideshare on the map, or link one you already host — joiners see it on this plan.';
+
+export const ORGANIZE_CARPOOL_LINKED_NOTICE = 'Rideshare linked — joiners will see it on your plan.';
+
+export const EXPLORE_LINKED_RIDESHARES_PEEK_TITLE = 'Rideshares for this plan';
+
+export const EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX = 'For plan:';

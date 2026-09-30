@@ -33,9 +33,11 @@ All rides use **this same organize flow**. Hike/camp/event plans do **not** embe
 | **Offer carpool on a plan** | Host (or flow) creates a **rideshare activity** and links it — replaces long-term reliance on `carPoolEnabled` on the outing row |
 | **Multiple vehicles** | Several hosts publish rides + link to the **same** parent activity; UI collates linked rides (future host tools) |
 
-Interim: host peek **“Link carpool”** may still set `carPoolEnabled` until link model ships — target is **standalone ride + link**.
+**Shipped (explore):** **Link carpool** opens FLOW-04 with `linkToParentActivityId`; publish sets `linkedActivityId` on the ride and updates the parent. Rides appear as **separate map/list pins**; parent peek lists **Rideshares for this plan**; ride peek links **For plan:** back to the parent.
 
-**No** “Offer carpool” checkbox on rideshare **publish**. **No** carpool toggle after publish on the ride itself.
+**Post-publish carpool CTA** on success sheet: all **parent** organize flows (hiking, camping, events, activities) when the plan is **public**; not on FLOW-04 rideshare publish.
+
+**No** carpool checkbox on rideshare **publish** step.
 
 ---
 

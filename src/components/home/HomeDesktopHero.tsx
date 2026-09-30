@@ -1,3 +1,4 @@
+import type React from 'react';
 import { Link } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../../config/seo';
@@ -18,8 +19,8 @@ export const HomeDesktopHero = ({ joinHref, signInHref }: HomeDesktopHeroProps) 
         src={HOME_HERO_IMAGE_JPEG}
         alt=""
         decoding="async"
-        fetchPriority="high"
         className="landing-hero-image"
+        {...({ fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
       />
     </picture>
     <div className="landing-hero-overlay-r" />

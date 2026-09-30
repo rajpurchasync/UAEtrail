@@ -28,6 +28,7 @@ interface ExploreComposeHostProps {
   onOpenHostApplication: () => void;
   onContributeSubmitted: (result: ContributeSubmitResult) => void;
   onDemandSubmitted: (result: DemandSubmitResult) => void;
+  onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
 }
 
 /** FAB compose menu and create wizards — mounted once at explore shell level. */
@@ -52,6 +53,7 @@ export const ExploreComposeHost = ({
   onOpenHostApplication,
   onContributeSubmitted,
   onDemandSubmitted,
+  onCreateLinkedRideshare,
 }: ExploreComposeHostProps) => (
   <>
     {composeMenuOpen && exploreCompose && (
@@ -79,6 +81,7 @@ export const ExploreComposeHost = ({
         onClose={onCloseCreateFlow}
         organizeKind={organizeKind}
         demandPrefill={fulfillIntentPrefill}
+        onCreateLinkedRideshare={onCreateLinkedRideshare}
         onBackToIntent={onOrganizeBackToIntent}
         onPublished={onActivityPublished}
         onOpenHostApplication={onOpenHostApplication}

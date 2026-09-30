@@ -113,11 +113,11 @@ export function renderMeetingStep(ctx: OrganizeWizardContext): ReactNode | null 
                     value={draft.goingFromNotes}
                     onChange={(event) => patchDraft({ goingFromNotes: event.target.value })}
                     rows={3}
-                    placeholder="e.g. Mall entrance B, look for the green flagΓÇª"
+                    placeholder="e.g. Mall entrance B, look for the green flag…"
                     className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                     maxLength={500}
                   />
-                  <span className="mt-1 block text-xs text-gray-500">Optional ΓÇö for the going-from pin.</span>
+                  <span className="mt-1 block text-xs text-gray-500">Optional — for the going-from pin.</span>
                 </label>
               </>
             ) : (
@@ -145,11 +145,11 @@ export function renderMeetingStep(ctx: OrganizeWizardContext): ReactNode | null 
                     value={draft.meetingPointInfo}
                     onChange={(event) => patchDraft({ meetingPointInfo: event.target.value })}
                     rows={3}
-                    placeholder="e.g. Mall entrance B, look for the green flag, park on the leftΓÇª"
+                    placeholder="e.g. Mall entrance B, look for the green flag, park on the left…"
                     className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                     maxLength={500}
                   />
-                  <span className="mt-1 block text-xs text-gray-500">Optional ΓÇö helps people find the spot.</span>
+                  <span className="mt-1 block text-xs text-gray-500">Optional — helps people find the spot.</span>
                 </label>
 
                 <label className="mt-4 block">

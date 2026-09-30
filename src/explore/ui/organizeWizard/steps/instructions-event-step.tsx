@@ -33,7 +33,7 @@ export function renderInstructionsEventStep(ctx: OrganizeWizardContext): ReactNo
                 value={draft.description}
                 onChange={(event) => patchDraft({ description: event.target.value })}
                 rows={3}
-                placeholder="What to expect, schedule highlights, vibeΓÇª"
+                placeholder="What to expect, schedule highlights, vibe…"
                 className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                 maxLength={1200}
               />
@@ -44,7 +44,7 @@ export function renderInstructionsEventStep(ctx: OrganizeWizardContext): ReactNo
                 value={draft.additionalInstructions}
                 onChange={(event) => patchDraft({ additionalInstructions: event.target.value })}
                 rows={4}
-                placeholder="Safety rules, gear requirements, house rules joiners must acceptΓÇª"
+                placeholder="Safety rules, gear requirements, house rules joiners must accept…"
                 className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                 maxLength={1000}
               />

@@ -35,7 +35,7 @@ export function renderInstructionsCarpoolStep(ctx: OrganizeWizardContext): React
                 value={draft.description}
                 onChange={(event) => patchDraft({ description: event.target.value })}
                 rows={5}
-                placeholder="e.g. Meet at mall entrance, max 1 bag per person, no smokingΓÇª"
+                placeholder="e.g. Meet at mall entrance, max 1 bag per person, no smoking…"
                 className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                 maxLength={1200}
               />

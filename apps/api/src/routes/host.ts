@@ -159,6 +159,8 @@ const eventCreateSchema = z.object({
   outingCategory: outingCategorySchema.optional(),
   outingTopic: outingTopicSchema.optional(),
   clonedFromActivityId: z.string().uuid().optional(),
+  linkedActivityId: z.string().uuid().nullable().optional(),
+  linkedCarpoolActivityId: z.string().uuid().nullable().optional(),
 });
 
 const eventPatchSchema = eventCreateSchema.partial();
@@ -329,6 +331,8 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
       capacity: body.capacity,
       outingCategory: body.outingCategory ?? null,
       outingTopic: body.outingTopic ?? null,
+      linkedActivityId: body.linkedActivityId ?? null,
+      linkedCarpoolActivityId: body.linkedCarpoolActivityId ?? null,
     });
 
     await createAuditLog({
@@ -482,6 +486,8 @@ tenantActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), va
       host: body.hostId ? { connect: { id: body.hostId } } : body.hostId === null ? { disconnect: true } : undefined,
       outingCategory: body.outingCategory,
       outingTopic: body.outingTopic,
+      linkedActivityId: body.linkedActivityId,
+      linkedCarpoolActivityId: body.linkedCarpoolActivityId,
     });
 
     await createAuditLog({

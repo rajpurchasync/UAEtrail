@@ -18,6 +18,7 @@ export type CreateOrganizeFlowHostProps = {
   signInHref: string;
   organizeKind: OrganizeComposeKind | null;
   demandPrefill: import('../organizeWizardPrefill').OrganizeWizardPrefill | null;
+  onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
 };
 
 /** Routes FAB organize compose to one catalog flow wizard (see `composeFlowCatalog`). */
@@ -30,6 +31,7 @@ export const CreateOrganizeFlowHost = ({
   signInHref,
   organizeKind,
   demandPrefill,
+  onCreateLinkedRideshare,
 }: CreateOrganizeFlowHostProps) => {
   const resolvedKind = organizeKind ?? demandPrefill?.draft.kind ?? null;
 
@@ -41,6 +43,7 @@ export const CreateOrganizeFlowHost = ({
     onBackToIntent,
     signInHref,
     demandPrefill,
+    onCreateLinkedRideshare,
   };
 
   switch (resolvedKind) {

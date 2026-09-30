@@ -5,17 +5,13 @@ import type { ActivityDTO, ExploreMapItemDTO, UserRole } from '@uaetrail/shared-
 import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
 import { api } from '../../api/index';
 import { buildExploreCardModel } from '../exploreCardModel';
+import { resolveLinkedRideshareRows } from '../linkedRideshareExplore';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { activityHostUserId } from '../../utils/hostLabels';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
-import {
-  canLinkCarpoolToActivity,
-  linkActivityCarpoolOffer,
-} from '../linkActivityCarpoolOffer';
-import { ORGANIZE_CARPOOL_LINKED_NOTICE } from '../createFlowCopy';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
@@ -34,7 +30,6 @@ type UseExploreSelectionActionsArgs = {
   clearFulfillPrefill: () => void;
   fulfillIntentPrefill: unknown;
   clearFulfillAfterPublish: () => void;
-  openEdit: (activity: ActivityDTO, opts: { tenantId: string }) => void;
   handleFocusMapLocation: (coords: { lat: number; lng: number }) => void;
 };
 
@@ -52,33 +47,47 @@ export const useExploreSelectionActions = ({
   clearFulfillPrefill,
   fulfillIntentPrefill,
   clearFulfillAfterPublish,
-  openEdit,
   handleFocusMapLocation,
 }: UseExploreSelectionActionsArgs) => {
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
-  const [carpoolLinkActivityId, setCarpoolLinkActivityId] = useState<string | null>(null);
-  const [carpoolLinkLoading, setCarpoolLinkLoading] = useState(false);
+  const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
+  const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
 
   const selected = items.find((item) => item.id === selectedId) ?? null;
 
   const selectedCard = useMemo(() => {
     if (!selected) return null;
-    const card = buildExploreCardModel(selected);
+    const linkedRideshares = resolveLinkedRideshareRows(selected, items);
+    let activity = selected.activity;
+    if (activity?.linkedActivityId && !activity.linkedParentActivity) {
+      const parentItem = items.find((entry) => entry.activity?.id === activity!.linkedActivityId);
+      if (parentItem?.activity) {
+        activity = {
+          ...activity,
+          linkedParentActivity: {
+            id: parentItem.activity.id,
+            title: parentItem.title,
+            activityType: parentItem.activity.activityType,
+          },
+        };
+      }
+    }
+    const card = {
+      ...buildExploreCardModel(selected),
+      activity,
+      linkedRideshares: linkedRideshares.length > 0 ? linkedRideshares : undefined,
+    };
     const activity = selected.activity;
     const hostUserId = activity ? activityHostUserId(activity) : null;
-    const isOwnActivity = Boolean(
-      user &&
-        activity &&
-        (hostUserId === user.id || (tenantId && activity.tenantId === tenantId))
-    );
+    const isOwnActivity = Boolean(user && activity && hostUserId === user.id);
     if (!isOwnActivity) return card;
     return {
       ...card,
       showJoinActions: false,
       showHostActions: true,
     };
-  }, [selected, user, tenantId]);
+  }, [selected, items, user, tenantId]);
 
   const joinContextEnabled = Boolean(selected?.activity?.id && !selectedCard?.showHostActions && user);
   const {
@@ -174,13 +183,32 @@ export const useExploreSelectionActions = ({
       return;
     }
 
-    if (tenantId) {
-      openEdit(activity, { tenantId });
-      return;
-    }
-
     navigate(`/activities?tab=hosted&checkin=${encodeURIComponent(activity.id)}`);
-  }, [selected, tenantId, navigate, openEdit, setSelectedId]);
+  }, [selected, tenantId, navigate, setSelectedId]);
+
+  const requestHostRemove = useCallback(() => {
+    const activity = selected?.activity;
+    if (!activity) return;
+    if (activity.status !== 'draft' && activity.status !== 'published') return;
+    setHostRemoveConfirm(activity);
+  }, [selected?.activity]);
+
+  const confirmHostRemove = useCallback(async () => {
+    if (!hostRemoveConfirm || !tenantId) return;
+    setHostRemoveBusy(true);
+    try {
+      await api.cancelOrganisationActivity(tenantId, hostRemoveConfirm.id);
+      const wasDraft = hostRemoveConfirm.status === 'draft';
+      setHostRemoveConfirm(null);
+      setSelectedId(null);
+      await reloadExploreMap(queryClient);
+      setVenueNotice(wasDraft ? 'Draft deleted.' : 'Activity cancelled.');
+    } catch (err) {
+      setVenueNotice(err instanceof Error ? err.message : 'Could not update activity.');
+    } finally {
+      setHostRemoveBusy(false);
+    }
+  }, [hostRemoveConfirm, tenantId, queryClient, setSelectedId]);
 
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
@@ -209,9 +237,6 @@ export const useExploreSelectionActions = ({
         setSelectedId(`activity:${activity.id}`);
       }
 
-      if (canLinkCarpoolToActivity(activity)) {
-        setCarpoolLinkActivityId(activity.id);
-      }
     },
     [
       queryClient,
@@ -223,32 +248,8 @@ export const useExploreSelectionActions = ({
     ]
   );
 
-  const handleLinkCarpool = useCallback(async () => {
-    const activity = selected?.activity;
-    if (!activity || !tenantId || !canLinkCarpoolToActivity(activity)) return;
-
-    setCarpoolLinkLoading(true);
-    try {
-      await linkActivityCarpoolOffer(tenantId, activity);
-      await reloadExploreMap(queryClient);
-      setCarpoolLinkActivityId(null);
-      setVenueNotice(ORGANIZE_CARPOOL_LINKED_NOTICE);
-    } catch (err) {
-      setVenueNotice(err instanceof Error ? err.message : 'Could not link carpool. Try again.');
-    } finally {
-      setCarpoolLinkLoading(false);
-    }
-  }, [selected?.activity, tenantId, queryClient]);
-
-  const showCarpoolLinkOnPeek = Boolean(
-    selected?.activity &&
-      carpoolLinkActivityId === selected.activity.id &&
-      canLinkCarpoolToActivity(selected.activity)
-  );
-
   const handleCloseSelection = useCallback(() => {
     setSelectedId(null);
-    setCarpoolLinkActivityId(null);
   }, [setSelectedId]);
 
   const handleDemandSubmitted = useCallback(
@@ -297,10 +298,12 @@ export const useExploreSelectionActions = ({
     handleDemandMessage,
     handleHostMessage,
     handleHostManage,
+    requestHostRemove,
+    hostRemoveConfirm,
+    setHostRemoveConfirm,
+    confirmHostRemove,
+    hostRemoveBusy,
     handleActivityPublished,
-    handleLinkCarpool,
-    showCarpoolLinkOnPeek,
-    carpoolLinkLoading,
     handleCloseSelection,
     handleDemandSubmitted,
     handleContributeSubmitted,

@@ -73,7 +73,11 @@ export const extractExploreRequirementBadges = (requirements?: string[] | null):
 /** Map requirement lines to short peek/list chips (vehicle, difficulty, carpool). */
 export const enrichExploreActivityRequirementBadges = (
   requirements: string[] | null | undefined,
-  options: { kind: ActivityBadgeKind; carPoolEnabled?: boolean }
+  options: {
+    kind: ActivityBadgeKind;
+    carPoolEnabled?: boolean;
+    venueDifficulty?: 'easy' | 'moderate' | 'hard' | null;
+  }
 ): string[] => {
   const items = requirements ?? [];
   const badges = extractExploreRequirementBadges(items);
@@ -86,6 +90,16 @@ export const enrichExploreActivityRequirementBadges = (
     if (/^Difficulty: Easy/i.test(line) && !badges.includes('Easy')) badges.push('Easy');
     if (/^Difficulty: Medium/i.test(line) && !badges.includes('Medium')) badges.push('Medium');
     if (/^Difficulty: Hard/i.test(line) && !badges.includes('Hard')) badges.push('Hard');
+  }
+
+  if (options.kind === 'hiking' && options.venueDifficulty) {
+    const fromVenue =
+      options.venueDifficulty === 'hard'
+        ? 'Hard'
+        : options.venueDifficulty === 'moderate'
+          ? 'Medium'
+          : 'Easy';
+    if (!badges.includes(fromVenue)) badges.push(fromVenue);
   }
 
   const hasNoChildren = items.some((line) => /^No children$/i.test(line.trim()));

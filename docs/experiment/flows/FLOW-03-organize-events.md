@@ -51,7 +51,7 @@ Tap **+** → **Organize** → **🏃 Event**
 | 10 | `transportation` | **Transportation** | Sedan vs **4x4 required** |
 | 11 | `publish` | **Preview and publish** | Summary · **Publish** (no carpool offer) |
 
-**Not in events wizard:** `meeting` / **Going from** (hiking & camping only). **Not on publish:** Offer carpool checkbox (hiking only).
+**Not in events wizard:** `meeting` / **Going from** (hiking & camping only). **Publish success (public):** **View on map** + optional **Link carpool** (FLOW-04). **Host peek:** Message · Delete · Check in · Link carpool.
 
 **Map pin:** Meeting point coordinates only — venue registry coords used as `startPoint` / location ref when applicable.
 

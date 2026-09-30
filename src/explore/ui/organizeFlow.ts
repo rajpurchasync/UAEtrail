@@ -547,7 +547,7 @@ export const buildOrganizeActivityRequirements = (draft: CreateActivityDraft): s
   } else if (draft.kind === 'activity' && draft.joinKit.trim()) {
     requirements.push(`Instructions: ${draft.joinKit.trim()}`);
   } else if ((draft.kind === 'hiking' || draft.kind === 'camping' || draft.kind === 'event') && draft.joinKit.trim()) {
-    requirements.push(`What to bring: ${draft.joinKit.trim()}`);
+    requirements.push(`Instructions: ${draft.joinKit.trim()}`);
   } else if (draft.additionalInstructions.trim()) {
     requirements.push(`Instructions: ${draft.additionalInstructions.trim()}`);
   }
@@ -631,6 +631,9 @@ export const ACTIVITY_DIFFICULTY_OPTIONS: Array<{ value: ActivityDifficulty; tit
   { value: 'hard', title: 'Hard', subtitle: 'For professionals' },
 ];
 
+export const resolveOrganizeDifficultyLabel = (difficulty: ActivityDifficulty): string =>
+  ACTIVITY_DIFFICULTY_OPTIONS.find((option) => option.value === difficulty)?.title ?? difficulty;
+
 export const VEHICLE_ACCESS_OPTIONS: Array<{ value: VehicleAccess; title: string; subtitle: string }> = [
   { value: 'sedan', title: 'Reachable by sedan', subtitle: 'Standard car access to the camp area' },
   { value: '4x4', title: '4x4 required', subtitle: 'Off-road or sand access needs a 4x4' },
@@ -661,4 +664,22 @@ export const priceModeLabel = (mode: PriceMode, kind: CreateActivityKind): strin
   if (mode === 'free') return 'Free';
   if (mode === 'shared') return 'Shared cost';
   return kind === 'carpool' ? 'Paid per seat' : 'Paid';
+};
+
+/** Publish preview — price line with AED when applicable. */
+export const formatOrganizePricePreview = (
+  draft: Pick<CreateActivityDraft, 'priceMode' | 'priceAmount' | 'sharedCostNote'>,
+  kind: CreateActivityKind
+): string => {
+  if (draft.priceMode === 'free') return 'Free';
+  const amount = Math.max(0, draft.priceAmount);
+  if (draft.priceMode === 'shared') {
+    const base = amount > 0 ? `AED ${amount} shared` : 'Shared cost (add amount on Price step)';
+    const note = draft.sharedCostNote.trim();
+    return note ? `${base} — ${note}` : base;
+  }
+  if (amount > 0) {
+    return kind === 'carpool' ? `AED ${amount} per seat` : `Paid · AED ${amount}`;
+  }
+  return kind === 'carpool' ? 'Paid per seat (add amount on Price step)' : 'Paid (add amount on Price step)';
 };

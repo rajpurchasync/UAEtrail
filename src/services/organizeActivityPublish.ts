@@ -7,6 +7,7 @@ import {
 } from '../utils/activityPublishPayload';
 import type { CreateActivityDraft } from '../explore/ui/organizeFlow';
 import { composeFlowSpecForOrganizeKind } from '../explore/composeFlowCatalog';
+import { linkParentToRideshareActivity } from '../explore/linkActivityCarpoolOffer';
 import {
   buildOrganizeActivityRequirements,
   defaultDescription,
@@ -161,8 +162,8 @@ export const buildOrganizeActivityPublishInput = (
     capacity: draft.capacity,
     pricing: {
       pricingMode: isPaid ? 'paid' : isShared ? 'shared' : 'free',
-      price: isPaid ? priceAmount : 0,
-      paymentTerms: null,
+      price: isPaid || isShared ? priceAmount : 0,
+      paymentTerms: isShared && draft.sharedCostNote.trim() ? draft.sharedCostNote.trim() : null,
     },
     location: {
       meetingPoint: structuredLike
@@ -185,7 +186,7 @@ export const buildOrganizeActivityPublishInput = (
       kind === 'activity' && draft.activityTopic
         ? activityOrganizeTopicToOutingTopic(draft.activityTopic)
         : null,
-    images: [HOME_HERO_OG_PATH],
+    images: [],
     hostId: userId,
     carpool: isCarpool
       ? {
@@ -210,8 +211,9 @@ export const publishOrganizeActivity = async (input: {
   userId: string;
   participantIntentId?: string | null;
   sourceActivityId?: string | null;
+  linkToParentActivityId?: string | null;
 }): Promise<ActivityDTO> => {
-  const { draft, tenantId, userId, participantIntentId, sourceActivityId } = input;
+  const { draft, tenantId, userId, participantIntentId, sourceActivityId, linkToParentActivityId } = input;
   if (!draft.kind) throw new Error('Choose an activity type.');
   const structured = isStructuredOrganizeFlow(draft.kind, draft.genericBuddy);
   const event = isEventOrganizeFlow(draft.kind, draft.genericBuddy);
@@ -244,15 +246,21 @@ export const publishOrganizeActivity = async (input: {
   const ctx: OrganizePublishContext = { draft, tenantId, userId };
   const locationId = await resolveOrganizeActivityLocationId(ctx);
   const payload = buildOrganizeActivityPublishInput({ ...ctx, locationId });
+  const parentLinkId = linkToParentActivityId?.trim() || null;
   const publishBody = buildOrganisationActivityPublishPayload({
     ...payload,
     clonedFromActivityId: sourceActivityId?.trim() || null,
+    linkedActivityId: draft.kind === 'carpool' && parentLinkId ? parentLinkId : null,
   });
   const created = await api.createOrganisationActivity(tenantId, publishBody);
   await api.publishOrganisationActivity(tenantId, created.data.id);
 
   if (participantIntentId) {
     await api.fulfillParticipantIntent(tenantId, participantIntentId, created.data.id);
+  }
+
+  if (parentLinkId && draft.kind === 'carpool') {
+    await linkParentToRideshareActivity(tenantId, parentLinkId, created.data.id);
   }
 
   return created.data;

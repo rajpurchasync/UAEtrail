@@ -1,4 +1,5 @@
 import type {
+  ExploreLinkedRideshareDTO,
   ExploreMapItemDTO,
   ExploreMapPersonDTO,
   ExplorePlanComposeIntent,
@@ -14,6 +15,7 @@ import {
 import { resolveExplorePrice, type ExplorePriceInfo } from './explorePriceLabel';
 import { enrichExploreActivityRequirementBadges } from './exploreRequirementBadges';
 import { exploreMapItemSharePath } from './routing';
+import { resolveExploreCoverImage } from './exploreCoverImage';
 
 export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
 export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
@@ -71,14 +73,16 @@ export interface ExploreCardModel {
   requirementBadges?: string[];
   mapLatitude?: number | null;
   mapLongitude?: number | null;
+  linkedRideshares?: ExploreLinkedRideshareDTO[];
 }
 
 const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
-  item.image ??
-  item.locationCard?.images?.[0] ??
-  item.activity?.bannerUrl ??
-  item.activity?.images?.[0] ??
-  null;
+  resolveExploreCoverImage(
+    item.locationCard?.images?.[0],
+    item.image,
+    item.activity?.bannerUrl,
+    item.activity?.images?.[0]
+  );
 
 const LIST_META_ICONS = new Set(['location', 'time', 'spots']);
 const LIST_META_ROUTE_SOURCES = new Set<ExploreCardModel['source']>(['demand']);
@@ -185,10 +189,12 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     surfaceTypes: item.locationCard?.surfaceType ?? [],
     requirementBadges: enrichExploreActivityRequirementBadges(activity?.requirements, {
       kind,
-      carPoolEnabled: Boolean(activity?.carPoolEnabled),
+      carPoolEnabled: Boolean(item.carPoolEnabled ?? activity?.carPoolEnabled),
+      venueDifficulty: item.locationCard?.difficulty ?? null,
     }),
     mapLatitude: item.latitude ?? null,
     mapLongitude: item.longitude ?? null,
+    linkedRideshares: item.linkedRideshareActivities ?? [],
   };
 };
 

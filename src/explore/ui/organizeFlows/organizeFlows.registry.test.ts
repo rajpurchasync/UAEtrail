@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { organizeActivitiesFlow } from './activities';
 import { organizeCampingFlow } from './camping';
 import { organizeEventsFlow } from './events';
 import { organizeHikingFlow } from './hiking';
+import { organizeRideshareFlow } from './rideshare';
 
 describe('organize catalog flows — registry venue step omit', () => {
   const registryDraft = {
@@ -27,6 +29,14 @@ describe('organize catalog flows — registry venue step omit', () => {
   it('events omits about_trail when registry venue selected', () => {
     const steps = organizeEventsFlow.getSteps(registryDraft);
     expect(steps).not.toContain('about_trail');
+  });
+
+  it('aligns post-publish carpool on parent organize flows (not rideshare)', () => {
+    expect(organizeHikingFlow.postPublishCarpool).toBe(true);
+    expect(organizeActivitiesFlow.postPublishCarpool).toBe(true);
+    expect(organizeCampingFlow.postPublishCarpool).toBe(true);
+    expect(organizeEventsFlow.postPublishCarpool).toBe(true);
+    expect(organizeRideshareFlow.postPublishCarpool).toBe(false);
   });
 
   it('keeps full hiking steps for custom venue label', () => {

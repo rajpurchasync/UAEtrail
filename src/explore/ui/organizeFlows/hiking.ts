@@ -66,6 +66,9 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     if (titleErr) return titleErr;
     const venueErr = validateStructuredPublishVenue(draft);
     if (venueErr) return venueErr;
+    if (draft.joinMode !== 'private' && !draft.joinKit.trim()) {
+      return 'Add what joiners should know before joining.';
+    }
     return validateOrganizePrice(draft);
   }
   return null;

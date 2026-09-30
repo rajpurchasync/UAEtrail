@@ -586,6 +586,15 @@ export interface ExploreLocationCardDTO {
   featured: boolean;
 }
 
+/** Published rideshare linked to a parent hike/camp/event (explore map + peek). */
+export interface ExploreLinkedRideshareDTO {
+  activityId: string;
+  exploreItemId: string;
+  title: string;
+  path: string;
+  subtitle?: string | null;
+}
+
 /** Unified map/list item for the mobile explore experience. */
 export interface ExploreMapItemDTO {
   id: string;
@@ -650,6 +659,8 @@ export interface ExploreMapItemDTO {
   outingTopic?: OutingTopic | null;
   /** Join mode for published organize plans only. */
   participationMode?: ParticipationMode | null;
+  /** Rideshare activities linked to this parent plan (parent rows only). */
+  linkedRideshareActivities?: ExploreLinkedRideshareDTO[];
 }
 
 export interface ProductClick {

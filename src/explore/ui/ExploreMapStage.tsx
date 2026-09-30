@@ -81,9 +81,10 @@ export type ExploreMapStageProps = {
   onFulfillIntent?: () => void;
   onManage?: () => void;
   onWithdraw: () => void;
-  showCarpoolLink?: boolean;
-  onLinkCarpool?: () => void;
-  carpoolLinkLoading?: boolean;
+  linkCarpoolTenantId?: string | null;
+  onCreateLinkedRideshare?: (parent: import('@uaetrail/shared-types').ActivityDTO) => void;
+  onHostRemove?: () => void;
+  onOpenExploreItem?: (exploreItemId: string) => void;
   onCloseMobileBrowse: () => void;
   mobileBrowseSheet: ReactNode;
   onGuestGatedAction?: () => void;
@@ -138,9 +139,10 @@ export const ExploreMapStage = ({
   onFulfillIntent,
   onManage,
   onWithdraw,
-  showCarpoolLink = false,
-  onLinkCarpool,
-  carpoolLinkLoading = false,
+  linkCarpoolTenantId = null,
+  onCreateLinkedRideshare,
+  onHostRemove,
+  onOpenExploreItem,
   onCloseMobileBrowse,
   mobileBrowseSheet,
   onGuestGatedAction,
@@ -286,9 +288,10 @@ export const ExploreMapStage = ({
           onMessage={onMessage}
           onFulfillIntent={canFulfillParticipantIntent ? onFulfillIntent : undefined}
           onManage={onManage}
-          showCarpoolLink={showCarpoolLink}
-          onLinkCarpool={onLinkCarpool}
-          carpoolLinkLoading={carpoolLinkLoading}
+          linkCarpoolTenantId={linkCarpoolTenantId}
+          onCreateLinkedRideshare={onCreateLinkedRideshare}
+          onHostRemove={onHostRemove}
+          onOpenExploreItem={onOpenExploreItem}
           joinUiState={selectedCard.showHostActions ? undefined : joinUiState}
           onWithdraw={onWithdraw}
           joinStateLoading={joinStateLoading}

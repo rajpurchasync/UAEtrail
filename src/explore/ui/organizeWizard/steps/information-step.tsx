@@ -33,7 +33,7 @@ export function renderInformationStep(ctx: OrganizeWizardContext): ReactNode | n
                 value={draft.description}
                 onChange={(event) => patchDraft({ description: event.target.value })}
                 rows={3}
-                placeholder="Tell joiners what to expect ΓÇö pace, distance, vibe, what makes this activity specialΓÇª"
+                placeholder="Tell joiners what to expect — pace, distance, vibe, what makes this activity special…"
                 className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                 maxLength={1200}
               />
@@ -46,7 +46,7 @@ export function renderInformationStep(ctx: OrganizeWizardContext): ReactNode | n
                   value={draft.additionalInstructions}
                   onChange={(event) => patchDraft({ additionalInstructions: event.target.value })}
                   rows={4}
-                  placeholder="Safety rules, pace, gear, rules joiners must acceptΓÇª"
+                  placeholder="Safety rules, pace, gear, rules joiners must accept…"
                   className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
                   maxLength={1000}
                 />

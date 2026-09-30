@@ -49,7 +49,7 @@ export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null
                   {
                     key: 'approval' as const,
                     title: 'Yes',
-                    subtitle: 'They request ΓÇö you OK',
+                    subtitle: 'They request — you OK',
                     icon: ClipboardCheck,
                   },
                   {
@@ -80,7 +80,7 @@ export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null
               <div className={EXPLORE_FLOW.choiceGrid2}>
                 {([
                   { key: 'open' as JoinMode, title: 'Public', subtitle: 'Listed on the explore map', icon: Users },
-                  { key: 'private' as JoinMode, title: 'Private', subtitle: 'Link only ΓÇö hidden from map', icon: Lock },
+                  { key: 'private' as JoinMode, title: 'Private', subtitle: 'Link only — hidden from map', icon: Lock },
                 ]).map((option) => {
                   const active = draft.joinMode === option.key;
                   const Icon = option.icon;
@@ -177,8 +177,8 @@ export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null
                       onChange={(event) => patchDraft({ audienceOtherNote: event.target.value })}
                       placeholder={
                         kind === 'carpool'
-                          ? 'e.g. Colleagues only, same company, no smokersΓÇª'
-                          : 'e.g. Members only, 18+, experienced runnersΓÇª'
+                          ? 'e.g. Colleagues only, same company, no smokers…'
+                          : 'e.g. Members only, 18+, experienced runners…'
                       }
                       className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm text-gray-900 outline-none focus:border-emerald-500"
                       maxLength={120}

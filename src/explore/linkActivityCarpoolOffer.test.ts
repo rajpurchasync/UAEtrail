@@ -20,15 +20,17 @@ const baseActivity = (overrides: Partial<ActivityDTO> = {}): ActivityDTO =>
   }) as ActivityDTO;
 
 describe('canLinkCarpoolToActivity', () => {
-  it('allows optional carpool link on published hiking, camping, and events', () => {
+  it('allows optional carpool link on published hiking, camping, and events (incl. FLOW-05)', () => {
     expect(canLinkCarpoolToActivity(baseActivity({ activityType: 'hiking' }))).toBe(true);
     expect(canLinkCarpoolToActivity(baseActivity({ activityType: 'camping' }))).toBe(true);
     expect(canLinkCarpoolToActivity(baseActivity({ activityType: 'event' }))).toBe(true);
   });
 
-  it('blocks carpool link on carpool activities and when already enabled', () => {
+  it('blocks carpool link on rideshare activities only', () => {
     expect(canLinkCarpoolToActivity(baseActivity({ activityType: 'carpool' }))).toBe(false);
-    expect(canLinkCarpoolToActivity(baseActivity({ carPoolEnabled: true }))).toBe(false);
+    expect(
+      canLinkCarpoolToActivity(baseActivity({ linkedCarpoolActivityId: 'ride-1' }))
+    ).toBe(true);
     expect(canLinkCarpoolToActivity(null)).toBe(false);
   });
 });

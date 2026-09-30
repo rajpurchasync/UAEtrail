@@ -11,7 +11,7 @@ interface ExploreSaveButtonProps {
 export const ExploreSaveButton = ({ card, light = false }: ExploreSaveButtonProps) => {
   const { canSave, saved, busy, notice, toggle } = useExploreSaveFavorite(card);
 
-  if (!canSave) return null;
+  if (card.showHostActions || !canSave) return null;
 
   const shell = light
     ? 'bg-neutral-100 text-gray-700 hover:bg-neutral-200'

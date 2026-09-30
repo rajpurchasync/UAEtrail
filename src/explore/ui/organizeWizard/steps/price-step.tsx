@@ -4,6 +4,7 @@ import {
   OrganizeWizardStepNext
 } from '../OrganizeWizardChrome';
 import { OFFLINE_PRICE_NOTE, priceModeLabel, priceModeOptions } from '../../organizeFlow';
+import { validateOrganizePrice } from '../../organizeFlows/validateShared';
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
 
@@ -24,6 +25,8 @@ export function renderPriceStep(ctx: OrganizeWizardContext): ReactNode | null {
   if (!(step === 'price' && kind)) {
     return null;
   }
+
+  const priceValidation = validateOrganizePrice(draft);
 
   return (
           <OrganizeWizardChrome title={stepTitle} onClose={handleClose} onBack={goBack}>
@@ -72,7 +75,7 @@ export function renderPriceStep(ctx: OrganizeWizardContext): ReactNode | null {
                   value={draft.sharedCostNote}
                   onChange={(event) => patchDraft({ sharedCostNote: event.target.value })}
                   rows={2}
-                  placeholder="e.g. Fuel, park entry, shared gearΓÇª"
+                  placeholder="e.g. Fuel, park entry, shared gear…"
                   className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm text-gray-900 outline-none focus:border-emerald-500"
                 />
               </label>
@@ -80,8 +83,8 @@ export function renderPriceStep(ctx: OrganizeWizardContext): ReactNode | null {
             {draft.priceMode !== 'free' && (
               <p className="mt-2 text-xs text-gray-500">{OFFLINE_PRICE_NOTE}</p>
             )}
-            <OrganizeWizardStepError error={error} />
-            <OrganizeWizardStepNext onClick={goNext}  />
+            <OrganizeWizardStepError error={error ?? priceValidation} />
+            <OrganizeWizardStepNext disabled={Boolean(priceValidation)} onClick={goNext} />
           </OrganizeWizardChrome>
   );
 }

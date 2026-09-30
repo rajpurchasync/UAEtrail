@@ -1,3 +1,4 @@
+import type React from 'react';
 import { Link } from 'react-router-dom';
 import { EXPLORE_MAP_PATH } from '../../config/platform';
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../../config/seo';
@@ -23,7 +24,13 @@ export const HomeMobileLaunch = ({ joinHref }: HomeMobileLaunchProps) => (
   <section className="home-launch relative overflow-x-clip md:hidden" aria-label="Welcome">
     <picture className="pointer-events-none absolute inset-0">
       <source srcSet={HOME_HERO_IMAGE_WEBP} type="image/webp" />
-      <img src={HOME_HERO_IMAGE_JPEG} alt="" decoding="async" fetchPriority="high" className="landing-hero-image" />
+      <img
+        src={HOME_HERO_IMAGE_JPEG}
+        alt=""
+        decoding="async"
+        className="landing-hero-image"
+        {...({ fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
+      />
     </picture>
     <div className="landing-hero-overlay-r pointer-events-none" aria-hidden />
     <div className="landing-hero-overlay-t pointer-events-none" aria-hidden />

@@ -8,7 +8,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { useExploreMap, reloadExploreMap } from '../../hooks/useExploreMap';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
-import { useActivityFormSession } from '../../context/ActivityFormSessionContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { getExploreMapTiles } from '../../config/platform';
 import { ExploreComposeHost } from './ExploreComposeHost';
@@ -25,17 +24,20 @@ import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
 import { useExploreOrganizeFromActivity } from './useExploreOrganizeFromActivity';
 import type { OrganizeWizardPrefill } from './organizeWizardPrefill';
+import { buildRideshareDraftFromParentActivity } from '../linkCarpoolPrefill';
+import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
 import { parseExplorePinMapItemId, parseOrganizeFromActivityId } from '../routing';
 import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
+import { Dialog } from '../../components/ui/Dialog';
+import { AppButton } from '../../components/mobile/AppButton';
 
 export const ExploreExperience = () => {
   const { user } = useAuth();
   const { canPublish, loading: hostGateLoading, tenantId } = useOrganisationGate({
     enabled: Boolean(user),
   });
-  const { openEdit } = useActivityFormSession();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -45,6 +47,7 @@ export const ExploreExperience = () => {
   const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [carpoolLinkParent, setCarpoolLinkParent] = useState<ActivityDTO | null>(null);
   const [hoveredListItemId, setHoveredListItemId] = useState<string | null>(null);
   const clearSelection = useCallback(() => setSelectedId(null), []);
 
@@ -102,7 +105,22 @@ export const ExploreExperience = () => {
     organizeKind: compose.organizeRoute?.kind ?? null,
   });
 
+  const handleCreateLinkedRideshare = useCallback(
+    (parent: ActivityDTO) => {
+      setCarpoolLinkParent(parent);
+      setSelectedId(null);
+      compose.setComposeRoute({ intent: 'organize', kind: 'carpool' });
+    },
+    [compose.setComposeRoute]
+  );
+
   const organizeWizardPrefill = useMemo((): OrganizeWizardPrefill | null => {
+    if (carpoolLinkParent) {
+      return {
+        draft: buildRideshareDraftFromParentActivity(carpoolLinkParent),
+        linkToParentActivityId: carpoolLinkParent.id,
+      };
+    }
     if (fulfill.fulfillIntentPrefill) {
       return {
         draft: fulfill.fulfillIntentPrefill.draft,
@@ -116,7 +134,7 @@ export const ExploreExperience = () => {
       };
     }
     return null;
-  }, [fulfill.fulfillIntentPrefill, organizeFrom.organizeFromPrefill]);
+  }, [carpoolLinkParent, fulfill.fulfillIntentPrefill, organizeFrom.organizeFromPrefill]);
 
   const selection = useExploreSelectionActions({
     items,
@@ -132,7 +150,6 @@ export const ExploreExperience = () => {
     clearFulfillPrefill: () => fulfill.setFulfillIntentPrefill(null),
     fulfillIntentPrefill: fulfill.fulfillIntentPrefill,
     clearFulfillAfterPublish: () => fulfill.setFulfillIntentPrefill(null),
-    openEdit,
     handleFocusMapLocation: viewport.handleFocusMapLocation,
   });
 
@@ -238,6 +255,7 @@ export const ExploreExperience = () => {
     compose.closeCompose();
     fulfill.setFulfillIntentPrefill(null);
     organizeFrom.clearOrganizeFromPrefill();
+    setCarpoolLinkParent(null);
   };
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
@@ -394,9 +412,13 @@ export const ExploreExperience = () => {
           }
           onFulfillIntent={fulfill.handleFulfillIntent}
           onManage={selection.selectedCard?.showHostActions ? selection.handleHostManage : undefined}
-          showCarpoolLink={selection.showCarpoolLinkOnPeek}
-          onLinkCarpool={selection.handleLinkCarpool}
-          carpoolLinkLoading={selection.carpoolLinkLoading}
+          linkCarpoolTenantId={tenantId}
+          onCreateLinkedRideshare={handleCreateLinkedRideshare}
+          onHostRemove={selection.selectedCard?.showHostActions ? selection.requestHostRemove : undefined}
+          onOpenExploreItem={(exploreItemId) => {
+            const item = items.find((entry) => entry.id === exploreItemId);
+            if (item) selection.openItem(item);
+          }}
           onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
           onCloseMobileBrowse={browse.closeListPanel}
           mobileBrowseSheet={mobileBrowsePanel}
@@ -429,11 +451,18 @@ export const ExploreExperience = () => {
         onOrganizeBackToIntent={() => {
           fulfill.setFulfillIntentPrefill(null);
           organizeFrom.clearOrganizeFromPrefill();
+          setCarpoolLinkParent(null);
           compose.setComposeRoute({ surface: 'menu', intent: 'organize' });
         }}
         onFindBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'find' })}
         onAddBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
-        onActivityPublished={selection.handleActivityPublished}
+        onActivityPublished={async (activity) => {
+          await selection.handleActivityPublished(activity);
+          if (carpoolLinkParent && activity.activityType === 'carpool') {
+            setCarpoolLinkParent(null);
+          }
+        }}
+        onCreateLinkedRideshare={handleCreateLinkedRideshare}
         onOpenHostApplication={() => {
           closeCreateFlow();
           navigate('/become-host');
@@ -441,6 +470,37 @@ export const ExploreExperience = () => {
         onContributeSubmitted={selection.handleContributeSubmitted}
         onDemandSubmitted={selection.handleDemandSubmitted}
       />
+
+      <Dialog
+        open={Boolean(selection.hostRemoveConfirm)}
+        onClose={() => selection.setHostRemoveConfirm(null)}
+        title={
+          selection.hostRemoveConfirm?.status === 'draft' ? 'Delete draft?' : 'Cancel activity?'
+        }
+      >
+        <p className="mb-4 text-sm text-neutral-600">
+          {selection.hostRemoveConfirm?.status === 'draft'
+            ? `Remove "${selection.hostRemoveConfirm?.title}" permanently?`
+            : `Cancel "${selection.hostRemoveConfirm?.title}"? People who joined will be notified.`}
+        </p>
+        <div className="flex justify-end gap-2">
+          <AppButton
+            type="button"
+            variant="secondary"
+            onClick={() => selection.setHostRemoveConfirm(null)}
+          >
+            Keep
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="destructive"
+            disabled={selection.hostRemoveBusy}
+            onClick={() => void selection.confirmHostRemove()}
+          >
+            {selection.hostRemoveConfirm?.status === 'draft' ? 'Delete' : 'Cancel activity'}
+          </AppButton>
+        </div>
+      </Dialog>
 
       <ExploreJoinOverlays activity={selection.selected?.activity} joinActions={selection.joinActions} />
 

@@ -36,16 +36,12 @@ import { usePlaceRegistry } from '../../hooks/usePlaceRegistry';
 import {
   fromLocationLabel,
   ORGANIZE_DEMAND_PREFILL_TITLE,
-  ORGANIZE_HOST_PROFILE_ERROR,
   ORGANIZE_CARPOOL_LINKED_NOTICE,
-  ORGANIZE_LINK_CARPOOL_HINT,
-  ORGANIZE_PUBLISH_SUCCESS_BODY,
-  ORGANIZE_PUBLISH_SUCCESS_TITLE,
-  ORGANIZE_PUBLISH_VIEW_ON_MAP,
+  ORGANIZE_HOST_PROFILE_ERROR,
   TO_LOCATION_LABEL,
 } from '../createFlowCopy';
 import { MAP_CONFIG } from '../../config/platform';
-import { canLinkCarpoolToActivity, linkActivityCarpoolOffer } from '../linkActivityCarpoolOffer';
+import { OrganizePublishSuccessSheet } from './OrganizePublishSuccessSheet';
 import { registryPlaceTypeForOrganizeFlow, type OrganizeCatalogFlow } from './organizeFlows';
 import type { OrganizeWizardPrefill } from './organizeWizardPrefill';
 import { renderOrganizeWizardSteps } from './organizeWizard/OrganizeWizardSteps';
@@ -67,6 +63,7 @@ export interface CreateActivityFlowProps {
   /** Locked catalog flow from `composeFlowCatalog` (FAB organize sub-kind). */
   catalogFlow?: OrganizeCatalogFlow | null;
   demandPrefill?: OrganizeWizardPrefill | null;
+  onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
 }
 
 const NextButton = ({
@@ -100,6 +97,7 @@ export const CreateActivityFlow = ({
   organizeKind = null,
   catalogFlow = null,
   demandPrefill = null,
+  onCreateLinkedRideshare,
 }: CreateActivityFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -115,7 +113,6 @@ export const CreateActivityFlow = ({
   const [whereMapOpen, setWhereMapOpen] = useState(false);
   const [meetingPointMapOpen, setMeetingPointMapOpen] = useState(false);
   const [publishedActivity, setPublishedActivity] = useState<ActivityDTO | null>(null);
-  const [carpoolOfferLoading, setCarpoolOfferLoading] = useState(false);
   const [carpoolOfferNotice, setCarpoolOfferNotice] = useState<string | null>(null);
 
   const kind = draft.kind ?? selectedKind;
@@ -175,7 +172,6 @@ export const CreateActivityFlow = ({
       setWhereMapOpen(false);
       setMeetingPointMapOpen(false);
       setPublishedActivity(null);
-      setCarpoolOfferLoading(false);
       setCarpoolOfferNotice(null);
       return;
     }
@@ -343,6 +339,7 @@ export const CreateActivityFlow = ({
         userId: user.id,
         participantIntentId: demandPrefill?.participantIntentId ?? null,
         sourceActivityId: demandPrefill?.sourceActivityId ?? null,
+        linkToParentActivityId: demandPrefill?.linkToParentActivityId ?? null,
       });
       setPublishedActivity(activity);
     } catch (err) {
@@ -360,146 +357,15 @@ export const CreateActivityFlow = ({
   };
 
   const isPickupMapOpen = step === 'meeting' && whereMapOpen;
+  const isWhereMapOpen = step === 'where' && whereMapOpen;
   const isMeetingPointMapOpen = step === 'meeting_point' && meetingPointMapOpen;
   const isDestMapOpen = step === 'to' && routeMapTarget === 'to';
   const isRouteMapOverlay = kind === 'carpool' && step === 'route' && routeMapTarget !== null;
-  const isFullScreenLocationStep = isPickupMapOpen || isDestMapOpen || isRouteMapOverlay || isMeetingPointMapOpen;
+  const isFullScreenLocationStep =
+    isPickupMapOpen || isWhereMapOpen || isDestMapOpen || isRouteMapOverlay || isMeetingPointMapOpen;
 
   const hasFromPin = draft.latitude != null && draft.longitude != null;
   const hasToPin = draft.toLatitude != null && draft.toLongitude != null;
-
-  if (!open) return null;
-
-  if (publishedActivity) {
-    const showPostPublishCarpool =
-      draft.joinMode !== 'private' &&
-      (catalogFlow?.postPublishCarpool ?? (hikingFlow || activityFlow)) &&
-      canLinkCarpoolToActivity(publishedActivity);
-
-    const enableCarpoolOffer = async () => {
-      if (!tenantId || publishedActivity.carPoolEnabled) return;
-      setCarpoolOfferLoading(true);
-      setCarpoolOfferNotice(null);
-      try {
-        const updated = await linkActivityCarpoolOffer(tenantId, publishedActivity);
-        setPublishedActivity(updated);
-        setCarpoolOfferNotice(ORGANIZE_CARPOOL_LINKED_NOTICE);
-      } catch (err) {
-        setCarpoolOfferNotice(err instanceof Error ? err.message : 'Could not enable carpool. Try again.');
-      } finally {
-        setCarpoolOfferLoading(false);
-      }
-    };
-
-    return (
-      <ExploreResponsiveSheet open={open} onClose={onClose}>
-        <FlowSheetChrome title={ORGANIZE_PUBLISH_SUCCESS_TITLE} onClose={onClose} onBack={onClose}>
-          <p className="text-sm leading-relaxed text-gray-600">{ORGANIZE_PUBLISH_SUCCESS_BODY}</p>
-          <p className="mt-2 text-base font-semibold text-gray-900">{publishedActivity.title}</p>
-
-          {showPostPublishCarpool && (
-            <label className="mt-4 flex items-start gap-3 rounded-2xl border border-neutral-200 px-4 py-3">
-              <input
-                type="checkbox"
-                checked={Boolean(publishedActivity.carPoolEnabled)}
-                disabled={carpoolOfferLoading || Boolean(publishedActivity.carPoolEnabled)}
-                onChange={(event) => {
-                  if (event.target.checked) void enableCarpoolOffer();
-                }}
-                className="mt-0.5 rounded border-gray-300 text-emerald-600 disabled:opacity-60"
-              />
-              <span className="text-sm text-gray-800">
-                <span className="font-semibold text-gray-900">Offer carpool</span>
-                <span className="mt-0.5 block text-xs text-gray-500">{ORGANIZE_LINK_CARPOOL_HINT}</span>
-              </span>
-            </label>
-          )}
-
-          {carpoolOfferNotice && (
-            <p
-              className={`mt-3 rounded-xl px-3 py-2 text-sm ${
-                publishedActivity.carPoolEnabled
-                  ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
-                  : 'bg-red-50 text-red-700'
-              }`}
-            >
-              {carpoolOfferNotice}
-            </p>
-          )}
-
-          <div className="mt-5 pb-2">
-            <NextButton label={ORGANIZE_PUBLISH_VIEW_ON_MAP} onClick={handleViewOnMap} />
-          </div>
-        </FlowSheetChrome>
-      </ExploreResponsiveSheet>
-    );
-  }
-
-  if ((isFullScreenLocationStep || isRouteMapOverlay) && kind) {
-    const isMeetingPin = step === 'meeting_point';
-    const isToStep = isRouteMapOverlay
-      ? routeMapTarget === 'to'
-      : step === 'to';
-    const lat = isMeetingPin
-      ? draft.meetingLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
-      : isToStep
-        ? draft.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
-        : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
-    const lng = isMeetingPin
-      ? draft.meetingLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
-      : isToStep
-        ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
-        : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
-    const mapEndpoint: 'from' | 'to' = isToStep ? 'to' : 'from';
-    const mapStep: CreateFlowStepId = step as CreateFlowStepId;
-
-    return (
-      <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
-        <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <CreatePlacePicker
-            precision={draft.locationPrecision}
-            latitude={lat}
-            longitude={lng}
-            headerTitle={locationPickerTitle(mapStep, kind, mapEndpoint, stepTitleOptions)}
-            confirmLabel={locationPickerConfirmLabel(kind, mapStep, mapEndpoint)}
-            hint={locationPickerHint(kind, draft.locationPrecision)}
-            onPrecisionChange={(locationPrecision: LocationPrecision) => patchDraft({ locationPrecision })}
-            onLocationChange={(latitude, longitude) => {
-              if (isMeetingPin) {
-                patchDraft({ meetingLatitude: latitude, meetingLongitude: longitude });
-                return;
-              }
-              if (isToStep) {
-                patchDraft({ toLatitude: latitude, toLongitude: longitude });
-              } else {
-                patchDraft({ latitude, longitude });
-              }
-            }}
-            onBack={goBack}
-            onClose={handleClose}
-            onConfirm={() => {
-              if (isRouteMapOverlay || isDestMapOpen) {
-                setRouteMapTarget(null);
-                setError(null);
-                return;
-              }
-              if (isPickupMapOpen) {
-                setWhereMapOpen(false);
-                setError(null);
-                return;
-              }
-              if (isMeetingPointMapOpen) {
-                setMeetingPointMapOpen(false);
-                setError(null);
-                return;
-              }
-              goNext();
-            }}
-          />
-        </Suspense>
-      </div>
-    );
-  }
 
   const stepTitle =
     step === 'type' || !kind
@@ -508,33 +374,35 @@ export const CreateActivityFlow = ({
         : 'Organize'
       : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);
 
-  const renderRoutePicker = (endpoint: 'from' | 'to') => {
-    const isTo = endpoint === 'to';
-    const placed = isTo ? hasToPin : hasFromPin;
-    const lat = isTo ? draft.toLatitude : draft.latitude;
-    const lng = isTo ? draft.toLongitude : draft.longitude;
+  const renderRoutePicker = useCallback(
+    (endpoint: 'from' | 'to') => {
+      const isTo = endpoint === 'to';
+      const placed = isTo ? hasToPin : hasFromPin;
+      const lat = isTo ? draft.toLatitude : draft.latitude;
+      const lng = isTo ? draft.toLongitude : draft.longitude;
 
-    return (
-      <button
-        key={endpoint}
-        type="button"
-        onClick={() => setRouteMapTarget(endpoint)}
-        className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
-      >
-        <span className="flex items-center gap-2 text-gray-800">
-          <MapPin className={`h-5 w-5 ${isTo ? 'text-sky-500' : 'text-emerald-600'}`} />
-          <span>
-            <span className="block text-sm font-bold">{isTo ? TO_LOCATION_LABEL : fromLocationLabel('carpool')}</span>
-            <span className="text-xs text-gray-500">
-              {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
+      return (
+        <button
+          key={endpoint}
+          type="button"
+          onClick={() => setRouteMapTarget(endpoint)}
+          className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
+        >
+          <span className="flex items-center gap-2 text-gray-800">
+            <MapPin className={`h-5 w-5 ${isTo ? 'text-sky-500' : 'text-emerald-600'}`} />
+            <span>
+              <span className="block text-sm font-bold">{isTo ? TO_LOCATION_LABEL : fromLocationLabel('carpool')}</span>
+              <span className="text-xs text-gray-500">
+                {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
+              </span>
             </span>
           </span>
-        </span>
-        <span className="text-xs font-semibold text-emerald-700">{placed ? 'Edit' : 'Map'}</span>
-      </button>
-    );
-  };
-
+          <span className="text-xs font-semibold text-emerald-700">{placed ? 'Edit' : 'Map'}</span>
+        </button>
+      );
+    },
+    [draft.latitude, draft.longitude, draft.toLatitude, draft.toLongitude, hasFromPin, hasToPin]
+  );
 
   const wizardCtx = useMemo((): OrganizeWizardContext => ({
     step,
@@ -599,12 +467,14 @@ export const CreateActivityFlow = ({
     hasFromPin,
     hasToPin,
     meetingPointMapOpen,
+    whereMapOpen,
     selectedKind,
     goNext,
     goBack,
     goToFirstStep,
     handleClose,
     handlePublish,
+    renderRoutePicker,
     hikingFlow,
     campingFlow,
     eventFlow,
@@ -613,6 +483,107 @@ export const CreateActivityFlow = ({
     structuredFlow,
     goingFromFlow,
   ]);
+
+  if (!open) return null;
+
+  if (publishedActivity && kind) {
+    const showPostPublishCarpool =
+      draft.joinMode !== 'private' &&
+      (catalogFlow?.postPublishCarpool === true ||
+        (!catalogFlow && (hikingFlow || campingFlow || eventFlow || activityFlow)));
+
+    return (
+      <OrganizePublishSuccessSheet
+        open={open}
+        onClose={onClose}
+        tenantId={tenantId}
+        publishedActivity={publishedActivity}
+        draft={draft}
+        kind={kind}
+        showPostPublishCarpool={showPostPublishCarpool}
+        carpoolNotice={carpoolOfferNotice}
+        onCreateLinkedRideshare={() => {
+          if (onCreateLinkedRideshare) {
+            onCreateLinkedRideshare(publishedActivity);
+            return;
+          }
+          setCarpoolOfferNotice('Open this plan from Explore to create a linked rideshare.');
+        }}
+        onCarpoolLinked={() => {
+          setCarpoolOfferNotice(ORGANIZE_CARPOOL_LINKED_NOTICE);
+          void onPublished?.(publishedActivity);
+        }}
+        onCarpoolLinkError={(message) => setCarpoolOfferNotice(message)}
+        onViewOnMap={handleViewOnMap}
+      />
+    );
+  }
+
+  if ((isFullScreenLocationStep || isRouteMapOverlay) && kind) {
+    const isMeetingPin = step === 'meeting_point';
+    const isToStep = isRouteMapOverlay
+      ? routeMapTarget === 'to'
+      : step === 'to';
+    const lat = isMeetingPin
+      ? draft.meetingLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
+      : isToStep
+        ? draft.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
+        : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
+    const lng = isMeetingPin
+      ? draft.meetingLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
+      : isToStep
+        ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
+        : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
+    const mapEndpoint: 'from' | 'to' = isToStep ? 'to' : 'from';
+    const mapStep: CreateFlowStepId = step as CreateFlowStepId;
+
+    return (
+      <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
+        <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
+          <CreatePlacePicker
+            precision={draft.locationPrecision}
+            latitude={lat}
+            longitude={lng}
+            headerTitle={locationPickerTitle(mapStep, kind, mapEndpoint, stepTitleOptions)}
+            confirmLabel={locationPickerConfirmLabel(kind, mapStep, mapEndpoint)}
+            hint={locationPickerHint(kind, draft.locationPrecision)}
+            onPrecisionChange={(locationPrecision: LocationPrecision) => patchDraft({ locationPrecision })}
+            onLocationChange={(latitude, longitude) => {
+              if (isMeetingPin) {
+                patchDraft({ meetingLatitude: latitude, meetingLongitude: longitude });
+                return;
+              }
+              if (isToStep) {
+                patchDraft({ toLatitude: latitude, toLongitude: longitude });
+              } else {
+                patchDraft({ latitude, longitude });
+              }
+            }}
+            onBack={goBack}
+            onClose={handleClose}
+            onConfirm={() => {
+              if (isRouteMapOverlay || isDestMapOpen) {
+                setRouteMapTarget(null);
+                setError(null);
+                return;
+              }
+              if (isPickupMapOpen || isWhereMapOpen) {
+                setWhereMapOpen(false);
+                setError(null);
+                return;
+              }
+              if (isMeetingPointMapOpen) {
+                setMeetingPointMapOpen(false);
+                setError(null);
+                return;
+              }
+              goNext();
+            }}
+          />
+        </Suspense>
+      </div>
+    );
+  }
 
   return (
     <ExploreResponsiveSheet

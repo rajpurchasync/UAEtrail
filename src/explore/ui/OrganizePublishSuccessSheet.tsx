@@ -1,0 +1,165 @@
+import { useState } from 'react';
+import { CheckCircle2 } from 'lucide-react';
+import type { ActivityDTO } from '@uaetrail/shared-types';
+import { EXPLORE_Z } from '../../config/exploreTheme';
+import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
+import { LinkCarpoolPanel } from './LinkCarpoolPanel';
+import {
+  ORGANIZE_CARPOOL_LINKED_NOTICE,
+  ORGANIZE_LINK_CARPOOL_LABEL,
+  ORGANIZE_LINK_CARPOOL_PASTE_CTA,
+  ORGANIZE_PUBLISH_SUCCESS_BODY,
+  ORGANIZE_PUBLISH_SUCCESS_TITLE,
+  ORGANIZE_PUBLISH_VIEW_CTA,
+} from '../createFlowCopy';
+import type { CreateActivityDraft, CreateActivityKind } from './organizeFlow';
+import { formatOrganizePricePreview, resolveOrganizeDifficultyLabel } from './organizeFlow';
+import { canLinkCarpoolToActivity } from '../linkActivityCarpoolOffer';
+
+type OrganizePublishSuccessSheetProps = {
+  open: boolean;
+  onClose: () => void;
+  tenantId: string | null;
+  publishedActivity: ActivityDTO;
+  draft: CreateActivityDraft;
+  kind: CreateActivityKind;
+  showPostPublishCarpool: boolean;
+  carpoolNotice: string | null;
+  onCreateLinkedRideshare: () => void;
+  onCarpoolLinked: () => void;
+  onCarpoolLinkError: (message: string) => void;
+  onViewOnMap: () => void;
+};
+
+const SuccessDetailRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="grid grid-cols-[minmax(4.5rem,5.5rem)_minmax(0,1fr)] items-start gap-x-3 border-t border-neutral-200/80 py-2.5 first:border-t-0 first:pt-0">
+    <dt className="text-xs font-medium text-neutral-500">{label}</dt>
+    <dd className="text-right text-sm font-semibold leading-snug text-neutral-900 break-words">{value}</dd>
+  </div>
+);
+
+const linkButtonClass =
+  'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950';
+
+export const OrganizePublishSuccessSheet = ({
+  open,
+  onClose,
+  tenantId,
+  publishedActivity,
+  draft,
+  kind,
+  showPostPublishCarpool,
+  carpoolNotice,
+  onCreateLinkedRideshare,
+  onCarpoolLinked,
+  onCarpoolLinkError,
+  onViewOnMap,
+}: OrganizePublishSuccessSheetProps) => {
+  const [pasteOpen, setPasteOpen] = useState(false);
+
+  const showLinkCarpool =
+    showPostPublishCarpool && tenantId && canLinkCarpoolToActivity(publishedActivity);
+
+  return (
+    <ExploreResponsiveSheet
+      open={open}
+      onClose={onClose}
+      layout="centered"
+      maxWidthClass="max-w-[min(100vw-2rem,22rem)] sm:max-w-md"
+      zClass={EXPLORE_Z.composeFlow}
+      overlayFixed
+      showCloseButton
+      showHandle={false}
+      ariaLabel={ORGANIZE_PUBLISH_SUCCESS_TITLE}
+      panelClassName="min-w-0 overflow-x-hidden px-5 pb-5 pt-10 sm:px-6 sm:pb-6"
+    >
+      <div className="flex min-w-0 flex-col">
+        <div className="flex flex-col items-center text-center">
+          <div
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
+            aria-hidden
+          >
+            <CheckCircle2 className="h-6 w-6" />
+          </div>
+          <h2 className="mt-3 text-lg font-bold tracking-tight text-neutral-900">
+            {ORGANIZE_PUBLISH_SUCCESS_TITLE}
+          </h2>
+          <p className="mt-2 max-w-[18rem] text-pretty text-sm leading-relaxed text-neutral-600">
+            {ORGANIZE_PUBLISH_SUCCESS_BODY}
+          </p>
+        </div>
+
+        <div className="mt-5 min-w-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50/90 px-4 py-3">
+          <p className="text-base font-semibold leading-snug text-neutral-900 break-words">
+            {publishedActivity.title}
+          </p>
+          <dl className="mt-1">
+            {kind === 'hiking' ? (
+              <SuccessDetailRow
+                label="Difficulty"
+                value={resolveOrganizeDifficultyLabel(draft.difficulty)}
+              />
+            ) : null}
+            <SuccessDetailRow label="Price" value={formatOrganizePricePreview(draft, kind)} />
+            {draft.trailName.trim() ? (
+              <SuccessDetailRow label="Trail" value={draft.trailName.trim()} />
+            ) : null}
+          </dl>
+        </div>
+
+        {carpoolNotice ? (
+          <p
+            className={`mt-3 rounded-lg px-3 py-2 text-sm leading-snug ${
+              carpoolNotice === ORGANIZE_CARPOOL_LINKED_NOTICE
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
+                : 'bg-red-50 text-red-700'
+            }`}
+          >
+            {carpoolNotice}
+          </p>
+        ) : null}
+
+        {showLinkCarpool && pasteOpen ? (
+          <div className="mt-4 min-w-0">
+            <LinkCarpoolPanel
+              tenantId={tenantId}
+              parentActivityId={publishedActivity.id}
+              variant="pasteOnly"
+              onCreateRideshare={onCreateLinkedRideshare}
+              onLinked={() => {
+                onCarpoolLinked();
+                setPasteOpen(false);
+              }}
+              onError={onCarpoolLinkError}
+            />
+          </div>
+        ) : null}
+
+        <div className="mt-6 space-y-3">
+          <button
+            type="button"
+            onClick={onViewOnMap}
+            className="min-h-12 w-full rounded-xl bg-emerald-600 px-3 py-3 text-base font-bold text-white shadow-md shadow-emerald-600/20"
+          >
+            {ORGANIZE_PUBLISH_VIEW_CTA}
+          </button>
+          {showLinkCarpool ? (
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+              <button type="button" onClick={onCreateLinkedRideshare} className={linkButtonClass}>
+                {ORGANIZE_LINK_CARPOOL_LABEL}
+              </button>
+              <button
+                type="button"
+                aria-expanded={pasteOpen}
+                onClick={() => setPasteOpen((value) => !value)}
+                className={linkButtonClass}
+              >
+                {ORGANIZE_LINK_CARPOOL_PASTE_CTA}
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </ExploreResponsiveSheet>
+  );
+};
