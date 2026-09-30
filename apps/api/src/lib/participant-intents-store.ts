@@ -3,8 +3,11 @@ import type { ExploreMapItemDTO, ParticipantIntentDTO } from '@uaetrail/shared-t
 import {
   buildExploreFeaturedPerson,
   buildExploreMapPlanProjection,
+  exploreDemandMapItemPath,
   exploreMapKindToPlanMapKind,
   demandFallbackTitle,
+  participantIntentKindToOutingCategory,
+  type OutingCategory,
 } from '@uaetrail/shared-types';
 import { ObjectId, type Filter } from 'mongodb';
 import type { CreateParticipantIntentInput, ParticipantIntentKind } from '../domain/participant-intent.js';
@@ -18,6 +21,7 @@ type MongoParticipantIntent = {
   _id: string;
   userId: string;
   kind: ParticipantIntentKind;
+  outingCategory?: OutingCategory | null;
   title?: string | null;
   date: string | null;
   time: string | null;
@@ -103,6 +107,7 @@ export const createParticipantIntent = async (
     _id: randomUUID(),
     userId,
     kind: input.kind,
+    outingCategory: participantIntentKindToOutingCategory(input.kind),
     title: input.title.trim(),
     date: input.date ?? null,
     time: input.time ?? null,
@@ -163,21 +168,6 @@ export const fulfillParticipantIntent = async (
   return mapDto(updated, user);
 };
 
-const demandExplorePath = (kind: ParticipantIntentKind): string => {
-  const filterByKind: Partial<Record<ParticipantIntentKind, string>> = {
-    hiking: 'hiking',
-    camping: 'camping',
-    carpool: 'carpool',
-    event: 'others',
-    guide: 'others',
-    other: 'others',
-  };
-  const params = new URLSearchParams({ list: '1', panel: 'activities' });
-  const filter = filterByKind[kind];
-  if (filter) params.set('filter', filter);
-  return `/explore?${params.toString()}`;
-};
-
 export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<ExploreMapItemDTO[]> => {
   const docs = await collection()
     .find({ status: 'active' })
@@ -219,6 +209,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
           source: 'demand',
           mapKind: exploreMapKindToPlanMapKind(mapKind),
           demandIntentKind: doc.kind,
+          storedOutingCategory: doc.outingCategory ?? null,
         }),
         title: planTitle,
         subtitle:
@@ -231,7 +222,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
         toLongitude: doc.toLongitude,
         fromLabel: route.fromLabel,
         toLabel: route.toLabel,
-        path: demandExplorePath(doc.kind),
+        path: exploreDemandMapItemPath(doc._id),
         featuredPerson: buildExploreFeaturedPerson({
           userId: doc.userId,
           displayName: user?.profile?.displayName ?? 'Someone',

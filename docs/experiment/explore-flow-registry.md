@@ -106,7 +106,7 @@ Examples: `organize.hiking`, `compose=organize:carpool` → `organize.rideshare`
 
 ## Demand → Organize (fulfill)
 
-Approved host opens a demand pin → **Host this** (or `?fulfillIntent=demand:{id}`) → `useExploreFulfillIntent` seeds `CreateActivityFlow` via `createDraftFromDemand` — **new** activity row; demand lifecycle unchanged until product marks fulfilled.
+Approved host opens a demand pin → **Host this** (or `?fulfillIntent=demand:{id}`) → `useExploreFulfillIntent` seeds organize via `createDraftFromDemand` using **`outingCategory`** (e.g. `find.event` → `activities` → `organize.activities`). Map `path` and share links use `exploreDemandMapItemPath` (`?pin=demand:{id}`). **New** activity row; demand lifecycle unchanged until product marks fulfilled.
 
 **Code:** `useExploreFulfillIntent.ts`, `exploreFulfillIntentReturnPath()` in `routing.ts`.
 

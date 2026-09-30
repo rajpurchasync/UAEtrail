@@ -50,10 +50,63 @@ export const participantIntentKindToOutingCategory = (
   kind: ParticipantIntentKindForPlan
 ): OutingCategory => {
   if (kind === 'carpool') return 'rideshare';
-  if (kind === 'event') return 'events';
+  /** FAB `find.event` — member “activities” demand (not organize `events` category). */
+  if (kind === 'event') return 'activities';
   if (kind === 'hiking') return 'hiking';
   if (kind === 'camping') return 'camping';
   return 'activities';
+};
+
+/** Organize wizard `CreateActivityKind` wire — maps from {@link OutingCategory}. */
+export type OrganizeCreateKindWire = 'hiking' | 'camping' | 'event' | 'carpool' | 'activity';
+
+export const outingCategoryToOrganizeCreateKind = (
+  category: OutingCategory
+): OrganizeCreateKindWire => {
+  switch (category) {
+    case 'activities':
+      return 'activity';
+    case 'events':
+      return 'event';
+    case 'rideshare':
+      return 'carpool';
+    case 'hiking':
+      return 'hiking';
+    case 'camping':
+      return 'camping';
+  }
+};
+
+/** Host fulfill: demand map row → organize catalog create kind (outing category wins). */
+export const resolveOrganizeCreateKindFromDemandMapItem = (item: {
+  outingCategory?: OutingCategory | null;
+  kind: ExploreMapPlanActivityKind;
+  participantIntentKind?: ParticipantIntentKindForPlan | null;
+}): OrganizeCreateKindWire => {
+  if (item.outingCategory) {
+    return outingCategoryToOrganizeCreateKind(item.outingCategory);
+  }
+  if (item.participantIntentKind) {
+    return outingCategoryToOrganizeCreateKind(
+      participantIntentKindToOutingCategory(item.participantIntentKind)
+    );
+  }
+  if (item.kind === 'carpool') return 'carpool';
+  if (item.kind === 'hiking') return 'hiking';
+  if (item.kind === 'camping') return 'camping';
+  return 'event';
+};
+
+/** Explore deep link — opens map peek for `demand:{intentId}` (share, notifications, `path`). */
+export const exploreDemandMapItemPath = (intentId: string): string => {
+  const bare = intentId.trim();
+  const mapItemId = bare.startsWith('demand:') ? bare : `demand:${bare}`;
+  const params = new URLSearchParams({
+    pin: mapItemId,
+    list: '1',
+    panel: 'activities',
+  });
+  return `/explore?${params.toString()}`;
 };
 
 /** FLOW-05 organize activity wizard chip → persisted `outingTopic`. */
@@ -129,8 +182,12 @@ export const buildExploreMapPlanProjection = (options: {
   if (options.source === 'activity' && options.mapKind !== 'shop') {
     outingCategory =
       options.storedOutingCategory ?? activityTypeToOutingCategory(options.mapKind);
-  } else if (options.source === 'demand' && options.demandIntentKind) {
-    outingCategory = participantIntentKindToOutingCategory(options.demandIntentKind);
+  } else if (options.source === 'demand') {
+    outingCategory =
+      options.storedOutingCategory ??
+      (options.demandIntentKind
+        ? participantIntentKindToOutingCategory(options.demandIntentKind)
+        : null);
   }
 
   return {

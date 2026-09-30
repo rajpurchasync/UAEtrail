@@ -3,8 +3,10 @@ import {
   activityTypeToOutingCategory,
   buildExploreMapPlanProjection,
   deriveOutingTopicFromRequirements,
+  exploreDemandMapItemPath,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
+  resolveOrganizeCreateKindFromDemandMapItem,
 } from '@uaetrail/shared-types';
 
 describe('explore plan projection mappers', () => {
@@ -14,10 +16,29 @@ describe('explore plan projection mappers', () => {
     expect(activityTypeToOutingCategory('event')).toBe('events');
   });
 
-  it('maps demand intent kinds including guide/other to activities', () => {
+  it('maps demand intent kinds to outing categories (find.event → activities)', () => {
     expect(participantIntentKindToOutingCategory('guide')).toBe('activities');
     expect(participantIntentKindToOutingCategory('other')).toBe('activities');
-    expect(participantIntentKindToOutingCategory('event')).toBe('events');
+    expect(participantIntentKindToOutingCategory('event')).toBe('activities');
+  });
+
+  it('maps demand outing category to organize create kind for fulfill', () => {
+    expect(
+      resolveOrganizeCreateKindFromDemandMapItem({
+        outingCategory: 'activities',
+        kind: 'event',
+      })
+    ).toBe('activity');
+    expect(
+      resolveOrganizeCreateKindFromDemandMapItem({
+        outingCategory: 'events',
+        kind: 'event',
+      })
+    ).toBe('event');
+  });
+
+  it('builds explore path for demand map items', () => {
+    expect(exploreDemandMapItemPath('abc')).toBe('/explore?pin=demand%3Aabc&list=1&panel=activities');
   });
 
   it('prefers stored outing category over mapKind for activities', () => {
@@ -53,6 +74,15 @@ describe('explore plan projection mappers', () => {
     expect(projection.composeIntent).toBe('demand');
     expect(projection.outingCategory).toBe('activities');
     expect(projection.participationMode).toBeNull();
+  });
+
+  it('sets find.event demand projection to activities outing category', () => {
+    const projection = buildExploreMapPlanProjection({
+      source: 'demand',
+      mapKind: 'event',
+      demandIntentKind: 'event',
+    });
+    expect(projection.outingCategory).toBe('activities');
   });
 
   it('derives outing topic from activity type requirement line', () => {

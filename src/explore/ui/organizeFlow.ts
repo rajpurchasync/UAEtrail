@@ -1,4 +1,8 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  exploreMapKindToPlanMapKind,
+  resolveOrganizeCreateKindFromDemandMapItem,
+} from '@uaetrail/shared-types';
 import { type ActivityType } from '../../config/activityTypes';
 import { getOrganizeCatalogFlowSteps, validateOrganizeCatalogStep } from './organizeFlows';
 import {
@@ -322,20 +326,20 @@ export const locationPickerHint = (
 export const defaultCapacityForKind = (kind: CreateActivityKind): number =>
   kind === 'carpool' ? 4 : 6;
 
-const demandKindToCreateKind = (kind: ExploreMapItemDTO['kind']): CreateActivityKind => {
-  if (kind === 'carpool') return 'carpool';
-  if (kind === 'camping') return 'camping';
-  if (kind === 'hiking') return 'hiking';
-  return 'event';
-};
-
 /** Prefill a host publish draft from a community request map item. */
 export const createDraftFromDemand = (item: ExploreMapItemDTO): CreateActivityDraft => {
-  const kind = demandKindToCreateKind(item.kind);
+  const kind = resolveOrganizeCreateKindFromDemandMapItem({
+    outingCategory: item.outingCategory ?? null,
+    kind: exploreMapKindToPlanMapKind(item.kind),
+  }) as CreateActivityKind;
   const base = emptyCreateActivityDraft();
   const timeStr = item.time?.trim() || '09:00';
   const subtitle = item.subtitle?.trim() || '';
   const fromLabel = item.fromLabel?.trim() || '';
+  const hasPin = item.latitude != null && item.longitude != null;
+  const structured = kind === 'hiking' || kind === 'camping';
+  const activityHost = kind === 'activity';
+  const areaLabel = subtitle || fromLabel;
 
   return {
     ...base,
@@ -355,7 +359,12 @@ export const createDraftFromDemand = (item: ExploreMapItemDTO): CreateActivityDr
     description:
       kind !== 'carpool' && subtitle && subtitle !== fromLabel ? subtitle : '',
     meetingPointInfo: fromLabel || (kind !== 'carpool' ? subtitle : ''),
-    locationPrecision: item.latitude != null && item.longitude != null ? 'specific' : 'general',
+    locationPrecision: hasPin ? 'specific' : 'general',
+    meetingLatitude: activityHost && hasPin ? item.latitude : base.meetingLatitude,
+    meetingLongitude: activityHost && hasPin ? item.longitude : base.meetingLongitude,
+    placeLabelSource: structured && hasPin ? 'custom' : base.placeLabelSource,
+    registryPlaceId: structured && hasPin ? null : base.registryPlaceId,
+    trailName: structured && hasPin ? areaLabel.slice(0, 120) : base.trailName,
   };
 };
 

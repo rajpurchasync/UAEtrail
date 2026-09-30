@@ -1,3 +1,4 @@
+import { exploreDemandMapItemPath } from '@uaetrail/shared-types';
 import type { OrganizeComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import type { ContributeVenueKind } from './contributeTypes';
@@ -68,8 +69,11 @@ export const exploreSavedPinPath = (mapItemId: string): string =>
   explorePath({ pin: mapItemId, panel: 'activities', list: true });
 
 /** Share link for map items — opens explore peek (guests and members). */
-export const exploreMapItemSharePath = (mapItemId: string): string =>
-  explorePath({ pin: mapItemId.trim() });
+export const exploreMapItemSharePath = (mapItemId: string): string => {
+  const id = mapItemId.trim();
+  if (id.startsWith('demand:')) return exploreDemandMapItemPath(id);
+  return explorePath({ pin: id });
+};
 
 /** Resume publishing an {@link Activity} for a map {@link ParticipantIntent} after auth/onboarding. */
 export const FULFILL_INTENT_QUERY_KEY = 'fulfillIntent';
