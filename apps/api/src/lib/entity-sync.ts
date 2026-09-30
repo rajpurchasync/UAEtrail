@@ -5,6 +5,7 @@ import { ActivityStatus as ActivityStatusEnum } from '../domain/enums.js';
 import { getMongoClient } from './mongo.js';
 import { locationDocForMongo } from './location-query.js';
 import type { MongoActivityDoc } from './entity-builders.js';
+import { invalidateExploreMapCache } from './explore-map-cache.js';
 
 type MongoLocationDoc = Omit<Location, 'id'> & {
   _id: string;
@@ -23,6 +24,15 @@ export const writeLocationToMongo = async (location: Location): Promise<void> =>
     { $set: locationDocForMongo(location) },
     { upsert: true }
   );
+  await invalidateExploreMapCache();
+};
+
+export const deleteLocationFromMongo = async (locationId: string): Promise<boolean> => {
+  const result = await locationsCollection().deleteOne({ _id: locationId });
+  if (result.deletedCount > 0) {
+    await invalidateExploreMapCache();
+  }
+  return result.deletedCount > 0;
 };
 
 export const writeActivityDocToMongo = async (doc: MongoActivityDoc): Promise<void> => {

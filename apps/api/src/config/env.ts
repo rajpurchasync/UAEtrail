@@ -17,7 +17,7 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(24),
   JWT_ACCESS_TTL: z.string().default('15m'),
   JWT_REFRESH_TTL_DAYS: z.coerce.number().default(30),
-  APP_BASE_URL: z.string().url().default('http://localhost:5173'),
+  APP_BASE_URL: z.string().url().default('http://localhost:5175'),
   APP_BASE_URLS: z.string().optional(),
   API_BASE_URL: z.string().url().default('http://localhost:4000'),
   S3_ENDPOINT: z.string().optional(),

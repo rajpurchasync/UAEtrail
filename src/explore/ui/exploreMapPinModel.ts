@@ -68,6 +68,10 @@ export const matchesBuddyMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFil
   return false;
 };
 
+/**
+ * Mixed Activities + Places filter — do not use for browse map/list.
+ * @deprecated Use {@link matchesBuddyMapFilter} or {@link matchesPlacesMapFilter}.
+ */
 export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKey): boolean => {
   if (mapFilter === 'all') return true;
   if (mapFilter === 'shops') return isShopMapItem(item) || item.kind === 'shop';

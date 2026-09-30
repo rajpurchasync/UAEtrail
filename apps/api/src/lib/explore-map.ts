@@ -190,6 +190,8 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
 
     const dto = toLocationDto(location);
     const kind = venueKind(dto.activityType);
+    if (kind !== 'hiking' && kind !== 'camping') continue;
+
     const latitude = dto.latitude ?? null;
     const longitude = dto.longitude ?? null;
     if (

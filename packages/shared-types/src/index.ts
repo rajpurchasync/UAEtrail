@@ -957,6 +957,15 @@ export {
 } from './explore-presentation.js';
 
 export {
+  VENUE_NAME_AR_TAG_PREFIX,
+  VENUE_NAME_EN_TAG_PREFIX,
+  readVenueArabicNameFromTags,
+  readVenueEnglishNameFromTags,
+  resolvePlaceDisplayTitle,
+  resolveVenueExploreLabels,
+} from './venue-catalog-tags.js';
+
+export {
   extractJoinInstructionLines,
   extractNonJoinRequirements,
   hasActivityJoinInstructions,

@@ -77,7 +77,7 @@ Phases are **sequential gates**. Later phases may start UI spikes only if they d
 
 - [ ] Remove redundant legacy filter keys in mobile panel if still duplicated (`ActivityListFilterKey` / venue filters).
 - [ ] Optional: sticky map segment Places \| Activities (`view=` URL) if product wants it on map chrome.
-- [ ] Run manual pass: Places All = N venues + shops; Activities never shows venue-only rows; shop list sections only when `filter=shops`.
+- [ ] Run manual pass: [`E2_EXPLORE_BROWSE_SMOKE.md`](./E2_EXPLORE_BROWSE_SMOKE.md) (automated: `explore-map-layers` + `exploreMapPinModel` tests).
 - [ ] Update [`explore-ux-spec.md`](./explore-ux-spec.md) checklist to match pill labels (Trails/Spots/Shops).
 
 **Exit:** Browse URL + map + list behave identically; Places layer excludes published/seeking pins.

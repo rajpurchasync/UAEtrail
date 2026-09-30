@@ -47,6 +47,8 @@ Without one of those flags, restarts skip seeding so existing records are not ov
 Frontend runs on `http://localhost:5175`.
 API is available through the frontend proxy at `http://localhost:5175/api/v1`.
 
+Explore map ops (venue catalog import, cache, smoke checks): [`docs/operations/EXPLORE_MAP_RUNBOOK.md`](docs/operations/EXPLORE_MAP_RUNBOOK.md).
+
 ## Dev Run Convention
 
 When someone says "dev run", use the VS Code hot-reload workflow with cloud test MongoDB and no observability stack containers.

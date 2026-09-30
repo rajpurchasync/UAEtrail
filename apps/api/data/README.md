@@ -2,6 +2,8 @@
 
 Curated hiking and camping pins for the explore map (`Places` panel).
 
+**Ops runbook (cache, env, smoke):** [`docs/operations/EXPLORE_MAP_RUNBOOK.md`](../../../docs/operations/EXPLORE_MAP_RUNBOOK.md)
+
 ## Edit the list
 
 Update `uae-outdoor-venue-catalog.json`:

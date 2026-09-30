@@ -37,3 +37,7 @@ Run `npm run test:frontend`. These tests guard the contracts below; they do **no
 | Explore compose (regression) | Organize sign-in / become-host gates | `exploreComposeRouteGuard.test.ts` |
 
 Gate query invalidation after profile save is implemented in `ProfileMemberDetailsCard`, `SignupProfileWizard`, and `Profile.tsx` via `meProfileSignupGateKey` — verify step 6 manually.
+
+## Related: E2 explore browse
+
+Places vs Activities separation: [`E2_EXPLORE_BROWSE_SMOKE.md`](./E2_EXPLORE_BROWSE_SMOKE.md) (API: `explore-map-layers` tests).

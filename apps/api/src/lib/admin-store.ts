@@ -1,11 +1,22 @@
 import type { Collection } from 'mongodb';
 import { COLLECTIONS } from './collections.js';
 import type { Activity, Location, Product, Tenant, TenantMembership } from '../domain/types.js';
-import { ActivityStatus, ProductStatus, TenantStatus, TenantType } from '../domain/enums.js';
+import {
+  ActivityStatus,
+  ProductStatus,
+  TenantBusinessMode,
+  TenantStatus,
+  TenantType,
+} from '../domain/enums.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import { createLocationRecord } from './activities-store.js';
 import { newEntityId, type MongoActivityDoc } from './entity-builders.js';
-import { findLocationInMongo, writeActivityDocToMongo, writeLocationToMongo } from './entity-sync.js';
+import {
+  deleteLocationFromMongo,
+  findLocationInMongo,
+  writeActivityDocToMongo,
+  writeLocationToMongo,
+} from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { findTenantById } from './tenant-store.js';
 import { syncTenantMembershipStatusForTenant } from './tenant-access.js';
@@ -314,7 +325,7 @@ export const deleteAdminLocation = async (id: string) => {
   if (!existing) {
     throw new Error('Location not found.');
   }
-  await locationsCollection().deleteOne({ _id: id });
+  await deleteLocationFromMongo(id);
   return existing;
 };
 
@@ -722,7 +733,12 @@ export const updateAdminTenantStatus = async (id: string, status: TenantStatus) 
     throw new Error('Tenant not found.');
   }
   await syncTenantMembershipStatusForTenant(id, status);
-  return mapMongoTenant(result);
+  const mapped = mapMongoTenant(result);
+  if (mapped.businessMode === TenantBusinessMode.SHOP) {
+    const { invalidateExploreMapCache } = await import('./explore-map-cache.js');
+    await invalidateExploreMapCache();
+  }
+  return mapped;
 };
 
 export const listAuditLogsPaged = async (input: {
