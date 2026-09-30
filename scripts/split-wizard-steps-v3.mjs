@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const slicePath = 'src/explore/ui/organizeWizard/organizeWizardStepSlice.tsx';
+/** Monolithic slice produced by restore-organize-wizard-slice.mjs (not shipped in repo). */
+const slicePath = 'src/explore/ui/organizeWizard/.regen-wizard-slice.tsx';
 const outDir = 'src/explore/ui/organizeWizard/steps';
 const lines = fs.readFileSync(slicePath, 'utf8').split(/\r?\n/);
 
@@ -158,6 +159,5 @@ export const renderOrganizeWizardStepsForIds = (
 `;
 
 fs.writeFileSync(path.join(outDir, 'index.tsx'), index);
-fs.writeFileSync(slicePath, `export { renderOrganizeWizardStepSlice, renderOrganizeWizardStepsForIds } from './steps/index';\n`);
 
 console.log('steps', blocks.length, blocks.map((b) => b.key).join(', '));

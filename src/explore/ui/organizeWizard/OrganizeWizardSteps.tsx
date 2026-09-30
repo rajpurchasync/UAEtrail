@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from './organizeWizardContext';
 import { renderCatalogOrganizeWizardStep } from './renderCatalogOrganizeWizardStep';
-import { renderOrganizeWizardStepSlice } from './organizeWizardStepSlice';
+import { renderOrganizeWizardStepSlice } from './steps';
 
 export function renderOrganizeWizardSteps(ctx: OrganizeWizardContext): ReactNode {
   if (ctx.catalogFlow) {
@@ -11,4 +11,4 @@ export function renderOrganizeWizardSteps(ctx: OrganizeWizardContext): ReactNode
   return renderOrganizeWizardStepSlice(ctx);
 }
 
-export { renderOrganizeWizardStepSlice } from './organizeWizardStepSlice';
+export { renderOrganizeWizardStepSlice } from './steps';

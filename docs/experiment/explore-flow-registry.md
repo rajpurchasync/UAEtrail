@@ -51,8 +51,8 @@ Examples: `organize.hiking`, `compose=organize:carpool` → `organize.rideshare`
 
 **Wizard maintenance (after editing the monolithic slice):**
 
-1. `node scripts/restore-organize-wizard-slice.mjs` (optional — from git snapshot)
-2. `node scripts/split-wizard-steps-v3.mjs`
+1. `node scripts/restore-organize-wizard-slice.mjs` — writes `organizeWizard/.regen-wizard-slice.tsx` (gitignored)
+2. `node scripts/split-wizard-steps-v3.mjs` — reads that file, emits `organizeWizard/steps/*`
 3. `node scripts/fix-wizard-step-imports.mjs`
 4. `node scripts/prune-organize-wizard-steps.mjs` — then restore any missing `lucide-react` icons used in JSX
 5. `node scripts/apply-organize-wizard-chrome.mjs` — `FlowSheetChrome` → `OrganizeWizardChrome` (custom `title={…}` supported; verify `type-step` uses `ORGANIZE_TYPE_SHEET_TITLE`)

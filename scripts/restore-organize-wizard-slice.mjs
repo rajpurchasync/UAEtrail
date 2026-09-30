@@ -170,5 +170,5 @@ ${body}
 }
 `;
 
-fs.writeFileSync('src/explore/ui/organizeWizard/organizeWizardStepSlice.tsx', header);
+fs.writeFileSync('src/explore/ui/organizeWizard/.regen-wizard-slice.tsx', header);
 console.log('restored', publishClose - start + 1, 'lines');

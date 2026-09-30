@@ -37,6 +37,9 @@ packages/shared-types/src/*.js.map
 # Local API uploads (dev fallback storage)
 apps/api/uploads/
 
+# Organize wizard regen monolith (restore-organize-wizard-slice.mjs)
+src/explore/ui/organizeWizard/.regen-wizard-slice.tsx
+
 # Local debug dumps (explore payload, one-off stats)
 .tmp-*.json
 tmp-*.txt
