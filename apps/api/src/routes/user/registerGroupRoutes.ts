@@ -335,12 +335,13 @@ router.get(
       if (!membership) {
         throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
       }
-      const items = await listGroupWallMessages(groupId, {
+      const { messages, hasMoreOlder } = await listGroupWallMessages(groupId, {
         limit: query.limit ?? 120,
         viewerUserId: req.auth!.userId,
         since: query.since ? new Date(query.since) : undefined,
+        before: query.before ? new Date(query.before) : undefined,
       });
-      res.json({ data: items });
+      res.json({ data: messages, meta: { hasMoreOlder } });
     } catch (error) {
       next(error);
     }

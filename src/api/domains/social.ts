@@ -174,15 +174,19 @@ export const socialApi = {
       auth: true
     }),
 
-    getMeGroupWall: (groupId: string, options?: { since?: string; limit?: number }) => {
+    getMeGroupWall: (
+      groupId: string,
+      options?: { since?: string; before?: string; limit?: number }
+    ) => {
       const params = new URLSearchParams();
       if (options?.since) params.set('since', options.since);
+      if (options?.before) params.set('before', options.before);
       if (options?.limit) params.set('limit', String(options.limit));
       const qs = params.toString();
-      return apiRequest<{ data: SocialGroupWallMessageView[] }>(
-        `/me/groups/${groupId}/wall${qs ? `?${qs}` : ''}`,
-        { auth: true }
-      );
+      return apiRequest<{
+        data: SocialGroupWallMessageView[];
+        meta?: { hasMoreOlder: boolean };
+      }>(`/me/groups/${groupId}/wall${qs ? `?${qs}` : ''}`, { auth: true });
     },
 
     markMeGroupWallRead: (groupId: string) =>

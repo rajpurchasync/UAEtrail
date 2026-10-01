@@ -14,6 +14,11 @@ import { GroupWallMessageItem, type GroupWallReplyTarget } from './GroupWallMess
 
 /** Fallback when SSE is unavailable; primary delivery is `group_wall_message` on chat stream. */
 const WALL_POLL_MS = 45_000;
+const WALL_INITIAL_LIMIT = 120;
+const WALL_OLDER_PAGE = 60;
+const LOAD_OLDER_SCROLL_PX = 72;
+
+type WallScrollMode = 'initial' | 'bottom' | 'preserve';
 
 export type GroupWallActivityPayload = {
   groupId: string;
@@ -48,11 +53,15 @@ export const GroupWallThreadPanel = ({
   const [membersOpen, setMembersOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [highlightMessageId, setHighlightMessageId] = useState<string | null>(null);
+  const [hasMoreOlder, setHasMoreOlder] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const highlightTimerRef = useRef<number | null>(null);
   const skipScrollRef = useRef(true);
   const wallLengthRef = useRef(0);
   const wallLatestAtRef = useRef<string | null>(null);
+  const scrollModeRef = useRef<WallScrollMode>('initial');
+  const preserveScrollHeightRef = useRef<number | null>(null);
 
   const canPost =
     group && membership ? canMemberPostToGroupWall(group, membership) : false;
@@ -71,6 +80,7 @@ export const GroupWallThreadPanel = ({
   }, [groupId]);
 
   const mergeWall = useCallback((incoming: SocialGroupWallMessageView[]) => {
+    scrollModeRef.current = 'initial';
     const ordered = [...incoming];
     setWall((current) => {
       const lastCurrent = current[current.length - 1];
@@ -82,8 +92,20 @@ export const GroupWallThreadPanel = ({
     });
   }, []);
 
+  const prependWallMessages = useCallback((incoming: SocialGroupWallMessageView[]) => {
+    if (incoming.length === 0) return;
+    scrollModeRef.current = 'preserve';
+    setWall((current) => {
+      const ids = new Set(current.map((row) => row.id));
+      const prepended = incoming.filter((message) => !ids.has(message.id));
+      if (prepended.length === 0) return current;
+      return [...prepended, ...current];
+    });
+  }, []);
+
   const appendWallMessages = useCallback((incoming: SocialGroupWallMessageView[]) => {
     if (incoming.length === 0) return;
+    scrollModeRef.current = 'bottom';
     setWall((current) => {
       const ids = new Set(current.map((row) => row.id));
       const merged = [...current];
@@ -112,11 +134,14 @@ export const GroupWallThreadPanel = ({
     try {
       const [detailRes, wallRes] = await Promise.all([
         api.getMeGroupDetail(groupId),
-        api.getMeGroupWall(groupId),
+        api.getMeGroupWall(groupId, { limit: WALL_INITIAL_LIMIT }),
       ]);
       setGroup(detailRes.data.group);
       setMembership(detailRes.data.membership);
       setMembers(detailRes.data.members);
+      setHasMoreOlder(
+        wallRes.meta?.hasMoreOlder ?? wallRes.data.length >= WALL_INITIAL_LIMIT
+      );
       mergeWall(wallRes.data);
       markWallRead();
       const latest = wallRes.data[wallRes.data.length - 1];
@@ -145,6 +170,30 @@ export const GroupWallThreadPanel = ({
     }
   }, [appendWallMessages, groupId, markWallRead, notifyWallActivity]);
 
+  const loadOlderMessages = useCallback(async () => {
+    if (loadingOlder || !hasMoreOlder || wall.length === 0) return;
+    const first = wall[0];
+    const container = chatContainerRef.current;
+    preserveScrollHeightRef.current = container?.scrollHeight ?? null;
+    setLoadingOlder(true);
+    try {
+      const wallRes = await api.getMeGroupWall(groupId, {
+        before: first.createdAt,
+        limit: WALL_OLDER_PAGE,
+      });
+      if (wallRes.data.length === 0) {
+        setHasMoreOlder(false);
+        return;
+      }
+      prependWallMessages(wallRes.data);
+      setHasMoreOlder(wallRes.meta?.hasMoreOlder ?? wallRes.data.length >= WALL_OLDER_PAGE);
+    } catch {
+      /* history load is best-effort */
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [groupId, hasMoreOlder, loadingOlder, prependWallMessages, wall]);
+
   useEffect(() => {
     void loadThread();
   }, [loadThread]);
@@ -153,7 +202,24 @@ export const GroupWallThreadPanel = ({
     skipScrollRef.current = true;
     wallLengthRef.current = 0;
     wallLatestAtRef.current = null;
+    setHasMoreOlder(false);
+    scrollModeRef.current = 'initial';
   }, [groupId]);
+
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container || loading) return;
+
+    const onScroll = () => {
+      if (loadingOlder || !hasMoreOlder) return;
+      if (container.scrollTop <= LOAD_OLDER_SCROLL_PX) {
+        void loadOlderMessages();
+      }
+    };
+
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => container.removeEventListener('scroll', onScroll);
+  }, [hasMoreOlder, loadOlderMessages, loading, loadingOlder]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -181,14 +247,28 @@ export const GroupWallThreadPanel = ({
   useEffect(() => {
     const container = chatContainerRef.current;
     if (!container || loading) return;
+
+    const mode = scrollModeRef.current;
+    scrollModeRef.current = 'bottom';
+
+    if (mode === 'preserve' && preserveScrollHeightRef.current !== null) {
+      const delta = container.scrollHeight - preserveScrollHeightRef.current;
+      container.scrollTop = delta;
+      preserveScrollHeightRef.current = null;
+      wallLengthRef.current = wall.length;
+      return;
+    }
+
     const grew = wall.length > wallLengthRef.current;
     wallLengthRef.current = wall.length;
-    if (skipScrollRef.current) {
+
+    if (mode === 'initial' || skipScrollRef.current) {
       skipScrollRef.current = false;
       container.scrollTop = container.scrollHeight;
       return;
     }
-    if (grew) {
+
+    if (grew && mode === 'bottom') {
       container.scrollTop = container.scrollHeight;
     }
   }, [wall.length, loading]);
@@ -321,7 +401,21 @@ export const GroupWallThreadPanel = ({
             </p>
           </div>
         ) : (
-          wall.map((message) => (
+          <>
+            {loadingOlder ? (
+              <div className="flex justify-center py-2" aria-busy="true">
+                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+              </div>
+            ) : hasMoreOlder ? (
+              <button
+                type="button"
+                onClick={() => void loadOlderMessages()}
+                className="mx-auto block rounded-full px-3 py-1 text-xs font-medium text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700"
+              >
+                Load earlier messages
+              </button>
+            ) : null}
+            {wall.map((message) => (
             <GroupWallMessageItem
               key={message.id}
               groupId={groupId}
@@ -334,7 +428,8 @@ export const GroupWallThreadPanel = ({
               resolveQuotedMessage={resolveQuotedMessage}
               onError={setError}
             />
-          ))
+          ))}
+          </>
         )}
       </div>
 

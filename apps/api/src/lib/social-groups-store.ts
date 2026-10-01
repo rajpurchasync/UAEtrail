@@ -885,14 +885,26 @@ export type ListGroupWallMessagesOptions = {
   viewerUserId?: string;
   /** Return messages strictly after this timestamp (ascending, for poll / SSE). */
   since?: Date;
+  /** Return messages strictly before this timestamp (ascending batch, for history). */
+  before?: Date;
+};
+
+export type ListGroupWallMessagesResult = {
+  messages: PresentedGroupWallMessage[];
+  /** True when the query hit `limit` and older messages may still exist. */
+  hasMoreOlder: boolean;
 };
 
 export const listGroupWallMessages = async (
   groupId: string,
   options: ListGroupWallMessagesOptions = {}
-) => {
+): Promise<ListGroupWallMessagesResult> => {
   const limit = options.limit ?? 100;
   const viewerUserId = options.viewerUserId;
+
+  if (options.since && options.before) {
+    throw new Error('wall_list_since_before_conflict');
+  }
 
   if (options.since) {
     const rows = await wallCollection()
@@ -901,12 +913,25 @@ export const listGroupWallMessages = async (
       .limit(limit)
       .toArray();
     const messages = rows.map(mapWall);
-    return presentGroupWallMessages(groupId, messages, viewerUserId);
+    const presented = await presentGroupWallMessages(groupId, messages, viewerUserId);
+    return { messages: presented, hasMoreOlder: false };
+  }
+
+  if (options.before) {
+    const rows = await wallCollection()
+      .find({ groupId, createdAt: { $lt: options.before } })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .toArray();
+    const messages = rows.map(mapWall).reverse();
+    const presented = await presentGroupWallMessages(groupId, messages, viewerUserId);
+    return { messages: presented, hasMoreOlder: rows.length === limit };
   }
 
   const rows = await wallCollection().find({ groupId }).sort({ createdAt: -1 }).limit(limit).toArray();
   const messages = rows.map(mapWall).reverse();
-  return presentGroupWallMessages(groupId, messages, viewerUserId);
+  const presented = await presentGroupWallMessages(groupId, messages, viewerUserId);
+  return { messages: presented, hasMoreOlder: rows.length === limit };
 };
 
 export const presentGroupWallMessage = async (

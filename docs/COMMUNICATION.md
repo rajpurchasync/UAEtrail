@@ -44,7 +44,8 @@ Used for **family/friends groups** and **activity crew** (`social_groups.type ==
 
 - **List groups + inbox preview:** `GET /me/groups` → each row includes **`chatPreview`**: `{ lastMessageBody, lastMessageAt, unreadCount }`
 - **Full thread (initial):** `GET /me/groups/:groupId/wall` (default limit 120, oldest→newest)
-- **Incremental sync:** `GET /me/groups/:groupId/wall?since=<ISO8601>`
+- **Incremental sync:** `GET /me/groups/:groupId/wall?since=<ISO8601>` (newer messages only)
+- **Older history:** `GET /me/groups/:groupId/wall?before=<ISO8601>&limit=` — ascending batch; response **`meta.hasMoreOlder`** when more exist (mutually exclusive with `since`)
 - **Send:** `POST /me/groups/:groupId/wall` — body max **600** chars (plain text for new replies); optional `replyToMessageId` (validated in-group); returns enriched message (author, reactions, **`replyToPreview`** when replying). Wall **GET** / **SSE** include the same preview. Client still resolves quotes from the loaded thread when preview is absent. Legacy messages may use embedded `↩[id:…]` quote text in `body`.
 - **Mark read:** `POST /me/groups/:groupId/wall/read` → `wallLastReadAt` on membership
 - **Reactions:** `POST /me/groups/:groupId/wall/:messageId/reactions`
@@ -121,5 +122,5 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 ## Future (not shipped)
 
 - Dedicated group-wall SSE channel (today: reuses `/chat/stream` + `group_wall_message` event)
-- Wall cursor pagination beyond fixed `limit` (~120)
+- Message-id cursor (today: `before` uses `createdAt` only)
 - Optional per-activity `groupChatPolicy` (host-only vs full crew)
