@@ -311,6 +311,15 @@ export const fulfillParticipantIntent = async (
 
   if (!updated) return null;
 
+  const { carryApprovedDemandJoinersToActivity } = await import(
+    '../services/participant-intent-carryover.js'
+  );
+  await carryApprovedDemandJoinersToActivity({
+    intentId: updated._id,
+    activityId,
+    hostUserId: updated.userId,
+  });
+
   const user = await findAuthUserById(updated.userId);
   return mapDto(updated, user);
 };

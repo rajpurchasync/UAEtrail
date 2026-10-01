@@ -199,6 +199,22 @@ export const rejectParticipantIntentJoinRequest = async (
   return mapDto(updated);
 };
 
+/** Approved joiners to copy onto a linked published activity (excludes poster). */
+export const listApprovedParticipantIntentJoinerUserIds = async (
+  intentId: string
+): Promise<string[]> => {
+  const intent = await intentsCollection().findOne(
+    intentLookupFilter(intentId) as Filter<MongoParticipantIntent>
+  );
+  if (!intent) return [];
+
+  const docs = await requestsCollection()
+    .find({ intentId: intent._id, status: 'approved' })
+    .toArray();
+
+  return docs.map((doc) => doc.userId).filter((userId) => userId !== intent.userId);
+};
+
 export const findParticipantIntentJoinRequestForUser = async (
   intentId: string,
   userId: string

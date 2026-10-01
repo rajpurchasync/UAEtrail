@@ -584,6 +584,7 @@ export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'deman
 
 export type ParticipantIntentKind = 'hiking' | 'camping' | 'event' | 'guide' | 'rideshare' | 'other';
 
+/** Find / demand pin — public map only; join via intent requests (approve/reject), not RSVP. */
 export interface ParticipantIntentDTO {
   id: string;
   userId: string;

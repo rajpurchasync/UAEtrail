@@ -28,6 +28,8 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`experiment/explore-backend-alignment.md
 
 ## Join requests: activities vs demand
 
+**Demand** pins are always **public** on the map and use **approval-style join only** — no RSVP, no **I'm going**, no `participationMode` or `joinMode` on intents. Organize activities keep both modes.
+
 Same product verb (**request to join**), two entities:
 
 | Step | Published activity | Demand (`participant_intents`) |

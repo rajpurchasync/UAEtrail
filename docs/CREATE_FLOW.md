@@ -166,13 +166,24 @@ participationMode: 'rsvp' | 'approval'
 
 The member who posts a **demand** pin is the **host** for that plan (they are looking for crew, not asking a stranger to take over).
 
+### Demand join model (locked)
+
+| Rule | Demand | Organize (activity) |
+|------|--------|---------------------|
+| **Map visibility** | Always **public** when pinned — no `joinMode`, no private demand | `joinMode` open or private |
+| **How others join** | **Request to join** only — poster approves on the intent | **I'm going** (`rsvp`) or **Request to join** (`approval`) |
+| **RSVP / instant join** | **Never** — no `participationMode` on intents | Host chooses `participationMode` |
+| **Storage** | `participant_intent_requests` | RSVPs + `activity_requests` |
+
+Demand is **not** a lightweight RSVP activity. Do not add **I'm going**, private pins, or `participationMode` to `participant_intents`.
+
 | Who | Peek actions |
 |-----|----------------|
 | **Poster** | Manage plan · remove from map · optional linked rideshare offer (approved publish gate) |
 | **Everyone else** | **Request to join** (same language as approval-mode activities) · **Message** |
 | **Guest** | Sign-in gate on join / message |
 
-When the poster is ready to run a dated outing on the map, they **Organize → publish** an activity — they remain the host. Approved joiners from the demand can carry into the published activity in a later phase; until then, join requests are stored on the intent (`POST /me/participant-intents/:id/requests`).
+When the poster is ready to run a dated outing on the map, they **Organize → publish** an activity — they remain the host. That published row has its **own** `participationMode` / `joinMode` for **new** discoverers. Approved demand joiners are **enrolled on the linked activity** when the poster calls `POST /me/participant-intents/:id/link-activity` (host-approved `activity_requests` + participants — even if the activity is RSVP for strangers). Join requests on the intent: `POST /me/participant-intents/:id/requests`.
 
 **Not used:** third-party “fulfill / convert” (another member publishing on behalf of the poster). Legacy `?fulfillIntent=` links only reopen the pin.
 

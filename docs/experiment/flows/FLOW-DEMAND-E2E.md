@@ -12,7 +12,7 @@
 | **Wizard** | Type → title → when → destination/area → party size → **audience** (restrictions only — no public/private) → pins → transport (hiking/camping/carpool) → **Review** |
 | **Review** | Summary + per-step **Edit** chips → **Submit** (not “Publish”) |
 | **API** | `POST /me/participant-intents` → `status: active` |
-| **Map** | Always **public** when a pin is set · no public/private toggle on find/demand flows · no pin → off-map notice |
+| **Map** | Always **public** when a pin is set · no public/private toggle · **no RSVP** (no **I'm going**) · no pin → off-map notice |
 | **After submit** | **Success sheet** (same pattern as organize publish) · **View** reloads map · focuses pin · opens peek when visible on map |
 
 **Requester peek:** **Manage plan** · **Remove request** (cancels intent). Optional **Link rideshare** when host gate allows.
@@ -40,8 +40,8 @@ The **poster is the host** for this plan — not a third-party organizer.
 | Stage | What happens |
 |-------|----------------|
 | **Organize** | Poster uses FAB **Organize** (or rideshare link from their demand) with draft prefill when applicable |
-| **Publish** | New activity; poster is host · `participationMode` drives **I'm going** / **Request to join** for the public activity |
-| **Link demand** | Optional `participantIntentId` on publish → `fulfill` marks intent `fulfilled` and sets `convertedActivityId` |
+| **Publish** | New activity; poster is host · `participationMode` / `joinMode` apply to the **activity** only (for new joiners who find that pin) |
+| **Link demand** | `participantIntentId` on publish → `POST /me/participant-intents/:id/link-activity` marks intent `fulfilled`, sets `convertedActivityId`, and **enrolls approved demand joiners** on the activity (host-approved rows — not RSVP on the demand pin) |
 
 ---
 
@@ -61,6 +61,5 @@ Private organize plans: [PRIVATE-ORGANIZE-PLANS](./PRIVATE-ORGANIZE-PLANS.md) (l
 
 ## Gaps / later
 
-- Carry approved demand joiners into activity crew on publish.
 - Cancel / withdraw demand join request from explore peek.
 - Check-in UX deep-dive (console panel).

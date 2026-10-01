@@ -34,11 +34,10 @@ Code name for the shared enum: **`OutingCategory`** (field e.g. `outingCategory`
 
 **Host** = role only (`canPublish`). Gates **Organize**, not Demand.
 
-**Join behaviour (Organize only)**
+**Join behaviour**
 
-- **`participationMode`**: `rsvp` \| `approval` — host **chooses** in the wizard; category may set an initial default only.
-- **`joinMode`**: `open` \| `private` — map visibility only ([`CREATE_FLOW.md`](../CREATE_FLOW.md)).
-- **Demand** lifecycle: active → fulfilled \| cancelled; optional convert to Organize (`convertedActivityId`). No `participationMode`.
+- **Organize only:** **`participationMode`**: `rsvp` \| `approval` — host **chooses** in the wizard; category may set an initial default only. **`joinMode`**: `open` \| `private` — map visibility only ([`CREATE_FLOW.md`](../CREATE_FLOW.md)).
+- **Demand:** Always **public** on the map when pinned. Join = **`participant_intent_requests`** only (**request to join** → poster approves). **No RSVP**, no **I'm going**, no `participationMode`, no `joinMode`, no private demand pins. Lifecycle: active → fulfilled \| cancelled; poster links published activity via **`link-activity`** (`convertedActivityId`), which enrolls approved demand joiners on that activity (host-approved participation — not RSVP on the intent).
 
 **Future (not outdoor time-bound):** **Demand for goods or services** — separate flows, lifecycle, and likely storage from outdoor Demand. Same word “Demand” in product, different `flowId` prefix (e.g. `demand.goods.*`). Does not share `OutingCategory` with hiking/camping unless product explicitly merges later.
 

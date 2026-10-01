@@ -740,6 +740,106 @@ export const findTenantActivityRequestForDecision = async (id: string, tenantId:
   };
 };
 
+export type EnrollHostApprovedActivityParticipantResult = 'enrolled' | 'skipped';
+
+/**
+ * Host-approved crew row (approval path) — used for tenant request approval and demand carry-over.
+ * Does not use RSVP instant-join even when the activity is in rsvp mode.
+ */
+export const enrollHostApprovedActivityParticipant = async (opts: {
+  activityId: string;
+  userId: string;
+  reviewerId: string;
+  organizerNote?: string | null;
+  /** When true, skip users who fail audience rules or capacity instead of throwing. */
+  lenient?: boolean;
+}): Promise<EnrollHostApprovedActivityParticipantResult> => {
+  const existingParticipant = await findActivityParticipantByEventAndUser(opts.activityId, opts.userId);
+  if (existingParticipant) return 'skipped';
+
+  const eventDoc = await findActivityDocInMongo(opts.activityId);
+  if (!eventDoc || eventDoc.status !== ActivityStatus.PUBLISHED) {
+    if (opts.lenient) return 'skipped';
+    throw new ApiError(400, 'event_not_publishable', 'Event must be published before approval.');
+  }
+
+  if (eventDoc.hostId === opts.userId || eventDoc.createdById === opts.userId) return 'skipped';
+
+  try {
+    await assertParticipantMeetsWomenOnlyRequirement(opts.userId, eventDoc.requirements ?? []);
+  } catch (error) {
+    if (opts.lenient) return 'skipped';
+    throw error;
+  }
+
+  if (eventDoc.participantSlotsUsed === undefined) {
+    const participantCount = await activityParticipantsCollection().countDocuments({
+      activityId: opts.activityId,
+    });
+    await patchActivityInMongo(opts.activityId, { participantSlotsUsed: participantCount });
+  }
+
+  const reserved = await tryReserveActivityParticipantSlot(opts.activityId, ActivityStatus.PUBLISHED);
+  if (!reserved) {
+    if (opts.lenient) return 'skipped';
+    throw new ApiError(400, 'activity_full', 'Activity capacity has already been reached.');
+  }
+
+  const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
+  const requestId = existing?.id ?? newEntityId();
+  const participantId = newEntityId();
+  const reviewedAt = new Date();
+
+  try {
+    await activityRequestsCollection().updateOne(
+      { _id: requestId },
+      {
+        $set: {
+          activityId: opts.activityId,
+          userId: opts.userId,
+          status: RequestStatus.APPROVED,
+          note: existing?.note ?? null,
+          organizerNote: opts.organizerNote ?? null,
+          cancelReason: null,
+          cancelMessage: null,
+          cancelledAt: null,
+          selectedPackageIndex: existing?.selectedPackageIndex ?? null,
+          reviewedAt,
+          reviewedById: opts.reviewerId,
+          updatedAt: reviewedAt,
+          createdAt: existing?.createdAt ?? reviewedAt,
+        },
+      },
+      { upsert: true }
+    );
+
+    await activityParticipantsCollection().updateOne(
+      { _id: participantId },
+      {
+        $set: {
+          activityId: opts.activityId,
+          requestId,
+          userId: opts.userId,
+          approvedById: opts.reviewerId,
+          checkedInAt: null,
+          createdAt: reviewedAt,
+        },
+      },
+      { upsert: true }
+    );
+  } catch (error) {
+    await releaseActivityParticipantSlot(opts.activityId);
+    throw error;
+  }
+
+  await addParticipantToActivityGroupChat({
+    activityId: opts.activityId,
+    userId: opts.userId,
+  }).catch(() => undefined);
+
+  return 'enrolled';
+};
+
 export const applyTenantActivityRequestDecision = async (input: {
   requestId: string;
   activityId: string;
@@ -751,54 +851,21 @@ export const applyTenantActivityRequestDecision = async (input: {
   const reviewedAt = new Date();
 
   if (input.decision === 'approved') {
-    const eventDoc = await findActivityDocInMongo(input.activityId);
-    if (!eventDoc || eventDoc.status !== ActivityStatus.PUBLISHED) {
-      throw new ApiError(400, 'event_not_publishable', 'Event must be published before approval.');
-    }
-
-    await assertParticipantMeetsWomenOnlyRequirement(input.userId, eventDoc.requirements ?? []);
-
-    if (eventDoc.participantSlotsUsed === undefined) {
-      const participantCount = await activityParticipantsCollection().countDocuments({ activityId: input.activityId });
-      await patchActivityInMongo(input.activityId, { participantSlotsUsed: participantCount });
-    }
-
-    const reserved = await tryReserveActivityParticipantSlot(input.activityId, ActivityStatus.PUBLISHED);
-    if (!reserved) {
-      throw new ApiError(400, 'activity_full', 'Activity capacity has already been reached.');
-    }
-
-    const participantId = newEntityId();
-    try {
-      await patchActivityRequestInMongo(input.requestId, {
-        status: RequestStatus.APPROVED,
-        organizerNote: input.organizerNote ?? null,
-        reviewedById: input.reviewerId,
-        reviewedAt
-      });
-      await activityParticipantsCollection().updateOne(
-        { _id: participantId },
-        {
-          $set: {
-            activityId: input.activityId,
-            requestId: input.requestId,
-            userId: input.userId,
-            approvedById: input.reviewerId,
-            checkedInAt: null,
-            createdAt: reviewedAt
-          }
-        },
-        { upsert: true }
-      );
-    } catch (error) {
-      await releaseActivityParticipantSlot(input.activityId);
-      throw error;
-    }
-
-    await addParticipantToActivityGroupChat({
+    const enrolled = await enrollHostApprovedActivityParticipant({
       activityId: input.activityId,
       userId: input.userId,
-    }).catch(() => undefined);
+      reviewerId: input.reviewerId,
+      organizerNote: input.organizerNote ?? null,
+    });
+
+    if (enrolled === 'skipped') {
+      const existingParticipant = await findActivityParticipantByEventAndUser(
+        input.activityId,
+        input.userId
+      );
+      if (existingParticipant) return;
+      throw new ApiError(400, 'approval_failed', 'Could not approve this join request.');
+    }
     return;
   }
 
