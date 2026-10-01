@@ -1,8 +1,6 @@
 const PRIVATE_MEDIA_KINDS = ['avatar', 'waiver', 'private_photo'] as const;
-const PROFILE_VISIBILITIES = ['public', 'group_members', 'private'] as const;
-
 export type PrivateMediaKind = (typeof PRIVATE_MEDIA_KINDS)[number];
-export type ProfileVisibility = (typeof PROFILE_VISIBILITIES)[number];
+export type ProfileVisibility = 'public' | 'group_members' | 'private';
 
 const KIND_FROM_SEGMENT: Record<string, string> = {
   avatars: 'avatar',

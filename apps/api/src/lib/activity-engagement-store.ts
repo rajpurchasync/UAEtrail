@@ -7,7 +7,6 @@ import {
 } from '../domain/enums.js';
 import type { ActivityParticipant, ActivityRequest } from '../domain/types.js';
 import { ApiError } from './api-error.js';
-import { assertCapacityAvailable } from '../domain/capacity.js';
 import { findAuthUsersByIds } from './auth-users.js';
 import { newEntityId } from './entity-builders.js';
 import {
@@ -28,10 +27,6 @@ const ACTIVE_STATUSES: RequestStatus[] = ['PENDING', 'APPROVED', 'WAITLISTED'];
 
 export const isActivityFull = (capacity: number, participantCount: number): boolean =>
   participantCount >= capacity;
-
-function assertCanApproveRequest(capacity: number, participantCount: number): void {
-  assertCapacityAvailable(capacity, participantCount);
-}
 
 type MongoActivityRequest = {
   _id: string;

@@ -798,8 +798,7 @@ export const createKidGroupMember = async (input: {
 };
 
 const displayNameForUser = (
-  user: Awaited<ReturnType<typeof findAuthUsersByIds>>[number] | undefined,
-  authorUserId: string
+  user: Awaited<ReturnType<typeof findAuthUsersByIds>>[number] | undefined
 ) => user?.profile.displayName ?? user?.email.split('@')[0] ?? 'Member';
 
 const presentGroupWallMessages = async (
@@ -862,7 +861,7 @@ const presentGroupWallMessages = async (
       replyId && parent
         ? {
             messageId: replyId,
-            authorDisplayName: displayNameForUser(parentUser, parent.authorUserId),
+            authorDisplayName: displayNameForUser(parentUser),
             bodySnippet: groupWallBodySnippet(parent.body),
           }
         : null;
@@ -871,7 +870,7 @@ const presentGroupWallMessages = async (
       ...message,
       author: {
         id: message.authorUserId,
-        displayName: displayNameForUser(user, message.authorUserId),
+        displayName: displayNameForUser(user),
         avatarUrl: user?.profile.avatarUrl ?? null,
       },
       reactions: reactionsByMessage.get(message.id) ?? [],

@@ -122,7 +122,7 @@ const productClicksCollection = (): Collection<MongoProductClick> =>
   getMongoClient()!.db().collection<MongoProductClick>(COLLECTIONS.PRODUCT_CLICKS);
 
 /** @deprecated Phase 4 — fulfillment reads/writes use embedded shop_orders.items. Kept for one-time migration reads. */
-const orderLineItemsCollection = (): Collection<MongoOrderLineItem> =>
+const _orderLineItemsCollection = (): Collection<MongoOrderLineItem> =>
   getMongoClient()!.db().collection<MongoOrderLineItem>(COLLECTIONS.ORDER_LINE_ITEMS);
 
 const mapMongoProduct = (item: MongoProduct): Product => ({

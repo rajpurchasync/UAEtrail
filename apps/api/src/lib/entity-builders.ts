@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { Activity, Location } from '../domain/types.js';
+import type { Location } from '../domain/types.js';
 import {
   ActivityType,
   Difficulty,

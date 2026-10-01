@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 import { env } from '../config/env.js';
-import { isEmailConfigured, resolveEmailConfig } from './email-config.js';
+import { resolveEmailConfig } from './email-config.js';
 
 export type EmailTemplate =
   | 'request_approved'

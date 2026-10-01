@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { OrderStatus, ProductStatus } from '../domain/enums.js';
 import ExcelJS from 'exceljs';
-import { UserRole } from '../domain/enums.js';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
 import { getStripe, isStripeConfigured } from '../lib/stripe.js';

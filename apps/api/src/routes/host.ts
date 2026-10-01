@@ -5,11 +5,9 @@ import { mountActivityRoutes } from '../lib/activity-routes.js';
 import { registerPlaceAlias } from '../lib/route-place-alias.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
-import { randomToken } from '../lib/hash.js';
 import { toLocationDto, buildActivityDto } from '../lib/mappers.js';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
-import { hashPassword } from '../lib/password.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { requireOrgRole, requireTenantContext } from '../middleware/tenant.js';
 import {
@@ -17,14 +15,13 @@ import {
   ORG_ACTIVITY_PUBLISH_ROLES,
   ORG_TEAM_MANAGE_ROLES,
 } from '../lib/org-permissions.js';
-import { notifyRequestDecision, sendPasswordResetEmail } from '../lib/email.js';
+import { notifyRequestDecision } from '../lib/email.js';
 import { validate } from '../middleware/validate.js';
 import { awardPoints } from '../services/rewards.js';
 import { notifyAdminsActivityPublished } from '../services/platform-admin-events.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import { ensureActivityGroupChat } from '../services/activity-group-chat.js';
 import { mapActivityIdsToGroupChatIds } from '../lib/social-groups-store.js';
-import { createUniqueReferralCode } from '../lib/referral-code.js';
 import { performParticipantCheckIn } from '../services/checkin.js';
 import { buildLocationCreateData } from '../services/location-submit.js';
 import {
@@ -36,8 +33,7 @@ import {
   toPrismaActivityType
 } from '../domain/activity-type.js';
 import { locationSubmitBodySchema } from '../domain/location-submit.js';
-import { createPasswordResetToken } from '../lib/auth-tokens.js';
-import { createAuthUser, findAuthUserByEmail, updateAuthUserCore } from '../lib/auth-users.js';
+import { findAuthUserByEmail, updateAuthUserCore } from '../lib/auth-users.js';
 import {
   cancelActivityById,
   createActivityDetailed,
@@ -882,7 +878,7 @@ hostRouter.post(
         throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
       }
 
-      let user = await findAuthUserByEmail(body.email);
+      const user = await findAuthUserByEmail(body.email);
       if (!user) {
         throw new ApiError(
           404,

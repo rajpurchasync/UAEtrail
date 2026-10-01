@@ -1,4 +1,4 @@
-import { ActivityStatus, TenantBusinessMode, TenantType, UserRole } from '../domain/enums.js';
+import { TenantBusinessMode, TenantType, UserRole } from '../domain/enums.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import {
   countPublishedActivitiesHostedByUser,

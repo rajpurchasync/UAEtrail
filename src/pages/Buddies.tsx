@@ -11,6 +11,7 @@ import { Dialog } from '../components/ui/Dialog';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
 import { EXPLORE_MAP_PATH } from '../config/platform';
+import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 import { isHostRole } from '../utils/roles';
 
 type FriendsTab = 'friends' | 'requests' | 'following';
@@ -302,7 +303,7 @@ export const Buddies = () => {
                         onClick={() => navigate(EXPLORE_MAP_PATH)}
                         className="mt-4 w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white"
                       >
-                        Explore the map
+                        {PRODUCT_EXPLORE_CTA}
                       </button>
                     </GlassCard>
                   ) : (

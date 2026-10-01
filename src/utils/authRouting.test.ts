@@ -43,7 +43,7 @@ describe('auth routing by role', () => {
   it('maps participant dashboard aliases', () => {
     expect(participantDashboardRedirect('overview')).toBe('/profile');
     expect(participantDashboardRedirect('requests')).toBe('/my-requests');
-    expect(participantDashboardRedirect('activities')).toBe('/trips?segment=upcoming&tab=joined');
+    expect(participantDashboardRedirect('activities')).toBe('/trips');
     expect(participantDashboardRedirect('messages')).toBe('/messages');
     expect(participantDashboardRedirect('profile')).toBe('/profile');
     expect(participantDashboardRedirect('unknown')).toBe('/profile');

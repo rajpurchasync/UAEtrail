@@ -24,7 +24,5 @@ export const withdrawReasonSchema = z
     }
   });
 
-type WithdrawReasonInput = z.infer<typeof withdrawReasonSchema>;
-
 export const canWithdrawRequest = (status: string): boolean =>
   status === 'pending' || status === 'approved' || status === 'waitlisted';

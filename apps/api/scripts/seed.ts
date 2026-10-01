@@ -19,7 +19,6 @@ import {
   TenantBusinessMode,
   TenantStatus,
   TenantType,
-  UserRole,
   UserStatus
 } from '../src/domain/enums.js';
 import {
@@ -37,7 +36,6 @@ import {
 } from '../src/lib/entity-builders.js';
 import { findActivityDocInMongo, findLocationInMongo, writeActivityDocToMongo, writeLocationToMongo } from '../src/lib/entity-sync.js';
 import { getMongoClient, connectMongo, disconnectMongo } from '../src/lib/mongo.js';
-import { ObjectId } from 'mongodb';
 import { createRewardLedgerEntry, createUserBadge } from '../src/lib/reward-ledger-store.js';
 import { createSocialReview } from '../src/lib/social-data.js';
 import {
@@ -900,11 +898,6 @@ const seedReward = async (
 const SEED_MARKER_EMAIL = 'admin@uaetrails.app';
 const SEED_MARKER_EVENT_ID = 'seed-event-jais';
 const SEED_MARKER_LOCATION_ID = 'jebel-jais-summit-trail';
-
-const seedObjectId = (label: string): ObjectId => {
-  const hex = crypto.createHash('md5').update(`uaetrail-seed:${label}`).digest('hex').slice(0, 24);
-  return new ObjectId(hex);
-};
 
 const isProductionEnv = (): boolean => process.env.NODE_ENV === 'production';
 

@@ -33,7 +33,6 @@ import {
   countActiveEventsByLocationId,
   countAdminMetrics,
   createAdminLocation,
-  createAdminPublishedActivity,
   deleteAdminLocation,
   findAdminEventById,
   findAdminActivityDetailedById,
