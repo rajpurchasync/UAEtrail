@@ -105,6 +105,25 @@ export const ExploreItemPeekFooter = ({
           onInviteCrew={onInviteCrew}
           onGuestGatedAction={gate}
         />
+      ) : isDemand && joinUiState?.kind === 'confirmed' ? (
+        <>
+          <button
+            type="button"
+            disabled
+            className="w-full rounded-2xl bg-emerald-100 py-3.5 text-base font-bold text-emerald-900 disabled:opacity-100"
+          >
+            You&apos;re in
+          </button>
+          {onMessage ? (
+            <button
+              type="button"
+              onClick={gate ?? onMessage}
+              className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
+            >
+              {card.secondaryCta ?? 'Message'}
+            </button>
+          ) : null}
+        </>
       ) : isDemand && onMessage && !card.showJoinActions ? (
         <button
           type="button"
@@ -120,9 +139,17 @@ export const ExploreItemPeekFooter = ({
             joinLabel={card.primaryCta}
             isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
             onJoin={gate ?? onJoin}
-            onWithdraw={onWithdraw}
+            onWithdraw={card.source === 'activity' ? onWithdraw : undefined}
           />
-          {card.secondaryCta && card.source === 'activity' ? (
+          {card.secondaryCta && isDemand && onMessage ? (
+            <button
+              type="button"
+              onClick={gate ?? onMessage}
+              className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
+            >
+              {card.secondaryCta}
+            </button>
+          ) : card.secondaryCta && card.source === 'activity' ? (
             detailLink(
               card.path,
               card.secondaryCta,

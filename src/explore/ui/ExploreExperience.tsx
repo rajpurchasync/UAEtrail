@@ -509,12 +509,8 @@ export const ExploreExperience = () => {
           primaryFabLabel={primaryFabLabel}
           selected={selection.selected}
           selectedCard={selection.selectedCard}
-          joinUiState={
-            selection.selectedCard?.showHostActions || selection.selectedCard?.source === 'demand'
-              ? undefined
-              : selection.joinUiState
-          }
-          joinStateLoading={selection.joinStateLoading}
+          joinUiState={selection.peekJoinUiState}
+          joinStateLoading={selection.peekJoinStateLoading}
           onCloseSelection={selection.handleCloseSelection}
           onJoin={selection.handleJoin}
           onMessage={

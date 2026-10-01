@@ -62,5 +62,5 @@ Private organize plans: [PRIVATE-ORGANIZE-PLANS](./PRIVATE-ORGANIZE-PLANS.md) (l
 ## Gaps / later
 
 - Carry approved demand joiners into activity crew on publish.
-- Explore peek state when viewer already requested (pending / approved).
+- Cancel / withdraw demand join request from explore peek.
 - Check-in UX deep-dive (console panel).

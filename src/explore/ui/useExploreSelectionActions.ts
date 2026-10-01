@@ -12,11 +12,12 @@ import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { viewerHostsActivity } from '../../utils/viewerHostsActivity';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
+import { useParticipantIntentJoinContext } from '../../hooks/useParticipantIntentJoinContext';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
 import { navigateToHostedActivityManage } from '../../host/navigateHostedActivityManage';
-import { navigateToSelfDemandManage } from '../../host/navigateSelfDemandManage';
+import { navigateToParticipantIntentManage } from '../../trips/navigateParticipantIntentManage';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
@@ -118,6 +119,33 @@ export const useExploreSelectionActions = ({
     userId: user?.id,
   });
 
+  const demandJoinContextEnabled = Boolean(
+    selected?.source === 'demand' &&
+      selected.participantIntentId &&
+      !selectedCard?.showDemandOwnerActions &&
+      user
+  );
+  const {
+    uiState: demandJoinUiState,
+    loading: demandJoinStateLoading,
+    reload: reloadDemandJoinContext,
+  } = useParticipantIntentJoinContext({
+    intentId: selected?.participantIntentId,
+    enabled: demandJoinContextEnabled,
+    userId: user?.id,
+  });
+
+  const peekJoinUiState =
+    selected?.source === 'demand' && !selectedCard?.showDemandOwnerActions
+      ? demandJoinUiState
+      : selectedCard?.showHostActions
+        ? undefined
+        : joinUiState;
+  const peekJoinStateLoading =
+    selected?.source === 'demand' && !selectedCard?.showDemandOwnerActions
+      ? demandJoinStateLoading
+      : joinStateLoading;
+
   const joinActions = useActivityJoinActions({
     activity: selected?.activity ?? null,
     uiState: joinUiState,
@@ -169,11 +197,12 @@ export const useExploreSelectionActions = ({
         joinActions.openGuestSheet('activity');
         return;
       }
+      if (demandJoinUiState.kind !== 'open') return;
       void (async () => {
         try {
           await api.createParticipantIntentJoinRequest(intentId);
+          await reloadDemandJoinContext();
           setDemandNotice('Request sent — they’ll review your request.');
-          setSelectedId(null);
         } catch (err) {
           setDemandNotice(err instanceof Error ? err.message : 'Could not send your request.');
         }
@@ -187,7 +216,7 @@ export const useExploreSelectionActions = ({
     }
     if (joinUiState.kind !== 'open') return;
     joinActions.openJoinModal();
-  }, [selected, user, joinUiState.kind, joinActions, setSelectedId]);
+  }, [selected, user, joinUiState.kind, demandJoinUiState.kind, joinActions, reloadDemandJoinContext]);
 
   const handleDemandMessage = useCallback(() => {
     if (selected) respondToDemand(selected);
@@ -235,7 +264,7 @@ export const useExploreSelectionActions = ({
     const intentId = selected?.participantIntentId;
     if (!intentId || selected?.source !== 'demand') return;
     setSelectedId(null);
-    navigateToSelfDemandManage(navigate, intentId);
+    navigateToParticipantIntentManage(navigate, intentId);
   }, [selected, navigate, setSelectedId]);
 
   const requestDemandRemove = useCallback(() => {
@@ -412,6 +441,8 @@ export const useExploreSelectionActions = ({
     selectedCard,
     joinUiState,
     joinStateLoading,
+    peekJoinUiState,
+    peekJoinStateLoading,
     joinActions,
     demandNotice,
     venueNotice,
