@@ -886,6 +886,8 @@ export type ListGroupWallMessagesOptions = {
   since?: Date;
   /** Return messages strictly before this timestamp (ascending batch, for history). */
   before?: Date;
+  /** Return messages older than this wall message (compound cursor with createdAt). */
+  beforeMessageId?: string;
 };
 
 export type ListGroupWallMessagesResult = {
@@ -901,8 +903,12 @@ export const listGroupWallMessages = async (
   const limit = options.limit ?? 100;
   const viewerUserId = options.viewerUserId;
 
-  if (options.since && options.before) {
+  const historyCursorCount = [options.before, options.beforeMessageId].filter(Boolean).length;
+  if (options.since && (options.before || options.beforeMessageId)) {
     throw new Error('wall_list_since_before_conflict');
+  }
+  if (historyCursorCount > 1) {
+    throw new Error('wall_list_before_conflict');
   }
 
   if (options.since) {
@@ -914,6 +920,27 @@ export const listGroupWallMessages = async (
     const messages = rows.map(mapWall);
     const presented = await presentGroupWallMessages(groupId, messages, viewerUserId);
     return { messages: presented, hasMoreOlder: false };
+  }
+
+  if (options.beforeMessageId) {
+    const anchor = await wallCollection().findOne({ _id: options.beforeMessageId, groupId });
+    if (!anchor) {
+      return { messages: [], hasMoreOlder: false };
+    }
+    const rows = await wallCollection()
+      .find({
+        groupId,
+        $or: [
+          { createdAt: { $lt: anchor.createdAt } },
+          { createdAt: anchor.createdAt, _id: { $lt: anchor._id } },
+        ],
+      })
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(limit)
+      .toArray();
+    const messages = rows.map(mapWall).reverse();
+    const presented = await presentGroupWallMessages(groupId, messages, viewerUserId);
+    return { messages: presented, hasMoreOlder: rows.length === limit };
   }
 
   if (options.before) {

@@ -176,11 +176,12 @@ export const socialApi = {
 
     getMeGroupWall: (
       groupId: string,
-      options?: { since?: string; before?: string; limit?: number }
+      options?: { since?: string; before?: string; beforeMessageId?: string; limit?: number }
     ) => {
       const params = new URLSearchParams();
       if (options?.since) params.set('since', options.since);
       if (options?.before) params.set('before', options.before);
+      if (options?.beforeMessageId) params.set('beforeMessageId', options.beforeMessageId);
       if (options?.limit) params.set('limit', String(options.limit));
       const qs = params.toString();
       return apiRequest<{

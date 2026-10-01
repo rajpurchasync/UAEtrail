@@ -178,7 +178,7 @@ export const GroupWallThreadPanel = ({
     setLoadingOlder(true);
     try {
       const wallRes = await api.getMeGroupWall(groupId, {
-        before: first.createdAt,
+        beforeMessageId: first.id,
         limit: WALL_OLDER_PAGE,
       });
       if (wallRes.data.length === 0) {

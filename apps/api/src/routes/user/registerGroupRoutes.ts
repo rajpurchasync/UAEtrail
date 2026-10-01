@@ -340,6 +340,7 @@ router.get(
         viewerUserId: req.auth!.userId,
         since: query.since ? new Date(query.since) : undefined,
         before: query.before ? new Date(query.before) : undefined,
+        beforeMessageId: query.beforeMessageId,
       });
       res.json({ data: messages, meta: { hasMoreOlder } });
     } catch (error) {

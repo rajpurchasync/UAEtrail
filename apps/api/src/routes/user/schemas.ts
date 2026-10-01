@@ -120,13 +120,19 @@ export const createWallPostSchema = z.object({
 export const groupWallListQuerySchema = z
   .object({
     since: z.string().datetime().optional(),
-    /** Load messages older than this timestamp (ascending batch). Mutually exclusive with `since`. */
+    /** Load messages older than this timestamp (ascending batch). */
     before: z.string().datetime().optional(),
+    /** Load messages older than this message id (stable cursor; preferred over `before`). */
+    beforeMessageId: z.string().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(200).optional(),
   })
-  .refine((query) => !(query.since && query.before), {
-    message: 'Use either since or before, not both',
-  });
+  .refine(
+    (query) => {
+      const modes = [query.since, query.before, query.beforeMessageId].filter(Boolean).length;
+      return modes <= 1;
+    },
+    { message: 'Use only one of since, before, or beforeMessageId' }
+  );
 
 export const groupSettingsPatchSchema = z.object({
   wallPostPolicy: z.enum(['all_members', 'admins_only'])
