@@ -9,7 +9,7 @@ import { createNotificationRecord } from '../../lib/notifications-store.js';
 import { isActivityGroupChatOpen } from '../../services/activity-group-chat.js';
 import { notifyGroupInvite, notifyGroupWallPost } from '../../services/social-notifications.js';
 import { canMemberPostToGroupWall } from '../../lib/group-wall-policy.js';
-import { acceptGroupInviteByToken, createGroupInvite, createGroupWallMessage, createKidGroupMember, createSocialGroup, deleteSocialGroup, findGroupById, findGroupMemberById, getGroupMembership, listGroupInvites, listGroupMembersDetailed, listGroupsForUser, listGroupWallMessages, removeGroupMembership, setGroupMembershipActiveState, toggleGroupWallReaction, updateGroupMemberRole, updateGroupWallPostPolicy } from '../../lib/social-groups-store.js';
+import { acceptGroupInviteByToken, createGroupInvite, createGroupWallMessage, createKidGroupMember, createSocialGroup, deleteSocialGroup, findGroupById, findGroupMemberById, getGroupMembership, listGroupInvites, listGroupMembersDetailed, listGroupsForUser, listGroupWallMessages, presentGroupWallMessage, removeGroupMembership, setGroupMembershipActiveState, toggleGroupWallReaction, updateGroupMemberRole, updateGroupWallPostPolicy } from '../../lib/social-groups-store.js';
 import { acceptInviteSchema, createGroupSchema, createKidSchema, createWallPostSchema, groupIdParamSchema, groupInviteSchema, groupMembershipIdParamSchema, groupMembershipPatchSchema, groupSettingsPatchSchema, groupWallMessageIdParamSchema, groupWallReactionSchema } from './schemas.js';
 import type { Router } from 'express';
 
@@ -396,7 +396,8 @@ router.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema, b
       body: message.body
     });
 
-    res.status(201).json({ data: message });
+    const data = await presentGroupWallMessage(groupId, message, req.auth!.userId);
+    res.status(201).json({ data });
   } catch (error) {
     next(error);
   }

@@ -35,7 +35,9 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
   const [replyTo, setReplyTo] = useState<GroupWallReplyTarget | null>(null);
   const [membersOpen, setMembersOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [highlightMessageId, setHighlightMessageId] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const highlightTimerRef = useRef<number | null>(null);
   const skipScrollRef = useRef(true);
   const wallLengthRef = useRef(0);
 
@@ -45,7 +47,7 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
   const postPolicy = group ? resolveGroupWallPostPolicy(group) : 'all_members';
 
   const mergeWall = useCallback((incoming: SocialGroupWallMessageView[]) => {
-    const ordered = [...incoming].reverse();
+    const ordered = [...incoming];
     setWall((current) => {
       const lastCurrent = current[current.length - 1];
       const lastOrdered = ordered[ordered.length - 1];
@@ -53,6 +55,13 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
         return current;
       }
       return ordered;
+    });
+  }, []);
+
+  const appendWallMessage = useCallback((message: SocialGroupWallMessageView) => {
+    setWall((current) => {
+      if (current.some((row) => row.id === message.id)) return current;
+      return [...current, message];
     });
   }, []);
 
@@ -118,18 +127,20 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
 
   const sendMessage = async () => {
     const trimmed = draft.trim();
-    if (!trimmed || !canPost) return;
+    if (!trimmed || !canPost || sending) return;
     const body = replyTo ? formatGroupWallReplyBody(replyTo, trimmed) : trimmed;
+    const previousReply = replyTo;
+    setDraft('');
+    setReplyTo(null);
     setSending(true);
     setError(null);
     try {
-      await api.createMeGroupWallPost(groupId, body);
-      setDraft('');
-      setReplyTo(null);
-      const wallRes = await api.getMeGroupWall(groupId);
-      mergeWall(wallRes.data);
+      const res = await api.createMeGroupWallPost(groupId, body);
+      appendWallMessage(res.data);
       skipScrollRef.current = false;
     } catch (err) {
+      setDraft(trimmed);
+      setReplyTo(previousReply);
       setError(err instanceof Error ? err.message : 'Could not send message.');
     } finally {
       setSending(false);
@@ -141,6 +152,30 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
       current.map((message) => (message.id === messageId ? { ...message, reactions } : message))
     );
   };
+
+  const scrollToWallMessage = useCallback((messageId: string) => {
+    const container = chatContainerRef.current;
+    const el = container?.querySelector(`[data-wall-message-id="${messageId}"]`);
+    if (!el || !(el instanceof HTMLElement)) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightMessageId(messageId);
+    if (highlightTimerRef.current !== null) {
+      window.clearTimeout(highlightTimerRef.current);
+    }
+    highlightTimerRef.current = window.setTimeout(() => {
+      setHighlightMessageId(null);
+      highlightTimerRef.current = null;
+    }, 2200);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (highlightTimerRef.current !== null) {
+        window.clearTimeout(highlightTimerRef.current);
+      }
+    },
+    []
+  );
 
   const activeMemberCount = members.filter((m) => m.memberType === 'adult' && m.isActive !== false).length;
   const title = group?.name || 'Group chat';
@@ -190,7 +225,7 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
         </p>
       ) : null}
 
-      <div ref={chatContainerRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto bg-neutral-50 p-4">
+      <div ref={chatContainerRef} className="min-h-0 min-w-0 flex-1 space-y-2 overflow-x-hidden overflow-y-auto bg-neutral-50 p-4">
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-7 w-7 animate-spin text-gray-400" />
@@ -209,8 +244,11 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
               key={message.id}
               groupId={groupId}
               message={message}
+              highlighted={highlightMessageId === message.id}
+              replyEnabled={canPost}
               onReactionsChange={updateMessageReactions}
-              onReply={canPost ? setReplyTo : () => {}}
+              onReply={setReplyTo}
+              onScrollToQuotedMessage={scrollToWallMessage}
               onError={setError}
             />
           ))

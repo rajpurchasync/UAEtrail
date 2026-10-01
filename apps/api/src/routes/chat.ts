@@ -176,23 +176,24 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
       activityId: activityId ?? null
     });
 
-    const sender = await findAuthUserById(senderId);
-    const senderName = sender?.profile.displayName ?? sender?.email ?? 'Someone';
-    await dispatchNotification({
-      userId: receiverId,
-      title: 'New message',
-      body: `${senderName}: ${content.substring(0, 100)}`,
-      type: NotificationType.SYSTEM,
-      meta: {
-        kind: 'message',
-        chatMessageId: message.id,
-        senderId,
-        path: `/messages?to=${encodeURIComponent(senderId)}`
-      }
-    });
-
     const messageDto = toChatMessageDto(message);
     void publishChatStreamEvent(receiverId, { type: 'chat_message', data: messageDto });
+
+    void findAuthUserById(senderId).then((sender) => {
+      const senderName = sender?.profile.displayName ?? sender?.email ?? 'Someone';
+      return dispatchNotification({
+        userId: receiverId,
+        title: 'New message',
+        body: `${senderName}: ${content.substring(0, 100)}`,
+        type: NotificationType.SYSTEM,
+        meta: {
+          kind: 'message',
+          chatMessageId: message.id,
+          senderId,
+          path: `/messages?to=${encodeURIComponent(senderId)}`
+        }
+      });
+    }).catch(() => undefined);
 
     res.status(201).json({
       data: messageDto

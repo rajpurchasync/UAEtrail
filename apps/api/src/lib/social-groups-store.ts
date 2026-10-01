@@ -706,17 +706,20 @@ export const createKidGroupMember = async (input: {
   return mapMember(doc);
 };
 
-export const listGroupWallMessages = async (groupId: string, limit = 100, viewerUserId?: string) => {
-  const rows = await wallCollection().find({ groupId }).sort({ createdAt: -1 }).limit(limit).toArray();
-  const messages = rows.map(mapWall).reverse();
+const presentGroupWallMessages = async (
+  groupId: string,
+  messages: GroupWallMessageRecord[],
+  viewerUserId?: string
+) => {
+  if (messages.length === 0) return [];
+
   const users = await findAuthUsersByIds(messages.map((m) => m.authorUserId));
   const userMap = new Map(users.map((u) => [u._id, u]));
 
   const messageIds = messages.map((message) => message.id);
-  const reactionRows =
-    messageIds.length === 0
-      ? []
-      : await wallReactionsCollection().find({ groupId, messageId: { $in: messageIds } }).toArray();
+  const reactionRows = await wallReactionsCollection()
+    .find({ groupId, messageId: { $in: messageIds } })
+    .toArray();
 
   const reactionsByMessage = new Map<string, GroupWallReactionSummary[]>();
   for (const reaction of reactionRows) {
@@ -749,6 +752,21 @@ export const listGroupWallMessages = async (groupId: string, limit = 100, viewer
       reactions: reactionsByMessage.get(message.id) ?? []
     };
   });
+};
+
+export const listGroupWallMessages = async (groupId: string, limit = 100, viewerUserId?: string) => {
+  const rows = await wallCollection().find({ groupId }).sort({ createdAt: -1 }).limit(limit).toArray();
+  const messages = rows.map(mapWall).reverse();
+  return presentGroupWallMessages(groupId, messages, viewerUserId);
+};
+
+export const presentGroupWallMessage = async (
+  groupId: string,
+  message: GroupWallMessageRecord,
+  viewerUserId?: string
+) => {
+  const [presented] = await presentGroupWallMessages(groupId, [message], viewerUserId);
+  return presented;
 };
 
 export const createGroupWallMessage = async (input: {

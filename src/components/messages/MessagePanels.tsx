@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { ArrowLeft, Flag, Loader2, MessageSquare, Plus, Search, X } from 'lucide-react';
 import { ChatMessageDTO, ChatConversationDTO } from '@uaetrail/shared-types';
 import { ChatComposeBar } from '../ui/ChatComposeBar';
+import { chatMessageTextClassName } from './chatMessageText';
 
 export const MessageAvatar = ({
   name,
@@ -196,7 +197,10 @@ export const MessageThreadPanel = ({
             </button>
           </div>
 
-          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-1 bg-gray-50/50 min-h-0">
+          <div
+            ref={messagesContainerRef}
+            className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 space-y-1 bg-gray-50/50"
+          >
             {loadingMessages ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -223,15 +227,17 @@ export const MessageThreadPanel = ({
                           </span>
                         </div>
                       )}
-                      <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-1`}>
+                      <div className={`flex min-w-0 ${isMe ? 'justify-end' : 'justify-start'} mb-1`}>
                         <div
-                          className={`max-w-[75%] px-3.5 py-2 text-sm leading-relaxed ${
+                          className={`min-w-0 max-w-[min(75%,100%)] overflow-hidden px-3.5 py-2 text-sm leading-relaxed ${
                             isMe
                               ? 'bg-emerald-600 text-white rounded-2xl rounded-br-md'
                               : 'bg-white text-gray-900 rounded-2xl rounded-bl-md shadow-sm border'
                           }`}
                         >
-                          <p className="whitespace-pre-wrap break-words font-emoji">{m.content}</p>
+                          <p className={`${chatMessageTextClassName} ${isMe ? 'text-white' : 'text-gray-900'}`}>
+                            {m.content}
+                          </p>
                           <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : ''}`}>
                             <span className={`text-xs ${isMe ? 'text-emerald-200' : 'text-gray-400'}`}>
                               {new Date(m.createdAt).toLocaleTimeString([], {

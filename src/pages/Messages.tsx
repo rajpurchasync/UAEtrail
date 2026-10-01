@@ -281,9 +281,23 @@ export const Messages = () => {
         content: newMessage.trim(),
         ...(contextActivityId ? { activityId: contextActivityId } : {}),
       });
+      const sent = res.data;
       setNewMessage('');
-      setMessages((prev) => [...prev, res.data]);
-      void loadInbox();
+      setMessages((prev) => [...prev, sent]);
+      setConversations((prev) => {
+        const partnerId = selectedUserId;
+        const existing = prev.find((conversation) => conversation.userId === partnerId);
+        if (!existing) {
+          void loadInbox();
+          return prev;
+        }
+        const updated = {
+          ...existing,
+          lastMessage: sent.content,
+          lastMessageAt: sent.createdAt,
+        };
+        return [updated, ...prev.filter((conversation) => conversation.userId !== partnerId)];
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
