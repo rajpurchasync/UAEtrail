@@ -8,7 +8,7 @@ import { api } from '../../api/index';
 import { buildExploreCardModel } from '../exploreCardModel';
 import { finalizeExploreCardLinkedRideshare } from '../linkedRideshareExplore';
 import { canOfferRideshareForDemandItem } from '../linkActivityRideshareOffer';
-import { activityGroupChatPath } from '../../utils/activityGroupChatNav';
+import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { viewerHostsActivity } from '../../utils/viewerHostsActivity';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
@@ -184,12 +184,7 @@ export const useExploreSelectionActions = ({
     if (!activity) return;
     try {
       setSelectedId(null);
-      if (activity.groupChatId) {
-        navigate(activityGroupChatPath(activity.groupChatId));
-        return;
-      }
-      const res = await api.getActivityGroupChat(activity.id);
-      navigate(activityGroupChatPath(res.data.groupId));
+      await openActivityGroupChat(navigate, activity.id, activity.groupChatId);
     } catch (err) {
       setDemandNotice(err instanceof Error ? err.message : 'Could not open activity chat.');
     }

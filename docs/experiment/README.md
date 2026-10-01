@@ -22,6 +22,9 @@ Do **not** treat these docs as canonical for `uaetrail/main` until an explicit m
 | [explore-backend-alignment.md](./explore-backend-alignment.md) | **API / DB / DTO gate** before browse + FAB unification |
 | [explore-flow-registry.md](./explore-flow-registry.md) | Flow IDs → wizards, validation families, endpoints |
 | [../CREATE_FLOW.md](../CREATE_FLOW.md) | **Canonical** FAB, organize/find/add, Event vs Activity, participation (main docs) |
+| [../COMMUNICATION.md](../COMMUNICATION.md) | **Canonical** DMs, group/crew wall, Trips↔Messages, API & deep links |
+| [../TRIPS_HOST_MANAGE.md](../TRIPS_HOST_MANAGE.md) | Trips hosted/demand manage, invite vs crew chat |
+| [consumer-mobile-ia.md](./consumer-mobile-ia.md) | Profile / Trips / Messages tabs & launcher |
 
 ## Branch & remotes
 

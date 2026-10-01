@@ -1,6 +1,6 @@
 # Profile + Trips redesign — phased plan (`experiment-ui`)
 
-Companion to [`consumer-mobile-ia.md`](./consumer-mobile-ia.md) and [`NAVIGATION.md`](../NAVIGATION.md).
+Companion to [`consumer-mobile-ia.md`](./consumer-mobile-ia.md), [`NAVIGATION.md`](../NAVIGATION.md), and [`../TRIPS_HOST_MANAGE.md`](../TRIPS_HOST_MANAGE.md) (manage + crew chat). Messaging contract: [`../COMMUNICATION.md`](../COMMUNICATION.md).
 
 **Policy:** Complete **Phase 1** (Profile hub) before starting **Phase 2** (Trips hub). Phase 2 is large (new map surface, URL cleanup, list UX); do not ship Trips map until Phase 1 launcher + goal placement is stable on device.
 

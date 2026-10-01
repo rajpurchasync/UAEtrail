@@ -109,6 +109,7 @@ type MongoGroupMember = {
   createdByUserId: string;
   createdAt: Date;
   isActive?: boolean;
+  wallLastReadAt?: Date;
 };
 
 type MongoGroupInvite = {
@@ -331,12 +332,15 @@ export const createSocialGroup = async (input: {
   return mapGroup(groupDoc);
 };
 
-export const listGroupsForUser = async (userId: string): Promise<GroupRecord[]> => {
-  const memberships = await membersCollection()
-    .find({ userId, memberType: 'adult' })
-    .sort({ createdAt: -1 })
-    .toArray();
+export type GroupChatPreview = {
+  lastMessageBody: string | null;
+  lastMessageAt: string | null;
+  unreadCount: number;
+};
 
+export type GroupRecordWithChatPreview = GroupRecord & { chatPreview: GroupChatPreview };
+
+const listGroupsForMemberships = async (memberships: MongoGroupMember[]): Promise<GroupRecord[]> => {
   if (memberships.length === 0) return [];
 
   const uniqueGroupIds = [...new Set(memberships.map((m) => m.groupId))];
@@ -347,6 +351,79 @@ export const listGroupsForUser = async (userId: string): Promise<GroupRecord[]> 
     .map((id) => byId.get(id))
     .filter((row): row is MongoGroup => Boolean(row))
     .map(mapGroup);
+};
+
+export const listGroupsForUser = async (userId: string): Promise<GroupRecord[]> => {
+  const memberships = await membersCollection()
+    .find({ userId, memberType: 'adult' })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  return listGroupsForMemberships(memberships);
+};
+
+export const listGroupsForUserWithChatPreview = async (
+  userId: string
+): Promise<GroupRecordWithChatPreview[]> => {
+  const memberships = await membersCollection()
+    .find({ userId, memberType: 'adult', isActive: { $ne: false } })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  const groups = await listGroupsForMemberships(memberships);
+  if (groups.length === 0) return [];
+
+  const groupIds = groups.map((group) => group.id);
+  const readAtByGroup = new Map(
+    memberships.map((membership) => [membership.groupId, membership.wallLastReadAt ?? new Date(0)])
+  );
+
+  const latestRows = await wallCollection()
+    .aggregate<{ _id: string; body: string; createdAt: Date }>([
+      { $match: { groupId: { $in: groupIds } } },
+      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: '$groupId',
+          body: { $first: '$body' },
+          createdAt: { $first: '$createdAt' },
+        },
+      },
+    ])
+    .toArray();
+  const latestByGroup = new Map(latestRows.map((row) => [row._id, row]));
+
+  const unreadEntries = await Promise.all(
+    groupIds.map(async (groupId) => {
+      const since = readAtByGroup.get(groupId) ?? new Date(0);
+      const unreadCount = await wallCollection().countDocuments({
+        groupId,
+        createdAt: { $gt: since },
+        authorUserId: { $ne: userId },
+      });
+      return [groupId, unreadCount] as const;
+    })
+  );
+  const unreadByGroup = new Map(unreadEntries);
+
+  return groups.map((group) => {
+    const latest = latestByGroup.get(group.id);
+    return {
+      ...group,
+      chatPreview: {
+        lastMessageBody: latest?.body ?? null,
+        lastMessageAt: latest?.createdAt?.toISOString() ?? null,
+        unreadCount: unreadByGroup.get(group.id) ?? 0,
+      },
+    };
+  });
+};
+
+export const markGroupWallRead = async (groupId: string, userId: string): Promise<void> => {
+  await membersCollection().updateOne(
+    { groupId, userId, memberType: 'adult' },
+    { $set: { wallLastReadAt: new Date() } }
+  );
 };
 
 export const listUserGroupsWithMembership = async (userId: string) => {
@@ -754,7 +831,30 @@ const presentGroupWallMessages = async (
   });
 };
 
-export const listGroupWallMessages = async (groupId: string, limit = 100, viewerUserId?: string) => {
+export type ListGroupWallMessagesOptions = {
+  limit?: number;
+  viewerUserId?: string;
+  /** Return messages strictly after this timestamp (ascending, for poll / SSE). */
+  since?: Date;
+};
+
+export const listGroupWallMessages = async (
+  groupId: string,
+  options: ListGroupWallMessagesOptions = {}
+) => {
+  const limit = options.limit ?? 100;
+  const viewerUserId = options.viewerUserId;
+
+  if (options.since) {
+    const rows = await wallCollection()
+      .find({ groupId, createdAt: { $gt: options.since } })
+      .sort({ createdAt: 1 })
+      .limit(limit)
+      .toArray();
+    const messages = rows.map(mapWall);
+    return presentGroupWallMessages(groupId, messages, viewerUserId);
+  }
+
   const rows = await wallCollection().find({ groupId }).sort({ createdAt: -1 }).limit(limit).toArray();
   const messages = rows.map(mapWall).reverse();
   return presentGroupWallMessages(groupId, messages, viewerUserId);

@@ -18,12 +18,19 @@ import {
 
 const WALL_POLL_MS = 12_000;
 
+export type GroupWallActivityPayload = {
+  groupId: string;
+  body: string;
+  createdAt: string;
+};
+
 type GroupWallThreadPanelProps = {
   groupId: string;
   onBack: () => void;
+  onWallActivity?: (payload: GroupWallActivityPayload) => void;
 };
 
-export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelProps) => {
+export const GroupWallThreadPanel = ({ groupId, onBack, onWallActivity }: GroupWallThreadPanelProps) => {
   const [group, setGroup] = useState<SocialGroupView | null>(null);
   const [membership, setMembership] = useState<SocialGroupMemberView | null>(null);
   const [members, setMembers] = useState<SocialGroupMemberView[]>([]);
@@ -40,11 +47,23 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
   const highlightTimerRef = useRef<number | null>(null);
   const skipScrollRef = useRef(true);
   const wallLengthRef = useRef(0);
+  const wallLatestAtRef = useRef<string | null>(null);
 
   const canPost =
     group && membership ? canMemberPostToGroupWall(group, membership) : false;
   const isAdmin = membership?.role === 'admin';
   const postPolicy = group ? resolveGroupWallPostPolicy(group) : 'all_members';
+
+  const notifyWallActivity = useCallback(
+    (message: Pick<SocialGroupWallMessageView, 'body' | 'createdAt'>) => {
+      onWallActivity?.({ groupId, body: message.body, createdAt: message.createdAt });
+    },
+    [groupId, onWallActivity]
+  );
+
+  const markWallRead = useCallback(() => {
+    void api.markMeGroupWallRead(groupId).catch(() => undefined);
+  }, [groupId]);
 
   const mergeWall = useCallback((incoming: SocialGroupWallMessageView[]) => {
     const ordered = [...incoming];
@@ -58,41 +77,68 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
     });
   }, []);
 
-  const appendWallMessage = useCallback((message: SocialGroupWallMessageView) => {
+  const appendWallMessages = useCallback((incoming: SocialGroupWallMessageView[]) => {
+    if (incoming.length === 0) return;
     setWall((current) => {
-      if (current.some((row) => row.id === message.id)) return current;
-      return [...current, message];
+      const ids = new Set(current.map((row) => row.id));
+      const merged = [...current];
+      for (const message of incoming) {
+        if (!ids.has(message.id)) {
+          merged.push(message);
+          ids.add(message.id);
+        }
+      }
+      return merged;
     });
   }, []);
 
-  const loadThread = useCallback(
-    async (options?: { silent?: boolean }) => {
-      if (!options?.silent) {
-        setLoading(true);
-      }
-      setError(null);
-      try {
-        const [detailRes, wallRes] = await Promise.all([
-          api.getMeGroupDetail(groupId),
-          api.getMeGroupWall(groupId),
-        ]);
-        setGroup(detailRes.data.group);
-        setMembership(detailRes.data.membership);
-        setMembers(detailRes.data.members);
-        mergeWall(wallRes.data);
-      } catch (err) {
-        if (!options?.silent) {
-          setError(err instanceof Error ? err.message : 'Could not load group chat.');
-          setWall([]);
-        }
-      } finally {
-        if (!options?.silent) {
-          setLoading(false);
-        }
-      }
-    },
-    [groupId, mergeWall]
-  );
+  const appendWallMessage = useCallback((message: SocialGroupWallMessageView) => {
+    appendWallMessages([message]);
+  }, [appendWallMessages]);
+
+  useEffect(() => {
+    const last = wall[wall.length - 1];
+    wallLatestAtRef.current = last?.createdAt ?? null;
+  }, [wall]);
+
+  const loadThread = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [detailRes, wallRes] = await Promise.all([
+        api.getMeGroupDetail(groupId),
+        api.getMeGroupWall(groupId),
+      ]);
+      setGroup(detailRes.data.group);
+      setMembership(detailRes.data.membership);
+      setMembers(detailRes.data.members);
+      mergeWall(wallRes.data);
+      markWallRead();
+      const latest = wallRes.data[wallRes.data.length - 1];
+      if (latest) notifyWallActivity(latest);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load group chat.');
+      setWall([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [groupId, markWallRead, mergeWall, notifyWallActivity]);
+
+  const pollNewMessages = useCallback(async () => {
+    const since = wallLatestAtRef.current;
+    if (!since) return;
+    try {
+      const wallRes = await api.getMeGroupWall(groupId, { since });
+      if (wallRes.data.length === 0) return;
+      appendWallMessages(wallRes.data);
+      skipScrollRef.current = false;
+      markWallRead();
+      const latest = wallRes.data[wallRes.data.length - 1];
+      if (latest) notifyWallActivity(latest);
+    } catch {
+      /* poll is best-effort */
+    }
+  }, [appendWallMessages, groupId, markWallRead, notifyWallActivity]);
 
   useEffect(() => {
     void loadThread();
@@ -101,14 +147,15 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
   useEffect(() => {
     skipScrollRef.current = true;
     wallLengthRef.current = 0;
+    wallLatestAtRef.current = null;
   }, [groupId]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
-      void loadThread({ silent: true });
+      void pollNewMessages();
     }, WALL_POLL_MS);
     return () => window.clearInterval(id);
-  }, [loadThread]);
+  }, [pollNewMessages]);
 
   useEffect(() => {
     const container = chatContainerRef.current;
@@ -138,6 +185,8 @@ export const GroupWallThreadPanel = ({ groupId, onBack }: GroupWallThreadPanelPr
       const res = await api.createMeGroupWallPost(groupId, body);
       appendWallMessage(res.data);
       skipScrollRef.current = false;
+      markWallRead();
+      notifyWallActivity(res.data);
     } catch (err) {
       setDraft(trimmed);
       setReplyTo(previousReply);

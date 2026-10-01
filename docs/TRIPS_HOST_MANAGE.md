@@ -68,11 +68,21 @@ Not hosted under org tenant — **member intents** (`POST /me/participant-intent
 
 ## Messaging
 
-- **Group chat:** Host + **approved** participants (`activity-group-chat` service).
-- **Pending requesters:** Request note only until host approves.
-- **DM policy:** `chat-policy.ts` (buddies, host↔participant links).
+Full contract (API, inbox, Trips entry points): **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
 
-Future: optional `groupChatPolicy` on activity (host-only vs crew).
+| Channel | Who | Route / API |
+|---------|-----|-------------|
+| **Outing crew chat** | Host + **approved** participants | `/messages?group=<groupId>` · `social_groups.type === 'activity'` wall |
+| **Open from Trips** | Host / joiner in manage sheet | `openActivityGroupChat()` · optional `messagesReturnTo` back to `/trips?...` |
+| **Direct message** | Buddies or activity-linked context | `/messages?to=<userId>` · `POST /chat/messages` |
+| **Invite (not chat)** | Share `/activity/:id`, DM link, or family group wall post | `ActivityInviteSharePanel` |
+
+- **Roster sync:** `activity-group-chat` service adds host + confirmed joiners to the activity group.
+- **Pending requesters:** Join request **note** only — no crew chat until host approves.
+- **Chat closed:** Wall posts blocked **7 days after** activity start (server).
+- **Demand / My plans:** No crew chat until intent becomes an organized activity.
+
+Future: optional `groupChatPolicy` on activity (host-only vs crew); SSE for group walls.
 
 ## Deep links
 

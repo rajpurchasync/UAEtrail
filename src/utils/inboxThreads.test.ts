@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { filterInboxThreads, type InboxThread } from './inboxThreads';
+import { filterInboxThreads, groupThreadFromSocialGroup, type InboxThread } from './inboxThreads';
+import type { SocialGroupView } from '../api/types';
 
 const threads: InboxThread[] = [
   {
@@ -28,6 +29,28 @@ const threads: InboxThread[] = [
     unreadCount: 0,
   },
 ];
+
+describe('groupThreadFromSocialGroup', () => {
+  it('maps chatPreview to inbox row with unread', () => {
+    const group: SocialGroupView = {
+      id: 'g1',
+      type: 'friends',
+      name: 'Weekend crew',
+      adminUserId: 'a1',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      chatPreview: {
+        lastMessageBody: 'See you there',
+        lastMessageAt: '2026-09-22T10:00:00.000Z',
+        unreadCount: 3,
+      },
+    };
+    const thread = groupThreadFromSocialGroup(group);
+    expect(thread.kind).toBe('user-group');
+    expect(thread.lastMessage).toBe('See you there');
+    expect(thread.unreadCount).toBe(3);
+  });
+});
 
 describe('filterInboxThreads', () => {
   it('filters by pill and search query', () => {

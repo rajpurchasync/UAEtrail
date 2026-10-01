@@ -1,6 +1,7 @@
+import type { GroupWallPostPolicy } from '@uaetrail/shared-types';
 import type { SocialGroupMemberView, SocialGroupView } from '../api/types';
 
-export type GroupWallPostPolicy = 'all_members' | 'admins_only';
+export type { GroupWallPostPolicy };
 
 export const resolveGroupWallPostPolicy = (
   group: Pick<SocialGroupView, 'wallPostPolicy'>

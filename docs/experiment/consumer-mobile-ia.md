@@ -39,6 +39,20 @@ Consumer pattern (not Settings-style chevron lists on the hub):
 
 Signed-in **Friends**, **Contributions**, **Groups**, **My badges**, **Notifications**, and **Join requests** use **`ConsumerShell` stack** (`maxWidth="4xl"`, back to Profile) and keep the bottom tab bar visible.
 
+## Messages & groups (communication)
+
+Canonical contract: [`../COMMUNICATION.md`](../COMMUNICATION.md) · routes in [`../NAVIGATION.md`](../NAVIGATION.md).
+
+| Surface | Role |
+|---------|------|
+| **`/messages`** (tab) | Unified inbox: Direct · Groups · Outing chats; filters people / groups / outings |
+| **`/groups`** | List/create/manage family & friends groups — **chat opens in Messages**, not inline |
+| **`/host/messages`** | Same inbox UI for org hosts |
+
+- **Trips** hosted/joined **Manage outing** → **Message crew** → `/messages?group=` (return state can point back to `/trips`).
+- **Explore** activity peek / **Activity detail** → crew callout + invite panel (share link, DM, or group wall post).
+- **Inbox previews** come from `GET /me/groups` `chatPreview` — do not fetch full walls per group for the list.
+
 ## Trips hub (`/trips`) — Phase 2 (in progress)
 
 **Layout:** `ConsumerShell` tab + **toolbar** (map layer pills **Trips · Places · Shops**, search, outdoor map shortcut on Trips layer, segment + role chips, compact goal in scroll). Lists use **`ActivityHubListRow`** (hosted rows include actions menu).
@@ -51,7 +65,7 @@ Signed-in **Friends**, **Contributions**, **Groups**, **My badges**, **Notificat
 Canonical code comments: `src/trips/demandVsWishlist.ts`.
 - **Role chips** (Upcoming & Completed): **Joined** · **Hosted** (hosts) · **My plans** (`?role=self`; legacy `tab=` normalized away).
 - **Upcoming + Joined:** goal card + upcoming carousel + suggestions (no nested Past tab).
-- **Completed + Joined:** attended outings only; **Hosted:** past hosted; **My plans:** placeholder until demand API.
+- **Completed + Joined:** attended outings only; **Hosted:** past hosted; **My plans:** demand intents via `GET /me/participant-intents` + `MemberDemandManageSheet` (no crew chat until organized).
 - **Map:** `/trips/map` — personal outdoor map (pins + joined/hosted entries); not Explore.
 - Legacy `/profile/wishlist` → `/trips?segment=wishlist`; starred **places** → `?layer=places`, **shops** → `?layer=shops`.
 

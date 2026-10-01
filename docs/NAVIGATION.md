@@ -27,13 +27,29 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 - **Main tabs:** Plans · Completed · Map (`?view=plans|completed`; map at `/trips/map`). Legacy `segment` / `tab` query params normalize on load.
 - **Plans:** goal card → **Upcoming** heading with All · Hosted · Joined · Wishlist pills (default `?role=all`; wishlist uses `segment=wishlist`). Hosted/Joined lists are **future** outings only.
-- **Completed:** Joined · Hosted · Self trip pills — **past** outings (`?view=completed&role=`).
+- **Completed:** Joined · Hosted · Self (**My plans** / demand intents) — **past** outings (`?view=completed&role=`).
 - **My trips map:** `/trips/map` (also the Map main tab).
 - **`/activities`** redirects to `/trips` for bookmarks and old links.
+- **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore host peek → **Message crew** opens **`/messages?group=<id>`** (not chat on `/trips`). Deep links: [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). Full messaging contract: [`COMMUNICATION.md`](./COMMUNICATION.md).
 
 ### Friends (`/buddies`)
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
+
+### Messages (`/messages`)
+
+Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
+
+- **Inbox:** Direct chats, **Groups** (family/friends), and **Outing chats** (activity crew) in one list; filters `people` / `groups` / `outings`.
+- **Direct thread:** `/messages?to=<userId>` (optional `activity` context).
+- **Group / crew thread:** `/messages?group=<groupId>` — all wall chat UI lives here (not on `/groups`).
+- **Hosts:** same component at `/host/messages` (org shell); deep links still use `?group=` / `?to=`.
+- **API:** `GET /me/groups` includes `chatPreview` (last message + unread); wall supports `?since=` for incremental sync; `POST .../wall/read` marks read.
+
+### Groups (`/groups`)
+
+- **List + manage:** create family/friends groups, members, invites, kids, **who can message** (wall post policy).
+- **Chat:** tap **Message** → `/messages?group=<id>` (single chat surface).
 
 ### Post-auth member details (`/welcome`)
 
@@ -89,6 +105,10 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 | Platform nav constants | `EXPLORE_MAP_PATH`, `joinAuthPath()` | `src/config/platform.ts` |
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |
+| Trips hub URLs | `tripsPlansPath()`, `parseTripsSegment`, … | `src/trips/tripsRouting.ts` |
+| Crew chat deep link | `activityGroupChatPath()`, `navigateToActivityGroupChat()` | `src/utils/activityGroupChatNav.ts` |
+| Open crew chat from activity id | `openActivityGroupChat()` | `src/utils/openActivityGroupChat.ts` |
+| Notification → route | `resolveNotificationPath()` | `src/utils/notificationRouting.ts` |
 
 ## Browse defaults
 

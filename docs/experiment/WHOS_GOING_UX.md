@@ -2,7 +2,7 @@
 
 **Branch:** `experiment-ui` · **Status:** Partial (People/Trips UI + buddies; **Follow** for map notifications without buddy)
 
-**Related:** [`explore-browse-taxonomy.md`](./explore-browse-taxonomy.md) · `apps/api/src/services/profile-viewer-access.ts` · `apps/api/src/services/chat-policy.ts`
+**Related:** [`explore-browse-taxonomy.md`](./explore-browse-taxonomy.md) · [`../COMMUNICATION.md`](../COMMUNICATION.md) · `apps/api/src/services/profile-viewer-access.ts` · `apps/api/src/services/chat-policy.ts`
 
 ---
 

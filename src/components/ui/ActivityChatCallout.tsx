@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import { activityGroupChatPath } from '../../utils/activityGroupChatNav';
+import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 
 interface ActivityChatCalloutProps {
   activityId: string;
@@ -82,8 +83,7 @@ export const ActivityChatCallout = ({ activityId, groupChatId, className = '' }:
         navigate(activityGroupChatPath(knownGroupId));
         return;
       }
-      const res = await api.getActivityGroupChat(activityId);
-      navigate(activityGroupChatPath(res.data.groupId));
+      await openActivityGroupChat(navigate, activityId, knownGroupId);
       await loadStatus();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not open crew chat.');

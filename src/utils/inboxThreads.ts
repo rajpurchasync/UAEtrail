@@ -1,6 +1,7 @@
 import type { ChatConversationDTO } from '@uaetrail/shared-types';
 import type { SocialGroupView } from '../api/index';
 import { api } from '../api/index';
+import { formatWallInboxPreview } from './wallMessagePreview';
 
 export type InboxFilter = 'all' | 'unread' | 'people' | 'groups' | 'outings';
 
@@ -49,20 +50,13 @@ export const toDirectThread = (conversation: ChatConversationDTO): InboxThread =
   unreadCount: conversation.unreadCount ?? 0,
 });
 
-const buildGroupThread = async (group: SocialGroupView): Promise<InboxThread> => {
-  let lastMessage = 'Open group chat';
-  let lastMessageAt = group.updatedAt;
-
-  try {
-    const wall = await api.getMeGroupWall(group.id);
-    const latest = wall.data[wall.data.length - 1];
-    if (latest) {
-      lastMessage = latest.body;
-      lastMessageAt = latest.createdAt;
-    }
-  } catch {
-    /* preview optional */
-  }
+export const groupThreadFromSocialGroup = (group: SocialGroupView): InboxThread => {
+  const preview = group.chatPreview;
+  const lastMessage = preview?.lastMessageBody
+    ? formatWallInboxPreview(preview.lastMessageBody)
+    : 'Open group chat';
+  const lastMessageAt = preview?.lastMessageAt ?? group.updatedAt;
+  const unreadCount = preview?.unreadCount ?? 0;
 
   if (group.type === 'activity') {
     return {
@@ -72,7 +66,7 @@ const buildGroupThread = async (group: SocialGroupView): Promise<InboxThread> =>
       activityId: group.activityId,
       lastMessage,
       lastMessageAt,
-      unreadCount: 0,
+      unreadCount,
     };
   }
 
@@ -84,14 +78,14 @@ const buildGroupThread = async (group: SocialGroupView): Promise<InboxThread> =>
     groupType: group.type,
     lastMessage,
     lastMessageAt,
-    unreadCount: 0,
+    unreadCount,
   };
 };
 
 export const sortInboxThreads = sortThreads;
 
-export const loadGroupThreadPreviews = async (groups: SocialGroupView[]): Promise<InboxThread[]> =>
-  Promise.all(groups.map(buildGroupThread));
+export const loadGroupThreadPreviews = (groups: SocialGroupView[]): InboxThread[] =>
+  groups.map(groupThreadFromSocialGroup);
 
 export const loadInboxThreads = async (): Promise<InboxThread[]> => {
   const [conversationsRes, groupsRes] = await Promise.all([
@@ -100,7 +94,7 @@ export const loadInboxThreads = async (): Promise<InboxThread[]> => {
   ]);
 
   const directThreads = conversationsRes.data.map(toDirectThread);
-  const groupThreads = await loadGroupThreadPreviews(groupsRes.data);
+  const groupThreads = loadGroupThreadPreviews(groupsRes.data);
 
   return sortThreads([...directThreads, ...groupThreads]);
 };

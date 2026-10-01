@@ -48,6 +48,19 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 
 Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined lists — reuse **activity** and **member engagement** APIs.
 
+**Trips → chat:** Opening **crew chat** from hosted/joined manage is a **navigation** to Messages (`/messages?group=`), not a Trips API. See [`COMMUNICATION.md`](./COMMUNICATION.md).
+
+## Communication (not separate domain entities)
+
+| Concept | Storage | UI |
+|---------|---------|-----|
+| **Direct message** | Chat messages collection | `/messages?to=` |
+| **Family / friends group** | `social_groups` + `social_group_wall` | `/groups` manage · `/messages?group=` chat |
+| **Activity crew chat** | Same wall; `social_groups.type === 'activity'`, `activityId` set | `/messages?group=`; roster from `activity-group-chat` service |
+| **Demand intent** | `participant_intents` | No crew chat until organized to **Activity** |
+
+Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. Unread for group threads uses membership `wallLastReadAt` + `chatPreview` on `GET /me/groups`.
+
 ## Place — one entity, `PlaceKind`
 
 Use **Place** in product copy and new code. **Do not** introduce parallel “venue” or “location” entities — those words are legacy wire names or explore UI labels (`?panel=venues` = place list).

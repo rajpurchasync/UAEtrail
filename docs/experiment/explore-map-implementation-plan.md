@@ -269,17 +269,20 @@ Execute **one phase at a time**. Update **Phase status** (§8) when complete.
 
 ### PHASE P6 — Auto messaging groups
 
-| ID | Task | Files |
-|----|------|-------|
-| P6-1 | `activity_groups` collection | mongo-indexes |
-| P6-2 | `activity-groups-store.ts` | new |
-| P6-3 | Hook publish activity | activities-store |
-| P6-4 | Hook create demand | P5 store |
-| P6-5 | Add member on join approve | activity-engagement-store |
-| P6-6 | Add member on demand join | P5 |
-| P6-7 | `groupId` on DTOs | mappers, explore-map |
-| P6-8 | Open group chat CTA | ExploreItemSheet |
-| P6-9 | Group type activity/demand | social-groups-store |
+**As-built on `experiment-ui` (2026-10):** Uses existing **`social_groups`** + **`social_group_wall`** (not a separate `activity_groups` collection). Activity crew = `type: 'activity'`. Demand intents do **not** get a chat until converted to organize. Contract: [`../COMMUNICATION.md`](../COMMUNICATION.md).
+
+| ID | Task | Files | Status (experiment-ui) |
+|----|------|-------|------------------------|
+| P6-1 | Group + wall indexes | mongo-indexes | Done |
+| P6-2 | Activity group lifecycle | `activity-group-chat.ts`, `social-groups-store.ts` | Done |
+| P6-3 | Hook publish activity | activities-store / host publish | Done |
+| P6-4 | Hook create demand | — | N/A (no demand group chat) |
+| P6-5 | Add member on join approve | activity-engagement-store | Done |
+| P6-6 | Add member on demand join | — | N/A |
+| P6-7 | `groupChatId` on DTOs | mappers, explore-map | Done |
+| P6-8 | Open group chat CTA | Explore peek, ActivityChatCallout, Trips manage | Done |
+| P6-9 | Group type activity | social-groups-store | Done |
+| P6-10 | Inbox previews + incremental wall | `GET /me/groups` `chatPreview`, `wall?since=`, `wall/read` | Done |
 
 ---
 
@@ -334,7 +337,7 @@ Suggested tags: `experiment/explore-p0`, `experiment/explore-p1`, …
 | P3 | Complete | 2026-09-07 | Host gate, per-type ≤5-step create, price labels, more options |
 | P4 | Not started | — | |
 | P5 | Not started | — | |
-| P6 | Not started | — | |
+| P6 | Partial (experiment-ui) | 2026-10 | Activity crew via `social_groups`; Messages inbox; see COMMUNICATION.md |
 | P7 | Deferred | — | |
 
 _Update this table as work progresses._

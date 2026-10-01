@@ -145,5 +145,5 @@ Record answers here when confirmed:
 | # | Decision | Answer |
 |---|----------|--------|
 | 1 | Rideshare pins | Two pins (from 🚗 + to 🏁) with dashed route line |
-| 2 | Group UI | _TBD_ |
+| 2 | Group UI | **Reuse `social_groups` wall** — activity crew is `type: activity`; thread UI in **Messages** (`/messages?group=`). See [`../COMMUNICATION.md`](../COMMUNICATION.md). |
 | 3 | Business mode | _TBD_ |

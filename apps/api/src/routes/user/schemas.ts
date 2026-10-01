@@ -116,6 +116,11 @@ export const createWallPostSchema = z.object({
   body: z.string().min(1).max(600)
 });
 
+export const groupWallListQuerySchema = z.object({
+  since: z.string().datetime().optional(),
+  limit: z.coerce.number().int().min(1).max(200).optional(),
+});
+
 export const groupSettingsPatchSchema = z.object({
   wallPostPolicy: z.enum(['all_members', 'admins_only'])
 });

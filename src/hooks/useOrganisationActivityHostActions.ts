@@ -7,7 +7,7 @@ import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinked
 import { navigateToReorganizeActivity } from '../explore/navigateReorganizeActivity';
 import { openPublishedActivityPreview } from '../components/activities';
 import { useReloadExploreMap } from './useReloadExploreMap';
-import { navigateToActivityGroupChat } from '../utils/activityGroupChatNav';
+import { openActivityGroupChat } from '../utils/openActivityGroupChat';
 
 export function useOrganisationActivityHostActions(
   tenantId: string | null,
@@ -35,13 +35,9 @@ export function useOrganisationActivityHostActions(
       setError(null);
       setBusy(true);
       try {
-        const returnTo = options?.returnTo;
-        if (groupChatId) {
-          navigateToActivityGroupChat(navigate, groupChatId, returnTo);
-          return true;
-        }
-        const res = await api.getActivityGroupChat(activityId);
-        navigateToActivityGroupChat(navigate, res.data.groupId, returnTo);
+        await openActivityGroupChat(navigate, activityId, groupChatId, {
+          returnTo: options?.returnTo,
+        });
         return true;
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Could not open activity chat.');

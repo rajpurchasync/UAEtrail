@@ -41,6 +41,7 @@ HTTP → routes/ (thin controllers)
 4. **Shop** — affiliate-style public pages at `/shop/:id` with outbound links; physical shops get map pins, online partners are list-only.
 5. **Host profiles** — guides and agencies host trips (`/operator/:slug`); they do **not** appear as explore map pins.
 6. **Push** — Web Push (VAPID) via `PushSubscription` model; optional when keys configured.
+7. **Communication** — Direct chat (`/chat`, SSE to client) and group/crew walls (`/me/groups/:id/wall` on `social_groups`). Activity crew: one group per activity, roster sync on join approve. Inbox previews on `GET /me/groups`. See [`COMMUNICATION.md`](./COMMUNICATION.md) and [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md).
 
 ## Domain model (consumer-facing)
 
@@ -67,7 +68,7 @@ context/        AuthContext
 utils/          authRouting, exploreRouting, shopPaths
 ```
 
-**Mobile IA:** Explore (map + lists) → Profile; signed-in default landing is `/explore`. Guest marketing is `/` only — see [`LANDING.md`](./LANDING.md) and [`NORTHSTAR.md`](./NORTHSTAR.md).
+**Mobile IA:** Bottom tabs **Explore · Trips · Messages**; Profile via header avatar. Signed-in default landing is `/explore`. Guest marketing is `/` only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Trips manage surfaces link to Messages for crew chat — not embedded chat on `/trips`.
 
 **SEO:** `PageMeta` updates title/description/canonical per route; static `robots.txt` + `sitemap.xml` in `public/`.
 

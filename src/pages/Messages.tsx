@@ -18,7 +18,11 @@ import {
   MessageThreadPanel,
   NewChatModal,
 } from '../components/messages/MessagePanels';
-import { GroupWallThreadPanel } from '../components/messages/GroupWallThreadPanel';
+import {
+  GroupWallThreadPanel,
+  type GroupWallActivityPayload,
+} from '../components/messages/GroupWallThreadPanel';
+import { formatWallInboxPreview } from '../utils/wallMessagePreview';
 import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';
 import { useChatStream } from '../hooks/useChatStream';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
@@ -106,6 +110,34 @@ export const Messages = () => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
+  const handleGroupWallActivity = useCallback((payload: GroupWallActivityPayload) => {
+    setGroupThreads((prev) =>
+      sortInboxThreads(
+        prev.map((thread) =>
+          thread.id === payload.groupId && thread.kind !== 'direct'
+            ? {
+                ...thread,
+                lastMessage: formatWallInboxPreview(payload.body),
+                lastMessageAt: payload.createdAt,
+                unreadCount: 0,
+              }
+            : thread
+        )
+      )
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!selectedGroupId) return;
+    setGroupThreads((prev) =>
+      prev.map((thread) =>
+        thread.id === selectedGroupId && thread.kind !== 'direct'
+          ? { ...thread, unreadCount: 0 }
+          : thread
+      )
+    );
+  }, [selectedGroupId]);
+
   const loadInbox = useCallback(async () => {
     try {
       const [convRes, groupsRes] = await Promise.all([
@@ -113,7 +145,7 @@ export const Messages = () => {
         api.getMeGroups().catch(() => ({ data: [] as SocialGroupView[] })),
       ]);
       setConversations(convRes.data);
-      setGroupThreads(await loadGroupThreadPreviews(groupsRes.data));
+      setGroupThreads(loadGroupThreadPreviews(groupsRes.data));
     } catch {
       /* stream / retry fallback */
     } finally {
@@ -491,7 +523,11 @@ export const Messages = () => {
             </div>
           ) : null}
           {inGroupThread && selectedGroupId ? (
-            <GroupWallThreadPanel groupId={selectedGroupId} onBack={backToList} />
+            <GroupWallThreadPanel
+              groupId={selectedGroupId}
+              onBack={backToList}
+              onWallActivity={handleGroupWallActivity}
+            />
           ) : (
             <MessageThreadPanel
               mobileShowThread={mobileShowThread}

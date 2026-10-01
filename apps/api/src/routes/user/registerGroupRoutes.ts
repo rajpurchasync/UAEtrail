@@ -9,15 +9,22 @@ import { createNotificationRecord } from '../../lib/notifications-store.js';
 import { isActivityGroupChatOpen } from '../../services/activity-group-chat.js';
 import { notifyGroupInvite, notifyGroupWallPost } from '../../services/social-notifications.js';
 import { canMemberPostToGroupWall } from '../../lib/group-wall-policy.js';
-import { acceptGroupInviteByToken, createGroupInvite, createGroupWallMessage, createKidGroupMember, createSocialGroup, deleteSocialGroup, findGroupById, findGroupMemberById, getGroupMembership, listGroupInvites, listGroupMembersDetailed, listGroupsForUser, listGroupWallMessages, presentGroupWallMessage, removeGroupMembership, setGroupMembershipActiveState, toggleGroupWallReaction, updateGroupMemberRole, updateGroupWallPostPolicy } from '../../lib/social-groups-store.js';
-import { acceptInviteSchema, createGroupSchema, createKidSchema, createWallPostSchema, groupIdParamSchema, groupInviteSchema, groupMembershipIdParamSchema, groupMembershipPatchSchema, groupSettingsPatchSchema, groupWallMessageIdParamSchema, groupWallReactionSchema } from './schemas.js';
+import { acceptGroupInviteByToken, createGroupInvite, createGroupWallMessage, createKidGroupMember, createSocialGroup, deleteSocialGroup, findGroupById, findGroupMemberById, getGroupMembership, listGroupInvites, listGroupMembersDetailed, listGroupsForUserWithChatPreview, listGroupWallMessages, markGroupWallRead, presentGroupWallMessage, removeGroupMembership, setGroupMembershipActiveState, toggleGroupWallReaction, updateGroupMemberRole, updateGroupWallPostPolicy } from '../../lib/social-groups-store.js';
+import { acceptInviteSchema, createGroupSchema, createKidSchema, createWallPostSchema, groupIdParamSchema, groupInviteSchema, groupMembershipIdParamSchema, groupMembershipPatchSchema, groupSettingsPatchSchema, groupWallListQuerySchema, groupWallMessageIdParamSchema, groupWallReactionSchema } from './schemas.js';
 import type { Router } from 'express';
 
 export const registerGroupRoutes = (router: Router): void => {
 router.get('/me/groups', async (req, res, next) => {
   try {
-    const groups = await listGroupsForUser(req.auth!.userId);
-    res.json({ data: groups.map((group) => ({ ...group, createdAt: group.createdAt, updatedAt: group.updatedAt })) });
+    const groups = await listGroupsForUserWithChatPreview(req.auth!.userId);
+    res.json({
+      data: groups.map((group) => ({
+        ...group,
+        createdAt: group.createdAt,
+        updatedAt: group.updatedAt,
+        chatPreview: group.chatPreview,
+      })),
+    });
   } catch (error) {
     next(error);
   }
@@ -316,15 +323,38 @@ router.post('/me/groups/:groupId/kids', validate({ params: groupIdParamSchema, b
   }
 });
 
-router.get('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema }), async (req, res, next) => {
+router.get(
+  '/me/groups/:groupId/wall',
+  validate({ params: groupIdParamSchema, query: groupWallListQuerySchema }),
+  async (req, res, next) => {
+    try {
+      const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
+      const query = req.query as z.infer<typeof groupWallListQuerySchema>;
+      const membership = await getGroupMembership(groupId, req.auth!.userId);
+      if (!membership) {
+        throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
+      }
+      const items = await listGroupWallMessages(groupId, {
+        limit: query.limit ?? 120,
+        viewerUserId: req.auth!.userId,
+        since: query.since ? new Date(query.since) : undefined,
+      });
+      res.json({ data: items });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.post('/me/groups/:groupId/wall/read', validate({ params: groupIdParamSchema }), async (req, res, next) => {
   try {
     const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
     const membership = await getGroupMembership(groupId, req.auth!.userId);
     if (!membership) {
       throw new ApiError(403, 'forbidden', 'You are not a member of this group.');
     }
-    const items = await listGroupWallMessages(groupId, 120, req.auth!.userId);
-    res.json({ data: items });
+    await markGroupWallRead(groupId, req.auth!.userId);
+    res.json({ data: { read: true } });
   } catch (error) {
     next(error);
   }

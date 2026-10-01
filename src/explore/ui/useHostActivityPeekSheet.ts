@@ -7,7 +7,7 @@ import { buildExploreMapItemFromActivity } from '../privateActivityExploreItem';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import { useQueryClient } from '@tanstack/react-query';
 import { navigateToHostedActivityManage } from '../../host/navigateHostedActivityManage';
-import { activityGroupChatPath } from '../../utils/activityGroupChatNav';
+import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 
 /** Host activity manage actions (message, cancel, check-in) — Explore map peek and hosted-activities list. */
 export function useHostActivityPeekSheet(
@@ -38,12 +38,7 @@ export function useHostActivityPeekSheet(
     if (!activity) return;
     try {
       setPeekItem(null);
-      if (activity.groupChatId) {
-        navigate(activityGroupChatPath(activity.groupChatId));
-        return;
-      }
-      const res = await api.getActivityGroupChat(activity.id);
-      navigate(activityGroupChatPath(res.data.groupId));
+      await openActivityGroupChat(navigate, activity.id, activity.groupChatId);
     } catch (err) {
       setNotice(err instanceof Error ? err.message : 'Could not open activity chat.');
     }

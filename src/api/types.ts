@@ -1,6 +1,8 @@
 import {
   ActivityDetailDTO,
+  GroupWallPostPolicy,
   OrganisationHostDetailsDTO,
+  SocialGroupChatPreviewDTO,
   TenantListDTO,
   TenantPublicDTO,
   TenantType,
@@ -196,7 +198,7 @@ export type PublicMemberProfileDTO =
 /** Domain alias — a Person's public profile at `/member/:id`. */
 export type PersonPublicProfileDTO = PublicMemberProfileDTO;
 
-export type GroupWallPostPolicy = 'all_members' | 'admins_only';
+export type { GroupWallPostPolicy };
 
 export interface SocialGroupView {
   id: string;
@@ -211,6 +213,7 @@ export interface SocialGroupView {
   wallPostPolicy?: GroupWallPostPolicy;
   createdAt: string;
   updatedAt: string;
+  chatPreview?: SocialGroupChatPreviewDTO;
 }
 
 export interface SocialGroupMemberView {
