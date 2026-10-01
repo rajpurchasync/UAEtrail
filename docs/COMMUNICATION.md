@@ -45,13 +45,13 @@ Used for **family/friends groups** and **activity crew** (`social_groups.type ==
 - **List groups + inbox preview:** `GET /me/groups` → each row includes **`chatPreview`**: `{ lastMessageBody, lastMessageAt, unreadCount }`
 - **Full thread (initial):** `GET /me/groups/:groupId/wall` (default limit 120, oldest→newest)
 - **Incremental sync:** `GET /me/groups/:groupId/wall?since=<ISO8601>`
-- **Send:** `POST /me/groups/:groupId/wall` — body max **600** chars (plain text for new replies); optional `replyToMessageId` (validated in-group); returns enriched message (author + reactions). Legacy messages may still use embedded `↩[id:…]` quote text in `body` for display.
+- **Send:** `POST /me/groups/:groupId/wall` — body max **600** chars (plain text for new replies); optional `replyToMessageId` (validated in-group); returns enriched message (author, reactions, **`replyToPreview`** when replying). Wall **GET** / **SSE** include the same preview. Client still resolves quotes from the loaded thread when preview is absent. Legacy messages may use embedded `↩[id:…]` quote text in `body`.
 - **Mark read:** `POST /me/groups/:groupId/wall/read` → `wallLastReadAt` on membership
 - **Reactions:** `POST /me/groups/:groupId/wall/:messageId/reactions`
 - **Post policy:** `wallPostPolicy`: `all_members` | `admins_only` — `PATCH /me/groups/:groupId`
 - **Deep link:** `/messages?group=<groupId>`
 
-Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO` in `@uaetrail/shared-types`.
+Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO`, `GroupWallReplyPreviewDTO`, `groupWallBodySnippet` in `@uaetrail/shared-types`.
 
 ## Activity crew chat (Trips ↔ Explore ↔ Messages)
 
@@ -121,5 +121,5 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 ## Future (not shipped)
 
 - Dedicated group-wall SSE channel (today: reuses `/chat/stream` + `group_wall_message` event)
-- Server-side quote enrichment on read (client resolves parent from loaded thread today)
+- Wall cursor pagination beyond fixed `limit` (~120)
 - Optional per-activity `groupChatPolicy` (host-only vs full crew)

@@ -1,4 +1,5 @@
 import type { Collection } from 'mongodb';
+import { groupWallBodySnippet, type GroupWallReplyPreviewDTO } from '@uaetrail/shared-types';
 import { newEntityId } from './entity-builders.js';
 import { findAuthUsersByIds } from './auth-users.js';
 import { getMongoClient } from './mongo.js';
@@ -82,6 +83,16 @@ export type GroupWallMessageRecord = {
   replyToMessageId?: string | null;
   createdAt: Date;
   reactions?: GroupWallReactionSummary[];
+};
+
+export type PresentedGroupWallMessage = GroupWallMessageRecord & {
+  author: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+  };
+  reactions: GroupWallReactionSummary[];
+  replyToPreview?: GroupWallReplyPreviewDTO | null;
 };
 
 type MongoGroup = {
@@ -786,14 +797,36 @@ export const createKidGroupMember = async (input: {
   return mapMember(doc);
 };
 
+const displayNameForUser = (
+  user: Awaited<ReturnType<typeof findAuthUsersByIds>>[number] | undefined,
+  authorUserId: string
+) => user?.profile.displayName ?? user?.email.split('@')[0] ?? 'Member';
+
 const presentGroupWallMessages = async (
   groupId: string,
   messages: GroupWallMessageRecord[],
   viewerUserId?: string
-) => {
+): Promise<PresentedGroupWallMessage[]> => {
   if (messages.length === 0) return [];
 
-  const users = await findAuthUsersByIds(messages.map((m) => m.authorUserId));
+  const replyParentIds = [
+    ...new Set(
+      messages.map((m) => m.replyToMessageId?.trim()).filter((id): id is string => Boolean(id))
+    ),
+  ];
+  const parentRows =
+    replyParentIds.length > 0
+      ? await wallCollection().find({ groupId, _id: { $in: replyParentIds } }).toArray()
+      : [];
+  const parentById = new Map(parentRows.map((row) => [row._id, mapWall(row)]));
+
+  const authorIds = [
+    ...new Set([
+      ...messages.map((m) => m.authorUserId),
+      ...parentRows.map((row) => row.authorUserId),
+    ]),
+  ];
+  const users = await findAuthUsersByIds(authorIds);
   const userMap = new Map(users.map((u) => [u._id, u]));
 
   const messageIds = messages.map((message) => message.id);
@@ -822,14 +855,27 @@ const presentGroupWallMessages = async (
 
   return messages.map((message) => {
     const user = userMap.get(message.authorUserId);
+    const replyId = message.replyToMessageId?.trim() || null;
+    const parent = replyId ? parentById.get(replyId) : undefined;
+    const parentUser = parent ? userMap.get(parent.authorUserId) : undefined;
+    const replyToPreview =
+      replyId && parent
+        ? {
+            messageId: replyId,
+            authorDisplayName: displayNameForUser(parentUser, parent.authorUserId),
+            bodySnippet: groupWallBodySnippet(parent.body),
+          }
+        : null;
+
     return {
       ...message,
       author: {
         id: message.authorUserId,
-        displayName: user?.profile.displayName ?? user?.email.split('@')[0] ?? 'Member',
-        avatarUrl: user?.profile.avatarUrl ?? null
+        displayName: displayNameForUser(user, message.authorUserId),
+        avatarUrl: user?.profile.avatarUrl ?? null,
       },
-      reactions: reactionsByMessage.get(message.id) ?? []
+      reactions: reactionsByMessage.get(message.id) ?? [],
+      replyToPreview,
     };
   });
 };

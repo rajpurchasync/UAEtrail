@@ -1219,10 +1219,13 @@ export {
 export type {
   GroupWallMessageAuthorDTO,
   GroupWallPostPolicy,
+  GroupWallReplyPreviewDTO,
   GroupWallStreamEventDTO,
   GroupWallStreamMessageDTO,
   SocialGroupChatPreviewDTO,
 } from './group-wall.js';
+
+export { groupWallBodySnippet } from './group-wall.js';
 
 export type { MemberInboxGroupDTO, MemberInboxGroupType } from './member-inbox.js';
 

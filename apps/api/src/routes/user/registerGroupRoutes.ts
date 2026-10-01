@@ -450,6 +450,7 @@ router.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema, b
           body: data.body,
           createdAt,
           replyToMessageId: data.replyToMessageId ?? null,
+          replyToPreview: data.replyToPreview ?? null,
           author: data.author,
           reactions: data.reactions ?? [],
         },

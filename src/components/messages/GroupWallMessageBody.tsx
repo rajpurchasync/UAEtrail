@@ -7,9 +7,16 @@ import { chatMessageTextClassName } from './chatMessageText';
 
 type QuotedWallMessage = Pick<GroupWallReplyTarget, 'authorName' | 'body'>;
 
+type ReplyPreview = {
+  messageId: string;
+  authorDisplayName: string;
+  bodySnippet: string;
+};
+
 type GroupWallMessageBodyProps = {
   body: string;
   replyToMessageId?: string | null;
+  replyToPreview?: ReplyPreview | null;
   resolveQuotedMessage?: (messageId: string) => QuotedWallMessage | null;
   onScrollToQuotedMessage?: (messageId: string) => void;
 };
@@ -65,11 +72,26 @@ const QuoteBlock = ({
 export const GroupWallMessageBody = ({
   body,
   replyToMessageId: replyToMessageIdProp,
+  replyToPreview,
   resolveQuotedMessage,
   onScrollToQuotedMessage,
 }: GroupWallMessageBodyProps) => {
   const parsed = parseGroupWallMessageBody(body);
   const serverReplyId = replyToMessageIdProp?.trim() || null;
+
+  if (serverReplyId && replyToPreview && !parsed) {
+    return (
+      <div className="mt-1 min-w-0 max-w-full space-y-2">
+        <QuoteBlock
+          quoteAuthor={replyToPreview.authorDisplayName}
+          quoteSnippet={replyToPreview.bodySnippet}
+          replyToMessageId={replyToPreview.messageId}
+          onScrollToQuotedMessage={onScrollToQuotedMessage}
+        />
+        <p className={`text-neutral-800 ${chatMessageTextClassName}`}>{body}</p>
+      </div>
+    );
+  }
 
   if (serverReplyId && resolveQuotedMessage && !parsed) {
     const quoted = resolveQuotedMessage(serverReplyId);

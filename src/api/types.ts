@@ -262,6 +262,11 @@ export interface SocialGroupWallMessageView {
   authorUserId: string;
   body: string;
   replyToMessageId?: string | null;
+  replyToPreview?: {
+    messageId: string;
+    authorDisplayName: string;
+    bodySnippet: string;
+  } | null;
   createdAt: string;
   author?: {
     id: string;

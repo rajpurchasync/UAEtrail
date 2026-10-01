@@ -8,6 +8,19 @@ export interface SocialGroupChatPreviewDTO {
   unreadCount: number;
 }
 
+/** Server-enriched quote for `replyToMessageId` (wall GET / POST / SSE). */
+export interface GroupWallReplyPreviewDTO {
+  messageId: string;
+  authorDisplayName: string;
+  bodySnippet: string;
+}
+
+/** First-line inbox / quote snippet (plain body; no client regex). */
+export const groupWallBodySnippet = (body: string): string => {
+  const line = body.trim().split('\n')[0] ?? '';
+  return line.length > 160 ? `${line.slice(0, 157)}…` : line;
+};
+
 /** Wall message author on stream payloads (matches API wall presenter). */
 export interface GroupWallMessageAuthorDTO {
   id: string;
@@ -23,6 +36,7 @@ export interface GroupWallStreamMessageDTO {
   body: string;
   createdAt: string;
   replyToMessageId?: string | null;
+  replyToPreview?: GroupWallReplyPreviewDTO | null;
   author: GroupWallMessageAuthorDTO;
   reactions: { kind: string; count: number; reactedByMe: boolean }[];
 }

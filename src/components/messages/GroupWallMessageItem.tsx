@@ -226,6 +226,7 @@ export const GroupWallMessageItem = ({
         <GroupWallMessageBody
           body={message.body}
           replyToMessageId={message.replyToMessageId}
+          replyToPreview={message.replyToPreview}
           resolveQuotedMessage={resolveQuotedMessage}
           onScrollToQuotedMessage={onScrollToQuotedMessage}
         />
