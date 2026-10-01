@@ -20,7 +20,7 @@ import type { Place } from '../types/place';
 import { fetchPlaceDetail } from '../api/public';
 import { api } from '../api/index';
 import { activitiesBrowsePath } from '../config/activityTypes';
-import { detailBackPath } from '../utils/exploreRouting';
+import { detailBackPath, myActivitiesPath } from '../utils/exploreRouting';
 import { hasPositiveNumber, isDefaultVenueSeason } from '../utils/venueDetailDisplay';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind, type PlaceDetailKindConfig } from './placeDetailConfig';
 import { readPlaceArabicName, resolvePlaceDisplayTitle } from '../utils/venueDetailDisplay';
@@ -361,7 +361,10 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
             {activities.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-8 text-center">
                 <p className="text-gray-600">{config.emptyActivitiesMessage}</p>
-                <Link to={kind === 'event' ? browsePath : '/activities'} className={`${accentLink} mt-2 inline-block`}>
+                <Link
+                  to={kind === 'event' ? browsePath : myActivitiesPath()}
+                  className={`${accentLink} mt-2 inline-block`}
+                >
                   {config.emptyActivitiesLinkLabel}
                 </Link>
               </div>

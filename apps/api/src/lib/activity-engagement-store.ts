@@ -22,6 +22,7 @@ import { parseStoredPricePackages } from './activity-pricing.js';
 import { dispatchNotification } from '../services/notifications.js';
 import { addParticipantToActivityGroupChat, removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
+import { assertParticipantMeetsWomenOnlyRequirement } from '../domain/activity-audience-requirements.js';
 
 const ACTIVE_STATUSES: RequestStatus[] = ['PENDING', 'APPROVED', 'WAITLISTED'];
 
@@ -130,6 +131,7 @@ const loadPublishedEventForJoin = async (activityId: string) => {
     capacity: doc.capacity,
     pricePackages: doc.pricePackages,
     participationMode: resolveParticipationMode(doc.participationMode, doc.requirements),
+    requirements: doc.requirements ?? [],
     hostId: doc.hostId,
     createdById: doc.createdById,
     participants: Array.from({ length: participantCount }, (_, index) => ({ id: String(index) }))
@@ -174,6 +176,8 @@ export async function createJoinOrWaitlistRequest(opts: {
   if (event.hostId === opts.userId || event.createdById === opts.userId) {
     throw new ApiError(400, 'host_cannot_join', 'Hosts cannot join their own activity.');
   }
+
+  await assertParticipantMeetsWomenOnlyRequirement(opts.userId, event.requirements);
 
   const packages = parseStoredPricePackages(event.pricePackages);
   if (packages.length > 1) {
@@ -250,6 +254,8 @@ export async function createRsvpParticipation(opts: {
   if (event.hostId === opts.userId || event.createdById === opts.userId) {
     throw new ApiError(400, 'host_cannot_join', 'Hosts cannot RSVP to their own activity.');
   }
+
+  await assertParticipantMeetsWomenOnlyRequirement(opts.userId, event.requirements);
 
   const existingParticipant = await findActivityParticipantByEventAndUser(opts.activityId, opts.userId);
   if (existingParticipant) {
@@ -741,6 +747,8 @@ export const applyTenantActivityRequestDecision = async (input: {
     if (!eventDoc || eventDoc.status !== ActivityStatus.PUBLISHED) {
       throw new ApiError(400, 'event_not_publishable', 'Event must be published before approval.');
     }
+
+    await assertParticipantMeetsWomenOnlyRequirement(input.userId, eventDoc.requirements ?? []);
 
     if (eventDoc.participantSlotsUsed === undefined) {
       const participantCount = await activityParticipantsCollection().countDocuments({ activityId: input.activityId });

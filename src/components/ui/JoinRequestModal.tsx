@@ -117,7 +117,7 @@ export const JoinRequestModal = ({
 
       if (isRsvp) {
         await api.rsvpActivity(activity.id, packageIndex);
-        const successMessage = "You're going! It's on your Up next list.";
+        const successMessage = "You're going! Find it under My trips.";
         setSubmitted(true);
         onSuccess?.(successMessage);
         setTimeout(() => {
@@ -261,7 +261,7 @@ export const JoinRequestModal = ({
               {submitLabel}
             </button>
             <p className="text-xs text-gray-500 text-center">
-              {isRsvp ? 'You\'ll show up in Up next right away.' : 'The host will review your request'}
+              {isRsvp ? 'You\'ll show up in My trips right away.' : 'The host will review your request'}
             </p>
           </form>
         </>
@@ -276,7 +276,7 @@ export const JoinRequestModal = ({
             {isRsvp ? "You're going!" : 'Request sent!'}
           </h3>
           <p className="text-gray-600">
-            {isRsvp ? "It's on your Up next list." : 'We\'ll let you know as soon as the host replies.'}
+            {isRsvp ? 'See it in My trips.' : 'We\'ll let you know as soon as the host replies.'}
           </p>
         </div>
       )}

@@ -1,0 +1,83 @@
+import { useEffect, useState } from 'react';
+import { api, type UserProfile } from '../../api/index';
+import { GlassCard } from '../mobile/GlassCard';
+
+type ProfileVisibility = NonNullable<UserProfile['profileVisibility']>;
+
+const VISIBILITY_OPTIONS: Array<{
+  value: ProfileVisibility;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: 'public',
+    label: 'Public',
+    description: 'Anyone with your link can view your member profile.',
+  },
+  {
+    value: 'group_members',
+    label: 'Friends & groups',
+    description: 'Full profile for people in your family or friends groups.',
+  },
+  {
+    value: 'private',
+    label: 'Private',
+    description: 'Hidden from browse; friends and outing co-participants can still view when allowed.',
+  },
+];
+
+export const ProfileVisibilitySection = () => {
+  const [profileVisibility, setProfileVisibility] = useState<ProfileVisibility>('public');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    void api.getMeProfile().then((res) => {
+      setProfileVisibility(res.data.profileVisibility ?? 'public');
+    });
+  }, []);
+
+  const handleChange = async (next: ProfileVisibility) => {
+    if (next === profileVisibility || saving) return;
+    setSaving(true);
+    setMessage(null);
+    try {
+      await api.updateMeProfile({ profileVisibility: next });
+      setProfileVisibility(next);
+      setMessage('Visibility updated.');
+    } catch {
+      setMessage('Could not update visibility.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <GlassCard padding>
+      <h2 className="text-sm font-semibold text-neutral-900">Profile visibility</h2>
+      <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
+        Who can open your public member profile from a link or activity.
+      </p>
+      <div className="mt-3 space-y-2">
+        {VISIBILITY_OPTIONS.map((option) => {
+          const selected = profileVisibility === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              disabled={saving}
+              onClick={() => void handleChange(option.value)}
+              className={`w-full rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                selected ? 'border-emerald-300 bg-emerald-50' : 'border-neutral-200 bg-white'
+              }`}
+            >
+              <p className="text-sm font-semibold text-neutral-900">{option.label}</p>
+              <p className="mt-0.5 text-xs text-neutral-600">{option.description}</p>
+            </button>
+          );
+        })}
+      </div>
+      {message ? <p className="mt-2 text-xs text-emerald-700">{message}</p> : null}
+    </GlassCard>
+  );
+};

@@ -45,7 +45,9 @@ export const MemberFollowControls = ({
         : await api.followMember(targetUserId);
       setState(res.data);
       onStatusMessage?.(
-        res.data.isFollowing ? 'You will get notified when they post on the map.' : 'Unfollowed.'
+        res.data.isFollowing
+          ? 'You will get notified when they host an outing.'
+          : 'Unfollowed.'
       );
     } catch (err) {
       onStatusMessage?.(err instanceof Error ? err.message : 'Could not update follow.');
@@ -65,10 +67,10 @@ export const MemberFollowControls = ({
         disabled={busy}
         onClick={() => void toggle()}
       >
-        {state.isFollowing ? 'Following · map updates on' : 'Follow · get map updates'}
+        {state.isFollowing ? 'Following · host alerts on' : 'Follow · host outing alerts'}
       </AppButton>
       <p className="mt-2 text-center text-xs text-neutral-500">
-        Get notified when they post trips or looking-for pins — no buddy request needed.
+        Get notified when they host an outing on the map — not their find-a-group posts.
       </p>
     </div>
   );

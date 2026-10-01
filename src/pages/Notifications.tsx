@@ -236,7 +236,7 @@ export const Notifications = () => {
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                     <Link
-                      to="/profile/wishlist"
+                      to="/trips?segment=wishlist"
                       className="text-xs font-medium text-neutral-600"
                     >
                       Saved map

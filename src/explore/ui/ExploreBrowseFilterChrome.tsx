@@ -68,7 +68,7 @@ const SecondaryFilters = ({
   );
 };
 
-/** Category pills; date on map beside pills (desktop) or below pills (mobile). List panel date is on the search row (desktop). */
+/** Category pills; map chrome shows date/state beside or below pills. List panel date/state sit on the search row (all breakpoints). */
 export const ExploreBrowseFilterChrome = ({
   mapFilter,
   onMapFilterChange,
@@ -136,7 +136,7 @@ export const ExploreBrowseFilterChrome = ({
 
   return (
     <div className={`${mobileShell} ${className}`}>
-      {/* Desktop — map: date/state beside last pill; list: pills only (date lives on search in panel) */}
+      {/* Desktop — map: date/state beside last pill; list: pills only (date/state on search row in panel) */}
       <div className="hidden min-w-0 flex-col gap-1.5 lg:flex">
         <div className="flex min-w-0 items-center gap-2">
           <div className={layout === 'list' ? 'min-w-0 flex-1' : 'min-w-0 flex-1 overflow-hidden'}>
@@ -199,7 +199,6 @@ export const ExploreBrowseFilterChrome = ({
               layout="list"
             />
           ) : null}
-          <div className="flex justify-start">{secondary}</div>
         </div>
       )}
     </div>

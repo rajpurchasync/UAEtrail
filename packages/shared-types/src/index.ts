@@ -1062,6 +1062,14 @@ export {
 } from './activity-participation-mode.js';
 
 export {
+  isWomenOnlyActivityRequirements,
+  resolveWomenOnlyJoinEligibility,
+  womenOnlyJoinBlockMessage,
+  type UserGenderWire,
+  type WomenOnlyJoinEligibility,
+} from './activity-audience-requirements.js';
+
+export {
   buildExploreActivityDisplay,
   resolveExplorePrice,
   type ExploreActivityDisplayFields,

@@ -369,6 +369,25 @@ export const listPublishedUpcomingActivitiesByLocationFromMongo = async (
   return assembleEventsWithPublicRelations(docs);
 };
 
+/** Published upcoming outings hosted or created by a member (public profile). */
+export const listPublishedUpcomingActivitiesByMemberFromMongo = async (
+  userId: string,
+  take: number
+): Promise<ActivityWithPublicRelations[]> => {
+  const docs = await activitiesCollection()
+    .find({
+      status: ActivityStatus.PUBLISHED,
+      startAt: { $gte: new Date() },
+      $or: [{ hostId: userId }, { createdById: userId }],
+    })
+    .sort({ startAt: 1 })
+    .limit(Math.max(take, 1) * 3)
+    .toArray();
+
+  const filtered = await filterPublishedDocs(docs, 'upcoming');
+  return assembleEventsWithPublicRelations(filtered.slice(0, take));
+};
+
 export type ActivityWithTenantRelations = Activity & {
   location: Location;
   tenant: TenantRecord;

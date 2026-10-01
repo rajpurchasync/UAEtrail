@@ -27,7 +27,7 @@ export const MemberProfile = () => {
   const [buddyMessage, setBuddyMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hostedActivities, setHostedActivities] = useState<ActivityDTO[]>([]);
+  const [upcomingActivities, setUpcomingActivities] = useState<ActivityDTO[]>([]);
 
   useEffect(() => {
     if (!userId) return;
@@ -41,22 +41,15 @@ export const MemberProfile = () => {
   }, [userId]);
 
   useEffect(() => {
-    const hostPath =
-      profile && profile.visibilityState === 'full' ? profile.hostProfilePath : null;
-    if (!hostPath?.startsWith('/operator/')) {
-      setHostedActivities([]);
-      return;
-    }
-    const slug = hostPath.slice('/operator/'.length);
-    if (!slug) {
-      setHostedActivities([]);
+    if (!userId || profile?.visibilityState !== 'full') {
+      setUpcomingActivities([]);
       return;
     }
     void api
-      .getOrganisationProfile(slug)
-      .then((res) => setHostedActivities(res.data.activities ?? []))
-      .catch(() => setHostedActivities([]));
-  }, [profile]);
+      .getPersonUpcomingActivities(userId)
+      .then((res) => setUpcomingActivities(res.data))
+      .catch(() => setUpcomingActivities([]));
+  }, [userId, profile?.visibilityState]);
 
   const loadBuddyRelationship = () => {
     if (!userId || !user || user.id === userId) return;
@@ -87,7 +80,7 @@ export const MemberProfile = () => {
             }
           : null
       );
-      setBuddyMessage(res.data.status === 'accepted' ? 'You are now connected.' : 'Buddy request sent.');
+      setBuddyMessage(res.data.status === 'accepted' ? 'You are now friends.' : 'Friend request sent.');
       if (res.data.status === 'accepted') {
         void api.getPersonPublicProfile(userId).then((profileRes) => setProfile(profileRes.data));
       }
@@ -104,7 +97,7 @@ export const MemberProfile = () => {
     setBuddyMessage(null);
     try {
       await api.acceptBuddyRequest(buddyRel.incomingRequest.id);
-      setBuddyMessage('Buddy request accepted.');
+      setBuddyMessage('Friend request accepted.');
       loadBuddyRelationship();
       if (userId) {
         void api.getPersonPublicProfile(userId).then((profileRes) => setProfile(profileRes.data));
@@ -176,7 +169,7 @@ export const MemberProfile = () => {
       title={pageTitle}
       navTitle={pageTitle.length > 18 ? `${pageTitle.slice(0, 16)}…` : pageTitle}
       showJourney={false}
-      back={{ fallbackTo: myActivitiesPath(), label: 'My activities' }}
+      back={{ fallbackTo: myActivitiesPath(), label: 'My trips' }}
     >
       <PageMeta title={pageTitle} noIndex />
 
@@ -224,7 +217,7 @@ export const MemberProfile = () => {
           onDeclineBuddyRequest={() => void handleDeclineBuddyRequest()}
           onCancelBuddyRequest={() => void handleCancelBuddyRequest()}
           onMessage={() => navigate(messagesRouteForRole(user!.role, fullProfile.id))}
-          hostedActivities={hostedActivities}
+          upcomingActivities={upcomingActivities}
         />
       ) : null}
     </ConsumerShell>

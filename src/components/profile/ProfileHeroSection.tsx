@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { GlassCard } from '../mobile/GlassCard';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { ShareButton } from '../ui/ShareButton';
@@ -16,6 +17,8 @@ interface ProfileHeroSectionProps {
   onEditAvatar: () => void;
   onEditProfile: () => void;
   onViewProfile: () => void;
+  memberSinceLabel?: string | null;
+  visibilityLabel?: string | null;
   extra?: ReactNode;
 }
 
@@ -32,6 +35,8 @@ export const ProfileHeroSection = ({
   onEditAvatar,
   onEditProfile,
   onViewProfile,
+  memberSinceLabel,
+  visibilityLabel,
   extra,
 }: ProfileHeroSectionProps) => (
   <GlassCard padding className="!p-5 text-center animate-fade-up">
@@ -95,6 +100,17 @@ export const ProfileHeroSection = ({
 
     <h1 className="text-xl font-bold text-neutral-900">{displayName}</h1>
     <p className="mt-1 text-sm text-neutral-500 capitalize">{roleLabel}</p>
+    {memberSinceLabel ? (
+      <p className="mt-1 text-xs font-semibold text-neutral-500">{memberSinceLabel}</p>
+    ) : null}
+    {visibilityLabel ? (
+      <Link
+        to="/profile/settings/privacy"
+        className="mt-2 inline-flex rounded-full bg-neutral-100 px-3 py-1 text-[11px] font-bold text-neutral-700 ring-1 ring-neutral-200/80"
+      >
+        {visibilityLabel}
+      </Link>
+    ) : null}
     {extra && <div className="mt-2 flex justify-center">{extra}</div>}
   </GlassCard>
 );

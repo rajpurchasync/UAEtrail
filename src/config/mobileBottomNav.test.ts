@@ -5,6 +5,7 @@ describe('shouldShowMobileBottomNav', () => {
   it('shows on signed-in root tabs', () => {
     expect(shouldShowMobileBottomNav('/explore', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/activities', '?tab=joined', true)).toBe(true);
+    expect(shouldShowMobileBottomNav('/trips', '?segment=upcoming&tab=joined', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/messages', '', true)).toBe(true);
   });
 
@@ -12,6 +13,8 @@ describe('shouldShowMobileBottomNav', () => {
     expect(shouldShowMobileBottomNav('/profile', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/profile/settings', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/profile/reviews', '', true)).toBe(true);
+    expect(shouldShowMobileBottomNav('/buddies', '', true)).toBe(true);
+    expect(shouldShowMobileBottomNav('/contributions', '', true)).toBe(true);
   });
 
   it('hides for guests and other routes', () => {

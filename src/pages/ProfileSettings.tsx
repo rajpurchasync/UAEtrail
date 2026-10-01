@@ -1,8 +1,3 @@
-import { useAuth } from '../context/AuthContext';
-import { ProfileSettingsView } from '../components/profile/ProfileSettingsView';
+import { ProfileSettingsIndex } from '../components/profile/ProfileSettingsIndex';
 
-export const ProfileSettings = () => {
-  const { signOut } = useAuth();
-
-  return <ProfileSettingsView onSignOut={() => void signOut()} />;
-};
+export const ProfileSettings = () => <ProfileSettingsIndex />;

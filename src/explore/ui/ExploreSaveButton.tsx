@@ -34,7 +34,7 @@ export const ExploreSaveButton = ({ card, light = false }: ExploreSaveButtonProp
           {notice.includes('Profile') ? (
             <>
               Saved —{' '}
-              <Link to="/profile/wishlist" className="text-emerald-700 underline">
+              <Link to="/trips?segment=wishlist" className="text-emerald-700 underline">
                 Profile
               </Link>
             </>

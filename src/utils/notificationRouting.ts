@@ -43,6 +43,15 @@ export const inferNotificationPath = (
   if (kind === 'join_request_approved') {
     const groupId = toStringValue(meta?.groupId);
     if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
+    return '/trips?segment=upcoming&tab=joined';
+  }
+  if (
+    kind === 'join_request_pending' ||
+    kind === 'join_request_waitlisted' ||
+    kind === 'join_request_rejected' ||
+    kind === 'join_request_withdrawn'
+  ) {
+    return '/trips?segment=upcoming&tab=joined';
   }
   if (kind === 'group_message') {
     const groupId = toStringValue(meta?.groupId);

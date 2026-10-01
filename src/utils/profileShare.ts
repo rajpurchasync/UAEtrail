@@ -22,7 +22,7 @@ export const resolveProfileSharePath = (
   const referralCode = options.referralCode?.trim();
   if (referralCode) return `/signup?ref=${encodeURIComponent(referralCode)}`;
 
-  return options.fallbackPath ?? '/activities';
+  return options.fallbackPath ?? '/trips?segment=upcoming&tab=joined';
 };
 
 export const resolveProfileShareText = (

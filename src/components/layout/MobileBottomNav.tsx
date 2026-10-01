@@ -19,11 +19,11 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
   />
 );
 
-/** Signed-in mobile tab bar — Map · My Activities · Messages. */
+/** Signed-in mobile tab bar — Map · Trips · Messages. */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname } = useLocation();
-  const activitiesActive = pathname === '/activities';
+  const tripsActive = pathname === '/trips' || pathname === '/activities';
   const unreadMessages = useInboxUnreadCount();
 
   useEffect(() => {
@@ -53,12 +53,12 @@ export const MobileBottomNav = () => {
         </NavLink>
 
         <Link
-          to="/activities?tab=joined"
-          className={tabShellClass(activitiesActive)}
-          aria-current={activitiesActive ? 'page' : undefined}
-          aria-label="My activities"
+          to="/trips?segment=upcoming&tab=joined"
+          className={tabShellClass(tripsActive)}
+          aria-current={tripsActive ? 'page' : undefined}
+          aria-label="My trips"
         >
-          <TabIcon icon={ClipboardList} active={activitiesActive} />
+          <TabIcon icon={ClipboardList} active={tripsActive} />
         </Link>
 
         <NavLink to="/messages" end className={({ isActive }) => tabShellClass(isActive)} aria-label="Messages">

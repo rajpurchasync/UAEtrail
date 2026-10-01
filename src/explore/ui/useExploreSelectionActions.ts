@@ -11,6 +11,8 @@ import { canOfferCarpoolForDemandItem } from '../linkActivityCarpoolOffer';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { activityHostUserId } from '../../utils/hostLabels';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
+import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
+import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
@@ -61,6 +63,11 @@ export const useExploreSelectionActions = ({
   const [demandRemoveBusy, setDemandRemoveBusy] = useState(false);
 
   const selected = items.find((item) => item.id === selectedId) ?? null;
+  const viewerGender = useViewerProfileGender(user?.id);
+  const joinGuardMessage = useMemo(
+    () => womenOnlyJoinMessageForActivity(selected?.activity?.requirements, viewerGender),
+    [selected?.activity?.requirements, viewerGender]
+  );
 
   const selectedCard = useMemo(() => {
     if (!selected) return null;
@@ -125,6 +132,7 @@ export const useExploreSelectionActions = ({
     activity: selected?.activity ?? null,
     uiState: joinUiState,
     requestIdFallback: joinContext?.myRequest?.id ?? null,
+    joinGuardMessage,
     onReload: reloadJoinContext,
     onMessage: setDemandNotice,
     onError: setDemandNotice,
@@ -203,7 +211,7 @@ export const useExploreSelectionActions = ({
       return;
     }
 
-    navigate(`/activities?tab=hosted&checkin=${encodeURIComponent(activity.id)}`);
+    navigate(`/trips?segment=upcoming&tab=hosted&checkin=${encodeURIComponent(activity.id)}`);
   }, [selected, tenantId, navigate, setSelectedId]);
 
   const requestHostRemove = useCallback(() => {

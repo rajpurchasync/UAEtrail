@@ -37,6 +37,16 @@ const DiscoveryRedirect = () => {
   return <Navigate to={`${explorePath()}?${discoveryToExploreSearch(search)}`} replace />;
 };
 
+const ActivitiesLegacyRedirect = () => {
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  if (!params.get('segment')) {
+    params.set('segment', 'upcoming');
+  }
+  const qs = params.toString();
+  return <Navigate to={`/trips${qs ? `?${qs}` : ''}`} replace />;
+};
+
 const ActivitiesBrowseRoute = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -45,7 +55,7 @@ const ActivitiesBrowseRoute = () => {
   if (legacyCreatePath) {
     return <Navigate to={legacyCreatePath} replace />;
   }
-  if (user && (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin'))) {
+  if (user && (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || searchParams.get('segment'))) {
     return (
       <Suspense fallback={<PageLoader />}>
         <Activities />
@@ -55,14 +65,14 @@ const ActivitiesBrowseRoute = () => {
   if (!user && (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || !tab)) {
     return (
       <GuestTabPlaceholder
-        title="My activities"
+        title="My trips"
         description="Sign in to see what you're joining, hosting, and check-in."
         intent="explore-browse"
       />
     );
   }
   if (user) {
-    return <Navigate to="/activities?tab=joined" replace />;
+    return <Navigate to="/trips?segment=upcoming&tab=joined" replace />;
   }
   const activity = parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter'));
   return (
@@ -149,6 +159,17 @@ const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ de
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
+const ProfileSettingsAccount = lazy(() =>
+  import('./pages/ProfileSettingsAccount').then((m) => ({ default: m.ProfileSettingsAccount }))
+);
+const ProfileSettingsPrivacy = lazy(() =>
+  import('./pages/ProfileSettingsPrivacy').then((m) => ({ default: m.ProfileSettingsPrivacy }))
+);
+const ProfileSettingsNotifications = lazy(() =>
+  import('./pages/ProfileSettingsNotifications').then((m) => ({ default: m.ProfileSettingsNotifications }))
+);
+const ProfileEdit = lazy(() => import('./pages/ProfileEdit').then((m) => ({ default: m.ProfileEdit })));
+const Contributions = lazy(() => import('./pages/Contributions').then((m) => ({ default: m.Contributions })));
 const ProfileReviews = lazy(() => import('./pages/ProfileReviews').then((m) => ({ default: m.ProfileReviews })));
 const ProfileWishlist = lazy(() => import('./pages/ProfileWishlist').then((m) => ({ default: m.ProfileWishlist })));
 const JoinRequestDetail = lazy(() =>
@@ -289,7 +310,13 @@ function App() {
           <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
           <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
-          <Route path="/activities" element={<ActivitiesBrowseRoute />} />
+          <Route path="/trips" element={<ActivitiesBrowseRoute />} />
+          <Route
+            path="/activities"
+            element={
+              <ActivitiesLegacyRedirect />
+            }
+          />
           <Route
             path="/profile/reviews"
             element={
@@ -307,10 +334,54 @@ function App() {
             }
           />
           <Route
+            path="/profile/settings/account"
+            element={
+              <ProtectedRoute>
+                <ProfileSettingsAccount />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/settings/privacy"
+            element={
+              <ProtectedRoute>
+                <ProfileSettingsPrivacy />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/settings/notifications"
+            element={
+              <ProtectedRoute>
+                <ProfileSettingsNotifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/profile/settings"
             element={
               <ProtectedRoute>
                 <ProfileSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/edit"
+            element={
+              <ProtectedRoute>
+                <ProfileEdit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/badges"
+            element={<Navigate to="/my-rewards?panel=badges" replace />}
+          />
+          <Route
+            path="/contributions"
+            element={
+              <ProtectedRoute>
+                <Contributions />
               </ProtectedRoute>
             }
           />

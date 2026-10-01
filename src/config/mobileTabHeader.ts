@@ -4,7 +4,7 @@ export type MobileTabHeaderCenter =
   | { kind: 'brand' }
   | { kind: 'title'; text: string };
 
-const TAB_HEADER_ROUTES = new Set(['/explore', '/profile', '/activities', '/messages']);
+const TAB_HEADER_ROUTES = new Set(['/explore', '/profile', '/trips', '/activities', '/messages']);
 
 export const isMobileTabHeaderRoute = (pathname: string): boolean => TAB_HEADER_ROUTES.has(pathname);
 

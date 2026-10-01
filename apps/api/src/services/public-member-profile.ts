@@ -82,9 +82,9 @@ export type PublicMemberProfileResponse =
       displayName: string;
       avatarUrl: string | null;
       bio: string | null;
-      age: number | null;
       city: string | null;
       languages: string | null;
+      memberSince: string;
       isHost: boolean;
       isGuideStaff?: boolean;
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
@@ -184,7 +184,6 @@ export async function buildPublicMemberProfile(
     user.profile?.languages ?? null
   );
   const showBio = canViewProfileField(visibility, access, 'bio');
-  const showAge = canViewProfileField(visibility, access, 'age');
   const showCity = canViewProfileField(visibility, access, 'city');
   const showLanguages = canViewProfileField(visibility, access, 'languages');
   const profileCity = user.profile?.city ?? null;
@@ -195,8 +194,8 @@ export async function buildPublicMemberProfile(
     displayName: user.profile?.displayName ?? user.email.split('@')[0],
     avatarUrl: user.profile?.avatarUrl ?? null,
     bio: showBio ? user.profile?.bio ?? null : null,
-    age: showAge ? memberDetails.age : null,
     city: showCity && profileCity ? USER_CITY_LABELS[profileCity as UserCity] : null,
+    memberSince: user.createdAt.toISOString(),
     languages: showLanguages ? memberDetails.languages : null,
     isHost,
     isGuideStaff,

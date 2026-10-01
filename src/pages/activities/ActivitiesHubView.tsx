@@ -138,7 +138,7 @@ export const ActivitiesHubView = ({
           </div>
           {canHost ? (
             <Link
-              to="/activities?tab=hosted"
+              to="/trips?segment=upcoming&tab=hosted"
               className="shrink-0 pb-2.5 text-xs font-semibold text-emerald-700"
             >
               Hosted

@@ -744,7 +744,9 @@ hostRouter.patch('/requests/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valid
           requestId: request.id,
           groupId: groupId ?? null,
           organizerNote: organizerNote?.trim() || null,
-          path: groupId ? `/groups?group=${groupId}` : `/activity/${request.activityId}`
+          path: groupId
+            ? `/groups?group=${groupId}`
+            : '/trips?segment=upcoming&tab=joined'
         }
       });
     } else {
@@ -767,7 +769,7 @@ hostRouter.patch('/requests/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valid
           activityId: request.activityId,
           requestId: request.id,
           organizerNote: organizerNote?.trim() || null,
-          path: `/activity/${request.activityId}`
+          path: '/trips?segment=upcoming&tab=joined',
         }
       });
     }

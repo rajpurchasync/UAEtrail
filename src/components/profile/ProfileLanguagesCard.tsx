@@ -106,7 +106,7 @@ export const ProfileLanguagesCard = ({
         <button type="button" onClick={openEditor} className="block w-full text-left">
           <GlassCard padding className="animate-fade-up transition-opacity active:opacity-90">
             <div className="mb-2.5 flex items-center justify-between gap-2">
-              <h3 className="text-sm font-bold text-neutral-800">Languages</h3>
+              <h3 className="text-sm font-bold text-neutral-800">Speaks</h3>
               <span
                 className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-base shadow-sm ring-1 ring-neutral-200/90"
                 aria-hidden
@@ -133,7 +133,7 @@ export const ProfileLanguagesCard = ({
       ) : (
         <GlassCard padding className="animate-fade-up">
           <div className="mb-2.5 flex items-center justify-between gap-2">
-            <h3 className="text-sm font-bold text-neutral-800">Languages</h3>
+            <h3 className="text-sm font-bold text-neutral-800">Speaks</h3>
             <Link to="/become-host" className="text-xs font-semibold text-emerald-600">
               Add
             </Link>
@@ -158,7 +158,7 @@ export const ProfileLanguagesCard = ({
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        title="Languages"
+        title="Speaks"
         variant="form"
         className="!p-0 !max-h-[min(88dvh,640px)]"
       >

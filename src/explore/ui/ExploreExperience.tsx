@@ -28,7 +28,8 @@ import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActi
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
-import { parseExplorePinMapItemId, parseOrganizeFromActivityId } from '../routing';
+import { MY_TRIPS_QUERY_KEY, parseExplorePinMapItemId, parseOrganizeFromActivityId } from '../routing';
+import { useMyTripsMapPinIds } from '../../hooks/useMyTripsMapPinIds';
 import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
 import { AppButton } from '../../components/mobile/AppButton';
@@ -44,6 +45,16 @@ export const ExploreExperience = () => {
   const { pathname, search, state: locationState } = useLocation();
   const isDesktop = useMinWidthLg();
   const { data: items = [], isLoading: loading, error: mapError } = useExploreMap();
+  const myTripsMode = searchParams.get(MY_TRIPS_QUERY_KEY) === '1';
+  const { ids: myTripsPinIds, loading: myTripsPinsLoading } = useMyTripsMapPinIds(
+    myTripsMode ? user?.id : undefined
+  );
+  const mapItems = useMemo(() => {
+    if (!myTripsMode) return items;
+    if (!myTripsPinIds) return [];
+    return items.filter((item) => myTripsPinIds.has(item.id));
+  }, [items, myTripsMode, myTripsPinIds]);
+  const mapLoading = loading || (myTripsMode && myTripsPinsLoading);
   const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -79,16 +90,22 @@ export const ExploreExperience = () => {
   });
 
   const selectionItems = useMemo(() => {
-    const ids = new Set(items.map((entry) => entry.id));
+    const ids = new Set(mapItems.map((entry) => entry.id));
     const extra = linkOnlyPeekItems.filter((entry) => !ids.has(entry.id));
-    return extra.length > 0 ? [...items, ...extra] : items;
-  }, [items, linkOnlyPeekItems]);
+    return extra.length > 0 ? [...mapItems, ...extra] : mapItems;
+  }, [mapItems, linkOnlyPeekItems]);
 
   const selected = selectionItems.find((item) => item.id === selectedId) ?? null;
 
+  useEffect(() => {
+    if (!myTripsMode || user) return;
+    const { href } = buildSignInRedirect({ pathname, search });
+    navigate(href, { replace: true });
+  }, [myTripsMode, user, navigate, pathname, search]);
+
   const fulfill = useExploreFulfillIntent({
-    items,
-    loading,
+    items: mapItems,
+    loading: mapLoading,
     user,
     hostGateLoading,
     canPublish,
@@ -261,7 +278,7 @@ export const ExploreExperience = () => {
   const whosGoingFriends = useWhosGoingFriends({
     enabled: Boolean(user) && browse.listMode === 'whosGoing',
     userId: user?.id,
-    mapItems: items,
+    mapItems,
     activityDatePreset: browse.activityDatePreset,
   });
 
@@ -275,7 +292,7 @@ export const ExploreExperience = () => {
     whosGoingListItems,
   } =
     useExploreBrowseList({
-      items,
+      items: mapItems,
       ephemeralMapItems: linkOnlyPeekItems,
       mapFilter: browse.mapFilter,
       venueRegions: browse.venueRegions,
@@ -339,7 +356,8 @@ export const ExploreExperience = () => {
 
   const browsePanelShared = {
     isDesktop,
-    loading,
+    loading: mapLoading,
+    myTripsMode,
     shopListSections,
     desktopBrowseTab: browse.desktopBrowseTab,
     mapFilter: browse.mapFilter,
@@ -421,8 +439,16 @@ export const ExploreExperience = () => {
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       <PageMeta
-        title="Explore hiking, camping, events & shops"
-        description="Find live hiking, camping, events, and shops on the map across the UAE."
+        title={
+          myTripsMode
+            ? 'My trips on the map'
+            : 'Explore hiking, camping, events & shops'
+        }
+        description={
+          myTripsMode
+            ? 'See your upcoming outings and wishlist pins on the UAE Trail map.'
+            : 'Find live hiking, camping, events, and shops on the map across the UAE.'
+        }
         path="/explore"
       />
 
@@ -456,7 +482,7 @@ export const ExploreExperience = () => {
           recenterTo={viewport.recenterTo}
           exploreMapCenter={viewport.exploreMapCenter}
           onPinClick={handleMapPinClick}
-          loading={loading}
+          loading={mapLoading}
           loadError={loadError}
           onReloadMap={reloadMap}
           venueNotice={selection.venueNotice}

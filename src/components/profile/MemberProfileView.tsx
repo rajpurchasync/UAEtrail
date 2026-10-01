@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
-import { UserPlus } from 'lucide-react';
 import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import { MemberFollowControls } from './MemberFollowControls';
+import { MemberProfileBuddyActions } from './MemberProfileBuddyActions';
 import type { PersonPublicProfileDTO } from '../../api/index';
 import { GlassCard } from '../mobile/GlassCard';
-import { AppButton } from '../mobile/AppButton';
 import { ProfileStampsRow } from './ProfileStampsRow';
 import { PublicProfileSectionHeading } from './PublicProfileSectionHeading';
 import { SecureAvatar } from '../ui/SecureAvatar';
@@ -13,9 +12,9 @@ import { ShareButton } from '../ui/ShareButton';
 import { ProfileActivityListRow } from './ProfileActivityListRow';
 import { AccountSectionHeader } from '../account/AccountSectionHeader';
 import type { ProfileStamp } from '../../utils/profileStamps';
-import { formatMemberAge } from '../../utils/profileAge';
 import { parseLanguagesList } from '../../utils/profileLanguages';
 import { resolvePublicMemberRoleLabel } from '../../utils/profileRoleLabel';
+import { formatMemberJoinedLabel } from '../../utils/formatMemberSince';
 
 export type FullMemberProfile = Extract<PersonPublicProfileDTO, { visibilityState: 'full' }>;
 
@@ -63,7 +62,7 @@ interface MemberProfileViewProps {
   onDeclineBuddyRequest: () => void;
   onCancelBuddyRequest: () => void;
   onMessage: () => void;
-  hostedActivities?: ActivityDTO[];
+  upcomingActivities?: ActivityDTO[];
 }
 
 export const MemberProfileView = ({
@@ -81,12 +80,13 @@ export const MemberProfileView = ({
   onDeclineBuddyRequest,
   onCancelBuddyRequest,
   onMessage,
-  hostedActivities = [],
+  upcomingActivities = [],
 }: MemberProfileViewProps) => {
   const roleLabel = resolvePublicMemberRoleLabel(profile);
   const languages = parseLanguagesList(profile.languages);
-  const hasDetails = Boolean(profile.city || profile.age != null || languages.length > 0);
+  const hasDetails = Boolean(profile.city || languages.length > 0);
   const showConnectActions = !isSelf && userLoggedIn;
+  const joinedLabel = formatMemberJoinedLabel(profile.memberSince);
 
   return (
     <div className="space-y-3 pb-nav-safe animate-fade-up">
@@ -109,6 +109,9 @@ export const MemberProfileView = ({
 
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-neutral-900">{profile.displayName}</h1>
           <p className="mt-1 text-sm font-medium text-neutral-500">{roleLabel}</p>
+          {joinedLabel ? (
+            <p className="mt-1.5 text-xs font-semibold text-neutral-500">{joinedLabel}</p>
+          ) : null}
 
           {profile.trailPointsEligible && profile.membershipTier.key !== 'free' && (
             <div className="mt-3 flex justify-center">
@@ -119,6 +122,32 @@ export const MemberProfileView = ({
               />
             </div>
           )}
+
+          {showConnectActions ? (
+            <MemberProfileBuddyActions
+              buddyRel={buddyRel}
+              buddyBusy={buddyBusy}
+              onSendBuddyRequest={onSendBuddyRequest}
+              onAcceptBuddyRequest={onAcceptBuddyRequest}
+              onDeclineBuddyRequest={onDeclineBuddyRequest}
+              onCancelBuddyRequest={onCancelBuddyRequest}
+              onMessage={onMessage}
+            />
+          ) : null}
+
+          {!isSelf && !userLoggedIn ? (
+            <Link
+              to="/signin"
+              state={{ from: `/member/${profile.id}` }}
+              className="mt-4 inline-block text-sm font-semibold text-emerald-700"
+            >
+              Log in to add as friend or message
+            </Link>
+          ) : null}
+
+          {buddyMessage ? (
+            <p className="mt-2 text-center text-xs font-medium text-neutral-600">{buddyMessage}</p>
+          ) : null}
         </div>
 
         <div className="grid grid-cols-2 divide-x divide-neutral-100 border-t border-neutral-100">
@@ -136,13 +165,8 @@ export const MemberProfileView = ({
                 <p className="text-[15px] font-semibold text-neutral-900">{profile.city}</p>
               </DetailRow>
             )}
-            {formatMemberAge(profile.age) && (
-              <DetailRow icon="🎂" label="Age">
-                <p className="text-[15px] font-semibold text-neutral-900">{formatMemberAge(profile.age)}</p>
-              </DetailRow>
-            )}
             {languages.length > 0 && (
-              <DetailRow icon="🗣️" label="Languages">
+              <DetailRow icon="🗣️" label="Speaks">
                 <div className="flex flex-wrap gap-1.5">
                   {languages.map((language) => (
                     <span
@@ -166,30 +190,26 @@ export const MemberProfileView = ({
         </GlassCard>
       )}
 
-      {stamps.length > 0 && (
-        <GlassCard padding>
-          <ProfileStampsRow stamps={stamps} title="Badges" align="start" />
-        </GlassCard>
-      )}
-
-      {hostedActivities.length > 0 && (
+      {upcomingActivities.length > 0 && (
         <GlassCard padding className="space-y-3">
-          <AccountSectionHeader
-            title="Activities hosted"
-            actionTo={profile.hostProfilePath ?? undefined}
-            actionLabel={profile.hostProfilePath ? 'Host profile' : undefined}
-          />
+          <AccountSectionHeader title="Upcoming activities" />
           <div className="space-y-2">
-            {hostedActivities.map((activity) => (
+            {upcomingActivities.map((activity) => (
               <ProfileActivityListRow key={activity.id} activity={activity} />
             ))}
           </div>
         </GlassCard>
       )}
 
-      {(showConnectActions || profile.hostProfilePath || (!isSelf && !userLoggedIn)) && (
+      {stamps.length > 0 && (
+        <GlassCard padding>
+          <ProfileStampsRow stamps={stamps} title="Badges" align="start" />
+        </GlassCard>
+      )}
+
+      {(showConnectActions || profile.hostProfilePath) && (
         <GlassCard padding className="space-y-3">
-          <SectionHeading>Connect</SectionHeading>
+          <SectionHeading>More</SectionHeading>
 
           {profile.hostProfilePath && (
             <Link
@@ -201,69 +221,7 @@ export const MemberProfileView = ({
           )}
 
           {showConnectActions && (
-            <>
-              <MemberFollowControls
-                targetUserId={userId}
-                onStatusMessage={onBuddyMessage}
-              />
-
-              <AppButton type="button" fullWidth onClick={onMessage}>
-                Message
-              </AppButton>
-
-              {buddyRel?.areBuddies ? (
-                <p className="text-center text-sm font-semibold text-emerald-700">Connected as buddies</p>
-              ) : buddyRel?.incomingRequest ? (
-                <div className="flex gap-2">
-                  <AppButton type="button" className="flex-1" disabled={buddyBusy} onClick={onAcceptBuddyRequest}>
-                    Accept buddy
-                  </AppButton>
-                  <AppButton
-                    type="button"
-                    variant="secondary"
-                    className="flex-1"
-                    disabled={buddyBusy}
-                    onClick={onDeclineBuddyRequest}
-                  >
-                    Decline
-                  </AppButton>
-                </div>
-              ) : buddyRel?.outgoingRequest ? (
-                <div className="space-y-2">
-                  <p className="text-center text-sm font-semibold text-neutral-600">Buddy request sent</p>
-                  <AppButton
-                    type="button"
-                    variant="secondary"
-                    fullWidth
-                    disabled={buddyBusy}
-                    onClick={onCancelBuddyRequest}
-                  >
-                    Cancel request
-                  </AppButton>
-                </div>
-              ) : buddyRel?.canSendRequest ? (
-                <AppButton type="button" variant="secondary" fullWidth disabled={buddyBusy} onClick={onSendBuddyRequest}>
-                  <UserPlus className="mr-2 inline h-4 w-4" />
-                  Add buddy
-                </AppButton>
-              ) : null}
-
-              <p className="text-center text-xs text-neutral-500">
-                Buddies can message and see each other in Who&apos;s going.
-              </p>
-
-              {buddyMessage && <p className="text-center text-xs text-neutral-600">{buddyMessage}</p>}
-            </>
-          )}
-
-          {!isSelf && !userLoggedIn && (
-            <Link
-              to="/signin"
-              state={{ from: `/member/${profile.id}` }}
-              className="block text-center text-sm font-semibold text-emerald-700"
-            >
-              Log in to message or connect
-            </Link>
+            <MemberFollowControls targetUserId={userId} onStatusMessage={onBuddyMessage} />
           )}
         </GlassCard>
       )}

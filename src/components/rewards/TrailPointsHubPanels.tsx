@@ -236,7 +236,7 @@ export const TRAIL_POINTS_QUICK_WINS = [
     title: 'Join an activity',
     hook: 'Show up, check in, earn +30',
     points: '+30',
-    path: '/activities',
+    path: '/trips?segment=upcoming&tab=joined',
   },
   {
     icon: MessageCircle,

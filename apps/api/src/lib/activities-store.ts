@@ -22,6 +22,7 @@ import {
   listPublishedActivitiesWithPreviewsFromMongo,
   listPublishedActivitiesForExploreMapFromMongo,
   listPublishedUpcomingActivitiesByLocationFromMongo,
+  listPublishedUpcomingActivitiesByMemberFromMongo,
   listTenantActivitiesFromMongo,
   type ActivityWithTenantRelations
 } from './activity-read-assembler.js';
@@ -378,6 +379,9 @@ export const listPublishedActivitiesWithPreviews = async (input: {
 
 export const findPublishedActivityWithPreviewsById = async (activityId: string) =>
   findPublishedActivityWithPreviewsFromMongo(activityId);
+
+export const listPublishedUpcomingActivitiesByMember = async (userId: string, take = 8) =>
+  listPublishedUpcomingActivitiesByMemberFromMongo(userId, take);
 
 export const findActivityTimingById = async (activityId: string) => {
   const item = await activitiesCollection().findOne({ _id: activityId });

@@ -65,7 +65,8 @@ export const activitiesApi = {
     getMeRequest: (requestId: string) =>
     apiRequest<{ data: ActivityRequestView }>(`/me/requests/${requestId}`, { auth: true }),
 
-    getMeActivities: () => apiRequest<{ data: MyActivityDTO[] }>('/me/activities', { auth: true }),
+    getMeActivities: () =>
+      apiRequest<{ data: MyActivityDTO[] }>('/me/activities?pageSize=100', { auth: true }),
 
     getAdminActivities: () => apiRequest<{ data: ActivityDTO[] }>('/admin/activities/moderation', { auth: true }),
 

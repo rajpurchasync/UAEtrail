@@ -1,5 +1,6 @@
 import { NotificationDTO } from '@uaetrail/shared-types';
 import { apiRequest, downloadAuthenticatedFile } from '../client';
+import type { ActivityDTO } from '@uaetrail/shared-types';
 import type {
   AccountDeletionInfo,
   PublicMemberProfileDTO,
@@ -12,6 +13,11 @@ export const accountApi = {
 
     getPersonPublicProfile: (userId: string) =>
     apiRequest<{ data: PublicMemberProfileDTO }>(`/users/${userId}/public-profile`),
+
+    getPersonUpcomingActivities: (userId: string, limit = 8) =>
+    apiRequest<{ data: ActivityDTO[] }>(
+      `/users/${userId}/upcoming-activities?limit=${encodeURIComponent(String(limit))}`
+    ),
 
     updateMeProfile: (payload: UserProfile) =>
     apiRequest<{ data: UserProfile }>('/me/profile', {

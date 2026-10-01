@@ -117,6 +117,16 @@ Both use the same creator question:
 
 Toggle applies to **all organize kinds** (Hiking, Camping, Event, Activity) on the **audience** step â€” **Rideshare** is always approval. Defaults differ.
 
+### Women-only audience
+
+When organizers set **Women only** (stored as a `requirements` line), the API enforces join eligibility on **request to join**, **Iâ€™m going (RSVP)**, and **host approval**:
+
+- Profile gender **`female`** â€” can join.
+- **`male`** â€” blocked.
+- **Missing gender** or **`prefer_not_to_say`** â€” blocked until the member sets **female** on their profile (signup/settings).
+
+Code: `assertParticipantMeetsWomenOnlyRequirement` in `apps/api/src/domain/activity-audience-requirements.ts`.
+
 ---
 
 ## Participation model

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import {
   Award,
   BookOpen,
@@ -23,14 +23,35 @@ import {
 } from '../components/rewards';
 
 /** Logged-in Trail Points wallet — tap-card hub with detail sheets. */
+const PANEL_FROM_QUERY = new Set<TrailPointsHubPanel>([
+  'earn',
+  'badges',
+  'invite',
+  'activity',
+  'tiers',
+  'share',
+]);
+
+const parseRewardsPanel = (raw: string | null): TrailPointsHubPanel | null => {
+  if (!raw || !PANEL_FROM_QUERY.has(raw as TrailPointsHubPanel)) return null;
+  return raw as TrailPointsHubPanel;
+};
+
 export const MyRewards = () => {
   const { user, initializing } = useAuth();
+  const [searchParams] = useSearchParams();
   const [summary, setSummary] = useState<RewardSummaryDTO | null>(null);
   const [leaderboard, setLeaderboard] = useState<RewardLeaderboardEntryDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [panel, setPanel] = useState<TrailPointsHubPanel>(null);
+  const [panel, setPanel] = useState<TrailPointsHubPanel>(() =>
+    parseRewardsPanel(searchParams.get('panel'))
+  );
+
+  useEffect(() => {
+    setPanel(parseRewardsPanel(searchParams.get('panel')));
+  }, [searchParams]);
 
   useEffect(() => {
     if (initializing) return;

@@ -25,7 +25,7 @@ export const Header = () => {
       if (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') {
         return true;
       }
-      if (pathname === '/activities') {
+      if (pathname === '/trips' || pathname === '/activities') {
         const tab = searchParams.get('tab');
         return tab !== 'joined' && tab !== 'hosted';
       }

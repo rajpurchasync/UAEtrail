@@ -43,7 +43,7 @@ export const notifyMemberFollowed = async (input: {
   await dispatchNotification({
     userId: input.followingUserId,
     title: 'New follower',
-    body: `${followerName} started following you — you will show up in their map updates.`,
+    body: `${followerName} started following you — they'll get notified when you host an outing.`,
     type: NotificationType.SYSTEM,
     meta: {
       kind: 'connection_member_followed',

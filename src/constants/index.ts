@@ -7,7 +7,9 @@ export const DIFFICULTY_COLORS = {
 };
 
 /** Public activities browse + dashboard tab. */
-export const ACTIVITIES_PATH = '/activities';
+export const TRIPS_PATH = '/trips';
+/** @deprecated Use {@link TRIPS_PATH} */
+export const ACTIVITIES_PATH = TRIPS_PATH;
 
 /** Host publishing console nav — tools live under /host routes. */
 export const HOST_CONSOLE_LINKS = [

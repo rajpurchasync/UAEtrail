@@ -75,6 +75,8 @@ export interface UseActivityJoinActionsOptions {
   activity: ActivityJoinTarget | null;
   uiState: JoinRequestUiState;
   requestIdFallback?: string | null;
+  /** When set, join modal cannot open (e.g. women-only gender gate). */
+  joinGuardMessage?: string | null;
   onReload: () => void | Promise<void>;
   onMessage?: (message: string) => void;
   onError?: (message: string) => void;
@@ -85,6 +87,7 @@ export const useActivityJoinActions = ({
   activity,
   uiState,
   requestIdFallback = null,
+  joinGuardMessage = null,
   onReload,
   onMessage,
   onError,
@@ -96,9 +99,13 @@ export const useActivityJoinActions = ({
   const [guestSheetIntent, setGuestSheetIntent] = useState<'activity' | 'place'>('activity');
 
   const openJoinModal = useCallback(() => {
+    if (joinGuardMessage) {
+      onError?.(joinGuardMessage);
+      return;
+    }
     if (uiState.kind !== 'open') return;
     setJoinModalOpen(true);
-  }, [uiState.kind]);
+  }, [uiState.kind, joinGuardMessage, onError]);
 
   const closeJoinModal = useCallback(() => {
     setJoinModalOpen(false);

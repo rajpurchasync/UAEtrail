@@ -42,6 +42,7 @@ router.get('/me/profile', async (req, res, next) => {
         countryCode: user.profile?.countryCode ?? null,
         languages: user.profile?.languages ?? null,
         signupProfileComplete: isSignupProfileComplete(user.profile),
+        memberSince: user.createdAt.toISOString(),
       }
     });
   } catch (error) {

@@ -56,9 +56,13 @@ describe('exploreRouting navigation contract', () => {
     expect(parseFulfillIntentMapItemId(canonical)).toBe('demand:new');
   });
 
-  it('myActivitiesPath targets personal hub tabs', () => {
-    expect(myActivitiesPath()).toBe('/activities?tab=joined');
-    expect(myActivitiesPath('hosted')).toBe('/activities?tab=hosted');
+  it('myActivitiesPath targets trips hub tabs', () => {
+    expect(myActivitiesPath()).toBe('/trips?segment=upcoming&tab=joined');
+    expect(myActivitiesPath('hosted')).toBe('/trips?segment=upcoming&tab=hosted');
+  });
+
+  it('explorePath supports my trips map filter', () => {
+    expect(explorePath({ myTrips: true, list: true })).toBe('/explore?list=1&myTrips=1');
   });
 
   it('exploreOrganizePath opens compose organize menu or kind wizard', () => {

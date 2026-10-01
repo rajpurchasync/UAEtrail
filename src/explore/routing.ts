@@ -60,6 +60,8 @@ const EXPLORE_PANELS = new Set<ExplorePanel>(['activities', 'venues', 'shops']);
 
 /** Open a specific explore map item (peek card), e.g. `demand:uuid` or `venue:uuid`. */
 export const EXPLORE_PIN_QUERY_KEY = 'pin';
+/** When `1`, map/list show only the signed-in member's trips + wishlist pins. */
+export const MY_TRIPS_QUERY_KEY = 'myTrips';
 
 export const parseExplorePinMapItemId = (searchParams: Pick<URLSearchParams, 'get'>): string | null =>
   searchParams.get(EXPLORE_PIN_QUERY_KEY)?.trim() || null;
@@ -236,6 +238,8 @@ export const explorePath = (options?: {
   pin?: string;
   /** Prefill organize wizard from an existing activity id (creates a new activity on publish). */
   organizeFrom?: string;
+  /** Limit pins to signed-in member trips + wishlist (requires auth). */
+  myTrips?: boolean;
 }): string => {
   const params = new URLSearchParams();
   if (options?.filter && options.filter !== 'all') {
@@ -298,6 +302,9 @@ export const explorePath = (options?: {
   }
   if (options?.organizeFrom?.trim()) {
     params.set(ORGANIZE_FROM_ACTIVITY_QUERY_KEY, options.organizeFrom.trim());
+  }
+  if (options?.myTrips) {
+    params.set(MY_TRIPS_QUERY_KEY, '1');
   }
   const qs = params.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
@@ -411,7 +418,7 @@ export const detailBackPath = (kind: DetailBackKind): string => {
 
 /** Personal activities hub — joined/hosted tabs only (not public browse). */
 export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
-  `/activities?tab=${tab}`;
+  `/trips?segment=upcoming&tab=${tab}`;
 
 /** Consumer create flow — explore compose organize menu or a specific kind. */
 export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>

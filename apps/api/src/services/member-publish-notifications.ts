@@ -3,8 +3,8 @@
  *
  * Domain terms:
  * - **Member** — auth user (subscriptions are always userId → userId).
- * - **Buddy** — mutual connection; included in fan-out.
- * - **Follow** — one-way subscription; included in fan-out.
+ * - **Buddy** — mutual connection; notified for hosted activities and demand posts.
+ * - **Follow** — one-way subscription; notified **only when they host/publish an activity** (not demand/find posts).
  * - **Publish** — activity moved to published, or new participant demand on the map.
  *
  * Host `/operator/:slug` profiles represent a tenant; follow on that UI targets `tenant.ownerId`
@@ -32,7 +32,7 @@ const notificationCopy = (
 ): { title: string; body: string; path: string } => {
   if (event.publishType === 'activity') {
     return {
-      title: `${actorName} shared something new`,
+      title: `${actorName} is hosting an outing`,
       body: event.title,
       path: `/activity/${event.activityId}`,
     };
@@ -44,24 +44,27 @@ const notificationCopy = (
   };
 };
 
-const listPublishSubscriberIds = async (publisherUserId: string): Promise<string[]> => {
-  const [buddies, followerIds] = await Promise.all([
-    listBuddiesForUser(publisherUserId),
-    listFollowerIdsForUser(publisherUserId),
-  ]);
+const listPublishSubscriberIds = async (
+  publisherUserId: string,
+  event: MemberPublishEvent
+): Promise<string[]> => {
+  const buddies = await listBuddiesForUser(publisherUserId);
   const ids = new Set<string>();
   for (const buddy of buddies) ids.add(buddy.userId);
-  for (const followerId of followerIds) ids.add(followerId);
+  if (event.publishType === 'activity') {
+    const followerIds = await listFollowerIdsForUser(publisherUserId);
+    for (const followerId of followerIds) ids.add(followerId);
+  }
   return [...ids];
 };
 
-/** Notify buddies and followers when a member publishes map-visible content. */
+/** Notify buddies (and followers on hosted activities) when a member publishes map-visible content. */
 export const notifyMemberPublishSubscribers = async (
   publisherUserId: string,
   event: MemberPublishEvent
 ): Promise<void> => {
   try {
-    const recipientIds = await listPublishSubscriberIds(publisherUserId);
+    const recipientIds = await listPublishSubscriberIds(publisherUserId, event);
     if (recipientIds.length === 0) return;
 
     const actorName = await actorDisplayName(publisherUserId);

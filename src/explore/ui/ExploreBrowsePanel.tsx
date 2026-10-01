@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PanelLeftClose, Search, X } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
@@ -34,6 +35,7 @@ import type { WhosGoingFriendRow } from '../whosGoingFriends';
 import type { UserRole } from '@uaetrail/shared-types';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
+import { ExploreMyTripsModeNotice } from './ExploreMyTripsModeNotice';
 
 export interface ExploreBrowsePanelProps {
   isDesktop: boolean;
@@ -82,6 +84,8 @@ export interface ExploreBrowsePanelProps {
   isSignedIn?: boolean;
   userRole?: UserRole;
   friendUserIds?: Set<string>;
+  /** Filtered explore: only member trips + wishlist pins (`myTrips=1`). */
+  myTripsMode?: boolean;
 }
 
 const listHeading = (
@@ -147,13 +151,16 @@ export const ExploreBrowsePanel = ({
   isSignedIn = false,
   userRole,
   friendUserIds,
+  myTripsMode = false,
 }: ExploreBrowsePanelProps) => {
   const whosGoing = listMode === 'whosGoing';
   const whosGoingTrips = whosGoing && whosGoingSegment === 'trips';
   const whosGoingPeople = whosGoing && whosGoingSegment === 'people';
   const heading = whosGoing
     ? "Who's going?"
-    : listHeading(isDesktop, desktopBrowseTab, sidebarPanel, listItems.length, mapFilter);
+    : myTripsMode
+      ? `My trips (${listItems.length})`
+      : listHeading(isDesktop, desktopBrowseTab, sidebarPanel, listItems.length, mapFilter);
   const filterEmojiContext = placesMode ? 'venue' : 'activity';
   const queryInputRef = useRef<HTMLInputElement>(null);
   const searchScopeAnchorRef = useRef<HTMLDivElement>(null);
@@ -222,6 +229,8 @@ export const ExploreBrowsePanel = ({
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
+
+      {myTripsMode ? <ExploreMyTripsModeNotice /> : null}
 
       {whosGoing ? (
         <div
@@ -363,14 +372,14 @@ export const ExploreBrowsePanel = ({
                   </button>
                 ) : null}
               </label>
-              {isDesktop && !placesMode ? (
+              {!placesMode ? (
                 <ExploreMapDateFilter
                   activityDatePreset={activityDatePreset}
                   onActivityDatePresetChange={onActivityDatePresetChange}
                   iconOnly
                 />
               ) : null}
-              {isDesktop && placesMode ? (
+              {placesMode ? (
                 <VenueStateFilterMenu
                   selected={venueRegions}
                   onChange={onVenueRegionsChange}
@@ -400,10 +409,10 @@ export const ExploreBrowsePanel = ({
             allowedKeys={browseFilterKeys}
             filterEmojiContext={filterEmojiContext}
             layout="list"
-            showDateFilter={!placesMode && !isDesktop}
+            showDateFilter={false}
             activityDatePreset={activityDatePreset}
             onActivityDatePresetChange={onActivityDatePresetChange}
-            showStateFilter={placesMode && !isDesktop}
+            showStateFilter={false}
             venueRegions={venueRegions}
             onVenueRegionsChange={onVenueRegionsChange}
             buddySubtype={buddySubtype}
@@ -434,16 +443,29 @@ export const ExploreBrowsePanel = ({
             <ExploreListSkeleton rows={isDesktop ? 8 : 5} />
           ) : null}
           {!whosGoingPeople && !loading && listItems.length === 0 ? (
-            <p className={`py-10 text-center text-sm font-medium ${EXPLORE_TYPE.muted}`}>
-              {whosGoingTrips
-                ? 'No outings with people joining yet — check back soon.'
-                : browseListEmptyMessage({
-                    isDesktop,
-                    desktopBrowseTab,
-                    sidebarPanel,
-                    emptyFiltersCopy: PRODUCT_EXPLORE_EMPTY_FILTERS,
-                  })}
-            </p>
+            myTripsMode ? (
+              <div className={`py-10 text-center text-sm ${EXPLORE_TYPE.muted}`}>
+                <p className="font-medium text-neutral-700">Nothing on your map yet</p>
+                <p className="mt-1">Join an outing or save a place from explore.</p>
+                <Link
+                  to="/trips?segment=upcoming&tab=joined"
+                  className="mt-3 inline-block font-semibold text-emerald-700"
+                >
+                  Open trip list
+                </Link>
+              </div>
+            ) : (
+              <p className={`py-10 text-center text-sm font-medium ${EXPLORE_TYPE.muted}`}>
+                {whosGoingTrips
+                  ? 'No outings with people joining yet — check back soon.'
+                  : browseListEmptyMessage({
+                      isDesktop,
+                      desktopBrowseTab,
+                      sidebarPanel,
+                      emptyFiltersCopy: PRODUCT_EXPLORE_EMPTY_FILTERS,
+                    })}
+              </p>
+            )
           ) : null}
           {listItems.length > 0 && shopListSections ? (
             <>

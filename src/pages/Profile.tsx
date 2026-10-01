@@ -1,93 +1,58 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
-import { GlassCard } from '../components/mobile/GlassCard';
-import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/ConsumerFeedback';
-import {
-  AccountAvatarModal,
-  AccountEditModal,
-  AccountSectionHeader,
-  AccountSignOutButton,
-  OrganisationHubSections,
-} from '../components/account';
+import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
+import { AccountAvatarModal } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
-import { useOrganisationHubData } from '../hooks/useOrganisationHubData';
 import { useOrganisationGate } from '../hooks/useOrganisationGate';
 import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
 import { TrailPointsPathSheet } from '../components/rewards';
 import { RewardSummaryDTO } from '@uaetrail/shared-types';
 import { ProfileHeroSection } from '../components/profile/ProfileHeroSection';
-import { ProfileQuickActions, type ProfileQuickAction } from '../components/profile/ProfileQuickActions';
-import { ProfileStampsRow } from '../components/profile/ProfileStampsRow';
-import { ProfileCompletionCard } from '../components/profile/ProfileCompletionCard';
+import { ProfileHubMenu } from '../components/profile/ProfileHubMenu';
+import { ProfileUpNextStrip } from '../components/profile/ProfileUpNextStrip';
 import { ProfileBioCard } from '../components/profile/ProfileBioCard';
 import { ProfileLanguagesCard } from '../components/profile/ProfileLanguagesCard';
-import { ProfileSettingsLink } from '../components/profile/ProfileSettingsLink';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
-import { buildProfileStamps } from '../utils/profileStamps';
 import { USER_CITY_LABELS } from '../constants/userProfileOptions';
-import { computeAgeFromDateOfBirth, formatMemberAge } from '../utils/profileAge';
+import { formatMemberJoinedLabel } from '../utils/formatMemberSince';
+import { profileVisibilityLabel } from '../utils/profileVisibilityLabel';
 import { resolveProfileHostKind, resolveProfileRoleLabel } from '../utils/profileRoleLabel';
-import type { AccountEditSavePayload } from '../components/account/AccountEditModal';
-import { attendedActivities } from '../utils/activityHubSections';
 import { isHostRole } from '../utils/roles';
-import { meProfileSignupGateKey } from '../utils/signupProfileGate';
 
 export const Profile = () => {
-  const { user, refreshUser, signOut } = useAuth();
-  const queryClient = useQueryClient();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const {
     profile,
     setProfile,
-    groups,
-    buddies,
     incomingBuddyRequests,
-    activities,
-    upcomingActivitiesCount,
-    unreadMessages,
+    upcomingPlans,
     loading,
     error,
     reload,
   } = useParticipantHubData();
 
-  const {
-    ownedProfiles,
-    loading: hostGateLoading,
-    tenantId: hostTenantId,
-  } = useOrganisationGate({ enabled: Boolean(user) });
+  const { ownedProfiles, loading: hostGateLoading } = useOrganisationGate({ enabled: Boolean(user) });
 
-  const host = useOrganisationHubData();
-
-  useEffect(() => {
-    if (hostTenantId) {
-      host.setTenantId(hostTenantId);
-    }
-  }, [hostTenantId, host.setTenantId]);
-
-  const [saving, setSaving] = useState(false);
   const [avatarSaving, setAvatarSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
-  const [showEdit, setShowEdit] = useState(false);
   const [showAvatarEdit, setShowAvatarEdit] = useState(false);
   const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
   const [showPointsPath, setShowPointsPath] = useState(false);
-  const [memberDetails, setMemberDetails] = useState<{ age: number | null }>({ age: null });
+  const [memberSince, setMemberSince] = useState<string | null>(null);
+  const [visibility, setVisibility] = useState<'public' | 'group_members' | 'private'>('public');
 
   useEffect(() => {
     if (!user) return;
     void api.getMeProfile().then((profileRes) => {
-      const dateOfBirth = profileRes?.data?.dateOfBirth;
-      setMemberDetails({
-        age: dateOfBirth ? computeAgeFromDateOfBirth(dateOfBirth) : null,
-      });
+      setMemberSince(profileRes.data.memberSince ?? null);
+      setVisibility(profileRes.data.profileVisibility ?? 'public');
     }).catch(() => undefined);
   }, [user]);
 
@@ -101,27 +66,18 @@ export const Profile = () => {
   useEffect(() => {
     const state = location.state as { openEdit?: boolean } | null;
     if (!state?.openEdit) return;
-    setShowEdit(true);
-    navigate(location.pathname, { replace: true, state: null });
+    navigate('/profile/edit', { replace: true, state: null });
   }, [location.pathname, location.state, navigate]);
 
   const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
   const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const canHost = isHostRole(user?.role);
   const isActivityHost = canHost && hostProfileKind !== 'shop';
-  const messagesPath = canHost ? '/host/messages' : '/messages';
-  const activitiesPath = '/activities?tab=joined';
   const displayName = profile.displayName || user!.displayName || 'Explorer';
   const roleLabel = resolveProfileRoleLabel(user?.role, ownedProfiles);
   const avatarUrl = profile.avatarUrl ?? user?.avatarUrl ?? null;
-
-  const profileAge = useMemo(() => {
-    const dateOfBirth = profile.dateOfBirth;
-    if (dateOfBirth) return computeAgeFromDateOfBirth(dateOfBirth);
-    return memberDetails.age;
-  }, [memberDetails.age, profile.dateOfBirth]);
-
   const profileCityLabel = profile.city ? USER_CITY_LABELS[profile.city] : null;
+  const memberSinceLabel = memberSince ? formatMemberJoinedLabel(memberSince) : null;
 
   const completion = useMemo(
     () =>
@@ -159,101 +115,7 @@ export const Profile = () => {
   const shareText = resolveProfileShareText(displayName, ownedProfiles);
   const shareReady = !hostGateLoading || ownedProfiles.length > 0 || Boolean(rewardSummary?.referralCode);
 
-  const profileStamps = useMemo(
-    () =>
-      buildProfileStamps({
-        rewardSummary,
-        attendedCount: attendedActivities(activities).length,
-        hostedCount: host.activities.filter((a) => a.status === 'published').length,
-        isHost: isActivityHost,
-        hostProfileKind,
-        isGuideStaff: user?.role === 'tenant_guide',
-      }),
-    [host.activities, hostProfileKind, isActivityHost, rewardSummary, activities, user?.role]
-  );
-
-  const openActivities = useCallback(() => {
-    navigate(activitiesPath);
-  }, [activitiesPath, navigate]);
-
-  const quickActions = useMemo((): ProfileQuickAction[] => {
-    const actions: ProfileQuickAction[] = [
-      {
-        key: 'activities',
-        label: 'Activities',
-        onClick: openActivities,
-        emoji: '🧭',
-        badge:
-          (canHost
-            ? upcomingActivitiesCount + host.pendingJoinRequests
-            : upcomingActivitiesCount) || undefined,
-        accent: 'bg-emerald-50',
-      },
-      {
-        key: 'messages',
-        label: 'Messages',
-        to: messagesPath,
-        emoji: '💬',
-        badge: unreadMessages,
-        accent: 'bg-sky-50',
-      },
-      {
-        key: 'buddies',
-        label: 'Buddies',
-        to: '/buddies',
-        emoji: '👥',
-        badge: incomingBuddyRequests.length || buddies.length || undefined,
-        accent: 'bg-violet-50',
-      },
-      {
-        key: 'groups',
-        label: 'Groups',
-        to: '/groups',
-        emoji: '🫂',
-        badge: groups.length,
-        accent: 'bg-indigo-50',
-      },
-      {
-        key: 'reviews',
-        label: 'Reviews',
-        to: '/profile/reviews',
-        emoji: '⭐',
-        accent: 'bg-amber-50',
-      },
-      {
-        key: 'wishlist',
-        label: 'Saved',
-        to: '/profile/wishlist',
-        emoji: '📍',
-        accent: 'bg-teal-50',
-      },
-    ];
-
-    if (trailPointsEligible) {
-      actions.push({
-        key: 'rewards',
-        label: 'Points',
-        to: '/my-rewards',
-        emoji: '🏆',
-        badge: rewardSummary?.points,
-        accent: 'bg-emerald-50',
-      });
-    }
-
-    return actions;
-  }, [
-    buddies.length,
-    canHost,
-    groups.length,
-    host.pendingJoinRequests,
-    incomingBuddyRequests.length,
-    messagesPath,
-    openActivities,
-    rewardSummary?.points,
-    trailPointsEligible,
-    unreadMessages,
-    upcomingActivitiesCount,
-  ]);
+  const buddyBadge = incomingBuddyRequests.length > 0 ? incomingBuddyRequests.length : undefined;
 
   const openPublicProfile = useCallback(() => {
     if (!user?.id) return;
@@ -261,8 +123,8 @@ export const Profile = () => {
   }, [navigate, user?.id]);
 
   const openEdit = useCallback(() => {
-    setShowEdit(true);
-  }, []);
+    navigate('/profile/edit');
+  }, [navigate]);
 
   const openAvatarEdit = useCallback(() => {
     setAvatarMessage(null);
@@ -271,29 +133,12 @@ export const Profile = () => {
 
   const handleRefresh = useCallback(async () => {
     await reload();
-    if (isActivityHost && hostTenantId) {
-      await host.reload();
-    }
-  }, [host, hostTenantId, isActivityHost, reload]);
-
-  const saveProfile = async (payload: AccountEditSavePayload) => {
-    setMessage(null);
-    setSaving(true);
-    try {
-      await api.updateMeProfile(payload);
-      await refreshUser();
-      if (user?.id) {
-        await queryClient.invalidateQueries({ queryKey: meProfileSignupGateKey(user.id) });
-      }
-      setMessage('Profile saved.');
-      setShowEdit(false);
-      await reload();
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Couldn\'t save your profile — try again.');
-    } finally {
-      setSaving(false);
-    }
-  };
+    if (!user) return;
+    void api.getMeProfile().then((profileRes) => {
+      setMemberSince(profileRes.data.memberSince ?? null);
+      setVisibility(profileRes.data.profileVisibility ?? 'public');
+    });
+  }, [reload, user]);
 
   const saveAvatar = async (nextAvatarUrl: string) => {
     setAvatarMessage(null);
@@ -314,20 +159,11 @@ export const Profile = () => {
 
   const heroExtra = (
     <div className="flex flex-col items-center gap-2">
-      {(profileCityLabel || formatMemberAge(profileAge)) && (
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {profileCityLabel && (
-            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
-              📍 {profileCityLabel}
-            </span>
-          )}
-          {formatMemberAge(profileAge) && (
-            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
-              {formatMemberAge(profileAge)}
-            </span>
-          )}
-        </div>
-      )}
+      {profileCityLabel ? (
+        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
+          📍 {profileCityLabel}
+        </span>
+      ) : null}
       {trailPointsEligible && rewardSummary?.membershipTier && rewardSummary.membershipTier.key !== 'free' ? (
         <MembershipTierBadge
           tierKey={rewardSummary.membershipTier.key}
@@ -372,6 +208,8 @@ export const Profile = () => {
             onEditAvatar={openAvatarEdit}
             onEditProfile={openEdit}
             onViewProfile={openPublicProfile}
+            memberSinceLabel={memberSinceLabel}
+            visibilityLabel={profileVisibilityLabel(visibility)}
             extra={heroExtra}
           />
 
@@ -387,45 +225,13 @@ export const Profile = () => {
             onUpdated={(languages) => setProfile((prev) => ({ ...prev, languages }))}
           />
 
-          {!loading && completion.percent < 100 && (
-            <ProfileCompletionCard
-              percent={completion.percent}
-              items={completion.items}
-              onEditProfile={openEdit}
-              onEditAvatar={openAvatarEdit}
-              onOpenSettings={() => navigate('/profile/settings')}
-            />
-          )}
+          <ProfileUpNextStrip plans={upcomingPlans} loading={loading} />
 
-          <ProfileQuickActions actions={quickActions} columns={quickActions.length > 4 ? 3 : 3} />
-
-          {isActivityHost && (
-            <GlassCard padding className="space-y-3">
-              <AccountSectionHeader title="Hosting" actionTo="/host/overview" actionLabel="Host console" />
-              {host.loading ? (
-                <ConsumerLoadingSpinner className="py-6" />
-              ) : (
-                <OrganisationHubSections
-                  activitiesCount={host.activities.length}
-                  pendingJoinRequests={host.pendingJoinRequests}
-                  upcomingActivitiesCount={host.upcomingActivitiesCount}
-                  pastActivitiesCount={host.pastActivitiesCount}
-                  upcomingActivities={host.upcomingActivities}
-                  showConsoleLinks={false}
-                />
-              )}
-            </GlassCard>
-          )}
-
-          {!loading && profileStamps.length > 0 && (
-            <GlassCard padding className="!py-4">
-              <ProfileStampsRow stamps={profileStamps} />
-            </GlassCard>
-          )}
-
-          <ProfileSettingsLink />
-
-          <AccountSignOutButton onSignOut={() => void signOut()} />
+          <ProfileHubMenu
+            buddyBadge={buddyBadge}
+            showHosting={isActivityHost}
+            trailPointsEligible={trailPointsEligible}
+          />
         </div>
       </PullToRefresh>
 
@@ -436,17 +242,6 @@ export const Profile = () => {
           summary={rewardSummary}
         />
       )}
-
-      <AccountEditModal
-        open={showEdit}
-        onClose={() => setShowEdit(false)}
-        profile={profile}
-        setProfile={setProfile}
-        email={user!.email ?? ''}
-        saving={saving}
-        message={message}
-        onSave={saveProfile}
-      />
 
       <AccountAvatarModal
         open={showAvatarEdit}

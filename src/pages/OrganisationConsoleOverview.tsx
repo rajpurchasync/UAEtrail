@@ -196,9 +196,9 @@ export const OrganisationConsoleOverview = () => {
             <AccountLinkList
               items={[
                 {
-                  to: '/activities?tab=joined',
+                  to: '/trips?segment=upcoming&tab=joined',
                   icon: <Calendar className="w-4 h-4" />,
-                  label: 'My activities as participant',
+                  label: 'My trips as participant',
                   badge: participant.upcomingActivitiesCount || undefined,
                   accent: 'neutral',
                 },

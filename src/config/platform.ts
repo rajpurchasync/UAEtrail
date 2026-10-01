@@ -100,7 +100,7 @@ export const MOBILE_DRAWER_MENU = [
   },
   { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery'] },
   { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
-  { label: 'My activities', to: '/activities?tab=joined', match: ['/activities', '/activity'] },
+  { label: 'My trips', to: '/trips?segment=upcoming&tab=joined', match: ['/trips', '/activities', '/activity'] },
 ] as const;
 
 /**
@@ -264,6 +264,7 @@ export const isMobileDetailRoute = (pathname: string): boolean =>
 export const CONSUMER_SELF_HEADER_EXACT = [
   '/',
   '/explore',
+  '/trips',
   '/activities',
   '/community',
   '/shop',
@@ -272,6 +273,7 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/my-rewards',
   '/groups',
   '/buddies',
+  '/contributions',
   '/messages',
   '/notifications',
   '/my-requests',
@@ -300,18 +302,28 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
   isMobileDetailRoute(pathname);
 
 /** Signed-in mobile tab shell — Map · Activities · Messages. */
-export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/activities', '/messages'] as const;
+export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/trips', '/messages'] as const;
 
 export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number];
 
 export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBottomNavTabPath =>
-  (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname);
+  (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname) || pathname === '/activities';
 
 /** Personal hub routes that keep the mobile tab bar visible (profile is not a tab). */
-export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = ['/profile', '/profile/settings'] as const;
+export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
+  '/profile',
+  '/buddies',
+  '/contributions',
+  '/groups',
+  '/my-rewards',
+  '/my-requests',
+] as const;
+
+const MOBILE_BOTTOM_NAV_PROFILE_PREFIXES = ['/profile/'] as const;
 
 const isMobileBottomNavProfilePath = (pathname: string): boolean =>
-  pathname === '/profile' || pathname.startsWith('/profile/');
+  (MOBILE_BOTTOM_NAV_PROFILE_PATHS as readonly string[]).includes(pathname) ||
+  MOBILE_BOTTOM_NAV_PROFILE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
 /** Mobile bottom nav — map tab for everyone; other tabs + profile when signed in. */
 export const shouldShowMobileBottomNav = (

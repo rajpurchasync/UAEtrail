@@ -7,6 +7,6 @@ export interface MemberFollowSummaryDTO {
 
 export interface MemberFollowStateDTO {
   isFollowing: boolean;
-  /** Viewer follows this member (one-way). */
+  /** Viewer follows this member (one-way; host outing alerts only, not demand posts). */
   canFollow: boolean;
 }

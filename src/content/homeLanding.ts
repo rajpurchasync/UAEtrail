@@ -66,7 +66,7 @@ export const HOME_VALUE_PROPS = [
   },
   {
     title: 'Same crew, next time',
-    tagline: 'Buddies and group chat make the next outing one tap away.',
+    tagline: 'Friends and group chat make the next outing one tap away.',
     description:
       'Meet people you want to hike, camp, or run with again — not one-off strangers.',
   },

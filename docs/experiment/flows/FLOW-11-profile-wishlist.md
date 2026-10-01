@@ -3,7 +3,7 @@
 **Status:** In progress — profile route + favorites list (2026-09-30)  
 **Product doc:** [`WISHLIST_MAP_ALERTS.md`](../WISHLIST_MAP_ALERTS.md)  
 **API (v1 saves):** `GET/POST/DELETE /me/favorites` · `user_favorites`  
-**UI:** `/profile/wishlist` · Profile hub quick action · Settings link
+**UI:** `/trips?segment=wishlist` (legacy `/profile/wishlist` redirects) · Profile menu **Trips** · Settings link
 
 ---
 
@@ -13,7 +13,7 @@ Signed-in members **save map pins** from explore (places, shops, people — acti
 
 | Field | Value |
 |-------|--------|
-| Surface | **Personal hub** `/profile` → **Saved map** `/profile/wishlist` |
+| Surface | **Trips** `/trips?segment=wishlist` (from Profile menu or Settings) |
 | Settings | `/profile/settings` — link + future global alert toggle |
 | Storage (v1) | `user_favorites` (extend with `alertOnMatch`, saved filter JSON later) |
 | Demand on map | Unchanged — wishlist is private saves + alerts, not a replacement |
@@ -31,7 +31,7 @@ Signed-in members **save map pins** from explore (places, shops, people — acti
 
 ### Manage in profile
 
-1. Profile → **Saved** quick action (or Settings → **Saved map & alerts**).
+1. Profile → **Trips** → Wishlist segment (or Settings → **Saved map & alerts**).
 2. List: title, type chip, **Open on map**, **Remove**.
 3. Empty state → **Explore the map** (`EXPLORE_MAP_PATH`).
 

@@ -295,7 +295,7 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
 
       {canPublish && draft.joinMode !== 'private' && (
         <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-900">
-          Publishing adds your activity to the explore map at the pin you chose. You can manage it from My activities.
+          Publishing adds your activity to the explore map at the pin you chose. You can manage it from My trips.
         </p>
       )}
 

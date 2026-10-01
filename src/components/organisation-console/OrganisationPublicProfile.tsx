@@ -254,7 +254,7 @@ export const OrganisationPublicProfile = ({
                 state={{ from: `/operator/${slug}` }}
                 className="block text-center text-sm font-semibold text-emerald-700"
               >
-                Log in to follow for map updates
+                Log in to follow host outing alerts
               </Link>
             )}
             <HostMessageButton hostUserId={tenant.ownerId} size="md" className="w-full" />

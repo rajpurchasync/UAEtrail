@@ -23,7 +23,7 @@ export const notifyParticipantJoinRequestSubmitted = async (input: {
       kind: input.waitlisted ? 'join_request_waitlisted' : 'join_request_pending',
       activityId: input.activityId,
       requestId: input.requestId,
-      path: `/activity/${input.activityId}`
+      path: '/trips?segment=upcoming&tab=joined',
     }
   }).catch(() => undefined);
 };
@@ -49,7 +49,7 @@ export const notifyParticipantJoinRequestWithdrawn = async (input: {
       kind: 'join_request_withdrawn',
       activityId: input.activityId,
       requestId: input.requestId,
-      path: `/activity/${input.activityId}`
+      path: '/trips?segment=upcoming&tab=joined',
     }
   }).catch(() => undefined);
 };

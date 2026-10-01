@@ -10,17 +10,28 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 |---------|-------|---------|
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
-| **Personal hub** | `/profile`, `/profile/settings`, `/activities?tab=joined\|hosted` | Account hub, settings stack, activity lists |
-| **Mobile tabs (signed-in)** | `/explore`, `/activities`, `/messages` | Map · My Activities · Messages bottom nav (`md:hidden`); same bar on **`/profile`** and **`/profile/settings`** |
+| **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/trips` | Account hub, settings stack, trips (upcoming / past / wishlist) |
+| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | Map · My trips · Messages bottom nav (`md:hidden`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
 | **Entity detail** | `/trail`, `/camp`, `/event`, `/activity`, `/shop`, `/operator` | Single place, trip, or host |
 
 ### Profile hub (`/profile`)
 
-- **Priority order:** Hero → bio & languages → profile completion → quick actions → hosting (hosts only) → **My Badges** → settings → sign out.
+- **Priority order:** Hero (member since, visibility, completion ring) → bio & speaks → **Profile menu** (Friends, Groups, Trips, Badges, Contributions, Settings; hosting link for approved hosts).
+- **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
 - **Pull-to-refresh** reloads hub data at scroll top.
-- **Empty “Up next”:** single CTA → Explore map.
-- **Saved map (wishlist):** `/profile/wishlist` — starred places/plans from explore; hub quick action **Saved**; Settings → **Saved map & alerts**. In-app match notifications (E11) — not host console.
-- **Settings stack:** `/profile/settings` — member details (DOB, gender, based in, languages), password, email, sign out (not on main hub).
+- **Sign out:** Settings → Account only (not on hub).
+- **Wishlist:** `/trips?segment=wishlist` (legacy `/profile/wishlist` redirects). Settings → **Saved map & alerts** links to the same segment.
+- **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes.
+
+### Trips (`/trips`)
+
+- **Segments:** `?segment=upcoming|past|wishlist` with joined/hosted tabs on upcoming (`?tab=joined|hosted`).
+- **My trips map:** `explorePath({ myTrips: true, list: true })` filters explore to the member’s saved pins + joined/pending activity pins.
+- **`/activities`** redirects to `/trips` for bookmarks and old links.
+
+### Friends (`/buddies`)
+
+- Consumer label **Friends**; tabs `?tab=friends|requests|following`.
 
 ### Post-auth member details (`/welcome`)
 
@@ -63,7 +74,7 @@ Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTH
 - **Do not add** demand posting, become-host, buddies, shops, or full map UX to Home — those belong on `/explore` or in-app.
 - **Copy:** `src/content/homeLanding.ts`. **Components:** `src/components/home/*`.
 
-Legacy browse URLs (`/map`, `/discovery`, `/calendar`, `/shop`, bare `/activities`) redirect into `/explore` via `App.tsx` only — do not link to them from new UI.
+Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as browse) redirect via `App.tsx` — do not link to them from new UI. **`/activities` → `/trips`** is the personal hub exception.
 
 ## Source of truth (code)
 
@@ -86,6 +97,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, `/shop`, bare `/activitie
 - **Guest join:** tapping Join on an activity opens a signup sheet (returns to map after auth).
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
 - Pass `list: true` to `explorePath()` only when opening the browse sheet intentionally.
+- **My trips map:** `explorePath({ myTrips: true, list: true })` sets `myTrips=1` and filters pins to the signed-in member’s wishlist + joined/pending activities.
 - Filter/panel query params select map context; they do not imply list mode.
 - **Others drill-down (Activities tab):** `filter=others` → optional `subtype=events|activities`; when `subtype=activities`, optional `outingTopic` (`climbing`, `trail_run`, `workshop`, `community`, …). Helpers: `explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })`.
 

@@ -131,6 +131,7 @@ export interface UserProfile {
   languages?: string | null;
   countryCode?: 'AE' | 'SA' | 'OM' | 'QA' | 'BH' | 'KW' | null;
   signupProfileComplete?: boolean;
+  memberSince?: string;
 }
 
 export type PublicMemberProfileDTO =
@@ -145,9 +146,9 @@ export type PublicMemberProfileDTO =
       displayName: string;
       avatarUrl: string | null;
       bio: string | null;
-      age: number | null;
       city: string | null;
       languages: string | null;
+      memberSince: string;
       isHost: boolean;
       isGuideStaff?: boolean;
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
