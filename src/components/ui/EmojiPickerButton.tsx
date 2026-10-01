@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Smile } from 'lucide-react';
 import { CHAT_EMOJI_LIST } from '../../constants/chatEmojis';
 
@@ -11,53 +12,87 @@ interface EmojiPickerButtonProps {
 export const EmojiPickerButton = ({ onPick, disabled, className = '' }: EmojiPickerButtonProps) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [pickerPos, setPickerPos] = useState<{ top: number; left: number } | null>(null);
+
+  const updatePickerPosition = () => {
+    const button = buttonRef.current;
+    if (!button) return;
+    const rect = button.getBoundingClientRect();
+    const width = Math.min(280, window.innerWidth - 16);
+    const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+    const top = Math.max(8, rect.top - 8);
+    setPickerPos({ top, left });
+  };
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPickerPos(null);
+      return;
+    }
+    updatePickerPosition();
+    window.addEventListener('resize', updatePickerPosition);
+    window.addEventListener('scroll', updatePickerPosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePickerPosition);
+      window.removeEventListener('scroll', updatePickerPosition, true);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
-    const onPointerDown = (event: MouseEvent | TouchEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (rootRef.current?.contains(target)) return;
+      const portal = document.getElementById('emoji-picker-portal');
+      if (portal?.contains(target)) return;
+      setOpen(false);
     };
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('touchstart', onPointerDown);
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('touchstart', onPointerDown);
-    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
   }, [open]);
 
   return (
     <div ref={rootRef} className={`relative shrink-0 ${className}`}>
       <button
+        ref={buttonRef}
         type="button"
         disabled={disabled}
         onClick={() => setOpen((current) => !current)}
         className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-emerald-600 disabled:opacity-40 transition-colors"
         aria-label="Insert emoji"
         title="Emoji"
+        aria-expanded={open}
       >
         <Smile className="w-5 h-5" />
       </button>
-      {open && (
-        <div className="absolute left-0 bottom-full mb-2 z-30 w-[min(280px,calc(100vw-2rem))] rounded-xl border border-neutral-200 bg-white p-2 shadow-lg">
-          <div className="grid grid-cols-8 gap-0.5 max-h-40 overflow-y-auto">
-            {CHAT_EMOJI_LIST.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                onClick={() => {
-                  onPick(emoji);
-                  setOpen(false);
-                }}
-                className="font-emoji h-9 w-9 rounded-lg text-xl hover:bg-neutral-100 active:bg-neutral-200"
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {open && pickerPos
+        ? createPortal(
+            <div
+              id="emoji-picker-portal"
+              className="fixed z-[2000] w-[min(280px,calc(100vw-2rem))] rounded-xl border border-neutral-200 bg-white p-2 shadow-lg"
+              style={{ top: pickerPos.top, left: pickerPos.left, transform: 'translateY(-100%)' }}
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <div className="grid grid-cols-8 gap-0.5 max-h-40 overflow-y-auto">
+                {CHAT_EMOJI_LIST.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => {
+                      onPick(emoji);
+                      setOpen(false);
+                    }}
+                    className="font-emoji h-9 w-9 rounded-lg text-xl hover:bg-neutral-100 active:bg-neutral-200"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 };

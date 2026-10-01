@@ -2,7 +2,7 @@ import { Plus, Search } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 const actionButtonClass =
-  'touch-target-icon inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm active:scale-[0.98]';
+  'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm active:scale-[0.98] min-h-[40px] min-w-[40px] max-h-11 max-w-11';
 
 const searchToggleClass =
   'touch-target-icon inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-neutral-200/90 bg-white text-neutral-600 shadow-sm active:scale-[0.98] md:hidden';
@@ -18,6 +18,8 @@ interface TabPageSearchRowProps {
   onAction?: () => void;
   actionAriaLabel?: string;
   action?: ReactNode;
+  /** Renders between search and trailing action (e.g. filter). */
+  beforeAction?: ReactNode;
   /** On small screens, show a search icon until expanded (full field always on md+). */
   mobileSearch?: 'field' | 'icon';
   /** Drop top padding when nested in a tab toolbar. */
@@ -33,6 +35,7 @@ export const TabPageSearchRow = ({
   onAction,
   actionAriaLabel,
   action,
+  beforeAction,
   mobileSearch = 'field',
   inset = false,
   className = '',
@@ -61,7 +64,9 @@ export const TabPageSearchRow = ({
     ) : null);
 
   return (
-    <div className={`flex items-center gap-2 ${inset ? '' : 'pt-2'} ${className}`.trim()}>
+    <div
+      className={`flex w-full max-w-full min-w-0 items-center gap-2 ${inset ? '' : 'pt-2'} ${className}`.trim()}
+    >
       <label
         className={[
           'relative min-w-0 flex-1',
@@ -98,6 +103,7 @@ export const TabPageSearchRow = ({
         </>
       ) : null}
 
+      {beforeAction}
       {trailing}
     </div>
   );

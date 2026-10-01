@@ -12,13 +12,41 @@ See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing r
 |--------|------------|----------------|------------|-------------|
 | **Place** | One map/catalog POI — typed, not a separate “venue” or “location” product | `locations`, `PlaceDTO` / `LocationDTO` | See [Place kinds](#place-one-entity-placekind) | Yes (venue / shop pins) |
 | **Activity** | A scheduled outing hosted at a place | `activities`, `ActivityDTO` | `/activity/:id` | Yes |
-| **Event (organize)** | Public outdoor happening (run, marathon, group race) — default **I’m going** RSVP | Same as Activity row | `/activity/:id` | Yes |
-| **Activity (organize — buddy)** | Generic “I want to run / jog / …” plan; free-text title; default **request to join** | Same row; `activityType: event` + user title in v1 | `/activity/:id` | Yes |
+| **Event (organize chip)** | Compose label — public happening; default **I’m going** RSVP | Same **Activity** row (`activityType: event`) | `/activity/:id` | Yes |
+| **Activity (organize chip)** | Compose label — generic buddy plan (run, jog, …); default **request to join** | Same **Activity** row (see CREATE_FLOW for `activityType`) | `/activity/:id` | Yes |
 | **Host** (publishing) | Anyone who publishes trips and may have a public profile — **guide**, **agency**, or **shop** | `tenants`, `TenantProfile`, `merchant_profiles` (shops) | Guide/agency: `/operator/:slug` · Shop: `/shop/:id` | Physical shops only |
 | **Person** | A member's public identity on the platform | `users` (profile fields), `/member/:id` | `/profile`, `/member/:id` | Via demand cards |
 | **User** | Auth account (login, roles, suspension) | `users`, `UserDTO`, `AuthContext` | `/signin`, `/signup` | — |
 
 **Participation** links **Person ↔ Activity ↔ Place**. **Publishing** links **Host (tenant) ↔ Activity**. Shops also link **featured outbound picks**.
+
+### Scheduled outings — one entity, many labels (avoid “Trip” in code)
+
+There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map that members join or hosts publish is an **Activity** (`activities`, `ActivityDTO`, `/activity/:id`).
+
+| Word | Layer | Meaning | Use in new code |
+|------|--------|---------|-----------------|
+| **Activity** | Domain | Scheduled outing (hike, camp, rideshare, run, …) | `ActivityDTO`, `activityId`, org/host activity APIs |
+| **Outing / plan** | Product copy | Same as activity — emotional, member-facing | UI strings, north star |
+| **Organize** | Action (FAB) | Host flow that **creates or edits** an activity | `compose=organize`, organize wizards — not an entity |
+| **Event** | Overloaded — read context | (1) **Place kind** → venue page `/event/:id` (2) **Organize chip** → `activityType: event` (3) Legacy JSON `event` on some payloads → use **`activity`** | Never a fourth entity; prefer **place** vs **activity** in code |
+| **Trip / Trips** | **UI only** | Bottom nav + `/trips` = **your** calendar (joined, hosting, wishlist) | `tripsRouting.ts`, `components/trips/*`, tab title “Trips” — **not** API module names |
+| **Hosted** | Relationship | You publish/manage an activity as a host tenant | `HostedActivitiesSection`, org hub — not a type of outing |
+| **Joined** | Relationship | You RSVP’d or have a pending join request | `getMeActivities`, `getMeRequests` |
+| **Self / My plans** | Relationship | Demand or self-started compose (not host publish) | Trips tab slice; still activities or demand when persisted |
+
+**Organize menu labels** (Hiking, Camping, Event, Activity, Rideshare) are **kinds of activity** (`activityType` / compose intent), not separate products. **“Organized activities”** in conversation means activities created via **Organize** — still one `Activity` row.
+
+**Trips tab** (`/trips`) groups **your** relationships to activities and saved places:
+
+| Trips UI | Domain data |
+|----------|-------------|
+| Upcoming rail / Joined list | `GET /me/activities`, `GET /me/requests` |
+| Hosted list + manage sheet | Organisation hub: `listOrganisationActivities`, join requests |
+| Wishlist / Places / Shops layers | Favorites / place registry — not activities |
+| `/trips/map` (outdoor map) | `memberJourneyMapApi` → `/me/trips/map` (legacy path name on server) |
+
+Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined lists — reuse **activity** and **member engagement** APIs.
 
 ## Place — one entity, `PlaceKind`
 

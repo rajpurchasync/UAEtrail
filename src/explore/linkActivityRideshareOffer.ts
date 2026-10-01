@@ -1,4 +1,4 @@
-import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ExploreMapItemDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 
 /** Parse `/activity/:id` or a bare UUID from user paste. */
@@ -73,4 +73,14 @@ export const canOfferRideshareForDemandItem = (item: ExploreMapItemDTO | null | 
   if (item.convertedActivityId) return false;
   if (item.kind === 'rideshare') return false;
   return item.kind === 'hiking' || item.kind === 'camping' || item.kind === 'event';
+};
+
+/** Trips → My plans manage sheet — same rules as map owner peek. */
+export const canOfferRideshareForParticipantIntent = (
+  intent: ParticipantIntentDTO | null | undefined
+): boolean => {
+  if (!intent || intent.status !== 'active') return false;
+  if (intent.convertedActivityId) return false;
+  if (intent.kind === 'rideshare') return false;
+  return intent.kind === 'hiking' || intent.kind === 'camping' || intent.kind === 'event';
 };

@@ -84,16 +84,19 @@ export type ExploreMapStageProps = {
   onMessage: () => void;
   onFulfillIntent?: () => void;
   onManage?: () => void;
+  onHostFullManage?: () => void;
   onWithdraw: () => void;
   linkRideshareTenantId?: string | null;
   onCreateLinkedRideshare?: (parent: import('@uaetrail/shared-types').ActivityDTO) => void;
   onHostRemove?: () => void;
   onDemandRemove?: () => void;
+  onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onCloseMobileBrowse: () => void;
   mobileBrowseSheet: ReactNode;
   onGuestGatedAction?: () => void;
+  onInviteCrew?: () => void;
 };
 
 export const ExploreMapStage = ({
@@ -150,16 +153,19 @@ export const ExploreMapStage = ({
   onMessage,
   onFulfillIntent,
   onManage,
+  onHostFullManage,
   onWithdraw,
   linkRideshareTenantId = null,
   onCreateLinkedRideshare,
   onHostRemove,
   onDemandRemove,
+  onDemandFullManage,
   onDemandLinkRideshare,
   onOpenExploreItem,
   onCloseMobileBrowse,
   mobileBrowseSheet,
   onGuestGatedAction,
+  onInviteCrew,
 }: ExploreMapStageProps) => {
   const guestGatedAction = user ? undefined : onGuestGatedAction;
 
@@ -304,6 +310,7 @@ export const ExploreMapStage = ({
           item={selected}
           onClose={onCloseSelection}
           onGuestGatedAction={guestGatedAction}
+          onInviteCrew={onInviteCrew}
         />
       ) : selectedCard ? (
         <ExploreItemSheet
@@ -314,10 +321,12 @@ export const ExploreMapStage = ({
           onMessage={onMessage}
           onFulfillIntent={canFulfillParticipantIntent ? onFulfillIntent : undefined}
           onManage={onManage}
+          onHostFullManage={onHostFullManage}
           linkRideshareTenantId={linkRideshareTenantId}
           onCreateLinkedRideshare={onCreateLinkedRideshare}
           onHostRemove={onHostRemove}
           onDemandRemove={onDemandRemove}
+          onDemandFullManage={onDemandFullManage}
           onDemandLinkRideshare={onDemandLinkRideshare}
           onOpenExploreItem={onOpenExploreItem}
           joinUiState={selectedCard.showHostActions ? undefined : joinUiState}

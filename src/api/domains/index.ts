@@ -3,7 +3,7 @@ export { fetchPlaceRegistry, type PlaceRegistryQuery } from './placeRegistry';
 export { exploreApi } from './explore';
 export { rewardsApi } from './rewards';
 export { goalsApi } from './goals';
-export { tripsMapApi } from './tripsMap';
+export { memberJourneyMapApi } from './memberJourneyMap';
 export { activitiesApi } from './activities';
 export { accountApi } from './account';
 export { socialApi } from './social';

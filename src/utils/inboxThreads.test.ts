@@ -32,6 +32,7 @@ const threads: InboxThread[] = [
 describe('filterInboxThreads', () => {
   it('filters by pill and search query', () => {
     expect(filterInboxThreads(threads, 'unread', '')).toHaveLength(1);
+    expect(filterInboxThreads(threads, 'people', '')[0]?.title).toBe('Sarah');
     expect(filterInboxThreads(threads, 'groups', '')[0]?.title).toBe('Weekend Hikers');
     expect(filterInboxThreads(threads, 'outings', '')[0]?.title).toBe('Fossil Rock hike');
     expect(filterInboxThreads(threads, 'all', 'fossil')).toHaveLength(1);

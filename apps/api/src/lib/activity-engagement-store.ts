@@ -336,9 +336,9 @@ export async function createRsvpParticipation(opts: {
     throw error;
   }
 
-  void addParticipantToActivityGroupChat({
+  await addParticipantToActivityGroupChat({
     activityId: opts.activityId,
-    userId: opts.userId
+    userId: opts.userId,
   }).catch(() => undefined);
 
   const mongoRow = await activityRequestsCollection().findOne({ _id: requestId });
@@ -633,9 +633,15 @@ export const listTenantActivityRequestsDetailed = async (input: {
   tenantId: string;
   skip: number;
   take: number;
+  activityId?: string;
 }) => {
+  const eventFilter: { tenantId: string; _id?: string } = { tenantId: input.tenantId };
+  if (input.activityId) {
+    eventFilter._id = input.activityId;
+  }
+
   const tenantEvents = await activitiesCollection()
-    .find({ tenantId: input.tenantId }, { projection: { _id: 1, title: 1, startAt: 1, locationId: 1 } })
+    .find(eventFilter, { projection: { _id: 1, title: 1, startAt: 1, locationId: 1 } })
     .toArray();
   const eventIds = tenantEvents.map((event) => event._id);
   if (eventIds.length === 0) return [];
@@ -695,8 +701,15 @@ export const listTenantActivityRequestsDetailed = async (input: {
   });
 };
 
-export const countTenantActivityRequests = async (tenantId: string): Promise<number> => {
-  const tenantEvents = await activitiesCollection().find({ tenantId }, { projection: { _id: 1 } }).toArray();
+export const countTenantActivityRequests = async (
+  tenantId: string,
+  activityId?: string
+): Promise<number> => {
+  const eventFilter: { tenantId: string; _id?: string } = { tenantId };
+  if (activityId) {
+    eventFilter._id = activityId;
+  }
+  const tenantEvents = await activitiesCollection().find(eventFilter, { projection: { _id: 1 } }).toArray();
   const eventIds = tenantEvents.map((event) => event._id);
   if (eventIds.length === 0) return 0;
   return activityRequestsCollection().countDocuments({ activityId: { $in: eventIds } });
@@ -787,9 +800,9 @@ export const applyTenantActivityRequestDecision = async (input: {
       throw error;
     }
 
-    void addParticipantToActivityGroupChat({
+    await addParticipantToActivityGroupChat({
       activityId: input.activityId,
-      userId: input.userId
+      userId: input.userId,
     }).catch(() => undefined);
     return;
   }

@@ -1,4 +1,4 @@
-﻿import type { NextFunction, Request, Response, Router } from 'express';
+import type { NextFunction, Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { RequestStatus, TenantBusinessMode, TenantType, UserRole } from '../../domain/enums.js';
 import { ApiError } from '../../lib/api-error.js';
@@ -29,7 +29,13 @@ import {
 import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { buildParticipationDto } from '../../services/checkin.js';
-import { ensureActivityGroupChat, userCanAccessActivityGroupChat } from '../../services/activity-group-chat.js';
+import {
+  getActivityGroupChatStatusForUser,
+  joinActivityGroupChatForUser,
+  leaveActivityGroupChatForUser,
+  openActivityGroupChat,
+  userCanAccessActivityGroupChat,
+} from '../../services/activity-group-chat.js';
 import { eventIdParamSchema, pushSubscriptionSchema, userSearchSchema } from './schemas.js';
 
 const meRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
@@ -125,12 +131,107 @@ registerActivityRoute(
         throw new ApiError(403, 'forbidden', 'You cannot access this activity chat.');
       }
 
-      const groupId = await ensureActivityGroupChat(id);
+      const groupId = await openActivityGroupChat(id);
       if (!groupId) {
-        throw new ApiError(404, 'group_chat_unavailable', 'Activity chat is not available.');
+        throw new ApiError(
+          404,
+          'group_chat_unavailable',
+          'Activity chat is not set up for this outing yet.'
+        );
       }
 
-      res.json({ data: { groupId } });
+      const status = await getActivityGroupChatStatusForUser({
+        activityId: id,
+        userId: req.auth!.userId,
+      });
+
+      res.json({
+        data: {
+          groupId,
+          membershipId: status?.membershipId ?? null,
+          isMember: status?.isMember ?? false,
+          canLeave: status?.canLeave ?? false,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+registerActivityRoute(
+  router,
+  'get',
+  '/:id/group-chat/status',
+  validate({ params: eventIdParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+      const status = await getActivityGroupChatStatusForUser({
+        activityId: id,
+        userId: req.auth!.userId,
+      });
+      if (!status) {
+        throw new ApiError(403, 'forbidden', 'You cannot access this activity chat.');
+      }
+      res.json({ data: status });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+registerActivityRoute(
+  router,
+  'post',
+  '/:id/group-chat/join',
+  validate({ params: eventIdParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+      try {
+        const status = await joinActivityGroupChatForUser({
+          activityId: id,
+          userId: req.auth!.userId,
+        });
+        res.json({ data: status });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '';
+        if (message === 'forbidden') {
+          throw new ApiError(403, 'forbidden', 'You cannot join this activity chat.');
+        }
+        throw new ApiError(404, 'group_chat_unavailable', 'Activity chat is not set up for this outing yet.');
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+registerActivityRoute(
+  router,
+  'delete',
+  '/:id/group-chat',
+  validate({ params: eventIdParamSchema }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+      try {
+        await leaveActivityGroupChatForUser({
+          activityId: id,
+          userId: req.auth!.userId,
+        });
+      } catch (err) {
+        if (err instanceof Error && err.message === 'group_owner_cannot_leave') {
+          throw new ApiError(
+            403,
+            'group_owner_cannot_leave',
+            'Hosts stay in the crew chat to coordinate the outing.'
+          );
+        }
+        throw err;
+      }
+      res.json({ data: { left: true } });
     } catch (error) {
       next(error);
     }

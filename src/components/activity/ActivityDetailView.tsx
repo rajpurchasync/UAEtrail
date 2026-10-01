@@ -35,6 +35,8 @@ import {
 } from '../../utils/joinInstructions';
 import { activityRegistryPlacePath } from '../../utils/activityRegistryPlacePath';
 import { linkedParentRidesharePeekCopy } from '../../explore/exploreLinkedParentRideshareCopy';
+import { ActivityInviteSharePanel } from './ActivityInviteSharePanel';
+import { buildActivitySharePayload } from '../../utils/activityShare';
 import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '../../explore/createFlowCopy';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
@@ -158,6 +160,17 @@ export const ActivityDetailView = ({
     ? `${formatDate(activity.date)} – ${formatDate(activity.endDate)}`
     : formatDate(activity.date);
 
+  const sharePayload = buildActivitySharePayload({
+    id: activity.id,
+    title: activity.title || activity.locationName,
+    activityType: activity.activityType,
+    date: activity.date,
+    locationName: activity.locationName,
+  });
+
+  const showInviteShare =
+    !previewMode && activity.status === 'published' && activity.visibilityState !== 'private';
+
   const joinLabel = usesExternalSignup
     ? 'Sign up / Join'
     : activityJoinCtaLabel({
@@ -271,6 +284,17 @@ export const ActivityDetailView = ({
       backTo={backTo}
       backLabel={backLabel}
       footer={joinButton}
+      headerAction={
+        showInviteShare ? (
+          <ShareButton
+            title={sharePayload.title}
+            text={sharePayload.text}
+            path={sharePayload.path}
+            iconOnly
+            light
+          />
+        ) : undefined
+      }
       banner={{
         src: heroImage,
         alt: activity.title || activity.locationName,
@@ -284,6 +308,18 @@ export const ActivityDetailView = ({
     >
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
+          {showInviteShare ? (
+            <ActivityInviteSharePanel
+              activity={{
+                id: activity.id,
+                title: activity.title || activity.locationName,
+                activityType: activity.activityType,
+                date: activity.date,
+                locationName: activity.locationName,
+              }}
+            />
+          ) : null}
+
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-3">About this {activity.activityType === 'event' ? 'event' : 'activity'}</h2>
             <p className="text-gray-600 leading-relaxed whitespace-pre-line">{activity.description}</p>

@@ -4,9 +4,10 @@ import type { InboxFilter } from '../../utils/inboxThreads';
 
 const FILTER_OPTIONS: Array<{ key: InboxFilter; label: string }> = [
   { key: 'all', label: 'All' },
-  { key: 'unread', label: 'Unread' },
+  { key: 'people', label: 'Direct' },
   { key: 'groups', label: 'Groups' },
   { key: 'outings', label: 'Outings' },
+  { key: 'unread', label: 'Unread' },
 ];
 
 interface MessagesInboxToolbarProps {
@@ -30,7 +31,7 @@ export const MessagesInboxToolbar = ({
       onChange={onQueryChange}
       placeholder="Search conversations"
       onAction={onCompose}
-      actionAriaLabel="New message"
+      actionAriaLabel="Compose message"
     />
     <FilterChips options={FILTER_OPTIONS} value={filter} onChange={onFilterChange} />
   </div>

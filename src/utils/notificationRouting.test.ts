@@ -33,7 +33,7 @@ describe('inferNotificationPath', () => {
       inferNotificationPath(
         notif({ kind: 'join_request_approved', groupId: 'g-1' })
       )
-    ).toBe('/groups?group=g-1');
+    ).toBe('/messages?group=g-1');
   });
 
   it('routes member goal milestones to profile or trips', () => {

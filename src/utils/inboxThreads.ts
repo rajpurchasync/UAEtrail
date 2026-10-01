@@ -2,7 +2,7 @@ import type { ChatConversationDTO } from '@uaetrail/shared-types';
 import type { SocialGroupView } from '../api/index';
 import { api } from '../api/index';
 
-export type InboxFilter = 'all' | 'unread' | 'groups' | 'outings';
+export type InboxFilter = 'all' | 'unread' | 'people' | 'groups' | 'outings';
 
 export type InboxThread =
   | {
@@ -114,6 +114,7 @@ export const filterInboxThreads = (
 
   return threads.filter((thread) => {
     if (filter === 'unread' && thread.unreadCount <= 0) return false;
+    if (filter === 'people' && thread.kind !== 'direct') return false;
     if (filter === 'groups' && thread.kind !== 'user-group') return false;
     if (filter === 'outings' && thread.kind !== 'activity-chat') return false;
 
@@ -127,6 +128,9 @@ export const filterInboxThreads = (
 };
 
 export const inboxThreadBadgeLabel = (thread: InboxThread): string | null => {
+  if (thread.kind === 'direct') {
+    return 'Direct';
+  }
   if (thread.kind === 'user-group') {
     return thread.groupType === 'family' ? 'Family' : 'Friends';
   }

@@ -1,7 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/index';
-import { getActiveTenantId } from '../api/tenant';
+import { getActiveTenantId, setActiveTenantId } from '../api/tenant';
+import { useOrganisationGate } from './useOrganisationGate';
+import { useAuth } from '../context/AuthContext';
 
 const organisationHubKey = (tenantId: string) => ['organisation-hub', tenantId] as const;
 
@@ -20,8 +22,17 @@ async function fetchOrganisationHub(tenantId: string) {
 
 /** Organisation console hub data for the active tenant (`/host/*` routes). */
 export const useOrganisationHubData = () => {
-  const [tenantId, setTenantId] = useState(getActiveTenantId());
+  const { user } = useAuth();
+  const gate = useOrganisationGate({ enabled: Boolean(user) });
+  const storedTenantId = getActiveTenantId();
+  const tenantId = gate.tenantId ?? (storedTenantId || null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (gate.tenantId && gate.tenantId !== getActiveTenantId()) {
+      setActiveTenantId(gate.tenantId);
+    }
+  }, [gate.tenantId]);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: tenantId ? organisationHubKey(tenantId) : ['organisation-hub', 'none'],
@@ -74,9 +85,11 @@ export const useOrganisationHubData = () => {
     [requests]
   );
 
+  const loading = gate.loading || (Boolean(tenantId) && isLoading);
+
   return {
     tenantId,
-    setTenantId,
+    setTenantId: setActiveTenantId,
     activities,
     requests,
     pendingRequests,
@@ -86,7 +99,7 @@ export const useOrganisationHubData = () => {
     upcomingActivitiesCount,
     pastActivitiesCount,
     upcomingActivities,
-    loading: isLoading,
+    loading,
     error: error instanceof Error ? error.message : error ? 'Failed to load host data' : null,
     reload,
   };

@@ -18,7 +18,40 @@ export const activitiesApi = {
     apiRequest<{ data: ActivityDetail }>(`/activities/${id}`, { auth: Boolean(getStoredSession()) }),
 
     getActivityGroupChat: (activityId: string) =>
-    apiRequest<{ data: { groupId: string } }>(`/activities/${activityId}/group-chat`, { auth: true }),
+    apiRequest<{
+      data: {
+        groupId: string;
+        membershipId: string | null;
+        isMember: boolean;
+        canLeave: boolean;
+      };
+    }>(`/activities/${activityId}/group-chat`, { auth: true }),
+
+    getActivityGroupChatStatus: (activityId: string) =>
+    apiRequest<{
+      data: {
+        groupId: string | null;
+        membershipId: string | null;
+        isMember: boolean;
+        canLeave: boolean;
+      };
+    }>(`/activities/${activityId}/group-chat/status`, { auth: true }),
+
+    joinActivityGroupChat: (activityId: string) =>
+    apiRequest<{
+      data: {
+        groupId: string | null;
+        membershipId: string | null;
+        isMember: boolean;
+        canLeave: boolean;
+      };
+    }>(`/activities/${activityId}/group-chat/join`, { method: 'POST', auth: true }),
+
+    leaveActivityGroupChat: (activityId: string) =>
+    apiRequest<{ data: { left: boolean } }>(`/activities/${activityId}/group-chat`, {
+      method: 'DELETE',
+      auth: true,
+    }),
 
     createJoinRequest: (activityId: string, note?: string, selectedPackageIndex?: number) =>
     apiRequest<{ data: JoinRequestDTO }>(`/activities/${activityId}/requests`, {

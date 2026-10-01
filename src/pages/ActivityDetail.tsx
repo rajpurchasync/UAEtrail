@@ -22,10 +22,13 @@ import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
 import { PushEnableBanner } from '../components/ui/PushEnableBanner';
 import { ActivityDetailView } from '../components/activity/ActivityDetailView';
 import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
-
+import { useOrganisationGate } from '../hooks/useOrganisationGate';
+import { viewerHostsActivity } from '../utils/viewerHostsActivity';
+import { tripsPath } from '../trips/tripsRouting';
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const gate = useOrganisationGate({ enabled: Boolean(user) });
   const navigate = useNavigate();
   const [activity, setActivity] = useState<ActivityDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,6 +89,21 @@ export const ActivityDetail = () => {
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
   const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
 
+  const isViewerHost = Boolean(
+    activity &&
+      user &&
+      activity.visibilityState !== 'private' &&
+      viewerHostsActivity(activity, user.id, gate.tenantId, gate.canPublish)
+  );
+
+  useEffect(() => {
+    if (!isViewerHost || !activity) return;
+    const params = new URLSearchParams();
+    params.set('role', 'hosted');
+    params.set('peek', activity.id);
+    navigate(`${tripsPath()}?${params.toString()}`, { replace: true });
+  }, [isViewerHost, activity, navigate]);
+
   const openJoinModal = () => {
     if (!id || !activity) return;
     if (!user) {
@@ -127,6 +145,17 @@ export const ActivityDetail = () => {
     );
   }
 
+  if (isViewerHost) {
+    return (
+      <>
+        <PageMeta title="Loading" path={id ? `/activity/${id}` : undefined} />
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
+        </div>
+      </>
+    );
+  }
+
   if (activity.visibilityState === 'private') {
     return (
       <>
@@ -140,12 +169,15 @@ export const ActivityDetail = () => {
             <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
               {activity.message ?? 'This activity is private — only invited members can view it.'}
             </p>
+            <p className="mt-3 text-xs text-neutral-500 leading-relaxed">
+              If someone shared this link with you, sign in — or create a free account to request access.
+            </p>
             {!user && (
               <Link
                 to={signInPathForReturn(`/activity/${activity.id}`)}
                 className="mt-4 inline-block text-sm font-semibold text-emerald-700"
               >
-                Log in if you were invited
+                Sign up or log in
               </Link>
             )}
           </div>

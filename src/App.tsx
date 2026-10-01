@@ -55,21 +55,14 @@ const ActivitiesBrowseRoute = () => {
   if (legacyCreatePath) {
     return <Navigate to={legacyCreatePath} replace />;
   }
-  if (
-    user &&
-    (tab === 'joined' ||
-      tab === 'hosted' ||
-      searchParams.get('checkin') ||
-      searchParams.get('segment') ||
-      searchParams.get('role'))
-  ) {
+  if (user) {
     return (
       <Suspense fallback={<PageLoader />}>
         <Activities />
       </Suspense>
     );
   }
-  if (!user && (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || !tab)) {
+  if (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || !tab) {
     return (
       <GuestTabPlaceholder
         title="My trips"
@@ -77,9 +70,6 @@ const ActivitiesBrowseRoute = () => {
         intent="explore-browse"
       />
     );
-  }
-  if (user) {
-    return <Navigate to="/trips?segment=upcoming&tab=joined" replace />;
   }
   const activity = parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter'));
   return (

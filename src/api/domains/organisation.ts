@@ -12,11 +12,16 @@ export const organisationApi = {
   getOrganisationProfile: (slug: string) =>
     apiRequest<{ data: TenantPublicDTO }>(`/tenants/${slug}`),
 
-  getOrganisationJoinRequests: (tenantId: string) =>
-    apiRequest<{ data: ActivityRequestView[] }>('/host/requests?pageSize=100', {
+  getOrganisationJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
+    const params = new URLSearchParams({ pageSize: '100' });
+    if (options?.activityId) {
+      params.set('activityId', options.activityId);
+    }
+    return apiRequest<{ data: ActivityRequestView[] }>(`/host/requests?${params.toString()}`, {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
-    }),
+    });
+  },
 
   decideOrganisationJoinRequest: (
     tenantId: string,

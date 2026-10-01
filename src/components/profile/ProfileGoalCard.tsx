@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import type { MemberGoalDTO, MemberGoalActivityFilter } from '@uaetrail/shared-types';
 import { Calendar, ChevronRight, Target } from 'lucide-react';
 import { AppButton } from '../mobile/AppButton';
@@ -27,6 +27,10 @@ type ProfileGoalCardProps = {
   onClear?: () => Promise<void>;
   /** Trips hub — one-line glass row; Profile keeps the warm hero card. */
   variant?: 'full' | 'compact';
+  /** Hide the card surface; only render the goal sheet (e.g. opened from Trips filters). */
+  surfaceHidden?: boolean;
+  sheetOpen?: boolean;
+  onSheetOpenChange?: (open: boolean) => void;
 };
 
 const warmCardClass =
@@ -40,8 +44,17 @@ export const ProfileGoalCard = ({
   onSave,
   onClear,
   variant = 'full',
+  surfaceHidden = false,
+  sheetOpen: sheetOpenProp,
+  onSheetOpenChange,
 }: ProfileGoalCardProps) => {
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetOpenInternal, setSheetOpenInternal] = useState(false);
+  const sheetOpen = sheetOpenProp ?? sheetOpenInternal;
+  const setSheetOpen = (open: boolean) => {
+    onSheetOpenChange?.(open);
+    if (sheetOpenProp === undefined) setSheetOpenInternal(open);
+  };
+
   const [step, setStep] = useState<SheetStep>('presets');
   const [filter, setFilter] = useState<MemberGoalActivityFilter>('hiking');
   const [target, setTarget] = useState(8);
@@ -53,7 +66,7 @@ export const ProfileGoalCard = ({
   const dateInputMin =
     goal && goal.targetDate < minDate ? goal.targetDate : minDate;
 
-  const openSheet = () => {
+  const primeSheetForm = () => {
     if (goal) {
       setStep('customize');
       setFilter(goal.activityFilter);
@@ -66,8 +79,17 @@ export const ProfileGoalCard = ({
       setTargetDate(defaultGoalTargetDate());
     }
     setCountingHelpOpen(false);
+  };
+
+  const openSheet = () => {
+    primeSheetForm();
     setSheetOpen(true);
   };
+
+  useEffect(() => {
+    if (!sheetOpenProp) return;
+    primeSheetForm();
+  }, [sheetOpenProp, goal]);
 
   const closeSheet = () => setSheetOpen(false);
 
@@ -115,41 +137,68 @@ export const ProfileGoalCard = ({
     />
   );
 
+  if (surfaceHidden) {
+    return sheet;
+  }
+
   if (variant === 'compact') {
-    const progressLabel = goal
-      ? `${goal.currentCount}/${goal.targetCount}`
-      : null;
     const title = goal
       ? formatGoalHeadline(goal.activityFilter, goal.targetCount, goal.targetDate)
       : 'Set your outdoor goal';
-    const subtitle = goal
+    const pct = goal
+      ? Math.min(100, Math.round((goal.currentCount / Math.max(goal.targetCount, 1)) * 100))
+      : 0;
+    const progressCaption = goal
       ? goal.completed
-        ? 'Goal complete — tap to set a new one'
-        : `${goal.targetCount - goal.currentCount} check-ins to go · by ${formatGoalDeadlineLabel(goal.targetDate)}`
-      : 'Joined trip check-ins count toward your target';
+        ? 'Goal complete — set a new one anytime'
+        : `${goal.targetCount - goal.currentCount} check-in${goal.targetCount - goal.currentCount === 1 ? '' : 's'} to go · by ${formatGoalDeadlineLabel(goal.targetDate)}`
+      : 'Join trips — check-ins count when your host checks you in';
 
     return (
       <>
         <button
           type="button"
           onClick={openSheet}
-          className="glass-card-interactive flex w-full items-center gap-3 p-3.5 text-left"
+          aria-label={goal ? 'View goal progress' : 'Set a goal'}
+          className="group relative w-full overflow-hidden rounded-2xl border border-orange-200/70 bg-gradient-to-br from-amber-50/95 via-white to-orange-50/80 p-4 text-left shadow-sm shadow-orange-900/5 transition active:scale-[0.99]"
         >
-          <span
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800"
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-amber-400 via-orange-500 to-rose-500"
             aria-hidden
-          >
-            {progressLabel ? (
-              <span className="text-xs font-bold tabular-nums">{progressLabel}</span>
+          />
+          <div className="flex items-start gap-3 pl-1">
+            {goal ? (
+              <GoalProgressRing goal={goal} size="sm" tone="light" />
             ) : (
-              <Target className="h-5 w-5" strokeWidth={2.25} />
+              <span
+                className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-orange-100 text-orange-700 shadow-inner"
+                aria-hidden
+              >
+                <Target className="h-7 w-7" strokeWidth={2.25} />
+              </span>
             )}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="line-clamp-1 text-sm font-semibold text-neutral-900">{title}</p>
-            <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-neutral-500">{subtitle}</p>
+            <div className="min-w-0 flex-1 pt-0.5">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-orange-700/90">
+                {goal ? (goal.completed ? 'Goal complete' : 'My Goal Progress') : 'Year outside'}
+              </p>
+              <p className="mt-0.5 line-clamp-2 text-[15px] font-bold leading-snug text-neutral-900">
+                {title}
+              </p>
+              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-neutral-600">{progressCaption}</p>
+              <GoalProgressBar percent={pct} className="mt-3" />
+              {goal ? (
+                <p className="mt-1.5 text-[11px] font-semibold tabular-nums text-neutral-500">
+                  {pct}% · {goal.currentCount} of {goal.targetCount} check-ins
+                </p>
+              ) : (
+                <p className="mt-1.5 text-[11px] font-semibold text-emerald-700">Tap to choose a goal</p>
+              )}
+            </div>
+            <ChevronRight
+              className="mt-1 h-5 w-5 shrink-0 text-orange-300 transition group-active:text-orange-400"
+              aria-hidden
+            />
           </div>
-          <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" aria-hidden />
         </button>
         {sheet}
       </>
@@ -181,7 +230,7 @@ export const ProfileGoalCard = ({
           onClick={openSheet}
           className={`flex w-full items-center gap-4 p-4 text-left active:scale-[0.99] transition-transform ${warmCardClass}`}
         >
-          <GoalProgressRing goal={goal} />
+          <GoalProgressRing goal={goal} size="lg" tone="warm" />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-amber-50/95">
               {goal.completed ? '🎉 Goal complete' : 'You’re on your way'}
@@ -203,35 +252,80 @@ export const ProfileGoalCard = ({
   );
 };
 
-const GoalProgressRing = ({ goal }: { goal: MemberGoalDTO }) => {
-  const pct = Math.min(100, Math.round((goal.currentCount / goal.targetCount) * 100));
-  const ring = 2 * Math.PI * 54;
+const GoalProgressBar = ({ percent, className = '' }: { percent: number; className?: string }) => (
+  <div
+    className={`h-2 overflow-hidden rounded-full bg-orange-100/90 ${className}`}
+    role="progressbar"
+    aria-valuenow={percent}
+    aria-valuemin={0}
+    aria-valuemax={100}
+  >
+    <div
+      className="h-full rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 transition-[width] duration-500 ease-out"
+      style={{ width: `${percent}%` }}
+    />
+  </div>
+);
+
+const GoalProgressRing = ({
+  goal,
+  size = 'lg',
+  tone = 'warm',
+}: {
+  goal: MemberGoalDTO;
+  size?: 'sm' | 'lg';
+  tone?: 'warm' | 'light';
+}) => {
+  const pct = Math.min(100, Math.round((goal.currentCount / Math.max(goal.targetCount, 1)) * 100));
+  const dim = size === 'sm' ? 72 : 120;
+  const center = dim / 2;
+  const r = size === 'sm' ? 30 : 54;
+  const stroke = size === 'sm' ? 5 : 8;
+  const ring = 2 * Math.PI * r;
   const dash = (pct / 100) * ring;
   const deadlineShort = formatGoalDeadlineLabel(goal.targetDate);
+  const trackStroke = tone === 'warm' ? 'rgba(255,255,255,0.25)' : 'rgb(254 215 170 / 0.9)';
+  const progressStroke = tone === 'warm' ? '#ffffff' : '#ea580c';
 
   return (
-    <div className="relative h-[120px] w-[120px] shrink-0">
-      <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120" aria-hidden>
-        <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="8" />
+    <div className="relative shrink-0" style={{ width: dim, height: dim }}>
+      <svg className="h-full w-full -rotate-90" viewBox={`0 0 ${dim} ${dim}`} aria-hidden>
+        <circle cx={center} cy={center} r={r} fill="none" stroke={trackStroke} strokeWidth={stroke} />
         <circle
-          cx="60"
-          cy="60"
-          r="54"
+          cx={center}
+          cy={center}
+          r={r}
           fill="none"
-          stroke="#ffffff"
-          strokeWidth="8"
+          stroke={progressStroke}
+          strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={`${dash} ${ring}`}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-1">
-        <span className="text-2xl font-bold tabular-nums leading-none">
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-0.5">
+        <span
+          className={`font-bold tabular-nums leading-none ${
+            size === 'sm' ? 'text-base' : 'text-2xl'
+          } ${tone === 'warm' ? 'text-white' : 'text-neutral-900'}`}
+        >
           {goal.currentCount}
-          <span className="text-lg font-semibold text-amber-100">/{goal.targetCount}</span>
+          <span
+            className={`font-semibold ${size === 'sm' ? 'text-sm' : 'text-lg'} ${
+              tone === 'warm' ? 'text-amber-100' : 'text-orange-600'
+            }`}
+          >
+            /{goal.targetCount}
+          </span>
         </span>
-        <span className="mt-1 max-w-full truncate text-center text-[9px] font-bold uppercase tracking-wide text-amber-50">
-          by {deadlineShort}
-        </span>
+        {size === 'lg' ? (
+          <span className="mt-1 max-w-full truncate text-center text-[9px] font-bold uppercase tracking-wide text-amber-50">
+            by {deadlineShort}
+          </span>
+        ) : (
+          <span className="mt-0.5 text-[8px] font-bold uppercase tracking-wide text-orange-600/80">
+            {pct}%
+          </span>
+        )}
       </div>
     </div>
   );

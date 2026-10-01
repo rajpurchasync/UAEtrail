@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { ActivityRequestView } from '../../api/index';
+import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 
@@ -38,8 +39,9 @@ export const OrganisationJoinRequestCard = ({
 }: OrganisationJoinRequestCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const isPending = request.status === 'pending';
-  const activityTitle = request.activity.title || request.activity.locationName;
-  const activityDate = formatDate(request.activity.date || request.activity.startAt);
+  const activity = resolveJoinRequestActivity(request);
+  const activityTitle = activity?.title || activity?.locationName || 'Activity';
+  const activityDate = formatDate(activity?.date || activity?.startAt);
 
   return (
     <GlassCard padding className="!p-3.5">
@@ -58,7 +60,10 @@ export const OrganisationJoinRequestCard = ({
             </p>
           )}
           {request.organizerNote && !isPending && (
-            <p className="text-xs text-neutral-500 mt-1 italic">Your note: {request.organizerNote}</p>
+            <p className="text-xs text-neutral-500 mt-1 italic">
+              {request.status === 'rejected' ? 'Sent to guest: ' : 'Note to guest: '}
+              {request.organizerNote}
+            </p>
           )}
         </div>
         <span
@@ -104,14 +109,14 @@ export const OrganisationJoinRequestCard = ({
         </div>
       )}
 
-      {!isPending && (
+      {!isPending && activity?.id ? (
         <Link
-          to={`/activity/${request.activity.id}`}
+          to={`/activity/${activity.id}`}
           className="mt-2 inline-block text-xs font-semibold text-emerald-700"
         >
           View activity
         </Link>
-      )}
+      ) : null}
     </GlassCard>
   );
 };

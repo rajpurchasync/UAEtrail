@@ -31,6 +31,8 @@ import {
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { requestStatusClassName, requestStatusLabel } from '../../utils/joinRequestUi';
 import { getRequestEventDate } from '../../utils/activityDates';
+import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
+import { ActivityHubInviteIconButton } from '../../components/activity/ActivityHubInviteIconButton';
 
 const formatActivityMeta = (activity: MyActivityDTO) => {
   const parts = [formatActivityType(activity.activityType), activity.date];
@@ -59,6 +61,7 @@ export const JoinedSection = ({
   scope?: 'all' | 'attended-only';
 }) => {
   const navigate = useNavigate();
+  const inviteShare = useActivityInviteShareSheet();
   const [searchParams, setSearchParams] = useSearchParams();
   const subTab = parseJoinedSubTab(searchParams.get('sub'));
   const [activities, setActivities] = useState<MyActivityDTO[]>([]);
@@ -157,6 +160,11 @@ export const JoinedSection = ({
                     </span>
                   }
                   onClick={() => navigate(`/activity/${row.activity.id}`)}
+                  menu={
+                    <ActivityHubInviteIconButton
+                      onClick={() => inviteShare.openInviteFromActivity(row.activity)}
+                    />
+                  }
                 />
               ) : (
                 <ActivityHubListRow
@@ -200,6 +208,11 @@ export const JoinedSection = ({
                   </span>
                 }
                 onClick={() => navigate(`/activity/${activity.id}`)}
+                menu={
+                  <ActivityHubInviteIconButton
+                    onClick={() => inviteShare.openInviteFromActivity(activity)}
+                  />
+                }
               />
             ))}
           </div>
@@ -247,6 +260,7 @@ export const JoinedSection = ({
           ))}
         </div>
       )}
+      {inviteShare.sheet}
     </div>
   );
 };

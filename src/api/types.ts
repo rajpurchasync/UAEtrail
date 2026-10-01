@@ -196,6 +196,8 @@ export type PublicMemberProfileDTO =
 /** Domain alias — a Person's public profile at `/member/:id`. */
 export type PersonPublicProfileDTO = PublicMemberProfileDTO;
 
+export type GroupWallPostPolicy = 'all_members' | 'admins_only';
+
 export interface SocialGroupView {
   id: string;
   type: 'family' | 'friends' | 'activity';
@@ -206,6 +208,7 @@ export interface SocialGroupView {
   adminUserId: string;
   activityId?: string | null;
   status?: 'active' | 'suspended';
+  wallPostPolicy?: GroupWallPostPolicy;
   createdAt: string;
   updatedAt: string;
 }

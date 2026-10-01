@@ -23,6 +23,8 @@ interface ConsumerShellProps {
   back?: { fallbackTo?: string; label?: string };
   /** Hide mobile sticky title row — use Layout MobileTabHeader on bottom-nav tabs. */
   suppressMobileHeader?: boolean;
+  /** Trips-style toolbar: no hairline under search/filter on mobile. */
+  suppressMobileToolbarBorder?: boolean;
   /** @deprecated Use Layout MobileTabHeader leading slot. */
   leading?: 'profile';
   showJourney?: boolean;
@@ -48,6 +50,7 @@ export const ConsumerShell = ({
   maxWidth = '7xl',
   back,
   suppressMobileHeader = false,
+  suppressMobileToolbarBorder = false,
   leading,
   showJourney = true,
   journey,
@@ -185,7 +188,11 @@ export const ConsumerShell = ({
               </div>
             )}
             {layout === 'tab' && toolbar && (
-              <div className="md:hidden border-b border-black/[0.04] pb-3">{toolbar}</div>
+              <div
+                className={`md:hidden pb-3 ${suppressMobileToolbarBorder ? '' : 'border-b border-black/[0.04]'}`}
+              >
+                {toolbar}
+              </div>
             )}
           </div>
         </div>

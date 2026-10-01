@@ -6,8 +6,7 @@ import { OrganisationJoinRequestCard } from '../components/organisation-console/
 import { TenantSwitcher } from '../components/ui';
 import { AppSegmented } from '../components/mobile/AppSegmented';
 import { GlassCard } from '../components/mobile/GlassCard';
-import { Dialog } from '../components/ui/Dialog';
-import { AppButton } from '../components/mobile/AppButton';
+import { OrganisationJoinRequestDeclineDialog } from '../components/organisation-console/OrganisationJoinRequestDeclineDialog';
 
 type RequestFilter = 'pending' | 'all';
 
@@ -17,11 +16,7 @@ export const OrganisationJoinRequests = () => {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<RequestFilter>('pending');
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
-  const [decisionModal, setDecisionModal] = useState<{
-    request: ActivityRequestView;
-    action: 'approved' | 'rejected';
-  } | null>(null);
-  const [hostNote, setHostNote] = useState('');
+  const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
 
   const loadRequests = async (activeTenantId: string) => {
     if (!activeTenantId) return;
@@ -49,18 +44,17 @@ export const OrganisationJoinRequests = () => {
     return requests;
   }, [filter, requests]);
 
-  const submitDecision = async () => {
-    if (!tenantId || !decisionModal) return;
-    setBusyRequestId(decisionModal.request.id);
+  const submitDecline = async (organizerNote: string) => {
+    if (!tenantId || !declineRequest) return;
+    setBusyRequestId(declineRequest.id);
     try {
       await api.decideOrganisationJoinRequest(
         tenantId,
-        decisionModal.request.id,
-        decisionModal.action,
-        hostNote || undefined
+        declineRequest.id,
+        'rejected',
+        organizerNote
       );
-      setDecisionModal(null);
-      setHostNote('');
+      setDeclineRequest(null);
       await loadRequests(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process request');
@@ -124,63 +118,20 @@ export const OrganisationJoinRequests = () => {
                 busy={busyRequestId === request.id}
                 showActions={request.status === 'pending'}
                 onApprove={() => void quickDecide(request.id, 'approved')}
-                onReject={() => setDecisionModal({ request, action: 'rejected' })}
+                onReject={() => setDeclineRequest(request)}
               />
             ))}
           </div>
         )}
       </div>
 
-      <Dialog
-        open={Boolean(decisionModal)}
-        onClose={() => setDecisionModal(null)}
-        title={decisionModal?.action === 'approved' ? 'Approve request' : 'Decline request'}
-      >
-        {decisionModal && (
-          <>
-            <div className="rounded-xl bg-neutral-50 p-3 mb-4">
-              <p className="text-sm font-semibold text-neutral-900">
-                {decisionModal.request.user?.displayName ?? 'Guest'}
-              </p>
-              <p className="text-xs text-neutral-500 mt-0.5">
-                {decisionModal.request.activity.title || decisionModal.request.activity.locationName}
-              </p>
-              {decisionModal.request.note && (
-                <p className="text-xs text-neutral-600 mt-2 italic">&ldquo;{decisionModal.request.note}&rdquo;</p>
-              )}
-            </div>
-
-            <label className="text-sm font-medium text-neutral-700 mb-1 block">
-              Optional note to the guest
-            </label>
-            <textarea
-              value={hostNote}
-              onChange={(event) => setHostNote(event.target.value)}
-              placeholder={
-                decisionModal.action === 'approved'
-                  ? 'Welcome — see you on the trail!'
-                  : 'Sorry, this activity is full.'
-              }
-              className="w-full border rounded-xl px-3 py-2 text-sm mb-4"
-              rows={3}
-            />
-
-            <div className="flex justify-end gap-2">
-              <AppButton type="button" variant="secondary" onClick={() => setDecisionModal(null)}>
-                Cancel
-              </AppButton>
-              <AppButton
-                type="button"
-                variant={decisionModal.action === 'approved' ? 'primary' : 'destructive'}
-                disabled={Boolean(busyRequestId)}
-                onClick={() => void submitDecision()}
-              >
-                {decisionModal.action === 'approved' ? 'Approve' : 'Decline'}
-              </AppButton>
-            </div>
-          </>
-        )}
-      </Dialog>
+      <OrganisationJoinRequestDeclineDialog
+        open={Boolean(declineRequest)}
+        request={declineRequest}
+        submitting={Boolean(declineRequest && busyRequestId === declineRequest.id)}
+        onClose={() => setDeclineRequest(null)}
+        onConfirm={submitDecline}
+      />
     </OrganisationConsoleShell>
   );
 };

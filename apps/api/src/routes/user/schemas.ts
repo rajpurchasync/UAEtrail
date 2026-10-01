@@ -116,6 +116,10 @@ export const createWallPostSchema = z.object({
   body: z.string().min(1).max(600)
 });
 
+export const groupSettingsPatchSchema = z.object({
+  wallPostPolicy: z.enum(['all_members', 'admins_only'])
+});
+
 export const SWITCHABLE_PRIVILEGED_ROLES: UserRole[] = [
   UserRole.PLATFORM_ADMIN,
   UserRole.MERCHANT_ADMIN,

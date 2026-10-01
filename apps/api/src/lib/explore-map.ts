@@ -187,9 +187,9 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     const activity = activityDtos[index];
     const event = activityEvents[index];
     if (resolveJoinMode(event.joinMode, event.requirements) === 'private') continue;
-    const carpool = isRideshareActivity(activity);
+    const rideshare = isRideshareActivity(activity);
     const hikingDual =
-      !carpool &&
+      !rideshare &&
       activity.meetingDifferent === true &&
       activity.startLat != null &&
       activity.startLng != null &&
@@ -198,7 +198,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     const fromCoords = hikingDual
       ? { latitude: activity.startLat as number, longitude: activity.startLng as number }
       : resolveFromCoords(activity, event.location);
-    const toCoords = carpool
+    const toCoords = rideshare
       ? resolveToCoords(activity)
       : hikingDual
         ? { latitude: activity.meetingLat as number, longitude: activity.meetingLng as number }
@@ -209,7 +209,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       kind: rideshare ? 'rideshare' : activity.activityType,
       source: 'activity',
       title: activity.title,
-      subtitle: carpool
+      subtitle: rideshare
         ? [display.fromLabel, display.toLabel].filter(Boolean).join(' → ') || activity.locationName
         : activity.locationName,
       latitude: fromCoords?.latitude ?? null,
@@ -231,7 +231,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       slotsTotal: activity.slotsTotal,
       participantPreviews: activity.participantPreviews,
       image: activity.images?.[0] ?? activity.bannerUrl ?? null,
-      rideshareEnabled: carpool || Boolean(activity.rideshareEnabled),
+      rideshareEnabled: rideshare || Boolean(activity.rideshareEnabled),
       priceLabel: display.priceLabel,
       priceDisplay: display.priceDisplay,
       fromLabel: display.fromLabel,

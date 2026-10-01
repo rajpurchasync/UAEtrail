@@ -6,27 +6,20 @@ import {
   type MobileTabHeaderCenter,
 } from '../../config/mobileTabHeader';
 import { joinedSubViewTitle } from '../../pages/activities/shared';
+import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
 import { MobileNotificationHeaderLink } from './MobileNotificationHeaderLink';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
 
-const resolveCenter = (pathname: string, search: string): MobileTabHeaderCenter | null => {
+const resolveCenter = (
+  pathname: string,
+  search: string,
+  _canHost: boolean
+): MobileTabHeaderCenter | null => {
   if (pathname === '/explore') return { kind: 'brand' };
   if (pathname === '/profile') return { kind: 'title', text: 'Profile' };
   if (pathname === '/trips' || pathname === '/activities') {
     const params = new URLSearchParams(search);
-    const layer = params.get('layer');
-    if (layer === 'places') return { kind: 'title', text: 'Places' };
-    if (layer === 'shops') return { kind: 'title', text: 'Shops' };
-    if (params.get('segment') === 'wishlist' || params.get('segment') === 'saved') {
-      return { kind: 'title', text: 'Wishlist' };
-    }
-    if (params.get('segment') === 'past' || params.get('segment') === 'completed') {
-      return { kind: 'title', text: 'Completed' };
-    }
-    if (params.get('role') === 'hosted' || params.get('tab') === 'hosted') {
-      return { kind: 'title', text: 'Hosted' };
-    }
-    if (params.get('role') === 'self') return { kind: 'title', text: 'My plans' };
     const subTitle = joinedSubViewTitle(params.get('sub'));
     if (subTitle) return { kind: 'title', text: subTitle };
     return { kind: 'title', text: 'Trips' };
@@ -41,9 +34,11 @@ export const MobileTabHeader = () => {
   const { pathname, search } = useLocation();
   const { user } = useAuth();
   const signedIn = Boolean(user);
+  const gate = useOrganisationGate({ enabled: signedIn });
+  const canHost = memberCanManageHostedActivities(user, gate.canPublish);
 
   const visible = shouldShowMobileUnifiedTabHeader(pathname, search, signedIn);
-  const center = resolveCenter(pathname, search);
+  const center = resolveCenter(pathname, search, canHost);
 
   if (!visible || !center) return null;
 

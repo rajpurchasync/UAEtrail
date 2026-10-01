@@ -4,6 +4,8 @@ import { MoreVertical } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 
 export type ActivityMenuActionId =
+  | 'manage'
+  | 'share'
   | 'preview'
   | 'edit'
   | 'publish'
@@ -161,6 +163,7 @@ type HostMenuHandlers = {
   onDelete?: (activity: ActivityDTO) => void;
   onCancel?: (activity: ActivityDTO) => void;
   onCheckin?: (activity: ActivityDTO) => void;
+  onManage?: (activity: ActivityDTO) => void;
 };
 
 export const buildOrganisationActivityMenuItems = (
@@ -171,6 +174,12 @@ export const buildOrganisationActivityMenuItems = (
   const canEdit = status === 'draft' || status === 'published' || status === 'suspended';
 
   return [
+    {
+      id: 'manage',
+      label: 'Manage outing',
+      onClick: () => handlers.onManage?.(activity),
+      hidden: !handlers.onManage,
+    },
     {
       id: 'preview',
       label: 'Preview',

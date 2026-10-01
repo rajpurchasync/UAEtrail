@@ -14,6 +14,10 @@ import {
   PRODUCT_LOAD_ERROR,
 } from '../../content/productNorthStar';
 import { useExploreMap } from '../../hooks/useExploreMap';
+import { useAuth } from '../../context/AuthContext';
+import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { activityHostUserId } from '../../utils/hostLabels';
+import { viewerHostsActivity } from '../../utils/viewerHostsActivity';
 import {
   buildUpcomingPlanRows,
   type UpcomingPlanRow,
@@ -41,6 +45,8 @@ export const ActivitiesHubView = ({
   searchQuery = '',
 }: ActivitiesHubViewProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const gate = useOrganisationGate({ enabled: Boolean(user) });
   const { data: mapItems = [], isLoading: mapLoading } = useExploreMap();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +74,12 @@ export const ActivitiesHubView = ({
         const activity = item.activity;
         if (!activity || activity.status !== 'published') return false;
         if (myActivityIds.has(activity.id)) return false;
+        if (
+          viewerHostsActivity(activity, user?.id, gate.tenantId, gate.canPublish) ||
+          (user?.id && activityHostUserId(activity) === user.id)
+        ) {
+          return false;
+        }
         return new Date(activity.date) >= today;
       })
       .sort((a, b) => {
@@ -76,7 +88,7 @@ export const ActivitiesHubView = ({
         return new Date(dateA).getTime() - new Date(dateB).getTime();
       })
       .slice(0, 8);
-  }, [mapItems, myActivityIds]);
+  }, [mapItems, myActivityIds, user?.id, gate.tenantId, gate.canPublish]);
 
   const filteredUpcoming = useMemo(
     () => upcomingPlans.filter((row) => upcomingRowMatches(row, searchQuery)),

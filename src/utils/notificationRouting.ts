@@ -48,7 +48,7 @@ export const inferNotificationPath = (
   const kind = toStringValue(meta?.kind)?.toLowerCase() ?? '';
   if (kind === 'join_request_approved') {
     const groupId = toStringValue(meta?.groupId);
-    if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
+    if (groupId) return `/messages?group=${encodeURIComponent(groupId)}`;
     return '/trips?segment=upcoming&tab=joined';
   }
   if (
@@ -61,18 +61,18 @@ export const inferNotificationPath = (
   }
   if (kind === 'group_message') {
     const groupId = toStringValue(meta?.groupId);
-    if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
+    if (groupId) return `/messages?group=${encodeURIComponent(groupId)}`;
   }
   if (kind === 'group_invite') {
     const inviteToken = toStringValue(meta?.inviteToken);
     if (inviteToken) return `/groups?invite=${encodeURIComponent(inviteToken)}`;
     const groupId = toStringValue(meta?.groupId);
-    if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
+    if (groupId) return `/messages?group=${encodeURIComponent(groupId)}`;
     return '/groups';
   }
   if (kind === 'group_invite_accepted') {
     const groupId = toStringValue(meta?.groupId);
-    if (groupId) return `/groups?group=${encodeURIComponent(groupId)}`;
+    if (groupId) return `/messages?group=${encodeURIComponent(groupId)}`;
     return '/groups';
   }
   if (kind === 'request_withdrawal') {

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/index';
 
-/** Map item ids (`activity:…`, `venue:…`) for joined/hosted outings + personal wishlist places/plans — not demand posts. */
-export const useMyTripsMapPinIds = (userId: string | undefined) => {
+/** Explore “my outings” map filter — joined/hosted activities + wishlist place pins (not Trips tab UI). */
+export const useMemberJourneyMapPinIds = (userId: string | undefined) => {
   const [ids, setIds] = useState<Set<string> | null>(null);
   const [loading, setLoading] = useState(Boolean(userId));
   const [error, setError] = useState<string | null>(null);

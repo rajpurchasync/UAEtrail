@@ -99,6 +99,6 @@ export const resolveActivityViewerAccess = async (
     }
   }
 
-  // Link-only private plans: any signed-in member with the URL can view and RSVP (not on public map).
+  // Link-only private plans: signed-in members with the URL can view (not on public map).
   return { level: 'link_holder', canViewFullActivity: true, joinMode };
 };

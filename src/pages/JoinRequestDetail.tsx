@@ -165,7 +165,7 @@ export const JoinRequestDetail = () => {
       {request.organizerNote && (
         <GlassCard padding className="mb-4">
           <p className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-1">
-            From the host
+            {request.status === 'rejected' ? 'Why you weren’t added' : 'From the host'}
           </p>
           <p className="text-sm text-neutral-700 leading-relaxed">{request.organizerNote}</p>
         </GlassCard>

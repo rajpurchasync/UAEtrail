@@ -10,6 +10,8 @@ export type GroupInviteStatus = 'pending' | 'accepted' | 'expired' | 'cancelled'
 
 export type GroupStatus = 'active' | 'suspended';
 
+export type GroupWallPostPolicy = 'all_members' | 'admins_only';
+
 export type GroupRecord = {
   id: string;
   type: GroupType;
@@ -20,6 +22,7 @@ export type GroupRecord = {
   adminUserId: string;
   activityId: string | null;
   status: GroupStatus;
+  wallPostPolicy: GroupWallPostPolicy;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -90,6 +93,7 @@ type MongoGroup = {
   adminUserId: string;
   activityId?: string | null;
   status?: GroupStatus;
+  wallPostPolicy?: GroupWallPostPolicy;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -164,6 +168,7 @@ const mapGroup = (row: MongoGroup): GroupRecord => ({
   adminUserId: row.adminUserId,
   activityId: row.activityId ?? null,
   status: row.status ?? 'active',
+  wallPostPolicy: row.wallPostPolicy ?? 'all_members',
   createdAt: row.createdAt,
   updatedAt: row.updatedAt
 });
@@ -216,6 +221,24 @@ export const findGroupByActivityId = async (activityId: string): Promise<GroupRe
   return row ? mapGroup(row) : null;
 };
 
+export const mapActivityIdsToGroupChatIds = async (
+  activityIds: string[]
+): Promise<Map<string, string>> => {
+  const unique = [...new Set(activityIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+
+  const rows = await groupsCollection()
+    .find({ activityId: { $in: unique } })
+    .project({ _id: 1, activityId: 1 })
+    .toArray();
+
+  const map = new Map<string, string>();
+  for (const row of rows) {
+    if (row.activityId) map.set(row.activityId, row._id);
+  }
+  return map;
+};
+
 export const createActivityGroup = async (input: {
   activityId: string;
   activityTitle: string;
@@ -233,6 +256,7 @@ export const createActivityGroup = async (input: {
     adminUserId: input.hostUserId,
     activityId: input.activityId,
     status: 'active',
+    wallPostPolicy: 'all_members',
     createdAt: now,
     updatedAt: now
   };
@@ -254,6 +278,18 @@ export const createActivityGroup = async (input: {
   return mapGroup(groupDoc);
 };
 
+export const updateGroupWallPostPolicy = async (
+  groupId: string,
+  wallPostPolicy: GroupWallPostPolicy
+): Promise<GroupRecord | null> => {
+  const result = await groupsCollection().findOneAndUpdate(
+    { _id: groupId },
+    { $set: { wallPostPolicy, updatedAt: new Date() } },
+    { returnDocument: 'after' }
+  );
+  return result ? mapGroup(result) : null;
+};
+
 export const createSocialGroup = async (input: {
   creatorUserId: string;
   type: GroupType;
@@ -273,6 +309,7 @@ export const createSocialGroup = async (input: {
     photoUrl: input.photoUrl?.trim() || null,
     adminUserId: input.creatorUserId,
     status: 'active',
+    wallPostPolicy: 'all_members',
     createdAt: now,
     updatedAt: now
   };

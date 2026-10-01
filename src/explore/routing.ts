@@ -461,6 +461,13 @@ export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>
     ? explorePath({ compose: { intent: 'organize', kind } })
     : explorePath({ compose: { surface: 'menu', intent: 'organize' } });
 
+/** Host with publish access — prefill rideshare organize from an own demand intent. */
+export const exploreOfferRideshareForDemandPath = (intentId: string): string =>
+  explorePath({
+    pin: `demand:${intentId}`,
+    compose: { intent: 'organize', kind: 'rideshare' },
+  });
+
 /** Map legacy `/activities?create=` values onto explore compose organize routes. */
 export const legacyCreateParamToOrganizePath = (createParam: string | null): string | null => {
   if (!createParam) return null;

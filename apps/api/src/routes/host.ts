@@ -23,6 +23,7 @@ import { awardPoints } from '../services/rewards.js';
 import { notifyAdminsActivityPublished } from '../services/platform-admin-events.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import { ensureActivityGroupChat } from '../services/activity-group-chat.js';
+import { mapActivityIdsToGroupChatIds } from '../lib/social-groups-store.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
 import { performParticipantCheckIn } from '../services/checkin.js';
 import { buildLocationCreateData } from '../services/location-submit.js';
@@ -176,10 +177,22 @@ const eventCreateSchema = z.object({
   });
 
 const eventPatchSchema = eventCreateSchema.innerType().partial();
-const requestDecisionSchema = z.object({
-  status: z.enum(['approved', 'rejected']),
-  organizerNote: z.string().max(300).optional()
-});
+const requestDecisionSchema = z
+  .object({
+    status: z.enum(['approved', 'rejected']),
+    organizerNote: z.string().max(300).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status !== 'rejected') return;
+    const note = data.organizerNote?.trim();
+    if (!note || note.length < 3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'A short note is required when declining a join request.',
+        path: ['organizerNote'],
+      });
+    }
+  });
 
 const teamCreateSchema = z.object({
   email: z.string().email(),
@@ -245,8 +258,12 @@ tenantActivitiesRouter.get('/', async (req, res, next) => {
       orderBy: { startAt: 'asc' }
     });
 
+    const groupChatIds = await mapActivityIdsToGroupChatIds(events.map((event) => event.id));
     res.json(paginatedResponse(
-      events.map((event) => buildActivityDto(event)),
+      events.map((event) => ({
+        ...buildActivityDto(event),
+        groupChatId: groupChatIds.get(event.id) ?? null,
+      })),
       total,
       pg
     ));
@@ -360,10 +377,13 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
       metadata: body.clonedFromActivityId ? { sourceActivityId: body.clonedFromActivityId } : undefined,
     });
 
+    const groupChatId = await ensureActivityGroupChat(created.id);
+
     const refreshed = await findTenantActivityForEdit(created.id, tenantId);
+    const dto = await buildHostActivityResponse(refreshed ?? created);
 
     res.status(201).json({
-      data: await buildHostActivityResponse(refreshed ?? created)
+      data: { ...dto, groupChatId: groupChatId ?? null },
     });
   } catch (error) {
     next(error);
@@ -627,7 +647,8 @@ tenantActivitiesRouter.post('/:id/duplicate', requireOrgRole(ORG_ACTIVITY_EDIT_R
       tenantId,
       metadata: { sourceActivityId: id }
     });
-    res.status(201).json({ data: buildActivityDto(duplicated) });
+    const groupChatId = await ensureActivityGroupChat(duplicated.id);
+    res.status(201).json({ data: { ...buildActivityDto(duplicated), groupChatId: groupChatId ?? null } });
   } catch (error) {
     next(error);
   }
@@ -674,17 +695,23 @@ tenantActivitiesRouter.post('/:id/publish', requireOrgRole(ORG_ACTIVITY_PUBLISH_
   }
 });
 
+const hostRequestsQuerySchema = paginationSchema.extend({
+  activityId: z.string().min(1).optional(),
+});
+
 hostRouter.get('/requests', async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
-    const pg = paginationSchema.parse(req.query);
+    const query = hostRequestsQuerySchema.parse(req.query);
+    const { activityId, page, pageSize } = query;
     const [requests, total] = await Promise.all([
       listTenantActivityRequestsDetailed({
         tenantId,
-        skip: (pg.page - 1) * pg.pageSize,
-        take: pg.pageSize
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        activityId,
       }),
-      countTenantActivityRequests(tenantId)
+      countTenantActivityRequests(tenantId, activityId)
     ]);
     res.json(paginatedResponse(
       requests.map((request) => ({
@@ -701,15 +728,25 @@ hostRouter.get('/requests', async (req, res, next) => {
           email: request.user.email,
           displayName: request.user.profile?.displayName ?? request.user.email
         },
-        event: {
-          id: request.activity.id,
-          title: request.activity.title,
-          locationName: request.activity.location.name,
-          startAt: request.activity.startAt
-        }
+        activity: (() => {
+          const startAt = request.activity.startAt;
+          const startIso =
+            startAt instanceof Date
+              ? startAt.toISOString()
+              : startAt
+                ? String(startAt)
+                : undefined;
+          return {
+            id: request.activity.id,
+            title: request.activity.title,
+            locationName: request.activity.location.name,
+            startAt: startIso,
+            date: startIso?.slice(0, 10),
+          };
+        })()
       })),
       total,
-      pg
+      { page, pageSize }
     ));
   } catch (error) {
     next(error);

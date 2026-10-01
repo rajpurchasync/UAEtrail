@@ -8,7 +8,9 @@ import type { SocialGroupView } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
 import { MobileScreen } from '../components/layout/MobileScreen';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
+import { MessagesComposeSheet } from '../components/messages/MessagesComposeSheet';
 import { MessagesInboxList } from '../components/messages/MessagesInboxList';
 import { MessagesInboxToolbar } from '../components/messages/MessagesInboxToolbar';
 import {
@@ -16,6 +18,8 @@ import {
   MessageThreadPanel,
   NewChatModal,
 } from '../components/messages/MessagePanels';
+import { GroupWallThreadPanel } from '../components/messages/GroupWallThreadPanel';
+import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';
 import { useChatStream } from '../hooks/useChatStream';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
 import {
@@ -78,6 +82,7 @@ export const Messages = () => {
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [groupThreads, setGroupThreads] = useState<InboxThread[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('to'));
+  const selectedGroupId = searchParams.get('group');
   const [contextActivityId, setContextActivityId] = useState<string | null>(searchParams.get('activity'));
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -154,8 +159,15 @@ export const Messages = () => {
 
   useEffect(() => {
     const toUser = searchParams.get('to');
+    const groupId = searchParams.get('group');
     const activityId = searchParams.get('activity');
     setContextActivityId(activityId);
+
+    if (groupId) {
+      if (toUser) setSelectedUserId(null);
+      setMobileShowThread(true);
+      return;
+    }
 
     if (toUser) {
       if (toUser !== selectedUserId) setSelectedUserId(toUser);
@@ -311,23 +323,40 @@ export const Messages = () => {
   };
 
   const openGroupThread = (groupId: string) => {
-    navigate(`/groups?group=${encodeURIComponent(groupId)}`);
+    setSearchParams({ group: groupId });
+    setMobileShowThread(true);
+    setSelectedUserId(null);
   };
 
+  const chatReturnTo = parseMessagesChatReturnTo(location.state);
+
   const backToList = () => {
+    if (selectedGroupId && chatReturnTo) {
+      navigate(chatReturnTo, { replace: true });
+      return;
+    }
     setMobileShowThread(false);
     setSelectedUserId(null);
     setContextActivityId(null);
     setSearchParams({});
   };
 
-  const inThread = mobileShowThread && !!selectedUserId;
+  const inGroupThread = Boolean(selectedGroupId);
+  const inDirectThread = mobileShowThread && !!selectedUserId;
+  const inThread = inGroupThread || inDirectThread;
 
   const selectedConversation = conversations.find((conversation) => conversation.userId === selectedUserId);
   const threadPartnerName = selectedConversation?.displayName ?? partnerBrief?.displayName ?? 'User';
   const threadPartnerAvatar = selectedConversation?.avatarUrl ?? partnerBrief?.avatarUrl ?? undefined;
 
-  const newChatModal = (
+  const openCreateGroup = () => {
+    setShowNewChat(false);
+    setComposeQuery('');
+    setSearchResults([]);
+    navigate('/groups?create=1');
+  };
+
+  const newChatModal = isHostMessages ? (
     <NewChatModal
       open={showNewChat}
       searchQuery={composeQuery}
@@ -340,6 +369,22 @@ export const Messages = () => {
       }}
       onSearchChange={setComposeQuery}
       onSelectUser={startConversation}
+      userLabel={userLabel}
+    />
+  ) : (
+    <MessagesComposeSheet
+      open={showNewChat}
+      searchQuery={composeQuery}
+      searching={searching}
+      searchResults={searchResults}
+      onClose={() => {
+        setShowNewChat(false);
+        setComposeQuery('');
+        setSearchResults([]);
+      }}
+      onSearchChange={setComposeQuery}
+      onSelectUser={startConversation}
+      onCreateGroup={openCreateGroup}
       userLabel={userLabel}
     />
   );
@@ -413,10 +458,59 @@ export const Messages = () => {
     );
   }
 
+  if (inThread) {
+    return (
+      <>
+        <div
+          className="fixed inset-0 z-[1300] flex h-[100dvh] w-full max-w-[100vw] flex-col overflow-hidden bg-white"
+        >
+          {error ? (
+            <div className="flex shrink-0 items-center justify-between border-b border-red-200 bg-red-50 p-3">
+              <p className="text-sm text-red-700">{error}</p>
+              <button
+                type="button"
+                onClick={() => setError(null)}
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center text-red-400"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
+          {inGroupThread && selectedGroupId ? (
+            <GroupWallThreadPanel groupId={selectedGroupId} onBack={backToList} />
+          ) : (
+            <MessageThreadPanel
+              mobileShowThread={mobileShowThread}
+              selectedUserId={selectedUserId}
+              threadPartnerName={threadPartnerName}
+              threadPartnerAvatar={threadPartnerAvatar}
+              loadingMessages={loadingMessages}
+              messages={messages}
+              newMessage={newMessage}
+              sending={sending}
+              onBack={backToList}
+              onReport={() => setShowReport(true)}
+              onMessageChange={setNewMessage}
+              onSend={handleSend}
+            />
+          )}
+        </div>
+        {newChatModal}
+        {reportDialog}
+      </>
+    );
+  }
+
   return (
-    <div className="min-h-screen consumer-bg md:bg-gray-50">
-      {!inThread ? (
-        <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
+    <>
+      <ConsumerShell
+        layout="tab"
+        title="Messages"
+        suppressMobileHeader
+        suppressMobileToolbarBorder
+        maxWidth="4xl"
+        flush
+        toolbar={
           <MessagesInboxToolbar
             query={inboxQuery}
             filter={inboxFilter}
@@ -424,58 +518,25 @@ export const Messages = () => {
             onFilterChange={setInboxFilter}
             onCompose={() => setShowNewChat(true)}
           />
-        </div>
-      ) : null}
-
-      <div
-        className={`mx-auto w-full max-w-4xl px-4 sm:px-6 ${
-          inThread ? 'fixed inset-0 z-[1300] flex max-w-none flex-col bg-white px-0 sm:px-0' : 'pb-bottom-nav-safe md:pb-8'
-        }`}
+        }
       >
-        {error && !inThread && <ConsumerErrorCard message={error} className="mb-3" />}
-        {error && inThread && (
-          <div className="mb-3 flex shrink-0 items-center justify-between border-b border-red-200 bg-red-50 p-3">
-            <p className="text-sm text-red-700">{error}</p>
-            <button
-              type="button"
-              onClick={() => setError(null)}
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center text-red-400"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-
-        {inThread ? (
-          <MessageThreadPanel
-            mobileShowThread={mobileShowThread}
-            selectedUserId={selectedUserId}
-            threadPartnerName={threadPartnerName}
-            threadPartnerAvatar={threadPartnerAvatar}
-            loadingMessages={loadingMessages}
-            messages={messages}
-            newMessage={newMessage}
-            sending={sending}
-            onBack={backToList}
-            onReport={() => setShowReport(true)}
-            onMessageChange={setNewMessage}
-            onSend={handleSend}
-          />
-        ) : (
+        {error ? <ConsumerErrorCard message={error} className="mb-3" /> : null}
+        <div className="pb-bottom-nav-safe md:pb-4">
           <MessagesInboxList
             threads={visibleThreads}
             loading={loading}
+            inboxFilter={inboxFilter}
+            inboxQuery={inboxQuery}
             selectedDirectId={selectedUserId}
             onSelectDirect={selectConversation}
             onSelectGroup={openGroupThread}
             onCompose={() => setShowNewChat(true)}
             formatTime={formatTime}
           />
-        )}
-      </div>
-
+        </div>
+      </ConsumerShell>
       {newChatModal}
       {reportDialog}
-    </div>
+    </>
   );
 };

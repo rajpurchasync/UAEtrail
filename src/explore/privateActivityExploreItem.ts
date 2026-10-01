@@ -14,9 +14,9 @@ const isRideshareActivity = (activity: ActivityDTO): boolean => activity.activit
 
 /** Map peek row for link-only (`joinMode: private`) activities — not on public explore payload. */
 export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreMapItemDTO => {
-  const carpool = isRideshareActivity(activity);
+  const rideshare = isRideshareActivity(activity);
   const hikingDual =
-    !carpool &&
+    !rideshare &&
     activity.meetingDifferent === true &&
     activity.startLat != null &&
     activity.startLng != null &&
@@ -27,7 +27,7 @@ export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreM
     ? { latitude: activity.startLat as number, longitude: activity.startLng as number }
     : resolveActivityDisplayCoordinates(activity);
 
-  const toCoords = carpool
+  const toCoords = rideshare
     ? resolveActivityDestinationCoordinates(activity)
     : hikingDual
       ? { latitude: activity.meetingLat as number, longitude: activity.meetingLng as number }
@@ -40,7 +40,7 @@ export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreM
     kind: rideshare ? 'rideshare' : activity.activityType,
     source: 'activity',
     title: activity.title,
-    subtitle: carpool
+    subtitle: rideshare
       ? [display.fromLabel, display.toLabel].filter(Boolean).join(' → ') || activity.locationName
       : activity.locationName,
     latitude: fromCoords.latitude,
@@ -62,7 +62,7 @@ export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreM
     slotsTotal: activity.slotsTotal,
     participantPreviews: activity.participantPreviews,
     image: activity.images?.[0] ?? activity.bannerUrl ?? null,
-    rideshareEnabled: carpool || Boolean(activity.rideshareEnabled),
+    rideshareEnabled: rideshare || Boolean(activity.rideshareEnabled),
     priceLabel: display.priceLabel,
     priceDisplay: display.priceDisplay,
     fromLabel: display.fromLabel,

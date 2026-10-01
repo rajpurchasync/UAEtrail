@@ -25,8 +25,10 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Trips (`/trips`)
 
-- **Segments:** `?segment=upcoming|past|wishlist` with joined/hosted tabs on upcoming (`?tab=joined|hosted`).
-- **My trips map:** `explorePath({ myTrips: true, list: true })` filters explore to the member’s saved pins + joined/pending activity pins.
+- **Main tabs:** Plans · Completed · Map (`?view=plans|completed`; map at `/trips/map`). Legacy `segment` / `tab` query params normalize on load.
+- **Plans:** goal card → **Upcoming** heading with All · Hosted · Joined · Wishlist pills (default `?role=all`; wishlist uses `segment=wishlist`). Hosted/Joined lists are **future** outings only.
+- **Completed:** Joined · Hosted · Self trip pills — **past** outings (`?view=completed&role=`).
+- **My trips map:** `/trips/map` (also the Map main tab).
 - **`/activities`** redirects to `/trips` for bookmarks and old links.
 
 ### Friends (`/buddies`)

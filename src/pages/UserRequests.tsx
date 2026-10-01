@@ -108,6 +108,12 @@ export const UserRequests = () => {
                   <p>Host: {activityHostName(request.activity)}</p>
                 )}
                 {request.note && <p className="text-neutral-500 line-clamp-2">{request.note}</p>}
+                {request.status === 'rejected' && request.organizerNote && (
+                  <p className="text-neutral-600 line-clamp-2">
+                    <span className="font-medium text-neutral-700">Host: </span>
+                    {request.organizerNote}
+                  </p>
+                )}
               </div>
             </Link>
           ))}

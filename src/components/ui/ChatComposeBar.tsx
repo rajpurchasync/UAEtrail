@@ -40,17 +40,21 @@ export const ChatComposeBar = ({
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitMessage = () => {
     if (!value.trim() || sending) return;
     void onSend();
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitMessage();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (value.trim() && !sending) {
-        void onSend();
+        submitMessage();
       }
     }
   };
@@ -61,7 +65,7 @@ export const ChatComposeBar = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`shrink-0 border-t border-neutral-200 bg-white px-3 pt-2 pb-safe flex items-end gap-1.5 ${className}`}
+      className={`box-border w-full max-w-full shrink-0 border-t border-neutral-200 bg-white px-2 sm:px-3 pt-2 pb-safe flex items-end gap-1 gap-x-1.5 overflow-hidden ${className}`}
     >
       <EmojiPickerButton onPick={insertEmoji} disabled={sending} />
       {multiline ? (
@@ -88,8 +92,9 @@ export const ChatComposeBar = ({
         />
       )}
       <button
-        type="submit"
+        type="button"
         disabled={sending || !value.trim()}
+        onClick={submitMessage}
         className="min-h-[44px] min-w-[44px] mb-0.5 flex items-center justify-center bg-emerald-600 text-white rounded-full hover:bg-emerald-700 disabled:opacity-40 transition-colors shrink-0"
         aria-label="Send"
       >

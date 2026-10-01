@@ -2,6 +2,7 @@ import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../createFlowCopy';
 
 type ExploreDemandOwnerPeekActionsProps = {
   onDelete: () => void;
+  onFullManage?: () => void;
   showLinkRideshare?: boolean;
   onLinkRideshare?: () => void;
   onGuestGatedAction?: () => void;
@@ -13,6 +14,7 @@ const linkButtonClass =
 /** Requester peek on their own demand — Delete + optional rideshare offer (no check-in). */
 export const ExploreDemandOwnerPeekActions = ({
   onDelete,
+  onFullManage,
   showLinkRideshare = false,
   onLinkRideshare,
   onGuestGatedAction,
@@ -27,6 +29,15 @@ export const ExploreDemandOwnerPeekActions = ({
 
   return (
     <div className="space-y-3">
+      {onFullManage ? (
+        <button
+          type="button"
+          onClick={() => runGated(onFullManage)}
+          className="w-full rounded-xl bg-neutral-900 py-3.5 text-sm font-bold text-white"
+        >
+          Manage plan
+        </button>
+      ) : null}
       <button
         type="button"
         onClick={() => runGated(onDelete)}

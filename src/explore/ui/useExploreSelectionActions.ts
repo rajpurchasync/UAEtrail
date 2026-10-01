@@ -8,12 +8,15 @@ import { api } from '../../api/index';
 import { buildExploreCardModel } from '../exploreCardModel';
 import { finalizeExploreCardLinkedRideshare } from '../linkedRideshareExplore';
 import { canOfferRideshareForDemandItem } from '../linkActivityRideshareOffer';
+import { activityGroupChatPath } from '../../utils/activityGroupChatNav';
 import { messagesRouteForRole } from '../../utils/authRouting';
-import { activityHostUserId } from '../../utils/hostLabels';
+import { viewerHostsActivity } from '../../utils/viewerHostsActivity';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
+import { navigateToHostedActivityManage } from '../../host/navigateHostedActivityManage';
+import { navigateToSelfDemandManage } from '../../host/navigateSelfDemandManage';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
@@ -36,6 +39,7 @@ type UseExploreSelectionActionsArgs = {
   clearFulfillAfterPublish: () => void;
   handleFocusMapLocation: (coords: { lat: number; lng: number }) => void;
   setLinkOnlyPeekItems: Dispatch<SetStateAction<ExploreMapItemDTO[]>>;
+  onInviteActivity?: (activity: ActivityDTO) => void;
 };
 
 export const useExploreSelectionActions = ({
@@ -54,6 +58,7 @@ export const useExploreSelectionActions = ({
   clearFulfillAfterPublish,
   handleFocusMapLocation,
   setLinkOnlyPeekItems,
+  onInviteActivity,
 }: UseExploreSelectionActionsArgs) => {
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
@@ -73,8 +78,11 @@ export const useExploreSelectionActions = ({
     if (!selected) return null;
     const card = finalizeExploreCardLinkedRideshare(buildExploreCardModel(selected), selected, items);
     const activity = card.activity;
-    const hostUserId = activity ? activityHostUserId(activity) : null;
-    const isOwnActivity = Boolean(user && activity && hostUserId === user.id);
+    const isOwnActivity = Boolean(
+      user &&
+        activity &&
+        viewerHostsActivity(activity, user.id, tenantId ?? null, Boolean(tenantId && user))
+    );
     const isOwnDemand = Boolean(
       user &&
         selected.source === 'demand' &&
@@ -175,9 +183,13 @@ export const useExploreSelectionActions = ({
     const activity = selected?.activity;
     if (!activity) return;
     try {
-      const res = await api.getActivityGroupChat(activity.id);
       setSelectedId(null);
-      navigate(`/groups?group=${encodeURIComponent(res.data.groupId)}`);
+      if (activity.groupChatId) {
+        navigate(activityGroupChatPath(activity.groupChatId));
+        return;
+      }
+      const res = await api.getActivityGroupChat(activity.id);
+      navigate(activityGroupChatPath(res.data.groupId));
     } catch (err) {
       setDemandNotice(err instanceof Error ? err.message : 'Could not open activity chat.');
     }
@@ -187,14 +199,21 @@ export const useExploreSelectionActions = ({
     const activity = selected?.activity;
     if (!activity) return;
     setSelectedId(null);
+    navigateToHostedActivityManage(navigate, activity.id, 'overview');
+  }, [selected, navigate, setSelectedId]);
 
-    if (activity.status === 'published' && tenantId) {
-      navigate(`/host/activities?checkin=${encodeURIComponent(activity.id)}`);
-      return;
-    }
+  const handleHostCheckin = useCallback(() => {
+    const activity = selected?.activity;
+    if (!activity) return;
+    setSelectedId(null);
+    navigateToHostedActivityManage(navigate, activity.id, 'checkin');
+  }, [selected, navigate, setSelectedId]);
 
-    navigate(`/trips?segment=upcoming&tab=hosted&checkin=${encodeURIComponent(activity.id)}`);
-  }, [selected, tenantId, navigate, setSelectedId]);
+  const handleInviteCrew = useCallback(() => {
+    const activity = selected?.activity;
+    if (!activity || activity.status !== 'published') return;
+    onInviteActivity?.(activity);
+  }, [onInviteActivity, selected?.activity]);
 
   const requestHostRemove = useCallback(() => {
     const activity = selected?.activity;
@@ -202,6 +221,13 @@ export const useExploreSelectionActions = ({
     if (activity.status !== 'draft' && activity.status !== 'published') return;
     setHostRemoveConfirm(activity);
   }, [selected?.activity]);
+
+  const handleDemandManage = useCallback(() => {
+    const intentId = selected?.participantIntentId;
+    if (!intentId || selected?.source !== 'demand') return;
+    setSelectedId(null);
+    navigateToSelfDemandManage(navigate, intentId);
+  }, [selected, navigate, setSelectedId]);
 
   const requestDemandRemove = useCallback(() => {
     const intentId = selected?.participantIntentId;
@@ -393,6 +419,8 @@ export const useExploreSelectionActions = ({
     handleDemandMessage,
     handleHostMessage,
     handleHostManage,
+    handleHostCheckin,
+    handleInviteCrew,
     requestHostRemove,
     hostRemoveConfirm,
     setHostRemoveConfirm,
@@ -400,6 +428,7 @@ export const useExploreSelectionActions = ({
     hostRemoveBusy,
     demandRemoveIntentId,
     setDemandRemoveIntentId,
+    handleDemandManage,
     requestDemandRemove,
     confirmDemandRemove,
     demandRemoveBusy,

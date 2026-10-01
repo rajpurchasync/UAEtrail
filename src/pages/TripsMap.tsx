@@ -16,8 +16,9 @@ import { OutdoorMapListSheet } from '../components/trips/OutdoorMapListSheet';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { shareOutdoorMapSummary } from '../components/trips/outdoorMapShare';
-import { tripsMapApi } from '../api/domains/tripsMap';
-import { tripsPath } from '../trips/tripsRouting';
+import { memberJourneyMapApi } from '../api/domains/memberJourneyMap';
+import { tripsPlansPath } from '../trips/tripsRouting';
+import { TripsMainTabs } from '../components/trips/TripsMainTabs';
 import {
   filterOutdoorEntries,
   mappableOutdoorEntries,
@@ -68,7 +69,7 @@ export const TripsMap = () => {
   const reload = useCallback(async () => {
     setError(null);
     try {
-      const res = await tripsMapApi.getJourneyMap();
+      const res = await memberJourneyMapApi.getJourneyMap();
       setPins(res.data.pins);
       setEntries(res.data.entries ?? []);
       setStats(res.data.stats);
@@ -143,7 +144,7 @@ export const TripsMap = () => {
     setSaving(true);
     setError(null);
     try {
-      await tripsMapApi.createPin({
+      await memberJourneyMapApi.createPin({
         kind: input.kind,
         latitude: sheet.lat,
         longitude: sheet.lng,
@@ -174,7 +175,7 @@ export const TripsMap = () => {
     setSaving(true);
     setError(null);
     try {
-      await tripsMapApi.updatePin(pinId, input);
+      await memberJourneyMapApi.updatePin(pinId, input);
       setSheet({ type: 'idle' });
       await reload();
     } catch {
@@ -188,7 +189,7 @@ export const TripsMap = () => {
     setSaving(true);
     setError(null);
     try {
-      await tripsMapApi.deletePin(pinId);
+      await memberJourneyMapApi.deletePin(pinId);
       setSheet({ type: 'idle' });
       await reload();
     } catch {
@@ -220,13 +221,14 @@ export const TripsMap = () => {
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden consumer-bg">
-      <PageMeta title="My outdoor map" noIndex />
+      <PageMeta title="My Map" noIndex />
 
-      <header className="z-[100] glass-header flex shrink-0 items-center gap-2 px-4 pb-2 pt-safe-plus-2">
-        <MobileBackButton fallbackTo={tripsPath()} label="Trips" className="shrink-0" />
-        <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-semibold text-neutral-900">
-          My outdoor map
-        </h1>
+      <header className="z-[100] glass-header flex shrink-0 flex-col gap-2 px-4 pb-2 pt-safe-plus-2">
+        <div className="flex items-center gap-2">
+          <MobileBackButton fallbackTo={tripsPlansPath()} label="Trips" className="shrink-0" />
+          <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-semibold text-neutral-900">
+            My Map
+          </h1>
         <button
           type="button"
           onClick={() => void onShare()}
@@ -236,6 +238,8 @@ export const TripsMap = () => {
         >
           <Share2 className="h-5 w-5" aria-hidden />
         </button>
+        </div>
+        <TripsMainTabs active="map" />
       </header>
 
       {shareHint ? (

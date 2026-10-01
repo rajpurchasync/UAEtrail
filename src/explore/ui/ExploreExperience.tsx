@@ -29,10 +29,11 @@ import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
 import { MY_TRIPS_QUERY_KEY, parseExplorePinMapItemId, parseOrganizeFromActivityId } from '../routing';
-import { useMyTripsMapPinIds } from '../../hooks/useMyTripsMapPinIds';
+import { useMemberJourneyMapPinIds } from '../../hooks/useMemberJourneyMapPinIds';
 import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
 import { AppButton } from '../../components/mobile/AppButton';
+import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 
 export const ExploreExperience = () => {
   const { user } = useAuth();
@@ -46,7 +47,7 @@ export const ExploreExperience = () => {
   const isDesktop = useMinWidthLg();
   const { data: items = [], isLoading: loading, error: mapError } = useExploreMap();
   const myTripsMode = searchParams.get(MY_TRIPS_QUERY_KEY) === '1';
-  const { ids: myTripsPinIds, loading: myTripsPinsLoading } = useMyTripsMapPinIds(
+  const { ids: myTripsPinIds, loading: myTripsPinsLoading } = useMemberJourneyMapPinIds(
     myTripsMode ? user?.id : undefined
   );
   const mapItems = useMemo(() => {
@@ -197,6 +198,8 @@ export const ExploreExperience = () => {
     return null;
   }, [rideshareLinkParent, rideshareLinkDemand, fulfill.fulfillIntentPrefill, organizeFrom.organizeFromPrefill]);
 
+  const inviteShare = useActivityInviteShareSheet();
+
   const selection = useExploreSelectionActions({
     items: selectionItems,
     selectedId,
@@ -213,6 +216,7 @@ export const ExploreExperience = () => {
     clearFulfillAfterPublish: () => fulfill.setFulfillIntentPrefill(null),
     handleFocusMapLocation: viewport.handleFocusMapLocation,
     setLinkOnlyPeekItems,
+    onInviteActivity: inviteShare.openInviteFromActivity,
   });
 
   const organizeFromPending = Boolean(parseOrganizeFromActivityId(searchParams));
@@ -222,6 +226,21 @@ export const ExploreExperience = () => {
 
   const deepLinkPinId = parseExplorePinMapItemId(searchParams);
   const openedDeepLinkPinRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!deepLinkPinId?.startsWith('demand:') || rideshareLinkDemand || loading) return;
+    if (compose.organizeRoute?.kind !== 'rideshare') return;
+    const item = selectionItems.find((entry) => entry.id === deepLinkPinId);
+    if (item?.source === 'demand') {
+      setRideshareLinkDemand(item);
+    }
+  }, [
+    deepLinkPinId,
+    rideshareLinkDemand,
+    loading,
+    compose.organizeRoute?.kind,
+    selectionItems,
+  ]);
 
   useEffect(() => {
     if (!deepLinkPinId || loading) return;
@@ -515,12 +534,20 @@ export const ExploreExperience = () => {
               : selection.handleDemandMessage
           }
           onFulfillIntent={fulfill.handleFulfillIntent}
-          onManage={selection.selectedCard?.showHostActions ? selection.handleHostManage : undefined}
+          onHostFullManage={
+            selection.selectedCard?.showHostActions ? selection.handleHostManage : undefined
+          }
+          onManage={
+            selection.selectedCard?.showHostActions ? selection.handleHostCheckin : undefined
+          }
           linkRideshareTenantId={tenantId}
           onCreateLinkedRideshare={handleCreateLinkedRideshare}
           onHostRemove={selection.selectedCard?.showHostActions ? selection.requestHostRemove : undefined}
           onDemandRemove={
             selection.selectedCard?.showDemandOwnerActions ? selection.requestDemandRemove : undefined
+          }
+          onDemandFullManage={
+            selection.selectedCard?.showDemandOwnerActions ? selection.handleDemandManage : undefined
           }
           onDemandLinkRideshare={
             selection.selectedCard?.showDemandLinkRideshare ? handleOfferRideshareForDemand : undefined
@@ -533,7 +560,15 @@ export const ExploreExperience = () => {
           onCloseMobileBrowse={browse.closeListPanel}
           mobileBrowseSheet={mobileBrowsePanel}
           onGuestGatedAction={selection.handleGuestGatedAction}
+          onInviteCrew={
+            selection.selected?.activity?.status === 'published' &&
+            (selection.selectedCard?.showHostActions || selection.joinUiState?.kind === 'confirmed')
+              ? selection.handleInviteCrew
+              : undefined
+          }
         />
+
+        {inviteShare.sheet}
 
         {isDesktop && browse.listMode === 'whosGoing' ? (
           <aside

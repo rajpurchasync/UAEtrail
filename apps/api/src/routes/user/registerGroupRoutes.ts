@@ -8,8 +8,9 @@ import { findActivityDocInMongo } from '../../lib/entity-sync.js';
 import { createNotificationRecord } from '../../lib/notifications-store.js';
 import { isActivityGroupChatOpen } from '../../services/activity-group-chat.js';
 import { notifyGroupInvite, notifyGroupWallPost } from '../../services/social-notifications.js';
-import { acceptGroupInviteByToken, createGroupInvite, createGroupWallMessage, createKidGroupMember, createSocialGroup, deleteSocialGroup, findGroupById, findGroupMemberById, getGroupMembership, listGroupInvites, listGroupMembersDetailed, listGroupsForUser, listGroupWallMessages, removeGroupMembership, setGroupMembershipActiveState, toggleGroupWallReaction, updateGroupMemberRole } from '../../lib/social-groups-store.js';
-import { acceptInviteSchema, createGroupSchema, createKidSchema, createWallPostSchema, groupIdParamSchema, groupInviteSchema, groupMembershipIdParamSchema, groupMembershipPatchSchema, groupWallMessageIdParamSchema, groupWallReactionSchema } from './schemas.js';
+import { canMemberPostToGroupWall } from '../../lib/group-wall-policy.js';
+import { acceptGroupInviteByToken, createGroupInvite, createGroupWallMessage, createKidGroupMember, createSocialGroup, deleteSocialGroup, findGroupById, findGroupMemberById, getGroupMembership, listGroupInvites, listGroupMembersDetailed, listGroupsForUser, listGroupWallMessages, removeGroupMembership, setGroupMembershipActiveState, toggleGroupWallReaction, updateGroupMemberRole, updateGroupWallPostPolicy } from '../../lib/social-groups-store.js';
+import { acceptInviteSchema, createGroupSchema, createKidSchema, createWallPostSchema, groupIdParamSchema, groupInviteSchema, groupMembershipIdParamSchema, groupMembershipPatchSchema, groupSettingsPatchSchema, groupWallMessageIdParamSchema, groupWallReactionSchema } from './schemas.js';
 import type { Router } from 'express';
 
 export const registerGroupRoutes = (router: Router): void => {
@@ -59,6 +60,35 @@ router.delete('/me/groups/:groupId', validate({ params: groupIdParamSchema }), a
     next(error);
   }
 });
+
+router.patch(
+  '/me/groups/:groupId',
+  validate({ params: groupIdParamSchema, body: groupSettingsPatchSchema }),
+  async (req, res, next) => {
+    try {
+      const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
+      const body = req.body as z.infer<typeof groupSettingsPatchSchema>;
+      const membership = await getGroupMembership(groupId, req.auth!.userId);
+      if (!membership || membership.role !== 'admin') {
+        throw new ApiError(403, 'forbidden', 'Only group admins can update chat settings.');
+      }
+
+      const group = await findGroupById(groupId);
+      if (!group) {
+        throw new ApiError(404, 'group_not_found', 'Group not found.');
+      }
+
+      const updated = await updateGroupWallPostPolicy(groupId, body.wallPostPolicy);
+      if (!updated) {
+        throw new ApiError(404, 'group_not_found', 'Group not found.');
+      }
+
+      res.json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.get('/me/groups/:groupId', validate({ params: groupIdParamSchema }), async (req, res, next) => {
   try {
@@ -340,7 +370,13 @@ router.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema, b
     }
 
     const group = await findGroupById(groupId);
-    if (group?.type === 'activity' && group.activityId) {
+    if (!group) {
+      throw new ApiError(404, 'group_not_found', 'Group not found.');
+    }
+    if (!canMemberPostToGroupWall(group, membership)) {
+      throw new ApiError(403, 'wall_post_forbidden', 'Only admins can post in this group chat.');
+    }
+    if (group.type === 'activity' && group.activityId) {
       const eventDoc = await findActivityDocInMongo(group.activityId);
       if (eventDoc && !isActivityGroupChatOpen(eventDoc.startAt)) {
         throw new ApiError(403, 'activity_chat_closed', 'Activity chat closed one week after the activity.');

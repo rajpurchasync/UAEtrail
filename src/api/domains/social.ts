@@ -126,6 +126,13 @@ export const socialApi = {
       };
     }>(`/me/groups/${groupId}`, { auth: true }),
 
+    updateMeGroupSettings: (groupId: string, payload: { wallPostPolicy: 'all_members' | 'admins_only' }) =>
+    apiRequest<{ data: SocialGroupView }>(`/me/groups/${groupId}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload),
+    }),
+
     createMeGroupInvite: (groupId: string, payload: { email: string; role: 'admin' | 'buddy' }) =>
     apiRequest<{ data: SocialGroupInviteView; inviteLink: string }>(`/me/groups/${groupId}/invites`, {
       method: 'POST',

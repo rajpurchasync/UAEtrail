@@ -10,7 +10,12 @@ import {
   type OutingCategory,
 } from '@uaetrail/shared-types';
 import { ObjectId, type Filter } from 'mongodb';
-import type { CreateParticipantIntentInput, ParticipantIntentKind } from '../domain/participant-intent.js';
+import {
+  parseMergedParticipantIntent,
+  type CreateParticipantIntentInput,
+  type ParticipantIntentKind,
+  type UpdateParticipantIntentInput,
+} from '../domain/participant-intent.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import { invalidateExploreMapCache } from './explore-map-cache.js';
 import { COLLECTIONS } from './collections.js';
@@ -138,6 +143,76 @@ export const createParticipantIntent = async (
   return mapDto(doc, user);
 };
 
+const mongoDocToCreateInput = (doc: MongoParticipantIntent): CreateParticipantIntentInput => ({
+  kind: doc.kind,
+  title: doc.title?.trim() || resolveStoredDemandTitle(doc),
+  date: doc.date,
+  time: doc.time,
+  preferredArea: doc.preferredArea,
+  latitude: doc.latitude,
+  longitude: doc.longitude,
+  locationPrecision: doc.locationPrecision ?? undefined,
+  toLatitude: doc.toLatitude,
+  toLongitude: doc.toLongitude,
+  partySize: doc.partySize,
+  comment: doc.comment,
+});
+
+export const updateParticipantIntent = async (
+  userId: string,
+  intentId: string,
+  patch: UpdateParticipantIntentInput
+): Promise<ParticipantIntentDTO | null> => {
+  const lookupFilter: Record<string, unknown> =
+    /^[a-f0-9]{24}$/i.test(intentId) && ObjectId.isValid(intentId)
+      ? { $or: [{ _id: intentId }, { _id: new ObjectId(intentId) }] }
+      : { _id: intentId };
+
+  const existing = await collection().findOne({
+    ...lookupFilter,
+    userId,
+    status: 'active',
+  } as Filter<MongoParticipantIntent>);
+
+  if (!existing) return null;
+
+  const merged = parseMergedParticipantIntent({
+    ...mongoDocToCreateInput(existing),
+    ...patch,
+    title: patch.title?.trim() ?? mongoDocToCreateInput(existing).title,
+  });
+
+  const now = new Date();
+  const update: Partial<MongoParticipantIntent> = {
+    kind: merged.kind,
+    outingCategory: participantIntentKindToOutingCategory(merged.kind),
+    title: merged.title.trim(),
+    date: merged.date ?? null,
+    time: merged.time ?? null,
+    preferredArea: merged.preferredArea?.trim() || null,
+    latitude: merged.latitude ?? null,
+    longitude: merged.longitude ?? null,
+    locationPrecision: merged.locationPrecision ?? null,
+    toLatitude: merged.toLatitude ?? null,
+    toLongitude: merged.toLongitude ?? null,
+    partySize: merged.partySize,
+    comment: merged.comment.trim(),
+    updatedAt: now,
+  };
+
+  const updated = await collection().findOneAndUpdate(
+    { _id: existing._id, userId, status: 'active' } as Filter<MongoParticipantIntent>,
+    { $set: update },
+    { returnDocument: 'after' }
+  );
+
+  if (!updated) return null;
+
+  await invalidateExploreMapCache();
+  const user = await findAuthUserById(userId);
+  return mapDto(updated, user);
+};
+
 export const cancelParticipantIntent = async (
   userId: string,
   intentId: string
@@ -188,6 +263,22 @@ export const fulfillParticipantIntent = async (
 
   const user = await findAuthUserById(updated.userId);
   return mapDto(updated, user);
+};
+
+export const listParticipantIntentsForUser = async (
+  userId: string,
+  limit = 100
+): Promise<ParticipantIntentDTO[]> => {
+  const docs = await collection()
+    .find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .toArray();
+
+  if (docs.length === 0) return [];
+
+  const user = await findAuthUserById(userId);
+  return docs.map((doc) => mapDto(doc, user));
 };
 
 export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<ExploreMapItemDTO[]> => {

@@ -61,10 +61,11 @@ export const OrganisationActivityCheckInPanel = ({
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Check-in</p>
-        <h3 className="text-lg font-semibold text-neutral-900 mt-0.5">{activityTitle}</h3>
-        <p className="text-sm text-neutral-600 mt-1">
-          Confirm who arrived in person. Only hosts can check attendees in for safety and attendance records.
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Confirmed joiners</p>
+        <h3 className="mt-0.5 text-lg font-semibold text-neutral-900">{activityTitle}</h3>
+        <p className="mt-1 text-sm leading-relaxed text-neutral-600">
+          Tap each person who attended. Check-in verifies attendance so they can review the trip and place, and
+          hosts get a fair record of who went.
         </p>
       </div>
 

@@ -1,46 +1,51 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Map as MapIcon, Plus } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
-import { TabPageSearchRow } from '../components/mobile/TabPageSearchRow';
 import { PageMeta } from '../components/seo/PageMeta';
 import { TRIPS_PATH } from '../constants';
 import { explorePath } from '../explore/routing';
-import { isHostRole } from '../utils/roles';
+import { useOrganisationGate } from '../hooks/useOrganisationGate';
+import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { signInPathForReturn } from '../utils/authReturnContext';
-import { ActivitiesHubView } from './activities/ActivitiesHubView';
 import { JoinedSection } from './activities/JoinedSection';
-import { HostedSection } from './activities/HostedSection';
-import { TripsSelfSection } from './activities/TripsSelfSection';
+import { HostedActivitiesSection } from './activities/HostedActivitiesSection';
+import { SelfPlansSection } from './activities/SelfPlansSection';
+import { ActivitiesHubView } from './activities/ActivitiesHubView';
+import { PlansUpcomingAllView } from './activities/PlansUpcomingAllView';
 import { ProfileWishlistPanel } from '../components/trips/ProfileWishlistPanel';
 import { ProfileGoalCard } from '../components/profile/ProfileGoalCard';
 import { useMemberGoal } from '../hooks/useMemberGoal';
-import { TripsSegmentScroll } from '../components/trips/TripsSegmentScroll';
-import { TripsRoleChips } from '../components/trips/TripsRoleChips';
-import { TripsHubLayerPills } from '../components/trips/TripsHubLayerPills';
+import { TripsPageToolbar } from '../components/trips/TripsPageToolbar';
+import { TripsPlansUpcomingHeader } from '../components/trips/TripsPlansUpcomingHeader';
+import { TripsFiltersSheet } from '../components/trips/TripsFiltersSheet';
 import {
-  TRIPS_SEGMENT_TABS,
   normalizeTripsSearchParams,
-  parseTripsHubLayer,
+  parseTripsMainView,
+  parseTripsPlansRole,
   parseTripsRole,
+  parseTripsSavedLayer,
   parseTripsSegment,
-  tripsRoleChips,
-  tripsMapPath,
-  type TripsHubLayer,
+  type TripsPlansRole,
   type TripsRole,
-  type TripsSegment,
+  type TripsSavedLayer,
 } from '../trips/tripsRouting';
+import { resolveTripsContent, tripsContentShowsComposeFab } from '../trips/resolveTripsContent';
 
 export const Activities = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
-  const canHost = isHostRole(user?.role);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [goalSheetOpen, setGoalSheetOpen] = useState(false);
+  const gate = useOrganisationGate({ enabled: Boolean(user) });
+  const canHost = memberCanManageHostedActivities(user, gate.canPublish);
   const { goal, saving: goalSaving, saveGoal, clearGoal, reload: reloadGoal } = useMemberGoal(Boolean(user));
 
   useEffect(() => {
@@ -50,55 +55,74 @@ export const Activities = () => {
     if (changed) setSearchParams(next, { replace: true });
   }, [canHost, searchParams, setSearchParams, user]);
 
-  const hubLayer = parseTripsHubLayer(searchParams.get('layer'));
+  const mainView = parseTripsMainView(location.pathname, searchParams.get('view'));
   const segment = parseTripsSegment(searchParams.get('segment'));
-  const role = parseTripsRole(searchParams.get('role'), segment, {
+  const plansRole = parseTripsPlansRole(segment, searchParams.get('role'), canHost);
+  const savedLayer = parseTripsSavedLayer(searchParams.get('saved'));
+  const historyRole: TripsRole =
+    mainView === 'completed'
+      ? parseTripsRole(searchParams.get('role'), 'completed', {
+          canHost,
+          legacyTab: searchParams.get('tab'),
+        })
+      : 'joined';
+
+  const contentKey = resolveTripsContent({
+    signedIn: Boolean(user),
+    mainView,
+    plansRole,
+    role: historyRole,
     canHost,
-    legacyTab: searchParams.get('tab'),
   });
-
-  const roleChips = useMemo(() => tripsRoleChips(segment, canHost), [canHost, segment]);
-
-  const setHubLayer = useCallback(
-    (nextLayer: TripsHubLayer) => {
-      const next = new URLSearchParams(searchParams);
-      if (nextLayer === 'trips') {
-        next.delete('layer');
-        if (!next.get('segment')) next.set('segment', 'upcoming');
-        if (!next.get('role')) next.set('role', 'joined');
-      } else {
-        next.set('layer', nextLayer);
-        next.delete('segment');
-        next.delete('role');
-      }
-      setSearchParams(next, { replace: true });
-    },
-    [searchParams, setSearchParams]
-  );
 
   const handleRefresh = useCallback(async () => {
     setRefreshKey((key) => key + 1);
     reloadGoal();
   }, [reloadGoal]);
 
-  const setSegment = useCallback(
-    (nextSegment: TripsSegment) => {
+  const setPlansRole = useCallback(
+    (role: TripsPlansRole) => {
       const next = new URLSearchParams(searchParams);
-      next.set('segment', nextSegment);
-      if (nextSegment === 'wishlist') {
+      next.set('view', 'plans');
+      if (role === 'wishlist') {
+        next.set('segment', 'wishlist');
         next.delete('role');
-      } else if (!next.get('role')) {
-        next.set('role', 'joined');
+      } else {
+        next.delete('segment');
+        if (role === 'all') {
+          next.set('role', 'all');
+        } else {
+          next.set('role', role);
+        }
       }
+      next.delete('saved');
       setSearchParams(next, { replace: true });
     },
     [searchParams, setSearchParams]
   );
 
-  const setRole = useCallback(
-    (nextRole: TripsRole) => {
+  const setHistoryRole = useCallback(
+    (role: TripsRole) => {
       const next = new URLSearchParams(searchParams);
-      next.set('role', nextRole);
+      next.set('view', 'completed');
+      next.set('role', role);
+      next.delete('segment');
+      next.delete('saved');
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
+
+  const setSavedLayer = useCallback(
+    (nextLayer: TripsSavedLayer) => {
+      const next = new URLSearchParams(searchParams);
+      next.set('view', 'plans');
+      next.set('segment', 'wishlist');
+      if (nextLayer === 'trips') {
+        next.delete('saved');
+      } else {
+        next.set('saved', nextLayer);
+      }
       setSearchParams(next, { replace: true });
     },
     [searchParams, setSearchParams]
@@ -113,55 +137,120 @@ export const Activities = () => {
     navigate(composePath);
   }, [navigate, user]);
 
-  const showUpcomingJoinedHub = hubLayer === 'trips' && segment === 'upcoming' && role === 'joined';
-  const showFab = showUpcomingJoinedHub && Boolean(user);
+  const showFab = tripsContentShowsComposeFab(contentKey) && Boolean(user);
 
-  const searchPlaceholder =
-    hubLayer === 'places'
-      ? 'Search saved places'
-      : hubLayer === 'shops'
-        ? 'Search saved shops'
-        : segment === 'wishlist'
-          ? 'Search your wishlist'
-          : 'Search trips';
+  const filtersActive = false;
+
+  const searchPlaceholder = 'Search completed trips';
+
+  const listSearchQuery = mainView === 'completed' ? activitySearchQuery : '';
 
   const tripsToolbar = user ? (
-    <div className="flex flex-col gap-3">
-      <TripsHubLayerPills activeId={hubLayer} onChange={setHubLayer} />
-      <TabPageSearchRow
-        inset
-        value={activitySearchQuery}
-        onChange={setActivitySearchQuery}
-        placeholder={searchPlaceholder}
-        action={
-          hubLayer === 'trips' ? (
-            <Link
-              to={tripsMapPath()}
-              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-neutral-200/80 bg-white text-emerald-700 shadow-sm active:scale-[0.98]"
-              aria-label="My outdoor map"
-              title="My outdoor map"
-            >
-              <MapIcon className="h-5 w-5" aria-hidden />
-            </Link>
-          ) : undefined
-        }
-      />
-      {hubLayer === 'trips' ? (
-        <>
-          <TripsSegmentScroll tabs={TRIPS_SEGMENT_TABS} activeId={segment} onChange={setSegment} />
-          {segment !== 'wishlist' ? (
-            <TripsRoleChips chips={roleChips} activeId={role} onChange={setRole} />
-          ) : null}
-        </>
-      ) : null}
-    </div>
+    <TripsPageToolbar
+      mainView={mainView}
+      searchQuery={activitySearchQuery}
+      onSearchChange={setActivitySearchQuery}
+      searchPlaceholder={searchPlaceholder}
+      filtersActive={filtersActive}
+      onOpenFilters={() => setFiltersOpen(true)}
+      historyRole={historyRole}
+      onHistoryRoleChange={setHistoryRole}
+      canHost={canHost}
+    />
   ) : null;
+
+  const renderContent = () => {
+    if (!user) {
+      return (
+        <div className="glass-card p-6 text-center text-sm text-neutral-600">
+          Sign in to see your trips, hosted outings, and saved plans.
+        </div>
+      );
+    }
+
+    switch (contentKey) {
+      case 'wishlist':
+        return (
+          <ProfileWishlistPanel
+            key={`wishlist-${savedLayer}-${refreshKey}`}
+            layer={savedLayer}
+            searchQuery={listSearchQuery}
+          />
+        );
+      case 'plans-all':
+        return (
+          <PlansUpcomingAllView refreshKey={refreshKey} canHost={canHost} />
+        );
+      case 'plans-joined':
+        return (
+          <>
+            <ActivitiesHubView refreshKey={refreshKey} searchQuery={listSearchQuery} />
+            <SelfPlansSection
+              segment="upcoming"
+              refreshKey={refreshKey}
+              searchQuery={listSearchQuery}
+              peekBridgeOnly
+            />
+          </>
+        );
+      case 'plans-hosted':
+        return (
+          <HostedActivitiesSection
+            refreshKey={refreshKey}
+            searchQuery={listSearchQuery}
+            timeScope="upcoming"
+            layout="embedded"
+          />
+        );
+      case 'joined-completed':
+        return (
+          <JoinedSection
+            refreshKey={refreshKey}
+            searchQuery={listSearchQuery}
+            scope="attended-only"
+          />
+        );
+      case 'hosted-completed':
+        return (
+          <HostedActivitiesSection
+            refreshKey={refreshKey}
+            searchQuery={listSearchQuery}
+            timeScope="past"
+          />
+        );
+      case 'self-completed':
+        return (
+          <SelfPlansSection
+            segment="completed"
+            refreshKey={refreshKey}
+            searchQuery={listSearchQuery}
+          />
+        );
+      case 'hosted-needs-approval':
+        return (
+          <div className="glass-card p-6 text-center">
+            <p className="mb-3 text-sm text-neutral-600">
+              Host activities on the map to share them with the community.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/become-host')}
+              className="text-sm font-semibold text-emerald-700"
+            >
+              Become a host
+            </button>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
       <PageMeta
-        title="My trips — outings, places, and shops you saved"
-        description="Your upcoming outings, history, and saved map pins on UAE Trail."
+        title="Trips — your outings on UAE Trail"
+        description="Upcoming and past outings you joined or host on UAE Trail."
         path={TRIPS_PATH}
       />
 
@@ -169,86 +258,57 @@ export const Activities = () => {
         layout="tab"
         title="Trips"
         suppressMobileHeader
+        suppressMobileToolbarBorder
         maxWidth="4xl"
         toolbar={tripsToolbar}
       >
         <PullToRefresh onRefresh={handleRefresh}>
-          <div
-            className={`space-y-4 pt-1 ${showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'}`}
-          >
-            {hubLayer === 'places' && user ? (
-              <ProfileWishlistPanel key={`places-${refreshKey}`} layer="places" searchQuery={activitySearchQuery} />
+          <div className={`space-y-4 pt-1 ${showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'}`}>
+            {user && mainView === 'plans' ? (
+              <>
+                <ProfileGoalCard
+                  variant="compact"
+                  goal={goal}
+                  saving={goalSaving}
+                  onSave={saveGoal}
+                  onClear={clearGoal}
+                />
+                <ProfileGoalCard
+                  surfaceHidden
+                  goal={goal}
+                  saving={goalSaving}
+                  onSave={saveGoal}
+                  onClear={clearGoal}
+                  sheetOpen={goalSheetOpen}
+                  onSheetOpenChange={setGoalSheetOpen}
+                />
+                <TripsPlansUpcomingHeader
+                  activeRole={plansRole}
+                  onRoleChange={setPlansRole}
+                  canHost={canHost}
+                />
+              </>
             ) : null}
 
-            {hubLayer === 'shops' && user ? (
-              <ProfileWishlistPanel key={`shops-${refreshKey}`} layer="shops" searchQuery={activitySearchQuery} />
-            ) : null}
-
-            {hubLayer === 'trips' && segment === 'upcoming' && user ? (
-              <ProfileGoalCard
-                variant="compact"
-                goal={goal}
-                saving={goalSaving}
-                onSave={saveGoal}
-                onClear={clearGoal}
-              />
-            ) : null}
-
-            {hubLayer === 'trips' && segment === 'wishlist' && user ? (
-              <ProfileWishlistPanel key={`wishlist-${refreshKey}`} layer="trips" searchQuery={activitySearchQuery} />
-            ) : null}
-
-            {showUpcomingJoinedHub && user ? (
-              <ActivitiesHubView refreshKey={refreshKey} searchQuery={activitySearchQuery} />
-            ) : null}
-
-            {hubLayer === 'trips' && segment === 'upcoming' && role === 'hosted' && user && canHost ? (
-              <HostedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} timeScope="upcoming" />
-            ) : null}
-
-            {hubLayer === 'trips' && segment === 'upcoming' && role === 'hosted' && user && !canHost ? (
-              <div className="glass-card p-6 text-center">
-                <p className="mb-3 text-sm text-neutral-600">
-                  Host activities on the map to share them with the community.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => navigate('/become-host')}
-                  className="text-sm font-semibold text-emerald-700"
-                >
-                  Become a host
-                </button>
-              </div>
-            ) : null}
-
-            {hubLayer === 'trips' && segment === 'upcoming' && role === 'self' && user ? (
-              <TripsSelfSection segment="upcoming" />
-            ) : null}
-
-            {hubLayer === 'trips' && segment === 'completed' && role === 'joined' && user ? (
-              <JoinedSection
-                refreshKey={refreshKey}
-                searchQuery={activitySearchQuery}
-                scope="attended-only"
-              />
-            ) : null}
-
-            {hubLayer === 'trips' && segment === 'completed' && role === 'hosted' && user && canHost ? (
-              <HostedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} timeScope="past" />
-            ) : null}
-
-            {hubLayer === 'trips' && segment === 'completed' && role === 'hosted' && user && !canHost ? (
-              <div className="glass-card p-6 text-center text-sm text-neutral-600">
-                Hosting history is available after you become an approved host.
-              </div>
-            ) : null}
-
-            {hubLayer === 'trips' && segment === 'completed' && role === 'self' && user ? (
-              <TripsSelfSection segment="completed" />
-            ) : null}
+            {renderContent()}
           </div>
         </PullToRefresh>
       </ConsumerShell>
+
+      {user && mainView === 'completed' ? (
+        <TripsFiltersSheet
+          open={filtersOpen}
+          onClose={() => setFiltersOpen(false)}
+          segment="completed"
+          hasActiveGoal={Boolean(goal)}
+          savedLayer={savedLayer}
+          onSavedLayerChange={setSavedLayer}
+          onOpenGoal={() => {
+            setFiltersOpen(false);
+            setGoalSheetOpen(true);
+          }}
+        />
+      ) : null}
 
       {showFab ? (
         <FloatingActionButton

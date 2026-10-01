@@ -14,6 +14,7 @@ interface ShareButtonProps {
   iconOnly?: boolean;
   /** Icon button on light card backgrounds (default is dark overlay for photos) */
   light?: boolean;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -30,6 +31,7 @@ export const ShareButton = ({
   compact = false,
   iconOnly = false,
   light = false,
+  disabled = false,
   className = '',
 }: ShareButtonProps) => {
   const [showShareMenu, setShowShareMenu] = useState(false);
@@ -82,6 +84,7 @@ export const ShareButton = ({
   const openMenu = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (disabled) return;
     if (!showShareMenu && (compact || iconOnly) && canNativeShare) {
       const shared = await handleNativeShare();
       if (shared) return;
@@ -99,7 +102,13 @@ export const ShareButton = ({
 
   return (
     <div className={`relative ${className}`} onClick={(e) => e.stopPropagation()}>
-      <button type="button" onClick={(e) => void openMenu(e)} className={buttonClass} aria-label="Share">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={(e) => void openMenu(e)}
+        className={`${buttonClass}${disabled ? ' opacity-50 pointer-events-none' : ''}`}
+        aria-label="Share"
+      >
         <Share2 className={iconOnly ? 'w-3.5 h-3.5' : 'w-5 h-5'} />
         {!compact && !iconOnly && 'Share'}
       </button>

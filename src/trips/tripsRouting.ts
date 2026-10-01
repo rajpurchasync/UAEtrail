@@ -1,10 +1,17 @@
 import { TRIPS_PATH } from '../constants';
 
 /**
- * Personal library layers under the Trips tab (wishlist by kind).
- * Not Explore map publish filters — public “Looking for” stays on `/explore` only.
+ * **Trips tab UI only** — `/trips` query params, labels, and path helpers.
+ * Domain data (activities, join requests, org hub) lives under activities / organisation APIs — not here.
  */
 export type TripsHubLayer = 'trips' | 'places' | 'shops';
+
+export type TripsSavedLayer = 'trips' | 'places' | 'shops';
+
+export const parseTripsSavedLayer = (raw: string | null): TripsSavedLayer => {
+  if (raw === 'places' || raw === 'shops') return raw;
+  return 'trips';
+};
 
 export const TRIPS_HUB_LAYER_PILLS: { id: TripsHubLayer; label: string }[] = [
   { id: 'trips', label: 'Trips' },
@@ -12,7 +19,73 @@ export const TRIPS_HUB_LAYER_PILLS: { id: TripsHubLayer; label: string }[] = [
   { id: 'shops', label: 'Shops' },
 ];
 
+export type TripsMainView = 'plans' | 'completed' | 'map';
+
 export type TripsSegment = 'upcoming' | 'completed' | 'wishlist';
+
+/** Sub-tab under Plans: upcoming outings vs wishlist. */
+export type TripsPlansSub = 'upcoming' | 'wishlist';
+
+/** Pill under Plans → Upcoming: all / hosted / joined outings or wishlist. */
+export type TripsPlansRole = 'all' | 'hosted' | 'joined' | 'wishlist';
+
+export const TRIPS_PLANS_SUB_TABS: { id: TripsPlansSub; label: string }[] = [
+  { id: 'upcoming', label: 'Upcoming' },
+  { id: 'wishlist', label: 'Wishlist' },
+];
+
+export const parseTripsPlansRole = (
+  segment: TripsSegment,
+  roleRaw: string | null,
+  canHost: boolean
+): TripsPlansRole => {
+  if (segment === 'wishlist') return 'wishlist';
+  if (roleRaw === 'hosted' && canHost) return 'hosted';
+  if (roleRaw === 'joined') return 'joined';
+  return 'all';
+};
+
+export const tripsPlansRoleChips = (canHost: boolean): { id: TripsPlansRole; label: string }[] => {
+  const chips: { id: TripsPlansRole; label: string }[] = [{ id: 'all', label: 'All' }];
+  if (canHost) chips.push({ id: 'hosted', label: 'Hosted' });
+  chips.push({ id: 'joined', label: 'Joined' });
+  chips.push({ id: 'wishlist', label: 'Wishlist' });
+  return chips;
+};
+
+export const parseTripsMainView = (pathname: string, rawView: string | null): TripsMainView => {
+  if (pathname === '/trips/map' || pathname.endsWith('/trips/map')) return 'map';
+  if (rawView === 'completed' || rawView === 'history') return 'completed';
+  if (rawView === 'map') return 'map';
+  return 'plans';
+};
+
+export const parseTripsPlansSub = (segment: TripsSegment): TripsPlansSub =>
+  segment === 'wishlist' ? 'wishlist' : 'upcoming';
+
+export const tripsPlansPath = (
+  role: TripsPlansRole | TripsPlansSub = 'all'
+): string => {
+  const params = new URLSearchParams();
+  params.set('view', 'plans');
+  if (role === 'wishlist') {
+    params.set('segment', 'wishlist');
+  } else if (role === 'upcoming') {
+    params.set('role', 'all');
+  } else if (role !== 'all') {
+    params.set('role', role);
+  } else {
+    params.set('role', 'all');
+  }
+  return `${TRIPS_PATH}?${params.toString()}`;
+};
+
+export const tripsCompletedPath = (role?: TripsRole): string => {
+  const params = new URLSearchParams();
+  params.set('view', 'completed');
+  if (role && role !== 'joined') params.set('role', role);
+  return `${TRIPS_PATH}?${params.toString()}`;
+};
 
 export type TripsRole = 'joined' | 'hosted' | 'self';
 
@@ -54,18 +127,56 @@ export const normalizeTripsSearchParams = (
     changed = true;
   }
 
-  const layer = parseTripsHubLayer(params.get('layer'));
-  if (!params.get('layer')) {
-    params.set('layer', layer);
+  const segmentBeforeView = parseTripsSegment(params.get('segment'));
+  if (!params.get('view')) {
+    if (segmentBeforeView === 'completed') {
+      params.set('view', 'completed');
+    } else {
+      params.set('view', 'plans');
+    }
     changed = true;
   }
 
-  if (layer !== 'trips') {
-    if (params.get('segment') || params.get('role')) {
+  if (params.get('view') === 'completed') {
+    if (params.get('segment') !== 'completed') {
       params.delete('segment');
-      params.delete('role');
+    }
+  }
+
+  if (params.get('view') === 'plans') {
+    const seg = params.get('segment');
+    if (seg === 'completed') {
+      params.delete('segment');
+      changed = true;
+    } else if (seg === 'saved') {
+      params.set('segment', 'wishlist');
       changed = true;
     }
+    const plansRole = params.get('role');
+    if (params.get('segment') === 'wishlist' && plansRole) {
+      params.delete('role');
+      changed = true;
+    } else if (params.get('segment') !== 'wishlist') {
+      if (plansRole === 'hosted' && !canHost) {
+        params.set('role', 'all');
+        changed = true;
+      } else if (!plansRole) {
+        params.set('role', 'all');
+        changed = true;
+      }
+    }
+  }
+
+  const legacyLayer = params.get('layer');
+  if (legacyLayer === 'places' || legacyLayer === 'shops') {
+    params.delete('layer');
+    params.set('view', 'plans');
+    params.set('segment', 'wishlist');
+    params.set('saved', legacyLayer);
+    changed = true;
+  } else if (legacyLayer) {
+    params.delete('layer');
+    changed = true;
   }
 
   if (!params.get('segment') && (legacyTab || legacySub)) {
@@ -82,10 +193,16 @@ export const normalizeTripsSearchParams = (
     changed = true;
   }
 
-  if (!params.get('role') && resolvedSegment !== 'wishlist') {
-    const role = parseTripsRole(null, resolvedSegment, { canHost, legacyTab });
-    params.set('role', role);
-    changed = true;
+  if (params.get('view') === 'completed') {
+    if (!canHost && params.get('role') === 'hosted') {
+      params.set('role', 'joined');
+      changed = true;
+    }
+    if (!params.get('role')) {
+      const role = parseTripsRole(null, 'completed', { canHost, legacyTab });
+      params.set('role', role);
+      changed = true;
+    }
   }
 
   if (legacyTab || legacySub) {
@@ -97,55 +214,112 @@ export const normalizeTripsSearchParams = (
   return { changed };
 };
 
+/** Deep link: Trips → Hosted → manage sheet (or check-in subview). */
+/** Deep link: Trips → My plans → manage sheet for a demand intent. */
+export const tripsSelfDemandPath = (intentId: string): string => {
+  const params = new URLSearchParams();
+  params.set('view', 'plans');
+  params.set('role', 'joined');
+  params.set('peek', intentId);
+  return `${TRIPS_PATH}?${params.toString()}`;
+};
+
+export const tripsHostedActivityPath = (
+  activityId: string,
+  view: 'overview' | 'checkin' = 'overview'
+): string => {
+  const params = new URLSearchParams();
+  params.set('view', 'plans');
+  params.set('role', 'hosted');
+  if (view === 'checkin') {
+    params.set('checkin', activityId);
+  } else {
+    params.set('peek', activityId);
+  }
+  return `${TRIPS_PATH}?${params.toString()}`;
+};
+
 export const tripsPath = (input?: {
   layer?: TripsHubLayer;
   segment?: TripsSegment;
   role?: TripsRole;
 }): string => {
-  const params = new URLSearchParams();
-  if (input?.layer && input.layer !== 'trips') {
-    params.set('layer', input.layer);
+  if (input?.segment === 'completed') {
+    return tripsCompletedPath(input?.role);
   }
-  if (input?.layer === 'trips' || !input?.layer) {
-    if (input?.segment && input.segment !== 'upcoming') {
-      params.set('segment', input.segment);
-    }
-    if (input?.role && input.role !== 'joined') {
-      params.set('role', input.role);
-    }
+  if (input?.segment === 'wishlist') {
+    return tripsPlansPath('wishlist');
   }
-  const qs = params.toString();
-  return qs ? `${TRIPS_PATH}?${qs}` : TRIPS_PATH;
+  if (input?.role === 'hosted') {
+    return tripsPlansPath('hosted');
+  }
+  if (input?.role === 'joined' || input?.role === 'self') {
+    return tripsCompletedPath(input.role);
+  }
+  if (input?.layer === 'places' || input?.layer === 'shops') {
+    const params = new URLSearchParams();
+    params.set('view', 'plans');
+    params.set('segment', 'wishlist');
+    params.set('saved', input.layer);
+    return `${TRIPS_PATH}?${params.toString()}`;
+  }
+  return tripsPlansPath('all');
 };
 
 export const tripsMapPath = () => '/trips/map';
 
-export const TRIPS_SEGMENT_TABS: { id: TripsSegment; label: string }[] = [
+export const TRIPS_MAIN_TABS: {
+  id: TripsMainView;
+  label: string;
+  href: string;
+}[] = [
+  { id: 'plans', label: 'Plans', href: tripsPlansPath('all') },
+  { id: 'completed', label: 'Completed', href: tripsCompletedPath() },
+  { id: 'map', label: 'My Map', href: tripsMapPath() },
+];
+
+export const TRIPS_UNDERLINE_TABS: { id: 'upcoming' | 'completed'; label: string }[] = [
   { id: 'upcoming', label: 'Upcoming' },
   { id: 'completed', label: 'Completed' },
+];
+
+/** @deprecated Use TRIPS_UNDERLINE_TABS + wishlist in filters */
+export const TRIPS_SEGMENT_TABS: { id: TripsSegment; label: string }[] = [
+  ...TRIPS_UNDERLINE_TABS,
   { id: 'wishlist', label: 'Wishlist' },
 ];
 
+export type TripsSubviewPillId = TripsRole | 'wishlist';
+
+/** History (Completed) tab — Joined / Hosted / Self trip filters. */
+export const tripsHistoryRoleChips = (
+  canHost: boolean
+): { id: TripsRole; label: string }[] => {
+  const chips: { id: TripsRole; label: string }[] = [{ id: 'joined', label: 'Joined' }];
+  if (canHost) chips.push({ id: 'hosted', label: 'Hosted' });
+  chips.push({ id: 'self', label: 'Self trip' });
+  return chips;
+};
+
+/** @deprecated Use tripsHistoryRoleChips + TRIPS_PLANS_SUB_TABS */
+export const tripsSubviewPills = (
+  timeline: 'upcoming' | 'completed' | 'wishlist',
+  canHost: boolean
+): { id: TripsSubviewPillId; label: string }[] => {
+  if (timeline === 'completed') {
+    return tripsHistoryRoleChips(canHost);
+  }
+  return TRIPS_PLANS_SUB_TABS.map((t) => ({
+    id: t.id === 'wishlist' ? 'wishlist' : 'joined',
+    label: t.label,
+  }));
+};
+
+/** @deprecated Use tripsSubviewPills */
 export const tripsRoleChips = (
   segment: TripsSegment,
   canHost: boolean
-): { id: TripsRole; label: string }[] => {
-  if (segment === 'wishlist') return [];
-  if (segment === 'upcoming') {
-    const chips: { id: TripsRole; label: string }[] = [
-      { id: 'joined', label: 'Joined' },
-    ];
-    if (canHost) chips.push({ id: 'hosted', label: 'Hosted' });
-    chips.push({ id: 'self', label: 'My plans' });
-    return chips;
-  }
-  if (segment === 'completed') {
-    const chips: { id: TripsRole; label: string }[] = [
-      { id: 'joined', label: 'Joined' },
-    ];
-    if (canHost) chips.push({ id: 'hosted', label: 'Hosted' });
-    chips.push({ id: 'self', label: 'My plans' });
-    return chips;
-  }
-  return [];
-};
+): { id: TripsRole; label: string }[] =>
+  tripsSubviewPills(segment === 'completed' ? 'completed' : 'upcoming', canHost).filter(
+    (chip): chip is { id: TripsRole; label: string } => chip.id !== 'wishlist'
+  );

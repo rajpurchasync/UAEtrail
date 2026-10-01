@@ -220,6 +220,8 @@ export interface ActivityDTO {
   /** Browse/match family when distinct from legacy `activityType` (e.g. generic activity wizard). */
   outingCategory?: OutingCategory | null;
   outingTopic?: OutingTopic | null;
+  /** Activity crew chat — one group per outing (host list / manage). */
+  groupChatId?: string | null;
 }
 
 
@@ -332,6 +334,38 @@ export type WithdrawReason = (typeof WITHDRAW_REASONS)[number]['value'];
 
 export const withdrawReasonLabel = (value: string): string =>
   WITHDRAW_REASONS.find((r) => r.value === value)?.label ?? value;
+
+/** Predefined reasons when a host declines a join request */
+export const HOST_JOIN_DECLINE_REASONS = [
+  { value: 'activity_full', label: 'Activity is full' },
+  { value: 'not_right_fit', label: 'Not the right fit for this outing' },
+  { value: 'requirements_not_met', label: "Doesn't meet activity requirements" },
+  { value: 'schedule_conflict', label: 'Schedule or timing conflict' },
+  { value: 'safety_capacity', label: 'Safety or capacity limits' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+export type HostJoinDeclineReason = (typeof HOST_JOIN_DECLINE_REASONS)[number]['value'];
+
+export const hostJoinDeclineReasonLabel = (value: string): string =>
+  HOST_JOIN_DECLINE_REASONS.find((r) => r.value === value)?.label ?? value;
+
+/** Text stored on the request and shown to the guest (notification + request detail). */
+export const formatHostJoinDeclineNote = (
+  reason: HostJoinDeclineReason,
+  message?: string | null
+): string => {
+  const label = hostJoinDeclineReasonLabel(reason);
+  const note = message?.trim();
+
+  if (reason === 'other' && note) {
+    return note;
+  }
+  if (note) {
+    return `${label} — ${note}`;
+  }
+  return label;
+};
 
 export interface NotificationDTO {
   id: string;

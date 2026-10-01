@@ -6,7 +6,8 @@ import type {
 } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
-export const tripsMapApi = {
+/** Member outdoor journey map — HTTP path `/me/trips/map` is legacy; not the Trips tab UI module. */
+export const memberJourneyMapApi = {
   getJourneyMap: () => apiRequest<{ data: MemberJourneyMapDTO }>('/me/trips/map', { auth: true }),
   createPin: (body: CreateMemberMapPinInput) =>
     apiRequest<{ data: MemberMapPinDTO }>('/me/map-pins', {

@@ -21,11 +21,16 @@ import {
   SocialGroupWallMessageView,
 } from '../api/index';
 import {
-  GROUP_WALL_REACTION_EMOJI,
-  GROUP_WALL_REACTION_KINDS,
-  GROUP_WALL_REACTION_LABEL,
-  GroupWallReactionKind,
-} from '../constants/groupReactions';
+  formatGroupWallReplyBody,
+  GroupWallMessageItem,
+  type GroupWallReplyTarget,
+} from '../components/messages/GroupWallMessageItem';
+import {
+  canMemberPostToGroupWall,
+  groupWallPostPolicyLabel,
+  resolveGroupWallPostPolicy,
+  type GroupWallPostPolicy,
+} from '../utils/groupWallPostPolicy';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { Dialog } from '../components/ui/Dialog';
@@ -93,8 +98,7 @@ export const Groups = () => {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [memberActionId, setMemberActionId] = useState<string | null>(null);
-  const [reactionPickerMessageId, setReactionPickerMessageId] = useState<string | null>(null);
-  const [reactionBusyMessageId, setReactionBusyMessageId] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<GroupWallReplyTarget | null>(null);
   const [acceptingInvite, setAcceptingInvite] = useState(false);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -261,88 +265,9 @@ export const Groups = () => {
     }
   };
 
-  const toggleWallReaction = async (messageId: string, kind: GroupWallReactionKind) => {
-    if (!detail?.group.id) return;
-    setReactionBusyMessageId(messageId);
-    setError(null);
-    try {
-      const res = await api.toggleMeGroupWallReaction(detail.group.id, messageId, kind);
-      setWall((current) =>
-        current.map((message) =>
-          message.id === messageId ? { ...message, reactions: res.data.reactions } : message
-        )
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update reaction');
-    } finally {
-      setReactionBusyMessageId(null);
-    }
-  };
-
   const memberRoleLabel = (member: SocialGroupMemberView) => {
     if (member.userId === detail?.group.adminUserId) return 'Owner';
     return member.role === 'admin' ? 'Admin' : 'Member';
-  };
-
-  const renderMessageReactions = (message: SocialGroupWallMessageView) => {
-    const reactions = message.reactions ?? [];
-    const activeKinds = new Set(reactions.map((reaction) => reaction.kind));
-
-    return (
-      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        {reactions.map((reaction) => (
-          <button
-            key={`${message.id}-${reaction.kind}`}
-            type="button"
-            disabled={reactionBusyMessageId === message.id}
-            onClick={() => void toggleWallReaction(message.id, reaction.kind)}
-            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border transition-colors ${
-              reaction.reactedByMe
-                ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                : 'border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
-            }`}
-            title={GROUP_WALL_REACTION_LABEL[reaction.kind]}
-          >
-            <span className="font-emoji text-sm">{GROUP_WALL_REACTION_EMOJI[reaction.kind]}</span>
-            <span className="font-medium">{reaction.count}</span>
-          </button>
-        ))}
-        <div className="relative">
-          <button
-            type="button"
-            disabled={reactionBusyMessageId === message.id}
-            onClick={() =>
-              setReactionPickerMessageId((current) => (current === message.id ? null : message.id))
-            }
-            className="inline-flex items-center rounded-full border border-dashed border-neutral-300 px-2 py-0.5 text-xs text-neutral-500 hover:bg-neutral-50"
-            aria-label="Add reaction"
-          >
-            +
-          </button>
-          {reactionPickerMessageId === message.id && (
-            <div className="absolute left-0 bottom-full mb-1 z-10 flex flex-wrap gap-1 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg max-w-[220px]">
-              {GROUP_WALL_REACTION_KINDS.map((kind) => (
-                <button
-                  key={kind}
-                  type="button"
-                  disabled={reactionBusyMessageId === message.id}
-                  onClick={() => {
-                    void toggleWallReaction(message.id, kind);
-                    setReactionPickerMessageId(null);
-                  }}
-                  className={`h-8 w-8 rounded-lg text-base font-emoji hover:bg-neutral-100 ${
-                    activeKinds.has(kind) ? 'bg-emerald-50' : ''
-                  }`}
-                  title={GROUP_WALL_REACTION_LABEL[kind]}
-                >
-                  {GROUP_WALL_REACTION_EMOJI[kind]}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
   };
 
   const handleCreateGroup = async () => {
@@ -371,11 +296,14 @@ export const Groups = () => {
 
   const sendWallMessage = async () => {
     if (!detail?.group.id || !wallMessage.trim()) return;
+    if (!canMemberPostToGroupWall(detail.group, detail.membership)) return;
+    const body = replyTo ? formatGroupWallReplyBody(replyTo, wallMessage) : wallMessage;
     setSaving(true);
     setError(null);
     try {
-      await api.createMeGroupWallPost(detail.group.id, wallMessage);
+      await api.createMeGroupWallPost(detail.group.id, body);
       setWallMessage('');
+      setReplyTo(null);
       const wallRes = await api.getMeGroupWall(detail.group.id);
       setWall([...wallRes.data].reverse());
     } catch (err) {
@@ -459,6 +387,9 @@ export const Groups = () => {
   const renderChatTab = () => {
     if (!detail) return null;
 
+    const canPost = canMemberPostToGroupWall(detail.group, detail.membership);
+    const postPolicy = resolveGroupWallPostPolicy(detail.group);
+
     return (
       <GlassCard padding className="!p-0 overflow-hidden flex flex-col max-h-[min(560px,70vh)]">
         <div className="px-4 py-3 border-b border-neutral-100 bg-neutral-50/50">
@@ -466,7 +397,7 @@ export const Groups = () => {
             <MessageSquare className="w-4 h-4 text-emerald-600" />
             <h3 className="text-sm font-semibold text-neutral-900">Group chat</h3>
           </div>
-          <p className="text-xs text-neutral-500 mt-1">Everyone in this group can read and post messages.</p>
+          <p className="text-xs text-neutral-500 mt-1">{groupWallPostPolicyLabel[postPolicy]}</p>
         </div>
         <div ref={chatContainerRef} className="space-y-2 flex-1 min-h-0 overflow-y-auto p-4 bg-neutral-50">
           {wall.length === 0 ? (
@@ -475,31 +406,55 @@ export const Groups = () => {
                 <MessageSquare className="w-5 h-5 text-emerald-600" />
               </div>
               <p className="text-sm font-medium text-neutral-700">No messages yet</p>
-              <p className="text-xs text-neutral-500 mt-1">Be the first to say hello to the group.</p>
+              <p className="text-xs text-neutral-500 mt-1">
+                {canPost ? 'Be the first to say hello to the group.' : 'Admins can post updates here.'}
+              </p>
             </div>
           ) : (
             wall.map((message) => (
-              <div key={message.id} className="rounded-2xl bg-white border border-neutral-100 px-3.5 py-2.5 shadow-sm">
-                <p className="text-xs font-semibold text-neutral-700">
-                  {message.author?.displayName || 'Member'}
-                  <span className="font-normal text-neutral-400 ml-2">
-                    {new Date(message.createdAt).toLocaleString()}
-                  </span>
-                </p>
-                <p className="text-sm text-neutral-800 mt-1 whitespace-pre-wrap leading-relaxed font-emoji">{message.body}</p>
-                {renderMessageReactions(message)}
-              </div>
+              <GroupWallMessageItem
+                key={message.id}
+                groupId={detail.group.id}
+                message={message}
+                onReactionsChange={(messageId, reactions) =>
+                  setWall((current) =>
+                    current.map((row) => (row.id === messageId ? { ...row, reactions } : row))
+                  )
+                }
+                onReply={canPost ? setReplyTo : () => {}}
+                onError={setError}
+              />
             ))
           )}
         </div>
-        <ChatComposeBar
-          value={wallMessage}
-          onChange={setWallMessage}
-          onSend={sendWallMessage}
-          sending={saving}
-          placeholder="Write a message…"
-          className="!px-4"
-        />
+        {replyTo ? (
+          <div className="flex shrink-0 items-center gap-2 border-t border-emerald-100 bg-emerald-50/90 px-4 py-2 text-xs text-emerald-900">
+            <span className="min-w-0 flex-1 truncate">
+              Replying to <span className="font-semibold">{replyTo.authorName}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setReplyTo(null)}
+              className="rounded-lg px-2 py-1 text-emerald-800 hover:bg-emerald-100"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : null}
+        {canPost ? (
+          <ChatComposeBar
+            value={wallMessage}
+            onChange={setWallMessage}
+            onSend={sendWallMessage}
+            sending={saving}
+            placeholder={replyTo ? 'Write your reply…' : 'Write a message…'}
+            className="!px-4"
+          />
+        ) : (
+          <div className="shrink-0 border-t bg-neutral-50 px-4 py-3 text-center text-xs text-neutral-600">
+            {groupWallPostPolicyLabel[postPolicy]}. You can still read messages and react.
+          </div>
+        )}
       </GlassCard>
     );
   };
@@ -595,8 +550,47 @@ export const Groups = () => {
   const renderManageTab = () => {
     if (!detail || !isAdmin) return null;
 
+    const wallPolicy = resolveGroupWallPostPolicy(detail.group);
+
     return (
       <div className="space-y-3">
+        <GlassCard padding>
+          <h3 className="text-sm font-semibold text-neutral-900 mb-2">Who can message</h3>
+          <p className="text-xs text-neutral-500 mb-3">Applies to this group&apos;s chat for all members.</p>
+          <div className="space-y-2">
+            {(['all_members', 'admins_only'] as GroupWallPostPolicy[]).map((policy) => (
+              <button
+                key={policy}
+                type="button"
+                disabled={saving}
+                onClick={async () => {
+                  if (policy === wallPolicy) return;
+                  setSaving(true);
+                  setError(null);
+                  try {
+                    const res = await api.updateMeGroupSettings(detail.group.id, { wallPostPolicy: policy });
+                    setDetail((current) =>
+                      current ? { ...current, group: { ...current.group, ...res.data } } : current
+                    );
+                    setSuccess('Chat messaging settings updated.');
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : 'Could not update chat settings');
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                className={`w-full rounded-xl border px-4 py-3 text-left text-sm ${
+                  wallPolicy === policy
+                    ? 'border-emerald-400 bg-emerald-50 text-emerald-900'
+                    : 'border-neutral-200 hover:bg-neutral-50'
+                }`}
+              >
+                {groupWallPostPolicyLabel[policy]}
+              </button>
+            ))}
+          </div>
+        </GlassCard>
+
         <GlassCard padding>
           <div className="flex items-center gap-2 mb-2">
             <UserPlus className="w-4 h-4 text-emerald-600" />

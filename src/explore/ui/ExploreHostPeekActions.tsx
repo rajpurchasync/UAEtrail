@@ -1,5 +1,4 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { activityHasJoinedParticipants } from '@uaetrail/shared-types';
 import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../createFlowCopy';
 import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
 import type { ExploreCardModel } from '../exploreCardModel';
@@ -8,9 +7,13 @@ type ExploreHostPeekActionsProps = {
   card: ExploreCardModel;
   linkRideshareTenantId: string | null;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
-  onMessage: () => void;
+  onMessage?: () => void;
   onHostRemove?: () => void;
+  /** Opens full manage sheet (Trips → Hosted). */
+  onFullManage?: () => void;
+  /** Check-in subview (optional underline link). */
   onManage?: () => void;
+  onInviteCrew?: () => void;
   onGuestGatedAction?: () => void;
 };
 
@@ -24,7 +27,9 @@ export const ExploreHostPeekActions = ({
   onCreateLinkedRideshare,
   onMessage,
   onHostRemove,
+  onFullManage,
   onManage,
+  onInviteCrew,
   onGuestGatedAction,
 }: ExploreHostPeekActionsProps) => {
   const gate = onGuestGatedAction;
@@ -37,10 +42,7 @@ export const ExploreHostPeekActions = ({
       canLinkRideshareToActivity(activity)
   );
 
-  const showCheckIn =
-    activity?.status === 'published' &&
-    Boolean(onManage) &&
-    activityHasJoinedParticipants(activity);
+  const showCheckIn = activity?.status === 'published' && Boolean(onManage);
 
   const runGated = (action: () => void) => {
     if (gate) {
@@ -52,19 +54,39 @@ export const ExploreHostPeekActions = ({
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+      {onFullManage ? (
         <button
           type="button"
-          onClick={() => runGated(onMessage)}
-          className="rounded-xl bg-emerald-500 py-3.5 text-sm font-bold text-white"
+          onClick={() => runGated(onFullManage)}
+          className="w-full rounded-xl bg-neutral-900 py-3.5 text-sm font-bold text-white"
         >
-          Message
+          Manage outing
         </button>
+      ) : null}
+      {onInviteCrew && activity?.status === 'published' ? (
+        <button
+          type="button"
+          onClick={() => runGated(onInviteCrew)}
+          className="w-full rounded-xl border border-neutral-200 bg-white py-3.5 text-sm font-bold text-neutral-900"
+        >
+          Invite your crew
+        </button>
+      ) : null}
+      <div className={onMessage && onHostRemove ? 'grid grid-cols-2 gap-2' : 'space-y-2'}>
+        {onMessage ? (
+          <button
+            type="button"
+            onClick={() => runGated(onMessage)}
+            className="w-full rounded-xl bg-emerald-500 py-3.5 text-sm font-bold text-white"
+          >
+            Message
+          </button>
+        ) : null}
         {onHostRemove ? (
           <button
             type="button"
             onClick={() => runGated(onHostRemove)}
-            className="rounded-xl border border-red-200 bg-white py-3.5 text-sm font-bold text-red-700"
+            className="w-full rounded-xl border border-red-200 bg-white py-3.5 text-sm font-bold text-red-700"
           >
             Delete
           </button>

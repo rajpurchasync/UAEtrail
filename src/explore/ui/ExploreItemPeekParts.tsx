@@ -2,6 +2,7 @@ import { ExternalLink } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { ExploreHostPeekActions } from './ExploreHostPeekActions';
 import { ExploreDemandOwnerPeekActions } from './ExploreDemandOwnerPeekActions';
+import { ExploreParticipantPeekActions } from './ExploreParticipantPeekActions';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
@@ -27,6 +28,8 @@ export interface ExploreItemPeekFooterProps {
   onMessage?: () => void;
   onFulfillIntent?: () => void;
   onManage?: () => void;
+  onHostFullManage?: () => void;
+  onInviteCrew?: () => void;
   joinUiState?: JoinRequestUiState;
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
@@ -34,6 +37,7 @@ export interface ExploreItemPeekFooterProps {
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
   onHostRemove?: () => void;
   onDemandRemove?: () => void;
+  onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
   /** Guests — detail, join-adjacent, and profile navigation show sign-up instead. */
   onGuestGatedAction?: () => void;
@@ -47,6 +51,8 @@ export const ExploreItemPeekFooter = ({
   onMessage,
   onFulfillIntent,
   onManage,
+  onHostFullManage,
+  onInviteCrew,
   joinUiState,
   onWithdraw,
   joinStateLoading = false,
@@ -54,6 +60,7 @@ export const ExploreItemPeekFooter = ({
   onCreateLinkedRideshare,
   onHostRemove,
   onDemandRemove,
+  onDemandFullManage,
   onDemandLinkRideshare,
   onGuestGatedAction,
 }: ExploreItemPeekFooterProps) => {
@@ -78,18 +85,27 @@ export const ExploreItemPeekFooter = ({
       {card.showDemandOwnerActions && onDemandRemove ? (
         <ExploreDemandOwnerPeekActions
           onDelete={onDemandRemove}
+          onFullManage={onDemandFullManage}
           showLinkRideshare={card.showDemandLinkRideshare}
           onLinkRideshare={onDemandLinkRideshare}
           onGuestGatedAction={gate}
         />
-      ) : card.showHostActions && onMessage && onHostRemove ? (
+      ) : card.showHostActions ? (
         <ExploreHostPeekActions
           card={card}
           linkRideshareTenantId={linkRideshareTenantId}
           onCreateLinkedRideshare={onCreateLinkedRideshare}
           onMessage={onMessage}
           onHostRemove={onHostRemove}
+          onFullManage={onHostFullManage}
           onManage={onManage}
+          onInviteCrew={onInviteCrew}
+          onGuestGatedAction={gate}
+        />
+      ) : joinUiState?.kind === 'confirmed' && card.activityId && onInviteCrew ? (
+        <ExploreParticipantPeekActions
+          activityId={card.activityId}
+          onInviteCrew={onInviteCrew}
           onGuestGatedAction={gate}
         />
       ) : isDemand && onFulfillIntent ? (
@@ -213,7 +229,7 @@ export const ExploreItemPeekFooter = ({
             )}
           </>
         )
-      ) : (
+      ) : card.showJoinActions ? (
         <>
           {gate &&
           exploreCardHasMapCoords(card) &&
@@ -229,6 +245,12 @@ export const ExploreItemPeekFooter = ({
             'block w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white'
           )}
         </>
+      ) : (
+        detailLink(
+          card.path,
+          card.secondaryCta ?? 'View details',
+          'block w-full rounded-2xl bg-neutral-100 py-3.5 text-center text-base font-bold text-gray-900'
+        )
       )}
     </>
   );
