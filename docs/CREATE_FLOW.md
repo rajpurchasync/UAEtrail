@@ -60,7 +60,7 @@ Three compact choices (drill-down in the same sheet â€” not three tall arch
 
 | UI label | Maps to (`ParticipantIntentKind`) |
 |----------|-----------------------------------|
-| **Rideshare** | `carpool` |
+| **Rideshare** | `rideshare` |
 | **Hiking** | `hiking` |
 | **Camping** | `camping` |
 | **Activities** | `event` (runs, jogs, general outdoors) |

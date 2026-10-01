@@ -73,7 +73,7 @@ export const JoinRequestModal = ({
       : pricePackages[0];
 
   const priceInfo = resolveExplorePrice({
-    isCarpool: false,
+    isRideshare: false,
     price: activity.price,
   });
 

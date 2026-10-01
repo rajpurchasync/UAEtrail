@@ -12,7 +12,7 @@ export interface HomeLandingActivitiesState {
 }
 
 const resolveWhenSuffix = (activity: ActivityDTO): 'flexible' | 'fixed' | null => {
-  if (activity.activityType === 'carpool') return 'fixed';
+  if (activity.activityType === 'rideshare') return 'fixed';
   const requirements = activity.requirements ?? [];
   if (requirements.some((line) => /flexible time/i.test(line))) return 'flexible';
   return null;

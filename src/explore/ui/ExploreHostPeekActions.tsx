@@ -1,12 +1,12 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { activityHasJoinedParticipants } from '@uaetrail/shared-types';
-import { ORGANIZE_LINK_CARPOOL_LABEL } from '../createFlowCopy';
-import { canLinkCarpoolToActivity } from '../linkActivityCarpoolOffer';
+import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../createFlowCopy';
+import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
 import type { ExploreCardModel } from '../exploreCardModel';
 
 type ExploreHostPeekActionsProps = {
   card: ExploreCardModel;
-  linkCarpoolTenantId: string | null;
+  linkRideshareTenantId: string | null;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
   onMessage: () => void;
   onHostRemove?: () => void;
@@ -20,7 +20,7 @@ const linkButtonClass =
 /** Host peek footer — Message + Delete; optional underlined check-in and link carpool. */
 export const ExploreHostPeekActions = ({
   card,
-  linkCarpoolTenantId,
+  linkRideshareTenantId,
   onCreateLinkedRideshare,
   onMessage,
   onHostRemove,
@@ -30,11 +30,11 @@ export const ExploreHostPeekActions = ({
   const gate = onGuestGatedAction;
   const activity = card.activity;
 
-  const canLinkCarpool = Boolean(
-    linkCarpoolTenantId &&
+  const canLinkRideshare = Boolean(
+    linkRideshareTenantId &&
       activity &&
       onCreateLinkedRideshare &&
-      canLinkCarpoolToActivity(activity)
+      canLinkRideshareToActivity(activity)
   );
 
   const showCheckIn =
@@ -71,20 +71,20 @@ export const ExploreHostPeekActions = ({
         ) : null}
       </div>
 
-      {showCheckIn || canLinkCarpool ? (
+      {showCheckIn || canLinkRideshare ? (
         <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
           {showCheckIn ? (
             <button type="button" onClick={() => runGated(() => onManage!())} className={linkButtonClass}>
               Check in attendees
             </button>
           ) : null}
-          {canLinkCarpool && activity ? (
+          {canLinkRideshare && activity ? (
             <button
               type="button"
               onClick={() => runGated(() => onCreateLinkedRideshare!(activity))}
               className={linkButtonClass}
             >
-              {ORGANIZE_LINK_CARPOOL_LABEL}
+              {ORGANIZE_LINK_RIDESHARE_LABEL}
             </button>
           ) : null}
         </div>

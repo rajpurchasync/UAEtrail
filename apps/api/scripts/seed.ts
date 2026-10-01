@@ -273,7 +273,7 @@ const seedMobileInboxDemo = async (input: {
     { authorUserId: input.participantId, body: 'Who is in for a 5:30am meet at Hatta Dam this Saturday?' },
     { authorUserId: input.agencyGuideId, body: 'I am — bringing an extra headlamp for whoever needs one 🔦' },
     { authorUserId: input.agencyGuideId, body: 'Forecast looks clear. Pack 2L water minimum.' },
-    { authorUserId: input.participantId, body: 'Reply here if you want to carpool from Dubai Marina 🚗' },
+    { authorUserId: input.participantId, body: 'Reply here if you want a rideshare from Dubai Marina 🚗' },
   ];
   const friendsWallIds: string[] = [];
   for (const post of groupWallPosts) {
@@ -1687,13 +1687,13 @@ Share your live location and carry extra water in summer months.`
   carpoolStart.setDate(carpoolStart.getDate() + 4);
   carpoolStart.setHours(5, 0, 0, 0);
 
-  await upsertEvent('seed-event-carpool-marina-jais', {
+  await upsertEvent('seed-event-rideshare-marina-jais', {
     tenant: { connect: { id: individualHostTenant.id } },
     location: { connect: { id: 'jebel-jais-summit-trail' } },
     createdBy: { connect: { id: individualHost._id } },
     host: { connect: { id: individualHost._id } },
-    activityType: ActivityType.CARPOOL,
-    title: 'Carpool Dubai Marina → Jebel Jais',
+    activityType: ActivityType.RIDESHARE,
+    title: 'Rideshare Dubai Marina → Jebel Jais',
     description: 'Shared ride for the Jebel Jais hike — split fuel costs.',
     startAt: carpoolStart,
     meetingPoint: 'Dubai Marina Mall parking',
@@ -1703,8 +1703,8 @@ Share your live location and carry extra water in summer months.`
     startLat: 25.9433,
     startLng: 56.1422,
     pricingMode: 'shared',
-    carPoolFree: false,
-    carPoolPriceAed: 35,
+    rideshareFree: false,
+    ridesharePriceAed: 35,
     priceAed: 35,
     capacity: 4,
     featured: true,
@@ -2016,7 +2016,7 @@ Share your live location and carry extra water in summer months.`
     seedDemandId('demand-hike-hatta'),
     seedDemandId('demand-camp-fossil-rock'),
     seedDemandId('demand-event-kite-beach'),
-    seedDemandId('demand-carpool-dxb-rak'),
+    seedDemandId('demand-rideshare-dxb-rak'),
   ];
   await db().collection('participant_intents').deleteMany({
     _id: { $in: demandSeedIds },
@@ -2098,12 +2098,12 @@ Share your live location and carry extra water in summer months.`
   );
 
   await db().collection('participant_intents').updateOne(
-    { _id: seedDemandId('demand-carpool-dxb-rak') },
+    { _id: seedDemandId('demand-rideshare-dxb-rak') },
     {
       $set: {
         userId: pendingParticipant._id,
         title: 'Ride to Jebel Jais hike',
-        kind: 'carpool',
+        kind: 'rideshare',
         date: new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10),
         time: '07:30',
         preferredArea: 'Dubai Marina → Jebel Jais',

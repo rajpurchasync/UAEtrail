@@ -48,7 +48,7 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
   const showActivityPins = activityFlow;
 
   const whenLine = `${structuredFlow || activityFlow ? formatHikeCapacityLabel(draft.capacity) : formatCapacityLabel(draft.capacity)} ${
-    kind === 'carpool' ? 'seats' : 'spots'
+    kind === 'rideshare' ? 'seats' : 'spots'
   } · ${draft.date}${
     hikingFlow && draft.timeMode === 'specific' && draft.endTime
       ? ` · ${draft.time || draft.meetingTime}–${draft.endTime}`
@@ -59,14 +59,24 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
           : ' · flexible time'
   }`;
 
+  const limitedAudienceParts = [
+    !draft.participantsOpenToAll && draft.limitedWomenOnly ? 'Women only' : null,
+    !draft.participantsOpenToAll && draft.limitedFamilyOnly ? 'Family only' : null,
+    !draft.participantsOpenToAll && draft.limitedMinAgeEnabled && draft.ageMin > 0
+      ? `Ages ${draft.ageMin}+`
+      : null,
+  ].filter(Boolean);
+
   const audienceLine =
     draft.joinMode === 'private'
       ? 'Private · link only'
-      : !draft.participantsOpenToAll && draft.limitedWomenOnly
-        ? 'Women only'
-        : !draft.participantsOpenToAll && draft.limitedMinAgeEnabled
-          ? `Ages ${draft.ageMin}+`
-          : 'Public · anyone';
+      : limitedAudienceParts.length > 0
+        ? limitedAudienceParts.join(' · ')
+        : draft.audienceAccess === 'women_only'
+          ? 'Women only'
+          : draft.audienceAccess === 'family_only'
+            ? 'Family only'
+            : 'Public · anyone';
 
   const joinStyleLabel =
     draft.joinMode === 'private'
@@ -96,10 +106,10 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
       <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-gray-700">
         <p className="text-base font-semibold text-gray-900">{draft.title}</p>
         <p className="mt-1 text-xs text-gray-500">
-          {kind === 'carpool' ? (
+          {kind === 'rideshare' ? (
             <span className="inline-flex items-center gap-1.5">
               <Car className="h-3.5 w-3.5 text-sky-500" />
-              Carpool
+              Rideshare
             </span>
           ) : kind === 'camping' ? (
             <span className="inline-flex items-center gap-1.5">
@@ -177,7 +187,7 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
                 />
               ) : null}
             </>
-          ) : kind === 'carpool' && hasFromPin && hasToPin ? (
+          ) : kind === 'rideshare' && hasFromPin && hasToPin ? (
             <>
               <OrganizePinReviewLine
                 title="From"
@@ -195,7 +205,7 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
           ) : (
             <p className="flex items-center gap-1.5 text-gray-500">
               <MapPin className="h-3.5 w-3.5 shrink-0" />
-              {kind === 'carpool'
+              {kind === 'rideshare'
                 ? 'Set from and to on map'
                 : `Pin on map${draft.locationPrecision === 'general' ? ' · general area' : ' · exact spot'}`}
             </p>
@@ -216,6 +226,7 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
             <p className="text-sm text-gray-800">
               Public on map · request to join
               {!draft.participantsOpenToAll && draft.limitedWomenOnly ? ' · women only' : ''}
+              {!draft.participantsOpenToAll && draft.limitedFamilyOnly ? ' · family only' : ''}
               {!draft.childrenAllowed ? ' · no children' : ''}
               {!draft.petsAllowed ? ' · no pets' : ''}
             </p>
@@ -249,7 +260,7 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
         (structuredFlow && draft.joinKit.trim()) ||
         (!structuredFlow && draft.meetingPointInfo.trim()) ||
         (!structuredFlow && draft.description.trim()) ||
-        ((draft.additionalInstructions.trim() || (kind === 'carpool' && draft.description.trim())) && !structuredFlow) ? (
+        ((draft.additionalInstructions.trim() || (kind === 'rideshare' && draft.description.trim())) && !structuredFlow) ? (
           <OrganizePublishPreviewBlock title="Joiners should know">
             {activityFlow && draft.joinKit.trim() ? (
               <p className="line-clamp-4 leading-relaxed">
@@ -275,18 +286,18 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
                 {draft.description}
               </p>
             ) : null}
-            {(draft.additionalInstructions.trim() || (kind === 'carpool' && draft.description.trim())) &&
+            {(draft.additionalInstructions.trim() || (kind === 'rideshare' && draft.description.trim())) &&
               !structuredFlow ? (
               <p className="line-clamp-4 leading-relaxed">
                 <span className="font-semibold text-gray-700">{JOIN_RULES_PREVIEW_LABEL}</span>
-                {kind === 'carpool' ? draft.description : draft.additionalInstructions}
+                {kind === 'rideshare' ? draft.description : draft.additionalInstructions}
               </p>
             ) : null}
           </OrganizePublishPreviewBlock>
         ) : null}
       </div>
 
-      {kind !== 'carpool' && draft.joinMode === 'private' && (
+      {kind !== 'rideshare' && draft.joinMode === 'private' && (
         <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
           Private activities are not shown on the public explore map. Share the activity link with your group after
           publishing.

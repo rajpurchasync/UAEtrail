@@ -5,7 +5,7 @@ export type ExploreMobileActivityMenuKey =
   | 'anyday'
   | 'hiking'
   | 'camping'
-  | 'carpool'
+  | 'rideshare'
   | 'others';
 
 export type ExploreMobilePlacesMenuKey =
@@ -25,7 +25,7 @@ export const EXPLORE_MOBILE_ACTIVITY_MENU: ReadonlyArray<{
   { key: 'anyday', label: 'Anyday' },
   { key: 'hiking', label: 'Hiking' },
   { key: 'camping', label: 'Camping' },
-  { key: 'carpool', label: 'Rideshare' },
+  { key: 'rideshare', label: 'Rideshare' },
   { key: 'others', label: 'Others' },
 ];
 
@@ -81,7 +81,7 @@ export const mapFilterToMobilePlacesMenu = (filter: MapFilterKey): ExploreMobile
 };
 
 export const mapFilterToMobileActivityMenu = (filter: MapFilterKey): ExploreMobileActivityMenuKey => {
-  if (filter === 'hiking' || filter === 'camping' || filter === 'carpool' || filter === 'others') {
+  if (filter === 'hiking' || filter === 'camping' || filter === 'rideshare' || filter === 'others') {
     return filter;
   }
   return 'all';
@@ -89,3 +89,11 @@ export const mapFilterToMobileActivityMenu = (filter: MapFilterKey): ExploreMobi
 
 export const browsePanelForMobileLayer = (layer: 'activity' | 'places'): ExplorePanel =>
   layer === 'places' ? 'venues' : 'activities';
+
+/** Mobile map chrome — which pill row is expanded on first paint (matches browse panel). */
+export const defaultMobileMapExpandedLayer = (
+  panel: ExplorePanel
+): 'activity' | 'places' | null => {
+  if (panel === 'venues' || panel === 'shops') return 'places';
+  return 'activity';
+};

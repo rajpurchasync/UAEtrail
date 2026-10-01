@@ -52,7 +52,7 @@ const resolveStoredDemandTitle = (doc: MongoParticipantIntent): string =>
 const buildDemandRouteLabels = (
   doc: MongoParticipantIntent
 ): { fromLabel: string | null; toLabel: string | null } => {
-  if (doc.kind !== 'carpool') {
+  if (doc.kind !== 'rideshare') {
     return { fromLabel: null, toLabel: null };
   }
 
@@ -235,7 +235,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
         }),
         title: planTitle,
         subtitle:
-          doc.kind === 'carpool' && route.fromLabel && route.toLabel
+          doc.kind === 'rideshare' && route.fromLabel && route.toLabel
             ? `${route.fromLabel} → ${route.toLabel}`
             : doc.preferredArea || doc.comment.slice(0, 80),
         latitude: doc.latitude,

@@ -20,7 +20,7 @@ export function renderRouteStep(ctx: OrganizeWizardContext): ReactNode | null {
     renderRoutePicker,
   } = ctx;
 
-  if (!(step === 'route' && kind === 'carpool')) {
+  if (!(step === 'route' && kind === 'rideshare')) {
     return null;
   }
 

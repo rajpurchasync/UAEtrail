@@ -1,5 +1,6 @@
 import type { CreateActivityDraft, CreateFlowStepId } from '../organizeFlow';
 import type { OrganizeCatalogFlow } from './types';
+import { parseRideshareRiderRules } from '../rideshareRiderRules';
 import {
   validateOrganizeAudienceOthers,
   validateOrganizePrice,
@@ -44,6 +45,12 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     return null;
   }
   if (step === 'transportation') return null;
+  if (step === 'instructions') {
+    if (parseRideshareRiderRules(draft.description).length < 1) {
+      return 'Add at least one rule for riders.';
+    }
+    return null;
+  }
   if (step === 'price') return validateOrganizePrice(draft);
   if (step === 'publish') {
     if (draft.latitude == null && draft.longitude == null) return 'Drop a pin on the map.';
@@ -59,9 +66,9 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
 
 export const organizeRideshareFlow: OrganizeCatalogFlow = {
   id: 'organize.rideshare',
-  createKind: 'carpool',
+  createKind: 'rideshare',
   defaultSteps: DEFAULT_STEPS,
-  postPublishCarpool: false,
+  postPublishRideshare: false,
   getSteps: () => [...DEFAULT_STEPS],
   validateStep,
 };

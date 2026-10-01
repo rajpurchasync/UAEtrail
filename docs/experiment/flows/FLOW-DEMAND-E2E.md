@@ -1,6 +1,6 @@
 # Demand (Find) — end-to-end
 
-**Compose:** `find.hiking` · `find.camping` · `find.event` · `find.carpool` (FLOW-06–09)  
+**Compose:** `find.hiking` · `find.camping` · `find.event` · `find.rideshare` (FLOW-06–09)  
 **Code:** `CreateDemandFlow` · `demandFlow.ts` · `demandWizardSteps.tsx`
 
 ---
@@ -26,7 +26,7 @@
 | **Guest** | Sign-in gate on message / propose |
 | **Signed-in member** | **Message** (DM requester) |
 | **Approved host** (`canPublish`) | **Propose plan** → organize wizard prefill from demand |
-| **Requester** | **Delete** · **Link carpool** (approved host — FLOW-04 prefill from request; no check-in) |
+| **Requester** | **Delete** · **Link rideshare** (approved host — FLOW-04 prefill from request; no check-in) |
 
 **Not on demand pins:** Check-in (published activities only, when joiners exist).
 
@@ -40,7 +40,7 @@
 | **Organize wizard** | Same as FLOW-01/02/03/05 for chosen kind |
 | **Publish** | `publishOrganizeActivity` · `POST …/participant-intents/:id/fulfill` links activity |
 | **Demand row** | `status: fulfilled` · `convertedActivityId` · removed from active map list |
-| **Success** | `OrganizePublishSuccessSheet` — **View on map** · optional **Link carpool** (public parents) |
+| **Success** | `OrganizePublishSuccessSheet` — **View on map** · optional **Link rideshare** (public parents) |
 
 ---
 
@@ -50,7 +50,7 @@
 |--------|-----|--------|
 | **Message** | Host | Activity group chat |
 | **Delete** | Host | Cancel/delete activity |
-| **Link carpool** | Host | FLOW-04 wizard or paste URL |
+| **Link rideshare** | Host | FLOW-04 wizard or paste URL |
 | **Check in attendees** | Host | **Only if ≥1 joiner** (`slotsAvailable < slotsTotal` or participant previews) |
 | **I'm going / Request** | Members | From `participationMode` on activity |
 

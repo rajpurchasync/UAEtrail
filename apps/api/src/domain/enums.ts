@@ -36,7 +36,7 @@ export const ActivityType = {
   HIKING: 'HIKING',
   CAMPING: 'CAMPING',
   EVENT: 'EVENT',
-  CARPOOL: 'CARPOOL',
+  RIDESHARE: 'RIDESHARE',
   /** Community-submitted gear shop pins (map information, not merchant tenants). */
   SHOP: 'SHOP',
   /** @deprecated Use EVENT. Kept so existing Mongo documents still type-check until migrated. */

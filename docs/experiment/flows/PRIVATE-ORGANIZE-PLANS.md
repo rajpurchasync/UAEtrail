@@ -8,7 +8,7 @@ Applies to **hiking, camping, events, and general activities** — **not** stand
 | Discovery | Host + anyone **signed in** with the **share link** (`/activity/:id` or `/explore?pin=activity:…`) |
 | Guests | Lock screen / sign-in — no browse or join without account |
 | Join | **`participationMode: rsvp` only** — **I'm going**; no request-to-join / approval queue |
-| Publish success | **View on map** opens **link-only peek** (ephemeral pin); no post-publish carpool CTAs |
-| Host peek | Full host actions; optional **Link carpool** (linked ride stays its own public pin) |
+| Publish success | **View on map** opens **link-only peek** (ephemeral pin); no Post-publish rideshare CTAs |
+| Host peek | Full host actions; optional **Link rideshare** (linked ride stays its own public pin) |
 
 Wizard: audience step sets `{ joinMode: 'private', participationMode: 'rsvp' }` and hides public-only audience chips.

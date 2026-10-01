@@ -17,10 +17,10 @@ import { enrichExploreActivityRequirementBadges } from './exploreRequirementBadg
 import { exploreMapItemSharePath } from './routing';
 import { resolveExploreCoverImage } from './exploreCoverImage';
 
-export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
+export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
 export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
 
-export type ExploreCardTone = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
+export type ExploreCardTone = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
 
 export interface ExploreCardModel {
   id: string;
@@ -44,7 +44,7 @@ export interface ExploreCardModel {
   /** Requester viewing their own active demand pin. */
   showDemandOwnerActions?: boolean;
   /** Hiking / camping / activity demand — host can publish a linked rideshare offer. */
-  showDemandLinkCarpool?: boolean;
+  showDemandLinkRideshare?: boolean;
   websiteUrl?: string | null;
   contactPhone?: string | null;
   shareTitle: string;
@@ -96,11 +96,12 @@ export const buildExploreListMeta = (card: ExploreCardModel): string | null => {
   if (card.source === 'shop' || card.source === 'agency' || card.source === 'venue') {
     return null;
   }
-  const allowRoute = LIST_META_ROUTE_SOURCES.has(card.source) || card.kind === 'carpool';
+  const allowRoute = LIST_META_ROUTE_SOURCES.has(card.source) || card.kind === 'rideshare';
   const labels = card.sections.details
     .filter(
       (detail) =>
-        LIST_META_ICONS.has(detail.icon) || (allowRoute && detail.icon === 'route' && detail.label !== 'Carpool available')
+        LIST_META_ICONS.has(detail.icon) ||
+        (allowRoute && detail.icon === 'route' && detail.label !== 'Rideshare available')
     )
     .map((detail) => detail.label)
     .filter(Boolean);
@@ -113,14 +114,14 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
   const kind = presentation.kind;
   const source = presentation.source;
   const featuredPerson = item.featuredPerson ?? presentation.featuredPerson ?? resolveExploreFeaturedPerson(item);
-  const isCarpool = kind === 'carpool';
+  const isRideshare = kind === 'rideshare';
   const activity = item.activity;
 
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = presentation.routeLabel ?? buildExploreRouteLabel(fromLabel, toLabel, kind);
   const whenSuffix =
-    source === 'demand' ? 'flexible' : kind === 'carpool' ? 'fixed' : null;
+    source === 'demand' ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
   const whenLabel =
     presentation.whenLabel ??
     buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
@@ -132,10 +133,10 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
   const price =
     source === 'activity'
       ? resolveExplorePrice({
-          isCarpool,
+          isRideshare,
           price: activity?.price ?? null,
-          carPoolFree: activity?.carPoolFree ?? null,
-          carPoolPriceAed: activity?.carPoolPriceAed ?? null,
+          rideshareFree: activity?.rideshareFree ?? null,
+          ridesharePriceAed: activity?.ridesharePriceAed ?? null,
           priceLabel: item.priceLabel ?? null,
           priceDisplay: item.priceDisplay ?? null,
         })
@@ -148,7 +149,7 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     path: item.path,
     source,
     kind,
-    tone: isCarpool ? 'carpool' : kind,
+    tone: isRideshare ? 'rideshare' : kind,
     emoji: presentation.emoji,
     headline,
     listTitle: presentation.listTitle,
@@ -196,12 +197,21 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     surfaceTypes: item.locationCard?.surfaceType ?? [],
     requirementBadges: enrichExploreActivityRequirementBadges(activity?.requirements, {
       kind,
-      carPoolEnabled: Boolean(item.carPoolEnabled ?? activity?.carPoolEnabled),
+      rideshareEnabled: Boolean(
+        source === 'activity' &&
+          kind !== 'rideshare' &&
+          (item.rideshareEnabled ??
+            activity?.rideshareEnabled ??
+            (item.linkedRideshareActivities?.length ?? 0) > 0)
+      ),
       venueDifficulty: item.locationCard?.difficulty ?? null,
     }),
     mapLatitude: item.latitude ?? null,
     mapLongitude: item.longitude ?? null,
-    linkedRideshares: item.linkedRideshareActivities ?? [],
+    linkedRideshares:
+      item.linkedRideshareActivities && item.linkedRideshareActivities.length > 0
+        ? item.linkedRideshareActivities
+        : undefined,
   };
 };
 
@@ -211,7 +221,7 @@ export const exploreCardToneClass: Record<ExploreCardTone, string> = {
   event: 'bg-violet-50 text-violet-900',
   shop: 'bg-rose-50 text-rose-900',
   agency: 'bg-indigo-50 text-indigo-900',
-  carpool: 'bg-sky-50 text-sky-900',
+  rideshare: 'bg-sky-50 text-sky-900',
 };
 
 export const exploreCardToneTextClass: Record<ExploreCardTone, string> = {
@@ -220,7 +230,7 @@ export const exploreCardToneTextClass: Record<ExploreCardTone, string> = {
   event: 'text-violet-800',
   shop: 'text-rose-800',
   agency: 'text-indigo-800',
-  carpool: 'text-sky-800',
+  rideshare: 'text-sky-800',
 };
 
 export const exploreCardHasMapCoords = (card: ExploreCardModel): boolean =>
@@ -246,7 +256,7 @@ export type ExploreFavoriteTarget = {
 
 const outingCategoryFromCardKind = (card: ExploreCardModel): OutingCategory | null => {
   if (card.outingCategory) return card.outingCategory;
-  if (card.kind === 'carpool') return 'rideshare';
+  if (card.kind === 'rideshare') return 'rideshare';
   if (card.kind === 'hiking' || card.kind === 'camping') return card.kind;
   if (card.kind === 'event') return card.source === 'venue' ? 'events' : 'events';
   return null;

@@ -29,7 +29,7 @@
 | `add.*` | `add` | Add place | `locations` / shop |
 | `find.goods.*` | **Future** | Goods/services demand | TBD |
 
-Examples: `organize.hiking`, `compose=organize:carpool` → `organize.rideshare`, `find:carpool` → `find.carpool`, `add.trail`.
+Examples: `organize.hiking`, `compose=organize:rideshare` → `organize.rideshare`, `find:carpool` → `find.rideshare`, `add.trail`.
 
 ---
 
@@ -40,7 +40,7 @@ Examples: `organize.hiking`, `compose=organize:carpool` → `organize.rideshare`
 | `organize.hiking` | `organize:hiking` | hiking | `hiking` | `host.ts` create + `outingCategory` | approval |
 | `organize.camping` | `organize:camping` | camping | `camping` | same | approval |
 | `organize.events` | `organize:event` | events | `event` | same | rsvp |
-| `organize.rideshare` | `organize:carpool` | rideshare | `carpool` | same | approval (locked on submit) |
+| `organize.rideshare` | `organize:carpool` | rideshare | `rideshare` | same | approval (locked on submit) |
 | `organize.activities` | `organize:activity` | activities | `event` | same + `outingTopic` | approval |
 
 \* Host may choose rsvp vs approval on **audience** step (except rideshare — always approval). Per-flow Zod split (E5 optional) not yet extracted.
@@ -62,7 +62,7 @@ Examples: `organize.hiking`, `compose=organize:carpool` → `organize.rideshare`
 
 **Meeting point step:** map pin + **extra directions** only (no optional label field).
 
-**Post-publish carpool:** optional on success sheet when `catalogFlow.postPublishCarpool` (not on publish step).
+**Post-publish rideshare:** optional on success sheet when `catalogFlow.postPublishRideshare` (not on publish step).
 
 **Reorganize (new activity id):** host menu **Reorganize on map** → `/explore?compose=organize:<kind>&organizeFrom=<activityId>` · `organizeFromActivity.ts` · publish sends optional `clonedFromActivityId` (audit `metadata.sourceActivityId`). Distinct from console **Duplicate** (`POST …/duplicate` → draft modal).
 
@@ -77,7 +77,7 @@ Examples: `organize.hiking`, `compose=organize:carpool` → `organize.rideshare`
 | `find.hiking` | `find:hiking` | Hiking | hiking | `hiking` | `POST /me/participant-intents` |
 | `find.camping` | `find:camping` | Camping | camping | `camping` | same |
 | `find.event` | `find:event` | **Activities** | activities | `event` | same |
-| `find.carpool` | `find:carpool` | Rideshare | rideshare | `carpool` | same |
+| `find.rideshare` | `find:carpool` | Rideshare | rideshare | `rideshare` | same |
 
 **Lifecycle:** active → fulfilled \| cancelled; host **fulfill** → separate Organize publish (see below).
 

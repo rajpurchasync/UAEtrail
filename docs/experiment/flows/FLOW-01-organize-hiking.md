@@ -57,7 +57,7 @@ Each step: back chevron, title from `createFlowStepTitle`, **Next** (or map conf
 | 11 | `join_kit` | **What joiners should bring or know** | Optional gear/rules text |
 | 12 | `transportation` | **Transportation** | Sedan vs **4x4 required** (trailhead access) |
 | 13 | `publish` | **Preview and publish** | Summary · **Publish** |
-| *(success)* | — | **Published** | Optional **Offer carpool** · **View on map** |
+| *(success)* | — | **Published** | Optional **Offer rideshare** · **View on map** |
 
 **Map pins on explore:** Primary pin = going-from (`startLat`/`startLng`); second pin = meeting point when coords differ (`meetingDifferent`).
 
@@ -74,7 +74,7 @@ Each step: back chevron, title from `createFlowStepTitle`, **Next** (or map conf
 | **Validate** | `validateDraftStep('publish', draft)` — both pins, title, trail, about, join kit, price, transportation |
 | **API sequence** | `submitPlace` → `createOrganisationActivity` → `publishOrganisationActivity` |
 | **Payload** | `startLat/Lng` = going-from; `meetingLat/Lng` = meeting point; `meetingDifferent`; `aboutTrail` → description; `joinKit` → requirements; vehicle access in requirements |
-| **Carpool flag** | Optional **after publish** on success sheet (`linkActivityCarpoolOffer`) — not on review step |
+| **Rideshare link** | Optional **after publish** on success sheet (`linkActivityRideshareOffer`) — not on review step |
 | **Success** | `onPublished(activity)` · compose cleared · map refreshes |
 
 ---

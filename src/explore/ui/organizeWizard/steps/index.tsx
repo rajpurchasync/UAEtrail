@@ -7,7 +7,7 @@ export { renderToStep } from './to-step';
 export { renderWhereStep } from './where-step';
 export { renderInstructionsActivityStep } from './instructions-activity-step';
 export { renderInstructionsEventStep } from './instructions-event-step';
-export { renderInstructionsCarpoolStep } from './instructions-carpool-step';
+export { renderInstructionsRideshareStep } from './instructions-rideshare-step';
 export { renderWhenStep } from './when-step';
 export { renderSpotsStep } from './spots-step';
 export { renderTransportationActivityStep } from './transportation-activity-step';
@@ -34,7 +34,7 @@ import { renderToStep } from './to-step';
 import { renderWhereStep } from './where-step';
 import { renderInstructionsActivityStep } from './instructions-activity-step';
 import { renderInstructionsEventStep } from './instructions-event-step';
-import { renderInstructionsCarpoolStep } from './instructions-carpool-step';
+import { renderInstructionsRideshareStep } from './instructions-rideshare-step';
 import { renderWhenStep } from './when-step';
 import { renderSpotsStep } from './spots-step';
 import { renderTransportationActivityStep } from './transportation-activity-step';
@@ -59,7 +59,7 @@ const RENDERERS: Array<(ctx: OrganizeWizardContext) => ReactNode | null> = [
   renderWhereStep,
   renderInstructionsActivityStep,
   renderInstructionsEventStep,
-  renderInstructionsCarpoolStep,
+  renderInstructionsRideshareStep,
   renderWhenStep,
   renderSpotsStep,
   renderTransportationActivityStep,

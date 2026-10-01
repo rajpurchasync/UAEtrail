@@ -9,7 +9,10 @@ import {
 } from '../exploreBrowseTaxonomy';
 import { EXPLORE_MAP_TOOLBAR_FLOATING } from '../../config/exploreTheme';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
-import { useExploreMapPillDropdown } from './exploreMapPillDropdown';
+import {
+  EXPLORE_MAP_SEARCH_INPUT_FONT_PX,
+  useExploreMapPillDropdown,
+} from './exploreMapPillDropdown';
 
 type ExploreSearchIntentMenuProps = {
   query?: string;
@@ -65,6 +68,7 @@ export const ExploreSearchIntentMenu = ({
     layout: 'fullWidth',
     zIndex: MAP_SEARCH_Z,
     positionBelowRef: variant === 'mapSegment' ? dropdownPositionBelowRef : undefined,
+    repositionDeps: [query, showHints],
   });
 
   useEffect(() => {
@@ -124,7 +128,7 @@ export const ExploreSearchIntentMenu = ({
       style={mapFloatingMenu ? menuStyle : undefined}
       className={
         mapFloatingMenu
-          ? 'overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)]'
+          ? 'rounded-2xl border border-neutral-200 bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)]'
           : `absolute left-0 top-full ${dropdownZClass} mt-2 w-[min(100vw-1.5rem,22rem)] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)]`
       }
       onClick={(event) => event.stopPropagation()}
@@ -137,6 +141,12 @@ export const ExploreSearchIntentMenu = ({
           <Search className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
           <input
             ref={inputRef}
+            type="search"
+            inputMode="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             onKeyDown={(event) => {
@@ -146,7 +156,14 @@ export const ExploreSearchIntentMenu = ({
               }
             }}
             placeholder={EXPLORE_SEARCH_OPEN_PLACEHOLDER}
-            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+            className={`min-w-0 flex-1 bg-transparent outline-none placeholder:text-gray-400 ${
+              mapFloatingMenu ? '' : 'text-sm'
+            }`}
+            style={
+              mapFloatingMenu
+                ? { fontSize: EXPLORE_MAP_SEARCH_INPUT_FONT_PX }
+                : undefined
+            }
           />
           {query.trim() ? (
             <button

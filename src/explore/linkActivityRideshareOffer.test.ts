@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { canLinkCarpoolToActivity } from './linkActivityCarpoolOffer';
+import { canLinkRideshareToActivity } from './linkActivityRideshareOffer';
 
 const baseActivity = (overrides: Partial<ActivityDTO> = {}): ActivityDTO =>
   ({
@@ -19,18 +19,18 @@ const baseActivity = (overrides: Partial<ActivityDTO> = {}): ActivityDTO =>
     ...overrides,
   }) as ActivityDTO;
 
-describe('canLinkCarpoolToActivity', () => {
+describe('canLinkRideshareToActivity', () => {
   it('allows optional carpool link on published hiking, camping, and events (incl. FLOW-05)', () => {
-    expect(canLinkCarpoolToActivity(baseActivity({ activityType: 'hiking' }))).toBe(true);
-    expect(canLinkCarpoolToActivity(baseActivity({ activityType: 'camping' }))).toBe(true);
-    expect(canLinkCarpoolToActivity(baseActivity({ activityType: 'event' }))).toBe(true);
+    expect(canLinkRideshareToActivity(baseActivity({ activityType: 'hiking' }))).toBe(true);
+    expect(canLinkRideshareToActivity(baseActivity({ activityType: 'camping' }))).toBe(true);
+    expect(canLinkRideshareToActivity(baseActivity({ activityType: 'event' }))).toBe(true);
   });
 
   it('blocks carpool link on rideshare activities only', () => {
-    expect(canLinkCarpoolToActivity(baseActivity({ activityType: 'carpool' }))).toBe(false);
+    expect(canLinkRideshareToActivity(baseActivity({ activityType: 'rideshare' }))).toBe(false);
     expect(
-      canLinkCarpoolToActivity(baseActivity({ linkedCarpoolActivityId: 'ride-1' }))
+      canLinkRideshareToActivity(baseActivity({ linkedRideshareActivityId: 'ride-1' }))
     ).toBe(true);
-    expect(canLinkCarpoolToActivity(null)).toBe(false);
+    expect(canLinkRideshareToActivity(null)).toBe(false);
   });
 });

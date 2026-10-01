@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
@@ -30,12 +30,18 @@ import {
   type CreateActivityKind,
 } from './organizeFlow';
 import { organizePublishSeed, type OrganizeComposeKind } from '../compose';
-import { defaultParticipationForOrganizeRoute } from '../composeFlowCatalog';
+import { composeFlowIdFromRoute, defaultParticipationForOrganizeRoute } from '../composeFlowCatalog';
+import {
+  clearOrganizeWizardSession,
+  organizeWizardSessionScope,
+  readOrganizeWizardSession,
+  writeOrganizeWizardSession,
+} from './composeWizardSession';
 import { usePlaceRegistry } from '../../hooks/usePlaceRegistry';
 import {
   fromLocationLabel,
   ORGANIZE_DEMAND_PREFILL_TITLE,
-  ORGANIZE_CARPOOL_LINKED_NOTICE,
+  ORGANIZE_RIDESHARE_LINKED_NOTICE,
   ORGANIZE_HOST_PROFILE_ERROR,
   TO_LOCATION_LABEL,
 } from '../createFlowCopy';
@@ -91,7 +97,7 @@ export const CreateActivityFlow = ({
   const [whereMapOpen, setWhereMapOpen] = useState(false);
   const [meetingPointMapOpen, setMeetingPointMapOpen] = useState(false);
   const [publishedActivity, setPublishedActivity] = useState<ActivityDTO | null>(null);
-  const [carpoolOfferNotice, setCarpoolOfferNotice] = useState<string | null>(null);
+  const [rideshareOfferNotice, setRideshareOfferNotice] = useState<string | null>(null);
 
   const kind = draft.kind ?? selectedKind;
   const hikingFlow = isHikingOrganizeFlow(kind, draft.genericBuddy);
@@ -138,21 +144,38 @@ export const CreateActivityFlow = ({
   );
   const dateOptions = useMemo(() => buildDateOptions(), []);
 
+  const organizeFlowId = useMemo(
+    () =>
+      organizeKind ? composeFlowIdFromRoute({ intent: 'organize', kind: organizeKind }) : null,
+    [organizeKind]
+  );
+  const wizardSessionScope = useMemo(
+    () => organizeWizardSessionScope(demandPrefill),
+    [
+      demandPrefill?.participantIntentId,
+      demandPrefill?.sourceActivityId,
+      demandPrefill?.linkToParentActivityId,
+    ]
+  );
+  const wizardInitKey = organizeFlowId
+    ? `${organizeFlowId}:${wizardSessionScope ?? ''}`
+    : demandPrefill
+      ? 'prefill'
+      : null;
+  const wizardInitializedRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!open) {
-      setStep('type');
-      setDraft(emptyCreateActivityDraft());
-      setSelectedKind(null);
       setError(null);
       setSubmitting(false);
       setShowMonthView(false);
       setRouteMapTarget(null);
       setWhereMapOpen(false);
       setMeetingPointMapOpen(false);
-      setPublishedActivity(null);
-      setCarpoolOfferNotice(null);
       return;
     }
+
+    if (wizardInitKey && wizardInitializedRef.current === wizardInitKey) return;
 
     if (demandPrefill?.draft.kind) {
       const prefillKind = demandPrefill.draft.kind;
@@ -173,10 +196,27 @@ export const CreateActivityFlow = ({
       setWhereMapOpen(false);
       setMeetingPointMapOpen(false);
       setPublishedActivity(null);
+      wizardInitializedRef.current = wizardInitKey;
       return;
     }
 
-    if (organizeKind) {
+    if (organizeKind && organizeFlowId) {
+      const saved = readOrganizeWizardSession(organizeFlowId, wizardSessionScope);
+      if (saved?.draft?.kind) {
+        setDraft(saved.draft);
+        setSelectedKind(saved.selectedKind);
+        setStep(saved.step as FlowStep);
+        setError(null);
+        setSubmitting(false);
+        setShowMonthView(false);
+        setRouteMapTarget(null);
+        setWhereMapOpen(false);
+        setMeetingPointMapOpen(false);
+        setPublishedActivity(null);
+        wizardInitializedRef.current = wizardInitKey;
+        return;
+      }
+
       const seed = organizePublishSeed(organizeKind);
       const createKind = seed.createKind;
       const participationMode =
@@ -199,6 +239,7 @@ export const CreateActivityFlow = ({
       setWhereMapOpen(false);
       setMeetingPointMapOpen(false);
       setPublishedActivity(null);
+      wizardInitializedRef.current = wizardInitKey;
       return;
     }
 
@@ -206,7 +247,28 @@ export const CreateActivityFlow = ({
       navigate(signInHref);
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, demandPrefill, organizeKind, catalogFlow]);
+  }, [
+    open,
+    user,
+    navigate,
+    signInHref,
+    onClose,
+    demandPrefill,
+    organizeKind,
+    catalogFlow,
+    organizeFlowId,
+    wizardSessionScope,
+    wizardInitKey,
+  ]);
+
+  useEffect(() => {
+    if (!open || !organizeFlowId || publishedActivity) return;
+    writeOrganizeWizardSession(
+      organizeFlowId,
+      { step, draft, selectedKind },
+      wizardSessionScope
+    );
+  }, [open, organizeFlowId, wizardSessionScope, step, draft, selectedKind, publishedActivity]);
 
   const patchDraft = useCallback((patch: Partial<CreateActivityDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -230,7 +292,7 @@ export const CreateActivityFlow = ({
       capacity: defaultCapacityForKind(selectedKind),
       priceMode: 'free',
       priceAmount: 0,
-      ...(selectedKind === 'carpool'
+      ...(selectedKind === 'rideshare'
         ? { joinMode: 'open' as const, participationMode: 'approval' as const }
         : {}),
     });
@@ -312,13 +374,14 @@ export const CreateActivityFlow = ({
     setError(null);
     try {
       const activity = await publishCreateActivity({
-        draft: { ...draft, kind: draft.kind ?? selectedKind, carPoolEnabled: false },
+        draft: { ...draft, kind: draft.kind ?? selectedKind, rideshareEnabled: false },
         tenantId,
         userId: user.id,
         participantIntentId: demandPrefill?.participantIntentId ?? null,
         sourceActivityId: demandPrefill?.sourceActivityId ?? null,
         linkToParentActivityId: demandPrefill?.linkToParentActivityId ?? null,
       });
+      if (organizeFlowId) clearOrganizeWizardSession(organizeFlowId, wizardSessionScope);
       setPublishedActivity(activity);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not publish. Try again.');
@@ -338,7 +401,7 @@ export const CreateActivityFlow = ({
   const isWhereMapOpen = step === 'where' && whereMapOpen;
   const isMeetingPointMapOpen = step === 'meeting_point' && meetingPointMapOpen;
   const isDestMapOpen = step === 'to' && routeMapTarget === 'to';
-  const isRouteMapOverlay = kind === 'carpool' && step === 'route' && routeMapTarget !== null;
+  const isRouteMapOverlay = kind === 'rideshare' && step === 'route' && routeMapTarget !== null;
   const isFullScreenLocationStep =
     isPickupMapOpen || isWhereMapOpen || isDestMapOpen || isRouteMapOverlay || isMeetingPointMapOpen;
 
@@ -369,7 +432,7 @@ export const CreateActivityFlow = ({
           <span className="flex items-center gap-2 text-gray-800">
             <MapPin className={`h-5 w-5 ${isTo ? 'text-sky-500' : 'text-emerald-600'}`} />
             <span>
-              <span className="block text-sm font-bold">{isTo ? TO_LOCATION_LABEL : fromLocationLabel('carpool')}</span>
+              <span className="block text-sm font-bold">{isTo ? TO_LOCATION_LABEL : fromLocationLabel('rideshare')}</span>
               <span className="text-xs text-gray-500">
                 {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
               </span>
@@ -465,9 +528,9 @@ export const CreateActivityFlow = ({
   if (!open) return null;
 
   if (publishedActivity && kind) {
-    const showPostPublishCarpool =
+    const showPostPublishRideshare =
       draft.joinMode !== 'private' &&
-      (catalogFlow?.postPublishCarpool === true ||
+      (catalogFlow?.postPublishRideshare === true ||
         (!catalogFlow && (hikingFlow || campingFlow || eventFlow || activityFlow)));
 
     return (
@@ -478,20 +541,20 @@ export const CreateActivityFlow = ({
         publishedActivity={publishedActivity}
         draft={draft}
         kind={kind}
-        showPostPublishCarpool={showPostPublishCarpool}
-        carpoolNotice={carpoolOfferNotice}
+        showPostPublishRideshare={showPostPublishRideshare}
+        rideshareNotice={rideshareOfferNotice}
         onCreateLinkedRideshare={() => {
           if (onCreateLinkedRideshare) {
             onCreateLinkedRideshare(publishedActivity);
             return;
           }
-          setCarpoolOfferNotice('Open this plan from Explore to create a linked rideshare.');
+          setRideshareOfferNotice('Open this plan from Explore to create a linked rideshare.');
         }}
-        onCarpoolLinked={() => {
-          setCarpoolOfferNotice(ORGANIZE_CARPOOL_LINKED_NOTICE);
+        onRideshareLinked={() => {
+          setRideshareOfferNotice(ORGANIZE_RIDESHARE_LINKED_NOTICE);
           void onPublished?.(publishedActivity);
         }}
-        onCarpoolLinkError={(message) => setCarpoolOfferNotice(message)}
+        onRideshareLinkError={(message) => setRideshareOfferNotice(message)}
         onViewOnMap={handleViewOnMap}
       />
     );

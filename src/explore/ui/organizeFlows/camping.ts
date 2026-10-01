@@ -73,7 +73,7 @@ export const organizeCampingFlow: OrganizeCatalogFlow = {
   createKind: 'camping',
   defaultSteps: DEFAULT_STEPS,
   registryVenue: { placeType: 'camping', omitWhenRegistry: REGISTRY_OMIT },
-  postPublishCarpool: true,
+  postPublishRideshare: true,
   getSteps: (draft) => applyRegistryVenueStepOmit(DEFAULT_STEPS, REGISTRY_OMIT, draft),
   validateStep,
 };

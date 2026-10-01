@@ -66,6 +66,15 @@ export const DemandAudienceStepBody = ({
       <label className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-3">
         <input
           type="checkbox"
+          checked={draft.familyOnly}
+          onChange={(event) => patchDraft({ familyOnly: event.target.checked })}
+          className="rounded border-gray-300 text-emerald-600"
+        />
+        <span className="text-sm text-gray-800">Family only</span>
+      </label>
+      <label className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-3">
+        <input
+          type="checkbox"
           checked={draft.childrenAllowed}
           onChange={(event) => patchDraft({ childrenAllowed: event.target.checked })}
           className="rounded border-gray-300 text-emerald-600"
@@ -118,7 +127,7 @@ export const DemandTransportStepBody = ({
     <div className={`mb-4 ${EXPLORE_FLOW.choiceGrid2}`}>
       {([
         { key: 'self' as const, title: 'Self transport', subtitle: 'I have a vehicle' },
-        { key: 'carpool' as const, title: 'Carpool needed', subtitle: 'Need a ride' },
+        { key: 'rideshare' as const, title: 'Rideshare needed', subtitle: 'Need a ride' },
       ]).map((option) => {
         const active = draft.transportMode === option.key;
         return (
@@ -128,7 +137,7 @@ export const DemandTransportStepBody = ({
             onClick={() =>
               patchDraft({
                 transportMode: option.key,
-                carPoolNeeded: option.key === 'carpool',
+                rideshareNeeded: option.key === 'rideshare',
                 selfVehicleType: option.key === 'self' ? draft.selfVehicleType ?? 'sedan' : null,
               })
             }
@@ -156,17 +165,17 @@ export const DemandTransportStepBody = ({
           );
         })}
       </div>
-    ) : draft.transportMode === 'carpool' ? (
+    ) : draft.transportMode === 'rideshare' ? (
       <>
         <p className="mb-2 text-sm font-semibold text-gray-900">Seats you need (including you)</p>
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5, 6].map((value) => {
-            const active = draft.carpoolSeatsNeeded === value;
+            const active = draft.rideshareSeatsNeeded === value;
             return (
               <button
                 key={value}
                 type="button"
-                onClick={() => patchDraft({ carpoolSeatsNeeded: value, partySize: value })}
+                onClick={() => patchDraft({ rideshareSeatsNeeded: value, partySize: value })}
                 className={`rounded-full px-4 py-2 text-sm font-bold ${
                   active ? 'bg-emerald-500 text-white' : 'bg-neutral-100 text-gray-800'
                 }`}
@@ -181,7 +190,7 @@ export const DemandTransportStepBody = ({
   </>
 );
 
-export const DemandCarpoolDestinationStepBody = ({
+export const DemandRideshareDestinationStepBody = ({
   draft,
   patchDraft,
   onOpenMap,

@@ -14,7 +14,7 @@ const TYPE_OPTIONS: Array<{
 }> = [
   { key: 'hiking', title: 'Hiking', subtitle: 'Trails & day hikes', emoji: '🥾' },
   { key: 'camping', title: 'Camping', subtitle: 'Overnight outdoors', emoji: '⛺' },
-  { key: 'carpool', title: 'Rideshare', subtitle: 'Share a ride', emoji: '🚗' },
+  { key: 'rideshare', title: 'Rideshare', subtitle: 'Share a ride', emoji: '🚗' },
   { key: 'event', title: 'Other Outdoors', subtitle: 'Runs, meetups & more', emoji: '✨' },
 ];
 

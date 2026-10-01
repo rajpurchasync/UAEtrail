@@ -30,7 +30,7 @@ export const GOING_FROM_NOTES_PREVIEW_LABEL = 'Directions: ';
 
 export const JOIN_RULES_PREVIEW_LABEL = 'Before joining: ';
 
-export const CARPOOL_PICKUP_HINT = 'Set the pickup point on the map.';
+export const RIDESHARE_PICKUP_HINT = 'Set the pickup point on the map.';
 
 export const GOING_FROM_HINT = 'Drop a pin for where you\u2019re starting from.';
 
@@ -40,8 +40,8 @@ export const WHERE_STEP_CAMP_HINT = 'Choose where campers will meet or set up.';
 
 export const WHERE_STEP_HINT = 'Choose where you\u2019ll start from.';
 
-export const fromLocationLabel = (kind: 'carpool' | 'default'): string =>
-  kind === 'carpool' ? PICKUP_POINT_LABEL : GOING_FROM_LABEL;
+export const fromLocationLabel = (kind: 'rideshare' | 'default'): string =>
+  kind === 'rideshare' ? PICKUP_POINT_LABEL : GOING_FROM_LABEL;
 
 export const HIKE_PUBLIC_EVENT_LABEL = 'Public';
 
@@ -145,21 +145,33 @@ export const ORGANIZE_PUBLISH_VIEW_ON_MAP = 'View on map';
 /** Post-publish success sheet — short primary CTA. */
 export const ORGANIZE_PUBLISH_VIEW_CTA = 'View';
 
-export const ORGANIZE_LINK_CARPOOL_LABEL = 'Link carpool';
+export const ORGANIZE_LINK_RIDESHARE_LABEL = 'Link rideshare';
 
-export const ORGANIZE_LINK_CARPOOL_CREATE = 'Create a rideshare';
+export const ORGANIZE_OFFER_RIDESHARE_LABEL = 'Offer rideshare';
 
-export const ORGANIZE_LINK_CARPOOL_PASTE_CTA = 'Paste rideshare link';
+export const ORGANIZE_LINK_RIDESHARE_CREATE = 'Create a rideshare';
 
-export const ORGANIZE_LINK_CARPOOL_PASTE_LABEL = 'Or paste your rideshare link';
+export const ORGANIZE_LINK_RIDESHARE_PASTE_CTA = 'Paste rideshare link';
 
-export const ORGANIZE_LINK_CARPOOL_PASTE_PLACEHOLDER = 'https://uaetrail.com/activity/…';
+export const ORGANIZE_LINK_RIDESHARE_PASTE_LABEL = 'Or paste your rideshare link';
 
-export const ORGANIZE_LINK_CARPOOL_HINT =
+export const ORGANIZE_LINK_RIDESHARE_PASTE_PLACEHOLDER = 'https://uaetrail.com/activity/…';
+
+export const ORGANIZE_LINK_RIDESHARE_HINT =
   'Publish a rideshare on the map, or link one you already host — joiners see it on this plan.';
 
-export const ORGANIZE_CARPOOL_LINKED_NOTICE = 'Rideshare linked — joiners will see it on your plan.';
+export const ORGANIZE_RIDESHARE_LINKED_NOTICE = 'Rideshare linked — joiners will see it on your plan.';
 
 export const EXPLORE_LINKED_RIDESHARES_PEEK_TITLE = 'Rideshares for this plan';
 
 export const EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX = 'For plan:';
+
+/** User-facing label — always “Rideshare”, not carpool. */
+export const EXPLORE_RIDESHARE_AVAILABLE_LABEL = 'Rideshare available';
+
+/** @deprecated Use EXPLORE_RIDESHARE_AVAILABLE_LABEL */
+export const EXPLORE_RIDESHARE_AVAILABLE_PEEK_LABEL = EXPLORE_RIDESHARE_AVAILABLE_LABEL;
+
+export const EXPLORE_VIEW_LINKED_PLAN_CTA = 'View outing';
+
+export const EXPLORE_VIEW_LINKED_RIDESHARE_CTA = 'View rideshare';

@@ -3,11 +3,11 @@ import { CheckCircle2 } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-import { LinkCarpoolPanel } from './LinkCarpoolPanel';
+import { LinkRidesharePanel } from './LinkRidesharePanel';
 import {
-  ORGANIZE_CARPOOL_LINKED_NOTICE,
-  ORGANIZE_LINK_CARPOOL_LABEL,
-  ORGANIZE_LINK_CARPOOL_PASTE_CTA,
+  ORGANIZE_RIDESHARE_LINKED_NOTICE,
+  ORGANIZE_LINK_RIDESHARE_LABEL,
+  ORGANIZE_LINK_RIDESHARE_PASTE_CTA,
   ORGANIZE_PUBLISH_SUCCESS_BODY,
   ORGANIZE_PUBLISH_SUCCESS_BODY_PRIVATE,
   ORGANIZE_PUBLISH_SUCCESS_TITLE,
@@ -15,7 +15,7 @@ import {
 } from '../createFlowCopy';
 import type { CreateActivityDraft, CreateActivityKind } from './organizeFlow';
 import { formatOrganizePricePreview, resolveOrganizeDifficultyLabel } from './organizeFlow';
-import { canLinkCarpoolToActivity } from '../linkActivityCarpoolOffer';
+import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
 
 type OrganizePublishSuccessSheetProps = {
   open: boolean;
@@ -24,11 +24,11 @@ type OrganizePublishSuccessSheetProps = {
   publishedActivity: ActivityDTO;
   draft: CreateActivityDraft;
   kind: CreateActivityKind;
-  showPostPublishCarpool: boolean;
-  carpoolNotice: string | null;
+  showPostPublishRideshare: boolean;
+  rideshareNotice: string | null;
   onCreateLinkedRideshare: () => void;
-  onCarpoolLinked: () => void;
-  onCarpoolLinkError: (message: string) => void;
+  onRideshareLinked: () => void;
+  onRideshareLinkError: (message: string) => void;
   onViewOnMap: () => void;
 };
 
@@ -49,17 +49,17 @@ export const OrganizePublishSuccessSheet = ({
   publishedActivity,
   draft,
   kind,
-  showPostPublishCarpool,
-  carpoolNotice,
+  showPostPublishRideshare,
+  rideshareNotice,
   onCreateLinkedRideshare,
-  onCarpoolLinked,
-  onCarpoolLinkError,
+  onRideshareLinked,
+  onRideshareLinkError,
   onViewOnMap,
 }: OrganizePublishSuccessSheetProps) => {
   const [pasteOpen, setPasteOpen] = useState(false);
 
-  const showLinkCarpool =
-    showPostPublishCarpool && tenantId && canLinkCarpoolToActivity(publishedActivity);
+  const showLinkRideshare =
+    showPostPublishRideshare && tenantId && canLinkRideshareToActivity(publishedActivity);
 
   return (
     <ExploreResponsiveSheet
@@ -110,30 +110,30 @@ export const OrganizePublishSuccessSheet = ({
           </dl>
         </div>
 
-        {carpoolNotice ? (
+        {rideshareNotice ? (
           <p
             className={`mt-3 rounded-lg px-3 py-2 text-sm leading-snug ${
-              carpoolNotice === ORGANIZE_CARPOOL_LINKED_NOTICE
+              rideshareNotice === ORGANIZE_RIDESHARE_LINKED_NOTICE
                 ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
                 : 'bg-red-50 text-red-700'
             }`}
           >
-            {carpoolNotice}
+            {rideshareNotice}
           </p>
         ) : null}
 
-        {showLinkCarpool && pasteOpen ? (
+        {showLinkRideshare && pasteOpen ? (
           <div className="mt-4 min-w-0">
-            <LinkCarpoolPanel
+            <LinkRidesharePanel
               tenantId={tenantId}
               parentActivityId={publishedActivity.id}
               variant="pasteOnly"
               onCreateRideshare={onCreateLinkedRideshare}
               onLinked={() => {
-                onCarpoolLinked();
+                onRideshareLinked();
                 setPasteOpen(false);
               }}
-              onError={onCarpoolLinkError}
+              onError={onRideshareLinkError}
             />
           </div>
         ) : null}
@@ -146,10 +146,10 @@ export const OrganizePublishSuccessSheet = ({
           >
             {ORGANIZE_PUBLISH_VIEW_CTA}
           </button>
-          {showLinkCarpool ? (
+          {showLinkRideshare ? (
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
               <button type="button" onClick={onCreateLinkedRideshare} className={linkButtonClass}>
-                {ORGANIZE_LINK_CARPOOL_LABEL}
+                {ORGANIZE_LINK_RIDESHARE_LABEL}
               </button>
               <button
                 type="button"
@@ -157,7 +157,7 @@ export const OrganizePublishSuccessSheet = ({
                 onClick={() => setPasteOpen((value) => !value)}
                 className={linkButtonClass}
               >
-                {ORGANIZE_LINK_CARPOOL_PASTE_CTA}
+                {ORGANIZE_LINK_RIDESHARE_PASTE_CTA}
               </button>
             </div>
           ) : null}

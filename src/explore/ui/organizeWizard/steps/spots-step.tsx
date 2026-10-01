@@ -49,7 +49,7 @@ export function renderSpotsStep(ctx: OrganizeWizardContext): ReactNode | null {
             ) : (
               <>
                 <p className="mb-3 text-sm text-gray-600">
-                  {kind === 'carpool' ? 'How many seats can you offer?' : 'How many people can join?'}
+                  {kind === 'rideshare' ? 'How many seats can you offer?' : 'How many people can join?'}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {CAPACITY_PRESETS.map((value) => {

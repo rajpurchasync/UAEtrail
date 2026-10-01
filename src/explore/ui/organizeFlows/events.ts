@@ -64,7 +64,7 @@ export const organizeEventsFlow: OrganizeCatalogFlow = {
   createKind: 'event',
   defaultSteps: DEFAULT_STEPS,
   registryVenue: { placeType: 'event', omitWhenRegistry: REGISTRY_OMIT },
-  postPublishCarpool: true,
+  postPublishRideshare: true,
   getSteps: (draft) => applyRegistryVenueStepOmit(DEFAULT_STEPS, REGISTRY_OMIT, draft),
   validateStep,
 };

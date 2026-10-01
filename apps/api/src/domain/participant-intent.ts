@@ -5,7 +5,7 @@ export const participantIntentKindSchema = z.enum([
   'camping',
   'event',
   'guide',
-  'carpool',
+  'rideshare',
   'other',
 ]);
 
@@ -54,7 +54,7 @@ export const createParticipantIntentSchema = z
         path: ['latitude'],
       });
     }
-    if (body.kind === 'carpool') {
+    if (body.kind === 'rideshare') {
       if (body.latitude == null || body.longitude == null) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Drop a from pin on the map.', path: ['latitude'] });
       }

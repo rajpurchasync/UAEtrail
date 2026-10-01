@@ -51,7 +51,18 @@ const mapMongoLocation = (doc: MongoLocationDoc): Location => {
   return { id: _id, ...rest };
 };
 
-const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
+type LegacyRideshareMongoFields = {
+  carPoolEnabled?: boolean;
+  carPoolFree?: boolean | null;
+  carPoolPriceAed?: number | null;
+  carPoolSeats?: number | null;
+  carPoolDetails?: string | null;
+  linkedCarpoolActivityId?: string | null;
+};
+
+const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
+  const legacy = doc as MongoActivityDoc & LegacyRideshareMongoFields;
+  return {
   id: doc._id,
   tenantId: doc.tenantId,
   locationId: doc.locationId,
@@ -72,13 +83,14 @@ const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
   parkingLat: doc.parkingLat,
   parkingLng: doc.parkingLng,
   meetingDifferent: doc.meetingDifferent,
-  carPoolEnabled: doc.carPoolEnabled,
-  carPoolFree: doc.carPoolFree,
-  carPoolPriceAed: doc.carPoolPriceAed,
-  carPoolSeats: doc.carPoolSeats ?? null,
-  carPoolDetails: doc.carPoolDetails,
+  rideshareEnabled: legacy.rideshareEnabled ?? legacy.carPoolEnabled ?? false,
+  rideshareFree: legacy.rideshareFree ?? legacy.carPoolFree ?? null,
+  ridesharePriceAed: legacy.ridesharePriceAed ?? legacy.carPoolPriceAed ?? null,
+  rideshareSeats: legacy.rideshareSeats ?? legacy.carPoolSeats ?? null,
+  rideshareDetails: legacy.rideshareDetails ?? legacy.carPoolDetails ?? null,
   linkedActivityId: doc.linkedActivityId ?? null,
-  linkedCarpoolActivityId: doc.linkedCarpoolActivityId ?? null,
+  linkedRideshareActivityId:
+    legacy.linkedRideshareActivityId ?? legacy.linkedCarpoolActivityId ?? null,
   paymentTerms: doc.paymentTerms,
   pricingMode: doc.pricingMode ?? null,
   itinerary: doc.itinerary,
@@ -96,8 +108,9 @@ const mongoEventToEvent = (doc: MongoActivityDoc) : Activity => ({
   outingCategory: (doc.outingCategory as OutingCategory | null | undefined) ?? null,
   outingTopic: (doc.outingTopic as OutingTopic | null | undefined) ?? null,
   createdAt: doc.createdAt,
-  updatedAt: doc.updatedAt
-});
+  updatedAt: doc.updatedAt,
+  };
+};
 
 const toGuidePreview = (user: AuthUserRecord | undefined) =>
   user

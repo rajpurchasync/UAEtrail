@@ -1,18 +1,26 @@
+import { useEffect } from 'react';
 import {
   BadgeCheck,
+  Baby,
   ClipboardCheck,
   Lock,
   SlidersHorizontal,
   UserRound,
   Users,
 } from 'lucide-react';
+import { ensureHikingJoinKitText } from './hikingJoinKitDefaults';
 import {
   formatHikeCapacityLabel,
   HIKE_CAPACITY_PRESETS,
   ACTIVITY_DIFFICULTY_OPTIONS,
+  resolveLimitedAudienceAccess,
   type ActivityDifficulty,
   type CreateActivityDraft,
 } from './organizeFlow';
+import {
+  formatParticipantMinAgeFieldValue,
+  parseParticipantMinAgeFieldValue,
+} from './organizeParticipantAgeMin';
 import { OrganizeVenuePlaceField } from './OrganizeVenuePlaceField';
 import type { PlaceDTO } from '@uaetrail/shared-types';
 import {
@@ -147,7 +155,7 @@ export const HikingSpotsStepBody = ({
     }
     patchDraft({
       ...patch,
-      audienceAccess: next.limitedWomenOnly ? 'women_only' : 'anyone',
+      audienceAccess: resolveLimitedAudienceAccess(next),
     });
   };
 
@@ -201,6 +209,7 @@ export const HikingSpotsStepBody = ({
                     ? {
                         participantsOpenToAll: true,
                         limitedWomenOnly: false,
+                        limitedFamilyOnly: false,
                         limitedMinAgeEnabled: false,
                       }
                     : { participantsOpenToAll: false }
@@ -228,6 +237,16 @@ export const HikingSpotsStepBody = ({
             <UserRound className="h-4 w-4 text-emerald-600" aria-hidden />
             Women only
           </label>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-800">
+            <input
+              type="checkbox"
+              checked={draft.limitedFamilyOnly}
+              onChange={(event) => patchAudience({ limitedFamilyOnly: event.target.checked })}
+              className="rounded border-gray-300 text-emerald-600"
+            />
+            <Users className="h-4 w-4 text-emerald-600" aria-hidden />
+            Family only
+          </label>
           <label className="flex items-start gap-2 text-sm font-medium text-gray-800">
             <input
               type="checkbox"
@@ -237,16 +256,18 @@ export const HikingSpotsStepBody = ({
               }
               className="mt-0.5 rounded border-gray-300 text-emerald-600"
             />
+            <Baby className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
             <span className="min-w-0 flex-1">
               <span className="block">{PARTICIPANTS_MIN_AGE_LABEL}</span>
               {draft.limitedMinAgeEnabled ? (
                 <input
                   type="number"
+                  inputMode="numeric"
                   min={1}
                   max={99}
-                  value={draft.ageMin}
+                  value={formatParticipantMinAgeFieldValue(draft.ageMin)}
                   onChange={(event) =>
-                    patchDraft({ ageMin: Number(event.target.value) || 0 })
+                    patchDraft({ ageMin: parseParticipantMinAgeFieldValue(event.target.value) })
                   }
                   className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-base font-semibold text-gray-900"
                   aria-label={PARTICIPANTS_MIN_AGE_LABEL}
@@ -348,14 +369,22 @@ export const HikingJoinKitStepBody = ({
 }: {
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
-}) => (
-  <textarea
-    value={draft.joinKit}
-    onChange={(event) => patchDraft({ joinKit: event.target.value })}
-    rows={5}
-    placeholder="Water, shoes, headlamp, fitness level, rules…"
-    aria-label={JOIN_RULES_LABEL}
-    className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base"
-    maxLength={1000}
-  />
-);
+}) => {
+  useEffect(() => {
+    if (draft.kind === 'hiking' && !draft.joinKit.trim()) {
+      patchDraft({ joinKit: ensureHikingJoinKitText('') });
+    }
+  }, [draft.kind, draft.joinKit, patchDraft]);
+
+  return (
+    <textarea
+      value={draft.joinKit}
+      onChange={(event) => patchDraft({ joinKit: event.target.value })}
+      rows={12}
+      placeholder="Water, shoes, headlamp, fitness level, rules…"
+      aria-label={JOIN_RULES_LABEL}
+      className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base leading-relaxed"
+      maxLength={1000}
+    />
+  );
+};

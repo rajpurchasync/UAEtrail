@@ -54,7 +54,7 @@ describe('exploreMapPinModel', () => {
     const pins = expandMapPins([
       baseItem({
         id: 'c1',
-        kind: 'carpool',
+        kind: 'rideshare',
         source: 'activity',
         latitude: 25,
         longitude: 55,
@@ -63,8 +63,8 @@ describe('exploreMapPinModel', () => {
       }),
     ]);
     expect(pins).toHaveLength(2);
-    expect(pins[0].carpoolEndpoint).toBe('from');
-    expect(pins[1].carpoolEndpoint).toBe('to');
+    expect(pins[0].rideshareEndpoint).toBe('from');
+    expect(pins[1].rideshareEndpoint).toBe('to');
     expect(pins[1].id).toBe('c1:to');
   });
 

@@ -23,7 +23,7 @@ describe('resolveMapPinEmoji', () => {
     expect(resolveMapPinEmoji('hiking', 'activity')).toBe('🥾');
     expect(resolveMapPinEmoji('camping', 'activity')).toBe('🏕️');
     expect(resolveMapPinEmoji('event', 'activity')).toBe('🏃');
-    expect(resolveMapPinEmoji('carpool', 'activity')).toBe('🚗');
+    expect(resolveMapPinEmoji('rideshare', 'activity')).toBe('🚗');
   });
 
   it('uses venue emojis', () => {
@@ -34,7 +34,7 @@ describe('resolveMapPinEmoji', () => {
   it('uses shop and demand emojis', () => {
     expect(resolveMapPinEmoji('shop', 'shop')).toBe('🛍️');
     expect(resolveMapPinEmoji('hiking', 'demand')).toBe('🙋');
-    expect(resolveMapPinEmoji('carpool', 'demand')).toBe('🚗');
+    expect(resolveMapPinEmoji('rideshare', 'demand')).toBe('🚗');
   });
 
   it('resolves source from id prefix when source is missing', () => {
@@ -48,8 +48,8 @@ describe('resolveMapPinEmoji', () => {
   });
 
   it('uses car emoji for all carpool map pins', () => {
-    expect(resolveMapPinEmoji('carpool', 'activity', 'to')).toBe('🚗');
-    expect(resolveMapPinEmoji('carpool', 'activity', 'from')).toBe('🚗');
+    expect(resolveMapPinEmoji('rideshare', 'activity', 'to')).toBe('🚗');
+    expect(resolveMapPinEmoji('rideshare', 'activity', 'from')).toBe('🚗');
   });
 });
 
@@ -185,7 +185,7 @@ describe('exploreHeadline', () => {
     expect(
       exploreHeadline({
         source: 'activity',
-        kind: 'carpool',
+        kind: 'rideshare',
         title: 'Ride to Fujairah',
         hostName: 'Ali',
         date: '2026-09-13',
@@ -212,8 +212,8 @@ describe('exploreHeadline', () => {
     expect(
       exploreHeadline({
         source: 'demand',
-        kind: 'carpool',
-        title: 'Ride share request',
+        kind: 'rideshare',
+        title: 'Rideshare request',
         hostName: 'Alex Rider',
         date: '2026-09-13',
         time: '14:00',
@@ -268,7 +268,7 @@ describe('exploreHeadline', () => {
 
 describe('buildExploreRouteLabel', () => {
   it('returns route for carpool only', () => {
-    expect(buildExploreRouteLabel('Dubai', 'Fujairah', 'carpool')).toBe('Dubai to Fujairah');
+    expect(buildExploreRouteLabel('Dubai', 'Fujairah', 'rideshare')).toBe('Dubai to Fujairah');
     expect(buildExploreRouteLabel('Dubai', 'Fujairah', 'hiking')).toBeNull();
   });
 });
@@ -325,16 +325,16 @@ describe('extractExploreRequirementBadges', () => {
 
 describe('resolveExplorePrice', () => {
   it('returns free for zero price', () => {
-    expect(resolveExplorePrice({ isCarpool: false, price: 0 }).badge).toBe('Free');
+    expect(resolveExplorePrice({ isRideshare: false, price: 0 }).badge).toBe('Free');
   });
 
   it('returns paid label', () => {
-    expect(resolveExplorePrice({ isCarpool: false, price: 120 }).badge).toBe('Paid Event · AED 120');
+    expect(resolveExplorePrice({ isRideshare: false, price: 120 }).badge).toBe('Paid Event · AED 120');
   });
 
   it('returns shared carpool label', () => {
     expect(
-      resolveExplorePrice({ isCarpool: true, carPoolFree: false, carPoolPriceAed: 35 }).badge
+      resolveExplorePrice({ isRideshare: true, rideshareFree: false, ridesharePriceAed: 35 }).badge
     ).toBe('Shared · AED 35/seat');
   });
 });
@@ -446,20 +446,20 @@ describe('buildExploreCardModel', () => {
   it('surfaces carpool available badge on linked hiking and camping activities', () => {
     const withCarpool: ExploreMapItemDTO = {
       ...hikingActivity,
-      activity: { ...hikingActivity.activity!, carPoolEnabled: true },
+      activity: { ...hikingActivity.activity!, rideshareEnabled: true },
     };
     const campingCarpool: ExploreMapItemDTO = {
       ...hikingActivity,
-      id: 'activity:carpool-camp',
+      id: 'activity:rideshare-camp',
       kind: 'camping',
       activity: {
         ...hikingActivity.activity!,
         activityType: 'camping',
-        carPoolEnabled: true,
+        rideshareEnabled: true,
       },
     };
-    expect(buildExploreCardModel(withCarpool).requirementBadges).toContain('Carpool available');
-    expect(buildExploreCardModel(campingCarpool).requirementBadges).toContain('Carpool available');
+    expect(buildExploreCardModel(withCarpool).requirementBadges).toContain('Rideshare available');
+    expect(buildExploreCardModel(campingCarpool).requirementBadges).toContain('Rideshare available');
   });
 
   it('extracts structured participant restriction badges on activity cards', () => {
@@ -482,9 +482,9 @@ describe('buildExploreCardModel', () => {
   it('builds one-line demand card', () => {
     const demand: ExploreMapItemDTO = {
       id: 'demand:1',
-      kind: 'carpool',
+      kind: 'rideshare',
       source: 'demand',
-      title: 'Ride share request',
+      title: 'Rideshare request',
       subtitle: 'Dubai to Fujairah',
       latitude: 25.3,
       longitude: 55.3,

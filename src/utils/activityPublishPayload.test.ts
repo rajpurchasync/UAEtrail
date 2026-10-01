@@ -114,7 +114,7 @@ describe('buildHostActivityPublishPayload', () => {
       price: 0,
     });
     expect(payload).not.toHaveProperty('paymentTerms');
-    expect(payload).not.toHaveProperty('carPoolEnabled');
+    expect(payload).not.toHaveProperty('rideshareEnabled');
   });
 
   it('omits paymentTerms when empty so API zod validation passes', () => {
@@ -137,7 +137,7 @@ describe('buildHostActivityPublishPayload', () => {
 
   it('adds carpool fields for carpool activity type', () => {
     const payload = buildHostActivityPublishPayload({
-      activityType: 'carpool',
+      activityType: 'rideshare',
       locationId: 'loc-2',
       title: 'Ride to Hatta',
       description: 'Shared ride',
@@ -156,20 +156,20 @@ describe('buildHostActivityPublishPayload', () => {
       requirements: [APPROVAL_PARTICIPATION_REQUIREMENT],
       joinMode: 'open',
       participationMode: 'approval',
-      carpool: {
-        carPoolFree: false,
-        carPoolPriceAed: 25,
-        carPoolSeats: 3,
-        carPoolDetails: 'Confirm pickup after joining.',
+      rideshare: {
+        rideshareFree: false,
+        ridesharePriceAed: 25,
+        rideshareSeats: 3,
+        rideshareDetails: 'Confirm pickup after joining.',
       },
     });
 
     expect(payload).toMatchObject({
-      carPoolEnabled: true,
-      carPoolFree: false,
-      carPoolPriceAed: 25,
-      carPoolSeats: 3,
-      carPoolDetails: 'Confirm pickup after joining.',
+      rideshareEnabled: true,
+      rideshareFree: false,
+      ridesharePriceAed: 25,
+      rideshareSeats: 3,
+      rideshareDetails: 'Confirm pickup after joining.',
     });
   });
 

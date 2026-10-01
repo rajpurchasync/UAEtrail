@@ -55,7 +55,7 @@ export const CreateOrganizeFlowHost = ({
       return <CreateOrganizeEventsFlow {...shared} />;
     case 'activity':
       return <CreateOrganizeActivitiesFlow {...shared} />;
-    case 'carpool':
+    case 'rideshare':
       return <CreateOrganizeRideshareFlow {...shared} />;
     default:
       return <CreateActivityFlow {...shared} organizeKind={null} />;

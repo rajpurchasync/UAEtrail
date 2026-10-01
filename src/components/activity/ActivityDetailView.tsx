@@ -34,6 +34,8 @@ import {
   MANDATORY_INSTRUCTIONS_LABEL,
 } from '../../utils/joinInstructions';
 import { activityRegistryPlacePath } from '../../utils/activityRegistryPlacePath';
+import { linkedParentRidesharePeekCopy } from '../../explore/exploreLinkedParentRideshareCopy';
+import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '../../explore/createFlowCopy';
 
 const GoogleMapsIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden>
@@ -491,40 +493,40 @@ export const ActivityDetailView = ({
               </div>
             )}
 
-            {activity.carPoolEnabled && (
+            {activity.rideshareEnabled && (
               <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
                 <div className="flex items-start gap-2 text-sm text-gray-700">
                   <Car className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900">Carpool available</p>
+                    <p className="font-medium text-gray-900">{EXPLORE_RIDESHARE_AVAILABLE_LABEL}</p>
                     <p className="mt-1">
-                      {activity.carPoolSeats != null && activity.carPoolSeats > 0
-                        ? `${activity.carPoolSeats} seat${activity.carPoolSeats === 1 ? '' : 's'} · `
+                      {activity.rideshareSeats != null && activity.rideshareSeats > 0
+                        ? `${activity.rideshareSeats} seat${activity.rideshareSeats === 1 ? '' : 's'} · `
                         : ''}
-                      {activity.carPoolFree
+                      {activity.rideshareFree
                         ? 'Free shared ride'
-                        : activity.carPoolPriceAed != null
-                          ? `AED ${activity.carPoolPriceAed} per seat`
+                        : activity.ridesharePriceAed != null
+                          ? `AED ${activity.ridesharePriceAed} per seat`
                           : 'Shared ride'}
                     </p>
-                    {activity.carPoolDetails && (
-                      <p className="text-gray-600 mt-1 whitespace-pre-line">{activity.carPoolDetails}</p>
+                    {activity.rideshareDetails && (
+                      <p className="text-gray-600 mt-1 whitespace-pre-line">{activity.rideshareDetails}</p>
                     )}
-                    {activity.linkedCarpool && (
+                    {activity.linkedRideshare && (
                       <div className="mt-3 rounded-xl border border-sky-200 bg-white px-3 py-2.5">
                         <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
-                          Linked carpool listing
+                          Linked rideshare listing
                         </p>
                         <p className="mt-1 text-sm text-gray-800">
-                          {activity.linkedCarpool.meetingPoint && activity.linkedCarpool.startPoint
-                            ? `${activity.linkedCarpool.meetingPoint} → ${activity.linkedCarpool.startPoint}`
-                            : activity.linkedCarpool.title}
+                          {activity.linkedRideshare.meetingPoint && activity.linkedRideshare.startPoint
+                            ? `${activity.linkedRideshare.meetingPoint} → ${activity.linkedRideshare.startPoint}`
+                            : activity.linkedRideshare.title}
                         </p>
                         <Link
-                          to={`/activity/${activity.linkedCarpool.id}`}
+                          to={`/activity/${activity.linkedRideshare.id}`}
                           className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
                         >
-                          View carpool details
+                          View rideshare details
                           <ChevronRight className="h-4 w-4" />
                         </Link>
                       </div>
@@ -534,21 +536,25 @@ export const ActivityDetailView = ({
               </div>
             )}
 
-            {activity.linkedParentActivity && (
-              <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-gray-700">
-                <p className="font-medium text-gray-900">Linked activity</p>
-                <p className="mt-1">
-                  This carpool is offered for{' '}
+            {activity.linkedParentActivity && (() => {
+              const parent = activity.linkedParentActivity;
+              const linkedCopy = linkedParentRidesharePeekCopy(parent.activityType, parent.title);
+              return (
+                <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-gray-700">
+                  <p className="font-semibold text-gray-900">{linkedCopy.eyebrow}</p>
+                  {linkedCopy.showTitleSubtitle ? (
+                    <p className="mt-1 text-gray-800">{parent.title}</p>
+                  ) : null}
                   <Link
-                    to={`/activity/${activity.linkedParentActivity.id}`}
-                    className="font-semibold text-emerald-700 hover:text-emerald-800"
+                    to={`/activity/${parent.id}`}
+                    className="mt-2 inline-flex items-center gap-1 font-semibold text-sky-700 hover:text-sky-800"
                   >
-                    {activity.linkedParentActivity.title}
+                    View outing
+                    <ChevronRight className="h-4 w-4" aria-hidden />
                   </Link>
-                  .
-                </p>
-              </div>
-            )}
+                </div>
+              );
+            })()}
           </div>
 
           {activity.itinerary && activity.itinerary.length > 0 && (

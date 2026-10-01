@@ -6,8 +6,8 @@ import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
 import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../privateActivityExploreItem';
 import { api } from '../../api/index';
 import { buildExploreCardModel } from '../exploreCardModel';
-import { resolveLinkedRideshareRows } from '../linkedRideshareExplore';
-import { canOfferCarpoolForDemandItem } from '../linkActivityCarpoolOffer';
+import { finalizeExploreCardLinkedRideshare } from '../linkedRideshareExplore';
+import { canOfferRideshareForDemandItem } from '../linkActivityRideshareOffer';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { activityHostUserId } from '../../utils/hostLabels';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
@@ -71,26 +71,8 @@ export const useExploreSelectionActions = ({
 
   const selectedCard = useMemo(() => {
     if (!selected) return null;
-    const linkedRideshares = resolveLinkedRideshareRows(selected, items);
-    let activity = selected.activity;
-    if (activity?.linkedActivityId && !activity.linkedParentActivity) {
-      const parentItem = items.find((entry) => entry.activity?.id === activity!.linkedActivityId);
-      if (parentItem?.activity) {
-        activity = {
-          ...activity,
-          linkedParentActivity: {
-            id: parentItem.activity.id,
-            title: parentItem.title,
-            activityType: parentItem.activity.activityType,
-          },
-        };
-      }
-    }
-    const card = {
-      ...buildExploreCardModel(selected),
-      activity,
-      linkedRideshares: linkedRideshares.length > 0 ? linkedRideshares : undefined,
-    };
+    const card = finalizeExploreCardLinkedRideshare(buildExploreCardModel(selected), selected, items);
+    const activity = card.activity;
     const hostUserId = activity ? activityHostUserId(activity) : null;
     const isOwnActivity = Boolean(user && activity && hostUserId === user.id);
     const isOwnDemand = Boolean(
@@ -105,7 +87,7 @@ export const useExploreSelectionActions = ({
         ...card,
         showJoinActions: false,
         showDemandOwnerActions: true,
-        showDemandLinkCarpool: canOfferCarpoolForDemandItem(selected),
+        showDemandLinkRideshare: canOfferRideshareForDemandItem(selected),
       };
     }
     if (!isOwnActivity) return card;

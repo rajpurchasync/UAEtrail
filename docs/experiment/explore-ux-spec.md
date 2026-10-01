@@ -26,7 +26,7 @@ This document is the **single source of truth** for visitor-facing copy, emojis,
 | activity | hiking | 🥾 | |
 | activity | camping | 🏕️ | |
 | activity | event | 🏃 | |
-| activity | carpool | 🚗 | From pin; to pin uses 🏁 (Phase P2) |
+| activity | rideshare | 🚗 | From pin; to pin uses 🏁 (Phase P2) |
 | venue | hiking | ⛰️ | Label: **Hiking Spot** |
 | venue | camping | ⛺ | Label: **Camping Spot** |
 | shop | shop | 🛍️ | |
@@ -42,7 +42,7 @@ This document is the **single source of truth** for visitor-facing copy, emojis,
 | Hiking activity | `{FirstName} is going Hiking on {WeekdayDate}` | `{locationName}` or region |
 | Camping activity | `{FirstName} is going Camping on {WeekdayDate}` | same |
 | Event activity | `{FirstName} is hosting “{Title}” on {WeekdayDate}` | same |
-| Carpool activity | `{FirstName} is carpooling {From} → {To} on {WeekdayDate}` | seats / shared label |
+| Rideshare activity | `{FirstName} is offering rideshare {From} → {To} on {WeekdayDate}` | seats / shared label |
 | Hiking venue | **Hiking Spot** | Trail name |
 | Camping venue | **Camping Spot** | Camp name |
 | Shop | `{ShopName}` | region or product count |
@@ -74,7 +74,7 @@ This document is the **single source of truth** for visitor-facing copy, emojis,
 | Event activity (`approval`) | Request to join | View details |
 | Event activity (`rsvp`) | **I'm going** | View details |
 | Generic buddy activity (`approval`) | Request to join | View details |
-| Carpool activity | Request to join | View details |
+| Rideshare activity | Request to join | View details |
 | Hiking / Camping venue | View details | — |
 | Shop | View shop | — |
 | Tour agency | View agency | — |
@@ -129,14 +129,14 @@ List sheet: Organize + Demand on Activities; venues/shops on Places per panel.
 - [ ] Offline payment note on paid/shared
 - [ ] Venues use Spot labels, not host names
 - [ ] Events use “hosting”, not “wants to”
-- [ ] Carpool shows from → to when Phase P2 done
+- [ ] Rideshare shows from → to when Phase P2 done
 - [ ] Host gate on publish only, not browse
 
 ---
 
 ## Open decisions (confirm before Phase P2/P4/P6)
 
-1. **Carpool map:** two pins (from 🚗 + to 🏁) vs one pin + text for MVP?
+1. **Rideshare map:** two pins (from 🚗 + to 🏁) vs one pin + text for MVP?
 2. **Activity groups:** reuse existing Groups wall vs new lightweight chat?
 3. **Business tenant:** one mode (shop **or** agency) vs both allowed?
 
@@ -144,6 +144,6 @@ Record answers here when confirmed:
 
 | # | Decision | Answer |
 |---|----------|--------|
-| 1 | Carpool pins | Two pins (from 🚗 + to 🏁) with dashed route line |
+| 1 | Rideshare pins | Two pins (from 🚗 + to 🏁) with dashed route line |
 | 2 | Group UI | _TBD_ |
 | 3 | Business mode | _TBD_ |

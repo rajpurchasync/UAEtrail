@@ -1,10 +1,11 @@
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { emptyCreateActivityDraft, todayIso, type CreateActivityDraft } from './ui/organizeFlow';
+import { defaultRideshareRiderRulesText } from './ui/rideshareRiderRules';
 
 /** Seed a rideshare organize draft from a parent hike/camp/event/activity. */
 export const buildRideshareDraftFromParentActivity = (parent: ActivityDTO): CreateActivityDraft => ({
   ...emptyCreateActivityDraft(),
-  kind: 'carpool',
+  kind: 'rideshare',
   title: `Ride for ${parent.title}`.slice(0, 120),
   date: parent.date,
   time: parent.time ?? '09:00',
@@ -19,6 +20,7 @@ export const buildRideshareDraftFromParentActivity = (parent: ActivityDTO): Crea
   participationMode: 'approval',
   priceMode: 'free',
   priceAmount: 0,
+  description: defaultRideshareRiderRulesText(),
 });
 
 /** Seed FLOW-04 from a requester's own demand pin (standalone rideshare on the map). */
@@ -27,7 +29,7 @@ export const buildRideshareDraftFromDemandMapItem = (item: ExploreMapItemDTO): C
   const timeStr = item.time?.trim() || '09:00';
   return {
     ...emptyCreateActivityDraft(),
-    kind: 'carpool',
+    kind: 'rideshare',
     title: `Ride for ${label}`.slice(0, 120),
     date: item.date?.trim() || todayIso(),
     time: timeStr,
@@ -44,5 +46,6 @@ export const buildRideshareDraftFromDemandMapItem = (item: ExploreMapItemDTO): C
     participationMode: 'approval',
     priceMode: 'free',
     priceAmount: 0,
+    description: defaultRideshareRiderRulesText(),
   };
 };

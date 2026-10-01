@@ -5,7 +5,7 @@ import {
   OrganizeWizardStepNext
 } from '../OrganizeWizardChrome';
 import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
-import { CARPOOL_PICKUP_HINT, EXTRA_DIRECTIONS_LABEL, GOING_FROM_HINT, GOING_FROM_WITH_TIME_HINT, PICKUP_POINT_LABEL } from '../../../createFlowCopy';
+import { RIDESHARE_PICKUP_HINT, EXTRA_DIRECTIONS_LABEL, GOING_FROM_HINT, GOING_FROM_WITH_TIME_HINT, PICKUP_POINT_LABEL } from '../../../createFlowCopy';
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
 
@@ -33,9 +33,9 @@ export function renderMeetingStep(ctx: OrganizeWizardContext): ReactNode | null 
 
   return (
           <OrganizeWizardChrome title={stepTitle} onClose={handleClose} onBack={goBack}>
-            {kind === 'carpool' ? (
+            {kind === 'rideshare' ? (
               <>
-                <p className="mb-4 text-sm text-gray-600">{CARPOOL_PICKUP_HINT}</p>
+                <p className="mb-4 text-sm text-gray-600">{RIDESHARE_PICKUP_HINT}</p>
                 <button
                   type="button"
                   onClick={() => setWhereMapOpen(true)}
@@ -171,7 +171,7 @@ export function renderMeetingStep(ctx: OrganizeWizardContext): ReactNode | null 
                   !(hasFromPin || (activityFlow && draft.meetingLatitude != null && draft.meetingLongitude != null)) ||
                   (!goingFromFlow &&
                     !structuredFlow &&
-                    kind !== 'carpool' &&
+                    kind !== 'rideshare' &&
                     !draft.genericBuddy &&
                     !draft.meetingTime.trim())
                 }

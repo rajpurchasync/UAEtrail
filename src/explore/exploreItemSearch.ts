@@ -91,8 +91,8 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
     case 'camping':
       terms.push('camping', 'camp', 'camps');
       break;
-    case 'carpool':
-      terms.push('carpool', 'rideshare', 'ride share', 'ride');
+    case 'rideshare':
+      terms.push('rideshare', 'rideshare', 'ride share', 'ride');
       break;
     case 'event':
       terms.push('event', 'events');
@@ -156,7 +156,7 @@ export const exploreItemSearchHaystack = (item: ExploreMapItemDTO): string => {
       activity.hostName,
       activity.hostBio,
       activity.paymentTerms,
-      activity.carPoolDetails,
+      activity.rideshareDetails,
       activity.createdByName,
     ]);
     if (activity.requirements?.length) parts.push(activity.requirements.join(' '));

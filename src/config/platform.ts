@@ -34,7 +34,7 @@ export const DOMAIN_GLOSSARY = {
   },
   Activity: {
     product: 'Activity',
-    description: 'Scheduled listing at a place (hike, camp trip, event, carpool).',
+    description: 'Scheduled listing at a place (hike, camp trip, event, rideshare).',
     storage: 'Activity',
     api: '/activities',
     publicRoute: '/activity/:id',

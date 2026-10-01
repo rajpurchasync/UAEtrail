@@ -95,7 +95,7 @@ import {
 } from './organizeActivitiesWizardSteps';
 import { usePlaceRegistry } from '../../hooks/usePlaceRegistry';
 import {
-  CARPOOL_PICKUP_HINT,
+  RIDESHARE_PICKUP_HINT,
   EXTRA_DIRECTIONS_LABEL,
   fromLocationLabel,
   GOING_FROM_HINT,
@@ -131,7 +131,7 @@ const TYPE_OPTIONS: Array<{
 }> = [
   { key: 'hiking', title: 'Hiking', subtitle: 'Trails & day hikes', emoji: '≡ƒÑ╛' },
   { key: 'camping', title: 'Camping', subtitle: 'Overnight outdoors', emoji: 'Γ¢║' },
-  { key: 'carpool', title: 'Rideshare', subtitle: 'Share a ride', emoji: '≡ƒÜù' },
+  { key: 'rideshare', title: 'Rideshare', subtitle: 'Share a ride', emoji: '≡ƒÜù' },
   { key: 'event', title: 'Other Outdoors', subtitle: 'Runs, meetups & more', emoji: 'Γ£¿' },
 ];
 
@@ -301,7 +301,7 @@ export const CreateActivityFlow = ({
       capacity: defaultCapacityForKind(selectedKind),
       priceMode: 'free',
       priceAmount: 0,
-      ...(selectedKind === 'carpool'
+      ...(selectedKind === 'rideshare'
         ? { joinMode: 'open' as const, participationMode: 'approval' as const }
         : {}),
     });
@@ -406,7 +406,7 @@ export const CreateActivityFlow = ({
   const isPickupMapOpen = step === 'meeting' && whereMapOpen;
   const isMeetingPointMapOpen = step === 'meeting_point' && meetingPointMapOpen;
   const isDestMapOpen = step === 'to' && routeMapTarget === 'to';
-  const isRouteMapOverlay = kind === 'carpool' && step === 'route' && routeMapTarget !== null;
+  const isRouteMapOverlay = kind === 'rideshare' && step === 'route' && routeMapTarget !== null;
   const isFullScreenLocationStep = isPickupMapOpen || isDestMapOpen || isRouteMapOverlay || isMeetingPointMapOpen;
 
   const hasFromPin = draft.latitude != null && draft.longitude != null;
@@ -517,7 +517,7 @@ export const CreateActivityFlow = ({
         <span className="flex items-center gap-2 text-gray-800">
           <MapPin className={`h-5 w-5 ${isTo ? 'text-sky-500' : 'text-emerald-600'}`} />
           <span>
-            <span className="block text-sm font-bold">{isTo ? TO_LOCATION_LABEL : fromLocationLabel('carpool')}</span>
+            <span className="block text-sm font-bold">{isTo ? TO_LOCATION_LABEL : fromLocationLabel('rideshare')}</span>
             <span className="text-xs text-gray-500">
               {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
             </span>
@@ -571,7 +571,7 @@ export const CreateActivityFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'route' && kind === 'carpool' && (
+        {step === 'route' && kind === 'rideshare' && (
           <FlowSheetChrome title={stepTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Set both pickup and destination on the map.</p>
             <div className="space-y-3">
@@ -606,9 +606,9 @@ export const CreateActivityFlow = ({
 
         {step === 'meeting' && kind && (
           <FlowSheetChrome title={stepTitle} onClose={handleClose} onBack={goBack}>
-            {kind === 'carpool' ? (
+            {kind === 'rideshare' ? (
               <>
-                <p className="mb-4 text-sm text-gray-600">{CARPOOL_PICKUP_HINT}</p>
+                <p className="mb-4 text-sm text-gray-600">{RIDESHARE_PICKUP_HINT}</p>
                 <button
                   type="button"
                   onClick={() => setWhereMapOpen(true)}
@@ -745,7 +745,7 @@ export const CreateActivityFlow = ({
                   !(hasFromPin || (activityFlow && draft.meetingLatitude != null && draft.meetingLongitude != null)) ||
                   (!goingFromFlow &&
                     !structuredFlow &&
-                    kind !== 'carpool' &&
+                    kind !== 'rideshare' &&
                     !draft.genericBuddy &&
                     !draft.meetingTime.trim())
                 }
@@ -755,7 +755,7 @@ export const CreateActivityFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'to' && kind === 'carpool' && (
+        {step === 'to' && kind === 'rideshare' && (
           <FlowSheetChrome title={stepTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Set the destination on the map.</p>
             <button
@@ -874,7 +874,7 @@ export const CreateActivityFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'instructions' && kind === 'carpool' && (
+        {step === 'instructions' && kind === 'rideshare' && (
           <FlowSheetChrome title={stepTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-3 text-sm text-gray-600">
               Riders must read and agree to these instructions before requesting a seat.
@@ -1009,7 +1009,7 @@ export const CreateActivityFlow = ({
             ) : (
               <>
                 <p className="mb-3 text-sm text-gray-600">
-                  {kind === 'carpool' ? 'How many seats can you offer?' : 'How many people can join?'}
+                  {kind === 'rideshare' ? 'How many seats can you offer?' : 'How many people can join?'}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {CAPACITY_PRESETS.map((value) => {
@@ -1111,7 +1111,7 @@ export const CreateActivityFlow = ({
                 })}
               </div>
             </div>
-            {!draft.genericBuddy && kind !== 'carpool' && (
+            {!draft.genericBuddy && kind !== 'rideshare' && (
               <div className={EXPLORE_FLOW.choiceGrid2}>
                 {([
                   { key: 'open' as JoinMode, title: 'Public', subtitle: 'Listed on the explore map', icon: Users },
@@ -1141,15 +1141,15 @@ export const CreateActivityFlow = ({
               </div>
             )}
 
-            {!draft.genericBuddy && kind !== 'carpool' && draft.joinMode === 'private' && (
+            {!draft.genericBuddy && kind !== 'rideshare' && draft.joinMode === 'private' && (
               <p className="mt-4 rounded-xl bg-neutral-50 px-3 py-2 text-sm text-gray-600">
                 {HIKE_PRIVATE_EVENT_INFO}
               </p>
             )}
 
-            {!draft.genericBuddy && (draft.joinMode === 'open' || kind === 'carpool') && (
-              <div className={`space-y-3 ${kind !== 'carpool' ? 'mt-4' : ''}`}>
-                {kind === 'carpool' && (
+            {!draft.genericBuddy && (draft.joinMode === 'open' || kind === 'rideshare') && (
+              <div className={`space-y-3 ${kind !== 'rideshare' ? 'mt-4' : ''}`}>
+                {kind === 'rideshare' && (
                   <p className="text-sm text-gray-600">Who can request a seat in your ride?</p>
                 )}
                 <p className={`${EXPLORE_FLOW.choiceCardTitle}`}>Public options</p>
@@ -1167,7 +1167,7 @@ export const CreateActivityFlow = ({
                       subtitle: 'For women',
                       icon: UserRound,
                     },
-                    ...(kind === 'event' || kind === 'carpool'
+                    ...(kind === 'event' || kind === 'rideshare'
                       ? [
                           {
                             key: 'others' as AudienceAccess,
@@ -1202,16 +1202,16 @@ export const CreateActivityFlow = ({
                     );
                   })}
                 </div>
-                {(kind === 'event' || kind === 'carpool') && draft.audienceAccess === 'others' && (
+                {(kind === 'event' || kind === 'rideshare') && draft.audienceAccess === 'others' && (
                   <label className="block">
                     <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      {kind === 'carpool' ? 'Who can join?' : 'Who can attend?'}
+                      {kind === 'rideshare' ? 'Who can join?' : 'Who can attend?'}
                     </span>
                     <input
                       value={draft.audienceOtherNote}
                       onChange={(event) => patchDraft({ audienceOtherNote: event.target.value })}
                       placeholder={
-                        kind === 'carpool'
+                        kind === 'rideshare'
                           ? 'e.g. Colleagues only, same company, no smokersΓÇª'
                           : 'e.g. Members only, 18+, experienced runnersΓÇª'
                       }
@@ -1248,7 +1248,7 @@ export const CreateActivityFlow = ({
               <NextButton
                 disabled={
                   !structuredFlow &&
-                  (draft.joinMode === 'open' || kind === 'carpool') &&
+                  (draft.joinMode === 'open' || kind === 'rideshare') &&
                   draft.audienceAccess === 'others' &&
                   !draft.audienceOtherNote.trim()
                 }
@@ -1473,7 +1473,7 @@ export const CreateActivityFlow = ({
               </label>
             )}
             <p className="mt-4 mb-2 text-sm font-semibold text-gray-900">
-              {kind === 'carpool' ? 'How many seats?' : 'How many spots?'}
+              {kind === 'rideshare' ? 'How many seats?' : 'How many spots?'}
             </p>
             <div className="flex flex-wrap gap-2">
               {CAPACITY_PRESETS.map((value) => {
@@ -1508,10 +1508,10 @@ export const CreateActivityFlow = ({
             <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-gray-700">
               <p className="font-semibold text-gray-900">{draft.title}</p>
               <p className="mt-1 text-xs text-gray-500">
-                {kind === 'carpool' ? (
+                {kind === 'rideshare' ? (
                   <span className="inline-flex items-center gap-1.5">
                     <Car className="h-3.5 w-3.5 text-sky-500" />
-                    Carpool
+                    Rideshare
                   </span>
                 ) : kind === 'camping' ? (
                   <span className="inline-flex items-center gap-1.5">
@@ -1551,15 +1551,15 @@ export const CreateActivityFlow = ({
                           ? ` ┬╖ From ${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
                           : ''
                       }`
-                  : kind === 'carpool' && hasFromPin && hasToPin
+                  : kind === 'rideshare' && hasFromPin && hasToPin
                     ? `From ${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)} ΓåÆ To ${draft.toLatitude?.toFixed(4)}, ${draft.toLongitude?.toFixed(4)}`
-                    : kind === 'carpool'
+                    : kind === 'rideshare'
                       ? 'Set from and to on map'
                       : `Pin on map${draft.locationPrecision === 'general' ? ' ┬╖ general area' : ' ┬╖ exact spot'}`}
               </p>
               <p className="mt-1 text-xs text-gray-500">
                 {structuredFlow || activityFlow ? formatHikeCapacityLabel(draft.capacity) : formatCapacityLabel(draft.capacity)}{' '}
-                {kind === 'carpool' ? 'seats' : 'spots'} ┬╖ {draft.date}
+                {kind === 'rideshare' ? 'seats' : 'spots'} ┬╖ {draft.date}
                 {hikingFlow && draft.timeMode === 'specific' && draft.endTime
                   ? ` ┬╖ ${draft.time || draft.meetingTime}ΓÇô${draft.endTime}`
                   : !structuredFlow && draft.meetingTime
@@ -1606,11 +1606,11 @@ export const CreateActivityFlow = ({
                   {draft.description}
                 </p>
               )}
-              {(draft.additionalInstructions.trim() || (kind === 'carpool' && draft.description.trim())) &&
+              {(draft.additionalInstructions.trim() || (kind === 'rideshare' && draft.description.trim())) &&
                 !structuredFlow && (
                 <p className="mt-2 line-clamp-3 text-xs text-gray-600">
                   <span className="font-semibold text-gray-700">{JOIN_RULES_PREVIEW_LABEL}</span>
-                  {kind === 'carpool' ? draft.description : draft.additionalInstructions}
+                  {kind === 'rideshare' ? draft.description : draft.additionalInstructions}
                 </p>
               )}
               {(structuredFlow || activityFlow) && !rideshareFlow && (
@@ -1654,8 +1654,8 @@ export const CreateActivityFlow = ({
               <label className="mt-4 flex items-start gap-3 rounded-2xl border border-neutral-200 px-4 py-3">
                 <input
                   type="checkbox"
-                  checked={draft.carPoolEnabled}
-                  onChange={(event) => patchDraft({ carPoolEnabled: event.target.checked })}
+                  checked={draft.rideshareEnabled}
+                  onChange={(event) => patchDraft({ rideshareEnabled: event.target.checked })}
                   className="mt-0.5 rounded border-gray-300 text-emerald-600"
                 />
                 <span className="text-sm text-gray-800">
@@ -1667,7 +1667,7 @@ export const CreateActivityFlow = ({
               </label>
             )}
 
-            {kind !== 'carpool' && draft.joinMode === 'private' && (
+            {kind !== 'rideshare' && draft.joinMode === 'private' && (
               <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                 Private activities are not shown on the public explore map. Share the activity link with your group after
                 publishing.

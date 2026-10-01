@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from 'lucide-react';
 import { MapPin, Mountain, ShoppingBag, Sparkles, Tent } from 'lucide-react';
@@ -37,6 +37,11 @@ import {
   CONTRIBUTE_REVIEW_FOOTER_SHOP,
   CONTRIBUTE_REVIEW_FOOTER_TRAIL,
 } from '../createFlowCopy';
+import {
+  clearContributeWizardSession,
+  readContributeWizardSession,
+  writeContributeWizardSession,
+} from './composeWizardSession';
 
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -127,22 +132,39 @@ export const CreateContributeFlow = ({
   const kindMeta = KIND_LABELS[kind];
   const KindIcon = kindMeta.icon;
 
+  const contributeInitKey = kind;
+  const contributeInitializedRef = useRef<ContributeVenueKind | null>(null);
+
   useEffect(() => {
     if (!open) {
-      setStep('title');
-      setDraft({ ...emptyContributeDraft(), kind });
       setError(null);
       setSubmitting(false);
-      setSubmitResult(null);
       setLocationMapOpen(false);
       setParkingMapOpen(false);
       return;
+    }
+    if (contributeInitializedRef.current !== contributeInitKey) {
+      const saved = readContributeWizardSession(kind);
+      if (saved?.draft) {
+        setDraft(saved.draft);
+        setStep(saved.step as ContributeFlowStepId);
+      } else {
+        setStep('title');
+        setDraft({ ...emptyContributeDraft(), kind });
+      }
+      setSubmitResult(null);
+      contributeInitializedRef.current = contributeInitKey;
     }
     if (!user) {
       navigate(signInHref);
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, kind]);
+  }, [open, user, navigate, signInHref, onClose, kind, contributeInitKey]);
+
+  useEffect(() => {
+    if (!open || submitResult) return;
+    writeContributeWizardSession(kind, { step, draft });
+  }, [open, kind, step, draft, submitResult]);
 
   const patchDraft = useCallback((patch: Partial<ContributeDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -202,6 +224,7 @@ export const CreateContributeFlow = ({
     setError(null);
     try {
       const result = await publishContributeVenue({ ...draft, kind });
+      clearContributeWizardSession(kind);
       setSubmitResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not submit your contribution.');

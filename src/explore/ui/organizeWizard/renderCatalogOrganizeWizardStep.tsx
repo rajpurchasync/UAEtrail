@@ -19,7 +19,7 @@ const CATALOG_STEP_RENDERERS: Record<
   'find.hiking': () => null,
   'find.camping': () => null,
   'find.event': () => null,
-  'find.carpool': () => null,
+  'find.rideshare': () => null,
   'add.trail': () => null,
   'add.camp': () => null,
   'add.shop': () => null,

@@ -1,6 +1,6 @@
 # FLOW-04 — Organize · Rideshare (`organize.rideshare`)
 
-**Status:** Implemented — FAB `compose=organize:carpool` · catalog `organize.rideshare` (2026-09-30)  
+**Status:** Implemented — FAB `compose=organize:rideshare` · catalog `organize.rideshare` (2026-09-30)  
 **Catalog:** `src/explore/composeFlowCatalog.ts` → `organize.rideshare`  
 **Code:** `createOrganize/CreateOrganizeFlowHost.tsx` · `organizeFlows/rideshare.ts` · `organizeWizard/steps/*` · bodies `organizeRideshareWizardSteps.tsx` · shell `CreateActivityFlow.tsx`
 
@@ -15,27 +15,27 @@ Signed-in **host** (`canPublish`) publishes a **standalone rideshare** (`activit
 | Compose intent | Organize |
 | Outing category | `rideshare` |
 | Storage | `activities` |
-| API type | `carpool` |
+| API type | `rideshare` |
 | Explore map | Two pins (from + to) |
 | Join | **`participationMode: approval` only** · listed on map (`joinMode: open`) |
 | Host required | Yes |
 
 ---
 
-## Linked rides & “offer carpool” (architecture)
+## Linked rides & “Offer rideshare” (architecture)
 
 All rides use **this same organize flow**. Hike/camp/event plans do **not** embed a different carpool wizard.
 
 | Pattern | Behaviour |
 |---------|-----------|
 | **Standalone ride** | Host publishes FLOW-04 only |
-| **Linked to a hosted plan** | Separate `carpool` activity + **`linkedActivityId`** (or equivalent) pointing at the hike/camp/event — optional, both stay independent records |
-| **Offer carpool on a plan** | Host (or flow) creates a **rideshare activity** and links it — replaces long-term reliance on `carPoolEnabled` on the outing row |
+| **Linked to a hosted plan** | Separate `rideshare` activity + **`linkedActivityId`** (or equivalent) pointing at the hike/camp/event — optional, both stay independent records |
+| **Offer rideshare on a plan** | Host (or flow) creates a **rideshare activity** and links it — replaces long-term reliance on `rideshareEnabled` on the outing row |
 | **Multiple vehicles** | Several hosts publish rides + link to the **same** parent activity; UI collates linked rides (future host tools) |
 
-**Shipped (explore):** **Link carpool** opens FLOW-04 with `linkToParentActivityId`; publish sets `linkedActivityId` on the ride and updates the parent. Rides appear as **separate map/list pins**; parent peek lists **Rideshares for this plan**; ride peek links **For plan:** back to the parent.
+**Shipped (explore):** **Link rideshare** opens FLOW-04 with `linkToParentActivityId`; publish sets `linkedActivityId` on the ride and updates the parent. Rides appear as **separate map/list pins**; parent peek lists **Rideshares for this plan**; ride peek links **For plan:** back to the parent.
 
-**Post-publish carpool CTA** on success sheet: all **parent** organize flows (hiking, camping, events, activities) when the plan is **public**; not on FLOW-04 rideshare publish.
+**Post-publish rideshare CTA** on success sheet: all **parent** organize flows (hiking, camping, events, activities) when the plan is **public**; not on FLOW-04 rideshare publish.
 
 **No** carpool checkbox on rideshare **publish** step.
 
@@ -50,7 +50,7 @@ Same as FLOW-01: signed in, host profile complete, tenant on publish.
 ## Journey
 
 Tap **+** → **Organize** → **🚗 Rideshare**  
-**URL:** `/explore?compose=organize:carpool`
+**URL:** `/explore?compose=organize:rideshare`
 
 ---
 
@@ -89,5 +89,5 @@ Tap **+** → **Organize** → **🚗 Rideshare**
 
 ## Related
 
-- **Find a ride:** `find.carpool` (demand) — separate doc  
+- **Find a ride:** `find.rideshare` (demand) — separate doc  
 - **Activities / workshops:** [FLOW-05](./FLOW-05-organize-activities.md)

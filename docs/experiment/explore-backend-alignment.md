@@ -25,7 +25,7 @@ Three compose intents on the map product. **Two are time-bound and share the sam
 | Hiking | `hiking` | `hiking` |
 | Camping | `camping` | `camping` |
 | Events | `event` | `event` |
-| Rideshare | `carpool` | `carpool` |
+| Rideshare | `rideshare` | `rideshare` |
 | Activities | `event` (+ optional topic: climb, run, …) | `event` / `other` |
 
 Code name for the shared enum: **`OutingCategory`** (field e.g. `outingCategory`) — so it is not confused with the **`activities`** collection (Organize rows only).
@@ -96,7 +96,7 @@ Align by **contracts**; Organize and Demand stay in separate collections.
 
 **Activity row** (`activities.activityType`, Prisma/Mongo):
 
-- `HIKING` | `CAMPING` | `EVENT` | `CARPOOL` (+ deprecated `COMMUNITY_ACTIVITY`)
+- `HIKING` | `CAMPING` | `EVENT` | `RIDESHARE` (+ deprecated `COMMUNITY_ACTIVITY`)
 
 **Location row** (`locations.activityType`):
 
@@ -104,7 +104,7 @@ Align by **contracts**; Organize and Demand stay in separate collections.
 
 **Participant intent** (`participant_intents.kind`):
 
-- `hiking` | `camping` | `event` | `guide` | `carpool` | `other`
+- `hiking` | `camping` | `event` | `guide` | `rideshare` | `other`
 
 **Explore map item** (`ExploreMapItemDTO` in `@uaetrail/shared-types`):
 
@@ -134,7 +134,7 @@ Frontend mirrors this split: `organizeFlow.ts`, `demandFlow.ts`, `contributeFlow
 | Organize **Rideshare** | `activityType: carpool` | Supported on API; FAB/registry wiring incomplete |
 | Organize **Activities** submenu | Climbing, run, … | Same as generic **event** row |
 | Places **Trails / Spots / Shops** | `venue` hiking/camping/event + `shop` | OK at `kind` level; “spot” = `event` venue type |
-| Find outdoor vs rideshare | Two demand families | One schema; `carpool` has extra coord rules |
+| Find outdoor vs rideshare | Two demand families | One schema; `rideshare` has extra coord rules |
 
 **Conclusion:** Unifying browse chrome is safe **now** (client filters on existing DTOs). **Subtype pills and FAB submenu labels** need optional fields + explore-map projection — implement backend **before** relying on them in production data.
 
@@ -179,7 +179,7 @@ participationMode?: 'rsvp' | 'approval' | null; // Organize only
 Filter pills (client or future `?filter=` server-side):
 
 - Activities browse pills: filter on `outingCategory` (+ optional `outingTopic` for sub-pills).
-- Activities **Rideshare:** `kind === 'carpool'`.
+- Activities **Rideshare:** `kind === 'rideshare'`.
 - Places **Trails / Spots:** `source === 'venue'` + `kind === 'hiking'` | `kind === 'event'` (product: spots = event venues).
 
 ### 4. Location submit — clarify venue kind (no new collection)
@@ -193,7 +193,7 @@ Keep `activityType` on locations:
 Tighten `locationSubmitBodySchema` over time:
 
 - Prefer discriminated unions per **flow ID** (`add.trail` vs `add.camp` vs `add.venue.other`) reusing the same POST handler.
-- Remove legacy accepts: `EVENT`, `COMMUNITY_ACTIVITY`, `carpool` on location submit (migration + 400 with clear message).
+- Remove legacy accepts: `EVENT`, `COMMUNITY_ACTIVITY`, `rideshare` on location submit (migration + 400 with clear message).
 
 ---
 
@@ -202,15 +202,15 @@ Tighten `locationSubmitBodySchema` over time:
 Registry entry documents **one primary schema** per flow (see flow registry doc). Implementation pattern:
 
 1. **Shared primitives** — coords, media URLs, date/time (already in domain modules).
-2. **Per-flow schemas** — e.g. `organizeHikingCreateSchema`, `demandCarpoolCreateSchema`, `placeAddTrailSchema`, … (one per `flowId`)
+2. **Per-flow schemas** — e.g. `organizeHikingCreateSchema`, `demandRideshareCreateSchema`, `placeAddTrailSchema`, … (one per `flowId`)
 3. **Route handler** — validates with family schema, maps to `ActivityCreateInput` / intent document / location create.
 
 Host `eventCreateSchema` can remain the **union entry** for backward compatibility while new flows call stricter schemas from the same handler.
 
-**Carpool / rideshare:**
+**Rideshare:**
 
 - Organize: `activityType: carpool` + from/to coords (already on activity).
-- Find: `kind: carpool` + validation in `createParticipantIntentSchema` (already present).
+- Find: `kind: rideshare` + validation in `createParticipantIntentSchema` (already present).
 
 **Guide intent:**
 
@@ -248,7 +248,7 @@ Order of changes (each step shippable on `experiment-ui`):
 |------|-------------------|
 | Map payload mix | Extend `apps/api/tests/explore-map-publish.test.ts` — activities, venues, shops, demands; exclude private join |
 | Places exclude activities | Assert no `source: activity` in Places client filter matches server item set |
-| Carpool coords | Intent + activity create validation tests |
+| Rideshare coords | Intent + activity create validation tests |
 | OutingCategory filter | `outingCategory: activities` + `outingTopic: climbing` → subtype pill |
 | Location submit | Reject carpool on `/me/locations` |
 

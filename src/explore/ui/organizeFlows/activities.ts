@@ -64,7 +64,7 @@ export const organizeActivitiesFlow: OrganizeCatalogFlow = {
   id: 'organize.activities',
   createKind: 'activity',
   defaultSteps: DEFAULT_STEPS,
-  postPublishCarpool: true,
+  postPublishRideshare: true,
   getSteps: () => [...DEFAULT_STEPS],
   validateStep,
 };

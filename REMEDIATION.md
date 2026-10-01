@@ -87,13 +87,13 @@ Prerequisite work from the explore/host-display audit. Complete these before Pha
 | 6.3 | Trip pricing consolidation (`packages/shared-types/src/trip-pricing.ts`; API zod schema + FE badge styling only) | Done |
 | 6.4 | Remove `organizerName` from API DTO mappers (compat mirror only) | Done |
 | 6.5 | Remove venue pin offset hack in `explore-map.ts` (`+= 0.004`) | Done |
-| 6.6 | **Carpool consolidation:** rideshare supply = standalone `activityType: 'carpool'` only; deprecate `carPoolEnabled` on hiking/camping/event, linked child carpools, and duplicate route fields (`carPoolFromLat` vs `meetingLat`/`startLat`) | Done (create/edit blocked; linked-carpool sync removed; orphaned `linked-carpool.ts` deleted; read-compat for existing linked carpools retained) |
+| 6.6 | **Carpool consolidation:** rideshare supply = standalone `activityType: 'rideshare'` only; deprecate `rideshareEnabled` on hiking/camping/event, linked child carpools, and duplicate route fields (`rideshareFromLat` vs `meetingLat`/`startLat`) | Done (create/edit blocked; linked-carpool sync removed; orphaned `linked-carpool.ts` deleted; read-compat for existing linked carpools retained) |
 
 **Completed in this track:** host resolution (shared-types), deprecated FE `organizerName` usage, explore cache invalidation, server-built `presentation`, join-instructions / explore-price / display coords in shared-types, demo accounts module.
 
 **6.1 design (person + role, not name-per-role):** On `ExploreMapItemDTO`, one optional `featuredPerson` carries the user's display name and a contextual **role** (`host`, `requester`, `contact`). Headlines use name + role-driven templates (`"{name} is going Hiking"` vs `"{name} is looking for Hiking"`). Keep `ActivityDTO.hostName` / `hostUserId` as activity-domain fields; keep `tenantName` separate for org brand. Venues may omit `featuredPerson`.
 
-**6.6 design (one rideshare supply model):** Published rideshare is `activityType: 'carpool'` on the explore map. Legacy linked child carpools remain readable via `linkedCarpoolActivityId` on parent activities; new linked carpool creation is blocked.
+**6.6 design (one rideshare supply model):** Published rideshare is `activityType: 'rideshare'` on the explore map. Legacy linked child carpools remain readable via `linkedRideshareActivityId` on parent activities; new linked carpool creation is blocked.
 
 ---
 

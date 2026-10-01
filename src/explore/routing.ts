@@ -19,22 +19,22 @@ import {
 export type ExplorePanel = 'activities' | 'venues' | 'shops';
 
 /** Map overlay filter — controls which pins appear on the map. */
-export type MapFilterKey = 'all' | 'hiking' | 'camping' | 'carpool' | 'others' | 'shops';
+export type MapFilterKey = 'all' | 'hiking' | 'camping' | 'rideshare' | 'others' | 'shops';
 
 /** Side-panel activity list filter. */
-export type ActivityListFilterKey = 'all' | 'hiking' | 'camping' | 'event' | 'carpool';
+export type ActivityListFilterKey = 'all' | 'hiking' | 'camping' | 'event' | 'rideshare';
 
 /** Side-panel venue list filter. */
 export type VenueListFilterKey = 'all' | 'hiking' | 'camping' | 'shop' | 'event';
 
-const MAP_FILTERS = new Set<MapFilterKey>(['all', 'hiking', 'camping', 'carpool', 'others', 'shops']);
+const MAP_FILTERS = new Set<MapFilterKey>(['all', 'hiking', 'camping', 'rideshare', 'others', 'shops']);
 
 const ACTIVITY_LIST_FILTER_SET = new Set<ActivityListFilterKey>([
   'all',
   'hiking',
   'camping',
   'event',
-  'carpool',
+  'rideshare',
 ]);
 
 const VENUE_LIST_FILTER_SET = new Set<VenueListFilterKey>([
@@ -61,7 +61,7 @@ const LEGACY_ACTIVITY_FROM_FILTER: Record<string, ActivityListFilterKey> = {
   event: 'event',
   events: 'event',
   others: 'event',
-  carpool: 'carpool',
+  carpool: 'rideshare',
 };
 
 const EXPLORE_PANELS = new Set<ExplorePanel>(['activities', 'venues', 'shops']);
@@ -331,8 +331,8 @@ export const mapFilterToActivityListFilter = (filter: MapFilterKey): ActivityLis
       return 'hiking';
     case 'camping':
       return 'camping';
-    case 'carpool':
-      return 'carpool';
+    case 'rideshare':
+      return 'rideshare';
     case 'others':
       return 'event';
     default:
@@ -383,7 +383,7 @@ export const parseVenueListFilter = (
   }
   if (!activityParam && legacyFilterParam) {
     const parsed = parseMapFilter(legacyFilterParam);
-    if (parsed === 'others' || parsed === 'carpool' || parsed === 'all') {
+    if (parsed === 'others' || parsed === 'rideshare' || parsed === 'all') {
       return 'all';
     }
     return mapFilterToVenueListFilter(parsed);
@@ -477,8 +477,13 @@ export const legacyCreateParamToOrganizePath = (createParam: string | null): str
   if (createParam === 'activity') {
     return exploreOrganizePath('activity');
   }
-  if (createParam === 'carpool' || createParam === 'CARPOOL') {
-    return exploreOrganizePath('carpool');
+  if (
+    createParam === 'rideshare' ||
+    createParam === 'RIDESHARE' ||
+    createParam === 'carpool' ||
+    createParam === 'CARPOOL'
+  ) {
+    return exploreOrganizePath('rideshare');
   }
   return null;
 };

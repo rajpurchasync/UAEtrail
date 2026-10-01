@@ -3,7 +3,7 @@ import { resolveActivityHostDisplayName } from '@uaetrail/shared-types';
 import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
 
 export const formatActivityType = (activityType: ActivityType | string): string => {
-  if (activityType === 'carpool') return 'Carpool';
+  if (activityType === 'rideshare') return 'Rideshare';
   return ACTIVITY_TYPE_LABELS[activityType as ActivityType] ?? String(activityType).replace(/_/g, ' ');
 };
 

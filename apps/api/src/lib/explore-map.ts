@@ -51,8 +51,8 @@ const venueKind = (activityType: string): 'hiking' | 'camping' | 'event' => {
   return 'hiking';
 };
 
-const isCarpoolActivity = (activity: ActivityDTO): boolean =>
-  activity.activityType === 'carpool';
+const isRideshareActivity = (activity: ActivityDTO): boolean =>
+  activity.activityType === 'rideshare';
 
 const resolveFromCoords = (
   activity: ActivityDTO,
@@ -89,7 +89,7 @@ const attachLinkedRideshareMetadata = (items: ExploreMapItemDTO[]): void => {
   const byParent = new Map<string, ExploreMapItemDTO['linkedRideshareActivities']>();
 
   for (const item of items) {
-    if (item.source !== 'activity' || item.kind !== 'carpool') continue;
+    if (item.source !== 'activity' || item.kind !== 'rideshare') continue;
     const parentId = item.activity?.linkedActivityId;
     const activityId = item.activity?.id;
     if (!parentId || !activityId) continue;
@@ -107,7 +107,7 @@ const attachLinkedRideshareMetadata = (items: ExploreMapItemDTO[]): void => {
   }
 
   for (const item of items) {
-    if (item.source !== 'activity' || item.kind === 'carpool') continue;
+    if (item.source !== 'activity' || item.kind === 'rideshare') continue;
     const parentId = item.activity?.id;
     if (!parentId) continue;
 
@@ -115,11 +115,11 @@ const attachLinkedRideshareMetadata = (items: ExploreMapItemDTO[]): void => {
     if (!linked?.length) continue;
 
     item.linkedRideshareActivities = linked;
-    item.carPoolEnabled = true;
+    item.rideshareEnabled = true;
   }
 
   for (const item of items) {
-    if (item.source !== 'activity' || item.kind !== 'carpool' || !item.activity) continue;
+    if (item.source !== 'activity' || item.kind !== 'rideshare' || !item.activity) continue;
     const parentId = item.activity.linkedActivityId;
     if (!parentId) continue;
     const parentItem = items.find((entry) => entry.activity?.id === parentId);
@@ -187,7 +187,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     const activity = activityDtos[index];
     const event = activityEvents[index];
     if (resolveJoinMode(event.joinMode, event.requirements) === 'private') continue;
-    const carpool = isCarpoolActivity(activity);
+    const carpool = isRideshareActivity(activity);
     const hikingDual =
       !carpool &&
       activity.meetingDifferent === true &&
@@ -206,7 +206,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     const display = buildExploreActivityDisplay(activity);
     items.push({
       id: `activity:${activity.id}`,
-      kind: carpool ? 'carpool' : activity.activityType,
+      kind: rideshare ? 'rideshare' : activity.activityType,
       source: 'activity',
       title: activity.title,
       subtitle: carpool
@@ -231,7 +231,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       slotsTotal: activity.slotsTotal,
       participantPreviews: activity.participantPreviews,
       image: activity.images?.[0] ?? activity.bannerUrl ?? null,
-      carPoolEnabled: carpool || Boolean(activity.carPoolEnabled),
+      rideshareEnabled: carpool || Boolean(activity.rideshareEnabled),
       priceLabel: display.priceLabel,
       priceDisplay: display.priceDisplay,
       fromLabel: display.fromLabel,
@@ -241,7 +241,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
   }
 
   for (const location of locationsResult.items) {
-    if (String(location.activityType).toUpperCase() === 'CARPOOL') continue;
+    if (String(location.activityType).toUpperCase() === 'RIDESHARE') continue;
 
     const dto = toLocationDto(location);
     if (dto.activityType === 'shop') {

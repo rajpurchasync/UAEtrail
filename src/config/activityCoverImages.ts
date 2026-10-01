@@ -27,7 +27,7 @@ export const ACTIVITY_TYPE_COVER_IMAGE_POOLS: Record<ActivityType, readonly stri
     unsplashPhoto('photo-1646641678252-52aee3025261'), // Hatta Dam group outing setting
     unsplashPhoto('photo-1753703986788-2ac0aa05b728'), // Desert sunset meetup dunes
   ],
-  carpool: [
+  rideshare: [
     unsplashPhoto('photo-1449965408869-eaa3f722e40d'), // Car on open road
     unsplashPhoto('photo-1680425982087-9f6f25861db1'), // Jebel Jais winding mountain road
     unsplashPhoto('photo-1753703986788-2ac0aa05b728'), // Desert highway dunes
@@ -39,7 +39,7 @@ export const ACTIVITY_TYPE_COVER_IMAGES: Record<ActivityType, string> = {
   hiking: ACTIVITY_TYPE_COVER_IMAGE_POOLS.hiking[0],
   camping: ACTIVITY_TYPE_COVER_IMAGE_POOLS.camping[0],
   event: ACTIVITY_TYPE_COVER_IMAGE_POOLS.event[0],
-  carpool: ACTIVITY_TYPE_COVER_IMAGE_POOLS.carpool[0],
+  rideshare: ACTIVITY_TYPE_COVER_IMAGE_POOLS.rideshare[0],
 };
 
 const pickFromPool = (pool: readonly string[], key: string): string => {

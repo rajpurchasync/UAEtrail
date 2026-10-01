@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { canOfferCarpoolForDemandItem } from './linkActivityCarpoolOffer';
-import { buildRideshareDraftFromDemandMapItem } from './linkCarpoolPrefill';
+import { canOfferRideshareForDemandItem } from './linkActivityRideshareOffer';
+import { buildRideshareDraftFromDemandMapItem } from './linkRidesharePrefill';
 
 const demandItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
   ({
@@ -19,13 +19,13 @@ const demandItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemD
 
 describe('demand carpool offer', () => {
   it('allows carpool offer for hiking demand', () => {
-    expect(canOfferCarpoolForDemandItem(demandItem())).toBe(true);
-    expect(canOfferCarpoolForDemandItem(demandItem({ kind: 'carpool' }))).toBe(false);
+    expect(canOfferRideshareForDemandItem(demandItem())).toBe(true);
+    expect(canOfferRideshareForDemandItem(demandItem({ kind: 'rideshare' }))).toBe(false);
   });
 
   it('prefills rideshare draft from demand map item', () => {
     const draft = buildRideshareDraftFromDemandMapItem(demandItem());
-    expect(draft.kind).toBe('carpool');
+    expect(draft.kind).toBe('rideshare');
     expect(draft.title).toContain('Jebel hike crew');
     expect(draft.latitude).toBe(25.1);
     expect(draft.capacity).toBe(3);

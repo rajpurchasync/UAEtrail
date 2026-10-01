@@ -1,4 +1,6 @@
-type ActivityBadgeKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
+type ActivityBadgeKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
+
+export const EXPLORE_RIDESHARE_AVAILABLE_BADGE = 'Rideshare available';
 
 const SKIP_BADGE_PATTERNS = [
   /^Open:/i,
@@ -12,7 +14,9 @@ const SKIP_BADGE_PATTERNS = [
   /^Difficulty:/i,
   /^Fitness level:/i,
   /^Carpool needed/i,
+  /^Rideshare needed/i,
   /^No carpool needed/i,
+  /^No rideshare needed/i,
   /^Audience:/i,
   /^Custom audience restriction/i,
   /^What to bring:/i,
@@ -38,8 +42,20 @@ export const extractExploreRequirementBadges = (requirements?: string[] | null):
     const trimmed = raw.trim();
     if (!trimmed || SKIP_BADGE_PATTERNS.some((pattern) => pattern.test(trimmed))) continue;
 
+    if (/^Carpool available$/i.test(trimmed) || /^Rideshare available$/i.test(trimmed)) {
+      badges.push(EXPLORE_RIDESHARE_AVAILABLE_BADGE);
+      continue;
+    }
+    if (/^Carpool needed$/i.test(trimmed)) {
+      badges.push('Rideshare needed');
+      continue;
+    }
     if (/^Women only$/i.test(trimmed)) {
       badges.push('Women only');
+      continue;
+    }
+    if (/^Family only$/i.test(trimmed)) {
+      badges.push('Family only');
       continue;
     }
     if (/^No pets$/i.test(trimmed)) {
@@ -75,7 +91,7 @@ export const enrichExploreActivityRequirementBadges = (
   requirements: string[] | null | undefined,
   options: {
     kind: ActivityBadgeKind;
-    carPoolEnabled?: boolean;
+    rideshareEnabled?: boolean;
     venueDifficulty?: 'easy' | 'moderate' | 'hard' | null;
   }
 ): string[] => {
@@ -106,7 +122,7 @@ export const enrichExploreActivityRequirementBadges = (
   const hasNoPets = items.some((line) => /^No pets$/i.test(line.trim()));
 
   if (
-    (options.kind === 'event' || options.kind === 'carpool') &&
+    (options.kind === 'event' || options.kind === 'rideshare') &&
     !hasNoChildren &&
     !badges.includes('Children welcome')
   ) {
@@ -117,7 +133,7 @@ export const enrichExploreActivityRequirementBadges = (
     (options.kind === 'hiking' ||
       options.kind === 'camping' ||
       options.kind === 'event' ||
-      options.kind === 'carpool') &&
+      options.kind === 'rideshare') &&
     !hasNoPets &&
     !badges.includes('Pets welcome') &&
     !badges.includes('No pets')
@@ -125,8 +141,12 @@ export const enrichExploreActivityRequirementBadges = (
     badges.push('Pets welcome');
   }
 
-  if (options.carPoolEnabled && options.kind !== 'carpool' && !badges.includes('Carpool available')) {
-    badges.push('Carpool available');
+  if (
+    options.rideshareEnabled &&
+    options.kind !== 'rideshare' &&
+    !badges.includes(EXPLORE_RIDESHARE_AVAILABLE_BADGE)
+  ) {
+    badges.push(EXPLORE_RIDESHARE_AVAILABLE_BADGE);
   }
 
   return dedupeBadges(badges);

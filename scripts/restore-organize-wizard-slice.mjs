@@ -84,7 +84,7 @@ import {
   ActivityTypeStepBody,
 } from '../organizeActivitiesWizardSteps';
 import {
-  CARPOOL_PICKUP_HINT,
+  RIDESHARE_PICKUP_HINT,
   EXTRA_DIRECTIONS_LABEL,
   fromLocationLabel,
   GOING_FROM_HINT,
@@ -114,7 +114,7 @@ const TYPE_OPTIONS: Array<{
 }> = [
   { key: 'hiking', title: 'Hiking', subtitle: 'Trails & day hikes', emoji: '🥾' },
   { key: 'camping', title: 'Camping', subtitle: 'Overnight outdoors', emoji: '⛺' },
-  { key: 'carpool', title: 'Rideshare', subtitle: 'Share a ride', emoji: '🚗' },
+  { key: 'rideshare', title: 'Rideshare', subtitle: 'Share a ride', emoji: '🚗' },
   { key: 'event', title: 'Other Outdoors', subtitle: 'Runs, meetups & more', emoji: '✨' },
 ];
 

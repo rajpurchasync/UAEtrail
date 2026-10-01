@@ -21,7 +21,7 @@ export function renderToStep(ctx: OrganizeWizardContext): ReactNode | null {
     setRouteMapTarget,
   } = ctx;
 
-  if (!(step === 'to' && kind === 'carpool')) {
+  if (!(step === 'to' && kind === 'rideshare')) {
     return null;
   }
 

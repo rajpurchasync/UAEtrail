@@ -55,7 +55,7 @@ export const matchesPlacesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFi
   if (!isPlacesMapItem(item)) return false;
   if (mapFilter === 'all') return true;
   if (mapFilter === 'shops') return isShopMapItem(item) || item.kind === 'shop';
-  if (mapFilter === 'carpool' || mapFilter === 'others') return false;
+  if (mapFilter === 'rideshare' || mapFilter === 'others') return false;
   return matchesVenueFilter(item, mapFilterToVenueListFilter(mapFilter));
 };
 
@@ -74,7 +74,7 @@ export const matchesBuddyMapFilter = (
 
   if (mapFilter === 'hiking') return kind === 'hiking';
   if (mapFilter === 'camping') return kind === 'camping';
-  if (mapFilter === 'carpool') return kind === 'carpool';
+  if (mapFilter === 'rideshare') return kind === 'rideshare';
   if (mapFilter === 'others') {
     if (!isBuddyOthersMapItem(item)) return false;
     if (!matchesBuddyOthersSubtype(item, othersSubtype)) return false;
@@ -159,8 +159,8 @@ export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKe
   if (mapFilter === 'camping') {
     return kind === 'camping' && (item.source === 'activity' || item.source === 'demand' || item.source === 'venue');
   }
-  if (mapFilter === 'carpool') {
-    return kind === 'carpool' && (item.source === 'activity' || item.source === 'demand');
+  if (mapFilter === 'rideshare') {
+    return kind === 'rideshare' && (item.source === 'activity' || item.source === 'demand');
   }
   if (mapFilter === 'others') {
     return kind === 'event' && (item.source === 'activity' || item.source === 'demand' || item.source === 'venue');
@@ -172,8 +172,8 @@ export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKe
 export const matchesActivityFilter = (item: ExploreMapItemDTO, activityFilter: ActivityListFilterKey): boolean => {
   if (item.source !== 'activity' && item.source !== 'demand') return false;
   if (activityFilter === 'all') return true;
-  if (activityFilter === 'carpool') return item.kind === 'carpool';
-  if (item.kind === 'carpool') return false;
+  if (activityFilter === 'rideshare') return item.kind === 'rideshare';
+  if (item.kind === 'rideshare') return false;
   return item.kind === activityFilter;
 };
 
@@ -222,9 +222,9 @@ export const resolveExploreItemScheduleDate = (item: ExploreMapItemDTO): string 
 };
 
 const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
-  if (item.source === 'demand') return item.kind === 'carpool' ? 'carpool' : (item.kind as MapPinKind);
+  if (item.source === 'demand') return item.kind === 'rideshare' ? 'rideshare' : (item.kind as MapPinKind);
   if (item.kind === 'shop') return 'shop';
-  if (item.kind === 'carpool') return 'carpool';
+  if (item.kind === 'rideshare') return 'rideshare';
   return item.kind as MapPinKind;
 };
 
@@ -254,11 +254,11 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
       path: item.path,
       hostAvatar: item.hostAvatar,
       source: resolveMapPinItemSource(item),
-      carpoolEndpoint: hasDistinctTo ? 'from' : undefined,
+      rideshareEndpoint: hasDistinctTo ? 'from' : undefined,
     });
 
     if (hasDistinctTo) {
-      const secondKind = item.kind === 'carpool' ? 'carpool' : (item.kind as MapPinKind);
+      const secondKind = item.kind === 'rideshare' ? 'rideshare' : (item.kind as MapPinKind);
       pins.push({
         id: `${item.id}:to`,
         exploreItemId: item.id,
@@ -269,7 +269,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
         path: item.path,
         hostAvatar: item.hostAvatar,
         source: resolveMapPinItemSource(item),
-        carpoolEndpoint: item.kind === 'carpool' ? 'to' : 'to',
+        rideshareEndpoint: item.kind === 'rideshare' ? 'to' : 'to',
       });
     }
   }
@@ -282,7 +282,7 @@ const COORD_PRECISION = 4;
 export const mapPinLocationKey = (pin: PlaceMapPin): string => {
   const lat = pin.latitude.toFixed(COORD_PRECISION);
   const lng = pin.longitude.toFixed(COORD_PRECISION);
-  const endpoint = pin.carpoolEndpoint ?? '';
+  const endpoint = pin.rideshareEndpoint ?? '';
   return `${lat},${lng},${endpoint}`;
 };
 

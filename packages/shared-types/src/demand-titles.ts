@@ -1,4 +1,4 @@
-export type DemandTitleKind = 'hiking' | 'camping' | 'event' | 'guide' | 'carpool' | 'other';
+export type DemandTitleKind = 'hiking' | 'camping' | 'event' | 'guide' | 'rideshare' | 'other';
 
 /** Canonical stored title when the user did not provide a custom plan name. */
 export const demandFallbackTitle = (kind: DemandTitleKind): string => {
@@ -11,8 +11,8 @@ export const demandFallbackTitle = (kind: DemandTitleKind): string => {
       return 'Looking for an event';
     case 'guide':
       return 'Looking for a guide';
-    case 'carpool':
-      return 'Ride share request';
+    case 'rideshare':
+      return 'Rideshare request';
     case 'other':
       return 'Outdoor plan request';
     default:
@@ -21,7 +21,7 @@ export const demandFallbackTitle = (kind: DemandTitleKind): string => {
 };
 
 const LEGACY_EMBEDDED_DEMAND_TITLE_PATTERNS: RegExp[] = [
-  /^.+ needs a carpool$/i,
+  /^.+ needs a (?:carpool|rideshare)$/i,
   /^.+ wants to go hiking$/i,
   /^.+ wants to go camping$/i,
   /^.+ is looking for an event$/i,
@@ -51,7 +51,7 @@ const isLegacyAutoActivityPrefixTitle = (title: string, kind: DemandTitleKind): 
   if (!trimmed) return true;
   if (kind === 'hiking' && /^hiking\b/i.test(trimmed)) return true;
   if (kind === 'camping' && /^camping\b/i.test(trimmed)) return true;
-  if (kind === 'carpool' && /^carpool\b/i.test(trimmed)) return true;
+  if (kind === 'rideshare' && (/^carpool\b/i.test(trimmed) || /^rideshare\b/i.test(trimmed))) return true;
   return false;
 };
 
@@ -61,5 +61,6 @@ export const isGenericDemandPlanTitle = (title: string, kind: DemandTitleKind): 
   if (!trimmed) return true;
   if (isLegacyEmbeddedDemandTitle(trimmed)) return true;
   if (trimmed === demandFallbackTitle(kind)) return true;
+  if (kind === 'rideshare' && /^ride\s*share\s*request$/i.test(trimmed)) return true;
   return isLegacyAutoActivityPrefixTitle(trimmed, kind);
 };

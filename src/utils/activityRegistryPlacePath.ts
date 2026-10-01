@@ -14,9 +14,9 @@ export const activityRegistryPlacePath = (activity: ActivityPlaceLink): string |
 
   const placeType =
     activity.location?.activityType ??
-    (activity.activityType === 'carpool' ? 'hiking' : activity.activityType);
+    (activity.activityType === 'rideshare' ? 'hiking' : activity.activityType);
 
-  if (placeType === 'carpool') return null;
+  if (placeType === 'rideshare') return null;
 
   return placeDetailPath(placeType, id);
 };

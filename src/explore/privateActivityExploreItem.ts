@@ -10,11 +10,11 @@ import {
   resolveEntityPath,
 } from '@uaetrail/shared-types';
 
-const isCarpoolActivity = (activity: ActivityDTO): boolean => activity.activityType === 'carpool';
+const isRideshareActivity = (activity: ActivityDTO): boolean => activity.activityType === 'rideshare';
 
 /** Map peek row for link-only (`joinMode: private`) activities — not on public explore payload. */
 export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreMapItemDTO => {
-  const carpool = isCarpoolActivity(activity);
+  const carpool = isRideshareActivity(activity);
   const hikingDual =
     !carpool &&
     activity.meetingDifferent === true &&
@@ -37,7 +37,7 @@ export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreM
 
   return {
     id: `activity:${activity.id}`,
-    kind: carpool ? 'carpool' : activity.activityType,
+    kind: rideshare ? 'rideshare' : activity.activityType,
     source: 'activity',
     title: activity.title,
     subtitle: carpool
@@ -62,7 +62,7 @@ export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreM
     slotsTotal: activity.slotsTotal,
     participantPreviews: activity.participantPreviews,
     image: activity.images?.[0] ?? activity.bannerUrl ?? null,
-    carPoolEnabled: carpool || Boolean(activity.carPoolEnabled),
+    rideshareEnabled: carpool || Boolean(activity.rideshareEnabled),
     priceLabel: display.priceLabel,
     priceDisplay: display.priceDisplay,
     fromLabel: display.fromLabel,

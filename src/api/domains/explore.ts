@@ -5,7 +5,7 @@ export const exploreApi = {
   getExploreMap: () =>
     apiRequest<{ data: { items: ExploreMapItemDTO[] } }>('/explore/map'),
   createParticipantIntent: (payload: {
-    kind: 'hiking' | 'camping' | 'event' | 'guide' | 'carpool' | 'other';
+    kind: 'hiking' | 'camping' | 'event' | 'guide' | 'rideshare' | 'other';
     title: string;
     date?: string | null;
     time?: string | null;

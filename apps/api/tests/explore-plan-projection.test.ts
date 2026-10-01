@@ -12,7 +12,7 @@ import {
 describe('explore plan projection mappers', () => {
   it('maps activity types to outing categories', () => {
     expect(activityTypeToOutingCategory('hiking')).toBe('hiking');
-    expect(activityTypeToOutingCategory('carpool')).toBe('rideshare');
+    expect(activityTypeToOutingCategory('rideshare')).toBe('rideshare');
     expect(activityTypeToOutingCategory('event')).toBe('events');
   });
 

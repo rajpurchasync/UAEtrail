@@ -47,11 +47,11 @@ export type ActivityFormState = {
   noPets: boolean;
   additionalRequirements: string;
   fourByFourOnly: boolean;
-  carPoolEnabled: boolean;
+  rideshareEnabled: boolean;
   carPoolPricing: CarPoolPricing;
   carPoolSharedAmount: number;
-  carPoolSeats: number;
-  carPoolDetails: string;
+  rideshareSeats: number;
+  rideshareDetails: string;
   carPoolFrom: LocationPinForm;
   carPoolTo: LocationPinForm;
   images: string[];
@@ -93,11 +93,11 @@ export const emptyActivityForm = (activityType: ActivityType = 'hiking'): Activi
   noPets: false,
   additionalRequirements: '',
   fourByFourOnly: false,
-  carPoolEnabled: false,
+  rideshareEnabled: false,
   carPoolPricing: 'free',
   carPoolSharedAmount: 0,
-  carPoolSeats: 0,
-  carPoolDetails: '',
+  rideshareSeats: 0,
+  rideshareDetails: '',
   carPoolFrom: emptyPin(),
   carPoolTo: emptyPin(),
   images: [],
@@ -221,20 +221,20 @@ export const activityToForm = (activity: ActivityDTO): ActivityFormState => {
       pricingMode === 'shared'
         ? instructionFields.sharedCostInfo || activity.paymentTerms || ''
         : '',
-    carPoolEnabled: activity.carPoolEnabled ?? false,
-    carPoolPricing: activity.carPoolEnabled && activity.carPoolFree === false ? 'shared' : 'free',
-    carPoolSharedAmount: activity.carPoolPriceAed ?? 0,
-    carPoolSeats: activity.carPoolSeats ?? 0,
-    carPoolDetails: activity.carPoolDetails ?? '',
+    rideshareEnabled: activity.rideshareEnabled ?? false,
+    carPoolPricing: activity.rideshareEnabled && activity.rideshareFree === false ? 'shared' : 'free',
+    carPoolSharedAmount: activity.ridesharePriceAed ?? 0,
+    rideshareSeats: activity.rideshareSeats ?? 0,
+    rideshareDetails: activity.rideshareDetails ?? '',
     carPoolFrom: pinFromEvent(
-      activity.linkedCarpool?.meetingPoint,
-      activity.linkedCarpool?.meetingLat,
-      activity.linkedCarpool?.meetingLng
+      activity.linkedRideshare?.meetingPoint,
+      activity.linkedRideshare?.meetingLat,
+      activity.linkedRideshare?.meetingLng
     ),
     carPoolTo: pinFromEvent(
-      activity.linkedCarpool?.startPoint,
-      activity.linkedCarpool?.startLat,
-      activity.linkedCarpool?.startLng
+      activity.linkedRideshare?.startPoint,
+      activity.linkedRideshare?.startLat,
+      activity.linkedRideshare?.startLng
     ),
     images: activity.images?.slice(0, 1) ?? [],
     signupUrl: activity.signupUrl ?? '',

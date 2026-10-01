@@ -34,7 +34,7 @@ export interface PlaceMapPin {
   source?: MapPinSource;
   /** Base explore item id when this pin is a carpool endpoint. */
   exploreItemId?: string;
-  carpoolEndpoint?: 'from' | 'to';
+  rideshareEndpoint?: 'from' | 'to';
   /** Same map icon + location; tap opens the first unless one is already selected. */
   stackExploreItemIds?: string[];
   stackCount?: number;
@@ -117,7 +117,7 @@ const pinIcon = (
     PlaceMapPin,
     'id' | 'name' | 'source' | 'stackCount' | 'colocatedEntries'
   >,
-  _carpoolEndpoint?: 'from' | 'to',
+  _rideshareEndpoint?: 'from' | 'to',
   selectedExploreItemId?: string,
   mapZoom: number = MAP_CONFIG.exploreDefaultZoom,
   highlightedExploreItemId?: string
@@ -584,7 +584,7 @@ const ClusteredMarkers = ({
             pin.activityType,
             isPinEmphasized(pin, selectedExploreItemId, highlightedExploreItemId),
             pin,
-            pin.carpoolEndpoint,
+            pin.rideshareEndpoint,
             selectedExploreItemId,
             mapZoom,
             highlightedExploreItemId
@@ -692,7 +692,7 @@ export const PlacesMap = ({
         pin.activityType,
         isPinEmphasized(pin, activeSelection, highlightedExploreItemId),
         pin,
-        pin.carpoolEndpoint,
+        pin.rideshareEndpoint,
         activeSelection,
         MAP_CONFIG.exploreDefaultZoom,
         highlightedExploreItemId

@@ -85,11 +85,11 @@ export type ExploreMapStageProps = {
   onFulfillIntent?: () => void;
   onManage?: () => void;
   onWithdraw: () => void;
-  linkCarpoolTenantId?: string | null;
+  linkRideshareTenantId?: string | null;
   onCreateLinkedRideshare?: (parent: import('@uaetrail/shared-types').ActivityDTO) => void;
   onHostRemove?: () => void;
   onDemandRemove?: () => void;
-  onDemandLinkCarpool?: () => void;
+  onDemandLinkRideshare?: () => void;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onCloseMobileBrowse: () => void;
   mobileBrowseSheet: ReactNode;
@@ -151,11 +151,11 @@ export const ExploreMapStage = ({
   onFulfillIntent,
   onManage,
   onWithdraw,
-  linkCarpoolTenantId = null,
+  linkRideshareTenantId = null,
   onCreateLinkedRideshare,
   onHostRemove,
   onDemandRemove,
-  onDemandLinkCarpool,
+  onDemandLinkRideshare,
   onOpenExploreItem,
   onCloseMobileBrowse,
   mobileBrowseSheet,
@@ -255,7 +255,7 @@ export const ExploreMapStage = ({
       ) : null}
 
       {!listOpen ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+0.75rem)] z-[1100] flex items-end justify-between gap-3 px-4 lg:hidden">
+        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] flex items-end justify-between gap-3 px-4 lg:hidden">
           <div className="pointer-events-auto flex items-center gap-2">
             <button
               type="button"
@@ -266,7 +266,10 @@ export const ExploreMapStage = ({
               List
             </button>
           </div>
-          <div className="pointer-events-auto flex flex-col items-center gap-3">
+          <div
+            className="pointer-events-auto flex flex-col items-center"
+            style={{ gap: 'var(--explore-map-fab-stack-gap)' }}
+          >
             <ExploreMapStyleToggle style={exploreMapStyle} onToggle={onToggleMapStyle} />
             <button
               type="button"
@@ -280,7 +283,10 @@ export const ExploreMapStage = ({
         </div>
       ) : null}
 
-      <div className="pointer-events-none absolute bottom-6 right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-center lg:gap-3">
+      <div
+        className="pointer-events-none absolute bottom-12 right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-center"
+        style={{ gap: 'var(--explore-map-fab-stack-gap)' }}
+      >
         <ExploreMapStyleToggle style={exploreMapStyle} onToggle={onToggleMapStyle} />
         <button
           type="button"
@@ -308,11 +314,11 @@ export const ExploreMapStage = ({
           onMessage={onMessage}
           onFulfillIntent={canFulfillParticipantIntent ? onFulfillIntent : undefined}
           onManage={onManage}
-          linkCarpoolTenantId={linkCarpoolTenantId}
+          linkRideshareTenantId={linkRideshareTenantId}
           onCreateLinkedRideshare={onCreateLinkedRideshare}
           onHostRemove={onHostRemove}
           onDemandRemove={onDemandRemove}
-          onDemandLinkCarpool={onDemandLinkCarpool}
+          onDemandLinkRideshare={onDemandLinkRideshare}
           onOpenExploreItem={onOpenExploreItem}
           joinUiState={selectedCard.showHostActions ? undefined : joinUiState}
           onWithdraw={onWithdraw}

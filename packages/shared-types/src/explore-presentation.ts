@@ -13,11 +13,11 @@ import {
 } from './activity-participation-mode.js';
 
 export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
-export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'carpool' | 'shop' | 'agency';
+export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency';
 
 export type ExplorePresentationBuildInput = {
   id: string;
-  kind: ExploreCardKind | 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
+  kind: ExploreCardKind | 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
   source: ExploreCardSource;
   title: string;
   subtitle?: string | null;
@@ -45,7 +45,7 @@ export type ExplorePresentationBuildInput = {
     activityType?: string;
     requirements?: string[] | null;
     participationMode?: ParticipationMode | null;
-    carPoolEnabled?: boolean;
+    rideshareEnabled?: boolean;
   } | null;
 };
 
@@ -113,7 +113,7 @@ export const MAP_FILTER_EMOJI = {
   event: '🏃',
   shop: SHOP_MAP_EMOJI,
   agency: '🏢',
-  carpool: RIDESHARE_EMOJI,
+  rideshare: RIDESHARE_EMOJI,
 } as const;
 
 export const MAP_LAYER_FILTER_EMOJI = {
@@ -157,7 +157,7 @@ export const resolveMapPinItemSource = (
 export const resolveMapPinEmoji = (
   kind: ExploreCardKind,
   source: ExploreCardSource = 'activity',
-  _carpoolEndpoint?: 'from' | 'to'
+  _rideshareEndpoint?: 'from' | 'to'
 ): string => {
   if (source === 'venue') {
     if (kind === 'hiking') return HIKING_VENUE_EMOJI;
@@ -169,11 +169,11 @@ export const resolveMapPinEmoji = (
   if (source === 'shop') return SHOP_MAP_EMOJI;
   if (source === 'agency') return '🏢';
   if (source === 'demand') {
-    if (kind === 'carpool') return RIDESHARE_EMOJI;
+    if (kind === 'rideshare') return RIDESHARE_EMOJI;
     return DEMAND_EMOJI;
   }
 
-  if (kind === 'carpool') return RIDESHARE_EMOJI;
+  if (kind === 'rideshare') return RIDESHARE_EMOJI;
   if (kind === 'hiking') return HIKING_ACTIVITY_EMOJI;
   if (kind === 'camping') return CAMPING_ACTIVITY_EMOJI;
   if (kind === 'event') return '🏃';
@@ -210,12 +210,12 @@ const isLegacyAutoTitle = (title: string, kind: ExploreCardKind): boolean => {
   if (!trimmed) return true;
   if (kind === 'hiking' && /^hiking\b/i.test(trimmed)) return true;
   if (kind === 'camping' && /^camping\b/i.test(trimmed)) return true;
-  if (kind === 'carpool' && /^carpool\b/i.test(trimmed)) return true;
+  if (kind === 'rideshare' && (/^carpool\b/i.test(trimmed) || /^rideshare\b/i.test(trimmed))) return true;
   return false;
 };
 
 const mapDemandTitleKind = (kind: ExploreCardKind): DemandTitleKind => {
-  if (kind === 'hiking' || kind === 'camping' || kind === 'carpool' || kind === 'event') {
+  if (kind === 'hiking' || kind === 'camping' || kind === 'rideshare' || kind === 'event') {
     return kind;
   }
   return 'other';
@@ -229,7 +229,7 @@ const fallbackPlanPhrase = (kind: ExploreCardKind): string => {
       return 'camping';
     case 'event':
       return 'to an outdoor event';
-    case 'carpool':
+    case 'rideshare':
       return 'on a shared ride';
     default:
       return 'outdoors';
@@ -251,7 +251,7 @@ export const formatPlanPhrase = (title: string, kind: ExploreCardKind): string =
 
 const demandKindLabel = (kind: ExploreCardKind): string => {
   switch (kind) {
-    case 'carpool':
+    case 'rideshare':
       return 'Rideshare';
     case 'hiking':
       return 'Hiking';
@@ -358,7 +358,7 @@ export const buildExploreRouteLabel = (
   toLabel?: string | null,
   kind?: ExploreCardKind
 ): string | null => {
-  if (kind !== 'carpool' || !fromLabel || !toLabel) return null;
+  if (kind !== 'rideshare' || !fromLabel || !toLabel) return null;
   return `${fromLabel} to ${toLabel}`;
 };
 
@@ -441,7 +441,7 @@ const buildExploreListTitle = (input: ExploreHeadlineInput): string => {
     return `${resolveDemandActivityHighlight(input.title, input.kind)} · ${user}`;
   }
 
-  if (input.kind === 'carpool') {
+  if (input.kind === 'rideshare') {
     const dest = input.toLabel?.trim();
     const day = formatExploreDayForHeadline(input.date);
     if (dest) return `Rideshare to ${dest}${day ?? ''}`;
@@ -460,7 +460,7 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
 
   const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
   const whenSuffix =
-    input.source === 'demand' ? 'flexible' : input.kind === 'carpool' ? 'fixed' : null;
+    input.source === 'demand' ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
   const when = buildExploreWhenSegment(input.date, input.time, whenSuffix);
   const location = sanitizeExploreLocation(input.location);
 
@@ -472,7 +472,7 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
     return joinExploreParts(lead, route ?? location, when);
   }
 
-  if (input.kind === 'carpool') {
+  if (input.kind === 'rideshare') {
     const host = exploreHeadlinePersonLabel(input);
     const day = formatExploreDayForHeadline(input.date);
     return joinExploreParts(`${host} is offering Rideshare${day ?? ''}`, route, when);
@@ -554,10 +554,10 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
 
   const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
   const whenSuffix =
-    input.source === 'demand' ? 'flexible' : input.kind === 'carpool' ? 'fixed' : null;
+    input.source === 'demand' ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
   const when = buildExploreWhenSegment(input.date, input.time, whenSuffix);
   const spots =
-    input.source === 'activity' && input.kind !== 'carpool'
+    input.source === 'activity' && input.kind !== 'rideshare'
       ? buildExploreSpotsSegment(input.slotsAvailable, input.slotsTotal)
       : null;
   const partySize = input.source === 'demand' ? input.slotsTotal : null;
@@ -568,7 +568,7 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
   if (input.source === 'demand') {
     const user = exploreHeadlinePersonLabel(input);
     push('route', route);
-    push('location', input.kind !== 'carpool' ? location : null);
+    push('location', input.kind !== 'rideshare' ? location : null);
     push('time', when);
 
     return finishExploreCardSections(input, {
@@ -581,7 +581,7 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
     });
   }
 
-  if (input.kind === 'carpool') {
+  if (input.kind === 'rideshare') {
     const host = exploreHeadlinePersonLabel(input);
     push('route', route);
     push('time', when);
@@ -601,8 +601,8 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
   push('location', location);
   push('time', when);
   push('spots', spots);
-  if (input.source === 'activity' && input.activity?.carPoolEnabled) {
-    push('route', 'Carpool available');
+  if (input.source === 'activity' && input.activity?.rideshareEnabled) {
+    push('route', 'Rideshare available');
   }
   if (activityTitle && !isLegacyAutoTitle(activityTitle, input.kind)) {
     push('route', activityTitle);
@@ -625,7 +625,7 @@ export const exploreSubtitle = (
 ): string | null => {
   if (source === 'venue') return item.subtitle?.trim() || null;
   if (source === 'demand') {
-    if (kind === 'carpool') return null;
+    if (kind === 'rideshare') return null;
     return item.subtitle?.trim() || null;
   }
   if (source === 'shop' || source === 'agency') return item.subtitle ?? null;
@@ -701,13 +701,13 @@ export interface ExploreCardPresentationDTO {
   sections: ExploreCardSections;
 }
 
-const isCarpoolExploreItem = (item: ExplorePresentationBuildInput): boolean =>
-  item.kind === 'carpool' || item.activity?.activityType === 'carpool';
+const isRideshareExploreItem = (item: ExplorePresentationBuildInput): boolean =>
+  item.kind === 'rideshare' || item.activity?.activityType === 'rideshare';
 
 const resolveExploreCardKind = (item: ExplorePresentationBuildInput): ExploreCardKind => {
   if (item.kind === 'shop') return 'shop';
   if (item.kind === 'agency') return 'agency';
-  if (isCarpoolExploreItem(item)) return 'carpool';
+  if (isRideshareExploreItem(item)) return 'rideshare';
   return item.kind as ExploreCardKind;
 };
 
@@ -722,7 +722,7 @@ export const buildExploreCardPresentation = (
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = buildExploreRouteLabel(fromLabel, toLabel, kind);
-  const whenSuffix = source === 'demand' ? 'flexible' : kind === 'carpool' ? 'fixed' : null;
+  const whenSuffix = source === 'demand' ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
   const whenLabel = buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
   const location = sanitizeExploreLocation(
     item.subtitle?.trim() ||

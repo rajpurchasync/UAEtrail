@@ -8,7 +8,7 @@
 
 ## Summary
 
-Signed-in **host** (`canPublish`) publishes an **outdoor event / group activity** (`activityType: event`) on the explore map. Structured track like hiking/camping, with **no going-from step** and **no offer-carpool on publish**.
+Signed-in **host** (`canPublish`) publishes an **outdoor event / group activity** (`activityType: event`) on the explore map. Structured track like hiking/camping, with **no going-from step** and **no offer-Rideshare on publish**.
 
 | Field | Value |
 |-------|--------|
@@ -49,9 +49,9 @@ Tap **+** → **Organize** → **🏃 Event**
 | 8 | `meeting_point` | **Meeting point** | **Map pin where people meet** (explore map pin) · label · directions |
 | 9 | `join_kit` | **What joiners should bring or know** | Gear / rules |
 | 10 | `transportation` | **Transportation** | Sedan vs **4x4 required** |
-| 11 | `publish` | **Preview and publish** | Summary · **Publish** (no carpool offer) |
+| 11 | `publish` | **Preview and publish** | Summary · **Publish** (no Rideshare offer) |
 
-**Not in events wizard:** `meeting` / **Going from** (hiking & camping only). **Publish success (public):** **View on map** + optional **Link carpool** (FLOW-04). **Host peek:** Message · Delete · Check in · Link carpool.
+**Not in events wizard:** `meeting` / **Going from** (hiking & camping only). **Publish success (public):** **View on map** + optional **Link rideshare** (FLOW-04). **Host peek:** Message · Delete · Check in · Link rideshare.
 
 **Map pin:** Meeting point coordinates only — venue registry coords used as `startPoint` / location ref when applicable.
 
@@ -67,7 +67,7 @@ Same API chain as FLOW-01: `publishOrganizeActivity` · `activityType: event` ·
 
 ## Peek & detail
 
-Same chip + CTA pattern as hiking/camping (`ExploreActivityPeekMeta`). No **Carpool available** badge from publish (events do not set `carPoolEnabled`).
+Same chip + CTA pattern as hiking/camping (`ExploreActivityPeekMeta`). No **Rideshare available** badge from publish (events do not set `rideshareEnabled`).
 
 ---
 

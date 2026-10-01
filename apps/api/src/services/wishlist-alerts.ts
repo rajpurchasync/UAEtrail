@@ -33,7 +33,7 @@ const resolveActivityOutingCategory = (doc: {
 }): OutingCategory | null => {
   if (doc.outingCategory) return doc.outingCategory as OutingCategory;
   const raw = doc.activityType?.toLowerCase();
-  if (raw === 'hiking' || raw === 'camping' || raw === 'event' || raw === 'carpool') {
+  if (raw === 'hiking' || raw === 'camping' || raw === 'event' || raw === 'rideshare') {
     return activityTypeToOutingCategory(raw);
   }
   return null;
@@ -110,7 +110,7 @@ export const notifyWishlistForNewDemand = async (intentId: string, requesterUser
 
     if (!doc) return;
 
-    const kind = doc.kind as 'hiking' | 'camping' | 'event' | 'guide' | 'carpool' | 'other';
+    const kind = doc.kind as 'hiking' | 'camping' | 'event' | 'guide' | 'rideshare' | 'other';
     const event: WishlistPinEvent = {
       composeIntent: 'demand',
       outingCategory: participantIntentKindToOutingCategory(kind),

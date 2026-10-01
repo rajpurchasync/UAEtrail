@@ -21,7 +21,7 @@ describe('demand titles', () => {
   });
 
   it('treats fallback and legacy titles as generic plan titles', () => {
-    expect(isGenericDemandPlanTitle('Ride share request', 'carpool')).toBe(true);
+    expect(isGenericDemandPlanTitle('Rideshare request', 'rideshare')).toBe(true);
     expect(isGenericDemandPlanTitle('Sarah wants to go hiking', 'hiking')).toBe(true);
     expect(isGenericDemandPlanTitle('Sunrise yoga at Kite Beach', 'event')).toBe(false);
   });

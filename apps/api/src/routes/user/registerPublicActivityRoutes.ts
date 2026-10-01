@@ -129,11 +129,11 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       }
     }
 
-    let linkedCarpool = null;
-    if (event.linkedCarpoolActivityId) {
-      const linkedEvent = await findPublishedActivityWithPreviewsById(event.linkedCarpoolActivityId);
+    let linkedRideshare = null;
+    if (event.linkedRideshareActivityId) {
+      const linkedEvent = await findPublishedActivityWithPreviewsById(event.linkedRideshareActivityId);
       if (linkedEvent) {
-        linkedCarpool = buildActivityDto(linkedEvent);
+        linkedRideshare = buildActivityDto(linkedEvent);
       }
     }
 
@@ -153,7 +153,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       data: {
         visibilityState: 'full',
         ...buildActivityDto(event),
-        linkedCarpool,
+        linkedRideshare,
         linkedParentActivity,
         organizerId: event.hostId ?? event.tenant.ownerId,
         participants: toParticipantPreviews(event.participants),

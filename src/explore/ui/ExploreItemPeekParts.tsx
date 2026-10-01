@@ -7,11 +7,8 @@ import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { PlaceCardActions } from '../../components/ui/PlaceCardActions';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import {
-  EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX,
-  EXPLORE_LINKED_RIDESHARES_PEEK_TITLE,
-  ORGANIZE_DEMAND_PREFILL_TITLE,
-} from '../createFlowCopy';
+import { ORGANIZE_DEMAND_PREFILL_TITLE } from '../createFlowCopy';
+import { ExploreLinkedRidesharePeekIndication } from './ExploreLinkedRidesharePeekIndication';
 import {
   exploreCardHasMapCoords,
   exploreCardShowsInlineDirections,
@@ -33,11 +30,11 @@ export interface ExploreItemPeekFooterProps {
   joinUiState?: JoinRequestUiState;
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
-  linkCarpoolTenantId?: string | null;
+  linkRideshareTenantId?: string | null;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
   onHostRemove?: () => void;
   onDemandRemove?: () => void;
-  onDemandLinkCarpool?: () => void;
+  onDemandLinkRideshare?: () => void;
   /** Guests — detail, join-adjacent, and profile navigation show sign-up instead. */
   onGuestGatedAction?: () => void;
 }
@@ -53,11 +50,11 @@ export const ExploreItemPeekFooter = ({
   joinUiState,
   onWithdraw,
   joinStateLoading = false,
-  linkCarpoolTenantId = null,
+  linkRideshareTenantId = null,
   onCreateLinkedRideshare,
   onHostRemove,
   onDemandRemove,
-  onDemandLinkCarpool,
+  onDemandLinkRideshare,
   onGuestGatedAction,
 }: ExploreItemPeekFooterProps) => {
   const isShop = card.source === 'shop';
@@ -81,14 +78,14 @@ export const ExploreItemPeekFooter = ({
       {card.showDemandOwnerActions && onDemandRemove ? (
         <ExploreDemandOwnerPeekActions
           onDelete={onDemandRemove}
-          showLinkCarpool={card.showDemandLinkCarpool}
-          onLinkCarpool={onDemandLinkCarpool}
+          showLinkRideshare={card.showDemandLinkRideshare}
+          onLinkRideshare={onDemandLinkRideshare}
           onGuestGatedAction={gate}
         />
       ) : card.showHostActions && onMessage && onHostRemove ? (
         <ExploreHostPeekActions
           card={card}
-          linkCarpoolTenantId={linkCarpoolTenantId}
+          linkRideshareTenantId={linkRideshareTenantId}
           onCreateLinkedRideshare={onCreateLinkedRideshare}
           onMessage={onMessage}
           onHostRemove={onHostRemove}
@@ -254,6 +251,7 @@ export const ExploreItemPeekBody = ({
 
   return (
     <>
+      <ExploreLinkedRidesharePeekIndication card={card} onOpenExploreItem={onOpenExploreItem} />
       {isShop && card.sections.aboutLine && (
         <p className="mt-3 text-sm leading-relaxed text-gray-600">{card.sections.aboutLine}</p>
       )}
@@ -273,40 +271,6 @@ export const ExploreItemPeekBody = ({
         </p>
       )}
       {showPeopleRow && <ExploreCardPeopleRow card={card} onGuestGatedAction={onGuestGatedAction} />}
-      {card.kind === 'carpool' && card.activity?.linkedParentActivity ? (
-        <div className="mt-4 border-t border-neutral-100 pt-3">
-          <button
-            type="button"
-            onClick={() => onOpenExploreItem?.(`activity:${card.activity!.linkedParentActivity!.id}`)}
-            className="text-sm font-semibold text-sky-800 underline underline-offset-2"
-          >
-            {EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX} {card.activity.linkedParentActivity.title}
-          </button>
-        </div>
-      ) : null}
-      {card.linkedRideshares && card.linkedRideshares.length > 0 ? (
-        <div className="mt-4 border-t border-neutral-100 pt-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            {EXPLORE_LINKED_RIDESHARES_PEEK_TITLE}
-          </p>
-          <ul className="mt-2 space-y-2">
-            {card.linkedRideshares.map((ride) => (
-              <li key={ride.exploreItemId}>
-                <button
-                  type="button"
-                  onClick={() => onOpenExploreItem?.(ride.exploreItemId)}
-                  className="w-full text-left text-sm font-semibold text-sky-800 underline underline-offset-2"
-                >
-                  {ride.title}
-                </button>
-                {ride.subtitle ? (
-                  <p className="mt-0.5 text-xs text-neutral-500 line-clamp-2">{ride.subtitle}</p>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
       {card.venueHint && isShop && (
         <p className="mt-3 text-xs leading-relaxed text-slate-500">{card.venueHint}</p>
       )}

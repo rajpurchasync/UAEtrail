@@ -28,7 +28,7 @@ const resolveFilterEmoji = (
   if (filter === 'camping') {
     return context === 'venue' ? CAMPING_VENUE_EMOJI : CAMPING_ACTIVITY_EMOJI;
   }
-  if (filter === 'carpool') return MAP_FILTER_EMOJI.carpool;
+  if (filter === 'rideshare') return MAP_FILTER_EMOJI.rideshare;
   if (filter === 'event') return MAP_FILTER_EMOJI.event;
   return null;
 };

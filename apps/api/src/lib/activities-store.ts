@@ -122,11 +122,11 @@ export const updateActivityDetailed = async (
   if (data.parkingLat !== undefined) patch.parkingLat = data.parkingLat;
   if (data.parkingLng !== undefined) patch.parkingLng = data.parkingLng;
   if (data.meetingDifferent !== undefined) patch.meetingDifferent = data.meetingDifferent;
-  if (data.carPoolEnabled !== undefined) patch.carPoolEnabled = data.carPoolEnabled;
-  if (data.carPoolFree !== undefined) patch.carPoolFree = data.carPoolFree;
-  if (data.carPoolPriceAed !== undefined) patch.carPoolPriceAed = data.carPoolPriceAed;
-  if (data.carPoolSeats !== undefined) patch.carPoolSeats = data.carPoolSeats;
-  if (data.carPoolDetails !== undefined) patch.carPoolDetails = data.carPoolDetails;
+  if (data.rideshareEnabled !== undefined) patch.rideshareEnabled = data.rideshareEnabled;
+  if (data.rideshareFree !== undefined) patch.rideshareFree = data.rideshareFree;
+  if (data.ridesharePriceAed !== undefined) patch.ridesharePriceAed = data.ridesharePriceAed;
+  if (data.rideshareSeats !== undefined) patch.rideshareSeats = data.rideshareSeats;
+  if (data.rideshareDetails !== undefined) patch.rideshareDetails = data.rideshareDetails;
   if (data.paymentTerms !== undefined) patch.paymentTerms = data.paymentTerms;
   if (data.pricingMode !== undefined) patch.pricingMode = data.pricingMode;
   if (data.itinerary !== undefined) patch.itinerary = data.itinerary;
@@ -138,7 +138,7 @@ export const updateActivityDetailed = async (
   if (data.signupUrl !== undefined) patch.signupUrl = data.signupUrl?.trim() || null;
   if (data.pricePackages !== undefined) patch.pricePackages = data.pricePackages;
   if (data.linkedActivityId !== undefined) patch.linkedActivityId = data.linkedActivityId;
-  if (data.linkedCarpoolActivityId !== undefined) patch.linkedCarpoolActivityId = data.linkedCarpoolActivityId;
+  if (data.linkedRideshareActivityId !== undefined) patch.linkedRideshareActivityId = data.linkedRideshareActivityId;
   if (data.publishedAt !== undefined) patch.publishedAt = data.publishedAt;
   if (data.outingCategory !== undefined) patch.outingCategory = data.outingCategory;
   if (data.outingTopic !== undefined) patch.outingTopic = data.outingTopic;
@@ -234,12 +234,12 @@ export const duplicateTenantActivity = async (
     parkingLat: source.parkingLat ?? undefined,
     parkingLng: source.parkingLng ?? undefined,
     meetingDifferent: source.meetingDifferent ?? false,
-    carPoolEnabled: source.carPoolEnabled ?? false,
-    carPoolFree: source.carPoolEnabled ? (source.carPoolFree ?? true) : null,
-    carPoolPriceAed:
-      source.carPoolEnabled && source.carPoolFree === false ? source.carPoolPriceAed ?? 0 : null,
-    carPoolSeats: source.carPoolEnabled ? source.carPoolSeats ?? null : null,
-    carPoolDetails: source.carPoolEnabled ? source.carPoolDetails ?? undefined : undefined,
+    rideshareEnabled: source.rideshareEnabled ?? false,
+    rideshareFree: source.rideshareEnabled ? (source.rideshareFree ?? true) : null,
+    ridesharePriceAed:
+      source.rideshareEnabled && source.rideshareFree === false ? source.ridesharePriceAed ?? 0 : null,
+    rideshareSeats: source.rideshareEnabled ? source.rideshareSeats ?? null : null,
+    rideshareDetails: source.rideshareEnabled ? source.rideshareDetails ?? undefined : undefined,
     paymentTerms: source.paymentTerms ?? undefined,
     itinerary: source.itinerary ?? [],
     requirements: source.requirements ?? [],
@@ -411,9 +411,9 @@ export const findActivityForRequestViewById = async (activityId: string) => {
   return event ?? null;
 };
 
-export const findLinkedCarpoolDocByParentId = async (parentActivityId: string): Promise<MongoActivityDoc | null> =>
+export const findLinkedRideshareDocByParentId = async (parentActivityId: string): Promise<MongoActivityDoc | null> =>
   activitiesCollection().findOne({
     linkedActivityId: parentActivityId,
-    activityType: ActivityType.CARPOOL,
+    activityType: ActivityType.RIDESHARE,
     status: { $ne: ActivityStatus.CANCELLED },
   });

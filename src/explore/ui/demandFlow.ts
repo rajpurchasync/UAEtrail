@@ -19,13 +19,13 @@ export type DemandFlowStepId =
   | 'requirements'
   | 'info'
   | 'transport'
-  | 'carpool'
+  | 'rideshare'
   | 'comment'
   | 'review';
 
 export type DemandFitnessLevel = 'beginner' | 'medium' | 'goat';
 
-export type DemandTransportMode = 'self' | 'carpool';
+export type DemandTransportMode = 'self' | 'rideshare';
 
 export type DemandVehicleType = 'sedan' | 'suv' | '4x4' | 'van';
 
@@ -45,13 +45,14 @@ export type DemandDraft = {
   partySize: number;
   fitnessLevel: DemandFitnessLevel | null;
   additionalInfo: string;
-  carPoolNeeded: boolean;
+  rideshareNeeded: boolean;
   womenOnly: boolean;
+  familyOnly: boolean;
   childrenAllowed: boolean;
   petsAllowed: boolean;
   transportMode: DemandTransportMode | null;
   selfVehicleType: DemandVehicleType | null;
-  carpoolSeatsNeeded: number;
+  rideshareSeatsNeeded: number;
   destinationTimeMode: TimeMode;
   destinationTime: string;
   requirementsOther: boolean;
@@ -69,7 +70,7 @@ export const DEMAND_TYPE_OPTIONS: Array<{
   subtitle: string;
   emoji: string;
 }> = [
-  { key: 'carpool', title: 'Rideshare', subtitle: 'Share a ride to the trailhead', emoji: '🚗' },
+  { key: 'rideshare', title: 'Rideshare', subtitle: 'Share a ride to the trailhead', emoji: '🚗' },
   { key: 'hiking', title: 'Hiking', subtitle: 'Find a crew for the trail', emoji: '🥾' },
   { key: 'camping', title: 'Camping', subtitle: 'Camp with the right people', emoji: '⛺' },
   { key: 'event', title: 'Activities', subtitle: 'Runs, jogs, meetups & more', emoji: '✨' },
@@ -118,7 +119,7 @@ const CAMPING_DEMAND_STEPS: DemandFlowStepId[] = [
   'review',
 ];
 
-const CARPOOL_DEMAND_STEPS: DemandFlowStepId[] = [
+const RIDESHARE_DEMAND_STEPS: DemandFlowStepId[] = [
   'title',
   'when',
   'from',
@@ -144,7 +145,7 @@ export const usesHikingDemandFlow = (kind: DemandKind | null): boolean => kind =
 export const usesCampingDemandFlow = (kind: DemandKind | null): boolean => kind === 'camping';
 
 export const demandWhenShowsTime = (kind: DemandKind | null): boolean =>
-  kind === 'carpool' || kind === 'event';
+  kind === 'rideshare' || kind === 'event';
 
 export const usesStructuredDemandFlow = (kind: DemandKind | null): boolean =>
   kind === 'hiking' || kind === 'camping';
@@ -154,10 +155,10 @@ export const usesEventDemandFlow = (kind: DemandKind | null): boolean => kind ==
 export const usesOutdoorActivityDemandFlow = (kind: DemandKind | null): boolean =>
   usesStructuredDemandFlow(kind) || usesEventDemandFlow(kind);
 
-export const usesCarpoolDemandFlow = (kind: DemandKind | null): boolean => kind === 'carpool';
+export const usesRideshareDemandFlow = (kind: DemandKind | null): boolean => kind === 'rideshare';
 
 export const usesGuidedDemandFlow = (kind: DemandKind | null): boolean =>
-  usesOutdoorActivityDemandFlow(kind) || usesCarpoolDemandFlow(kind);
+  usesOutdoorActivityDemandFlow(kind) || usesRideshareDemandFlow(kind);
 
 export const emptyDemandDraft = (): DemandDraft => ({
   kind: null,
@@ -174,13 +175,14 @@ export const emptyDemandDraft = (): DemandDraft => ({
   partySize: 2,
   fitnessLevel: null,
   additionalInfo: '',
-  carPoolNeeded: false,
+  rideshareNeeded: false,
   womenOnly: false,
+  familyOnly: false,
   childrenAllowed: false,
   petsAllowed: false,
   transportMode: null,
   selfVehicleType: null,
-  carpoolSeatsNeeded: 2,
+  rideshareSeatsNeeded: 2,
   destinationTimeMode: 'flexible',
   destinationTime: '09:00',
   requirementsOther: false,
@@ -201,8 +203,8 @@ export const getDemandFlowSteps = (kind: DemandKind): DemandFlowStepId[] => {
       return EVENT_DEMAND_STEPS;
     case 'guide':
       return ['title', 'area', 'when', 'persons', 'comment', 'review'];
-    case 'carpool':
-      return CARPOOL_DEMAND_STEPS;
+    case 'rideshare':
+      return RIDESHARE_DEMAND_STEPS;
     case 'other':
       return ['title', 'area', 'persons', 'comment', 'review'];
     default:
@@ -216,7 +218,7 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): s
   if (step === 'audience') return 'Looking for';
   if (step === 'transport') return 'Transport';
 
-  if (usesCarpoolDemandFlow(kind)) {
+  if (usesRideshareDemandFlow(kind)) {
     switch (step) {
       case 'title':
         return 'Title';
@@ -300,14 +302,14 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): s
 export const demandTitlePlaceholder = (kind: DemandKind): string => {
   switch (kind) {
     case 'hiking':
-      return 'e.g. Easy-moderate hike near Hatta this weekend, happy to carpool';
+      return 'e.g. Easy-moderate hike near Hatta this weekend, open to rideshare';
     case 'camping':
       return 'e.g. Weekend camping near Al Qudra with a small group';
     case 'event':
       return 'e.g. Sunrise run at Kite Beach';
     case 'guide':
       return 'e.g. Certified desert guide for an overnight camp';
-    case 'carpool':
+    case 'rideshare':
       return 'e.g. Ride to Hatta Friday morning';
     default:
       return 'e.g. Outdoor photography meetup or something similar';
@@ -330,7 +332,7 @@ export const demandAreaPlaceholder = (kind: DemandKind): string => {
       return 'e.g. Sunrise trail run, beach cleanup, group yoga';
     case 'guide':
       return 'e.g. Desert safari guide, hiking guide for Jebel Jais';
-    case 'carpool':
+    case 'rideshare':
       return 'e.g. Dubai → Hatta, Abu Dhabi → Al Ain';
     default:
       return 'Describe your preferred area or plan';
@@ -349,7 +351,7 @@ export const demandGoingFromPlaceholder = (kind: DemandKind): string => {
 };
 
 export const demandAdditionalInfoPlaceholder = (kind: DemandKind): string => {
-  if (kind === 'carpool') {
+  if (kind === 'rideshare') {
     return 'Luggage, pickup flexibility, preferred departure window…';
   }
   if (kind === 'event') {
@@ -371,6 +373,7 @@ export const buildDemandComment = (draft: DemandDraft): string => {
   const parts: string[] = [];
 
   if (draft.womenOnly) parts.push('Women only');
+  if (draft.familyOnly) parts.push('Family only');
   if (draft.childrenAllowed) parts.push('Children in group');
   if (draft.petsAllowed) parts.push('Traveling with pets');
 
@@ -378,7 +381,7 @@ export const buildDemandComment = (draft: DemandDraft): string => {
     parts.push(`Fitness level: ${fitnessLevelLabel(draft.fitnessLevel)}`);
   }
 
-  if (draft.kind === 'carpool') {
+  if (draft.kind === 'rideshare') {
     if (draft.destinationTimeMode === 'flexible') {
       parts.push('Destination time: flexible');
     } else if (draft.destinationTime) {
@@ -389,8 +392,8 @@ export const buildDemandComment = (draft: DemandDraft): string => {
   if (draft.kind === 'hiking' || draft.kind === 'camping') {
     if (draft.transportMode === 'self' && draft.selfVehicleType) {
       parts.push(`Transport: Self (${vehicleLabel(draft.selfVehicleType)})`);
-    } else if (draft.transportMode === 'carpool') {
-      parts.push(`Transport: Carpool needed (${draft.carpoolSeatsNeeded} people)`);
+    } else if (draft.transportMode === 'rideshare') {
+      parts.push(`Transport: Rideshare needed (${draft.rideshareSeatsNeeded} people)`);
     }
   }
 
@@ -417,7 +420,7 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
       if (!draft.preferredArea.trim()) return 'Choose a preferred destination.';
       return null;
     case 'from':
-      if (kind === 'carpool' || usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) {
+      if (kind === 'rideshare' || usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) {
         if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
           return 'Drop a going-from pin on the map.';
         }
@@ -431,7 +434,7 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
     case 'transport':
       if (!draft.transportMode) return 'Choose how you will get there.';
       if (draft.transportMode === 'self' && !draft.selfVehicleType) return 'Choose your vehicle type.';
-      if (draft.transportMode === 'carpool' && draft.carpoolSeatsNeeded < 1) {
+      if (draft.transportMode === 'rideshare' && draft.rideshareSeatsNeeded < 1) {
         return 'Choose how many seats you need.';
       }
       return null;
@@ -453,7 +456,7 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
       return null;
     case 'info':
       return null;
-    case 'carpool':
+    case 'rideshare':
       return null;
     case 'area': {
       if (kind === 'event') {

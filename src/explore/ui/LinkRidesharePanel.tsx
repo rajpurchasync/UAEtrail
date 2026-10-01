@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { Car, Link2 } from 'lucide-react';
 import {
-  ORGANIZE_LINK_CARPOOL_CREATE,
-  ORGANIZE_LINK_CARPOOL_HINT,
-  ORGANIZE_LINK_CARPOOL_PASTE_LABEL,
-  ORGANIZE_LINK_CARPOOL_PASTE_PLACEHOLDER,
+  ORGANIZE_LINK_RIDESHARE_CREATE,
+  ORGANIZE_LINK_RIDESHARE_HINT,
+  ORGANIZE_OFFER_RIDESHARE_LABEL,
+  ORGANIZE_LINK_RIDESHARE_PASTE_LABEL,
+  ORGANIZE_LINK_RIDESHARE_PASTE_PLACEHOLDER,
 } from '../createFlowCopy';
-import { linkParentToRideshareActivity, parseActivityIdFromShareInput } from '../linkActivityCarpoolOffer';
+import { linkParentToRideshareActivity, parseActivityIdFromShareInput } from '../linkActivityRideshareOffer';
 
-type LinkCarpoolPanelProps = {
+type LinkRidesharePanelProps = {
   tenantId: string;
   parentActivityId: string;
   onCreateRideshare: () => void;
@@ -18,14 +19,14 @@ type LinkCarpoolPanelProps = {
   variant?: 'full' | 'pasteOnly';
 };
 
-export const LinkCarpoolPanel = ({
+export const LinkRidesharePanel = ({
   tenantId,
   parentActivityId,
   onCreateRideshare,
   onLinked,
   onError,
   variant = 'full',
-}: LinkCarpoolPanelProps) => {
+}: LinkRidesharePanelProps) => {
   const [pasteValue, setPasteValue] = useState('');
   const [linking, setLinking] = useState(false);
 
@@ -51,15 +52,15 @@ export const LinkCarpoolPanel = ({
     <div className="min-w-0 overflow-hidden rounded-xl border border-sky-100 bg-sky-50/50 px-3 py-3 sm:px-4">
       {variant === 'full' ? (
         <>
-          <p className="text-sm font-semibold text-gray-900">Offer carpool</p>
-          <p className="mt-1 text-xs leading-relaxed text-gray-600">{ORGANIZE_LINK_CARPOOL_HINT}</p>
+          <p className="text-sm font-semibold text-gray-900">{ORGANIZE_OFFER_RIDESHARE_LABEL}</p>
+          <p className="mt-1 text-xs leading-relaxed text-gray-600">{ORGANIZE_LINK_RIDESHARE_HINT}</p>
           <button
             type="button"
             onClick={onCreateRideshare}
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 py-3 text-sm font-bold text-white"
           >
             <Car className="h-4 w-4" aria-hidden />
-            {ORGANIZE_LINK_CARPOOL_CREATE}
+            {ORGANIZE_LINK_RIDESHARE_CREATE}
           </button>
         </>
       ) : null}
@@ -67,13 +68,13 @@ export const LinkCarpoolPanel = ({
       <label className={variant === 'full' ? 'mt-4 block' : 'block'}>
         <span className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
           <Link2 className="h-3.5 w-3.5" aria-hidden />
-          {ORGANIZE_LINK_CARPOOL_PASTE_LABEL}
+          {ORGANIZE_LINK_RIDESHARE_PASTE_LABEL}
         </span>
         <input
           type="url"
           value={pasteValue}
           onChange={(event) => setPasteValue(event.target.value)}
-          placeholder={ORGANIZE_LINK_CARPOOL_PASTE_PLACEHOLDER}
+          placeholder={ORGANIZE_LINK_RIDESHARE_PASTE_PLACEHOLDER}
           className="w-full min-w-0 rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-sky-400"
           autoComplete="off"
         />

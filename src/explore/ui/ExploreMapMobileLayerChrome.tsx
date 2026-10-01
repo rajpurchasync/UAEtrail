@@ -20,6 +20,7 @@ import {
   EXPLORE_MOBILE_ACTIVITY_MENU,
   EXPLORE_MOBILE_PLACES_MENU,
   browsePanelForMobileLayer,
+  defaultMobileMapExpandedLayer,
   mapFilterToMobileActivityMenu,
   mapFilterToMobilePlacesMenu,
   mobileActivityMenuToMapFilter,
@@ -63,7 +64,7 @@ type ExploreMapMobileLayerChromeProps = {
   searchScopeCounts?: ExploreSearchScopeCounts;
 };
 
-const pillClass = (active: boolean, activeKey: 'all' | 'hiking' | 'camping' | 'carpool' | 'others' | 'shops') =>
+const pillClass = (active: boolean, activeKey: 'all' | 'hiking' | 'camping' | 'rideshare' | 'others' | 'shops') =>
   `${EXPLORE_FILTER_PILL.mapTopic} ${active ? exploreMapFilterActiveClass(activeKey) : EXPLORE_MAP_FILTER_INACTIVE}`;
 
 export const ExploreMapMobileLayerChrome = ({
@@ -80,7 +81,9 @@ export const ExploreMapMobileLayerChrome = ({
   onSearchCommit,
   searchScopeCounts,
 }: ExploreMapMobileLayerChromeProps) => {
-  const [expandedLayer, setExpandedLayer] = useState<MobileLayer | null>(null);
+  const [expandedLayer, setExpandedLayer] = useState<MobileLayer | null>(() =>
+    defaultMobileMapExpandedLayer(panel)
+  );
   const [searchMenuOpen, setSearchMenuOpen] = useState(false);
   const intentBarRef = useRef<HTMLDivElement>(null);
 
@@ -211,8 +214,8 @@ export const ExploreMapMobileLayerChrome = ({
               const activeKey =
                 option.key === 'camping'
                   ? 'camping'
-                  : option.key === 'carpool'
-                    ? 'carpool'
+                  : option.key === 'rideshare'
+                    ? 'rideshare'
                     : option.key === 'others'
                       ? 'others'
                       : option.key === 'hiking'
@@ -241,7 +244,7 @@ export const ExploreMapMobileLayerChrome = ({
                     <ExploreFilterIcon filter="hiking" context="activity" />
                   ) : option.key === 'camping' ? (
                     <ExploreFilterIcon filter="camping" context="activity" />
-                  ) : option.key === 'carpool' ? (
+                  ) : option.key === 'rideshare' ? (
                     <span className="font-emoji text-base leading-none" aria-hidden>{RIDESHARE_EMOJI}</span>
                   ) : option.key === 'others' ? (
                     <span className="font-emoji text-base leading-none" aria-hidden>

@@ -31,7 +31,7 @@ describe('demandFlow steps', () => {
   });
 
   it('find rideshare matches FLOW-08', () => {
-    expect(getDemandFlowSteps('carpool')).toEqual([
+    expect(getDemandFlowSteps('rideshare')).toEqual([
       'title',
       'when',
       'from',

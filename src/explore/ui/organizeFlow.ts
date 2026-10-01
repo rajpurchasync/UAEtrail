@@ -13,7 +13,7 @@ import type { ParticipationMode } from '../compose';
 
 export type { ParticipationMode } from '../compose';
 
-export type CreateActivityKind = 'hiking' | 'camping' | 'event' | 'carpool' | 'activity';
+export type CreateActivityKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'activity';
 
 export type CreateFlowStepId =
   | 'activity_type'
@@ -24,7 +24,7 @@ export type CreateFlowStepId =
   | 'difficulty'
   | 'price'
   | 'information'
-  | 'carpool'
+  | 'rideshare'
   | 'transportation'
   | 'publish'
   | 'route'
@@ -43,7 +43,7 @@ export type TimeMode = 'flexible' | 'specific';
 
 export type JoinMode = 'open' | 'private';
 
-export type AudienceAccess = 'anyone' | 'women_only' | 'others';
+export type AudienceAccess = 'anyone' | 'women_only' | 'family_only' | 'others';
 
 export type ActivityDifficulty = 'easy' | 'medium' | 'hard';
 
@@ -116,17 +116,27 @@ export type CreateActivityDraft = {
   meetingLatitude: number | null;
   meetingLongitude: number | null;
   meetingPointLabel: string;
-  carPoolEnabled: boolean;
-  carPoolFromLat: number | null;
-  carPoolFromLng: number | null;
-  carPoolToLat: number | null;
-  carPoolToLng: number | null;
-  carPoolFromLabel: string;
-  carPoolToLabel: string;
+  rideshareEnabled: boolean;
+  rideshareFromLat: number | null;
+  rideshareFromLng: number | null;
+  rideshareToLat: number | null;
+  rideshareToLng: number | null;
+  rideshareFromLabel: string;
+  rideshareToLabel: string;
   /** Hiking participants step — open to all vs limited restrictions */
   participantsOpenToAll: boolean;
   limitedWomenOnly: boolean;
+  limitedFamilyOnly: boolean;
   limitedMinAgeEnabled: boolean;
+};
+
+export const resolveLimitedAudienceAccess = (draft: Pick<
+  CreateActivityDraft,
+  'limitedWomenOnly' | 'limitedFamilyOnly'
+>): AudienceAccess => {
+  if (draft.limitedWomenOnly) return 'women_only';
+  if (draft.limitedFamilyOnly) return 'family_only';
+  return 'anyone';
 };
 
 export const OFFLINE_PRICE_NOTE = OFFLINE_PAYMENT_NOTE;
@@ -147,7 +157,7 @@ export const RIDESHARE_CAPACITY_PRESETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as con
 export const isRideshareOrganizeFlow = (
   kind: CreateActivityKind | null,
   genericBuddy = false
-): boolean => kind === 'carpool' && !genericBuddy;
+): boolean => kind === 'rideshare' && !genericBuddy;
 
 export const isHikingOrganizeFlow = (
   kind: CreateActivityKind | null,
@@ -204,7 +214,7 @@ export const getCreateFlowSteps = (
 
 export const usesVenueHostFlow = (kind: CreateActivityKind | null): boolean => kind === 'camping';
 
-export const usesCarpoolHostFlow = (kind: CreateActivityKind | null): boolean => kind === 'carpool';
+export const usesRideshareHostFlow = (kind: CreateActivityKind | null): boolean => kind === 'rideshare';
 
 export type CreateFlowStepTitleOptions = {
   genericBuddy?: boolean;
@@ -229,7 +239,7 @@ export const createFlowStepTitle = (
     if (genericBuddy) return 'What do you want to do?';
     if (structuredHost || rideshareHost || activityHost) return 'Give it a title';
     if (kind === 'event') return 'Event title';
-    if (kind === 'carpool') return 'Give it a title';
+    if (kind === 'rideshare') return 'Give it a title';
     return 'Activity title';
   }
   if (step === 'when') {
@@ -241,9 +251,9 @@ export const createFlowStepTitle = (
     if (activityHost) return 'Going from';
     if (eventHost) return 'Meeting point';
     if (rideshareHost) return 'Going from';
-    return kind === 'carpool' ? 'Going from' : 'Where are you going from?';
+    return kind === 'rideshare' ? 'Going from' : 'Where are you going from?';
   }
-  if (step === 'to') return rideshareHost || kind === 'carpool' ? 'Destination' : 'To location';
+  if (step === 'to') return rideshareHost || kind === 'rideshare' ? 'Destination' : 'To location';
   if (step === 'audience') {
     if (genericBuddy) return 'Who can join?';
     if (structuredHost || rideshareHost || activityHost) return 'Who can join?';
@@ -266,15 +276,15 @@ export const createFlowStepTitle = (
   if (step === 'spots' && rideshareHost) return 'Seats';
   if (step === 'price') return 'Price';
   if (step === 'information') return kind === 'hiking' ? 'Information & rules' : 'Information';
-  if (step === 'carpool') return 'Carpool';
+  if (step === 'rideshare') return 'Rideshare';
   if (step === 'transportation') return rideshareHost ? 'Transportation' : 'Transportation';
   if (step === 'where') return kind === 'camping' ? 'Camp location' : 'Where are you going from?';
   if (step === 'instructions') {
     if (rideshareHost) return 'What riders should know';
     if (activityHost) return 'Instructions';
-    return usesVenueHostFlow(kind) || kind === 'carpool' ? 'Instructions' : 'Before they join';
+    return usesVenueHostFlow(kind) || kind === 'rideshare' ? 'Instructions' : 'Before they join';
   }
-  if (step === 'spots') return kind === 'carpool' ? 'Seats' : 'Spots';
+  if (step === 'spots') return kind === 'rideshare' ? 'Seats' : 'Spots';
   if ((structuredHost || activityHost) && step === 'publish') return 'Preview and publish';
   return 'Preview & publish';
 };
@@ -285,7 +295,7 @@ export const locationPickerTitle = (
   endpoint?: 'from' | 'to',
   options: CreateFlowStepTitleOptions = {}
 ): string => {
-  if (step === 'route' || (kind === 'carpool' && (step === 'meeting' || step === 'to'))) {
+  if (step === 'route' || (kind === 'rideshare' && (step === 'meeting' || step === 'to'))) {
     if (step === 'meeting' || endpoint === 'from') return 'Going from';
     return 'Destination';
   }
@@ -302,11 +312,11 @@ export const locationPickerConfirmLabel = (
   step: CreateFlowStepId,
   endpoint?: 'from' | 'to'
 ): string => {
-  if (step === 'carpool' || step === 'transportation') {
+  if (step === 'rideshare' || step === 'transportation') {
     return endpoint === 'to' ? 'Confirm destination' : 'Confirm pickup';
   }
   if (endpoint === 'to' || step === 'to') return 'Confirm destination';
-  if (kind === 'carpool') return 'Confirm pickup';
+  if (kind === 'rideshare') return 'Confirm pickup';
   if (step === 'where') return 'Confirm location';
   return 'Confirm pin';
 };
@@ -319,12 +329,12 @@ export const locationPickerHint = (
     return "If you're not sure about the exact spot, use general area";
   }
   if (kind === 'camping') return 'Pinch or drag to zoom — place the camp spot on the map';
-  if (kind === 'carpool') return 'Pinch or drag to zoom — place the pin on the map';
+  if (kind === 'rideshare') return 'Pinch or drag to zoom — place the pin on the map';
   return 'Pinch or drag to zoom — place the pin on the map';
 };
 
 export const defaultCapacityForKind = (kind: CreateActivityKind): number =>
-  kind === 'carpool' ? 4 : 6;
+  kind === 'rideshare' ? 4 : 6;
 
 /** Prefill a host publish draft from a community request map item. */
 export const createDraftFromDemand = (item: ExploreMapItemDTO): CreateActivityDraft => {
@@ -357,8 +367,8 @@ export const createDraftFromDemand = (item: ExploreMapItemDTO): CreateActivityDr
     meetingTime: item.time?.trim() ? timeStr : base.meetingTime,
     capacity: item.slotsTotal ?? defaultCapacityForKind(kind),
     description:
-      kind !== 'carpool' && subtitle && subtitle !== fromLabel ? subtitle : '',
-    meetingPointInfo: fromLabel || (kind !== 'carpool' ? subtitle : ''),
+      kind !== 'rideshare' && subtitle && subtitle !== fromLabel ? subtitle : '',
+    meetingPointInfo: fromLabel || (kind !== 'rideshare' ? subtitle : ''),
     locationPrecision: hasPin ? 'specific' : 'general',
     meetingLatitude: activityHost && hasPin ? item.latitude : base.meetingLatitude,
     meetingLongitude: activityHost && hasPin ? item.longitude : base.meetingLongitude,
@@ -413,15 +423,16 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   additionalInstructions: '',
   meetingPointInfo: '',
   goingFromNotes: '',
-  carPoolEnabled: false,
-  carPoolFromLat: null,
-  carPoolFromLng: null,
-  carPoolToLat: null,
-  carPoolToLng: null,
-  carPoolFromLabel: '',
-  carPoolToLabel: '',
+  rideshareEnabled: false,
+  rideshareFromLat: null,
+  rideshareFromLng: null,
+  rideshareToLat: null,
+  rideshareToLng: null,
+  rideshareFromLabel: '',
+  rideshareToLabel: '',
   participantsOpenToAll: true,
   limitedWomenOnly: false,
+  limitedFamilyOnly: false,
   limitedMinAgeEnabled: false,
 });
 
@@ -451,8 +462,8 @@ export const buildDateOptions = (count = 14): Array<{ iso: string; label: string
   return options;
 };
 
-export const resolveActivityType = (kind: CreateActivityKind): ActivityType | 'carpool' => {
-  if (kind === 'carpool') return 'carpool';
+export const resolveActivityType = (kind: CreateActivityKind): ActivityType | 'rideshare' => {
+  if (kind === 'rideshare') return 'rideshare';
   if (kind === 'activity') return 'event';
   return kind;
 };
@@ -473,7 +484,7 @@ export const createTitlePlaceholder = (
       return 'e.g. Trail run at Kite Beach';
     case 'activity':
       return 'e.g. Sunrise yoga at the beach';
-    case 'carpool':
+    case 'rideshare':
       return 'e.g. Ride to Hatta Friday morning';
     default:
       return 'Describe your plan in a few words';
@@ -487,7 +498,7 @@ export const resolveActivityTitle = (draft: CreateActivityDraft): string => {
 };
 
 export const defaultDescription = (kind: CreateActivityKind): string => {
-  if (kind === 'carpool') {
+  if (kind === 'rideshare') {
     return 'Shared ride on the map. Connect with travelers heading the same way across the UAE.';
   }
   if (kind === 'camping') {
@@ -504,32 +515,35 @@ export const defaultDescription = (kind: CreateActivityKind): string => {
 
 export const buildOrganizeActivityRequirements = (draft: CreateActivityDraft): string[] => {
   const participationMode =
-    draft.kind === 'carpool'
+    draft.kind === 'rideshare'
       ? 'approval'
       : draft.joinMode === 'private'
         ? 'rsvp'
         : draft.participationMode;
-  const joinMode = draft.kind === 'carpool' ? 'open' : draft.joinMode;
+  const joinMode = draft.kind === 'rideshare' ? 'open' : draft.joinMode;
   const requirements = buildParticipationRequirementLines({
     participationMode,
     joinMode,
   });
 
-  if (draft.kind === 'carpool' || draft.joinMode !== 'private') {
-    if (draft.kind === 'hiking' || draft.kind === 'camping' || draft.kind === 'event' || draft.kind === 'carpool' || draft.kind === 'activity') {
+  if (draft.kind === 'rideshare' || draft.joinMode !== 'private') {
+    if (draft.kind === 'hiking' || draft.kind === 'camping' || draft.kind === 'event' || draft.kind === 'rideshare' || draft.kind === 'activity') {
       if (!draft.participantsOpenToAll) {
         if (draft.limitedWomenOnly) requirements.push('Women only');
+        if (draft.limitedFamilyOnly) requirements.push('Family only');
         if (draft.limitedMinAgeEnabled && draft.ageMin > 0) {
           requirements.push(`Minimum age: ${draft.ageMin}`);
         }
       }
-      if ((draft.kind === 'event' || draft.kind === 'carpool' || draft.kind === 'activity') && !draft.childrenAllowed) {
+      if ((draft.kind === 'event' || draft.kind === 'rideshare' || draft.kind === 'activity') && !draft.childrenAllowed) {
         requirements.push('No children');
       }
       if (!draft.petsAllowed) requirements.push('No pets');
     } else {
       if (draft.audienceAccess === 'women_only') {
         requirements.push('Women only');
+      } else if (draft.audienceAccess === 'family_only') {
+        requirements.push('Family only');
       } else if (draft.audienceAccess === 'others') {
         requirements.push(
           draft.audienceOtherNote.trim()
@@ -547,7 +561,7 @@ export const buildOrganizeActivityRequirements = (draft: CreateActivityDraft): s
   if (draft.locationPrecision === 'general') {
     requirements.push('General area — exact meeting point may vary');
   }
-  if (draft.kind === 'carpool' && draft.description.trim()) {
+  if (draft.kind === 'rideshare' && draft.description.trim()) {
     requirements.push(`Instructions: ${draft.description.trim()}`);
   } else if (draft.kind === 'activity' && draft.joinKit.trim()) {
     requirements.push(`Instructions: ${draft.joinKit.trim()}`);
@@ -581,7 +595,7 @@ export const buildOrganizeActivityRequirements = (draft: CreateActivityDraft): s
     requirements.push(
       draft.vehicleAccess === '4x4' ? 'Reachable by 4x4 only' : 'Reachable by sedan'
     );
-  } else if (draft.kind === 'carpool') {
+  } else if (draft.kind === 'rideshare') {
     requirements.push(`Vehicle: ${resolveRideshareVehicleLabel(draft.vehicleAccess)}`);
   } else if (draft.kind === 'hiking') {
     const difficultyLabel =
@@ -659,7 +673,7 @@ export const priceModeOptions = (
   kind: CreateActivityKind,
   canHostPaidActivities = false
 ): PriceMode[] => {
-  if (kind === 'carpool') {
+  if (kind === 'rideshare') {
     return canHostPaidActivities ? ['free', 'shared', 'paid'] : ['free', 'shared'];
   }
   return canHostPaidActivities ? ['free', 'shared', 'paid'] : ['free', 'shared'];
@@ -668,7 +682,7 @@ export const priceModeOptions = (
 export const priceModeLabel = (mode: PriceMode, kind: CreateActivityKind): string => {
   if (mode === 'free') return 'Free';
   if (mode === 'shared') return 'Shared cost';
-  return kind === 'carpool' ? 'Paid per seat' : 'Paid';
+  return kind === 'rideshare' ? 'Paid per seat' : 'Paid';
 };
 
 /** Publish preview — price line with AED when applicable. */
@@ -684,7 +698,7 @@ export const formatOrganizePricePreview = (
     return note ? `${base} — ${note}` : base;
   }
   if (amount > 0) {
-    return kind === 'carpool' ? `AED ${amount} per seat` : `Paid · AED ${amount}`;
+    return kind === 'rideshare' ? `AED ${amount} per seat` : `Paid · AED ${amount}`;
   }
-  return kind === 'carpool' ? 'Paid per seat (add amount on Price step)' : 'Paid (add amount on Price step)';
+  return kind === 'rideshare' ? 'Paid per seat (add amount on Price step)' : 'Paid (add amount on Price step)';
 };

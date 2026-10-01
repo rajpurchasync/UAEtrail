@@ -7,8 +7,12 @@
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --cta-height: 56px;
-    --bottom-nav-height: 3.5rem;
+    --bottom-nav-height: 3.75rem;
     --explore-float-base: var(--safe-bottom);
+    /** Extra lift for map “+” FAB above bottom nav / safe area */
+    --explore-map-fab-inset: 2.75rem;
+    /** Vertical gap between map layer toggle and compose FAB */
+    --explore-map-fab-stack-gap: 1.25rem;
     --sticky-top: var(--safe-top);
     /* App design tokens — 8pt grid */
     --space-page: 16px;

@@ -44,7 +44,7 @@ Top bar (map **and** list) — **what outdoor context** (UI routing, not a singl
 |----------|------------------|-------------------|
 | **Hiking** | Organized hike, demand for hiking crew | Trail, hiking spot |
 | **Camping** | Camp trip, demand for camp mates | Camp spot |
-| **Rideshare** | Carpool offer / ride demand | (usually none) |
+| **Rideshare** | Rideshare offer / ride demand | (usually none) |
 | **Shops** | — | Gear shop pin |
 | **Activity** (emoji / shortcut) | Runs, climbs, workshops, social outings | Rare; routes to general-activities browse + FAB |
 | **Search** | Text / area | Same |

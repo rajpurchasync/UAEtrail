@@ -4,7 +4,7 @@ export const MAP_FILTER_PILLS: ReadonlyArray<{ key: MapFilterKey; label: string 
   { key: 'all', label: 'All' },
   { key: 'hiking', label: 'Hiking' },
   { key: 'camping', label: 'Camping' },
-  { key: 'carpool', label: 'Rideshare' },
+  { key: 'rideshare', label: 'Rideshare' },
   { key: 'others', label: 'Others' },
   { key: 'shops', label: 'Shops' },
 ];

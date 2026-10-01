@@ -44,7 +44,7 @@ const mapPlaceActivityType = (activityType: ActivityType | string): LocationDTO[
   if (value === 'HIKING') return 'hiking';
   if (value === 'CAMPING') return 'camping';
   if (value === 'SHOP') return 'shop';
-  if (value === 'CARPOOL') return 'carpool';
+  if (value === 'RIDESHARE' || value === 'CARPOOL') return 'rideshare';
   return 'event';
 };
 
@@ -52,7 +52,7 @@ const mapScheduledActivityType = (activityType: ActivityType | string): Activity
   const value = String(activityType).toUpperCase();
   if (value === 'HIKING') return 'hiking';
   if (value === 'CAMPING') return 'camping';
-  if (value === 'CARPOOL') return 'carpool';
+  if (value === 'RIDESHARE' || value === 'CARPOOL') return 'rideshare';
   return 'event';
 };
 
@@ -250,13 +250,13 @@ const toEventDto = ({
   parkingLat: event.parkingLat,
   parkingLng: event.parkingLng,
   meetingDifferent: event.meetingDifferent,
-  carPoolEnabled: event.carPoolEnabled,
-  carPoolFree: event.carPoolFree,
-  carPoolPriceAed: event.carPoolPriceAed,
-  carPoolSeats: event.carPoolSeats ?? null,
-  carPoolDetails: event.carPoolDetails,
+  rideshareEnabled: event.rideshareEnabled,
+  rideshareFree: event.rideshareFree,
+  ridesharePriceAed: event.ridesharePriceAed,
+  rideshareSeats: event.rideshareSeats ?? null,
+  rideshareDetails: event.rideshareDetails,
   linkedActivityId: event.linkedActivityId ?? null,
-  linkedCarpoolActivityId: event.linkedCarpoolActivityId ?? null,
+  linkedRideshareActivityId: event.linkedRideshareActivityId ?? null,
   paymentTerms: event.paymentTerms,
   pricingMode: event.pricingMode ?? null,
   itinerary: event.itinerary,

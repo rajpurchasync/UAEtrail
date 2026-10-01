@@ -1,4 +1,4 @@
-import { SlidersHorizontal, UserRound, Users } from 'lucide-react';
+import { Baby, SlidersHorizontal, UserRound, Users } from 'lucide-react';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
 import {
@@ -13,9 +13,14 @@ import {
   formatCapacityLabel,
   RIDESHARE_CAPACITY_PRESETS,
   RIDESHARE_VEHICLE_OPTIONS,
+  resolveLimitedAudienceAccess,
   type CreateActivityDraft,
   type VehicleAccess,
 } from './organizeFlow';
+import {
+  formatParticipantMinAgeFieldValue,
+  parseParticipantMinAgeFieldValue,
+} from './organizeParticipantAgeMin';
 
 type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 
@@ -35,7 +40,7 @@ export const RideshareAudienceStepBody = ({
     }
     patchDraft({
       ...patch,
-      audienceAccess: next.limitedWomenOnly ? 'women_only' : 'anyone',
+      audienceAccess: resolveLimitedAudienceAccess(next),
     });
   };
 
@@ -73,6 +78,7 @@ export const RideshareAudienceStepBody = ({
                     ? {
                         participantsOpenToAll: true,
                         limitedWomenOnly: false,
+                        limitedFamilyOnly: false,
                         limitedMinAgeEnabled: false,
                       }
                     : { participantsOpenToAll: false }
@@ -100,6 +106,16 @@ export const RideshareAudienceStepBody = ({
             <UserRound className="h-4 w-4 text-emerald-600" aria-hidden />
             Women only
           </label>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-800">
+            <input
+              type="checkbox"
+              checked={draft.limitedFamilyOnly}
+              onChange={(event) => patchAudience({ limitedFamilyOnly: event.target.checked })}
+              className="rounded border-gray-300 text-emerald-600"
+            />
+            <Users className="h-4 w-4 text-emerald-600" aria-hidden />
+            Family only
+          </label>
           <label className="flex items-start gap-2 text-sm font-medium text-gray-800">
             <input
               type="checkbox"
@@ -109,16 +125,18 @@ export const RideshareAudienceStepBody = ({
               }
               className="mt-0.5 rounded border-gray-300 text-emerald-600"
             />
+            <Baby className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
             <span className="min-w-0 flex-1">
               <span className="block">{PARTICIPANTS_MIN_AGE_LABEL}</span>
               {draft.limitedMinAgeEnabled ? (
                 <input
                   type="number"
+                  inputMode="numeric"
                   min={1}
                   max={99}
-                  value={draft.ageMin}
+                  value={formatParticipantMinAgeFieldValue(draft.ageMin)}
                   onChange={(event) =>
-                    patchDraft({ ageMin: Number(event.target.value) || 0 })
+                    patchDraft({ ageMin: parseParticipantMinAgeFieldValue(event.target.value) })
                   }
                   className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-base font-semibold text-gray-900"
                   aria-label={PARTICIPANTS_MIN_AGE_LABEL}

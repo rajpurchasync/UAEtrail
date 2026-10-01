@@ -67,7 +67,7 @@ describe('organizeFlow', () => {
     expect(createFlowStepTitle('meeting', 'hiking')).toBe('Where are you going from?');
     expect(createFlowStepTitle('join_kit', 'hiking')).toBe('What joiners should bring or know');
     expect(createFlowStepTitle('difficulty', 'hiking')).toBe('How difficult is the hike?');
-    expect(createFlowStepTitle('meeting', 'carpool')).toBe('Going from');
+    expect(createFlowStepTitle('meeting', 'rideshare')).toBe('Going from');
     expect(createFlowStepTitle('where', 'camping')).toBe('Camp location');
     expect(createFlowStepTitle('where', 'event')).toBe('Where are you going from?');
     expect(createFlowStepTitle('instructions', 'hiking')).toBe('Before they join');
@@ -109,7 +109,7 @@ describe('organizeFlow', () => {
   });
 
   it('organize rideshare uses ten steps with audience restrictions only', () => {
-    expect(getCreateFlowSteps('carpool', false)).toEqual([
+    expect(getCreateFlowSteps('rideshare', false)).toEqual([
       'title',
       'when',
       'meeting',
@@ -121,8 +121,8 @@ describe('organizeFlow', () => {
       'transportation',
       'publish',
     ]);
-    expect(createFlowStepTitle('meeting', 'carpool')).toBe('Going from');
-    expect(createFlowStepTitle('when', 'carpool')).toBe('When are you going?');
+    expect(createFlowStepTitle('meeting', 'rideshare')).toBe('Going from');
+    expect(createFlowStepTitle('when', 'rideshare')).toBe('When are you going?');
   });
 
   it('organize event uses structured steps without going-from', () => {
@@ -175,7 +175,7 @@ describe('organizeFlow', () => {
   });
 
   it('every organize kind includes audience step (participation / visibility)', () => {
-    for (const kind of ['hiking', 'camping', 'event', 'carpool', 'activity'] as const) {
+    for (const kind of ['hiking', 'camping', 'event', 'rideshare', 'activity'] as const) {
       expect(getCreateFlowSteps(kind, false)).toContain('audience');
     }
   });
@@ -376,7 +376,7 @@ describe('organizeFlow', () => {
   it('buildOrganizeActivityRequirements forces approval for rideshare even if draft says rsvp', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
-      kind: 'carpool' as const,
+      kind: 'rideshare' as const,
       participationMode: 'rsvp' as const,
       joinMode: 'open' as const,
       vehicleAccess: 'sedan' as const,

@@ -90,8 +90,8 @@ export const activityFormTitle = (type: ActivityType, mode: 'create' | 'edit'): 
 };
 
 /** Detail page banner eyebrow for a scheduled listing. */
-export const activityDetailEyebrow = (type: ActivityType | 'carpool'): string => {
-  if (type === 'carpool') return 'Carpool';
+export const activityDetailEyebrow = (type: ActivityType | 'rideshare'): string => {
+  if (type === 'rideshare') return 'Rideshare';
   if (type === 'hiking') return 'Hiking';
   if (type === 'camping') return 'Camping';
   return 'Event';

@@ -13,7 +13,7 @@ export const parseMemberMapPinActivityType = (
   if (SET.has(lower)) return lower as MemberMapPinActivityType;
   if (lower === 'hiking') return 'hike';
   if (lower === 'camping') return 'camp';
-  if (lower === 'carpool') return 'trip';
+  if (lower === 'rideshare') return 'trip';
   return null;
 };
 
@@ -25,6 +25,6 @@ export const scheduledLocationToPinActivityType = (
   if (t === 'HIKING') return 'hike';
   if (t === 'CAMPING') return 'camp';
   if (t === 'EVENT') return 'event';
-  if (t === 'CARPOOL') return 'trip';
+  if (t === 'RIDESHARE') return 'trip';
   return parseMemberMapPinActivityType(activityType.toLowerCase());
 };

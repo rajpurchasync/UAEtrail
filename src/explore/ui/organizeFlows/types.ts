@@ -14,7 +14,7 @@ export type OrganizeCatalogFlow = {
   defaultSteps: readonly CreateFlowStepId[];
   registryVenue?: OrganizeRegistryVenueConfig;
   /** Show optional carpool on post-publish success (not on review). */
-  postPublishCarpool: boolean;
+  postPublishRideshare: boolean;
   getSteps: (
     draft: Pick<CreateActivityDraft, 'placeLabelSource' | 'registryPlaceId' | 'genericBuddy'>
   ) => CreateFlowStepId[];

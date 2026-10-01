@@ -29,7 +29,7 @@ export const normalizeOutdoorActivityType = (raw: string | null | undefined): Me
   }
   if (lower === 'hiking') return 'hike';
   if (lower === 'camping') return 'camp';
-  if (lower === 'carpool') return 'trip';
+  if (lower === 'rideshare') return 'trip';
   return 'other';
 };
 

@@ -32,11 +32,11 @@ describe('organize catalog flows — registry venue step omit', () => {
   });
 
   it('aligns post-publish carpool on parent organize flows (not rideshare)', () => {
-    expect(organizeHikingFlow.postPublishCarpool).toBe(true);
-    expect(organizeActivitiesFlow.postPublishCarpool).toBe(true);
-    expect(organizeCampingFlow.postPublishCarpool).toBe(true);
-    expect(organizeEventsFlow.postPublishCarpool).toBe(true);
-    expect(organizeRideshareFlow.postPublishCarpool).toBe(false);
+    expect(organizeHikingFlow.postPublishRideshare).toBe(true);
+    expect(organizeActivitiesFlow.postPublishRideshare).toBe(true);
+    expect(organizeCampingFlow.postPublishRideshare).toBe(true);
+    expect(organizeEventsFlow.postPublishRideshare).toBe(true);
+    expect(organizeRideshareFlow.postPublishRideshare).toBe(false);
   });
 
   it('keeps full hiking steps for custom venue label', () => {

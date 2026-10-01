@@ -5,10 +5,10 @@ import type { ContributeVenueKind } from './contributeTypes';
 export type ComposeIntent = 'organize' | 'find' | 'add';
 
 /** Organize sub-kind on the compose route (`activity` = generic buddy plan). */
-export type OrganizeComposeKind = 'hiking' | 'camping' | 'event' | 'carpool' | 'activity';
+export type OrganizeComposeKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'activity';
 
 /** Find sub-kind — subset of {@link ParticipantIntentKind} exposed in the FAB. */
-export type FindComposeKind = 'carpool' | 'hiking' | 'camping' | 'event';
+export type FindComposeKind = 'rideshare' | 'hiking' | 'camping' | 'event';
 
 export type ParticipationMode = 'rsvp' | 'approval';
 
@@ -51,12 +51,12 @@ export const ORGANIZE_COMPOSE_OPTIONS: Array<{ kind: OrganizeComposeKind; label:
   { kind: 'hiking', label: 'Hiking Trips', emoji: '🥾' },
   { kind: 'camping', label: 'Camping Plan', emoji: '⛺' },
   { kind: 'event', label: 'Outdoor Event', emoji: '🏃' },
-  { kind: 'carpool', label: 'Rideshare', emoji: '🚗' },
+  { kind: 'rideshare', label: 'Rideshare', emoji: '🚗' },
   { kind: 'activity', label: 'Other Activities', emoji: '✨' },
 ];
 
 export const FIND_COMPOSE_OPTIONS: Array<{ kind: FindComposeKind; label: string; emoji: string }> = [
-  { kind: 'carpool', label: 'Rideshare', emoji: '🚗' },
+  { kind: 'rideshare', label: 'Rideshare', emoji: '🚗' },
   { kind: 'hiking', label: 'Hiking', emoji: '🥾' },
   { kind: 'camping', label: 'Camping', emoji: '⛺' },
   { kind: 'event', label: 'Activities', emoji: '✨' },
@@ -82,10 +82,10 @@ const ORGANIZE_COMPOSE_KINDS = new Set<OrganizeComposeKind>([
   'hiking',
   'camping',
   'event',
-  'carpool',
+  'rideshare',
   'activity',
 ]);
-const FIND_COMPOSE_KINDS = new Set<FindComposeKind>(['carpool', 'hiking', 'camping', 'event']);
+const FIND_COMPOSE_KINDS = new Set<FindComposeKind>(['rideshare', 'hiking', 'camping', 'event']);
 const ADD_COMPOSE_KINDS = new Set<ContributeVenueKind>(['hiking', 'camping', 'shop', 'event']);
 const COMPOSE_INTENTS = new Set<ComposeIntent>(['organize', 'find', 'add']);
 
@@ -135,8 +135,9 @@ const parseComposeQuery = (value: string): ExploreCompose | null => {
   const colon = value.indexOf(':');
   if (colon <= 0) return null;
   const intent = value.slice(0, colon) as ComposeIntent;
-  const kind = value.slice(colon + 1);
+  let kind = value.slice(colon + 1);
   if (!COMPOSE_INTENTS.has(intent) || !kind) return null;
+  if (kind === 'carpool') kind = 'rideshare';
 
   if (intent === 'organize' && ORGANIZE_COMPOSE_KINDS.has(kind as OrganizeComposeKind)) {
     return { intent: 'organize', kind: kind as OrganizeComposeKind };

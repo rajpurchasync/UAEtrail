@@ -20,7 +20,7 @@ export const ORGANIZE_CATALOG_FLOWS: Record<OrganizeComposeKind, OrganizeCatalog
   hiking: organizeHikingFlow,
   camping: organizeCampingFlow,
   event: organizeEventsFlow,
-  carpool: organizeRideshareFlow,
+  rideshare: organizeRideshareFlow,
   activity: organizeActivitiesFlow,
 };
 
@@ -28,7 +28,7 @@ const CREATE_KIND_TO_FLOW: Record<CreateActivityKind, OrganizeCatalogFlow> = {
   hiking: organizeHikingFlow,
   camping: organizeCampingFlow,
   event: organizeEventsFlow,
-  carpool: organizeRideshareFlow,
+  rideshare: organizeRideshareFlow,
   activity: organizeActivitiesFlow,
 };
 

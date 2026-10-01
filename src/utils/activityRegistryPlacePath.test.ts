@@ -16,7 +16,7 @@ describe('activityRegistryPlacePath', () => {
     expect(
       activityRegistryPlacePath({
         locationId: 'loc-2',
-        activityType: 'carpool',
+        activityType: 'rideshare',
         location: { activityType: 'hiking' } as never,
       })
     ).toBe('/trail/loc-2');

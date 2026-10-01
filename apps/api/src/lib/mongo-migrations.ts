@@ -95,14 +95,46 @@ const migrateNotificationKinds = async (db: Db): Promise<void> => {
   }
 };
 
-const migrateLegacyCarpoolActivities = async (db: Db): Promise<void> => {
+const migrateLegacyRideshareActivities = async (db: Db): Promise<void> => {
   const collection = db.collection(COLLECTIONS.ACTIVITIES);
   const result = await collection.updateMany(
-    { carPoolEnabled: true, activityType: { $ne: 'CARPOOL' } },
-    { $set: { activityType: 'CARPOOL' } }
+    {
+      $or: [{ rideshareEnabled: true }, { carPoolEnabled: true }],
+      activityType: { $nin: ['RIDESHARE', 'CARPOOL'] },
+    },
+    { $set: { activityType: 'RIDESHARE' } }
   );
   if (result.modifiedCount > 0) {
-    console.log(`[mongo] Migrated legacy carPoolEnabled → CARPOOL (${result.modifiedCount} docs)`);
+    console.log(`[mongo] Migrated legacy rideshareEnabled → RIDESHARE (${result.modifiedCount} docs)`);
+  }
+};
+
+/** Rename persisted carpool terminology to rideshare (activity type, fields, demand kind). */
+const migrateCarpoolTerminologyToRideshare = async (db: Db): Promise<void> => {
+  const activities = db.collection(COLLECTIONS.ACTIVITIES);
+  for (const from of ['CARPOOL', 'carpool'] as const) {
+    const typeResult = await activities.updateMany({ activityType: from }, { $set: { activityType: 'RIDESHARE' } });
+    if (typeResult.modifiedCount > 0) {
+      console.log(`[mongo] Migrated activityType ${from} → RIDESHARE (${typeResult.modifiedCount} docs)`);
+    }
+  }
+
+  const activityFieldRenames: Array<[string, string]> = [
+    ['carPoolEnabled', 'rideshareEnabled'],
+    ['carPoolFree', 'rideshareFree'],
+    ['carPoolPriceAed', 'ridesharePriceAed'],
+    ['carPoolSeats', 'rideshareSeats'],
+    ['carPoolDetails', 'rideshareDetails'],
+    ['linkedCarpoolActivityId', 'linkedRideshareActivityId'],
+  ];
+  for (const [from, to] of activityFieldRenames) {
+    await renameFieldIfPresent(db, COLLECTIONS.ACTIVITIES, from, to);
+  }
+
+  const intents = db.collection('participant_intents');
+  const kindResult = await intents.updateMany({ kind: 'carpool' }, { $set: { kind: 'rideshare' } });
+  if (kindResult.modifiedCount > 0) {
+    console.log(`[mongo] Migrated participant_intents kind carpool → rideshare (${kindResult.modifiedCount} docs)`);
   }
 };
 
@@ -603,7 +635,8 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
 
   await migrateActivityTypeValues(db, COLLECTIONS.ACTIVITIES);
   await migrateActivityTypeValues(db, 'locations');
-  await migrateLegacyCarpoolActivities(db);
+  await migrateLegacyRideshareActivities(db);
+  await migrateCarpoolTerminologyToRideshare(db);
   await renameFieldIfPresent(db, COLLECTIONS.ACTIVITIES, 'guideId', 'hostId');
   await migrateUserRoleVisitorToParticipant(db);
   await migrateAuditLogEntityTypes(db);

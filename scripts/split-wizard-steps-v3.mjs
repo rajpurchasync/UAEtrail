@@ -46,7 +46,7 @@ for (let m = 0; m < markerIdx.length; m++) {
   let key = keyMatch?.[1] ?? `unknown-${m}`;
   if (openLine.includes('activityFlow')) key = `${key}-activity`;
   else if (openLine.includes("kind === 'event'")) key = `${key}-event`;
-  else if (openLine.includes("kind === 'carpool'") && key === 'instructions') key = `${key}-carpool`;
+  else if (openLine.includes("kind === 'rideshare'") && key === 'instructions') key = `${key}-carpool`;
   else if (openLine.includes('hikingFlow || campingFlow')) key = `${key}-structured`;
   else if (openLine.includes('rideshareFlow') && key === 'transportation') key = `${key}-rideshare`;
 

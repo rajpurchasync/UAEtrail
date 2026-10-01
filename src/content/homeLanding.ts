@@ -86,7 +86,7 @@ export type HomeLandingActivity = {
   title: string;
   region: string;
   whenLabel: string;
-  activityType: 'hiking' | 'camping' | 'event' | 'carpool';
+  activityType: 'hiking' | 'camping' | 'event' | 'rideshare';
   price: number;
   pricePackages?: { label: string; amount: number; currency: string }[];
   paymentTerms?: string | null;

@@ -1,4 +1,6 @@
 import type { ExploreLinkedRideshareDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreCardModel } from './exploreCardModel';
+import { enrichExploreActivityRequirementBadges } from './exploreRequirementBadges';
 
 /** Rideshares on the map whose `linkedActivityId` points at the parent activity. */
 export const listLinkedRideshareExploreRows = (
@@ -9,7 +11,7 @@ export const listLinkedRideshareExploreRows = (
     .filter(
       (item) =>
         item.source === 'activity' &&
-        item.kind === 'carpool' &&
+        item.kind === 'rideshare' &&
         item.activity?.linkedActivityId === parentActivityId &&
         item.activity?.id
     )
@@ -31,4 +33,53 @@ export const resolveLinkedRideshareRows = (
   const parentId = parentItem.activity?.id;
   if (!parentId) return [];
   return listLinkedRideshareExploreRows(parentId, allItems);
+};
+
+const resolveLinkedParentOnActivity = (
+  activity: ExploreMapItemDTO['activity'],
+  allItems: ExploreMapItemDTO[]
+): ExploreMapItemDTO['activity'] => {
+  if (!activity?.linkedActivityId || activity.linkedParentActivity) return activity;
+  const parentItem = allItems.find((entry) => entry.activity?.id === activity.linkedActivityId);
+  if (!parentItem?.activity) return activity;
+  return {
+    ...activity,
+    linkedParentActivity: {
+      id: parentItem.activity.id,
+      title: parentItem.title,
+      activityType: parentItem.activity.activityType,
+    },
+  };
+};
+
+/** Parent hike / camp / event / outing — may have linked rideshare map rows. */
+export const isExploreParentOutingCard = (card: ExploreCardModel): boolean =>
+  card.source === 'activity' && card.kind !== 'rideshare';
+
+/** Apply linked rideshare rows, parent back-link on carpool cards, and carpool peek badges. */
+export const finalizeExploreCardLinkedRideshare = (
+  card: ExploreCardModel,
+  mapItem: ExploreMapItemDTO,
+  allItems: ExploreMapItemDTO[]
+): ExploreCardModel => {
+  const linkedRideshares = resolveLinkedRideshareRows(mapItem, allItems);
+  const activity = resolveLinkedParentOnActivity(card.activity, allItems);
+  const hasLinkedRides = linkedRideshares.length > 0;
+  const parentOuting = isExploreParentOutingCard(card);
+  const rideshareForBadges =
+    parentOuting &&
+    Boolean(mapItem.rideshareEnabled ?? activity?.rideshareEnabled ?? hasLinkedRides);
+
+  const requirementBadges = enrichExploreActivityRequirementBadges(activity?.requirements, {
+    kind: card.kind,
+    rideshareEnabled: rideshareForBadges,
+    venueDifficulty: card.difficulty ?? null,
+  });
+
+  return {
+    ...card,
+    activity,
+    linkedRideshares: hasLinkedRides ? linkedRideshares : undefined,
+    requirementBadges,
+  };
 };

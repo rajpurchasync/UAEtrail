@@ -53,7 +53,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 | 8 | `meeting` | **Going from** | Optional **going-from** pin when departure ≠ meeting place · directions (`goingFromNotes`) |
 | 9 | `transportation` | **Transportation** | **Reachable by sedan** vs **4x4 required** (venue access) |
 | 10 | `publish` | **Preview and publish** | Summary · **Publish** |
-| *(success)* | — | **Published** | Optional **Offer carpool** · **View on map** |
+| *(success)* | — | **Published** | Optional **Offer rideshare** · **View on map** |
 
 **Step 0** may live on the Organize sub-row (type chip) or as the first wizard screen — product choice; both count as “activity type” in this flow.
 
@@ -63,7 +63,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 
 **Participation:** Step 5 sets `participationMode`. Default **approval** for `organize.activities`.
 
-**Carpool:** On **publish success** (not the publish step) when `postPublishCarpool` — optional **Offer carpool** links a **FLOW-04** rideshare (`linkedActivityId` target).
+**Rideshare:** On **publish success** (not the publish step) when `postPublishRideshare` — optional **Offer rideshare** links a **FLOW-04** rideshare (`linkedActivityId` target).
 
 ---
 
@@ -76,7 +76,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 | Meet pin | After destination/about | **Early** (step 3) |
 | Audience vs spots | Audience before spots | **Spots then audience** |
 | Instruction fields | About + meeting + join kit | **One instructions step** |
-| Carpool on publish | **No** | **Yes** (optional) |
+| Rideshare on publish | **No** | **Yes** (optional) |
 
 ---
 
@@ -87,7 +87,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 | **Validate** | Title, when, meet pin, capacity, audience, price, instructions, transportation; going-from when `meetingDifferent` |
 | **API** | Same chain as FLOW-01: `publishOrganizeActivity` · `activityType: event` (+ topic metadata when schema exists) |
 | **Requirements** | Participation lines · women only / min age / children / pets · vehicle access · instructions text |
-| **Carpool** | Same as FLOW-01 § linked rideshare |
+| **Rideshare** | Same as FLOW-01 § linked rideshare |
 | **Success** | `onPublished` · compose cleared · map refresh |
 
 ---
@@ -95,7 +95,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 ## Peek & detail
 
 - Headline: host + activity type + date (presentation TBD in `explore-presentation.ts`)
-- Chips: restrictions, transportation, **Carpool available** when publish flag / linked ride
+- Chips: restrictions, transportation, **Rideshare available** when publish flag / linked ride
 - Join CTA from `participationMode` (Request to join vs I'm going)
 
 ---
@@ -113,7 +113,7 @@ Each step: back, title from `createFlowStepTitle`, **Next** (or map confirm). Va
 
 ## Related
 
-- [FLOW-01](./FLOW-01-organize-hiking.md) — full trail wizard · carpool on publish pattern  
+- [FLOW-01](./FLOW-01-organize-hiking.md) — full trail wizard · Rideshare on publish pattern  
 - [FLOW-03](./FLOW-03-organize-events.md) — events without going-from  
 - [FLOW-04](./FLOW-04-organize-rideshare.md) — linked ride from carpool checkbox  
 - Find demand for activities: `find.event` in catalog (member “looking for” — separate flow)

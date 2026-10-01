@@ -30,7 +30,7 @@ interface ExploreItemSheetProps {
 
   joinStateLoading?: boolean;
 
-  linkCarpoolTenantId?: string | null;
+  linkRideshareTenantId?: string | null;
 
   onCreateLinkedRideshare?: (parent: import('@uaetrail/shared-types').ActivityDTO) => void;
 
@@ -38,7 +38,7 @@ interface ExploreItemSheetProps {
 
   onDemandRemove?: () => void;
 
-  onDemandLinkCarpool?: () => void;
+  onDemandLinkRideshare?: () => void;
 
   onGuestGatedAction?: () => void;
 
@@ -68,7 +68,7 @@ export const ExploreItemSheet = ({
 
   joinStateLoading = false,
 
-  linkCarpoolTenantId = null,
+  linkRideshareTenantId = null,
 
   onCreateLinkedRideshare,
 
@@ -76,7 +76,7 @@ export const ExploreItemSheet = ({
 
   onDemandRemove,
 
-  onDemandLinkCarpool,
+  onDemandLinkRideshare,
 
   onGuestGatedAction,
 
@@ -128,7 +128,7 @@ export const ExploreItemSheet = ({
 
             onManage={onManage}
 
-            linkCarpoolTenantId={linkCarpoolTenantId}
+            linkRideshareTenantId={linkRideshareTenantId}
 
             onCreateLinkedRideshare={onCreateLinkedRideshare}
 
@@ -136,7 +136,7 @@ export const ExploreItemSheet = ({
 
             onDemandRemove={onDemandRemove}
 
-            onDemandLinkCarpool={onDemandLinkCarpool}
+            onDemandLinkRideshare={onDemandLinkRideshare}
 
             joinUiState={joinUiState}
 

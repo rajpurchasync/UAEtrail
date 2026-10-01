@@ -20,7 +20,7 @@ import { EXPLORE_MAP_PATH } from '../config/platform';
 const setupSteps = [
   { emoji: '👋', title: 'Introduce yourself', detail: 'Guide, agency, or gear shop — pick what fits you.' },
   { emoji: '📍', title: 'Pin yourself on the map', detail: 'A photo and where you\'re based helps people find you.' },
-  { emoji: '🏕️', title: 'Invite people along', detail: 'Post hikes, camps, carpools, and meetups when you\'re ready.' },
+  { emoji: '🏕️', title: 'Invite people along', detail: 'Post hikes, camps, rideshares, and meetups when you\'re ready.' },
 ];
 
 /** Become a host — guide, agency, or shop. Routes: `/become-host`, `/become-organizer`. */
@@ -140,7 +140,7 @@ export const BecomeHost = () => {
 
   const subcopy =
     intent === 'become-host'
-      ? 'Guides, agencies, and shops share activities here. A quick intro — then you can post hikes, camps, carpools, and more.'
+      ? 'Guides, agencies, and shops share activities here. A quick intro — then you can post hikes, camps, rideshares, and more.'
       : intent === 'add-shop'
         ? 'Help hikers and campers find your gear shop when they\'re planning their next activity.'
         : intent === 'add-agency'

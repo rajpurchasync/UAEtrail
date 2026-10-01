@@ -8,7 +8,7 @@
 
 ## Summary
 
-Signed-in **host** (`canPublish`) publishes a **camping** outing on the explore map. Join style is the host’s choice (`participationMode`: approval or RSVP). Step pattern matches **FLOW-01** (structured organize track), with a **Transportation** step instead of hiking difficulty; optional **Link carpool** on publish success (public plans).
+Signed-in **host** (`canPublish`) publishes a **camping** outing on the explore map. Join style is the host’s choice (`participationMode`: approval or RSVP). Step pattern matches **FLOW-01** (structured organize track), with a **Transportation** step instead of hiking difficulty; optional **Link rideshare** on publish success (public plans).
 
 | Field | Value |
 |-------|--------|
@@ -70,4 +70,4 @@ Payload uses structured outing fields: `aboutTrail`, `joinKit`, `trailName` (cam
 - Find camping demand — separate flow  
 - Add camp catalog — `add.camp`  
 - Event organize — [FLOW-03](./FLOW-03-organize-events.md) (structured; no going-from step)
-- Linked rideshare — same as FLOW-01 § linked rideshare (success **View** + **Link carpool** on public publish)
+- Linked rideshare — same as FLOW-01 § linked rideshare (success **View** + **Link rideshare** on public publish)

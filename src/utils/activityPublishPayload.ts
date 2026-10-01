@@ -42,12 +42,12 @@ export type ActivityPublishLocation = {
   meetingDifferent?: boolean;
 };
 
-export type ActivityPublishCarpool = {
-  carPoolEnabled?: boolean;
-  carPoolFree?: boolean;
-  carPoolPriceAed?: number | null;
-  carPoolSeats?: number | null;
-  carPoolDetails?: string | null;
+export type ActivityPublishRideshare = {
+  rideshareEnabled?: boolean;
+  rideshareFree?: boolean;
+  ridesharePriceAed?: number | null;
+  rideshareSeats?: number | null;
+  rideshareDetails?: string | null;
 };
 
 /** Canonical host activity create/update body — shared by explore compose and host console. */
@@ -70,7 +70,7 @@ export type ActivityPublishInput = {
   bannerUrl?: string | null;
   signupUrl?: string | null;
   hostId?: string;
-  carpool?: ActivityPublishCarpool;
+  rideshare?: ActivityPublishRideshare;
   outingCategory?: OutingCategory | null;
   outingTopic?: OutingTopic | null;
   /** Optional lineage when reorganizing from a prior activity (audit only). */
@@ -127,8 +127,8 @@ export const mergeParticipationRequirements = (
 
 /** Build the POST/PATCH body for `/host/activities`. */
 export const buildOrganisationActivityPublishPayload = (input: ActivityPublishInput): Record<string, unknown> => {
-  const isCarpool = input.activityType === 'carpool';
-  const carpool = input.carpool ?? {};
+  const isRideshare = input.activityType === 'rideshare';
+  const rideshare = input.rideshare ?? {};
   const { pricing, location } = input;
 
   const paymentTerms = pricing.paymentTerms?.trim() ?? '';
@@ -182,12 +182,12 @@ export const buildOrganisationActivityPublishPayload = (input: ActivityPublishIn
     payload.pricePackages = pricing.pricePackages;
   }
 
-  if (isCarpool || carpool.carPoolEnabled) {
-    payload.carPoolEnabled = isCarpool ? true : carpool.carPoolEnabled;
-    if (carpool.carPoolFree !== undefined) payload.carPoolFree = carpool.carPoolFree;
-    if (carpool.carPoolPriceAed !== undefined) payload.carPoolPriceAed = carpool.carPoolPriceAed;
-    if (carpool.carPoolSeats !== undefined) payload.carPoolSeats = carpool.carPoolSeats;
-    if (carpool.carPoolDetails !== undefined) payload.carPoolDetails = carpool.carPoolDetails;
+  if (isRideshare || rideshare.rideshareEnabled) {
+    payload.rideshareEnabled = isRideshare ? true : rideshare.rideshareEnabled;
+    if (rideshare.rideshareFree !== undefined) payload.rideshareFree = rideshare.rideshareFree;
+    if (rideshare.ridesharePriceAed !== undefined) payload.ridesharePriceAed = rideshare.ridesharePriceAed;
+    if (rideshare.rideshareSeats !== undefined) payload.rideshareSeats = rideshare.rideshareSeats;
+    if (rideshare.rideshareDetails !== undefined) payload.rideshareDetails = rideshare.rideshareDetails;
   }
 
   return payload;

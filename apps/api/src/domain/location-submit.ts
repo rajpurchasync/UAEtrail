@@ -16,7 +16,7 @@ export const locationSubmitBodySchema = z.object({
     'camping',
     'event',
     'shop',
-    'carpool',
+    'rideshare',
     'EVENT',
     'COMMUNITY_ACTIVITY',
     'community_activity',

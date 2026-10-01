@@ -43,12 +43,12 @@ describe('compose flow catalog', () => {
   });
 
   it('parses organize rideshare from compose URL', () => {
-    expect(composeFlowIdFromRoute({ intent: 'organize', kind: 'carpool' })).toBe('organize.rideshare');
+    expect(composeFlowIdFromRoute({ intent: 'organize', kind: 'rideshare' })).toBe('organize.rideshare');
   });
 
   it('catalog default participation matches organize events (rsvp) and rideshare (approval)', () => {
     expect(defaultParticipationForOrganizeRoute('event')).toBe('rsvp');
-    expect(defaultParticipationForOrganizeRoute('carpool')).toBe('approval');
+    expect(defaultParticipationForOrganizeRoute('rideshare')).toBe('approval');
   });
 
   it('catalog default participation is approval for hiking, camping, and activity', () => {

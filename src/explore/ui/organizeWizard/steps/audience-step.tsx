@@ -76,7 +76,7 @@ export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null
                 })}
               </div>
             </div>
-            {!draft.genericBuddy && kind !== 'carpool' && (
+            {!draft.genericBuddy && kind !== 'rideshare' && (
               <div className={EXPLORE_FLOW.choiceGrid2}>
                 {([
                   { key: 'open' as JoinMode, title: 'Public', subtitle: 'Listed on the explore map', icon: Users },
@@ -106,15 +106,15 @@ export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null
               </div>
             )}
 
-            {!draft.genericBuddy && kind !== 'carpool' && draft.joinMode === 'private' && (
+            {!draft.genericBuddy && kind !== 'rideshare' && draft.joinMode === 'private' && (
               <p className="mt-4 rounded-xl bg-neutral-50 px-3 py-2 text-sm text-gray-600">
                 {HIKE_PRIVATE_EVENT_INFO}
               </p>
             )}
 
-            {!draft.genericBuddy && (draft.joinMode === 'open' || kind === 'carpool') && (
-              <div className={`space-y-3 ${kind !== 'carpool' ? 'mt-4' : ''}`}>
-                {kind === 'carpool' && (
+            {!draft.genericBuddy && (draft.joinMode === 'open' || kind === 'rideshare') && (
+              <div className={`space-y-3 ${kind !== 'rideshare' ? 'mt-4' : ''}`}>
+                {kind === 'rideshare' && (
                   <p className="text-sm text-gray-600">Who can request a seat in your ride?</p>
                 )}
                 <p className={`${EXPLORE_FLOW.choiceCardTitle}`}>Public options</p>
@@ -132,7 +132,13 @@ export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null
                       subtitle: 'For women',
                       icon: UserRound,
                     },
-                    ...(kind === 'event' || kind === 'carpool'
+                    {
+                      key: 'family_only' as AudienceAccess,
+                      title: 'Family only',
+                      subtitle: 'Families welcome',
+                      icon: Users,
+                    },
+                    ...(kind === 'event' || kind === 'rideshare'
                       ? [
                           {
                             key: 'others' as AudienceAccess,
@@ -167,16 +173,16 @@ export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null
                     );
                   })}
                 </div>
-                {(kind === 'event' || kind === 'carpool') && draft.audienceAccess === 'others' && (
+                {(kind === 'event' || kind === 'rideshare') && draft.audienceAccess === 'others' && (
                   <label className="block">
                     <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      {kind === 'carpool' ? 'Who can join?' : 'Who can attend?'}
+                      {kind === 'rideshare' ? 'Who can join?' : 'Who can attend?'}
                     </span>
                     <input
                       value={draft.audienceOtherNote}
                       onChange={(event) => patchDraft({ audienceOtherNote: event.target.value })}
                       placeholder={
-                        kind === 'carpool'
+                        kind === 'rideshare'
                           ? 'e.g. Colleagues only, same company, no smokers…'
                           : 'e.g. Members only, 18+, experienced runners…'
                       }
@@ -212,7 +218,7 @@ export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null
             <OrganizeWizardStepNext
                 disabled={
                   !structuredFlow &&
-                  (draft.joinMode === 'open' || kind === 'carpool') &&
+                  (draft.joinMode === 'open' || kind === 'rideshare') &&
                   draft.audienceAccess === 'others' &&
                   !draft.audienceOtherNote.trim()
                 }

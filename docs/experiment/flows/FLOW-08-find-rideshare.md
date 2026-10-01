@@ -1,4 +1,4 @@
-# FLOW-08 — Find · Rideshare (`find.carpool`)
+# FLOW-08 — Find · Rideshare (`find.rideshare`)
 
 **Status:** Implemented (2026-09-28)
 

@@ -69,7 +69,7 @@ describe('exploreRouting navigation contract', () => {
     expect(exploreOrganizePath()).toBe('/explore?compose=organize');
     expect(exploreOrganizePath('hiking')).toBe('/explore?compose=organize%3Ahiking');
     expect(exploreOrganizePath('activity')).toBe('/explore?compose=organize%3Aactivity');
-    expect(exploreOrganizePath('carpool')).toBe('/explore?compose=organize%3Acarpool');
+    expect(exploreOrganizePath('rideshare')).toBe('/explore?compose=organize%3Arideshare');
   });
 
   it('exploreReorganizeActivityPath deep-links organize wizard prefill', () => {
@@ -81,7 +81,7 @@ describe('exploreRouting navigation contract', () => {
   it('legacyCreateParamToOrganizePath redirects old activity create URLs', () => {
     expect(legacyCreateParamToOrganizePath('hiking')).toBe('/explore?compose=organize%3Ahiking');
     expect(legacyCreateParamToOrganizePath('EVENT')).toBe('/explore?compose=organize%3Aevent');
-    expect(legacyCreateParamToOrganizePath('carpool')).toBe('/explore?compose=organize%3Acarpool');
+    expect(legacyCreateParamToOrganizePath('rideshare')).toBe('/explore?compose=organize%3Arideshare');
     expect(legacyCreateParamToOrganizePath(null)).toBeNull();
   });
 });

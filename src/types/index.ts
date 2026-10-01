@@ -1,4 +1,4 @@
-export type ActivityType = 'hiking' | 'camping' | 'event' | 'carpool';
+export type ActivityType = 'hiking' | 'camping' | 'event' | 'rideshare';
 export type DifficultyLevel = 'easy' | 'moderate' | 'hard';
 export type CampingType = 'self-guided' | 'operator-led';
 export type Accessibility = 'car-accessible' | 'remote';
@@ -42,7 +42,7 @@ export interface ActivityListing {
   meetingPoint?: string;
   itinerary?: string[];
   requirements?: string[];
-  carpoolAvailable?: boolean;
+  rideshareAvailable?: boolean;
   latitude?: number | null;
   longitude?: number | null;
 }

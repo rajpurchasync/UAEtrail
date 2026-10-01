@@ -41,12 +41,12 @@ describe('createDraftFromDemand', () => {
   it('routes rideshare demand to carpool organize flow', () => {
     const draft = createDraftFromDemand(
       demandItem({
-        kind: 'carpool',
+        kind: 'rideshare',
         outingCategory: 'rideshare',
         toLatitude: 25.2,
         toLongitude: 55.3,
       })
     );
-    expect(draft.kind).toBe('carpool');
+    expect(draft.kind).toBe('rideshare');
   });
 });

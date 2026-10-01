@@ -1,6 +1,6 @@
 # E11 — Organize flows manual smoke (`experiment-ui`)
 
-Quick pass on `/explore` after wizard split, registry venue skips, meeting-point UX, post-publish carpool, and reorganize.
+Quick pass on `/explore` after wizard split, registry venue skips, meeting-point UX, Post-publish rideshare, and reorganize.
 
 **Preconditions:** `npm run dev:local` (or `dev:all`), signed-in host with `canPublish`, seeded map if pins look empty.
 
@@ -23,8 +23,8 @@ Each flow should use consistent sheet chrome (back / close, step title) via `Org
 
 ## Publish & carpool
 
-- Carpool is **not** on the publish step.
-- When catalog sets `postPublishCarpool`, success sheet offers optional carpool link (rideshare / applicable flows).
+- Rideshare link is **not** on the publish step.
+- When catalog sets `postPublishRideshare`, success sheet offers optional rideshare link (rideshare / applicable flows).
 
 ## Reorganize (new activity id)
 

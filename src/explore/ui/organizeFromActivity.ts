@@ -12,7 +12,7 @@ const OUTING_TOPIC_TO_ACTIVITY_CHIP: Partial<Record<OutingTopic, ActivityOrganiz
 
 /** Map a stored activity row to the FAB organize compose kind. */
 export const resolveOrganizeComposeKindFromActivity = (activity: ActivityDTO): OrganizeComposeKind => {
-  if (activity.activityType === 'carpool') return 'carpool';
+  if (activity.activityType === 'rideshare') return 'rideshare';
   if (activity.activityType === 'hiking') return 'hiking';
   if (activity.activityType === 'camping') return 'camping';
   if (activity.outingCategory === 'activities') return 'activity';
@@ -41,7 +41,7 @@ const isStructuredKind = (kind: CreateActivityKind): boolean =>
 export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivityDraft => {
   const kind = resolveCreateKindFromActivity(activity);
   const structured = isStructuredKind(kind);
-  const carpool = kind === 'carpool';
+  const carpool = kind === 'rideshare';
   const genericActivity = kind === 'activity';
 
   const meetingLat = activity.meetingLat ?? activity.displayLatitude ?? activity.locationLatitude ?? null;
@@ -93,6 +93,6 @@ export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivi
     trailLongitude: structured ? startLng : null,
     aboutTrail: structured ? activity.description?.trim() || '' : '',
     joinKit: genericActivity ? activity.description?.trim() || '' : '',
-    carPoolEnabled: Boolean(activity.carPoolEnabled),
+    rideshareEnabled: Boolean(activity.rideshareEnabled),
   };
 };

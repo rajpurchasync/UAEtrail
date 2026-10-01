@@ -7,7 +7,7 @@ import {
 } from '../utils/activityPublishPayload';
 import type { CreateActivityDraft } from '../explore/ui/organizeFlow';
 import { composeFlowSpecForOrganizeKind } from '../explore/composeFlowCatalog';
-import { linkParentToRideshareActivity } from '../explore/linkActivityCarpoolOffer';
+import { linkParentToRideshareActivity } from '../explore/linkActivityRideshareOffer';
 import {
   buildOrganizeActivityRequirements,
   defaultDescription,
@@ -25,7 +25,7 @@ const formatCoord = (value: number): string => Number(value.toFixed(6)).toString
 const resolveFromLabel = (draft: CreateActivityDraft, lat: number, lng: number): string => {
   if (draft.fromLabel.trim()) return draft.fromLabel.trim();
   const coordLabel = `${formatCoord(lat)}, ${formatCoord(lng)}`;
-  return draft.kind === 'carpool' ? `From · ${coordLabel}` : coordLabel;
+  return draft.kind === 'rideshare' ? `From · ${coordLabel}` : coordLabel;
 };
 
 const resolveToLabel = (draft: CreateActivityDraft, lat: number, lng: number): string => {
@@ -105,7 +105,7 @@ export const buildOrganizeActivityPublishInput = (
   const structuredLike = structured || activityHost;
   const kind = draft.kind;
   const activityType = resolveActivityType(kind);
-  const isCarpool = kind === 'carpool';
+  const isRideshare = kind === 'rideshare';
 
   const fromLat = goingFrom ? draft.latitude ?? draft.meetingLatitude! : draft.meetingLatitude!;
   const fromLng = goingFrom ? draft.longitude ?? draft.meetingLongitude! : draft.meetingLongitude!;
@@ -120,11 +120,11 @@ export const buildOrganizeActivityPublishInput = (
     registryVenueId && draft.trailLatitude != null ? draft.trailLatitude : fromLat;
   const trailStartLng =
     registryVenueId && draft.trailLongitude != null ? draft.trailLongitude : fromLng;
-  const toLat = isCarpool ? draft.toLatitude! : trailStartLat;
-  const toLng = isCarpool ? draft.toLongitude! : trailStartLng;
+  const toLat = isRideshare ? draft.toLatitude! : trailStartLat;
+  const toLng = isRideshare ? draft.toLongitude! : trailStartLng;
   const trailOrFrom =
     structured && draft.trailName.trim() ? draft.trailName.trim() : fromLabel;
-  const toLabel = isCarpool ? resolveToLabel(draft, toLat, toLng) : trailOrFrom;
+  const toLabel = isRideshare ? resolveToLabel(draft, toLat, toLng) : trailOrFrom;
 
   const meetLat = structuredLike ? draft.meetingLatitude! : fromLat;
   const meetLng = structuredLike ? draft.meetingLongitude! : fromLng;
@@ -154,7 +154,11 @@ export const buildOrganizeActivityPublishInput = (
       ? draft.aboutTrail.trim() || defaultDescription(kind)
       : activityHost
         ? draft.joinKit.trim() || defaultDescription(kind)
-        : draft.description.trim() || defaultDescription(kind),
+        : isRideshare
+          ? draft.description.trim().length >= 20
+            ? draft.description.trim()
+            : defaultDescription(kind)
+          : draft.description.trim() || defaultDescription(kind),
     date: draft.date,
     time: startTime,
     endDate: hiking && draft.timeMode === 'specific' ? draft.date : undefined,
@@ -179,9 +183,9 @@ export const buildOrganizeActivityPublishInput = (
       meetingDifferent: structuredLike ? meetingDifferent : false,
     },
     requirements,
-    joinMode: draft.kind === 'carpool' ? 'open' : draft.joinMode,
+    joinMode: draft.kind === 'rideshare' ? 'open' : draft.joinMode,
     participationMode:
-      draft.kind === 'carpool'
+      draft.kind === 'rideshare'
         ? 'approval'
         : draft.joinMode === 'private'
           ? 'rsvp'
@@ -193,18 +197,18 @@ export const buildOrganizeActivityPublishInput = (
         : null,
     images: [],
     hostId: userId,
-    carpool: isCarpool
+    rideshare: isRideshare
       ? {
-          carPoolFree: !isShared && !isPaid,
-          carPoolPriceAed: isShared || isPaid ? priceAmount : null,
-          carPoolSeats: draft.capacity,
-          carPoolDetails: 'Carpool — confirm pickup and drop-off details after joining.',
+          rideshareFree: !isShared && !isPaid,
+          ridesharePriceAed: isShared || isPaid ? priceAmount : null,
+          rideshareSeats: draft.capacity,
+          rideshareDetails: 'Rideshare — confirm pickup and drop-off details after joining.',
         }
-      : draft.carPoolEnabled
+      : draft.rideshareEnabled
         ? {
-            carPoolEnabled: true,
-            carPoolFree: true,
-            carPoolDetails: 'Host offers carpool — coordinate seats in activity chat after joining.',
+            rideshareEnabled: true,
+            rideshareFree: true,
+            rideshareDetails: 'Host offers rideshare — coordinate seats in activity chat after joining.',
           }
         : undefined,
   };
@@ -241,7 +245,7 @@ export const publishOrganizeActivity = async (input: {
   if (goingFrom && structured && (draft.meetingLatitude == null || draft.meetingLongitude == null)) {
     throw new Error('Drop a meeting point pin on the map.');
   }
-  if (draft.kind === 'carpool' && (draft.toLatitude == null || draft.toLongitude == null)) {
+  if (draft.kind === 'rideshare' && (draft.toLatitude == null || draft.toLongitude == null)) {
     throw new Error('Drop a destination pin on the map.');
   }
   if (!draft.title.trim()) {
@@ -255,7 +259,7 @@ export const publishOrganizeActivity = async (input: {
   const publishBody = buildOrganisationActivityPublishPayload({
     ...payload,
     clonedFromActivityId: sourceActivityId?.trim() || null,
-    linkedActivityId: draft.kind === 'carpool' && parentLinkId ? parentLinkId : null,
+    linkedActivityId: draft.kind === 'rideshare' && parentLinkId ? parentLinkId : null,
   });
   const created = await api.createOrganisationActivity(tenantId, publishBody);
   await api.publishOrganisationActivity(tenantId, created.data.id);
@@ -264,7 +268,7 @@ export const publishOrganizeActivity = async (input: {
     await api.fulfillParticipantIntent(tenantId, participantIntentId, created.data.id);
   }
 
-  if (parentLinkId && draft.kind === 'carpool') {
+  if (parentLinkId && draft.kind === 'rideshare') {
     await linkParentToRideshareActivity(tenantId, parentLinkId, created.data.id);
   }
 

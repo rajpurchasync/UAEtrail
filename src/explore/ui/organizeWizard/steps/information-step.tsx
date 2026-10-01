@@ -56,7 +56,7 @@ export function renderInformationStep(ctx: OrganizeWizardContext): ReactNode | n
               </label>
             )}
             <p className="mt-4 mb-2 text-sm font-semibold text-gray-900">
-              {kind === 'carpool' ? 'How many seats?' : 'How many spots?'}
+              {kind === 'rideshare' ? 'How many seats?' : 'How many spots?'}
             </p>
             <div className="flex flex-wrap gap-2">
               {CAPACITY_PRESETS.map((value) => {

@@ -11,7 +11,7 @@ Confirm **one flow at a time**. Catalog: `src/explore/composeFlowCatalog.ts` (`o
 | 05 | `organize.activities` | [FLOW-05](./FLOW-05-organize-activities.md) | **Implemented** |
 | 06 | `find.hiking` | [FLOW-06](./FLOW-06-find-hiking.md) | **Implemented** |
 | 07 | `find.camping` | [FLOW-07](./FLOW-07-find-camping.md) | **Implemented** |
-| 08 | `find.carpool` | [FLOW-08](./FLOW-08-find-rideshare.md) | **Implemented** |
+| 08 | `find.rideshare` | [FLOW-08](./FLOW-08-find-rideshare.md) | **Implemented** |
 | 09 | `find.event` | [FLOW-09](./FLOW-09-find-activity.md) | **Implemented** |
 
 **Next for you:** confirm Find copy on map peek / demand cards against FLOW-06–09.

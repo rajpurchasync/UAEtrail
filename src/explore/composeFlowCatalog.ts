@@ -39,7 +39,7 @@ export type ComposeFlowId =
   | 'find.hiking'
   | 'find.camping'
   | 'find.event'
-  | 'find.carpool'
+  | 'find.rideshare'
   | 'add.trail'
   | 'add.camp'
   | 'add.shop'
@@ -60,8 +60,8 @@ export type ComposeFlowSpec = {
   organizeSteps?: readonly CreateFlowStepId[];
   demandSteps?: readonly DemandFlowStepId[];
   contributeSteps?: readonly ContributeFlowStepId[];
-  /** Host publish API activity type when applicable (rideshare uses carpool). */
-  activityType?: ActivityType | 'carpool';
+  /** Host publish API activity type when applicable. */
+  activityType?: ActivityType | 'rideshare';
   confirmationDoc?: string;
 };
 
@@ -128,7 +128,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     defaultParticipation: 'approval',
     wizard: 'organizeFlow',
     organizeSteps: organizeRideshareFlow.defaultSteps,
-    activityType: 'carpool',
+    activityType: 'rideshare',
     confirmationDoc: 'docs/experiment/flows/FLOW-04-organize-rideshare.md',
   },
   'find.hiking': {
@@ -167,8 +167,8 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     demandSteps: getDemandFlowSteps('event'),
     confirmationDoc: 'docs/experiment/flows/FLOW-09-find-activity.md',
   },
-  'find.carpool': {
-    id: 'find.carpool',
+  'find.rideshare': {
+    id: 'find.rideshare',
     intent: 'find',
     outingCategory: 'rideshare',
     label: 'Rideshare',
@@ -176,7 +176,7 @@ export const COMPOSE_FLOW_CATALOG: Record<ComposeFlowId, ComposeFlowSpec> = {
     requiresHost: false,
     defaultParticipation: null,
     wizard: 'demandFlow',
-    demandSteps: getDemandFlowSteps('carpool'),
+    demandSteps: getDemandFlowSteps('rideshare'),
     confirmationDoc: 'docs/experiment/flows/FLOW-08-find-rideshare.md',
   },
   'add.trail': {
@@ -234,7 +234,7 @@ const ORGANIZE_KIND_TO_ID: Record<OrganizeComposeKind, ComposeFlowId> = {
   hiking: 'organize.hiking',
   camping: 'organize.camping',
   event: 'organize.events',
-  carpool: 'organize.rideshare',
+  rideshare: 'organize.rideshare',
   activity: 'organize.activities',
 };
 
@@ -245,7 +245,7 @@ const FIND_KIND_TO_ID: Record<FindComposeKind, ComposeFlowId> = {
   hiking: 'find.hiking',
   camping: 'find.camping',
   event: 'find.event',
-  carpool: 'find.carpool',
+  rideshare: 'find.rideshare',
 };
 
 const ADD_KIND_TO_ID: Record<ContributeVenueKind, ComposeFlowId> = {

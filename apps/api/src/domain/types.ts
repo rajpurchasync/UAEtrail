@@ -195,15 +195,15 @@ export interface Activity {
   parkingLat: number | null;
   parkingLng: number | null;
   meetingDifferent: boolean;
-  carPoolEnabled: boolean;
-  carPoolFree: boolean | null;
-  carPoolPriceAed: number | null;
-  carPoolSeats: number | null;
-  carPoolDetails: string | null;
+  rideshareEnabled: boolean;
+  rideshareFree: boolean | null;
+  ridesharePriceAed: number | null;
+  rideshareSeats: number | null;
+  rideshareDetails: string | null;
   /** Parent hike/camp/event when this is a linked carpool listing. */
   linkedActivityId: string | null;
   /** Linked carpool activity id when car pool is offered for this listing. */
-  linkedCarpoolActivityId: string | null;
+  linkedRideshareActivityId: string | null;
   paymentTerms: string | null;
   pricingMode: 'free' | 'shared' | 'paid' | null;
   itinerary: string[];

@@ -73,13 +73,13 @@ export type ActivityCreateInput = {
   parkingLat?: number | null;
   parkingLng?: number | null;
   meetingDifferent?: boolean;
-  carPoolEnabled?: boolean;
-  carPoolFree?: boolean | null;
-  carPoolPriceAed?: number | null;
-  carPoolSeats?: number | null;
-  carPoolDetails?: string | null;
+  rideshareEnabled?: boolean;
+  rideshareFree?: boolean | null;
+  ridesharePriceAed?: number | null;
+  rideshareSeats?: number | null;
+  rideshareDetails?: string | null;
   linkedActivityId?: string | null;
-  linkedCarpoolActivityId?: string | null;
+  linkedRideshareActivityId?: string | null;
   paymentTerms?: string | null;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[];
@@ -115,13 +115,13 @@ export type ActivityUpdateInput = {
   parkingLat?: number | null;
   parkingLng?: number | null;
   meetingDifferent?: boolean;
-  carPoolEnabled?: boolean;
-  carPoolFree?: boolean | null;
-  carPoolPriceAed?: number | null;
-  carPoolSeats?: number | null;
-  carPoolDetails?: string | null;
+  rideshareEnabled?: boolean;
+  rideshareFree?: boolean | null;
+  ridesharePriceAed?: number | null;
+  rideshareSeats?: number | null;
+  rideshareDetails?: string | null;
   linkedActivityId?: string | null;
-  linkedCarpoolActivityId?: string | null;
+  linkedRideshareActivityId?: string | null;
   paymentTerms?: string | null;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[];
@@ -218,13 +218,13 @@ export type MongoActivityDoc = {
   parkingLat: number | null;
   parkingLng: number | null;
   meetingDifferent: boolean;
-  carPoolEnabled: boolean;
-  carPoolFree: boolean | null;
-  carPoolPriceAed: number | null;
-  carPoolSeats: number | null;
-  carPoolDetails: string | null;
+  rideshareEnabled: boolean;
+  rideshareFree: boolean | null;
+  ridesharePriceAed: number | null;
+  rideshareSeats: number | null;
+  rideshareDetails: string | null;
   linkedActivityId: string | null;
-  linkedCarpoolActivityId: string | null;
+  linkedRideshareActivityId: string | null;
   paymentTerms: string | null;
   pricingMode: 'free' | 'shared' | 'paid' | null;
   itinerary: string[];
@@ -270,13 +270,13 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     parkingLat: data.parkingLat ?? null,
     parkingLng: data.parkingLng ?? null,
     meetingDifferent: data.meetingDifferent ?? false,
-    carPoolEnabled: data.carPoolEnabled ?? false,
-    carPoolFree: data.carPoolFree ?? null,
-    carPoolPriceAed: data.carPoolPriceAed ?? null,
-    carPoolSeats: data.carPoolSeats ?? null,
-    carPoolDetails: data.carPoolDetails ?? null,
+    rideshareEnabled: data.rideshareEnabled ?? false,
+    rideshareFree: data.rideshareFree ?? null,
+    ridesharePriceAed: data.ridesharePriceAed ?? null,
+    rideshareSeats: data.rideshareSeats ?? null,
+    rideshareDetails: data.rideshareDetails ?? null,
     linkedActivityId: data.linkedActivityId ?? null,
-    linkedCarpoolActivityId: data.linkedCarpoolActivityId ?? null,
+    linkedRideshareActivityId: data.linkedRideshareActivityId ?? null,
     paymentTerms: data.paymentTerms ?? null,
     pricingMode: data.pricingMode ?? null,
     itinerary: asStringArray(data.itinerary),

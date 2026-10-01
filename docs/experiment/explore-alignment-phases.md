@@ -128,7 +128,7 @@ Phases are **sequential gates**. Later phases may start UI spikes only if they d
 |------|--------|
 | Mongo optional `outingCategory`, `outingTopic` on activities | Done — `entity-builders.ts`, host create/update Zod |
 | Organize publish sends category + topic | Done — `organizeActivityPublish.ts`, `composeFlowCatalog` |
-| Per-flow Zod: `organizeHikingCreateSchema`, `demandCarpoolCreateSchema`, … | Open |
+| Per-flow Zod: `organizeHikingCreateSchema`, `demandRideshareCreateSchema`, … | Open |
 | Tighten `locationSubmitBodySchema` — drop carpool/legacy enums on place submit | Open |
 | Registry table ↔ schema names documented | Open — `explore-flow-registry.md` |
 

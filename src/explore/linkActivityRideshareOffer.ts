@@ -18,7 +18,7 @@ export const parseActivityIdFromShareInput = (input: string): string | null => {
 };
 
 const assertRideshareForLink = (rideshare: ActivityDTO, tenantId: string, parentId: string): void => {
-  if (rideshare.activityType !== 'carpool') {
+  if (rideshare.activityType !== 'rideshare') {
     throw new Error('That link must be a published rideshare activity.');
   }
   if (rideshare.tenantId !== tenantId) {
@@ -52,14 +52,14 @@ export const linkParentToRideshareActivity = async (
     linkedActivityId: parentActivityId,
   });
   await api.updateOrganisationActivity(tenantId, parentActivityId, {
-    linkedCarpoolActivityId: rideshareActivityId,
+    linkedRideshareActivityId: rideshareActivityId,
   });
 };
 
 /** Parent plans that may spawn or link FLOW-04 rideshares (peek + post-publish when enabled). */
-export const canLinkCarpoolToActivity = (activity: ActivityDTO | null | undefined): boolean => {
+export const canLinkRideshareToActivity = (activity: ActivityDTO | null | undefined): boolean => {
   if (!activity) return false;
-  if (activity.activityType === 'carpool') return false;
+  if (activity.activityType === 'rideshare') return false;
   return (
     activity.activityType === 'hiking' ||
     activity.activityType === 'camping' ||
@@ -68,9 +68,9 @@ export const canLinkCarpoolToActivity = (activity: ActivityDTO | null | undefine
 };
 
 /** Own-demand peek — offer a rideshare alongside a looking-for pin (not rideshare demands). */
-export const canOfferCarpoolForDemandItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
+export const canOfferRideshareForDemandItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
   if (!item || item.source !== 'demand') return false;
   if (item.convertedActivityId) return false;
-  if (item.kind === 'carpool') return false;
+  if (item.kind === 'rideshare') return false;
   return item.kind === 'hiking' || item.kind === 'camping' || item.kind === 'event';
 };

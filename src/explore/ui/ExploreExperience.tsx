@@ -24,7 +24,7 @@ import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
 import { useExploreOrganizeFromActivity } from './useExploreOrganizeFromActivity';
 import type { OrganizeWizardPrefill } from './organizeWizardPrefill';
-import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkCarpoolPrefill';
+import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkRidesharePrefill';
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
@@ -59,8 +59,8 @@ export const ExploreExperience = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [linkOnlyPeekItems, setLinkOnlyPeekItems] = useState<ExploreMapItemDTO[]>([]);
-  const [carpoolLinkParent, setCarpoolLinkParent] = useState<ActivityDTO | null>(null);
-  const [carpoolLinkDemand, setCarpoolLinkDemand] = useState<ExploreMapItemDTO | null>(null);
+  const [rideshareLinkParent, setRideshareLinkParent] = useState<ActivityDTO | null>(null);
+  const [rideshareLinkDemand, setRideshareLinkDemand] = useState<ExploreMapItemDTO | null>(null);
   const [hoveredListItemId, setHoveredListItemId] = useState<string | null>(null);
   const clearSelection = useCallback(() => setSelectedId(null), []);
 
@@ -132,10 +132,10 @@ export const ExploreExperience = () => {
 
   const handleCreateLinkedRideshare = useCallback(
     (parent: ActivityDTO) => {
-      setCarpoolLinkDemand(null);
-      setCarpoolLinkParent(parent);
+      setRideshareLinkDemand(null);
+      setRideshareLinkParent(parent);
       setSelectedId(null);
-      compose.setComposeRoute({ intent: 'organize', kind: 'carpool' });
+      compose.setComposeRoute({ intent: 'organize', kind: 'rideshare' });
     },
     [compose.setComposeRoute]
   );
@@ -155,10 +155,10 @@ export const ExploreExperience = () => {
       return;
     }
 
-    setCarpoolLinkParent(null);
-    setCarpoolLinkDemand(selected);
+    setRideshareLinkParent(null);
+    setRideshareLinkDemand(selected);
     setSelectedId(null);
-    compose.setComposeRoute({ intent: 'organize', kind: 'carpool' });
+    compose.setComposeRoute({ intent: 'organize', kind: 'rideshare' });
   }, [
     selected,
     pathname,
@@ -171,15 +171,15 @@ export const ExploreExperience = () => {
   ]);
 
   const organizeWizardPrefill = useMemo((): OrganizeWizardPrefill | null => {
-    if (carpoolLinkParent) {
+    if (rideshareLinkParent) {
       return {
-        draft: buildRideshareDraftFromParentActivity(carpoolLinkParent),
-        linkToParentActivityId: carpoolLinkParent.id,
+        draft: buildRideshareDraftFromParentActivity(rideshareLinkParent),
+        linkToParentActivityId: rideshareLinkParent.id,
       };
     }
-    if (carpoolLinkDemand) {
+    if (rideshareLinkDemand) {
       return {
-        draft: buildRideshareDraftFromDemandMapItem(carpoolLinkDemand),
+        draft: buildRideshareDraftFromDemandMapItem(rideshareLinkDemand),
       };
     }
     if (fulfill.fulfillIntentPrefill) {
@@ -195,7 +195,7 @@ export const ExploreExperience = () => {
       };
     }
     return null;
-  }, [carpoolLinkParent, carpoolLinkDemand, fulfill.fulfillIntentPrefill, organizeFrom.organizeFromPrefill]);
+  }, [rideshareLinkParent, rideshareLinkDemand, fulfill.fulfillIntentPrefill, organizeFrom.organizeFromPrefill]);
 
   const selection = useExploreSelectionActions({
     items: selectionItems,
@@ -344,7 +344,7 @@ export const ExploreExperience = () => {
     compose.closeCompose();
     fulfill.setFulfillIntentPrefill(null);
     organizeFrom.clearOrganizeFromPrefill();
-    setCarpoolLinkParent(null);
+    setRideshareLinkParent(null);
   };
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
@@ -516,14 +516,14 @@ export const ExploreExperience = () => {
           }
           onFulfillIntent={fulfill.handleFulfillIntent}
           onManage={selection.selectedCard?.showHostActions ? selection.handleHostManage : undefined}
-          linkCarpoolTenantId={tenantId}
+          linkRideshareTenantId={tenantId}
           onCreateLinkedRideshare={handleCreateLinkedRideshare}
           onHostRemove={selection.selectedCard?.showHostActions ? selection.requestHostRemove : undefined}
           onDemandRemove={
             selection.selectedCard?.showDemandOwnerActions ? selection.requestDemandRemove : undefined
           }
-          onDemandLinkCarpool={
-            selection.selectedCard?.showDemandLinkCarpool ? handleOfferRideshareForDemand : undefined
+          onDemandLinkRideshare={
+            selection.selectedCard?.showDemandLinkRideshare ? handleOfferRideshareForDemand : undefined
           }
           onOpenExploreItem={(exploreItemId) => {
             const item = selectionItems.find((entry) => entry.id === exploreItemId);
@@ -561,19 +561,19 @@ export const ExploreExperience = () => {
         onOrganizeBackToIntent={() => {
           fulfill.setFulfillIntentPrefill(null);
           organizeFrom.clearOrganizeFromPrefill();
-          setCarpoolLinkParent(null);
-          setCarpoolLinkDemand(null);
+          setRideshareLinkParent(null);
+          setRideshareLinkDemand(null);
           compose.setComposeRoute({ surface: 'menu', intent: 'organize' });
         }}
         onFindBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'find' })}
         onAddBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
         onActivityPublished={async (activity) => {
           await selection.handleActivityPublished(activity);
-          if (carpoolLinkParent && activity.activityType === 'carpool') {
-            setCarpoolLinkParent(null);
+          if (rideshareLinkParent && activity.activityType === 'rideshare') {
+            setRideshareLinkParent(null);
           }
-          if (carpoolLinkDemand && activity.activityType === 'carpool') {
-            setCarpoolLinkDemand(null);
+          if (rideshareLinkDemand && activity.activityType === 'rideshare') {
+            setRideshareLinkDemand(null);
           }
         }}
         onCreateLinkedRideshare={handleCreateLinkedRideshare}

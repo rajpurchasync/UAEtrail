@@ -16,7 +16,7 @@ export type OutingTopic =
   | 'workshop'
   | 'community';
 
-export type ExploreMapPlanActivityKind = 'hiking' | 'camping' | 'event' | 'carpool' | 'shop';
+export type ExploreMapPlanActivityKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop';
 
 export type ExploreMapKindForPlan =
   | ExploreMapPlanActivityKind
@@ -33,13 +33,13 @@ export type ParticipantIntentKindForPlan =
   | 'camping'
   | 'event'
   | 'guide'
-  | 'carpool'
+  | 'rideshare'
   | 'other';
 
 export const activityTypeToOutingCategory = (
-  activityType: 'hiking' | 'camping' | 'event' | 'carpool'
+  activityType: 'hiking' | 'camping' | 'event' | 'rideshare'
 ): OutingCategory => {
-  if (activityType === 'carpool') return 'rideshare';
+  if (activityType === 'rideshare') return 'rideshare';
   if (activityType === 'event') return 'events';
   if (activityType === 'hiking') return 'hiking';
   if (activityType === 'camping') return 'camping';
@@ -49,7 +49,7 @@ export const activityTypeToOutingCategory = (
 export const participantIntentKindToOutingCategory = (
   kind: ParticipantIntentKindForPlan
 ): OutingCategory => {
-  if (kind === 'carpool') return 'rideshare';
+  if (kind === 'rideshare') return 'rideshare';
   /** FAB `find.event` — member “activities” demand (not organize `events` category). */
   if (kind === 'event') return 'activities';
   if (kind === 'hiking') return 'hiking';
@@ -58,7 +58,7 @@ export const participantIntentKindToOutingCategory = (
 };
 
 /** Organize wizard `CreateActivityKind` wire — maps from {@link OutingCategory}. */
-export type OrganizeCreateKindWire = 'hiking' | 'camping' | 'event' | 'carpool' | 'activity';
+export type OrganizeCreateKindWire = 'hiking' | 'camping' | 'event' | 'rideshare' | 'activity';
 
 export const outingCategoryToOrganizeCreateKind = (
   category: OutingCategory
@@ -69,7 +69,7 @@ export const outingCategoryToOrganizeCreateKind = (
     case 'events':
       return 'event';
     case 'rideshare':
-      return 'carpool';
+      return 'rideshare';
     case 'hiking':
       return 'hiking';
     case 'camping':
@@ -91,7 +91,7 @@ export const resolveOrganizeCreateKindFromDemandMapItem = (item: {
       participantIntentKindToOutingCategory(item.participantIntentKind)
     );
   }
-  if (item.kind === 'carpool') return 'carpool';
+  if (item.kind === 'rideshare') return 'rideshare';
   if (item.kind === 'hiking') return 'hiking';
   if (item.kind === 'camping') return 'camping';
   return 'event';

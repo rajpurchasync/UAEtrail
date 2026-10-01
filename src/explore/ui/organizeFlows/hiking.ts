@@ -79,7 +79,7 @@ export const organizeHikingFlow: OrganizeCatalogFlow = {
   createKind: 'hiking',
   defaultSteps: DEFAULT_STEPS,
   registryVenue: { placeType: 'hiking', omitWhenRegistry: REGISTRY_OMIT },
-  postPublishCarpool: true,
+  postPublishRideshare: true,
   getSteps: (draft) =>
     draft.genericBuddy
       ? ['title', 'when', 'meeting', 'audience', 'price', 'publish']

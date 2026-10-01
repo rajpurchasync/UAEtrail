@@ -37,7 +37,7 @@ export const exploreMapFilterActiveClass = (key: MapFilterKey): string => {
       return EXPLORE_BRAND_ACTIVE;
     case 'camping':
       return 'bg-amber-700 text-white border-amber-800 shadow-sm shadow-amber-900/20';
-    case 'carpool':
+    case 'rideshare':
       return 'bg-sky-700 text-white border-sky-800 shadow-sm shadow-sky-900/20';
     case 'others':
       return 'bg-violet-700 text-white border-violet-800 shadow-sm shadow-violet-900/20';
@@ -184,7 +184,7 @@ export const EXPLORE_Z = {
 /** Compact map peek card — same silhouette for venues and activities. */
 export const EXPLORE_PEEK = {
   position:
-    `pointer-events-none absolute inset-x-0 bottom-0 ${EXPLORE_Z.peekCard} px-4 pb-[calc(var(--explore-float-base)+88px)] lg:px-6 lg:pb-6`,
+    `pointer-events-none absolute inset-x-0 bottom-0 ${EXPLORE_Z.peekCard} px-4 pb-[calc(var(--explore-float-base)+var(--explore-map-fab-inset)+7.5rem)] lg:px-6 lg:pb-6`,
   inner: 'pointer-events-auto mx-auto w-full max-w-md',
   shell:
     'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5',
@@ -197,7 +197,7 @@ export const exploreActivityListFilterActiveClass = (key: ActivityListFilterKey)
   switch (key) {
     case 'camping':
       return 'bg-amber-700 text-white shadow-sm shadow-amber-900/20';
-    case 'carpool':
+    case 'rideshare':
       return 'bg-sky-700 text-white shadow-sm shadow-sky-900/20';
     case 'event':
       return 'bg-violet-700 text-white shadow-sm shadow-violet-900/20';
@@ -219,7 +219,7 @@ export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): stri
   }
 };
 
-export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'carpool';
+export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
 export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
 
 /** Type-colored ring on map pins — matches filter / badge colors. */
@@ -233,7 +233,7 @@ export const exploreMapPinRingColor = (
       return '#d97706';
     case 'event':
       return '#7c3aed';
-    case 'carpool':
+    case 'rideshare':
       return '#0284c7';
     case 'shop':
       return '#e11d48';

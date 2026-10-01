@@ -27,8 +27,8 @@ import { createUniqueReferralCode } from '../lib/referral-code.js';
 import { performParticipantCheckIn } from '../services/checkin.js';
 import { buildLocationCreateData } from '../services/location-submit.js';
 import {
-  assertCarpoolActivityFields,
-  assertNoLegacyLinkedCarpoolFields,
+  assertRideshareActivityFields,
+  assertNoLegacyLinkedRideshareFields,
   assertLocationMatchesActivityType,
   fromPrismaActivityType,
   sharedActivityTypeSchema,
@@ -119,7 +119,7 @@ const eventCreateSchema = z.object({
   activityType: sharedActivityTypeSchema,
   locationId: z.string().min(1),
   title: z.string().min(4).max(120),
-  description: z.string().min(20),
+  description: z.string().min(1).max(5000),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   time: z.string().regex(/^\d{2}:\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
@@ -134,17 +134,17 @@ const eventCreateSchema = z.object({
   parkingLat: z.number().min(-90).max(90).optional(),
   parkingLng: z.number().min(-180).max(180).optional(),
   meetingDifferent: z.boolean().optional(),
-  carPoolEnabled: z.boolean().optional(),
-  carPoolFree: z.boolean().optional(),
-  carPoolPriceAed: z.number().int().min(0).optional(),
-  carPoolSeats: z.number().int().min(1).optional(),
-  carPoolDetails: z.string().max(1000).optional(),
-  carPoolFromPoint: z.string().max(200).optional(),
-  carPoolFromLat: z.number().min(-90).max(90).optional(),
-  carPoolFromLng: z.number().min(-180).max(180).optional(),
-  carPoolToPoint: z.string().max(200).optional(),
-  carPoolToLat: z.number().min(-90).max(90).optional(),
-  carPoolToLng: z.number().min(-180).max(180).optional(),
+  rideshareEnabled: z.boolean().optional(),
+  rideshareFree: z.boolean().optional(),
+  ridesharePriceAed: z.number().int().min(0).optional(),
+  rideshareSeats: z.number().int().min(1).optional(),
+  rideshareDetails: z.string().max(1000).optional(),
+  rideshareFromPoint: z.string().max(200).optional(),
+  rideshareFromLat: z.number().min(-90).max(90).optional(),
+  rideshareFromLng: z.number().min(-180).max(180).optional(),
+  rideshareToPoint: z.string().max(200).optional(),
+  rideshareToLat: z.number().min(-90).max(90).optional(),
+  rideshareToLng: z.number().min(-180).max(180).optional(),
   paymentTerms: z.string().max(1000).optional(),
   itinerary: z.array(z.string()).default([]),
   requirements: z.array(z.string()).default([]),
@@ -162,10 +162,20 @@ const eventCreateSchema = z.object({
   outingTopic: outingTopicSchema.optional(),
   clonedFromActivityId: z.string().uuid().optional(),
   linkedActivityId: z.string().uuid().nullable().optional(),
-  linkedCarpoolActivityId: z.string().uuid().nullable().optional(),
-});
+  linkedRideshareActivityId: z.string().uuid().nullable().optional(),
+})
+  .superRefine((data, ctx) => {
+    if (data.activityType === 'rideshare') return;
+    if (data.description.trim().length < 20) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Description must be at least 20 characters.',
+        path: ['description'],
+      });
+    }
+  });
 
-const eventPatchSchema = eventCreateSchema.partial();
+const eventPatchSchema = eventCreateSchema.innerType().partial();
 const requestDecisionSchema = z.object({
   status: z.enum(['approved', 'rejected']),
   organizerNote: z.string().max(300).optional()
@@ -204,14 +214,14 @@ import { resolveParticipationModeForJoinMode } from '@uaetrail/shared-types';
 
 const buildHostActivityResponse = async (event: ActivityWithTenantRelations): Promise<ActivityDTO> => {
   const dto = buildActivityDto(event);
-  if (!event.linkedCarpoolActivityId) return dto;
+  if (!event.linkedRideshareActivityId) return dto;
 
-  const linked = await findTenantActivityForEdit(event.linkedCarpoolActivityId, event.tenantId);
+  const linked = await findTenantActivityForEdit(event.linkedRideshareActivityId, event.tenantId);
   if (!linked) return dto;
 
   return {
     ...dto,
-    linkedCarpool: buildActivityDto(linked),
+    linkedRideshare: buildActivityDto(linked),
   };
 };
 
@@ -253,8 +263,8 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
 
     const location = await resolveActivityLocation(body.locationId, req.auth!.userId, { platformAdmin });
     assertLocationMatchesActivityType(location.activityType, body.activityType);
-    assertNoLegacyLinkedCarpoolFields(body.activityType, body);
-    assertCarpoolActivityFields(body);
+    assertNoLegacyLinkedRideshareFields(body.activityType, body);
+    assertRideshareActivityFields(body);
 
     const tenant = await findTenantById(tenantId);
     if (!tenant) {
@@ -270,14 +280,14 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
       pricePackages: body.pricePackages,
       pricingMode: body.pricingMode,
     });
-    const isCarpool = body.activityType === 'carpool';
+    const isRideshare = body.activityType === 'rideshare';
     assertActivityPricingAllowed({
       tenantType: tenant.type,
       pricingMode: body.pricingMode,
       pricing,
-      sharedAmountAed: isCarpool
-        ? body.carPoolFree === false
-          ? body.carPoolPriceAed ?? body.price ?? 0
+      sharedAmountAed: isRideshare
+        ? body.rideshareFree === false
+          ? body.ridesharePriceAed ?? body.price ?? 0
           : null
         : body.pricingMode === 'shared'
           ? pricing.priceAed
@@ -304,21 +314,21 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
       parkingLat: body.parkingLat,
       parkingLng: body.parkingLng,
       meetingDifferent: body.meetingDifferent ?? false,
-      carPoolEnabled: isCarpool ? true : (body.carPoolEnabled ?? false),
-      carPoolFree: isCarpool
-        ? body.carPoolFree ?? body.price === 0
-        : body.carPoolEnabled
-          ? (body.carPoolFree ?? true)
+      rideshareEnabled: isRideshare ? true : (body.rideshareEnabled ?? false),
+      rideshareFree: isRideshare
+        ? body.rideshareFree ?? body.price === 0
+        : body.rideshareEnabled
+          ? (body.rideshareFree ?? true)
           : null,
-      carPoolPriceAed: isCarpool
-        ? body.carPoolFree === false
-          ? body.carPoolPriceAed ?? body.price ?? 0
+      ridesharePriceAed: isRideshare
+        ? body.rideshareFree === false
+          ? body.ridesharePriceAed ?? body.price ?? 0
           : null
-        : body.carPoolEnabled && body.carPoolFree === false
-          ? body.carPoolPriceAed ?? 0
+        : body.rideshareEnabled && body.rideshareFree === false
+          ? body.ridesharePriceAed ?? 0
           : null,
-      carPoolSeats: isCarpool ? body.carPoolSeats ?? body.capacity : body.carPoolEnabled ? body.carPoolSeats ?? null : null,
-      carPoolDetails: isCarpool ? body.carPoolDetails ?? null : body.carPoolEnabled ? body.carPoolDetails : null,
+      rideshareSeats: isRideshare ? body.rideshareSeats ?? body.capacity : body.rideshareEnabled ? body.rideshareSeats ?? null : null,
+      rideshareDetails: isRideshare ? body.rideshareDetails ?? null : body.rideshareEnabled ? body.rideshareDetails : null,
       paymentTerms: body.paymentTerms,
       itinerary: body.itinerary,
       requirements: body.requirements,
@@ -338,7 +348,7 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
       outingCategory: body.outingCategory ?? null,
       outingTopic: body.outingTopic ?? null,
       linkedActivityId: body.linkedActivityId ?? null,
-      linkedCarpoolActivityId: body.linkedCarpoolActivityId ?? null,
+      linkedRideshareActivityId: body.linkedRideshareActivityId ?? null,
     });
 
     await createAuditLog({
@@ -374,7 +384,7 @@ tenantActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), va
 
     const nextActivityType =
       body.activityType ?? fromPrismaActivityType(existing.activityType ?? ActivityType.HIKING);
-    assertNoLegacyLinkedCarpoolFields(nextActivityType, body);
+    assertNoLegacyLinkedRideshareFields(nextActivityType, body);
     if (existing.status === ActivityStatus.CANCELLED || existing.status === ActivityStatus.SUSPENDED) {
       throw new ApiError(400, 'activity_not_editable', `Cannot edit an activity that is ${existing.status.toLowerCase()}.`);
     }
@@ -416,16 +426,16 @@ tenantActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), va
     if (pricing) {
       const tenant = await findTenantById(tenantId);
       if (tenant) {
-        const isCarpool =
-          body.activityType === 'carpool' ||
-          String(existing.activityType ?? '').toLowerCase() === 'carpool';
+        const isRideshare =
+          body.activityType === 'rideshare' ||
+          String(existing.activityType ?? '').toLowerCase() === 'rideshare';
         assertActivityPricingAllowed({
           tenantType: tenant.type,
           pricingMode: body.pricingMode ?? pricing.pricingMode,
           pricing,
-          sharedAmountAed: isCarpool
-            ? body.carPoolFree === false
-              ? body.carPoolPriceAed ?? body.price ?? existing.carPoolPriceAed ?? 0
+          sharedAmountAed: isRideshare
+            ? body.rideshareFree === false
+              ? body.ridesharePriceAed ?? body.price ?? existing.ridesharePriceAed ?? 0
               : null
             : (body.pricingMode ?? pricing.pricingMode) === 'shared'
               ? pricing.priceAed
@@ -455,11 +465,11 @@ tenantActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), va
       parkingLat: body.parkingLat,
       parkingLng: body.parkingLng,
       meetingDifferent: body.meetingDifferent,
-      carPoolEnabled: body.carPoolEnabled,
-      carPoolFree: body.carPoolFree,
-      carPoolPriceAed: body.carPoolPriceAed,
-      carPoolSeats: body.carPoolSeats,
-      carPoolDetails: body.carPoolDetails,
+      rideshareEnabled: body.rideshareEnabled,
+      rideshareFree: body.rideshareFree,
+      ridesharePriceAed: body.ridesharePriceAed,
+      rideshareSeats: body.rideshareSeats,
+      rideshareDetails: body.rideshareDetails,
       paymentTerms: body.paymentTerms,
       itinerary: body.itinerary,
       requirements: body.requirements,
@@ -514,7 +524,7 @@ tenantActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), va
       outingCategory: body.outingCategory,
       outingTopic: body.outingTopic,
       linkedActivityId: body.linkedActivityId,
-      linkedCarpoolActivityId: body.linkedCarpoolActivityId,
+      linkedRideshareActivityId: body.linkedRideshareActivityId,
     });
 
     await createAuditLog({

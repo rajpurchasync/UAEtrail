@@ -20,7 +20,7 @@ export type TenantType = 'company' | 'guide_owned';
 export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
 
 /** Scheduled listings on the map (host activities, carpools). */
-export type ScheduledActivityType = 'hiking' | 'camping' | 'event' | 'carpool';
+export type ScheduledActivityType = 'hiking' | 'camping' | 'event' | 'rideshare';
 
 /** Wire `activityType` on place/location rows (includes community shop pins). */
 export type PlaceActivityType = ScheduledActivityType | 'shop';
@@ -169,14 +169,14 @@ export interface ActivityDTO {
   parkingLat?: number | null;
   parkingLng?: number | null;
   meetingDifferent?: boolean;
-  carPoolEnabled?: boolean;
-  carPoolFree?: boolean | null;
-  carPoolPriceAed?: number | null;
-  carPoolSeats?: number | null;
-  carPoolDetails?: string | null;
+  rideshareEnabled?: boolean;
+  rideshareFree?: boolean | null;
+  ridesharePriceAed?: number | null;
+  rideshareSeats?: number | null;
+  rideshareDetails?: string | null;
   linkedActivityId?: string | null;
-  linkedCarpoolActivityId?: string | null;
-  linkedCarpool?: ActivityDTO | null;
+  linkedRideshareActivityId?: string | null;
+  linkedRideshare?: ActivityDTO | null;
   linkedParentActivity?: Pick<ActivityDTO, 'id' | 'title' | 'activityType'> | null;
   paymentTerms?: string | null;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
@@ -548,7 +548,7 @@ export type ShopPublicDTO = MerchantPublicDTO;
 export type ExploreMapKind = ActivityType | 'shop' | 'agency';
 export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
 
-export type ParticipantIntentKind = 'hiking' | 'camping' | 'event' | 'guide' | 'carpool' | 'other';
+export type ParticipantIntentKind = 'hiking' | 'camping' | 'event' | 'guide' | 'rideshare' | 'other';
 
 export interface ParticipantIntentDTO {
   id: string;
@@ -626,7 +626,7 @@ export interface ExploreMapItemDTO {
   participantPreviews?: ParticipantPreviewDTO[];
   image?: string | null;
   activity?: ActivityDTO;
-  carPoolEnabled?: boolean;
+  rideshareEnabled?: boolean;
   merchantId?: string;
   productId?: string;
   priceAed?: number | null;

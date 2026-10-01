@@ -46,7 +46,7 @@ const todayIsoUtc = (): string => new Date().toISOString().slice(0, 10);
 const activityTypesForFilter = (filter: MemberGoalActivityFilter): string[] => {
   if (filter === 'hiking') return [ActivityType.HIKING];
   if (filter === 'camping') return [ActivityType.CAMPING];
-  return [ActivityType.HIKING, ActivityType.CAMPING, ActivityType.EVENT, ActivityType.CARPOOL];
+  return [ActivityType.HIKING, ActivityType.CAMPING, ActivityType.EVENT, ActivityType.RIDESHARE];
 };
 
 /** Whether a stored activity/location type counts toward the member's goal filter. */

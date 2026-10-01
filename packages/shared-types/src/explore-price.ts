@@ -13,10 +13,10 @@ export interface ExploreActivityDisplayFields {
 }
 
 type ExplorePriceInput = {
-  isCarpool: boolean;
+  isRideshare: boolean;
   price?: number | null;
-  carPoolFree?: boolean | null;
-  carPoolPriceAed?: number | null;
+  rideshareFree?: boolean | null;
+  ridesharePriceAed?: number | null;
   priceLabel?: ExplorePriceLabelKind | null;
   priceDisplay?: string | null;
 };
@@ -24,8 +24,8 @@ type ExplorePriceInput = {
 type ActivityPriceSource = {
   activityType?: string;
   price?: number | null;
-  carPoolFree?: boolean | null;
-  carPoolPriceAed?: number | null;
+  rideshareFree?: boolean | null;
+  ridesharePriceAed?: number | null;
   meetingPoint?: string | null;
   startPoint?: string | null;
   locationName?: string | null;
@@ -59,11 +59,11 @@ export const resolveExplorePrice = (input: ExplorePriceInput): ExplorePriceInfo 
     };
   }
 
-  if (input.isCarpool) {
-    if (input.carPoolFree === true || (input.carPoolPriceAed ?? 0) === 0) {
+  if (input.isRideshare) {
+    if (input.rideshareFree === true || (input.ridesharePriceAed ?? 0) === 0) {
       return { kind: 'free', badge: 'Free' };
     }
-    const amount = input.carPoolPriceAed ?? 0;
+    const amount = input.ridesharePriceAed ?? 0;
     return {
       kind: 'shared',
       badge: `Shared · AED ${amount}/seat`,
@@ -81,22 +81,22 @@ export const resolveExplorePrice = (input: ExplorePriceInput): ExplorePriceInfo 
   };
 };
 
-const isCarpoolActivity = (activity: ActivityPriceSource): boolean =>
-  activity.activityType === 'carpool';
+const isRideshareActivity = (activity: ActivityPriceSource): boolean =>
+  activity.activityType === 'rideshare';
 
 /** Server-side explore map price + route labels for an activity pin. */
 export const buildExploreActivityDisplay = (activity: ActivityPriceSource): ExploreActivityDisplayFields => {
   const fromLabel = activity.meetingPoint ?? null;
   const toLabel = activity.startPoint ?? activity.locationName ?? null;
-  const carpool = isCarpoolActivity(activity);
+  const rideshare = isRideshareActivity(activity);
 
-  if (carpool) {
-    if (activity.carPoolFree === true || (activity.carPoolPriceAed ?? 0) === 0) {
+  if (rideshare) {
+    if (activity.rideshareFree === true || (activity.ridesharePriceAed ?? 0) === 0) {
       return { priceLabel: 'free', priceDisplay: 'Free', fromLabel, toLabel };
     }
     return {
       priceLabel: 'shared',
-      priceDisplay: `Shared · AED ${activity.carPoolPriceAed ?? 0}/seat`,
+      priceDisplay: `Shared · AED ${activity.ridesharePriceAed ?? 0}/seat`,
       fromLabel,
       toLabel,
     };

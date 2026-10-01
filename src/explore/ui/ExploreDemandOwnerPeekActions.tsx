@@ -1,9 +1,9 @@
-import { ORGANIZE_LINK_CARPOOL_LABEL } from '../createFlowCopy';
+import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../createFlowCopy';
 
 type ExploreDemandOwnerPeekActionsProps = {
   onDelete: () => void;
-  showLinkCarpool?: boolean;
-  onLinkCarpool?: () => void;
+  showLinkRideshare?: boolean;
+  onLinkRideshare?: () => void;
   onGuestGatedAction?: () => void;
 };
 
@@ -13,8 +13,8 @@ const linkButtonClass =
 /** Requester peek on their own demand — Delete + optional rideshare offer (no check-in). */
 export const ExploreDemandOwnerPeekActions = ({
   onDelete,
-  showLinkCarpool = false,
-  onLinkCarpool,
+  showLinkRideshare = false,
+  onLinkRideshare,
   onGuestGatedAction,
 }: ExploreDemandOwnerPeekActionsProps) => {
   const runGated = (action: () => void) => {
@@ -35,14 +35,14 @@ export const ExploreDemandOwnerPeekActions = ({
         Delete
       </button>
 
-      {showLinkCarpool && onLinkCarpool ? (
+      {showLinkRideshare && onLinkRideshare ? (
         <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
           <button
             type="button"
-            onClick={() => runGated(onLinkCarpool)}
+            onClick={() => runGated(onLinkRideshare)}
             className={linkButtonClass}
           >
-            {ORGANIZE_LINK_CARPOOL_LABEL}
+            {ORGANIZE_LINK_RIDESHARE_LABEL}
           </button>
         </div>
       ) : null}

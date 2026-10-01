@@ -30,8 +30,8 @@ Work is **sequential by phase**. Do not skip Phase P0 (alignment layer).
 | ID | Decision |
 |----|----------|
 | D1 | No pay links — labels only + “Payment arranged directly with the host.” |
-| D2 | Carpool = **separate activity type** (`CARPOOL` / `'carpool'`), not `carPoolEnabled` on hiking |
-| D3 | Carpool map shows **from and to** locations (two pins; polyline optional) |
+| D2 | Rideshare = **separate activity type** (`RIDESHARE` / `'rideshare'`), not `rideshareEnabled` on hiking |
+| D3 | Rideshare map shows **from and to** locations (two pins; polyline optional) |
 | D4 | Optional `linkedActivityId` on carpool for future hike/camp link (UI deferred) |
 | D5 | Simpler mobile create — ≤5 steps per type; advanced fields under “More options” |
 | D6 | Sign-up/host: **Individual** (`GUIDE_OWNED`) or **Business** (`COMPANY`) via `/become-host` |
@@ -63,8 +63,8 @@ Work is **sequential by phase**. Do not skip Phase P0 (alignment layer).
 
 - Generic bottom sheet copy (not type-specific)
 - No Free/Paid badges on map sheet
-- Carpool = hiking + `carPoolEnabled` hack in `mobileCreateFlow.ts`
-- No `carpool` in ActivityType enum
+- Legacy: hiking + `rideshareEnabled` hack in `mobileCreateFlow.ts`
+- No `rideshare` in ActivityType enum
 - No demand posts, no activity-linked groups
 - No tour agencies on explore map
 - Join modal still framed for paid checkout flow
@@ -94,22 +94,22 @@ LocationsMap.tsx      ← pins (incl. carpool dual pins)
 #### Activity (extend)
 
 ```ts
-// API enum: ActivityType.CARPOOL = 'CARPOOL'
-// Shared: ActivityType includes 'carpool'
+// API enum: ActivityType.RIDESHARE = 'RIDESHARE'
+// Shared: ActivityType includes 'rideshare'
 
-carPoolFromLabel, carPoolFromLat, carPoolFromLng
-carPoolToLabel, carPoolToLat, carPoolToLng
-carPoolSeats, carPoolFree, carPoolPriceAed
+rideshareFromLabel, rideshareFromLat, rideshareFromLng
+rideshareToLabel, rideshareToLat, rideshareToLng
+rideshareSeats, rideshareFree, ridesharePriceAed
 linkedActivityId?: string | null   // future
 
-// Legacy read-compat: carPoolEnabled → treat as carpool kind
+// Legacy read-compat: rideshareEnabled → treat as carpool kind
 ```
 
 #### ExploreMapItemDTO (extend)
 
 ```ts
 source: 'activity' | 'venue' | 'shop' | 'agency' | 'demand'
-kind: ActivityType | 'shop' | 'carpool'
+kind: ActivityType | 'shop' | 'rideshare'
 
 priceLabel?: 'free' | 'paid' | 'shared'
 priceDisplay?: string | null
@@ -198,20 +198,20 @@ Execute **one phase at a time**. Update **Phase status** (§8) when complete.
 
 ---
 
-### PHASE P2 — Carpool as first-class type
+### PHASE P2 — Rideshare as first-class type
 
 | ID | Task | Files |
 |----|------|-------|
-| P2-1 | `CARPOOL` enum + shared `'carpool'` | enums, shared-types, activity-type.ts |
+| P2-1 | `RIDESHARE` enum + shared `'rideshare'` | enums, shared-types, activity-type.ts |
 | P2-2 | From/to fields on Activity | types, entity-builders |
 | P2-3 | Mongo migration legacy docs | mongo-migrations.ts |
 | P2-4 | Host create API validation | routes/host.ts |
 | P2-5 | Explore map carpool + to coords | explore-map.ts |
 | P2-6 | Dual map markers | LocationsMap.tsx |
 | P2-7 | Polyline from→to (optional) | LocationsMap.tsx |
-| P2-8 | Carpool headline | exploreCopy |
-| P2-9 | Filter `kind === 'carpool'` | MobileExploreExperience |
-| P2-10 | Rename Rideshare → Carpool in UI | create flow, pills |
+| P2-8 | Rideshare headline | exploreCopy |
+| P2-9 | Filter `kind === 'rideshare'` | MobileExploreExperience |
+| P2-10 | Rideshare label in UI | create flow, pills |
 
 **Gate:** API create carpool; two pins; sheet shows from → to.
 
@@ -226,7 +226,7 @@ Execute **one phase at a time**. Update **Phase status** (§8) when complete.
 | P3-3 | Per-type create flows | MobileCreateActivityFlow |
 | P3-4 | Hiking/Camp: Where→When→Spots→Price→Publish | mobileCreateFlow |
 | P3-5 | Event: Title→Where→When→Spots→Price→Publish | same |
-| P3-6 | Carpool: From→To→When→Seats→Price→Publish | same |
+| P3-6 | Rideshare: From→To→When→Seats→Price→Publish | same |
 | P3-7 | “More options” drawer | same |
 | P3-8 | Redirect to `/become-host` if not approved | create flow |
 | P3-9 | Remove rideshare→hiking hack | mobileCreateFlow.ts |
@@ -287,7 +287,7 @@ Execute **one phase at a time**. Update **Phase status** (§8) when complete.
 
 | ID | Task |
 |----|------|
-| P7-1 | Carpool ↔ hike/camp link UI |
+| P7-1 | Rideshare ↔ hike/camp link UI |
 | P7-2 | Map search |
 | P7-3 | MapTiler English tiles (env) |
 | P7-4 | PWA / Capacitor full-screen |
@@ -330,7 +330,7 @@ Suggested tags: `experiment/explore-p0`, `experiment/explore-p1`, …
 |-------|--------|-----------|-------|
 | P0 | Complete | 2026-09-07 | exploreCopy, exploreCardModel, explorePriceLabel, tests |
 | P1 | Complete | 2026-09-07 | Shared sheet/list, API price fields, JoinRequestModal offline UX |
-| P2 | Complete | 2026-09-07 | CARPOOL type, dual pins, from→to sheet, migration |
+| P2 | Complete | 2026-09-07 | RIDESHARE type, dual pins, from→to sheet, migration |
 | P3 | Complete | 2026-09-07 | Host gate, per-type ≤5-step create, price labels, more options |
 | P4 | Not started | — | |
 | P5 | Not started | — | |

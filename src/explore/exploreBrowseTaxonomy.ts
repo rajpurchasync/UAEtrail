@@ -33,7 +33,7 @@ export const EXPLORE_SEARCH_SCOPE_COPY: Record<
 > = {
   trips: {
     label: 'Trips',
-    description: 'Hosted hikes, camps, carpools, events',
+    description: 'Hosted hikes, camps, rideshares, events',
     shipped: true,
   },
   spots: {
