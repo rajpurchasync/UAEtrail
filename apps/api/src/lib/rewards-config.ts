@@ -158,8 +158,8 @@ export const EARN_OPPORTUNITIES = [
 
 /** Actionable links shown in “path to next tier” checklist */
 export const EARN_PATH_SUGGESTIONS = [
-  { title: 'Invite a friend', points: REWARD_POINTS.REFERRAL_BONUS_REFERRER, path: '/my-rewards', note: 'Copy your invite link' },
-  { title: 'Join an activity', points: REWARD_POINTS.ACTIVITY_ATTENDED, path: '/activities?tab=joined', note: 'Get checked in on the day' },
+  { title: 'Invite a friend', points: REWARD_POINTS.REFERRAL_BONUS_REFERRER, path: '/profile/badges', note: 'Share from your profile when available' },
+  { title: 'Join an activity', points: REWARD_POINTS.ACTIVITY_ATTENDED, path: '/trips', note: 'Get checked in on the day' },
   { title: 'Community post', points: REWARD_POINTS.COMMUNITY_POST, path: '/community', note: 'Activity report, tip, or question' },
   { title: 'Write a review', points: REWARD_POINTS.REVIEW_WRITTEN, path: '/explore?panel=venues&list=1', note: 'After a trail or camp visit' },
   { title: 'Reply in community', points: REWARD_POINTS.COMMUNITY_REPLY, path: '/community', note: 'Help fellow explorers' },

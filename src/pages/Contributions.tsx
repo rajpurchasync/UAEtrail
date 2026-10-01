@@ -33,6 +33,7 @@ export const Contributions = () => {
     <ConsumerShell
       layout="stack"
       title="Map contributions"
+      maxWidth="4xl"
       showJourney={false}
       back={{ fallbackTo: '/profile', label: 'Profile' }}
     >

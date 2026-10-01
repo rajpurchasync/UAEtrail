@@ -93,7 +93,7 @@ export const tripsRoleChips = (
       { id: 'joined', label: 'Joined' },
     ];
     if (canHost) chips.push({ id: 'hosted', label: 'Hosted' });
-    chips.push({ id: 'self', label: 'Self' });
+    chips.push({ id: 'self', label: 'My plans' });
     return chips;
   }
   if (segment === 'completed') {
@@ -101,7 +101,7 @@ export const tripsRoleChips = (
       { id: 'joined', label: 'Joined' },
     ];
     if (canHost) chips.push({ id: 'hosted', label: 'Hosted' });
-    chips.push({ id: 'self', label: 'Self' });
+    chips.push({ id: 'self', label: 'My plans' });
     return chips;
   }
   return [];

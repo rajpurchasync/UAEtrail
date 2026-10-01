@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Map as MapIcon, Plus } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { TabPageSearchRow } from '../components/mobile/TabPageSearchRow';
@@ -94,58 +95,62 @@ export const Activities = () => {
   const showUpcomingJoinedHub = segment === 'upcoming' && role === 'joined';
   const showFab = showUpcomingJoinedHub && Boolean(user);
 
+  const tripsToolbar = user ? (
+    <>
+      <div className="mb-3 flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <TabPageSearchRow
+            value={activitySearchQuery}
+            onChange={setActivitySearchQuery}
+            placeholder="Search trips"
+          />
+        </div>
+        <Link
+          to={tripsMapPath()}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-emerald-700 shadow-sm"
+          aria-label="My outdoor map"
+          title="My outdoor map"
+        >
+          <MapIcon className="h-5 w-5" aria-hidden />
+        </Link>
+      </div>
+      <TripsSegmentScroll tabs={TRIPS_SEGMENT_TABS} activeId={segment} onChange={setSegment} />
+      {segment !== 'wishlist' ? (
+        <div className="mt-3">
+          <TripsRoleChips chips={roleChips} activeId={role} onChange={setRole} />
+        </div>
+      ) : null}
+      {segment === 'upcoming' ? (
+        <div className="mt-3">
+          <ProfileGoalCard
+            variant="compact"
+            goal={goal}
+            saving={goalSaving}
+            onSave={saveGoal}
+            onClear={clearGoal}
+          />
+        </div>
+      ) : null}
+    </>
+  ) : null;
+
   return (
-    <div className="min-h-screen consumer-bg md:bg-gray-50">
+    <>
       <PageMeta
         title="My trips — upcoming, completed, and wishlist"
         description="Your upcoming outings, completed trips, and wishlist on UAE Trail."
         path={TRIPS_PATH}
       />
 
-      <PullToRefresh onRefresh={handleRefresh}>
-        <div className="mx-auto w-full max-w-4xl px-4 pb-bottom-nav-safe sm:px-6 md:pb-8">
-          {user ? (
-            <>
-              <div className="mb-3 flex items-center gap-2">
-                <div className="min-w-0 flex-1">
-                  <TabPageSearchRow
-                    value={activitySearchQuery}
-                    onChange={setActivitySearchQuery}
-                    placeholder="Search trips"
-                  />
-                </div>
-                <Link
-                  to={tripsMapPath()}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-emerald-700 shadow-sm"
-                  aria-label="My outdoor map"
-                  title="My outdoor map"
-                >
-                  <MapIcon className="h-5 w-5" aria-hidden />
-                </Link>
-              </div>
-
-              <TripsSegmentScroll tabs={TRIPS_SEGMENT_TABS} activeId={segment} onChange={setSegment} />
-
-              {segment !== 'wishlist' ? (
-                <div className="mt-3">
-                  <TripsRoleChips chips={roleChips} activeId={role} onChange={setRole} />
-                </div>
-              ) : null}
-
-              {segment === 'upcoming' ? (
-                <div className="mt-3">
-                  <ProfileGoalCard
-                    goal={goal}
-                    saving={goalSaving}
-                    onSave={saveGoal}
-                    onClear={clearGoal}
-                  />
-                </div>
-              ) : null}
-            </>
-          ) : null}
-
-          <div className="mt-3">
+      <ConsumerShell
+        layout="tab"
+        title="Trips"
+        suppressMobileHeader
+        maxWidth="4xl"
+        toolbar={tripsToolbar}
+      >
+        <PullToRefresh onRefresh={handleRefresh}>
+          <div className="space-y-3 pb-bottom-nav-safe">
             {segment === 'wishlist' && user ? <ProfileWishlistPanel key={refreshKey} /> : null}
 
             {showUpcomingJoinedHub && user ? (
@@ -197,8 +202,8 @@ export const Activities = () => {
               <TripsSelfSection segment="completed" />
             ) : null}
           </div>
-        </div>
-      </PullToRefresh>
+        </PullToRefresh>
+      </ConsumerShell>
 
       {showFab ? (
         <FloatingActionButton
@@ -208,6 +213,6 @@ export const Activities = () => {
           className="md:hidden"
         />
       ) : null}
-    </div>
+    </>
   );
 };

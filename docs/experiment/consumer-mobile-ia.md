@@ -16,15 +16,18 @@ Profile is reached from the header avatar (`/profile`), not a fourth tab.
 
 ## Profile hub UX (`/profile`) — Phase 1
 
+**Layout:** `ConsumerShell` `layout="tab"`, `suppressMobileHeader`, `maxWidth="4xl"` (matches Trips). Sticky filters/search live in shell `toolbar` on Trips only.
+
 Consumer pattern (not Settings-style chevron lists on the hub):
 
 - **Identity hero (~40dvh):** larger avatar + completion ring, name/meta, visibility; tappable **Followed by · Joined · Hosted**; header actions (view public left, share + edit right).
-- **Quick launcher:** emoji + label grid — **Friends**, **Badges** (earned count), **Contributions**, **Settings**, **Hosting** (when applicable). No **Trips** / **Messages** (bottom tabs).
+- **Quick launcher:** Lucide icon tiles (`glass-card-interactive`) — **Friends**, **Badges** (earned count), **Contributions**, **Settings**, **Hosting** (when applicable). No **Trips** / **Messages** (bottom tabs).
 - **Bio & speaks:** **Edit profile** only (`/profile/edit`), not on the hub.
-- **Member goal:** summary card on Profile; same editor on **Trips → Upcoming** (primary context for progress).
+- **Member goal:** full warm card on Profile; **compact glass row** on **Trips → Upcoming**; editor uses shared **`ConsumerBottomSheet`** (warm header).
 - **Sign out:** single row below goal (not in launcher).
 - **Chrome:** unified mobile tab header title **Profile**.
-- **Trail Points / rewards hub:** not part of profile IA for now (`/my-rewards` may remain for legacy links only).
+- **Trail Points / rewards wallet:** removed from consumer IA. Legacy `/my-rewards`, `/trail-points`, `/rewards` redirect to **`/profile/badges`**; notification deep links normalize the same way.
+- **Profile identity:** `glass-card` hero + Lucide actions (aligned with hub list rows / launcher).
 
 ## Personal goals
 
@@ -34,15 +37,17 @@ Consumer pattern (not Settings-style chevron lists on the hub):
 - **Notifications:** Halfway + complete on check-in; optional behind-pace nudge when loading your goal (≤1×/28d).
 - **Public profile:** `yearGoal` strip when the member has a current-year goal and full visibility.
 
-Signed-in **Friends**, **Contributions**, **Groups**, **My badges**, and **My requests** keep the bottom tab bar visible (stack pages off Profile).
+Signed-in **Friends**, **Contributions**, **Groups**, **My badges**, **Notifications**, and **Join requests** use **`ConsumerShell` stack** (`maxWidth="4xl"`, back to Profile) and keep the bottom tab bar visible.
 
 ## Trips hub (`/trips`) — Phase 2 (in progress)
 
+**Layout:** `ConsumerShell` tab + **toolbar** (search, outdoor map shortcut, `FilterChips` segments, role chips, compact goal). Lists use **`ActivityHubListRow`** (hosted rows include actions menu).
+
 - **Segments (scroll):** **Upcoming** · **Completed** · **Wishlist** (`?segment=`; legacy `past` → `completed`).
-- **Role chips** (Upcoming & Completed): **Joined** · **Hosted** (hosts) · **Self** (`?role=`; legacy `tab=` normalized away).
+- **Role chips** (Upcoming & Completed): **Joined** · **Hosted** (hosts) · **My plans** (`?role=self`; legacy `tab=` normalized away).
 - **Upcoming + Joined:** goal card + upcoming carousel + suggestions (no nested Past tab).
-- **Completed + Joined:** attended outings only; **Hosted:** past hosted; **Self:** placeholder until demand API.
-- **Map:** `/trips/map` (stub → explore my-trips until dedicated map ships).
+- **Completed + Joined:** attended outings only; **Hosted:** past hosted; **My plans:** placeholder until demand API.
+- **Map:** `/trips/map` — personal outdoor map (pins + joined/hosted entries); not Explore.
 - Legacy `/profile/wishlist` → `/trips?segment=wishlist`.
 
 ## Friends (`/buddies`)
@@ -59,7 +64,7 @@ Signed-in **Friends**, **Contributions**, **Groups**, **My badges**, and **My re
 - `/profile/settings` — index
 - `/profile/settings/account` · `/privacy` · `/notifications`
 - `/profile/edit` — consumer edit (no DOB field)
-- `/profile/badges` — redirects to Trail Points with badges sheet open (`/my-rewards?panel=badges`)
+- `/profile/badges` — earned + pipeline badges (no points wallet)
 
 ## Explicitly out of scope
 

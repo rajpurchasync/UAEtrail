@@ -209,6 +209,7 @@ export const Buddies = () => {
     <ConsumerShell
       layout="stack"
       title="Friends"
+      maxWidth="4xl"
       showJourney={false}
       back={{ fallbackTo: '/profile', label: 'Profile' }}
     >

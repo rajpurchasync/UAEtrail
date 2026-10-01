@@ -130,7 +130,7 @@
   }
 
   .app-chip-active-neutral {
-    @apply app-chip-active;
+    @apply app-chip bg-neutral-900 text-white shadow-sm;
   }
 
   .app-chip-inactive {

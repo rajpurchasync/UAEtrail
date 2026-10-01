@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, ActivityRequestView } from '../api/index';
-import { MobileScreen } from '../components/layout/MobileScreen';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/ConsumerFeedback';
+import { PageMeta } from '../components/seo/PageMeta';
 import { AppSelect } from '../components/ui/AppSelect';
 
 import { requestStatusLabel } from '../utils/joinRequestUi';
@@ -45,10 +47,19 @@ export const UserRequests = () => {
   const pendingCount = requests.filter((r) => r.status === 'pending').length;
 
   return (
-    <MobileScreen title="Join Requests" backTo="/profile">
-      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+    <ConsumerShell
+      layout="stack"
+      title="Join requests"
+      maxWidth="4xl"
+      showJourney={false}
+      back={{ fallbackTo: '/profile', label: 'Profile' }}
+    >
+      <PageMeta title="Join requests" noIndex />
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="space-y-3 pb-nav-safe animate-fade-up">
+      {error ? <ConsumerErrorCard message={error} /> : null}
+
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {pendingCount > 0 && (
             <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
@@ -67,9 +78,7 @@ export const UserRequests = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <ConsumerLoadingSpinner />
       ) : (
         <div className="space-y-3">
           {filtered.map((request) => (
@@ -107,6 +116,7 @@ export const UserRequests = () => {
           )}
         </div>
       )}
-    </MobileScreen>
+      </div>
+    </ConsumerShell>
   );
 };

@@ -21,7 +21,7 @@ const resolveCenter = (pathname: string, search: string): MobileTabHeaderCenter 
     if (params.get('role') === 'hosted' || params.get('tab') === 'hosted') {
       return { kind: 'title', text: 'Hosted' };
     }
-    if (params.get('role') === 'self') return { kind: 'title', text: 'Self' };
+    if (params.get('role') === 'self') return { kind: 'title', text: 'My plans' };
     const subTitle = joinedSubViewTitle(params.get('sub'));
     if (subTitle) return { kind: 'title', text: subTitle };
     return { kind: 'title', text: 'Trips' };

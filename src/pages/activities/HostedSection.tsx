@@ -23,6 +23,7 @@ import {
   ConsumerLoadingSpinner,
 } from '../../components/mobile/ConsumerFeedback';
 import { Dialog } from '../../components/ui/Dialog';
+import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 
@@ -261,41 +262,37 @@ export const HostedSection = ({
       ) : (
         <div className="space-y-2">
           {filteredActivities.map((event) => (
-            <div key={event.id} className="glass-card-interactive flex items-center gap-1 p-1 pl-3.5">
-              <div className="min-w-0 flex-1">
-                <button
-                  type="button"
-                  className="w-full text-left py-2"
-                  onClick={() => openActivity(event)}
+            <ActivityHubListRow
+              key={event.id}
+              title={event.title || event.locationName}
+              meta={formatEventMeta(event)}
+              badge={
+                <span
+                  className={`shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full capitalize ${
+                    statusStyle[event.status] ?? statusStyle.draft
+                  }`}
                 >
-                  <p className="text-sm font-semibold text-neutral-900 truncate">
-                    {event.title || event.locationName}
-                  </p>
-                  <p className="text-xs text-neutral-500 mt-0.5 truncate">{formatEventMeta(event)}</p>
-                </button>
-              </div>
-              <span
-                className={`shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full capitalize ${
-                  statusStyle[event.status] ?? statusStyle.draft
-                }`}
-              >
-                {event.status}
-              </span>
-              <ActivityActionsMenu
-                items={buildOrganisationActivityMenuItems(event, {
-                  onPreview: (activity) => {
-                    if (activity.status === 'published') openPublishedActivityPreview(activity.id);
-                  },
-                  onEdit: (activity) => openEdit(activity, { tenantId: host.tenantId! }),
-                  onPublish: publishActivity,
-                  onDuplicate: duplicateActivity,
-                  onReorganize: reorganizeActivity,
-                  onDelete: (activity) => setConfirmAction({ type: 'delete', activity }),
-                  onCancel: (activity) => setConfirmAction({ type: 'cancel', activity }),
-                  onCheckin: (activity) => setCheckinActivity(activity),
-                })}
-              />
-            </div>
+                  {event.status}
+                </span>
+              }
+              onClick={() => openActivity(event)}
+              menu={
+                <ActivityActionsMenu
+                  items={buildOrganisationActivityMenuItems(event, {
+                    onPreview: (activity) => {
+                      if (activity.status === 'published') openPublishedActivityPreview(activity.id);
+                    },
+                    onEdit: (activity) => openEdit(activity, { tenantId: host.tenantId! }),
+                    onPublish: publishActivity,
+                    onDuplicate: duplicateActivity,
+                    onReorganize: reorganizeActivity,
+                    onDelete: (activity) => setConfirmAction({ type: 'delete', activity }),
+                    onCancel: (activity) => setConfirmAction({ type: 'cancel', activity }),
+                    onCheckin: (activity) => setCheckinActivity(activity),
+                  })}
+                />
+              }
+            />
           ))}
         </div>
       )}

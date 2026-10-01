@@ -16,6 +16,12 @@ export const inferNotificationPath = (
 
   const directPath = toStringValue(meta?.path);
   if (directPath && directPath.startsWith('/')) {
+    const legacyWallet =
+      directPath === '/my-rewards' ||
+      directPath === '/rewards' ||
+      directPath === '/trail-points' ||
+      directPath.startsWith('/trail-points?');
+    if (legacyWallet) return '/profile/badges';
     return directPath;
   }
 
@@ -72,11 +78,14 @@ export const inferNotificationPath = (
   if (kind === 'request_withdrawal') {
     return '/host/requests';
   }
-  if (kind === 'reward' || kind === 'tier_upgrade' || kind === 'badge') {
-    return '/my-rewards';
+  if (kind === 'badge') {
+    return '/profile/badges';
+  }
+  if (kind === 'reward' || kind === 'tier_upgrade') {
+    return '/profile/badges';
   }
   if (kind === 'goal_halfway' || kind === 'goal_complete') {
-    return '/profile';
+    return '/trips?segment=upcoming';
   }
   if (kind === 'goal_behind_pace') {
     return '/trips?segment=upcoming&tab=joined';

@@ -30,7 +30,7 @@ type ActivityActionsMenuProps = {
 };
 
 const MENU_MIN_WIDTH = 176;
-const MENU_ITEM_HEIGHT = 40;
+const MENU_ITEM_HEIGHT = 44;
 const VIEWPORT_PADDING = 8;
 
 export const ActivityActionsMenu = ({ items, align = 'right' }: ActivityActionsMenuProps) => {
@@ -123,7 +123,7 @@ export const ActivityActionsMenu = ({ items, align = 'right' }: ActivityActionsM
             setOpen(false);
             item.onClick();
           }}
-          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${
+          className={`flex min-h-[44px] w-full items-center px-3 text-left text-sm hover:bg-gray-50 ${
             item.destructive ? 'text-red-600' : 'text-gray-800'
           }`}
         >
@@ -139,7 +139,7 @@ export const ActivityActionsMenu = ({ items, align = 'right' }: ActivityActionsM
         ref={buttonRef}
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-gray-500 active:bg-gray-100 active:text-gray-800"
         aria-label="Activity options"
         aria-expanded={open}
         aria-haspopup="menu"

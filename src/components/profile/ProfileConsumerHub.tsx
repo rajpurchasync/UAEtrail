@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { MemberGoalDTO, MemberGoalActivityFilter, RewardBadgeDTO } from '@uaetrail/shared-types';
+import type { MemberGoalDTO, MemberGoalActivityFilter } from '@uaetrail/shared-types';
 import { ProfileHubIdentityCard } from './ProfileHubIdentityCard';
 import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
 import { ProfileGoalCard } from './ProfileGoalCard';
@@ -38,7 +38,7 @@ type ProfileConsumerHubProps = {
     targetDate: string;
   }) => Promise<void>;
   onClearGoal?: () => Promise<void>;
-  achievementBadges: RewardBadgeDTO[];
+  badgesEarnedCount?: number;
   buddyBadge?: number;
   showHosting?: boolean;
   onSignOut: () => void;
@@ -66,7 +66,7 @@ export const ProfileConsumerHub = ({
   goalSaving,
   onSaveGoal,
   onClearGoal,
-  achievementBadges,
+  badgesEarnedCount = 0,
   buddyBadge,
   showHosting = false,
   onSignOut,
@@ -74,11 +74,6 @@ export const ProfileConsumerHub = ({
   const showComplete =
     completionPercent < 100 && completionItems.some((item) => !item.done);
   const nextMissing = completionItems.find((item) => !item.done);
-
-  const badgesEarnedCount = useMemo(
-    () => achievementBadges.filter((b) => b.earned).length,
-    [achievementBadges]
-  );
 
   const launcherItems = useMemo(
     () =>
@@ -116,7 +111,7 @@ export const ProfileConsumerHub = ({
         <button
           type="button"
           onClick={onCompleteProfile}
-          className="flex w-full items-center gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2.5 text-left active:bg-emerald-100/80"
+          className="glass-card-interactive flex w-full items-center gap-3 border border-emerald-200/60 bg-emerald-50/50 px-3 py-3 text-left"
         >
           <span className="text-sm font-bold tabular-nums text-emerald-800">{completionPercent}%</span>
           <span className="min-w-0 flex-1 text-xs font-medium text-emerald-900">

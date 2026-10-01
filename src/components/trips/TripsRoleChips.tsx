@@ -6,6 +6,7 @@ type TripsRoleChipsProps = {
   onChange: (id: TripsRole) => void;
 };
 
+/** Secondary trips role filter — brand chips (emerald active). */
 export const TripsRoleChips = ({ chips, activeId, onChange }: TripsRoleChipsProps) => {
   if (chips.length === 0) return null;
 
@@ -18,9 +19,7 @@ export const TripsRoleChips = ({ chips, activeId, onChange }: TripsRoleChipsProp
             key={chip.id}
             type="button"
             onClick={() => onChange(chip.id)}
-            className={`min-h-[40px] rounded-full px-3.5 text-sm font-semibold transition active:scale-[0.98] ${
-              active ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-700 active:bg-neutral-200'
-            }`}
+            className={active ? 'app-chip-active' : 'app-chip-inactive'}
           >
             {chip.label}
           </button>

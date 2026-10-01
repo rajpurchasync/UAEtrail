@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { NotificationDTO } from '@uaetrail/shared-types';
 import { Bell, ChevronRight, Sparkles, Trophy } from 'lucide-react';
 import { api } from '../api/index';
-import { MobileScreen } from '../components/layout/MobileScreen';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
+import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/ConsumerFeedback';
+import { PageMeta } from '../components/seo/PageMeta';
+import { inferNotificationPath } from '../utils/notificationRouting';
 import { ShareButton } from '../components/ui/ShareButton';
 import { useAuth } from '../context/AuthContext';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
@@ -77,6 +80,7 @@ const inviteTokenFromMeta = (notif: NotificationDTO): string | null => {
 
 export const Notifications = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -125,24 +129,36 @@ export const Notifications = () => {
     syncUnreadBadge();
   };
 
+  const openNotification = async (notif: NotificationDTO) => {
+    if (!notif.isRead) await markRead(notif.id);
+    navigate(inferNotificationPath(notif));
+  };
+
   return (
-    <MobileScreen title="Notifications" backTo="/profile">
-      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+    <ConsumerShell
+      layout="stack"
+      title="Notifications"
+      maxWidth="4xl"
+      showJourney={false}
+      back={{ fallbackTo: '/profile', label: 'Profile' }}
+    >
+      <PageMeta title="Notifications" noIndex />
+
+      <div className="space-y-4 pb-nav-safe animate-fade-up">
+      {error ? <ConsumerErrorCard message={error} onRetry={() => void load()} /> : null}
 
       {unreadCount > 0 && (
         <button
           type="button"
           onClick={markAllRead}
-          className="text-sm font-semibold text-emerald-600 mb-4"
+          className="text-sm font-semibold text-emerald-600"
         >
           Mark all as read
         </button>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <ConsumerLoadingSpinner />
       ) : notifications.length === 0 ? (
         <GlassCard padding className="text-center py-12">
           <Bell className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
@@ -174,7 +190,7 @@ export const Notifications = () => {
               >
                 <button
                   type="button"
-                  onClick={() => !notif.isRead && markRead(notif.id)}
+                  onClick={() => void openNotification(notif)}
                   className="w-full text-left"
                 >
                   <div className="flex items-start gap-3">
@@ -191,8 +207,8 @@ export const Notifications = () => {
                       {reasonLine && (
                         <p className="text-xs font-medium text-neutral-700 mt-2">{reasonLine}</p>
                       )}
-                      {isReward && typeof meta.pointsToNextTier === 'string' && meta.pointsToNextTier && (
-                        <p className="text-xs font-medium text-emerald-700 mt-2">{meta.pointsToNextTier}</p>
+                      {(isReward || isTierUpgrade) && (
+                        <p className="text-xs font-medium text-emerald-700 mt-2">View in My badges</p>
                       )}
                       <p className="text-xs text-neutral-400 mt-2">
                         {new Date(notif.createdAt).toLocaleString()}
@@ -201,30 +217,20 @@ export const Notifications = () => {
                   </div>
                 </button>
 
-                {(isReward || isTierUpgrade) && (
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100/80 pl-5">
-                    <Link
-                      to="/my-rewards"
-                      onClick={() => !notif.isRead && markRead(notif.id)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
-                    >
-                      View wallet
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
-                    {isTierUpgrade &&
-                      typeof meta.shareTitle === 'string' &&
-                      typeof meta.shareText === 'string' && (
-                        <ShareButton
-                          title={meta.shareTitle}
-                          text={meta.shareText}
-                          path={typeof meta.sharePath === 'string' ? meta.sharePath : '/trail-points'}
-                          iconOnly
-                          light
-                          className="ml-auto"
-                        />
-                      )}
-                  </div>
-                )}
+                {isTierUpgrade &&
+                  typeof meta.shareTitle === 'string' &&
+                  typeof meta.shareText === 'string' && (
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100/80 pl-5">
+                      <ShareButton
+                        title={meta.shareTitle}
+                        text={meta.shareText}
+                        path={typeof meta.sharePath === 'string' ? meta.sharePath : '/profile/badges'}
+                        iconOnly
+                        light
+                        className="ml-auto"
+                      />
+                    </div>
+                  )}
                 {wishlistMatchPathFromMeta(notif) && (
                   <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100/80 pl-5">
                     <Link
@@ -273,6 +279,7 @@ export const Notifications = () => {
           })}
         </div>
       )}
-    </MobileScreen>
+      </div>
+    </ConsumerShell>
   );
 };

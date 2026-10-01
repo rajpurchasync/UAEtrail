@@ -21,7 +21,6 @@ export const HOST_CONSOLE_LINKS = [
   { to: HOST_PLACES_PATH, label: 'Places' },
   { to: '/host/messages', label: 'Messages' },
   { to: '/host/history', label: 'History' },
-  { to: '/my-rewards', label: 'Trail Points' },
 ];
 
 /** @deprecated Use HOST_CONSOLE_LINKS */

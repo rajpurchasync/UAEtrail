@@ -9,7 +9,7 @@ const pathnameOf = (path: string): string => path.split('?')[0]?.split('#')[0] ?
 /** Paths that require authentication — unsafe as sign-in dismiss targets. */
 const AUTH_GATED_PREFIXES = [
   '/profile',
-  '/my-rewards',
+  '/profile/badges',
   '/my-requests',
   '/messages',
   '/notifications',

@@ -37,11 +37,16 @@ describe('inferNotificationPath', () => {
   });
 
   it('routes member goal milestones to profile or trips', () => {
-    expect(inferNotificationPath(notif({ kind: 'goal_halfway' }))).toBe('/profile');
-    expect(inferNotificationPath(notif({ kind: 'goal_complete' }))).toBe('/profile');
+    expect(inferNotificationPath(notif({ kind: 'goal_halfway' }))).toBe('/trips?segment=upcoming');
+    expect(inferNotificationPath(notif({ kind: 'goal_complete' }))).toBe('/trips?segment=upcoming');
     expect(inferNotificationPath(notif({ kind: 'goal_behind_pace' }))).toBe(
       '/trips?segment=upcoming&tab=joined'
     );
+  });
+
+  it('rewrites legacy rewards wallet paths to badges', () => {
+    expect(inferNotificationPath(notif({ path: '/my-rewards' }))).toBe('/profile/badges');
+    expect(inferNotificationPath(notif({ path: '/trail-points?ref=abc' }))).toBe('/profile/badges');
   });
 
   it('prefers explicit meta.path when present', () => {

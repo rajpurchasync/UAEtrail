@@ -95,7 +95,7 @@ export const ActivitiesHubView = ({
   }
 
   return (
-    <div className="mt-3 space-y-6 animate-fade-up pb-20 md:pb-0">
+    <div className="mt-3 space-y-6 animate-fade-up pb-bottom-nav-safe md:pb-0">
       {error && <ConsumerErrorCard message={error} />}
 
       <section aria-label="Your upcoming plans">

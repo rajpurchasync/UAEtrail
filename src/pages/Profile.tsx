@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api/index';
 import { useAuth } from '../context/AuthContext';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { AccountAvatarModal } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useOrganisationGate } from '../hooks/useOrganisationGate';
-import type { MemberGoalDTO, MemberHubStatsDTO, RewardSummaryDTO } from '@uaetrail/shared-types';
+import type { MemberGoalDTO, MemberHubStatsDTO } from '@uaetrail/shared-types';
 import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
@@ -34,7 +35,7 @@ export const Profile = () => {
   const [goal, setGoal] = useState<MemberGoalDTO | null>(null);
   const [goalSaving, setGoalSaving] = useState(false);
   const [hubStats, setHubStats] = useState<MemberHubStatsDTO | null>(null);
-  const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
+  const [badgesEarnedCount, setBadgesEarnedCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -48,7 +49,10 @@ export const Profile = () => {
     if (!user) return;
     void api.getActiveGoal().then((res) => setGoal(res.data)).catch(() => undefined);
     void api.getMeMemberHubStats().then((res) => setHubStats(res.data)).catch(() => undefined);
-    void api.getMyRewards().then((res) => setRewardSummary(res.data)).catch(() => undefined);
+    void api
+      .getMemberBadges()
+      .then((res) => setBadgesEarnedCount(res.data.filter((b) => b.earned).length))
+      .catch(() => undefined);
   }, [user]);
 
   useEffect(() => {
@@ -198,7 +202,10 @@ export const Profile = () => {
     });
     void api.getActiveGoal().then((res) => setGoal(res.data)).catch(() => undefined);
     void api.getMeMemberHubStats().then((res) => setHubStats(res.data)).catch(() => undefined);
-    void api.getMyRewards().then((res) => setRewardSummary(res.data)).catch(() => undefined);
+    void api
+      .getMemberBadges()
+      .then((res) => setBadgesEarnedCount(res.data.filter((b) => b.earned).length))
+      .catch(() => undefined);
   }, [reload, user]);
 
   const saveAvatar = async (nextAvatarUrl: string) => {
@@ -218,20 +225,16 @@ export const Profile = () => {
     }
   };
 
-  const achievementBadges = rewardSummary?.badges ?? [];
-
   return (
     <>
       <PageMeta title="Profile" noIndex />
 
-      {error && !loading && (
-        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-3">
+      <ConsumerShell layout="tab" title="Profile" suppressMobileHeader maxWidth="4xl">
+        {error && !loading ? (
           <ConsumerErrorCard message={error} onRetry={() => void reload()} />
-        </div>
-      )}
+        ) : null}
 
-      <PullToRefresh onRefresh={handleRefresh} disabled={loading}>
-        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-4 md:py-6">
+        <PullToRefresh onRefresh={handleRefresh} disabled={loading}>
           <ProfileConsumerHub
             displayName={displayName}
             roleLabel={roleLabel}
@@ -254,13 +257,13 @@ export const Profile = () => {
             goalSaving={goalSaving}
             onSaveGoal={saveGoal}
             onClearGoal={clearGoal}
-            achievementBadges={achievementBadges}
+            badgesEarnedCount={badgesEarnedCount}
             buddyBadge={buddyBadge}
             showHosting={isActivityHost}
             onSignOut={() => void signOut()}
           />
-        </div>
-      </PullToRefresh>
+        </PullToRefresh>
+      </ConsumerShell>
 
       <AccountAvatarModal
         open={showAvatarEdit}

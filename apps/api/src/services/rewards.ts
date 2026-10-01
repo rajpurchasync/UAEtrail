@@ -103,7 +103,7 @@ async function syncMembershipTier(userId: string, points: number): Promise<strin
         points,
         shareTitle: `I'm ${tierDef.name} on UAE Trails`,
         shareText: `I just reached ${tierDef.name} tier by contributing to the UAE outdoor community. Join me on UAE Trails!`,
-        sharePath: '/trail-points'
+        sharePath: '/profile/badges'
       }
     }).catch(() => undefined);
   }

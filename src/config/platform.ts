@@ -270,8 +270,6 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/community',
   '/shop',
   '/profile',
-  '/trail-points',
-  '/my-rewards',
   '/groups',
   '/buddies',
   '/contributions',
@@ -316,7 +314,6 @@ export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
   '/buddies',
   '/contributions',
   '/groups',
-  '/my-rewards',
   '/my-requests',
 ] as const;
 

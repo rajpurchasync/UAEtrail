@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Pencil } from 'lucide-react';
+import { Camera, Eye, Pencil } from 'lucide-react';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { ShareButton } from '../ui/ShareButton';
 type ProfileHubStat = {
@@ -83,28 +83,28 @@ export const ProfileHubIdentityCard = ({
   tierBadge,
   stats,
 }: ProfileHubIdentityCardProps) => (
-  <div className="overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-sm animate-fade-up">
+  <div className="glass-card overflow-hidden animate-fade-up">
     <div
-      className="relative flex min-h-[min(40dvh,380px)] flex-col justify-center bg-gradient-to-b from-emerald-50/80 to-white px-4 pb-4 pt-4 text-center"
+      className="relative flex min-h-[min(40dvh,380px)] flex-col justify-center bg-gradient-to-b from-emerald-50/70 via-white/40 to-transparent px-4 pb-4 pt-4 text-center"
     >
-      <div className="absolute left-2 top-2">
+      <div className="absolute left-1 top-1">
         <button
           type="button"
           onClick={onViewProfile}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-violet-100/90 text-violet-700 shadow-sm ring-1 ring-violet-200/80"
+          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl bg-violet-100/90 text-violet-700 shadow-sm ring-1 ring-violet-200/80 active:scale-[0.98]"
           aria-label="View public profile"
         >
           <Eye className="h-4 w-4" strokeWidth={2.25} aria-hidden />
         </button>
       </div>
-      <div className="absolute right-2 top-2 flex items-center gap-0.5">
+      <div className="absolute right-1 top-1 flex items-center gap-0.5">
         {shareReady ? (
           <ShareButton title={shareTitle} text={shareText} path={sharePath} iconOnly light />
         ) : null}
         <button
           type="button"
           onClick={onEditProfile}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-neutral-700 shadow-sm ring-1 ring-neutral-200/80"
+          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl bg-white/90 text-neutral-700 shadow-sm ring-1 ring-neutral-200/80 active:scale-[0.98]"
           aria-label="Edit profile"
         >
           <Pencil className="h-4 w-4" strokeWidth={2.25} aria-hidden />
@@ -133,10 +133,10 @@ export const ProfileHubIdentityCard = ({
         <button
           type="button"
           onClick={onEditAvatar}
-          className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-sm text-white shadow-md"
+          className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md ring-2 ring-white active:scale-[0.98]"
           aria-label="Change profile photo"
         >
-          <span aria-hidden>📷</span>
+          <Camera className="h-4 w-4" strokeWidth={2.25} aria-hidden />
         </button>
       </div>
 

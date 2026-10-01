@@ -189,10 +189,6 @@ const Notifications = lazy(() =>
 );
 const Groups = lazy(() => import('./pages/Groups').then((m) => ({ default: m.Groups })));
 const Buddies = lazy(() => import('./pages/Buddies').then((m) => ({ default: m.Buddies })));
-const MyRewards = lazy(() => import('./pages/MyRewards').then((m) => ({ default: m.MyRewards })));
-const TrailPointsAbout = lazy(() =>
-  import('./pages/TrailPointsAbout').then((m) => ({ default: m.TrailPointsAbout }))
-);
 const SecurityPrivacy = lazy(() =>
   import('./pages/SecurityPrivacy').then((m) => ({ default: m.SecurityPrivacy }))
 );
@@ -416,16 +412,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/trail-points" element={<TrailPointsAbout />} />
-          <Route
-            path="/my-rewards"
-            element={
-              <ProtectedRoute>
-                <MyRewards />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/rewards" element={<Navigate to="/trail-points" replace />} />
+          <Route path="/trail-points" element={<Navigate to="/profile/badges" replace />} />
+          <Route path="/my-rewards" element={<Navigate to="/profile/badges" replace />} />
+          <Route path="/rewards" element={<Navigate to="/profile/badges" replace />} />
           <Route
             path="/my-requests"
             element={

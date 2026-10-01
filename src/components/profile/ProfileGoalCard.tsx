@@ -1,9 +1,8 @@
-import { useId, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useId, useMemo, useState } from 'react';
 import type { MemberGoalDTO, MemberGoalActivityFilter } from '@uaetrail/shared-types';
-import { Calendar, ChevronRight, X } from 'lucide-react';
+import { Calendar, ChevronRight, Target } from 'lucide-react';
 import { AppButton } from '../mobile/AppButton';
-import { useModalA11y } from '../../hooks/useModalA11y';
+import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
 import {
   buildGoalPresets,
   defaultGoalTargetDate,
@@ -26,6 +25,8 @@ type ProfileGoalCardProps = {
   saving: boolean;
   onSave: (input: SaveMemberGoalInput) => Promise<void>;
   onClear?: () => Promise<void>;
+  /** Trips hub — one-line glass row; Profile keeps the warm hero card. */
+  variant?: 'full' | 'compact';
 };
 
 const warmCardClass =
@@ -33,7 +34,13 @@ const warmCardClass =
 
 type SheetStep = 'presets' | 'customize';
 
-export const ProfileGoalCard = ({ goal, saving, onSave, onClear }: ProfileGoalCardProps) => {
+export const ProfileGoalCard = ({
+  goal,
+  saving,
+  onSave,
+  onClear,
+  variant = 'full',
+}: ProfileGoalCardProps) => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [step, setStep] = useState<SheetStep>('presets');
   const [filter, setFilter] = useState<MemberGoalActivityFilter>('hiking');
@@ -82,6 +89,73 @@ export const ProfileGoalCard = ({ goal, saving, onSave, onClear }: ProfileGoalCa
       }
     : undefined;
 
+  const sheet = (
+    <MemberGoalSheet
+      open={sheetOpen}
+      onClose={closeSheet}
+      step={step}
+      onStepChange={setStep}
+      saving={saving}
+      presets={presets}
+      filter={filter}
+      setFilter={setFilter}
+      target={target}
+      setTarget={setTarget}
+      targetDate={targetDate}
+      setTargetDate={setTargetDate}
+      minDate={dateInputMin}
+      maxDate={maxDate}
+      todayMin={minDate}
+      countingHelpOpen={countingHelpOpen}
+      setCountingHelpOpen={setCountingHelpOpen}
+      onSavePreset={(p) => void save(p)}
+      onSaveCustomize={() => void save({ activityFilter: filter, targetCount: target, targetDate })}
+      onClear={clearGoal ? () => void clearGoal() : undefined}
+      hasExistingGoal={Boolean(goal)}
+    />
+  );
+
+  if (variant === 'compact') {
+    const progressLabel = goal
+      ? `${goal.currentCount}/${goal.targetCount}`
+      : null;
+    const title = goal
+      ? formatGoalHeadline(goal.activityFilter, goal.targetCount, goal.targetDate)
+      : 'Set your outdoor goal';
+    const subtitle = goal
+      ? goal.completed
+        ? 'Goal complete — tap to set a new one'
+        : `${goal.targetCount - goal.currentCount} check-ins to go · by ${formatGoalDeadlineLabel(goal.targetDate)}`
+      : 'Joined trip check-ins count toward your target';
+
+    return (
+      <>
+        <button
+          type="button"
+          onClick={openSheet}
+          className="glass-card-interactive flex w-full items-center gap-3 p-3.5 text-left"
+        >
+          <span
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800"
+            aria-hidden
+          >
+            {progressLabel ? (
+              <span className="text-xs font-bold tabular-nums">{progressLabel}</span>
+            ) : (
+              <Target className="h-5 w-5" strokeWidth={2.25} />
+            )}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-neutral-900 truncate">{title}</p>
+            <p className="mt-0.5 text-xs text-neutral-500 truncate">{subtitle}</p>
+          </div>
+          <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" aria-hidden />
+        </button>
+        {sheet}
+      </>
+    );
+  }
+
   return (
     <>
       {!goal ? (
@@ -124,29 +198,7 @@ export const ProfileGoalCard = ({ goal, saving, onSave, onClear }: ProfileGoalCa
         </button>
       )}
 
-      <MemberGoalSheet
-        open={sheetOpen}
-        onClose={closeSheet}
-        step={step}
-        onStepChange={setStep}
-        saving={saving}
-        presets={presets}
-        filter={filter}
-        setFilter={setFilter}
-        target={target}
-        setTarget={setTarget}
-        targetDate={targetDate}
-        setTargetDate={setTargetDate}
-        minDate={dateInputMin}
-        maxDate={maxDate}
-        todayMin={minDate}
-        countingHelpOpen={countingHelpOpen}
-        setCountingHelpOpen={setCountingHelpOpen}
-        onSavePreset={(p) => void save(p)}
-        onSaveCustomize={() => void save({ activityFilter: filter, targetCount: target, targetDate })}
-        onClear={clearGoal ? () => void clearGoal() : undefined}
-        hasExistingGoal={Boolean(goal)}
-      />
+      {sheet}
     </>
   );
 };
@@ -268,68 +320,68 @@ const MemberGoalSheet = ({
   onClear?: () => void;
   hasExistingGoal: boolean;
 }) => {
-  const titleId = useId();
   const dateFieldId = useId();
-  const panelRef = useRef<HTMLDivElement>(null);
-  useModalA11y(open, onClose, panelRef);
 
   const headline = formatGoalHeadline(filter, target, targetDate);
   const sheetTitle = step === 'presets' ? 'Your goal for outside' : 'Adjust your goal';
   const saveDisabled = saving || target < 1 || !targetDate || targetDate < todayMin;
 
-  if (!open) return null;
+  const headerAddon =
+    step === 'customize' ? (
+      <>
+        <p className="mt-2 text-xs text-white/85">
+          Trips you join count when you&apos;re checked in.{' '}
+          <button
+            type="button"
+            className="font-semibold underline underline-offset-2"
+            onClick={() => setCountingHelpOpen(!countingHelpOpen)}
+          >
+            {countingHelpOpen ? 'Less' : 'How counting works'}
+          </button>
+        </p>
+        {countingHelpOpen ? (
+          <p className="mt-2 rounded-xl bg-black/15 px-3 py-2 text-xs leading-relaxed text-white/95">
+            Saved trips help you discover plans — they don&apos;t add to your total. Only real outings you joined and
+            were checked in on count, between when you set the goal and your achieve-by date.
+          </p>
+        ) : null}
+      </>
+    ) : null;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[1400] flex items-end justify-center bg-black/40 md:items-center md:p-4">
-      <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="relative flex max-h-[min(88dvh,720px)] w-full max-w-md flex-col overflow-hidden rounded-t-[24px] bg-white shadow-2xl animate-fade-up md:rounded-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="shrink-0 bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 px-4 pb-4 pt-[calc(var(--safe-top)+12px)] text-white md:pt-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <h2 id={titleId} className="text-lg font-bold leading-snug">{sheetTitle}</h2>
-              {step === 'customize' ? (
-                <p className="mt-1 text-2xl font-bold leading-tight tracking-tight">{headline}</p>
-              ) : (
-                <p className="mt-1 text-sm text-white/90">Pick your deadline, then tap a goal — or build your own.</p>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white active:bg-white/30"
-              aria-label="Close"
-            >
-              <X className="h-5 w-5" aria-hidden />
-            </button>
-          </div>
-          {step === 'customize' ? (
-            <p className="mt-2 text-xs text-white/85">
-              Trips you join count when you&apos;re checked in.{' '}
-              <button
-                type="button"
-                className="font-semibold underline underline-offset-2"
-                onClick={() => setCountingHelpOpen(!countingHelpOpen)}
-              >
-                {countingHelpOpen ? 'Less' : 'How counting works'}
-              </button>
-            </p>
-          ) : null}
-          {step === 'customize' && countingHelpOpen ? (
-            <p className="mt-2 rounded-xl bg-black/15 px-3 py-2 text-xs leading-relaxed text-white/95">
-              Saved trips help you discover plans — they don&apos;t add to your total. Only real outings you joined and
-              were checked in on count, between when you set the goal and your achieve-by date.
-            </p>
-          ) : null}
-        </div>
+  const footer =
+    step === 'customize' ? (
+      <div className="space-y-2">
+        <AppButton type="button" fullWidth disabled={saveDisabled} onClick={onSaveCustomize}>
+          {saving ? 'Saving…' : 'Save goal'}
+        </AppButton>
+        {onClear && hasExistingGoal ? (
+          <button
+            type="button"
+            onClick={onClear}
+            className="w-full py-2 text-sm font-medium text-neutral-500 active:text-neutral-700"
+          >
+            Clear this goal
+          </button>
+        ) : null}
+      </div>
+    ) : (
+      <p className="text-center text-[11px] leading-relaxed text-neutral-500">
+        Check-ins on trips you joined count toward your goal until your achieve-by date.
+      </p>
+    );
 
-        <div className="min-h-0 flex-1 overflow-y-auto scroll-touch px-4 py-4">
+  return (
+    <ConsumerBottomSheet
+      open={open}
+      onClose={onClose}
+      zIndex={1400}
+      headerTone="warm"
+      title={sheetTitle}
+      subtitle={step === 'presets' ? 'Pick your deadline, then tap a goal — or build your own.' : undefined}
+      emphasis={step === 'customize' ? headline : undefined}
+      headerAddon={headerAddon}
+      footer={footer}
+    >
           {step === 'presets' ? (
             <div className="space-y-4">
               <AchieveByDateField
@@ -427,32 +479,6 @@ const MemberGoalSheet = ({
               </button>
             </div>
           )}
-        </div>
-
-        {step === 'customize' ? (
-          <div className="shrink-0 space-y-2 border-t border-neutral-100 bg-white px-4 py-3 pb-[calc(var(--safe-bottom)+12px)]">
-            <AppButton type="button" fullWidth disabled={saveDisabled} onClick={onSaveCustomize}>
-              {saving ? 'Saving…' : 'Save goal'}
-            </AppButton>
-            {onClear && hasExistingGoal ? (
-              <button
-                type="button"
-                onClick={onClear}
-                className="w-full py-2 text-sm font-medium text-neutral-500 active:text-neutral-700"
-              >
-                Clear this goal
-              </button>
-            ) : null}
-          </div>
-        ) : (
-          <div className="shrink-0 px-4 pb-[calc(var(--safe-bottom)+12px)] pt-1">
-            <p className="text-center text-[11px] leading-relaxed text-neutral-500">
-              Check-ins on trips you joined count toward your goal until your achieve-by date.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>,
-    document.body
+    </ConsumerBottomSheet>
   );
 };

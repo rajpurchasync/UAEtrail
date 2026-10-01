@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { List, MapPin, Plus, Share2, Sparkles } from 'lucide-react';
+import { List, Plus, Share2 } from 'lucide-react';
 import type {
   MemberJourneyMapStatsDTO,
   MemberMapPinActivityType,
@@ -24,8 +24,6 @@ import {
   parseOutdoorMapFilter,
 } from '../trips/outdoorMapFilters';
 import { resolveOutdoorPinStyle } from '../trips/outdoorMapPinStyle';
-
-const INTRO_STORAGE_KEY = 'uaetrail-outdoor-map-intro-dismissed';
 
 const emptyStats = (): MemberJourneyMapStatsDTO => ({
   totalPins: 0,
@@ -60,10 +58,6 @@ export const TripsMap = () => {
   const [error, setError] = useState<string | null>(null);
   const [shareHint, setShareHint] = useState<string | null>(null);
   const [focusLatLng, setFocusLatLng] = useState<{ lat: number; lng: number } | null>(null);
-  const [introDismissed, setIntroDismissed] = useState(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(INTRO_STORAGE_KEY) === '1'
-  );
-
   const setFilter = (next: OutdoorMapFilterCategory) => {
     const params = new URLSearchParams(searchParams);
     if (next === 'all') params.delete('filter');
@@ -95,18 +89,7 @@ export const TripsMap = () => {
     [filteredEntries]
   );
 
-  const dismissIntro = () => {
-    setIntroDismissed(true);
-    try {
-      window.localStorage.setItem(INTRO_STORAGE_KEY, '1');
-    } catch {
-      /* ignore */
-    }
-  };
-
   const pendingLatLng = sheet.type === 'new' ? { lat: sheet.lat, lng: sheet.lng } : null;
-  const showIntroDock = sheet.type === 'idle' && !pickMode && !introDismissed && entries.length === 0;
-
   const openEntry = (entry: OutdoorMapEntryDTO) => {
     setPickMode(false);
     setListOpen(false);
@@ -138,7 +121,6 @@ export const TripsMap = () => {
     setError(null);
     setSheet({ type: 'idle' });
     setPickMode(true);
-    if (entries.length === 0) dismissIntro();
   };
 
   const cancelPinning = () => {
@@ -171,7 +153,6 @@ export const TripsMap = () => {
       });
       setSheet({ type: 'idle' });
       setPickMode(false);
-      dismissIntro();
       await reload();
     } catch {
       setError('Could not save this pin.');
@@ -224,7 +205,7 @@ export const TripsMap = () => {
     window.setTimeout(() => setShareHint(null), 3000);
   };
 
-  const showMapActions = !pickMode && sheet.type === 'idle' && (entries.length > 0 || introDismissed);
+  const showMapActions = !pickMode && sheet.type === 'idle';
 
   const emptyListCopy =
     filter === 'wishlist'
@@ -250,7 +231,7 @@ export const TripsMap = () => {
           type="button"
           onClick={() => void onShare()}
           disabled={loading || entries.length === 0}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-100/90 text-neutral-700 disabled:opacity-40"
+          className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-2xl bg-neutral-100/90 text-neutral-700 active:scale-[0.98] disabled:opacity-40"
           aria-label="Share map summary"
         >
           <Share2 className="h-5 w-5" aria-hidden />
@@ -308,37 +289,6 @@ export const TripsMap = () => {
           </>
         ) : null}
       </div>
-
-      {showIntroDock ? (
-        <section
-          className="z-[100] max-h-[38dvh] shrink-0 overflow-y-auto border-t border-neutral-200/80 bg-white px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
-          aria-label="How your map works"
-        >
-          <div className="flex items-start gap-2">
-            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-              <Sparkles className="h-4 w-4" aria-hidden />
-            </span>
-            <div className="min-w-0 text-sm leading-relaxed text-neutral-700">
-              <p className="font-semibold text-neutral-900">Your outdoor life, on one map</p>
-              <p className="mt-2 text-neutral-600">
-                Coloured pins: amber want to go, blue joined, purple hosted, green gone. Tap{' '}
-                <strong>list</strong> for the full scrollable view.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={startPinning}
-            disabled={loading}
-            className="mt-4 min-h-12 w-full rounded-2xl bg-emerald-600 px-4 py-3.5 text-base font-semibold text-white shadow-sm disabled:opacity-60"
-          >
-            <span className="inline-flex items-center justify-center gap-2">
-              <MapPin className="h-5 w-5" aria-hidden />
-              Pin a place on the map
-            </span>
-          </button>
-        </section>
-      ) : null}
 
       {pickMode && sheet.type === 'idle' ? (
         <div className="z-[100] flex shrink-0 gap-2 border-t border-neutral-200/80 bg-white px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">

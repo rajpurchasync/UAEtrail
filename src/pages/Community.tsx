@@ -13,7 +13,6 @@ import { FloatingActionButton } from '../components/mobile/FloatingActionButton'
 import { PageMeta } from '../components/seo/PageMeta';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
-import { TrailPointsPromoBanner } from '../components/rewards';
 import { ReportContentButton } from '../components/ui/ReportContentDialog';
 import { ChatComposeBar } from '../components/ui/ChatComposeBar';
 import { EmojiPickerButton } from '../components/ui/EmojiPickerButton';
@@ -264,7 +263,6 @@ export const Community = () => {
         onClick={() => (user ? setShowNewPost(true) : redirectToSignIn('[data-auth-focus="community-new-post"]'))}
       />
       <div className="space-y-4 animate-fade-up pb-20 md:pb-4">
-        <TrailPointsPromoBanner variant="community" />
         <GlassCard
           padding
           className="flex flex-col sm:flex-row sm:items-center gap-4"

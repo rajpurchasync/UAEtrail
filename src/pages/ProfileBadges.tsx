@@ -57,9 +57,9 @@ export const ProfileBadges = () => {
   useEffect(() => {
     setLoading(true);
     void api
-      .getMyRewards()
+      .getMemberBadges()
       .then((res) => {
-        setBadges(res.data.badges ?? []);
+        setBadges(res.data);
         setError(null);
       })
       .catch((err) => {
@@ -81,6 +81,7 @@ export const ProfileBadges = () => {
     <ConsumerShell
       layout="stack"
       title="My badges"
+      maxWidth="4xl"
       showJourney={false}
       back={{ fallbackTo: '/profile', label: 'Profile' }}
     >
