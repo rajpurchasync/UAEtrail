@@ -1223,3 +1223,10 @@ export type {
   GroupWallStreamMessageDTO,
   SocialGroupChatPreviewDTO,
 } from './group-wall.js';
+
+export type { MemberInboxGroupDTO, MemberInboxGroupType } from './member-inbox.js';
+
+export interface MemberInboxDTO {
+  direct: ChatConversationDTO[];
+  groups: import('./member-inbox.js').MemberInboxGroupDTO[];
+}

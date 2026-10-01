@@ -191,11 +191,18 @@ export const socialApi = {
       auth: true,
     }),
 
-    createMeGroupWallPost: (groupId: string, body: string) =>
+    createMeGroupWallPost: (
+      groupId: string,
+      body: string,
+      options?: { replyToMessageId?: string }
+    ) =>
     apiRequest<{ data: SocialGroupWallMessageView }>(`/me/groups/${groupId}/wall`, {
       method: 'POST',
       auth: true,
-      body: JSON.stringify({ body })
+      body: JSON.stringify({
+        body,
+        ...(options?.replyToMessageId ? { replyToMessageId: options.replyToMessageId } : {}),
+      }),
     }),
 
     toggleMeGroupWallReaction: (

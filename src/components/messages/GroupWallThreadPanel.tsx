@@ -207,7 +207,9 @@ export const GroupWallThreadPanel = ({
     setSending(true);
     setError(null);
     try {
-      const res = await api.createMeGroupWallPost(groupId, body);
+      const res = await api.createMeGroupWallPost(groupId, body, {
+        replyToMessageId: previousReply?.id,
+      });
       appendWallMessage(res.data);
       skipScrollRef.current = false;
       markWallRead();

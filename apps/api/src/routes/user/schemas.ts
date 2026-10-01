@@ -113,7 +113,8 @@ export const listBuddyRequestsQuerySchema = z.object({
 });
 
 export const createWallPostSchema = z.object({
-  body: z.string().min(1).max(600)
+  body: z.string().min(1).max(600),
+  replyToMessageId: z.string().min(1).optional(),
 });
 
 export const groupWallListQuerySchema = z.object({

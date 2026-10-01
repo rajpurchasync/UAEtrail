@@ -44,7 +44,7 @@ Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
 - **Direct thread:** `/messages?to=<userId>` (optional `activity` context).
 - **Group / crew thread:** `/messages?group=<groupId>` — all wall chat UI lives here (not on `/groups`).
 - **Hosts:** same component at `/host/messages` (org shell); deep links still use `?group=` / `?to=`.
-- **API:** `GET /me/groups` includes `chatPreview` (last message + unread); wall supports `?since=` for incremental sync; `POST .../wall/read` marks read.
+- **API:** prefer **`GET /chat/inbox`** (direct + groups with `chatPreview`); wall supports `?since=` and `POST .../wall/read`; optional `replyToMessageId` on wall POST.
 
 ### Groups (`/groups`)
 

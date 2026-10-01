@@ -79,6 +79,7 @@ export type GroupWallMessageRecord = {
   groupId: string;
   authorUserId: string;
   body: string;
+  replyToMessageId?: string | null;
   createdAt: Date;
   reactions?: GroupWallReactionSummary[];
 };
@@ -132,6 +133,7 @@ type MongoGroupWallMessage = {
   groupId: string;
   authorUserId: string;
   body: string;
+  replyToMessageId?: string | null;
   createdAt: Date;
 };
 
@@ -207,6 +209,7 @@ const mapWall = (row: MongoGroupWallMessage): GroupWallMessageRecord => ({
   groupId: row.groupId,
   authorUserId: row.authorUserId,
   body: row.body,
+  replyToMessageId: row.replyToMessageId ?? null,
   createdAt: row.createdAt
 });
 
@@ -873,12 +876,22 @@ export const createGroupWallMessage = async (input: {
   groupId: string;
   authorUserId: string;
   body: string;
+  replyToMessageId?: string | null;
 }): Promise<GroupWallMessageRecord> => {
+  const replyToMessageId = input.replyToMessageId?.trim() || null;
+  if (replyToMessageId) {
+    const parent = await wallCollection().findOne({ _id: replyToMessageId, groupId: input.groupId });
+    if (!parent) {
+      throw new Error('reply_not_found');
+    }
+  }
+
   const doc: MongoGroupWallMessage = {
     _id: newEntityId(),
     groupId: input.groupId,
     authorUserId: input.authorUserId,
     body: input.body.trim(),
+    replyToMessageId,
     createdAt: new Date()
   };
   await wallCollection().insertOne(doc);

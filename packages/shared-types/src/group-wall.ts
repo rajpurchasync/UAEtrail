@@ -22,6 +22,7 @@ export interface GroupWallStreamMessageDTO {
   authorUserId: string;
   body: string;
   createdAt: string;
+  replyToMessageId?: string | null;
   author: GroupWallMessageAuthorDTO;
   reactions: { kind: string; count: number; reactedByMe: boolean }[];
 }

@@ -222,7 +222,11 @@ export const GroupWallMessageItem = ({
             </span>
           </p>
         </div>
-        <GroupWallMessageBody body={message.body} onScrollToQuotedMessage={onScrollToQuotedMessage} />
+        <GroupWallMessageBody
+          body={message.body}
+          replyToMessageId={message.replyToMessageId}
+          onScrollToQuotedMessage={onScrollToQuotedMessage}
+        />
 
         {reactions.length > 0 ? (
           <div className="mt-2 flex flex-wrap items-center gap-1.5">

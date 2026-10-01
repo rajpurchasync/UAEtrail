@@ -261,6 +261,7 @@ export interface SocialGroupWallMessageView {
   groupId: string;
   authorUserId: string;
   body: string;
+  replyToMessageId?: string | null;
   createdAt: string;
   author?: {
     id: string;

@@ -88,14 +88,9 @@ export const loadGroupThreadPreviews = (groups: SocialGroupView[]): InboxThread[
   groups.map(groupThreadFromSocialGroup);
 
 export const loadInboxThreads = async (): Promise<InboxThread[]> => {
-  const [conversationsRes, groupsRes] = await Promise.all([
-    api.getConversations(),
-    api.getMeGroups().catch(() => ({ data: [] as SocialGroupView[] })),
-  ]);
-
-  const directThreads = conversationsRes.data.map(toDirectThread);
-  const groupThreads = loadGroupThreadPreviews(groupsRes.data);
-
+  const res = await api.getInbox();
+  const directThreads = res.data.direct.map(toDirectThread);
+  const groupThreads = loadGroupThreadPreviews(res.data.groups as SocialGroupView[]);
   return sortThreads([...directThreads, ...groupThreads]);
 };
 

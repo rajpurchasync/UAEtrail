@@ -414,11 +414,21 @@ router.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema, b
       }
     }
 
-    const message = await createGroupWallMessage({
-      groupId,
-      authorUserId: req.auth!.userId,
-      body: body.body
-    });
+    let message;
+    try {
+      message = await createGroupWallMessage({
+        groupId,
+        authorUserId: req.auth!.userId,
+        body: body.body,
+        replyToMessageId: body.replyToMessageId,
+      });
+    } catch (error) {
+      const code = error instanceof Error && error.message === 'reply_not_found' ? 'reply_not_found' : null;
+      if (code) {
+        throw new ApiError(400, code, 'Reply target message was not found in this chat.');
+      }
+      throw error;
+    }
 
     void notifyGroupWallPost({
       groupId,
@@ -439,6 +449,7 @@ router.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema, b
           authorUserId: data.authorUserId,
           body: data.body,
           createdAt,
+          replyToMessageId: data.replyToMessageId ?? null,
           author: data.author,
           reactions: data.reactions ?? [],
         },

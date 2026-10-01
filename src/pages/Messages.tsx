@@ -152,12 +152,9 @@ export const Messages = () => {
 
   const loadInbox = useCallback(async () => {
     try {
-      const [convRes, groupsRes] = await Promise.all([
-        api.getConversations(),
-        api.getMeGroups().catch(() => ({ data: [] as SocialGroupView[] })),
-      ]);
-      setConversations(convRes.data);
-      setGroupThreads(loadGroupThreadPreviews(groupsRes.data));
+      const inboxRes = await api.getInbox();
+      setConversations(inboxRes.data.direct);
+      setGroupThreads(loadGroupThreadPreviews(inboxRes.data.groups as SocialGroupView[]));
     } catch {
       /* stream / retry fallback */
     } finally {

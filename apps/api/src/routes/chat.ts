@@ -3,13 +3,10 @@ import type { ChatMessage } from '../domain/types.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import type { ChatMessageDTO } from '@uaetrail/shared-types';
-import { findAuthUserById, findAuthUsersByIds } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users.js';
 import {
   countThreadMessages,
   createChatMessageRecord,
-  getLastMessageByPartner,
-  getUnreadCountByPartner,
-  listConversationPartnerIds,
   listThreadMessages,
   markThreadAsRead
 } from '../lib/chat-data.js';
@@ -17,8 +14,9 @@ import { dispatchNotification } from '../services/notifications.js';
 import { requireAuth, requireSseTicket, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { createSseTicket, SSE_TICKET_TTL_SECONDS } from '../lib/sse-ticket.js';
-import { assertCanMessageUser, assertChatRateLimit, canMessageUser } from '../services/chat-policy.js';
+import { assertCanMessageUser, assertChatRateLimit } from '../services/chat-policy.js';
 import { publishChatStreamEvent, registerChatStreamClient } from '../services/chat-stream.js';
+import { listMemberDirectConversations, loadMemberInbox } from '../services/member-inbox.js';
 
 export const chatRouter = Router();
 
@@ -53,52 +51,18 @@ chatRouter.post('/stream-ticket', async (req, res, next) => {
 });
 // ─── Conversations ──────────────────────────────────────────────────────────
 
+chatRouter.get('/inbox', async (req, res, next) => {
+  try {
+    const data = await loadMemberInbox(req.auth!.userId);
+    res.json({ data });
+  } catch (error) {
+    next(error);
+  }
+});
+
 chatRouter.get('/conversations', async (req, res, next) => {
   try {
-    const userId = req.auth!.userId;
-
-    const partnerIds = await listConversationPartnerIds(userId);
-
-    if (partnerIds.length === 0) {
-      return res.json({ data: [] });
-    }
-
-    // Batch all partner data in parallel instead of N+1 per partner
-    const [partners, unreadCounts] = await Promise.all([
-      findAuthUsersByIds(partnerIds),
-      getUnreadCountByPartner(userId, partnerIds)
-    ]);
-
-    const partnerMap = new Map(partners.map((p) => [p._id, p]));
-    const unreadMap = unreadCounts;
-    const lastMessageMap = await getLastMessageByPartner(userId, partnerIds);
-
-    const conversationRows = await Promise.all(
-      partnerIds.map(async (partnerId) => {
-        try {
-          const allowed = await canMessageUser(userId, partnerId);
-          if (!allowed) return null;
-        } catch {
-          return null;
-        }
-
-        const partner = partnerMap.get(partnerId);
-        const lastMsg = lastMessageMap.get(partnerId);
-        return {
-          userId: partnerId,
-          displayName: partner?.profile.displayName ?? partner?.email ?? 'Unknown',
-          avatarUrl: partner?.profile.avatarUrl ?? undefined,
-          lastMessage: lastMsg?.content ?? '',
-          lastMessageAt: lastMsg?.createdAt?.toISOString() ?? '',
-          unreadCount: unreadMap.get(partnerId) ?? 0
-        };
-      })
-    );
-
-    const conversations = conversationRows
-      .filter((row): row is NonNullable<typeof row> => row !== null)
-      .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
-
+    const conversations = await listMemberDirectConversations(req.auth!.userId);
     res.json({ data: conversations });
   } catch (error) {
     next(error);

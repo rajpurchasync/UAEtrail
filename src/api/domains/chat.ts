@@ -1,9 +1,11 @@
-import { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
+import { ChatConversationDTO, ChatMessageDTO, MemberInboxDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
 export const chatApi = {
     getConversations: () =>
     apiRequest<{ data: ChatConversationDTO[] }>('/chat/conversations', { auth: true }),
+
+    getInbox: () => apiRequest<{ data: MemberInboxDTO }>('/chat/inbox', { auth: true }),
 
     createChatStreamTicket: () =>
     apiRequest<{ data: { ticket: string; expiresIn: number } }>('/chat/stream-ticket', {

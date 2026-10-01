@@ -25,9 +25,14 @@ Legacy: `/dashboard/messages` may still exist for older host console paths — p
 
 Do **not** merge these in the UI without a product decision — inbox already unifies **threads**; backend stays dual until a single inbox API exists.
 
+### Unified inbox
+
+- **`GET /chat/inbox`** — `{ direct: ChatConversationDTO[], groups: MemberInboxGroupDTO[] }` in one round trip (preferred for Messages tab and nav badge).
+- **Legacy:** `GET /chat/conversations` + `GET /me/groups` still work; new UI should use `/chat/inbox`.
+
 ### Direct (`/chat`)
 
-- **List:** `GET /chat/conversations`
+- **List:** `GET /chat/conversations` (subset of inbox `direct`)
 - **Thread:** `GET /chat/messages/:userId` (paginated)
 - **Send:** `POST /chat/messages` — body max **2000** chars; `assertCanMessageUser` + rate limit
 - **Policy:** `apps/api/src/services/chat-policy.ts` — buddies and/or shared activity / join-request context
@@ -40,7 +45,7 @@ Used for **family/friends groups** and **activity crew** (`social_groups.type ==
 - **List groups + inbox preview:** `GET /me/groups` → each row includes **`chatPreview`**: `{ lastMessageBody, lastMessageAt, unreadCount }`
 - **Full thread (initial):** `GET /me/groups/:groupId/wall` (default limit 120, oldest→newest)
 - **Incremental sync:** `GET /me/groups/:groupId/wall?since=<ISO8601>`
-- **Send:** `POST /me/groups/:groupId/wall` — body max **600** chars; returns enriched message (author + reactions)
+- **Send:** `POST /me/groups/:groupId/wall` — body max **600** chars; optional `replyToMessageId` (validated in-group); returns enriched message (author + reactions). Plain-text `↩[id:…]` quotes remain for display/back-compat.
 - **Mark read:** `POST /me/groups/:groupId/wall/read` → `wallLastReadAt` on membership
 - **Reactions:** `POST /me/groups/:groupId/wall/:messageId/reactions`
 - **Post policy:** `wallPostPolicy`: `all_members` | `admins_only` — `PATCH /me/groups/:groupId`
@@ -115,7 +120,6 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 
 ## Future (not shipped)
 
-- Unified `GET /me/inbox` (direct + group previews in one call)
 - Dedicated group-wall SSE channel (today: reuses `/chat/stream` + `group_wall_message` event)
-- Server-side `replyToMessageId` for wall threads (today: plain-text quote in body)
+- Migrate reply UI to rely only on `replyToMessageId` (drop embedded id from body text)
 - Optional per-activity `groupChatPolicy` (host-only vs full crew)

@@ -3,10 +3,15 @@ import { chatMessageTextClassName } from './chatMessageText';
 
 type GroupWallMessageBodyProps = {
   body: string;
+  replyToMessageId?: string | null;
   onScrollToQuotedMessage?: (messageId: string) => void;
 };
 
-export const GroupWallMessageBody = ({ body, onScrollToQuotedMessage }: GroupWallMessageBodyProps) => {
+export const GroupWallMessageBody = ({
+  body,
+  replyToMessageId: replyToMessageIdProp,
+  onScrollToQuotedMessage,
+}: GroupWallMessageBodyProps) => {
   const parsed = parseGroupWallMessageBody(body);
 
   if (!parsed) {
@@ -15,7 +20,8 @@ export const GroupWallMessageBody = ({ body, onScrollToQuotedMessage }: GroupWal
     );
   }
 
-  const { replyToMessageId, quoteAuthor, quoteSnippet, replyText } = parsed;
+  const { replyToMessageId: parsedReplyId, quoteAuthor, quoteSnippet, replyText } = parsed;
+  const replyToMessageId = replyToMessageIdProp ?? parsedReplyId;
   const canJump = Boolean(replyToMessageId && onScrollToQuotedMessage);
 
   const quoteClass =
