@@ -8,7 +8,6 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { MemberProfileView } from '../components/profile/MemberProfileView';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
-import { buildProfileStamps } from '../utils/profileStamps';
 import { messagesRouteForRole } from '../utils/authRouting';
 import { myActivitiesPath } from '../utils/exploreRouting';
 
@@ -141,24 +140,6 @@ export const MemberProfile = () => {
 
   const fullProfile = profile && isFullProfile(profile) ? profile : null;
 
-  const stamps = fullProfile
-    ? buildProfileStamps({
-        attendedCount: fullProfile.stats.activitiesAttended,
-        hostedCount: fullProfile.stats.activitiesHosted,
-        isHost: fullProfile.isHost && fullProfile.hostProfileKind !== 'shop',
-        hostProfileKind: fullProfile.hostProfileKind,
-        isGuideStaff: fullProfile.isGuideStaff,
-        rewardSummary: fullProfile.trailPointsEligible
-          ? ({
-              points: fullProfile.points,
-              membershipTier: fullProfile.membershipTier,
-              tierBadges: fullProfile.tierBadges,
-              badges: fullProfile.badges,
-            } as never)
-          : null,
-      })
-    : [];
-
   const isSelf = user?.id === userId;
   const isPrivate = profile?.visibilityState === 'private';
   const pageTitle = fullProfile?.displayName ?? 'Member';
@@ -204,7 +185,6 @@ export const MemberProfile = () => {
       ) : fullProfile && userId ? (
         <MemberProfileView
           profile={fullProfile}
-          stamps={stamps}
           isSelf={Boolean(isSelf)}
           userId={userId}
           userLoggedIn={Boolean(user)}

@@ -183,6 +183,14 @@ export type PublicMemberProfileDTO =
         activitiesAttended: number;
         activitiesHosted: number;
       };
+      yearGoal: {
+        activityFilter: 'hiking' | 'camping' | 'all_outings';
+        targetCount: number;
+        targetDate: string;
+        year: number;
+        currentCount: number;
+        completed: boolean;
+      } | null;
     };
 
 /** Domain alias — a Person's public profile at `/member/:id`. */

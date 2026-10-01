@@ -45,16 +45,19 @@ const formatEventMeta = (event: ActivityDTO) => {
 export const HostedSection = ({
   refreshKey = 0,
   searchQuery = '',
+  timeScope,
 }: {
   refreshKey?: number;
   searchQuery?: string;
+  /** When set, locks list to upcoming or past hosted outings. */
+  timeScope?: 'upcoming' | 'past';
 }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const host = useOrganisationHubData();
   const reloadExploreMap = useReloadExploreMap();
   const { openEdit } = useActivityFormSession();
-  const [activityTab, setActivityTab] = useState<ActivityTab>('upcoming');
+  const [activityTab, setActivityTab] = useState<ActivityTab>(timeScope ?? 'upcoming');
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [busyActivityId, setBusyActivityId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +84,8 @@ export const HostedSection = ({
     [host.activities, today]
   );
 
-  const visibleActivities = activityTab === 'upcoming' ? upcomingActivities : pastActivities;
+  const lockedTab = timeScope ?? activityTab;
+  const visibleActivities = lockedTab === 'upcoming' ? upcomingActivities : pastActivities;
 
   const filteredActivities = useMemo(
     () =>
@@ -226,14 +230,16 @@ export const HostedSection = ({
       )}
 
       <div className="flex items-center justify-between gap-2">
-        <AppSegmented
-          segments={[
-            { key: 'upcoming', label: `Upcoming (${upcomingActivities.length})` },
-            { key: 'past', label: `Past (${pastActivities.length})` },
-          ]}
-          value={activityTab}
-          onChange={setActivityTab}
-        />
+        {timeScope ? null : (
+          <AppSegmented
+            segments={[
+              { key: 'upcoming', label: `Upcoming (${upcomingActivities.length})` },
+              { key: 'past', label: `Past (${pastActivities.length})` },
+            ]}
+            value={activityTab}
+            onChange={setActivityTab}
+          />
+        )}
         <Link
           to={exploreOrganizePath()}
           className="shrink-0 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
@@ -245,7 +251,7 @@ export const HostedSection = ({
       {visibleActivities.length === 0 ? (
         <ConsumerInlineEmpty
           message={
-            activityTab === 'upcoming' ? 'No upcoming hosted activities.' : 'No past hosted activities yet.'
+            lockedTab === 'upcoming' ? 'No upcoming hosted activities.' : 'No past hosted activities yet.'
           }
           actionLabel="Create activity"
           actionTo={exploreOrganizePath()}

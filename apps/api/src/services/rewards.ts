@@ -1,8 +1,7 @@
 import { MongoServerError } from 'mongodb';
 import { MembershipTier, RewardAction } from '../domain/enums.js';
 import {
-  ACHIEVEMENT_BADGE_DEFINITIONS,
-  BADGE_DEFINITIONS,
+  MEMBER_BADGE_DEFINITIONS,
   buildPointsToNextTierMessage,
   EARN_PATH_SUGGESTIONS,
   getNextTier,
@@ -90,10 +89,6 @@ async function syncMembershipTier(userId: string, points: number): Promise<strin
 
   await updateUserMembershipTier(userId, nextTierEnum);
 
-  if (tierDef.badgeKey) {
-    await createUserBadge({ userId, badgeKey: tierDef.badgeKey });
-  }
-
   if (tierDef.key !== 'free') {
     void dispatchNotification({
       userId,
@@ -152,7 +147,7 @@ export async function awardPoints(input: AwardPointsInput): Promise<{ awarded: b
         }
       }).catch(() => undefined);
 
-      void evaluateAchievementBadges(input.userId).catch(() => undefined);
+      void evaluateMemberBadges(input.userId).catch(() => undefined);
     }
 
     return { awarded: true, points };
@@ -164,45 +159,45 @@ export async function awardPoints(input: AwardPointsInput): Promise<{ awarded: b
   }
 }
 
-async function evaluateAchievementBadges(userId: string): Promise<string[]> {
+export async function evaluateMemberBadges(userId: string): Promise<string[]> {
   const badges = await findUserBadges(userId);
   const earnedKeys = new Set(badges.map((b) => b.badgeKey));
 
   const checks: Array<{ key: string; shouldAward: () => Promise<boolean> }> = [
     {
-      key: 'trail_mapper',
-      shouldAward: async () =>
-        (await hasRewardLedgerEntry(userId, RewardAction.LOCATION_SUBMITTED)) ||
-        (await hasRewardLedgerEntry(userId, RewardAction.LOCATION_PUBLISHED))
+      key: 'newbie',
+      shouldAward: async () => Boolean(await findAuthUserById(userId)),
     },
     {
-      key: 'community_voice',
-      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.COMMUNITY_POST)) >= 5
+      key: 'active',
+      shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.ACTIVITY_ATTENDED),
     },
     {
-      key: 'helpful_hand',
-      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.COMMUNITY_REPLY)) >= 10
+      key: 'host',
+      shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.ACTIVITY_PUBLISHED),
     },
     {
-      key: 'activity_leader',
-      shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.ACTIVITY_PUBLISHED)
+      key: 'helpful_critic',
+      shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.REVIEW_WRITTEN),
     },
     {
-      key: 'trusted_host',
-      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.ACTIVITY_HOSTED)) >= 5
-    },
-    {
-      key: 'reviewer',
-      shouldAward: async () => hasRewardLedgerEntry(userId, RewardAction.REVIEW_WRITTEN)
+      key: 'goat',
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.ACTIVITY_ATTENDED)) >= 5,
     },
     {
       key: 'ambassador',
-      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.REFERRAL_BONUS_REFERRER)) >= 3
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.REFERRAL_BONUS_REFERRER)) >= 3,
     },
     {
-      key: 'adventurer',
-      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.ACTIVITY_ATTENDED)) >= 5
-    }
+      key: 'contributor',
+      shouldAward: async () =>
+        (await hasRewardLedgerEntry(userId, RewardAction.LOCATION_SUBMITTED)) ||
+        (await hasRewardLedgerEntry(userId, RewardAction.LOCATION_PUBLISHED)),
+    },
+    {
+      key: 'trusted_host',
+      shouldAward: async () => (await countRewardLedgerEntries(userId, RewardAction.ACTIVITY_HOSTED)) >= 5,
+    },
   ];
 
   const newlyEarned: string[] = [];
@@ -215,7 +210,7 @@ async function evaluateAchievementBadges(userId: string): Promise<string[]> {
     if (created) {
       newlyEarned.push(check.key);
 
-      const badge = ACHIEVEMENT_BADGE_DEFINITIONS.find((b) => b.key === check.key);
+      const badge = MEMBER_BADGE_DEFINITIONS.find((b) => b.key === check.key);
       if (badge) {
         void dispatchNotification({
           userId,
@@ -241,6 +236,8 @@ export async function processSignupRewards(
     referenceId: userId,
     notify: true
   });
+
+  void evaluateMemberBadges(userId).catch(() => undefined);
 
   if (!referralCode?.trim()) return;
 
@@ -296,6 +293,8 @@ export async function getRewardSummary(userId: string) {
       recentActivity: []
     };
   }
+
+  await evaluateMemberBadges(userId);
 
   const [ledger, badges] = await Promise.all([
     listUserRewardLedger(userId, 30),
@@ -363,18 +362,8 @@ export async function getRewardSummary(userId: string) {
       : null,
     referralCode: user?.referralCode ?? '',
     pathToNextTier,
-    tierBadges: BADGE_DEFINITIONS.filter((b) => b.kind === 'tier').map((def) => {
-      const earned = badges.find((b) => b.badgeKey === def.key);
-      return {
-        key: def.key,
-        name: def.name,
-        description: def.description,
-        emoji: def.emoji,
-        earned: earnedBadgeKeys.has(def.key),
-        earnedAt: earned?.earnedAt.toISOString() ?? null
-      };
-    }),
-    badges: ACHIEVEMENT_BADGE_DEFINITIONS.map((def) => {
+    tierBadges: [],
+    badges: MEMBER_BADGE_DEFINITIONS.map((def) => {
       const earned = badges.find((b) => b.badgeKey === def.key);
       return {
         key: def.key,

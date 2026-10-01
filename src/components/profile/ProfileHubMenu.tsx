@@ -12,7 +12,7 @@ export const ProfileHubMenu = ({
   showHosting = false,
   trailPointsEligible = true,
 }: ProfileHubMenuProps) => (
-  <div className="space-y-4">
+  <div className="space-y-2.5">
     <SettingsMenuGroup title="People">
       <SettingsMenuRow label="Friends" to="/buddies" icon={Users} badge={buddyBadge} />
       <SettingsMenuRow label="Groups" to="/groups" icon={UserRound} />

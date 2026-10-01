@@ -2,16 +2,35 @@ import type { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../../middleware/validate.js';
 import {
+  countFollowersForUser,
   followUser,
   getFollowState,
   isFollowingUser,
   listFollowingForUser,
   unfollowUser,
 } from '../../lib/follow-store.js';
+import {
+  countPublishedActivitiesHostedByUser,
+  countUserCheckedInParticipations,
+} from '../../lib/activity-engagement-store.js';
 import { notifyMemberFollowed } from '../../services/social-notifications.js';
 import { buddyRelationshipParamSchema } from './schemas.js';
 
 export const registerFollowRoutes = (router: Router): void => {
+  router.get('/me/member-hub-stats', async (req, res, next) => {
+    try {
+      const userId = req.auth!.userId;
+      const [followerCount, joinedCount, hostedCount] = await Promise.all([
+        countFollowersForUser(userId),
+        countUserCheckedInParticipations(userId),
+        countPublishedActivitiesHostedByUser(userId),
+      ]);
+      res.json({ data: { followerCount, joinedCount, hostedCount } });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.get('/me/following', async (req, res, next) => {
     try {
       const data = await listFollowingForUser(req.auth!.userId);

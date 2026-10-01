@@ -60,7 +60,7 @@ export const MEMBERSHIP_TIERS: MembershipTierDefinition[] = [
     name: 'Active',
     minPoints: 100,
     emoji: '⚡',
-    badgeKey: 'tier_active',
+    badgeKey: null,
     tagline: 'Recognised contributor',
     benefits: [
       'Active member badge on your profile',
@@ -73,7 +73,7 @@ export const MEMBERSHIP_TIERS: MembershipTierDefinition[] = [
     name: 'Pro',
     minPoints: 500,
     emoji: '🛡️',
-    badgeKey: 'tier_pro',
+    badgeKey: null,
     tagline: 'Trusted explorer',
     benefits: [
       'Trusted member badge',
@@ -86,7 +86,7 @@ export const MEMBERSHIP_TIERS: MembershipTierDefinition[] = [
     name: 'GOAT',
     minPoints: 2000,
     emoji: '🐐',
-    badgeKey: 'tier_goat',
+    badgeKey: null,
     tagline: 'Greatest Of All Trails',
     benefits: [
       'GOAT badge — top contributor status',
@@ -104,26 +104,47 @@ export interface BadgeDefinition {
   kind: 'tier' | 'achievement';
 }
 
-const TIER_BADGE_DEFINITIONS: BadgeDefinition[] = MEMBERSHIP_TIERS.filter((t) => t.badgeKey).map((t) => ({
-  key: t.badgeKey!,
-  name: t.name,
-  description: t.tagline,
-  emoji: t.emoji,
-  kind: 'tier' as const
-}));
+/** Profile badges — earn rules in `evaluateMemberBadges` (rewards service). */
+export const MEMBER_BADGE_ORDER = [
+  'newbie',
+  'active',
+  'host',
+  'helpful_critic',
+  'goat',
+  'ambassador',
+  'contributor',
+  'trusted_host',
+] as const;
 
-export const ACHIEVEMENT_BADGE_DEFINITIONS: BadgeDefinition[] = [
-  { key: 'trail_mapper', name: 'Trail Mapper', description: 'Submit your first location', emoji: '🗺️', kind: 'achievement' },
-  { key: 'community_voice', name: 'Community Voice', description: 'Share 5 community posts', emoji: '💬', kind: 'achievement' },
-  { key: 'helpful_hand', name: 'Helpful Hand', description: 'Reply 10 times in the community', emoji: '🤝', kind: 'achievement' },
-  { key: 'activity_leader', name: 'Activity Leader', description: 'Publish your first activity', emoji: '🏔️', kind: 'achievement' },
-  { key: 'trusted_host', name: 'Trusted Host', description: 'Host 5 successful activities', emoji: '⭐', kind: 'achievement' },
-  { key: 'reviewer', name: 'Reviewer', description: 'Write your first review', emoji: '✍️', kind: 'achievement' },
-  { key: 'ambassador', name: 'Ambassador', description: 'Invite 3 friends who join', emoji: '🎁', kind: 'achievement' },
-  { key: 'adventurer', name: 'Adventurer', description: 'Attend 5 activities', emoji: '🥾', kind: 'achievement' }
+export type MemberBadgeKey = (typeof MEMBER_BADGE_ORDER)[number];
+
+export const MEMBER_BADGE_DEFINITIONS: BadgeDefinition[] = [
+  { key: 'newbie', name: 'Newbie', description: 'Signed-in user', emoji: '🌱', kind: 'achievement' },
+  { key: 'active', name: 'Active', description: 'Join a trip or activity', emoji: '⚡', kind: 'achievement' },
+  { key: 'host', name: 'Host', description: 'Organize a trip', emoji: '🏔️', kind: 'achievement' },
+  {
+    key: 'helpful_critic',
+    name: 'Helpful Critic',
+    description: 'Write a review',
+    emoji: '✍️',
+    kind: 'achievement',
+  },
+  { key: 'goat', name: 'GOAT', description: 'Join 5 trips', emoji: '🐐', kind: 'achievement' },
+  { key: 'ambassador', name: 'Ambassador', description: 'Invite 3 friends', emoji: '🎁', kind: 'achievement' },
+  { key: 'contributor', name: 'Contributor', description: 'Add a spot', emoji: '📍', kind: 'achievement' },
+  {
+    key: 'trusted_host',
+    name: 'Trusted Host',
+    description: 'Organize 5 trips',
+    emoji: '⭐',
+    kind: 'achievement',
+  },
 ];
 
-export const BADGE_DEFINITIONS: BadgeDefinition[] = [...TIER_BADGE_DEFINITIONS, ...ACHIEVEMENT_BADGE_DEFINITIONS];
+/** @deprecated Use MEMBER_BADGE_DEFINITIONS */
+export const ACHIEVEMENT_BADGE_DEFINITIONS = MEMBER_BADGE_DEFINITIONS;
+
+export const BADGE_DEFINITIONS: BadgeDefinition[] = MEMBER_BADGE_DEFINITIONS;
 
 export const EARN_OPPORTUNITIES = [
   { action: 'LOCATION_SUBMITTED' as const, title: 'Add a location', description: 'Share a trail or camp spot with the community', points: REWARD_POINTS.LOCATION_SUBMITTED + REWARD_POINTS.LOCATION_PUBLISHED },

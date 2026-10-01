@@ -11,6 +11,8 @@ import {
   registerMeActivityParticipationRoutes,
 } from './user/registerMeEngagementRoutes.js';
 import { registerMeRewardsRoutes } from './user/registerMeRewardsRoutes.js';
+import { registerMeGoalsRoutes } from './user/registerMeGoalsRoutes.js';
+import { registerMeMapPinsRoutes } from './user/registerMeMapPinsRoutes.js';
 import { registerMeSubmittedPlaceRoutes } from './user/registerMeSubmittedPlaceRoutes.js';
 import { registerNotificationRoutes } from './user/registerNotificationRoutes.js';
 import { registerProfileRoutes } from './user/registerProfileRoutes.js';
@@ -48,3 +50,5 @@ registerHostApplicationRoutes(userRouter);
 registerMeAccountSessionRoutes(userRouter);
 registerMeSubmittedPlaceRoutes(userRouter);
 registerMeRewardsRoutes(userRouter);
+registerMeGoalsRoutes(userRouter);
+registerMeMapPinsRoutes(userRouter);

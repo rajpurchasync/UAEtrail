@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 interface ActivityHubListRowProps {
   title: string;
   meta?: string | null;
+  leading?: ReactNode;
   badge?: ReactNode;
   onClick: () => void;
   menu?: ReactNode;
@@ -13,6 +14,7 @@ interface ActivityHubListRowProps {
 export const ActivityHubListRow = ({
   title,
   meta,
+  leading,
   badge,
   onClick,
   menu,
@@ -22,6 +24,7 @@ export const ActivityHubListRow = ({
     onClick={onClick}
     className="glass-card-interactive flex w-full items-center gap-3 p-3.5 text-left"
   >
+    {leading}
     <div className="min-w-0 flex-1">
       <p className="text-sm font-semibold text-neutral-900 truncate">{title}</p>
       {meta && <p className="text-xs text-neutral-500 mt-0.5 truncate">{meta}</p>}

@@ -2,18 +2,20 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api/index';
 import { AppButton } from '../mobile/AppButton';
 import { GlassCard } from '../mobile/GlassCard';
+import { SettingsMenuRow } from '../settings/SettingsMenuRow';
 import { Dialog } from '../ui/Dialog';
 
 interface ProfileBioCardProps {
   bio: string | null | undefined;
   canEdit: boolean;
   onUpdated: (bio: string) => void;
+  variant?: 'card' | 'hubRow' | 'inline';
 }
 
 const BIO_MAX = 500;
 
 /** Short intro shown on the personal profile hub. */
-export const ProfileBioCard = ({ bio, canEdit, onUpdated }: ProfileBioCardProps) => {
+export const ProfileBioCard = ({ bio, canEdit, onUpdated, variant = 'card' }: ProfileBioCardProps) => {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
@@ -72,9 +74,35 @@ export const ProfileBioCard = ({ bio, canEdit, onUpdated }: ProfileBioCardProps)
     </>
   );
 
+  const bioSubtitle = displayed
+    ? displayed.length > 72
+      ? `${displayed.slice(0, 72)}…`
+      : displayed
+    : 'Tell people what you love doing outdoors';
+
   return (
     <>
-      {canEdit ? (
+      {variant === 'inline' ? (
+        canEdit ? (
+          <button type="button" onClick={openEditor} className="block w-full text-left active:opacity-80">
+            {displayed ? (
+              <p className="text-sm leading-relaxed text-neutral-800 line-clamp-4 whitespace-pre-line">
+                {displayed}
+              </p>
+            ) : (
+              <p className="text-sm text-neutral-500">Add a short bio so people know what you&apos;re into outside.</p>
+            )}
+          </button>
+        ) : displayed ? (
+          <p className="text-sm leading-relaxed text-neutral-800 whitespace-pre-line">{displayed}</p>
+        ) : null
+      ) : variant === 'hubRow' ? (
+        canEdit ? (
+          <SettingsMenuRow label="Bio" subtitle={bioSubtitle} onClick={openEditor} />
+        ) : (
+          <SettingsMenuRow label="Bio" subtitle={bioSubtitle} />
+        )
+      ) : canEdit ? (
         <button type="button" onClick={openEditor} className="block w-full text-left">
           <GlassCard padding className="animate-fade-up transition-opacity active:opacity-90">
             {cardBody}

@@ -16,10 +16,10 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Profile hub (`/profile`)
 
-- **Priority order:** Hero (member since, visibility, completion ring) → bio & speaks → **Profile menu** (Friends, Groups, Trips, Badges, Contributions, Settings; hosting link for approved hosts).
+- **Priority order:** Consumer hub (identity card + **stats row**, About you bio/speaks, **year goal**, plan **carousel**, launcher **tiles**) — not stacked settings menus. **Settings** via More sheet or `/profile/settings`.
 - **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
 - **Pull-to-refresh** reloads hub data at scroll top.
-- **Sign out:** Settings → Account only (not on hub).
+- **Sign out:** Profile hub (bottom) and Settings → Account.
 - **Wishlist:** `/trips?segment=wishlist` (legacy `/profile/wishlist` redirects). Settings → **Saved map & alerts** links to the same segment.
 - **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes.
 

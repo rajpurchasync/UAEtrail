@@ -253,6 +253,15 @@
     z-index: 1250;
   }
 
+  .app-fab--secondary {
+    @apply bg-white text-neutral-800 shadow-lg ring-1 ring-neutral-200/90 hover:bg-neutral-50;
+    bottom: calc(var(--safe-bottom) + 12px + 3.75rem);
+  }
+
+  html[data-mobile-bottom-nav='true'] .app-fab--secondary {
+    bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 12px + 3.75rem);
+  }
+
   /* ── Typography ── */
   .consumer-eyebrow {
     @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90;
@@ -939,6 +948,11 @@
   }
 
   .uaetrail-map-pin {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .uaetrail-outdoor-pin {
     background: transparent !important;
     border: none !important;
   }

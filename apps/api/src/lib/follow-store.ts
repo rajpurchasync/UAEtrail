@@ -82,6 +82,9 @@ export const listFollowingForUser = async (followerId: string): Promise<MemberFo
 };
 
 /** Users who follow `userId` (for publish notifications). */
+export const countFollowersForUser = async (userId: string): Promise<number> =>
+  collection().countDocuments({ followingId: userId });
+
 export const listFollowerIdsForUser = async (userId: string): Promise<string[]> => {
   const docs = await collection()
     .find({ followingId: userId }, { projection: { followerId: 1 } })

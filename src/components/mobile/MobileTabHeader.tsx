@@ -15,8 +15,13 @@ const resolveCenter = (pathname: string, search: string): MobileTabHeaderCenter 
   if (pathname === '/trips' || pathname === '/activities') {
     const params = new URLSearchParams(search);
     if (params.get('segment') === 'wishlist') return { kind: 'title', text: 'Wishlist' };
-    if (params.get('segment') === 'past') return { kind: 'title', text: 'Past trips' };
-    if (params.get('tab') === 'hosted') return { kind: 'title', text: 'Hosted' };
+    if (params.get('segment') === 'past' || params.get('segment') === 'completed') {
+      return { kind: 'title', text: 'Completed' };
+    }
+    if (params.get('role') === 'hosted' || params.get('tab') === 'hosted') {
+      return { kind: 'title', text: 'Hosted' };
+    }
+    if (params.get('role') === 'self') return { kind: 'title', text: 'Self' };
     const subTitle = joinedSubViewTitle(params.get('sub'));
     if (subTitle) return { kind: 'title', text: subTitle };
     return { kind: 'title', text: 'Trips' };

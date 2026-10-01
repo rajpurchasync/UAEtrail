@@ -144,5 +144,19 @@ export async function performParticipantCheckIn(opts: {
     activityType
   });
 
+  void import('./member-goal-notifications.js')
+    .then((mod) => mod.notifyMemberGoalAfterCheckIn(participant.userId, activity.id))
+    .catch(() => undefined);
+
+  void import('../lib/member-map-pins-store.js')
+    .then((mod) =>
+      mod.upsertVisitedPinFromActivityCheckIn({
+        userId: participant.userId,
+        activityId: activity.id,
+        checkedInAt,
+      })
+    )
+    .catch(() => undefined);
+
   return { checkedInAt, alreadyCheckedIn: false };
 }

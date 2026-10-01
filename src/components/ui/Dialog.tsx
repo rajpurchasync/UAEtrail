@@ -1,4 +1,5 @@
 import { type ReactNode, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
 
@@ -46,7 +47,7 @@ export const Dialog = ({
       ? `glass-card w-full max-w-lg max-h-[min(88dvh,720px)] p-6 rounded-t-[24px] md:rounded-[24px] flex flex-col overflow-hidden ${className}`
       : `glass-card w-full max-w-lg max-h-[min(88dvh,720px)] overflow-y-auto scroll-touch p-6 rounded-t-[24px] md:rounded-[24px] ${className}`;
 
-  return (
+  return createPortal(
     <div
       className={`fixed inset-0 ${overlayClassName} flex items-end justify-center bg-black/40 p-0 md:items-center md:p-4`}
       onClick={onClose}
@@ -73,8 +74,9 @@ export const Dialog = ({
             <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
-        {variant === 'form' ? <div className="min-h-0 flex-1 flex flex-col">{children}</div> : children}
+        {variant === 'form' ? <div className="min-h-0 flex-1 flex flex-col overflow-hidden">{children}</div> : children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

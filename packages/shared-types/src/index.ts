@@ -276,6 +276,7 @@ export type {
 } from './buddy-connection.js';
 
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
+export type { MemberHubStatsDTO } from './member-hub-stats.js';
 
 export type HostApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
@@ -1068,6 +1069,34 @@ export {
   type UserGenderWire,
   type WomenOnlyJoinEligibility,
 } from './activity-audience-requirements.js';
+
+export type {
+  MemberGoalActivityFilter,
+  MemberGoalDTO,
+  MemberGoalPublicDTO,
+  UpsertMemberGoalInput,
+} from './member-goals.js';
+
+export {
+  MEMBER_MAP_PIN_ACTIVITY_TYPES,
+  type MemberMapPinActivityType,
+} from './member-map-pin-activity-type.js';
+
+export type {
+  CreateMemberMapPinInput,
+  MemberJourneyMapDTO,
+  MemberJourneyMapStatsDTO,
+  MemberMapPinDTO,
+  MemberMapPinKind,
+  MemberMapPinSource,
+  UpdateMemberMapPinInput,
+} from './member-map-pins.js';
+
+export type {
+  OutdoorMapEntryCategory,
+  OutdoorMapEntryDTO,
+  OutdoorMapFilterCategory,
+} from './outdoor-map-entries.js';
 
 export {
   buildExploreActivityDisplay,

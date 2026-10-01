@@ -303,8 +303,8 @@ interface AccountSignOutButtonProps {
   onSignOut: () => void;
 }
 
-export const AccountSignOutButton = ({ onSignOut }: AccountSignOutButtonProps) => (
-  <div className="mt-5 mb-4">
+export const AccountSignOutButton = ({ onSignOut, compact = false }: AccountSignOutButtonProps & { compact?: boolean }) => (
+  <div className={compact ? 'mt-1 mb-2' : 'mt-5 mb-4'}>
     <button
       type="button"
       onClick={onSignOut}

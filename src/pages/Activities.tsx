@@ -5,93 +5,82 @@ import { useAuth } from '../context/AuthContext';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { TabPageSearchRow } from '../components/mobile/TabPageSearchRow';
-import { FormTabBar } from '../components/ui/FormTabBar';
 import { PageMeta } from '../components/seo/PageMeta';
 import { TRIPS_PATH } from '../constants';
 import { explorePath } from '../explore/routing';
 import { isHostRole } from '../utils/roles';
 import { signInPathForReturn } from '../utils/authReturnContext';
-import { joinedSubViewTitle, parseTabParam, type PageTab } from './activities/shared';
 import { ActivitiesHubView } from './activities/ActivitiesHubView';
 import { JoinedSection } from './activities/JoinedSection';
 import { HostedSection } from './activities/HostedSection';
+import { TripsSelfSection } from './activities/TripsSelfSection';
 import { ProfileWishlistPanel } from '../components/trips/ProfileWishlistPanel';
-
-type TripsSegment = 'upcoming' | 'past' | 'wishlist';
-
-const parseSegment = (raw: string | null): TripsSegment => {
-  if (raw === 'past' || raw === 'wishlist') return raw;
-  return 'upcoming';
-};
+import { ProfileGoalCard } from '../components/profile/ProfileGoalCard';
+import { useMemberGoal } from '../hooks/useMemberGoal';
+import { TripsSegmentScroll } from '../components/trips/TripsSegmentScroll';
+import { TripsRoleChips } from '../components/trips/TripsRoleChips';
+import {
+  TRIPS_SEGMENT_TABS,
+  normalizeTripsSearchParams,
+  parseTripsRole,
+  parseTripsSegment,
+  tripsRoleChips,
+  tripsMapPath,
+  type TripsRole,
+  type TripsSegment,
+} from '../trips/tripsRouting';
 
 export const Activities = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<PageTab>(() => parseTabParam(searchParams.get('tab'), user));
   const [refreshKey, setRefreshKey] = useState(0);
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
   const canHost = isHostRole(user?.role);
-  const joinedSub = searchParams.get('sub');
-  const segment = parseSegment(searchParams.get('segment'));
-  const showUpcomingHub = segment === 'upcoming' && activeTab === 'joined' && !joinedSub;
-
-  const segmentTabs = useMemo(
-    () => [
-      { id: 'upcoming', label: 'Upcoming' },
-      { id: 'past', label: 'Past' },
-      { id: 'wishlist', label: 'Wishlist' },
-    ],
-    []
-  );
+  const { goal, saving: goalSaving, saveGoal, clearGoal, reload: reloadGoal } = useMemberGoal(Boolean(user));
 
   useEffect(() => {
-    setActiveTab(parseTabParam(searchParams.get('tab'), user));
-  }, [searchParams, user]);
-
-  useEffect(() => {
-    if (segment !== 'past' || joinedSub) return;
+    if (!user) return;
     const next = new URLSearchParams(searchParams);
-    next.set('sub', 'attended');
-    next.set('tab', 'joined');
-    setSearchParams(next, { replace: true });
-  }, [joinedSub, segment, searchParams, setSearchParams]);
+    const { changed } = normalizeTripsSearchParams(next, canHost);
+    if (changed) setSearchParams(next, { replace: true });
+  }, [canHost, searchParams, setSearchParams, user]);
 
-  useEffect(() => {
-    if (user) return;
-    const tab = searchParams.get('tab');
-    if (tab === 'joined' || tab === 'hosted' || tab === 'mine') {
-      const next = new URLSearchParams(searchParams);
-      next.delete('tab');
-      next.delete('sub');
-      setSearchParams(next, { replace: true });
-    }
-  }, [user, searchParams, setSearchParams]);
+  const segment = parseTripsSegment(searchParams.get('segment'));
+  const role = parseTripsRole(searchParams.get('role'), segment, {
+    canHost,
+    legacyTab: searchParams.get('tab'),
+  });
+
+  const roleChips = useMemo(() => tripsRoleChips(segment, canHost), [canHost, segment]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshKey((key) => key + 1);
-  }, []);
+    reloadGoal();
+  }, [reloadGoal]);
 
   const setSegment = useCallback(
     (nextSegment: TripsSegment) => {
       const next = new URLSearchParams(searchParams);
       next.set('segment', nextSegment);
-      next.set('tab', 'joined');
-      if (nextSegment === 'upcoming') {
-        next.delete('sub');
-      } else if (nextSegment === 'past') {
-        next.set('sub', 'attended');
-      } else {
-        next.delete('sub');
+      if (nextSegment === 'wishlist') {
+        next.delete('role');
+      } else if (!next.get('role')) {
+        next.set('role', 'joined');
       }
       setSearchParams(next, { replace: true });
     },
     [searchParams, setSearchParams]
   );
 
-  const goHub = useCallback(() => {
-    navigate(`${TRIPS_PATH}?segment=upcoming&tab=joined`);
-  }, [navigate]);
+  const setRole = useCallback(
+    (nextRole: TripsRole) => {
+      const next = new URLSearchParams(searchParams);
+      next.set('role', nextRole);
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
 
   const handleOpenCompose = useCallback(() => {
     const composePath = explorePath({ compose: 'menu' });
@@ -102,14 +91,14 @@ export const Activities = () => {
     navigate(composePath);
   }, [navigate, user]);
 
-  const showActivitiesSubNav =
-    segment === 'upcoming' && (activeTab === 'hosted' || Boolean(joinedSubViewTitle(joinedSub)));
+  const showUpcomingJoinedHub = segment === 'upcoming' && role === 'joined';
+  const showFab = showUpcomingJoinedHub && Boolean(user);
 
   return (
     <div className="min-h-screen consumer-bg md:bg-gray-50">
       <PageMeta
-        title="My trips — upcoming, past, and saved map"
-        description="Your upcoming outings, past trips, and wishlist on UAE Trail."
+        title="My trips — upcoming, completed, and wishlist"
+        description="Your upcoming outings, completed trips, and wishlist on UAE Trail."
         path={TRIPS_PATH}
       />
 
@@ -126,72 +115,92 @@ export const Activities = () => {
                   />
                 </div>
                 <Link
-                  to={explorePath({ myTrips: true, list: true })}
+                  to={tripsMapPath()}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-emerald-700 shadow-sm"
-                  aria-label="Map view"
-                  title="Map view"
+                  aria-label="My outdoor map"
+                  title="My outdoor map"
                 >
                   <MapIcon className="h-5 w-5" aria-hidden />
                 </Link>
               </div>
-              <FormTabBar tabs={segmentTabs} activeId={segment} onChange={(id) => setSegment(id as TripsSegment)} />
+
+              <TripsSegmentScroll tabs={TRIPS_SEGMENT_TABS} activeId={segment} onChange={setSegment} />
+
+              {segment !== 'wishlist' ? (
+                <div className="mt-3">
+                  <TripsRoleChips chips={roleChips} activeId={role} onChange={setRole} />
+                </div>
+              ) : null}
+
+              {segment === 'upcoming' ? (
+                <div className="mt-3">
+                  <ProfileGoalCard
+                    goal={goal}
+                    saving={goalSaving}
+                    onSave={saveGoal}
+                    onClear={clearGoal}
+                  />
+                </div>
+              ) : null}
             </>
           ) : null}
 
-          {segment === 'wishlist' && user ? <ProfileWishlistPanel key={refreshKey} /> : null}
+          <div className="mt-3">
+            {segment === 'wishlist' && user ? <ProfileWishlistPanel key={refreshKey} /> : null}
 
-          {showUpcomingHub && user ? (
-            <div className="mt-3">
-              <ActivitiesHubView
+            {showUpcomingJoinedHub && user ? (
+              <ActivitiesHubView refreshKey={refreshKey} searchQuery={activitySearchQuery} />
+            ) : null}
+
+            {segment === 'upcoming' && role === 'hosted' && user && canHost ? (
+              <HostedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} timeScope="upcoming" />
+            ) : null}
+
+            {segment === 'upcoming' && role === 'hosted' && user && !canHost ? (
+              <div className="glass-card p-6 text-center">
+                <p className="mb-3 text-sm text-neutral-600">
+                  Host activities on the map to share them with the community.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/become-host')}
+                  className="text-sm font-semibold text-emerald-700"
+                >
+                  Become a host
+                </button>
+              </div>
+            ) : null}
+
+            {segment === 'upcoming' && role === 'self' && user ? (
+              <TripsSelfSection segment="upcoming" />
+            ) : null}
+
+            {segment === 'completed' && role === 'joined' && user ? (
+              <JoinedSection
                 refreshKey={refreshKey}
-                canHost={canHost}
                 searchQuery={activitySearchQuery}
+                scope="attended-only"
               />
-            </div>
-          ) : null}
+            ) : null}
 
-          {showActivitiesSubNav && (
-            <button
-              type="button"
-              onClick={goHub}
-              className="mb-3 mt-3 text-sm font-semibold text-emerald-700"
-            >
-              ← Upcoming
-            </button>
-          )}
+            {segment === 'completed' && role === 'hosted' && user && canHost ? (
+              <HostedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} timeScope="past" />
+            ) : null}
 
-          {segment === 'upcoming' && activeTab === 'joined' && joinedSub && user ? (
-            <JoinedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} />
-          ) : null}
+            {segment === 'completed' && role === 'hosted' && user && !canHost ? (
+              <div className="glass-card p-6 text-center text-sm text-neutral-600">
+                Hosting history is available after you become an approved host.
+              </div>
+            ) : null}
 
-          {segment === 'past' && user ? (
-            <div className="mt-3">
-              <JoinedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} />
-            </div>
-          ) : null}
-
-          {segment === 'upcoming' && activeTab === 'hosted' && user && canHost ? (
-            <HostedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} />
-          ) : null}
-
-          {segment === 'upcoming' && activeTab === 'hosted' && user && !canHost && (
-            <div className="glass-card mt-3 p-6 text-center">
-              <p className="mb-3 text-sm text-neutral-600">
-                Host activities on the map to share them with the community.
-              </p>
-              <button
-                type="button"
-                onClick={() => navigate('/become-host')}
-                className="text-sm font-semibold text-emerald-700"
-              >
-                Become a host
-              </button>
-            </div>
-          )}
+            {segment === 'completed' && role === 'self' && user ? (
+              <TripsSelfSection segment="completed" />
+            ) : null}
+          </div>
         </div>
       </PullToRefresh>
 
-      {showUpcomingHub && user ? (
+      {showFab ? (
         <FloatingActionButton
           icon={<Plus className="h-6 w-6" strokeWidth={2.5} aria-hidden />}
           label="Add New"

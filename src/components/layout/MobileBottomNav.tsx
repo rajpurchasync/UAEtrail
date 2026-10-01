@@ -53,7 +53,7 @@ export const MobileBottomNav = () => {
         </NavLink>
 
         <Link
-          to="/trips?segment=upcoming&tab=joined"
+          to="/trips"
           className={tabShellClass(tripsActive)}
           aria-current={tripsActive ? 'page' : undefined}
           aria-label="My trips"

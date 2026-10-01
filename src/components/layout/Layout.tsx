@@ -25,10 +25,11 @@ export const Layout = ({ children }: LayoutProps) => {
   }, [location.pathname]);
 
   const isExploreMap = location.pathname === '/explore';
+  const isTripsPersonalMap = location.pathname === '/trips/map';
   const hideChrome = isConsumerChromeHidden(location.pathname);
-  const showConsumerChrome = !hideChrome && !isExploreMap;
+  const showConsumerChrome = !hideChrome && !isExploreMap && !isTripsPersonalMap;
 
-  if (isExploreMap) {
+  if (isExploreMap || isTripsPersonalMap) {
     return (
       <ComposeRailProvider>
         <MobileMenuProvider>

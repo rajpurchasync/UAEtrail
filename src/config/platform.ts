@@ -100,7 +100,7 @@ export const MOBILE_DRAWER_MENU = [
   },
   { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery'] },
   { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
-  { label: 'My trips', to: '/trips?segment=upcoming&tab=joined', match: ['/trips', '/activities', '/activity'] },
+  { label: 'My trips', to: '/trips', match: ['/trips', '/activities', '/activity'] },
 ] as const;
 
 /**
@@ -265,6 +265,7 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/',
   '/explore',
   '/trips',
+  '/trips/map',
   '/activities',
   '/community',
   '/shop',

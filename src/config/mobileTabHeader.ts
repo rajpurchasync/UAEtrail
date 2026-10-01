@@ -8,7 +8,7 @@ const TAB_HEADER_ROUTES = new Set(['/explore', '/profile', '/trips', '/activitie
 
 export const isMobileTabHeaderRoute = (pathname: string): boolean => TAB_HEADER_ROUTES.has(pathname);
 
-/** Root bottom-nav tabs share one header; profile stack routes keep ConsumerShell back chrome. */
+/** Root bottom-nav tabs share one unified mobile header; profile sub-routes keep ConsumerShell back chrome. */
 export const shouldShowMobileUnifiedTabHeader = (
   pathname: string,
   search: string,

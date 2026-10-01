@@ -53,6 +53,8 @@ export const COLLECTIONS = {
   NOTIFICATIONS: 'notifications',
   REWARD_LEDGERS: 'reward_ledgers',
   USER_BADGES: 'user_badges',
+  USER_GOALS: 'user_goals',
+  MEMBER_MAP_PINS: 'member_map_pins',
   PUSH_SUBSCRIPTIONS: 'push_subscriptions',
 
   // Platform

@@ -1,0 +1,381 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { List, MapPin, Plus, Share2, Sparkles } from 'lucide-react';
+import type {
+  MemberJourneyMapStatsDTO,
+  MemberMapPinActivityType,
+  MemberMapPinDTO,
+  OutdoorMapEntryDTO,
+  OutdoorMapFilterCategory,
+} from '@uaetrail/shared-types';
+import { PageMeta } from '../components/seo/PageMeta';
+import { TripsJourneyMap, type JourneyMapMarker } from '../components/trips/TripsJourneyMap';
+import { OutdoorMapPinSheet, type OutdoorMapSheetState } from '../components/trips/OutdoorMapPinSheet';
+import { OutdoorMapFilterScroll } from '../components/trips/OutdoorMapFilterScroll';
+import { OutdoorMapListSheet } from '../components/trips/OutdoorMapListSheet';
+import { MobileBackButton } from '../components/mobile/MobileBackButton';
+import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
+import { shareOutdoorMapSummary } from '../components/trips/outdoorMapShare';
+import { tripsMapApi } from '../api/domains/tripsMap';
+import { tripsPath } from '../trips/tripsRouting';
+import {
+  filterOutdoorEntries,
+  mappableOutdoorEntries,
+  parseOutdoorMapFilter,
+} from '../trips/outdoorMapFilters';
+import { resolveOutdoorPinStyle } from '../trips/outdoorMapPinStyle';
+
+const INTRO_STORAGE_KEY = 'uaetrail-outdoor-map-intro-dismissed';
+
+const emptyStats = (): MemberJourneyMapStatsDTO => ({
+  totalPins: 0,
+  wishlistCount: 0,
+  visitedCount: 0,
+  activityCheckInCount: 0,
+  byActivityType: {},
+});
+
+const entryToMarker = (entry: OutdoorMapEntryDTO): JourneyMapMarker | null => {
+  if (entry.latitude == null || entry.longitude == null) return null;
+  return {
+    id: entry.id,
+    latitude: entry.latitude,
+    longitude: entry.longitude,
+    pinStyle: resolveOutdoorPinStyle(entry),
+  };
+};
+
+export const TripsMap = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filter = parseOutdoorMapFilter(searchParams.get('filter'));
+
+  const [pins, setPins] = useState<MemberMapPinDTO[]>([]);
+  const [entries, setEntries] = useState<OutdoorMapEntryDTO[]>([]);
+  const [stats, setStats] = useState<MemberJourneyMapStatsDTO>(emptyStats);
+  const [loading, setLoading] = useState(true);
+  const [pickMode, setPickMode] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
+  const [sheet, setSheet] = useState<OutdoorMapSheetState | { type: 'idle' }>({ type: 'idle' });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [shareHint, setShareHint] = useState<string | null>(null);
+  const [focusLatLng, setFocusLatLng] = useState<{ lat: number; lng: number } | null>(null);
+  const [introDismissed, setIntroDismissed] = useState(
+    () => typeof window !== 'undefined' && window.localStorage.getItem(INTRO_STORAGE_KEY) === '1'
+  );
+
+  const setFilter = (next: OutdoorMapFilterCategory) => {
+    const params = new URLSearchParams(searchParams);
+    if (next === 'all') params.delete('filter');
+    else params.set('filter', next === 'self' ? 'gone' : next);
+    setSearchParams(params, { replace: true });
+  };
+
+  const reload = useCallback(async () => {
+    setError(null);
+    try {
+      const res = await tripsMapApi.getJourneyMap();
+      setPins(res.data.pins);
+      setEntries(res.data.entries ?? []);
+      setStats(res.data.stats);
+    } catch {
+      setError('Could not load your map. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  const filteredEntries = useMemo(() => filterOutdoorEntries(entries, filter), [entries, filter]);
+  const mapMarkers = useMemo(
+    () => mappableOutdoorEntries(filteredEntries).map(entryToMarker).filter(Boolean) as JourneyMapMarker[],
+    [filteredEntries]
+  );
+
+  const dismissIntro = () => {
+    setIntroDismissed(true);
+    try {
+      window.localStorage.setItem(INTRO_STORAGE_KEY, '1');
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const pendingLatLng = sheet.type === 'new' ? { lat: sheet.lat, lng: sheet.lng } : null;
+  const showIntroDock = sheet.type === 'idle' && !pickMode && !introDismissed && entries.length === 0;
+
+  const openEntry = (entry: OutdoorMapEntryDTO) => {
+    setPickMode(false);
+    setListOpen(false);
+    if (entry.pinId) {
+      const pin = pins.find((p) => p.id === entry.pinId);
+      if (pin) {
+        setSheet({ type: 'view', pin });
+        return;
+      }
+    }
+    setSheet({ type: 'view-entry', entry });
+  };
+
+  const openMarker = (markerId: string) => {
+    const entry = filteredEntries.find((e) => e.id === markerId);
+    if (entry) openEntry(entry);
+  };
+
+  const onListSelect = (entry: OutdoorMapEntryDTO) => {
+    openEntry(entry);
+    if (entry.latitude != null && entry.longitude != null) {
+      setFocusLatLng({ lat: entry.latitude, lng: entry.longitude });
+      window.setTimeout(() => setFocusLatLng(null), 800);
+    }
+  };
+
+  const startPinning = () => {
+    setListOpen(false);
+    setError(null);
+    setSheet({ type: 'idle' });
+    setPickMode(true);
+    if (entries.length === 0) dismissIntro();
+  };
+
+  const cancelPinning = () => {
+    setPickMode(false);
+    setSheet({ type: 'idle' });
+  };
+
+  const closeSheet = () => {
+    setSheet({ type: 'idle' });
+    if (sheet.type === 'new') setPickMode(true);
+  };
+
+  const createPin = async (input: {
+    kind: 'wishlist' | 'visited';
+    activityType: MemberMapPinActivityType;
+    title?: string;
+    placeDate?: string;
+  }) => {
+    if (sheet.type !== 'new') return;
+    setSaving(true);
+    setError(null);
+    try {
+      await tripsMapApi.createPin({
+        kind: input.kind,
+        latitude: sheet.lat,
+        longitude: sheet.lng,
+        activityType: input.activityType,
+        title: input.title,
+        placeDate: input.placeDate,
+      });
+      setSheet({ type: 'idle' });
+      setPickMode(false);
+      dismissIntro();
+      await reload();
+    } catch {
+      setError('Could not save this pin.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updatePin = async (
+    pinId: string,
+    input: {
+      title: string;
+      placeDate: string;
+      kind: 'wishlist' | 'visited';
+      activityType: MemberMapPinActivityType;
+      notes: string | null;
+    }
+  ) => {
+    setSaving(true);
+    setError(null);
+    try {
+      await tripsMapApi.updatePin(pinId, input);
+      setSheet({ type: 'idle' });
+      await reload();
+    } catch {
+      setError('Could not update this pin.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deletePin = async (pinId: string) => {
+    setSaving(true);
+    setError(null);
+    try {
+      await tripsMapApi.deletePin(pinId);
+      setSheet({ type: 'idle' });
+      await reload();
+    } catch {
+      setError('Could not remove this pin.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onShare = async () => {
+    setShareHint(null);
+    const ok = await shareOutdoorMapSummary(stats);
+    setShareHint(ok ? 'Summary copied or shared.' : 'Sharing is not available on this device.');
+    window.setTimeout(() => setShareHint(null), 3000);
+  };
+
+  const showMapActions = !pickMode && sheet.type === 'idle' && (entries.length > 0 || introDismissed);
+
+  const emptyListCopy =
+    filter === 'wishlist'
+      ? 'Places you want to go — drop a pin on the map.'
+      : filter === 'self'
+        ? 'Places you’ve been — pins you add yourself.'
+        : filter === 'joined'
+          ? 'Outings you join through UAE Trail.'
+          : filter === 'hosted'
+            ? 'Outings you host.'
+            : 'Pin a place or join an outing to build your map.';
+
+  return (
+    <div className="flex h-full w-full flex-col overflow-hidden consumer-bg">
+      <PageMeta title="My outdoor map" noIndex />
+
+      <header className="z-[100] glass-header flex shrink-0 items-center gap-2 px-4 pb-2 pt-safe-plus-2">
+        <MobileBackButton fallbackTo={tripsPath()} label="Trips" className="shrink-0" />
+        <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-semibold text-neutral-900">
+          My outdoor map
+        </h1>
+        <button
+          type="button"
+          onClick={() => void onShare()}
+          disabled={loading || entries.length === 0}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-100/90 text-neutral-700 disabled:opacity-40"
+          aria-label="Share map summary"
+        >
+          <Share2 className="h-5 w-5" aria-hidden />
+        </button>
+      </header>
+
+      {shareHint ? (
+        <p className="z-[100] shrink-0 bg-emerald-50 px-4 py-1.5 text-center text-xs font-medium text-emerald-800">
+          {shareHint}
+        </p>
+      ) : null}
+
+      {error ? (
+        <p className="z-[100] shrink-0 bg-red-50 px-4 py-2 text-center text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      <div className="relative z-0 min-h-0 flex-1">
+        <TripsJourneyMap
+          className="absolute inset-0"
+          markers={mapMarkers}
+          pendingLatLng={pendingLatLng}
+          focusLatLng={focusLatLng}
+          pickMode={pickMode}
+          onMapPick={(lat, lng) => {
+            setPickMode(false);
+            setSheet({ type: 'new', lat, lng });
+          }}
+          onMarkerTap={openMarker}
+        />
+        {!pickMode && sheet.type === 'idle' ? (
+          <OutdoorMapFilterScroll
+            filter={filter}
+            entries={entries}
+            onChange={setFilter}
+            variant="overlay"
+          />
+        ) : null}
+        {showMapActions ? (
+          <>
+            <FloatingActionButton
+              className="app-fab--secondary !z-[1250]"
+              icon={<List className="h-6 w-6" strokeWidth={2.25} aria-hidden />}
+              label="Open list"
+              onClick={() => setListOpen(true)}
+            />
+            <FloatingActionButton
+              extended
+              text="Add pin"
+              icon={<Plus className="h-6 w-6" strokeWidth={2.25} aria-hidden />}
+              label="Add pin"
+              onClick={startPinning}
+            />
+          </>
+        ) : null}
+      </div>
+
+      {showIntroDock ? (
+        <section
+          className="z-[100] max-h-[38dvh] shrink-0 overflow-y-auto border-t border-neutral-200/80 bg-white px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+          aria-label="How your map works"
+        >
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+              <Sparkles className="h-4 w-4" aria-hidden />
+            </span>
+            <div className="min-w-0 text-sm leading-relaxed text-neutral-700">
+              <p className="font-semibold text-neutral-900">Your outdoor life, on one map</p>
+              <p className="mt-2 text-neutral-600">
+                Coloured pins: amber want to go, blue joined, purple hosted, green gone. Tap{' '}
+                <strong>list</strong> for the full scrollable view.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={startPinning}
+            disabled={loading}
+            className="mt-4 min-h-12 w-full rounded-2xl bg-emerald-600 px-4 py-3.5 text-base font-semibold text-white shadow-sm disabled:opacity-60"
+          >
+            <span className="inline-flex items-center justify-center gap-2">
+              <MapPin className="h-5 w-5" aria-hidden />
+              Pin a place on the map
+            </span>
+          </button>
+        </section>
+      ) : null}
+
+      {pickMode && sheet.type === 'idle' ? (
+        <div className="z-[100] flex shrink-0 gap-2 border-t border-neutral-200/80 bg-white px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <button
+            type="button"
+            onClick={cancelPinning}
+            className="min-h-11 flex-1 rounded-2xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-800"
+          >
+            Cancel
+          </button>
+          <p className="flex flex-[2] items-center justify-center text-center text-xs font-medium text-neutral-600">
+            Zoom anywhere, then tap
+          </p>
+        </div>
+      ) : null}
+
+      <OutdoorMapListSheet
+        open={listOpen}
+        filter={filter}
+        entries={filteredEntries}
+        allEntries={entries}
+        onClose={() => setListOpen(false)}
+        onFilterChange={setFilter}
+        onSelect={onListSelect}
+        emptyMessage={emptyListCopy}
+      />
+
+      {sheet.type !== 'idle' ? (
+        <OutdoorMapPinSheet
+          sheet={sheet}
+          saving={saving}
+          onClose={closeSheet}
+          onCreate={createPin}
+          onUpdate={updatePin}
+          onDelete={deletePin}
+        />
+      ) : null}
+    </div>
+  );
+};

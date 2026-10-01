@@ -75,6 +75,12 @@ export const inferNotificationPath = (
   if (kind === 'reward' || kind === 'tier_upgrade' || kind === 'badge') {
     return '/my-rewards';
   }
+  if (kind === 'goal_halfway' || kind === 'goal_complete') {
+    return '/profile';
+  }
+  if (kind === 'goal_behind_pace') {
+    return '/trips?segment=upcoming&tab=joined';
+  }
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') {
     const buddyUserId = toStringValue(meta?.buddyUserId) ?? toStringValue(meta?.fromUserId);
     if (buddyUserId) return `/member/${buddyUserId}`;

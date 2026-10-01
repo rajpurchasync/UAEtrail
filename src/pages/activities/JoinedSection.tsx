@@ -51,9 +51,12 @@ const filterUpcomingRows = (rows: UpcomingPlanRow[], query: string) =>
 export const JoinedSection = ({
   refreshKey = 0,
   searchQuery = '',
+  scope = 'all',
 }: {
   refreshKey?: number;
   searchQuery?: string;
+  /** Completed trips hub — only checked-in outings. */
+  scope?: 'all' | 'attended-only';
 }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -120,15 +123,17 @@ export const JoinedSection = ({
     { key: 'rejected' as const, label: `Not this time (${rejected.length})` },
   ];
 
+  const effectiveSubTab = scope === 'attended-only' ? 'attended' : subTab;
+
   return (
     <div className="space-y-3">
       {error && <ConsumerErrorCard message={error} />}
 
-      <AppSegmented segments={segments} value={subTab} onChange={setSubTab} />
+      {scope === 'all' ? <AppSegmented segments={segments} value={subTab} onChange={setSubTab} /> : null}
 
       {loading ? (
         <ConsumerLoadingSpinner />
-      ) : subTab === 'upcoming' ? (
+      ) : effectiveSubTab === 'upcoming' ? (
         upcomingRows.length === 0 ? (
           <ActivityHubEmptyState
             title={PRODUCT_JOINED_UPCOMING_EMPTY_TITLE}
@@ -171,7 +176,7 @@ export const JoinedSection = ({
             )}
           </div>
         )
-      ) : subTab === 'attended' ? (
+      ) : effectiveSubTab === 'attended' ? (
         attended.length === 0 ? (
           <ActivityHubEmptyState
             emoji="✅"
@@ -199,7 +204,7 @@ export const JoinedSection = ({
             ))}
           </div>
         )
-      ) : subTab === 'cancelled' ? (
+      ) : effectiveSubTab === 'cancelled' ? (
         cancelled.length === 0 ? (
           <ConsumerInlineEmpty message="No cancelled requests here." />
         ) : filteredCancelled.length === 0 ? (

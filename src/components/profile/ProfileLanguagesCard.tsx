@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/index';
 import { AppButton } from '../mobile/AppButton';
 import { GlassCard } from '../mobile/GlassCard';
+import { SettingsMenuRow } from '../settings/SettingsMenuRow';
 import { Dialog } from '../ui/Dialog';
 import { formatLanguages, parseLanguagesList } from '../../utils/profileLanguages';
 
@@ -23,12 +24,14 @@ interface ProfileLanguagesCardProps {
   languages: string | null;
   canEdit: boolean;
   onUpdated: (languages: string) => void;
+  variant?: 'card' | 'hubRow' | 'inline';
 }
 
 export const ProfileLanguagesCard = ({
   languages,
   canEdit,
   onUpdated,
+  variant = 'card',
 }: ProfileLanguagesCardProps) => {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
@@ -100,9 +103,50 @@ export const ProfileLanguagesCard = ({
     }
   };
 
+  const speaksSubtitle =
+    displayedLanguages.length > 0
+      ? displayedLanguages.join(', ')
+      : 'Add the languages you speak on activities';
+
   return (
     <>
-      {canEdit ? (
+      {variant === 'inline' ? (
+        canEdit ? (
+          <button type="button" onClick={openEditor} className="flex w-full flex-wrap items-center gap-1.5 text-left active:opacity-80">
+            <span className="text-xs font-semibold text-neutral-500">Speaks</span>
+            {displayedLanguages.length > 0 ? (
+              displayedLanguages.map((language) => (
+                <span
+                  key={language}
+                  className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800"
+                >
+                  {language}
+                </span>
+              ))
+            ) : (
+              <span className="text-xs font-medium text-emerald-700">Add languages</span>
+            )}
+          </button>
+        ) : displayedLanguages.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-semibold text-neutral-500">Speaks</span>
+            {displayedLanguages.map((language) => (
+              <span
+                key={language}
+                className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800"
+              >
+                {language}
+              </span>
+            ))}
+          </div>
+        ) : null
+      ) : variant === 'hubRow' ? (
+        canEdit ? (
+          <SettingsMenuRow label="Speaks" subtitle={speaksSubtitle} onClick={openEditor} />
+        ) : (
+          <SettingsMenuRow label="Speaks" subtitle={speaksSubtitle} />
+        )
+      ) : canEdit ? (
         <button type="button" onClick={openEditor} className="block w-full text-left">
           <GlassCard padding className="animate-fade-up transition-opacity active:opacity-90">
             <div className="mb-2.5 flex items-center justify-between gap-2">

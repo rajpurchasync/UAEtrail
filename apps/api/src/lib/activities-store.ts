@@ -396,6 +396,16 @@ export const findActivityTimingById = async (activityId: string) => {
 export const listActivitiesForRequestViews = async (eventIds: string[]) =>
   listActivitiesByIdsFromMongo(eventIds);
 
+export const listHostedActivityIdsForUser = async (userId: string, limit = 150): Promise<string[]> => {
+  const rows = await activitiesCollection()
+    .find({ $or: [{ hostId: userId }, { createdById: userId }] })
+    .project({ _id: 1 })
+    .sort({ startAt: -1 })
+    .limit(limit)
+    .toArray();
+  return rows.map((row) => row._id);
+};
+
 export const findActivityForRequestViewById = async (activityId: string) => {
   const [event] = await listActivitiesByIdsFromMongo([activityId]);
   return event ?? null;

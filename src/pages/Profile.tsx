@@ -2,20 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api/index';
 import { useAuth } from '../context/AuthContext';
-import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { AccountAvatarModal } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useOrganisationGate } from '../hooks/useOrganisationGate';
-import { MembershipTierBadge } from '../components/ui/MembershipTierBadge';
-import { TrailPointsPathSheet } from '../components/rewards';
-import { RewardSummaryDTO } from '@uaetrail/shared-types';
-import { ProfileHeroSection } from '../components/profile/ProfileHeroSection';
-import { ProfileHubMenu } from '../components/profile/ProfileHubMenu';
-import { ProfileUpNextStrip } from '../components/profile/ProfileUpNextStrip';
-import { ProfileBioCard } from '../components/profile/ProfileBioCard';
-import { ProfileLanguagesCard } from '../components/profile/ProfileLanguagesCard';
+import type { MemberGoalDTO, MemberHubStatsDTO, RewardSummaryDTO } from '@uaetrail/shared-types';
+import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
 import { USER_CITY_LABELS } from '../constants/userProfileOptions';
@@ -23,30 +16,25 @@ import { formatMemberJoinedLabel } from '../utils/formatMemberSince';
 import { profileVisibilityLabel } from '../utils/profileVisibilityLabel';
 import { resolveProfileHostKind, resolveProfileRoleLabel } from '../utils/profileRoleLabel';
 import { isHostRole } from '../utils/roles';
+import { PageMeta } from '../components/seo/PageMeta';
 
 export const Profile = () => {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    profile,
-    setProfile,
-    incomingBuddyRequests,
-    upcomingPlans,
-    loading,
-    error,
-    reload,
-  } = useParticipantHubData();
+  const { profile, setProfile, incomingBuddyRequests, loading, error, reload } = useParticipantHubData();
 
   const { ownedProfiles, loading: hostGateLoading } = useOrganisationGate({ enabled: Boolean(user) });
 
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
   const [showAvatarEdit, setShowAvatarEdit] = useState(false);
-  const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
-  const [showPointsPath, setShowPointsPath] = useState(false);
   const [memberSince, setMemberSince] = useState<string | null>(null);
   const [visibility, setVisibility] = useState<'public' | 'group_members' | 'private'>('public');
+  const [goal, setGoal] = useState<MemberGoalDTO | null>(null);
+  const [goalSaving, setGoalSaving] = useState(false);
+  const [hubStats, setHubStats] = useState<MemberHubStatsDTO | null>(null);
+  const [rewardSummary, setRewardSummary] = useState<RewardSummaryDTO | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -58,9 +46,9 @@ export const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
-    void api.getMyRewards()
-      .then((res) => setRewardSummary(res.data))
-      .catch(() => undefined);
+    void api.getActiveGoal().then((res) => setGoal(res.data)).catch(() => undefined);
+    void api.getMeMemberHubStats().then((res) => setHubStats(res.data)).catch(() => undefined);
+    void api.getMyRewards().then((res) => setRewardSummary(res.data)).catch(() => undefined);
   }, [user]);
 
   useEffect(() => {
@@ -69,7 +57,6 @@ export const Profile = () => {
     navigate('/profile/edit', { replace: true, state: null });
   }, [location.pathname, location.state, navigate]);
 
-  const trailPointsEligible = rewardSummary?.trailPointsEligible !== false;
   const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const canHost = isHostRole(user?.role);
   const isActivityHost = canHost && hostProfileKind !== 'shop';
@@ -78,7 +65,6 @@ export const Profile = () => {
   const avatarUrl = profile.avatarUrl ?? user?.avatarUrl ?? null;
   const profileCityLabel = profile.city ? USER_CITY_LABELS[profile.city] : null;
   const memberSinceLabel = memberSince ? formatMemberJoinedLabel(memberSince) : null;
-
   const completion = useMemo(
     () =>
       buildProfileCompletion({
@@ -108,14 +94,73 @@ export const Profile = () => {
   const sharePath = useMemo(
     () =>
       resolveProfileSharePath(ownedProfiles, {
-        referralCode: rewardSummary?.referralCode,
+        fallbackPath: user?.id ? `/member/${user.id}` : '/explore',
       }),
-    [ownedProfiles, rewardSummary?.referralCode]
+    [ownedProfiles, user?.id]
   );
   const shareText = resolveProfileShareText(displayName, ownedProfiles);
-  const shareReady = !hostGateLoading || ownedProfiles.length > 0 || Boolean(rewardSummary?.referralCode);
+  const shareReady = !hostGateLoading || ownedProfiles.length > 0;
 
   const buddyBadge = incomingBuddyRequests.length > 0 ? incomingBuddyRequests.length : undefined;
+
+  const profileHubStats = useMemo(() => {
+    const followerCount = hubStats?.followerCount ?? 0;
+    const joinedCount = hubStats?.joinedCount ?? 0;
+    const hostedCount = hubStats?.hostedCount ?? 0;
+    const showHosted = isActivityHost || hostedCount > 0;
+
+    const stats = [
+      {
+        key: 'followers',
+        label: 'Followed by',
+        value: followerCount,
+      },
+      {
+        key: 'joined',
+        label: 'Joined',
+        value: joinedCount,
+        to: '/trips?segment=completed',
+      },
+    ];
+
+    if (showHosted) {
+      stats.push({
+        key: 'hosted',
+        label: 'Hosted',
+        value: hostedCount,
+        to: '/trips?role=hosted',
+      });
+    }
+
+    return stats;
+  }, [hubStats, isActivityHost]);
+
+  const saveGoal = useCallback(
+    async (input: {
+      activityFilter: MemberGoalDTO['activityFilter'];
+      targetCount: number;
+      targetDate: string;
+    }) => {
+      setGoalSaving(true);
+      try {
+        const res = await api.upsertActiveGoal(input);
+        setGoal(res.data);
+      } finally {
+        setGoalSaving(false);
+      }
+    },
+    []
+  );
+
+  const clearGoal = useCallback(async () => {
+    setGoalSaving(true);
+    try {
+      await api.clearActiveGoal();
+      setGoal(null);
+    } finally {
+      setGoalSaving(false);
+    }
+  }, []);
 
   const openPublicProfile = useCallback(() => {
     if (!user?.id) return;
@@ -131,6 +176,19 @@ export const Profile = () => {
     setShowAvatarEdit(true);
   }, []);
 
+  const handleCompleteProfile = useCallback(() => {
+    const next = completion.items.find((item) => !item.done);
+    if (!next) {
+      openEdit();
+      return;
+    }
+    if (next.action === 'avatar') {
+      openAvatarEdit();
+      return;
+    }
+    openEdit();
+  }, [completion.items, openEdit, openAvatarEdit]);
+
   const handleRefresh = useCallback(async () => {
     await reload();
     if (!user) return;
@@ -138,6 +196,9 @@ export const Profile = () => {
       setMemberSince(profileRes.data.memberSince ?? null);
       setVisibility(profileRes.data.profileVisibility ?? 'public');
     });
+    void api.getActiveGoal().then((res) => setGoal(res.data)).catch(() => undefined);
+    void api.getMeMemberHubStats().then((res) => setHubStats(res.data)).catch(() => undefined);
+    void api.getMyRewards().then((res) => setRewardSummary(res.data)).catch(() => undefined);
   }, [reload, user]);
 
   const saveAvatar = async (nextAvatarUrl: string) => {
@@ -157,91 +218,49 @@ export const Profile = () => {
     }
   };
 
-  const heroExtra = (
-    <div className="flex flex-col items-center gap-2">
-      {profileCityLabel ? (
-        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
-          📍 {profileCityLabel}
-        </span>
-      ) : null}
-      {trailPointsEligible && rewardSummary?.membershipTier && rewardSummary.membershipTier.key !== 'free' ? (
-        <MembershipTierBadge
-          tierKey={rewardSummary.membershipTier.key}
-          name={rewardSummary.membershipTier.name}
-          size="md"
-        />
-      ) : trailPointsEligible && rewardSummary ? (
-        <button
-          type="button"
-          onClick={() => setShowPointsPath(true)}
-          className="text-xs font-semibold text-emerald-600"
-        >
-          {rewardSummary.points.toLocaleString()} trail points
-        </button>
-      ) : null}
-    </div>
-  );
+  const achievementBadges = rewardSummary?.badges ?? [];
 
   return (
-    <ConsumerShell
-      layout="stack"
-      title="Profile"
-      showJourney={false}
-      suppressMobileHeader
-    >
+    <>
+      <PageMeta title="Profile" noIndex />
+
       {error && !loading && (
-        <ConsumerErrorCard message={error} onRetry={() => void reload()} className="mb-3" />
+        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-3">
+          <ConsumerErrorCard message={error} onRetry={() => void reload()} />
+        </div>
       )}
 
       <PullToRefresh onRefresh={handleRefresh} disabled={loading}>
-        <div className="space-y-3 pb-nav-safe animate-fade-up">
-          <ProfileHeroSection
+        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-4 md:py-6">
+          <ProfileConsumerHub
             displayName={displayName}
             roleLabel={roleLabel}
             avatarUrl={avatarUrl}
             completionPercent={completion.percent}
+            completionItems={completion.items}
+            onCompleteProfile={handleCompleteProfile}
             shareTitle={`${displayName} on UAE Trail`}
             shareText={shareText}
             sharePath={sharePath}
             shareReady={shareReady}
-            showCompletionBadge={!loading}
             onEditAvatar={openAvatarEdit}
             onEditProfile={openEdit}
             onViewProfile={openPublicProfile}
             memberSinceLabel={memberSinceLabel}
             visibilityLabel={profileVisibilityLabel(visibility)}
-            extra={heroExtra}
-          />
-
-          <ProfileBioCard
-            bio={profile.bio}
-            canEdit
-            onUpdated={(bio) => setProfile((prev) => ({ ...prev, bio }))}
-          />
-
-          <ProfileLanguagesCard
-            languages={profile.languages ?? null}
-            canEdit
-            onUpdated={(languages) => setProfile((prev) => ({ ...prev, languages }))}
-          />
-
-          <ProfileUpNextStrip plans={upcomingPlans} loading={loading} />
-
-          <ProfileHubMenu
+            cityLabel={profileCityLabel}
+            hubStats={profileHubStats}
+            goal={goal}
+            goalSaving={goalSaving}
+            onSaveGoal={saveGoal}
+            onClearGoal={clearGoal}
+            achievementBadges={achievementBadges}
             buddyBadge={buddyBadge}
             showHosting={isActivityHost}
-            trailPointsEligible={trailPointsEligible}
+            onSignOut={() => void signOut()}
           />
         </div>
       </PullToRefresh>
-
-      {rewardSummary && trailPointsEligible && (
-        <TrailPointsPathSheet
-          open={showPointsPath}
-          onClose={() => setShowPointsPath(false)}
-          summary={rewardSummary}
-        />
-      )}
 
       <AccountAvatarModal
         open={showAvatarEdit}
@@ -252,6 +271,6 @@ export const Profile = () => {
         message={avatarMessage}
         onSave={saveAvatar}
       />
-    </ConsumerShell>
+    </>
   );
 };

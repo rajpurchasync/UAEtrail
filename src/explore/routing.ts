@@ -418,7 +418,7 @@ export const detailBackPath = (kind: DetailBackKind): string => {
 
 /** Personal activities hub — joined/hosted tabs only (not public browse). */
 export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
-  `/trips?segment=upcoming&tab=${tab}`;
+  tab === 'hosted' ? '/trips?role=hosted' : '/trips';
 
 /** Consumer create flow — explore compose organize menu or a specific kind. */
 export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>

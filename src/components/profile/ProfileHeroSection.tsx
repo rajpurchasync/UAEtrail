@@ -9,6 +9,8 @@ interface ProfileHeroSectionProps {
   roleLabel: string;
   avatarUrl?: string | null;
   completionPercent: number;
+  /** Card stack vs flat header on page background */
+  surface?: 'card' | 'flat';
   shareTitle: string;
   shareText: string;
   sharePath: string;
@@ -38,8 +40,15 @@ export const ProfileHeroSection = ({
   memberSinceLabel,
   visibilityLabel,
   extra,
-}: ProfileHeroSectionProps) => (
-  <GlassCard padding className="!p-5 text-center animate-fade-up">
+  surface = 'flat',
+}: ProfileHeroSectionProps) => {
+  const shellClass =
+    surface === 'card'
+      ? '!p-5'
+      : 'px-1 pb-2 pt-0';
+
+  const content = (
+    <>
     <div className="mb-3 flex items-center justify-end gap-1">
       <button
         type="button"
@@ -112,5 +121,16 @@ export const ProfileHeroSection = ({
       </Link>
     ) : null}
     {extra && <div className="mt-2 flex justify-center">{extra}</div>}
-  </GlassCard>
-);
+    </>
+  );
+
+  if (surface === 'card') {
+    return (
+      <GlassCard padding className={`${shellClass} text-center animate-fade-up`}>
+        {content}
+      </GlassCard>
+    );
+  }
+
+  return <section className={`${shellClass} text-center animate-fade-up`}>{content}</section>;
+};

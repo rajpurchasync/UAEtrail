@@ -19,6 +19,8 @@ import {
   PRIVATE_PROFILE_MESSAGE,
   resolveProfileViewerAccess,
 } from './profile-viewer-access.js';
+import { getMemberGoalPublicSnapshot } from '../lib/member-goals-store.js';
+import type { MemberGoalPublicDTO } from '@uaetrail/shared-types';
 
 const computeAgeFromDateOfBirth = (dateOfBirth: string): number | null => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) return null;
@@ -119,6 +121,7 @@ export type PublicMemberProfileResponse =
         activitiesAttended: number;
         activitiesHosted: number;
       };
+      yearGoal: MemberGoalPublicDTO | null;
     };
 
 export async function buildPublicMemberProfile(
@@ -144,13 +147,15 @@ export async function buildPublicMemberProfile(
     };
   }
 
-  const [activitiesAttended, activitiesHosted, ownedTenants, badges, businessHost, hostApplication] = await Promise.all([
+  const [activitiesAttended, activitiesHosted, ownedTenants, badges, businessHost, hostApplication, yearGoal] =
+    await Promise.all([
     countUserCheckedInParticipations(userId),
     countPublishedActivitiesHostedByUser(userId),
     listTenantsByOwnerId(userId),
     findUserBadges(userId),
     isBusinessHostById(userId),
     findLatestHostApplicationByApplicant(userId),
+    getMemberGoalPublicSnapshot(userId),
   ]);
 
   const earnedBadgeKeys = new Set(badges.map((b) => b.badgeKey));
@@ -170,8 +175,8 @@ export async function buildPublicMemberProfile(
     };
   };
 
-  const tierBadges = BADGE_DEFINITIONS.filter((b) => b.kind === 'tier').map(mapBadge);
-  const achievementBadges = BADGE_DEFINITIONS.filter((b) => b.kind === 'achievement').map(mapBadge);
+  const tierBadges: ReturnType<typeof mapBadge>[] = [];
+  const achievementBadges = BADGE_DEFINITIONS.map(mapBadge);
 
   const primaryTenant = ownedTenants[0] ?? null;
   const hostProfileKind = resolveHostProfileKind(primaryTenant);
@@ -217,5 +222,6 @@ export async function buildPublicMemberProfile(
       activitiesAttended,
       activitiesHosted,
     },
+    yearGoal,
   };
 }

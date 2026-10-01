@@ -57,8 +57,8 @@ describe('exploreRouting navigation contract', () => {
   });
 
   it('myActivitiesPath targets trips hub tabs', () => {
-    expect(myActivitiesPath()).toBe('/trips?segment=upcoming&tab=joined');
-    expect(myActivitiesPath('hosted')).toBe('/trips?segment=upcoming&tab=hosted');
+    expect(myActivitiesPath()).toBe('/trips');
+    expect(myActivitiesPath('hosted')).toBe('/trips?role=hosted');
   });
 
   it('explorePath supports my trips map filter', () => {

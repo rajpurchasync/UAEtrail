@@ -68,7 +68,7 @@ export const SettingsMenuGroup = ({
 }) => (
   <div className="space-y-1">
     {title ? (
-      <p className="px-1 text-[11px] font-bold uppercase tracking-wide text-neutral-500">{title}</p>
+      <p className="mb-0.5 px-0.5 text-[11px] font-bold uppercase tracking-wide text-neutral-500">{title}</p>
     ) : null}
     <div className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm divide-y divide-neutral-100">
       {children}

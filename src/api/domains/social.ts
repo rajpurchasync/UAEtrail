@@ -4,6 +4,7 @@ import {
   BuddySummaryDTO,
   MemberFollowStateDTO,
   MemberFollowSummaryDTO,
+  MemberHubStatsDTO,
   FavoriteDTO,
   PostDTO,
   PostReplyDTO,
@@ -72,6 +73,9 @@ export const socialApi = {
       method: 'POST',
       auth: true,
     }),
+
+    getMeMemberHubStats: () =>
+      apiRequest<{ data: MemberHubStatsDTO }>('/me/member-hub-stats', { auth: true }),
 
     getMeFollowing: () =>
       apiRequest<{ data: MemberFollowSummaryDTO[] }>('/me/following', { auth: true }),

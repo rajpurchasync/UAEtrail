@@ -36,6 +36,14 @@ describe('inferNotificationPath', () => {
     ).toBe('/groups?group=g-1');
   });
 
+  it('routes member goal milestones to profile or trips', () => {
+    expect(inferNotificationPath(notif({ kind: 'goal_halfway' }))).toBe('/profile');
+    expect(inferNotificationPath(notif({ kind: 'goal_complete' }))).toBe('/profile');
+    expect(inferNotificationPath(notif({ kind: 'goal_behind_pace' }))).toBe(
+      '/trips?segment=upcoming&tab=joined'
+    );
+  });
+
   it('prefers explicit meta.path when present', () => {
     expect(
       inferNotificationPath(

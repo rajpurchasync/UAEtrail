@@ -55,7 +55,14 @@ const ActivitiesBrowseRoute = () => {
   if (legacyCreatePath) {
     return <Navigate to={legacyCreatePath} replace />;
   }
-  if (user && (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || searchParams.get('segment'))) {
+  if (
+    user &&
+    (tab === 'joined' ||
+      tab === 'hosted' ||
+      searchParams.get('checkin') ||
+      searchParams.get('segment') ||
+      searchParams.get('role'))
+  ) {
     return (
       <Suspense fallback={<PageLoader />}>
         <Activities />
@@ -157,6 +164,7 @@ const OrganisationManage = lazy(() =>
 const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
 const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
+const TripsMap = lazy(() => import('./pages/TripsMap').then((m) => ({ default: m.TripsMap })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
 const ProfileSettingsAccount = lazy(() =>
@@ -169,6 +177,7 @@ const ProfileSettingsNotifications = lazy(() =>
   import('./pages/ProfileSettingsNotifications').then((m) => ({ default: m.ProfileSettingsNotifications }))
 );
 const ProfileEdit = lazy(() => import('./pages/ProfileEdit').then((m) => ({ default: m.ProfileEdit })));
+const ProfileBadges = lazy(() => import('./pages/ProfileBadges').then((m) => ({ default: m.ProfileBadges })));
 const Contributions = lazy(() => import('./pages/Contributions').then((m) => ({ default: m.Contributions })));
 const ProfileReviews = lazy(() => import('./pages/ProfileReviews').then((m) => ({ default: m.ProfileReviews })));
 const ProfileWishlist = lazy(() => import('./pages/ProfileWishlist').then((m) => ({ default: m.ProfileWishlist })));
@@ -312,6 +321,16 @@ function App() {
           <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
           <Route path="/trips" element={<ActivitiesBrowseRoute />} />
           <Route
+            path="/trips/map"
+            element={
+              <ProtectedRoute>
+                <Suspense fallback={<PageLoader />}>
+                  <TripsMap />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/activities"
             element={
               <ActivitiesLegacyRedirect />
@@ -375,7 +394,11 @@ function App() {
           />
           <Route
             path="/profile/badges"
-            element={<Navigate to="/my-rewards?panel=badges" replace />}
+            element={
+              <ProtectedRoute>
+                <ProfileBadges />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/contributions"

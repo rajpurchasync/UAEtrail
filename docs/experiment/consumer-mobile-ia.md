@@ -2,6 +2,8 @@
 
 Companion to [`NAVIGATION.md`](../NAVIGATION.md). Tracks the profile / trips / friends refactor on `experiment-ui`.
 
+**Phased redesign:** [`profile-and-trips-phases.md`](./profile-and-trips-phases.md) — **Phase 1** Profile hub first; **Phase 2** Trips hub + personal map (Nomadtable-style) after Phase 1 ships.
+
 ## Bottom tabs (signed-in)
 
 | Tab | Route | Label |
@@ -12,14 +14,36 @@ Companion to [`NAVIGATION.md`](../NAVIGATION.md). Tracks the profile / trips / f
 
 Profile is reached from the header avatar (`/profile`), not a fourth tab.
 
+## Profile hub UX (`/profile`) — Phase 1
+
+Consumer pattern (not Settings-style chevron lists on the hub):
+
+- **Identity hero (~40dvh):** larger avatar + completion ring, name/meta, visibility; tappable **Followed by · Joined · Hosted**; header actions (view public left, share + edit right).
+- **Quick launcher:** emoji + label grid — **Friends**, **Badges** (earned count), **Contributions**, **Settings**, **Hosting** (when applicable). No **Trips** / **Messages** (bottom tabs).
+- **Bio & speaks:** **Edit profile** only (`/profile/edit`), not on the hub.
+- **Member goal:** summary card on Profile; same editor on **Trips → Upcoming** (primary context for progress).
+- **Sign out:** single row below goal (not in launcher).
+- **Chrome:** unified mobile tab header title **Profile**.
+- **Trail Points / rewards hub:** not part of profile IA for now (`/my-rewards` may remain for legacy links only).
+
+## Personal goals
+
+- **API:** `GET/PUT/DELETE /me/goals/active` — one active goal per member (`user_goals`).
+- **Progress:** Checked-in outings in the calendar year; filter `hiking` | `camping` | `all_outings`.
+- **UI:** Goal card on `/profile`; wishlist saves do **not** count.
+- **Notifications:** Halfway + complete on check-in; optional behind-pace nudge when loading your goal (≤1×/28d).
+- **Public profile:** `yearGoal` strip when the member has a current-year goal and full visibility.
+
 Signed-in **Friends**, **Contributions**, **Groups**, **My badges**, and **My requests** keep the bottom tab bar visible (stack pages off Profile).
 
-## Trips hub (`/trips`)
+## Trips hub (`/trips`) — Phase 2 (in progress)
 
-- Segments: **Upcoming** · **Past** · **Wishlist** (`?segment=`).
-- Joined/hosted sub-views use `?tab=joined|hosted` and `?sub=` where applicable.
-- **Map:** `explorePath({ myTrips: true, list: true })` → `/explore?myTrips=1&list=1` — pins from wishlist + joined/pending activities only.
-- Legacy `/profile/wishlist` redirects to `/trips?segment=wishlist`.
+- **Segments (scroll):** **Upcoming** · **Completed** · **Wishlist** (`?segment=`; legacy `past` → `completed`).
+- **Role chips** (Upcoming & Completed): **Joined** · **Hosted** (hosts) · **Self** (`?role=`; legacy `tab=` normalized away).
+- **Upcoming + Joined:** goal card + upcoming carousel + suggestions (no nested Past tab).
+- **Completed + Joined:** attended outings only; **Hosted:** past hosted; **Self:** placeholder until demand API.
+- **Map:** `/trips/map` (stub → explore my-trips until dedicated map ships).
+- Legacy `/profile/wishlist` → `/trips?segment=wishlist`.
 
 ## Friends (`/buddies`)
 

@@ -104,6 +104,16 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     ]),
     db.collection(COLLECTIONS.REWARD_LEDGERS).createIndexes([{ key: { userId: 1, action: 1 } }]),
     db.collection(COLLECTIONS.USER_BADGES).createIndexes([{ key: { userId: 1 } }]),
+    db.collection(COLLECTIONS.USER_GOALS).createIndexes([{ key: { userId: 1, updatedAt: -1 } }]),
+    db.collection(COLLECTIONS.MEMBER_MAP_PINS).createIndexes([
+      { key: { userId: 1, placeDate: -1 } },
+      {
+        key: { userId: 1, activityId: 1 },
+        unique: true,
+        name: 'userId_activityId_checkin_unique',
+        partialFilterExpression: { source: 'activity_check_in', activityId: { $type: 'string' } },
+      },
+    ]),
     db.collection(COLLECTIONS.ACTIVITIES).createIndexes([
       { key: { tenantId: 1, startAt: 1 } },
       { key: { status: 1, startAt: 1 } },

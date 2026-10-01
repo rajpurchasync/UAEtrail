@@ -1994,12 +1994,12 @@ Share your live location and carry extra water in summer months.`
     { $set: { 'profile.membershipTier': MembershipTier.ACTIVE, updatedAt: new Date() } }
   );
 
-  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'tier_active' });
-  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'activity_leader' });
-  await createUserBadge({ userId: individualHost._id, badgeKey: 'activity_leader' });
-  await createUserBadge({ userId: individualHost._id, badgeKey: 'trail_mapper' });
-  await createUserBadge({ userId: participant._id, badgeKey: 'reviewer' });
-  await createUserBadge({ userId: agencyGuide._id, badgeKey: 'reviewer' });
+  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'active' });
+  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'host' });
+  await createUserBadge({ userId: individualHost._id, badgeKey: 'host' });
+  await createUserBadge({ userId: individualHost._id, badgeKey: 'contributor' });
+  await createUserBadge({ userId: participant._id, badgeKey: 'helpful_critic' });
+  await createUserBadge({ userId: agencyGuide._id, badgeKey: 'helpful_critic' });
 
   const suspendLegacyDemoUser = async (email: string, keepUserId: string) => {
     const legacy = await findAuthUserByEmail(email);

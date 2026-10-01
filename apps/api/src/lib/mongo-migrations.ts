@@ -250,6 +250,33 @@ const migrateActivityTerminologyValues = async (db: Db): Promise<void> => {
   if (badgeResult.modifiedCount > 0) {
     console.log(`[mongo] Migrated badge key trip_leader → activity_leader (${badgeResult.modifiedCount} docs)`);
   }
+
+  const legacyBadgeRenames: Array<[string, string]> = [
+    ['trail_mapper', 'contributor'],
+    ['activity_leader', 'host'],
+    ['reviewer', 'helpful_critic'],
+    ['adventurer', 'goat'],
+    ['tier_active', 'active'],
+    ['tier_goat', 'goat'],
+  ];
+  for (const [from, to] of legacyBadgeRenames) {
+    const renamed = await badges.updateMany({ badgeKey: from }, { $set: { badgeKey: to } });
+    if (renamed.modifiedCount > 0) {
+      console.log(`[mongo] Migrated badge key ${from} → ${to} (${renamed.modifiedCount} docs)`);
+    }
+  }
+
+  const goals = db.collection('user_goals');
+  const missingTargetDate = await goals
+    .find({ $or: [{ targetDate: { $exists: false } }, { targetDate: null }, { targetDate: '' }] })
+    .toArray();
+  for (const doc of missingTargetDate) {
+    const year = typeof doc.year === 'number' ? doc.year : new Date().getUTCFullYear();
+    await goals.updateOne({ _id: doc._id }, { $set: { targetDate: `${year}-12-31` } });
+  }
+  if (missingTargetDate.length > 0) {
+    console.log(`[mongo] Backfilled user_goals.targetDate (${missingTargetDate.length} docs)`);
+  }
 };
 
 /** Create shop tenants for merchant profiles that still lack tenantId after backfill. */

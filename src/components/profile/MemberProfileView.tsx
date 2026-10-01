@@ -4,17 +4,15 @@ import { MemberFollowControls } from './MemberFollowControls';
 import { MemberProfileBuddyActions } from './MemberProfileBuddyActions';
 import type { PersonPublicProfileDTO } from '../../api/index';
 import { GlassCard } from '../mobile/GlassCard';
-import { ProfileStampsRow } from './ProfileStampsRow';
 import { PublicProfileSectionHeading } from './PublicProfileSectionHeading';
 import { SecureAvatar } from '../ui/SecureAvatar';
-import { MembershipTierBadge } from '../ui/MembershipTierBadge';
 import { ShareButton } from '../ui/ShareButton';
 import { ProfileActivityListRow } from './ProfileActivityListRow';
 import { AccountSectionHeader } from '../account/AccountSectionHeader';
-import type { ProfileStamp } from '../../utils/profileStamps';
 import { parseLanguagesList } from '../../utils/profileLanguages';
 import { resolvePublicMemberRoleLabel } from '../../utils/profileRoleLabel';
 import { formatMemberJoinedLabel } from '../../utils/formatMemberSince';
+import { PublicMemberYearGoal } from './PublicMemberYearGoal';
 
 export type FullMemberProfile = Extract<PersonPublicProfileDTO, { visibilityState: 'full' }>;
 
@@ -49,7 +47,6 @@ const DetailRow = ({
 
 interface MemberProfileViewProps {
   profile: FullMemberProfile;
-  stamps: ProfileStamp[];
   isSelf: boolean;
   userId: string;
   userLoggedIn: boolean;
@@ -67,7 +64,6 @@ interface MemberProfileViewProps {
 
 export const MemberProfileView = ({
   profile,
-  stamps,
   isSelf,
   userId,
   userLoggedIn,
@@ -87,7 +83,6 @@ export const MemberProfileView = ({
   const hasDetails = Boolean(profile.city || languages.length > 0);
   const showConnectActions = !isSelf && userLoggedIn;
   const joinedLabel = formatMemberJoinedLabel(profile.memberSince);
-
   return (
     <div className="space-y-3 pb-nav-safe animate-fade-up">
       <GlassCard padding className="!p-0 overflow-hidden">
@@ -112,16 +107,6 @@ export const MemberProfileView = ({
           {joinedLabel ? (
             <p className="mt-1.5 text-xs font-semibold text-neutral-500">{joinedLabel}</p>
           ) : null}
-
-          {profile.trailPointsEligible && profile.membershipTier.key !== 'free' && (
-            <div className="mt-3 flex justify-center">
-              <MembershipTierBadge
-                tierKey={profile.membershipTier.key}
-                name={profile.membershipTier.name}
-                size="md"
-              />
-            </div>
-          )}
 
           {showConnectActions ? (
             <MemberProfileBuddyActions
@@ -155,6 +140,8 @@ export const MemberProfileView = ({
           <StatBlock label="Activities hosted" value={profile.stats.activitiesHosted} />
         </div>
       </GlassCard>
+
+      {profile.yearGoal ? <PublicMemberYearGoal goal={profile.yearGoal} /> : null}
 
       {hasDetails && (
         <GlassCard padding>
@@ -198,12 +185,6 @@ export const MemberProfileView = ({
               <ProfileActivityListRow key={activity.id} activity={activity} />
             ))}
           </div>
-        </GlassCard>
-      )}
-
-      {stamps.length > 0 && (
-        <GlassCard padding>
-          <ProfileStampsRow stamps={stamps} title="Badges" align="start" />
         </GlassCard>
       )}
 
