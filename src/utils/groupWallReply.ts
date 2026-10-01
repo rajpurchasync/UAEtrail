@@ -14,7 +14,15 @@ export type ParsedGroupWallReply = {
 const REPLY_LINE =
   /^↩(?:\[id:([^\]]+)\])?\s+([^:]+):\s*[“"](.+?)[”"]\s*(?:\n\n|\n)([\s\S]*)$/;
 
-/** Plain-text reply quote stored in wall message body (includes target id for scroll-to). */
+/** First-line snippet for quote UI (strips nested legacy reply bodies). */
+export const wallMessageQuoteSnippet = (body: string): string => {
+  const parsed = parseGroupWallMessageBody(body);
+  const text = (parsed?.replyText ?? body).trim();
+  const line = text.split('\n')[0] ?? '';
+  return line.length > 160 ? `${line.slice(0, 157)}…` : line;
+};
+
+/** @deprecated New posts use plain `body` + `replyToMessageId`. Legacy embedded quote format. */
 export const formatGroupWallReplyBody = (target: GroupWallReplyTarget, text: string): string => {
   const parsed = parseGroupWallMessageBody(target.body);
   const snippetSource = parsed?.replyText ?? target.body;

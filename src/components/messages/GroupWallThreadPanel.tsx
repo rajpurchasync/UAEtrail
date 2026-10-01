@@ -10,11 +10,7 @@ import {
 } from '../../utils/groupWallPostPolicy';
 import { GroupWallChatSettingsSheet } from './GroupWallChatSettingsSheet';
 import { GroupWallMembersSheet } from './GroupWallMembersSheet';
-import {
-  formatGroupWallReplyBody,
-  GroupWallMessageItem,
-  type GroupWallReplyTarget,
-} from './GroupWallMessageItem';
+import { GroupWallMessageItem, type GroupWallReplyTarget } from './GroupWallMessageItem';
 
 /** Fallback when SSE is unavailable; primary delivery is `group_wall_message` on chat stream. */
 const WALL_POLL_MS = 45_000;
@@ -200,7 +196,7 @@ export const GroupWallThreadPanel = ({
   const sendMessage = async () => {
     const trimmed = draft.trim();
     if (!trimmed || !canPost || sending) return;
-    const body = replyTo ? formatGroupWallReplyBody(replyTo, trimmed) : trimmed;
+    const body = trimmed;
     const previousReply = replyTo;
     setDraft('');
     setReplyTo(null);
@@ -243,6 +239,16 @@ export const GroupWallThreadPanel = ({
       highlightTimerRef.current = null;
     }, 2200);
   }, []);
+
+  const resolveQuotedMessage = useCallback(
+    (messageId: string) => {
+      const quoted = wall.find((m) => m.id === messageId);
+      if (!quoted) return null;
+      const authorName = quoted.author?.displayName?.trim() || 'Member';
+      return { authorName, body: quoted.body };
+    },
+    [wall]
+  );
 
   useEffect(
     () => () => {
@@ -325,6 +331,7 @@ export const GroupWallThreadPanel = ({
               onReactionsChange={updateMessageReactions}
               onReply={setReplyTo}
               onScrollToQuotedMessage={scrollToWallMessage}
+              resolveQuotedMessage={resolveQuotedMessage}
               onError={setError}
             />
           ))

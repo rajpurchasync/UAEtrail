@@ -14,7 +14,6 @@ import { MessageSwipeReplyShell } from './MessageSwipeReplyShell';
 import type { GroupWallReplyTarget } from '../../utils/groupWallReply';
 
 export type { GroupWallReplyTarget } from '../../utils/groupWallReply';
-export { formatGroupWallReplyBody } from '../../utils/groupWallReply';
 
 type GroupWallMessageItemProps = {
   groupId: string;
@@ -24,6 +23,7 @@ type GroupWallMessageItemProps = {
   onReactionsChange: (messageId: string, reactions: SocialGroupWallMessageView['reactions']) => void;
   onReply: (target: GroupWallReplyTarget) => void;
   onScrollToQuotedMessage?: (messageId: string) => void;
+  resolveQuotedMessage?: (messageId: string) => Pick<GroupWallReplyTarget, 'authorName' | 'body'> | null;
   onError: (message: string) => void;
 };
 
@@ -37,6 +37,7 @@ export const GroupWallMessageItem = ({
   onReactionsChange,
   onReply,
   onScrollToQuotedMessage,
+  resolveQuotedMessage,
   onError,
   highlighted = false,
   replyEnabled = true,
@@ -225,6 +226,7 @@ export const GroupWallMessageItem = ({
         <GroupWallMessageBody
           body={message.body}
           replyToMessageId={message.replyToMessageId}
+          resolveQuotedMessage={resolveQuotedMessage}
           onScrollToQuotedMessage={onScrollToQuotedMessage}
         />
 

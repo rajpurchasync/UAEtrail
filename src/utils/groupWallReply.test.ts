@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { formatGroupWallReplyBody, parseGroupWallMessageBody } from './groupWallReply';
+import {
+  formatGroupWallReplyBody,
+  parseGroupWallMessageBody,
+  wallMessageQuoteSnippet,
+} from './groupWallReply';
 
 describe('groupWallReply', () => {
   it('round-trips reply metadata with message id', () => {
@@ -18,5 +22,14 @@ describe('groupWallReply', () => {
     const parsed = parseGroupWallMessageBody('↩ Alex: “Hello”\n\nThanks');
     expect(parsed?.replyToMessageId).toBeNull();
     expect(parsed?.replyText).toBe('Thanks');
+  });
+
+  it('snippets plain or nested reply bodies', () => {
+    expect(wallMessageQuoteSnippet('Line one\nline two')).toBe('Line one');
+    const nested = formatGroupWallReplyBody(
+      { id: 'x', authorName: 'A', body: 'Hi' },
+      'Nested reply'
+    );
+    expect(wallMessageQuoteSnippet(nested)).toBe('Nested reply');
   });
 });

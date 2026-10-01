@@ -1,7 +1,13 @@
 import { useCallback, useMemo, type SetStateAction } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { BuddyRequestDTO, BuddySummaryDTO, ChatConversationDTO, MyActivityDTO } from '@uaetrail/shared-types';
-import { api, ActivityRequestView, UserProfile, SocialGroupView } from '../api/index';
+import {
+  BuddyRequestDTO,
+  BuddySummaryDTO,
+  ChatConversationDTO,
+  MemberInboxGroupDTO,
+  MyActivityDTO,
+} from '@uaetrail/shared-types';
+import { api, ActivityRequestView, UserProfile } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { isUpcomingActivity, upcomingActivitiesTotal } from '../utils/activityDates';
 import { buildUpcomingPlanRows } from '../utils/activityHubSections';
@@ -9,17 +15,18 @@ import { buildUpcomingPlanRows } from '../utils/activityHubSections';
 const participantHubKey = (userId: string) => ['participant-hub', userId] as const;
 
 async function fetchParticipantHub() {
-  const [profileRes, activitiesRes, requestsRes, notifRes, convRes, groupsRes, buddiesRes, buddyRequestsRes] =
+  const [profileRes, activitiesRes, requestsRes, notifRes, inboxRes, buddiesRes, buddyRequestsRes] =
     await Promise.all([
     api.getMeProfile(),
     api.getMeActivities().catch(() => ({ data: [] as MyActivityDTO[] })),
     api.getMeRequests().catch(() => ({ data: [] as ActivityRequestView[] })),
     api.getMeNotifications(1).catch(() => ({ data: [], unreadCount: 0, total: 0 })),
-    api.getConversations().catch(() => ({ data: [] as ChatConversationDTO[] })),
-    api.getMeGroups().catch(() => ({ data: [] as SocialGroupView[] })),
+    api.getInbox().catch(() => ({ data: { direct: [] as ChatConversationDTO[], groups: [] as MemberInboxGroupDTO[] } })),
     api.getMeBuddies().catch(() => ({ data: [] as BuddySummaryDTO[] })),
     api.getMeBuddyRequests('incoming').catch(() => ({ data: [] as BuddyRequestDTO[] })),
   ]);
+
+  const inbox = inboxRes.data;
 
   return {
     profile: profileRes.data,
@@ -27,8 +34,8 @@ async function fetchParticipantHub() {
     requests: requestsRes.data ?? [],
     notifications: notifRes.data?.slice(0, 3) ?? [],
     unreadNotifications: notifRes.unreadCount ?? 0,
-    conversations: convRes.data?.slice(0, 4) ?? [],
-    groups: groupsRes.data ?? [],
+    conversations: inbox.direct?.slice(0, 4) ?? [],
+    groups: inbox.groups ?? [],
     buddies: buddiesRes.data ?? [],
     incomingBuddyRequests: (buddyRequestsRes.data ?? []).filter((request) => request.status === 'pending'),
   };
@@ -92,10 +99,11 @@ export const useParticipantHubData = () => {
     [upcomingPlans]
   );
 
-  const unreadMessages = useMemo(
-    () => conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0),
-    [conversations]
-  );
+  const unreadMessages = useMemo(() => {
+    const direct = conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0);
+    const crew = groups.reduce((sum, g) => sum + (g.chatPreview?.unreadCount ?? 0), 0);
+    return direct + crew;
+  }, [conversations, groups]);
 
   const reload = useCallback(async () => {
     await refetch();

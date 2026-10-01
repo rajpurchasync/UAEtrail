@@ -283,6 +283,8 @@ Execute **one phase at a time**. Update **Phase status** (§8) when complete.
 | P6-8 | Open group chat CTA | Explore peek, ActivityChatCallout, Trips manage | Done |
 | P6-9 | Group type activity | social-groups-store | Done |
 | P6-10 | Inbox previews + incremental wall | `GET /me/groups` `chatPreview`, `wall?since=`, `wall/read` | Done |
+| P6-11 | Unified inbox API | `GET /chat/inbox` (`direct` + `groups`) | Done |
+| P6-12 | Live wall + server replies | SSE `group_wall_message`; `replyToMessageId`; plain reply body | Done |
 
 ---
 
@@ -337,7 +339,7 @@ Suggested tags: `experiment/explore-p0`, `experiment/explore-p1`, …
 | P3 | Complete | 2026-09-07 | Host gate, per-type ≤5-step create, price labels, more options |
 | P4 | Not started | — | |
 | P5 | Not started | — | |
-| P6 | Partial (experiment-ui) | 2026-10 | Activity crew via `social_groups`; Messages inbox; see COMMUNICATION.md |
+| P6 | Complete (experiment-ui) | 2026-10 | Crew chat, inbox API, SSE wall, replies; see COMMUNICATION.md |
 | P7 | Deferred | — | |
 
 _Update this table as work progresses._
