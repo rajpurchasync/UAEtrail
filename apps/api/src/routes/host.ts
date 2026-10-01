@@ -1173,6 +1173,7 @@ const fulfillIntentBodySchema = z.object({
   activityId: z.string().min(1)
 });
 
+/** @deprecated Prefer `POST /me/participant-intents/:intentId/link-activity` (demand poster). */
 hostRouter.post(
   '/participant-intents/:intentId/fulfill',
   requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),

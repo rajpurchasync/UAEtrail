@@ -11,7 +11,6 @@ interface ExploreItemSheetProps {
   onClose: () => void;
   onJoin?: () => void;
   onMessage?: () => void;
-  onFulfillIntent?: () => void;
   onManage?: () => void;
   onHostFullManage?: () => void;
   joinUiState?: JoinRequestUiState;
@@ -35,7 +34,6 @@ const ExploreItemPeekCard = ({
   onClose,
   onJoin,
   onMessage,
-  onFulfillIntent,
   onManage,
   onHostFullManage,
   joinUiState,
@@ -61,7 +59,6 @@ const ExploreItemPeekCard = ({
         onClose={onClose}
         onJoin={onJoin}
         onMessage={onMessage}
-        onFulfillIntent={onFulfillIntent}
         onManage={onManage}
         onHostFullManage={onHostFullManage}
         linkRideshareTenantId={linkRideshareTenantId}

@@ -14,9 +14,10 @@ import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { useAuth } from '../../context/AuthContext';
 import { signInPathForReturn } from '../../utils/authReturnContext';
-import { MemberDemandEditForm } from './MemberDemandEditForm';
+import { ParticipantIntentEditForm } from './ParticipantIntentEditForm';
+import { ParticipantIntentJoinRequestsSection } from './ParticipantIntentJoinRequestsSection';
 
-export type MemberDemandManageSheetProps = {
+export type ParticipantIntentManageSheetProps = {
   open: boolean;
   intent: ParticipantIntentDTO | null;
   onClose: () => void;
@@ -25,16 +26,16 @@ export type MemberDemandManageSheetProps = {
 
 const statusLabel: Record<ParticipantIntentDTO['status'], string> = {
   active: 'On the map',
-  fulfilled: 'Converted',
+  fulfilled: 'Linked to outing',
   cancelled: 'Removed',
 };
 
-export const MemberDemandManageSheet = ({
+export const ParticipantIntentManageSheet = ({
   open,
   intent,
   onClose,
   onChanged,
-}: MemberDemandManageSheetProps) => {
+}: ParticipantIntentManageSheetProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const gate = useOrganisationGate({ enabled: Boolean(user) });
@@ -115,7 +116,7 @@ export const MemberDemandManageSheet = ({
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
           {intent.status === 'active' && editing ? (
-            <MemberDemandEditForm
+            <ParticipantIntentEditForm
               intent={intent}
               onCancel={() => setEditing(false)}
               onSaved={async () => {
@@ -127,6 +128,7 @@ export const MemberDemandManageSheet = ({
 
           {intent.status === 'active' && !editing ? (
             <div className="space-y-2">
+              <ParticipantIntentJoinRequestsSection intentId={intent.id} />
               <AppButton type="button" variant="secondary" fullWidth onClick={() => setEditing(true)}>
                 Edit plan
               </AppButton>

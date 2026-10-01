@@ -10,7 +10,7 @@ const CreatePlacePicker = lazy(() =>
   import('../../explore/ui/CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
 );
 
-export type DemandLocationValue = {
+export type ParticipantIntentLocationValue = {
   latitude: number | null;
   longitude: number | null;
   locationPrecision: LocationPrecision;
@@ -20,10 +20,10 @@ export type DemandLocationValue = {
 
 type MapTarget = 'primary' | 'to';
 
-type MemberDemandLocationEditorProps = {
+type ParticipantIntentLocationEditorProps = {
   kind: ParticipantIntentKind;
-  value: DemandLocationValue;
-  onChange: (next: DemandLocationValue) => void;
+  value: ParticipantIntentLocationValue;
+  onChange: (next: ParticipantIntentLocationValue) => void;
 };
 
 const coordLabel = (lat: number | null, lng: number | null, placed: boolean) =>
@@ -31,9 +31,9 @@ const coordLabel = (lat: number | null, lng: number | null, placed: boolean) =>
     ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
     : 'Tap to choose on map';
 
-export const validateDemandLocations = (
+export const validateParticipantIntentLocations = (
   kind: ParticipantIntentKind,
-  value: DemandLocationValue
+  value: ParticipantIntentLocationValue
 ): string | null => {
   if (kind === 'hiking' || kind === 'camping' || kind === 'event') {
     if (value.latitude == null || value.longitude == null) {
@@ -78,11 +78,11 @@ const PinRow = ({
   </button>
 );
 
-export const MemberDemandLocationEditor = ({
+export const ParticipantIntentLocationEditor = ({
   kind,
   value,
   onChange,
-}: MemberDemandLocationEditorProps) => {
+}: ParticipantIntentLocationEditorProps) => {
   const [mapTarget, setMapTarget] = useState<MapTarget | null>(null);
   const [draftLat, setDraftLat] = useState<number>(MAP_CONFIG.exploreDefaultCenter.lat);
   const [draftLng, setDraftLng] = useState<number>(MAP_CONFIG.exploreDefaultCenter.lng);

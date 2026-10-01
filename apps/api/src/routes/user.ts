@@ -10,6 +10,7 @@ import {
   registerMeAccountSessionRoutes,
   registerMeActivityParticipationRoutes,
 } from './user/registerMeEngagementRoutes.js';
+import { registerMeParticipantIntentRoutes } from './user/registerMeParticipantIntentRoutes.js';
 import { registerMeRewardsRoutes } from './user/registerMeRewardsRoutes.js';
 import { registerMeGoalsRoutes } from './user/registerMeGoalsRoutes.js';
 import { registerMeMapPinsRoutes } from './user/registerMeMapPinsRoutes.js';
@@ -49,6 +50,7 @@ registerHostApplicationRoutes(userRouter);
 
 registerMeAccountSessionRoutes(userRouter);
 registerMeSubmittedPlaceRoutes(userRouter);
+registerMeParticipantIntentRoutes(userRouter);
 registerMeRewardsRoutes(userRouter);
 registerMeGoalsRoutes(userRouter);
 registerMeMapPinsRoutes(userRouter);

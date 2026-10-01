@@ -171,6 +171,7 @@ export const activitiesApi = {
       headers: organisationRequestHeaders(tenantId)
     }),
 
+    /** @deprecated Prefer `exploreApi.linkParticipantIntentToActivity` (poster-owned demand). */
     fulfillParticipantIntent: (tenantId: string, intentId: string, activityId: string) =>
     apiRequest<import('@uaetrail/shared-types').ParticipantIntentDTO>(
       `/host/participant-intents/${intentId}/fulfill`,

@@ -23,11 +23,11 @@ HTTP → routes/ (thin controllers)
      → domain/ (pure rules: capacity)
 ```
 
-**Route map**
+**Route map** — detail in [`API_ROUTING.md`](./API_ROUTING.md)
 
 - `/auth` — JWT + refresh
-- `/` (userRouter) — public discovery, join requests, `/me/*`, `/explore/map`
-- `/host` — tenant-scoped activities, check-in, approvals (legacy alias `/organizer`)
+- `/` (userRouter) — public `/activities`, `/explore/map`, `/me/*` (profile, **participant-intents**, groups, inbox)
+- `/host` — tenant-scoped **activities**, check-in, activity join approvals (legacy alias `/organizer`)
 - `/admin` — platform ops
 - `/shop` — shop profiles, featured picks, merchant CRUD (Stripe checkout retained but disabled in product)
 - `/social` — posts, reviews
@@ -35,7 +35,7 @@ HTTP → routes/ (thin controllers)
 
 **Key flows**
 
-1. **Join / waitlist** — `POST /events/:id/requests` creates `PENDING` or `WAITLISTED`. Slot opens → oldest waitlisted promoted to `PENDING` + notification.
+1. **Join / waitlist** — `POST /activities/:id/requests` creates `PENDING` or `WAITLISTED`. Demand uses `POST /me/participant-intents/:id/requests`. Slot opens → waitlist promotion + notification.
 2. **Post-event review** — host check-in triggers `REVIEW_PROMPT` notification if user has not reviewed the location.
 3. **Explore map** — unified `/explore/map` payload: activities, location venues, shop partners (physical + online), participant demand.
 4. **Shop** — affiliate-style public pages at `/shop/:id` with outbound links; physical shops get map pins, online partners are list-only.
@@ -61,7 +61,7 @@ Shop identity is split between **tenant** (become-host signup: website, optional
 
 ```
 pages/          Route-level views (lazy-loaded in App.tsx)
-components/     layout/, ui/, seo/, explore/, host/, shop/
+components/     layout/, ui/, seo/, explore/, host/, participant-intent/, shop/
 api/            client.ts → domains/* → services.ts (`api` facade) — see `src/api/index.ts`
 config/         platform.ts, regions.ts, exploreTheme.ts
 context/        AuthContext

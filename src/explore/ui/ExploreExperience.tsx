@@ -104,18 +104,10 @@ export const ExploreExperience = () => {
     navigate(href, { replace: true });
   }, [myTripsMode, user, navigate, pathname, search]);
 
-  const fulfill = useExploreFulfillIntent({
-    items: mapItems,
-    loading: mapLoading,
-    user,
-    hostGateLoading,
-    canPublish,
-    navigate,
-    pathname,
+  useExploreFulfillIntent({
     searchParams,
     setSearchParams,
     setSelectedId,
-    selected,
   });
 
   const organizeFrom = useExploreOrganizeFromActivity({
@@ -181,12 +173,7 @@ export const ExploreExperience = () => {
     if (rideshareLinkDemand) {
       return {
         draft: buildRideshareDraftFromDemandMapItem(rideshareLinkDemand),
-      };
-    }
-    if (fulfill.fulfillIntentPrefill) {
-      return {
-        draft: fulfill.fulfillIntentPrefill.draft,
-        participantIntentId: fulfill.fulfillIntentPrefill.participantIntentId,
+        participantIntentId: rideshareLinkDemand.participantIntentId ?? undefined,
       };
     }
     if (organizeFrom.organizeFromPrefill) {
@@ -196,7 +183,7 @@ export const ExploreExperience = () => {
       };
     }
     return null;
-  }, [rideshareLinkParent, rideshareLinkDemand, fulfill.fulfillIntentPrefill, organizeFrom.organizeFromPrefill]);
+  }, [rideshareLinkParent, rideshareLinkDemand, organizeFrom.organizeFromPrefill]);
 
   const inviteShare = useActivityInviteShareSheet();
 
@@ -211,9 +198,9 @@ export const ExploreExperience = () => {
     browse,
     isDesktop,
     closeCompose: compose.closeCompose,
-    clearFulfillPrefill: () => fulfill.setFulfillIntentPrefill(null),
-    fulfillIntentPrefill: fulfill.fulfillIntentPrefill,
-    clearFulfillAfterPublish: () => fulfill.setFulfillIntentPrefill(null),
+    clearFulfillPrefill: () => {},
+    fulfillIntentPrefill: null,
+    clearFulfillAfterPublish: () => {},
     handleFocusMapLocation: viewport.handleFocusMapLocation,
     setLinkOnlyPeekItems,
     onInviteActivity: inviteShare.openInviteFromActivity,
@@ -361,7 +348,6 @@ export const ExploreExperience = () => {
 
   const closeCreateFlow = () => {
     compose.closeCompose();
-    fulfill.setFulfillIntentPrefill(null);
     organizeFrom.clearOrganizeFromPrefill();
     setRideshareLinkParent(null);
   };
@@ -523,9 +509,12 @@ export const ExploreExperience = () => {
           primaryFabLabel={primaryFabLabel}
           selected={selection.selected}
           selectedCard={selection.selectedCard}
-          joinUiState={selection.selectedCard?.showHostActions ? undefined : selection.joinUiState}
+          joinUiState={
+            selection.selectedCard?.showHostActions || selection.selectedCard?.source === 'demand'
+              ? undefined
+              : selection.joinUiState
+          }
           joinStateLoading={selection.joinStateLoading}
-          canFulfillParticipantIntent={fulfill.canFulfillParticipantIntent}
           onCloseSelection={selection.handleCloseSelection}
           onJoin={selection.handleJoin}
           onMessage={
@@ -533,7 +522,6 @@ export const ExploreExperience = () => {
               ? selection.handleHostMessage
               : selection.handleDemandMessage
           }
-          onFulfillIntent={fulfill.handleFulfillIntent}
           onHostFullManage={
             selection.selectedCard?.showHostActions ? selection.handleHostManage : undefined
           }
@@ -594,7 +582,6 @@ export const ExploreExperience = () => {
         onCloseCompose={compose.closeCompose}
         onCloseCreateFlow={closeCreateFlow}
         onOrganizeBackToIntent={() => {
-          fulfill.setFulfillIntentPrefill(null);
           organizeFrom.clearOrganizeFromPrefill();
           setRideshareLinkParent(null);
           setRideshareLinkDemand(null);

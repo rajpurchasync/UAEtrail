@@ -162,11 +162,21 @@ participationMode: 'rsvp' | 'approval'
 
 ---
 
-## Fulfill demand (host converts seeking â†’ published plan)
+## Demand (Find) — who is the host?
 
-Approved host on a **demand** pin: **Host this** or deep link `?fulfillIntent=demand:{id}` â†’ explore opens **Organize** wizard with draft prefilled from the intent (`useExploreFulfillIntent`, `createDraftFromDemand`). Submit creates a **new** activity; demand row stays until explicitly fulfilled in product lifecycle.
+The member who posts a **demand** pin is the **host** for that plan (they are looking for crew, not asking a stranger to take over).
 
-Registry: [`experiment/explore-flow-registry.md`](./experiment/explore-flow-registry.md) Â§ Demand â†’ Organize.
+| Who | Peek actions |
+|-----|----------------|
+| **Poster** | Manage plan · remove from map · optional linked rideshare offer (approved publish gate) |
+| **Everyone else** | **Request to join** (same language as approval-mode activities) · **Message** |
+| **Guest** | Sign-in gate on join / message |
+
+When the poster is ready to run a dated outing on the map, they **Organize → publish** an activity — they remain the host. Approved joiners from the demand can carry into the published activity in a later phase; until then, join requests are stored on the intent (`POST /me/participant-intents/:id/requests`).
+
+**Not used:** third-party “fulfill / convert” (another member publishing on behalf of the poster). Legacy `?fulfillIntent=` links only reopen the pin.
+
+Registry: [`experiment/explore-flow-registry.md`](./experiment/explore-flow-registry.md) · E2E: [`experiment/flows/FLOW-DEMAND-E2E.md`](./experiment/flows/FLOW-DEMAND-E2E.md).
 
 ---
 

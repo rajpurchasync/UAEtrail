@@ -78,7 +78,7 @@ This document is the **single source of truth** for visitor-facing copy, emojis,
 | Hiking / Camping venue | View details | — |
 | Shop | View shop | — |
 | Tour agency | View agency | — |
-| Demand post | Join this plan | View details |
+| Demand post | Request to join | Message |
 | Activity/demand group (member) | Open group chat | — |
 
 **Participation modes:** See [`../CREATE_FLOW.md`](../CREATE_FLOW.md). When `participationMode: rsvp`, primary CTA is **I'm going** (no host approve queue). When `approval`, use **Request to join** (current behavior).

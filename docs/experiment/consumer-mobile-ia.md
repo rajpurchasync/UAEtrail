@@ -65,7 +65,7 @@ Canonical contract: [`../COMMUNICATION.md`](../COMMUNICATION.md) · routes in [`
 Canonical code comments: `src/trips/demandVsWishlist.ts`.
 - **Role chips** (Upcoming & Completed): **Joined** · **Hosted** (hosts) · **My plans** (`?role=self`; legacy `tab=` normalized away).
 - **Upcoming + Joined:** goal card + upcoming carousel + suggestions (no nested Past tab).
-- **Completed + Joined:** attended outings only; **Hosted:** past hosted; **My plans:** demand intents via `GET /me/participant-intents` + `MemberDemandManageSheet` (no crew chat until organized).
+- **Completed + Joined:** attended outings only; **Hosted:** past hosted; **My plans:** demand intents via `GET /me/participant-intents` + `ParticipantIntentManageSheet` (no crew chat until organized).
 - **Map:** `/trips/map` — personal outdoor map (pins + joined/hosted entries); not Explore.
 - Legacy `/profile/wishlist` → `/trips?segment=wishlist`; starred **places** → `?layer=places`, **shops** → `?layer=shops`.
 

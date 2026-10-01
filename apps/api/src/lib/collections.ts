@@ -23,6 +23,7 @@ export const COLLECTIONS = {
   ACTIVITY_REQUESTS: 'activity_requests',
   ACTIVITY_PARTICIPANTS: 'activity_participants',
   PARTICIPANT_INTENTS: 'participant_intents',
+  PARTICIPANT_INTENT_REQUESTS: 'participant_intent_requests',
 
   // Commerce
   MERCHANT_PROFILES: 'merchant_profiles',

@@ -79,7 +79,7 @@ Examples: `organize.hiking`, `compose=organize:rideshare` → `organize.rideshar
 | `find.event` | `find:event` | **Activities** | activities | `event` | same |
 | `find.rideshare` | `find:carpool` | Rideshare | rideshare | `rideshare` | same |
 
-**Lifecycle:** active → fulfilled \| cancelled; host **fulfill** → separate Organize publish (see below).
+**Lifecycle:** active → fulfilled \| cancelled. **Poster is host** — others **request to join**; poster may later **Organize → publish** (see below).
 
 **Code:** `demandFlow.ts`, `CreateDemandFlow.tsx`.
 
@@ -104,14 +104,23 @@ Examples: `organize.hiking`, `compose=organize:rideshare` → `organize.rideshar
 
 ---
 
-## Demand → Organize (fulfill)
+## Demand → Organize (poster publishes)
 
-Approved host opens a demand pin → **Host this** (or `?fulfillIntent=demand:{id}`) → `useExploreFulfillIntent` seeds organize via `createDraftFromDemand` using **`outingCategory`** (e.g. `find.event` → `activities` → `organize.activities`). Map `path` and share links use `exploreDemandMapItemPath` (`?pin=demand:{id}`). **New** activity row; demand lifecycle unchanged until product marks fulfilled.
+Only the **demand poster** publishes an outing (FAB Organize or rideshare link from their pin). They are the activity host. Optional `participantIntentId` on publish links the intent (`fulfill` API) when the outing replaces the looking-for pin.
 
-**Code:** `useExploreFulfillIntent.ts`, `exploreFulfillIntentReturnPath()` in `routing.ts`.
+**Join on map:** `POST /me/participant-intents/:intentId/requests` — not third-party convert.
+
+**Code:** `createDraftFromDemand` (prefill), `organizeActivityPublish.ts`, `exploreDemandMapItemPath()` in `routing.ts`.
 
 ---
 
-## Endpoints (unchanged)
+## Endpoints
 
-Organize · `POST /host/activities` · Demand · `POST /me/participant-intents` · Add · `POST /me/locations` · Map · `GET /explore/map`
+| Flow | Primary routes |
+|------|----------------|
+| Organize | `POST /host/activities`, publish, `/activities/:id/requests` |
+| Demand | `POST /me/participant-intents`, `…/requests`, `…/link-activity` |
+| Add | `POST /me/places` (alias `/me/locations`) |
+| Map | `GET /explore/map` |
+
+See [`../API_ROUTING.md`](../API_ROUTING.md).

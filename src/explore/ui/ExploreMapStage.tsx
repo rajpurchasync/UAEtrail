@@ -78,11 +78,9 @@ export type ExploreMapStageProps = {
   selectedCard: ExploreCardModel | null;
   joinUiState: JoinRequestUiState | undefined;
   joinStateLoading: boolean;
-  canFulfillParticipantIntent: boolean;
   onCloseSelection: () => void;
   onJoin: () => void;
   onMessage: () => void;
-  onFulfillIntent?: () => void;
   onManage?: () => void;
   onHostFullManage?: () => void;
   onWithdraw: () => void;
@@ -147,11 +145,9 @@ export const ExploreMapStage = ({
   selectedCard,
   joinUiState,
   joinStateLoading,
-  canFulfillParticipantIntent,
   onCloseSelection,
   onJoin,
   onMessage,
-  onFulfillIntent,
   onManage,
   onHostFullManage,
   onWithdraw,
@@ -318,7 +314,6 @@ export const ExploreMapStage = ({
           onGuestGatedAction={guestGatedAction}
           onJoin={onJoin}
           onMessage={onMessage}
-          onFulfillIntent={canFulfillParticipantIntent ? onFulfillIntent : undefined}
           onManage={onManage}
           onHostFullManage={onHostFullManage}
           linkRideshareTenantId={linkRideshareTenantId}

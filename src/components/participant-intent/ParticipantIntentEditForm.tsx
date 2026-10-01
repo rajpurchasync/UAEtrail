@@ -5,18 +5,18 @@ import { api } from '../../api/index';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import type { LocationPrecision } from '../../explore/ui/organizeFlow';
 import {
-  MemberDemandLocationEditor,
-  validateDemandLocations,
-  type DemandLocationValue,
-} from './MemberDemandLocationEditor';
+  ParticipantIntentLocationEditor,
+  validateParticipantIntentLocations,
+  type ParticipantIntentLocationValue,
+} from './ParticipantIntentLocationEditor';
 
-type MemberDemandEditFormProps = {
+type ParticipantIntentEditFormProps = {
   intent: ParticipantIntentDTO;
   onSaved: () => void | Promise<void>;
   onCancel: () => void;
 };
 
-const locationFromIntent = (intent: ParticipantIntentDTO): DemandLocationValue => ({
+const locationFromIntent = (intent: ParticipantIntentDTO): ParticipantIntentLocationValue => ({
   latitude: intent.latitude,
   longitude: intent.longitude,
   locationPrecision: (intent.locationPrecision ?? 'general') as LocationPrecision,
@@ -24,8 +24,8 @@ const locationFromIntent = (intent: ParticipantIntentDTO): DemandLocationValue =
   toLongitude: intent.toLongitude,
 });
 
-/** In-sheet edit for active demand — text fields and map pins. */
-export const MemberDemandEditForm = ({ intent, onSaved, onCancel }: MemberDemandEditFormProps) => {
+/** In-sheet edit for active participant intent — text fields and map pins. */
+export const ParticipantIntentEditForm = ({ intent, onSaved, onCancel }: ParticipantIntentEditFormProps) => {
   const reloadExploreMap = useReloadExploreMap();
   const [title, setTitle] = useState(intent.title);
   const [date, setDate] = useState(intent.date ?? '');
@@ -33,7 +33,7 @@ export const MemberDemandEditForm = ({ intent, onSaved, onCancel }: MemberDemand
   const [preferredArea, setPreferredArea] = useState(intent.preferredArea ?? '');
   const [partySize, setPartySize] = useState(String(intent.partySize));
   const [comment, setComment] = useState(intent.comment);
-  const [location, setLocation] = useState<DemandLocationValue>(() => locationFromIntent(intent));
+  const [location, setLocation] = useState<ParticipantIntentLocationValue>(() => locationFromIntent(intent));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,7 +76,7 @@ export const MemberDemandEditForm = ({ intent, onSaved, onCancel }: MemberDemand
         setError('Pick a date.');
         return;
       }
-      const locationError = validateDemandLocations(intent.kind, location);
+      const locationError = validateParticipantIntentLocations(intent.kind, location);
       if (locationError) {
         setError(locationError);
         return;
@@ -110,7 +110,7 @@ export const MemberDemandEditForm = ({ intent, onSaved, onCancel }: MemberDemand
 
   return (
     <div className="space-y-3">
-      <MemberDemandLocationEditor kind={intent.kind} value={location} onChange={setLocation} />
+      <ParticipantIntentLocationEditor kind={intent.kind} value={location} onChange={setLocation} />
 
       <label className="block space-y-1">
         <span className="text-xs font-semibold text-neutral-700">Title</span>

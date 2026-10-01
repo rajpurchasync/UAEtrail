@@ -163,7 +163,21 @@ export const useExploreSelectionActions = ({
 
   const handleJoin = useCallback(() => {
     if (selected?.source === 'demand') {
-      respondToDemand(selected);
+      const intentId = selected.participantIntentId;
+      if (!intentId) return;
+      if (!user) {
+        joinActions.openGuestSheet('activity');
+        return;
+      }
+      void (async () => {
+        try {
+          await api.createParticipantIntentJoinRequest(intentId);
+          setDemandNotice('Request sent — they’ll review your request.');
+          setSelectedId(null);
+        } catch (err) {
+          setDemandNotice(err instanceof Error ? err.message : 'Could not send your request.');
+        }
+      })();
       return;
     }
     if (!selected?.activity) return;
@@ -173,7 +187,7 @@ export const useExploreSelectionActions = ({
     }
     if (joinUiState.kind !== 'open') return;
     joinActions.openJoinModal();
-  }, [selected, user, joinUiState.kind, joinActions, respondToDemand]);
+  }, [selected, user, joinUiState.kind, joinActions, setSelectedId]);
 
   const handleDemandMessage = useCallback(() => {
     if (selected) respondToDemand(selected);
@@ -265,11 +279,6 @@ export const useExploreSelectionActions = ({
 
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
-      if (fulfillIntentPrefill) {
-        setDemandNotice('Activity published and linked to the community request.');
-        clearFulfillAfterPublish();
-      }
-
       if (activity.joinMode === 'private') {
         await reloadExploreMap(queryClient);
         const peekItem = buildExploreMapItemFromActivity(activity);

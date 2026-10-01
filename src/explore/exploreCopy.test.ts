@@ -507,7 +507,8 @@ describe('buildExploreCardModel', () => {
       'Alex is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)'
     );
     expect(card.routeLabel).toBe('Dubai to Fujairah');
-    expect(card.secondaryCta).toBe('View details');
+    expect(card.primaryCta).toBe('Request to join');
+    expect(card.secondaryCta).toBe('Message');
     expect(buildExploreListMeta(card)).toContain('Dubai to Fujairah');
     expect(card.sections.highlightName).toBe('Alex');
     expect(card.sections.listTitle).toBe('Rideshare · Alex');

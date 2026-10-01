@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/index';
-import { MemberDemandManageSheet } from '../../components/host/MemberDemandManageSheet';
+import { ParticipantIntentManageSheet } from '../../components/participant-intent/ParticipantIntentManageSheet';
 import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import {
   ConsumerErrorCard,
@@ -111,7 +111,7 @@ export const SelfPlansSection = ({
 
   if (peekBridgeOnly) {
     return (
-      <MemberDemandManageSheet
+      <ParticipantIntentManageSheet
         open={Boolean(manageIntent)}
         intent={manageIntent}
         onClose={() => setManageIntent(null)}
@@ -158,7 +158,7 @@ export const SelfPlansSection = ({
         </div>
       )}
 
-      <MemberDemandManageSheet
+      <ParticipantIntentManageSheet
         open={Boolean(manageIntent)}
         intent={manageIntent}
         onClose={() => setManageIntent(null)}

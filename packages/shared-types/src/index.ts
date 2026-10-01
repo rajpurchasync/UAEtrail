@@ -606,6 +606,25 @@ export interface ParticipantIntentDTO {
   requesterAvatar?: string | null;
 }
 
+/** Member asks to join someone else's demand; the poster is the host. */
+export interface ParticipantIntentJoinRequestDTO {
+  id: string;
+  intentId: string;
+  userId: string;
+  status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ParticipantIntentJoinRequestViewDTO extends ParticipantIntentJoinRequestDTO {
+  requester?: {
+    userId: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  } | null;
+}
+
 export type ExplorePriceLabelKind = 'free' | 'paid' | 'shared';
 
 /** Rich catalog fields for trail/camp location cards on explore. */

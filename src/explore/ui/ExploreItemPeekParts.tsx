@@ -8,7 +8,6 @@ import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { PlaceCardActions } from '../../components/ui/PlaceCardActions';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import { ORGANIZE_DEMAND_PREFILL_TITLE } from '../createFlowCopy';
 import { ExploreLinkedRidesharePeekIndication } from './ExploreLinkedRidesharePeekIndication';
 import {
   exploreCardHasMapCoords,
@@ -26,7 +25,6 @@ export interface ExploreItemPeekFooterProps {
   onClose: () => void;
   onJoin?: () => void;
   onMessage?: () => void;
-  onFulfillIntent?: () => void;
   onManage?: () => void;
   onHostFullManage?: () => void;
   onInviteCrew?: () => void;
@@ -49,7 +47,6 @@ export const ExploreItemPeekFooter = ({
   onClose,
   onJoin,
   onMessage,
-  onFulfillIntent,
   onManage,
   onHostFullManage,
   onInviteCrew,
@@ -108,26 +105,7 @@ export const ExploreItemPeekFooter = ({
           onInviteCrew={onInviteCrew}
           onGuestGatedAction={gate}
         />
-      ) : isDemand && onFulfillIntent ? (
-        <>
-          <button
-            type="button"
-            onClick={gate ?? onFulfillIntent}
-            className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
-          >
-            {ORGANIZE_DEMAND_PREFILL_TITLE}
-          </button>
-          {onMessage ? (
-            <button
-              type="button"
-              onClick={gate ?? onMessage}
-              className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
-            >
-              Message
-            </button>
-          ) : null}
-        </>
-      ) : isDemand && onMessage ? (
+      ) : isDemand && onMessage && !card.showJoinActions ? (
         <button
           type="button"
           onClick={gate ?? onMessage}

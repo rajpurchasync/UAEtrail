@@ -11,12 +11,12 @@
 | Shared host actions (`useOrganisationActivityHostActions`) | Done |
 | Join decline reason + note (host → guest) | Done |
 | Explore host peek → Trips manage / check-in | Done |
-| My plans list + `MemberDemandManageSheet` | Done — `GET /me/participant-intents` |
+| My plans list + `ParticipantIntentManageSheet` | Done — `GET /me/participant-intents` |
 | Invite crew (`ActivityInviteSharePanel` / sheet) | Done — detail, manage sheet, explore peek, Trips joined/hosted, org table |
 | Edit demand intent (PATCH) | Done — `PATCH /me/participant-intents/:id` + **Edit plan** in manage sheet |
 | `GET /host/requests?activityId=` filter | Done — manage sheet loads per-activity requests |
 | Invite / share published activities | Done — plain `/activity/:id` link; private plans need sign-in to view |
-| Edit demand map pins (My plans) | Done — **Edit plan** → `MemberDemandLocationEditor` |
+| Edit demand map pins (My plans) | Done — **Edit plan** → `ParticipantIntentLocationEditor` |
 
 ## Surfaces
 
@@ -45,7 +45,7 @@ Code: `HostActivityManageSheet`, `useOrganisationActivityHostActions`, `hostActi
 ## Looking for (demand / Find)
 
 Not hosted under org tenant — **member intents** (`POST /me/participant-intents`).  
-**Trips → My plans / Self:** `GET /me/participant-intents` → list → **Manage plan** sheet (`MemberDemandManageSheet`).  
+**Trips → My plans / Self:** `GET /me/participant-intents` → list → **Manage plan** sheet (`ParticipantIntentManageSheet` in `src/components/participant-intent/`).  
 **Explore map** owner peek remains available (delete, offer rideshare if host).
 
 | Capability | Demand owner |

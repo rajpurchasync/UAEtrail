@@ -31,6 +31,42 @@ export const exploreApi = {
       auth: true,
     }),
 
+  createParticipantIntentJoinRequest: (intentId: string, payload?: { note?: string }) =>
+    apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentJoinRequestDTO }>(
+      `/me/participant-intents/${intentId}/requests`,
+      { method: 'POST', auth: true, body: JSON.stringify(payload ?? {}) }
+    ),
+
+  listParticipantIntentJoinRequests: (intentId: string) =>
+    apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentJoinRequestViewDTO[] }>(
+      `/me/participant-intents/${intentId}/requests`,
+      { auth: true }
+    ),
+
+  getMyParticipantIntentJoinRequest: (intentId: string) =>
+    apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentJoinRequestDTO | null }>(
+      `/me/participant-intents/${intentId}/requests/mine`,
+      { auth: true }
+    ),
+
+  approveParticipantIntentJoinRequest: (intentId: string, requestId: string) =>
+    apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentJoinRequestDTO }>(
+      `/me/participant-intents/${intentId}/requests/${requestId}/approve`,
+      { method: 'POST', auth: true }
+    ),
+
+  rejectParticipantIntentJoinRequest: (intentId: string, requestId: string) =>
+    apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentJoinRequestDTO }>(
+      `/me/participant-intents/${intentId}/requests/${requestId}/reject`,
+      { method: 'POST', auth: true }
+    ),
+
+  linkParticipantIntentToActivity: (intentId: string, activityId: string) =>
+    apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentDTO }>(
+      `/me/participant-intents/${intentId}/link-activity`,
+      { method: 'POST', auth: true, body: JSON.stringify({ activityId }) }
+    ),
+
   cancelParticipantIntent: (intentId: string) =>
     apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentDTO }>(
       `/me/participant-intents/${intentId}/cancel`,

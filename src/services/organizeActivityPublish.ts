@@ -265,7 +265,7 @@ export const publishOrganizeActivity = async (input: {
   await api.publishOrganisationActivity(tenantId, created.data.id);
 
   if (participantIntentId) {
-    await api.fulfillParticipantIntent(tenantId, participantIntentId, created.data.id);
+    await api.linkParticipantIntentToActivity(participantIntentId, created.data.id);
   }
 
   if (parentLinkId && draft.kind === 'rideshare') {

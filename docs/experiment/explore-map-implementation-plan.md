@@ -17,7 +17,7 @@
 This plan implements the mobile **map-first explore experience** for UAE Trail:
 
 - **Supply side:** hosts publish hiking, camping, events, carpools; venues and gear shops appear as static listings (agencies are host profiles only, not map pins).
-- **Demand side:** participants post public “I want to go” intents; others join; a participant can convert to host.
+- **Demand side:** members post public “looking for crew” intents; the **poster is host**; others **request to join** (and can message). Poster may later publish an activity as host — no third-party “convert” flow.
 - **Social:** auto messaging group per published activity/demand; members added on join approval.
 - **Payments:** indication only (Free/Paid/Shared) — offline settlement, no checkout.
 
@@ -37,8 +37,8 @@ Work is **sequential by phase**. Do not skip Phase P0 (alignment layer).
 | D6 | Sign-up/host: **Individual** (`GUIDE_OWNED`) or **Business** (`COMPANY`) via `/become-host` |
 | D7 | Business chooses **Shop** or **Tour agency** (`tenant.businessMode`) |
 | D8 | Demand posts **public by default** |
-| D9 | Others **Join this plan** on demand posts |
-| D10 | **Host this trip** converts demand → prefilled activity publish |
+| D9 | Others **Request to join** on demand posts (poster = host) |
+| D10 | **Poster** publishes via Organize (optional link intent on publish) — not stranger fulfill |
 | D11 | Anyone can host after **Become a Host** approved; gate on publish not browse |
 | D12 | **Auto group** on activity/demand publish; add members on join approve |
 
@@ -146,9 +146,9 @@ agencyLatitude?, agencyLongitude?
 |--------|-------|-------|
 | GET | `/explore/map` | Extend each phase |
 | GET | `/me/host-status` | P3 |
-| POST | `/me/intents` | P5 |
-| POST | `/me/intents/:id/join` | P5 |
-| POST | `/me/intents/:id/convert` | P5 |
+| POST | `/me/participant-intents` | P5 |
+| POST | `/me/participant-intents/:id/requests` | P5 |
+| POST | `/me/participant-intents/:id/link-activity` | P5 (poster; replaces stranger convert) |
 | POST | `/host/activities` (carpool fields) | P2 |
 | Publish hooks → create group | P6 |
 

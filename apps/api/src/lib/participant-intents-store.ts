@@ -17,6 +17,7 @@ import {
   type UpdateParticipantIntentInput,
 } from '../domain/participant-intent.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
+import { ApiError } from './api-error.js';
 import { invalidateExploreMapCache } from './explore-map-cache.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
@@ -102,6 +103,21 @@ const mapDto = (
   requesterName: user?.profile?.displayName ?? null,
   requesterAvatar: user?.profile?.avatarUrl ?? null,
 });
+
+export const findParticipantIntentById = async (
+  intentId: string
+): Promise<ParticipantIntentDTO | null> => {
+  const lookupFilter: Record<string, unknown> =
+    /^[a-f0-9]{24}$/i.test(intentId) && ObjectId.isValid(intentId)
+      ? { $or: [{ _id: intentId }, { _id: new ObjectId(intentId) }] }
+      : { _id: intentId };
+
+  const doc = await collection().findOne(lookupFilter as Filter<MongoParticipantIntent>);
+  if (!doc) return null;
+
+  const user = await findAuthUserById(doc.userId);
+  return mapDto(doc, user);
+};
 
 export const createParticipantIntent = async (
   userId: string,
@@ -233,6 +249,40 @@ export const cancelParticipantIntent = async (
   await invalidateExploreMapCache();
   const user = await findAuthUserById(updated.userId);
   return mapDto(updated, user);
+};
+
+/** Poster links their published activity to close the demand pin. */
+export const linkParticipantIntentToActivityForOwner = async (
+  intentId: string,
+  ownerUserId: string,
+  activityId: string
+): Promise<ParticipantIntentDTO | null> => {
+  const { findActivityDocInMongo } = await import('./entity-sync.js');
+  const activity = await findActivityDocInMongo(activityId);
+  if (!activity) {
+    throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+  }
+  const activityOwnerId = activity.hostId ?? activity.createdById;
+  if (activityOwnerId !== ownerUserId) {
+    throw new ApiError(403, 'not_activity_owner', 'You can only link your own published outing.');
+  }
+
+  const lookupFilter: Record<string, unknown> =
+    /^[a-f0-9]{24}$/i.test(intentId) && ObjectId.isValid(intentId)
+      ? { $or: [{ _id: intentId }, { _id: new ObjectId(intentId) }] }
+      : { _id: intentId };
+
+  const intent = await collection().findOne({
+    ...lookupFilter,
+    userId: ownerUserId,
+    status: 'active',
+  } as Filter<MongoParticipantIntent>);
+
+  if (!intent) {
+    throw new ApiError(404, 'intent_not_found', 'Demand not found or already closed.');
+  }
+
+  return fulfillParticipantIntent(intentId, activityId);
 };
 
 export const fulfillParticipantIntent = async (

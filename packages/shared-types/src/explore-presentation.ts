@@ -642,7 +642,7 @@ export const explorePrimaryCtaLabel = (
   source: ExploreCardSource,
   options?: { participationMode?: ParticipationMode | null; requirements?: string[] | null }
 ): string => {
-  if (source === 'demand') return 'Join this plan';
+  if (source === 'demand') return 'Request to join';
   if (source === 'shop') return 'View shop';
   if (source === 'agency') return 'View agency';
   if (source === 'activity') {
@@ -659,7 +659,7 @@ export const exploreSecondaryCtaLabel = (
   options?: { websiteUrl?: string | null }
 ): string | null => {
   if (source === 'activity') return 'View details';
-  if (source === 'demand') return 'View details';
+  if (source === 'demand') return 'Message';
   if (source === 'shop' && options?.websiteUrl) return 'Visit website';
   return null;
 };
