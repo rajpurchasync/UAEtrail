@@ -108,7 +108,9 @@ export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null):
   if (route && 'intent' in route) {
     if (route.intent === 'organize') clearOrganizeWizardSession(flowId);
     else if (route.intent === 'find') clearDemandWizardSession(flowId);
-    else if (route.intent === 'add' && route.kind) clearContributeWizardSession(route.kind);
+    else if (route.intent === 'add' && 'kind' in route && route.kind) {
+      clearContributeWizardSession(route.kind);
+    }
   }
 };
 

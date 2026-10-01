@@ -1216,4 +1216,10 @@ export {
   type ShopContributeTagInput,
 } from './shop-contribute.js';
 
-export type { GroupWallPostPolicy, SocialGroupChatPreviewDTO } from './group-wall.js';
+export type {
+  GroupWallMessageAuthorDTO,
+  GroupWallPostPolicy,
+  GroupWallStreamEventDTO,
+  GroupWallStreamMessageDTO,
+  SocialGroupChatPreviewDTO,
+} from './group-wall.js';

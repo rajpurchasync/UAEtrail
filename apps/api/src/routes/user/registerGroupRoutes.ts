@@ -8,6 +8,7 @@ import { findActivityDocInMongo } from '../../lib/entity-sync.js';
 import { createNotificationRecord } from '../../lib/notifications-store.js';
 import { isActivityGroupChatOpen } from '../../services/activity-group-chat.js';
 import { notifyGroupInvite, notifyGroupWallPost } from '../../services/social-notifications.js';
+import { publishGroupWallStreamToMembers } from '../../services/group-wall-stream.js';
 import { canMemberPostToGroupWall } from '../../lib/group-wall-policy.js';
 import { acceptGroupInviteByToken, createGroupInvite, createGroupWallMessage, createKidGroupMember, createSocialGroup, deleteSocialGroup, findGroupById, findGroupMemberById, getGroupMembership, listGroupInvites, listGroupMembersDetailed, listGroupsForUserWithChatPreview, listGroupWallMessages, markGroupWallRead, presentGroupWallMessage, removeGroupMembership, setGroupMembershipActiveState, toggleGroupWallReaction, updateGroupMemberRole, updateGroupWallPostPolicy } from '../../lib/social-groups-store.js';
 import { acceptInviteSchema, createGroupSchema, createKidSchema, createWallPostSchema, groupIdParamSchema, groupInviteSchema, groupMembershipIdParamSchema, groupMembershipPatchSchema, groupSettingsPatchSchema, groupWallListQuerySchema, groupWallMessageIdParamSchema, groupWallReactionSchema } from './schemas.js';
@@ -427,7 +428,24 @@ router.post('/me/groups/:groupId/wall', validate({ params: groupIdParamSchema, b
     });
 
     const data = await presentGroupWallMessage(groupId, message, req.auth!.userId);
-    res.status(201).json({ data });
+    const createdAt =
+      data.createdAt instanceof Date ? data.createdAt.toISOString() : String(data.createdAt);
+    void publishGroupWallStreamToMembers(
+      {
+        groupId,
+        message: {
+          id: data.id,
+          groupId: data.groupId,
+          authorUserId: data.authorUserId,
+          body: data.body,
+          createdAt,
+          author: data.author,
+          reactions: data.reactions ?? [],
+        },
+      },
+      req.auth!.userId
+    );
+    res.status(201).json({ data: { ...data, createdAt } });
   } catch (error) {
     next(error);
   }

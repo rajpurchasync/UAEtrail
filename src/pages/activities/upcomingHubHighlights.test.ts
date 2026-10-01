@@ -19,7 +19,7 @@ describe('buildUpcomingHubHighlights', () => {
         status: 'published',
       },
     ];
-    const highlights = buildUpcomingHubHighlights(joined, hosted as never);
+    const highlights = buildUpcomingHubHighlights(joined as never, hosted as never);
     expect(highlights).toHaveLength(2);
     expect(highlights[0].kind).toBe('hosted');
     expect(highlights.length).toBeLessThanOrEqual(UPCOMING_HUB_HIGHLIGHT_MAX);

@@ -2,9 +2,13 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
-import type { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
+import type {
+  ChatConversationDTO,
+  ChatMessageDTO,
+  GroupWallStreamEventDTO,
+} from '@uaetrail/shared-types';
 import { api } from '../api/index';
-import type { SocialGroupView } from '../api/index';
+import type { SocialGroupView, SocialGroupWallMessageView } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
 import { MobileScreen } from '../components/layout/MobileScreen';
@@ -105,10 +109,18 @@ export const Messages = () => {
   const [inboxFilter, setInboxFilter] = useState<InboxFilter>('all');
 
   const selectedUserIdRef = useRef<string | null>(selectedUserId);
+  const selectedGroupIdRef = useRef<string | null>(selectedGroupId);
+  const [streamedWallMessage, setStreamedWallMessage] = useState<SocialGroupWallMessageView | null>(
+    null
+  );
 
   useEffect(() => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
+
+  useEffect(() => {
+    selectedGroupIdRef.current = selectedGroupId;
+  }, [selectedGroupId]);
 
   const handleGroupWallActivity = useCallback((payload: GroupWallActivityPayload) => {
     setGroupThreads((prev) =>
@@ -227,8 +239,32 @@ export const Messages = () => {
       .catch(() => setPartnerBrief(null));
   }, [selectedUserId, conversations]);
 
+  const handleGroupWallStream = useCallback((payload: GroupWallStreamEventDTO) => {
+      const openGroupId = selectedGroupIdRef.current;
+      const isOpen = openGroupId === payload.groupId;
+      if (isOpen) {
+        setStreamedWallMessage(payload.message as SocialGroupWallMessageView);
+      }
+      setGroupThreads((prev) =>
+        sortInboxThreads(
+          prev.map((thread) => {
+            if (thread.id !== payload.groupId || thread.kind === 'direct') return thread;
+            return {
+              ...thread,
+              lastMessage: formatWallInboxPreview(payload.message.body),
+              lastMessageAt: payload.message.createdAt,
+              unreadCount: isOpen ? 0 : thread.unreadCount + 1,
+            };
+          })
+        )
+      );
+    },
+    []
+  );
+
   useChatStream({
     enabled: !!user,
+    onGroupWallMessage: handleGroupWallStream,
     onMessage: (message) => {
       const partnerId = selectedUserIdRef.current;
       if (partnerId && (message.senderId === partnerId || message.receiverId === partnerId)) {
@@ -527,6 +563,8 @@ export const Messages = () => {
               groupId={selectedGroupId}
               onBack={backToList}
               onWallActivity={handleGroupWallActivity}
+              streamedMessage={streamedWallMessage}
+              onStreamedMessageApplied={() => setStreamedWallMessage(null)}
             />
           ) : (
             <MessageThreadPanel

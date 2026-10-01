@@ -7,3 +7,26 @@ export interface SocialGroupChatPreviewDTO {
   lastMessageAt: string | null;
   unreadCount: number;
 }
+
+/** Wall message author on stream payloads (matches API wall presenter). */
+export interface GroupWallMessageAuthorDTO {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+}
+
+/** Full wall row pushed over SSE (`group_wall_message`). */
+export interface GroupWallStreamMessageDTO {
+  id: string;
+  groupId: string;
+  authorUserId: string;
+  body: string;
+  createdAt: string;
+  author: GroupWallMessageAuthorDTO;
+  reactions: { kind: string; count: number; reactedByMe: boolean }[];
+}
+
+export interface GroupWallStreamEventDTO {
+  groupId: string;
+  message: GroupWallStreamMessageDTO;
+}

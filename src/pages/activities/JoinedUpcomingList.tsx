@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { MyActivityDTO } from '@uaetrail/shared-types';
-import { api, type ActivityRequestView } from '../../api/index';
+import { api } from '../../api/index';
 import { ActivityHubEmptyState } from '../../components/mobile/ActivityHubEmptyState';
 import {
   ConsumerErrorCard,

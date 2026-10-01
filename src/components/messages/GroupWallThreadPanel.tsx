@@ -16,7 +16,8 @@ import {
   type GroupWallReplyTarget,
 } from './GroupWallMessageItem';
 
-const WALL_POLL_MS = 12_000;
+/** Fallback when SSE is unavailable; primary delivery is `group_wall_message` on chat stream. */
+const WALL_POLL_MS = 45_000;
 
 export type GroupWallActivityPayload = {
   groupId: string;
@@ -28,9 +29,17 @@ type GroupWallThreadPanelProps = {
   groupId: string;
   onBack: () => void;
   onWallActivity?: (payload: GroupWallActivityPayload) => void;
+  streamedMessage?: SocialGroupWallMessageView | null;
+  onStreamedMessageApplied?: () => void;
 };
 
-export const GroupWallThreadPanel = ({ groupId, onBack, onWallActivity }: GroupWallThreadPanelProps) => {
+export const GroupWallThreadPanel = ({
+  groupId,
+  onBack,
+  onWallActivity,
+  streamedMessage,
+  onStreamedMessageApplied,
+}: GroupWallThreadPanelProps) => {
   const [group, setGroup] = useState<SocialGroupView | null>(null);
   const [membership, setMembership] = useState<SocialGroupMemberView | null>(null);
   const [members, setMembers] = useState<SocialGroupMemberView[]>([]);
@@ -156,6 +165,22 @@ export const GroupWallThreadPanel = ({ groupId, onBack, onWallActivity }: GroupW
     }, WALL_POLL_MS);
     return () => window.clearInterval(id);
   }, [pollNewMessages]);
+
+  useEffect(() => {
+    if (!streamedMessage || streamedMessage.groupId !== groupId) return;
+    appendWallMessages([streamedMessage]);
+    skipScrollRef.current = false;
+    markWallRead();
+    notifyWallActivity(streamedMessage);
+    onStreamedMessageApplied?.();
+  }, [
+    appendWallMessages,
+    groupId,
+    markWallRead,
+    notifyWallActivity,
+    onStreamedMessageApplied,
+    streamedMessage,
+  ]);
 
   useEffect(() => {
     const container = chatContainerRef.current;

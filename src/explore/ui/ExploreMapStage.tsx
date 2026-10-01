@@ -310,7 +310,6 @@ export const ExploreMapStage = ({
           item={selected}
           onClose={onCloseSelection}
           onGuestGatedAction={guestGatedAction}
-          onInviteCrew={onInviteCrew}
         />
       ) : selectedCard ? (
         <ExploreItemSheet
@@ -332,6 +331,7 @@ export const ExploreMapStage = ({
           joinUiState={selectedCard.showHostActions ? undefined : joinUiState}
           onWithdraw={onWithdraw}
           joinStateLoading={joinStateLoading}
+          onInviteCrew={onInviteCrew}
         />
       ) : null}
     </div>

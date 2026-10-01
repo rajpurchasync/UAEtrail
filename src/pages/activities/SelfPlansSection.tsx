@@ -115,7 +115,9 @@ export const SelfPlansSection = ({
         open={Boolean(manageIntent)}
         intent={manageIntent}
         onClose={() => setManageIntent(null)}
-        onChanged={() => refetch()}
+        onChanged={() => {
+          void refetch();
+        }}
       />
     );
   }
@@ -160,7 +162,9 @@ export const SelfPlansSection = ({
         open={Boolean(manageIntent)}
         intent={manageIntent}
         onClose={() => setManageIntent(null)}
-        onChanged={() => refetch()}
+        onChanged={() => {
+          void refetch();
+        }}
       />
     </div>
   );

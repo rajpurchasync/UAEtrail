@@ -21,7 +21,7 @@ Legacy: `/dashboard/messages` may still exist for older host console paths — p
 | Channel | Storage | Real-time | Unread |
 |---------|---------|-----------|--------|
 | **Direct messages** | `chat` messages (`/chat/*`) | SSE (`useChatStream`) | `GET /chat/conversations` |
-| **Group / crew chat** | `social_group_wall` per group | Poll + `GET .../wall?since=` (incremental) | `chatPreview.unreadCount` on `GET /me/groups` |
+| **Group / crew chat** | `social_group_wall` per group | SSE `group_wall_message` on `/chat/stream` + `GET .../wall?since=` fallback poll | `chatPreview.unreadCount` on `GET /me/groups` |
 
 Do **not** merge these in the UI without a product decision — inbox already unifies **threads**; backend stays dual until a single inbox API exists.
 
@@ -116,6 +116,6 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 ## Future (not shipped)
 
 - Unified `GET /me/inbox` (direct + group previews in one call)
-- SSE or WebSocket for group walls (replace poll)
+- Dedicated group-wall SSE channel (today: reuses `/chat/stream` + `group_wall_message` event)
 - Server-side `replyToMessageId` for wall threads (today: plain-text quote in body)
 - Optional per-activity `groupChatPolicy` (host-only vs full crew)

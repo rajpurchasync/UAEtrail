@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { ChatMessageDTO } from '@uaetrail/shared-types';
+import type { ChatMessageDTO, GroupWallStreamEventDTO } from '@uaetrail/shared-types';
 import { API_BASE_URL } from '../api/client';
 import { api } from '../api/index';
 
@@ -9,6 +9,7 @@ const MAX_RETRY_MS = 30_000;
 interface UseChatStreamOptions {
   enabled: boolean;
   onMessage: (message: ChatMessageDTO) => void;
+  onGroupWallMessage?: (payload: GroupWallStreamEventDTO) => void;
   onReconnect?: () => void;
 }
 
@@ -16,13 +17,18 @@ interface UseChatStreamOptions {
  * Subscribe to server-sent chat events via short-lived tickets.
  * Falls back to slow polling when SSE is unavailable.
  */
-export const useChatStream = ({ enabled, onMessage, onReconnect }: UseChatStreamOptions) => {
+export const useChatStream = ({ enabled, onMessage, onGroupWallMessage, onReconnect }: UseChatStreamOptions) => {
   const onMessageRef = useRef(onMessage);
+  const onGroupWallRef = useRef(onGroupWallMessage);
   const onReconnectRef = useRef(onReconnect);
 
   useEffect(() => {
     onMessageRef.current = onMessage;
   }, [onMessage]);
+
+  useEffect(() => {
+    onGroupWallRef.current = onGroupWallMessage;
+  }, [onGroupWallMessage]);
 
   useEffect(() => {
     onReconnectRef.current = onReconnect;
@@ -85,6 +91,15 @@ export const useChatStream = ({ enabled, onMessage, onReconnect }: UseChatStream
           try {
             const message = JSON.parse(event.data) as ChatMessageDTO;
             onMessageRef.current(message);
+          } catch {
+            // ignore malformed payloads
+          }
+        });
+
+        source.addEventListener('group_wall_message', (event) => {
+          try {
+            const payload = JSON.parse(event.data) as GroupWallStreamEventDTO;
+            onGroupWallRef.current?.(payload);
           } catch {
             // ignore malformed payloads
           }

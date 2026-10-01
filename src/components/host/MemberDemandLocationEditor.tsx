@@ -84,8 +84,8 @@ export const MemberDemandLocationEditor = ({
   onChange,
 }: MemberDemandLocationEditorProps) => {
   const [mapTarget, setMapTarget] = useState<MapTarget | null>(null);
-  const [draftLat, setDraftLat] = useState(MAP_CONFIG.exploreDefaultCenter.lat);
-  const [draftLng, setDraftLng] = useState(MAP_CONFIG.exploreDefaultCenter.lng);
+  const [draftLat, setDraftLat] = useState<number>(MAP_CONFIG.exploreDefaultCenter.lat);
+  const [draftLng, setDraftLng] = useState<number>(MAP_CONFIG.exploreDefaultCenter.lng);
   const [draftPrecision, setDraftPrecision] = useState<LocationPrecision>(value.locationPrecision);
 
   const openMap = (target: MapTarget) => {

@@ -20,11 +20,7 @@ import {
   SocialGroupMemberView,
   SocialGroupView,
 } from '../api/index';
-import {
-  groupWallPostPolicyLabel,
-  resolveGroupWallPostPolicy,
-  type GroupWallPostPolicy,
-} from '../utils/groupWallPostPolicy';
+import { groupWallPostPolicyLabel, resolveGroupWallPostPolicy } from '../utils/groupWallPostPolicy';
 import {
   activityGroupChatPath,
   MESSAGES_CHAT_RETURN_TO_KEY,
@@ -453,40 +449,21 @@ export const Groups = () => {
     return (
       <div className="space-y-3">
         <GlassCard padding>
-          <h3 className="text-sm font-semibold text-neutral-900 mb-2">Who can message</h3>
-          <p className="text-xs text-neutral-500 mb-3">Applies to this group&apos;s chat for all members.</p>
-          <div className="space-y-2">
-            {(['all_members', 'admins_only'] as GroupWallPostPolicy[]).map((policy) => (
-              <button
-                key={policy}
-                type="button"
-                disabled={saving}
-                onClick={async () => {
-                  if (policy === wallPolicy) return;
-                  setSaving(true);
-                  setError(null);
-                  try {
-                    const res = await api.updateMeGroupSettings(detail.group.id, { wallPostPolicy: policy });
-                    setDetail((current) =>
-                      current ? { ...current, group: { ...current.group, ...res.data } } : current
-                    );
-                    setSuccess('Chat messaging settings updated.');
-                  } catch (err) {
-                    setError(err instanceof Error ? err.message : 'Could not update chat settings');
-                  } finally {
-                    setSaving(false);
-                  }
-                }}
-                className={`w-full rounded-xl border px-4 py-3 text-left text-sm ${
-                  wallPolicy === policy
-                    ? 'border-emerald-400 bg-emerald-50 text-emerald-900'
-                    : 'border-neutral-200 hover:bg-neutral-50'
-                }`}
-              >
-                {groupWallPostPolicyLabel[policy]}
-              </button>
-            ))}
-          </div>
+          <h3 className="text-sm font-semibold text-neutral-900 mb-2">Group chat</h3>
+          <p className="text-xs text-neutral-500 mb-2">
+            Current setting: <span className="font-medium text-neutral-800">{groupWallPostPolicyLabel[wallPolicy]}</span>
+          </p>
+          <p className="text-xs text-neutral-500 mb-3">
+            Admins change who can post in the group chat (gear icon in the thread).
+          </p>
+          <button
+            type="button"
+            onClick={() => openGroupChat(detail.group.id)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 hover:bg-emerald-100"
+          >
+            <MessageSquare className="h-4 w-4" aria-hidden />
+            Open group chat
+          </button>
         </GlassCard>
 
         <GlassCard padding>

@@ -26,8 +26,8 @@ export const buildActivityShareDetail = (activity: ActivityShareInput): string =
   const label = activity.title?.trim() || activity.locationName?.trim() || 'Outdoor plan';
   const when = activity.date?.trim();
   return when
-    ? `${when} · Join this ${activity.activityType} outing on UAE Trail`
-    : `Join this ${activity.activityType} outing on UAE Trail`;
+    ? `${when} · ${label} — join on UAE Trail`
+    : `${label} — join this ${activity.activityType} outing on UAE Trail`;
 };
 
 export const buildActivitySharePayload = (activity: ActivityShareInput) => {

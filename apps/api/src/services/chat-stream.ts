@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import type { ChatMessageDTO } from '@uaetrail/shared-types';
+import type { ChatMessageDTO, GroupWallStreamEventDTO } from '@uaetrail/shared-types';
 import { getRedisClient } from '../lib/redis.js';
 
 const CHAT_REDIS_CHANNEL = 'chat:stream';
@@ -8,6 +8,7 @@ const REDIS_SUBSCRIBE_TIMEOUT_MS = 8000;
 
 export type ChatStreamEvent =
   | { type: 'chat_message'; data: ChatMessageDTO }
+  | { type: 'group_wall_message'; data: GroupWallStreamEventDTO }
   | { type: 'ping' };
 
 interface SseClient {

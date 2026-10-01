@@ -44,7 +44,7 @@ describe('finalizeExploreCardLinkedRideshare', () => {
       longitude: 55.2,
       path: `/activity/${parentId}`,
       activity: { id: parentId, activityType: 'hiking', requirements: [] },
-    } as ExploreMapItemDTO;
+    } as unknown as ExploreMapItemDTO;
     const items = [parentItem, ride(parentId, 'r1')];
     const card = finalizeExploreCardLinkedRideshare(buildExploreCardModel(parentItem), parentItem, items);
     expect(card.linkedRideshares).toHaveLength(1);
