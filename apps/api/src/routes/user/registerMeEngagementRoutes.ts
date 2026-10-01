@@ -36,6 +36,7 @@ import {
   openActivityGroupChat,
   userCanAccessActivityGroupChat,
 } from '../../services/activity-group-chat.js';
+import { loadMemberInbox } from '../../services/member-inbox.js';
 import { eventIdParamSchema, pushSubscriptionSchema, userSearchSchema } from './schemas.js';
 
 const meRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
@@ -412,6 +413,16 @@ router.get('/me/host-status', requireAuth, async (req, res, next) => {
         ownedProfiles
       }
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/** Alias of `GET /chat/inbox` for member-scoped API discovery. */
+router.get('/me/inbox', async (req, res, next) => {
+  try {
+    const data = await loadMemberInbox(req.auth!.userId);
+    res.json({ data });
   } catch (error) {
     next(error);
   }

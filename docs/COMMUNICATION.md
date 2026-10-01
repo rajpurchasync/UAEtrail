@@ -23,12 +23,12 @@ Legacy: `/dashboard/messages` may still exist for older host console paths — p
 | **Direct messages** | `chat` messages (`/chat/*`) | SSE (`useChatStream`) | `GET /chat/conversations` |
 | **Group / crew chat** | `social_group_wall` per group | SSE `group_wall_message` on `/chat/stream` + `GET .../wall?since=` fallback poll | `chatPreview.unreadCount` on `GET /me/groups` |
 
-Do **not** merge these in the UI without a product decision — inbox already unifies **threads**; backend stays dual until a single inbox API exists.
+Do **not** merge transports in storage without a product decision — inbox already unifies **threads** in the UI.
 
 ### Unified inbox
 
-- **`GET /chat/inbox`** — `{ direct: ChatConversationDTO[], groups: MemberInboxGroupDTO[] }` in one round trip (preferred for Messages tab and nav badge).
-- **Legacy:** `GET /chat/conversations` + `GET /me/groups` still work; new UI should use `/chat/inbox`.
+- **`GET /chat/inbox`** or **`GET /me/inbox`** — same payload: `{ direct: ChatConversationDTO[], groups: MemberInboxGroupDTO[] }` (preferred for Messages tab and nav badge).
+- **Legacy:** `GET /chat/conversations` + `GET /me/groups` still work; new UI should use inbox endpoints above.
 
 ### Direct (`/chat`)
 

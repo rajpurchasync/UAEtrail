@@ -285,6 +285,7 @@ Execute **one phase at a time**. Update **Phase status** (§8) when complete.
 | P6-10 | Inbox previews + incremental wall | `GET /me/groups` `chatPreview`, `wall?since=`, `wall/read` | Done |
 | P6-11 | Unified inbox API | `GET /chat/inbox` (`direct` + `groups`) | Done |
 | P6-12 | Live wall + server replies | SSE `group_wall_message`; `replyToMessageId`; plain reply body | Done |
+| P6-13 | Wall history cursor | `beforeMessageId` + `meta.hasMoreOlder` | Done |
 
 ---
 
@@ -337,9 +338,9 @@ Suggested tags: `experiment/explore-p0`, `experiment/explore-p1`, …
 | P1 | Complete | 2026-09-07 | Shared sheet/list, API price fields, JoinRequestModal offline UX |
 | P2 | Complete | 2026-09-07 | RIDESHARE type, dual pins, from→to sheet, migration |
 | P3 | Complete | 2026-09-07 | Host gate, per-type ≤5-step create, price labels, more options |
-| P4 | Not started | — | |
-| P5 | Not started | — | |
-| P6 | Complete (experiment-ui) | 2026-10 | Crew chat, inbox API, SSE wall, replies; see COMMUNICATION.md |
+| P4 | Not started | — | Agency pins on explore map (`source: agency`) not wired |
+| P5 | Partial (experiment-ui) | 2026-10 | `participant_intents`, explore `source: demand`, demand compose in explore UI; join/convert gaps vs original P5-8–10 checklist |
+| P6 | Complete (experiment-ui) | 2026-10 | Crew chat, inbox API, SSE wall, replies, wall pagination; see COMMUNICATION.md |
 | P7 | Deferred | — | |
 
 _Update this table as work progresses._
