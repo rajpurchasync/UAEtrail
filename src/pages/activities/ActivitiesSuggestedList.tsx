@@ -22,13 +22,14 @@ export const ActivitiesSuggestedList = ({ items, searchQuery = '' }: ActivitiesS
   if (filtered.length === 0) return null;
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-3">
       {filtered.map((item) => {
         const card = buildExploreCardModel(item);
         return (
           <ExploreListRow
             key={item.id}
             card={card}
+            multiline
             onClick={() => navigate(card.path)}
           />
         );

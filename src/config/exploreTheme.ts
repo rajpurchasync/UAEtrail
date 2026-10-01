@@ -158,10 +158,13 @@ export const EXPLORE_FLOATING_CONTROL =
 export const EXPLORE_MAP_TOOLBAR_FLOATING =
   'inline-flex items-center rounded-full bg-white/95 shadow-[0_2px_12px_rgba(15,23,42,.14)] backdrop-blur-sm';
 
+/** Shared vertical padding for map toolbar pills (Who's going + intent menu). */
+export const EXPLORE_MAP_TOOLBAR_PILL_PADDING = 'py-2';
+
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {
   filterTop: 'max-lg:top-0',
-  noticeTop: 'max-lg:top-[7.5rem]',
+  noticeTop: 'max-lg:top-[8rem]',
 } as const;
 
 /** Explore map stacking — keep in sync across peek cards, filters, and sheets. */

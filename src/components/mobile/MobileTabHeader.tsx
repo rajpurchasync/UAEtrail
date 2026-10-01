@@ -14,7 +14,12 @@ const resolveCenter = (pathname: string, search: string): MobileTabHeaderCenter 
   if (pathname === '/profile') return { kind: 'title', text: 'Profile' };
   if (pathname === '/trips' || pathname === '/activities') {
     const params = new URLSearchParams(search);
-    if (params.get('segment') === 'wishlist') return { kind: 'title', text: 'Wishlist' };
+    const layer = params.get('layer');
+    if (layer === 'places') return { kind: 'title', text: 'Places' };
+    if (layer === 'shops') return { kind: 'title', text: 'Shops' };
+    if (params.get('segment') === 'wishlist' || params.get('segment') === 'saved') {
+      return { kind: 'title', text: 'Wishlist' };
+    }
     if (params.get('segment') === 'past' || params.get('segment') === 'completed') {
       return { kind: 'title', text: 'Completed' };
     }

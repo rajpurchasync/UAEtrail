@@ -20,7 +20,6 @@ import {
 import {
   mapItemMatchesFilterPills,
   mapItemMatchesSearchScope,
-  type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
 import type { ExploreBrowseListMode, WhosGoingSegment } from './useExploreBrowseUrlState';
@@ -35,7 +34,6 @@ type UseExploreBrowseListArgs = {
   venueRegions: string[];
   query: string;
   activityDatePreset: ExploreActivityDatePreset;
-  topicPills: readonly ExploreMapFilterPillKey[];
   listMode: ExploreBrowseListMode;
   whosGoingSegment: WhosGoingSegment;
   searchScope: ExploreSearchScopeKey | null;
@@ -76,7 +74,6 @@ export const useExploreBrowseList = ({
   venueRegions,
   query,
   activityDatePreset,
-  topicPills,
   listMode,
   whosGoingSegment,
   searchScope,
@@ -87,28 +84,50 @@ export const useExploreBrowseList = ({
   buddySubtype,
   outingTopic,
 }: UseExploreBrowseListArgs) => {
-  /** Map pins — topic pills on mobile only; desktop map shows all categories (list panel filters). */
-  const mapTopicPills = isDesktop ? [] : topicPills;
-
   const mapItems = useMemo(() => {
     const itemIds = new Set(items.map((entry) => entry.id));
     const merged = [
       ...items,
       ...ephemeralMapItems.filter((entry) => !itemIds.has(entry.id)),
     ];
-    let pool = merged.filter((item) => mapItemMatchesFilterPills(item, mapTopicPills));
+    let pool = merged;
     if (isDesktop) {
+      pool = pool.filter((item) => mapItemMatchesFilterPills(item, []));
       if (desktopBrowseTab === 'venues') {
         pool = pool.filter(isPlacesMapItem);
       } else {
         pool = pool.filter(isBuddyMapItem);
       }
+    } else if (sidebarPanel === 'venues') {
+      pool = pool
+        .filter(isPlacesMapItem)
+        .filter((item) => matchesPlacesMapFilter(item, mapFilter))
+        .filter((item) => venueItemMatchesRegions(item, venueRegions));
+    } else if (sidebarPanel === 'shops') {
+      pool = pool.filter(isShopListItem);
+    } else {
+      pool = pool
+        .filter(isBuddyMapItem)
+        .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic))
+        .filter((item) => matchesActivityDateFilter(item, activityDatePreset));
     }
     if (query.trim()) {
       pool = pool.filter((item) => exploreItemMatchesQuery(item, query));
     }
     return pool;
-  }, [items, ephemeralMapItems, mapTopicPills, query, isDesktop, desktopBrowseTab]);
+  }, [
+    items,
+    ephemeralMapItems,
+    query,
+    isDesktop,
+    desktopBrowseTab,
+    sidebarPanel,
+    mapFilter,
+    activityDatePreset,
+    venueRegions,
+    buddySubtype,
+    outingTopic,
+  ]);
 
   const browseListMode: ExploreBrowseListMode = isDesktop ? 'default' : listMode;
 

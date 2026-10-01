@@ -8,10 +8,12 @@ import { PRODUCT_EXPLORE_CTA } from '../../content/productNorthStar';
 import { GlassCard } from '../mobile/GlassCard';
 import { activityDetailPath, memberProfilePath } from '@uaetrail/shared-types';
 import { exploreSavedPinPath } from '../../explore/routing';
+import type { TripsHubLayer } from '../../trips/tripsRouting';
+import { favoriteMatchesTripsHubLayer } from '../../trips/wishlistFilters';
+import { matchesActivitySearch } from '../../utils/activitySearch';
 
 const favoriteLabel = (item: FavoriteDTO): string => {
   if (item.location?.name) return item.location.name;
-  if (item.participantIntent?.title) return item.participantIntent.title;
   const plan = item.activity ?? item.event;
   if (plan?.title) return plan.title;
   if (item.merchant?.shopName) return item.merchant.shopName;
@@ -23,15 +25,13 @@ const favoriteLabel = (item: FavoriteDTO): string => {
 
 const favoriteTypeLabel = (item: FavoriteDTO): string => {
   if (item.locationId) return 'Place';
-  if (item.participantIntentId || item.participantIntent) return 'Looking for crew';
-  if (item.activityId || item.activity || item.event) return 'Plan';
+  if (item.activityId || item.activity || item.event) return 'Outing';
   if (item.merchantId || item.tenantId || item.productId) return 'Shop';
   if (item.profileUserId) return 'Member';
   return 'Saved';
 };
 
 const favoritePath = (item: FavoriteDTO): string | null => {
-  if (item.participantIntentId) return exploreSavedPinPath(`demand:${item.participantIntentId}`);
   if (item.locationId) return exploreSavedPinPath(`venue:${item.locationId}`);
   const plan = item.activity ?? item.event;
   if (item.activityId) return activityDetailPath(item.activityId);
@@ -42,7 +42,32 @@ const favoritePath = (item: FavoriteDTO): string | null => {
   return null;
 };
 
-export const ProfileWishlistPanel = () => {
+const emptyCopyForLayer = (layer: TripsHubLayer): { title: string; body: string } => {
+  switch (layer) {
+    case 'places':
+      return {
+        title: 'No places saved yet',
+        body: 'Star trails, camps, and spots on the map — they show up here.',
+      };
+    case 'shops':
+      return {
+        title: 'No shops saved yet',
+        body: 'Save outdoor shops from the map to find them again quickly.',
+      };
+    default:
+      return {
+        title: 'Nothing on your wishlist yet',
+        body: 'Save outings you want to join — private to you; we can alert you when something similar is on the map.',
+      };
+  }
+};
+
+type ProfileWishlistPanelProps = {
+  layer: TripsHubLayer;
+  searchQuery?: string;
+};
+
+export const ProfileWishlistPanel = ({ layer, searchQuery = '' }: ProfileWishlistPanelProps) => {
   const [items, setItems] = useState<FavoriteDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,11 +128,19 @@ export const ProfileWishlistPanel = () => {
     return <p className="text-sm text-red-600">{error}</p>;
   }
 
+  const filtered = items.filter((item) => {
+    if (!favoriteMatchesTripsHubLayer(item, layer)) return false;
+    const title = favoriteLabel(item);
+    const type = favoriteTypeLabel(item);
+    return matchesActivitySearch(searchQuery, title, type);
+  });
+
   if (items.length === 0) {
+    const empty = emptyCopyForLayer(layer);
     return (
       <GlassCard padding className="text-center !py-10">
-        <p className="text-base font-semibold text-neutral-900">Nothing saved yet</p>
-        <p className="mt-2 text-sm text-neutral-500">Star places and plans on the map — we&apos;ll alert you when something matches.</p>
+        <p className="text-base font-semibold text-neutral-900">{empty.title}</p>
+        <p className="mt-2 text-sm text-neutral-500">{empty.body}</p>
         <Link
           to={EXPLORE_MAP_PATH}
           className="mt-5 inline-flex rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white"
@@ -118,9 +151,31 @@ export const ProfileWishlistPanel = () => {
     );
   }
 
+  if (filtered.length === 0) {
+    const empty = emptyCopyForLayer(layer);
+    return (
+      <GlassCard padding className="text-center !py-10">
+        <p className="text-base font-semibold text-neutral-900">
+          {searchQuery.trim() ? 'No matches' : empty.title}
+        </p>
+        <p className="mt-2 text-sm text-neutral-500">
+          {searchQuery.trim() ? 'Try a different search.' : empty.body}
+        </p>
+        {!searchQuery.trim() ? (
+          <Link
+            to={EXPLORE_MAP_PATH}
+            className="mt-5 inline-flex rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white"
+          >
+            {PRODUCT_EXPLORE_CTA}
+          </Link>
+        ) : null}
+      </GlassCard>
+    );
+  }
+
   return (
     <ul className="space-y-2">
-      {items.map((item) => {
+      {filtered.map((item) => {
         const path = favoritePath(item);
         return (
           <li key={item.id}>

@@ -263,9 +263,8 @@ const watchMetaFromCard = (card: ExploreCardModel) => ({
 export const resolveExploreFavoriteTarget = (card: ExploreCardModel): ExploreFavoriteTarget | null => {
   const watch = watchMetaFromCard(card);
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
-  if (card.source === 'demand' && card.participantIntentId) {
-    return { participantIntentId: card.participantIntentId, ...watch };
-  }
+  // Demand = public participation on Explore — not wishlist saves (see `src/trips/demandVsWishlist.ts`).
+  if (card.source === 'demand') return null;
   if (card.source === 'venue' && card.locationId) return { locationId: card.locationId, ...watch };
   if (card.source === 'shop' || card.source === 'agency') {
     if (card.merchantId) return { merchantId: card.merchantId, ...watch };

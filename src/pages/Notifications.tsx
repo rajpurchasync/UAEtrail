@@ -242,7 +242,7 @@ export const Notifications = () => {
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                     <Link
-                      to="/trips?segment=wishlist"
+                      to="/trips?layer=places"
                       className="text-xs font-medium text-neutral-600"
                     >
                       Saved map

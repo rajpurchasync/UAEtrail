@@ -1,11 +1,28 @@
 import { TRIPS_PATH } from '../constants';
 
+/**
+ * Personal library layers under the Trips tab (wishlist by kind).
+ * Not Explore map publish filters — public “Looking for” stays on `/explore` only.
+ */
+export type TripsHubLayer = 'trips' | 'places' | 'shops';
+
+export const TRIPS_HUB_LAYER_PILLS: { id: TripsHubLayer; label: string }[] = [
+  { id: 'trips', label: 'Trips' },
+  { id: 'places', label: 'Places' },
+  { id: 'shops', label: 'Shops' },
+];
+
 export type TripsSegment = 'upcoming' | 'completed' | 'wishlist';
 
 export type TripsRole = 'joined' | 'hosted' | 'self';
 
+export const parseTripsHubLayer = (raw: string | null): TripsHubLayer => {
+  if (raw === 'places' || raw === 'shops') return raw;
+  return 'trips';
+};
+
 export const parseTripsSegment = (raw: string | null): TripsSegment => {
-  if (raw === 'wishlist') return 'wishlist';
+  if (raw === 'wishlist' || raw === 'saved') return 'wishlist';
   if (raw === 'past' || raw === 'completed') return 'completed';
   return 'upcoming';
 };
@@ -37,6 +54,20 @@ export const normalizeTripsSearchParams = (
     changed = true;
   }
 
+  const layer = parseTripsHubLayer(params.get('layer'));
+  if (!params.get('layer')) {
+    params.set('layer', layer);
+    changed = true;
+  }
+
+  if (layer !== 'trips') {
+    if (params.get('segment') || params.get('role')) {
+      params.delete('segment');
+      params.delete('role');
+      changed = true;
+    }
+  }
+
   if (!params.get('segment') && (legacyTab || legacySub)) {
     if (legacySub === 'attended' || legacyTab === 'joined') {
       params.set('segment', 'completed');
@@ -46,7 +77,12 @@ export const normalizeTripsSearchParams = (
 
   const resolvedSegment = parseTripsSegment(params.get('segment'));
 
-  if (!params.get('role')) {
+  if (resolvedSegment === 'wishlist' && params.get('role')) {
+    params.delete('role');
+    changed = true;
+  }
+
+  if (!params.get('role') && resolvedSegment !== 'wishlist') {
     const role = parseTripsRole(null, resolvedSegment, { canHost, legacyTab });
     params.set('role', role);
     changed = true;
@@ -62,15 +98,21 @@ export const normalizeTripsSearchParams = (
 };
 
 export const tripsPath = (input?: {
+  layer?: TripsHubLayer;
   segment?: TripsSegment;
   role?: TripsRole;
 }): string => {
   const params = new URLSearchParams();
-  if (input?.segment && input.segment !== 'upcoming') {
-    params.set('segment', input.segment);
+  if (input?.layer && input.layer !== 'trips') {
+    params.set('layer', input.layer);
   }
-  if (input?.role && input.role !== 'joined') {
-    params.set('role', input.role);
+  if (input?.layer === 'trips' || !input?.layer) {
+    if (input?.segment && input.segment !== 'upcoming') {
+      params.set('segment', input.segment);
+    }
+    if (input?.role && input.role !== 'joined') {
+      params.set('role', input.role);
+    }
   }
   const qs = params.toString();
   return qs ? `${TRIPS_PATH}?${qs}` : TRIPS_PATH;
@@ -88,6 +130,7 @@ export const tripsRoleChips = (
   segment: TripsSegment,
   canHost: boolean
 ): { id: TripsRole; label: string }[] => {
+  if (segment === 'wishlist') return [];
   if (segment === 'upcoming') {
     const chips: { id: TripsRole; label: string }[] = [
       { id: 'joined', label: 'Joined' },

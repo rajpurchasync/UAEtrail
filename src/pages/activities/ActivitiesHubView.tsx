@@ -95,11 +95,11 @@ export const ActivitiesHubView = ({
   }
 
   return (
-    <div className="mt-3 space-y-6 animate-fade-up pb-bottom-nav-safe md:pb-0">
+    <div className="space-y-6 animate-fade-up">
       {error && <ConsumerErrorCard message={error} />}
 
       <section aria-label="Your upcoming plans">
-        <h2 className="mb-3 px-0.5 text-sm font-bold text-neutral-900">Your upcoming plans</h2>
+        <h2 className="mb-2 text-sm font-bold tracking-tight text-neutral-900">Your upcoming plans</h2>
         {upcomingPlans.length === 0 ? (
             <ConsumerInlineEmpty
               message={`${PRODUCT_JOINED_UPCOMING_EMPTY_TITLE} — ${PRODUCT_JOINED_UPCOMING_EMPTY_BODY}`}
@@ -109,7 +109,7 @@ export const ActivitiesHubView = ({
           ) : filteredUpcoming.length === 0 ? (
             <ConsumerInlineEmpty message="No upcoming plans match your search." />
           ) : (
-            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 scrollbar-none snap-x snap-mandatory">
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 pr-6 scrollbar-none snap-x snap-mandatory">
               {filteredUpcoming.map((row) => (
                 <UpcomingPlanCard
                   key={row.kind === 'confirmed' ? row.activity.id : row.request.id}
@@ -128,7 +128,7 @@ export const ActivitiesHubView = ({
       </section>
 
       <section aria-label="Suggested for you">
-          <h2 className="mb-3 px-0.5 text-sm font-bold text-neutral-900">Suggested for you</h2>
+          <h2 className="mb-2 text-sm font-bold tracking-tight text-neutral-900">Suggested for you</h2>
           {mapLoading ? (
             <ConsumerLoadingSpinner className="py-10" />
           ) : peekItems.length === 0 ? (

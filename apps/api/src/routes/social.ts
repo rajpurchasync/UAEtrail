@@ -466,17 +466,14 @@ const favoriteCreateSchema = z
     watchLatitude: z.number().min(-90).max(90).optional(),
     watchLongitude: z.number().min(-180).max(180).optional(),
   })
+  .refine((d) => !d.participantIntentId, {
+    message: 'Demand posts are not wishlist saves. Participate on the map instead.',
+  })
   .refine(
     (d) =>
-      [
-        d.locationId,
-        d.activityId,
-        d.participantIntentId,
-        d.productId,
-        d.merchantId,
-        d.tenantId,
-        d.profileUserId,
-      ].filter(Boolean).length === 1,
+      [d.locationId, d.activityId, d.productId, d.merchantId, d.tenantId, d.profileUserId].filter(
+        Boolean
+      ).length === 1,
     { message: 'Exactly one favorite target id is required.' }
   );
 

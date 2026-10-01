@@ -20,11 +20,9 @@ import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
 import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-import type {
-  ExploreMapFilterPillKey,
-  ExploreSearchScopeCounts,
-  ExploreSearchScopeKey,
-} from '../exploreBrowseTaxonomy';
+import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
+import type { ExplorePanel, MapFilterKey } from '../routing';
+import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 
 type ExploreMapTiles = ReturnType<typeof getExploreMapTiles>;
 
@@ -40,8 +38,14 @@ export type ExploreMapStageProps = {
   onSearchQueryChange?: (value: string) => void;
   onSearchCommit?: (scope?: ExploreSearchScopeKey | null) => void;
   searchScopeCounts?: ExploreSearchScopeCounts;
-  topicPills: readonly ExploreMapFilterPillKey[];
-  onTopicPillToggle: (key: ExploreMapFilterPillKey) => void;
+  panel: ExplorePanel;
+  mapFilter: MapFilterKey;
+  venueRegions: string[];
+  activityDatePreset: ExploreActivityDatePreset;
+  onBrowsePanelChange: (panel: ExplorePanel) => void;
+  onMapFilterChange: (filter: MapFilterKey) => void;
+  onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
+  onVenueRegionsChange: (regions: string[]) => void;
   onWhosGoing: () => void;
   whosGoingAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
   whosGoingExtraCount?: number;
@@ -100,8 +104,14 @@ export const ExploreMapStage = ({
   onSearchQueryChange,
   onSearchCommit,
   searchScopeCounts,
-  topicPills,
-  onTopicPillToggle,
+  panel,
+  mapFilter,
+  venueRegions,
+  activityDatePreset,
+  onBrowsePanelChange,
+  onMapFilterChange,
+  onActivityDatePresetChange,
+  onVenueRegionsChange,
   onWhosGoing,
   whosGoingAvatars,
   whosGoingExtraCount,
@@ -183,8 +193,14 @@ export const ExploreMapStage = ({
       {!listOpen && !isDesktop && user ? <ExploreCoachMarks /> : null}
 
       <ExploreMapChromeBar
-        topicPills={topicPills}
-        onTopicPillToggle={onTopicPillToggle}
+        panel={panel}
+        mapFilter={mapFilter}
+        venueRegions={venueRegions}
+        activityDatePreset={activityDatePreset}
+        onBrowsePanelChange={onBrowsePanelChange}
+        onMapFilterChange={onMapFilterChange}
+        onActivityDatePresetChange={onActivityDatePresetChange}
+        onVenueRegionsChange={onVenueRegionsChange}
         onWhosGoing={onWhosGoing}
         whosGoingAvatars={whosGoingAvatars}
         whosGoingExtraCount={whosGoingExtraCount}

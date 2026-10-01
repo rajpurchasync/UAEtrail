@@ -95,6 +95,12 @@ export const CAMPING_VENUE_EMOJI = '⛺';
 /** “Looking for” / participant demand pins (hand raised). */
 export const DEMAND_EMOJI = '🙋';
 
+/** Explore map chrome — places / venue catalog layer (trails, spots, shops). */
+export const EXPLORE_PLACES_LAYER_EMOJI = '📍';
+
+/** UAE country filter pill — use with `font-emoji` so flags render on Windows. */
+export const UAE_FLAG_EMOJI = '🇦🇪';
+
 /** Scheduled rideshare activities and ride requests. */
 export const RIDESHARE_EMOJI = '🚗';
 

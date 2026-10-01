@@ -9,7 +9,7 @@
 
 ## Summary
 
-Signed-in members **save map pins** from explore (places, shops, people — activities/demand as API allows) and **manage everything under Profile**, not host console or explore-only chrome. **In-app notifications** when new Organize or Demand pins match saved intent ship after match engine (E11.2+).
+Signed-in members **wishlist** private saves from Explore (places, shops, published outings) and manage them under **Trips**. **Demand (Looking for)** is **not** wishlist — it is public participation on Explore (`participant_intents`). Wishlist match **notifications** fire when new **Organize** or **Demand** pins fit a saved intent (category/geo); that is alerts only, not listing demand posts in the wishlist UI.
 
 | Field | Value |
 |-------|--------|
@@ -60,10 +60,11 @@ Align with [`NAVIGATION.md`](../../NAVIGATION.md) § Profile hub.
 - [x] FLOW doc + product brief
 - [x] `/profile/wishlist` route (lists `GET /me/favorites`)
 - [x] Profile hub + Settings entry
-- [x] Explore peek **Save** → activity/demand/venue/shop + watch metadata on `user_favorites`
+- [x] Explore peek **Save** → activity/venue/shop (+ watch metadata). **No** `participantIntentId` wishlist rows.
 - [x] In-app notification fan-out on activity publish + demand create (`wishlist-alerts`)
 - [x] Per-save **In-app alerts** checkbox on `/profile/wishlist` (`PATCH /me/favorites/:id`)
 - [x] Explore `?pin=` deep link + notification **View on map**
+- [x] Data cleanup: remove `user_favorites` rows with `participantIntentId` (`runMongoMigrations` + `npm --workspace @uaetrail/api run purge-demand-favorites`)
 
 ---
 

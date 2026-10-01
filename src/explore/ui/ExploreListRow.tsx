@@ -12,6 +12,8 @@ interface ExploreListRowProps {
   card: ExploreCardModel;
   onClick: () => void;
   onPointerEnter?: () => void;
+  /** Two-line title/meta — better on Trips suggested list. */
+  multiline?: boolean;
   showJoining?: boolean;
   /** Highlight friends; strangers link to profile to connect (no message until buddies). */
   friendUserIds?: Set<string>;
@@ -21,7 +23,7 @@ const rowShellClass =
   'rounded-2xl border border-neutral-200/75 bg-white shadow-[0_1px_8px_rgba(15,23,42,.06)] ring-1 ring-black/[0.02] transition';
 
 const rowMainClass =
-  'flex w-full items-center gap-2.5 p-2.5 text-left transition active:scale-[0.995] active:bg-neutral-50/80';
+  'flex w-full items-center gap-3 p-3.5 text-left transition active:scale-[0.995] active:bg-neutral-50/80';
 
 const JoiningIndicator = ({
   card,
@@ -71,9 +73,12 @@ export const ExploreListRow = ({
   card,
   onClick,
   onPointerEnter,
+  multiline = false,
   showJoining = false,
   friendUserIds,
 }: ExploreListRowProps) => {
+  const titleClamp = multiline ? 'line-clamp-2' : 'truncate';
+  const metaClamp = multiline ? 'line-clamp-2' : 'truncate';
   const { listTitle, details, highlightName, suffix, activityHighlight, dateHighlight } = card.sections;
   const meta = buildExploreListMeta(card);
   const toneTextClass = exploreCardToneTextClass[card.tone];
@@ -102,14 +107,14 @@ export const ExploreListRow = ({
   );
 
   const titleBlock = highlightName ? (
-    <p className={`truncate text-[15px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>
+    <p className={`${titleClamp} text-[15px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>
       <span>{highlightName}</span>
       {suffix && <span>{suffix}</span>}
       {activityHighlight && <span className={toneTextClass}>{activityHighlight}</span>}
       {dateHighlight && <span>{dateHighlight}</span>}
     </p>
   ) : (
-    <p className={`truncate text-[15px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>{listTitle}</p>
+    <p className={`${titleClamp} text-[15px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>{listTitle}</p>
   );
 
   if (isCatalogRow) {
@@ -146,7 +151,7 @@ export const ExploreListRow = ({
       <span className="min-w-0 flex-1">
         {titleBlock}
         {meta ? (
-          <p className={`mt-0.5 truncate text-sm font-semibold ${EXPLORE_TYPE.muted}`}>{meta}</p>
+          <p className={`mt-0.5 ${metaClamp} text-sm font-medium leading-snug ${EXPLORE_TYPE.muted}`}>{meta}</p>
         ) : (
           <ExploreCardDetailList details={details} compact />
         )}

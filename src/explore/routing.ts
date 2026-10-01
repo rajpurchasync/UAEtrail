@@ -37,6 +37,14 @@ const ACTIVITY_LIST_FILTER_SET = new Set<ActivityListFilterKey>([
   'carpool',
 ]);
 
+const VENUE_LIST_FILTER_SET = new Set<VenueListFilterKey>([
+  'all',
+  'hiking',
+  'camping',
+  'shop',
+  'event',
+]);
+
 const LEGACY_MAP_FILTER: Record<string, MapFilterKey> = {
   shop: 'shops',
   shops: 'shops',
@@ -360,6 +368,33 @@ export const venueFilterToMapFilter = (filter: VenueListFilterKey): MapFilterKey
     default:
       return undefined;
   }
+};
+
+/** Parse `?places=` venue catalog filter (trails, spots, shops, …). */
+export const parseVenueListFilter = (
+  placesParam: string | null,
+  legacyFilterParam: string | null = null,
+  /** When set, activity uses `?activity=` — do not infer places from legacy `?filter=`. */
+  activityParam: string | null = null
+): VenueListFilterKey => {
+  if (placesParam === 'shops') return 'shop';
+  if (placesParam && VENUE_LIST_FILTER_SET.has(placesParam as VenueListFilterKey)) {
+    return placesParam as VenueListFilterKey;
+  }
+  if (!activityParam && legacyFilterParam) {
+    const parsed = parseMapFilter(legacyFilterParam);
+    if (parsed === 'others' || parsed === 'carpool' || parsed === 'all') {
+      return 'all';
+    }
+    return mapFilterToVenueListFilter(parsed);
+  }
+  return 'all';
+};
+
+export const serializeVenueListFilter = (filter: VenueListFilterKey): string | null => {
+  if (filter === 'all') return null;
+  if (filter === 'shop') return 'shops';
+  return filter;
 };
 
 /** Gear shops on the explore map (replaces legacy `/shop` catalogue browse). */

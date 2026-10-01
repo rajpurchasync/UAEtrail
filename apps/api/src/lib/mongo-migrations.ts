@@ -577,6 +577,19 @@ const backfillLocationRegistryListed = async (db: Db): Promise<void> => {
   }
 };
 
+/** Demand posts are public participation — not wishlist rows (see wishlist-alerts / FLOW-11). */
+const purgeDemandBookmarkFavorites = async (db: Db): Promise<void> => {
+  const favorites = db.collection(COLLECTIONS.USER_FAVORITES);
+  const result = await favorites.deleteMany({
+    participantIntentId: { $exists: true, $nin: [null, ''] },
+  });
+  if (result.deletedCount > 0) {
+    console.log(
+      `[mongo] Removed ${result.deletedCount} demand bookmark favorite(s) from user_favorites (wishlist ≠ demand)`
+    );
+  }
+};
+
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENTS, COLLECTIONS.ACTIVITIES);
@@ -605,4 +618,5 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateParticipantIntentIdsToString(db);
   await migrateActivityTerminologyValues(db);
   await backfillLocationRegistryListed(db);
+  await purgeDemandBookmarkFavorites(db);
 };

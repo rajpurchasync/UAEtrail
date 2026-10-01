@@ -67,7 +67,7 @@ export const useExploreSaveFavorite = (card: ExploreCardModel): ExploreSaveState
         const res = await api.addFavorite(target);
         setSaved(true);
         setFavoriteId(res.data.id);
-        setNotice('Saved — manage in Profile → Saved map.');
+        setNotice('Saved to your wishlist — we can alert you when similar plans show up.');
       }
     } catch (err) {
       setNotice(err instanceof Error ? err.message : 'Could not update saved map.');

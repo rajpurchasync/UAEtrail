@@ -298,7 +298,6 @@ export const ExploreExperience = () => {
       venueRegions: browse.venueRegions,
       query: browse.query,
       activityDatePreset: browse.activityDatePreset,
-      topicPills: browse.topicPills,
       listMode: browse.listMode,
       whosGoingSegment: browse.whosGoingSegment,
       searchScope: browse.searchScope,
@@ -463,8 +462,14 @@ export const ExploreExperience = () => {
           isDesktop={isDesktop}
           listOpen={browse.listOpen}
           showListPanel={browse.showListPanel}
-          topicPills={browse.topicPills}
-          onTopicPillToggle={browse.toggleMapTopicPill}
+          panel={browse.panel}
+          mapFilter={browse.mapFilter}
+          venueRegions={browse.venueRegions}
+          activityDatePreset={browse.activityDatePreset}
+          onBrowsePanelChange={(next) => browse.applyBrowsePanel(next)}
+          onMapFilterChange={browse.applyMapFilter}
+          onActivityDatePresetChange={browse.applyActivityDatePreset}
+          onVenueRegionsChange={browse.applyVenueRegions}
           onWhosGoing={browse.openWhosGoingList}
           whosGoingAvatars={whosGoingPreview.avatars}
           whosGoingExtraCount={whosGoingPreview.extraCount}

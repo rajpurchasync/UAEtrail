@@ -146,8 +146,8 @@ export const ProfileGoalCard = ({
             )}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-neutral-900 truncate">{title}</p>
-            <p className="mt-0.5 text-xs text-neutral-500 truncate">{subtitle}</p>
+            <p className="line-clamp-1 text-sm font-semibold text-neutral-900">{title}</p>
+            <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-neutral-500">{subtitle}</p>
           </div>
           <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" aria-hidden />
         </button>

@@ -11,7 +11,9 @@ import {
   parseExploreActivityDatePreset,
   serializeExploreActivityDatePreset,
   parseMapFilter,
+  parseVenueListFilter,
   parseVenueRegionsParam,
+  serializeVenueListFilter,
   venueFilterToMapFilter,
   type ActivityListFilterKey,
   type ExplorePanel,
@@ -61,6 +63,7 @@ export const UNIFIED_MAP_FILTER_KEYS: MapFilterKey[] = MAP_FILTER_PILLS.map((pil
 type SyncPatch = {
   filter?: MapFilterKey;
   activityFilter?: ActivityListFilterKey;
+  placesFilter?: VenueListFilterKey;
   panel?: ExplorePanel;
   list?: boolean;
   q?: string;
@@ -95,7 +98,13 @@ export const useExploreBrowseUrlState = ({
   const [panel, setPanel] = useState<ExplorePanel>(() => parseExplorePanel(searchParams.get('panel')));
   const [listOpen, setListOpen] = useState(() => readInitialListOpen(searchParams.get('list')));
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '');
-  const [venueFilter, setVenueFilter] = useState<VenueListFilterKey>('all');
+  const [venueFilter, setVenueFilter] = useState<VenueListFilterKey>(() =>
+    parseVenueListFilter(
+      searchParams.get('places'),
+      searchParams.get('filter'),
+      searchParams.get('activity')
+    )
+  );
   const [venueRegions, setVenueRegions] = useState<string[]>(() => parseVenueRegionsParam(searchParams));
   const [desktopBrowseTab, setDesktopBrowseTab] = useState<DesktopBrowseTab>(() =>
     parseDesktopBrowseTab(parseExplorePanel(searchParams.get('panel')))
@@ -135,6 +144,7 @@ export const useExploreBrowseUrlState = ({
       const params = new URLSearchParams(searchParams);
       const filterValue = next.filter ?? mapFilter;
       const activityFilterValue = next.activityFilter ?? activityFilter;
+      const placesFilterValue = next.placesFilter ?? venueFilter;
       const panelValue = next.panel ?? panel;
       const listValue = next.list ?? listOpen;
       const queryValue = next.q ?? query;
@@ -152,6 +162,10 @@ export const useExploreBrowseUrlState = ({
 
       if (activityFilterValue === 'all') params.delete('activity');
       else params.set('activity', activityFilterValue);
+
+      const serializedPlaces = serializeVenueListFilter(placesFilterValue);
+      if (serializedPlaces) params.set('places', serializedPlaces);
+      else params.delete('places');
 
       if (panelValue === 'activities') params.delete('panel');
       else params.set('panel', panelValue);
@@ -216,6 +230,7 @@ export const useExploreBrowseUrlState = ({
     [
       mapFilter,
       activityFilter,
+      venueFilter,
       panel,
       listOpen,
       query,
@@ -248,8 +263,14 @@ export const useExploreBrowseUrlState = ({
       nextMapFilter = 'all';
     }
     setMapFilter(nextMapFilter);
-    setActivityFilter(parseActivityListFilter(searchParams.get('activity')));
-    setVenueFilter(mapFilterToVenueListFilter(nextMapFilter));
+    setActivityFilter(parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter')));
+    setVenueFilter(
+      parseVenueListFilter(
+        searchParams.get('places'),
+        searchParams.get('filter'),
+        searchParams.get('activity')
+      )
+    );
     setPanel(nextPanel);
     setListOpen(parseListOpen(searchParams.get('list'), isDesktop));
     setQuery(searchParams.get('q') ?? '');
@@ -296,6 +317,7 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({
       filter: next,
       activityFilter: syncedActivity,
+      placesFilter: syncedVenue,
       buddySubtype: nextSubtype,
       outingTopic: nextTopic,
       list: listOpen,
@@ -391,6 +413,11 @@ export const useExploreBrowseUrlState = ({
   };
 
   const applyActivityFilter = (next: ActivityListFilterKey) => {
+    if (!isDesktop) {
+      applyBrowsePanel('activities');
+      applyMapFilter(activityFilterToMapFilter(next) ?? 'all');
+      return;
+    }
     setActivityFilter(next);
     clearSelection();
     const syncedMap = activityFilterToMapFilter(next);
@@ -409,7 +436,8 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ activityFilter: next, list: listOpen });
   };
 
-  const applyPanel = (next: ExplorePanel) => {
+  const applyBrowsePanel = (next: ExplorePanel, options?: { openList?: boolean }) => {
+    const openList = options?.openList ?? false;
     setPanel(next);
     clearSelection();
     const tab = parseDesktopBrowseTab(next);
@@ -425,12 +453,17 @@ export const useExploreBrowseUrlState = ({
     }
     syncExploreUrl({
       panel: next,
-      list: true,
+      list: openList ? true : listOpen,
       filter: nextFilter,
       activityFilter: mapFilterToActivityListFilter(nextFilter),
+      placesFilter: mapFilterToVenueListFilter(nextFilter),
     });
-    setListOpen(true);
+    if (openList) {
+      setListOpen(true);
+    }
   };
+
+  const applyPanel = (next: ExplorePanel) => applyBrowsePanel(next, { openList: true });
 
   const openBrowse = () => {
     clearSelection();
@@ -441,6 +474,16 @@ export const useExploreBrowseUrlState = ({
   const applyVenueFilter = (next: VenueListFilterKey) => {
     setVenueFilter(next);
     clearSelection();
+    if (!isDesktop) {
+      const syncedMap = venueFilterToMapFilter(next);
+      applyBrowsePanel(next === 'shop' ? 'shops' : 'venues');
+      if (syncedMap) {
+        applyMapFilter(syncedMap);
+      } else {
+        applyMapFilter('all');
+      }
+      return;
+    }
     const syncedMap = venueFilterToMapFilter(next);
     if (syncedMap && syncedMap !== mapFilter) {
       setMapFilter(syncedMap);
@@ -449,12 +492,13 @@ export const useExploreBrowseUrlState = ({
       syncExploreUrl({
         filter: syncedMap,
         activityFilter: mapFilterToActivityListFilter(syncedMap),
+        placesFilter: next,
         panel: syncedMap === 'shops' ? 'shops' : 'venues',
         list: listOpen,
       });
       return;
     }
-    syncExploreUrl({ list: listOpen });
+    syncExploreUrl({ placesFilter: next, list: listOpen });
   };
 
   const applyActivityDatePreset = (next: ExploreActivityDatePreset) => {
@@ -550,6 +594,7 @@ export const useExploreBrowseUrlState = ({
     applyActivityFilter,
     applyPanel,
     applyVenueFilter,
+    applyBrowsePanel,
     openBrowse,
     closeListPanel,
     showListPanel,

@@ -41,14 +41,19 @@ Signed-in **Friends**, **Contributions**, **Groups**, **My badges**, **Notificat
 
 ## Trips hub (`/trips`) — Phase 2 (in progress)
 
-**Layout:** `ConsumerShell` tab + **toolbar** (search, outdoor map shortcut, `FilterChips` segments, role chips, compact goal). Lists use **`ActivityHubListRow`** (hosted rows include actions menu).
+**Layout:** `ConsumerShell` tab + **toolbar** (map layer pills **Trips · Places · Shops**, search, outdoor map shortcut on Trips layer, segment + role chips, compact goal in scroll). Lists use **`ActivityHubListRow`** (hosted rows include actions menu).
 
-- **Segments (scroll):** **Upcoming** · **Completed** · **Wishlist** (`?segment=`; legacy `past` → `completed`).
+- **Wishlist layers** (personal, not public map): **Trips** · **Places** · **Shops** (`?layer=`). Private saves + match alerts — **not** the same as Explore **Looking for** (public demand pins).
+- **Segments (Trips layer only):** **Upcoming** · **Completed** · **Wishlist** (`?segment=`; legacy `past` → `completed`). Wishlist segment = saved **outings** only; places/shops use layer pills.
+- **Looking for (demand)** stays on **`/explore`** — public participation (`participant_intents`). Not wishlist rows; Explore **Save** is disabled on demand cards. API rejects `participantIntentId` on `POST /me/favorites`.
+- **Match notifications** (`wishlist_match`) are intent alerts only — they deep-link to the new public plan/demand pin; they do not mean demand was added to wishlist.
+
+Canonical code comments: `src/trips/demandVsWishlist.ts`.
 - **Role chips** (Upcoming & Completed): **Joined** · **Hosted** (hosts) · **My plans** (`?role=self`; legacy `tab=` normalized away).
 - **Upcoming + Joined:** goal card + upcoming carousel + suggestions (no nested Past tab).
 - **Completed + Joined:** attended outings only; **Hosted:** past hosted; **My plans:** placeholder until demand API.
 - **Map:** `/trips/map` — personal outdoor map (pins + joined/hosted entries); not Explore.
-- Legacy `/profile/wishlist` → `/trips?segment=wishlist`.
+- Legacy `/profile/wishlist` → `/trips?segment=wishlist`; starred **places** → `?layer=places`, **shops** → `?layer=shops`.
 
 ## Friends (`/buddies`)
 

@@ -1,6 +1,7 @@
 import { Bookmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
+import { tripsPath } from '../../trips/tripsRouting';
 import { useExploreSaveFavorite } from './useExploreSaveFavorite';
 
 interface ExploreSaveButtonProps {
@@ -12,6 +13,13 @@ export const ExploreSaveButton = ({ card, light = false }: ExploreSaveButtonProp
   const { canSave, saved, busy, notice, toggle } = useExploreSaveFavorite(card);
 
   if (card.showHostActions || !canSave) return null;
+
+  const afterSavePath =
+    card.source === 'shop' || card.source === 'agency'
+      ? tripsPath({ layer: 'shops' })
+      : card.source === 'venue'
+        ? tripsPath({ layer: 'places' })
+        : tripsPath({ segment: 'wishlist' });
 
   const shell = light
     ? 'bg-neutral-100 text-gray-700 hover:bg-neutral-200'
@@ -34,8 +42,8 @@ export const ExploreSaveButton = ({ card, light = false }: ExploreSaveButtonProp
           {notice.includes('Profile') ? (
             <>
               Saved —{' '}
-              <Link to="/trips?segment=wishlist" className="text-emerald-700 underline">
-                Profile
+              <Link to={afterSavePath} className="text-emerald-700 underline">
+                Wishlist
               </Link>
             </>
           ) : (

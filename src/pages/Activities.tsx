@@ -20,13 +20,16 @@ import { ProfileGoalCard } from '../components/profile/ProfileGoalCard';
 import { useMemberGoal } from '../hooks/useMemberGoal';
 import { TripsSegmentScroll } from '../components/trips/TripsSegmentScroll';
 import { TripsRoleChips } from '../components/trips/TripsRoleChips';
+import { TripsHubLayerPills } from '../components/trips/TripsHubLayerPills';
 import {
   TRIPS_SEGMENT_TABS,
   normalizeTripsSearchParams,
+  parseTripsHubLayer,
   parseTripsRole,
   parseTripsSegment,
   tripsRoleChips,
   tripsMapPath,
+  type TripsHubLayer,
   type TripsRole,
   type TripsSegment,
 } from '../trips/tripsRouting';
@@ -47,6 +50,7 @@ export const Activities = () => {
     if (changed) setSearchParams(next, { replace: true });
   }, [canHost, searchParams, setSearchParams, user]);
 
+  const hubLayer = parseTripsHubLayer(searchParams.get('layer'));
   const segment = parseTripsSegment(searchParams.get('segment'));
   const role = parseTripsRole(searchParams.get('role'), segment, {
     canHost,
@@ -54,6 +58,23 @@ export const Activities = () => {
   });
 
   const roleChips = useMemo(() => tripsRoleChips(segment, canHost), [canHost, segment]);
+
+  const setHubLayer = useCallback(
+    (nextLayer: TripsHubLayer) => {
+      const next = new URLSearchParams(searchParams);
+      if (nextLayer === 'trips') {
+        next.delete('layer');
+        if (!next.get('segment')) next.set('segment', 'upcoming');
+        if (!next.get('role')) next.set('role', 'joined');
+      } else {
+        next.set('layer', nextLayer);
+        next.delete('segment');
+        next.delete('role');
+      }
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
 
   const handleRefresh = useCallback(async () => {
     setRefreshKey((key) => key + 1);
@@ -92,53 +113,55 @@ export const Activities = () => {
     navigate(composePath);
   }, [navigate, user]);
 
-  const showUpcomingJoinedHub = segment === 'upcoming' && role === 'joined';
+  const showUpcomingJoinedHub = hubLayer === 'trips' && segment === 'upcoming' && role === 'joined';
   const showFab = showUpcomingJoinedHub && Boolean(user);
 
+  const searchPlaceholder =
+    hubLayer === 'places'
+      ? 'Search saved places'
+      : hubLayer === 'shops'
+        ? 'Search saved shops'
+        : segment === 'wishlist'
+          ? 'Search your wishlist'
+          : 'Search trips';
+
   const tripsToolbar = user ? (
-    <>
-      <div className="mb-3 flex items-center gap-2">
-        <div className="min-w-0 flex-1">
-          <TabPageSearchRow
-            value={activitySearchQuery}
-            onChange={setActivitySearchQuery}
-            placeholder="Search trips"
-          />
-        </div>
-        <Link
-          to={tripsMapPath()}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-emerald-700 shadow-sm"
-          aria-label="My outdoor map"
-          title="My outdoor map"
-        >
-          <MapIcon className="h-5 w-5" aria-hidden />
-        </Link>
-      </div>
-      <TripsSegmentScroll tabs={TRIPS_SEGMENT_TABS} activeId={segment} onChange={setSegment} />
-      {segment !== 'wishlist' ? (
-        <div className="mt-3">
-          <TripsRoleChips chips={roleChips} activeId={role} onChange={setRole} />
-        </div>
+    <div className="flex flex-col gap-3">
+      <TripsHubLayerPills activeId={hubLayer} onChange={setHubLayer} />
+      <TabPageSearchRow
+        inset
+        value={activitySearchQuery}
+        onChange={setActivitySearchQuery}
+        placeholder={searchPlaceholder}
+        action={
+          hubLayer === 'trips' ? (
+            <Link
+              to={tripsMapPath()}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-neutral-200/80 bg-white text-emerald-700 shadow-sm active:scale-[0.98]"
+              aria-label="My outdoor map"
+              title="My outdoor map"
+            >
+              <MapIcon className="h-5 w-5" aria-hidden />
+            </Link>
+          ) : undefined
+        }
+      />
+      {hubLayer === 'trips' ? (
+        <>
+          <TripsSegmentScroll tabs={TRIPS_SEGMENT_TABS} activeId={segment} onChange={setSegment} />
+          {segment !== 'wishlist' ? (
+            <TripsRoleChips chips={roleChips} activeId={role} onChange={setRole} />
+          ) : null}
+        </>
       ) : null}
-      {segment === 'upcoming' ? (
-        <div className="mt-3">
-          <ProfileGoalCard
-            variant="compact"
-            goal={goal}
-            saving={goalSaving}
-            onSave={saveGoal}
-            onClear={clearGoal}
-          />
-        </div>
-      ) : null}
-    </>
+    </div>
   ) : null;
 
   return (
     <>
       <PageMeta
-        title="My trips — upcoming, completed, and wishlist"
-        description="Your upcoming outings, completed trips, and wishlist on UAE Trail."
+        title="My trips — outings, places, and shops you saved"
+        description="Your upcoming outings, history, and saved map pins on UAE Trail."
         path={TRIPS_PATH}
       />
 
@@ -150,18 +173,40 @@ export const Activities = () => {
         toolbar={tripsToolbar}
       >
         <PullToRefresh onRefresh={handleRefresh}>
-          <div className="space-y-3 pb-bottom-nav-safe">
-            {segment === 'wishlist' && user ? <ProfileWishlistPanel key={refreshKey} /> : null}
+          <div
+            className={`space-y-4 pt-1 ${showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'}`}
+          >
+            {hubLayer === 'places' && user ? (
+              <ProfileWishlistPanel key={`places-${refreshKey}`} layer="places" searchQuery={activitySearchQuery} />
+            ) : null}
+
+            {hubLayer === 'shops' && user ? (
+              <ProfileWishlistPanel key={`shops-${refreshKey}`} layer="shops" searchQuery={activitySearchQuery} />
+            ) : null}
+
+            {hubLayer === 'trips' && segment === 'upcoming' && user ? (
+              <ProfileGoalCard
+                variant="compact"
+                goal={goal}
+                saving={goalSaving}
+                onSave={saveGoal}
+                onClear={clearGoal}
+              />
+            ) : null}
+
+            {hubLayer === 'trips' && segment === 'wishlist' && user ? (
+              <ProfileWishlistPanel key={`wishlist-${refreshKey}`} layer="trips" searchQuery={activitySearchQuery} />
+            ) : null}
 
             {showUpcomingJoinedHub && user ? (
               <ActivitiesHubView refreshKey={refreshKey} searchQuery={activitySearchQuery} />
             ) : null}
 
-            {segment === 'upcoming' && role === 'hosted' && user && canHost ? (
+            {hubLayer === 'trips' && segment === 'upcoming' && role === 'hosted' && user && canHost ? (
               <HostedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} timeScope="upcoming" />
             ) : null}
 
-            {segment === 'upcoming' && role === 'hosted' && user && !canHost ? (
+            {hubLayer === 'trips' && segment === 'upcoming' && role === 'hosted' && user && !canHost ? (
               <div className="glass-card p-6 text-center">
                 <p className="mb-3 text-sm text-neutral-600">
                   Host activities on the map to share them with the community.
@@ -176,11 +221,11 @@ export const Activities = () => {
               </div>
             ) : null}
 
-            {segment === 'upcoming' && role === 'self' && user ? (
+            {hubLayer === 'trips' && segment === 'upcoming' && role === 'self' && user ? (
               <TripsSelfSection segment="upcoming" />
             ) : null}
 
-            {segment === 'completed' && role === 'joined' && user ? (
+            {hubLayer === 'trips' && segment === 'completed' && role === 'joined' && user ? (
               <JoinedSection
                 refreshKey={refreshKey}
                 searchQuery={activitySearchQuery}
@@ -188,17 +233,17 @@ export const Activities = () => {
               />
             ) : null}
 
-            {segment === 'completed' && role === 'hosted' && user && canHost ? (
+            {hubLayer === 'trips' && segment === 'completed' && role === 'hosted' && user && canHost ? (
               <HostedSection refreshKey={refreshKey} searchQuery={activitySearchQuery} timeScope="past" />
             ) : null}
 
-            {segment === 'completed' && role === 'hosted' && user && !canHost ? (
+            {hubLayer === 'trips' && segment === 'completed' && role === 'hosted' && user && !canHost ? (
               <div className="glass-card p-6 text-center text-sm text-neutral-600">
                 Hosting history is available after you become an approved host.
               </div>
             ) : null}
 
-            {segment === 'completed' && role === 'self' && user ? (
+            {hubLayer === 'trips' && segment === 'completed' && role === 'self' && user ? (
               <TripsSelfSection segment="completed" />
             ) : null}
           </div>

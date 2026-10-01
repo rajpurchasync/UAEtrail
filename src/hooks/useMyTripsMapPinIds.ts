@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/index';
 
-/** Map item ids (`activity:…`, `venue:…`, `demand:…`) for the signed-in member's trips + wishlist. */
+/** Map item ids (`activity:…`, `venue:…`) for joined/hosted outings + personal wishlist places/plans — not demand posts. */
 export const useMyTripsMapPinIds = (userId: string | undefined) => {
   const [ids, setIds] = useState<Set<string> | null>(null);
   const [loading, setLoading] = useState(Boolean(userId));
@@ -26,7 +26,7 @@ export const useMyTripsMapPinIds = (userId: string | undefined) => {
         if (cancelled) return;
         const pinIds = new Set<string>();
         for (const fav of favoritesRes.data) {
-          if (fav.participantIntentId) pinIds.add(`demand:${fav.participantIntentId}`);
+          if (fav.participantIntentId) continue;
           if (fav.locationId) pinIds.add(`venue:${fav.locationId}`);
           const plan = fav.activity ?? fav.event;
           if (fav.activityId) pinIds.add(`activity:${fav.activityId}`);

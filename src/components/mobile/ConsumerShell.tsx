@@ -185,7 +185,7 @@ export const ConsumerShell = ({
               </div>
             )}
             {layout === 'tab' && toolbar && (
-              <div className="md:hidden pb-3">{toolbar}</div>
+              <div className="md:hidden border-b border-black/[0.04] pb-3">{toolbar}</div>
             )}
           </div>
         </div>

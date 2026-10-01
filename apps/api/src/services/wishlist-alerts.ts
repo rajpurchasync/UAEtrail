@@ -94,6 +94,7 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
   }
 };
 
+/** Notify wishlist *watchers* when a new public demand pin matches their saved intent — not a wishlist row for the demand itself. */
 export const notifyWishlistForNewDemand = async (intentId: string, requesterUserId: string): Promise<void> => {
   try {
     const doc = await getMongoClient()!

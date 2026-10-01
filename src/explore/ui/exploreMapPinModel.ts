@@ -177,6 +177,44 @@ export const matchesActivityFilter = (item: ExploreMapItemDTO, activityFilter: A
   return item.kind === activityFilter;
 };
 
+export type MobileExploreMapFilterInput = {
+  activityFilter: ActivityListFilterKey;
+  venueFilter: VenueListFilterKey;
+  mapFilter: MapFilterKey;
+  activityDatePreset: ExploreActivityDatePreset;
+  venueRegions: string[];
+  buddySubtype?: ExploreBuddySubtypeKey;
+  outingTopic?: ExploreOutingTopicKey;
+};
+
+/** Mobile map — activity + places menus filter independent layers on one map. */
+export const matchesMobileExploreMapItem = (
+  item: ExploreMapItemDTO,
+  input: MobileExploreMapFilterInput
+): boolean => {
+  const buddySubtype = input.buddySubtype ?? 'all';
+  const outingTopic = input.outingTopic ?? 'all';
+
+  if (isBuddyMapItem(item)) {
+    const topicOk =
+      input.mapFilter === 'others'
+        ? matchesBuddyMapFilter(item, 'others', buddySubtype, outingTopic)
+        : matchesActivityFilter(item, input.activityFilter);
+    if (!topicOk) return false;
+    return matchesActivityDateFilter(item, input.activityDatePreset);
+  }
+
+  if (isPlacesMapItem(item) || isShopListItem(item)) {
+    if (!matchesVenueFilter(item, input.venueFilter)) return false;
+    if (isPlacesMapItem(item) && !isShopListItem(item)) {
+      return venueItemMatchesRegions(item, input.venueRegions);
+    }
+    return true;
+  }
+
+  return false;
+};
+
 export const resolveExploreItemScheduleDate = (item: ExploreMapItemDTO): string | null => {
   const raw = item.date ?? item.activity?.date ?? null;
   if (!raw?.trim()) return null;

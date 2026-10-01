@@ -414,6 +414,7 @@ export const listWishlistWatchCandidates = async () => {
     .find({
       alertOnMatch: { $ne: false },
       watchOutingCategory: { $exists: true, $ne: null },
+      $or: [{ participantIntentId: null }, { participantIntentId: { $exists: false } }],
     })
     .toArray();
 

@@ -30,7 +30,7 @@ describe('resolveExploreFavoriteTarget', () => {
     expect(target?.watchLatitude).toBe(25);
   });
 
-  it('supports demand participant intent id', () => {
+  it('does not wishlist-save demand pins (participation is on Explore)', () => {
     const card = buildExploreCardModel(
       baseItem({
         id: 'demand:int-1',
@@ -42,8 +42,6 @@ describe('resolveExploreFavoriteTarget', () => {
         participantIntentId: 'int-1',
       })
     );
-    const target = resolveExploreFavoriteTarget(card);
-    expect(target?.participantIntentId).toBe('int-1');
-    expect(target?.watchOutingCategory).toBe('hiking');
+    expect(resolveExploreFavoriteTarget(card)).toBeNull();
   });
 });

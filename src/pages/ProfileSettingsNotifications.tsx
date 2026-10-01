@@ -14,7 +14,7 @@ export const ProfileSettingsNotifications = () => (
       </p>
       <SettingsMenuGroup>
         <SettingsMenuRow label="Notification inbox" to="/notifications" subtitle="Activity, friends, and map alerts" />
-        <SettingsMenuRow label="Saved map & alerts" to="/trips?segment=wishlist" subtitle="Pins you starred on the map" />
+        <SettingsMenuRow label="Saved map & alerts" to="/trips?layer=places" subtitle="Places, shops, and plans you starred" />
       </SettingsMenuGroup>
     </div>
   </ConsumerShell>

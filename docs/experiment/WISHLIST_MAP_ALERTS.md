@@ -46,7 +46,7 @@ Optional later: **named saved explore filters** (URL state JSON) — still manag
 
 | Existing | Storage | Overlap with wishlist |
 |----------|---------|------------------------|
-| **Demand** (Find) | `participant_intents` | Stays on public map; wishlist matchers also get in-app notify on new Demand |
+| **Demand** (Find) | `participant_intents` | Public map only — **not** saved via wishlist API. Match alerts may still notify wishlist holders when new demand fits their saved intent. |
 | **Organize** | `activities` | Match source when hosts publish |
 | **Favorites API** | `user_favorites` | v1 backend for saved pins |
 

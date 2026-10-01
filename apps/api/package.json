@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "seed": "tsx scripts/seed.ts",
     "bump-activity-dates": "tsx scripts/bump-activity-dates.ts",
+    "purge-demand-favorites": "tsx scripts/purge-demand-favorites.ts",
     "import-venue-catalog": "tsx scripts/import-venue-catalog.ts",
     "cleanup:test-users": "node scripts/cleanup-test-users.mjs",
     "test": "vitest run"

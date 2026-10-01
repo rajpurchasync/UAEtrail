@@ -10,7 +10,6 @@ type TripsSegmentScrollProps = {
 /** Primary trips segments — shared {@link FilterChips} (neutral active). */
 export const TripsSegmentScroll = ({ tabs, activeId, onChange }: TripsSegmentScrollProps) => (
   <FilterChips
-    className="-mx-4 px-4"
     variant="neutral"
     options={tabs.map((tab) => ({ key: tab.id, label: tab.label }))}
     value={activeId}
