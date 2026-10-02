@@ -18,6 +18,8 @@ Historical specs and phase plans were **removed from the tree** (Oct 2026) after
 | `experiment/flows/*`, `explore-flow-registry.md`, `explore-backend-alignment.md` | [`CREATE_FLOW.md`](../CREATE_FLOW.md), `src/explore/composeFlowCatalog.ts` |
 | `experiment/WISHLIST_MAP_ALERTS.md`, `WHOS_GOING_UX.md`, `trips-personal-map-spec.md` | [`CREATE_FLOW.md`](../CREATE_FLOW.md), [`NAVIGATION.md`](../NAVIGATION.md), [`COMMUNICATION.md`](../COMMUNICATION.md) |
 
+| One-off `scripts/*` wizard/API splitters (2026) | Shipped code in `src/`; repeatable routing: `scripts/align-routing-imports.mjs` |
+
 **Member / host model (2026):** [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) · audit [`HOST_CLEANUP_ROADMAP.md`](../HOST_CLEANUP_ROADMAP.md).
 
 Pre–`main` experiment branch notes: `legacy/*` tags on `origin` (see `.cursor/rules/main-workflow.mdc`).

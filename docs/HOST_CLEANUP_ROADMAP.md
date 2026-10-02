@@ -28,7 +28,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Explore `?fulfillIntent=` clears param; no third-party fulfill wizard | ✅ | `useExploreFulfillIntent.ts` |
 | Publish links demand via `POST /me/.../link-activity` | ✅ | `organizeActivityPublish.ts`, `exploreApi` |
 | FE guard: no `api.fulfillParticipantIntent` | ✅ | `apiLegacyGuard.test.ts` |
-| Remove fulfill prefill props from compose (optional shrink) | ⬜ | `ExploreComposeHost` still accepts `fulfillIntentPrefill` for reorganize |
+| Remove legacy fulfill prefill wiring from explore selection/compose | ✅ | `organizeWizardPrefill` only; `useExploreFulfillIntent` clears deep links |
 
 ---
 

@@ -209,9 +209,6 @@ export const ExploreExperience = () => {
     browse,
     isDesktop,
     closeCompose: compose.closeCompose,
-    clearFulfillPrefill: () => {},
-    fulfillIntentPrefill: null,
-    clearFulfillAfterPublish: () => {},
     handleFocusMapLocation: viewport.handleFocusMapLocation,
     setLinkOnlyPeekItems,
     onInviteActivity: inviteShare.openInviteFromActivity,
@@ -583,7 +580,7 @@ export const ExploreExperience = () => {
         organizeKind={compose.organizeRoute?.kind ?? null}
         findKind={compose.findRoute?.kind}
         addKind={compose.addRoute?.kind ?? null}
-        fulfillIntentPrefill={organizeWizardPrefill}
+        organizeWizardPrefill={organizeWizardPrefill}
         signInHref={buildSignInRedirect({ pathname, search }).href}
         onComposeRouteChange={compose.handleComposeRouteChange}
         onCloseCompose={compose.closeCompose}

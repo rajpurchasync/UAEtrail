@@ -35,9 +35,6 @@ type UseExploreSelectionActionsArgs = {
   browse: BrowseState;
   isDesktop: boolean;
   closeCompose: () => void;
-  clearFulfillPrefill: () => void;
-  fulfillIntentPrefill: unknown;
-  clearFulfillAfterPublish: () => void;
   handleFocusMapLocation: (coords: { lat: number; lng: number }) => void;
   setLinkOnlyPeekItems: Dispatch<SetStateAction<ExploreMapItemDTO[]>>;
   onInviteActivity?: (activity: ActivityDTO) => void;
@@ -54,9 +51,6 @@ export const useExploreSelectionActions = ({
   browse,
   isDesktop,
   closeCompose,
-  clearFulfillPrefill,
-  fulfillIntentPrefill,
-  clearFulfillAfterPublish,
   handleFocusMapLocation,
   setLinkOnlyPeekItems,
   onInviteActivity,
@@ -159,13 +153,12 @@ export const useExploreSelectionActions = ({
   const openItem = useCallback(
     (item: ExploreMapItemDTO) => {
       closeCompose();
-      clearFulfillPrefill();
       setSelectedId(item.id);
       if (!isDesktop) {
         browse.setListOpen(false);
       }
     },
-    [closeCompose, clearFulfillPrefill, isDesktop, browse, setSelectedId]
+    [closeCompose, isDesktop, browse, setSelectedId]
   );
 
   const respondToDemand = useCallback(
@@ -339,15 +332,7 @@ export const useExploreSelectionActions = ({
       }
 
     },
-    [
-      queryClient,
-      browse,
-      handleFocusMapLocation,
-      fulfillIntentPrefill,
-      clearFulfillAfterPublish,
-      setSelectedId,
-      setLinkOnlyPeekItems,
-    ]
+    [queryClient, browse, handleFocusMapLocation, setSelectedId, setLinkOnlyPeekItems]
   );
 
   type ActivityPinDeepLinkResult = 'opened' | 'not_activity' | 'auth_required' | 'denied' | 'error';

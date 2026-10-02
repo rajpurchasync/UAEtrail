@@ -58,7 +58,7 @@ describe('exploreRouting navigation contract', () => {
 
   it('myActivitiesPath targets trips hub tabs', () => {
     expect(myActivitiesPath()).toBe('/trips');
-    expect(myActivitiesPath('hosted')).toBe('/trips?role=hosted');
+    expect(myActivitiesPath('hosted')).toBe('/trips?view=plans&role=hosted');
   });
 
   it('explorePath supports my trips map filter', () => {

@@ -16,7 +16,7 @@ interface ExploreComposeHostProps {
   organizeKind: OrganizeComposeKind | null;
   findKind: FindComposeKind | null | undefined;
   addKind: ContributeVenueKind | null;
-  fulfillIntentPrefill: import('./organizeWizardPrefill').OrganizeWizardPrefill | null;
+  organizeWizardPrefill: import('./organizeWizardPrefill').OrganizeWizardPrefill | null;
   signInHref: string;
   onComposeRouteChange: (route: ExploreCompose | null) => void;
   onCloseCompose: () => void;
@@ -41,7 +41,7 @@ export const ExploreComposeHost = ({
   organizeKind,
   findKind,
   addKind,
-  fulfillIntentPrefill,
+  organizeWizardPrefill,
   signInHref,
   onComposeRouteChange,
   onCloseCompose,
@@ -80,7 +80,7 @@ export const ExploreComposeHost = ({
         open={organizeWizardOpen}
         onClose={onCloseCreateFlow}
         organizeKind={organizeKind}
-        demandPrefill={fulfillIntentPrefill}
+        demandPrefill={organizeWizardPrefill}
         onCreateLinkedRideshare={onCreateLinkedRideshare}
         onBackToIntent={onOrganizeBackToIntent}
         onPublished={onActivityPublished}

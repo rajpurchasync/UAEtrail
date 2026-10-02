@@ -8,14 +8,14 @@ type UseExploreFulfillIntentArgs = {
 };
 
 /**
- * Legacy `?fulfillIntent=` deep links are cleared on load.
- * Demand is hosted by the poster — others request to join; third-party fulfill is not used.
+ * Legacy `?fulfillIntent=` deep links: select the pin once, then strip the query param.
+ * Third-party fulfill / prefill wizards are not used (demand host is the poster).
  */
 export const useExploreFulfillIntent = ({
   searchParams,
   setSearchParams,
   setSelectedId,
-}: UseExploreFulfillIntentArgs) => {
+}: UseExploreFulfillIntentArgs): void => {
   const clearFulfillIntentParam = useCallback(() => {
     if (!parseFulfillIntentMapItemId(searchParams)) return;
     const params = new URLSearchParams(searchParams);
@@ -29,11 +29,4 @@ export const useExploreFulfillIntent = ({
     setSelectedId(intentMapItemId);
     clearFulfillIntentParam();
   }, [searchParams, setSelectedId, clearFulfillIntentParam]);
-
-  return {
-    fulfillIntentPrefill: null,
-    setFulfillIntentPrefill: () => {},
-    canFulfillParticipantIntent: false,
-    handleFulfillIntent: () => {},
-  };
 };
