@@ -10,6 +10,7 @@ alwaysApply: true
 - **Primary remote:** `origin` → `https://github.com/uaetrail/main.git`
 - **Default branch:** `main` (explore product promoted from `experiment-ui`, Oct 2026)
 - **Always push commits and PRs to `origin` (`uaetrail/main`).** Feature branches merge to `main`.
+- **No long-lived experiment branches on `origin`** — retired branches are archived as `legacy/*` tags only.
 
 ## Mirror (only when asked)
 

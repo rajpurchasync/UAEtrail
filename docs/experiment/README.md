@@ -2,9 +2,15 @@
 
 Specs and phased plans from the explore redesign (formerly branch `experiment-ui`), now on **`main`** (Oct 2026). Day-to-day product truth: **`../CREATE_FLOW.md`**, **`../NAVIGATION.md`**, **`../ARCHITECTURE.md`**.
 
-## Legacy remotes
+## Legacy pointers
 
-**`rajpurchasync/UAEtrail`** holds a frozen pre-ship `main` snapshot — not auto-synced (see `git-remotes.mdc`). Ignore older doc lines that say `git push purchasync experiment/new-ui`.
+| Pointer | What |
+|---------|------|
+| **`origin/main`** | Live product |
+| **`rajpurchasync/UAEtrail` @ `main`** | Frozen pre-ship snapshot (see `git-remotes.mdc`) |
+| **Tags on `origin`** | `legacy/experiment-new-ui`, `legacy/ui-experiment`, `legacy/performance-cross-platform-bugfix` — archived branch tips (Oct 2026) |
+
+Do not recreate `experiment-ui`, `experiment/new-ui`, or `ui-experiment` branches unless you intentionally restore old work from a tag.
 
 ## Documents
 

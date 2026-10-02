@@ -12,7 +12,7 @@ The explore / demand product shipped to **`origin/main`** (promoted from `experi
 - **Default branch:** `main` — pull before new work (`git pull origin main`).
 - **Features:** branch off `main`, merge back via PR or explicit merge; push `origin main` when the user asks.
 - **`purchasync`:** mirror to `rajpurchasync/UAEtrail` **only** when the user explicitly asks (`git-remotes.mdc`). No auto-sync after ordinary pushes to `origin`.
-- **`experiment-ui`:** retired; do not treat as the active line unless the user revives it.
+- **Origin branches:** only **`main`** for product work. Old experiment branches were removed; tips are tagged `legacy/*` on `origin` if you need archaeology.
 
 ## Legacy snapshot
 
