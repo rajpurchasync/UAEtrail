@@ -1,6 +1,6 @@
 # Member model — users, roles, tiers, routes
 
-**Canonical map** for how one **person account** connects to capabilities, storage, and HTTP. Doc index: [`DOCS_INDEX.md`](./DOCS_INDEX.md). Product voice: [`NORTHSTAR.md`](./NORTHSTAR.md). Domain entities: [`DOMAIN.md`](./DOMAIN.md). HTTP prefixes: [`API_ROUTING.md`](./API_ROUTING.md). Rollout tracker: [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md) · host audit P0–P3: [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md).
+**Canonical map** for how one **person account** connects to capabilities, storage, and HTTP. Doc index: [`DOCS_INDEX.md`](./DOCS_INDEX.md). Product voice: [`NORTHSTAR.md`](./NORTHSTAR.md). Domain entities: [`DOMAIN.md`](./DOMAIN.md). HTTP prefixes: [`API_ROUTING.md`](./API_ROUTING.md). Host audit P0–P3: [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md).
 
 Do **not** re-implement tier logic in React hooks — consume **`GET /me/host-status`** (`HostStatusDTO` in `@uaetrail/shared-types`).
 
@@ -129,7 +129,7 @@ Wire: `HostStatusDTO.hostTiers`, `HostStatusDTO.profileRoleLabel`, `HostStatusDT
 | Community footprint | `apps/api/src/lib/community-host.ts` |
 | Buddy tenant | `apps/api/src/lib/buddy-host-tenant.ts` |
 | Client display strings | `src/member/memberProfileRoleLabel.ts` |
-| Client hook (thin) | `src/hooks/useMemberHostStatus.ts` (alias `useOrganisationGate`) |
+| Client hook (thin) | `src/hooks/useOrganisationGate.ts` (`canPublish`, `canAccessHostConsole`) |
 
 ---
 

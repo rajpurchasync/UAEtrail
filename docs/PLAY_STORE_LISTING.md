@@ -1,6 +1,6 @@
 # Google Play Store listing — UAE Trail
 
-Cross-platform auth/session/access baseline for release verification is persisted in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
+Release gates: [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) · auth baseline: [`DEV_RUN.md`](./DEV_RUN.md).
 
 Voice and positioning: [`NORTHSTAR.md`](./NORTHSTAR.md). Canonical UI strings: `src/content/productNorthStar.ts`.
 

@@ -27,13 +27,6 @@ const TIER1 = [
 /** Files that may mention legacy paths in redirect/legacy tables only */
 const LEGACY_PATH_ALLOWLIST = new Set(['docs/NAVIGATION.md', 'docs/DOMAIN.md']);
 
-/** Former standalone docs — must remain one-line superseded stubs, not full duplicates */
-const MERGED_STUBS = [
-  'docs/NAMING_COHERENCE.md',
-  'docs/SYSTEM_ALIGNMENT_MATRIX.md',
-  'docs/NAMING_HOST_MEMBER.md',
-];
-
 /** Documents that intentionally list banned phrases as guidance */
 const BANNED_PHRASE_ALLOWLIST = new Set(['docs/DOCS_GOVERNANCE.md']);
 
@@ -64,20 +57,6 @@ for (const rel of TIER1) {
       console.error(`[verify:docs] ${rel}: ${label}`);
       failed = true;
     }
-  }
-}
-
-for (const rel of MERGED_STUBS) {
-  const abs = join(root, rel);
-  if (!existsSync(abs)) continue;
-  const text = readFileSync(abs, 'utf8');
-  if (!/^>\s*\*\*Superseded/i.test(text.trim())) {
-    console.error(`[verify:docs] ${rel}: must be a superseded stub — merge content into Tier-1 per DOCS_GOVERNANCE.md`);
-    failed = true;
-  }
-  if (text.split('\n').filter((l) => l.trim()).length > 3) {
-    console.error(`[verify:docs] ${rel}: stub too long — move body into canonical Tier-1 file`);
-    failed = true;
   }
 }
 

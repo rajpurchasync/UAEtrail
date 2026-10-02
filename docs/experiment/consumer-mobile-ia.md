@@ -2,7 +2,7 @@
 
 Companion to [`NAVIGATION.md`](../NAVIGATION.md). Tracks the profile / trips / friends refactor on `main`.
 
-**Phased redesign:** [`profile-and-trips-phases.md`](./profile-and-trips-phases.md) — **Phase 1** Profile hub first; **Phase 2** Trips hub + personal map (Nomadtable-style) after Phase 1 ships.
+**Related:** personal journey map on `/trips/map` — [`NAVIGATION.md`](../NAVIGATION.md) · `src/trips/journeyMap*`.
 
 ## Bottom tabs (signed-in)
 

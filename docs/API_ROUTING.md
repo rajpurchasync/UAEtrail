@@ -2,7 +2,7 @@
 
 **Branch:** `main` · **Base path:** `/api/v1` (see `apps/api/src/routes/index.ts`).
 
-Companion: [`DOMAIN.md`](./DOMAIN.md), [`experiment/explore-backend-alignment.md`](./experiment/explore-backend-alignment.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md).
+Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 ---
 
@@ -107,7 +107,7 @@ Signed-in **member contract** for publish gates, host console access, and profil
 
 Canonical frontend client: `memberApi.getMemberHostStatus()` (`src/api/domains/member.ts`). Legacy: `organisationApi.getMyOrganisationStatus`.
 
-Implementation phases: [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md) · map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
+Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · `GET /me/host-status`.
 
 ---
 

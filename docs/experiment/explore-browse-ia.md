@@ -2,7 +2,7 @@
 
 **Branch:** `main` · **Status:** Map pills + search scopes implemented — see **[`explore-browse-taxonomy.md`](./explore-browse-taxonomy.md)**
 
-**Related:** [`explore-browse-taxonomy.md`](./explore-browse-taxonomy.md) · [`explore-backend-alignment.md`](./explore-backend-alignment.md) · [`explore-ux-spec.md`](./explore-ux-spec.md) · [`../NAVIGATION.md`](../NAVIGATION.md)
+**Related:** [`explore-browse-taxonomy.md`](./explore-browse-taxonomy.md) · [`explore-ux-spec.md`](./explore-ux-spec.md) · [`../CREATE_FLOW.md`](../CREATE_FLOW.md) · [`../NAVIGATION.md`](../NAVIGATION.md)
 
 ### Agreed map + search (summary)
 
@@ -92,13 +92,13 @@ Intent order: **topic (top) → pin kind (sub) → when / where**.
 | **Events** meaning three different things | UX **Plans** = time-bound layer; **events** category = marathon-style outing only in copy when needed |
 | List sheet different chrome than map | **Same** top + sub on map and list |
 
-Backend **unchanged:** separate collections, endpoints, wizards (`explore-flow-registry.md`).
+Backend **unchanged:** separate collections, endpoints, wizards (`composeFlowCatalog.ts`, `CREATE_FLOW.md`).
 
 ---
 
 ## Browse projection (implementation sketch)
 
-No new entity — **Layer A discovery** only (`explore-backend-alignment.md`).
+No new entity — **Layer A discovery** only (browse filters; see `exploreBrowseTaxonomy.ts`).
 
 **Map (shipped):** `matchesUnifiedExploreMapItem` in `exploreMapPinModel.ts` — URL `filter` + `pinKind` + `date` + `regions`.
 

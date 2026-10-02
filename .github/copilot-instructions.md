@@ -7,5 +7,5 @@ Output Directives:
 - Do not restate plans, reasoning, or implementation notes unless asked.
 
 Repository Persisted Context:
-- Cross-platform auth/session/performance/access baseline is documented in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
-- If behavior touches auth refresh, role switch, team/group access, or social post/reply paths, preserve the invariants in that document.
+- Auth/session/access baseline: `docs/DEV_RUN.md` (§ Auth & session baseline).
+- If behavior touches auth refresh, role switch, team/group access, or social post/reply paths, preserve those invariants.

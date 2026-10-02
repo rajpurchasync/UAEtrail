@@ -25,21 +25,29 @@
 
 ---
 
-## Tier 2 — rollout & ops
+## Tier 2 — ops & rollout
 
-[`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md) · [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) · [`RELEASE_READINESS.md`](./RELEASE_READINESS.md) · [`DEV_RUN.md`](./DEV_RUN.md) · deploy/mobile docs · [`operations/`](./operations/)
+| Doc | Use when you change… |
+|-----|----------------------|
+| [`DEV_RUN.md`](./DEV_RUN.md) | VS Code hot reload, seed, auth/session dev checks |
+| [`DEPLOYMENT.md`](./DEPLOYMENT.md) | Docker VPS, env, HTTPS |
+| [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) | Go-live + release gates |
+| [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) | Host/tenant technical debt |
+| [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) | Map seed, venue import, browse smoke |
+| [`ANDROID_RELEASE.md`](./ANDROID_RELEASE.md) · [`IOS_RELEASE.md`](./IOS_RELEASE.md) · [`PLAY_STORE_LISTING.md`](./PLAY_STORE_LISTING.md) | Native store ship |
+| [`MODERATION.md`](./MODERATION.md) | UGC reports |
 
 ---
 
-## Tier 3 — experiment (defers to Tier 1)
+## Tier 3 — explore supplement (defers to Tier 1)
 
-[`experiment/README.md`](./experiment/README.md) · [`experiment/flows/`](./experiment/flows/) · explore UX/backend specs
+[`experiment/README.md`](./experiment/README.md) — UX/browse/mobile IA only; FAB truth stays in `CREATE_FLOW.md`.
 
 ---
 
 ## Tier 4 — historical
 
-[`archive/README.md`](./archive/README.md) · `IMPLEMENTATION_GUIDE.md` · `ENGINEERING_PLAN.md` · `DOMAIN_ADOPTION_PLAN.md` · `schema-audit.md`
+Removed filenames → canonical map: [`archive/README.md`](./archive/README.md).
 
 ---
 
@@ -53,4 +61,5 @@ Who can Organize / host?   → MEMBER_MODEL
 Map / FAB / publish?       → CREATE_FLOW + NORTHSTAR
 Names / api.* / meta?      → DOMAIN_CANONICALS §6–12
 Copy on map or home?       → exploreCopy / homeLanding + NORTHSTAR
+Go live?                   → PRE_DEPLOY_CHECKLIST + DEPLOYMENT
 ```

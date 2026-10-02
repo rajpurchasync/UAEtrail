@@ -19,7 +19,7 @@ alwaysApply: true
 | **Join an outing** | `activity_requests`, `POST /activities/:id/requests` | Host onboarding |
 | **Host reviews joiners** | `GET/PATCH /host/requests` (**activity** queue) | `registerHost*JoinRequest*` without **Activity** in the name |
 
-**`UserRole` (TENANT_GUIDE, …) ≠ host publishing tier.** UI gates use **`HostStatusDTO`** from `api.getMemberHostStatus()` / `useMemberHostStatus`.
+**`UserRole` (TENANT_GUIDE, …) ≠ host publishing tier.** UI gates use **`HostStatusDTO`** from `api.getMemberHostStatus()` / `useOrganisationGate`.
 
 ## Code placement
 

@@ -45,6 +45,12 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] Android: see `docs/ANDROID_RELEASE.md`
 - [ ] iOS (Mac): `npx cap add ios` → `docs/IOS_RELEASE.md`
 
+## Release gates (before traffic)
+
+- [ ] `npm run verify:system` (or `verify:system:quick` on CI) on the release commit
+- [ ] `npm run test:explore-alignment` when explore/FAB changed
+- [ ] Staging smoke aligned with [`NAVIGATION.md`](./NAVIGATION.md) (explore-first IA — not legacy organizer/community nav)
+
 ## Smoke test (production)
 
 - [ ] Sign up → verify email → sign in
@@ -56,7 +62,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] Sign-in survives refresh/reload (cookie refresh + bearer retry flow)
 - [ ] Role switch (`visitor` <-> `original`) preserves same account identity
 
-Reference persisted baseline: `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
+Auth/session checks: [`DEV_RUN.md`](./DEV_RUN.md) § Auth & session baseline.
 
 ---
 

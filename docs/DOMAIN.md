@@ -146,7 +146,7 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 | **Host public profile** | The **business or guide brand** (tenant) | `/operator/:slug` (guide/agency) |
 | **Self hub** | Signed-in account settings | `/profile` |
 
-**Follow** and **map publish notifications** attach to the **user id** of whoever published (owner or guide user on the activity), not to the tenant slug. See experiment notes in [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
+**Follow** and **map publish notifications** attach to the **user id** of whoever published (owner or guide user on the activity), not to the tenant slug. See [`COMMUNICATION.md`](./COMMUNICATION.md) and `profile-viewer-access` for peek visibility rules.
 
 ### Participation modes (planned — see [`CREATE_FLOW.md`](./CREATE_FLOW.md))
 
@@ -259,7 +259,7 @@ Scheduled outings and **demand** posts on the **Activities** map layer carry pla
 
 **Browse filters:** map pills (`filter=hiking`, …) use category; under **Others**, `subtype=events|activities` then optional `outingTopic` for general activities. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse defaults.
 
-**Compose intents (separate lifecycles):** **Organize** → `activities` collection; **Demand** → `participant_intents`; **Add** → place catalog. Architecture detail: [`experiment/explore-backend-alignment.md`](./experiment/explore-backend-alignment.md).
+**Compose intents (separate lifecycles):** **Organize** → `activities` collection; **Demand** → `participant_intents`; **Add** → place catalog. Product detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) · `src/explore/composeFlowCatalog.ts`.
 
 ## Identity, routing, and audit
 
@@ -295,4 +295,4 @@ Reorganize never updates the source row; venue registry ids are **reused** when 
 5. API paths may say `locations` / `merchant`; product copy says place / shop.
 6. FAB compose taxonomy and participation — [`CREATE_FLOW.md`](./CREATE_FLOW.md).
 
-**Adoption roadmap:** [`DOMAIN_ADOPTION_PLAN.md`](./DOMAIN_ADOPTION_PLAN.md) — frontend migration complete. Deferred: Phase 6b tenant/merchant collapse.
+**Naming adoption:** complete for frontend symbols — see [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md). Deferred: tenant/merchant collapse (shop dual-write) in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §7 **C6**.

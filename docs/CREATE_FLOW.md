@@ -95,7 +95,7 @@ Any signed-in member â€” no host approval to post demand.
 
 **Storage (v1):** `activityType: event`, `outingCategory: activities`, `outingTopic` from type chip, `participationMode` default `approval`.
 
-Hiking / Camping / **Event** / **Rideshare** remain **separate** organize branches (see [`FLOW-05`](./experiment/flows/FLOW-05-organize-activities.md)).
+Hiking / Camping / **Event** / **Rideshare** remain **separate** organize branches (Activity = `organize.activities` in `composeFlowCatalog.ts`).
 
 ---
 
@@ -187,7 +187,7 @@ When the poster is ready to run a dated outing on the map, they **Organize → p
 
 **Not used:** third-party “fulfill / convert” (another member publishing on behalf of the poster). Legacy `?fulfillIntent=` links only reopen the pin.
 
-Registry: [`experiment/explore-flow-registry.md`](./experiment/explore-flow-registry.md) · E2E: [`experiment/flows/FLOW-DEMAND-E2E.md`](./experiment/flows/FLOW-DEMAND-E2E.md).
+**Catalog:** `src/explore/composeFlowCatalog.ts` (one entry per FAB path). **Tests:** `npm run test:explore-alignment`, `demandFlow.test.ts`.
 
 ---
 

@@ -1,1 +1,0 @@
-> **Superseded (Oct 2026).** Merged into [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §10–12 and [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1. **Do not extend this file** — update those sections instead. See [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md).

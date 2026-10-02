@@ -15,12 +15,6 @@ const tier1 = [
   'DOMAIN_CANONICALS.md',
 ];
 
-const mergedStubs = [
-  'NAMING_COHERENCE.md',
-  'SYSTEM_ALIGNMENT_MATRIX.md',
-  'NAMING_HOST_MEMBER.md',
-];
-
 describe('doc coherence (Tier 1)', () => {
   it('includes canonical index and member model', () => {
     for (const name of tier1) {
@@ -34,11 +28,23 @@ describe('doc coherence (Tier 1)', () => {
     expect(member).toMatch(/## Naming vocabulary/);
   });
 
-  it('merged docs stay superseded stubs (no corpus regrowth)', () => {
-    for (const name of mergedStubs) {
-      const text = readFileSync(join(DOCS, name), 'utf8');
-      expect(text.trim()).toMatch(/^>\s*\*\*Superseded/i);
+  it('removed Tier-4 snapshots are not reintroduced at docs root', () => {
+    const removed = [
+      'ENGINEERING_PLAN.md',
+      'DOMAIN_ADOPTION_PLAN.md',
+      'IMPLEMENTATION_GUIDE.md',
+      'NAMING_COHERENCE.md',
+      'RELEASE_READINESS.md',
+      'MEMBER_MODEL_PHASES.md',
+      'MIGRATION.md',
+      'PERFORMANCE_CROSS_PLATFORM_BUGFIX.md',
+    ];
+    for (const name of removed) {
+      expect(existsSync(join(DOCS, name)), `stale doc regrowth: docs/${name}`).toBe(false);
     }
+    expect(existsSync(join(DOCS, 'experiment', 'flows')), 'use CREATE_FLOW + composeFlowCatalog').toBe(
+      false
+    );
   });
 
   it('DOCS_GOVERNANCE forbids adding parallel Tier-1 docs', () => {

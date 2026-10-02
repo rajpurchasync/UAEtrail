@@ -31,7 +31,7 @@ Tier-1 is a **fixed list** (see `scripts/verify-docs-tier1.mjs`). When behavior 
 | What to read when | `DOCS_INDEX.md` |
 | This policy | `DOCS_GOVERNANCE.md` |
 
-Tier-2: rollout/ops (`HOST_CLEANUP_ROADMAP.md`, `RELEASE_READINESS.md`, …). Tier-3: `experiment/*` (must defer to Tier-1). Tier-4: historical — banner at top, no new semantics.
+Tier-2: ops (`DEV_RUN.md`, `DEPLOYMENT.md`, `PRE_DEPLOY_CHECKLIST.md`, …). Tier-3: `experiment/*` supplement only (must defer to Tier-1). Tier-4: removed — see `archive/README.md`.
 
 ---
 
@@ -42,9 +42,9 @@ Tier-2: rollout/ops (`HOST_CLEANUP_ROADMAP.md`, `RELEASE_READINESS.md`, …). Ti
 3. **Cross-context placement** → `SYSTEM_COHERENCE.md` §3 if a new write path
 4. **Names & call sites** → `DOMAIN_CANONICALS.md` §6–12
 5. **Copy** → `src/content/*` per Cursor rules
-6. **Flow QA only** → matching `experiment/flows/FLOW-*.md`
+6. **FAB / compose QA** → `CREATE_FLOW.md` + `npm run test:explore-alignment`
 
-Do **not** put new product semantics only in `ENGINEERING_PLAN.md` or `IMPLEMENTATION_GUIDE.md` (Tier-4).
+Do **not** put new product semantics only in `experiment/*` phase trackers or deleted Tier-4 snapshots (see [`archive/README.md`](./archive/README.md)).
 
 ---
 

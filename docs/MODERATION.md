@@ -1,6 +1,6 @@
 # Content moderation — UAE Trail
 
-Relevant social-content hardening baseline is persisted in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
+Social content is sanitized server-side; see `apps/api` content moderation and [`COMMUNICATION.md`](./COMMUNICATION.md).
 
 ## User reporting
 

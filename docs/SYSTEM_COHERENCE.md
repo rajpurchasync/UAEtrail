@@ -99,7 +99,7 @@ Each context has **one write path** and **one public read model** where possible
 | **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/ui/*`, `compose.ts`, `organizeFlow.ts` | `POST /host/activities`, `POST /me/participant-intents` | `activities`, `participant_intents` |
 | **Participation** | Join, waitlist, RSVP, demand requests | `useActivityJoin*`, detail + explore selection | `services/join-request.ts`, intent request stores | `activity_requests`, `participant_intent_requests`, `activity_participants` |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `users` / profile fields |
-| **Host capabilities** | Who may publish & console access (not onboarding verb) | `useMemberHostStatus`, `organizePublishGate` | **`services/member-host-status.ts` only** | `tenants`, `tenant_memberships` |
+| **Host capabilities** | Who may publish & console access (not onboarding verb) | `useOrganisationGate`, `organizePublishGate` | **`services/member-host-status.ts` only** | `tenants`, `tenant_memberships` |
 | **Organisation console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/Organisation*`, `organisation-console/` | `routes/host/*` registrars | same + `activities` |
 | **Communication** | DM, inbox, crew wall | `Messages.tsx`, `messages/*` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
 | **Social graph** | Buddies, follows, groups (non-crew) | `Buddies.tsx`, `Groups.tsx` | `registerBuddyRoutes`, `registerGroupRoutes`, `registerFollowRoutes` | `buddy_*`, `user_follows`, `social_groups` |
@@ -120,7 +120,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | compose | `activities`, `participant_intents` | `POST /host/activities`, `POST /me/participant-intents` | `exploreApi`, `organisationApi` | `src/explore/ui/*` |
 | participation | `activity_requests`, `participant_intent_requests`, `activity_participants` | `/activities/.../requests`, `/host/requests` | `activitiesApi`, `exploreApi` | Activity detail, `JoinRequestDetail` |
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
-| host_capabilities | `tenants`, `tenant_memberships` | `GET /me/host-status` | `memberApi` | `useMemberHostStatus` |
+| host_capabilities | `tenants`, `tenant_memberships` | `GET /me/host-status` | `memberApi` | `useOrganisationGate` |
 | organisation_console | + `activities` | `/host/*` + tenant header | `organisationApi`, `activitiesApi` | `Organisation*`, `organisation-console/*` |
 | communication | `chat_messages`, group wall | `/chat/*`, group wall | `chatApi`, `socialApi` | `Messages.tsx` |
 | social_graph | `buddy_*`, `user_follows`, `social_groups*` | `/me/buddies`, `/me/groups`, … | `socialApi` | `Buddies`, `Groups` |
@@ -178,9 +178,9 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 | `src/config/*`, `src/content/*` | Routes helpers and canonical copy |
 | `src/member/*` | Host-status display helpers and guards |
 
-**API client:** Prefer `api.getMemberHostStatus()`, `exploreApi.*`, `organisationApi.*`. **`legacyApi`** is a shrinking alias layer — do not add methods; see `apiLegacyGuard.test.ts`.
+**API client:** Prefer `api.getMemberHostStatus()`, `exploreApi.*`, `organisationApi.*`. Domain modules only — `legacyApi.ts` removed; see `apiLegacyGuard.test.ts`.
 
-**Publish payload:** Single builder `activityPublishPayload.ts` for explore Organize and host console forms ([`ENGINEERING_PLAN.md`](./ENGINEERING_PLAN.md) Phase 3).
+**Publish payload:** Single builder `activityPublishPayload.ts` for explore Organize and host console forms (shared across surfaces).
 
 ---
 
@@ -191,16 +191,16 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | ID | Symptom | Why it hurts | Target state | Tracker |
 |----|---------|--------------|--------------|---------|
 | **C1** | Three permission notions (`UserRole`, `HostStatusDTO`, tenant middleware) | Wrong gates in UI; host console confused with Organize | Roles = shell; `HostStatusDTO` = product; tenant header = `/host` only | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), `host-member-model.mdc` |
-| **C2** | `legacyApi` + Organisation/Host naming mix | New code calls wrong alias; grep noise | Domain-only `api.*`; delete aliases when knip-clean | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
+| **C2** | Organisation/Host naming mix in UI | New code uses wrong copy or imports | Domain-only `api.*`; `Organisation*` folders, host user copy | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **C3** | Large `host.ts` remainder (activities CRUD) | Hard to review; route naming drift | Split registrars like activity requests / team | HOST_CLEANUP P2 |
 | **C4** | Parallel place detail pages (`Trail` / `Camp` / `Event`) | Duplicate SEO/loading patterns | Shared `PlaceDetail` internals | ARCHITECTURE “Future” |
-| **C5** | `components/activities/*` modals vs explore wizards | Two create UX paths | Explore compose only for consumer create | ENGINEERING Phase 4 (mostly done) |
-| **C6** | Shop = `tenant` + `merchant_profile` | Two writes for one brand | Documented split; sync on ShopManage save | [`DOMAIN.md`](./DOMAIN.md), schema-audit |
-| **C7** | Premium location unlock + old membership page | Feb 2026 guide vision vs north star | Tier 4 docs only; product TBD | `IMPLEMENTATION_GUIDE.md` banner |
+| **C5** | `components/activities/*` modals vs explore wizards | Two create UX paths | Explore compose only for consumer create | Mostly done — audit `components/activities` |
+| **C6** | Shop = `tenant` + `merchant_profile` | Two writes for one brand | Documented split; sync on ShopManage save | [`DOMAIN.md`](./DOMAIN.md) |
+| **C7** | Premium location unlock + old membership page | Legacy freemium copy vs north star | Product TBD | [`NORTHSTAR.md`](./NORTHSTAR.md) |
 | **C8** | `/community`, `/membership` routes | Secondary surfaces vs explore-first IA | `/membership` → explore; `/community` desktop hub (constants in `surfacePaths.ts`) | [`NAVIGATION.md`](./NAVIGATION.md) legacy table |
-| **C9** | Notification + privacy matrix incomplete | Inconsistent actor labels in edge kinds | Phase 7.7 smoke | `REMEDIATION.md`, HOST_CLEANUP P2 |
+| **C9** | Notification + privacy matrix incomplete | Inconsistent actor labels in edge kinds | FE smoke matrix | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **C10** | 100+ markdown files, multiple “plans” | Agents read wrong doc | **Tier 1** only for truth; experiment defers | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) |
-| **C11** | Long flat `api.*` + `legacyApi` | Wrong facade | Domain modules; delete aliases | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §10–12 |
+| **C11** | Long flat `api.*` surface | Wrong facade | Domain modules in `src/api/domains/*` | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §10–12 |
 | **C12** | Notification meta dialects | Routing sprawl | `NotificationMeta` + `actorUserId` | §11 |
 | **C13** | Many `*Routing.ts` helpers | Import confusion | `routingCatalog` + `inferNotificationPath` | §10 |
 | **C14** | Doc corpus duplication | Contradictory terms | **Update Tier-1 only** — [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) | |
@@ -219,9 +219,9 @@ Ordered for **coherence**, not feature count:
 | **S0** | Single doc entry + automated phrase guards | `DOCS_INDEX`, `verify:docs` |
 | **S1** | One member capability resolver (`/me/host-status`) enforced server-side | `MEMBER_MODEL`, `verify:host-member` |
 | **S2** | Host route modularization + fulfill removal | `HOST_CLEANUP_ROADMAP` P1–P2 |
-| **S3** | API `user` router fully split (registrars only in `user.ts`) | `ENGINEERING_PLAN` Phase 5 |
-| **S4** | Frontend delete `legacyApi` usage | `apiLegacyGuard`, knip |
-| **S5** | Privacy notification matrix + viewer access everywhere | `REMEDIATION` Phase 7 |
+| **S3** | API `user` router fully split (registrars only in `user.ts`) | [`API_ROUTING.md`](./API_ROUTING.md) |
+| **S4** | Frontend `api.*` stays domain-only | `apiLegacyGuard`, knip |
+| **S5** | Privacy notification matrix + viewer access everywhere | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **S6** | Place detail internal merge + SEO pass | ARCHITECTURE future |
 
 Phases **S0–S1** are largely in place; **S2–S6** are the production-grade cohesion work remaining.
@@ -247,5 +247,5 @@ Phases **S0–S1** are largely in place; **S2–S6** are the production-grade co
 | FAB and join behavior | `CREATE_FLOW.md` |
 | HTTP paths | `API_ROUTING.md` |
 | Deploy & monorepo layers | `ARCHITECTURE.md` |
-| Engineering burn-down detail | `ENGINEERING_PLAN.md` |
+| System-wide debt register | §7–8 (this file) |
 | Host/tenant cleanup tasks | `HOST_CLEANUP_ROADMAP.md` |

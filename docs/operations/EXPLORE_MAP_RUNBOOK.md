@@ -51,7 +51,7 @@ npm --workspace @uaetrail/api run import-venue-catalog
 
 Vite dev server uses port **5175** (see root `README.md`). API default `APP_BASE_URL` matches 5175; set production URLs in deployment secrets.
 
-## Smoke checks (E2 browse)
+## Smoke checks (browse + map layers)
 
-Automated API: `apps/api/tests/explore-map-layers.test.ts`  
-Manual checklist: [`docs/experiment/E2_EXPLORE_BROWSE_SMOKE.md`](../experiment/E2_EXPLORE_BROWSE_SMOKE.md)
+Automated: `npm run test:explore-alignment` (includes `apps/api/tests/explore-map-layers.test.ts` and explore FE guards).  
+Manual: signed-in browse on `/explore` — Activities vs Places pills, map pan/zoom, pin sheet open/join CTA.

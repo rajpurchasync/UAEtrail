@@ -1,6 +1,6 @@
 # Host / explore cleanup roadmap
 
-Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tiers and gates: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md).
+Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tiers and gates: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 **Enforcement (Oct 2026):** [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (§ Naming vocabulary) · `.cursor/rules/host-member-model.mdc` · **`npm run verify:host-member`** (in CI after `typecheck:api`).
 
@@ -16,7 +16,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Migration: missing owner `tenant_memberships` | ✅ | `mongo-migrations.ts` → `backfillTenantOwnerMemberships` |
 | `canPublish` + `signupProfileComplete` on `/me/host-status` | ✅ | `member-host-status.ts` |
 | Server enforce on create/publish | ✅ | `member-publish-gate.ts` |
-| Product docs (`CREATE_FLOW`, `DOMAIN`, `NORTHSTAR` mechanisms) | ✅ | `DOMAIN`, `RELEASE_READINESS`, flow docs; archive index for historical plans |
+| Product docs (`CREATE_FLOW`, `DOMAIN`, `NORTHSTAR` mechanisms) | ✅ | Tier-1 only; [`archive/README.md`](./archive/README.md) for removed plans |
 
 ---
 
@@ -38,7 +38,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 |------|--------|--------|
 | Archive index for superseded docs | ✅ | [`docs/archive/README.md`](./archive/README.md) |
 | README doc map (member model, API routing, cleanup) | ✅ | `README.md` |
-| Experiment flow docs aligned to `/welcome` + Pro Membership | ✅ | `docs/experiment/flows/*`, `flows/README.md` |
+| Compose gates aligned to `/welcome` + Pro Membership | ✅ | `CREATE_FLOW.md`, `composeFlowCatalog.ts` |
 
 ---
 
@@ -54,7 +54,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 
 ---
 
-## P2 — Privacy 7.6 (REMEDIATION)
+## P2 — Privacy & notification actor labels
 
 | Item | Status | Where |
 |------|--------|--------|
@@ -62,7 +62,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Join queue: host sees requester identity | ✅ | By design (activity host) |
 | Notifications actor names respect `profileVisibility` | ✅ | `notification-actor-label.ts` (buddy, follow, group, publish fan-out) |
 | Favorites profile hydration PII | ✅ | `listUserFavoritesWithDetails` + `profileVisibility` |
-| 7.7 FE smoke matrix | ⬜ | `REMEDIATION.md` Phase 7 |
+| FE smoke matrix (notification + profile edge cases) | ⬜ | Manual QA checklist — track here until automated |
 
 ---
 
