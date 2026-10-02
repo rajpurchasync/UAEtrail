@@ -15,6 +15,7 @@ import {
   PROFILE_PATH,
 } from './surfacePaths';
 import { LEGACY_BECOME_HOST_PATH } from './memberRoutes';
+import { HOST_MESSAGES_PATH } from './routingCatalog';
 
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
@@ -344,7 +345,10 @@ export const shouldShowMobileBottomNav = (
   signedIn: boolean
 ): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
-  if (pathname === MESSAGES_PATH && new URLSearchParams(search).get('to')) return false;
+  if (pathname === MESSAGES_PATH || pathname === HOST_MESSAGES_PATH) {
+    const params = new URLSearchParams(search);
+    if (params.get('to') || params.get('group')) return false;
+  }
   if (!signedIn) return isMobileBottomNavTabPath(pathname);
   if (isMobileBottomNavTabPath(pathname)) return true;
   if (isMobileBottomNavProfilePath(pathname)) return true;

@@ -401,16 +401,61 @@ export const Messages = () => {
       />
     ) : null;
 
+  const threadFullscreen = inThread ? (
+    <>
+      <div
+        className="fixed inset-0 z-[1300] flex h-[100dvh] w-full max-w-[100vw] flex-col overflow-hidden bg-white"
+      >
+        {error ? (
+          <div className="flex shrink-0 items-center justify-between border-b border-red-200 bg-red-50 p-3">
+            <p className="text-sm text-red-700">{error}</p>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center text-red-400"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : null}
+        <div className="flex min-h-0 flex-1 flex-col">
+          {inGroupThread && selectedGroupId ? (
+            <ChatThreadRouter
+              mode="group"
+              group={{
+                groupId: selectedGroupId,
+                onBack: backToList,
+                onGroupActivity: handleGroupChatActivity,
+                streamedMessage: streamedWallMessage,
+                onStreamedMessageApplied: () => setStreamedWallMessage(null),
+              }}
+            />
+          ) : (
+            <ChatThreadRouter
+              mode="direct"
+              direct={{ ...directThreadProps, mobileShowThread: true }}
+            />
+          )}
+        </div>
+      </div>
+      {newChatModal}
+      {reportDialog}
+    </>
+  ) : null;
+
+  if (isHostMessages && inThread) {
+    return threadFullscreen;
+  }
+
   if (isHostMessages) {
     return (
       <MobileScreen
         title="Chat"
         backTo="/host/overview"
         backLabel="Host console"
-        hideHeader={inThread}
         showBanner={false}
       >
-        <div className={`flex min-h-0 flex-1 flex-col ${inThread ? 'px-0 -mx-1' : ''}`}>
+        <div className="flex min-h-0 flex-1 flex-col">
           {error && (
             <div className="mb-3 flex shrink-0 items-center justify-between rounded-ios border border-red-200 bg-red-50 p-3">
               <p className="text-sm text-red-700">{error}</p>
@@ -423,11 +468,7 @@ export const Messages = () => {
               </button>
             </div>
           )}
-          <div
-            className={`flex min-h-0 flex-1 overflow-hidden rounded-ios-lg border bg-white shadow-ios-sm ${
-              inThread ? '' : 'border-neutral-200'
-            }`}
-          >
+          <div className="flex min-h-0 flex-1 overflow-hidden rounded-ios-lg border border-neutral-200 bg-white shadow-ios-sm">
             <ConversationListPanel
               mobileShowThread={mobileShowThread}
               loading={loading}
@@ -447,42 +488,7 @@ export const Messages = () => {
   }
 
   if (inThread) {
-    return (
-      <>
-        <div
-          className="fixed inset-0 z-[1300] flex h-[100dvh] w-full max-w-[100vw] flex-col overflow-hidden bg-white"
-        >
-          {error ? (
-            <div className="flex shrink-0 items-center justify-between border-b border-red-200 bg-red-50 p-3">
-              <p className="text-sm text-red-700">{error}</p>
-              <button
-                type="button"
-                onClick={() => setError(null)}
-                className="flex min-h-[44px] min-w-[44px] items-center justify-center text-red-400"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ) : null}
-          {inGroupThread && selectedGroupId ? (
-            <ChatThreadRouter
-              mode="group"
-              group={{
-                groupId: selectedGroupId,
-                onBack: backToList,
-                onGroupActivity: handleGroupChatActivity,
-                streamedMessage: streamedWallMessage,
-                onStreamedMessageApplied: () => setStreamedWallMessage(null),
-              }}
-            />
-          ) : (
-            <ChatThreadRouter mode="direct" direct={directThreadProps} />
-          )}
-        </div>
-        {newChatModal}
-        {reportDialog}
-      </>
-    );
+    return threadFullscreen;
   }
 
   return (

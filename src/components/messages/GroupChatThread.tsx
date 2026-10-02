@@ -13,6 +13,7 @@ import {
 } from '../../utils/groupWallPostPolicy';
 import { GroupWallChatSettingsSheet } from './GroupWallChatSettingsSheet';
 import { GroupWallMembersSheet } from './GroupWallMembersSheet';
+import { useAuth } from '../../context/AuthContext';
 import { GroupWallMessageItem } from './GroupWallMessageItem';
 
 /** Fallback when SSE is unavailable; primary delivery is `group_wall_message` on chat stream. */
@@ -47,6 +48,8 @@ export const GroupChatThread = ({
   streamedMessage,
   onStreamedMessageApplied,
 }: GroupChatThreadProps) => {
+  const { user } = useAuth();
+  const currentUserId = user?.id;
   const [group, setGroup] = useState<SocialGroupView | null>(null);
   const [membership, setMembership] = useState<SocialGroupMemberView | null>(null);
   const [members, setMembers] = useState<SocialGroupMemberView[]>([]);
@@ -327,7 +330,7 @@ export const GroupChatThread = ({
   const title = group?.name || 'Group chat';
 
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col bg-white">
     <ChatThreadShell
       error={error}
       scrollContainerRef={chatContainerRef}
@@ -409,20 +412,28 @@ export const GroupChatThread = ({
                 Load earlier messages
               </button>
             ) : null}
-            {wall.map((message) => (
-            <GroupWallMessageItem
-              key={message.id}
-              groupId={groupId}
-              message={message}
-              highlighted={highlightMessageId === message.id}
-              replyEnabled={canPost}
-              onReactionsChange={updateMessageReactions}
-              onReply={setReplyTo}
-              onScrollToQuotedMessage={scrollToWallMessage}
-              resolveQuotedMessage={resolveQuotedMessage}
-              onError={setError}
-            />
-          ))}
+            {wall.map((message) => {
+              const isMe = Boolean(currentUserId && message.authorUserId === currentUserId);
+              return (
+                <div
+                  key={message.id}
+                  className={`flex min-w-0 ${isMe ? 'justify-end' : 'justify-start'} mb-1`}
+                >
+                  <GroupWallMessageItem
+                    groupId={groupId}
+                    message={message}
+                    isMe={isMe}
+                    highlighted={highlightMessageId === message.id}
+                    replyEnabled={canPost}
+                    onReactionsChange={updateMessageReactions}
+                    onReply={setReplyTo}
+                    onScrollToQuotedMessage={scrollToWallMessage}
+                    resolveQuotedMessage={resolveQuotedMessage}
+                    onError={setError}
+                  />
+                </div>
+              );
+            })}
           </>
         )}
     </ChatThreadShell>
@@ -444,6 +455,6 @@ export const GroupChatThread = ({
         />
       </>
     ) : null}
-    </>
+    </div>
   );
 };

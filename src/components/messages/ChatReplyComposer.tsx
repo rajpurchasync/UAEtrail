@@ -1,5 +1,6 @@
+import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import { ChatComposeBar } from '../ui/ChatComposeBar';
+import { ChatComposeBar, type ChatComposeBarHandle } from '../ui/ChatComposeBar';
 import type { GroupWallReplyTarget } from '../../utils/groupWallReply';
 import { wallMessageQuoteSnippet } from '../../utils/groupWallReply';
 
@@ -28,8 +29,15 @@ export const ChatReplyComposer = ({
   placeholder,
   composeClassName = '',
 }: ChatReplyComposerProps) => {
+  const composeRef = useRef<ChatComposeBarHandle>(null);
   const composePlaceholder =
     placeholder ?? (replyTo ? 'Write your reply…' : 'Type a message…');
+
+  useEffect(() => {
+    if (!replyTo) return;
+    const frame = requestAnimationFrame(() => composeRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [replyTo?.id]);
 
   return (
     <>
@@ -55,6 +63,7 @@ export const ChatReplyComposer = ({
       ) : null}
 
       <ChatComposeBar
+        ref={composeRef}
         value={value}
         onChange={onChange}
         onSend={onSend}
