@@ -11,13 +11,17 @@ import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
-import { MessagesComposeSheet } from '../components/messages/MessagesComposeSheet';
-import { MessagesInboxList } from '../components/messages/MessagesInboxList';
-import { MessagesInboxToolbar } from '../components/messages/MessagesInboxToolbar';
-import { ConversationListPanel, NewChatModal } from '../components/messages/MessagePanels';
-import { ChatThreadRouter, type GroupChatActivityPayload } from '../components/messages/ChatThreadRouter';
-import type { DirectChatThreadProps } from '../components/messages/DirectChatThread';
-import { useDirectChatThread } from '../components/messages/useDirectChatThread';
+import {
+  ChatThreadRouter,
+  ConversationListPanel,
+  MessagesComposeSheet,
+  MessagesInboxList,
+  MessagesInboxToolbar,
+  NewChatModal,
+  useDirectChatThread,
+  type DirectChatThreadProps,
+  type GroupChatActivityPayload,
+} from '@/chat';
 import { formatWallInboxPreview } from '../utils/wallMessagePreview';
 import { groupsPath, HOST_MESSAGES_PATH } from '../config/routingCatalog';
 import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';

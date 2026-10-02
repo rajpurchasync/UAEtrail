@@ -35,11 +35,11 @@ Do **not** merge transports in storage without a product decision — inbox alre
 | **HTTP (app code)** | `messagingApi` | `direct.*` = DM; `crew.*` = group wall; inbox + stream ticket on root |
 | **Wire impl** | `chatApi`, `socialApi` in `src/api/domains/*` | Used only behind `messagingApi` / facade — not from pages |
 | **Page** | `Messages.tsx` | Inbox + fullscreen `ChatThreadRouter` |
-| **Thread UI** | `src/components/messages/*` | `ChatThreadRouter`, `ChatMessageBubble`, `useDirectChatThread` |
+| **Thread UI** | `@/chat` (`src/components/chat`) | `ChatThreadRouter`, `ChatMessageBubble`, `useDirectChatThread` |
 
 **Guards:** `src/messaging/clientGuard.test.ts` — no `api.getInbox` / `api.sendMessage` / wall methods in app code.
 
-**Shared FE (DM + group wall):** `ChatThreadRouter` → `DirectChatThread` | `GroupChatThread`; `useDirectChatThread` (DM data); `ChatThreadShell`, `ChatThreadHeaderBar`, `useThreadReply`, `ChatReplyComposer`, `ChatMessageBody`, `MessageSwipeReplyShell` under `src/components/messages/`. **Shared API:** `apps/api/src/lib/reply-preview.ts` for `replyToPreview` enrichment.
+**Shared FE (DM + group wall):** `ChatThreadRouter` → `DirectChatThread` | `GroupChatThread`; `useDirectChatThread` (DM data); `ChatThreadShell`, `ChatThreadHeaderBar`, `useThreadReply`, `ChatReplyComposer`, `ChatMessageBody`, `MessageSwipeReplyShell` under `@/chat`. **Shared API:** `apps/api/src/lib/reply-preview.ts` for `replyToPreview` enrichment.
 
 ### Unified inbox
 
@@ -127,8 +127,8 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 | Inbox preview text | `formatWallInboxPreview` | `src/utils/wallMessagePreview.ts` |
 | Wall post policy (client) | `canMemberPostToGroupWall` | `src/utils/groupWallPostPolicy.ts` |
 | Wall post policy (server) | `canMemberPostToGroupWall` | `apps/api/src/lib/group-wall-policy.ts` |
-| Direct chat thread | `DirectChatThread`, `useDirectChatThread` | `src/components/messages/` |
-| Crew chat thread | `GroupChatThread` via `ChatThreadRouter` | `src/components/messages/` |
+| Direct chat thread | `DirectChatThread`, `useDirectChatThread` | `@/chat` |
+| Crew chat thread | `GroupChatThread` via `ChatThreadRouter` | `@/chat` |
 | Host actions | `useOrganisationActivityHostActions.openGroupChat` | `src/hooks/` |
 
 ## Trips / architecture rules

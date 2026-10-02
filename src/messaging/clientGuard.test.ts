@@ -14,12 +14,17 @@ const BANNED: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.createMeGroupWallPost\b/, hint: 'Use messagingApi.crew.post from src/messaging' },
   { pattern: /\bapi\.toggleMeGroupWallReaction\b/, hint: 'Use messagingApi.crew.toggleReaction from src/messaging' },
   { pattern: /\bapi\.markMeGroupWallRead\b/, hint: 'Use messagingApi.crew.markWallRead from src/messaging' },
+  {
+    pattern: /from ['"][^'"]*components\/messages\/[^'"]+['"]/,
+    hint: 'Import thread UI from @/chat (src/components/chat)',
+  },
 ];
 
 const ALLOW_PREFIXES = [
   'src/api/',
   'src/api\\',
   'src/messaging/clientGuard.test.ts',
+  'src/components/messages/index.ts',
 ];
 
 const collectSourceFiles = (dir: string): string[] => {

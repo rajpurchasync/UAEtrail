@@ -7,7 +7,7 @@
  * | UI label | "Chat" (not "Messages") |
  * | Inbox, DM, stream ticket, crew wall | `messagingApi` |
  * | Group metadata / members (non-thread CRUD) | `socialApi` |
- * | Thread UI | `src/components/messages/*` (`ChatThreadRouter`, `ChatMessageBubble`) |
+ * | Thread UI | `@/chat` (`src/components/chat`) |
  *
  * See `docs/COMMUNICATION.md` § Frontend architecture.
  */

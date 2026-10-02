@@ -72,7 +72,7 @@
       "apiFiles": ["apps/api/src/routes/chat.ts"],
       "routeRegistrars": ["apps/api/src/routes/chat.ts"],
       "feDomains": ["src/api/domains/chat.ts", "src/api/domains/messaging.ts"],
-      "feRoots": ["src/pages/Messages.tsx", "src/messaging", "src/components/messages"]
+      "feRoots": ["src/pages/Messages.tsx", "src/messaging", "src/components/chat"]
     },
     {
       "id": "social_graph",
