@@ -3,6 +3,7 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
+import uaetrail from './eslint/uaetrail-plugin.mjs';
 
 export default tseslint.config(
   { ignores: ['dist', 'public/sw.js'] },
@@ -31,8 +32,10 @@ export default tseslint.config(
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/api/**'],
+    ignores: ['src/api/**', 'src/messaging/clientGuard.test.ts', 'src/components/messages/index.ts'],
+    plugins: { uaetrail },
     rules: {
+      'uaetrail/no-legacy-messaging-api': 'error',
       'no-restricted-imports': [
         'error',
         {

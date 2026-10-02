@@ -37,7 +37,7 @@ Do **not** merge transports in storage without a product decision — inbox alre
 | **Page** | `Messages.tsx` | Inbox + fullscreen `ChatThreadRouter` |
 | **Thread UI** | `@/chat` (`src/components/chat`) | `ChatThreadRouter`, `ChatMessageBubble`, `useDirectChatThread` |
 
-**Guards:** `src/messaging/clientGuard.test.ts` — no `api.getInbox` / `api.sendMessage` / wall methods in app code.
+**Guards:** `src/messaging/clientGuard.test.ts` (CI) and ESLint `uaetrail/no-legacy-messaging-api` — no `api.getInbox` / `api.sendMessage` / wall methods or deep `components/messages/*` imports in app code.
 
 **Shared FE (DM + group wall):** `ChatThreadRouter` → `DirectChatThread` | `GroupChatThread`; `useDirectChatThread` (DM data); `ChatThreadShell`, `ChatThreadHeaderBar`, `useThreadReply`, `ChatReplyComposer`, `ChatMessageBody`, `MessageSwipeReplyShell` under `@/chat`. **Shared API:** `apps/api/src/lib/reply-preview.ts` for `replyToPreview` enrichment.
 
@@ -141,3 +141,11 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 
 - Dedicated group-wall SSE channel (today: reuses `/chat/stream` + `group_wall_message` event)
 - Optional per-activity `groupChatPolicy` (host-only vs full crew)
+
+### Unified thread API (deferred — product decision)
+
+**Today (intentional):** `GET /chat/inbox` unifies the **list**; **thread bodies** use two transports — `GET /chat/messages/:userId` (DM) and `GET /me/groups/:groupId/wall` (crew). The app hides this behind `messagingApi.direct` and `messagingApi.crew`.
+
+**Not required for scale** while inbox + `messagingApi` + `@/chat` stay the FE contract.
+
+**If product later wants one thread wire:** add a projection route (e.g. `GET /me/threads/:threadId/messages`) that routes internally to DM or wall — **without** merging `chat_messages` and `social_group_wall` storage unless explicitly approved. Pagination, reactions, and post policy must stay equivalent to today’s endpoints. Until then, do not add parallel “thread” CRUD in routes or clients.
