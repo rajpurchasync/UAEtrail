@@ -1,6 +1,10 @@
 type PwaDisplayMode = 'standalone' | 'minimal-ui' | 'fullscreen' | 'browser' | 'window-controls-overlay';
 
 /** True when the app runs as an installed PWA or native shell (no browser chrome). */
+export function isPwaInstalled(): boolean {
+  return isStandaloneDisplayMode();
+}
+
 function isStandaloneDisplayMode(): boolean {
   if (typeof window === 'undefined') return false;
 
@@ -62,4 +66,25 @@ export function registerAppServiceWorker(): void {
       /* non-fatal — push registration retries on user action */
     });
   });
+}
+
+export type MobileWebPlatform = 'ios' | 'android' | 'other';
+
+/** Best-effort UA sniff for install instructions (not for security). */
+export function detectMobileWebPlatform(): MobileWebPlatform {
+  if (typeof navigator === 'undefined') return 'other';
+
+  const ua = navigator.userAgent;
+  const isIos =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  if (isIos) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  return 'other';
+}
+
+export function isMobileWebDevice(): boolean {
+  const platform = detectMobileWebPlatform();
+  return platform === 'ios' || platform === 'android';
 }

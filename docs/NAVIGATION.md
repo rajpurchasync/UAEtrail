@@ -21,7 +21,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
 - **Wishlist:** `/trips?segment=wishlist` (legacy `/profile/wishlist` redirects). Settings → **Saved map & alerts** links to the same segment.
-- **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes.
+- **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **Phone app** (PWA install on Android Chrome when available, Add to Home Screen steps on iOS).
 
 ### Trips (`/trips`)
 
