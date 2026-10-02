@@ -1,6 +1,6 @@
 import type { ChatConversationDTO } from '@uaetrail/shared-types';
 import type { SocialGroupView } from '../api/index';
-import { api } from '../api/index';
+import { messagingApi } from '../messaging';
 import { formatWallInboxPreview } from './wallMessagePreview';
 
 export type InboxFilter = 'all' | 'unread' | 'people' | 'groups' | 'outings';
@@ -88,7 +88,7 @@ export const loadGroupThreadPreviews = (groups: SocialGroupView[]): InboxThread[
   groups.map(groupThreadFromSocialGroup);
 
 export const loadInboxThreads = async (): Promise<InboxThread[]> => {
-  const res = await api.getInbox();
+  const res = await messagingApi.getInbox();
   const directThreads = res.data.direct.map(toDirectThread);
   const groupThreads = loadGroupThreadPreviews(res.data.groups as SocialGroupView[]);
   return sortThreads([...directThreads, ...groupThreads]);

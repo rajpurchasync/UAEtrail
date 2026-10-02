@@ -25,7 +25,21 @@ Legacy: `/dashboard/messages` may still exist for older host console paths — p
 
 Do **not** merge transports in storage without a product decision — inbox already unifies **threads** in the UI.
 
-**Shared FE (DM + group wall):** `ChatThreadRouter` → `DirectChatThread` | `GroupChatThread`; `useDirectChatThread` (DM data); `ChatThreadShell`, `ChatThreadHeaderBar`, `useThreadReply`, `ChatReplyComposer`, `GroupWallMessageBody`, `MessageSwipeReplyShell` under `src/components/messages/`. **Shared API:** `apps/api/src/lib/reply-preview.ts` for `replyToPreview` enrichment.
+## Frontend architecture (scalable)
+
+| Layer | Canonical | Notes |
+|--------|-----------|--------|
+| **Route** | `MESSAGES_PATH` (`/messages`), `messagesToUserPath`, `messagesGroupPath` | Stable URLs — do not rename to `/chat` |
+| **Product copy** | **Chat** | Tab label, headers (`NAVIGATION.md`) |
+| **Feature entry** | `src/messaging` | `messagingApi`, `socialApi` (group metadata), path helpers |
+| **HTTP (app code)** | `messagingApi` | `direct.*` = DM; `crew.*` = group wall; inbox + stream ticket on root |
+| **Wire impl** | `chatApi`, `socialApi` in `src/api/domains/*` | Used only behind `messagingApi` / facade — not from pages |
+| **Page** | `Messages.tsx` | Inbox + fullscreen `ChatThreadRouter` |
+| **Thread UI** | `src/components/messages/*` | `ChatThreadRouter`, `ChatMessageBubble`, `useDirectChatThread` |
+
+**Guards:** `src/messaging/clientGuard.test.ts` — no `api.getInbox` / `api.sendMessage` / wall methods in app code.
+
+**Shared FE (DM + group wall):** `ChatThreadRouter` → `DirectChatThread` | `GroupChatThread`; `useDirectChatThread` (DM data); `ChatThreadShell`, `ChatThreadHeaderBar`, `useThreadReply`, `ChatReplyComposer`, `ChatMessageBody`, `MessageSwipeReplyShell` under `src/components/messages/`. **Shared API:** `apps/api/src/lib/reply-preview.ts` for `replyToPreview` enrichment.
 
 ### Unified inbox
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { ChatMessageDTO, GroupWallStreamEventDTO } from '@uaetrail/shared-types';
 import { API_BASE_URL } from '../api/client';
-import { api } from '../api/index';
+import { messagingApi } from '../messaging';
 
 const FALLBACK_POLL_MS = 60_000;
 const MAX_RETRY_MS = 30_000;
@@ -81,7 +81,7 @@ export const useChatStream = ({ enabled, onMessage, onGroupWallMessage, onReconn
       source = null;
 
       try {
-        const { data } = await api.createChatStreamTicket();
+        const { data } = await messagingApi.createStreamTicket();
         if (disposed) return;
 
         const url = `${API_BASE_URL}/chat/stream?ticket=${encodeURIComponent(data.ticket)}`;

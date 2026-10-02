@@ -10,8 +10,8 @@ const LONG_PRESS_CANCEL_PX = 10;
 type MessageSwipeReplyShellProps = {
   enabled: boolean;
   onReply: () => void;
-  /** Opens unified reply/reaction sheet (mobile long-press). */
-  onLongPress?: () => void;
+  /** Opens unified reply/reaction menu anchored on the message. */
+  onLongPress?: (anchor: DOMRect) => void;
   children: ReactNode;
   className?: string;
 };
@@ -27,6 +27,7 @@ export const MessageSwipeReplyShell = ({
   children,
   className = '',
 }: MessageSwipeReplyShellProps) => {
+  const contentRef = useRef<HTMLDivElement>(null);
   const [offsetX, setOffsetX] = useState(0);
   const offsetXRef = useRef(0);
   const touchOriginRef = useRef<{ x: number; y: number } | null>(null);
@@ -66,7 +67,8 @@ export const MessageSwipeReplyShell = ({
     if (onLongPress) {
       longPressTimerRef.current = window.setTimeout(() => {
         longPressFiredRef.current = true;
-        onLongPress();
+        const rect = contentRef.current?.getBoundingClientRect();
+        if (rect) onLongPress(rect);
       }, LONG_PRESS_MS);
     }
   };
@@ -112,7 +114,7 @@ export const MessageSwipeReplyShell = ({
   const replyIconOpacity = Math.min(1, offsetX / SWIPE_REPLY_THRESHOLD_PX);
 
   return (
-    <div className={`relative min-w-0 max-w-full md:touch-pan-y ${className}`.trim()}>
+    <div className={`relative md:touch-pan-y ${className}`.trim()}>
       {enabled ? (
         <div
           className="pointer-events-none absolute inset-y-0 left-0 flex w-14 items-center justify-center md:hidden"
@@ -127,7 +129,8 @@ export const MessageSwipeReplyShell = ({
         </div>
       ) : null}
       <div
-        className="relative transition-transform duration-75 ease-out md:!translate-x-0"
+        ref={contentRef}
+        className="relative w-fit transition-transform duration-75 ease-out md:!translate-x-0"
         style={{ transform: offsetX > 0 ? `translateX(${offsetX}px)` : undefined }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}

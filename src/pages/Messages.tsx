@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import type { ChatConversationDTO, GroupWallStreamEventDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
+import { messagingApi } from '../messaging';
 import type { SocialGroupView, SocialGroupWallMessageView } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
@@ -112,7 +113,7 @@ export const Messages = () => {
 
   const loadInbox = useCallback(async () => {
     try {
-      const inboxRes = await api.getInbox();
+      const inboxRes = await messagingApi.getInbox();
       setConversations(inboxRes.data.direct);
       setGroupThreads(loadGroupThreadPreviews(inboxRes.data.groups as SocialGroupView[]));
     } catch {

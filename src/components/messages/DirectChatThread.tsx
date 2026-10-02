@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Flag, Loader2, MessageSquare } from 'lucide-react';
 import type { ChatMessageDTO } from '@uaetrail/shared-types';
 import { DirectMessageBubble } from './DirectMessageBubble';
+import { chatMessageRowAlign } from './chatMessageLayout';
 import { ChatReplyComposer } from './ChatReplyComposer';
 import {
   ChatMessageDateSeparator,
@@ -155,7 +156,7 @@ export const DirectChatThread = ({
                 return (
                   <div key={m.id}>
                     {showDate ? <ChatMessageDateSeparator isoDate={m.createdAt} /> : null}
-                    <div className={`flex min-w-0 ${isMe ? 'justify-end' : 'justify-start'} mb-1`}>
+                    <div className={chatMessageRowAlign(isMe)}>
                       <DirectMessageBubble
                         message={m}
                         isMe={isMe}

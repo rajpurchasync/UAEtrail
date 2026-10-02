@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../api/index';
+import { messagingApi } from '../messaging';
 import { useAuth } from '../context/AuthContext';
 
 const inboxUnreadKey = (userId: string) => ['inbox-unread', userId] as const;
@@ -11,7 +11,7 @@ export const useInboxUnreadCount = (): number => {
   const { data } = useQuery({
     queryKey: user ? inboxUnreadKey(user.id) : ['inbox-unread', 'anonymous'],
     queryFn: async () => {
-      const res = await api.getInbox();
+      const res = await messagingApi.getInbox();
       const direct = res.data.direct.reduce((sum, row) => sum + (row.unreadCount ?? 0), 0);
       const groups = res.data.groups.reduce((sum, row) => sum + (row.chatPreview.unreadCount ?? 0), 0);
       return direct + groups;

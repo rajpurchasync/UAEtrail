@@ -41,7 +41,7 @@ if (failed) {
 console.log('[verify:domain] docs + catalog OK');
 
 execSync(
-  'npx vitest run src/config/routingHygiene.test.ts src/config/routingCatalogAdoption.test.ts src/config/systemCoherenceGuard.test.ts src/config/boundedContextAlignment.test.ts src/member/hostMemberGuard.test.ts src/api/apiLegacyGuard.test.ts src/api/services.domain-aliases.test.ts src/utils/notificationRouting.test.ts',
+  'npx vitest run src/config/routingHygiene.test.ts src/config/routingCatalogAdoption.test.ts src/config/systemCoherenceGuard.test.ts src/config/boundedContextAlignment.test.ts src/member/hostMemberGuard.test.ts src/api/apiLegacyGuard.test.ts src/api/services.domain-aliases.test.ts src/messaging/clientGuard.test.ts src/utils/notificationRouting.test.ts',
   { cwd: root, stdio: 'inherit' }
 );
 

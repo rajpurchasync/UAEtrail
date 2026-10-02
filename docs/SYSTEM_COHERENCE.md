@@ -101,7 +101,7 @@ Each context has **one write path** and **one public read model** where possible
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `users` / profile fields |
 | **Host capabilities** | Who may publish & console access (not onboarding verb) | `useOrganisationGate`, `organizePublishGate` | **`services/member-host-status.ts` only** | `tenants`, `tenant_memberships` |
 | **Organisation console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/Organisation*`, `organisation-console/` | `routes/host/*` registrars | same + `activities` |
-| **Communication** | DM, inbox, crew wall | `Messages.tsx`, `messages/*` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
+| **Communication** | DM, inbox, crew wall | `Messages.tsx`, `src/messaging`, `messages/*` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
 | **Social graph** | Buddies, follows, groups (non-crew) | `Buddies.tsx`, `Groups.tsx` | `registerBuddyRoutes`, `registerGroupRoutes`, `registerFollowRoutes` | `buddy_*`, `user_follows`, `social_groups` |
 | **Places** | Registry, contribute, venue detail | `PlaceDetail*`, `TrailDetail`, contribute flows | `place-registry`, `location-submit`, `/places` | `locations` |
 | **Commerce** | Shop public + merchant manage (affiliate) | `ShopPublic`, `ShopManage` | `routes/shop.ts` | `merchant_profiles`, `tenants` (SHOP) |
@@ -122,7 +122,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
 | host_capabilities | `tenants`, `tenant_memberships` | `GET /me/host-status` | `memberApi` | `useOrganisationGate` |
 | organisation_console | + `activities` | `/host/*` + tenant header | `organisationApi`, `activitiesApi` | `Organisation*`, `organisation-console/*` |
-| communication | `chat_messages`, group wall | `/chat/*`, group wall | `chatApi`, `socialApi` | `Messages.tsx` |
+| communication | `chat_messages`, group wall | `/chat/*`, group wall | `messagingApi` (`chatApi` + wall via `socialApi`) | `Messages.tsx`, `src/messaging` |
 | social_graph | `buddy_*`, `user_follows`, `social_groups*` | `/me/buddies`, `/me/groups`, … | `socialApi` | `Buddies`, `Groups` |
 | places | `locations` | `/places`, `/me/places` | `placeApi`, `placeRegistry` | `TrailDetail`, `CampDetail`, contribute |
 | commerce | `merchant_profiles`, `products` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |

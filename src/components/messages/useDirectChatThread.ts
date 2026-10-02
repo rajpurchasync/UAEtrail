@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } 
 import type { QueryClient } from '@tanstack/react-query';
 import type { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
 import { accountApi } from '../../api/domains/account';
-import { messagingApi } from '../../api/domains/messaging';
+import { messagingApi } from '../../messaging';
 
 type PartnerBrief = { displayName: string; avatarUrl?: string | null };
 

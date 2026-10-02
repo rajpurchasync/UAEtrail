@@ -8,6 +8,7 @@ import {
   MyActivityDTO,
 } from '@uaetrail/shared-types';
 import { api, ActivityRequestView, UserProfile } from '../api/index';
+import { messagingApi } from '../messaging';
 import { useAuth } from '../context/AuthContext';
 import { isUpcomingActivity, upcomingActivitiesTotal } from '../utils/activityDates';
 import { buildUpcomingPlanRows } from '../utils/activityHubSections';
@@ -21,7 +22,7 @@ async function fetchParticipantHub() {
     api.getMeActivities().catch(() => ({ data: [] as MyActivityDTO[] })),
     api.getMeRequests().catch(() => ({ data: [] as ActivityRequestView[] })),
     api.getMeNotifications(1).catch(() => ({ data: [], unreadCount: 0, total: 0 })),
-    api.getInbox().catch(() => ({ data: { direct: [] as ChatConversationDTO[], groups: [] as MemberInboxGroupDTO[] } })),
+    messagingApi.getInbox().catch(() => ({ data: { direct: [] as ChatConversationDTO[], groups: [] as MemberInboxGroupDTO[] } })),
     api.getMeBuddies().catch(() => ({ data: [] as BuddySummaryDTO[] })),
     api.getMeBuddyRequests('incoming').catch(() => ({ data: [] as BuddyRequestDTO[] })),
   ]);

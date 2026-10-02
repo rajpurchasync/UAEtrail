@@ -5,6 +5,7 @@ import type { BuddySummaryDTO } from '@uaetrail/shared-types';
 import { ShareButton } from '../ui/ShareButton';
 import { SecureAvatar } from '../ui';
 import { api } from '../../api/index';
+import { messagingApi } from '../../messaging';
 import { GROUPS_PATH, PROFILE_PATH } from '../../config/routingCatalog';
 import { useAuth } from '../../context/AuthContext';
 import { buildActivitySharePayload, type ActivityShareInput } from '../../utils/activityShare';
@@ -56,7 +57,7 @@ export const ActivityInviteSharePanel = ({
     setError(null);
     setNotice(null);
     try {
-      await api.sendMessage({
+      await messagingApi.direct.send({
         receiverId: buddy.userId,
         content: share.messageWithUrl,
         activityId: activity.id,
@@ -74,7 +75,7 @@ export const ActivityInviteSharePanel = ({
     setError(null);
     setNotice(null);
     try {
-      await api.createMeGroupWallPost(group.id, share.messageWithUrl);
+      await messagingApi.crew.post(group.id, share.messageWithUrl);
       setNotice(`Posted to ${group.name}.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not post to group.');

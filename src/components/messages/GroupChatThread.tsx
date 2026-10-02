@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, MessageSquare, Settings2, Users } from 'lucide-react';
-import { api } from '../../api/index';
+import { messagingApi, socialApi } from '../../messaging';
 import type { SocialGroupMemberView, SocialGroupView, SocialGroupWallMessageView } from '../../api/index';
 import { ChatReplyComposer } from './ChatReplyComposer';
 import { runWithReplyTarget, useThreadReply } from './useThreadReply';
@@ -15,6 +15,7 @@ import { GroupWallChatSettingsSheet } from './GroupWallChatSettingsSheet';
 import { GroupWallMembersSheet } from './GroupWallMembersSheet';
 import { useAuth } from '../../context/AuthContext';
 import { GroupWallMessageItem } from './GroupWallMessageItem';
+import { chatMessageRowAlign } from './chatMessageLayout';
 
 /** Fallback when SSE is unavailable; primary delivery is `group_wall_message` on chat stream. */
 const WALL_POLL_MS = 45_000;
@@ -89,7 +90,7 @@ export const GroupChatThread = ({
   );
 
   const markWallRead = useCallback(() => {
-    void api.markMeGroupWallRead(groupId).catch(() => undefined);
+    void messagingApi.crew.markWallRead(groupId).catch(() => undefined);
   }, [groupId]);
 
   const mergeWall = useCallback((incoming: SocialGroupWallMessageView[]) => {
@@ -146,8 +147,8 @@ export const GroupChatThread = ({
     setError(null);
     try {
       const [detailRes, wallRes] = await Promise.all([
-        api.getMeGroupDetail(groupId),
-        api.getMeGroupWall(groupId, { limit: WALL_INITIAL_LIMIT }),
+        socialApi.getMeGroupDetail(groupId),
+        messagingApi.crew.getWall(groupId, { limit: WALL_INITIAL_LIMIT }),
       ]);
       setGroup(detailRes.data.group);
       setMembership(detailRes.data.membership);
@@ -171,7 +172,7 @@ export const GroupChatThread = ({
     const since = wallLatestAtRef.current;
     if (!since) return;
     try {
-      const wallRes = await api.getMeGroupWall(groupId, { since });
+      const wallRes = await messagingApi.crew.getWall(groupId, { since });
       if (wallRes.data.length === 0) return;
       appendWallMessages(wallRes.data);
       skipScrollRef.current = false;
@@ -190,7 +191,7 @@ export const GroupChatThread = ({
     preserveScrollHeightRef.current = container?.scrollHeight ?? null;
     setLoadingOlder(true);
     try {
-      const wallRes = await api.getMeGroupWall(groupId, {
+      const wallRes = await messagingApi.crew.getWall(groupId, {
         beforeMessageId: first.id,
         limit: WALL_OLDER_PAGE,
       });
@@ -294,7 +295,7 @@ export const GroupChatThread = ({
     setError(null);
     try {
       await runWithReplyTarget(replyTo, setReplyTo, async (replyToMessageId) => {
-        const res = await api.createMeGroupWallPost(groupId, trimmed, {
+        const res = await messagingApi.crew.post(groupId, trimmed, {
           replyToMessageId,
         });
         appendWallMessage(res.data);
@@ -415,10 +416,7 @@ export const GroupChatThread = ({
             {wall.map((message) => {
               const isMe = Boolean(currentUserId && message.authorUserId === currentUserId);
               return (
-                <div
-                  key={message.id}
-                  className={`flex min-w-0 ${isMe ? 'justify-end' : 'justify-start'} mb-1`}
-                >
+                <div key={message.id} className={chatMessageRowAlign(isMe)}>
                   <GroupWallMessageItem
                     groupId={groupId}
                     message={message}
