@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
-import type { OutdoorMapEntryDTO, OutdoorMapFilterCategory } from '@uaetrail/shared-types';
+import type { JourneyMapEntryDTO, JourneyMapFilterCategory } from '@uaetrail/shared-types';
 import { FilterChips } from '../mobile/FilterChips';
 import { JOURNEY_MAP_FILTERS, countJourneyMapEntries } from '../../trips/journeyMapFilters';
 
 interface JourneyMapFilterScrollProps {
-  filter: OutdoorMapFilterCategory;
-  entries: OutdoorMapEntryDTO[];
-  onChange: (filter: OutdoorMapFilterCategory) => void;
+  filter: JourneyMapFilterCategory;
+  entries: JourneyMapEntryDTO[];
+  onChange: (filter: JourneyMapFilterCategory) => void;
   variant?: 'inline' | 'overlay';
 }
 

@@ -1,15 +1,16 @@
 import { NotificationType } from '../domain/enums.js';
-import type { ChatMessage } from '../domain/types.js';
 import { Router } from 'express';
 import { z } from 'zod';
-import type { ChatMessageDTO } from '@uaetrail/shared-types';
 import { findAuthUserById } from '../lib/auth-users.js';
+import { ApiError } from '../lib/api-error.js';
 import {
   countThreadMessages,
   createChatMessageRecord,
+  findChatMessageInThread,
   listThreadMessages,
   markThreadAsRead
 } from '../lib/chat-data.js';
+import { presentChatMessageAsDto, presentChatMessagesAsDtos } from '../lib/chat-message-presenter.js';
 import { messagesToUserPath } from '../lib/member-routes.js';
 import { dispatchNotification } from '../services/notifications.js';
 import { requireAuth, requireSseTicket, requireVerifiedEmail } from '../middleware/auth.js';
@@ -20,16 +21,6 @@ import { publishChatStreamEvent, registerChatStreamClient } from '../services/ch
 import { listMemberDirectConversations, loadMemberInbox } from '../services/member-inbox.js';
 
 export const chatRouter = Router();
-
-const toChatMessageDto = (message: ChatMessage): ChatMessageDTO => ({
-  id: message.id,
-  senderId: message.senderId,
-  receiverId: message.receiverId,
-  content: message.content,
-  activityId: message.activityId ?? undefined,
-  readAt: message.readAt?.toISOString() ?? undefined,
-  createdAt: message.createdAt.toISOString()
-});
 
 chatRouter.get('/stream', requireSseTicket, requireVerifiedEmail, (req, res) => {
   const userId = req.auth!.userId;
@@ -100,7 +91,7 @@ chatRouter.get('/messages/:userId', validate({ params: messageThreadSchema, quer
     ]);
 
     res.json({
-      data: messages.map(toChatMessageDto),
+      data: await presentChatMessagesAsDtos(messages),
       pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) }
     });
   } catch (error) {
@@ -113,13 +104,16 @@ chatRouter.get('/messages/:userId', validate({ params: messageThreadSchema, quer
 const sendMessageSchema = z.object({
   receiverId: z.string().min(1),
   content: z.string().min(1).max(2000),
-  activityId: z.string().optional()
+  activityId: z.string().optional(),
+  replyToMessageId: z.string().min(1).optional(),
 });
 
 chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, res, next) => {
   try {
     const senderId = req.auth!.userId;
-    const { receiverId, content, activityId } = req.body as z.infer<typeof sendMessageSchema>;
+    const { receiverId, content, activityId, replyToMessageId } = req.body as z.infer<
+      typeof sendMessageSchema
+    >;
 
     if (senderId === receiverId) {
       return res.status(400).json({ error: { code: 'self_message', message: 'Cannot message yourself.' } });
@@ -134,14 +128,23 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
       return res.status(404).json({ error: { code: 'user_not_found', message: 'Recipient not found.' } });
     }
 
+    const trimmedReplyId = replyToMessageId?.trim() || null;
+    if (trimmedReplyId) {
+      const parent = await findChatMessageInThread(trimmedReplyId, senderId, receiverId);
+      if (!parent) {
+        throw new ApiError(400, 'invalid_reply', 'Reply target is not in this conversation.');
+      }
+    }
+
     const message = await createChatMessageRecord({
       senderId,
       receiverId,
       content,
-      activityId: activityId ?? null
+      activityId: activityId ?? null,
+      replyToMessageId: trimmedReplyId,
     });
 
-    const messageDto = toChatMessageDto(message);
+    const messageDto = await presentChatMessageAsDto(message);
     void publishChatStreamEvent(receiverId, { type: 'chat_message', data: messageDto });
 
     void findAuthUserById(senderId).then((sender) => {

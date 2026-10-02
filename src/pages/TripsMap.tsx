@@ -5,8 +5,8 @@ import type {
   MemberJourneyMapStatsDTO,
   MemberMapPinActivityType,
   MemberMapPinDTO,
-  OutdoorMapEntryDTO,
-  OutdoorMapFilterCategory,
+  JourneyMapEntryDTO,
+  JourneyMapFilterCategory,
 } from '@uaetrail/shared-types';
 import { PageMeta } from '../components/seo/PageMeta';
 import { TripsJourneyMap, type JourneyMapMarker } from '../components/trips/TripsJourneyMap';
@@ -34,7 +34,7 @@ const emptyStats = (): MemberJourneyMapStatsDTO => ({
   byActivityType: {},
 });
 
-const entryToMarker = (entry: OutdoorMapEntryDTO): JourneyMapMarker | null => {
+const entryToMarker = (entry: JourneyMapEntryDTO): JourneyMapMarker | null => {
   if (entry.latitude == null || entry.longitude == null) return null;
   return {
     id: entry.id,
@@ -49,7 +49,7 @@ export const TripsMap = () => {
   const filter = parseJourneyMapFilter(searchParams.get('filter'));
 
   const [pins, setPins] = useState<MemberMapPinDTO[]>([]);
-  const [entries, setEntries] = useState<OutdoorMapEntryDTO[]>([]);
+  const [entries, setEntries] = useState<JourneyMapEntryDTO[]>([]);
   const [stats, setStats] = useState<MemberJourneyMapStatsDTO>(emptyStats);
   const [loading, setLoading] = useState(true);
   const [pickMode, setPickMode] = useState(false);
@@ -59,7 +59,7 @@ export const TripsMap = () => {
   const [error, setError] = useState<string | null>(null);
   const [shareHint, setShareHint] = useState<string | null>(null);
   const [focusLatLng, setFocusLatLng] = useState<{ lat: number; lng: number } | null>(null);
-  const setFilter = (next: OutdoorMapFilterCategory) => {
+  const setFilter = (next: JourneyMapFilterCategory) => {
     const params = new URLSearchParams(searchParams);
     if (next === 'all') params.delete('filter');
     else params.set('filter', next === 'self' ? 'gone' : next);
@@ -91,7 +91,7 @@ export const TripsMap = () => {
   );
 
   const pendingLatLng = sheet.type === 'new' ? { lat: sheet.lat, lng: sheet.lng } : null;
-  const openEntry = (entry: OutdoorMapEntryDTO) => {
+  const openEntry = (entry: JourneyMapEntryDTO) => {
     setPickMode(false);
     setListOpen(false);
     if (entry.pinId) {
@@ -109,7 +109,7 @@ export const TripsMap = () => {
     if (entry) openEntry(entry);
   };
 
-  const onListSelect = (entry: OutdoorMapEntryDTO) => {
+  const onListSelect = (entry: JourneyMapEntryDTO) => {
     openEntry(entry);
     if (entry.latitude != null && entry.longitude != null) {
       setFocusLatLng({ lat: entry.latitude, lng: entry.longitude });

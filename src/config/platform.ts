@@ -314,7 +314,7 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
   CONSUMER_SELF_HEADER_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
   isMobileDetailRoute(pathname);
 
-/** Signed-in mobile tab shell — Map · Activities · Messages. */
+/** Signed-in mobile tab shell — Explore · Trips · Chat (`MESSAGES_PATH`). */
 export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/trips', MESSAGES_PATH] as const;
 
 export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number];

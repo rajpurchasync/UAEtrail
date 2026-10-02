@@ -1,4 +1,4 @@
-import type { OutdoorMapEntryDTO } from '@uaetrail/shared-types';
+import type { JourneyMapEntryDTO } from '@uaetrail/shared-types';
 import { journeyMapActivityLabel } from './journeyMapActivityTypes';
 import { JOURNEY_PIN_STYLES, resolveJourneyPinStyle } from './journeyMapPinStyle';
 
@@ -14,12 +14,12 @@ export const formatJourneyListDate = (iso: string): string => {
 };
 
 /** One short category line — avoids duplicated API status strings. */
-export const journeyEntryCategoryLabel = (entry: OutdoorMapEntryDTO): string => {
+export const journeyEntryCategoryLabel = (entry: JourneyMapEntryDTO): string => {
   if (entry.statusLabel?.toLowerCase().includes('checked in')) return 'Checked in';
   return JOURNEY_PIN_STYLES[resolveJourneyPinStyle(entry)].label;
 };
 
-export const formatJourneyListSubtitle = (entry: OutdoorMapEntryDTO): string => {
+export const formatJourneyListSubtitle = (entry: JourneyMapEntryDTO): string => {
   const parts = [
     formatJourneyListDate(entry.placeDate),
     journeyMapActivityLabel(entry.activityType),

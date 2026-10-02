@@ -199,7 +199,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Demand bookmark** (legacy favorite row) | `favorite.participantIntentId` | `favoriteIsDemandBookmark` (`favoriteDemandBookmark.ts`) | Treating as wishlist |
 | **Organize** (FAB) | `activities` publish | `organizeFlow*`, `organizeActivityPublish` | `hostActivity` in consumer explore |
 | **Trips** (tab) | joined/hosted/self + favorites | `src/trips/tripsRouting.ts`, `components/trips/*` | `/activities` hub naming |
-| **My trips map** (`/trips/map`) | `GET /me/trips/map`, `OutdoorMapEntryDTO` | `journeyMap*` (`src/trips/journeyMap*`, `JourneyMap*` components) | `outdoorMap*` (removed from FE) |
+| **My trips map** (`/trips/map`) | `GET /me/trips/map`, `JourneyMapEntryDTO` (`OutdoorMapEntryDTO` deprecated alias) | `journeyMap*` (`src/trips/journeyMap*`, `JourneyMap*` components) | `outdoorMap*` (removed from FE) |
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |

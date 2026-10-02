@@ -7,7 +7,7 @@
 
 | Surface | Route | What it is |
 |---------|--------|------------|
-| **Messages inbox** | `/messages` | One inbox: **Direct**, **Groups** (family/friends), **Outing chats** (activity crew) |
+| **Chat inbox** (UI label; route `/messages`) | `/messages` | One inbox: **Direct**, **Groups** (family/friends), **Outing chats** (activity crew) |
 | **Host org inbox** | `/host/messages` | Same `Messages` UI in host shell; same `?to=` / `?group=` deep links |
 | **Groups admin** | `/groups` | Create/manage groups, members, **who can message** — **no inline chat** |
 | **Activity detail** | `/activity/:id` | Crew callout (join/open chat), invite share panel |
@@ -25,6 +25,8 @@ Legacy: `/dashboard/messages` may still exist for older host console paths — p
 
 Do **not** merge transports in storage without a product decision — inbox already unifies **threads** in the UI.
 
+**Shared FE (DM + group wall):** `ChatThreadRouter` → `DirectChatThread` | `GroupChatThread`; `useDirectChatThread` (DM data); `ChatThreadShell`, `ChatThreadHeaderBar`, `useThreadReply`, `ChatReplyComposer`, `GroupWallMessageBody`, `MessageSwipeReplyShell` under `src/components/messages/`. **Shared API:** `apps/api/src/lib/reply-preview.ts` for `replyToPreview` enrichment.
+
 ### Unified inbox
 
 - **`GET /chat/inbox`** or **`GET /me/inbox`** — same payload: `{ direct: ChatConversationDTO[], groups: MemberInboxGroupDTO[] }` (preferred for Messages tab and nav badge).
@@ -34,8 +36,9 @@ Do **not** merge transports in storage without a product decision — inbox alre
 
 - **List:** `GET /chat/conversations` (subset of inbox `direct`)
 - **Thread:** `GET /chat/messages/:userId` (paginated)
-- **Send:** `POST /chat/messages` — body max **2000** chars; `assertCanMessageUser` + rate limit
-- **Policy:** `apps/api/src/services/chat-policy.ts` — buddies and/or shared activity / join-request context
+- **Send:** `POST /chat/messages` — body max **2000** chars; optional `replyToMessageId` (must be in the same 1:1 thread); returns **`replyToPreview`** when replying. Thread **GET** and SSE use the same enrichment. UI: swipe/long-press reply (no reactions on DMs).
+- **Policy:** `assertCanMessageUser` + rate limit on send; thread read uses the same relationship rules (activity inquiry alone does not unlock **GET** without a lasting buddy/join link).
+- **Policy detail:** `apps/api/src/services/chat-policy.ts` — buddies and/or shared activity / join-request context
 - **Deep link:** `/messages?to=<userId>` optional `activity=<activityId>` for context banner
 
 ### Group wall (`/me/groups/.../wall`)
@@ -110,7 +113,8 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 | Inbox preview text | `formatWallInboxPreview` | `src/utils/wallMessagePreview.ts` |
 | Wall post policy (client) | `canMemberPostToGroupWall` | `src/utils/groupWallPostPolicy.ts` |
 | Wall post policy (server) | `canMemberPostToGroupWall` | `apps/api/src/lib/group-wall-policy.ts` |
-| Crew chat UI | `GroupWallThreadPanel` | `src/components/messages/` |
+| Direct chat thread | `DirectChatThread`, `useDirectChatThread` | `src/components/messages/` |
+| Crew chat thread | `GroupChatThread` via `ChatThreadRouter` | `src/components/messages/` |
 | Host actions | `useOrganisationActivityHostActions.openGroupChat` | `src/hooks/` |
 
 ## Trips / architecture rules

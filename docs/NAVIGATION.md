@@ -11,7 +11,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/trips` | Account hub, settings stack, trips (upcoming / past / wishlist) |
-| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | Map · My trips · Messages bottom nav (`md:hidden`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
+| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | Map · My trips · **Chat** bottom nav (`md:hidden`; route stays `/messages`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
 | **Entity detail** | `/trail`, `/camp`, `/event`, `/activity`, `/shop`, `/operator` | Single place, trip, or host |
 
 ### Profile hub (`/profile`)
@@ -42,7 +42,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
 
-### Messages (`/messages`)
+### Chat (`/messages`)
 
 Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
 

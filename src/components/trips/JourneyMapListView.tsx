@@ -1,5 +1,5 @@
 import { MapPin } from 'lucide-react';
-import type { OutdoorMapEntryDTO } from '@uaetrail/shared-types';
+import type { JourneyMapEntryDTO } from '@uaetrail/shared-types';
 import { ActivityHubListRow } from '../mobile/ActivityHubListRow';
 import { formatJourneyListSubtitle } from '../../trips/journeyMapListMeta';
 import { journeyEntryCategoryBadge } from '../../trips/journeyMapCategoryBadge';
@@ -7,8 +7,8 @@ import { resolveJourneyPinStyle } from '../../trips/journeyMapPinStyle';
 import { JourneyMapListPinIcon } from './JourneyMapListPinIcon';
 
 interface JourneyMapListViewProps {
-  entries: OutdoorMapEntryDTO[];
-  onSelect: (entry: OutdoorMapEntryDTO) => void;
+  entries: JourneyMapEntryDTO[];
+  onSelect: (entry: JourneyMapEntryDTO) => void;
   emptyMessage?: string;
 }
 

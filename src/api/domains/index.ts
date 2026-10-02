@@ -12,4 +12,5 @@ export { organisationApi } from './organisation';
 export { shopApi } from './shop';
 export { adminApi } from './admin';
 export { chatApi } from './chat';
+export { messagingApi } from './messaging';
 export { mediaApi } from './media';

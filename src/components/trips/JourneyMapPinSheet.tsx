@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
-import type { MemberMapPinActivityType, MemberMapPinDTO, OutdoorMapEntryDTO } from '@uaetrail/shared-types';
+import type { MemberMapPinActivityType, MemberMapPinDTO, JourneyMapEntryDTO } from '@uaetrail/shared-types';
 import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
 import { JourneyMapActivityTypePicker } from './JourneyMapActivityTypePicker';
 import { normalizeJourneyMapActivityType, journeyMapActivityLabel } from '../../trips/journeyMapActivityTypes';
@@ -9,7 +9,7 @@ import { journeyEntryCategoryBadge } from '../../trips/journeyMapCategoryBadge';
 
 export type NewPinSheet = { type: 'new'; lat: number; lng: number };
 export type ViewPinSheet = { type: 'view'; pin: MemberMapPinDTO };
-export type ViewEntrySheet = { type: 'view-entry'; entry: OutdoorMapEntryDTO };
+export type ViewEntrySheet = { type: 'view-entry'; entry: JourneyMapEntryDTO };
 
 export type JourneyMapSheetState = NewPinSheet | ViewPinSheet | ViewEntrySheet;
 

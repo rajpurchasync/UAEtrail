@@ -24,7 +24,12 @@ export const chatApi = {
     );
   },
 
-    sendMessage: (payload: { receiverId: string; content: string; activityId?: string }) =>
+    sendMessage: (payload: {
+      receiverId: string;
+      content: string;
+      activityId?: string;
+      replyToMessageId?: string;
+    }) =>
     apiRequest<{ data: ChatMessageDTO }>('/chat/messages', {
       method: 'POST',
       auth: true,

@@ -30,7 +30,7 @@ const resolveCenter = (
     if (subTitle) return { kind: 'title', text: subTitle };
     return { kind: 'title', text: 'Trips' };
   }
-  if (pathname === MESSAGES_PATH) return { kind: 'title', text: 'Messages' };
+  if (pathname === MESSAGES_PATH) return { kind: 'title', text: 'Chat' };
   if (!isMobileTabHeaderRoute(pathname)) return null;
   return null;
 };

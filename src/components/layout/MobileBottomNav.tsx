@@ -28,7 +28,7 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
   />
 );
 
-/** Mobile tab bar — Explore · Trips · Messages. */
+/** Mobile tab bar — Explore · Trips · Chat. */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname } = useLocation();
@@ -76,7 +76,7 @@ export const MobileBottomNav = () => {
           <span className={tabLabelClass(tripsActive)}>Trips</span>
         </Link>
 
-        <NavLink to={MESSAGES_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Messages">
+        <NavLink to={MESSAGES_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Chat">
           {({ isActive }) => (
             <>
               <span className="relative">
@@ -87,7 +87,7 @@ export const MobileBottomNav = () => {
                   </span>
                 ) : null}
               </span>
-              <span className={tabLabelClass(isActive)}>Messages</span>
+              <span className={tabLabelClass(isActive)}>Chat</span>
             </>
           )}
         </NavLink>

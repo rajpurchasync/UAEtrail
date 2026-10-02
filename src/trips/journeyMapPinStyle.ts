@@ -1,4 +1,4 @@
-import type { OutdoorMapEntryCategory, OutdoorMapEntryDTO } from '@uaetrail/shared-types';
+import type { JourneyMapEntryCategory, JourneyMapEntryDTO } from '@uaetrail/shared-types';
 
 /** Personal map pin colours — not Explore medallions. */
 export type JourneyPinStyle = 'want_to_go' | 'joined' | 'hosted' | 'gone';
@@ -14,7 +14,7 @@ export const JOURNEY_PIN_STYLES: Record<
 };
 
 export const resolveJourneyPinStyleFromCategories = (
-  categories: OutdoorMapEntryCategory[]
+  categories: JourneyMapEntryCategory[]
 ): JourneyPinStyle => {
   if (categories.includes('wishlist')) return 'want_to_go';
   if (categories.includes('hosted')) return 'hosted';
@@ -23,5 +23,5 @@ export const resolveJourneyPinStyleFromCategories = (
   return 'gone';
 };
 
-export const resolveJourneyPinStyle = (entry: OutdoorMapEntryDTO): JourneyPinStyle =>
+export const resolveJourneyPinStyle = (entry: JourneyMapEntryDTO): JourneyPinStyle =>
   resolveJourneyPinStyleFromCategories(entry.categories);

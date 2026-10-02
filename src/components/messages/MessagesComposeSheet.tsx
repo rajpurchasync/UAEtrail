@@ -1,6 +1,6 @@
 import { Loader2, MessageCircle, Search, Users } from 'lucide-react';
 import { Dialog } from '../ui/Dialog';
-import { MessageAvatar } from './MessagePanels';
+import { MessageAvatar } from './ChatMessageAvatar';
 
 interface SearchUser {
   id: string;

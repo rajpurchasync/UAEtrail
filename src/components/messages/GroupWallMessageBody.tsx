@@ -19,6 +19,8 @@ type GroupWallMessageBodyProps = {
   replyToPreview?: ReplyPreview | null;
   resolveQuotedMessage?: (messageId: string) => QuotedWallMessage | null;
   onScrollToQuotedMessage?: (messageId: string) => void;
+  /** Outgoing DM bubbles on emerald background. */
+  tone?: 'default' | 'onPrimary';
 };
 
 const QuoteBlock = ({
@@ -26,14 +28,28 @@ const QuoteBlock = ({
   quoteSnippet,
   replyToMessageId,
   onScrollToQuotedMessage,
+  tone = 'default',
 }: {
   quoteAuthor: string;
   quoteSnippet: string;
   replyToMessageId: string | null;
   onScrollToQuotedMessage?: (messageId: string) => void;
+  tone?: 'default' | 'onPrimary';
 }) => {
   const quoteClass =
-    'mb-2 min-w-0 max-w-full rounded-xl border border-emerald-200/80 border-l-4 border-l-emerald-500 bg-emerald-50/90 px-3 py-2 text-left transition-colors';
+    tone === 'onPrimary'
+      ? 'mb-2 min-w-0 max-w-full rounded-xl border border-white/25 border-l-4 border-l-white/70 bg-white/15 px-3 py-2 text-left transition-colors'
+      : 'mb-2 min-w-0 max-w-full rounded-xl border border-emerald-200/80 border-l-4 border-l-emerald-500 bg-emerald-50/90 px-3 py-2 text-left transition-colors';
+  const labelClass =
+    tone === 'onPrimary'
+      ? 'block text-[11px] font-semibold uppercase tracking-wide text-emerald-100'
+      : 'block text-[11px] font-semibold uppercase tracking-wide text-emerald-700';
+  const authorClass =
+    tone === 'onPrimary' ? 'block text-xs font-semibold text-white' : 'block text-xs font-semibold text-emerald-950';
+  const snippetClass =
+    tone === 'onPrimary'
+      ? `mt-0.5 block line-clamp-2 text-xs text-emerald-50/95 ${chatMessageTextClassName}`
+      : `mt-0.5 block line-clamp-2 text-xs text-emerald-900/90 ${chatMessageTextClassName}`;
   const canJump = Boolean(replyToMessageId && onScrollToQuotedMessage);
 
   if (canJump) {
@@ -41,30 +57,20 @@ const QuoteBlock = ({
       <button
         type="button"
         onClick={() => onScrollToQuotedMessage!(replyToMessageId!)}
-        className={`${quoteClass} hover:bg-emerald-100/90 active:bg-emerald-100`}
+        className={`${quoteClass} ${tone === 'onPrimary' ? 'hover:bg-white/20 active:bg-white/25' : 'hover:bg-emerald-100/90 active:bg-emerald-100'}`}
       >
-        <span className="block text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-          Replying to
-        </span>
-        <span className="block text-xs font-semibold text-emerald-950">{quoteAuthor}</span>
-        <span
-          className={`mt-0.5 block line-clamp-2 text-xs text-emerald-900/90 ${chatMessageTextClassName}`}
-        >
-          {quoteSnippet}
-        </span>
+        <span className={labelClass}>Replying to</span>
+        <span className={authorClass}>{quoteAuthor}</span>
+        <span className={snippetClass}>{quoteSnippet}</span>
       </button>
     );
   }
 
   return (
     <div className={quoteClass} aria-label="Quoted message">
-      <span className="block text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-        Replying to
-      </span>
-      <span className="block text-xs font-semibold text-emerald-950">{quoteAuthor}</span>
-      <span className={`mt-0.5 block line-clamp-2 text-xs text-emerald-900/90 ${chatMessageTextClassName}`}>
-        {quoteSnippet}
-      </span>
+      <span className={labelClass}>Replying to</span>
+      <span className={authorClass}>{quoteAuthor}</span>
+      <span className={snippetClass}>{quoteSnippet}</span>
     </div>
   );
 };
@@ -75,6 +81,7 @@ export const GroupWallMessageBody = ({
   replyToPreview,
   resolveQuotedMessage,
   onScrollToQuotedMessage,
+  tone = 'default',
 }: GroupWallMessageBodyProps) => {
   const parsed = parseGroupWallMessageBody(body);
   const serverReplyId = replyToMessageIdProp?.trim() || null;
@@ -87,8 +94,13 @@ export const GroupWallMessageBody = ({
           quoteSnippet={replyToPreview.bodySnippet}
           replyToMessageId={replyToPreview.messageId}
           onScrollToQuotedMessage={onScrollToQuotedMessage}
+          tone={tone}
         />
-        <p className={`text-neutral-800 ${chatMessageTextClassName}`}>{body}</p>
+        <p
+          className={`${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`}
+        >
+          {body}
+        </p>
       </div>
     );
   }
@@ -103,15 +115,26 @@ export const GroupWallMessageBody = ({
             quoteSnippet={wallMessageQuoteSnippet(quoted.body)}
             replyToMessageId={serverReplyId}
             onScrollToQuotedMessage={onScrollToQuotedMessage}
+            tone={tone}
           />
-          <p className={`text-neutral-800 ${chatMessageTextClassName}`}>{body}</p>
+          <p
+            className={`${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`}
+          >
+            {body}
+          </p>
         </div>
       );
     }
   }
 
   if (!parsed) {
-    return <p className={`mt-1 text-neutral-800 ${chatMessageTextClassName}`}>{body}</p>;
+    return (
+      <p
+        className={`mt-1 ${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`}
+      >
+        {body}
+      </p>
+    );
   }
 
   const { replyToMessageId: parsedReplyId, quoteAuthor, quoteSnippet, replyText } = parsed;
@@ -124,8 +147,13 @@ export const GroupWallMessageBody = ({
         quoteSnippet={quoteSnippet}
         replyToMessageId={replyToMessageId}
         onScrollToQuotedMessage={onScrollToQuotedMessage}
+        tone={tone}
       />
-      <p className={`text-neutral-800 ${chatMessageTextClassName}`}>{replyText}</p>
+      <p
+        className={`${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`}
+      >
+        {replyText}
+      </p>
     </div>
   );
 };

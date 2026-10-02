@@ -103,6 +103,45 @@ describe('chat messaging policy', () => {
     expect(response.body.data?.content).toBe('Is this activity beginner friendly?');
   });
 
+  it('persists replyToMessageId and enriches reply preview in the thread', async () => {
+    const parentRes = await request(app)
+      .post('/api/v1/chat/messages')
+      .set('Authorization', `Bearer ${visitorB.accessToken}`)
+      .send({
+        receiverId: organizerId,
+        content: 'Quick question about the meetup point',
+        activityId,
+      });
+
+    expect(parentRes.status).toBe(201);
+    const parentId = parentRes.body.data?.id as string;
+
+    const replyRes = await request(app)
+      .post('/api/v1/chat/messages')
+      .set('Authorization', `Bearer ${visitorB.accessToken}`)
+      .send({
+        receiverId: organizerId,
+        content: 'Sorry — meant the parking lot.',
+        replyToMessageId: parentId,
+        activityId,
+      });
+
+    expect(replyRes.status).toBe(201);
+    expect(replyRes.body.data?.replyToMessageId).toBe(parentId);
+    expect(replyRes.body.data?.replyToPreview?.messageId).toBe(parentId);
+    expect(replyRes.body.data?.replyToPreview?.bodySnippet).toContain('meetup');
+
+    const threadRes = await request(app)
+      .get(`/api/v1/chat/messages/${organizerId}`)
+      .set('Authorization', `Bearer ${visitorB.accessToken}`);
+
+    expect(threadRes.status).toBe(200);
+    const replyRow = (threadRes.body.data as { replyToMessageId?: string }[]).find(
+      (row) => row.replyToMessageId === parentId
+    );
+    expect(replyRow).toBeTruthy();
+  });
+
   it('blocks buddy-only messaging after unfriend, even when a thread already exists', async () => {
     const userA = await findAuthUserByEmail(visitorA.email);
     const userB = await findAuthUserByEmail(visitorB.email);

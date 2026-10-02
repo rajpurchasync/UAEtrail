@@ -193,6 +193,7 @@ export interface ChatMessage {
   receiverId: string;
   activityId: string | null;
   content: string;
+  replyToMessageId: string | null;
   readAt: Date | null;
   createdAt: Date;
 }

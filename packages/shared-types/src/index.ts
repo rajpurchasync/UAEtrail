@@ -1,3 +1,4 @@
+import type { GroupWallReplyPreviewDTO } from './group-wall.js';
 import type { ExploreCardPresentationDTO } from './explore-presentation.js';
 import type { ExploreMapPersonDTO } from './explore-person.js';
 import type { ActivityJoinMode } from './activity-join-mode.js';
@@ -436,6 +437,8 @@ export interface ChatMessageDTO {
   receiverId: string;
   content: string;
   activityId?: string;
+  replyToMessageId?: string;
+  replyToPreview?: GroupWallReplyPreviewDTO;
   readAt?: string;
   createdAt: string;
 }
@@ -1171,6 +1174,9 @@ export type {
 } from './member-map-pins.js';
 
 export type {
+  JourneyMapEntryCategory,
+  JourneyMapEntryDTO,
+  JourneyMapFilterCategory,
   OutdoorMapEntryCategory,
   OutdoorMapEntryDTO,
   OutdoorMapFilterCategory,

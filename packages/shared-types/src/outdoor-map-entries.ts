@@ -1,12 +1,12 @@
-/** Filter tabs on the personal outdoor map (not Explore). */
+/** Filter tabs on the personal journey map (`/trips/map`), not Explore. */
 
-export type OutdoorMapFilterCategory = 'all' | 'wishlist' | 'joined' | 'hosted' | 'self';
+export type JourneyMapFilterCategory = 'all' | 'wishlist' | 'joined' | 'hosted' | 'self';
 
-export type OutdoorMapEntryCategory = 'wishlist' | 'joined' | 'hosted' | 'self';
+export type JourneyMapEntryCategory = 'wishlist' | 'joined' | 'hosted' | 'self';
 
-export interface OutdoorMapEntryDTO {
+export interface JourneyMapEntryDTO {
   id: string;
-  categories: OutdoorMapEntryCategory[];
+  categories: JourneyMapEntryCategory[];
   title: string;
   placeDate: string;
   latitude: number | null;
@@ -17,3 +17,12 @@ export interface OutdoorMapEntryDTO {
   pinId: string | null;
   activityId: string | null;
 }
+
+/** @deprecated Use {@link JourneyMapFilterCategory} */
+export type OutdoorMapFilterCategory = JourneyMapFilterCategory;
+
+/** @deprecated Use {@link JourneyMapEntryCategory} */
+export type OutdoorMapEntryCategory = JourneyMapEntryCategory;
+
+/** @deprecated Use {@link JourneyMapEntryDTO} */
+export type OutdoorMapEntryDTO = JourneyMapEntryDTO;

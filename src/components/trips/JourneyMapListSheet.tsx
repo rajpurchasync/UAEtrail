@@ -1,16 +1,16 @@
-import type { OutdoorMapEntryDTO, OutdoorMapFilterCategory } from '@uaetrail/shared-types';
+import type { JourneyMapEntryDTO, JourneyMapFilterCategory } from '@uaetrail/shared-types';
 import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
 import { JourneyMapFilterScroll } from './JourneyMapFilterScroll';
 import { JourneyMapListView } from './JourneyMapListView';
 
 interface JourneyMapListSheetProps {
   open: boolean;
-  filter: OutdoorMapFilterCategory;
-  entries: OutdoorMapEntryDTO[];
-  allEntries: OutdoorMapEntryDTO[];
+  filter: JourneyMapFilterCategory;
+  entries: JourneyMapEntryDTO[];
+  allEntries: JourneyMapEntryDTO[];
   onClose: () => void;
-  onFilterChange: (filter: OutdoorMapFilterCategory) => void;
-  onSelect: (entry: OutdoorMapEntryDTO) => void;
+  onFilterChange: (filter: JourneyMapFilterCategory) => void;
+  onSelect: (entry: JourneyMapEntryDTO) => void;
   emptyMessage?: string;
 }
 

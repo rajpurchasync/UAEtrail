@@ -2,7 +2,7 @@ import type { MemberJourneyMapDTO, MemberMapPinActivityType } from '@uaetrail/sh
 import { MEMBER_MAP_PIN_ACTIVITY_TYPES } from '@uaetrail/shared-types';
 import { parseMemberMapPinActivityType } from '../lib/member-map-pin-activity-type.js';
 import { listMemberMapPinsForUser, syncActivityCheckInPinsForUser } from '../lib/member-map-pins-store.js';
-import { buildOutdoorMapEntries } from './member-outdoor-map-entries.js';
+import { buildJourneyMapEntries } from './member-outdoor-map-entries.js';
 
 const emptyByType = (): Partial<Record<MemberMapPinActivityType, number>> => {
   const out: Partial<Record<MemberMapPinActivityType, number>> = {};
@@ -27,7 +27,7 @@ export const buildMemberJourneyMap = async (userId: string): Promise<MemberJourn
     byActivityType[type] = (byActivityType[type] ?? 0) + 1;
   }
 
-  const entries = await buildOutdoorMapEntries(userId, pins);
+  const entries = await buildJourneyMapEntries(userId, pins);
 
   return {
     pins,

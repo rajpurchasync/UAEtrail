@@ -1,5 +1,6 @@
 import type { Collection } from 'mongodb';
-import { groupWallBodySnippet, type GroupWallReplyPreviewDTO } from '@uaetrail/shared-types';
+import type { GroupWallReplyPreviewDTO } from '@uaetrail/shared-types';
+import { buildGroupWallReplyPreview } from './reply-preview.js';
 import { newEntityId } from './entity-builders.js';
 import { findAuthUsersByIds } from './auth-users.js';
 import { getMongoClient } from './mongo.js';
@@ -861,11 +862,11 @@ const presentGroupWallMessages = async (
     const parentUser = parent ? userMap.get(parent.authorUserId) : undefined;
     const replyToPreview =
       replyId && parent
-        ? {
-            messageId: replyId,
-            authorDisplayName: displayNameForUser(parentUser),
-            bodySnippet: groupWallBodySnippet(parent.body),
-          }
+        ? buildGroupWallReplyPreview(
+            replyId,
+            displayNameForUser(parentUser),
+            parent.body
+          )
         : null;
 
     return {

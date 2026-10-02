@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Loader2, MessageSquare, Settings2, Users, X } from 'lucide-react';
+import { Loader2, MessageSquare, Settings2, Users } from 'lucide-react';
 import { api } from '../../api/index';
 import type { SocialGroupMemberView, SocialGroupView, SocialGroupWallMessageView } from '../../api/index';
-import { ChatComposeBar } from '../ui/ChatComposeBar';
+import { ChatReplyComposer } from './ChatReplyComposer';
+import { runWithReplyTarget, useThreadReply } from './useThreadReply';
+import { ChatThreadShell } from './ChatThreadShell';
+import { ChatThreadHeaderBar } from './ChatThreadHeaderBar';
 import {
   canMemberPostToGroupWall,
   groupWallPostPolicyLabel,
@@ -10,7 +13,7 @@ import {
 } from '../../utils/groupWallPostPolicy';
 import { GroupWallChatSettingsSheet } from './GroupWallChatSettingsSheet';
 import { GroupWallMembersSheet } from './GroupWallMembersSheet';
-import { GroupWallMessageItem, type GroupWallReplyTarget } from './GroupWallMessageItem';
+import { GroupWallMessageItem } from './GroupWallMessageItem';
 
 /** Fallback when SSE is unavailable; primary delivery is `group_wall_message` on chat stream. */
 const WALL_POLL_MS = 45_000;
@@ -20,27 +23,30 @@ const LOAD_OLDER_SCROLL_PX = 72;
 
 type WallScrollMode = 'initial' | 'bottom' | 'preserve';
 
-export type GroupWallActivityPayload = {
+export type GroupChatActivityPayload = {
   groupId: string;
   body: string;
   createdAt: string;
 };
 
-type GroupWallThreadPanelProps = {
+/** @deprecated Use {@link GroupChatActivityPayload} */
+export type GroupWallActivityPayload = GroupChatActivityPayload;
+
+type GroupChatThreadProps = {
   groupId: string;
   onBack: () => void;
-  onWallActivity?: (payload: GroupWallActivityPayload) => void;
+  onGroupActivity?: (payload: GroupChatActivityPayload) => void;
   streamedMessage?: SocialGroupWallMessageView | null;
   onStreamedMessageApplied?: () => void;
 };
 
-export const GroupWallThreadPanel = ({
+export const GroupChatThread = ({
   groupId,
   onBack,
-  onWallActivity,
+  onGroupActivity,
   streamedMessage,
   onStreamedMessageApplied,
-}: GroupWallThreadPanelProps) => {
+}: GroupChatThreadProps) => {
   const [group, setGroup] = useState<SocialGroupView | null>(null);
   const [membership, setMembership] = useState<SocialGroupMemberView | null>(null);
   const [members, setMembers] = useState<SocialGroupMemberView[]>([]);
@@ -49,14 +55,18 @@ export const GroupWallThreadPanel = ({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
-  const [replyTo, setReplyTo] = useState<GroupWallReplyTarget | null>(null);
   const [membersOpen, setMembersOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [highlightMessageId, setHighlightMessageId] = useState<string | null>(null);
   const [hasMoreOlder, setHasMoreOlder] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
-  const highlightTimerRef = useRef<number | null>(null);
+  const {
+    replyTo,
+    setReplyTo,
+    clearReply,
+    highlightMessageId,
+    scrollContainerRef: chatContainerRef,
+    scrollToMessage: scrollToWallMessage,
+  } = useThreadReply(groupId, 'data-wall-message-id');
   const skipScrollRef = useRef(true);
   const wallLengthRef = useRef(0);
   const wallLatestAtRef = useRef<string | null>(null);
@@ -70,9 +80,9 @@ export const GroupWallThreadPanel = ({
 
   const notifyWallActivity = useCallback(
     (message: Pick<SocialGroupWallMessageView, 'body' | 'createdAt'>) => {
-      onWallActivity?.({ groupId, body: message.body, createdAt: message.createdAt });
+      onGroupActivity?.({ groupId, body: message.body, createdAt: message.createdAt });
     },
-    [groupId, onWallActivity]
+    [groupId, onGroupActivity]
   );
 
   const markWallRead = useCallback(() => {
@@ -276,23 +286,21 @@ export const GroupWallThreadPanel = ({
   const sendMessage = async () => {
     const trimmed = draft.trim();
     if (!trimmed || !canPost || sending) return;
-    const body = trimmed;
-    const previousReply = replyTo;
     setDraft('');
-    setReplyTo(null);
     setSending(true);
     setError(null);
     try {
-      const res = await api.createMeGroupWallPost(groupId, body, {
-        replyToMessageId: previousReply?.id,
+      await runWithReplyTarget(replyTo, setReplyTo, async (replyToMessageId) => {
+        const res = await api.createMeGroupWallPost(groupId, trimmed, {
+          replyToMessageId,
+        });
+        appendWallMessage(res.data);
+        skipScrollRef.current = false;
+        markWallRead();
+        notifyWallActivity(res.data);
       });
-      appendWallMessage(res.data);
-      skipScrollRef.current = false;
-      markWallRead();
-      notifyWallActivity(res.data);
     } catch (err) {
       setDraft(trimmed);
-      setReplyTo(previousReply);
       setError(err instanceof Error ? err.message : 'Could not send message.');
     } finally {
       setSending(false);
@@ -305,21 +313,6 @@ export const GroupWallThreadPanel = ({
     );
   };
 
-  const scrollToWallMessage = useCallback((messageId: string) => {
-    const container = chatContainerRef.current;
-    const el = container?.querySelector(`[data-wall-message-id="${messageId}"]`);
-    if (!el || !(el instanceof HTMLElement)) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setHighlightMessageId(messageId);
-    if (highlightTimerRef.current !== null) {
-      window.clearTimeout(highlightTimerRef.current);
-    }
-    highlightTimerRef.current = window.setTimeout(() => {
-      setHighlightMessageId(null);
-      highlightTimerRef.current = null;
-    }, 2200);
-  }, []);
-
   const resolveQuotedMessage = useCallback(
     (messageId: string) => {
       const quoted = wall.find((m) => m.id === messageId);
@@ -330,64 +323,65 @@ export const GroupWallThreadPanel = ({
     [wall]
   );
 
-  useEffect(
-    () => () => {
-      if (highlightTimerRef.current !== null) {
-        window.clearTimeout(highlightTimerRef.current);
-      }
-    },
-    []
-  );
-
   const activeMemberCount = members.filter((m) => m.memberType === 'adult' && m.isActive !== false).length;
   const title = group?.name || 'Group chat';
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-white">
-      <div className="flex shrink-0 items-center gap-2 border-b bg-white p-3 shadow-sm pt-safe-plus-2 md:gap-3 md:pt-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
-          aria-label="Back to messages"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <button
-          type="button"
-          onClick={() => setMembersOpen(true)}
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left hover:bg-neutral-50 pr-1"
-        >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-            <Users className="h-5 w-5" aria-hidden />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-gray-900">{title}</p>
-            <p className="text-xs text-gray-500">
+    <>
+    <ChatThreadShell
+      error={error}
+      scrollContainerRef={chatContainerRef}
+      scrollVariant="group"
+      header={
+        <ChatThreadHeaderBar
+          onBack={onBack}
+          backLabel="Back to chat list"
+          titleButton={{ onClick: () => setMembersOpen(true) }}
+          leading={
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+              <Users className="h-5 w-5" aria-hidden />
+            </div>
+          }
+          title={title}
+          subtitle={
+            <>
               {activeMemberCount} participant{activeMemberCount === 1 ? '' : 's'} ·{' '}
               {groupWallPostPolicyLabel[postPolicy]}
-            </p>
+            </>
+          }
+          trailing={
+            isAdmin ? (
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
+                aria-label="Chat settings"
+              >
+                <Settings2 className="h-5 w-5" />
+              </button>
+            ) : null
+          }
+        />
+      }
+      footer={
+        canPost ? (
+          <ChatReplyComposer
+            replyTo={replyTo}
+            onCancelReply={clearReply}
+            showQuoteSnippet={false}
+            value={draft}
+            onChange={setDraft}
+            onSend={sendMessage}
+            sending={sending}
+            composeClassName="!border-t-0 !px-4"
+          />
+        ) : (
+          <div className="shrink-0 border-t bg-neutral-50 px-4 py-3 text-center text-xs text-neutral-600">
+            {groupWallPostPolicyLabel[postPolicy]}. You can still read messages and react.
           </div>
-        </button>
-        {isAdmin ? (
-          <button
-            type="button"
-            onClick={() => setSettingsOpen(true)}
-            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
-            aria-label="Chat settings"
-          >
-            <Settings2 className="h-5 w-5" />
-          </button>
-        ) : null}
-      </div>
-
-      {error ? (
-        <p className="shrink-0 border-b border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700" role="alert">
-          {error}
-        </p>
-      ) : null}
-
-      <div ref={chatContainerRef} className="min-h-0 min-w-0 flex-1 space-y-2 overflow-x-hidden overflow-y-auto bg-neutral-50 p-4">
+        )
+      }
+    >
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-7 w-7 animate-spin text-gray-400" />
@@ -431,56 +425,25 @@ export const GroupWallThreadPanel = ({
           ))}
           </>
         )}
-      </div>
+    </ChatThreadShell>
 
-      {replyTo ? (
-        <div className="flex shrink-0 items-center gap-2 border-t border-emerald-100 bg-emerald-50/90 px-4 py-2 text-xs text-emerald-900">
-          <span className="min-w-0 flex-1 truncate">
-            Replying to <span className="font-semibold">{replyTo.authorName}</span>
-          </span>
-          <button
-            type="button"
-            onClick={() => setReplyTo(null)}
-            className="flex min-h-[32px] min-w-[32px] items-center justify-center rounded-lg text-emerald-800 hover:bg-emerald-100"
-            aria-label="Cancel reply"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      ) : null}
-
-      {canPost ? (
-        <ChatComposeBar
-          value={draft}
-          onChange={setDraft}
-          onSend={sendMessage}
-          sending={sending}
-          placeholder={replyTo ? 'Write your reply…' : 'Write a message…'}
-          className="!border-t-0 !px-4"
+    {group ? (
+      <>
+        <GroupWallMembersSheet
+          open={membersOpen}
+          onClose={() => setMembersOpen(false)}
+          group={group}
+          members={members}
         />
-      ) : (
-        <div className="shrink-0 border-t bg-neutral-50 px-4 py-3 text-center text-xs text-neutral-600">
-          {groupWallPostPolicyLabel[postPolicy]}. You can still read messages and react.
-        </div>
-      )}
-
-      {group ? (
-        <>
-          <GroupWallMembersSheet
-            open={membersOpen}
-            onClose={() => setMembersOpen(false)}
-            group={group}
-            members={members}
-          />
-          <GroupWallChatSettingsSheet
-            open={settingsOpen}
-            onClose={() => setSettingsOpen(false)}
-            group={group}
-            onUpdated={(updated) => setGroup(updated)}
-            onError={setError}
-          />
-        </>
-      ) : null}
-    </div>
+        <GroupWallChatSettingsSheet
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          group={group}
+          onUpdated={(updated) => setGroup(updated)}
+          onError={setError}
+        />
+      </>
+    ) : null}
+    </>
   );
 };

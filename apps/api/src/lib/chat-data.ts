@@ -9,6 +9,7 @@ type MongoChatMessage = {
   receiverId: string;
   content: string;
   activityId: string | null;
+  replyToMessageId?: string | null;
   readAt: Date | null;
   createdAt: Date;
 };
@@ -22,6 +23,7 @@ const mapMessage = (msg: MongoChatMessage): ChatMessage => ({
   receiverId: msg.receiverId,
   content: msg.content,
   activityId: msg.activityId,
+  replyToMessageId: msg.replyToMessageId ?? null,
   readAt: msg.readAt,
   createdAt: msg.createdAt
 });
@@ -135,11 +137,32 @@ export const listThreadMessages = async (input: {
   return rows.map(mapMessage);
 };
 
+export const findChatMessageInThread = async (
+  messageId: string,
+  userA: string,
+  userB: string
+): Promise<ChatMessage | null> => {
+  const row = await chatMessagesCollection().findOne({ _id: messageId });
+  if (!row) return null;
+  const inThread =
+    (row.senderId === userA && row.receiverId === userB) ||
+    (row.senderId === userB && row.receiverId === userA);
+  if (!inThread) return null;
+  return mapMessage(row);
+};
+
+export const findChatMessagesByIds = async (messageIds: string[]): Promise<ChatMessage[]> => {
+  if (messageIds.length === 0) return [];
+  const rows = await chatMessagesCollection().find({ _id: { $in: messageIds } }).toArray();
+  return rows.map(mapMessage);
+};
+
 export const createChatMessageRecord = async (input: {
   senderId: string;
   receiverId: string;
   content: string;
   activityId?: string | null;
+  replyToMessageId?: string | null;
 }): Promise<ChatMessage> => {
   const doc: MongoChatMessage = {
     _id: randomUUID(),
@@ -147,6 +170,7 @@ export const createChatMessageRecord = async (input: {
     receiverId: input.receiverId,
     content: input.content,
     activityId: input.activityId ?? null,
+    replyToMessageId: input.replyToMessageId ?? null,
     readAt: null,
     createdAt: new Date()
   };

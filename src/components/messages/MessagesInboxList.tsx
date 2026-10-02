@@ -1,6 +1,6 @@
 import { Loader2, MessageSquare, Users } from 'lucide-react';
 import { inboxThreadBadgeLabel, type InboxFilter, type InboxThread } from '../../utils/inboxThreads';
-import { MessageAvatar } from './MessagePanels';
+import { MessageAvatar } from './ChatMessageAvatar';
 
 interface MessagesInboxListProps {
   threads: InboxThread[];
