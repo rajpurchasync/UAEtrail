@@ -1,16 +1,10 @@
-# Experiment branch documentation
+# Experiment-era documentation (architecture & flows)
 
-This folder describes **experiment branches** — not canonical `uaetrail/main` product docs unless explicitly merged later.
-
-## Active experiment: `experiment-ui`
-
-Mobile hub, API route split, frontend domain aliases, stale-file removal. **Standalone — do not merge to `main` without explicit decision.** Push: `origin experiment-ui`.
+Specs and phased plans from the **experiment-ui** line, which **shipped to `origin/main`** (Oct 2026). Day-to-day product truth is also in **`../CREATE_FLOW.md`**, **`../NAVIGATION.md`**, **`../ARCHITECTURE.md`**.
 
 ## Legacy experiment: `experiment/new-ui`
 
-Source of truth for explore UX specs on **`purchasync/UAEtrail`** (`git push purchasync experiment/new-ui`).
-
-Do **not** treat these docs as canonical for `uaetrail/main` until an explicit merge decision.
+Some docs still mention **`purchasync/UAEtrail`** — that mirror is **legacy-only** (see `git-remotes.mdc`), not auto-synced.
 
 ## Documents
 
@@ -28,9 +22,8 @@ Do **not** treat these docs as canonical for `uaetrail/main` until an explicit m
 
 ## Branch & remotes
 
-- **experiment-ui (current):** push `origin experiment-ui` — no merge to `main`
-- **experiment/new-ui:** `git push purchasync experiment/new-ui`
-- **`origin/main`:** canonical product line for uaetrail — **not** the default target for experiment-ui work
+- **`origin/main`:** canonical product — normal development (`git push origin main`)
+- **`purchasync` / `rajpurchasync/UAEtrail`:** frozen legacy snapshot; push only when explicitly requested
 
 ## Status tracking
 

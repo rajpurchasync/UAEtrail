@@ -1,0 +1,19 @@
+---
+description: Canonical git workflow on uaetrail/main after experiment-ui shipped
+alwaysApply: true
+---
+
+# Git workflow (canonical `main`)
+
+The explore / demand product shipped to **`origin/main`** (promoted from `experiment-ui`, Oct 2026). One GitHub repo: **`https://github.com/uaetrail/main`**.
+
+## Policy
+
+- **Default branch:** `main` — pull before new work (`git pull origin main`).
+- **Features:** branch off `main`, merge back via PR or explicit merge; push `origin main` when the user asks.
+- **`purchasync`:** mirror to `rajpurchasync/UAEtrail` **only** when the user explicitly asks (`git-remotes.mdc`). No auto-sync after ordinary pushes to `origin`.
+- **`experiment-ui`:** retired; do not treat as the active line unless the user revives it.
+
+## Legacy snapshot
+
+Pre-promotion `main` is frozen on **`rajpurchasync/UAEtrail`** branch `main` (not updated unless the user requests a mirror push).
