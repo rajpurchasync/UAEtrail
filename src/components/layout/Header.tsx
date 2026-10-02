@@ -1,9 +1,10 @@
+import { ACTIVITIES_PATH, EXPLORE_MAP_PATH, TRIPS_PATH } from '../../config/routingCatalog';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
-import { DESKTOP_NAV_LINKS, EXPLORE_MAP_PATH, MEMBERSHIP_NAV_LINK } from '../../config/platform';
+import { DESKTOP_NAV_LINKS, MEMBERSHIP_NAV_LINK } from '../../config/platform';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { MobileMenuButton } from './MobileMenu';
@@ -25,7 +26,7 @@ export const Header = () => {
       if (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') {
         return true;
       }
-      if (pathname === '/trips' || pathname === '/activities') {
+      if (pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH) {
         const tab = searchParams.get('tab');
         return tab !== 'joined' && tab !== 'hosted';
       }

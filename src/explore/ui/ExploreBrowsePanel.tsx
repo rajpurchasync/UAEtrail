@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PanelLeftClose, Search, X } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
+import { tripsLegacyJoinedTabPath } from '../../config/routingCatalog';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
 import { buildExploreCardModel } from '../exploreCardModel';
@@ -448,7 +449,7 @@ export const ExploreBrowsePanel = ({
                 <p className="font-medium text-neutral-700">Nothing on your map yet</p>
                 <p className="mt-1">Join an outing or save a place from explore.</p>
                 <Link
-                  to="/trips?segment=upcoming&tab=joined"
+                  to={tripsLegacyJoinedTabPath()}
                   className="mt-3 inline-block font-semibold text-emerald-700"
                 >
                   Open trip list

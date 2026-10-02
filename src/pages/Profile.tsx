@@ -15,9 +15,15 @@ import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profi
 import { USER_CITY_LABELS } from '../constants/userProfileOptions';
 import { formatMemberJoinedLabel } from '../utils/formatMemberSince';
 import { profileVisibilityLabel } from '../utils/profileVisibilityLabel';
-import { resolveProfileHostKind, resolveProfileRoleLabel } from '../utils/profileRoleLabel';
-import { isHostRole } from '../utils/roles';
+import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
+import { resolveProfileHostKind } from '../utils/profileRoleLabel';
 import { PageMeta } from '../components/seo/PageMeta';
+import {
+  EXPLORE_MAP_PATH,
+  memberProfilePath,
+  tripsCompletedPath,
+  tripsPlansPath,
+} from '../config/routingCatalog';
 
 export const Profile = () => {
   const { user, refreshUser, signOut } = useAuth();
@@ -25,7 +31,14 @@ export const Profile = () => {
   const location = useLocation();
   const { profile, setProfile, incomingBuddyRequests, loading, error, reload } = useParticipantHubData();
 
-  const { ownedProfiles, loading: hostGateLoading } = useOrganisationGate({ enabled: Boolean(user) });
+  const {
+    ownedProfiles,
+    canAccessHostConsole,
+    profileRoleLabel: profileRoleKey,
+    isCommunityHost: gateCommunityHost,
+    loading: hostGateLoading,
+    refresh: refreshHostGate,
+  } = useOrganisationGate({ enabled: Boolean(user) });
 
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
@@ -62,10 +75,10 @@ export const Profile = () => {
   }, [location.pathname, location.state, navigate]);
 
   const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
-  const canHost = isHostRole(user?.role);
-  const isActivityHost = canHost && hostProfileKind !== 'shop';
+  const isActivityHost =
+    canAccessHostConsole && hostProfileKind !== 'shop' && (gateCommunityHost || (hubStats?.isCommunityHost ?? false));
   const displayName = profile.displayName || user!.displayName || 'Explorer';
-  const roleLabel = resolveProfileRoleLabel(user?.role, ownedProfiles);
+  const roleLabel = memberProfileRoleLabel(profileRoleKey);
   const avatarUrl = profile.avatarUrl ?? user?.avatarUrl ?? null;
   const profileCityLabel = profile.city ? USER_CITY_LABELS[profile.city] : null;
   const memberSinceLabel = memberSince ? formatMemberJoinedLabel(memberSince) : null;
@@ -98,7 +111,7 @@ export const Profile = () => {
   const sharePath = useMemo(
     () =>
       resolveProfileSharePath(ownedProfiles, {
-        fallbackPath: user?.id ? `/member/${user.id}` : '/explore',
+        fallbackPath: user?.id ? (memberProfilePath(user.id) ?? EXPLORE_MAP_PATH) : EXPLORE_MAP_PATH,
       }),
     [ownedProfiles, user?.id]
   );
@@ -123,7 +136,7 @@ export const Profile = () => {
         key: 'joined',
         label: 'Joined',
         value: joinedCount,
-        to: '/trips?segment=completed',
+        to: tripsCompletedPath(),
       },
     ];
 
@@ -132,7 +145,7 @@ export const Profile = () => {
         key: 'hosted',
         label: 'Hosted',
         value: hostedCount,
-        to: '/trips?role=hosted',
+        to: tripsPlansPath('hosted'),
       });
     }
 
@@ -206,7 +219,8 @@ export const Profile = () => {
       .getMemberBadges()
       .then((res) => setBadgesEarnedCount(res.data.filter((b) => b.earned).length))
       .catch(() => undefined);
-  }, [reload, user]);
+    void refreshHostGate();
+  }, [reload, user, refreshHostGate]);
 
   const saveAvatar = async (nextAvatarUrl: string) => {
     setAvatarMessage(null);

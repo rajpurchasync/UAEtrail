@@ -320,12 +320,12 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       displayName
     });
 
-    void processSignupRewards(created._id, referralCode).catch(() => undefined);
     notifyAdminsMemberRegistered({
       userId: created._id,
       email: created.email,
       displayName: displayName,
     });
+    void processSignupRewards(created._id, referralCode).catch(() => undefined);
     if (groupInviteToken) {
       void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
         () => undefined
@@ -707,12 +707,12 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
 
       user = { id: created._id, email: created.email, role: created.role, status: created.status };
 
-      void processSignupRewards(created._id, referralCode).catch(() => undefined);
       notifyAdminsMemberRegistered({
         userId: created._id,
         email: created.email,
         displayName: profile.displayName,
       });
+      void processSignupRewards(created._id, referralCode).catch(() => undefined);
       if (groupInviteToken) {
         void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
           () => undefined

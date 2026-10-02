@@ -1,12 +1,17 @@
+import { EXPLORE_MAP_PATH, PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
 import { Link } from 'react-router-dom';
 import { Plus, Sun } from 'lucide-react';
+
+
 import { useAuth } from '../../context/AuthContext';
-import { isHostRole } from '../../utils/roles';
+import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 
 /** Shown when there are no upcoming activities. */
 export const EmptyActivitiesBanner = () => {
   const { user } = useAuth();
-  const canHost = isHostRole(user?.role);
+  const { canAccessHostConsole, canPublish } = useOrganisationGate({ enabled: Boolean(user) });
+  const canHost = canAccessHostConsole;
+  const memberHostCtaPath = canPublish ? EXPLORE_MAP_PATH : PRO_MEMBERSHIP_PATH;
 
   return (
     <div className="rounded-[22px] glass-card px-6 py-10 text-center shadow-glass">
@@ -29,11 +34,11 @@ export const EmptyActivitiesBanner = () => {
           </Link>
         ) : user ? (
           <Link
-            to="/become-host"
+            to={memberHostCtaPath}
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Become a host
+            {canPublish ? 'Organize on the map' : 'Pro Membership'}
           </Link>
         ) : (
           <Link

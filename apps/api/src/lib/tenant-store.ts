@@ -1,5 +1,7 @@
 import type { Collection } from 'mongodb';
 import { MembershipRole, TenantStatus, TenantBusinessMode, TenantType } from '../domain/enums.js';
+import type { TenantPublishingPurpose } from '../domain/tenant-publishing.js';
+import { inferTenantPublishingPurpose } from '../domain/tenant-publishing.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
 import { slugify } from './slug.js';
@@ -20,6 +22,7 @@ export type TenantRecord = {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  publishingPurpose?: TenantPublishingPurpose | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -40,6 +43,7 @@ type MongoTenantDoc = {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  publishingPurpose?: TenantPublishingPurpose | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -63,6 +67,7 @@ const mapMongoTenant = (doc: MongoTenantDoc): TenantRecord => ({
   latitude: doc.latitude ?? null,
   longitude: doc.longitude ?? null,
   region: doc.region ?? null,
+  publishingPurpose: doc.publishingPurpose ?? null,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
 });
@@ -83,6 +88,7 @@ const tenantRowToMongoDoc = (row: TenantRecord): MongoTenantDoc => ({
   latitude: row.latitude ?? null,
   longitude: row.longitude ?? null,
   region: row.region ?? null,
+  publishingPurpose: row.publishingPurpose ?? null,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt
 });
@@ -152,12 +158,21 @@ export const tenantMatchesHostProfileType = (
   return tenant.businessMode === TenantBusinessMode.SHOP;
 };
 
+const activityTenantSortKey = (tenant: TenantRecord): number => {
+  if (tenant.businessMode === TenantBusinessMode.AGENCY) return 3;
+  const purpose = inferTenantPublishingPurpose(tenant);
+  if (purpose === 'professional') return 2;
+  return 1;
+};
+
+/** Default Organize tenant: community buddy host first, then professional guide, then agency. */
 export const pickActivityTenant = (tenants: TenantRecord[]): TenantRecord | null => {
   const activityCapable = tenants.filter(
     (tenant) =>
       tenant.type === TenantType.GUIDE_OWNED || tenant.businessMode === TenantBusinessMode.AGENCY
   );
-  return activityCapable[0] ?? tenants[0] ?? null;
+  if (activityCapable.length === 0) return tenants[0] ?? null;
+  return [...activityCapable].sort((a, b) => activityTenantSortKey(a) - activityTenantSortKey(b))[0];
 };
 
 /** Merge tenant ownership and active memberships for host-status / publish gates. */

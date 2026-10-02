@@ -26,7 +26,7 @@ Consumer pattern (not Settings-style chevron lists on the hub):
 - **Member goal:** full warm card on Profile; **compact glass row** on **Trips → Upcoming**; editor uses shared **`ConsumerBottomSheet`** (warm header).
 - **Sign out:** single row below goal (not in launcher).
 - **Chrome:** unified mobile tab header title **Profile**.
-- **Trail Points / rewards wallet:** removed from consumer IA. Legacy `/my-rewards`, `/trail-points`, `/rewards` redirect to **`/profile/badges`**; notification deep links normalize the same way.
+- **Trail Points / rewards wallet:** removed. Legacy `/my-rewards`, `/trail-points`, `/rewards`, `/profile/badges` redirect to **`/profile`**.
 - **Profile identity:** `glass-card` hero + Lucide actions (aligned with hub list rows / launcher).
 
 ## Personal goals
@@ -83,7 +83,6 @@ Canonical code comments: `src/trips/demandVsWishlist.ts`.
 - `/profile/settings` — index
 - `/profile/settings/account` · `/privacy` · `/notifications`
 - `/profile/edit` — consumer edit (no DOB field)
-- `/profile/badges` — earned + pipeline badges (no points wallet)
 
 ## Explicitly out of scope
 

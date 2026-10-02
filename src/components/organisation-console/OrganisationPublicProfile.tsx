@@ -28,7 +28,7 @@ import { AccountSectionHeader } from '../account/AccountSectionHeader';
 import { useAuth } from '../../context/AuthContext';
 import { COUNTRIES } from '../../constants';
 import { hostNotFoundLabel, hostProfileLabel, hostPublicProfileLabel, normalizeHostKind } from '../../utils/hostCopy';
-import { detailBackPath } from '../../utils/exploreRouting';
+import { detailBackPath } from '../../config/routingCatalog';
 
 const EXPERIENCE_OPTIONS = [
   { value: '<1 year', label: 'Less than 1 year' },

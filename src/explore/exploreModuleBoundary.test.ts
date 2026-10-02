@@ -9,7 +9,7 @@ const listExploreSourceFiles = (): string[] =>
     .filter(Boolean);
 
 describe('explore module boundary', () => {
-  it('does not import utils/exploreRouting shim (use src/explore/routing.ts)', () => {
+  it('does not import config/routingCatalog shim (use src/explore/routing.ts)', () => {
     const violations: string[] = [];
 
     for (const file of listExploreSourceFiles()) {

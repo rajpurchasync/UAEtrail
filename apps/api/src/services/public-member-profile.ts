@@ -1,4 +1,9 @@
 import { TenantBusinessMode, TenantType, UserRole } from '../domain/enums.js';
+import { resolveHostTiersFromTenants } from '../domain/member-host-tiers.js';
+import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js';
+import { isSignupProfileComplete } from '../domain/user-profile.js';
+import { resolveOwnedProfileType } from '../lib/tenant-store.js';
+import type { MemberProfileRoleLabel } from '@uaetrail/shared-types';
 import { findAuthUserById } from '../lib/auth-users.js';
 import {
   countPublishedActivitiesHostedByUser,
@@ -6,10 +11,7 @@ import {
 } from '../lib/activity-engagement-store.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
 import { listTenantsByOwnerId } from '../lib/tenant-store.js';
-import { BADGE_DEFINITIONS, getTierForPoints } from '../lib/rewards-config.js';
-import { findUserBadges } from '../lib/reward-ledger-store.js';
 import { findLatestHostApplicationByApplicant } from '../lib/host-applications-store.js';
-import { isBusinessHostById } from '../lib/user-type.js';
 import {
   USER_CITY_LABELS,
   type UserCity,
@@ -20,7 +22,9 @@ import {
   resolveProfileViewerAccess,
 } from './profile-viewer-access.js';
 import { getMemberGoalPublicSnapshot } from '../lib/member-goals-store.js';
+import { countParticipantIntentsByUser } from '../lib/participant-intents-store.js';
 import type { MemberGoalPublicDTO } from '@uaetrail/shared-types';
+import { listPublicMemberBadges } from './member-badges.js';
 
 const computeAgeFromDateOfBirth = (dateOfBirth: string): number | null => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) return null;
@@ -88,27 +92,10 @@ export type PublicMemberProfileResponse =
       languages: string | null;
       memberSince: string;
       isHost: boolean;
+      profileRoleLabel: MemberProfileRoleLabel;
       isGuideStaff?: boolean;
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
       hostProfilePath: string | null;
-      trailPointsEligible: boolean;
-      points: number;
-      membershipTier: {
-        key: string;
-        name: string;
-        minPoints: number;
-        emoji: string;
-        tagline: string;
-        benefits: string[];
-      };
-      tierBadges: Array<{
-        key: string;
-        name: string;
-        description: string;
-        emoji: string;
-        earned: boolean;
-        earnedAt: string | null;
-      }>;
       badges: Array<{
         key: string;
         name: string;
@@ -147,40 +134,32 @@ export async function buildPublicMemberProfile(
     };
   }
 
-  const [activitiesAttended, activitiesHosted, ownedTenants, badges, businessHost, hostApplication, yearGoal] =
+  const [activitiesAttended, activitiesHosted, demandPosts, ownedTenants, hostApplication, yearGoal, badges] =
     await Promise.all([
     countUserCheckedInParticipations(userId),
     countPublishedActivitiesHostedByUser(userId),
+    countParticipantIntentsByUser(userId),
     listTenantsByOwnerId(userId),
-    findUserBadges(userId),
-    isBusinessHostById(userId),
     findLatestHostApplicationByApplicant(userId),
     getMemberGoalPublicSnapshot(userId),
+    listPublicMemberBadges(userId),
   ]);
-
-  const earnedBadgeKeys = new Set(badges.map((b) => b.badgeKey));
-  const points = businessHost ? 0 : (user.profile?.rewardPoints ?? 0);
-  const tier = getTierForPoints(points);
-
-  const mapBadge = (def: (typeof BADGE_DEFINITIONS)[number]) => {
-    const earned = earnedBadgeKeys.has(def.key);
-    const earnedAt = badges.find((b) => b.badgeKey === def.key)?.earnedAt?.toISOString() ?? null;
-    return {
-      key: def.key,
-      name: def.name,
-      description: def.description,
-      emoji: def.emoji,
-      earned,
-      earnedAt,
-    };
-  };
-
-  const tierBadges: ReturnType<typeof mapBadge>[] = [];
-  const achievementBadges = BADGE_DEFINITIONS.map(mapBadge);
 
   const primaryTenant = ownedTenants[0] ?? null;
   const hostProfileKind = resolveHostProfileKind(primaryTenant);
-  const isHost = user.role !== UserRole.PARTICIPANT || ownedTenants.length > 0 || activitiesHosted > 0;
+  const profileComplete = isSignupProfileComplete(user.profile);
+  const hostTiers = resolveHostTiersFromTenants(ownedTenants, profileComplete);
+  const hasAgencyProfile = ownedTenants.some((t) => resolveOwnedProfileType(t) === 'agency');
+  const hasShopProfile = ownedTenants.some((t) => resolveOwnedProfileType(t) === 'shop');
+  const isCommunityHost = activitiesHosted > 0 || demandPosts > 0;
+  const profileRoleLabel = resolveMemberProfileRoleLabel({
+    role: user.role,
+    hostTiers,
+    isCommunityHost,
+    hasAgencyProfile,
+    hasShopProfile,
+  });
+  const isHost = profileRoleLabel !== 'community_member';
   const isGuideStaff = user.role === UserRole.TENANT_GUIDE;
 
   const memberDetails = parseMemberDetails(
@@ -203,21 +182,11 @@ export async function buildPublicMemberProfile(
     memberSince: user.createdAt.toISOString(),
     languages: showLanguages ? memberDetails.languages : null,
     isHost,
+    profileRoleLabel,
     isGuideStaff,
     hostProfileKind,
     hostProfilePath: primaryTenant ? `/operator/${primaryTenant.slug}` : null,
-    trailPointsEligible: !businessHost,
-    points,
-    membershipTier: {
-      key: tier.key,
-      name: tier.name,
-      minPoints: tier.minPoints,
-      emoji: tier.emoji,
-      tagline: tier.tagline,
-      benefits: tier.benefits,
-    },
-    tierBadges,
-    badges: achievementBadges,
+    badges,
     stats: {
       activitiesAttended,
       activitiesHosted,

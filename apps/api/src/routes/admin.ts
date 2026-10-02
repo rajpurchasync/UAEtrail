@@ -7,10 +7,10 @@ import {
   NotificationType,
   HostApplicationStatus,
   ProductStatus,
-  RewardAction,
   TenantStatus,
   TenantType,
   UserRole,
+  RewardAction,
   UserStatus
 } from '../domain/enums.js';
 import { placeDetailPath, shopPublicPath } from '@uaetrail/shared-types';
@@ -19,8 +19,10 @@ import { z } from 'zod';
 import { mountActivityRoutes } from '../lib/activity-routes.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
+import { PRO_MEMBERSHIP_PATH } from '../lib/member-routes.js';
 import { toLocationDto, buildActivityDto } from '../lib/mappers.js';
 import { invalidateExploreMapCache } from '../lib/explore-map-cache.js';
+import { awardPoints } from '../services/rewards.js';
 import {
   locationHasCatalogImportTag,
   withCatalogAdminEditedTag,
@@ -87,7 +89,6 @@ import {
 } from '../lib/host-applications-store.js';
 import { dispatchNotification } from '../services/notifications.js';
 import { notifyUserAdminAction } from '../services/admin-notifications.js';
-import { awardPoints, getRewardSummary, getUserLeaderboardRank } from '../services/rewards.js';
 import {
   countSocialGroups,
   getSocialGroupAdminDetail,
@@ -397,7 +398,7 @@ adminPlaceItemPaths.forEach((path) => {
         userId: updated.submittedById,
         action: RewardAction.LOCATION_PUBLISHED,
         referenceId: updated.id,
-        label: `Location approved: ${updated.name}`
+        label: `Location approved: ${updated.name}`,
       }).catch(() => undefined);
     }
 
@@ -518,7 +519,7 @@ adminRouter.patch(
           meta: {
             kind: 'host_application_rejected',
             applicationId: application.id,
-            path: '/become-host'
+            path: PRO_MEMBERSHIP_PATH
           }
         });
       }
@@ -813,15 +814,13 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
       throw new ApiError(404, 'user_not_found', 'User not found.');
     }
 
-    const [ownedTenants, memberships, requests, participants, groups, hostedActivities, rewardSummary, leaderboardRank] = await Promise.all([
+    const [ownedTenants, memberships, requests, participants, groups, hostedActivities] = await Promise.all([
       listUserOwnedTenantsBasic(id),
       listTenantMembershipsForUser(id),
       listUserActivityRequestsBasic(id, 20),
       listUserActivityParticipantsBasic(id, 20),
       listUserGroupsWithMembership(id),
       listUserHostedActivitiesBasic(id, 20),
-      getRewardSummary(id),
-      getUserLeaderboardRank(id)
     ]);
 
     const requestEventIds = [...new Set(requests.map((request) => request.activityId))];
@@ -883,12 +882,6 @@ adminRouter.get('/users/:id', validate({ params: idParamSchema }), async (req, r
           joinedAt: group.joinedAt
         })),
         hostedActivities,
-        rewards: rewardSummary.trailPointsEligible === false ? null : {
-          points: rewardSummary.points,
-          membershipTier: rewardSummary.membershipTier,
-          leaderboardRank,
-          badgeCount: [...rewardSummary.tierBadges, ...rewardSummary.badges].filter((badge) => badge.earned).length
-        },
         requests: requests.reduce<Array<{
           id: string;
           activityId: string;
@@ -1098,7 +1091,7 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
       meta: {
         kind: status === 'active' ? 'host_reopened' : 'host_suspended',
         tenantId: id,
-        path: status === 'active' ? '/host/overview' : '/become-host'
+        path: status === 'active' ? '/host/overview' : PRO_MEMBERSHIP_PATH
       }
     });
 

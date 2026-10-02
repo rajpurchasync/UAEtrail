@@ -60,7 +60,9 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 | GET | `/me/participant-intents/:intentId/requests/mine` | Caller’s request on this intent |
 | POST | `…/requests/:requestId/approve` \| `…/reject` | **Poster** decides |
 
-**Legacy:** `POST /host/participant-intents/:intentId/fulfill` — tenant-scoped link after publish; prefer **`link-activity`** on `/me` for the demand poster.
+**Legacy:** `POST /host/participant-intents/:intentId/fulfill` — deprecated (returns `Deprecation` header). Demand **posters** must use **`POST /me/participant-intents/:intentId/link-activity`**. Explore publish already calls `exploreApi.linkParticipantIntentToActivity`.
+
+**Publish gate:** `POST /host/activities` and `POST /host/activities/:id/publish` require `signupProfileComplete` + `canPublish` (see `member-publish-gate.ts`), except platform admin acting on a tenant.
 
 Registration: `registerMeParticipantIntentRoutes.ts` (not mixed with `/me/rewards`).
 
@@ -79,10 +81,30 @@ Registration: `registerMeParticipantIntentRoutes.ts` (not mixed with `/me/reward
 
 ---
 
+## Member host capabilities (`GET /me/host-status`)
+
+Signed-in **member contract** for publish gates, host console access, and profile role labels. Resolved server-side in `apps/api/src/services/member-host-status.ts` — clients must not re-derive tiers from `UserRole`.
+
+| Field (subset) | Meaning |
+|----------------|---------|
+| `signupProfileComplete` | Buddy **Organize** + demand allowed after `/welcome` |
+| `canPublish` | Can open host publish APIs (community buddy tenant or business) |
+| `canAccessHostConsole` | `/host/*` chrome (publish, messages, team) |
+| `isCommunityHost` | **Host** label after first map activity or demand post |
+| `hostTiers` | `community` \| `professional` \| `business` flags |
+| `profileRoleLabel` | Display key for profile chrome |
+
+Canonical frontend client: `memberApi.getMemberHostStatus()` (`src/api/domains/member.ts`). Legacy: `organisationApi.getMyOrganisationStatus`.
+
+Implementation phases: [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md) · map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
+
+---
+
 ## Client facades (`src/api/domains`)
 
 | Domain module | Routes |
 |---------------|--------|
+| `member.ts` | **`/me/host-status`** |
 | `activities.ts` | `/activities`, `/me/requests`, `/host/activities`, `/host/requests` |
 | `explore.ts` | `/explore/map`, **`/me/participant-intents`** (+ requests, link-activity) |
 | `social.ts`, `chat.ts` | Groups, DMs, inbox |

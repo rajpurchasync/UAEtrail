@@ -1,3 +1,4 @@
+import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageCircle, UserMinus, UserRound } from 'lucide-react';
@@ -10,9 +11,9 @@ import { FormTabBar } from '../components/ui/FormTabBar';
 import { Dialog } from '../components/ui/Dialog';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
-import { EXPLORE_MAP_PATH } from '../config/platform';
+
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
-import { isHostRole } from '../utils/roles';
+import { useOrganisationGate } from '../hooks/useOrganisationGate';
 
 type FriendsTab = 'friends' | 'requests' | 'following';
 
@@ -47,7 +48,8 @@ export const Buddies = () => {
   >([]);
   const [findSearching, setFindSearching] = useState(false);
 
-  const messagesPath = isHostRole(user?.role) ? '/host/messages' : '/messages';
+  const { canAccessHostConsole } = useOrganisationGate({ enabled: Boolean(user) });
+  const messagesPath = canAccessHostConsole ? '/host/messages' : '/messages';
 
   const loadCore = useCallback(async () => {
     setLoading(true);

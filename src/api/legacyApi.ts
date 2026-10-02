@@ -6,6 +6,7 @@ import {
   placeApi,
   activitiesApi,
   accountApi,
+  memberApi,
   organisationApi,
   shopApi,
   adminApi,
@@ -45,7 +46,7 @@ export const legacyApi = {
   removeHostTeamMember: organisationApi.removeOrganisationTeamMember,
   submitHostApplication: organisationApi.submitOrganisationApplication,
   getMyHostApplication: organisationApi.getMyOrganisationApplication,
-  getMyHostStatus: organisationApi.getMyOrganisationStatus,
+  getMyHostStatus: memberApi.getMemberHostStatus,
   updateHostDetails: organisationApi.updateOrganisationDetails,
 
   // Activities

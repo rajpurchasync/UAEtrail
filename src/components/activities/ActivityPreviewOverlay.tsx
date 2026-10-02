@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { ActivityDetailView } from '../activity/ActivityDetailView';
-import { detailBackPath } from '../../utils/exploreRouting';
+import { detailBackPath } from '../../config/routingCatalog';
 
 type ActivityPreviewOverlayProps = {
   activity: ActivityDetailDTO;

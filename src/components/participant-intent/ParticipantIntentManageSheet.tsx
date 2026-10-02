@@ -14,6 +14,7 @@ import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { useAuth } from '../../context/AuthContext';
 import { signInPathForReturn } from '../../utils/authReturnContext';
+import { organizePublishGateHref } from '../../utils/organizePublishGate';
 import { ParticipantIntentEditForm } from './ParticipantIntentEditForm';
 import { ParticipantIntentJoinRequestsSection } from './ParticipantIntentJoinRequestsSection';
 
@@ -67,7 +68,12 @@ export const ParticipantIntentManageSheet = ({
     }
     if (gate.loading) return;
     if (!gate.canPublish) {
-      navigate(`/become-host?redirect=${encodeURIComponent(returnPath)}`);
+      navigate(
+        organizePublishGateHref(returnPath, {
+          signupProfileComplete: gate.signupProfileComplete,
+          canPublish: gate.canPublish,
+        })
+      );
       return;
     }
     onClose();

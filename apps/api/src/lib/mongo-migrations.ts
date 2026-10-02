@@ -609,6 +609,47 @@ const backfillLocationRegistryListed = async (db: Db): Promise<void> => {
   }
 };
 
+/** Owners need membership rows for /host scope; legacy data often only set ownerId on tenants. */
+const backfillTenantOwnerMemberships = async (db: Db): Promise<void> => {
+  const tenants = db.collection('tenants');
+  const memberships = db.collection('tenant_memberships');
+  let created = 0;
+
+  const cursor = tenants.find({ status: 'ACTIVE' });
+  for await (const tenant of cursor) {
+    const tenantId = String(tenant._id);
+    const ownerId = typeof tenant.ownerId === 'string' ? tenant.ownerId : null;
+    if (!ownerId) continue;
+
+    const exists = await memberships.findOne({
+      tenantId,
+      userId: ownerId,
+      isActive: { $ne: false },
+    });
+    if (exists) continue;
+
+    await memberships.updateOne(
+      { tenantId, userId: ownerId },
+      {
+        $set: {
+          tenantId,
+          userId: ownerId,
+          role: 'TENANT_OWNER',
+          isActive: true,
+          tenant: { status: tenant.status ?? 'ACTIVE' },
+        },
+        $setOnInsert: { _id: randomUUID(), createdAt: new Date() },
+      },
+      { upsert: true }
+    );
+    created += 1;
+  }
+
+  if (created > 0) {
+    console.log(`[mongo] Backfilled ${created} tenant owner membership(s)`);
+  }
+};
+
 /** Demand posts are public participation — not wishlist rows (see wishlist-alerts / FLOW-11). */
 const purgeDemandBookmarkFavorites = async (db: Db): Promise<void> => {
   const favorites = db.collection(COLLECTIONS.USER_FAVORITES);
@@ -652,4 +693,30 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateActivityTerminologyValues(db);
   await backfillLocationRegistryListed(db);
   await purgeDemandBookmarkFavorites(db);
+  await backfillTenantOwnerMemberships(db);
+  await backfillTenantPublishingPurpose(db);
+};
+
+/** Align tenant rows with community / professional / business publishing tiers. */
+const backfillTenantPublishingPurpose = async (db: Db): Promise<void> => {
+  const tenants = db.collection('tenants');
+  let updated = 0;
+
+  const cursor = tenants.find({ publishingPurpose: { $exists: false } });
+  for await (const tenant of cursor) {
+    const type = tenant.type as string | undefined;
+    const businessMode = tenant.businessMode as string | undefined | null;
+    let purpose: string;
+    if (type === 'COMPANY' || businessMode === 'AGENCY' || businessMode === 'SHOP') {
+      purpose = 'business';
+    } else {
+      purpose = 'community';
+    }
+    await tenants.updateOne({ _id: tenant._id }, { $set: { publishingPurpose: purpose } });
+    updated += 1;
+  }
+
+  if (updated > 0) {
+    console.log(`[mongo] Backfilled publishingPurpose on ${updated} tenant(s)`);
+  }
 };

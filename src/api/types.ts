@@ -152,27 +152,10 @@ export type PublicMemberProfileDTO =
       languages: string | null;
       memberSince: string;
       isHost: boolean;
+      profileRoleLabel?: import('@uaetrail/shared-types').MemberProfileRoleLabel;
       isGuideStaff?: boolean;
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
       hostProfilePath: string | null;
-      trailPointsEligible: boolean;
-      points: number;
-      membershipTier: {
-        key: string;
-        name: string;
-        minPoints: number;
-        emoji: string;
-        tagline: string;
-        benefits: string[];
-      };
-      tierBadges: Array<{
-        key: string;
-        name: string;
-        description: string;
-        emoji: string;
-        earned: boolean;
-        earnedAt: string | null;
-      }>;
       badges: Array<{
         key: string;
         name: string;

@@ -1,7 +1,8 @@
+import { ACTIVITIES_PATH, EXPLORE_MAP_PATH, TRIPS_PATH } from '../../config/routingCatalog';
 import { useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { ClipboardList, Map, MessageSquare, type LucideIcon } from 'lucide-react';
-import { EXPLORE_MAP_PATH } from '../../config/platform';
+
 import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
 
@@ -26,7 +27,7 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname } = useLocation();
-  const tripsActive = pathname === '/trips' || pathname === '/activities';
+  const tripsActive = pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH;
   const unreadMessages = useInboxUnreadCount();
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export const MobileBottomNav = () => {
         </NavLink>
 
         <Link
-          to="/trips"
+          to={TRIPS_PATH}
           className={tabShellClass(tripsActive)}
           aria-current={tripsActive ? 'page' : undefined}
           aria-label="Trips"

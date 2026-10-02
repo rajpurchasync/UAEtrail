@@ -1,0 +1,44 @@
+---
+description: Member/host tiers, naming, and gates — avoid confusing join-request with host onboarding
+alwaysApply: true
+---
+
+# Host & member model (enforcement)
+
+**Canonical docs:** `docs/MEMBER_MODEL.md` · `docs/NAMING_HOST_MEMBER.md` · `docs/DOMAIN_CANONICALS.md` (entities & routes) · `docs/HOST_CLEANUP_ROADMAP.md`
+
+## Product truth (do not invert)
+
+| User action | Mechanism | NOT this |
+|-------------|-----------|----------|
+| **Buddy Organize** on map | `signupProfileComplete` → `canPublish` (`GET /me/host-status`) → `/welcome` if incomplete | `/become-host`, host application |
+| **Pro / agency / shop** | `/profile/pro-membership`, `host_applications` | Bare “become host” funnel in consumer UI |
+| **Join an outing** | `activity_requests`, `POST /activities/:id/requests` | Host onboarding |
+| **Host reviews joiners** | `GET/PATCH /host/requests` (**activity** queue) | `registerHost*JoinRequest*` without **Activity** in the name |
+
+**`UserRole` (TENANT_GUIDE, …) ≠ host publishing tier.** UI gates use **`HostStatusDTO`** from `api.getMemberHostStatus()` / `useMemberHostStatus`.
+
+## Code placement
+
+| Concern | Location |
+|---------|----------|
+| Tier resolver | `apps/api/src/services/member-host-status.ts` only |
+| Publish enforcement | `member-publish-gate.ts` on create/publish |
+| Client | `src/api/domains/member.ts` → `getMemberHostStatus` |
+| Pro path constant (FE) | `src/config/memberRoutes.ts` |
+| Pro path constant (API meta) | `apps/api/src/lib/member-routes.ts` |
+
+## Before finishing host/member changes
+
+1. Run **`npm run verify:host-member`** (typecheck + contract tests).
+2. New `/host/*` registrars: name must include **Activity**, **Team**, **Tenant**, or **Legacy** — never ambiguous `JoinRequest` alone.
+3. Domain types: use **`TenantPublishingPurpose`**, not `string`, for `publishingPurpose`.
+4. Grep: no new `path: '/become-host'` in `apps/api/src` (use `PRO_MEMBERSHIP_PATH`).
+5. No new consumer links to `/become-host` (redirect route only); use `PRO_MEMBERSHIP_PATH` / `proMembershipPath()`.
+6. No new `isHostRole(` for product gates in `src/` (console access → `canAccessHostConsole`).
+
+## Tests that guard this
+
+- `apps/api/tests/host-member-contract.test.ts`
+- `src/member/hostMemberGuard.test.ts`
+- `src/api/apiLegacyGuard.test.ts` (includes `fulfillParticipantIntent`)

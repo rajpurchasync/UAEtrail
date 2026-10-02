@@ -12,7 +12,7 @@ import {
 import { HostActivityManageSheet } from '../../components/host/HostActivityManageSheet';
 import { HostedActivityListRow } from '../../components/host/HostedActivityListRow';
 import { buildTripsHostedActivityMenuItems } from '../../components/host/buildTripsHostedActivityMenu';
-import { exploreOrganizePath } from '../../utils/exploreRouting';
+import { exploreOrganizePath } from '../../config/routingCatalog';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 import type { ActivityRequestView } from '../../api/index';

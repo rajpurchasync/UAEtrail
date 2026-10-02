@@ -1,5 +1,5 @@
 import { Navigate, useParams } from 'react-router-dom';
-import { exploreShopsPath } from '../utils/exploreRouting';
+import { exploreShopsPath } from '../config/routingCatalog';
 import { shopPublicPath } from '../utils/shopPaths';
 
 /** Legacy alias — canonical public shop URL is `/shop/:id`. */

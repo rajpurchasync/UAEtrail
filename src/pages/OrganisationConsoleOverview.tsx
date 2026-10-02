@@ -18,6 +18,7 @@ import type { AccountEditSavePayload } from '../components/account/AccountEditMo
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useOrganisationHubData } from '../hooks/useOrganisationHubData';
 import { FEATURE_FLAGS } from '../config/platform';
+import { MEMBERSHIP_MARKETING_PATH, tripsLegacyJoinedTabPath } from '../config/routingCatalog';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
 import { inferNotificationPath } from '../utils/notificationRouting';
 
@@ -196,7 +197,7 @@ export const OrganisationConsoleOverview = () => {
             <AccountLinkList
               items={[
                 {
-                  to: '/trips?segment=upcoming&tab=joined',
+                  to: tripsLegacyJoinedTabPath(),
                   icon: <Calendar className="w-4 h-4" />,
                   label: 'My trips as participant',
                   badge: participant.upcomingActivitiesCount || undefined,
@@ -224,7 +225,7 @@ export const OrganisationConsoleOverview = () => {
                 ...(FEATURE_FLAGS.membershipEnabled
                   ? [
                       {
-                        to: '/membership',
+                        to: MEMBERSHIP_MARKETING_PATH,
                         icon: <Crown className="w-4 h-4" />,
                         label: 'Membership',
                         accent: 'amber' as const,

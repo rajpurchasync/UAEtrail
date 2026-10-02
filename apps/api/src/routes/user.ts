@@ -11,16 +11,16 @@ import {
   registerMeActivityParticipationRoutes,
 } from './user/registerMeEngagementRoutes.js';
 import { registerMeParticipantIntentRoutes } from './user/registerMeParticipantIntentRoutes.js';
-import { registerMeRewardsRoutes } from './user/registerMeRewardsRoutes.js';
+import { registerMeBadgesRoutes } from './user/registerMeBadgesRoutes.js';
 import { registerMeGoalsRoutes } from './user/registerMeGoalsRoutes.js';
 import { registerMeMapPinsRoutes } from './user/registerMeMapPinsRoutes.js';
+import { registerMemberHostStatusRoutes } from './user/registerMemberHostStatusRoutes.js';
 import { registerMeSubmittedPlaceRoutes } from './user/registerMeSubmittedPlaceRoutes.js';
 import { registerNotificationRoutes } from './user/registerNotificationRoutes.js';
 import { registerProfileRoutes } from './user/registerProfileRoutes.js';
 import { registerPublicActivityRoutes } from './user/registerPublicActivityRoutes.js';
 import { registerPublicMemberRoutes } from './user/registerPublicMemberRoutes.js';
 import { registerPublicPlaceRoutes } from './user/registerPublicPlaceRoutes.js';
-import { registerPublicRewardsRoutes } from './user/registerPublicRewardsRoutes.js';
 import { registerPublicTenantRoutes } from './user/registerPublicTenantRoutes.js';
 
 export const userRouter = Router();
@@ -34,7 +34,6 @@ registerPublicPlaceRoutes(userRouter);
 registerPublicTenantRoutes(userRouter);
 registerPublicActivityRoutes(userRouter);
 registerAccountLifecycleRoutes(userRouter);
-registerPublicRewardsRoutes(userRouter);
 registerPublicMemberRoutes(userRouter);
 
 userRouter.use(requireAuth, requireVerifiedEmail);
@@ -48,9 +47,10 @@ registerFollowRoutes(userRouter);
 registerGroupRoutes(userRouter);
 registerHostApplicationRoutes(userRouter);
 
+registerMemberHostStatusRoutes(userRouter);
 registerMeAccountSessionRoutes(userRouter);
 registerMeSubmittedPlaceRoutes(userRouter);
 registerMeParticipantIntentRoutes(userRouter);
-registerMeRewardsRoutes(userRouter);
+registerMeBadgesRoutes(userRouter);
 registerMeGoalsRoutes(userRouter);
 registerMeMapPinsRoutes(userRouter);

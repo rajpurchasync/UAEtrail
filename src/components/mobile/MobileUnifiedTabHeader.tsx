@@ -1,7 +1,8 @@
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { Link } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { ReactNode } from 'react';
-import { EXPLORE_MAP_PATH } from '../../config/platform';
+
 import { MobileProfileHeaderLink } from './MobileProfileHeaderLink';
 
 export type MobileUnifiedTabHeaderCenter =

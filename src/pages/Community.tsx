@@ -17,7 +17,7 @@ import { ReportContentButton } from '../components/ui/ReportContentDialog';
 import { ChatComposeBar } from '../components/ui/ChatComposeBar';
 import { EmojiPickerButton } from '../components/ui/EmojiPickerButton';
 import { buildSignInRedirect } from '../utils/authReturnContext';
-import { explorePlacesPath } from '../utils/exploreRouting';
+import { COMMUNITY_PATH, explorePlacesPath } from '../config/routingCatalog';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 const linkPattern = /(?:https?:\/\/|www\.)\S+|(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/\S*)?/gi;
@@ -233,7 +233,7 @@ export const Community = () => {
       <PageMeta
         title="Outdoor community"
         description="Ask questions, share activity reports, and get tips from hikers and campers across the UAE."
-        path="/community"
+        path={COMMUNITY_PATH}
       />
     <ConsumerShell
       layout="stack"
@@ -506,7 +506,7 @@ export const Community = () => {
                 Tip: open a <Link to={explorePlacesPath()} className="text-emerald-600">location page</Link> and paste its ID to anchor your post.
               </p>
               <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
-                Earn <strong>+20 Trail Points</strong> when you publish.
+                Share reports, tips, and questions with the community.
               </p>
               <button
                 type="submit"

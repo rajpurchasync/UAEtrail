@@ -1,6 +1,6 @@
 # UAE Trail — Remediation Plan
 
-Phased fixes from the CTO review. **All planned remediation items complete.**
+Phased fixes from the CTO review. **Phases 1–6 and listed Phase 8 items:** complete. **Phase 7 (privacy / notification actor labels, smoke matrix):** partial — track remaining work in [`docs/HOST_CLEANUP_ROADMAP.md`](docs/HOST_CLEANUP_ROADMAP.md) § P2 and member-model verify (`npm run verify:host-member`). Product/doc truth: [`docs/DOCS_INDEX.md`](docs/DOCS_INDEX.md).
 
 ---
 
@@ -124,7 +124,7 @@ Two **independent** privacy controls. Both mean **hidden from map discovery**, n
 | 7.3 | **Settings UI:** profile visibility toggle (Public / Group members / Private) in Security & privacy | Done |
 | 7.4 | **Contextual access:** host, friends group, accepted co-participants; anonymous browse denied | Done |
 | 7.5 | **Map redaction:** `shouldHideFromMapMemberDiscovery` — private + no hosted activity only; activity cards keep host identity | Done |
-| 7.6 | **Downstream wiring:** media presign, join-request review, notifications, favorites — same helper | Partial (media + brief done) |
+| 7.6 | **Downstream wiring:** media presign, join-request review, notifications, favorites — same helper | Partial (media + public profile + host join queue + notification actor labels + **saved profile favorites**; spot-check remaining notification kinds ⬜) |
 | 7.7 | **Tests:** API matrix (visibility × viewer); FE smoke for private profile page | Partial (API unit tests done) |
 
 **Current baseline:** `profileVisibility` on user profile; `resolveProfileViewerAccess` gates `/users/:id/public-profile`, brief, and media. Demand map pins filtered for private users with no hosted activities. Activity cards still show host identity. Settings toggle in Security & privacy.

@@ -4,7 +4,7 @@
 **FAB:** Add → **Shops**  
 **Code:** `contributeFlows/shop.ts` · `CreateContributeFlow` · `ContributeShopPreview.tsx`
 
-**Community map info** — anyone signed in can add a nearby shop tip (not shop-owner onboarding or **Organisations** applications). Separate from **become-host** merchant profiles.
+**Community map info** — anyone signed in can add a nearby shop tip (not shop-owner onboarding or **Organisations** applications). Separate from **Pro Membership** merchant/agency applications (`/profile/pro-membership`).
 
 ## Steps
 

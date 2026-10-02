@@ -138,7 +138,6 @@ export const ReviewSection = ({
             <EmojiPickerButton onPick={insertEmoji} disabled={submitting} />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <p className="text-xs text-emerald-700">Earn +25 Trail Points for your review.</p>
           <button
             type="submit"
             disabled={submitting}

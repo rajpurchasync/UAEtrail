@@ -1,6 +1,5 @@
 import type { Router } from 'express';
 import { z } from 'zod';
-import { RewardAction } from '../../domain/enums.js';
 import { locationSubmitBodySchema } from '../../domain/location-submit.js';
 import { createLocationRecord, listSubmittedLocationsByUser } from '../../lib/activities-store.js';
 import { createAuditLog } from '../../lib/audit.js';
@@ -8,10 +7,11 @@ import { toLocationDto } from '../../lib/mappers.js';
 import { registerPlaceAlias } from '../../lib/route-place-alias.js';
 import { validate } from '../../middleware/validate.js';
 import { buildLocationCreateData } from '../../services/location-submit.js';
-import { awardPoints } from '../../services/rewards.js';
 import { notifyAdminsLocationSubmitted } from '../../services/platform-admin-events.js';
 import { findAuthUserById } from '../../lib/auth-users.js';
+import { RewardAction } from '../../domain/enums.js';
 import { fromPrismaActivityType } from '../../domain/activity-type.js';
+import { awardPoints } from '../../services/rewards.js';
 
 /** Signed-in place submission (`/me/locations`). Requires prior auth middleware. */
 export const registerMeSubmittedPlaceRoutes = (router: Router): void => {

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
 import type { MemberGoalDTO, MemberGoalActivityFilter } from '@uaetrail/shared-types';
 import { ProfileHubIdentityCard } from './ProfileHubIdentityCard';
 import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
@@ -124,6 +125,11 @@ export const ProfileConsumerHub = ({
       <ProfileGoalCard goal={goal} saving={goalSaving} onSave={onSaveGoal} onClear={onClearGoal} />
 
       <SettingsMenuGroup>
+        <SettingsMenuRow
+          label="Pro Membership"
+          subtitle="Professional guide, agency, or shop profile"
+          to={PRO_MEMBERSHIP_PATH}
+        />
         <SettingsMenuRow label="Sign out" destructive onClick={onSignOut} />
       </SettingsMenuGroup>
     </div>

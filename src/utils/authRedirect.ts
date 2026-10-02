@@ -1,6 +1,6 @@
+import { EXPLORE_MAP_PATH, GROUPS_PATH, PROFILE_BADGES_PATH, PROFILE_PATH } from '../config/routingCatalog';
 import type { UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
-import { EXPLORE_MAP_PATH } from '../config/platform';
 
 const AUTH_LOOP_PATHS = new Set(['/signin', '/signup', '/verify']);
 
@@ -8,12 +8,12 @@ const pathnameOf = (path: string): string => path.split('?')[0]?.split('#')[0] ?
 
 /** Paths that require authentication — unsafe as sign-in dismiss targets. */
 const AUTH_GATED_PREFIXES = [
-  '/profile',
-  '/profile/badges',
+  PROFILE_PATH,
+  PROFILE_BADGES_PATH,
   '/my-requests',
   '/messages',
   '/notifications',
-  '/groups',
+  GROUPS_PATH,
   '/host',
   '/admin',
   '/merchant',

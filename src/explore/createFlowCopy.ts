@@ -5,10 +5,10 @@ export const ORGANIZE_TYPE_SHEET_TITLE = 'What kind of plan?';
 export const ORGANIZE_DEMAND_PREFILL_TITLE = 'Propose Plan';
 
 export const ORGANIZE_HOST_PROFILE_ERROR =
-  'Almost there — tell people a bit about you first so you can share this plan.';
+  'Finish your profile first — then you can publish this plan on the map.';
 
 export const ORGANIZE_INTRO_PROMPT =
-  'Almost there — a quick intro so people know who they\u2019re meeting up with. We\u2019ll walk you through it.';
+  'Finish your member profile (age, gender, and where you\u2019re based) to publish on the map.';
 
 export const GOING_FROM_LABEL = 'Where are you going from?';
 

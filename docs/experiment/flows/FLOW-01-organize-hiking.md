@@ -25,8 +25,8 @@ Signed-in **host** (complete host profile / `canPublish`) publishes a **hiking**
 | Check | If fail |
 |-------|---------|
 | Signed in | Redirect to sign-in; return URL includes `compose=organize:hiking` |
-| Host profile complete | Redirect to `/become-host` when selecting Hiking |
-| Host tenant loaded | Error on publish: host profile message |
+| Signup profile complete (`canPublish`) | Redirect to `/welcome?redirect=…` when incomplete; Pro/business → `/profile/pro-membership` |
+| Buddy host tenant loaded | Error on publish if tenant missing (see [`MEMBER_MODEL.md`](../../MEMBER_MODEL.md)) |
 
 ---
 

@@ -4,8 +4,8 @@ import { findLocationInMongo, findActivityDocInMongo } from '../lib/entity-sync.
 import { findAuthUserById } from '../lib/auth-users.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { promptPostActivityReview } from './review-prompt.js';
-import { awardPoints } from './rewards.js';
 import { createAuditLog } from '../lib/audit.js';
+import { awardPoints } from './rewards.js';
 
 type ActivityTiming = { startAt: Date; endAt: Date | null; status: ActivityStatus };
 
@@ -107,19 +107,20 @@ export async function performParticipantCheckIn(opts: {
 
   await activityParticipantsCollection().updateOne({ _id: participant.id }, { $set: { checkedInAt } });
 
+  const hostUserId = activity.hostId ?? activity.createdById;
+
   void awardPoints({
     userId: participant.userId,
     action: RewardAction.ACTIVITY_ATTENDED,
     referenceId: `${activity.id}:${participant.userId}`,
-    label: `Attended: ${activity.title}`
+    label: `Attended: ${activity.title}`,
   }).catch(() => undefined);
 
-  const hostUserId = activity.hostId ?? activity.createdById;
   void awardPoints({
     userId: hostUserId,
     action: RewardAction.ACTIVITY_HOSTED,
     referenceId: activity.id,
-    label: `Hosted activity: ${activity.title}`
+    label: `Hosted activity: ${activity.title}`,
   }).catch(() => undefined);
 
   await createAuditLog({

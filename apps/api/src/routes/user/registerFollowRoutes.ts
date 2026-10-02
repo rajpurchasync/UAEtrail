@@ -13,6 +13,8 @@ import {
   countPublishedActivitiesHostedByUser,
   countUserCheckedInParticipations,
 } from '../../lib/activity-engagement-store.js';
+import { isCommunityHostByUserId } from '../../lib/community-host.js';
+import { countParticipantIntentsByUser } from '../../lib/participant-intents-store.js';
 import { notifyMemberFollowed } from '../../services/social-notifications.js';
 import { buddyRelationshipParamSchema } from './schemas.js';
 
@@ -20,12 +22,16 @@ export const registerFollowRoutes = (router: Router): void => {
   router.get('/me/member-hub-stats', async (req, res, next) => {
     try {
       const userId = req.auth!.userId;
-      const [followerCount, joinedCount, hostedCount] = await Promise.all([
+      const [followerCount, joinedCount, hostedCount, demandPostCount, isCommunityHost] = await Promise.all([
         countFollowersForUser(userId),
         countUserCheckedInParticipations(userId),
         countPublishedActivitiesHostedByUser(userId),
+        countParticipantIntentsByUser(userId),
+        isCommunityHostByUserId(userId),
       ]);
-      res.json({ data: { followerCount, joinedCount, hostedCount } });
+      res.json({
+        data: { followerCount, joinedCount, hostedCount, demandPostCount, isCommunityHost },
+      });
     } catch (error) {
       next(error);
     }

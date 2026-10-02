@@ -51,6 +51,12 @@ Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
 - **List + manage:** create family/friends groups, members, invites, kids, **who can message** (wall post policy).
 - **Chat:** tap **Message** → `/messages?group=<id>` (single chat surface).
 
+### Community (`/community`)
+
+- **Secondary surface** (desktop nav link) — Q&A, activity reports, tips; **not** the product home (`/explore` is).
+- **Mobile:** route redirects to `/` (marketing); use explore + profile hubs for day-to-day discovery.
+- **Constants:** `COMMUNITY_PATH` in `src/config/surfacePaths.ts` (re-exported from `routingCatalog`).
+
 ### Post-auth member details (`/welcome`)
 
 After sign-up, sign-in, or OTP verify, **participants** and **shop members** (`merchant_admin`) with incomplete profile fields are sent to **`/welcome`** — **finish signing up**, not “confirm profile”.
@@ -173,11 +179,12 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/discovery` | `/explore` (+ param transform) | 2026-Q4 |
 | `/calendar` | `/explore` | 2026-Q4 |
 | `/shop` (bare) | `/explore?panel=shops` | 2026-Q4 |
-| `/activities` (no tab) | `/explore?panel=activities` | 2026-Q4 |
-| `/activities?create=*` | `/explore?compose=organize:*` | 2026-Q4 |
-| `/rewards` | `/trail-points` | 2026-Q4 |
+| `/activities` (any) | `/trips` (preserves query; `create=*` → explore compose) | 2026-Q4 |
+| `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
+| `/membership` | `/explore` (`Membership.tsx`; not product home) | 2026-Q4 or fold |
 | `/organizer/*` | `/host/*` | 2026-Q4 |
 | `/become-organizer` | `/become-host` | 2026-Q4 |
+| `/become-host` | `/profile/pro-membership` | 2026-Q4 (Pro / agency / shop; buddy Organize uses `/welcome` + `canPublish`) |
 | `/dashboard/*` | role-based redirect | 2026-Q4 |
 | `/admin/organizers` | `/admin/hosts` | 2026-Q4 |
 | `/admin/locations` | `/admin/places` | 2026-Q4 |
@@ -186,16 +193,16 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/merchant/:id` | legacy merchant page | TBD |
 | `/sign-up`, `/sign-in` | auth aliases | keep |
 
-Personal hub tabs (`/activities?tab=joined|hosted`) remain for Past, Scheduled, and Hosted sub-views. Default `/activities?tab=joined` is the Activities hub (Upcoming + Suggested).
+Personal hub canonical route: **`/trips`** (`TRIPS_PATH`). Legacy `/activities` redirects to `/trips` in `App.tsx`.
 
 ## Mobile tab shell (signed-in, `md:hidden`)
 
 | Tab | Route | Chrome |
 |-----|-------|--------|
-| **Map** | `/explore` | Unified tab header (avatar · brand · notifications) |
-| **Profile** | `/profile` | Same header (avatar · title · notifications) |
-| **Activities** | `/activities?tab=joined` | Same header (avatar · title · create) |
+| **Explore** | `/explore` | Unified tab header (avatar · brand · notifications) |
+| **Trips** | `/trips` | Plans · Completed · Map (`tripsRouting.ts`) |
 | **Messages** | `/messages` | Same header (avatar · title · compose); search + pills below |
+| **Profile** | `/profile` (avatar in header on other tabs) | Profile hub / settings stack |
 
 - One mobile header component in Layout for all four bottom-nav roots; sub-routes (e.g. `/profile/settings`, message threads) use their own back chrome.
 - User groups and activity outing chats appear in Messages inbox (Groups / Outings pills).

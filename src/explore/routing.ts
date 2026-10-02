@@ -1,6 +1,8 @@
 import { exploreDemandMapItemPath } from '@uaetrail/shared-types';
 import type { OrganizeComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
+import { TRIPS_PATH } from '../constants';
+import { tripsPlansPath } from '../trips/tripsRouting';
 import type { ContributeVenueKind } from './contributeTypes';
 import { formatComposeQuery, type ExploreCompose } from './compose';
 import {
@@ -86,6 +88,7 @@ export const exploreMapItemSharePath = (mapItemId: string): string => {
 };
 
 /** Resume publishing an {@link Activity} for a map {@link ParticipantIntent} after auth/onboarding. */
+/** Legacy deep link: selects a demand pin on load; poster links via `link-activity`, not host fulfill. */
 export const FULFILL_INTENT_QUERY_KEY = 'fulfillIntent';
 /** @deprecated Legacy query key — parsed for backward compatibility. */
 export const LEGACY_FULFILL_INTENT_QUERY_KEY = 'hostDemand';
@@ -453,7 +456,7 @@ export const detailBackPath = (kind: DetailBackKind): string => {
 
 /** Personal activities hub — joined/hosted tabs only (not public browse). */
 export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
-  tab === 'hosted' ? '/trips?role=hosted' : '/trips';
+  tab === 'hosted' ? tripsPlansPath('hosted') : TRIPS_PATH;
 
 /** Consumer create flow — explore compose organize menu or a specific kind. */
 export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>

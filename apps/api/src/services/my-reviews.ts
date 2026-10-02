@@ -12,7 +12,7 @@ import {
   type SocialReview,
 } from '../lib/social-data.js';
 import { findTenantById } from '../lib/tenant-store.js';
-import { tierEnumToDisplay } from '../lib/rewards-config.js';
+import { tierEnumToDisplay } from '../lib/membership-tier-display.js';
 import { findAuthUserById, getAuthUserMembershipTier } from '../lib/auth-users.js';
 import { ApiError } from '../lib/api-error.js';
 

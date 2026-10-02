@@ -1,12 +1,13 @@
 export { placeApi } from './places';
 export { fetchPlaceRegistry, type PlaceRegistryQuery } from './placeRegistry';
 export { exploreApi } from './explore';
-export { rewardsApi } from './rewards';
+export { badgesApi } from './badges';
 export { goalsApi } from './goals';
 export { memberJourneyMapApi } from './memberJourneyMap';
 export { activitiesApi } from './activities';
 export { accountApi } from './account';
 export { socialApi } from './social';
+export { memberApi } from './member';
 export { organisationApi } from './organisation';
 export { shopApi } from './shop';
 export { adminApi } from './admin';

@@ -32,7 +32,7 @@ Code name for the shared enum: **`OutingCategory`** (field e.g. `outingCategory`
 
 **Browse tab “Activities”** = map/list of **Organize + Demand** time-bound pins (not the category label “Activities”). Category **Activities** = the fifth outing type (runs, climbs, etc.).
 
-**Host** = role only (`canPublish`). Gates **Organize**, not Demand.
+**Host (buddy Organize)** = **profile completion** + `canPublish` on `/me/host-status`. Gates **Organize**, not Demand. **Business** agency/shop/pro → `/profile/pro-membership` and `canHostPaidActivities`. Legacy `/become-host` redirects there.
 
 **Join behaviour**
 

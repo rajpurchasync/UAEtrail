@@ -3,7 +3,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
-import { detailBackPath } from '../utils/exploreRouting';
+import { detailBackPath } from '../config/routingCatalog';
 
 export const NotFound = () => (
   <>

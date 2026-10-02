@@ -1,3 +1,12 @@
+import {
+  COMMUNITY_PATH,
+  EXPLORE_MAP_PATH,
+  LEGACY_MY_REWARDS_PATH,
+  LEGACY_REWARDS_PATH,
+  LEGACY_TRAIL_POINTS_PATH,
+  MEMBERSHIP_MARKETING_PATH,
+  PROFILE_BADGES_PATH,
+} from './config/routingCatalog';
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -11,8 +20,8 @@ import { useAuth } from './context/AuthContext';
 import { Home } from './pages/Home';
 import { Membership } from './pages/Membership';
 import { ExploreExperience } from './explore';
-import { EXPLORE_MAP_PATH } from './config/platform';
-import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter } from './utils/exploreRouting';
+
+import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter } from './config/routingCatalog';
 import { organisationManagePath } from './utils/organisationPaths';
 import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
 
@@ -94,6 +103,9 @@ const EventDetail = lazy(() => import('./pages/EventDetail').then((m) => ({ defa
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
 const BecomeHost = lazy(() =>
   import('./pages/BecomeHost').then((m) => ({ default: m.BecomeHost }))
+);
+const ProfileProMembership = lazy(() =>
+  import('./pages/ProfileProMembership').then((m) => ({ default: m.ProfileProMembership }))
 );
 /** Legacy redirect — canonical public shop URL is `/shop/:id`. */
 const LegacyMerchantPublicRedirect = lazy(() =>
@@ -379,7 +391,15 @@ function App() {
             }
           />
           <Route
-            path="/profile/badges"
+            path="/profile/pro-membership"
+            element={
+              <ProtectedRoute>
+                <ProfileProMembership />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={PROFILE_BADGES_PATH}
             element={
               <ProtectedRoute>
                 <ProfileBadges />
@@ -402,9 +422,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/trail-points" element={<Navigate to="/profile/badges" replace />} />
-          <Route path="/my-rewards" element={<Navigate to="/profile/badges" replace />} />
-          <Route path="/rewards" element={<Navigate to="/profile/badges" replace />} />
+          <Route path={LEGACY_TRAIL_POINTS_PATH} element={<Navigate to={PROFILE_BADGES_PATH} replace />} />
+          <Route path={LEGACY_MY_REWARDS_PATH} element={<Navigate to={PROFILE_BADGES_PATH} replace />} />
+          <Route path={LEGACY_REWARDS_PATH} element={<Navigate to={PROFILE_BADGES_PATH} replace />} />
           <Route
             path="/my-requests"
             element={
@@ -479,7 +499,7 @@ function App() {
           />
           <Route path="/become-organizer" element={<BecomeHost />} />
           <Route path="/become-host" element={<BecomeHost />} />
-          <Route path="/membership" element={<Membership />} />
+          <Route path={MEMBERSHIP_MARKETING_PATH} element={<Membership />} />
           <Route path="/shop" element={<ShopBrowseRoute />} />
           <Route
             path="/shop/:id"
@@ -498,7 +518,7 @@ function App() {
             }
           />
           <Route path="/merchant/:id" element={<LegacyMerchantPublicRedirect />} />
-          <Route path="/community" element={<Community />} />
+          <Route path={COMMUNITY_PATH} element={<Community />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signed-out" element={<Navigate to="/" replace />} />

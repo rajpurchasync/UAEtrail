@@ -1,6 +1,5 @@
 import { TileLayer } from 'react-leaflet';
 import { MAP_CONFIG } from '../../config/platform';
-
 interface MapTileLayersProps {
   tileUrl?: string;
   labelTileUrl?: string | null;

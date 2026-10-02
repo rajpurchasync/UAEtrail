@@ -1,6 +1,6 @@
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { Facebook, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { EXPLORE_MAP_PATH } from '../../config/platform';
 
 const SOCIAL_LINKS = {
   facebook: 'https://www.facebook.com/profile.php?id=61593777959562',

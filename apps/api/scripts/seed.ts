@@ -14,7 +14,6 @@ import {
   PostCategory,
   ProductStatus,
   RequestStatus,
-  RewardAction,
   ReviewTargetType,
   TenantBusinessMode,
   TenantStatus,
@@ -36,7 +35,6 @@ import {
 } from '../src/lib/entity-builders.js';
 import { findActivityDocInMongo, findLocationInMongo, writeActivityDocToMongo, writeLocationToMongo } from '../src/lib/entity-sync.js';
 import { getMongoClient, connectMongo, disconnectMongo } from '../src/lib/mongo.js';
-import { createRewardLedgerEntry, createUserBadge } from '../src/lib/reward-ledger-store.js';
 import { createSocialReview } from '../src/lib/social-data.js';
 import {
   createMerchantProfileForUser,
@@ -875,24 +873,6 @@ const seedParticipant = async (activityId: string, userId: string, reviewerId: s
     },
     { upsert: true }
   );
-};
-
-const seedReward = async (
-  userId: string,
-  action: RewardAction,
-  points: number,
-  referenceId: string,
-  label: string
-) => {
-  try {
-    await createRewardLedgerEntry({ userId, action, points, referenceId, label });
-    await db().collection('auth_users').updateOne(
-      { _id: userId },
-      { $inc: { 'profile.rewardPoints': points }, $set: { updatedAt: new Date() } }
-    );
-  } catch {
-    // idempotent re-seed
-  }
 };
 
 const SEED_MARKER_EMAIL = 'admin@uaetrails.app';
@@ -1968,31 +1948,6 @@ Share your live location and carry extra water in summer months.`
       { $set: { checkedInAt: new Date() } }
     );
   }
-
-  await seedReward(participant._id, RewardAction.SIGNUP_WELCOME, 25, participant._id, 'Welcome bonus');
-  await seedReward(participant._id, RewardAction.ACTIVITY_ATTENDED, 30, `${event._id}:${participant._id}`, 'Attended an activity');
-  await seedReward(participant._id, RewardAction.COMMUNITY_POST, 20, 'seed-post-1', 'Community post');
-  await seedReward(participant._id, RewardAction.REVIEW_WRITTEN, 25, 'seed-review-shawka', 'Review written');
-  await seedReward(agencyOwner._id, RewardAction.ACTIVITY_PUBLISHED, 50, event._id, 'Published an activity');
-  await seedReward(agencyOwner._id, RewardAction.ACTIVITY_HOSTED, 75, event._id, 'Hosted an activity');
-  await seedReward(agencyGuide._id, RewardAction.ACTIVITY_ATTENDED, 30, `${event._id}:${agencyGuide._id}`, 'Attended an activity');
-  await seedReward(agencyGuide._id, RewardAction.REVIEW_WRITTEN, 25, 'seed-review-jais', 'Review written');
-  await seedReward(individualHost._id, RewardAction.SIGNUP_WELCOME, 25, individualHost._id, 'Welcome bonus');
-  await seedReward(individualHost._id, RewardAction.ACTIVITY_PUBLISHED, 50, 'seed-event-fossil-camp', 'Published Fossil Rock camp');
-  await seedReward(individualHost._id, RewardAction.LOCATION_SUBMITTED, 15, SEED_MARKER_LOCATION_ID, 'Location submitted');
-  await seedReward(pendingParticipant._id, RewardAction.SIGNUP_WELCOME, 25, pendingParticipant._id, 'Welcome bonus');
-
-  await db().collection('auth_users').updateOne(
-    { _id: agencyOwner._id },
-    { $set: { 'profile.membershipTier': MembershipTier.ACTIVE, updatedAt: new Date() } }
-  );
-
-  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'active' });
-  await createUserBadge({ userId: agencyOwner._id, badgeKey: 'host' });
-  await createUserBadge({ userId: individualHost._id, badgeKey: 'host' });
-  await createUserBadge({ userId: individualHost._id, badgeKey: 'contributor' });
-  await createUserBadge({ userId: participant._id, badgeKey: 'helpful_critic' });
-  await createUserBadge({ userId: agencyGuide._id, badgeKey: 'helpful_critic' });
 
   const suspendLegacyDemoUser = async (email: string, keepUserId: string) => {
     const legacy = await findAuthUserByEmail(email);

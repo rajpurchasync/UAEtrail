@@ -6,7 +6,7 @@ import {
   api,
   TenantDetail
 } from '../../api/index';
-import { USER_TYPE_BADGE, USER_TYPE_LABELS, isBusinessHostUserType } from '../../constants/userTypes';
+import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../../constants/userTypes';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { activityHostName } from '../../utils/hostLabels';
 
@@ -65,12 +65,6 @@ export interface AdminUserDetail {
     tenantName?: string;
     role: string;
   }>;
-  rewards?: {
-    points: number;
-    membershipTier: { key: string; name: string; emoji: string };
-    leaderboardRank: number | null;
-    badgeCount: number;
-  } | null;
 }
 
 type Tab = 'overview' | 'hosts' | 'groups' | 'hosted' | 'participated' | 'requests';
@@ -498,33 +492,6 @@ export const AdminUserDetailPanel = ({
                     <p className="font-medium text-gray-900">{user.emailVerifiedAt ? new Date(user.emailVerifiedAt).toLocaleDateString() : 'No'}</p>
                   </div>
                 </div>
-
-                {isBusinessHostUserType(user.userType) && !user.rewards && (
-                  <p className="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
-                    Business hosts do not participate in Trail Points.
-                  </p>
-                )}
-
-                {user.rewards && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-emerald-50 rounded-lg">
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase">Trail Points</p>
-                      <p className="text-xl font-bold text-emerald-800">{user.rewards.points}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase">Membership</p>
-                      <p className="text-sm font-medium">{user.rewards.membershipTier.emoji} {user.rewards.membershipTier.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase">Leaderboard</p>
-                      <p className="text-sm font-medium">{user.rewards.leaderboardRank ? `#${user.rewards.leaderboardRank}` : '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase">Badges</p>
-                      <p className="text-sm font-medium">{user.rewards.badgeCount}</p>
-                    </div>
-                  </div>
-                )}
 
                 {user.profile?.phone && (
                   <Section title="Phone"><p className="text-sm text-gray-700">{user.profile.phone}</p></Section>

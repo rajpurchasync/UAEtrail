@@ -3,6 +3,16 @@
  * Reference: UAE Trail Platform Audit & Strategy plan.
  */
 
+import {
+  BUDDIES_PATH,
+  COMMUNITY_PATH,
+  CONTRIBUTIONS_PATH,
+  GROUPS_PATH,
+  MEMBERSHIP_MARKETING_PATH,
+  PROFILE_PATH,
+} from './surfacePaths';
+import { LEGACY_BECOME_HOST_PATH } from './memberRoutes';
+
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
 
@@ -75,7 +85,7 @@ export const OPERATOR_PUBLIC_PATH_PREFIX = ORGANISATION_PUBLIC_PATH_PREFIX;
 export const DESKTOP_NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: EXPLORE_MAP_PATH, label: 'Explore' },
-  { to: '/community', label: 'Community' },
+  { to: COMMUNITY_PATH, label: 'Community' },
   { to: '/faq', label: 'Help' },
 ] as const;
 
@@ -94,8 +104,8 @@ export const MOBILE_LANDING_USER_MENU = [
 export const MOBILE_DRAWER_MENU = [
   {
     label: 'My Profile',
-    to: '/profile',
-    match: ['/profile', '/my-requests', '/messages'],
+    to: PROFILE_PATH,
+    match: [PROFILE_PATH, '/my-requests', '/messages'],
     profileLink: true,
   },
   { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery'] },
@@ -131,7 +141,7 @@ export const FEATURE_FLAGS = {
 } as const;
 
 export const MEMBERSHIP_NAV_LINK = FEATURE_FLAGS.membershipEnabled
-  ? ({ to: '/membership' as const, label: 'Membership' })
+  ? ({ to: MEMBERSHIP_MARKETING_PATH, label: 'Membership' })
   : null;
 
 /** Shop: catalog, cart, and Stripe checkout (when configured). */
@@ -267,16 +277,17 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/trips',
   '/trips/map',
   '/activities',
-  '/community',
+  COMMUNITY_PATH,
   '/shop',
-  '/profile',
-  '/groups',
-  '/buddies',
-  '/contributions',
+  PROFILE_PATH,
+  GROUPS_PATH,
+  BUDDIES_PATH,
+  CONTRIBUTIONS_PATH,
   '/messages',
   '/notifications',
   '/my-requests',
-  '/become-host',
+  LEGACY_BECOME_HOST_PATH,
+  '/profile/pro-membership',
   '/become-organizer',
   '/faq',
   '/terms',
@@ -310,10 +321,10 @@ export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBo
 
 /** Personal hub routes that keep the mobile tab bar visible (profile is not a tab). */
 export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
-  '/profile',
-  '/buddies',
-  '/contributions',
-  '/groups',
+  PROFILE_PATH,
+  BUDDIES_PATH,
+  CONTRIBUTIONS_PATH,
+  GROUPS_PATH,
   '/my-requests',
 ] as const;
 

@@ -2,7 +2,7 @@
 
 **Canonical product concept.** All user-facing copy, surface design, and feature decisions should align with this document before shipping.
 
-Companion docs: [`NAVIGATION.md`](./NAVIGATION.md) (where things live), [`LANDING.md`](./LANDING.md) (guest funnel), [`ARCHITECTURE.md`](./ARCHITECTURE.md) (implementation), [`CREATE_FLOW.md`](./CREATE_FLOW.md) (FAB + organize/find/add), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) (explore card copy).
+Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md) (canonical map), [`NAVIGATION.md`](./NAVIGATION.md) (where things live), [`LANDING.md`](./LANDING.md) (guest funnel), [`ARCHITECTURE.md`](./ARCHITECTURE.md) (implementation), [`CREATE_FLOW.md`](./CREATE_FLOW.md) (FAB + organize/find/add), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (community vs Pro vs business host), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) (explore card copy).
 
 Code mirror (short strings for UI): `src/content/productNorthStar.ts`.
 

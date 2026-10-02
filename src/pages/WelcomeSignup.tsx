@@ -1,10 +1,11 @@
+import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { api } from '../api/index';
 import { SignupProfileWizard } from '../components/signup/SignupProfileWizard';
 import { PageMeta } from '../components/seo/PageMeta';
-import { EXPLORE_MAP_PATH } from '../config/platform';
+
 import { isSignupProfileComplete } from '../constants/userProfileOptions';
 import type { UserCountryCode, UserGender } from '../constants/userProfileOptions';
 import {

@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+/**
+ * Host/member model verification — run before merging tier or /host route work.
+ * Wired as `npm run verify:host-member`.
+ */
+import { execSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+const run = (label, command) => {
+  console.log(`\n[verify:host-member] ${label}`);
+  execSync(command, { cwd: root, stdio: 'inherit' });
+};
+
+try {
+  run('API typecheck', 'npm run typecheck:api');
+  run('API host-member contracts', 'npm --workspace @uaetrail/api run test -- --run tests/host-member-contract.test.ts');
+  run('Frontend host-member guard', 'npx vitest run src/member/hostMemberGuard.test.ts');
+  console.log('\n[verify:host-member] OK');
+} catch (error) {
+  console.error('\n[verify:host-member] FAILED');
+  process.exit(typeof error.status === 'number' ? error.status : 1);
+}

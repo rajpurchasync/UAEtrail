@@ -1,9 +1,10 @@
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, MapPin } from 'lucide-react';
 import { resolveActivityTypeCoverImage } from '../../config/activityCoverImages';
 import type { HomeLandingActivity } from '../../content/homeLanding';
 import { HOME_LIVE_SECTION } from '../../content/homeLanding';
-import { EXPLORE_MAP_PATH } from '../../config/platform';
+
 import { activityPricingBadge } from '../../utils/activityPricing';
 import { LandingShell } from './LandingShell';
 

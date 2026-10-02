@@ -1,6 +1,7 @@
 import { MembershipRole, UserRole } from '../domain/enums.js';
 import { NextFunction, Request, Response } from 'express';
 import { ApiError } from '../lib/api-error.js';
+import { ensureOwnerMembershipForTenant } from '../lib/buddy-host-tenant.js';
 import { findTenantMembershipContext } from '../lib/tenant-access.js';
 import { findTenantById } from '../lib/tenant-store.js';
 
@@ -51,7 +52,20 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
     const membership = await findTenantMembershipContext(organisationId, req.auth.userId);
 
     if (!membership) {
-      throw new ApiError(403, 'forbidden', 'No organisation membership found for this scope.');
+      const tenant = await findTenantById(organisationId);
+      if (!tenant || tenant.ownerId !== req.auth.userId) {
+        throw new ApiError(403, 'forbidden', 'No organisation membership found for this scope.');
+      }
+      if (tenant.status !== 'ACTIVE') {
+        throw new ApiError(403, 'tenant_inactive', 'Host organization is not active.');
+      }
+      await ensureOwnerMembershipForTenant(req.auth.userId, organisationId);
+      req.tenantContext = {
+        tenantId: organisationId,
+        membershipRole: MembershipRole.TENANT_OWNER,
+        actingAsPlatformAdmin: false,
+      };
+      return next();
     }
     if (membership.tenant.status !== 'ACTIVE') {
       throw new ApiError(403, 'tenant_inactive', 'Host organization is not active.');

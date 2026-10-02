@@ -1,5 +1,7 @@
 # UAE Trail — Implementation Guide
 
+> **Superseded for product truth** — use [`DOCS_INDEX.md`](./DOCS_INDEX.md) Tier 1: [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`NAVIGATION.md`](./NAVIGATION.md). This guide is a **historical** engineering onboarding snapshot; roles, “Organizer” wording, and freemium tier tables below are **not** current consumer product semantics.
+
 > **Version**: 1.0 (Frozen)  
 > **Date**: February 26, 2026  
 > **Stack**: React 18 + Vite · Express + MongoDB · Tailwind CSS · S3/MinIO  

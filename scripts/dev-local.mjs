@@ -38,6 +38,9 @@ const main = async () => {
   await startLocalMongo();
 
   console.log(`[dev:local] Starting Vite + API with MONGODB_URI=${localMongoUri}`);
+  console.log(
+    '[dev:local] Explore map empty?  SEED_DATA=true npm run seed  — see docs/operations/EXPLORE_MAP_RUNBOOK.md'
+  );
   const env = {
     ...process.env,
     MONGODB_URI: localMongoUri,

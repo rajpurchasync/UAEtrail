@@ -1,5 +1,7 @@
 # Domain naming adoption plan
 
+> **Status: execution largely complete (checklist archive).** For **current** routes, buddy Organize (`canPublish`), and Pro/business entry, use [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`NAMING_HOST_MEMBER.md`](./NAMING_HOST_MEMBER.md), and [`NAVIGATION.md`](./NAVIGATION.md). Rows below that mention `/become-host` as a product surface are **historical** rename notes, not the live entry map (`/profile/pro-membership`).
+
 Companion to [`DOMAIN.md`](./DOMAIN.md). Goal: converge **frontend symbols and file names** on Place · Activity · Organisation · Person without breaking URLs, API paths, or Mongo collections.
 
 ## Principles

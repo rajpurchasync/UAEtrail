@@ -1,4 +1,4 @@
-/** Display order — keep in sync with apps/api/src/lib/rewards-config.ts MEMBER_BADGE_ORDER */
+/** Display order — keep in sync with apps/api/src/lib/member-badges-config.ts MEMBER_BADGE_ORDER */
 export const MEMBER_BADGE_ORDER = [
   'newbie',
   'active',

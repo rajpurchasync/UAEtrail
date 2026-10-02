@@ -1,3 +1,4 @@
+import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/routingCatalog';
 import { Navigate, useLocation } from 'react-router-dom';
 import { DEFAULT_OG_IMAGE } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -7,7 +8,7 @@ import { websiteSchema } from '../components/seo/schemas';
 import { HOME_FAQ_PREVIEW } from '../content/platformFaqs';
 import { useAuth } from '../context/AuthContext';
 import { useHomeLandingActivities } from '../hooks/useHomeLandingActivities';
-import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/platform';
+
 import { buildSignInRedirect } from '../utils/authReturnContext';
 import { HomeDayTimeline } from '../components/home/HomeDayTimeline';
 import { HomeDesktopHero } from '../components/home/HomeDesktopHero';

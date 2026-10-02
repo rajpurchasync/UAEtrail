@@ -7,7 +7,7 @@ import type {
   MyActivityRequestDTO,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
-import { detailBackPath } from '../utils/exploreRouting';
+import { detailBackPath } from '../config/routingCatalog';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
 import { useActivityJoinActions } from '../hooks/useActivityJoinFlow';

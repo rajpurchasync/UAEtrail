@@ -1,7 +1,14 @@
 import { randomUUID } from 'crypto';
 import type { Collection } from 'mongodb';
 import type { Activity, Location } from '../domain/types.js';
+import { normalizeProfileVisibility } from './media-access.js';
 import { getMongoClient } from './mongo.js';
+import {
+  canViewProfileField,
+  resolveProfileViewerAccess,
+} from '../services/profile-viewer-access.js';
+
+const PRIVATE_SAVED_PROFILE_LABEL = 'Private member';
 
 type MongoFavorite = {
   _id: string;
@@ -45,8 +52,11 @@ type MongoTenantDoc = {
 };
 type MongoAuthUserDoc = {
   _id: string;
-  displayName: string;
-  avatarUrl?: string | null;
+  profile?: {
+    displayName?: string | null;
+    avatarUrl?: string | null;
+    profileVisibility?: string | null;
+  };
 };
 
 export type FavoriteRecord = {
@@ -298,7 +308,7 @@ export const listUserFavoritesWithDetails = async (userId: string): Promise<Favo
       : Promise.resolve([]),
     profileUserIds.length > 0
       ? authUsersCollection()
-          .find({ _id: { $in: profileUserIds } }, { projection: { displayName: 1, avatarUrl: 1 } })
+          .find({ _id: { $in: profileUserIds } }, { projection: { profile: 1 } })
           .toArray()
       : Promise.resolve([])
   ]);
@@ -323,7 +333,37 @@ export const listUserFavoritesWithDetails = async (userId: string): Promise<Favo
       : [];
   const productMerchantMap = new Map(productMerchantDocs.map((merchant) => [merchant._id, merchant.shopName]));
 
-  return favorites.map((favorite) => ({
+  const resolveSavedProfile = async (
+    profileUserId: string
+  ): Promise<FavoriteWithDetails['profile']> => {
+    const row = profileMap.get(profileUserId);
+    if (!row) return null;
+
+    const visibility = normalizeProfileVisibility(row.profile?.profileVisibility);
+    const access = await resolveProfileViewerAccess({
+      viewerUserId: userId,
+      targetUserId: profileUserId,
+      targetVisibility: visibility,
+    });
+
+    if (!canViewProfileField(visibility, access, 'identity')) {
+      return {
+        id: profileUserId,
+        displayName: PRIVATE_SAVED_PROFILE_LABEL,
+        avatarUrl: null,
+      };
+    }
+
+    const displayName = row.profile?.displayName?.trim() || PRIVATE_SAVED_PROFILE_LABEL;
+    return {
+      id: profileUserId,
+      displayName,
+      avatarUrl: row.profile?.avatarUrl ?? null,
+    };
+  };
+
+  return Promise.all(
+    favorites.map(async (favorite) => ({
     ...favorite,
     location: favorite.locationId
       ? (() => {
@@ -372,18 +412,7 @@ export const listUserFavoritesWithDetails = async (userId: string): Promise<Favo
             : null;
         })()
       : null,
-    profile: favorite.profileUserId
-      ? (() => {
-          const profile = profileMap.get(favorite.profileUserId);
-          return profile
-            ? {
-                id: profile._id,
-                displayName: profile.displayName,
-                avatarUrl: profile.avatarUrl ?? null
-              }
-            : null;
-        })()
-      : null,
+    profile: favorite.profileUserId ? await resolveSavedProfile(favorite.profileUserId) : null,
     product: favorite.productId
       ? (() => {
           const product = productMap.get(favorite.productId);
@@ -401,7 +430,8 @@ export const listUserFavoritesWithDetails = async (userId: string): Promise<Favo
             : null;
         })()
       : null
-  }));
+  }))
+  );
 };
 
 export const deleteUserFavoritesByUser = async (userId: string): Promise<void> => {

@@ -1,10 +1,10 @@
+import { joinAuthPath } from '../../config/routingCatalog';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { resolveExploreFavoriteTarget } from '../exploreCardModel';
 import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
-import { joinAuthPath } from '../../config/platform';
 
 export type ExploreSaveState = {
   canSave: boolean;

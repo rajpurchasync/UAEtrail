@@ -1,10 +1,11 @@
+import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ChevronRight, Loader2, Star } from 'lucide-react';
 import type { MyReviewDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { useAuth } from '../context/AuthContext';
-import { EXPLORE_MAP_PATH } from '../config/platform';
+
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';

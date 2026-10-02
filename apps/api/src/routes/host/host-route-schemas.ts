@@ -1,0 +1,37 @@
+import { z } from 'zod';
+import { MembershipRole } from '../../domain/enums.js';
+
+export const idParamSchema = z.object({ id: z.string().min(1) });
+export const membershipIdSchema = z.object({ membershipId: z.string().min(1) });
+
+/** Approve/reject payload for **activity** join requests (`/host/requests/:id`). */
+export const activityRequestDecisionSchema = z
+  .object({
+    status: z.enum(['approved', 'rejected']),
+    organizerNote: z.string().max(300).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status !== 'rejected') return;
+    const note = data.organizerNote?.trim();
+    if (!note || note.length < 3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'A short note is required when declining an activity join request.',
+        path: ['organizerNote'],
+      });
+    }
+  });
+
+export const teamCreateSchema = z.object({
+  email: z.string().email(),
+  displayName: z.string().min(2).max(80).optional(),
+  role: z.enum(['tenant_admin', 'tenant_guide']),
+});
+
+export const teamPatchSchema = z.object({
+  role: z.enum(['tenant_admin', 'tenant_guide']).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): MembershipRole =>
+  role === 'tenant_admin' ? MembershipRole.TENANT_ADMIN : MembershipRole.TENANT_GUIDE;

@@ -2,25 +2,16 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { NotificationDTO } from '@uaetrail/shared-types';
-import { Bell, ChevronRight, Sparkles, Trophy } from 'lucide-react';
+import { Bell, ChevronRight } from 'lucide-react';
 import { api } from '../api/index';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/ConsumerFeedback';
 import { PageMeta } from '../components/seo/PageMeta';
 import { inferNotificationPath } from '../utils/notificationRouting';
-import { ShareButton } from '../components/ui/ShareButton';
 import { useAuth } from '../context/AuthContext';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
 import { notificationReasonLine } from '../utils/notificationDisplay';
-
-function rewardMeta(notif: NotificationDTO) {
-  const meta = notif.meta as Record<string, unknown> | null | undefined;
-  if (!meta || typeof meta !== 'object') return null;
-  const kind = meta.kind;
-  if (kind !== 'reward' && kind !== 'tier_upgrade') return null;
-  return meta;
-}
 
 type NotificationSection =
   | 'Activity updates'
@@ -176,9 +167,6 @@ export const Notifications = () => {
                 <h3 className="text-xs uppercase tracking-wide font-bold text-neutral-600 mb-2">{section}</h3>
                 <div className="space-y-2">
                   {items.map((notif) => {
-            const meta = rewardMeta(notif);
-            const isReward = meta?.kind === 'reward';
-            const isTierUpgrade = meta?.kind === 'tier_upgrade';
             const reasonLine = notificationReasonLine(notif);
 
             return (
@@ -186,7 +174,7 @@ export const Notifications = () => {
                 key={notif.id}
                 className={`glass-card-interactive p-4 ${
                   !notif.isRead ? 'ring-2 ring-emerald-500/20' : ''
-                } ${isTierUpgrade ? 'bg-gradient-to-br from-amber-50/80 to-orange-50/50' : ''}`}
+                }`}
               >
                 <button
                   type="button"
@@ -198,17 +186,10 @@ export const Notifications = () => {
                       <span className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0" />
                     )}
                     <div className={`flex-1 min-w-0 ${notif.isRead ? 'pl-0' : ''}`}>
-                      <div className="flex items-center gap-2">
-                        {isReward && <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />}
-                        {isTierUpgrade && <Trophy className="w-4 h-4 text-amber-600 shrink-0" />}
-                        <p className="font-semibold text-neutral-900 text-[15px]">{notif.title}</p>
-                      </div>
+                      <p className="font-semibold text-neutral-900 text-[15px]">{notif.title}</p>
                       <p className="text-sm text-neutral-600 mt-1 leading-relaxed">{notif.body}</p>
                       {reasonLine && (
                         <p className="text-xs font-medium text-neutral-700 mt-2">{reasonLine}</p>
-                      )}
-                      {(isReward || isTierUpgrade) && (
-                        <p className="text-xs font-medium text-emerald-700 mt-2">View in My badges</p>
                       )}
                       <p className="text-xs text-neutral-400 mt-2">
                         {new Date(notif.createdAt).toLocaleString()}
@@ -217,20 +198,6 @@ export const Notifications = () => {
                   </div>
                 </button>
 
-                {isTierUpgrade &&
-                  typeof meta.shareTitle === 'string' &&
-                  typeof meta.shareText === 'string' && (
-                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100/80 pl-5">
-                      <ShareButton
-                        title={meta.shareTitle}
-                        text={meta.shareText}
-                        path={typeof meta.sharePath === 'string' ? meta.sharePath : '/profile/badges'}
-                        iconOnly
-                        light
-                        className="ml-auto"
-                      />
-                    </div>
-                  )}
                 {wishlistMatchPathFromMeta(notif) && (
                   <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100/80 pl-5">
                     <Link

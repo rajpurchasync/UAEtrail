@@ -1,5 +1,6 @@
+import { EXPLORE_MAP_PATH, ADMIN_PLACES_PATH } from '../config/routingCatalog';
 import { UserRole } from '@uaetrail/shared-types';
-import { EXPLORE_MAP_PATH, ADMIN_PLACES_PATH } from '../config/platform';
+
 import { myActivitiesPath } from '../explore/routing';
 import { organisationManagePath } from './organisationPaths';
 import { isPlatformAdmin } from './roles';

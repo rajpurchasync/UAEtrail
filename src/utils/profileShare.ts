@@ -1,4 +1,9 @@
 import type { OwnedOrganisationProfileDTO } from '@uaetrail/shared-types';
+import {
+  organisationProfilePath,
+  shopPublicPath,
+  tripsLegacyJoinedTabPath,
+} from '../config/routingCatalog';
 
 export interface ProfileShareOptions {
   referralCode?: string | null;
@@ -11,18 +16,22 @@ export const resolveProfileSharePath = (
   options: ProfileShareOptions = {}
 ): string => {
   const agency = ownedProfiles.find((profile) => profile.type === 'agency' && profile.slug);
-  if (agency) return `/operator/${agency.slug}`;
+  const agencyPath = organisationProfilePath(agency?.slug);
+  if (agencyPath) return agencyPath;
 
   const guide = ownedProfiles.find((profile) => profile.type === 'guide' && profile.slug);
-  if (guide) return `/operator/${guide.slug}`;
+  const guidePath = organisationProfilePath(guide?.slug);
+  if (guidePath) return guidePath;
 
   const shop = ownedProfiles.find((profile) => profile.type === 'shop' && profile.slug);
-  if (shop) return `/shop/${shop.slug}`;
+  if (shop?.slug) {
+    return shopPublicPath({ slug: shop.slug });
+  }
 
   const referralCode = options.referralCode?.trim();
   if (referralCode) return `/signup?ref=${encodeURIComponent(referralCode)}`;
 
-  return options.fallbackPath ?? '/trips?segment=upcoming&tab=joined';
+  return options.fallbackPath ?? tripsLegacyJoinedTabPath();
 };
 
 export const resolveProfileShareText = (
@@ -33,7 +42,7 @@ export const resolveProfileShareText = (
     return `Check out ${displayName} on UAE Trail — hikes, camps, and outdoor activities in the UAE.`;
   }
   if (ownedProfiles.some((profile) => profile.type === 'shop')) {
-    return `Visit ${displayName} on UAE Trail — outdoor gear and adventure shops in the UAE.`;
+    return `Check out ${displayName}'s shop on UAE Trail — outdoor gear and picks in the UAE.`;
   }
-  return `${displayName} on UAE Trail — find hikes, camps, and outdoor activities across the UAE.`;
+  return `Join ${displayName} on UAE Trail — find your crew and get outside together in the UAE.`;
 };

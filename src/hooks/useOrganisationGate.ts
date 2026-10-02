@@ -8,7 +8,7 @@ interface UseOrganisationGateOptions {
   enabled?: boolean;
 }
 
-/** Whether the signed-in member can manage host profiles and publish activities. */
+/** Thin client for `GET /me/host-status` — tier logic lives in `member-host-status` (API). */
 export const useOrganisationGate = ({ enabled = true }: UseOrganisationGateOptions = {}) => {
   const { user } = useAuth();
   const [status, setStatus] = useState<HostStatusDTO | null>(null);
@@ -25,7 +25,7 @@ export const useOrganisationGate = ({ enabled = true }: UseOrganisationGateOptio
     setLoading(true);
     setError(null);
     try {
-      const res = await api.getMyOrganisationStatus();
+      const res = await api.getMemberHostStatus();
       setStatus(res.data);
       if (res.data.tenantId) {
         setActiveTenantId(res.data.tenantId);
@@ -52,6 +52,11 @@ export const useOrganisationGate = ({ enabled = true }: UseOrganisationGateOptio
     status,
     loading,
     error,
+    signupProfileComplete: status?.signupProfileComplete ?? false,
+    isCommunityHost: status?.isCommunityHost ?? false,
+    hostTiers: status?.hostTiers ?? { community: false, professional: false, business: false },
+    profileRoleLabel: status?.profileRoleLabel ?? 'community_member',
+    canAccessHostConsole: status?.canAccessHostConsole ?? false,
     canPublish: status?.canPublish ?? false,
     canHostPaidActivities: status?.canHostPaidActivities ?? false,
     applicationStatus: status?.applicationStatus ?? 'none',

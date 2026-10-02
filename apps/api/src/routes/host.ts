@@ -17,8 +17,8 @@ import {
 } from '../lib/org-permissions.js';
 import { notifyRequestDecision } from '../lib/email.js';
 import { validate } from '../middleware/validate.js';
-import { awardPoints } from '../services/rewards.js';
 import { notifyAdminsActivityPublished } from '../services/platform-admin-events.js';
+import { awardPoints } from '../services/rewards.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import { ensureActivityGroupChat } from '../services/activity-group-chat.js';
 import { mapActivityIdsToGroupChatIds } from '../lib/social-groups-store.js';
@@ -74,11 +74,11 @@ import {
   updateTenantMembershipRole,
   upsertTenantMembership
 } from '../lib/tenant-access.js';
-import { fulfillParticipantIntent } from '../lib/participant-intents-store.js';
-
-const idParamSchema = z.object({ id: z.string().min(1) });
-const intentIdParamSchema = z.object({ intentId: z.string().min(1) });
-const membershipIdSchema = z.object({ membershipId: z.string().min(1) });
+import { assertMemberCanPublishActivities } from '../services/member-publish-gate.js';
+import { registerHostDemandFulfillLegacyRoutes } from './host/registerHostDemandFulfillLegacy.js';
+import { registerHostActivityRequestRoutes } from './host/registerHostActivityRequestRoutes.js';
+import { registerHostTeamRoutes } from './host/registerHostTeamRoutes.js';
+import { idParamSchema } from './host/host-route-schemas.js';
 
 const optionalHttpUrlSchema = z
   .string()
@@ -173,33 +173,6 @@ const eventCreateSchema = z.object({
   });
 
 const eventPatchSchema = eventCreateSchema.innerType().partial();
-const requestDecisionSchema = z
-  .object({
-    status: z.enum(['approved', 'rejected']),
-    organizerNote: z.string().max(300).optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.status !== 'rejected') return;
-    const note = data.organizerNote?.trim();
-    if (!note || note.length < 3) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'A short note is required when declining a join request.',
-        path: ['organizerNote'],
-      });
-    }
-  });
-
-const teamCreateSchema = z.object({
-  email: z.string().email(),
-  displayName: z.string().min(2).max(80).optional(),
-  role: z.enum(['tenant_admin', 'tenant_guide'])
-});
-
-const teamPatchSchema = z.object({
-  role: z.enum(['tenant_admin', 'tenant_guide']).optional(),
-  isActive: z.boolean().optional()
-});
 
 import { parseLocalDateTime } from '../lib/datetime.js';
 import {
@@ -233,9 +206,6 @@ const buildHostActivityResponse = async (event: ActivityWithTenantRelations): Pr
     linkedRideshare: buildActivityDto(linked),
   };
 };
-
-const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): MembershipRole =>
-  role === 'tenant_admin' ? MembershipRole.TENANT_ADMIN : MembershipRole.TENANT_GUIDE;
 
 export const hostRouter = Router();
 
@@ -272,6 +242,7 @@ tenantActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), valida
   try {
     const tenantId = req.tenantContext!.tenantId;
     const platformAdmin = Boolean(req.tenantContext!.actingAsPlatformAdmin);
+    await assertMemberCanPublishActivities(req.auth!.userId, { platformAdmin });
     const body = req.body as z.infer<typeof eventCreateSchema>;
 
     const location = await resolveActivityLocation(body.locationId, req.auth!.userId, { platformAdmin });
@@ -653,6 +624,8 @@ tenantActivitiesRouter.post('/:id/duplicate', requireOrgRole(ORG_ACTIVITY_EDIT_R
 tenantActivitiesRouter.post('/:id/publish', requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES), validate({ params: idParamSchema }), async (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
+    const platformAdmin = Boolean(req.tenantContext!.actingAsPlatformAdmin);
+    await assertMemberCanPublishActivities(req.auth!.userId, { platformAdmin });
     const { id } = req.params as z.infer<typeof idParamSchema>;
     const event = await findTenantActivityById(id, tenantId);
     if (!event) {
@@ -672,12 +645,14 @@ tenantActivitiesRouter.post('/:id/publish', requireOrgRole(ORG_ACTIVITY_PUBLISH_
     });
     const hostUserId = updated.hostId ?? updated.createdById;
     void ensureActivityGroupChat(updated.id).catch(() => undefined);
-    void awardPoints({
-      userId: hostUserId,
-      action: RewardAction.ACTIVITY_PUBLISHED,
-      referenceId: updated.id,
-      label: `Published activity: ${updated.title}`
-    }).catch(() => undefined);
+    if (hostUserId) {
+      void awardPoints({
+        userId: hostUserId,
+        action: RewardAction.ACTIVITY_PUBLISHED,
+        referenceId: updated.id,
+        label: `Published activity: ${updated.title}`,
+      }).catch(() => undefined);
+    }
     const hostUser = hostUserId ? await findAuthUserById(hostUserId) : null;
     const hostLabel = hostUser?.profile?.displayName?.trim() || hostUser?.email || 'A host';
     notifyAdminsActivityPublished({
@@ -691,326 +666,8 @@ tenantActivitiesRouter.post('/:id/publish', requireOrgRole(ORG_ACTIVITY_PUBLISH_
   }
 });
 
-const hostRequestsQuerySchema = paginationSchema.extend({
-  activityId: z.string().min(1).optional(),
-});
-
-hostRouter.get('/requests', async (req, res, next) => {
-  try {
-    const tenantId = req.tenantContext!.tenantId;
-    const query = hostRequestsQuerySchema.parse(req.query);
-    const { activityId, page, pageSize } = query;
-    const [requests, total] = await Promise.all([
-      listTenantActivityRequestsDetailed({
-        tenantId,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        activityId,
-      }),
-      countTenantActivityRequests(tenantId, activityId)
-    ]);
-    res.json(paginatedResponse(
-      requests.map((request) => ({
-        id: request.id,
-        status: request.status.toLowerCase(),
-        note: request.note,
-        organizerNote: request.organizerNote,
-        cancelReason: request.cancelReason,
-        cancelMessage: request.cancelMessage,
-        cancelledAt: request.cancelledAt,
-        createdAt: request.createdAt,
-        user: {
-          id: request.user.id,
-          email: request.user.email,
-          displayName: request.user.profile?.displayName ?? request.user.email
-        },
-        activity: (() => {
-          const startAt = request.activity.startAt;
-          const startIso =
-            startAt instanceof Date
-              ? startAt.toISOString()
-              : startAt
-                ? String(startAt)
-                : undefined;
-          return {
-            id: request.activity.id,
-            title: request.activity.title,
-            locationName: request.activity.location.name,
-            startAt: startIso,
-            date: startIso?.slice(0, 10),
-          };
-        })()
-      })),
-      total,
-      { page, pageSize }
-    ));
-  } catch (error) {
-    next(error);
-  }
-});
-
-hostRouter.patch('/requests/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate({ params: idParamSchema, body: requestDecisionSchema }), async (req, res, next) => {
-  try {
-    const tenantId = req.tenantContext!.tenantId;
-    const { id } = req.params as z.infer<typeof idParamSchema>;
-    const { status, organizerNote } = req.body as z.infer<typeof requestDecisionSchema>;
-
-    const request = await findTenantActivityRequestForDecision(id, tenantId);
-
-    if (!request) {
-      throw new ApiError(404, 'request_not_found', 'Join request not found.');
-    }
-    if (request.status !== RequestStatus.PENDING) {
-      throw new ApiError(400, 'request_finalized', 'Only pending requests can be processed.');
-    }
-
-    if (status === 'approved') {
-      await applyTenantActivityRequestDecision({
-        requestId: request.id,
-        activityId: request.activityId,
-        userId: request.userId,
-        reviewerId: req.auth!.userId,
-        decision: 'approved',
-        organizerNote
-      });
-
-      const groupId = await ensureActivityGroupChat(request.activityId);
-
-      await dispatchNotification({
-        userId: request.userId,
-        title: "You're in!",
-        body: buildJoinApprovedBody(organizerNote),
-        type: NotificationType.REQUEST_UPDATE,
-        meta: {
-          kind: 'join_request_approved',
-          activityId: request.activityId,
-          requestId: request.id,
-          groupId: groupId ?? null,
-          organizerNote: organizerNote?.trim() || null,
-          path: groupId
-            ? `/groups?group=${groupId}`
-            : '/trips?segment=upcoming&tab=joined'
-        }
-      });
-    } else {
-      await applyTenantActivityRequestDecision({
-        requestId: request.id,
-        activityId: request.activityId,
-        userId: request.userId,
-        reviewerId: req.auth!.userId,
-        decision: 'rejected',
-        organizerNote
-      });
-
-      await dispatchNotification({
-        userId: request.userId,
-        title: 'Update on your activity request',
-        body: buildJoinRejectedBody(organizerNote),
-        type: NotificationType.REQUEST_UPDATE,
-        meta: {
-          kind: 'join_request_rejected',
-          activityId: request.activityId,
-          requestId: request.id,
-          organizerNote: organizerNote?.trim() || null,
-          path: '/trips?segment=upcoming&tab=joined',
-        }
-      });
-    }
-
-    await createAuditLog({
-      actorId: req.auth!.userId,
-      action: `request.${status}`,
-      entityType: 'activity_request',
-      entityId: request.id,
-      tenantId
-    });
-
-    const userName = request.user.profile?.displayName ?? request.user.email.split('@')[0];
-    const activityDate = request.activity.startAt.toISOString().slice(0, 10);
-    notifyRequestDecision({
-      to: request.user.email,
-      userName,
-      activityTitle: request.activity.title,
-      activityDate,
-      approved: status === 'approved',
-      note: organizerNote
-    }).catch(() => undefined);
-
-    res.json({ message: `Request ${status}.` });
-  } catch (error) {
-    next(error);
-  }
-});
-
-hostRouter.get('/team', async (req, res, next) => {
-  try {
-    const tenantId = req.tenantContext!.tenantId;
-    const members = await listTenantMembershipsWithUsers(tenantId);
-
-    res.json({
-      data: members.map((member) => ({
-        id: member.id,
-        userId: member.userId,
-        email: member.user.email,
-        displayName: member.user.profile?.displayName ?? member.user.email,
-        role: member.role.toLowerCase(),
-        createdAt: member.createdAt,
-        isActive: member.isActive ?? true
-      }))
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-hostRouter.post(
-  '/team',
-  requireOrgRole(ORG_TEAM_MANAGE_ROLES),
-  validate({ body: teamCreateSchema }),
-  async (req, res, next) => {
-    try {
-      const tenantId = req.tenantContext!.tenantId;
-      const body = req.body as z.infer<typeof teamCreateSchema>;
-      const role = membershipRoleToPrisma(body.role);
-
-      const tenant = await findTenantById(tenantId);
-      if (!tenant) {
-        throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
-      }
-
-      const user = await findAuthUserByEmail(body.email);
-      if (!user) {
-        throw new ApiError(
-          404,
-          'user_not_found',
-          'This person must sign up and sign in on UAE Trail before you can add them to your team.'
-        );
-      }
-
-      if (role === MembershipRole.TENANT_GUIDE && tenant.type === TenantType.COMPANY) {
-        const existingCompanyGuideMembership = await findCompanyGuideMembershipForUser(user._id, tenantId);
-        if (existingCompanyGuideMembership) {
-          throw new ApiError(400, 'guide_tenant_conflict', 'Guide is already assigned to another company tenant.');
-        }
-      }
-
-      const membership = await upsertTenantMembership({ tenantId, userId: user._id, role });
-
-      await createAuditLog({
-        actorId: req.auth!.userId,
-        action: 'team.upsert_member',
-        entityType: 'tenant_membership',
-        entityId: membership.id,
-        tenantId
-      });
-
-      res.status(201).json({
-        data: {
-          id: membership.id,
-          userId: user._id,
-          email: user.email,
-          displayName: user.profile?.displayName ?? user.email,
-          role: membership.role.toLowerCase(),
-          isNewUser: false
-        }
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-hostRouter.patch(
-  '/team/:membershipId',
-  requireOrgRole(ORG_TEAM_MANAGE_ROLES),
-  validate({ params: membershipIdSchema, body: teamPatchSchema }),
-  async (req, res, next) => {
-    try {
-      const { membershipId } = req.params as z.infer<typeof membershipIdSchema>;
-      const { role, isActive } = req.body as z.infer<typeof teamPatchSchema>;
-      const tenantId = req.tenantContext!.tenantId;
-
-      const membership = await findTenantMembershipById(tenantId, membershipId);
-      if (!membership) {
-        throw new ApiError(404, 'membership_not_found', 'Team member not found.');
-      }
-
-      let updated: { id: string; role: MembershipRole; isActive: boolean } | null = null;
-      if (role) {
-        const updatedRoleMembership = await updateTenantMembershipRole(membership.id, membershipRoleToPrisma(role));
-        updated = {
-          id: updatedRoleMembership.id,
-          role: updatedRoleMembership.role,
-          isActive: (updatedRoleMembership as { isActive?: boolean }).isActive ?? true
-        };
-        await updateAuthUserCore({
-          userId: membership.userId,
-          role: role === 'tenant_admin' ? UserRole.TENANT_ADMIN : UserRole.TENANT_GUIDE
-        });
-      }
-
-      if (isActive !== undefined) {
-        updated = await setTenantMembershipActiveState(membership.id, isActive);
-      }
-
-      await createAuditLog({
-        actorId: req.auth!.userId,
-        action: isActive !== undefined ? 'team.update_status' : 'team.update_role',
-        entityType: 'tenant_membership',
-        entityId: membership.id,
-        tenantId
-      });
-
-      res.json({
-        data: {
-          id: membership.id,
-          role: updated?.role?.toLowerCase() ?? membership.role.toLowerCase(),
-          isActive: updated?.isActive ?? (membership as { isActive?: boolean }).isActive ?? true
-        }
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-hostRouter.delete(
-  '/team/:membershipId',
-  requireOrgRole(ORG_TEAM_MANAGE_ROLES),
-  validate({ params: membershipIdSchema }),
-  async (req, res, next) => {
-    try {
-      const { membershipId } = req.params as z.infer<typeof membershipIdSchema>;
-      const tenantId = req.tenantContext!.tenantId;
-
-      const membership = await findTenantMembershipById(tenantId, membershipId);
-      if (!membership) {
-        throw new ApiError(404, 'membership_not_found', 'Team member not found.');
-      }
-
-      if (membership.role === MembershipRole.TENANT_OWNER) {
-        throw new ApiError(400, 'owner_cannot_be_removed', 'The tenant owner cannot be removed.');
-      }
-
-      const removed = await deleteTenantMembership(membership.id);
-      if (!removed) {
-        throw new ApiError(500, 'membership_delete_failed', 'Failed to remove team member.');
-      }
-
-      await createAuditLog({
-        actorId: req.auth!.userId,
-        action: 'team.remove_member',
-        entityType: 'tenant_membership',
-        entityId: membership.id,
-        tenantId
-      });
-
-      res.json({ data: { removed: true } });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
+registerHostActivityRequestRoutes(hostRouter);
+registerHostTeamRoutes(hostRouter);
 
 // ─── Participant Check-in ───────────────────────────────────────────────────
 
@@ -1128,7 +785,7 @@ registerPlaceAlias(hostRouter, 'post', '/locations', requireOrgRole(ORG_ACTIVITY
       userId: req.auth!.userId,
       action: RewardAction.LOCATION_SUBMITTED,
       referenceId: created.id,
-      label: `Submitted location: ${created.name}`
+      label: `Submitted location: ${created.name}`,
     }).catch(() => undefined);
 
     res.status(201).json({ data: toLocationDto(created) });
@@ -1169,33 +826,6 @@ tenantActivitiesRouter.get('/history', async (req, res, next) => {
   }
 });
 
-const fulfillIntentBodySchema = z.object({
-  activityId: z.string().min(1)
-});
-
-/** @deprecated Prefer `POST /me/participant-intents/:intentId/link-activity` (demand poster). */
-hostRouter.post(
-  '/participant-intents/:intentId/fulfill',
-  requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
-  validate({ params: intentIdParamSchema, body: fulfillIntentBodySchema }),
-  async (req, res, next) => {
-    try {
-      const { intentId } = req.params as z.infer<typeof intentIdParamSchema>;
-      const { activityId } = req.body as z.infer<typeof fulfillIntentBodySchema>;
-      const tenantId = req.tenantContext!.tenantId;
-      const activity = await findTenantActivityBasic(activityId, tenantId);
-      if (!activity) {
-        throw new ApiError(404, 'activity_not_found', 'Activity not found.');
-      }
-      const intent = await fulfillParticipantIntent(intentId, activityId);
-      if (!intent) {
-        throw new ApiError(404, 'intent_not_found', 'Community request not found.');
-      }
-      res.json(intent);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
+registerHostDemandFulfillLegacyRoutes(hostRouter);
 
 mountActivityRoutes(hostRouter, tenantActivitiesRouter);

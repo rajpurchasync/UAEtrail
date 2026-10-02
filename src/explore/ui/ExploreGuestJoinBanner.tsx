@@ -1,7 +1,8 @@
+import { joinAuthPath } from '../../config/routingCatalog';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { joinAuthPath } from '../../config/platform';
+
 import { guestJoinBannerBody } from '../../content/guestJoinCopy';
 import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
 import { hasSeenExploreCoach } from '../../explore/exploreOnboarding';

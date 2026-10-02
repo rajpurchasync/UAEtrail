@@ -10,6 +10,7 @@ import { useExploreMap, reloadExploreMap } from '../../hooks/useExploreMap';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { getExploreMapTiles } from '../../config/platform';
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { ExploreComposeHost } from './ExploreComposeHost';
 import { ExploreJoinOverlays } from './ExploreJoinOverlays';
 import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
@@ -34,10 +35,17 @@ import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
 import { AppButton } from '../../components/mobile/AppButton';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
+import { organizePublishGateHref } from '../../utils/organizePublishGate';
 
 export const ExploreExperience = () => {
   const { user } = useAuth();
-  const { canPublish, loading: hostGateLoading, tenantId } = useOrganisationGate({
+  const {
+    canPublish,
+    signupProfileComplete,
+    loading: hostGateLoading,
+    tenantId,
+    refresh: refreshHostGate,
+  } = useOrganisationGate({
     enabled: Boolean(user),
   });
   const navigate = useNavigate();
@@ -87,6 +95,7 @@ export const ExploreExperience = () => {
     setSearchParams,
     onOpenComposeMenu: clearSelection,
     canPublish,
+    signupProfileComplete,
     hostGateLoading,
   });
 
@@ -115,6 +124,7 @@ export const ExploreExperience = () => {
     tenantId,
     hostGateLoading,
     canPublish,
+    signupProfileComplete,
     navigate,
     pathname,
     searchParams,
@@ -144,7 +154,7 @@ export const ExploreExperience = () => {
     }
     if (hostGateLoading) return;
     if (!canPublish) {
-      navigate(`/become-host?redirect=${encodeURIComponent(returnPath)}`);
+      navigate(organizePublishGateHref(returnPath, { signupProfileComplete, canPublish }));
       return;
     }
 
@@ -159,6 +169,7 @@ export const ExploreExperience = () => {
     user,
     hostGateLoading,
     canPublish,
+    signupProfileComplete,
     navigate,
     compose.setComposeRoute,
   ]);
@@ -453,7 +464,7 @@ export const ExploreExperience = () => {
             ? 'See your upcoming outings and wishlist pins on the UAE Trail map.'
             : 'Find live hiking, camping, events, and shops on the map across the UAE.'
         }
-        path="/explore"
+        path={EXPLORE_MAP_PATH}
       />
 
       <div className="relative flex min-h-0 flex-1 lg:flex-row">
@@ -593,14 +604,19 @@ export const ExploreExperience = () => {
           if (rideshareLinkDemand && activity.activityType === 'rideshare') {
             setRideshareLinkDemand(null);
           }
+          void refreshHostGate();
+        }}
+        onDemandSubmitted={(result) => {
+          selection.handleDemandSubmitted(result);
+          void refreshHostGate();
         }}
         onCreateLinkedRideshare={handleCreateLinkedRideshare}
         onOpenHostApplication={() => {
           closeCreateFlow();
-          navigate('/become-host');
+          const returnPath = `${pathname}${search}`;
+          navigate(organizePublishGateHref(returnPath, { signupProfileComplete, canPublish }));
         }}
         onContributeSubmitted={selection.handleContributeSubmitted}
-        onDemandSubmitted={selection.handleDemandSubmitted}
       />
 
       <Dialog

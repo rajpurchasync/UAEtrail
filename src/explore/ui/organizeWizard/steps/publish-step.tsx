@@ -317,7 +317,7 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
       <OrganizeWizardStepError error={error} />
 
       <OrganizeWizardStepNext
-        label={canPublish ? 'Publish' : 'Introduce yourself first'}
+        label={canPublish ? 'Publish' : 'Complete your profile first'}
         loading={submitting || hostGateLoading}
         onClick={handlePublish}
       />

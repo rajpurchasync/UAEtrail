@@ -33,7 +33,7 @@
 | 0–4 | Lint, detail unify, publish payload, routing → `/explore` | Done |
 | 5–6 | API split, domain aliases, consumer feedback, copy guard | Done |
 | 7–8 | Mobile tabs, signup profile wizard | Done |
-| 9 | Explore shell hooks, become-host guard, manual smoke doc | In progress ([`PHASE9_MANUAL_SMOKE.md`](./PHASE9_MANUAL_SMOKE.md)) |
+| 9 | Explore shell hooks, profile-complete Organize guard, manual smoke doc | Done ([`PHASE9_MANUAL_SMOKE.md`](./PHASE9_MANUAL_SMOKE.md)) |
 
 This track cleaned **how code is organized**; it did not finish **OutingCategory projection + FAB/registry + backend DTO fields**.
 

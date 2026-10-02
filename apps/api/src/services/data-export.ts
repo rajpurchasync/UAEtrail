@@ -2,7 +2,6 @@ import { findAuthUserById } from '../lib/auth-users.js';
 import { listUserActivityParticipantsBasic, listUserActivityRequestsBasic } from '../lib/activity-engagement-store.js';
 import { listUserFavorites } from '../lib/favorites-store.js';
 import { countPushSubscriptions } from '../lib/push-subscriptions.js';
-import { findUserBadges, findUserRewardLedgerExport } from '../lib/reward-ledger-store.js';
 import { listUserShopOrdersBasic } from '../lib/shop-store.js';
 
 export interface UserDataExport {
@@ -20,8 +19,6 @@ export interface UserDataExport {
     phone: string | null;
     bio: string | null;
     avatarUrl: string | null;
-    rewardPoints: number;
-    membershipTier: string;
   } | null;
   favorites: Array<{
     id: string;
@@ -36,8 +33,6 @@ export interface UserDataExport {
   activityRequests: Array<{ id: string; activityId: string; status: string; createdAt: Date }>;
   participations: Array<{ id: string; activityId: string; checkedInAt: Date | null; createdAt: Date }>;
   shopOrders: Array<{ id: string; status: string; totalAed: number; createdAt: Date }>;
-  rewardLedger: Array<{ action: string; points: number; label: string | null; createdAt: Date }>;
-  badges: Array<{ badgeKey: string; earnedAt: Date }>;
   pushSubscriptionCount: number;
 }
 
@@ -48,14 +43,12 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
     throw new Error('User not found');
   }
 
-  const [favorites, requests, participants, shopOrders, rewardLedger, badges, pushSubscriptionCount] = await Promise.all([
+  const [favorites, requests, participants, shopOrders, pushSubscriptionCount] = await Promise.all([
     listUserFavorites(userId),
     listUserActivityRequestsBasic(userId, 200),
     listUserActivityParticipantsBasic(userId, 200),
     listUserShopOrdersBasic(userId, 100),
-    findUserRewardLedgerExport(userId),
-    findUserBadges(userId),
-    countPushSubscriptions(userId)
+    countPushSubscriptions(userId),
   ]);
 
   return {
@@ -66,7 +59,7 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
       role: user.role,
       authProvider: user.authProvider,
       createdAt: user.createdAt,
-      emailVerifiedAt: user.emailVerifiedAt
+      emailVerifiedAt: user.emailVerifiedAt,
     },
     profile: user.profile
       ? {
@@ -74,8 +67,6 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
           phone: user.profile.phone,
           bio: user.profile.bio,
           avatarUrl: user.profile.avatarUrl,
-          rewardPoints: user.profile.rewardPoints ?? 0,
-          membershipTier: user.profile.membershipTier ?? 'FREE'
         }
       : null,
     favorites,
@@ -83,22 +74,15 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
       id: r.id,
       activityId: r.activityId,
       status: r.status,
-      createdAt: r.createdAt
+      createdAt: r.createdAt,
     })),
     participations: participants.map((p: (typeof participants)[number]) => ({
       id: p.id,
       activityId: p.activityId,
       checkedInAt: p.checkedInAt,
-      createdAt: p.createdAt
+      createdAt: p.createdAt,
     })),
     shopOrders,
-    rewardLedger: rewardLedger.map((e: (typeof rewardLedger)[number]) => ({
-      action: e.action,
-      points: e.points,
-      label: e.label,
-      createdAt: e.createdAt
-    })),
-    badges,
-    pushSubscriptionCount
+    pushSubscriptionCount,
   };
 }

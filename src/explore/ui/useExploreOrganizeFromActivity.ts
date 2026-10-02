@@ -11,6 +11,7 @@ import {
   createDraftFromPastActivity,
   resolveOrganizeComposeKindFromActivity,
 } from './organizeFromActivity';
+import { organizePublishGateHref } from '../../utils/organizePublishGate';
 import type { CreateActivityDraft } from './organizeFlow';
 
 export type OrganizeFromActivityPrefill = {
@@ -23,6 +24,7 @@ type UseExploreOrganizeFromActivityArgs = {
   tenantId: string | null | undefined;
   hostGateLoading: boolean;
   canPublish: boolean;
+  signupProfileComplete: boolean;
   navigate: NavigateFunction;
   pathname: string;
   searchParams: URLSearchParams;
@@ -36,6 +38,7 @@ export const useExploreOrganizeFromActivity = ({
   tenantId,
   hostGateLoading,
   canPublish,
+  signupProfileComplete,
   navigate,
   pathname,
   searchParams,
@@ -64,7 +67,9 @@ export const useExploreOrganizeFromActivity = ({
     const returnPath = exploreReorganizeActivityReturnPath(sourceActivityId, searchParams, pathname);
 
     if (!canPublish) {
-      navigate(`/become-host?redirect=${encodeURIComponent(returnPath)}`);
+      navigate(
+        organizePublishGateHref(returnPath, { signupProfileComplete, canPublish })
+      );
       return;
     }
 
@@ -105,6 +110,7 @@ export const useExploreOrganizeFromActivity = ({
     user,
     hostGateLoading,
     canPublish,
+    signupProfileComplete,
     navigate,
     pathname,
     tenantId,

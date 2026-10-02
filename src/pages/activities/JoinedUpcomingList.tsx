@@ -1,3 +1,4 @@
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { MyActivityDTO } from '@uaetrail/shared-types';
@@ -8,7 +9,7 @@ import {
   ConsumerInlineEmpty,
   ConsumerLoadingSpinner,
 } from '../../components/mobile/ConsumerFeedback';
-import { EXPLORE_MAP_PATH } from '../../config/platform';
+
 import {
   PRODUCT_EXPLORE_CTA,
   PRODUCT_JOINED_UPCOMING_EMPTY_BODY,

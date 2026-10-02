@@ -1,6 +1,17 @@
+import {
+  activityDetailPath,
+  ADMIN_PLACES_PATH,
+  EXPLORE_MAP_PATH,
+  explorePath,
+  isLegacyRewardsWalletPath,
+  memberProfilePath,
+  PROFILE_BADGES_PATH,
+  PROFILE_PATH,
+  PRO_MEMBERSHIP_PATH,
+  tripsLegacyJoinedTabPath,
+  tripsLegacyUpcomingSegmentPath,
+} from '../config/routingCatalog';
 import { NotificationDTO, placeDetailPath } from '@uaetrail/shared-types';
-import { ADMIN_PLACES_PATH } from '../config/platform';
-import { explorePath } from '../utils/exploreRouting';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
   meta && typeof meta === 'object' ? meta : null;
@@ -16,12 +27,7 @@ export const inferNotificationPath = (
 
   const directPath = toStringValue(meta?.path);
   if (directPath && directPath.startsWith('/')) {
-    const legacyWallet =
-      directPath === '/my-rewards' ||
-      directPath === '/rewards' ||
-      directPath === '/trail-points' ||
-      directPath.startsWith('/trail-points?');
-    if (legacyWallet) return '/profile/badges';
+    if (isLegacyRewardsWalletPath(directPath)) return PROFILE_BADGES_PATH;
     return directPath;
   }
 
@@ -37,7 +43,7 @@ export const inferNotificationPath = (
 
   const activityId = toStringValue(meta?.activityId);
   if (activityId) {
-    return `/activity/${activityId}`;
+    return activityDetailPath(activityId);
   }
 
   const senderId = toStringValue(meta?.senderId);
@@ -49,7 +55,7 @@ export const inferNotificationPath = (
   if (kind === 'join_request_approved') {
     const groupId = toStringValue(meta?.groupId);
     if (groupId) return `/messages?group=${encodeURIComponent(groupId)}`;
-    return '/trips?segment=upcoming&tab=joined';
+    return tripsLegacyJoinedTabPath();
   }
   if (
     kind === 'join_request_pending' ||
@@ -57,7 +63,7 @@ export const inferNotificationPath = (
     kind === 'join_request_rejected' ||
     kind === 'join_request_withdrawn'
   ) {
-    return '/trips?segment=upcoming&tab=joined';
+    return tripsLegacyJoinedTabPath();
   }
   if (kind === 'group_message') {
     const groupId = toStringValue(meta?.groupId);
@@ -79,38 +85,39 @@ export const inferNotificationPath = (
     return '/host/requests';
   }
   if (kind === 'badge') {
-    return '/profile/badges';
+    return PROFILE_BADGES_PATH;
   }
   if (kind === 'reward' || kind === 'tier_upgrade') {
-    return '/profile/badges';
+    return PROFILE_BADGES_PATH;
   }
   if (kind === 'goal_halfway' || kind === 'goal_complete') {
-    return '/trips?segment=upcoming';
+    return tripsLegacyUpcomingSegmentPath();
   }
   if (kind === 'goal_behind_pace') {
-    return '/trips?segment=upcoming&tab=joined';
+    return tripsLegacyJoinedTabPath();
   }
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') {
     const buddyUserId = toStringValue(meta?.buddyUserId) ?? toStringValue(meta?.fromUserId);
-    if (buddyUserId) return `/member/${buddyUserId}`;
+    if (buddyUserId) return memberProfilePath(buddyUserId) ?? '/buddies';
     return '/buddies';
   }
   if (kind === 'connection_member_followed') {
     const followerUserId = toStringValue(meta?.followerUserId);
-    if (followerUserId) return `/member/${followerUserId}`;
-    return '/profile';
+    if (followerUserId) return memberProfilePath(followerUserId) ?? PROFILE_PATH;
+    return PROFILE_PATH;
   }
   if (kind === 'member_published' || kind === 'friend_published' || kind === 'friend_activity_published') {
-    if (activityId) return `/activity/${activityId}`;
+    if (activityId) return activityDetailPath(activityId);
     const intentId = toStringValue(meta?.intentId);
     if (intentId) {
-      return `/explore?pin=demand:${encodeURIComponent(intentId)}&list=1&panel=activities`;
+      return `${explorePath({ list: true, panel: 'activities' })}&pin=demand:${encodeURIComponent(intentId)}`;
     }
     const actorUserId = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.hostUserId);
-    if (actorUserId) return `/member/${actorUserId}`;
+    if (actorUserId) {
+      return memberProfilePath(actorUserId) ?? explorePath({ list: true }) ?? EXPLORE_MAP_PATH;
+    }
     return explorePath({ list: true });
   }
-  // Legacy mislabeled group invites stored before kind fix.
   if (kind === 'buddy_request' && toStringValue(meta?.groupId)) {
     const inviteToken = toStringValue(meta?.inviteToken);
     if (inviteToken) return `/groups?invite=${encodeURIComponent(inviteToken)}`;
@@ -133,13 +140,13 @@ export const inferNotificationPath = (
     return '/host/overview';
   }
   if (kind === 'host_application_rejected' || kind === 'organizer_application_rejected') {
-    return '/become-host';
+    return PRO_MEMBERSHIP_PATH;
   }
   if (kind === 'host_suspended' || kind === 'host_reopened') {
-    return kind === 'host_suspended' ? '/become-host' : '/host/overview';
+    return kind === 'host_suspended' ? PRO_MEMBERSHIP_PATH : '/host/overview';
   }
   if (kind === 'user_suspended' || kind === 'user_reactivated') {
-    return '/profile';
+    return PROFILE_PATH;
   }
   if (kind === 'location_rejected') {
     return explorePath({ panel: 'venues', addLocation: true });
@@ -177,5 +184,5 @@ export const inferNotificationPath = (
     if (adminText.includes('product') || adminText.includes('shop')) return '/admin/shop';
   }
 
-  return '/profile';
+  return PROFILE_PATH;
 };

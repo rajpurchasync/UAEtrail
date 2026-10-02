@@ -73,7 +73,7 @@ Map each journey to UI, API area, and current automation. Expand API/E2E coverag
 | J15 | Admin moderation audit | Admin | `/admin/audit-log` (filter `content_report`) | `/admin` | None | Required |
 | J16 | Shop browse | Anyone | `/shop` `/product/:id` | `/shop` | None | Smoke |
 | J17 | Stripe checkout | Visitor | product → checkout | checkout + webhook | Partial (`premium.test.ts` area) | Required if G6 not deferred |
-| J18 | Become host / organizer | Visitor | `/become-host` | organizer application | None | Smoke / P1 |
+| J18 | Pro Membership / business host | Visitor | `/profile/pro-membership` | agency/shop/guide application | None | Smoke / P1 |
 | J19 | Guide scoped access | Guide | `/organizer/*` | tenant RBAC | Weak | Required RBAC spot-check |
 | J20 | Health & public SEO pages | Anyone | `/health` (via edge) `/terms` `/privacy` `/faq` | health | `health.test.ts` | Smoke |
 

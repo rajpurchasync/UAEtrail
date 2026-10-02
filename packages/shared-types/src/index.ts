@@ -279,6 +279,12 @@ export type {
 
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
 export type { MemberHubStatsDTO } from './member-hub-stats.js';
+export type {
+  HostPublishingTier,
+  HostTierFlags,
+  MemberProfileRoleLabel,
+} from './host-publishing-tier.js';
+import type { HostTierFlags, MemberProfileRoleLabel } from './host-publishing-tier.js';
 
 export type HostApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
@@ -295,10 +301,23 @@ export interface OwnedHostProfileDTO {
   slug: string;
 }
 
-/** Host publish eligibility for mobile create gate (Phase P3). */
+/**
+ * Member publishing + host console eligibility (`GET /me/host-status`).
+ * Single wire contract — clients must not re-derive tiers from `UserRole` alone.
+ */
 export interface HostStatusDTO {
-  /** Can post dated activities (guide or agency profile — not shop-only). */
+  /** Member profile completion (DOB, gender, based-in) — required before buddy Organize. */
+  signupProfileComplete: boolean;
+  /** First map publish (activity or demand) — earns Host badge. */
+  isCommunityHost: boolean;
+  /** Active tiers for this account (see `docs/MEMBER_MODEL.md`). */
+  hostTiers: HostTierFlags;
+  /** Canonical profile subtitle key — map with `memberProfileRoleLabel()`. */
+  profileRoleLabel: MemberProfileRoleLabel;
+  /** Can post Organize activities (community / pro / business tenant). */
   canPublish: boolean;
+  /** `/host/*` console (publish queue, team) when publish-capable or business member. */
+  canAccessHostConsole: boolean;
   applicationStatus: HostApplicationStatus;
   tenantId: string | null;
   isHostRole: boolean;

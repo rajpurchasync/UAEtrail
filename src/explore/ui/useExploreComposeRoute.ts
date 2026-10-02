@@ -20,6 +20,7 @@ type UseExploreComposeRouteArgs = {
   setSearchParams: (params: URLSearchParams, opts?: { replace?: boolean }) => void;
   onOpenComposeMenu: () => void;
   canPublish: boolean;
+  signupProfileComplete: boolean;
   hostGateLoading: boolean;
 };
 
@@ -30,6 +31,7 @@ export const useExploreComposeRoute = ({
   setSearchParams,
   onOpenComposeMenu,
   canPublish,
+  signupProfileComplete,
   hostGateLoading,
 }: UseExploreComposeRouteArgs) => {
   const exploreCompose = useMemo(() => parseExploreCompose(searchParams), [searchParams]);
@@ -77,7 +79,12 @@ export const useExploreComposeRoute = ({
 
   const handleComposeRouteChange = useCallback(
     (route: ExploreCompose | null) => {
-      const decision = resolveComposeRouteChange(route, { user, hostGateLoading, canPublish });
+      const decision = resolveComposeRouteChange(route, {
+        user,
+        hostGateLoading,
+        canPublish,
+        signupProfileComplete,
+      });
       if (decision.type === 'sign-in') {
         if (!user) {
           setGuestComposeSignInOpen(true);
@@ -86,14 +93,14 @@ export const useExploreComposeRoute = ({
         navigate(decision.href);
         return;
       }
-      if (decision.type === 'become-host') {
-        navigate('/become-host');
+      if (decision.type === 'complete-profile') {
+        navigate(decision.href);
         return;
       }
       if (decision.type === 'blocked') return;
       setComposeRoute(decision.route);
     },
-    [user, hostGateLoading, canPublish, navigate, setComposeRoute]
+    [user, hostGateLoading, canPublish, signupProfileComplete, navigate, setComposeRoute]
   );
 
   const closeGuestComposeSignIn = useCallback(() => {

@@ -2,8 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { resolveComposeRouteChange } from './exploreComposeRouteGuard';
 
 describe('resolveComposeRouteChange', () => {
-  const signedIn = { user: { id: 'u1' }, hostGateLoading: false, canPublish: true };
-  const signedOut = { user: null, hostGateLoading: false, canPublish: false };
+  const signedIn = {
+    user: { id: 'u1' },
+    hostGateLoading: false,
+    canPublish: true,
+    signupProfileComplete: true,
+  };
+  const signedOut = {
+    user: null,
+    hostGateLoading: false,
+    canPublish: false,
+    signupProfileComplete: false,
+  };
 
   it('requires sign-in for organize wizard when logged out', () => {
     const route = { intent: 'organize' as const, kind: 'hiking' as const };
@@ -16,17 +26,30 @@ describe('resolveComposeRouteChange', () => {
     }
   });
 
-  it('sends non-publishers to become-host for organize', () => {
+  it('sends non-publishers to complete profile for organize', () => {
     const route = { intent: 'organize' as const, kind: 'event' as const };
-    expect(
-      resolveComposeRouteChange(route, { user: { id: 'u1' }, hostGateLoading: false, canPublish: false })
-    ).toEqual({ type: 'become-host' });
+    const decision = resolveComposeRouteChange(route, {
+      user: { id: 'u1' },
+      hostGateLoading: false,
+      canPublish: false,
+      signupProfileComplete: false,
+    });
+    expect(decision.type).toBe('complete-profile');
+    if (decision.type === 'complete-profile') {
+      expect(decision.href).toContain('/welcome');
+      expect(decision.href).toContain('redirect');
+    }
   });
 
   it('blocks organize while host gate is loading', () => {
     const route = { intent: 'organize' as const, kind: 'camping' as const };
     expect(
-      resolveComposeRouteChange(route, { user: { id: 'u1' }, hostGateLoading: true, canPublish: true })
+      resolveComposeRouteChange(route, {
+        user: { id: 'u1' },
+        hostGateLoading: true,
+        canPublish: true,
+        signupProfileComplete: true,
+      })
     ).toEqual({ type: 'blocked' });
   });
 

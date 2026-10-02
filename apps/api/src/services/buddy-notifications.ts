@@ -1,14 +1,13 @@
 import { NotificationType } from '../domain/enums.js';
-import { findAuthUserById } from '../lib/auth-users.js';
 import { dispatchNotification } from './notifications.js';
+import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
 
 export const notifyBuddyRequestReceived = async (input: {
   requestId: string;
   fromUserId: string;
   toUserId: string;
 }): Promise<void> => {
-  const sender = await findAuthUserById(input.fromUserId);
-  const senderName = sender?.profile?.displayName ?? sender?.email ?? 'Someone';
+  const senderName = await resolveNotificationActorDisplayName(input.fromUserId, input.toUserId);
 
   await dispatchNotification({
     userId: input.toUserId,
@@ -29,8 +28,7 @@ export const notifyBuddyRequestAccepted = async (input: {
   fromUserId: string;
   toUserId: string;
 }): Promise<void> => {
-  const accepter = await findAuthUserById(input.toUserId);
-  const accepterName = accepter?.profile?.displayName ?? accepter?.email ?? 'Someone';
+  const accepterName = await resolveNotificationActorDisplayName(input.toUserId, input.fromUserId);
 
   await dispatchNotification({
     userId: input.fromUserId,

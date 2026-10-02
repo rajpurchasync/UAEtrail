@@ -1,4 +1,9 @@
 import { Link } from 'react-router-dom';
+import {
+  BUDDIES_PATH,
+  CONTRIBUTIONS_PATH,
+  PROFILE_BADGES_PATH,
+} from '../../config/routingCatalog';
 import type { LucideIcon } from 'lucide-react';
 import { Award, MapPin, Mountain, Settings, Users } from 'lucide-react';
 
@@ -59,7 +64,7 @@ export const buildProfileQuickLauncherItems = (input: {
     {
       key: 'friends',
       label: 'Friends',
-      to: '/buddies',
+      to: BUDDIES_PATH,
       icon: Users,
       iconWrapClassName: 'bg-blue-50 text-blue-700',
       badge: input.buddyBadge,
@@ -67,7 +72,7 @@ export const buildProfileQuickLauncherItems = (input: {
     {
       key: 'badges',
       label: 'Badges',
-      to: '/profile/badges',
+      to: PROFILE_BADGES_PATH,
       icon: Award,
       iconWrapClassName: 'bg-amber-50 text-amber-800',
       badge: input.badgesEarnedCount > 0 ? input.badgesEarnedCount : undefined,
@@ -75,7 +80,7 @@ export const buildProfileQuickLauncherItems = (input: {
     {
       key: 'contributions',
       label: 'Contributions',
-      to: '/contributions',
+      to: CONTRIBUTIONS_PATH,
       icon: MapPin,
       iconWrapClassName: 'bg-emerald-50 text-emerald-700',
     },

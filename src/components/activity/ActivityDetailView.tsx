@@ -14,7 +14,7 @@ import {
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../../utils/hostLabels';
 import { resolveOrganisationProfilePath } from '../../utils/organisationLinks';
 import { activityDetailEyebrow } from '../../config/activityTypes';
-import { detailBackPath } from '../../utils/exploreRouting';
+import { detailBackPath } from '../../config/routingCatalog';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
 import { buildGoogleDriveUrl, buildGoogleMapsSearchUrl, buildWazeDriveUrl } from '../../utils/mapLinks';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';

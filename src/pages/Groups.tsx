@@ -25,6 +25,7 @@ import {
   activityGroupChatPath,
   MESSAGES_CHAT_RETURN_TO_KEY,
 } from '../utils/activityGroupChatNav';
+import { COMMUNITY_PATH, PROFILE_PATH } from '../config/routingCatalog';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { Dialog } from '../components/ui/Dialog';
@@ -616,7 +617,7 @@ export const Groups = () => {
   };
 
   return (
-    <MobileScreen title="My Groups" backTo={fromCommunity ? '/community' : '/profile'} showBanner={false}>
+    <MobileScreen title="My Groups" backTo={fromCommunity ? COMMUNITY_PATH : PROFILE_PATH} showBanner={false}>
       <div className="space-y-4 pb-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-neutral-600">

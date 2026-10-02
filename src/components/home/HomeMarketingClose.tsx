@@ -1,6 +1,7 @@
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { EXPLORE_MAP_PATH } from '../../config/platform';
+
 import { HOME_CLOSE_HEADLINE, HOME_CLOSE_SUBLINE } from '../../content/homeLanding';
 import { AppButtonLink } from '../mobile/AppButton';
 import { LandingShell } from './LandingShell';

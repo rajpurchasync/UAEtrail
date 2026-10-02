@@ -1,3 +1,4 @@
+import { PRO_MEMBERSHIP_PATH } from '../config/routingCatalog';
 import { useEffect, useMemo } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
@@ -5,6 +6,7 @@ import { AppSegmented } from '../components/mobile/AppSegmented';
 import { AgencyOrganisationPanel } from '../components/organisation/AgencyOrganisationPanel';
 import { ShopOrganisationPanel } from '../components/organisation/ShopOrganisationPanel';
 import { useOrganisationGate } from '../hooks/useOrganisationGate';
+
 import { parseOrganisationKind, type OrganisationKind } from '../utils/organisationPaths';
 
 export const OrganisationManage = () => {
@@ -30,7 +32,7 @@ export const OrganisationManage = () => {
   }, [activeKind, hasMultipleKinds, kindParam, loading, setSearchParams]);
 
   if (!loading && !hasAgencyProfile && !hasShopProfile && !kindParam) {
-    return <Navigate to="/become-host" replace />;
+    return <Navigate to={PRO_MEMBERSHIP_PATH} replace />;
   }
 
   const shellTitle = hasMultipleKinds
@@ -71,7 +73,7 @@ export const OrganisationManage = () => {
         ) : activeKind === 'shop' ? (
           <ShopOrganisationPanel />
         ) : (
-          <Navigate to="/become-host" replace />
+          <Navigate to={PRO_MEMBERSHIP_PATH} replace />
         )}
       </div>
     </ConsumerShell>

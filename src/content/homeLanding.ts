@@ -1,5 +1,7 @@
 /** Marketing landing — signed-out guests only; members always use /explore. See docs/LANDING.md & docs/NORTHSTAR.md */
 
+import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+
 export const HOME_HERO_EYEBROW = 'Outdoor community · UAE & GCC';
 
 /** Compact eyebrow for mobile hero — avoids crowded all-caps tracking. */
@@ -104,7 +106,7 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
     activityType: 'hiking',
     price: 0,
     pricingMode: 'free',
-    path: '/explore',
+    path: EXPLORE_MAP_PATH,
   },
   {
     id: 'fallback-wadi',
@@ -114,7 +116,7 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
     activityType: 'camping',
     price: 45,
     pricingMode: 'shared',
-    path: '/explore',
+    path: EXPLORE_MAP_PATH,
   },
   {
     id: 'fallback-dam',
@@ -125,7 +127,7 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
     price: 120,
     pricingMode: 'paid',
     pricePackages: [{ label: 'Standard', amount: 120, currency: 'AED' }],
-    path: '/explore',
+    path: EXPLORE_MAP_PATH,
   },
 ];
 

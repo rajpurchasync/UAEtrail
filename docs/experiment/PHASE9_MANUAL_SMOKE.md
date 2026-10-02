@@ -34,7 +34,7 @@ Run `npm run test:frontend`. These tests guard the contracts below; they do **no
 | 3 — wizard completeness | `isSignupProfileComplete`, step order | `signupProfileSteps.test.ts` |
 | 4 — explore location prompt | `EXPLORE_WELCOME_FINISH_STATE`, prefs | `exploreWelcomeNavigation.test.ts`, `exploreMapLocationPreference.test.ts` |
 | 6 — settings save stays unlocked | Complete profile does not re-force welcome | `signupProfileGate.test.ts` |
-| Explore compose (regression) | Organize sign-in / become-host gates | `exploreComposeRouteGuard.test.ts` |
+| Explore compose (regression) | Organize sign-in / profile-complete gates | `exploreComposeRouteGuard.test.ts` |
 
 Gate query invalidation after profile save is implemented in `ProfileMemberDetailsCard`, `SignupProfileWizard`, and `Profile.tsx` via `meProfileSignupGateKey` — verify step 6 manually.
 

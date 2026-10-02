@@ -1,6 +1,6 @@
 # UAE Trail — System Architecture
 
-**Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — who we serve, what problem we solve, and how surfaces should feel. **Create / FAB:** [`CREATE_FLOW.md`](./CREATE_FLOW.md). Implementation follows those docs; this file describes system shape.
+**Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — who we serve, what problem we solve, and how surfaces should feel. **Whole-system map (capabilities, contexts, debt):** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md). **Create / FAB:** [`CREATE_FLOW.md`](./CREATE_FLOW.md). This file describes deployment shape and layer diagram; use **SYSTEM_COHERENCE** for bounded contexts and consolidation order.
 
 ## Overview
 
@@ -12,7 +12,7 @@ Monorepo with three layers:
 | API | `apps/api/` | Express + MongoDB |
 | Shared contracts | `packages/shared-types/` | DTOs consumed by both sides |
 
-**Domain glossary:** see [`docs/DOMAIN.md`](./DOMAIN.md) for Place, Activity, Organisation, Person and legacy naming map.
+**Documentation map:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md). **Domain glossary:** [`DOMAIN.md`](./DOMAIN.md) (Place, Activity, Organisation). **Member / host tiers / roles:** [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — single map for users, `HostStatusDTO`, and routes.
 
 ## Backend (`apps/api`)
 
@@ -55,7 +55,7 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 | Shop (organisation) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only |
 | Guide / agency (organisation) | `tenants` (guide/agency) | `/operator/:slug` | No |
 
-Shop identity is split between **tenant** (become-host signup: website, optional pin) and **merchant profile** (ShopManage: contact, featured picks). Saving in ShopManage syncs both and invalidates the explore map cache.
+Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (ShopManage: contact, featured picks). Saving in ShopManage syncs both and invalidates the explore map cache.
 
 ## Frontend (`src`)
 
@@ -108,6 +108,17 @@ npm run test:frontend
 ```
 
 Unit tests cover capacity, JWT, datetime (GCC), and waitlist logic.
+
+## Documentation tiers
+
+| Tier | Where | Rule |
+|------|--------|------|
+| 1 | [`DOCS_INDEX.md`](./DOCS_INDEX.md) § Tier 1 | Canonical — must match shipped behavior |
+| 2 | Release, ops, rollout trackers | Must not contradict Tier 1 on semantics |
+| 3 | [`experiment/`](./experiment/) | Flow QA; defer to `CREATE_FLOW.md` / `MEMBER_MODEL.md` |
+| 4 | `IMPLEMENTATION_GUIDE.md`, `DOMAIN_ADOPTION_PLAN.md`, … | Historical — superseded banners at top |
+
+Checks: `npm run verify:docs` · `npm run verify:host-member`
 
 ## Future (not in scope)
 

@@ -23,7 +23,11 @@ Signed-in **host** (`canPublish`) publishes an **outdoor event / group activity*
 
 ## Preconditions
 
-Same as FLOW-01 / FLOW-02: signed in, host profile complete, tenant loaded on publish.
+| Check | If fail |
+|-------|---------|
+| Signed in | Redirect to sign-in; return URL includes `compose=organize:events` |
+| Signup profile complete (`canPublish` on `GET /me/host-status`) | Redirect to `/welcome?redirect=…` when incomplete; Pro/business → `/profile/pro-membership` |
+| Buddy host tenant loaded | Error on publish if tenant missing (see [`MEMBER_MODEL.md`](../../MEMBER_MODEL.md)) |
 
 ---
 

@@ -11,6 +11,7 @@ import { findAuthUserById, findAuthUsersByIds, updateAuthUserCore } from './auth
 import { COLLECTIONS } from './collections.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
+import { publishingPurposeForHostApplication } from '../domain/tenant-publishing.js';
 import { writeTenantToMongo, ensureUniqueTenantSlug } from './tenant-store.js';
 import { createMerchantProfileForUser } from './shop-store.js';
 
@@ -331,6 +332,7 @@ export const approveHostApplicationAndProvisionTenant = async (input: {
     latitude: isOnlineShop ? null : typeof meta.latitude === 'number' ? meta.latitude : null,
     longitude: isOnlineShop ? null : typeof meta.longitude === 'number' ? meta.longitude : null,
     region: typeof meta.region === 'string' ? meta.region : null,
+    publishingPurpose: publishingPurposeForHostApplication(hostProfileType),
     createdAt: now,
     updatedAt: now
   });

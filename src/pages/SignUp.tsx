@@ -162,8 +162,7 @@ export const SignUp = () => {
           <div className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2.5 text-sm text-emerald-800">
             <Gift className="w-4 h-4 shrink-0" />
             <span>
-              You&apos;ll earn <strong>25 bonus Trail Points</strong> with invite code{' '}
-              <strong>{referralCode}</strong>
+              You were invited with code <strong>{referralCode}</strong> — welcome to the crew.
             </span>
           </div>
         )}

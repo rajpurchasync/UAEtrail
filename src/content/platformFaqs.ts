@@ -30,7 +30,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'Is UAE Trail free to use?',
         answer:
-          'Creating an account and browsing trails, camps, and activities is free. Some location premium guides require payment or Trail Points. Organized activities may be free or paid depending on the host.'
+          'Creating an account and browsing trails, camps, and activities is free. Some location premium guides may require payment. Organized activities may be free or paid depending on the host.'
       }
     ]
   },
@@ -74,22 +74,6 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
         question: 'Are activity hosts verified?',
         answer:
           'Host applications are reviewed by our team. Public profiles show experience, team members, and community reviews so participants can make informed choices before joining.'
-      }
-    ]
-  },
-  {
-    id: 'rewards',
-    title: 'Trail Points & rewards',
-    items: [
-      {
-        question: 'What are Trail Points?',
-        answer:
-          'Trail Points are rewards for participating on UAE Trail — joining activities, writing reviews, posting in the community, submitting locations, and inviting friends. Points contribute to membership tiers and unlock perks over time.'
-      },
-      {
-        question: 'Where can I learn more about earning Trail Points?',
-        answer:
-          'Visit the Trail Points page for a full breakdown of earn opportunities, tier levels, and how rewards work on the platform.'
       }
     ]
   },

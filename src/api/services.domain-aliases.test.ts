@@ -77,7 +77,8 @@ describe('api domain aliases (Phase 1)', () => {
     expect(typeof api.getMyOrganisationApplication).toBe('function');
   });
 
-  it('exposes organisation console aliases alongside legacy host methods', () => {
+  it('exposes member host status and organisation console aliases', () => {
+    expect(typeof api.getMemberHostStatus).toBe('function');
     expect(typeof api.getMyOrganisationStatus).toBe('function');
     expect(typeof api.getMyHostStatus).toBe('function');
     expect(typeof api.listOrganisationActivities).toBe('function');

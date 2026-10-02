@@ -4,7 +4,7 @@ import { OrganisationPublicProfile } from '../components/organisation-console/Or
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { api, TenantProfile } from '../api/index';
 import { shopPublicPath } from '../utils/shopPaths';
-import { detailBackPath } from '../utils/exploreRouting';
+import { detailBackPath } from '../config/routingCatalog';
 
 const isShopTenant = (tenant: TenantProfile): boolean =>
   tenant.businessMode === 'SHOP' || tenant.type === 'shop' || tenant.type === 'SHOP';

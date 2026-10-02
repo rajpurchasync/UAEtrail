@@ -1,6 +1,5 @@
 import { Map, Satellite } from 'lucide-react';
 import type { ExploreMapStyle } from '../../config/platform';
-
 interface ExploreMapStyleToggleProps {
   style: ExploreMapStyle;
   onToggle: () => void;

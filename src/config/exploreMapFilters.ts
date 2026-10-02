@@ -1,4 +1,4 @@
-import type { MapFilterKey } from '../utils/exploreRouting';
+import type { MapFilterKey } from '../config/routingCatalog';
 
 export const MAP_FILTER_PILLS: ReadonlyArray<{ key: MapFilterKey; label: string }> = [
   { key: 'all', label: 'All' },

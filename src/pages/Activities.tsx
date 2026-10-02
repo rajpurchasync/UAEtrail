@@ -1,3 +1,4 @@
+import { PRO_MEMBERSHIP_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { FloatingActionButton } from '../components/mobile/FloatingActionButton'
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { PageMeta } from '../components/seo/PageMeta';
 import { TRIPS_PATH } from '../constants';
+
 import { explorePath } from '../explore/routing';
 import { useOrganisationGate } from '../hooks/useOrganisationGate';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
@@ -45,7 +47,7 @@ export const Activities = () => {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [goalSheetOpen, setGoalSheetOpen] = useState(false);
   const gate = useOrganisationGate({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canPublish);
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
   const { goal, saving: goalSaving, saveGoal, clearGoal, reload: reloadGoal } = useMemberGoal(Boolean(user));
 
   useEffect(() => {
@@ -234,10 +236,10 @@ export const Activities = () => {
             </p>
             <button
               type="button"
-              onClick={() => navigate('/become-host')}
+              onClick={() => navigate(PRO_MEMBERSHIP_PATH)}
               className="text-sm font-semibold text-emerald-700"
             >
-              Become a host
+              Pro Membership
             </button>
           </div>
         );

@@ -1,7 +1,7 @@
 import { NotificationType } from '../domain/enums.js';
-import { findAuthUserById } from '../lib/auth-users.js';
 import { findGroupById, listGroupMembersDetailed } from '../lib/social-groups-store.js';
 import { dispatchNotification } from './notifications.js';
+import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
 
 export const notifyGroupInvite = async (input: {
   invitedUserId: string;
@@ -9,13 +9,13 @@ export const notifyGroupInvite = async (input: {
   inviteToken: string;
   invitedByUserId: string;
 }): Promise<void> => {
-  const [group, inviter] = await Promise.all([
-    findGroupById(input.groupId),
-    findAuthUserById(input.invitedByUserId)
-  ]);
+  const group = await findGroupById(input.groupId);
 
   const groupName = group?.name ?? 'a group';
-  const inviterName = inviter?.profile.displayName ?? inviter?.email ?? 'Someone';
+  const inviterName = await resolveNotificationActorDisplayName(
+    input.invitedByUserId,
+    input.invitedUserId
+  );
 
   await dispatchNotification({
     userId: input.invitedUserId,
@@ -37,8 +37,10 @@ export const notifyMemberFollowed = async (input: {
   followerUserId: string;
   followingUserId: string;
 }): Promise<void> => {
-  const follower = await findAuthUserById(input.followerUserId);
-  const followerName = follower?.profile?.displayName ?? follower?.email?.split('@')[0] ?? 'Someone';
+  const followerName = await resolveNotificationActorDisplayName(
+    input.followerUserId,
+    input.followingUserId
+  );
 
   await dispatchNotification({
     userId: input.followingUserId,
@@ -59,14 +61,12 @@ export const notifyGroupWallPost = async (input: {
   authorUserId: string;
   body: string;
 }): Promise<void> => {
-  const [group, author, members] = await Promise.all([
+  const [group, members] = await Promise.all([
     findGroupById(input.groupId),
-    findAuthUserById(input.authorUserId),
-    listGroupMembersDetailed(input.groupId)
+    listGroupMembersDetailed(input.groupId),
   ]);
 
   const groupName = group?.name ?? 'your group';
-  const authorName = author?.profile.displayName ?? author?.email ?? 'Someone';
   const preview = input.body.trim().slice(0, 100);
   const recipientIds = members
     .map((member) => member.userId)
@@ -75,8 +75,9 @@ export const notifyGroupWallPost = async (input: {
   if (recipientIds.length === 0) return;
 
   await Promise.all(
-    recipientIds.map((userId) =>
-      dispatchNotification({
+    recipientIds.map(async (userId) => {
+      const authorName = await resolveNotificationActorDisplayName(input.authorUserId, userId);
+      return dispatchNotification({
         userId,
         title: `New message in ${groupName}`,
         body: `${authorName}: ${preview}`,
@@ -89,7 +90,7 @@ export const notifyGroupWallPost = async (input: {
           authorUserId: input.authorUserId,
           path: `/groups?group=${encodeURIComponent(input.groupId)}`
         }
-      }).catch(() => undefined)
-    )
+      }).catch(() => undefined);
+    })
   );
 };

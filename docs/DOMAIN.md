@@ -2,6 +2,8 @@
 
 This glossary maps **product concepts** to **code and routes**. Use it when naming pages, DTOs, and PRs. Routes and API paths stay stable during renames; component and file names may use `Organisation*` as a **code umbrella** for tenants.
 
+**Canonical naming & routes (single table):** [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) · **Code:** `src/config/routingCatalog.ts` · **Check:** `npm run verify:domain`
+
 **Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — people finding company outdoors; code entities below are *how* the product delivers that.
 
 See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing rules and [`CREATE_FLOW.md`](./CREATE_FLOW.md) for FAB / organize / find / add.
@@ -89,6 +91,8 @@ Use **Place** in product copy and new code. **Do not** introduce parallel “ven
 
 ## Accounts, members, and hosts (canonical)
 
+**Full tier / role / route map:** [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (community · professional · business).
+
 One **user** account. Capabilities stack — they are not separate products.
 
 ### Join as a member (everyone)
@@ -99,10 +103,12 @@ Anyone can explore and join outings after **basic signup**:
 |-------------|---------|----------------|
 | Account + verify | Email/password or Google + **OTP** | `/signup`, `/verify` |
 | Member details | **Age** (DOB), **gender**, **based in** (country/city) at signup | `/welcome` → `PATCH /me/profile/signup-details` |
-| Languages | Added on **profile** (optional for browse; needed for hosting story) | `PATCH /me/profile` · Profile / Settings member details |
+| Languages | Optional on profile (member details) | `PATCH /me/profile` · Profile / Settings |
 | Default role | **Participant** — browse map, RSVP, request to join, demand posts, buddies, follow | `UserRole.PARTICIPANT` |
 
-This is **not** hosting. No tenant is created.
+**Profile completion** = member details above (DOB, gender, based-in) — `signupProfileComplete` on `GET /me/profile` and `/me/host-status`. Required before **Organize** (buddy host). Demand and Add do not require it beyond signed-in member.
+
+This is **not** hosting. No tenant is created until profile is complete and the member opens Organize (API provisions a personal guide tenant).
 
 ### Become a host (publish trips)
 
@@ -114,10 +120,10 @@ This is **not** hosting. No tenant is created.
 | **Business host** (agency) | Licensed operator | **Yes** — paid pricing modes | `hostProfileType: agency` → `TenantType.COMPANY` / `businessMode: AGENCY` |
 | **Shop** (optional third line) | Gear partner, not trip inventory | N/A (featured picks) | `hostProfileType: shop` → shop public `/shop/:id` |
 
-**Shop provisioning (today):** platform **admin** or an authenticated user can create a shop tenant via become-host / admin flows. **Shop claim** — an existing brick-and-mortar business verifies ownership and takes over a listing — is **planned**, not built yet.
+**Shop provisioning (today):** platform **admin** or an authenticated user can create a shop tenant via **Pro Membership** (`/profile/pro-membership`) / admin flows. **Shop claim** — an existing brick-and-mortar business verifies ownership and takes over a listing — is **planned**, not built yet.
 
-**Minimum to start hosting (product):** credible **bio** + **languages** on the person/brand story (individuals also need a display identity).  
-**Today in code:** `/become-host` wizard still collects phone, photo, location, etc., and most paths require **admin approval** before a tenant is provisioned (`host_applications` → `approveHostApplicationAndProvisionTenant`). Tightening to “bio + languages only” is a product change on that wizard and/or approval policy.
+**Buddy host (Organize on map):** **profile completion** (`signupProfileComplete`) → `canPublish` on `GET /me/host-status`; API auto-provisions a guide-owned tenant. Gate UX → `/welcome` (incomplete profile). **Host** profile label → `isCommunityHost` after first published activity **or** demand post.  
+**Pro / business:** `/profile/pro-membership` (legacy `/become-host` redirects) — agency, shop, professional guide applications via `host_applications` where required.
 
 ### Business account from profile
 
@@ -130,7 +136,7 @@ Any member may add a **business hosting identity** without replacing their perso
 | Publish on behalf of business | Activity is under **tenant** (`x-tenant-id`); host picker in console | `/host/activities` |
 | Publish as self | Separate **individual** tenant (`add-guide` / own guide profile) | Second tenant + membership; same user, two publishing contexts |
 
-Entry UI: Profile / map presence → **`/become-host`** or **`/organisation/manage?kind=agency`** (and shop variant). There is not yet a single “create business” toggle that skips the host-application flow.
+Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/become-host` redirects) or **`/organisation/manage?kind=agency`** (and shop variant). There is not yet a single “create business” toggle that skips the host-application flow.
 
 ### Public surfaces (do not merge)
 
@@ -201,11 +207,11 @@ The route `/member/:userId` uses a user id in the URL (storage key). In UI, pref
 
 | Subtype | Role | Map pin? | Manage |
 |---------|------|----------|--------|
-| **Guide** | Individual host; public intro at `/operator/:slug` | No | `/host/*` console, `/become-host` |
+| **Guide** | Individual host; public intro at `/operator/:slug` | No | `/host/*` console; buddy Organize via `canPublish` |
 | **Agency** | Business host; paid trips | No | `/host/*`, `/organisation/manage?kind=agency` |
 | **Shop** | Physical or online gear partner | Physical only | `/shop/:id`, `/organisation/manage?kind=shop` |
 
-Shop identity: **tenant** (become-host) + **merchant profile** (ShopManage), linked via `merchant_profiles.tenantId`.
+Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (ShopManage), linked via `merchant_profiles.tenantId`.
 
 ## Legacy → domain naming
 
@@ -224,7 +230,7 @@ Shop identity: **tenant** (become-host) + **merchant profile** (ShopManage), lin
 |---------------|-------|-------|
 | `OrganisationProfile` | `/operator/:id` | Public guide/agency host profile |
 | `OrganisationConsoleOverview` | `/host/overview` | **Host console** in UI |
-| `BecomeHost` | `/become-host`, `/become-organizer` | User copy: **become a host** (guide, agency, shop) |
+| `ProfileProMembership` (`BecomeHost` legacy export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Organize (`canPublish` via profile complete) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
 | `AdminOrganisations` | `/admin/hosts` | Admin copy: **Hosts** |
 

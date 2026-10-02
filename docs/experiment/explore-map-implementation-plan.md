@@ -1,6 +1,6 @@
 # Explore Map — Detailed Implementation Plan
 
-> **Superseded naming (2026-09):** This plan predates the unified compose stack. Current code lives under `src/explore/` — see **`docs/CREATE_FLOW.md`** for the file map (`ExploreExperience.tsx`, `organizeFlow.ts`, `compose.ts`, etc.). References below to `Mobile*` / `mobileCreateFlow` are historical.
+> **Superseded naming (2026-09):** This plan predates the unified compose stack. Current code lives under `src/explore/` — see **`docs/CREATE_FLOW.md`** for the file map (`ExploreExperience.tsx`, `organizeFlow.ts`, `compose.ts`, etc.). References below to `Mobile*` / `mobileCreateFlow` are historical. **Pro / agency / shop entry** is `ProfileProMembership` at `/profile/pro-membership` (legacy `BecomeHost.tsx` / `/become-host` redirects). **Buddy Organize** uses `canPublish` — see **`docs/MEMBER_MODEL.md`**. Doc tiers: **`docs/DOCS_INDEX.md`**.
 
 **Branch:** `main` (shipped Oct 2026; this plan is historical)  
 **Remote:** `origin` → `https://github.com/uaetrail/main.git`  
@@ -33,7 +33,7 @@ Work is **sequential by phase**. Do not skip Phase P0 (alignment layer).
 | D3 | Rideshare map shows **from and to** locations (two pins; polyline optional) |
 | D4 | Optional `linkedActivityId` on carpool for future hike/camp link (UI deferred) |
 | D5 | Simpler mobile create — ≤5 steps per type; advanced fields under “More options” |
-| D6 | Sign-up/host: **Individual** (`GUIDE_OWNED`) or **Business** (`COMPANY`) via `/become-host` |
+| D6 | Sign-up/host: **Individual** (`GUIDE_OWNED`) buddy via profile complete + **Business** via `/profile/pro-membership` |
 | D7 | Business chooses **Shop** or **Tour agency** (`tenant.businessMode`) |
 | D8 | Demand posts **public by default** |
 | D9 | Others **Request to join** on demand posts (poster = host) |
@@ -227,7 +227,7 @@ Execute **one phase at a time**. Update **Phase status** (§8) when complete.
 | P3-5 | Event: Title→Where→When→Spots→Price→Publish | same |
 | P3-6 | Rideshare: From→To→When→Seats→Price→Publish | same |
 | P3-7 | “More options” drawer | same |
-| P3-8 | Redirect to `/become-host` if not approved | create flow |
+| P3-8 | Redirect to `/welcome` (profile) or Pro Membership for business | create flow |
 | P3-9 | Remove rideshare→hiking hack | mobileCreateFlow.ts |
 | P3-10 | Price toggle display-only | mobileCreateFlow |
 
@@ -312,20 +312,18 @@ P0 → P1 → P2 → P3 → P4 → P5 → P6 → P7
 
 ---
 
-## 7. Git workflow
+## 7. Git workflow (current)
 
 ```bash
-git checkout experiment/new-ui
-git pull purchasync experiment/new-ui
+git checkout main
+git pull origin main
 
-# After each phase
-git commit -m "feat(explore): Phase Pn — summary"
-git push purchasync experiment/new-ui
+# feature work
+git checkout -b feat/your-change
+git push -u origin HEAD
 ```
 
-Do **not** push to `origin/main` without approval.
-
-Suggested tags: `experiment/explore-p0`, `experiment/explore-p1`, …
+Legacy mirror: `rajpurchasync/UAEtrail` — frozen snapshot; see `git-remotes.mdc`.
 
 ---
 

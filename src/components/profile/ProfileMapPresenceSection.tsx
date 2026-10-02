@@ -24,7 +24,7 @@ export const ProfileMapPresenceSection = () => {
 
   const openHostFlow = (intent: HostFlowIntent) => {
     const redirect = encodeURIComponent(`${location.pathname}${location.search}`);
-    navigate(`/become-host?intent=${intent}&redirect=${redirect}`);
+    navigate(`/profile/pro-membership?intent=${intent}&redirect=${redirect}`);
   };
 
   const activeCount = HOST_PROFILE_CHIPS.filter((chip) => isActive(chip.key)).length;

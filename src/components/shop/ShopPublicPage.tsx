@@ -9,7 +9,7 @@ import { ShopFeaturedPicksSection } from './ShopFeaturedPicksSection';
 import { ShareButton } from '../ui/ShareButton';
 import { ReviewSection } from '../ui/ReviewSection';
 import { CatalogRatingSummary, DetailReviewFooter, scrollToReviewAnchor } from '../ui/DetailReviewChrome';
-import { explorePath } from '../../utils/exploreRouting';
+import { explorePath } from '../../config/routingCatalog';
 import { shopPublicPath } from '../../utils/shopPaths';
 import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';

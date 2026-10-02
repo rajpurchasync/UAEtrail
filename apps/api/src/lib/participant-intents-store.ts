@@ -409,3 +409,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
       };
     });
 };
+
+/** Non-cancelled demand posts — counts toward community Host label. */
+export const countParticipantIntentsByUser = async (userId: string): Promise<number> =>
+  collection().countDocuments({ userId, status: { $ne: 'cancelled' } });

@@ -20,7 +20,7 @@ import type { Place } from '../types/place';
 import { fetchPlaceDetail } from '../api/public';
 import { api } from '../api/index';
 import { activitiesBrowsePath } from '../config/activityTypes';
-import { detailBackPath, myActivitiesPath } from '../utils/exploreRouting';
+import { detailBackPath, myActivitiesPath } from '../config/routingCatalog';
 import { hasPositiveNumber, isDefaultVenueSeason } from '../utils/venueDetailDisplay';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind, type PlaceDetailKindConfig } from './placeDetailConfig';
 import { readPlaceArabicName, resolvePlaceDisplayTitle } from '../utils/venueDetailDisplay';

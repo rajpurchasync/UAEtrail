@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response, Router } from 'express';
 import { z } from 'zod';
-import { RequestStatus, TenantBusinessMode, TenantType, UserRole } from '../../domain/enums.js';
+import { RequestStatus } from '../../domain/enums.js';
 import { ApiError } from '../../lib/api-error.js';
 import {
   findActivityForRequestViewById,
@@ -16,16 +16,9 @@ import {
 } from '../../lib/activity-engagement-store.js';
 import { registerActivityRoute } from '../../lib/activity-routes.js';
 import { findAuthUserById, listAuthUsers } from '../../lib/auth-users.js';
-import { findLatestHostApplicationByApplicant } from '../../lib/host-applications-store.js';
 import { buildActivityDto } from '../../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { removePushSubscription, upsertPushSubscription } from '../../lib/push-subscriptions.js';
-import {
-  listTenantsByOwnerId,
-  mergeActiveTenantsForHostStatus,
-  pickActivityTenant,
-  resolveOwnedProfileType,
-} from '../../lib/tenant-store.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { buildParticipationDto } from '../../services/checkin.js';
@@ -335,83 +328,6 @@ router.get('/me/tenants', async (req, res, next) => {
         tenantType: membership.tenant.type.toLowerCase(),
         membershipRole: membership.role.toLowerCase()
       }))
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get('/me/host-status', requireAuth, async (req, res, next) => {
-  try {
-    const userId = req.auth!.userId;
-    const user = await findAuthUserById(userId);
-    const role = user?.role ?? UserRole.PARTICIPANT;
-    const isHostRole =
-      role === UserRole.TENANT_OWNER ||
-      role === UserRole.TENANT_ADMIN ||
-      role === UserRole.TENANT_GUIDE;
-    const isPlatformAdmin = role === UserRole.PLATFORM_ADMIN;
-
-    const [ownedByOwnerId, memberships] = await Promise.all([
-      listTenantsByOwnerId(userId),
-      listActiveTenantMembershipsByUser(userId),
-    ]);
-    const ownedTenants = mergeActiveTenantsForHostStatus(ownedByOwnerId, memberships);
-    const ownedProfiles = ownedTenants.map((tenant) => ({
-      type: resolveOwnedProfileType(tenant),
-      tenantId: tenant.id,
-      name: tenant.name,
-      slug: tenant.slug
-    }));
-
-    const hasGuideProfile = ownedProfiles.some((profile) => profile.type === 'guide');
-    const hasAgencyProfile = ownedProfiles.some((profile) => profile.type === 'agency');
-    const hasShopProfile = ownedProfiles.some((profile) => profile.type === 'shop');
-
-    const activityTenant = pickActivityTenant(ownedTenants);
-    const tenantId = activityTenant?.id ?? null;
-
-    const application = await findLatestHostApplicationByApplicant(userId);
-    let applicationStatus: 'none' | 'pending' | 'approved' | 'rejected' = 'none';
-    if (application) {
-      const normalized = application.status.toLowerCase();
-      if (normalized === 'pending' || normalized === 'approved' || normalized === 'rejected') {
-        applicationStatus = normalized;
-      }
-    }
-
-    const canPublish =
-      isPlatformAdmin || ((isHostRole || ownedTenants.length > 0) && (hasGuideProfile || hasAgencyProfile));
-
-    let tenantType: 'company' | 'guide_owned' | null = null;
-    let businessMode: 'agency' | 'shop' | null = null;
-    if (activityTenant) {
-      tenantType = activityTenant.type === TenantType.COMPANY ? 'company' : 'guide_owned';
-      businessMode =
-        activityTenant.businessMode === TenantBusinessMode.AGENCY
-          ? 'agency'
-          : activityTenant.businessMode === TenantBusinessMode.SHOP
-            ? 'shop'
-            : null;
-    }
-
-    const canHostPaidActivities = isPlatformAdmin || hasAgencyProfile;
-
-    res.json({
-      data: {
-        canPublish,
-        applicationStatus,
-        tenantId,
-        isHostRole,
-        hasTenant: ownedTenants.length > 0,
-        tenantType,
-        businessMode,
-        canHostPaidActivities,
-        hasGuideProfile,
-        hasAgencyProfile,
-        hasShopProfile,
-        ownedProfiles
-      }
     });
   } catch (error) {
     next(error);

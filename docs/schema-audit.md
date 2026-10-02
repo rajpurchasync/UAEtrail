@@ -2,6 +2,8 @@
 
 **Status:** Phase 4 complete · **Last updated:** 2026-09-22
 
+> **Scope:** MongoDB collections, indexes, and DTO alignment — **not** member publish gates or consumer routes. For **who can Organize** and `/me` vs `/host`, see [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) and [`API_ROUTING.md`](./API_ROUTING.md). Doc tiers: [`DOCS_INDEX.md`](./DOCS_INDEX.md).
+
 This document is the source of truth for UAE Trail's MongoDB schema, entity relationships, permissions, and the phased plan to unify them.
 
 ---

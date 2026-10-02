@@ -9,7 +9,7 @@ import { MemberProfileView } from '../components/profile/MemberProfileView';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import { messagesRouteForRole } from '../utils/authRouting';
-import { myActivitiesPath } from '../utils/exploreRouting';
+import { myActivitiesPath } from '../config/routingCatalog';
 
 const isFullProfile = (
   profile: PersonPublicProfileDTO

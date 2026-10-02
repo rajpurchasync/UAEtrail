@@ -268,6 +268,17 @@ export const tripsPath = (input?: {
 
 export const tripsMapPath = () => '/trips/map';
 
+/** Legacy `segment` + `tab` query — normalized on load by `normalizeTripsSearchParams`. */
+export const tripsLegacyJoinedTabPath = (): string => {
+  const params = new URLSearchParams({ segment: 'upcoming', tab: 'joined' });
+  return `${TRIPS_PATH}?${params.toString()}`;
+};
+
+export const tripsLegacyUpcomingSegmentPath = (): string => {
+  const params = new URLSearchParams({ segment: 'upcoming' });
+  return `${TRIPS_PATH}?${params.toString()}`;
+};
+
 export const TRIPS_MAIN_TABS: {
   id: TripsMainView;
   label: string;

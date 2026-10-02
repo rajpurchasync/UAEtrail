@@ -2,7 +2,7 @@ import type {
   ActivityListFilterKey,
   MapFilterKey,
   VenueListFilterKey,
-} from '../utils/exploreRouting';
+} from '../config/routingCatalog';
 
 export type { VenueListFilterKey };
 

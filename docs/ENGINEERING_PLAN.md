@@ -2,7 +2,7 @@
 
 **Goal:** A new developer should see intentional architecture, not accumulated experiments. This doc tracks the systematic cleanup after the create-flow / participation-mode work.
 
-**Companion:** [`NORTHSTAR.md`](./NORTHSTAR.md) (product), [`CREATE_FLOW.md`](./CREATE_FLOW.md) (compose), [`NAVIGATION.md`](./NAVIGATION.md) (routes), [`DOMAIN_ADOPTION_PLAN.md`](./DOMAIN_ADOPTION_PLAN.md) (rename burn-down).
+**Companion:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) (canonical map), [`NORTHSTAR.md`](./NORTHSTAR.md) (product), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (publish gates), [`CREATE_FLOW.md`](./CREATE_FLOW.md) (compose), [`NAVIGATION.md`](./NAVIGATION.md) (routes). Historical rename checklist: [`DOMAIN_ADOPTION_PLAN.md`](./DOMAIN_ADOPTION_PLAN.md).
 
 ---
 
@@ -136,7 +136,7 @@
 - [x] Signup gate query invalidated from Profile edit save
 - [x] copyGuard scans signup/account surfaces; bans legacy “Confirm your profile”
 - [x] Explore shell: `ExploreMapStage`, `useExploreBrowseList`, `exploreMapPinModel`, `useExploreBrowseUrlState`, `useExploreFulfillIntent`, `useExploreComposeRoute`, `useExploreMapViewport`, `useExploreSelectionActions`
-- [x] Become-host: canonical `BecomeHost` page + `BecomeHostFlow`; profile chips route to `/become-host?intent=…` (no duplicate modal wizard)
+- [x] Pro / business entry: `ProfileProMembership` + `BecomeHostFlow`; profile chips route to `/profile/pro-membership` (legacy `/become-host` redirects; buddy Organize uses `/welcome` + `canPublish`)
 - [x] Host wizard modules: `becomeHostForm.ts`, `hostWizardFlow.ts` (UI: `BecomeHostFlow.tsx`)
 - [ ] Manual smoke: incomplete member → `/welcome` → explore location prompt → settings edit — [`experiment/PHASE9_MANUAL_SMOKE.md`](./experiment/PHASE9_MANUAL_SMOKE.md) (automated contracts in same doc § CI)
 

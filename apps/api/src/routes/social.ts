@@ -6,8 +6,8 @@ import { paginatedResponse, paginationSchema } from '../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { optionalAuth } from '../middleware/optional-auth.js';
 import { validate } from '../middleware/validate.js';
+import { tierEnumToDisplay } from '../lib/membership-tier-display.js';
 import { awardPoints } from '../services/rewards.js';
-import { tierEnumToDisplay } from '../lib/rewards-config.js';
 import { findAuthUserById, findAuthUsersByIds, getAuthUserMembershipTier } from '../lib/auth-users.js';
 import {
   createUserFavorite,
@@ -237,7 +237,7 @@ socialRouter.post('/reviews', requireAuth, requireVerifiedEmail, validate({ body
     void awardPoints({
       userId: req.auth!.userId,
       action: RewardAction.REVIEW_WRITTEN,
-      referenceId: review.id
+      referenceId: review.id,
     }).catch(() => undefined);
     const author = await findAuthUserById(req.auth!.userId);
     const authorMembershipTier = await getAuthUserMembershipTier(req.auth!.userId);
@@ -347,7 +347,7 @@ socialRouter.post('/posts', requireAuth, requireVerifiedEmail, validate({ body: 
     void awardPoints({
       userId: req.auth!.userId,
       action: RewardAction.COMMUNITY_POST,
-      referenceId: post.id
+      referenceId: post.id,
     }).catch(() => undefined);
     const { authorMap, tierMap } = await enrichPostAuthors(post);
     res.status(201).json({ data: mapPost(post, authorMap, tierMap) });
@@ -377,7 +377,7 @@ socialRouter.post(
       void awardPoints({
         userId: req.auth!.userId,
         action: RewardAction.COMMUNITY_REPLY,
-        referenceId: reply.id
+        referenceId: reply.id,
       }).catch(() => undefined);
       const author = await findAuthUserById(req.auth!.userId);
       const authorMembershipTier = await getAuthUserMembershipTier(req.auth!.userId);

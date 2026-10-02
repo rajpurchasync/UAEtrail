@@ -1,10 +1,11 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { organizePublishGateHref } from '../../utils/organizePublishGate';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import {
@@ -84,8 +85,15 @@ export const CreateActivityFlow = ({
   onCreateLinkedRideshare,
 }: CreateActivityFlowProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const { canPublish, canHostPaidActivities, tenantId, loading: hostGateLoading } = useOrganisationGate({ enabled: open && Boolean(user) });
+  const {
+    canPublish,
+    signupProfileComplete,
+    canHostPaidActivities,
+    tenantId,
+    loading: hostGateLoading,
+  } = useOrganisationGate({ enabled: open && Boolean(user) });
 
   const [step, setStep] = useState<FlowStep>('type');
   const [draft, setDraft] = useState<CreateActivityDraft>(emptyCreateActivityDraft);
@@ -350,10 +358,11 @@ export const CreateActivityFlow = ({
     if (hostGateLoading) return;
 
     if (!canPublish) {
+      const returnPath = `${location.pathname}${location.search}`;
       if (onOpenHostApplication) {
         onOpenHostApplication();
       } else {
-        navigate('/become-host');
+        navigate(organizePublishGateHref(returnPath, { signupProfileComplete, canPublish }));
       }
       onClose();
       return;

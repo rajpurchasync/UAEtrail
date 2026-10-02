@@ -1,8 +1,9 @@
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogIn, LogOut, Menu, RefreshCw, ShoppingBag, User, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
-import { isConsumerChromeHidden, MOBILE_DRAWER_MENU, MOBILE_LANDING_USER_MENU, EXPLORE_MAP_PATH } from '../../config/platform';
+import { isConsumerChromeHidden, MOBILE_DRAWER_MENU, MOBILE_LANDING_USER_MENU } from '../../config/platform';
 import { ADMIN_LINKS, HOST_CONSOLE_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/index';
@@ -526,9 +527,9 @@ const MobileMenuPanel = () => {
 
           {user && !isMerchantRole(user.role) && (
             <Link
-              to="/become-host#host-profiles"
+              to="/profile/pro-membership#host-profiles"
               onClick={closeMenu}
-              className={navItemClass(pathname.startsWith('/become-host'))}
+              className={navItemClass(pathname.startsWith('/profile/pro-membership'))}
             >
               <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
                 <ShoppingBag className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />

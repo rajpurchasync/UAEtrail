@@ -1,3 +1,4 @@
+import { proMembershipPath } from '../../config/routingCatalog';
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ExternalLink, Package, Store, Trash2 } from 'lucide-react';
@@ -9,6 +10,7 @@ import { AppButton } from '../mobile/AppButton';
 import { AppSegmented } from '../mobile/AppSegmented';
 import { ImageUpload } from '../ui';
 import { AppSelect } from '../ui/AppSelect';
+
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 
 type Tab = 'shop' | 'products';
@@ -193,7 +195,7 @@ export const ShopOrganisationPanel = () => {
   };
 
   if (!gateLoading && storesLoaded && !hasShopProfile && stores.length === 0) {
-    return <Navigate to="/become-host" replace state={{ intent: 'add-shop' }} />;
+    return <Navigate to={proMembershipPath({ intent: 'add-shop' })} replace />;
   }
 
   if (gateLoading || !storesLoaded) {

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { api, TenantProfile } from '../api/index';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ShopPublicPage, type ShopPublicView } from '../components/shop/ShopPublicPage';
-import { explorePath } from '../utils/exploreRouting';
+import { explorePath } from '../config/routingCatalog';
 import { shopPublicPath } from '../utils/shopPaths';
 import { communityShopPlaceToView } from '../utils/communityShopPlace';
 

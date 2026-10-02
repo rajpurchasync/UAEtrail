@@ -1,6 +1,7 @@
+import { joinAuthPath } from '../../config/routingCatalog';
 import { Link, useLocation } from 'react-router-dom';
 import type { ParticipationMode } from '@uaetrail/shared-types';
-import { joinAuthPath } from '../../config/platform';
+
 import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
 import {
   guestBrowseGateCopy,

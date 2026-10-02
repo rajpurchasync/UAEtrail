@@ -1,6 +1,6 @@
 # Experiment-era documentation (architecture & flows)
 
-Specs and phased plans from the explore redesign (formerly branch `experiment-ui`), now on **`main`** (Oct 2026). Day-to-day product truth: **`../CREATE_FLOW.md`**, **`../NAVIGATION.md`**, **`../ARCHITECTURE.md`**.
+Specs and phased plans from the explore redesign (formerly branch `experiment-ui`), now on **`main`** (Oct 2026). Day-to-day product truth: **`../DOCS_INDEX.md`** Tier 1 — especially **`../CREATE_FLOW.md`**, **`../MEMBER_MODEL.md`**, **`../NAVIGATION.md`**, **`../ARCHITECTURE.md`**. When experiment docs disagree with Tier 1, **update the experiment doc**.
 
 ## Legacy pointers
 

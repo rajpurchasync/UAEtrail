@@ -1,8 +1,8 @@
-﻿# Create flow â€” FAB, organize, find, add
+# Create flow â€” FAB, organize, find, add
 
 **Canonical product spec** for the explore map **+ FAB** compose experience. Read this before changing intent sheets, create wizards, join CTAs, or participation behavior.
 
-Companion docs: [`NORTHSTAR.md`](./NORTHSTAR.md) (why), [`DOMAIN.md`](./DOMAIN.md) (entities), [`NAVIGATION.md`](./NAVIGATION.md) (routes), [`COMMUNICATION.md`](./COMMUNICATION.md) (DMs & crew chat), [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) (Trips manage & invites), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) (map card copy & CTAs).
+Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md) (why), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (publish gates), [`DOMAIN.md`](./DOMAIN.md) (entities), [`NAVIGATION.md`](./NAVIGATION.md) (routes), [`COMMUNICATION.md`](./COMMUNICATION.md) (DMs & crew chat), [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) (Trips manage & invites), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) (map card copy & CTAs).
 
 Code: `src/explore/compose.ts`, `src/explore/routing.ts`, `CreateIntentSheet.tsx`, `organizeFlow.ts`, `demandFlow.ts`, `contributeFlow.ts`.
 
@@ -54,7 +54,7 @@ Three compact choices (drill-down in the same sheet â€” not three tall arch
 | **Event** | `activityType: event` | Open RSVP (**Iâ€™m going**) |
 | **Activity** | Generic buddy plan (see below) | Host approval |
 
-**Organize requires** an approved host profile (`canPublish`) â€” unchanged unless product says otherwise. Gate failure â†’ `/become-host`.
+**Organize (buddy host)** requires **profile completion** (`signupProfileComplete` — same member details as `/welcome`). `GET /me/host-status` → `canPublish` provisions a personal guide-owned tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Agency / shop / professional** → `/profile/pro-membership` and `canHostPaidActivities` / business tenants.
 
 ### Find â†’ (demand / â€œlooking forâ€)
 

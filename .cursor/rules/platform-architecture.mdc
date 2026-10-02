@@ -7,7 +7,7 @@ alwaysApply: true
 
 **Product north star:** `docs/NORTHSTAR.md` — find people, get outside together (residents, expats, visitors; hikes, camps, runs, and more). Architecture and copy must serve that, not trail-inventory or host-console framing for consumers.
 
-Canonical detail: **`docs/NORTHSTAR.md`**, **`docs/NAVIGATION.md`**, **`docs/CREATE_FLOW.md`**, **`docs/ARCHITECTURE.md`**, **`docs/LANDING.md`**.
+Canonical detail: **`docs/SYSTEM_COHERENCE.md`** (whole product map), **`docs/DOCS_INDEX.md`** (tiers), **`docs/NORTHSTAR.md`**, **`docs/MEMBER_MODEL.md`**, **`docs/NAVIGATION.md`**, **`docs/CREATE_FLOW.md`**, **`docs/ARCHITECTURE.md`**, **`docs/LANDING.md`**. Keep docs aligned: **`docs/DOCS_GOVERNANCE.md`** · `npm run verify:docs`. Before large features: pick bounded context in SYSTEM_COHERENCE — one write path per entity. Paths and entity names: **`docs/DOMAIN_CANONICALS.md`** · `src/config/routingCatalog.ts` · `npm run verify:domain`.
 
 ## Surfaces (where users go)
 

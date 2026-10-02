@@ -2,6 +2,8 @@
 
 Confirm **one flow at a time**. Catalog: `src/explore/composeFlowCatalog.ts` (`organize.*` · `find.*` · `add.*` = `compose=` URL).
 
+**Canonical gates:** [`../../CREATE_FLOW.md`](../../CREATE_FLOW.md) · [`../../MEMBER_MODEL.md`](../../MEMBER_MODEL.md) · [`../../NAMING_HOST_MEMBER.md`](../../NAMING_HOST_MEMBER.md). **Organize (FLOW-01–05):** signed in → signup profile complete → `canPublish` (`GET /me/host-status`); incomplete → `/welcome`; Pro/business → `/profile/pro-membership` — not `/become-host`.
+
 | # | Catalog ID | Doc | Status |
 |---|------------|-----|--------|
 | 01 | `organize.hiking` | [FLOW-01](./FLOW-01-organize-hiking.md) | **Confirmed** |

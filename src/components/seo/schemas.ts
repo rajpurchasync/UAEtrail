@@ -4,7 +4,7 @@ import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types
 import { placeDetailPath } from '../../utils/placePaths';
 import type { TenantProfile } from '../../api/index';
 import { activityHostName } from '../../utils/hostLabels';
-import { explorePlacesPath } from '../../utils/exploreRouting';
+import { explorePlacesPath } from '../../config/routingCatalog';
 
 const absImage = (url?: string | null) => toAbsoluteUrl(url) ?? undefined;
 

@@ -1,6 +1,7 @@
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import type React from 'react';
 import { Link } from 'react-router-dom';
-import { EXPLORE_MAP_PATH } from '../../config/platform';
+
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../../config/seo';
 import {
   HOME_HERO_HEADLINE,

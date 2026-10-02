@@ -1,9 +1,10 @@
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import type React from 'react';
 import { Link } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../../config/seo';
 import { HOME_HERO_EYEBROW, HOME_HERO_HEADLINE, HOME_HERO_JOIN_CTA_DESKTOP, HOME_HERO_PRIMARY_CTA_DESKTOP, HOME_HERO_SUBLINE } from '../../content/homeLanding';
-import { EXPLORE_MAP_PATH } from '../../config/platform';
+
 import { AppButtonLink } from '../mobile/AppButton';
 
 interface HomeDesktopHeroProps {

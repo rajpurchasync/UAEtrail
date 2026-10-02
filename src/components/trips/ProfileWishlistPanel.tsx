@@ -1,9 +1,10 @@
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Loader2, MapPin, Trash2 } from 'lucide-react';
 import type { FavoriteDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/index';
-import { EXPLORE_MAP_PATH } from '../../config/platform';
+
 import { PRODUCT_EXPLORE_CTA } from '../../content/productNorthStar';
 import { GlassCard } from '../mobile/GlassCard';
 import { activityDetailPath, memberProfilePath } from '@uaetrail/shared-types';
