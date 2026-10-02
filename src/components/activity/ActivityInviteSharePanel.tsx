@@ -5,6 +5,7 @@ import type { BuddySummaryDTO } from '@uaetrail/shared-types';
 import { ShareButton } from '../ui/ShareButton';
 import { SecureAvatar } from '../ui';
 import { api } from '../../api/index';
+import { GROUPS_PATH, PROFILE_PATH } from '../../config/routingCatalog';
 import { useAuth } from '../../context/AuthContext';
 import { buildActivitySharePayload, type ActivityShareInput } from '../../utils/activityShare';
 import type { SocialGroupView } from '../../api/types';
@@ -127,7 +128,7 @@ export const ActivityInviteSharePanel = ({
                 ) : buddies.length === 0 ? (
                   <p className="text-xs text-neutral-500">
                     No connections yet —{' '}
-                    <Link to="/profile" className="font-semibold text-emerald-700">
+                    <Link to={PROFILE_PATH} className="font-semibold text-emerald-700">
                       find people on the map
                     </Link>
                     .
@@ -167,7 +168,7 @@ export const ActivityInviteSharePanel = ({
                 ) : groups.length === 0 ? (
                   <p className="text-xs text-neutral-500">
                     Create a family or friends group under{' '}
-                    <Link to="/groups" className="font-semibold text-emerald-700">Groups</Link>.
+                    <Link to={GROUPS_PATH} className="font-semibold text-emerald-700">Groups</Link>.
                   </p>
                 ) : (
                   <ul className="space-y-1">

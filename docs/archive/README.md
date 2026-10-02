@@ -10,6 +10,9 @@
 | `docs/experiment/explore-map-implementation-plan.md` | [`operations/EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md), shipped `main` explore |
 | Pre–`main` experiment branch notes | `legacy/*` tags on `origin` (see `.cursor/rules/main-workflow.mdc`) |
 | `/become-host` product copy in old flows | [`CREATE_FLOW.md`](../CREATE_FLOW.md), `/profile/pro-membership` |
+| `NAMING_COHERENCE.md` (full) | [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md) §10–12 |
+| `SYSTEM_ALIGNMENT_MATRIX.md` (full) | [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §3.1 |
+| `NAMING_HOST_MEMBER.md` (full) | [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) § Naming vocabulary |
 
 **Member / host model (2026):** [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) · rollout [`MEMBER_MODEL_PHASES.md`](../MEMBER_MODEL_PHASES.md) · audit [`HOST_CLEANUP_ROADMAP.md`](../HOST_CLEANUP_ROADMAP.md).
 

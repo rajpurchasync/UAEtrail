@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import type { MemberMapPinActivityType, MemberMapPinDTO, OutdoorMapEntryDTO } from '@uaetrail/shared-types';
 import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
-import { OutdoorMapActivityTypePicker } from './OutdoorMapActivityTypePicker';
-import { normalizeOutdoorActivityType, outdoorActivityLabel } from '../../trips/outdoorMapActivityTypes';
-import { outdoorEntryCategoryBadge } from '../../trips/outdoorMapCategoryBadge';
+import { JourneyMapActivityTypePicker } from './JourneyMapActivityTypePicker';
+import { normalizeJourneyMapActivityType, journeyMapActivityLabel } from '../../trips/journeyMapActivityTypes';
+import { journeyEntryCategoryBadge } from '../../trips/journeyMapCategoryBadge';
 
 export type NewPinSheet = { type: 'new'; lat: number; lng: number };
 export type ViewPinSheet = { type: 'view'; pin: MemberMapPinDTO };
 export type ViewEntrySheet = { type: 'view-entry'; entry: OutdoorMapEntryDTO };
 
-export type OutdoorMapSheetState = NewPinSheet | ViewPinSheet | ViewEntrySheet;
+export type JourneyMapSheetState = NewPinSheet | ViewPinSheet | ViewEntrySheet;
 
-interface OutdoorMapPinSheetProps {
-  sheet: OutdoorMapSheetState;
+interface JourneyMapPinSheetProps {
+  sheet: JourneyMapSheetState;
   saving: boolean;
   onClose: () => void;
   onCreate: (input: {
@@ -49,14 +49,14 @@ const formatPlaceDate = (iso: string) => {
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
-export const OutdoorMapPinSheet = ({
+export const JourneyMapPinSheet = ({
   sheet,
   saving,
   onClose,
   onCreate,
   onUpdate,
   onDelete,
-}: OutdoorMapPinSheetProps) => {
+}: JourneyMapPinSheetProps) => {
   const [activityType, setActivityType] = useState<MemberMapPinActivityType>('hike');
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState('');
@@ -67,7 +67,7 @@ export const OutdoorMapPinSheet = ({
   useEffect(() => {
     if (sheet.type === 'view') {
       const p = sheet.pin;
-      setActivityType(normalizeOutdoorActivityType(p.activityType));
+      setActivityType(normalizeJourneyMapActivityType(p.activityType));
       setTitle(p.title);
       setPlaceDate(p.placeDate);
       setKind(p.kind);
@@ -92,7 +92,7 @@ export const OutdoorMapPinSheet = ({
   if (sheet.type === 'new') {
     return shell('Save this spot', 'Tap Gone or Want to go', (
       <>
-        <OutdoorMapActivityTypePicker value={activityType} onChange={setActivityType} disabled={saving} />
+        <JourneyMapActivityTypePicker value={activityType} onChange={setActivityType} disabled={saving} />
         <label className="mt-4 block">
           <span className="text-sm font-medium text-neutral-800">Name (optional)</span>
           <input
@@ -155,11 +155,11 @@ export const OutdoorMapPinSheet = ({
 
   if (sheet.type === 'view-entry') {
     const entry = sheet.entry;
-    const badge = outdoorEntryCategoryBadge(entry);
+    const badge = journeyEntryCategoryBadge(entry);
     const subtitle = [
       badge.label,
       formatPlaceDate(entry.placeDate),
-      outdoorActivityLabel(entry.activityType),
+      journeyMapActivityLabel(entry.activityType),
     ]
       .filter(Boolean)
       .join(' · ');
@@ -191,7 +191,7 @@ export const OutdoorMapPinSheet = ({
   if (editing && canEdit) {
     return shell('Edit pin', pin.title, (
       <>
-        <OutdoorMapActivityTypePicker
+        <JourneyMapActivityTypePicker
           value={activityType}
           onChange={setActivityType}
           disabled={saving}
@@ -268,7 +268,7 @@ export const OutdoorMapPinSheet = ({
 
   const pinSubtitle = [
     pin.kind === 'wishlist' ? 'Want to go' : 'Gone',
-    outdoorActivityLabel(pin.activityType),
+    journeyMapActivityLabel(pin.activityType),
     pin.source === 'activity_check_in' ? 'UAE Trail' : null,
     formatPlaceDate(pin.placeDate),
   ]

@@ -4,7 +4,7 @@
 
 Do **not** re-implement tier logic in React hooks — consume **`GET /me/host-status`** (`HostStatusDTO` in `@uaetrail/shared-types`).
 
-**Vocabulary (avoid “join request = become host”):** [`NAMING_HOST_MEMBER.md`](./NAMING_HOST_MEMBER.md) · Cursor rule: `.cursor/rules/host-member-model.mdc` · verify: `npm run verify:host-member`.
+**Naming (host vs join vs buddy):** § [Naming vocabulary](#naming-vocabulary) below · Cursor: `.cursor/rules/host-member-model.mdc` · verify: `npm run verify:host-member`.
 
 ---
 
@@ -133,8 +133,36 @@ Wire: `HostStatusDTO.hostTiers`, `HostStatusDTO.profileRoleLabel`, `HostStatusDT
 
 ---
 
+## Naming vocabulary
+
+Host/member/join terms (do not duplicate in other docs — **update this section** when semantics change).
+
+| Term | Means | Storage / route |
+|------|--------|-----------------|
+| **Community host (buddy)** | Profile complete → can Organize; optional **Host** label after first map post | `GET /me/host-status`, `publishingPurpose: community` |
+| **Pro / business host** | Agency, shop, professional guide | `/profile/pro-membership`, `host_applications` |
+| **Host console** | Tenant-scoped publish/manage | `/host/*`, `x-organisation-id` |
+| **Activity join request** | Join a **published activity** (approval) | `activity_requests`, `/host/requests` |
+| **Demand join request** | Join a **Find** post | `participant_intent_requests`, `/me/participant-intents/.../requests` |
+| **Host application** | Pro/agency/shop onboarding | `host_applications` |
+| **Buddy connection (friends)** | Mutual link between **member accounts** | `BuddySummaryDTO.userId` = other person’s user id (no “buddy id”) |
+| **`actorUserId` (notifications)** | Who triggered the action | Always a **user** id — see `DOMAIN_CANONICALS.md` §11 |
+
+| Do not | Use instead |
+|--------|-------------|
+| `registerHostJoinRequestRoutes` | `registerHostActivityRequestRoutes` |
+| “Join request” without **activity** or **demand** | Qualified phrase |
+| `isHostRole` for Organize / publish gates | `canPublish`, `canAccessHostConsole` from host-status |
+| `/become-host` in new UI | `PRO_MEMBERSHIP_PATH` or `/welcome` |
+| `buddyUserId` in meta/API | `actorUserId` or `otherMemberUserId` |
+
+Host route files: `registerHostActivityRequestRoutes`, `registerHostTeamRoutes`, `registerHostDemandFulfillLegacy`, `registerMemberHostStatusRoutes` (under `routes/user/`).
+
+---
+
 ## Related docs
 
 - [`DOMAIN.md`](./DOMAIN.md) — Place, Activity, Demand glossary  
 - [`CREATE_FLOW.md`](./CREATE_FLOW.md) — Organize vs Find gates  
+- [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) — URLs, API client, notification meta  
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md) — monorepo layout  

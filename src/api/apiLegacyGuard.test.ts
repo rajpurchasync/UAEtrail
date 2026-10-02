@@ -29,6 +29,8 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.updateMerchantProduct\b/, hint: 'Use api.updateShopOrganisationProduct' },
   { pattern: /\bapi\.deleteMerchantProduct\b/, hint: 'Use api.deleteShopOrganisationProduct' },
   { pattern: /from ['"][^'"]*\/api\/services['"]/, hint: 'Import from api/index' },
+  { pattern: /from ['"].*legacyApi/, hint: 'legacyApi removed — use src/api/domains/* canonical methods' },
+  { pattern: /\.\.\.legacyApi\b/, hint: 'Do not spread legacyApi on api' },
 ];
 
 const SKIP_PREFIXES = ['src/api/', 'src/api\\'];

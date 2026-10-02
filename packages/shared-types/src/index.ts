@@ -277,6 +277,9 @@ export type {
   BuddyUserPreviewDTO,
 } from './buddy-connection.js';
 
+export type { NotificationKind, NotificationMeta } from './notification-meta.js';
+import type { NotificationMeta } from './notification-meta.js';
+
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
 export type { MemberHubStatsDTO } from './member-hub-stats.js';
 export type {
@@ -392,7 +395,7 @@ export interface NotificationDTO {
   body: string;
   type: 'request_update' | 'system' | 'activity' | 'review_prompt';
   isRead: boolean;
-  meta?: Record<string, unknown> | null;
+  meta?: NotificationMeta | null;
   createdAt: string;
 }
 

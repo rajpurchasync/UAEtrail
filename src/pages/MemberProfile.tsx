@@ -9,7 +9,7 @@ import { MemberProfileView } from '../components/profile/MemberProfileView';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import { messagesRouteForRole } from '../utils/authRouting';
-import { myActivitiesPath } from '../config/routingCatalog';
+import { myActivitiesPath, SIGNIN_PATH } from '../config/routingCatalog';
 
 const isFullProfile = (
   profile: PersonPublicProfileDTO
@@ -174,7 +174,7 @@ export const MemberProfile = () => {
           <p className="mt-2 text-sm text-neutral-600 leading-relaxed">{profile.message}</p>
           {!user && (
             <Link
-              to="/signin"
+              to={SIGNIN_PATH}
               state={{ from: `/member/${profile.id}` }}
               className="mt-4 inline-block text-sm font-semibold text-emerald-700"
             >

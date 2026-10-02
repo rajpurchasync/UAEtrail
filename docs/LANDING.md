@@ -67,7 +67,7 @@ Put these on **`/explore`** or in-app flows — not on Home unless explicitly re
 
 - Demand / “find a group” posting mechanics  
 - Become-a-host / agency / shop signup flows  
-- Buddies, social groups, DMs, Trail Points  
+- Buddies, social groups, DMs, badges hub  
 - Full map filters, venues panel, shops panel  
 - Host console, check-in, waitlist detail  
 - Profile hub IA  

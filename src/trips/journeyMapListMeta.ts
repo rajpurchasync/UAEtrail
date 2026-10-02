@@ -1,8 +1,8 @@
 import type { OutdoorMapEntryDTO } from '@uaetrail/shared-types';
-import { outdoorActivityLabel } from './outdoorMapActivityTypes';
-import { OUTDOOR_PIN_STYLES, resolveOutdoorPinStyle } from './outdoorMapPinStyle';
+import { journeyMapActivityLabel } from './journeyMapActivityTypes';
+import { JOURNEY_PIN_STYLES, resolveJourneyPinStyle } from './journeyMapPinStyle';
 
-export const formatOutdoorListDate = (iso: string): string => {
+export const formatJourneyListDate = (iso: string): string => {
   const [y, m, d] = iso.split('-').map((n) => parseInt(n, 10));
   if (!y || !m || !d) return iso;
   return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(undefined, {
@@ -14,15 +14,15 @@ export const formatOutdoorListDate = (iso: string): string => {
 };
 
 /** One short category line — avoids duplicated API status strings. */
-export const outdoorEntryCategoryLabel = (entry: OutdoorMapEntryDTO): string => {
+export const journeyEntryCategoryLabel = (entry: OutdoorMapEntryDTO): string => {
   if (entry.statusLabel?.toLowerCase().includes('checked in')) return 'Checked in';
-  return OUTDOOR_PIN_STYLES[resolveOutdoorPinStyle(entry)].label;
+  return JOURNEY_PIN_STYLES[resolveJourneyPinStyle(entry)].label;
 };
 
-export const formatOutdoorListSubtitle = (entry: OutdoorMapEntryDTO): string => {
+export const formatJourneyListSubtitle = (entry: OutdoorMapEntryDTO): string => {
   const parts = [
-    formatOutdoorListDate(entry.placeDate),
-    outdoorActivityLabel(entry.activityType),
+    formatJourneyListDate(entry.placeDate),
+    journeyMapActivityLabel(entry.activityType),
   ];
   return parts.filter(Boolean).join(' · ');
 };

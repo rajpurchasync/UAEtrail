@@ -12,7 +12,7 @@ import {
   parseFulfillIntentMapItemId,
   exploreSavedPinPath,
   parseExplorePinMapItemId,
-} from './exploreRouting';
+} from './routing';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 
 describe('exploreRouting navigation contract', () => {

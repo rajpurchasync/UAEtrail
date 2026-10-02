@@ -12,7 +12,11 @@ import {
 import { HostActivityManageSheet } from '../../components/host/HostActivityManageSheet';
 import { HostedActivityListRow } from '../../components/host/HostedActivityListRow';
 import { buildTripsHostedActivityMenuItems } from '../../components/host/buildTripsHostedActivityMenu';
-import { exploreOrganizePath } from '../../config/routingCatalog';
+import {
+  exploreOrganizePath,
+  HOST_OVERVIEW_PATH,
+  HOST_REQUESTS_PATH,
+} from '../../config/routingCatalog';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 import type { ActivityRequestView } from '../../api/index';
@@ -173,7 +177,7 @@ export const HostedActivitiesSection = ({
       <ConsumerInlineEmpty
         message="Host profile is still loading — try again in a moment, or open the host console."
         actionLabel="Host console"
-        actionTo="/host/overview"
+        actionTo={HOST_OVERVIEW_PATH}
       />
     );
   }
@@ -190,7 +194,7 @@ export const HostedActivitiesSection = ({
             <h3 className="text-sm font-bold text-neutral-800">
               Incoming requests ({host.pendingRequests.length})
             </h3>
-            <Link to="/host/requests" className="text-xs font-semibold text-emerald-600">
+            <Link to={HOST_REQUESTS_PATH} className="text-xs font-semibold text-emerald-600">
               View all
             </Link>
           </div>

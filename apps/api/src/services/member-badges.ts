@@ -9,6 +9,7 @@ import {
   recordMemberActionLog,
 } from '../lib/member-badge-store.js';
 import { isBusinessHostById } from '../lib/user-type.js';
+import { PROFILE_BADGES_PATH } from '../lib/member-routes.js';
 import { dispatchNotification } from './notifications.js';
 import { getMongoClient } from '../lib/mongo.js';
 
@@ -114,7 +115,7 @@ export async function evaluateMemberBadges(userId: string): Promise<string[]> {
           title: `Badge unlocked: ${badge.name}`,
           body: badge.description,
           type: 'SYSTEM',
-          meta: { kind: 'badge', badgeKey: check.key, path: '/profile/badges' },
+          meta: { kind: 'badge', badgeKey: check.key, path: PROFILE_BADGES_PATH },
         }).catch(() => undefined);
       }
     }

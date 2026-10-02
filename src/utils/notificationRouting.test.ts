@@ -44,6 +44,33 @@ describe('inferNotificationPath', () => {
     );
   });
 
+  it('routes buddy connection notifications to the acting member profile', () => {
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'connection_buddy_request', actorUserId: 'user-a' })
+      )
+    ).toBe('/member/user-a');
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'connection_buddy_accepted', actorUserId: 'user-b' })
+      )
+    ).toBe('/member/user-b');
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'connection_buddy_accepted', buddyUserId: 'legacy-b' })
+      )
+    ).toBe('/member/legacy-b');
+  });
+
+  it('routes chat message notifications to messages composer', () => {
+    expect(
+      inferNotificationPath(notif({ kind: 'message', actorUserId: 'user-c' }))
+    ).toBe('/messages?to=user-c');
+    expect(
+      inferNotificationPath(notif({ kind: 'message', senderId: 'legacy-sender' }))
+    ).toBe('/messages?to=legacy-sender');
+  });
+
   it('rewrites legacy rewards wallet paths to badges', () => {
     expect(inferNotificationPath(notif({ path: '/my-rewards' }))).toBe('/profile/badges');
     expect(inferNotificationPath(notif({ path: '/trail-points?ref=abc' }))).toBe('/profile/badges');

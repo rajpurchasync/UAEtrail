@@ -1,5 +1,6 @@
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { SettingsMenuGroup, SettingsMenuRow } from '../components/settings/SettingsMenuRow';
+import { NOTIFICATIONS_PATH, tripsPath } from '../config/routingCatalog';
 
 export const ProfileSettingsNotifications = () => (
   <ConsumerShell
@@ -13,8 +14,16 @@ export const ProfileSettingsNotifications = () => (
         In-app alerts and saved-map match notifications.
       </p>
       <SettingsMenuGroup>
-        <SettingsMenuRow label="Notification inbox" to="/notifications" subtitle="Activity, friends, and map alerts" />
-        <SettingsMenuRow label="Saved map & alerts" to="/trips?layer=places" subtitle="Places, shops, and plans you starred" />
+        <SettingsMenuRow
+          label="Notification inbox"
+          to={NOTIFICATIONS_PATH}
+          subtitle="Activity, friends, and map alerts"
+        />
+        <SettingsMenuRow
+          label="Saved map & alerts"
+          to={tripsPath({ layer: 'places' })}
+          subtitle="Places, shops, and plans you starred"
+        />
       </SettingsMenuGroup>
     </div>
   </ConsumerShell>

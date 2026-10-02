@@ -5,7 +5,7 @@ import { AppSegmented } from '../mobile/AppSegmented';
 import { OrganisationPublicProfile } from '../organisation-console/OrganisationPublicProfile';
 import { AgencyTeamSection } from '../organisation-console/AgencyTeamSection';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
-import { organisationManagePath } from '../../utils/organisationPaths';
+import { organisationManagePath } from '../../config/routingCatalog';
 
 type Tab = 'profile' | 'team';
 

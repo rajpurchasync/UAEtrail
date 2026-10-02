@@ -1,13 +1,13 @@
 import type { MemberMapPinActivityType } from '@uaetrail/shared-types';
 import { MEMBER_MAP_PIN_ACTIVITY_TYPES } from '@uaetrail/shared-types';
 
-export type OutdoorActivityOption = {
+export type JourneyMapActivityOption = {
   id: MemberMapPinActivityType;
   label: string;
   emoji: string;
 };
 
-export const OUTDOOR_MAP_ACTIVITY_OPTIONS: OutdoorActivityOption[] = [
+export const JOURNEY_MAP_ACTIVITY_OPTIONS: JourneyMapActivityOption[] = [
   { id: 'hike', label: 'Hike', emoji: '🥾' },
   { id: 'camp', label: 'Camp', emoji: '🏕️' },
   { id: 'trek', label: 'Trek', emoji: '⛰️' },
@@ -18,10 +18,10 @@ export const OUTDOOR_MAP_ACTIVITY_OPTIONS: OutdoorActivityOption[] = [
   { id: 'other', label: 'Other', emoji: '📍' },
 ];
 
-const optionById = new Map(OUTDOOR_MAP_ACTIVITY_OPTIONS.map((o) => [o.id, o]));
+const optionById = new Map(JOURNEY_MAP_ACTIVITY_OPTIONS.map((o) => [o.id, o]));
 
 /** Map legacy API strings (e.g. hiking) to canonical pin types. */
-export const normalizeOutdoorActivityType = (raw: string | null | undefined): MemberMapPinActivityType => {
+export const normalizeJourneyMapActivityType = (raw: string | null | undefined): MemberMapPinActivityType => {
   if (!raw) return 'other';
   const lower = raw.toLowerCase();
   if ((MEMBER_MAP_PIN_ACTIVITY_TYPES as readonly string[]).includes(lower)) {
@@ -33,13 +33,13 @@ export const normalizeOutdoorActivityType = (raw: string | null | undefined): Me
   return 'other';
 };
 
-export const outdoorActivityLabel = (raw: string | null | undefined): string => {
-  const id = normalizeOutdoorActivityType(raw);
+export const journeyMapActivityLabel = (raw: string | null | undefined): string => {
+  const id = normalizeJourneyMapActivityType(raw);
   return optionById.get(id)?.label ?? 'Outdoor';
 };
 
-export const outdoorActivityEmoji = (raw: string | null | undefined, kind: 'wishlist' | 'visited'): string => {
+export const journeyMapActivityEmoji = (raw: string | null | undefined, kind: 'wishlist' | 'visited'): string => {
   if (kind === 'wishlist') return '⭐';
-  const id = normalizeOutdoorActivityType(raw);
+  const id = normalizeJourneyMapActivityType(raw);
   return optionById.get(id)?.emoji ?? '📍';
 };

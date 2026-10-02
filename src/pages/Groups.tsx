@@ -25,7 +25,7 @@ import {
   activityGroupChatPath,
   MESSAGES_CHAT_RETURN_TO_KEY,
 } from '../utils/activityGroupChatNav';
-import { COMMUNITY_PATH, PROFILE_PATH } from '../config/routingCatalog';
+import { COMMUNITY_PATH, GROUPS_PATH, PROFILE_PATH } from '../config/routingCatalog';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { Dialog } from '../components/ui/Dialog';
@@ -140,7 +140,7 @@ export const Groups = () => {
 
   const openGroupChat = (groupId: string) => {
     navigate(activityGroupChatPath(groupId), {
-      state: { [MESSAGES_CHAT_RETURN_TO_KEY]: '/groups' },
+      state: { [MESSAGES_CHAT_RETURN_TO_KEY]: GROUPS_PATH },
     });
   };
 

@@ -8,6 +8,7 @@ import { TenantSwitcher } from '../components/ui';
 import { OrganisationPublicProfile } from '../components/organisation-console/OrganisationPublicProfile';
 import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
 import { GlassCard } from '../components/mobile/GlassCard';
+import { HOST_PROFILE_PATH, signInPath } from '../config/routingCatalog';
 import { accountRouteByRole } from '../utils/authRouting';
 
 export const OrganisationPublicProfileEdit = () => {
@@ -59,7 +60,9 @@ export const OrganisationPublicProfileEdit = () => {
   }
 
   if (!user) {
-    return <Navigate to="/signin" replace state={{ from: '/host/profile' }} />;
+    return (
+      <Navigate to={signInPath({ redirect: HOST_PROFILE_PATH })} replace state={{ from: HOST_PROFILE_PATH }} />
+    );
   }
 
   return (

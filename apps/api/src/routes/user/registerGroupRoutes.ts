@@ -5,6 +5,7 @@ import { validate } from '../../middleware/validate.js';
 import { env } from '../../config/env.js';
 import { findAuthUserByEmail, findAuthUserById } from '../../lib/auth-users.js';
 import { findActivityDocInMongo } from '../../lib/entity-sync.js';
+import { messagesGroupPath } from '../../lib/member-routes.js';
 import { createNotificationRecord } from '../../lib/notifications-store.js';
 import { isActivityGroupChatOpen } from '../../services/activity-group-chat.js';
 import { notifyGroupInvite, notifyGroupWallPost } from '../../services/social-notifications.js';
@@ -204,8 +205,9 @@ router.post('/me/group-invites/accept', validate({ body: acceptInviteSchema }), 
         meta: {
           kind: 'group_invite_accepted',
           groupId: accepted.groupId,
-          path: '/groups'
-        }
+          actorUserId: user._id,
+          path: messagesGroupPath(accepted.groupId),
+        },
       }).catch(() => undefined);
     }
 

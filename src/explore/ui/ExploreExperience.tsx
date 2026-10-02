@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
-import { describeExploreMapLoadError } from '../../utils/exploreMapErrors';
+import { describeExploreMapLoadError } from '../exploreMapErrors';
 import { PageMeta } from '../../components/seo/PageMeta';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';

@@ -27,6 +27,10 @@ vi.mock('../src/lib/logger.js', () => ({
   logger: { warn: vi.fn() },
 }));
 
+vi.mock('../src/services/notification-actor-label.js', () => ({
+  resolveNotificationActorDisplayName: vi.fn(async () => 'Host'),
+}));
+
 import { notifyMemberPublishSubscribers } from '../src/services/member-publish-notifications.js';
 
 describe('notifyMemberPublishSubscribers', () => {
@@ -52,6 +56,12 @@ describe('notifyMemberPublishSubscribers', () => {
     );
     expect(recipients).toContain('buddy-1');
     expect(recipients).toContain('follower-1');
+    const row = mocks.createNotificationsMany.mock.calls[0]![0]![0] as {
+      meta: Record<string, string>;
+    };
+    expect(row.meta.kind).toBe('friend_activity_published');
+    expect(row.meta.actorUserId).toBe('publisher');
+    expect(row.meta.path).toBe('/activity/act-1');
   });
 
   it('notifies buddies only for demand posts (followers excluded)', async () => {
@@ -69,5 +79,10 @@ describe('notifyMemberPublishSubscribers', () => {
       (row: { userId: string }) => row.userId
     );
     expect(recipients).toEqual(['buddy-1']);
+    const row = mocks.createNotificationsMany.mock.calls[0]![0]![0] as {
+      meta: Record<string, string>;
+    };
+    expect(row.meta.kind).toBe('friend_published');
+    expect(row.meta.intentId).toBe('demand-1');
   });
 });

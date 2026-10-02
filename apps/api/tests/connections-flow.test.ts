@@ -8,7 +8,7 @@ import { cleanupTestUsers, registerVerifiedVisitor } from './helpers/fixtures.js
 let app: Express;
 
 type NotificationRow = {
-  meta?: { kind?: string; requestId?: string; fromUserId?: string; buddyUserId?: string };
+  meta?: { kind?: string; requestId?: string; fromUserId?: string; actorUserId?: string };
 };
 
 const listNotifications = async (accessToken: string): Promise<NotificationRow[]> => {
@@ -178,7 +178,7 @@ describe('connections API — buddy requests', () => {
     const acceptedNotifs = senderNotifs.filter((n) => n.meta?.kind === 'connection_buddy_accepted');
     expect(acceptedNotifs.length).toBe(1);
     expect(acceptedNotifs[0]?.meta?.requestId).toBe(requestId);
-    expect(acceptedNotifs[0]?.meta?.buddyUserId).toBe(recipientUser!._id);
+    expect(acceptedNotifs[0]?.meta?.actorUserId).toBe(recipientUser!._id);
   });
 });
 

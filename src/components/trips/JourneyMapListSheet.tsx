@@ -1,9 +1,9 @@
 import type { OutdoorMapEntryDTO, OutdoorMapFilterCategory } from '@uaetrail/shared-types';
 import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
-import { OutdoorMapFilterScroll } from './OutdoorMapFilterScroll';
-import { OutdoorMapListView } from './OutdoorMapListView';
+import { JourneyMapFilterScroll } from './JourneyMapFilterScroll';
+import { JourneyMapListView } from './JourneyMapListView';
 
-interface OutdoorMapListSheetProps {
+interface JourneyMapListSheetProps {
   open: boolean;
   filter: OutdoorMapFilterCategory;
   entries: OutdoorMapEntryDTO[];
@@ -14,7 +14,7 @@ interface OutdoorMapListSheetProps {
   emptyMessage?: string;
 }
 
-export const OutdoorMapListSheet = ({
+export const JourneyMapListSheet = ({
   open,
   filter,
   entries,
@@ -23,21 +23,21 @@ export const OutdoorMapListSheet = ({
   onFilterChange,
   onSelect,
   emptyMessage,
-}: OutdoorMapListSheetProps) => {
+}: JourneyMapListSheetProps) => {
   const countLabel = entries.length === 1 ? '1 place' : `${entries.length} places`;
 
   return (
     <ConsumerBottomSheet
       open={open}
-      title="My outdoor map"
+      title="My map"
       subtitle={countLabel}
       onClose={onClose}
       zIndex={1500}
       toolbar={
-        <OutdoorMapFilterScroll filter={filter} entries={allEntries} onChange={onFilterChange} variant="inline" />
+        <JourneyMapFilterScroll filter={filter} entries={allEntries} onChange={onFilterChange} variant="inline" />
       }
     >
-      <OutdoorMapListView entries={entries} onSelect={onSelect} emptyMessage={emptyMessage} />
+      <JourneyMapListView entries={entries} onSelect={onSelect} emptyMessage={emptyMessage} />
     </ConsumerBottomSheet>
   );
 };

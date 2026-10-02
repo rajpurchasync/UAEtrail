@@ -1,4 +1,4 @@
-import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, PROFILE_REVIEWS_PATH, signInPath } from '../config/routingCatalog';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ChevronRight, Loader2, Star } from 'lucide-react';
@@ -187,7 +187,7 @@ export const ProfileReviews = () => {
   }, [user, initializing, load]);
 
   if (!initializing && !user) {
-    return <Navigate to="/signin?redirect=%2Fprofile%2Freviews" replace />;
+    return <Navigate to={signInPath({ redirect: PROFILE_REVIEWS_PATH })} replace />;
   }
 
   return (

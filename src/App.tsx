@@ -22,7 +22,7 @@ import { Membership } from './pages/Membership';
 import { ExploreExperience } from './explore';
 
 import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter } from './config/routingCatalog';
-import { organisationManagePath } from './utils/organisationPaths';
+import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
 import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
 
 const LegacyHostPathRedirect = () => {
@@ -519,11 +519,11 @@ function App() {
           />
           <Route path="/merchant/:id" element={<LegacyMerchantPublicRedirect />} />
           <Route path={COMMUNITY_PATH} element={<Community />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/signin" element={<SignIn />} />
+          <Route path={SIGNUP_PATH} element={<SignUp />} />
+          <Route path={SIGNIN_PATH} element={<SignIn />} />
           <Route path="/signed-out" element={<Navigate to="/" replace />} />
-          <Route path="/sign-up" element={<AuthAliasRedirect to="/signup" />} />
-          <Route path="/sign-in" element={<AuthAliasRedirect to="/signin" />} />
+          <Route path="/sign-up" element={<AuthAliasRedirect to={SIGNUP_PATH} />} />
+          <Route path="/sign-in" element={<AuthAliasRedirect to={SIGNIN_PATH} />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route

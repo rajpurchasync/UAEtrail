@@ -2,7 +2,7 @@
 
 Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tiers and gates: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md).
 
-**Enforcement (Oct 2026):** [`NAMING_HOST_MEMBER.md`](./NAMING_HOST_MEMBER.md) · `.cursor/rules/host-member-model.mdc` · **`npm run verify:host-member`** (in CI after `typecheck:api`).
+**Enforcement (Oct 2026):** [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (§ Naming vocabulary) · `.cursor/rules/host-member-model.mdc` · **`npm run verify:host-member`** (in CI after `typecheck:api`).
 
 **Status:** ✅ done · 🔄 partial · ⬜ queued
 
@@ -38,7 +38,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 |------|--------|--------|
 | Archive index for superseded docs | ✅ | [`docs/archive/README.md`](./archive/README.md) |
 | README doc map (member model, API routing, cleanup) | ✅ | `README.md` |
-| Experiment flow docs aligned to `/welcome` + Pro Membership | 🔄 | `FLOW-01` etc. |
+| Experiment flow docs aligned to `/welcome` + Pro Membership | ✅ | `docs/experiment/flows/*`, `flows/README.md` |
 
 ---
 
@@ -50,7 +50,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | `GET /me/host-status` in dedicated registrar | ✅ | `registerMemberHostStatusRoutes.ts` |
 | Split `host.ts` — team + activity request queue | ✅ | `registerHostTeamRoutes`, `registerHostActivityRequestRoutes` (`/host/requests`) |
 | Split remainder of `host.ts` (activities CRUD, check-in, places) | ⬜ | `tenantActivitiesRouter` still in `host.ts` |
-| Shrink `legacyApi` / remove unused FE shims | ⬜ | Keep aliases until knip pass |
+| Shrink `legacyApi` / remove unused FE shims | ✅ | `legacyApi.ts` removed; canonical `api` only — `services.domain-aliases.test.ts` |
 
 ---
 

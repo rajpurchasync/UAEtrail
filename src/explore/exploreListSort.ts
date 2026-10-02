@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { getRegionsForCountry } from '../config/regions';
-import { resolveVenueItemRegion } from './venueRegionFilter';
+import { resolveVenueItemRegion } from '../utils/venueRegionFilter';
 
 const GCC_OFFSET: Record<string, string> = {
   AE: '+04:00',

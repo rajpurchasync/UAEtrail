@@ -1,9 +1,9 @@
-import type { OutdoorPinStyle } from '../../trips/outdoorMapPinStyle';
-import { OUTDOOR_PIN_STYLES } from '../../trips/outdoorMapPinStyle';
+import type { JourneyPinStyle } from '../../trips/journeyMapPinStyle';
+import { JOURNEY_PIN_STYLES } from '../../trips/journeyMapPinStyle';
 
 /** Same teardrop pin as the map — scaled for list rows. */
-export const OutdoorMapListPinIcon = ({ style }: { style: OutdoorPinStyle }) => {
-  const { fill, stroke } = OUTDOOR_PIN_STYLES[style];
+export const JourneyMapListPinIcon = ({ style }: { style: JourneyPinStyle }) => {
+  const { fill, stroke } = JOURNEY_PIN_STYLES[style];
   return (
     <svg
       width="22"

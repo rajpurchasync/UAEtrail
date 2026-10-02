@@ -15,3 +15,7 @@ export const proMembershipPath = (query?: {
   const qs = params.toString();
   return qs ? `${PRO_MEMBERSHIP_PATH}?${qs}` : PRO_MEMBERSHIP_PATH;
 };
+
+/** Pro membership screen with in-page anchor (e.g. host profiles). */
+export const proMembershipAnchorPath = (fragment: string): string =>
+  `${PRO_MEMBERSHIP_PATH}#${fragment.replace(/^#/, '')}`;

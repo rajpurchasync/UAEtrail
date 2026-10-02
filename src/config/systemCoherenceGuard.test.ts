@@ -1,0 +1,152 @@
+import { describe, expect, it } from 'vitest';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+
+const ROOT = process.cwd();
+const SRC = join(ROOT, 'src');
+const DOCS_EXPERIMENT = join(ROOT, 'docs', 'experiment');
+const API_SRC = join(ROOT, 'apps', 'api', 'src');
+
+/** Surface literals that must come from routingCatalog in UI code. */
+const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
+  { path: '/buddies', constant: 'BUDDIES_PATH' },
+  { path: '/groups', constant: 'GROUPS_PATH' },
+  { path: '/contributions', constant: 'CONTRIBUTIONS_PATH' },
+  { path: '/community', constant: 'COMMUNITY_PATH' },
+  { path: '/profile/badges', constant: 'PROFILE_BADGES_PATH' },
+  { path: '/my-requests', constant: 'MY_REQUESTS_PATH' },
+  { path: '/messages', constant: 'MESSAGES_PATH' },
+  { path: '/notifications', constant: 'NOTIFICATIONS_PATH' },
+  { path: '/profile', constant: 'PROFILE_PATH' },
+  { path: '/profile/settings', constant: 'PROFILE_SETTINGS_PATH' },
+  { path: '/host/activities', constant: 'HOST_ACTIVITIES_PATH' },
+  { path: '/host/requests', constant: 'HOST_REQUESTS_PATH' },
+];
+
+const SURFACE_LITERAL_ALLOWLIST = new Set([
+  'src/App.tsx',
+  'src/config/surfacePaths.ts',
+  'src/config/routingCatalog.ts',
+  'src/config/platform.ts',
+  'src/config/memberRoutes.ts',
+  'src/config/mobileBottomNav.test.ts',
+  'src/utils/notificationRouting.test.ts',
+  'src/config/systemCoherenceGuard.test.ts',
+  'src/config/routingHygiene.test.ts',
+  'src/config/routingCatalogAdoption.test.ts',
+  'src/components/mobile/MobileTabHeader.tsx',
+  'src/pages/SignIn.tsx',
+  'src/pages/SignUp.tsx',
+  'src/pages/VerifyOTP.tsx',
+  'src/pages/ForgotPassword.tsx',
+  'src/pages/WelcomeSignup.tsx',
+  'src/components/profile/ProfileSettingsLink.tsx',
+]);
+
+const collectFiles = (dir: string, acc: string[] = []): string[] => {
+  if (!existsSync(dir)) return acc;
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    const rel = relative(ROOT, full).replace(/\\/g, '/');
+    const st = statSync(full);
+    if (st.isDirectory()) {
+      if (entry === 'node_modules' || entry === 'api') continue;
+      collectFiles(full, acc);
+    } else if (
+      (entry.endsWith('.ts') || entry.endsWith('.tsx')) &&
+      !entry.endsWith('.test.ts') &&
+      !rel.includes('/api/')
+    ) {
+      acc.push(rel);
+    }
+  }
+  return acc;
+};
+
+const collectMarkdown = (dir: string, acc: string[] = []): string[] => {
+  if (!existsSync(dir)) return acc;
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    const st = statSync(full);
+    if (st.isDirectory()) collectMarkdown(full, acc);
+    else if (entry.endsWith('.md')) acc.push(relative(ROOT, full).replace(/\\/g, '/'));
+  }
+  return acc;
+};
+
+const UI_SCAN_DIRS = ['pages', 'components', 'explore'].map((d) => join(SRC, d));
+
+describe('systemCoherenceGuard', () => {
+  it('consumer UI links use routingCatalog surface constants (not raw hub paths)', () => {
+    const files = UI_SCAN_DIRS.flatMap((dir) => collectFiles(dir));
+    const linkPattern = (path: string) =>
+      new RegExp(`(?:to|href)=["']${path.replace(/\//g, '\\/')}["']`);
+
+    const violations: string[] = [];
+    for (const file of files) {
+      if (SURFACE_LITERAL_ALLOWLIST.has(file)) continue;
+      const content = readFileSync(join(ROOT, file), 'utf8');
+      for (const { path, constant } of SURFACE_LINKS) {
+        if (linkPattern(path).test(content)) {
+          violations.push(`${file}: use ${constant} from config/routingCatalog`);
+        }
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('notificationRouting uses catalog constants for social fallbacks', () => {
+    const file = 'src/utils/notificationRouting.ts';
+    const content = readFileSync(join(ROOT, file), 'utf8');
+    expect(content).toMatch(/BUDDIES_PATH/);
+    expect(content).toMatch(/GROUPS_PATH/);
+    expect(content).toMatch(/messagesGroupPath/);
+    expect(content).not.toMatch(/return '\/buddies'/);
+    expect(content).not.toMatch(/return '\/groups'/);
+    expect(content).not.toMatch(/return `\/messages\?group=/);
+  });
+
+  it('experiment docs do not contradict Tier-1 badges and Pro entry', () => {
+    const violations: string[] = [];
+    const badPatterns: Array<{ pattern: RegExp; label: string }> = [
+      {
+        pattern: /\/profile\/badges` redirect to \*\*`\/profile`\*\*/i,
+        label: 'badges redirect to /profile only — use PROFILE_BADGES_PATH',
+      },
+      {
+        pattern: /product entry.*`\/become-host`/i,
+        label: 'Pro entry must be /profile/pro-membership',
+      },
+    ];
+
+    for (const rel of collectMarkdown(DOCS_EXPERIMENT)) {
+      const text = readFileSync(join(ROOT, rel), 'utf8');
+      for (const { pattern, label } of badPatterns) {
+        if (pattern.test(text)) violations.push(`${rel}: ${label}`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('API does not ship Trail Points wallet registrars or config', () => {
+    const userRoutes = join(API_SRC, 'routes', 'user');
+    expect(existsSync(join(userRoutes, 'registerMeRewardsRoutes.ts'))).toBe(false);
+    expect(existsSync(join(userRoutes, 'registerPublicRewardsRoutes.ts'))).toBe(false);
+    expect(existsSync(join(API_SRC, 'lib', 'rewards-config.ts'))).toBe(false);
+    const userRouter = readFileSync(join(API_SRC, 'routes', 'user.ts'), 'utf8');
+    expect(userRouter).not.toMatch(/registerMeRewardsRoutes|registerPublicRewardsRoutes/);
+    expect(userRouter).toMatch(/registerMeBadgesRoutes/);
+  });
+
+  it('apps/api routes do not register /me/rewards or public rewards catalog', () => {
+    const routesDir = join(API_SRC, 'routes');
+    const violations: string[] = [];
+    for (const file of collectFiles(routesDir)) {
+      const content = readFileSync(join(ROOT, file), 'utf8');
+      if (/\/me\/rewards|\/rewards\/catalog|\/rewards\/leaderboard/.test(content)) {
+        violations.push(`${file}: Trail Points wallet HTTP surface removed`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+});

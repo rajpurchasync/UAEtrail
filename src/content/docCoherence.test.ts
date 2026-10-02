@@ -15,6 +15,12 @@ const tier1 = [
   'DOMAIN_CANONICALS.md',
 ];
 
+const mergedStubs = [
+  'NAMING_COHERENCE.md',
+  'SYSTEM_ALIGNMENT_MATRIX.md',
+  'NAMING_HOST_MEMBER.md',
+];
+
 describe('doc coherence (Tier 1)', () => {
   it('includes canonical index and member model', () => {
     for (const name of tier1) {
@@ -22,10 +28,23 @@ describe('doc coherence (Tier 1)', () => {
     }
   });
 
-  it('MEMBER_MODEL points at host-status and naming glossary', () => {
+  it('MEMBER_MODEL points at host-status and inline naming vocabulary', () => {
     const member = readFileSync(join(DOCS, 'MEMBER_MODEL.md'), 'utf8');
     expect(member).toMatch(/GET \/me\/host-status/);
-    expect(member).toMatch(/NAMING_HOST_MEMBER/);
+    expect(member).toMatch(/## Naming vocabulary/);
+  });
+
+  it('merged docs stay superseded stubs (no corpus regrowth)', () => {
+    for (const name of mergedStubs) {
+      const text = readFileSync(join(DOCS, name), 'utf8');
+      expect(text.trim()).toMatch(/^>\s*\*\*Superseded/i);
+    }
+  });
+
+  it('DOCS_GOVERNANCE forbids adding parallel Tier-1 docs', () => {
+    const gov = readFileSync(join(DOCS, 'DOCS_GOVERNANCE.md'), 'utf8');
+    expect(gov).toMatch(/Closed Tier-1/);
+    expect(gov).toMatch(/do not add files/i);
   });
 
   it('SYSTEM_COHERENCE ties capabilities to bounded contexts', () => {
@@ -46,5 +65,11 @@ describe('doc coherence (Tier 1)', () => {
     expect(north).toMatch(/Anti-patterns/i);
     expect(north).toMatch(/trail database.*host management tool/i);
     expect(north).toMatch(/find your people|go together|get outside/i);
+  });
+
+  it('consumer mobile IA keeps badges on PROFILE_BADGES_PATH (not profile-only redirect)', () => {
+    const ia = readFileSync(join(DOCS, 'experiment/consumer-mobile-ia.md'), 'utf8');
+    expect(ia).toMatch(/\/profile\/badges/);
+    expect(ia).not.toMatch(/\/profile\/badges` redirect to \*\*`\/profile`\*\*/);
   });
 });

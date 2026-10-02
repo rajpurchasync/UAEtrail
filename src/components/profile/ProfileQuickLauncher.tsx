@@ -2,7 +2,9 @@ import { Link } from 'react-router-dom';
 import {
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
+  HOST_OVERVIEW_PATH,
   PROFILE_BADGES_PATH,
+  PROFILE_SETTINGS_PATH,
 } from '../../config/routingCatalog';
 import type { LucideIcon } from 'lucide-react';
 import { Award, MapPin, Mountain, Settings, Users } from 'lucide-react';
@@ -87,7 +89,7 @@ export const buildProfileQuickLauncherItems = (input: {
     {
       key: 'settings',
       label: 'Settings',
-      to: '/profile/settings',
+      to: PROFILE_SETTINGS_PATH,
       icon: Settings,
       iconWrapClassName: 'bg-neutral-100 text-neutral-700',
     },
@@ -97,7 +99,7 @@ export const buildProfileQuickLauncherItems = (input: {
     items.push({
       key: 'hosting',
       label: 'Hosting',
-      to: '/host/overview',
+      to: HOST_OVERVIEW_PATH,
       icon: Mountain,
       iconWrapClassName: 'bg-violet-50 text-violet-700',
     });

@@ -15,8 +15,9 @@ export const notifyDemandJoinRequestSubmitted = async (input: {
     type: NotificationType.REQUEST_UPDATE,
     meta: {
       kind: 'demand_join_request_pending',
-      participantIntentId: input.intentId,
+      intentId: input.intentId,
       requestId: input.requestId,
+      actorUserId: input.requesterUserId,
       path: `/trips?view=plans&role=joined&peek=${input.intentId}`,
     },
   }).catch(() => undefined);
@@ -28,7 +29,7 @@ export const notifyDemandJoinRequestSubmitted = async (input: {
     type: NotificationType.REQUEST_UPDATE,
     meta: {
       kind: 'demand_join_request_pending',
-      participantIntentId: input.intentId,
+      intentId: input.intentId,
       requestId: input.requestId,
       path: '/explore',
     },
@@ -51,7 +52,7 @@ export const notifyDemandJoinRequestDecided = async (input: {
     type: NotificationType.REQUEST_UPDATE,
     meta: {
       kind: input.approved ? 'demand_join_request_approved' : 'demand_join_request_rejected',
-      participantIntentId: input.intentId,
+      intentId: input.intentId,
       requestId: input.requestId,
       path: '/explore',
     },

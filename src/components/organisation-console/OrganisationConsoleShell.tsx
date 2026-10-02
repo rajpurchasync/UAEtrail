@@ -5,6 +5,7 @@ import { getActiveTenantId } from '../../api/tenant';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { FilterChips } from '../mobile/FilterChips';
 import { HOST_CONSOLE_LINKS } from '../../constants';
+import { HOST_PROFILE_PATH, PROFILE_PATH } from '../../config/routingCatalog';
 import { OrganisationRatingChip } from './OrganisationRatingChip';
 
 interface OrganisationConsoleShellProps {
@@ -51,13 +52,13 @@ export const OrganisationConsoleShell = ({ title, children, cta, headerExtra }: 
       layout="stack"
       title={title}
       showJourney={false}
-      back={{ fallbackTo: '/profile', label: 'Profile' }}
+      back={{ fallbackTo: PROFILE_PATH, label: 'Profile' }}
       action={
         avgRating !== null ? (
           <OrganisationRatingChip
             rating={avgRating}
             reviewCount={reviewCount}
-            onClick={() => navigate('/host/profile')}
+            onClick={() => navigate(HOST_PROFILE_PATH)}
           />
         ) : undefined
       }

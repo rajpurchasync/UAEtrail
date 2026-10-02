@@ -4,7 +4,7 @@
 
 **Not a duplicate of:** [`ARCHITECTURE.md`](./ARCHITECTURE.md) (deployment & layer diagram), [`DOMAIN.md`](./DOMAIN.md) (entity glossary), [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (naming & route builders), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (person vs host tier). **This file ties them together.**
 
-**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:docs` · `npm run verify:host-member` · `npm run test:explore-alignment`
+**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json`
 
 ---
 
@@ -110,6 +110,27 @@ Each context has **one write path** and **one public read model** where possible
 
 **Rule:** If a change touches “who can do X,” find the row above first. Do not add a second resolver in a route file or a random hook.
 
+### 3.1 Context alignment matrix (API · FE · storage)
+
+Pick a **context id** when changing code; touch registrar + `src/api/domains/*` + UI roots together. Machine-readable paths: `scripts/bounded-context-manifest.json`.
+
+| Context | Collections (wire) | Key HTTP | FE domain module | UI roots |
+|---------|-------------------|----------|------------------|----------|
+| discovery | `activities`, `locations`, `participant_intents`, shop tenants | `GET /explore/map` | `exploreApi` | `src/explore/*` |
+| compose | `activities`, `participant_intents` | `POST /host/activities`, `POST /me/participant-intents` | `exploreApi`, `organisationApi` | `src/explore/ui/*` |
+| participation | `activity_requests`, `participant_intent_requests`, `activity_participants` | `/activities/.../requests`, `/host/requests` | `activitiesApi`, `exploreApi` | Activity detail, `JoinRequestDetail` |
+| member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
+| host_capabilities | `tenants`, `tenant_memberships` | `GET /me/host-status` | `memberApi` | `useMemberHostStatus` |
+| organisation_console | + `activities` | `/host/*` + tenant header | `organisationApi`, `activitiesApi` | `Organisation*`, `organisation-console/*` |
+| communication | `chat_messages`, group wall | `/chat/*`, group wall | `chatApi`, `socialApi` | `Messages.tsx` |
+| social_graph | `buddy_*`, `user_follows`, `social_groups*` | `/me/buddies`, `/me/groups`, … | `socialApi` | `Buddies`, `Groups` |
+| places | `locations` | `/places`, `/me/places` | `placeApi`, `placeRegistry` | `TrailDetail`, `CampDetail`, contribute |
+| commerce | `merchant_profiles`, `products` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
+| engagement | `user_badges`, `user_goals`, `user_favorites`, … | `/me/badges`, `/me/goals`, … | `badgesApi`, `goalsApi`, … | `ProfileBadges`, goals on profile |
+| platform_ops | `host_applications`, `audit_logs` | `/admin/*` | `adminApi` | `Admin*` pages |
+
+**API mounts:** `/auth`, `/admin`, `/host`, `/chat`, `/shop`, `/media`, `/reports`, `/` (`user.ts` + `social.ts`) — see `apps/api/src/routes/index.ts`.
+
 ---
 
 ## 4. Surfaces vs routes (contract)
@@ -179,6 +200,11 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C8** | `/community`, `/membership` routes | Secondary surfaces vs explore-first IA | `/membership` → explore; `/community` desktop hub (constants in `surfacePaths.ts`) | [`NAVIGATION.md`](./NAVIGATION.md) legacy table |
 | **C9** | Notification + privacy matrix incomplete | Inconsistent actor labels in edge kinds | Phase 7.7 smoke | `REMEDIATION.md`, HOST_CLEANUP P2 |
 | **C10** | 100+ markdown files, multiple “plans” | Agents read wrong doc | **Tier 1** only for truth; experiment defers | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) |
+| **C11** | Long flat `api.*` + `legacyApi` | Wrong facade | Domain modules; delete aliases | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §10–12 |
+| **C12** | Notification meta dialects | Routing sprawl | `NotificationMeta` + `actorUserId` | §11 |
+| **C13** | Many `*Routing.ts` helpers | Import confusion | `routingCatalog` + `inferNotificationPath` | §10 |
+| **C14** | Doc corpus duplication | Contradictory terms | **Update Tier-1 only** — [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) | |
+| **C15** | Buddy/friend vocabulary | Fake entity ids | User ids only | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary |
 
 **Not debt (intentional):** stable URLs (`/trail`, `/host`, `/operator`); Mongo collection names; `Organisation*` folder name with host user copy.
 
@@ -207,7 +233,7 @@ Phases **S0–S1** are largely in place; **S2–S6** are the production-grade co
 1. Which **capability** (§1) and **context** (§3) does this touch?
 2. Does it introduce a **second write path** for the same entity? If yes, stop and extend the existing service.
 3. Update **Tier 1** doc(s): `CREATE_FLOW`, `NAVIGATION`, `API_ROUTING`, or `MEMBER_MODEL` — not only experiment plans.
-4. Run `npm run verify:docs`, `npm run verify:host-member`, and relevant tests (`test:explore-alignment` for explore).
+4. Run **`npm run verify:system`** (or `verify:system:quick` before push); explore work also needs `test:explore-alignment`.
 
 ---
 

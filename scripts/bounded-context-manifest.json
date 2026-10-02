@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "description": "Maps SYSTEM_COHERENCE §3 bounded contexts to API, FE client, and UI roots. Used by verify:system — do not duplicate in new markdown files.",
+  "contexts": [
+    {
+      "id": "discovery",
+      "label": "Discovery",
+      "apiFiles": ["apps/api/src/lib/explore-map.ts"],
+      "routeRegistrars": ["apps/api/src/routes/user/registerPublicActivityRoutes.ts"],
+      "feDomains": ["src/api/domains/explore.ts"],
+      "feRoots": ["src/explore"]
+    },
+    {
+      "id": "compose",
+      "label": "Compose",
+      "apiFiles": ["apps/api/src/services/member-publish-gate.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
+        "apps/api/src/routes/host.ts"
+      ],
+      "feDomains": ["src/api/domains/explore.ts"],
+      "feRoots": ["src/explore/ui"]
+    },
+    {
+      "id": "participation",
+      "label": "Participation",
+      "apiFiles": ["apps/api/src/services/join-request.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
+        "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts",
+        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/activities.ts", "src/api/domains/explore.ts"],
+      "feRoots": ["src/pages/JoinRequestDetail.tsx"]
+    },
+    {
+      "id": "member_identity",
+      "label": "Member identity",
+      "apiFiles": [
+        "apps/api/src/services/public-member-profile.ts",
+        "apps/api/src/services/profile-viewer-access.ts"
+      ],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerProfileRoutes.ts",
+        "apps/api/src/routes/user/registerPublicMemberRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/account.ts", "src/api/domains/member.ts"],
+      "feRoots": ["src/pages/Profile.tsx", "src/member"]
+    },
+    {
+      "id": "host_capabilities",
+      "label": "Host capabilities",
+      "apiFiles": ["apps/api/src/services/member-host-status.ts"],
+      "routeRegistrars": ["apps/api/src/routes/user/registerMemberHostStatusRoutes.ts"],
+      "feDomains": ["src/api/domains/member.ts"],
+      "feRoots": ["src/member"]
+    },
+    {
+      "id": "organisation_console",
+      "label": "Organisation console",
+      "apiFiles": [],
+      "routeRegistrars": [
+        "apps/api/src/routes/host/registerHostTeamRoutes.ts",
+        "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/organisation.ts", "src/api/domains/activities.ts"],
+      "feRoots": ["src/pages/OrganisationManage.tsx", "src/components/organisation-console"]
+    },
+    {
+      "id": "communication",
+      "label": "Communication",
+      "apiFiles": ["apps/api/src/routes/chat.ts"],
+      "routeRegistrars": ["apps/api/src/routes/chat.ts"],
+      "feDomains": ["src/api/domains/chat.ts"],
+      "feRoots": ["src/pages/Messages.tsx"]
+    },
+    {
+      "id": "social_graph",
+      "label": "Social graph",
+      "apiFiles": ["apps/api/src/lib/buddy-store.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerBuddyRoutes.ts",
+        "apps/api/src/routes/user/registerFollowRoutes.ts",
+        "apps/api/src/routes/user/registerGroupRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/social.ts"],
+      "feRoots": ["src/pages/Buddies.tsx", "src/pages/Groups.tsx"]
+    },
+    {
+      "id": "places",
+      "label": "Places",
+      "apiFiles": [],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerPublicPlaceRoutes.ts",
+        "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/places.ts", "src/api/domains/placeRegistry.ts"],
+      "feRoots": ["src/pages/TrailDetail.tsx", "src/pages/CampDetail.tsx"]
+    },
+    {
+      "id": "commerce",
+      "label": "Commerce",
+      "apiFiles": ["apps/api/src/routes/shop.ts"],
+      "routeRegistrars": ["apps/api/src/routes/shop.ts"],
+      "feDomains": ["src/api/domains/shop.ts"],
+      "feRoots": ["src/pages/ShopPublic.tsx", "src/components/shop"]
+    },
+    {
+      "id": "engagement",
+      "label": "Engagement",
+      "apiFiles": ["apps/api/src/services/member-badges.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerMeBadgesRoutes.ts",
+        "apps/api/src/routes/user/registerMeGoalsRoutes.ts",
+        "apps/api/src/routes/user/registerMeEngagementRoutes.ts",
+        "apps/api/src/routes/user/registerMeMapPinsRoutes.ts"
+      ],
+      "feDomains": [
+        "src/api/domains/badges.ts",
+        "src/api/domains/goals.ts",
+        "src/api/domains/memberJourneyMap.ts"
+      ],
+      "feRoots": ["src/pages/ProfileBadges.tsx"]
+    },
+    {
+      "id": "platform_ops",
+      "label": "Platform ops",
+      "apiFiles": ["apps/api/src/routes/admin.ts"],
+      "routeRegistrars": ["apps/api/src/routes/admin.ts"],
+      "feDomains": ["src/api/domains/admin.ts"],
+      "feRoots": ["src/pages/AdminOverview.tsx"]
+    }
+  ],
+  "apiMounts": [
+    { "prefix": "/auth", "file": "apps/api/src/routes/auth.ts" },
+    { "prefix": "/admin", "file": "apps/api/src/routes/admin.ts" },
+    { "prefix": "/host", "file": "apps/api/src/routes/host.ts" },
+    { "prefix": "/chat", "file": "apps/api/src/routes/chat.ts" },
+    { "prefix": "/shop", "file": "apps/api/src/routes/shop.ts" },
+    { "prefix": "/media", "file": "apps/api/src/routes/media.ts" },
+    { "prefix": "/reports", "file": "apps/api/src/routes/reports.ts" },
+    { "prefix": "/user+social", "file": "apps/api/src/routes/user.ts", "note": "user router + social router on /" }
+  ],
+  "feDomainModules": [
+    "account",
+    "activities",
+    "admin",
+    "badges",
+    "chat",
+    "explore",
+    "goals",
+    "media",
+    "member",
+    "memberJourneyMap",
+    "organisation",
+    "placeRegistry",
+    "places",
+    "shop",
+    "social"
+  ],
+  "removedProducts": {
+    "trailPointsWallet": {
+      "bannedRouteFiles": [
+        "apps/api/src/routes/user/registerMeRewardsRoutes.ts",
+        "apps/api/src/routes/user/registerPublicRewardsRoutes.ts"
+      ],
+      "bannedFeDomains": ["src/api/domains/rewards.ts"]
+    }
+  }
+}

@@ -32,6 +32,12 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **`/activities`** redirects to `/trips` for bookmarks and old links.
 - **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore host peek → **Message crew** opens **`/messages?group=<id>`** (not chat on `/trips`). Deep links: [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). Full messaging contract: [`COMMUNICATION.md`](./COMMUNICATION.md).
 
+### Host console (`/host/*`)
+
+- **Shell nav:** `HOST_CONSOLE_LINKS` in the org console (overview, activities, join requests, places, team, messages, …) — primary way to reach host tools.
+- **`/host/overview`:** Host stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, messages, explore map).
+- **Member profile (`/profile`):** consumer hub only; hosts open **Hosting** → `/host/overview` (no host tool menu on profile).
+
 ### Friends (`/buddies`)
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
@@ -104,10 +110,10 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 | Intent | Helper | File |
 |--------|--------|------|
-| Explore URLs | `explorePath()`, `exploreActivitiesPath()`, `explorePlacesPath()`, `exploreShopsPath()` | `src/utils/exploreRouting.ts` |
-| Back from detail | `detailBackPath(kind)` | `src/utils/exploreRouting.ts` |
-| My activities hub | `myActivitiesPath('joined' \| 'hosted')` | `src/utils/exploreRouting.ts` |
-| Fulfill participant intent (return from auth) | `explorePath({ fulfillIntent })`, `exploreFulfillIntentReturnPath()` | `src/utils/exploreRouting.ts` |
+| Explore URLs | `explorePath()`, `exploreActivitiesPath()`, `explorePlacesPath()`, `exploreShopsPath()` | `src/explore/routing.ts` · import via `config/routingCatalog` in app code |
+| Back from detail | `detailBackPath(kind)` | `src/explore/routing.ts` |
+| My activities hub | `myActivitiesPath('joined' \| 'hosted')` | `src/explore/routing.ts` |
+| Fulfill participant intent (return from auth) | `explorePath({ fulfillIntent })`, `exploreFulfillIntentReturnPath()` | `src/explore/routing.ts` |
 | Platform nav constants | `EXPLORE_MAP_PATH`, `joinAuthPath()` | `src/config/platform.ts` |
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |
@@ -243,5 +249,5 @@ API integration coverage: `apps/api/tests/connections-flow.test.ts`.
 ## Adding new links
 
 1. Pick the surface (browse / personal / detail).
-2. Use the helper from `exploreRouting.ts` — no raw `/explore?…` strings outside that module and `platform.ts`.
+2. Use helpers from `src/explore/routing.ts` (or `routingCatalog`) — no raw `/explore?…` strings outside those modules and `platform.ts`.
 3. Detail pages pass `backTo={detailBackPath('…')}` unless a tighter parent context exists.

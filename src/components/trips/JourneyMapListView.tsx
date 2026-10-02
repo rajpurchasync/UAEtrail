@@ -1,18 +1,18 @@
 import { MapPin } from 'lucide-react';
 import type { OutdoorMapEntryDTO } from '@uaetrail/shared-types';
 import { ActivityHubListRow } from '../mobile/ActivityHubListRow';
-import { formatOutdoorListSubtitle } from '../../trips/outdoorMapListMeta';
-import { outdoorEntryCategoryBadge } from '../../trips/outdoorMapCategoryBadge';
-import { resolveOutdoorPinStyle } from '../../trips/outdoorMapPinStyle';
-import { OutdoorMapListPinIcon } from './OutdoorMapListPinIcon';
+import { formatJourneyListSubtitle } from '../../trips/journeyMapListMeta';
+import { journeyEntryCategoryBadge } from '../../trips/journeyMapCategoryBadge';
+import { resolveJourneyPinStyle } from '../../trips/journeyMapPinStyle';
+import { JourneyMapListPinIcon } from './JourneyMapListPinIcon';
 
-interface OutdoorMapListViewProps {
+interface JourneyMapListViewProps {
   entries: OutdoorMapEntryDTO[];
   onSelect: (entry: OutdoorMapEntryDTO) => void;
   emptyMessage?: string;
 }
 
-export const OutdoorMapListView = ({ entries, onSelect, emptyMessage }: OutdoorMapListViewProps) => {
+export const JourneyMapListView = ({ entries, onSelect, emptyMessage }: JourneyMapListViewProps) => {
   if (entries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
@@ -26,9 +26,9 @@ export const OutdoorMapListView = ({ entries, onSelect, emptyMessage }: OutdoorM
     <ul className="space-y-2">
       {entries.map((entry) => {
         const hasMap = entry.latitude != null && entry.longitude != null;
-        const pinStyle = resolveOutdoorPinStyle(entry);
-        const badge = outdoorEntryCategoryBadge(entry);
-        const metaParts = [formatOutdoorListSubtitle(entry)];
+        const pinStyle = resolveJourneyPinStyle(entry);
+        const badge = journeyEntryCategoryBadge(entry);
+        const metaParts = [formatJourneyListSubtitle(entry)];
         if (!hasMap) metaParts.push('No map location');
 
         return (
@@ -36,7 +36,7 @@ export const OutdoorMapListView = ({ entries, onSelect, emptyMessage }: OutdoorM
             <ActivityHubListRow
               title={entry.title}
               meta={metaParts.join(' · ')}
-              leading={<OutdoorMapListPinIcon style={pinStyle} />}
+              leading={<JourneyMapListPinIcon style={pinStyle} />}
               badge={
                 <span
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${badge.className}`}

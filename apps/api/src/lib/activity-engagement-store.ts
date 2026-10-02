@@ -18,6 +18,7 @@ import {
 } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { parseStoredPricePackages } from './activity-pricing.js';
+import { myRequestDetailPath } from './member-routes.js';
 import { dispatchNotification } from '../services/notifications.js';
 import { addParticipantToActivityGroupChat, removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
@@ -375,7 +376,12 @@ async function promoteNextWaitlisted(activityId: string): Promise<boolean> {
     title: 'A spot opened up!',
     body: 'Your waitlisted activity now has availability. Your request is pending organizer approval.',
     type: NotificationType.REQUEST_UPDATE,
-    meta: { activityId, requestId: next._id, fromWaitlist: true }
+    meta: {
+      kind: 'join_request_pending',
+      activityId,
+      requestId: String(next._id),
+      path: myRequestDetailPath(String(next._id)),
+    },
   });
 
   return true;
@@ -596,7 +602,10 @@ export const usersShareActivity = async (userA: string, userB: string): Promise<
   if (!userA || !userB) return false;
   if (userA === userB) return true;
 
-  const eventIds = await activityParticipantsCollection().distinct('activityId', { userId: userA });
+  const participantRows = await activityParticipantsCollection()
+    .find({ userId: userA }, { projection: { activityId: 1 } })
+    .toArray();
+  const eventIds = [...new Set(participantRows.map((row) => row.activityId).filter(Boolean))];
   if (eventIds.length > 0) {
     const shared = await activityParticipantsCollection().findOne({
       userId: userB,

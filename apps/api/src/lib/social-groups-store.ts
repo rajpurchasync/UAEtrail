@@ -513,11 +513,13 @@ export const usersShareActiveGroup = async (userA: string, userB: string): Promi
   if (!userA || !userB) return false;
   if (userA === userB) return true;
 
-  const groupIds = await membersCollection().distinct('groupId', {
-    userId: userA,
-    memberType: 'adult',
-    isActive: { $ne: false }
-  });
+  const memberships = await membersCollection()
+    .find(
+      { userId: userA, memberType: 'adult', isActive: { $ne: false } },
+      { projection: { groupId: 1 } }
+    )
+    .toArray();
+  const groupIds = [...new Set(memberships.map((row) => row.groupId).filter(Boolean))];
   if (groupIds.length === 0) return false;
 
   const shared = await membersCollection().findOne({

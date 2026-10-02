@@ -10,6 +10,7 @@ import {
   listThreadMessages,
   markThreadAsRead
 } from '../lib/chat-data.js';
+import { messagesToUserPath } from '../lib/member-routes.js';
 import { dispatchNotification } from '../services/notifications.js';
 import { requireAuth, requireSseTicket, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -153,9 +154,9 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
         meta: {
           kind: 'message',
           chatMessageId: message.id,
-          senderId,
-          path: `/messages?to=${encodeURIComponent(senderId)}`
-        }
+          actorUserId: senderId,
+          path: messagesToUserPath(senderId),
+        },
       });
     }).catch(() => undefined);
 

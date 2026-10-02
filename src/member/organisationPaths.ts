@@ -1,8 +1,10 @@
+/** Canonical org commerce console — legacy `/shop/manage` and `/agency/manage` redirect here. */
+export const ORGANISATION_MANAGE_PATH = '/organisation/manage' as const;
+
 export type OrganisationKind = 'agency' | 'shop';
 
-/** Canonical organisation management console. Legacy `/shop/manage` and `/agency/manage` redirect here. */
 export const organisationManagePath = (kind?: OrganisationKind): string =>
-  kind ? `/organisation/manage?kind=${kind}` : '/organisation/manage';
+  kind ? `${ORGANISATION_MANAGE_PATH}?kind=${kind}` : ORGANISATION_MANAGE_PATH;
 
 export const parseOrganisationKind = (value: string | null): OrganisationKind | null =>
   value === 'agency' || value === 'shop' ? value : null;

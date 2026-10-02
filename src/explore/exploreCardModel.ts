@@ -1,4 +1,6 @@
 import type {
+  ExploreCardKind,
+  ExploreCardSource,
   ExploreLinkedRideshareDTO,
   ExploreMapItemDTO,
   ExploreMapPersonDTO,
@@ -17,10 +19,9 @@ import { enrichExploreActivityRequirementBadges } from './exploreRequirementBadg
 import { exploreMapItemSharePath } from './routing';
 import { resolveExploreCoverImage } from './exploreCoverImage';
 
-export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
-export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+export type { ExploreCardKind, ExploreCardSource } from '@uaetrail/shared-types';
 
-export type ExploreCardTone = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
+export type ExploreCardTone = ExploreCardKind;
 
 export interface ExploreCardModel {
   id: string;
@@ -273,7 +274,7 @@ const watchMetaFromCard = (card: ExploreCardModel) => ({
 export const resolveExploreFavoriteTarget = (card: ExploreCardModel): ExploreFavoriteTarget | null => {
   const watch = watchMetaFromCard(card);
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
-  // Demand = public participation on Explore — not wishlist saves (see `src/trips/demandVsWishlist.ts`).
+  // Demand = public participation on Explore — not wishlist saves (see `src/trips/favoriteDemandBookmark.ts`).
   if (card.source === 'demand') return null;
   if (card.source === 'venue' && card.locationId) return { locationId: card.locationId, ...watch };
   if (card.source === 'shop' || card.source === 'agency') {

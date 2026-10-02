@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowLeft, ShieldCheck, CheckCircle } from 'lucide-react';
 import { apiRequest } from '../api/client';
+import { SIGNIN_PATH } from '../config/routingCatalog';
 import { PageMeta } from '../components/seo/PageMeta';
 
 type Step = 'email' | 'otp' | 'reset' | 'done';
@@ -86,7 +87,7 @@ export const ForgotPassword = () => {
         {step === 'email' && (
           <>
             <Link
-              to="/signin"
+              to={SIGNIN_PATH}
               className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-5"
             >
               <ArrowLeft className="w-4 h-4" /> Back to login
@@ -216,7 +217,7 @@ export const ForgotPassword = () => {
               Your password has been changed successfully.
             </p>
             <Link
-              to="/signin"
+              to={SIGNIN_PATH}
               className="inline-flex items-center justify-center w-full bg-emerald-600 text-white rounded-lg py-2.5 hover:bg-emerald-700 text-sm font-medium transition-colors"
             >
               Log In

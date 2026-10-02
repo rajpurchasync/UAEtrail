@@ -286,12 +286,13 @@ export const listBuddiesForUser = async (userId: string): Promise<BuddySummaryDT
 };
 
 /** Ends a buddy connection for both users. Silent — no notification is sent. */
-export const unfriendBuddy = async (actorUserId: string, buddyUserId: string): Promise<void> => {
-  if (actorUserId === buddyUserId) {
+/** Remove mutual buddy link — `otherMemberUserId` is the other person's account id (`BuddySummaryDTO.userId`). */
+export const unfriendBuddy = async (actorUserId: string, otherMemberUserId: string): Promise<void> => {
+  if (actorUserId === otherMemberUserId) {
     throw new ApiError(400, 'invalid_buddy_request', 'You cannot unfriend yourself.');
   }
 
-  const pairId = buddyPairKey(actorUserId, buddyUserId);
+  const pairId = buddyPairKey(actorUserId, otherMemberUserId);
   const result = await pairsCollection().deleteOne({ _id: pairId });
   if (result.deletedCount === 0) {
     throw new ApiError(404, 'buddy_not_found', 'You are not connected with this member.');
@@ -302,8 +303,8 @@ export const unfriendBuddy = async (actorUserId: string, buddyUserId: string): P
     {
       status: 'pending',
       $or: [
-        { fromUserId: actorUserId, toUserId: buddyUserId },
-        { fromUserId: buddyUserId, toUserId: actorUserId },
+        { fromUserId: actorUserId, toUserId: otherMemberUserId },
+        { fromUserId: otherMemberUserId, toUserId: actorUserId },
       ],
     },
     { $set: { status: 'cancelled', updatedAt: now, respondedAt: now } }

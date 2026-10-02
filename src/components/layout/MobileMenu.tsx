@@ -1,4 +1,4 @@
-import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
+import { EXPLORE_MAP_PATH, proMembershipAnchorPath } from '../../config/routingCatalog';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogIn, LogOut, Menu, RefreshCw, ShoppingBag, User, X } from 'lucide-react';
@@ -527,7 +527,7 @@ const MobileMenuPanel = () => {
 
           {user && !isMerchantRole(user.role) && (
             <Link
-              to="/profile/pro-membership#host-profiles"
+              to={proMembershipAnchorPath('host-profiles')}
               onClick={closeMenu}
               className={navItemClass(pathname.startsWith('/profile/pro-membership'))}
             >

@@ -245,7 +245,6 @@ for (const [file, cfg] of Object.entries(domains)) {
 const indexExports = [
   "export { placeApi } from './places';",
   "export { exploreApi } from './explore';",
-  "export { rewardsApi } from './rewards';",
   ...Object.keys(domains).map((k) => `export { ${k}Api } from './${k}';`),
 ].join('\n');
 fs.writeFileSync(path.join(root, 'src/api/domains/index.ts'), `${indexExports}\n`);
@@ -253,7 +252,6 @@ fs.writeFileSync(path.join(root, 'src/api/domains/index.ts'), `${indexExports}\n
 const spreadLines = [
   '  ...placeApi,',
   '  ...exploreApi,',
-  '  ...rewardsApi,',
   ...Object.keys(domains).map((k) => `  ...${k}Api,`),
 ].join('\n');
 
@@ -261,7 +259,6 @@ const servicesOut = `import { PlaceDTO } from '@uaetrail/shared-types';
 import {
   placeApi,
   exploreApi,
-  rewardsApi,
   activitiesApi,
   accountApi,
   socialApi,

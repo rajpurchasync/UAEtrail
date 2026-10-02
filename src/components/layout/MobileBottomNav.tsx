@@ -1,4 +1,9 @@
-import { ACTIVITIES_PATH, EXPLORE_MAP_PATH, TRIPS_PATH } from '../../config/routingCatalog';
+import {
+  ACTIVITIES_PATH,
+  EXPLORE_MAP_PATH,
+  MESSAGES_PATH,
+  TRIPS_PATH,
+} from '../../config/routingCatalog';
 import { useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { ClipboardList, Map, MessageSquare, type LucideIcon } from 'lucide-react';
@@ -71,7 +76,7 @@ export const MobileBottomNav = () => {
           <span className={tabLabelClass(tripsActive)}>Trips</span>
         </Link>
 
-        <NavLink to="/messages" end className={({ isActive }) => tabShellClass(isActive)} aria-label="Messages">
+        <NavLink to={MESSAGES_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Messages">
           {({ isActive }) => (
             <>
               <span className="relative">

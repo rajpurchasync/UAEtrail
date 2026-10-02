@@ -64,7 +64,18 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 
 **Publish gate:** `POST /host/activities` and `POST /host/activities/:id/publish` require `signupProfileComplete` + `canPublish` (see `member-publish-gate.ts`), except platform admin acting on a tenant.
 
-Registration: `registerMeParticipantIntentRoutes.ts` (not mixed with `/me/rewards`).
+Registration: `registerMeParticipantIntentRoutes.ts`.
+
+---
+
+## Member badges (`GET /me/badges`)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/badges` | Signed-in member — earned + in-progress achievement badges |
+
+Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.  
+**Removed (do not reintroduce):** `/me/rewards`, `/rewards/catalog`, `/rewards/leaderboard` — Trail Points wallet product retired; badge progress still records via `awardPoints` shim in `rewards.ts`.
 
 ---
 
@@ -105,6 +116,7 @@ Implementation phases: [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md) · m
 | Domain module | Routes |
 |---------------|--------|
 | `member.ts` | **`/me/host-status`** |
+| `badges.ts` | **`/me/badges`** |
 | `activities.ts` | `/activities`, `/me/requests`, `/host/activities`, `/host/requests` |
 | `explore.ts` | `/explore/map`, **`/me/participant-intents`** (+ requests, link-activity) |
 | `social.ts`, `chat.ts` | Groups, DMs, inbox |

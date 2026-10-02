@@ -5,6 +5,7 @@ import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import { isSignupProfileComplete } from '../../constants/userProfileOptions';
 import { accountRouteByRole } from '../../utils/authRouting';
+import { WELCOME_PATH } from '../../config/routingCatalog';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import {
   isSignupProfileGateExemptPath,
@@ -70,7 +71,7 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
     if (signupComplete === false) {
       return (
         <Navigate
-          to="/welcome"
+          to={WELCOME_PATH}
           replace
           state={{ redirectTo: location.pathname + location.search }}
         />

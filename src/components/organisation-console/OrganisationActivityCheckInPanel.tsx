@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ParticipantDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/index';
+import { hostActivitiesCheckInPath } from '../../config/routingCatalog';
 import { SecureAvatar } from '../ui';
 
 interface OrganisationActivityCheckInPanelProps {
@@ -147,7 +148,7 @@ export const OrganisationActivityCheckInPanel = ({
 };
 
 export const organisationActivityCheckInPath = (activityId: string): string =>
-  `/host/activities?checkin=${encodeURIComponent(activityId)}`;
+  hostActivitiesCheckInPath(activityId);
 
 /** @deprecated Use organisationActivityCheckInPath */
 export const hostActivityCheckInPath = organisationActivityCheckInPath;

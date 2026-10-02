@@ -19,7 +19,6 @@ import { z } from 'zod';
 import { mountActivityRoutes } from '../lib/activity-routes.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
-import { PRO_MEMBERSHIP_PATH } from '../lib/member-routes.js';
 import { toLocationDto, buildActivityDto } from '../lib/mappers.js';
 import { invalidateExploreMapCache } from '../lib/explore-map-cache.js';
 import { awardPoints } from '../services/rewards.js';
@@ -87,6 +86,14 @@ import {
   listHostApplicationsDetailed,
   markHostApplicationRejected
 } from '../lib/host-applications-store.js';
+import {
+  EXPLORE_VENUES_LIST_PATH,
+  GROUPS_PATH,
+  HOST_ACTIVITIES_PATH,
+  HOST_OVERVIEW_PATH,
+  PROFILE_PATH,
+  PRO_MEMBERSHIP_PATH,
+} from '../lib/member-routes.js';
 import { dispatchNotification } from '../services/notifications.js';
 import { notifyUserAdminAction } from '../services/admin-notifications.js';
 import {
@@ -407,7 +414,11 @@ adminPlaceItemPaths.forEach((path) => {
         userId: updated.submittedById,
         title: 'Location not approved',
         body: `"${updated.name}" was not approved for listing. Contact support if you have questions.`,
-        meta: { locationId: updated.id, kind: 'location_rejected', path: '/explore?panel=venues&list=1' }
+        meta: {
+          locationId: updated.id,
+          kind: 'location_rejected',
+          path: EXPLORE_VENUES_LIST_PATH,
+        },
       });
     }
 
@@ -650,7 +661,7 @@ adminActivitiesRouter.patch(
             ? `Your activity "${event.title}" has been suspended. Reason: ${comment}`
             : `Your activity "${event.title}" has been suspended by an administrator.`,
           reason: comment,
-          meta: { kind: 'activity_suspended', activityId: event.id, path: '/host/activities' }
+          meta: { kind: 'activity_suspended', activityId: event.id, path: HOST_ACTIVITIES_PATH },
         });
       }
 
@@ -968,8 +979,8 @@ adminRouter.patch('/users/:id/status', validate({ params: idParamSchema, body: u
       reason: comment,
       meta: {
         kind: status === 'active' ? 'user_reactivated' : 'user_suspended',
-        path: '/profile'
-      }
+        path: PROFILE_PATH,
+      },
     });
 
     res.json({ message: `User ${status === 'active' ? 'activated' : 'suspended'}.` });
@@ -1091,7 +1102,7 @@ adminRouter.patch('/tenants/:id/status', validate({ params: idParamSchema, body:
       meta: {
         kind: status === 'active' ? 'host_reopened' : 'host_suspended',
         tenantId: id,
-        path: status === 'active' ? '/host/overview' : PRO_MEMBERSHIP_PATH
+        path: status === 'active' ? HOST_OVERVIEW_PATH : PRO_MEMBERSHIP_PATH,
       }
     });
 
@@ -1139,7 +1150,11 @@ adminRouter.patch('/groups/:id/status', validate({ params: idParamSchema, body: 
               ? `Your group "${detail.group.name}" has been suspended. Reason: ${comment}`
               : `Your group "${detail.group.name}" has been suspended by an administrator.`,
         reason: comment,
-        meta: { kind: status === 'active' ? 'group_reactivated' : 'group_suspended', groupId: id, path: '/groups' }
+        meta: {
+          kind: status === 'active' ? 'group_reactivated' : 'group_suspended',
+          groupId: id,
+          path: GROUPS_PATH,
+        },
       });
     }
 

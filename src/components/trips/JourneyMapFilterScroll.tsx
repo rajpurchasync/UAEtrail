@@ -1,26 +1,26 @@
 import { useMemo } from 'react';
 import type { OutdoorMapEntryDTO, OutdoorMapFilterCategory } from '@uaetrail/shared-types';
 import { FilterChips } from '../mobile/FilterChips';
-import { OUTDOOR_MAP_FILTERS, countOutdoorEntries } from '../../trips/outdoorMapFilters';
+import { JOURNEY_MAP_FILTERS, countJourneyMapEntries } from '../../trips/journeyMapFilters';
 
-interface OutdoorMapFilterScrollProps {
+interface JourneyMapFilterScrollProps {
   filter: OutdoorMapFilterCategory;
   entries: OutdoorMapEntryDTO[];
   onChange: (filter: OutdoorMapFilterCategory) => void;
   variant?: 'inline' | 'overlay';
 }
 
-/** Outdoor map filters — shared chip row (neutral), optional map overlay chrome. */
-export const OutdoorMapFilterScroll = ({
+/** Trips journey map filters — shared chip row (neutral), optional map overlay chrome. */
+export const JourneyMapFilterScroll = ({
   filter,
   entries,
   onChange,
   variant = 'inline',
-}: OutdoorMapFilterScrollProps) => {
+}: JourneyMapFilterScrollProps) => {
   const options = useMemo(
     () =>
-      OUTDOOR_MAP_FILTERS.map((tab) => {
-        const count = countOutdoorEntries(entries, tab.id);
+      JOURNEY_MAP_FILTERS.map((tab) => {
+        const count = countJourneyMapEntries(entries, tab.id);
         const label = count > 0 ? `${tab.label} (${count})` : tab.label;
         return { key: tab.id, label };
       }),

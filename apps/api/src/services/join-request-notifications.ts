@@ -1,5 +1,6 @@
 import { NotificationType } from '../domain/enums.js';
 import { findActivityForRequestViewById } from '../lib/activities-store.js';
+import { myRequestDetailPath, TRIPS_JOINED_TAB_PATH } from '../lib/member-routes.js';
 import { dispatchNotification } from './notifications.js';
 
 export const notifyParticipantJoinRequestSubmitted = async (input: {
@@ -23,8 +24,8 @@ export const notifyParticipantJoinRequestSubmitted = async (input: {
       kind: input.waitlisted ? 'join_request_waitlisted' : 'join_request_pending',
       activityId: input.activityId,
       requestId: input.requestId,
-      path: '/trips?segment=upcoming&tab=joined',
-    }
+      path: myRequestDetailPath(input.requestId),
+    },
   }).catch(() => undefined);
 };
 
@@ -49,7 +50,7 @@ export const notifyParticipantJoinRequestWithdrawn = async (input: {
       kind: 'join_request_withdrawn',
       activityId: input.activityId,
       requestId: input.requestId,
-      path: '/trips?segment=upcoming&tab=joined',
-    }
+      path: TRIPS_JOINED_TAB_PATH,
+    },
   }).catch(() => undefined);
 };

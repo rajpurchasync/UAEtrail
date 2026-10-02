@@ -322,7 +322,7 @@ Full VPS steps remain in [PRE_DEPLOY_CHECKLIST.md](PRE_DEPLOY_CHECKLIST.md).
 |------|--------|
 | Public | `/` `/explore` `/trail/:id` `/camp/:id` `/activities` `/activity/:id` `/community` `/shop` `/product/:id` `/operator/:id` |
 | Auth | `/signup` `/signin` `/verify` `/forgot-password` |
-| Visitor app | `/profile` `/my-requests` `/messages` `/notifications` `/my-rewards` |
+| Visitor app | `/profile` `/profile/badges` `/my-requests` `/messages` `/notifications` |
 | Organizer | `/organizer/overview` `events` `requests` `team` `profile` `locations` `history` `messages` |
 | Admin | `/admin/overview` `locations` `organizers` `events` `users` `audit-log` `settings` `shop` |
 | Legal | `/terms` `/privacy` `/faq` |

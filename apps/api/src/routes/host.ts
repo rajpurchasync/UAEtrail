@@ -62,6 +62,7 @@ import {
   listActivityParticipantsWithUsers,
   listTenantActivityRequestsDetailed
 } from '../lib/activity-engagement-store.js';
+import { activityDetailPath } from '../lib/member-routes.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
 import { buildJoinApprovedBody, buildJoinRejectedBody } from '../lib/notification-copy.js';
 import { dispatchNotification } from '../services/notifications.js';
@@ -583,7 +584,11 @@ tenantActivitiesRouter.delete('/:id', requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES)
           title: 'Activity Cancelled',
           body: `Sorry — the host had to cancel "${event.title}".`,
           type: NotificationType.ACTIVITY,
-          meta: { activityId: event.id }
+          meta: {
+            kind: 'activity_cancelled',
+            activityId: event.id,
+            path: activityDetailPath(event.id),
+          },
         }))
       );
     }

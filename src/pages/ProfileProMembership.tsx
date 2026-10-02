@@ -1,4 +1,4 @@
-import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, proMembershipPath, signInPath } from '../config/routingCatalog';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
@@ -27,9 +27,11 @@ export const ProfileProMembership = () => {
   const { refresh: refreshHostGate } = useOrganisationGate({ enabled: Boolean(user) });
   const [flowOpen, setFlowOpen] = useState(false);
 
-  const signInHref = `/signin?redirect=${encodeURIComponent(
-    `/profile/pro-membership?intent=${intent}${searchParams.get('redirect') ? `&redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`
-  )}`;
+  const proReturnPath = proMembershipPath({
+    intent: intent ?? undefined,
+    redirect: searchParams.get('redirect') ?? undefined,
+  });
+  const signInHref = signInPath({ redirect: proReturnPath });
 
   useEffect(() => {
     if (!user) return;

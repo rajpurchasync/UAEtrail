@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { BUDDIES_PATH } from '../../config/routingCatalog';
 import { MessageCircle } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { SecureAvatar } from '../../components/ui';
@@ -48,7 +49,7 @@ export const ExploreWhosGoingPeopleList = ({
         <p className="mt-1 text-sm text-neutral-600">
           Connect on trips you like — then you&apos;ll see who&apos;s going here.
         </p>
-        <Link to="/buddies" className="mt-3 inline-block text-sm font-semibold text-emerald-700 hover:underline">
+        <Link to={BUDDIES_PATH} className="mt-3 inline-block text-sm font-semibold text-emerald-700 hover:underline">
           Manage buddies
         </Link>
       </div>

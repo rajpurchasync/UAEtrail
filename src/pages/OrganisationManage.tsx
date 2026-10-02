@@ -7,7 +7,7 @@ import { AgencyOrganisationPanel } from '../components/organisation/AgencyOrgani
 import { ShopOrganisationPanel } from '../components/organisation/ShopOrganisationPanel';
 import { useOrganisationGate } from '../hooks/useOrganisationGate';
 
-import { parseOrganisationKind, type OrganisationKind } from '../utils/organisationPaths';
+import { parseOrganisationKind, type OrganisationKind } from '../config/routingCatalog';
 
 export const OrganisationManage = () => {
   const [searchParams, setSearchParams] = useSearchParams();

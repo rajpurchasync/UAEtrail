@@ -18,7 +18,13 @@ import type { AccountEditSavePayload } from '../components/account/AccountEditMo
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useOrganisationHubData } from '../hooks/useOrganisationHubData';
 import { FEATURE_FLAGS } from '../config/platform';
-import { MEMBERSHIP_MARKETING_PATH, tripsLegacyJoinedTabPath } from '../config/routingCatalog';
+import {
+  EXPLORE_MAP_PATH,
+  HOST_ACTIVITIES_NEW_PATH,
+  HOST_MESSAGES_PATH,
+  MEMBERSHIP_MARKETING_PATH,
+  tripsLegacyJoinedTabPath,
+} from '../config/routingCatalog';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
 import { inferNotificationPath } from '../utils/notificationRouting';
 
@@ -62,7 +68,7 @@ export const OrganisationConsoleOverview = () => {
 
   const loading = participant.loading || host.loading;
   const error = participant.error ?? host.error;
-  const messagesPath = '/host/messages';
+  const messagesPath = HOST_MESSAGES_PATH;
 
   const displayName = participant.profile.displayName || user!.displayName || 'Host';
 
@@ -70,7 +76,7 @@ export const OrganisationConsoleOverview = () => {
     <OrganisationConsoleShell
       title="Host"
       cta={
-        <Link to="/host/activities/new" className="app-cta-sm">
+        <Link to={HOST_ACTIVITIES_NEW_PATH} className="app-cta-sm">
           <Plus className="w-4 h-4" />
           Add activity
         </Link>
@@ -192,6 +198,7 @@ export const OrganisationConsoleOverview = () => {
               upcomingActivitiesCount={host.upcomingActivitiesCount}
               pastActivitiesCount={host.pastActivitiesCount}
               upcomingActivities={host.upcomingActivities}
+              showConsoleLinks={false}
             />
 
             <AccountLinkList
@@ -211,9 +218,9 @@ export const OrganisationConsoleOverview = () => {
                   accent: 'neutral',
                 },
                 {
-                  to: '/',
+                  to: EXPLORE_MAP_PATH,
                   icon: <Compass className="w-4 h-4" />,
-                  label: 'Explore',
+                  label: 'Explore map',
                   accent: 'neutral',
                 },
                 {

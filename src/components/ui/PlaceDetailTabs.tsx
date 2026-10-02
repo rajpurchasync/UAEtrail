@@ -5,6 +5,7 @@ import { ActivityType, LocationPremiumSummaryDTO, PremiumAccessReason } from '@u
 import { MeetingPointMap } from './MeetingPointMap';
 import { capitalize } from '../../utils';
 import { splitPlacePracticalTags } from '../../utils/placePracticalInfo';
+import { signInPath } from '../../config/routingCatalog';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/index';
 import { AppButton } from '../mobile/AppButton';
@@ -149,7 +150,7 @@ export const PlaceDetailTabs = ({
   const isPremiumUnlocked = Boolean(premium?.isUnlocked);
   const showTrailStats = data.activityType === 'hiking' || data.activityType === 'event';
   const isCamping = data.activityType === 'camping';
-  const signInHref = `/signin?redirect=${encodeURIComponent(pathname)}`;
+  const signInHref = signInPath({ redirect: pathname });
   const lat = data.latitude;
   const lng = data.longitude;
   const hasCoordinates = lat != null && lng != null;

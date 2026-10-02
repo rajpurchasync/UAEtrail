@@ -17,7 +17,7 @@ import { ReportContentButton } from '../components/ui/ReportContentDialog';
 import { ChatComposeBar } from '../components/ui/ChatComposeBar';
 import { EmojiPickerButton } from '../components/ui/EmojiPickerButton';
 import { buildSignInRedirect } from '../utils/authReturnContext';
-import { COMMUNITY_PATH, explorePlacesPath } from '../config/routingCatalog';
+import { COMMUNITY_PATH, explorePlacesPath, groupsPath, signInPath } from '../config/routingCatalog';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 const linkPattern = /(?:https?:\/\/|www\.)\S+|(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/\S*)?/gi;
@@ -207,13 +207,15 @@ export const Community = () => {
   };
 
   const handleOpenCreateGroup = () => {
-    const groupsCreatePath = '/groups?create=1&from=community';
+    const groupsCreatePath = groupsPath({ create: true, from: 'community' });
     if (!user) {
-      const params = new URLSearchParams({
-        redirect: groupsCreatePath,
-        focus: '[data-auth-focus="community-create-group"]',
-      });
-      navigate(`/signin?${params.toString()}`, { state: { from: groupsCreatePath } });
+      navigate(
+        signInPath({
+          redirect: groupsCreatePath,
+          focus: '[data-auth-focus="community-create-group"]',
+        }),
+        { state: { from: groupsCreatePath } }
+      );
       return;
     }
     navigate(groupsCreatePath);
@@ -290,7 +292,7 @@ export const Community = () => {
             </button>
             {user && (
               <Link
-                to="/groups?from=community"
+                to={groupsPath({ from: 'community' })}
                 className="inline-flex items-center justify-center rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
               >
                 My groups

@@ -10,21 +10,21 @@ import type {
 } from '@uaetrail/shared-types';
 import { PageMeta } from '../components/seo/PageMeta';
 import { TripsJourneyMap, type JourneyMapMarker } from '../components/trips/TripsJourneyMap';
-import { OutdoorMapPinSheet, type OutdoorMapSheetState } from '../components/trips/OutdoorMapPinSheet';
-import { OutdoorMapFilterScroll } from '../components/trips/OutdoorMapFilterScroll';
-import { OutdoorMapListSheet } from '../components/trips/OutdoorMapListSheet';
+import { JourneyMapPinSheet, type JourneyMapSheetState } from '../components/trips/JourneyMapPinSheet';
+import { JourneyMapFilterScroll } from '../components/trips/JourneyMapFilterScroll';
+import { JourneyMapListSheet } from '../components/trips/JourneyMapListSheet';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
-import { shareOutdoorMapSummary } from '../components/trips/outdoorMapShare';
+import { shareJourneyMapSummary } from '../components/trips/journeyMapShare';
 import { memberJourneyMapApi } from '../api/domains/memberJourneyMap';
 import { tripsPlansPath } from '../trips/tripsRouting';
 import { TripsMainTabs } from '../components/trips/TripsMainTabs';
 import {
-  filterOutdoorEntries,
-  mappableOutdoorEntries,
-  parseOutdoorMapFilter,
-} from '../trips/outdoorMapFilters';
-import { resolveOutdoorPinStyle } from '../trips/outdoorMapPinStyle';
+  filterJourneyMapEntries,
+  mappableJourneyMapEntries,
+  parseJourneyMapFilter,
+} from '../trips/journeyMapFilters';
+import { resolveJourneyPinStyle } from '../trips/journeyMapPinStyle';
 
 const emptyStats = (): MemberJourneyMapStatsDTO => ({
   totalPins: 0,
@@ -40,13 +40,13 @@ const entryToMarker = (entry: OutdoorMapEntryDTO): JourneyMapMarker | null => {
     id: entry.id,
     latitude: entry.latitude,
     longitude: entry.longitude,
-    pinStyle: resolveOutdoorPinStyle(entry),
+    pinStyle: resolveJourneyPinStyle(entry),
   };
 };
 
 export const TripsMap = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const filter = parseOutdoorMapFilter(searchParams.get('filter'));
+  const filter = parseJourneyMapFilter(searchParams.get('filter'));
 
   const [pins, setPins] = useState<MemberMapPinDTO[]>([]);
   const [entries, setEntries] = useState<OutdoorMapEntryDTO[]>([]);
@@ -54,7 +54,7 @@ export const TripsMap = () => {
   const [loading, setLoading] = useState(true);
   const [pickMode, setPickMode] = useState(false);
   const [listOpen, setListOpen] = useState(false);
-  const [sheet, setSheet] = useState<OutdoorMapSheetState | { type: 'idle' }>({ type: 'idle' });
+  const [sheet, setSheet] = useState<JourneyMapSheetState | { type: 'idle' }>({ type: 'idle' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shareHint, setShareHint] = useState<string | null>(null);
@@ -84,9 +84,9 @@ export const TripsMap = () => {
     void reload();
   }, [reload]);
 
-  const filteredEntries = useMemo(() => filterOutdoorEntries(entries, filter), [entries, filter]);
+  const filteredEntries = useMemo(() => filterJourneyMapEntries(entries, filter), [entries, filter]);
   const mapMarkers = useMemo(
-    () => mappableOutdoorEntries(filteredEntries).map(entryToMarker).filter(Boolean) as JourneyMapMarker[],
+    () => mappableJourneyMapEntries(filteredEntries).map(entryToMarker).filter(Boolean) as JourneyMapMarker[],
     [filteredEntries]
   );
 
@@ -201,7 +201,7 @@ export const TripsMap = () => {
 
   const onShare = async () => {
     setShareHint(null);
-    const ok = await shareOutdoorMapSummary(stats);
+    const ok = await shareJourneyMapSummary(stats);
     setShareHint(ok ? 'Summary copied or shared.' : 'Sharing is not available on this device.');
     window.setTimeout(() => setShareHint(null), 3000);
   };
@@ -268,7 +268,7 @@ export const TripsMap = () => {
           onMarkerTap={openMarker}
         />
         {!pickMode && sheet.type === 'idle' ? (
-          <OutdoorMapFilterScroll
+          <JourneyMapFilterScroll
             filter={filter}
             entries={entries}
             onChange={setFilter}
@@ -309,7 +309,7 @@ export const TripsMap = () => {
         </div>
       ) : null}
 
-      <OutdoorMapListSheet
+      <JourneyMapListSheet
         open={listOpen}
         filter={filter}
         entries={filteredEntries}
@@ -321,7 +321,7 @@ export const TripsMap = () => {
       />
 
       {sheet.type !== 'idle' ? (
-        <OutdoorMapPinSheet
+        <JourneyMapPinSheet
           sheet={sheet}
           saving={saving}
           onClose={closeSheet}

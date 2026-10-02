@@ -10,6 +10,7 @@ import { listWishlistWatchCandidates } from '../lib/favorites-store.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { COLLECTIONS } from '../lib/collections.js';
 import { wishlistWatchMatchesPin, type WishlistPinEvent } from '../lib/wishlist-match.js';
+import { activityDetailPath, exploreDemandPinPath } from '../lib/member-routes.js';
 import { logger } from '../lib/logger.js';
 
 const resolveActivityPinCoords = (doc: {
@@ -39,7 +40,13 @@ const resolveActivityOutingCategory = (doc: {
   return null;
 };
 
-const fanOutWishlistNotifications = async (event: WishlistPinEvent, title: string, body: string, path: string) => {
+const fanOutWishlistNotifications = async (
+  event: WishlistPinEvent,
+  title: string,
+  body: string,
+  path: string,
+  entityMeta: { activityId?: string; intentId?: string }
+) => {
   const watches = await listWishlistWatchCandidates();
   const notified = new Set<string>();
   const rows: Array<{
@@ -59,7 +66,14 @@ const fanOutWishlistNotifications = async (event: WishlistPinEvent, title: strin
       title,
       body,
       type: NotificationType.ACTIVITY,
-      meta: { kind: 'wishlist_match', path, favoriteId: watch.favoriteId },
+      meta: {
+        kind: 'wishlist_match',
+        path,
+        favoriteId: watch.favoriteId,
+        ...(entityMeta.activityId ? { activityId: entityMeta.activityId } : {}),
+        ...(entityMeta.intentId ? { intentId: entityMeta.intentId } : {}),
+        ...(event.actorUserId ? { actorUserId: event.actorUserId } : {}),
+      },
     });
   }
 
@@ -87,7 +101,8 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
       event,
       'New plan near your saved map',
       doc.title,
-      `/activity/${activityId}`
+      activityDetailPath(activityId),
+      { activityId }
     );
   } catch (error) {
     logger.warn({ err: error, activityId }, 'wishlist notify for activity failed');
@@ -123,7 +138,8 @@ export const notifyWishlistForNewDemand = async (intentId: string, requesterUser
       event,
       'Someone is looking for a crew near you',
       doc.title,
-      `/explore?pin=demand:${intentId}&list=1&panel=activities`
+      exploreDemandPinPath(intentId),
+      { intentId }
     );
   } catch (error) {
     logger.warn({ err: error, intentId }, 'wishlist notify for demand failed');

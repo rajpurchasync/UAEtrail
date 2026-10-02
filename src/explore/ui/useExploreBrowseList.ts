@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
+import { sortExploreActivities, sortExploreVenues } from '../exploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';

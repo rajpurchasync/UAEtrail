@@ -2,7 +2,7 @@
 
 **Purpose:** One vocabulary for **entities**, **wire/storage names**, **TypeScript symbols**, **public URLs**, and **HTTP paths**. Use this for naming and routing hygiene passes — not ad-hoc synonyms per PR.
 
-**Related:** [`DOMAIN.md`](./DOMAIN.md) (glossary depth) · [`NAMING_HOST_MEMBER.md`](./NAMING_HOST_MEMBER.md) (host vs join) · [`API_ROUTING.md`](./API_ROUTING.md) (HTTP) · [`NAVIGATION.md`](./NAVIGATION.md) (surface contract) · [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) (bounded contexts)
+**Related:** [`DOMAIN.md`](./DOMAIN.md) (glossary depth) · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (§ Naming vocabulary) · [`API_ROUTING.md`](./API_ROUTING.md) (HTTP) · [`NAVIGATION.md`](./NAVIGATION.md) (surface contract) · [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) (bounded contexts)
 
 **Code entry:** `src/config/routingCatalog.ts` (paths — **import this in pages/components/utils**) · `src/config/platform.ts` (map config, feature flags, chrome helpers) · `packages/shared-types/src/entity-path.ts` (`EntityRef`)
 
@@ -79,7 +79,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Panel/filter query | `explorePath({ panel, filter, … })` | Raw `` `/explore?${...}` `` outside `explore/routing.ts` |
 | Demand pin | `exploreDemandMapItemPath` (shared-types) | `/demand/:id` |
 
-Shim `src/utils/exploreRouting.ts` is **deprecated** — explore code imports `src/explore/routing.ts` only (enforced by `exploreModuleBoundary.test.ts`).
+Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/routingCatalog`); the old `utils/exploreRouting` shim is **removed** (`exploreModuleBoundary.test.ts`).
 
 ---
 
@@ -94,7 +94,7 @@ Shim `src/utils/exploreRouting.ts` is **deprecated** — explore code imports `s
 
 **Kebab-case plurals** on URLs: `participant-intents`, not `intents` or `demand`.
 
-**Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberHostStatus`, `getPublicPlaces`). **`legacyApi`** aliases are frozen; do not add (see `apiLegacyGuard.test.ts`).
+**Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberHostStatus`, `getPublicPlaces`). No legacy alias layer on `api` (see `apiLegacyGuard.test.ts`).
 
 ---
 
@@ -110,7 +110,9 @@ Shim `src/utils/exploreRouting.ts` is **deprecated** — explore code imports `s
 | `buildOrganisationActivityPublishPayload` | `buildHostActivityPublishPayload` | Single publish contract |
 | `registerHostActivityRequestRoutes` | `*JoinRequest*` (host) | Activity queue only |
 
-**Demand vs activity join:** always qualify — “activity join request” vs “demand join request” ([`NAMING_HOST_MEMBER.md`](./NAMING_HOST_MEMBER.md)).
+**Demand vs activity join:** always qualify — “activity join request” vs “demand join request” ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary).
+
+**Explore map pins:** `MapPinKind` / `ExploreCardKind` (`components/ui/mapPinTypes.ts`, `explore/exploreCardModel.ts`) — keep in sync; prefer shared-types for new pin metadata.
 
 ---
 
@@ -144,3 +146,82 @@ When renaming or adding routes:
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
 | `BecomeHost.tsx` filename | Route component; redirects to Pro Membership |
 | `/activities` route | Redirects to `/trips` in `App.tsx` |
+
+---
+
+## 10. Call-site contracts (routing & API client)
+
+**Do not add new `*Routing.ts` files** without updating this section and `systemCoherenceGuard.test.ts`.
+
+| Need | Import |
+|------|--------|
+| Path constants, entity URLs | `src/config/routingCatalog.ts` (`messagesToUserPath`, `messagesGroupPath`, `myRequestDetailPath`) |
+| Explore query (`compose=`, panels) | `explorePath()` — `src/explore/routing.ts` |
+| Notification deep link | `inferNotificationPath()` — `src/utils/notificationRouting.ts` only |
+| Post-auth / legacy dashboard | `authRouting.ts` (shrink over time) |
+
+| Context | FE module | Canonical calls |
+|---------|-----------|-----------------|
+| Host tier / publish gate | `memberApi` | `getMemberHostStatus()` |
+| Map / demand | `exploreApi` | explore map, participant-intents |
+| Buddies / groups / follow | `socialApi` | `/me/buddies`, … |
+| Tenant console | `organisationApi` | organisation profile, team, join queue |
+| Badges | `badgesApi` | `getMemberBadges()` |
+
+**API client:** `api` merges `src/api/domains/*` only (legacy alias layer removed Oct 2026). **Notification deep links:** `apps/api/src/lib/member-routes.ts` ↔ `src/config/surfacePaths.ts` (`member-routes-alignment.test.ts`). **Resolvers** (`resolve*`) belong in `apps/api/src/services/*` only.
+
+---
+
+## 11. Notification meta (`NotificationMeta`)
+
+Shared shape: `packages/shared-types` → `NotificationMeta`.
+
+| Field | Use |
+|-------|-----|
+| `kind` | Required — stable string (existing kinds: `join_request_*`, `connection_buddy_*`, `badge`, `goal_*`, …; prefer `domain.action` for **new** kinds) |
+| `actorUserId` | Who acted — profile link + actor label (always a **user** id) |
+| `activityId`, `groupId`, `requestId`, `intentId` | Entity pointers |
+| `path` | Optional; prefer catalog constants; FE rewrites legacy wallet paths |
+
+**Do not add:** `buddyUserId`. Buddy request DTO may still use `fromUserId` / `toUserId`; notifications use `actorUserId` for routing. Chat DMs: `kind: 'message'` + `actorUserId` (legacy `senderId` still read by FE).
+
+---
+
+## 12. Frontend module vocabulary (product ↔ `src/`)
+
+Use this when naming files, hooks, and utils — **one product word per concept**. Detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`DOMAIN.md`](./DOMAIN.md) § entities.
+
+| Product (UI copy) | API / wire | Preferred FE symbol / folder | Do not use for new code |
+|-------------------|------------|------------------------------|-------------------------|
+| **Find** (FAB) | `participant_intents` | `participantIntent*`, `demandFlow.ts`, explore `source: 'demand'` | “wishlist”, “lookingFor” in filenames |
+| **Demand pin** (public map) | same | `ExploreCardSource` `'demand'`, `participantIntentId` on DTOs | Mixing with personal save |
+| **Saved map & alerts** (profile/trips) | `user_favorites` (+ watch fields) | `favoriteIsPersonalWishlist`, trips `wishlist` segment | “demand” in wishlist UI |
+| **Demand bookmark** (legacy favorite row) | `favorite.participantIntentId` | `favoriteIsDemandBookmark` (`favoriteDemandBookmark.ts`) | Treating as wishlist |
+| **Organize** (FAB) | `activities` publish | `organizeFlow*`, `organizeActivityPublish` | `hostActivity` in consumer explore |
+| **Trips** (tab) | joined/hosted/self + favorites | `src/trips/tripsRouting.ts`, `components/trips/*` | `/activities` hub naming |
+| **My trips map** (`/trips/map`) | `GET /me/trips/map`, `OutdoorMapEntryDTO` | `journeyMap*` (`src/trips/journeyMap*`, `JourneyMap*` components) | `outdoorMap*` (removed from FE) |
+| **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |
+| **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
+| **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
+| **Host console** | `/host/*`, tenant | `organisation*`, `OrganisationConsole*` | `tenant` in consumer UI strings |
+
+**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — personal history + wishlist pins on `/trips/map`; (3) **Place catalog** — venues/shops layers on Explore.
+
+**`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/trips/`, `src/member/` (`organisationPaths.ts`), `src/host/` (`hostCopy.ts`), `src/components/<domain>/` — not new `utils/demand*.ts` / `utils/outdoor*.ts`.
+
+---
+
+## 13. Naming / alignment backlog (code — not new docs)
+
+Track progress here and in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §7 (`C11`–`C15`). **Do not create a new markdown file per audit.**
+
+| ID | Target |
+|----|--------|
+| NC-B | Normalize notification `meta` — **mostly done**; paths via `apps/api/src/lib/member-routes.ts` |
+| NC-C | Surface paths via `routingCatalog` — **in progress** (consumer + host + admin `adminSurfacePaths.ts` + `organisationManagePath` via catalog) |
+| NC-D | Remove `legacyApi` spread — **done** |
+| NC-E | Optional dot-style notification `kind` migration |
+| NC-F | **Frontend naming** — `outdoorMap*` → `journeyMap*` **done** (FE); explore pin types unified via shared-types **done**; explore helpers moved to `src/explore/` **done**; remaining `src/utils/` domain files (§12) |
+| NC-G | **Demand vs wishlist** — `favoriteDemandBookmark.ts` **done**; removed `favoriteIsLookingForWatch` |
+
+**Verify:** `npm run verify:system` · `apps/api/tests/naming-coherence.test.ts`

@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { PROFILE_PATH } from '../../config/routingCatalog';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
 
@@ -33,7 +34,7 @@ export const MobileProfileHeaderLink = ({ activeOnProfile = false }: { activeOnP
   }
 
   return (
-    <Link to="/profile" className={slotClass} aria-label="Profile">
+    <Link to={PROFILE_PATH} className={slotClass} aria-label="Profile">
       <SecureAvatar
         src={user.avatarUrl}
         name={user.displayName || user.email || 'Account'}

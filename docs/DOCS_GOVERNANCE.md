@@ -1,62 +1,79 @@
 # Documentation governance
 
-Goal: **one coherent story** across product, routes, and API — especially **member vs host publishing tier vs activity join queue**. Ungoverned docs are how “become host” and `/host/requests` keep creeping back into Organize and buddy flows.
+**One coherent story** across product, routes, and API. **Do not grow the doc corpus** — update the canonical file for each topic.
 
-**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **System architecture:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md)
-
----
-
-## Tiers (summary)
-
-1. **Tier 1** — Canonical product/platform. Any contradiction here is a **bug**. Update Tier 1 when behavior ships.
-2. **Tier 2** — Rollout, ops, release. May lag briefly but must not contradict Tier 1 on semantics.
-3. **Tier 3** — Experiment & per-flow confirmations. Must **defer** to Tier 1 when they conflict.
-4. **Tier 4** — Historical. Add a superseded banner at the top; do not treat as current product truth.
+**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **System map:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md)
 
 ---
 
-## When you change code, update docs in this order
+## Closed Tier-1 set (do not add files)
 
-1. **Behavior or API** → `MEMBER_MODEL.md` / `API_ROUTING.md` / `CREATE_FLOW.md` (whichever applies)
-2. **Routes or redirects** → `NAVIGATION.md` + `src/config/memberRoutes.ts` (or `platform.ts`)
-3. **User-facing strings** → `src/content/productNorthStar.ts`, `exploreCopy.ts`, or `homeLanding.ts` per `.cursor/rules`
-4. **Flow-level QA** → matching `docs/experiment/flows/FLOW-*.md` preconditions table
-5. **Rollout tracker** → `MEMBER_MODEL_PHASES.md` or `HOST_CLEANUP_ROADMAP.md` if the work was planned there
+Tier-1 is a **fixed list** (see `scripts/verify-docs-tier1.mjs`). When behavior changes:
 
-Do **not** update only `IMPLEMENTATION_GUIDE.md` or `ENGINEERING_PLAN.md` for new product semantics.
+1. **Edit the existing Tier-1 file** for that topic (table below).
+2. **Do not** create `NAMING_*`, `ALIGNMENT_*`, `AUDIT_*`, or parallel “coherence” docs.
+3. If content was exploratory, merge into Tier-1 then **stub** the old file (`> Superseded by …`) or move to [`archive/README.md`](./archive/README.md).
+
+| Topic | Single canonical file |
+|-------|------------------------|
+| Product why & voice | `NORTHSTAR.md` |
+| Routes & redirects | `NAVIGATION.md` |
+| Guest `/` | `LANDING.md` |
+| FAB · Organize · Find · Add | `CREATE_FLOW.md` |
+| Person · host tier · capabilities · host/join vocabulary | `MEMBER_MODEL.md` |
+| Entity glossary (depth) | `DOMAIN.md` |
+| Code names · URLs · API client · notification meta · routing hygiene | `DOMAIN_CANONICALS.md` |
+| Capabilities · bounded contexts · alignment matrix · debt register | `SYSTEM_COHERENCE.md` |
+| HTTP prefixes & deprecations | `API_ROUTING.md` |
+| Deploy & layers | `ARCHITECTURE.md` |
+| DMs · inbox · crew chat | `COMMUNICATION.md` |
+| Trips manage · crew entry | `TRIPS_HOST_MANAGE.md` |
+| What to read when | `DOCS_INDEX.md` |
+| This policy | `DOCS_GOVERNANCE.md` |
+
+Tier-2: rollout/ops (`HOST_CLEANUP_ROADMAP.md`, `RELEASE_READINESS.md`, …). Tier-3: `experiment/*` (must defer to Tier-1). Tier-4: historical — banner at top, no new semantics.
+
+---
+
+## When code ships, update docs in this order
+
+1. **Behavior / API** → `API_ROUTING.md` and/or `CREATE_FLOW.md` and/or `MEMBER_MODEL.md`
+2. **Routes** → `NAVIGATION.md` + `routingCatalog` / `surfacePaths`
+3. **Cross-context placement** → `SYSTEM_COHERENCE.md` §3 if a new write path
+4. **Names & call sites** → `DOMAIN_CANONICALS.md` §6–12
+5. **Copy** → `src/content/*` per Cursor rules
+6. **Flow QA only** → matching `experiment/flows/FLOW-*.md`
+
+Do **not** put new product semantics only in `ENGINEERING_PLAN.md` or `IMPLEMENTATION_GUIDE.md` (Tier-4).
 
 ---
 
 ## Automated checks
 
-| Command | What it guards |
-|---------|----------------|
-| `npm run verify:docs` | Tier 1 files exist; banned obsolete phrases in Tier 1 (except explicit legacy tables in `NAVIGATION.md` / `DOMAIN.md`) |
-| `npm run verify:domain` | `DOMAIN_CANONICALS.md`, `routingCatalog.ts`, routing + API legacy guards |
-| `npm run verify:host-member` | API typecheck, host-member contract tests, frontend guard tests |
-| `npm run test:explore-alignment` | Explore module boundaries and compose catalog |
-| `src/content/copyGuard.test.ts` | Marketing CTAs not duplicated outside canonical copy files |
-
-**CI:** `npm run ci` runs `verify:host-member` and frontend tests; `verify:docs` should pass locally before merging doc-heavy PRs (wired in `package.json`).
+| Command | Guards |
+|---------|--------|
+| `npm run verify:system` | Full alignment (docs, domain, bounded-context manifest, explore) |
+| `npm run verify:system:quick` | CI subset |
+| `npm run verify:docs` | Tier-1 exists; banned phrases; merged-doc stubs |
+| `npm run verify:domain` | Routing + bounded-context tests |
+| `npm run verify:host-member` | Host/member slice only |
 
 ---
 
-## Phrases to avoid in Tier 1 (use replacements)
+## Banned phrases in Tier-1 (except legacy tables in `NAVIGATION.md` / `DOMAIN.md`)
 
 | Avoid | Use instead |
 |-------|-------------|
-| “Request to become host” for buddy Organize | Profile complete → `canPublish`; gate `/welcome` |
-| `/become-host?intent=…` as product entry | `/profile/pro-membership` (`PRO_MEMBERSHIP_PATH`) |
-| `UserRole` / `isHostRole` for publish UI | `GET /me/host-status` (`HostStatusDTO`) |
-| `/host/requests` as onboarding | Activity **join** approvals for published outings |
-| “Hiking & camping platform only” in consumer lead | North star: find people · get outside · go together |
-
-Legacy **redirect** mentions of `/become-host` belong in `NAVIGATION.md` redirect tables only, with buddy Organize called out separately.
+| “Request to become host” for buddy Organize | Profile complete → `canPublish`; `/welcome` |
+| `/become-host?intent=…` as product entry | `/profile/pro-membership` |
+| `UserRole` / `isHostRole` for publish UI | `GET /me/host-status` |
+| `/host/requests` as onboarding | Activity join queue |
+| Consumer lead = “trail inventory / host console” only | North star: find people · get outside · go together |
 
 ---
 
-## Agent checklist (short)
+## Agent checklist
 
-- Read `DOCS_INDEX.md` tier for the task.
-- Grep docs for the old phrase you are replacing (`become-host`, `host profile complete` without `canPublish`, etc.).
-- Run `npm run verify:docs` and `npm run verify:host-member` when touching member/host or Tier 1 docs.
+1. [`DOCS_INDEX.md`](./DOCS_INDEX.md) → pick **one** Tier-1 file from the table above.
+2. Grep Tier-1 for the old phrase you are replacing.
+3. `npm run verify:system:quick` before merge.

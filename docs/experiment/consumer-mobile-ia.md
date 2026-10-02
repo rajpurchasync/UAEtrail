@@ -26,7 +26,7 @@ Consumer pattern (not Settings-style chevron lists on the hub):
 - **Member goal:** full warm card on Profile; **compact glass row** on **Trips → Upcoming**; editor uses shared **`ConsumerBottomSheet`** (warm header).
 - **Sign out:** single row below goal (not in launcher).
 - **Chrome:** unified mobile tab header title **Profile**.
-- **Trail Points / rewards wallet:** removed. Legacy `/my-rewards`, `/trail-points`, `/rewards`, `/profile/badges` redirect to **`/profile`**.
+- **Trail Points / rewards wallet:** removed. Legacy `/my-rewards`, `/trail-points`, `/rewards` redirect to **`/profile/badges`** (`PROFILE_BADGES_PATH`). Badges stay a first-class profile sub-route.
 - **Profile identity:** `glass-card` hero + Lucide actions (aligned with hub list rows / launcher).
 
 ## Personal goals
@@ -62,7 +62,7 @@ Canonical contract: [`../COMMUNICATION.md`](../COMMUNICATION.md) · routes in [`
 - **Looking for (demand)** stays on **`/explore`** — public participation (`participant_intents`). Not wishlist rows; Explore **Save** is disabled on demand cards. API rejects `participantIntentId` on `POST /me/favorites`.
 - **Match notifications** (`wishlist_match`) are intent alerts only — they deep-link to the new public plan/demand pin; they do not mean demand was added to wishlist.
 
-Canonical code comments: `src/trips/demandVsWishlist.ts`.
+Canonical code comments: `src/trips/favoriteDemandBookmark.ts`.
 - **Role chips** (Upcoming & Completed): **Joined** · **Hosted** (hosts) · **My plans** (`?role=self`; legacy `tab=` normalized away).
 - **Upcoming + Joined:** goal card + upcoming carousel + suggestions (no nested Past tab).
 - **Completed + Joined:** attended outings only; **Hosted:** past hosted; **My plans:** demand intents via `GET /me/participant-intents` + `ParticipantIntentManageSheet` (no crew chat until organized).

@@ -1,4 +1,12 @@
-import { EXPLORE_MAP_PATH, GROUPS_PATH, PROFILE_BADGES_PATH, PROFILE_PATH } from '../config/routingCatalog';
+import {
+  EXPLORE_MAP_PATH,
+  GROUPS_PATH,
+  MESSAGES_PATH,
+  MY_REQUESTS_PATH,
+  NOTIFICATIONS_PATH,
+  PROFILE_BADGES_PATH,
+  PROFILE_PATH,
+} from '../config/routingCatalog';
 import type { UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
 
@@ -10,9 +18,9 @@ const pathnameOf = (path: string): string => path.split('?')[0]?.split('#')[0] ?
 const AUTH_GATED_PREFIXES = [
   PROFILE_PATH,
   PROFILE_BADGES_PATH,
-  '/my-requests',
-  '/messages',
-  '/notifications',
+  MY_REQUESTS_PATH,
+  MESSAGES_PATH,
+  NOTIFICATIONS_PATH,
   GROUPS_PATH,
   '/host',
   '/admin',

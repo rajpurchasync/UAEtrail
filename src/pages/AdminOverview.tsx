@@ -3,7 +3,13 @@ import { Link } from 'react-router-dom';
 import { api, AdminMetrics, HostApplication, AuditLogEntry } from '../api/index';
 import { DashboardLayout } from '../components/layout';
 import { ActivityDTO } from '@uaetrail/shared-types';
-import { ADMIN_LINKS } from '../constants';
+import {
+  ADMIN_ACTIVITIES_PATH,
+  ADMIN_AUDIT_LOG_PATH,
+  ADMIN_HOSTS_PATH,
+  ADMIN_LINKS,
+  ADMIN_USERS_PATH,
+} from '../config/routingCatalog';
 import { resolveActivityOwnerLabel, formatActivityType } from '../utils/activityIdentity';
 
 export const AdminOverview = () => {
@@ -35,9 +41,9 @@ export const AdminOverview = () => {
   useEffect(() => { loadData(); }, []);
 
   const metricCards = [
-    { label: 'Pending host applications', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-800', icon: '📝', link: '/admin/hosts' },
+    { label: 'Pending host applications', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-800', icon: '📝', link: ADMIN_HOSTS_PATH },
     { label: 'Total places', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', icon: '📍' },
-    { label: 'Total members', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥', link: '/admin/users' },
+    { label: 'Total members', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥', link: ADMIN_USERS_PATH },
     { label: 'Active activities', value: metrics?.activeActivities ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾' }
   ];
 
@@ -96,7 +102,7 @@ export const AdminOverview = () => {
         <div className="bg-white border rounded-lg">
           <div className="px-4 py-3 border-b flex items-center justify-between">
             <h3 className="font-semibold text-gray-900">Recent Activities</h3>
-            <Link to="/admin/activities" className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
+            <Link to={ADMIN_ACTIVITIES_PATH} className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
           </div>
           <div className="divide-y">
             {recentEvents.map((e) => (
@@ -123,11 +129,11 @@ export const AdminOverview = () => {
         <div className="bg-white border rounded-lg">
           <div className="px-4 py-3 border-b flex items-center justify-between">
             <h3 className="font-semibold text-gray-900">Pending Applications</h3>
-            <Link to="/admin/hosts" className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
+            <Link to={ADMIN_HOSTS_PATH} className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
           </div>
           <div className="divide-y">
             {recentApps.map((a) => (
-              <Link key={a.id} to="/admin/hosts" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+              <Link key={a.id} to={ADMIN_HOSTS_PATH} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
                 <div>
                   <p className="text-sm font-medium text-gray-900">{a.metadata?.hostDisplayName || a.applicantName}</p>
                   <p className="text-xs text-gray-500">{a.requestedName} ({a.requestedType})</p>
@@ -144,7 +150,7 @@ export const AdminOverview = () => {
       <div className="bg-white border rounded-lg mt-6">
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <h3 className="font-semibold text-gray-900">Recent Activity</h3>
-          <Link to="/admin/audit-log" className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
+          <Link to={ADMIN_AUDIT_LOG_PATH} className="text-xs text-emerald-600 hover:text-emerald-700">View All</Link>
         </div>
         <div className="divide-y max-h-64 overflow-y-auto">
           {auditLogs.map((log) => (

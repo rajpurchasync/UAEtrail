@@ -1,6 +1,15 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Plus, UserCircle, Users, UsersRound } from 'lucide-react';
 import { ActivityDTO } from '@uaetrail/shared-types';
+import {
+  HOST_ACTIVITIES_NEW_PATH,
+  HOST_ACTIVITIES_PATH,
+  HOST_HISTORY_PATH,
+  HOST_PROFILE_PATH,
+  HOST_REQUESTS_PATH,
+  HOST_TEAM_PATH,
+} from '../../config/routingCatalog';
+import { HOST_PLACES_PATH } from '../../config/platform';
 import { AccountLinkList } from './AccountLinkList';
 import { AccountSectionHeader } from './AccountSectionHeader';
 import { AccountStat, AccountStatGrid } from './AccountStatGrid';
@@ -21,21 +30,21 @@ const buildOrganisationStats = ({
   upcomingActivitiesCount,
   pastActivitiesCount,
 }: Omit<OrganisationHubSectionsProps, 'upcomingActivities'>): AccountStat[] => [
-  { label: 'Activities', value: activitiesCount, to: '/host/activities' },
+  { label: 'Activities', value: activitiesCount, to: HOST_ACTIVITIES_PATH },
   {
     label: 'Pending',
     value: pendingJoinRequests,
-    to: '/host/requests',
+    to: HOST_REQUESTS_PATH,
     highlight: pendingJoinRequests > 0,
     tone: 'amber',
   },
   {
     label: 'Upcoming',
     value: upcomingActivitiesCount,
-    to: '/host/activities',
+    to: HOST_ACTIVITIES_PATH,
     highlight: upcomingActivitiesCount > 0,
   },
-  { label: 'History', value: pastActivitiesCount, to: '/host/history' },
+  { label: 'History', value: pastActivitiesCount, to: HOST_HISTORY_PATH },
 ];
 
 export const OrganisationHubSections = ({
@@ -61,12 +70,12 @@ export const OrganisationHubSections = ({
 
       {previewActivities.length > 0 ? (
         <section>
-          <AccountSectionHeader title="Up next" actionTo="/host/activities" actionLabel="All activities" />
+          <AccountSectionHeader title="Up next" actionTo={HOST_ACTIVITIES_PATH} actionLabel="All activities" />
           <div className="space-y-2">
             {previewActivities.map((evt) => (
               <Link
                 key={evt.id}
-                to="/host/activities"
+                to={HOST_ACTIVITIES_PATH}
                 className="glass-card-interactive flex items-center gap-3 p-3.5"
               >
                 <div className="flex-1 min-w-0">
@@ -98,7 +107,7 @@ export const OrganisationHubSections = ({
         </section>
       ) : activitiesCount === 0 ? (
         <Link
-          to="/host/activities/new"
+          to={HOST_ACTIVITIES_NEW_PATH}
           className="glass-card-interactive flex items-center gap-3 p-4 text-center"
         >
           <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
@@ -113,39 +122,42 @@ export const OrganisationHubSections = ({
       ) : null}
 
       {showConsoleLinks ? (
-        <AccountLinkList
+        <>
+          <AccountSectionHeader title="Host tools" />
+          <AccountLinkList
           items={[
             {
-              to: '/host/profile',
+              to: HOST_PROFILE_PATH,
               icon: <UserCircle className="w-4 h-4" />,
               label: 'Public host profile',
               accent: 'emerald',
             },
             {
-              to: '/host/activities/new',
+              to: HOST_ACTIVITIES_NEW_PATH,
               icon: <Plus className="w-4 h-4" />,
               label: 'Add activity',
             },
             {
-              to: '/host/requests',
+              to: HOST_REQUESTS_PATH,
               icon: <Users className="w-4 h-4" />,
               label: 'Join requests',
               badge: pendingJoinRequests || undefined,
               accent: 'amber',
             },
             {
-              to: '/host/places',
+              to: HOST_PLACES_PATH,
               icon: <MapPin className="w-4 h-4" />,
               label: 'Submit a place',
               accent: 'blue',
             },
             {
-              to: '/host/team',
+              to: HOST_TEAM_PATH,
               icon: <UsersRound className="w-4 h-4" />,
               label: 'Manage team',
             },
           ]}
-        />
+          />
+        </>
       ) : null}
     </>
   );

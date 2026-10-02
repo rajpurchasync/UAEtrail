@@ -43,7 +43,7 @@ Phased fixes from the CTO review. **Phases 1–6 and listed Phase 8 items:** com
 | 3.2 | Unify organizer navigation (`OrganizerShell`) | Done |
 | 3.3 | Split `Trips.tsx`; remove dead pages | Done |
 | 3.4 | Integration + frontend smoke tests | Done |
-| 3.5 | `ProtectedRoute` for `/profile`, `/my-rewards` | Done |
+| 3.5 | `ProtectedRoute` for `/profile`, `/profile/badges` (legacy `/my-rewards` → badges) | Done |
 | 3.6 | Accessible `Dialog` + key modals (`AccountEditModal`, `CreateTripModal`, `WithdrawRequestModal`, `BookingModal`) | Done |
 | 3.7 | Hide `/membership` nav when feature flag off | Done |
 | 3.8 | Location geo filter — DB-side query | Done |

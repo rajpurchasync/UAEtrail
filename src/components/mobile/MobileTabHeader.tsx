@@ -5,7 +5,12 @@ import {
   shouldShowMobileUnifiedTabHeader,
   type MobileTabHeaderCenter,
 } from '../../config/mobileTabHeader';
-import { ACTIVITIES_PATH, EXPLORE_MAP_PATH, TRIPS_PATH } from '../../config/routingCatalog';
+import {
+  ACTIVITIES_PATH,
+  EXPLORE_MAP_PATH,
+  MESSAGES_PATH,
+  TRIPS_PATH,
+} from '../../config/routingCatalog';
 import { joinedSubViewTitle } from '../../pages/activities/shared';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
@@ -25,7 +30,7 @@ const resolveCenter = (
     if (subTitle) return { kind: 'title', text: subTitle };
     return { kind: 'title', text: 'Trips' };
   }
-  if (pathname === '/messages') return { kind: 'title', text: 'Messages' };
+  if (pathname === MESSAGES_PATH) return { kind: 'title', text: 'Messages' };
   if (!isMobileTabHeaderRoute(pathname)) return null;
   return null;
 };
@@ -49,7 +54,7 @@ export const MobileTabHeader = () => {
       pathname === '/profile' ||
       pathname === ACTIVITIES_PATH ||
       pathname === TRIPS_PATH ||
-      pathname === '/messages');
+      pathname === MESSAGES_PATH);
 
   const trailing = showNotifications ? <MobileNotificationHeaderLink /> : null;
 

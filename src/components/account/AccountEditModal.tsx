@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
 import { UserProfile } from '../../api/index';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
 import type { UserCountryCode, UserGender } from '../../constants/userProfileOptions';
@@ -280,7 +281,7 @@ export const AccountEditModal = ({
             </div>
             <p className="text-xs text-neutral-500">
               Email: {currentEmail}.{' '}
-              <Link to="/profile/settings" className="font-semibold text-emerald-600" onClick={onClose}>
+              <Link to={PROFILE_SETTINGS_PATH} className="font-semibold text-emerald-600" onClick={onClose}>
                 Change in Settings
               </Link>
             </p>

@@ -1,4 +1,4 @@
-import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, HOST_MESSAGES_PATH, MESSAGES_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageCircle, UserMinus, UserRound } from 'lucide-react';
@@ -49,7 +49,7 @@ export const Buddies = () => {
   const [findSearching, setFindSearching] = useState(false);
 
   const { canAccessHostConsole } = useOrganisationGate({ enabled: Boolean(user) });
-  const messagesPath = canAccessHostConsole ? '/host/messages' : '/messages';
+  const messagesPath = canAccessHostConsole ? HOST_MESSAGES_PATH : MESSAGES_PATH;
 
   const loadCore = useCallback(async () => {
     setLoading(true);

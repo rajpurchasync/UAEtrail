@@ -1,90 +1,56 @@
 # Documentation index
 
-**Start here** when changing product behavior, routes, copy, or API contracts.
+**Start here.** Tier-1 is a **closed set** — see [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) (do not add new canonical docs; update the file for your topic).
 
-- **Whole system map (capabilities → modules → API):** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) — read this for architecture-wide changes, not only host/member wording.
-
-This index separates **canonical** docs from **experiment** checklists and **historical** archives so agents and humans do not reintroduce contradictions (e.g. “become host” for buddy Organize, or `/host/requests` as onboarding).
-
-**Governance:** [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) · **Automated checks:** `npm run verify:docs` · **Host/member contracts:** `npm run verify:host-member`
+**Checks:** `npm run verify:system` · **Machine manifest:** `scripts/bounded-context-manifest.json`
 
 ---
 
-## Tier 1 — product & platform (canonical)
+## Tier 1 — canonical (product & platform)
 
-Read these before shipping user-facing or API changes. They must agree with each other.
-
-| Doc | Job |
-|-----|-----|
-| [`NORTHSTAR.md`](./NORTHSTAR.md) | Why we exist, voice, surface jobs (emotion before architecture) |
-| [`NAVIGATION.md`](./NAVIGATION.md) | Routes, redirects, marketing vs `/explore`, legacy path table |
-| [`LANDING.md`](./LANDING.md) | Guest-only `/` scope and section jobs |
-| [`CREATE_FLOW.md`](./CREATE_FLOW.md) | FAB · Organize · Find · Add · join modes · publish gates |
-| [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) | Person account · `HostStatusDTO` · buddy `canPublish` vs Pro/business |
-| [`NAMING_HOST_MEMBER.md`](./NAMING_HOST_MEMBER.md) | Glossary: activity join queue ≠ host onboarding |
-| [`DOMAIN.md`](./DOMAIN.md) | Place · Activity · Organisation entities and URLs |
-| [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | **Objects, types, URL/API canon, routing hygiene** |
-| [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | **Whole product** — capabilities, bounded contexts, debt register |
-| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo layers, key flows, deployment notes |
-| [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*` vs `/host/*`, explore map, deprecations |
-| [`COMMUNICATION.md`](./COMMUNICATION.md) | DMs, crew chat, inbox |
-| [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) | Trips manage, invites vs Messages |
-
-**Cursor rules (enforced in IDE):** `.cursor/rules/product-northstar.mdc`, `platform-architecture.mdc`, `landing-marketing.mdc`, `host-member-model.mdc`
+| Doc | Use when you change… |
+|-----|----------------------|
+| [`NORTHSTAR.md`](./NORTHSTAR.md) | Product why, voice, outcomes |
+| [`NAVIGATION.md`](./NAVIGATION.md) | Routes, redirects, surfaces |
+| [`LANDING.md`](./LANDING.md) | Guest-only `/` |
+| [`CREATE_FLOW.md`](./CREATE_FLOW.md) | FAB, Organize, Find, Add, join modes |
+| [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) | Person account, host tiers, capabilities, host/join/buddy **naming** |
+| [`DOMAIN.md`](./DOMAIN.md) | Entity glossary (Place, Activity, Demand, …) |
+| [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | TS symbols, URLs, API client, notifications, routing hygiene |
+| [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | All domains, bounded contexts, **alignment matrix**, debt register |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo, deploy, layers |
+| [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/host/*`, explore, deprecations |
+| [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat, inbox, crew wall |
+| [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) | Trips manage, message crew |
 
 ---
 
-## Tier 2 — rollout, ops, release
+## Tier 2 — rollout & ops
 
-| Doc | Job |
-|-----|-----|
-| [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md) | Member/host rollout checklist |
-| [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) | P0–P3 host route / fulfill / privacy cleanup |
-| [`RELEASE_READINESS.md`](./RELEASE_READINESS.md) | QA gates, go/no-go |
-| [`DEV_RUN.md`](./DEV_RUN.md) | Local hot-reload convention |
-| [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) · [`DEPLOYMENT.md`](./DEPLOYMENT.md) | Production deploy |
-| [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) | Map cache, venue import, smoke |
-| [`MODERATION.md`](./MODERATION.md) | Reports workflow |
-| Mobile store guides | `MOBILE_DEPLOYMENT_PLAN.md`, `ANDROID_RELEASE.md`, `IOS_RELEASE.md`, `PLAY_STORE_LISTING.md` |
+[`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md) · [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) · [`RELEASE_READINESS.md`](./RELEASE_READINESS.md) · [`DEV_RUN.md`](./DEV_RUN.md) · deploy/mobile docs · [`operations/`](./operations/)
 
 ---
 
-## Tier 3 — experiment & flow confirmations
+## Tier 3 — experiment (defers to Tier 1)
 
-Under [`experiment/`](./experiment/). **Supplements** Tier 1; does not override it. When a flow doc disagrees with `CREATE_FLOW.md` or `MEMBER_MODEL.md`, **fix the flow doc**.
-
-| Entry | Job |
-|-------|-----|
-| [`experiment/README.md`](./experiment/README.md) | Map of experiment-era specs |
-| [`experiment/flows/README.md`](./experiment/flows/README.md) | FAB → publish confirmations (FLOW-01…) |
-| [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) | Map card copy & CTAs |
-| [`experiment/explore-backend-alignment.md`](./experiment/explore-backend-alignment.md) | API/DB gate notes |
-| [`experiment/explore-map-implementation-plan.md`](./experiment/explore-map-implementation-plan.md) | Phased build plan (some file names are historical) |
-
-**Organize preconditions (all FLOW-01–05):** signed in · signup profile complete → `canPublish` on `GET /me/host-status` · incomplete → `/welcome` · Pro/business → `/profile/pro-membership` (not `/become-host`).
+[`experiment/README.md`](./experiment/README.md) · [`experiment/flows/`](./experiment/flows/) · explore UX/backend specs
 
 ---
 
-## Tier 4 — historical / do not extend without a deliberate migration
+## Tier 4 — historical
 
-| Doc | Note |
-|-----|------|
-| [`IMPLEMENTATION_GUIDE.md`](./IMPLEMENTATION_GUIDE.md) | Feb 2026 onboarding snapshot; roles/tiers outdated |
-| [`DOMAIN_ADOPTION_PLAN.md`](./DOMAIN_ADOPTION_PLAN.md) | Rename execution log (mostly complete) |
-| [`ENGINEERING_PLAN.md`](./ENGINEERING_PLAN.md) | Engineering backlog; verify dates against Tier 1 |
-| [`schema-audit.md`](./schema-audit.md) | Mongo schema phases; not publish-gate truth |
-| [`archive/README.md`](./archive/README.md) | Archived pointers |
+[`archive/README.md`](./archive/README.md) · `IMPLEMENTATION_GUIDE.md` · `ENGINEERING_PLAN.md` · `DOMAIN_ADOPTION_PLAN.md` · `schema-audit.md`
 
 ---
 
-## Quick decision tree
+## Decision tree
 
 ```text
-New feature or large refactor?   → SYSTEM_COHERENCE (context + write path) first
-Changing copy on map or FAB?     → NORTHSTAR + CREATE_FLOW + explore-ux-spec
-Changing route or redirect?      → NAVIGATION + memberRoutes / App.tsx
-Changing who can Organize?       → MEMBER_MODEL + API member-publish-gate + /me/host-status
-Changing /host/* API?            → API_ROUTING + NAMING_HOST_MEMBER
-Renaming types/files?            → DOMAIN_CANONICALS + DOMAIN (+ DOMAIN_ADOPTION_PLAN historical only)
-New public URL or deep link?     → routingCatalog / entity-path + NAVIGATION legacy table
+Which bounded context?     → SYSTEM_COHERENCE §3 + manifest
+Routes / deep links?       → NAVIGATION + DOMAIN_CANONICALS §3 + routingCatalog
+HTTP / handlers?           → API_ROUTING
+Who can Organize / host?   → MEMBER_MODEL
+Map / FAB / publish?       → CREATE_FLOW + NORTHSTAR
+Names / api.* / meta?      → DOMAIN_CANONICALS §6–12
+Copy on map or home?       → exploreCopy / homeLanding + NORTHSTAR
 ```

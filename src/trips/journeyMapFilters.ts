@@ -1,6 +1,6 @@
 import type { OutdoorMapEntryDTO, OutdoorMapFilterCategory } from '@uaetrail/shared-types';
 
-export const OUTDOOR_MAP_FILTERS: { id: OutdoorMapFilterCategory; label: string }[] = [
+export const JOURNEY_MAP_FILTERS: { id: OutdoorMapFilterCategory; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'wishlist', label: 'Want to go' },
   { id: 'joined', label: 'Joined' },
@@ -8,15 +8,15 @@ export const OUTDOOR_MAP_FILTERS: { id: OutdoorMapFilterCategory; label: string 
   { id: 'self', label: 'Gone' },
 ];
 
-export const parseOutdoorMapFilter = (raw: string | null): OutdoorMapFilterCategory => {
+export const parseJourneyMapFilter = (raw: string | null): OutdoorMapFilterCategory => {
   const id = raw?.toLowerCase();
   if (id === 'gone' || id === 'been') return 'self';
   if (id === 'want' || id === 'want_to_go') return 'wishlist';
-  if (id && OUTDOOR_MAP_FILTERS.some((f) => f.id === id)) return id as OutdoorMapFilterCategory;
+  if (id && JOURNEY_MAP_FILTERS.some((f) => f.id === id)) return id as OutdoorMapFilterCategory;
   return 'all';
 };
 
-export const filterOutdoorEntries = (
+export const filterJourneyMapEntries = (
   entries: OutdoorMapEntryDTO[],
   filter: OutdoorMapFilterCategory
 ): OutdoorMapEntryDTO[] => {
@@ -24,10 +24,10 @@ export const filterOutdoorEntries = (
   return entries.filter((e) => e.categories.includes(filter));
 };
 
-export const countOutdoorEntries = (
+export const countJourneyMapEntries = (
   entries: OutdoorMapEntryDTO[],
   filter: OutdoorMapFilterCategory
-): number => filterOutdoorEntries(entries, filter).length;
+): number => filterJourneyMapEntries(entries, filter).length;
 
-export const mappableOutdoorEntries = (entries: OutdoorMapEntryDTO[]): OutdoorMapEntryDTO[] =>
+export const mappableJourneyMapEntries = (entries: OutdoorMapEntryDTO[]): OutdoorMapEntryDTO[] =>
   entries.filter((e) => e.latitude != null && e.longitude != null);

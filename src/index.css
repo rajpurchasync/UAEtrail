@@ -869,40 +869,6 @@
     }
   }
 
-  /* Rewards promo banner — subtle life without distraction */
-  @keyframes rewards-promo-shine {
-    0% {
-      transform: translateX(-120%) skewX(-12deg);
-    }
-    100% {
-      transform: translateX(220%) skewX(-12deg);
-    }
-  }
-
-  .rewards-promo-banner {
-    position: relative;
-  }
-
-  .rewards-promo-banner::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      105deg,
-      transparent 42%,
-      rgba(255, 255, 255, 0.28) 50%,
-      transparent 58%
-    );
-    pointer-events: none;
-    animation: rewards-promo-shine 7s ease-in-out infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .rewards-promo-banner::after {
-      animation: none;
-    }
-  }
-
   /* Shop featured marquee — scrolls right to left */
   @keyframes shop-marquee-rtl {
     0% {
@@ -961,7 +927,7 @@
     border: none !important;
   }
 
-  .uaetrail-outdoor-pin {
+  .uaetrail-journey-pin {
     background: transparent !important;
     border: none !important;
   }

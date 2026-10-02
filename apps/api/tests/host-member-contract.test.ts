@@ -57,4 +57,13 @@ describe('host-member API contracts', () => {
     expect(content).not.toMatch(/publishingPurpose\?:\s*string/);
     expect(content).toMatch(/TenantPublishingPurpose/);
   });
+
+  it('does not reintroduce Trail Points wallet route registrars', () => {
+    const userRoutes = join(API_SRC, 'routes', 'user');
+    expect(existsSync(join(userRoutes, 'registerMeRewardsRoutes.ts'))).toBe(false);
+    expect(existsSync(join(userRoutes, 'registerPublicRewardsRoutes.ts'))).toBe(false);
+    const userRouter = readFileSync(join(API_SRC, 'routes', 'user.ts'), 'utf8');
+    expect(userRouter).not.toMatch(/registerMeRewardsRoutes|registerPublicRewardsRoutes/);
+    expect(userRouter).toMatch(/registerMeBadgesRoutes/);
+  });
 });

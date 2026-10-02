@@ -27,6 +27,7 @@ import {
   type GroupWallActivityPayload,
 } from '../components/messages/GroupWallThreadPanel';
 import { formatWallInboxPreview } from '../utils/wallMessagePreview';
+import { groupsPath, HOST_MESSAGES_PATH } from '../config/routingCatalog';
 import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';
 import { useChatStream } from '../hooks/useChatStream';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
@@ -85,7 +86,7 @@ export const Messages = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
-  const isHostMessages = location.pathname === '/host/messages';
+  const isHostMessages = location.pathname === HOST_MESSAGES_PATH;
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [groupThreads, setGroupThreads] = useState<InboxThread[]>([]);
@@ -432,7 +433,7 @@ export const Messages = () => {
     setShowNewChat(false);
     setComposeQuery('');
     setSearchResults([]);
-    navigate('/groups?create=1');
+    navigate(groupsPath({ create: true }));
   };
 
   const newChatModal = isHostMessages ? (

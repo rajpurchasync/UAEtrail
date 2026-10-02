@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import {
   getExploreMapLocationPreference,
   saveExploreMapLocationPreference,
-} from '../utils/exploreMapLocationPreference';
+} from '../explore/exploreMapLocationPreference';
 
 export type DeviceLocationFix = { lat: number; lng: number };
 

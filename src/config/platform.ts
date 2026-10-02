@@ -9,6 +9,9 @@ import {
   CONTRIBUTIONS_PATH,
   GROUPS_PATH,
   MEMBERSHIP_MARKETING_PATH,
+  MESSAGES_PATH,
+  MY_REQUESTS_PATH,
+  NOTIFICATIONS_PATH,
   PROFILE_PATH,
 } from './surfacePaths';
 import { LEGACY_BECOME_HOST_PATH } from './memberRoutes';
@@ -105,11 +108,11 @@ export const MOBILE_DRAWER_MENU = [
   {
     label: 'My Profile',
     to: PROFILE_PATH,
-    match: [PROFILE_PATH, '/my-requests', '/messages'],
+    match: [PROFILE_PATH, MY_REQUESTS_PATH, MESSAGES_PATH],
     profileLink: true,
   },
   { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery'] },
-  { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
+  { label: 'Notifications', to: NOTIFICATIONS_PATH, match: [NOTIFICATIONS_PATH] },
   { label: 'My trips', to: '/trips', match: ['/trips', '/activities', '/activity'] },
 ] as const;
 
@@ -283,9 +286,9 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   GROUPS_PATH,
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
-  '/messages',
-  '/notifications',
-  '/my-requests',
+  MESSAGES_PATH,
+  NOTIFICATIONS_PATH,
+  MY_REQUESTS_PATH,
   LEGACY_BECOME_HOST_PATH,
   '/profile/pro-membership',
   '/become-organizer',
@@ -312,7 +315,7 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
   isMobileDetailRoute(pathname);
 
 /** Signed-in mobile tab shell — Map · Activities · Messages. */
-export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/trips', '/messages'] as const;
+export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/trips', MESSAGES_PATH] as const;
 
 export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number];
 
@@ -325,7 +328,7 @@ export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
   GROUPS_PATH,
-  '/my-requests',
+  MY_REQUESTS_PATH,
 ] as const;
 
 const MOBILE_BOTTOM_NAV_PROFILE_PREFIXES = ['/profile/'] as const;
@@ -341,7 +344,7 @@ export const shouldShowMobileBottomNav = (
   signedIn: boolean
 ): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
-  if (pathname === '/messages' && new URLSearchParams(search).get('to')) return false;
+  if (pathname === MESSAGES_PATH && new URLSearchParams(search).get('to')) return false;
   if (!signedIn) return isMobileBottomNavTabPath(pathname);
   if (isMobileBottomNavTabPath(pathname)) return true;
   if (isMobileBottomNavProfilePath(pathname)) return true;
