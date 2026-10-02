@@ -1,6 +1,6 @@
 # Explore alignment — phased plan
 
-**Branch:** `experiment-ui` · **Goal:** Browse + **Organize / Demand / Add**, separate flows, API alignment — no merged wizards.
+**Branch:** `main` (shipped Oct 2026) · **Goal:** Browse + **Organize / Demand / Add**, separate flows, API alignment — no merged wizards.
 
 **Docs:** [`explore-backend-alignment.md`](./explore-backend-alignment.md) · [`explore-flow-registry.md`](./explore-flow-registry.md) · [`../CREATE_FLOW.md`](../CREATE_FLOW.md) · [`../ENGINEERING_PLAN.md`](../ENGINEERING_PLAN.md).
 
@@ -26,7 +26,7 @@
 
 ---
 
-## Track A — Engineering plan (already shipped on experiment-ui)
+## Track A — Engineering plan (shipped on `main`)
 
 | Phase | Focus | Status |
 |-------|--------|--------|
@@ -212,7 +212,7 @@ Phases are **sequential gates**. Later phases may start UI spikes only if they d
 
 ---
 
-### E10 — QA gate & merge readiness (experiment-ui) — in progress
+### E10 — QA gate & merge readiness — shipped with `main`
 
 | Work | Status |
 |------|--------|
@@ -221,7 +221,7 @@ Phases are **sequential gates**. Later phases may start UI spikes only if they d
 | Seed: outing category / topic on featured activities | Done — `seed.ts` (+ boulder `activities` / `climbing`) |
 | `copyGuard` / `exploreModuleBoundary` in alignment script | Done |
 
-**Exit:** Automated gate green + manual checklists signed; product call on merge to `main` (separate decision per experiment-ui policy).
+**Exit:** Automated gate green + manual checklists signed on `main` (ongoing regression).
 
 ---
 

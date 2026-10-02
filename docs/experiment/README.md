@@ -1,10 +1,10 @@
 # Experiment-era documentation (architecture & flows)
 
-Specs and phased plans from the **experiment-ui** line, which **shipped to `origin/main`** (Oct 2026). Day-to-day product truth is also in **`../CREATE_FLOW.md`**, **`../NAVIGATION.md`**, **`../ARCHITECTURE.md`**.
+Specs and phased plans from the explore redesign (formerly branch `experiment-ui`), now on **`main`** (Oct 2026). Day-to-day product truth: **`../CREATE_FLOW.md`**, **`../NAVIGATION.md`**, **`../ARCHITECTURE.md`**.
 
-## Legacy experiment: `experiment/new-ui`
+## Legacy remotes
 
-Some docs still mention **`purchasync/UAEtrail`** — that mirror is **legacy-only** (see `git-remotes.mdc`), not auto-synced.
+**`rajpurchasync/UAEtrail`** holds a frozen pre-ship `main` snapshot — not auto-synced (see `git-remotes.mdc`). Ignore older doc lines that say `git push purchasync experiment/new-ui`.
 
 ## Documents
 

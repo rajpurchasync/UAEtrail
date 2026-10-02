@@ -1,6 +1,6 @@
-# Consumer mobile IA (experiment-ui)
+# Consumer mobile IA
 
-Companion to [`NAVIGATION.md`](../NAVIGATION.md). Tracks the profile / trips / friends refactor on `experiment-ui`.
+Companion to [`NAVIGATION.md`](../NAVIGATION.md). Tracks the profile / trips / friends refactor on `main`.
 
 **Phased redesign:** [`profile-and-trips-phases.md`](./profile-and-trips-phases.md) — **Phase 1** Profile hub first; **Phase 2** Trips hub + personal map (Nomadtable-style) after Phase 1 ships.
 

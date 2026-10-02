@@ -2,7 +2,7 @@
 
 **Name in product:** *Your outdoor map* (member-owned; not “Explore”).  
 **Route:** `/trips/map`  
-**Status:** In development on `experiment-ui`.
+**Status:** In development on `main`.
 
 Companion: [`profile-and-trips-phases.md`](./profile-and-trips-phases.md), [`NAVIGATION.md`](../NAVIGATION.md), [`NORTHSTAR.md`](../NORTHSTAR.md).
 

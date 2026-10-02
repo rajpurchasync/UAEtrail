@@ -1,6 +1,6 @@
 # Who's going? — people, trips, privacy, messaging
 
-**Branch:** `experiment-ui` · **Status:** Partial (People/Trips UI + buddies; **Follow** for map notifications without buddy)
+**Branch:** `main` · **Status:** Partial (People/Trips UI + buddies; **Follow** for map notifications without buddy)
 
 **Related:** [`explore-browse-taxonomy.md`](./explore-browse-taxonomy.md) · [`../COMMUNICATION.md`](../COMMUNICATION.md) · `apps/api/src/services/profile-viewer-access.ts` · `apps/api/src/services/chat-policy.ts`
 
@@ -121,7 +121,7 @@ Until this exists, UI can **compose** client-side: `getMeBuddies()` + current `w
 
 ---
 
-## Frontend changes (`experiment-ui`)
+## Frontend changes (main)
 
 1. **`ExploreBrowseListMode`:** extend or add sub-tab `whosGoingSegment: 'people' | 'trips'` (URL `view=going&segment=people`).
 2. **`ExploreBrowsePanel`:** segmented control under Who's going header; People list component (`ExploreWhosGoingPeopleRow`).

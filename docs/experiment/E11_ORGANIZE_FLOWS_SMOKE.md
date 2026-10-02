@@ -1,4 +1,4 @@
-# E11 — Organize flows manual smoke (`experiment-ui`)
+# E11 — Organize flows manual smoke (main)
 
 Quick pass on `/explore` after wizard split, registry venue skips, meeting-point UX, Post-publish rideshare, and reorganize.
 

@@ -1,6 +1,6 @@
 # HTTP API routing conventions
 
-**Branch:** `experiment-ui` · **Base path:** `/api/v1` (see `apps/api/src/routes/index.ts`).
+**Branch:** `main` · **Base path:** `/api/v1` (see `apps/api/src/routes/index.ts`).
 
 Companion: [`DOMAIN.md`](./DOMAIN.md), [`experiment/explore-backend-alignment.md`](./experiment/explore-backend-alignment.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md).
 

@@ -3,7 +3,7 @@
 **Audience:** Anyone who **organizes** on the map (host-approved publish) or posts **looking for** demand.  
 **Canonical entity:** Activity (organize) · Participant intent (find). See [`DOMAIN.md`](./DOMAIN.md).
 
-## Implementation status (experiment-ui)
+## Implementation status (`main`)
 
 | Item | Status |
 |------|--------|

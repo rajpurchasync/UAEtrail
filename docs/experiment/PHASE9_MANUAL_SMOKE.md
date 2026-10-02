@@ -1,6 +1,6 @@
 # Phase 9 — manual smoke (signup profile → explore location)
 
-Run on **`experiment-ui`** with local API + seed (`npm run dev:local` or `dev:all`).
+Run on **`main`** with local API + seed (`npm run dev:local` or `dev:all`).
 
 ## Preconditions
 

@@ -1,6 +1,6 @@
-# E10 — Explore alignment QA gate (`experiment-ui`)
+# E10 — Explore alignment QA gate (`main`)
 
-Use before a product call to merge experiment work to `main` (merge itself is a **separate** decision per branch policy).
+Use for regression checks on `main` after explore/demand shipped (Oct 2026).
 
 ## Automated gate (CI parity)
 

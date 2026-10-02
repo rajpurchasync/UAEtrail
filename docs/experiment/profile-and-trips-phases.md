@@ -1,4 +1,4 @@
-# Profile + Trips redesign — phased plan (`experiment-ui`)
+# Profile + Trips redesign — phased plan (`main`)
 
 Companion to [`consumer-mobile-ia.md`](./consumer-mobile-ia.md), [`NAVIGATION.md`](../NAVIGATION.md), and [`../TRIPS_HOST_MANAGE.md`](../TRIPS_HOST_MANAGE.md) (manage + crew chat). Messaging contract: [`../COMMUNICATION.md`](../COMMUNICATION.md).
 

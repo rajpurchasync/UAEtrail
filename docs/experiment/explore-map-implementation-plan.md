@@ -2,9 +2,8 @@
 
 > **Superseded naming (2026-09):** This plan predates the unified compose stack. Current code lives under `src/explore/` — see **`docs/CREATE_FLOW.md`** for the file map (`ExploreExperience.tsx`, `organizeFlow.ts`, `compose.ts`, etc.). References below to `Mobile*` / `mobileCreateFlow` are historical.
 
-**Branch:** `experiment/new-ui`  
-**Remote:** `purchasync/UAEtrail` (`git push purchasync experiment/new-ui`)  
-**Not in scope for:** `uaetrail/main` until explicit merge approval  
+**Branch:** `main` (shipped Oct 2026; this plan is historical)  
+**Remote:** `origin` → `https://github.com/uaetrail/main.git`  
 **Companion doc:** [explore-ux-spec.md](./explore-ux-spec.md)  
 **Last updated:** 2026-09-12
 
@@ -269,9 +268,9 @@ Execute **one phase at a time**. Update **Phase status** (§8) when complete.
 
 ### PHASE P6 — Auto messaging groups
 
-**As-built on `experiment-ui` (2026-10):** Uses existing **`social_groups`** + **`social_group_wall`** (not a separate `activity_groups` collection). Activity crew = `type: 'activity'`. Demand intents do **not** get a chat until converted to organize. Contract: [`../COMMUNICATION.md`](../COMMUNICATION.md).
+**As-built on `main` (2026-10):** Uses existing **`social_groups`** + **`social_group_wall`** (not a separate `activity_groups` collection). Activity crew = `type: 'activity'`. Demand intents do **not** get a chat until converted to organize. Contract: [`../COMMUNICATION.md`](../COMMUNICATION.md).
 
-| ID | Task | Files | Status (experiment-ui) |
+| ID | Task | Files | Status (main) |
 |----|------|-------|------------------------|
 | P6-1 | Group + wall indexes | mongo-indexes | Done |
 | P6-2 | Activity group lifecycle | `activity-group-chat.ts`, `social-groups-store.ts` | Done |
@@ -339,8 +338,8 @@ Suggested tags: `experiment/explore-p0`, `experiment/explore-p1`, …
 | P2 | Complete | 2026-09-07 | RIDESHARE type, dual pins, from→to sheet, migration |
 | P3 | Complete | 2026-09-07 | Host gate, per-type ≤5-step create, price labels, more options |
 | P4 | Not started | — | Agency pins on explore map (`source: agency`) not wired |
-| P5 | Partial (experiment-ui) | 2026-10 | `participant_intents`, explore `source: demand`, demand compose in explore UI; join/convert gaps vs original P5-8–10 checklist |
-| P6 | Complete (experiment-ui) | 2026-10 | Crew chat, inbox API, SSE wall, replies, wall pagination; see COMMUNICATION.md |
+| P5 | Partial (main) | 2026-10 | `participant_intents`, explore `source: demand`, demand compose in explore UI; join/convert gaps vs original P5-8–10 checklist |
+| P6 | Complete (main) | 2026-10 | Crew chat, inbox API, SSE wall, replies, wall pagination; see COMMUNICATION.md |
 | P7 | Deferred | — | |
 
 _Update this table as work progresses._

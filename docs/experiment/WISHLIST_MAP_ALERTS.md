@@ -1,7 +1,7 @@
 # Personal map / wishlist + match alerts (experiment)
 
-**Status:** v1 shipped on `experiment-ui` — profile saved map, explore bookmark, in-app match alerts (activities + demand)  
-**Branch context:** `experiment-ui`  
+**Status:** v1 shipped on `main` — profile saved map, explore bookmark, in-app match alerts (activities + demand)  
+**Branch:** `main`  
 **Flow:** [`flows/FLOW-11-profile-wishlist.md`](./flows/FLOW-11-profile-wishlist.md)  
 **Related:** [Explore alignment phases](./explore-alignment-phases.md) · [NAVIGATION.md](../NAVIGATION.md) § Profile hub
 

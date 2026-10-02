@@ -1,6 +1,6 @@
 # Compose flow catalog (FAB → API)
 
-**Branch:** `experiment-ui` · Maps **catalog IDs** to wizards, validation, lifecycles, and endpoints.
+**Branch:** `main` · Maps **catalog IDs** to wizards, validation, lifecycles, and endpoints.
 
 **Code IDs** match URL `compose=` ([`compose.ts`](../../src/explore/compose.ts)): **`organize.*` · `find.*` · `add.*`**
 

@@ -1,6 +1,6 @@
 # Explore browse — information architecture (aligned)
 
-**Branch:** `experiment-ui` · **Status:** Map pills + search scopes implemented — see **[`explore-browse-taxonomy.md`](./explore-browse-taxonomy.md)**
+**Branch:** `main` · **Status:** Map pills + search scopes implemented — see **[`explore-browse-taxonomy.md`](./explore-browse-taxonomy.md)**
 
 **Related:** [`explore-browse-taxonomy.md`](./explore-browse-taxonomy.md) · [`explore-backend-alignment.md`](./explore-backend-alignment.md) · [`explore-ux-spec.md`](./explore-ux-spec.md) · [`../NAVIGATION.md`](../NAVIGATION.md)
 
@@ -188,4 +188,4 @@ Places need a **minimum field set** for search and detail to work (name, geo, ty
 
 **Interim structured tags (shipped):** on place `tags`, use `facility:…` and `nearby:…` — rendered under **Facilities & nearby** on place detail (not shown as generic tags).
 
-**UI (shipped on `experiment-ui`):** **Search** icon → menu (**Find a venue** / **Find a trip**) on map and list; activity detail **At this venue** link when `locationId` is set.
+**UI (shipped on `main`):** **Search** icon → menu (**Find a venue** / **Find a trip**) on map and list; activity detail **At this venue** link when `locationId` is set.

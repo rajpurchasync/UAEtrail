@@ -1,6 +1,6 @@
 # Explore Map — UX Specification (Locked)
 
-**Branch:** `experiment/new-ui` · **Remote:** `purchasync/UAEtrail` only  
+**Branch:** `main` · **Remote:** `origin` (`uaetrail/main`)  
 **Status:** Approved for implementation · **Last updated:** 2026-09-07
 
 **Product north star:** [`../NORTHSTAR.md`](../NORTHSTAR.md) — explore is where users **find people and plans to get outside together**. Card copy should feel social and actionable (“{Name} is going…”, “{Name} wants to go…”), not like a trail database.

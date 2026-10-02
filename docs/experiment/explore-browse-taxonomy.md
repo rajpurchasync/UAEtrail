@@ -1,6 +1,6 @@
 # Explore browse taxonomy (canonical)
 
-**Branch:** `experiment-ui` · **Status:** Agreed UX — implementation migrating from legacy topic pills
+**Branch:** `main` · **Status:** Agreed UX — implementation migrating from legacy topic pills
 
 **Related:** [`explore-browse-ia.md`](./explore-browse-ia.md) · `src/explore/exploreBrowseTaxonomy.ts`
 

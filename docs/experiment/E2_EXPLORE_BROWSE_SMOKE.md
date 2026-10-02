@@ -1,6 +1,6 @@
 # E2 — Explore browse smoke (Places vs Activities)
 
-Run on **`experiment-ui`** with API + seed (`npm run dev:all` or `dev:local`).
+Run on **`main`** with API + seed (`npm run dev:all` or `dev:local`).
 
 **Automated:** `npm run test:explore-alignment` (bundles API + browse/FAB tests). Reseed before manual pass if Others/topic pins are missing.
 

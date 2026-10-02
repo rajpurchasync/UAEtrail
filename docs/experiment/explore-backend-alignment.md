@@ -1,6 +1,6 @@
 # Explore backend alignment (API · DB · DTOs)
 
-**Branch:** `experiment-ui` · **Status:** Planning gate — implement before wiring FAB + browse unification.
+**Branch:** `main` · **Status:** Shipped — FAB + browse on `main`; this doc is architecture reference.
 
 **Companion:** [`explore-flow-registry.md`](./explore-flow-registry.md) (flow IDs → endpoints), [`../CREATE_FLOW.md`](../CREATE_FLOW.md), [`../DOMAIN.md`](../DOMAIN.md), frontend [`explore-ux-spec.md`](./explore-ux-spec.md).
 
@@ -125,7 +125,7 @@ Frontend mirrors this split: `organizeFlow.ts`, `demandFlow.ts`, `contributeFlow
 
 ---
 
-## Gaps vs product UI (experiment-ui)
+## Gaps vs product UI (historical)
 
 | Product surface | UI filter / FAB | Backend today |
 |-----------------|-----------------|---------------|
@@ -231,7 +231,7 @@ Use `apps/api/src/lib/mongo-migrations.ts`:
 
 ## Shared-types as the contract
 
-Order of changes (each step shippable on `experiment-ui`):
+Order of changes (each step shippable on `main`):
 
 1. Add `ComposeIntent`, `OutingCategory`, optional `OutingTopic` on DTOs + explore projection.
 2. API mappers: read/write Mongo fields; default null → derive from legacy types.
