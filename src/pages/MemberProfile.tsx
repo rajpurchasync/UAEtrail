@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Loader2, Lock } from 'lucide-react';
 import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import { api, type PersonPublicProfileDTO } from '../api/index';
@@ -10,6 +10,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import { messagesRouteForRole } from '../utils/authRouting';
 import { myActivitiesPath, SIGNIN_PATH } from '../config/routingCatalog';
+import { parseProfileReturnNavState } from '../utils/profileReturnNav';
 
 const isFullProfile = (
   profile: PersonPublicProfileDTO
@@ -20,6 +21,8 @@ export const MemberProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const profileReturn = parseProfileReturnNavState(location.state);
   const [profile, setProfile] = useState<PersonPublicProfileDTO | null>(null);
   const [buddyRel, setBuddyRel] = useState<BuddyRelationshipDTO | null>(null);
   const [buddyBusy, setBuddyBusy] = useState(false);
@@ -150,7 +153,10 @@ export const MemberProfile = () => {
       title={pageTitle}
       navTitle={pageTitle.length > 18 ? `${pageTitle.slice(0, 16)}…` : pageTitle}
       showJourney={false}
-      back={{ fallbackTo: myActivitiesPath(), label: 'My trips' }}
+      back={{
+        fallbackTo: profileReturn?.from ?? myActivitiesPath(),
+        label: profileReturn?.backLabel ?? 'My trips',
+      }}
     >
       <PageMeta title={pageTitle} noIndex />
 

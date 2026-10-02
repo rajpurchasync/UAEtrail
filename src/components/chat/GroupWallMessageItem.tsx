@@ -3,6 +3,7 @@ import type { SocialGroupWallMessageView } from '../../api/index';
 import { messagingApi } from '../../messaging';
 import type { GroupWallReactionKind } from '../../constants/groupReactions';
 import { ChatMessageBubble, ChatMessageReactionRow } from './ChatMessageBubble';
+import { messagesGroupPath } from '../../config/routingCatalog';
 import { CHAT_BUBBLE_SHELL_CLASS } from './chatMessageLayout';
 import type { GroupWallReplyTarget } from '../../utils/groupWallReply';
 
@@ -51,14 +52,23 @@ export const GroupWallMessageItem = ({
   };
 
   const authorName = message.author?.displayName?.trim() || 'Member';
+  const chatReturnTo = messagesGroupPath(groupId);
 
   return (
-    <div className={`flex flex-col ${CHAT_BUBBLE_SHELL_CLASS}`}>
+    <div className={`flex flex-col gap-0 ${CHAT_BUBBLE_SHELL_CLASS}`}>
       <ChatMessageBubble
         messageId={message.id}
         selectorAttr="data-wall-message-id"
         isMe={isMe}
-        senderLabel={authorName}
+        groupSender={
+          !isMe
+            ? {
+                displayName: authorName,
+                userId: message.authorUserId,
+                chatReturnTo,
+              }
+            : undefined
+        }
         body={message.body}
         createdAt={message.createdAt}
         highlighted={highlighted}

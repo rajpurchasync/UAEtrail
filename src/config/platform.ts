@@ -13,17 +13,17 @@ import {
   MY_REQUESTS_PATH,
   NOTIFICATIONS_PATH,
   PROFILE_PATH,
+  TRIPS_PATH,
+  ADMIN_PLACES_PATH,
+  HOST_PLACES_PATH,
+  HOST_MESSAGES_PATH,
 } from './surfacePaths';
 import { LEGACY_BECOME_HOST_PATH } from './memberRoutes';
-import { HOST_MESSAGES_PATH } from './routingCatalog';
+
+export { ADMIN_PLACES_PATH, HOST_PLACES_PATH };
 
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
-
-/** Admin console — places (trails, camps, event venues). */
-export const ADMIN_PLACES_PATH = '/admin/places' as const;
-/** Host console — organisation place submissions. */
-export const HOST_PLACES_PATH = '/host/places' as const;
 
 /** @deprecated Use {@link ADMIN_PLACES_PATH} */
 export const ADMIN_LOCATIONS_PATH = ADMIN_PLACES_PATH;
@@ -104,18 +104,69 @@ export const MOBILE_LANDING_USER_MENU = [
   { label: 'Contact', href: 'mailto:support@uaetrail.com' },
 ] as const;
 
-/** Right-side hamburger drawer order (mobile/PWA only). */
-export const MOBILE_DRAWER_MENU = [
+export type ConsumerHamburgerMenuItem =
+  | {
+      kind: 'link';
+      label: string;
+      emoji: string;
+      to: string;
+      match: readonly string[];
+      profileLink?: true;
+      labelGuest?: string;
+      emojiGuest?: string;
+    }
+  | {
+      kind: 'download';
+      title: string;
+      items: readonly {
+        label: string;
+        emoji: string;
+        action: 'pwa-android' | 'pwa-ios';
+      }[];
+    };
+
+/** Hamburger drawer — emoji labels; notifications live in the header bell. */
+export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   {
-    label: 'My Profile',
+    kind: 'link',
+    label: 'Explore',
+    emoji: '🗺️',
+    to: EXPLORE_MAP_PATH,
+    match: [EXPLORE_MAP_PATH, '/discovery'],
+  },
+  {
+    kind: 'link',
+    label: 'My Trips',
+    emoji: '🧳',
+    to: TRIPS_PATH,
+    match: ['/trips', '/activities', '/activity'],
+  },
+  {
+    kind: 'link',
+    label: 'Messages',
+    emoji: '💬',
+    to: MESSAGES_PATH,
+    match: [MESSAGES_PATH],
+  },
+  {
+    kind: 'link',
+    label: 'Profile',
+    labelGuest: 'Sign in',
+    emoji: '👤',
+    emojiGuest: '👤',
     to: PROFILE_PATH,
-    match: [PROFILE_PATH, MY_REQUESTS_PATH, MESSAGES_PATH],
+    match: [PROFILE_PATH, MY_REQUESTS_PATH, '/signin', '/signup'],
     profileLink: true,
   },
-  { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery'] },
-  { label: 'Notifications', to: NOTIFICATIONS_PATH, match: [NOTIFICATIONS_PATH] },
-  { label: 'My trips', to: '/trips', match: ['/trips', '/activities', '/activity'] },
-] as const;
+  {
+    kind: 'download',
+    title: 'Download',
+    items: [
+      { label: 'Android', emoji: '🤖', action: 'pwa-android' },
+      { label: 'iOS', emoji: '🍎', action: 'pwa-ios' },
+    ],
+  },
+];
 
 /**
  * User taxonomy (admin + product):

@@ -7,6 +7,13 @@
 
 /** Personal hub */
 export const PROFILE_PATH = '/profile' as const;
+
+/** Trips hub — upcoming, past, wishlist (`docs/NAVIGATION.md`) */
+export const TRIPS_PATH = '/trips' as const;
+
+/** Admin / host place registry consoles */
+export const ADMIN_PLACES_PATH = '/admin/places' as const;
+export const HOST_PLACES_PATH = '/host/places' as const;
 export const PROFILE_EDIT_PATH = '/profile/edit' as const;
 export const PROFILE_REVIEWS_PATH = '/profile/reviews' as const;
 export const PROFILE_SETTINGS_PATH = '/profile/settings' as const;
@@ -44,8 +51,12 @@ export const groupsPath = (options?: {
 /** In-app notification inbox */
 export const NOTIFICATIONS_PATH = '/notifications' as const;
 
-/** Communication & participation hubs */
-export const MESSAGES_PATH = '/messages' as const;
+/** Communication & participation hubs — UI label: Chat */
+export const CHAT_PATH = '/chat' as const;
+/** Consumer inbox + threads (same as {@link CHAT_PATH}). */
+export const MESSAGES_PATH = CHAT_PATH;
+/** Legacy inbox URL — redirects to {@link CHAT_PATH} in `App.tsx`. */
+export const LEGACY_MESSAGES_PATH = '/messages' as const;
 export const HOST_MESSAGES_PATH = '/host/messages' as const;
 export const MY_REQUESTS_PATH = '/my-requests' as const;
 

@@ -1,5 +1,5 @@
 import { type ReactNode, useRef, useState } from 'react';
-import { CornerDownRight } from 'lucide-react';
+import { CornerDownLeft } from 'lucide-react';
 
 const SWIPE_REPLY_THRESHOLD_PX = 52;
 const SWIPE_MAX_PX = 76;
@@ -124,7 +124,7 @@ export const MessageSwipeReplyShell = ({
             className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 transition-opacity"
             style={{ opacity: replyIconOpacity }}
           >
-            <CornerDownRight className="h-5 w-5" />
+            <CornerDownLeft className="h-5 w-5" />
           </span>
         </div>
       ) : null}

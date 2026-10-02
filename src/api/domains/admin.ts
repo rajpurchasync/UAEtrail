@@ -4,6 +4,7 @@ import type {
   AdminMetrics,
   AdminSocialGroupDetail,
   AdminSocialGroupListItem,
+  AdminContentReportEntry,
   AuditLogEntry,
   HostApplication,
   TenantDetail,
@@ -82,6 +83,17 @@ export const adminApi = {
       auth: true,
       body: JSON.stringify({ status, comment })
     }),
+
+    getAdminContentReports: (page?: number, pageSize?: number) => {
+    const params = new URLSearchParams();
+    if (page) params.set('page', String(page));
+    if (pageSize) params.set('pageSize', String(pageSize));
+    const qs = params.toString();
+    return apiRequest<{
+      data: AdminContentReportEntry[];
+      pagination: { total: number; page: number; pageSize: number; totalPages: number };
+    }>(`/admin/reports${qs ? `?${qs}` : ''}`, { auth: true });
+  },
 
     getAdminAuditLogs: (filters?: { action?: string; entityType?: string; page?: number; pageSize?: number }) => {
     const params = new URLSearchParams();

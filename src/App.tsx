@@ -31,6 +31,11 @@ const LegacyHostPathRedirect = () => {
   return <Navigate to={`${next}${search}${hash}`} replace />;
 };
 
+const LegacyMessagesRedirect = () => {
+  const { search, hash } = useLocation();
+  return <Navigate to={`/chat${search}${hash}`} replace />;
+};
+
 const EventSpotRedirect = () => {
   const { id } = useParams<{ id: string }>();
   return <Navigate to={`/event/${id ?? ''}`} replace />;
@@ -130,6 +135,7 @@ const AdminActivities = lazy(() => import('./pages/AdminActivities').then((m) =>
 const AdminMembers = lazy(() => import('./pages/AdminMembers').then((m) => ({ default: m.AdminMembers })));
 const AdminGroups = lazy(() => import('./pages/AdminGroups').then((m) => ({ default: m.AdminGroups })));
 const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog').then((m) => ({ default: m.AdminAuditLog })));
+const AdminReports = lazy(() => import('./pages/AdminReports').then((m) => ({ default: m.AdminReports })));
 const AdminSettings = lazy(() => import('./pages/AdminSettings').then((m) => ({ default: m.AdminSettings })));
 const AdminShop = lazy(() => import('./pages/AdminShop').then((m) => ({ default: m.AdminShop })));
 const AdminNotifications = lazy(() =>
@@ -441,8 +447,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/messages" element={<LegacyMessagesRedirect />} />
           <Route
-            path="/messages"
+            path="/chat"
             element={
               <Suspense fallback={<PageLoader />}>
                 <MessagesGate />
@@ -597,6 +604,14 @@ function App() {
             element={
               <ProtectedRoute roles={['platform_admin']}>
                 <AdminGroups />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminReports />
               </ProtectedRoute>
             }
           />

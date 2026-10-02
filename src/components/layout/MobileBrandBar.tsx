@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Mountain } from 'lucide-react';
+import { ConsumerHeaderActions } from './ConsumerHeaderActions';
 import { MobileMenuButton, MobileUserMenuButton } from './MobileMenu';
 import { MobileSessionHeaderActions } from './MobileSessionHeaderActions';
 
@@ -59,7 +60,10 @@ export const MobileBrandBar = ({
     <div className="flex shrink-0 items-center gap-2 sm:gap-3">
       {desktopAction && <div className="hidden md:flex items-center">{desktopAction}</div>}
       {menuVariant === 'session' ? (
-        <MobileSessionHeaderActions tone={tone} />
+        <>
+          <ConsumerHeaderActions tone={tone} showOnDesktop={menuOnDesktop} />
+          <MobileSessionHeaderActions tone={tone} profileOnly />
+        </>
       ) : menuVariant === 'user' ? (
         <MobileUserMenuButton tone={tone} showOnDesktop={menuOnDesktop} />
       ) : (

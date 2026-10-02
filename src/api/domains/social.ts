@@ -126,7 +126,13 @@ export const socialApi = {
       };
     }>(`/me/groups/${groupId}`, { auth: true }),
 
-    updateMeGroupSettings: (groupId: string, payload: { wallPostPolicy: 'all_members' | 'admins_only' }) =>
+    updateMeGroupSettings: (
+      groupId: string,
+      payload: {
+        wallPostPolicy?: 'all_members' | 'admins_only';
+        photoUrl?: string | null;
+      }
+    ) =>
     apiRequest<{ data: SocialGroupView }>(`/me/groups/${groupId}`, {
       method: 'PATCH',
       auth: true,

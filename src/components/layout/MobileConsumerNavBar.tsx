@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
-import { MobileMenuButton } from './MobileMenu';
+import { ConsumerHeaderActions } from './ConsumerHeaderActions';
 
 /** Slim mobile top bar (logo + hamburger) for pages without banner chrome. */
 export const MobileConsumerNavBar = () => (
@@ -12,7 +12,7 @@ export const MobileConsumerNavBar = () => (
         </div>
         <span className="text-base font-bold text-gray-900 tracking-tight truncate">UAE Trail</span>
       </Link>
-      <MobileMenuButton />
+      <ConsumerHeaderActions />
     </div>
   </div>
 );

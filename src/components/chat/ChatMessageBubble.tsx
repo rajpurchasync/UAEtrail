@@ -1,5 +1,9 @@
 import { useRef, useState } from 'react';
-import { CornerDownRight, Smile } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { memberProfilePath } from '@uaetrail/shared-types';
+import { CornerDownLeft, Smile } from 'lucide-react';
+import { chatParticipantNameColorClass } from '../../utils/chatParticipantColor';
+import { profileReturnNavState } from '../../utils/profileReturnNav';
 import type { GroupWallReactionKind } from '../../constants/groupReactions';
 import {
   GROUP_WALL_REACTION_EMOJI,
@@ -25,8 +29,14 @@ export type ChatMessageBubbleProps = {
   messageId: string;
   selectorAttr: ChatThreadMessageSelectorAttr;
   isMe: boolean;
-  /** Shown above incoming bubbles (group + DM). */
+  /** Shown above incoming bubbles (DM). */
   senderLabel?: string;
+  /** Group chat: bold, color-coded, tappable name above the bubble. */
+  groupSender?: {
+    displayName: string;
+    userId: string;
+    chatReturnTo: string;
+  };
   body: string;
   createdAt: string;
   readAt?: string | null;
@@ -49,6 +59,7 @@ export const ChatMessageBubble = ({
   selectorAttr,
   isMe,
   senderLabel,
+  groupSender,
   body,
   createdAt,
   readAt,
@@ -85,12 +96,22 @@ export const ChatMessageBubble = ({
     ? 'bg-emerald-600 text-white rounded-2xl rounded-br-md'
     : 'bg-white text-gray-900 rounded-2xl rounded-bl-md shadow-sm border border-neutral-100';
 
-  const showSenderAbove = !isMe && Boolean(senderLabel?.trim());
+  const showDmSenderAbove = !isMe && Boolean(senderLabel?.trim()) && !groupSender;
+  const profilePath = groupSender ? memberProfilePath(groupSender.userId) : null;
 
   return (
-    <div className={`flex min-w-0 flex-col ${CHAT_BUBBLE_SHELL_CLASS}`}>
-      {showSenderAbove ? (
-        <p className={`mb-0.5 truncate px-1 text-xs font-semibold text-neutral-600 ${CHAT_BUBBLE_MAX_CLASS}`}>
+    <div className={`flex min-w-0 flex-col gap-0 ${CHAT_BUBBLE_SHELL_CLASS}`}>
+      {groupSender && !isMe && profilePath ? (
+        <Link
+          to={profilePath}
+          state={profileReturnNavState(groupSender.chatReturnTo, 'Chat')}
+          className={`block max-w-full truncate px-0.5 pb-0.5 text-[11px] font-bold leading-tight underline-offset-2 hover:underline active:opacity-80 ${chatParticipantNameColorClass(groupSender.userId)} ${CHAT_BUBBLE_MAX_CLASS}`}
+        >
+          {groupSender.displayName}
+        </Link>
+      ) : null}
+      {showDmSenderAbove ? (
+        <p className={`truncate px-0.5 pb-0.5 text-[11px] font-semibold leading-tight text-neutral-600 ${CHAT_BUBBLE_MAX_CLASS}`}>
           {senderLabel}
         </p>
       ) : null}
@@ -128,7 +149,7 @@ export const ChatMessageBubble = ({
                 isMe ? 'text-emerald-50 hover:bg-white/15' : 'text-neutral-600 hover:bg-neutral-100'
               }`}
             >
-              <CornerDownRight className="h-3.5 w-3.5" aria-hidden />
+              <CornerDownLeft className="h-3.5 w-3.5" aria-hidden />
               Reply
             </button>
             {reactions ? (

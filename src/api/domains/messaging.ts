@@ -17,6 +17,11 @@ export const messagingApi = {
   direct: {
     listMessages: chatApi.getMessages,
     send: chatApi.sendMessage,
+    toggleReaction: (
+      messageId: string,
+      partnerUserId: string,
+      kind: string
+    ) => chatApi.toggleMessageReaction(messageId, { partnerUserId, kind }),
   },
 
   crew: {

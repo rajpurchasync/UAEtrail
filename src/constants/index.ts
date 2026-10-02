@@ -1,21 +1,26 @@
-import { ADMIN_PLACES_PATH, HOST_PLACES_PATH } from '../config/platform';
 import {
   ADMIN_ACTIVITIES_PATH,
   ADMIN_AUDIT_LOG_PATH,
+  ADMIN_REPORTS_PATH,
   ADMIN_GROUPS_PATH,
   ADMIN_HOSTS_PATH,
   ADMIN_OVERVIEW_PATH,
   ADMIN_SETTINGS_PATH,
   ADMIN_SHOP_PATH,
   ADMIN_USERS_PATH,
+} from '../config/adminSurfacePaths';
+import {
+  ADMIN_PLACES_PATH,
   HOST_ACTIVITIES_PATH,
   HOST_HISTORY_PATH,
   HOST_MESSAGES_PATH,
   HOST_OVERVIEW_PATH,
+  HOST_PLACES_PATH,
   HOST_PROFILE_PATH,
   HOST_REQUESTS_PATH,
   HOST_TEAM_PATH,
-} from '../config/routingCatalog';
+  TRIPS_PATH,
+} from '../config/surfacePaths';
 
 export const DIFFICULTY_COLORS = {
   easy: 'bg-green-100 text-green-800',
@@ -24,7 +29,7 @@ export const DIFFICULTY_COLORS = {
 };
 
 /** Public activities browse + dashboard tab. */
-export const TRIPS_PATH = '/trips';
+export { TRIPS_PATH };
 /** @deprecated Use {@link TRIPS_PATH} */
 export const ACTIVITIES_PATH = TRIPS_PATH;
 
@@ -54,6 +59,7 @@ export const ADMIN_LINKS = [
   { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },
   { to: ADMIN_GROUPS_PATH, label: 'Groups' },
   { to: ADMIN_SHOP_PATH, label: 'Shop' },
+  { to: ADMIN_REPORTS_PATH, label: 'Reports' },
   { to: ADMIN_AUDIT_LOG_PATH, label: 'Audit Log' },
   { to: ADMIN_SETTINGS_PATH, label: 'Broadcast' },
 ];

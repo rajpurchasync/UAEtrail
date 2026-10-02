@@ -431,6 +431,22 @@ export interface ChatConversationDTO {
   unreadCount: number;
 }
 
+export type ChatMessageReactionKind =
+  | 'like'
+  | 'dislike'
+  | 'happy'
+  | 'heart'
+  | 'laugh'
+  | 'mountain'
+  | 'camping'
+  | 'car';
+
+export interface ChatMessageReactionDTO {
+  kind: ChatMessageReactionKind;
+  count: number;
+  reactedByMe: boolean;
+}
+
 export interface ChatMessageDTO {
   id: string;
   senderId: string;
@@ -441,6 +457,7 @@ export interface ChatMessageDTO {
   replyToPreview?: GroupWallReplyPreviewDTO;
   readAt?: string;
   createdAt: string;
+  reactions?: ChatMessageReactionDTO[];
 }
 
 // ─── Shop DTOs ──────────────────────────────────────────────────────────────

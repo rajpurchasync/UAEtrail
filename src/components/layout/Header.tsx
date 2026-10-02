@@ -5,15 +5,13 @@ import { useAuth } from '../../context/AuthContext';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { DESKTOP_NAV_LINKS, MEMBERSHIP_NAV_LINK } from '../../config/platform';
-import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { SecureAvatar } from '../ui/SecureAvatar';
-import { MobileMenuButton } from './MobileMenu';
+import { ConsumerHeaderActions } from './ConsumerHeaderActions';
 
 export const Header = () => {
   const { user } = useAuth();
   const { pathname, search } = useLocation();
   const [searchParams] = useSearchParams();
-  const unreadCount = useNotificationUnreadCount();
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
   const navLinks = [
     ...DESKTOP_NAV_LINKS,
@@ -63,11 +61,11 @@ export const Header = () => {
           </nav>
 
           <div className="flex items-center gap-2">
-            <MobileMenuButton className="md:hidden" />
+            <ConsumerHeaderActions notificationVariant="desktop" showOnDesktop />
             {user ? (
               <Link
                 to={accountRouteByRole(user.role)}
-                className="hidden md:flex relative items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm shadow-emerald-200/80"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm shadow-emerald-200/80"
               >
                 <SecureAvatar
                   src={user.avatarUrl}
@@ -75,11 +73,6 @@ export const Header = () => {
                   className="w-8 h-8 text-sm"
                 />
                 {user.displayName?.split(' ')[0] || 'Account'}
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
               </Link>
             ) : (
               <Link

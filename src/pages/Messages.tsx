@@ -21,7 +21,7 @@ import {
   useDirectChatThread,
   type DirectChatThreadProps,
   type GroupChatActivityPayload,
-} from '@/chat';
+} from '../components/chat';
 import { formatWallInboxPreview } from '../utils/wallMessagePreview';
 import { groupsPath, HOST_MESSAGES_PATH } from '../config/routingCatalog';
 import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';
@@ -30,6 +30,7 @@ import { ReportContentDialog } from '../components/ui/ReportContentDialog';
 import {
   filterInboxThreads,
   loadGroupThreadPreviews,
+  patchGroupInboxThread,
   sortInboxThreads,
   toDirectThread,
   type InboxFilter,
@@ -307,6 +308,10 @@ export const Messages = () => {
 
   const chatReturnTo = parseMessagesChatReturnTo(location.state);
 
+  const handleGroupMetaUpdated = useCallback((group: SocialGroupView) => {
+    setGroupThreads((prev) => patchGroupInboxThread(prev, group));
+  }, []);
+
   const backToList = useCallback(() => {
     if (selectedGroupId && chatReturnTo) {
       navigate(chatReturnTo, { replace: true });
@@ -344,6 +349,8 @@ export const Messages = () => {
       onReport: openReportDialog,
       onDraftChange: directChat.setDraft,
       onSend: directChat.send,
+      onMessageReactionsChange: directChat.updateMessageReactions,
+      onReactionError: setError,
     }),
     [
       mobileShowThread,
@@ -357,6 +364,7 @@ export const Messages = () => {
       directChat.sending,
       directChat.setDraft,
       directChat.send,
+      directChat.updateMessageReactions,
       backToList,
       openReportDialog,
     ]
@@ -402,7 +410,7 @@ export const Messages = () => {
         onClose={() => setShowReport(false)}
         targetType="user"
         targetId={selectedUserId}
-        title="Report user"
+        title="Report as"
       />
     ) : null;
 
@@ -433,6 +441,7 @@ export const Messages = () => {
                 onGroupActivity: handleGroupChatActivity,
                 streamedMessage: streamedWallMessage,
                 onStreamedMessageApplied: () => setStreamedWallMessage(null),
+                onGroupUpdated: handleGroupMetaUpdated,
               }}
             />
           ) : (

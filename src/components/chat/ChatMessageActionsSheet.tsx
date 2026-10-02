@@ -1,7 +1,12 @@
 import { useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CornerDownRight } from 'lucide-react';
+import { CornerDownLeft, MoreHorizontal } from 'lucide-react';
 import type { GroupWallReactionKind } from '../../constants/groupReactions';
+import {
+  GROUP_WALL_QUICK_REACTION_KINDS,
+  GROUP_WALL_REACTION_EMOJI,
+  GROUP_WALL_REACTION_LABEL,
+} from '../../constants/groupReactions';
 import { GroupWallReactionPicker } from './GroupWallReactionPicker';
 
 export type MessageAnchorRect = Pick<DOMRect, 'top' | 'left' | 'width' | 'height'>;
@@ -19,7 +24,7 @@ type ChatMessageActionsSheetProps = {
   };
 };
 
-/** Long-press menu anchored near the message center (reply + optional reactions). */
+/** Long-press menu: reply + quick reactions + full emoji picker. */
 export const ChatMessageActionsSheet = ({
   open,
   anchor,
@@ -29,6 +34,13 @@ export const ChatMessageActionsSheet = ({
   reactions,
 }: ChatMessageActionsSheetProps) => {
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const [fullPickerOpen, setFullPickerOpen] = useState(false);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setFullPickerOpen(false);
+    }
+  }, [open]);
 
   useLayoutEffect(() => {
     if (!open || !anchor) {
@@ -38,8 +50,8 @@ export const ChatMessageActionsSheet = ({
 
     const centerX = anchor.left + anchor.width / 2;
     const centerY = anchor.top + anchor.height / 2;
-    const cardW = Math.min(288, window.innerWidth - 24);
-    const cardH = reactions ? 200 : 88;
+    const cardW = Math.min(300, window.innerWidth - 24);
+    const cardH = reactions ? (fullPickerOpen ? 220 : 120) : 72;
     const margin = 12;
 
     let left = centerX;
@@ -50,13 +62,18 @@ export const ChatMessageActionsSheet = ({
     top = Math.min(Math.max(cardH / 2 + margin, top), window.innerHeight - cardH / 2 - margin);
 
     setPosition({ top, left });
-  }, [open, anchor, reactions]);
+  }, [open, anchor, reactions, fullPickerOpen]);
 
   if (!open || !anchor || !position) return null;
 
   const handleReply = () => {
     onClose();
     if (replyEnabled) onReply();
+  };
+
+  const pickReaction = (kind: GroupWallReactionKind) => {
+    reactions?.onPick(kind);
+    onClose();
   };
 
   return createPortal(
@@ -68,7 +85,7 @@ export const ChatMessageActionsSheet = ({
         onClick={onClose}
       />
       <div
-        className="fixed z-[1651] w-[288px] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-neutral-200 bg-white p-3 shadow-2xl"
+        className="fixed z-[1651] w-[300px] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-neutral-200 bg-white p-2 shadow-2xl"
         role="dialog"
         aria-label="Message actions"
         style={{
@@ -78,30 +95,57 @@ export const ChatMessageActionsSheet = ({
         }}
         onPointerDown={(event) => event.stopPropagation()}
       >
-        <button
-          type="button"
-          disabled={!replyEnabled}
-          onClick={handleReply}
-          className="flex w-full min-h-[44px] items-center gap-3 rounded-xl px-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-50 disabled:opacity-40"
-        >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-            <CornerDownRight className="h-5 w-5" aria-hidden />
-          </span>
-          Reply
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            disabled={!replyEnabled}
+            onClick={handleReply}
+            className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl text-sm font-semibold text-neutral-800 hover:bg-neutral-50 disabled:opacity-40"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+              <CornerDownLeft className="h-5 w-5" aria-hidden />
+            </span>
+            Reply
+          </button>
 
-        {reactions ? (
+          {reactions ? (
+            <>
+              <span className="h-8 w-px shrink-0 bg-neutral-200" aria-hidden />
+              {GROUP_WALL_QUICK_REACTION_KINDS.map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  disabled={reactions.disabled}
+                  onClick={() => pickReaction(kind)}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-2xl font-emoji transition-colors hover:bg-neutral-100 active:bg-neutral-200 disabled:opacity-40 ${
+                    reactions.activeKinds.has(kind) ? 'bg-emerald-50 ring-1 ring-emerald-200' : ''
+                  }`}
+                  title={GROUP_WALL_REACTION_LABEL[kind]}
+                  aria-label={GROUP_WALL_REACTION_LABEL[kind]}
+                >
+                  {GROUP_WALL_REACTION_EMOJI[kind]}
+                </button>
+              ))}
+              <button
+                type="button"
+                disabled={reactions.disabled}
+                onClick={() => setFullPickerOpen((open) => !open)}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-neutral-500 hover:bg-neutral-100 active:bg-neutral-200 disabled:opacity-40"
+                aria-label="More reactions"
+                aria-expanded={fullPickerOpen}
+              >
+                <MoreHorizontal className="h-5 w-5" aria-hidden />
+              </button>
+            </>
+          ) : null}
+        </div>
+
+        {reactions && fullPickerOpen ? (
           <div className="mt-2 border-t border-neutral-100 pt-2">
-            <p className="mb-2 px-1 text-[11px] font-medium uppercase tracking-wide text-neutral-500">
-              React
-            </p>
             <GroupWallReactionPicker
               activeKinds={reactions.activeKinds}
               disabled={reactions.disabled}
-              onPick={(kind) => {
-                reactions.onPick(kind);
-                onClose();
-              }}
+              onPick={pickReaction}
               className="w-full max-w-none shadow-none border-0 p-0"
             />
           </div>

@@ -70,6 +70,8 @@ export function registerAppServiceWorker(): void {
 
 export type MobileWebPlatform = 'ios' | 'android' | 'other';
 
+export type AndroidWebBrowser = 'chrome' | 'samsung' | 'edge' | 'firefox' | 'other';
+
 /** Best-effort UA sniff for install instructions (not for security). */
 export function detectMobileWebPlatform(): MobileWebPlatform {
   if (typeof navigator === 'undefined') return 'other';

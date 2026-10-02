@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Flag, Loader2, MessageSquare } from 'lucide-react';
-import type { ChatMessageDTO } from '@uaetrail/shared-types';
+import type { ChatMessageDTO, ChatMessageReactionDTO } from '@uaetrail/shared-types';
 import { DirectMessageBubble } from './DirectMessageBubble';
 import { chatMessageRowAlign } from './chatMessageLayout';
 import { ChatReplyComposer } from './ChatReplyComposer';
@@ -27,6 +27,8 @@ export type DirectChatThreadProps = {
   onReport: () => void;
   onDraftChange: (value: string) => void;
   onSend: (options?: { replyToMessageId?: string }) => void | Promise<void>;
+  onReactionError?: (message: string) => void;
+  onMessageReactionsChange: (messageId: string, reactions: ChatMessageReactionDTO[]) => void;
 };
 
 export const DirectChatThread = ({
@@ -43,6 +45,8 @@ export const DirectChatThread = ({
   onReport,
   onDraftChange,
   onSend,
+  onReactionError,
+  onMessageReactionsChange,
 }: DirectChatThreadProps) => {
   const prevCountRef = useRef(0);
   const skipInitialScrollRef = useRef(true);
@@ -160,11 +164,14 @@ export const DirectChatThread = ({
                       <DirectMessageBubble
                         message={m}
                         isMe={isMe}
+                        partnerUserId={partnerUserId}
                         partnerDisplayName={partnerName}
                         highlighted={highlightMessageId === m.id}
+                        onReactionsChange={onMessageReactionsChange}
                         onReply={setReplyTo}
                         onScrollToQuotedMessage={scrollToMessage}
                         resolveQuotedMessage={resolveQuotedMessage}
+                        onError={(msg) => onReactionError?.(msg)}
                       />
                     </div>
                   </div>

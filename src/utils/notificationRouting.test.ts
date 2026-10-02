@@ -33,7 +33,7 @@ describe('inferNotificationPath', () => {
       inferNotificationPath(
         notif({ kind: 'join_request_approved', groupId: 'g-1' })
       )
-    ).toBe('/messages?group=g-1');
+    ).toBe('/chat?group=g-1');
   });
 
   it('routes member goal milestones to profile or trips', () => {
@@ -65,10 +65,10 @@ describe('inferNotificationPath', () => {
   it('routes chat message notifications to messages composer', () => {
     expect(
       inferNotificationPath(notif({ kind: 'message', actorUserId: 'user-c' }))
-    ).toBe('/messages?to=user-c');
+    ).toBe('/chat?to=user-c');
     expect(
       inferNotificationPath(notif({ kind: 'message', senderId: 'legacy-sender' }))
-    ).toBe('/messages?to=legacy-sender');
+    ).toBe('/chat?to=legacy-sender');
   });
 
   it('rewrites legacy rewards wallet paths to badges', () => {

@@ -19,6 +19,8 @@ import { createSseTicket, SSE_TICKET_TTL_SECONDS } from '../lib/sse-ticket.js';
 import { assertCanMessageUser, assertChatRateLimit } from '../services/chat-policy.js';
 import { publishChatStreamEvent, registerChatStreamClient } from '../services/chat-stream.js';
 import { listMemberDirectConversations, loadMemberInbox } from '../services/member-inbox.js';
+import { toggleChatMessageReaction } from '../lib/chat-message-reactions.js';
+import { GROUP_WALL_REACTION_KINDS } from '../lib/social-groups-store.js';
 
 export const chatRouter = Router();
 
@@ -91,7 +93,7 @@ chatRouter.get('/messages/:userId', validate({ params: messageThreadSchema, quer
     ]);
 
     res.json({
-      data: await presentChatMessagesAsDtos(messages),
+      data: await presentChatMessagesAsDtos(messages, currentUserId),
       pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) }
     });
   } catch (error) {
@@ -144,7 +146,7 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
       replyToMessageId: trimmedReplyId,
     });
 
-    const messageDto = await presentChatMessageAsDto(message);
+    const messageDto = await presentChatMessageAsDto(message, senderId);
     void publishChatStreamEvent(receiverId, { type: 'chat_message', data: messageDto });
 
     void findAuthUserById(senderId).then((sender) => {
@@ -170,3 +172,38 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
     next(error);
   }
 });
+
+const chatMessageReactionParamsSchema = z.object({ messageId: z.string().min(1) });
+const chatMessageReactionBodySchema = z.object({
+  partnerUserId: z.string().min(1),
+  kind: z.enum(GROUP_WALL_REACTION_KINDS),
+});
+
+chatRouter.post(
+  '/messages/:messageId/reactions',
+  validate({ params: chatMessageReactionParamsSchema, body: chatMessageReactionBodySchema }),
+  async (req, res, next) => {
+    try {
+      const { messageId } = req.params as z.infer<typeof chatMessageReactionParamsSchema>;
+      const body = req.body as z.infer<typeof chatMessageReactionBodySchema>;
+      const userId = req.auth!.userId;
+
+      await assertCanMessageUser(userId, body.partnerUserId);
+
+      try {
+        const result = await toggleChatMessageReaction({
+          messageId,
+          userId,
+          partnerUserId: body.partnerUserId,
+          kind: body.kind,
+        });
+        res.json({ data: result });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Could not update reaction.';
+        throw new ApiError(404, 'message_not_found', message);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);

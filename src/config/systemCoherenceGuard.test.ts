@@ -15,7 +15,7 @@ const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
   { path: '/community', constant: 'COMMUNITY_PATH' },
   { path: '/profile/badges', constant: 'PROFILE_BADGES_PATH' },
   { path: '/my-requests', constant: 'MY_REQUESTS_PATH' },
-  { path: '/messages', constant: 'MESSAGES_PATH' },
+  { path: '/chat', constant: 'CHAT_PATH' },
   { path: '/notifications', constant: 'NOTIFICATIONS_PATH' },
   { path: '/profile', constant: 'PROFILE_PATH' },
   { path: '/profile/settings', constant: 'PROFILE_SETTINGS_PATH' },

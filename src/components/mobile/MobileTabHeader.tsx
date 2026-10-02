@@ -14,7 +14,7 @@ import {
 import { joinedSubViewTitle } from '../../pages/activities/shared';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
-import { MobileNotificationHeaderLink } from './MobileNotificationHeaderLink';
+import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
 
 const resolveCenter = (
@@ -39,24 +39,22 @@ const resolveCenter = (
 export const MobileTabHeader = () => {
   const { pathname, search } = useLocation();
   const { user } = useAuth();
-  const signedIn = Boolean(user);
-  const gate = useOrganisationGate({ enabled: signedIn });
+  const gate = useOrganisationGate({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
 
-  const visible = shouldShowMobileUnifiedTabHeader(pathname, search, signedIn);
+  const visible = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
   const center = resolveCenter(pathname, search, canHost);
 
   if (!visible || !center) return null;
 
-  const showNotifications =
-    signedIn &&
-    (pathname === EXPLORE_MAP_PATH ||
-      pathname === '/profile' ||
-      pathname === ACTIVITIES_PATH ||
-      pathname === TRIPS_PATH ||
-      pathname === MESSAGES_PATH);
+  const showHeaderActions =
+    pathname === EXPLORE_MAP_PATH ||
+    pathname === '/profile' ||
+    pathname === ACTIVITIES_PATH ||
+    pathname === TRIPS_PATH ||
+    pathname === MESSAGES_PATH;
 
-  const trailing = showNotifications ? <MobileNotificationHeaderLink /> : null;
+  const trailing = showHeaderActions ? <ConsumerHeaderActions /> : null;
 
   return (
     <MobileUnifiedTabHeader

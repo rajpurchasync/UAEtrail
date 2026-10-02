@@ -22,7 +22,7 @@ export const MobileUnifiedTabHeader = ({
   profileActive = false,
 }: MobileUnifiedTabHeaderProps) => (
   <header className="relative z-[1100] shrink-0 border-b border-neutral-200/80 bg-white pb-2 pt-[calc(var(--safe-top)+4px)] lg:hidden">
-    <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2 px-3">
+    <div className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-2 px-3">
       <MobileProfileHeaderLink activeOnProfile={profileActive} />
 
       {center.kind === 'brand' ? (
@@ -40,7 +40,7 @@ export const MobileUnifiedTabHeader = ({
         <h1 className="truncate text-center text-[17px] font-semibold text-neutral-900">{center.text}</h1>
       )}
 
-      <div className="flex justify-end justify-self-end min-h-[2.5rem] min-w-[2.5rem] items-center">
+      <div className="flex justify-end justify-self-end min-h-[2.5rem] items-center">
         {trailing ?? <span className="w-10" aria-hidden />}
       </div>
     </div>

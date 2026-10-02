@@ -297,10 +297,24 @@ export const createActivityGroup = async (input: {
 export const updateGroupWallPostPolicy = async (
   groupId: string,
   wallPostPolicy: GroupWallPostPolicy
+): Promise<GroupRecord | null> =>
+  updateGroupChatSettings(groupId, { wallPostPolicy });
+
+export const updateGroupChatSettings = async (
+  groupId: string,
+  patch: { wallPostPolicy?: GroupWallPostPolicy; photoUrl?: string | null }
 ): Promise<GroupRecord | null> => {
+  const $set: Record<string, unknown> = { updatedAt: new Date() };
+  if (patch.wallPostPolicy !== undefined) {
+    $set.wallPostPolicy = patch.wallPostPolicy;
+  }
+  if (patch.photoUrl !== undefined) {
+    $set.photoUrl = patch.photoUrl?.trim() || null;
+  }
+
   const result = await groupsCollection().findOneAndUpdate(
     { _id: groupId },
-    { $set: { wallPostPolicy, updatedAt: new Date() } },
+    { $set },
     { returnDocument: 'after' }
   );
   return result ? mapGroup(result) : null;

@@ -15,6 +15,7 @@ import { GroupWallChatSettingsSheet } from './GroupWallChatSettingsSheet';
 import { GroupWallMembersSheet } from './GroupWallMembersSheet';
 import { useAuth } from '../../context/AuthContext';
 import { GroupWallMessageItem } from './GroupWallMessageItem';
+import { MessageAvatar } from './ChatMessageAvatar';
 import { chatMessageRowAlign } from './chatMessageLayout';
 
 /** Fallback when SSE is unavailable; primary delivery is `group_wall_message` on chat stream. */
@@ -40,6 +41,7 @@ type GroupChatThreadProps = {
   onGroupActivity?: (payload: GroupChatActivityPayload) => void;
   streamedMessage?: SocialGroupWallMessageView | null;
   onStreamedMessageApplied?: () => void;
+  onGroupUpdated?: (group: SocialGroupView) => void;
 };
 
 export const GroupChatThread = ({
@@ -48,6 +50,7 @@ export const GroupChatThread = ({
   onGroupActivity,
   streamedMessage,
   onStreamedMessageApplied,
+  onGroupUpdated,
 }: GroupChatThreadProps) => {
   const { user } = useAuth();
   const currentUserId = user?.id;
@@ -342,9 +345,13 @@ export const GroupChatThread = ({
           backLabel="Back to chat list"
           titleButton={{ onClick: () => setMembersOpen(true) }}
           leading={
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-              <Users className="h-5 w-5" aria-hidden />
-            </div>
+            group?.photoUrl ? (
+              <MessageAvatar name={title} url={group.photoUrl} />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <Users className="h-5 w-5" aria-hidden />
+              </div>
+            )
           }
           title={title}
           subtitle={
@@ -448,7 +455,10 @@ export const GroupChatThread = ({
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}
           group={group}
-          onUpdated={(updated) => setGroup(updated)}
+          onUpdated={(updated) => {
+            setGroup(updated);
+            onGroupUpdated?.(updated);
+          }}
           onError={setError}
         />
       </>

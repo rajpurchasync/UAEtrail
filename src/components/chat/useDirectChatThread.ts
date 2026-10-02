@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
-import type { ChatConversationDTO, ChatMessageDTO } from '@uaetrail/shared-types';
+import type {
+  ChatConversationDTO,
+  ChatMessageDTO,
+  ChatMessageReactionDTO,
+} from '@uaetrail/shared-types';
 import { accountApi } from '../../api/domains/account';
 import { messagingApi } from '../../messaging';
 
@@ -182,6 +186,15 @@ export const useDirectChatThread = ({
     if (partnerUserId) void loadMessages(partnerUserId, true);
   }, [loadMessages, partnerUserId]);
 
+  const updateMessageReactions = useCallback(
+    (messageId: string, reactions: ChatMessageReactionDTO[]) => {
+      setMessages((current) =>
+        current.map((message) => (message.id === messageId ? { ...message, reactions } : message))
+      );
+    },
+    []
+  );
+
   return {
     messages,
     draft,
@@ -194,5 +207,6 @@ export const useDirectChatThread = ({
     handleStreamMessage,
     reloadSilent,
     seedPartnerBrief,
+    updateMessageReactions,
   };
 };

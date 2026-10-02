@@ -1,7 +1,7 @@
 import {
   ACTIVITIES_PATH,
+  CHAT_PATH,
   EXPLORE_MAP_PATH,
-  MESSAGES_PATH,
   TRIPS_PATH,
 } from '../../config/routingCatalog';
 import { useEffect } from 'react';
@@ -76,7 +76,7 @@ export const MobileBottomNav = () => {
           <span className={tabLabelClass(tripsActive)}>Trips</span>
         </Link>
 
-        <NavLink to={MESSAGES_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Chat">
+        <NavLink to={CHAT_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Chat">
           {({ isActive }) => (
             <>
               <span className="relative">

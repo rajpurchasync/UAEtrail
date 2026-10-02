@@ -1,3 +1,22 @@
+/* eslint-disable no-restricted-globals */
+/**
+ * PWA service worker — push + installability.
+ * Chromium requires a fetch handler for “Install app” / Add to Home screen (Chrome, Samsung Internet).
+ */
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(fetch(event.request));
+});
+
 self.addEventListener('push', (event) => {
   let payload = { title: 'UAE Trail', body: 'You have a new notification', data: {} };
   try {
@@ -10,7 +29,7 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(payload.title, {
       body: payload.body,
       icon: '/icons/icon-192.png',
-      data: payload.data
+      data: payload.data,
     })
   );
 });

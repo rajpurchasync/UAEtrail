@@ -21,7 +21,8 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
 - **Wishlist:** `/trips?segment=wishlist` (legacy `/profile/wishlist` redirects). Settings → **Saved map & alerts** links to the same segment.
-- **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **Phone app** (PWA install on Android Chrome when available, Add to Home Screen steps on iOS).
+- **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt).
+- **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, My Trips, Messages, Profile/Signup, Download → Android / iOS (deep-link to the matching settings hash). Notifications are the bell only, not in the drawer.
 
 ### Trips (`/trips`)
 

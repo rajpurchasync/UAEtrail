@@ -35,6 +35,8 @@ export const COLLECTIONS = {
 
   // Social & community
   CHAT_MESSAGES: 'chat_messages',
+  CHAT_MESSAGE_REACTIONS: 'chat_message_reactions',
+  CONTENT_REPORTS: 'content_reports',
   SOCIAL_REVIEWS: 'social_reviews',
   SOCIAL_POSTS: 'social_posts',
   SOCIAL_POST_REPLIES: 'social_post_replies',

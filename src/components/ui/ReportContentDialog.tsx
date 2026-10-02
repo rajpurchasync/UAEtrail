@@ -7,10 +7,8 @@ import { Dialog } from '../ui/Dialog';
 
 const REASONS: { value: ContentReportReason; label: string }[] = [
   { value: 'spam', label: 'Spam' },
-  { value: 'harassment', label: 'Harassment or bullying' },
-  { value: 'inappropriate', label: 'Inappropriate content' },
-  { value: 'scam', label: 'Scam or fraud' },
-  { value: 'other', label: 'Other' }
+  { value: 'harassment', label: 'Harassment' },
+  { value: 'other', label: 'Other' },
 ];
 
 interface ReportContentDialogProps {
@@ -26,7 +24,7 @@ export const ReportContentDialog = ({
   onClose,
   targetType,
   targetId,
-  title = 'Tell us what\'s wrong'
+  title = 'Report as',
 }: ReportContentDialogProps) => {
   const [reason, setReason] = useState<ContentReportReason>('harassment');
   const [details, setDetails] = useState('');
@@ -34,16 +32,22 @@ export const ReportContentDialog = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const noteRequired = reason === 'other';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (noteRequired && !details.trim()) {
+      setError('Add a note when you report as Other.');
+      return;
+    }
     setSubmitting(true);
     try {
       await api.reportContent({
         targetType,
         targetId,
         reason,
-        details: details.trim() || undefined
+        details: details.trim() || undefined,
       });
       setSuccess(true);
     } catch (err) {
@@ -73,25 +77,26 @@ export const ReportContentDialog = ({
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
-              Reason
+              Report as
             </label>
             <AppSelect
               value={reason}
               onChange={setReason}
               options={REASONS}
-              aria-label="Report reason"
+              aria-label="Report as"
             />
           </div>
           <div>
             <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
-              Details (optional)
+              {noteRequired ? 'Note (required)' : 'Note (optional)'}
             </label>
             <textarea
               className="ios-input text-[15px] min-h-[80px] resize-none"
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               maxLength={1000}
-              placeholder="Tell us what happened…"
+              placeholder={noteRequired ? 'Tell us what happened…' : 'Add any context for our team…'}
+              required={noteRequired}
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -115,7 +120,7 @@ export const ReportContentButton = ({
   targetType,
   targetId,
   label = 'Report',
-  className = ''
+  className = '',
 }: ReportContentButtonProps) => {
   const [open, setOpen] = useState(false);
 

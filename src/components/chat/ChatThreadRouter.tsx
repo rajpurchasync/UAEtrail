@@ -1,4 +1,4 @@
-import type { SocialGroupWallMessageView } from '../../api/index';
+import type { SocialGroupView, SocialGroupWallMessageView } from '../../api/index';
 import { DirectChatThread, type DirectChatThreadProps } from './DirectChatThread';
 import { GroupChatThread, type GroupChatActivityPayload } from './GroupChatThread';
 
@@ -10,6 +10,7 @@ type GroupChatThreadRouterProps = {
   onGroupActivity?: (payload: GroupChatActivityPayload) => void;
   streamedMessage?: SocialGroupWallMessageView | null;
   onStreamedMessageApplied?: () => void;
+  onGroupUpdated?: (group: SocialGroupView) => void;
 };
 
 type ChatThreadRouterProps =
@@ -19,8 +20,14 @@ type ChatThreadRouterProps =
 /** Picks direct vs group thread UI from inbox deep link (`?to=` / `?group=`). */
 export const ChatThreadRouter = (props: ChatThreadRouterProps) => {
   if (props.mode === 'group') {
-    const { groupId, onBack, onGroupActivity, streamedMessage, onStreamedMessageApplied } =
-      props.group;
+    const {
+      groupId,
+      onBack,
+      onGroupActivity,
+      streamedMessage,
+      onStreamedMessageApplied,
+      onGroupUpdated,
+    } = props.group;
     return (
       <GroupChatThread
         groupId={groupId}
@@ -28,6 +35,7 @@ export const ChatThreadRouter = (props: ChatThreadRouterProps) => {
         onGroupActivity={onGroupActivity}
         streamedMessage={streamedMessage}
         onStreamedMessageApplied={onStreamedMessageApplied}
+        onGroupUpdated={onGroupUpdated}
       />
     );
   }

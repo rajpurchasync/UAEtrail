@@ -17,10 +17,14 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), devQrPlugin()],
     resolve: {
-      alias: {
-        '@': path.resolve(projectRoot, 'src'),
-        '@/chat': path.resolve(projectRoot, 'src/components/chat'),
-      },
+      alias: [
+        // More specific paths before `@` → `src` (otherwise `@/chat` becomes `src/chat`).
+        {
+          find: '@/chat',
+          replacement: path.resolve(projectRoot, 'src/components/chat/index.ts'),
+        },
+        { find: '@', replacement: path.resolve(projectRoot, 'src') },
+      ],
     },
     server: {
       port: 5175,
