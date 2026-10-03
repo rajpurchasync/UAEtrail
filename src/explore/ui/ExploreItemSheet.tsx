@@ -53,6 +53,9 @@ const ExploreItemPeekCard = ({
     card={card}
     onClose={onClose}
     pinFooter
+    joinUiState={joinUiState}
+    joinStateLoading={joinStateLoading}
+    onGuestGatedAction={onGuestGatedAction}
     footer={
       <ExploreItemPeekFooter
         card={card}

@@ -110,6 +110,8 @@ Each context has **one write path** and **one public read model** where possible
 
 **Rule:** If a change touches “who can do X,” find the row above first. Do not add a second resolver in a route file or a random hook.
 
+**Viewer access (read vs act):** **Capabilities** = may publish / host console (`host_capabilities`). **Detail exposure** = may see full entity payload (`activity-viewer-access`, `profile-viewer-access`). **Guest sheets** = sign-in copy only — not authorization. Canonical model: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.
+
 ### 3.1 Context alignment matrix (API · FE · storage)
 
 Pick a **context id** when changing code; touch registrar + `src/api/domains/*` + UI roots together. Machine-readable paths: `scripts/bounded-context-manifest.json`.
@@ -119,6 +121,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | discovery | `activities`, `locations`, `participant_intents`, shop tenants | `GET /explore/map` | `exploreApi` | `src/explore/*` |
 | compose | `activities`, `participant_intents` | `POST /host/activities`, `POST /me/participant-intents` | `exploreApi`, `organisationApi` | `src/explore/ui/*` |
 | participation | `activity_requests`, `participant_intent_requests`, `activity_participants` | `/activities/.../requests`, `/host/requests` | `activitiesApi`, `exploreApi` | Activity detail, `JoinRequestDetail` |
+| *(cross-cut)* | — | `GET /activities/:id` viewer resolution | — | **`activity-viewer-access.ts`** (participation + discovery contexts) |
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
 | host_capabilities | `tenants`, `tenant_memberships` | `GET /me/host-status` | `memberApi` | `useOrganisationGate` |
 | organisation_console | + `activities` | `/host/*` + tenant header | `organisationApi`, `activitiesApi` | `Organisation*`, `organisation-console/*` |
@@ -205,6 +208,7 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C13** | Many `*Routing.ts` helpers | Import confusion | `routingCatalog` + `inferNotificationPath` | §10 |
 | **C14** | Doc corpus duplication | Contradictory terms | **Update Tier-1 only** — [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) | |
 | **C15** | Buddy/friend vocabulary | Fake entity ids | User ids only | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary |
+| **C16** | ~~Parallel detail policy~~ | — | **Mitigated (Oct 2026):** API `viewerAccess`, map enrich, `mapViewerAccessToUi`; FE shim is wire-only | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15 |
 
 **Not debt (intentional):** stable URLs (`/trail`, `/host`, `/operator`); Mongo collection names; `Organisation*` folder name with host user copy.
 
@@ -223,8 +227,9 @@ Ordered for **coherence**, not feature count:
 | **S4** | Frontend `api.*` stays domain-only | `apiLegacyGuard`, knip |
 | **S5** | Privacy notification matrix + viewer access everywhere | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **S6** | Place detail internal merge + SEO pass | ARCHITECTURE future |
+| **S7** | **Viewer access VA-1–VA-7** (activity detail + explore peek on API contract) | **Done** — §15.8; layer-7 hook `composeActivityViewerAccess` / `applyActivityViewEntitlements` |
 
-Phases **S0–S1** are largely in place; **S2–S6** are the production-grade cohesion work remaining.
+Phases **S0–S1** and **S7** are in place; **S2–S6** remain. **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
 
 ---
 
@@ -245,6 +250,7 @@ Phases **S0–S1** are largely in place; **S2–S6** are the production-grade co
 | What entities exist | `DOMAIN.md` |
 | Who can publish / host console | `MEMBER_MODEL.md` |
 | FAB and join behavior | `CREATE_FLOW.md` |
+| Who sees full detail vs peek | `DOMAIN_CANONICALS.md` §15 |
 | HTTP paths | `API_ROUTING.md` |
 | Deploy & monorepo layers | `ARCHITECTURE.md` |
 | System-wide debt register | §7–8 (this file) |

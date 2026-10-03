@@ -1,7 +1,7 @@
-import { ChevronRight, Mail, MapPin, MessageCircle, Navigation, Phone } from 'lucide-react';
+import { ChevronRight, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import type { ShopPublicDTO } from '@uaetrail/shared-types';
-import { buildGoogleDriveUrl, buildGoogleMapsSearchUrl, buildWazeDriveUrl } from '../../utils/mapLinks';
+import { DirectionsControl } from '../ui/DirectionsControl';
 import { personProfilePath } from '../../utils/organisationLinks';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { useAuth } from '../../context/AuthContext';
@@ -144,34 +144,13 @@ export const ShopContactSection = ({ shop }: ShopContactSectionProps) => {
             </div>
 
             {hasCoords && (
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                <a
-                  href={buildGoogleMapsSearchUrl(shop.latitude!, shop.longitude!)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-neutral-200 bg-white px-2 py-2.5 text-center text-xs font-semibold text-neutral-800 shadow-sm hover:bg-neutral-50 sm:flex-row sm:gap-2 sm:px-3 sm:text-sm"
-                >
-                  <MapPin className="h-4 w-4 text-emerald-600" aria-hidden />
-                  Maps
-                </a>
-                <a
-                  href={buildGoogleDriveUrl(shop.latitude!, shop.longitude!)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-neutral-200 bg-white px-2 py-2.5 text-center text-xs font-semibold text-neutral-800 shadow-sm hover:bg-neutral-50 sm:flex-row sm:gap-2 sm:px-3 sm:text-sm"
-                >
-                  <Navigation className="h-4 w-4 text-emerald-600" aria-hidden />
-                  Directions
-                </a>
-                <a
-                  href={buildWazeDriveUrl(shop.latitude!, shop.longitude!)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-sky-200 bg-sky-50 px-2 py-2.5 text-center text-xs font-semibold text-sky-900 shadow-sm hover:bg-sky-100 sm:flex-row sm:gap-2 sm:px-3 sm:text-sm"
-                >
-                  Waze
-                </a>
-              </div>
+              <DirectionsControl
+                lat={shop.latitude!}
+                lng={shop.longitude!}
+                variant="compact"
+                className="mt-3"
+                includeViewOnMap
+              />
             )}
           </div>
         )}

@@ -1,0 +1,39 @@
+---
+description: Viewer access and detail exposure — API resolvers, not FE policy duplication
+globs:
+  - src/explore/**
+  - src/pages/ActivityDetail.tsx
+  - src/access/**
+  - apps/api/src/services/activity-viewer-access.ts
+  - apps/api/src/services/profile-viewer-access.ts
+  - packages/shared-types/**
+---
+
+# Viewer access (detail exposure)
+
+**Canonical spec:** `docs/DOMAIN_CANONICALS.md` §15 · **Debt / phases:** `docs/SYSTEM_COHERENCE.md` C16, S7 (VA-0–VA-7).
+
+## Layers (see `DOMAIN_CANONICALS.md` §15.1 + §15.10)
+
+| Layer | Source |
+|-------|--------|
+| Identity (guest vs user id) | `req.auth` |
+| Platform role / admin bypass | `UserRole`, resolver `platform_admin` |
+| **Capabilities** (Organize, console, paid publish) | `member-host-status.ts` / `HostStatusDTO` only |
+| Map discovery / participation | `joinMode`, `participationMode` — not detail depth alone |
+| **Social viewer access** | `activity-viewer-access.ts`, `profile-viewer-access.ts` |
+| `computeActivityDetailExposure` | Roster + discovery → exposure — **not** Pro tiers |
+| **Entitlements (future)** | Separate service after social exposure — do not bolt onto `computeActivityDetailExposure` |
+
+## Rules
+
+1. **Policy lives on the API** — extend `resolveActivityViewerAccess` + tests before changing product rules.
+2. Peek policy must call **`computeActivityDetailExposure`** (`@uaetrail/shared-types`) — not duplicate rules in React.
+3. **Guest UI** — `guestBrowseGateCopy` / `openGuestSheet` when `gateReason === sign_in` only; `join_required` uses join/footer CTAs.
+4. **VA-3 done:** `GET /activities/:id` returns `viewerAccess`; Activity detail page must consume it.
+5. **Map peek:** `GET /explore/map` `viewerAccess` + `mapViewerAccessToExplorePeekDetail` — no `computeActivityDetailExposure` in React.
+6. **Commerce / venues on map:** `resolveCommerceMapViewerAccess` / `resolvePublicPlaceMapViewerAccess` on explore map rows.
+7. **Organize gates:** `organizePublishGateHref` ← `organizeEntitlementDenial` (not ad-hoc profile checks).
+8. **Next:** entitlements layer when paid SKUs ship (`applyActivityViewEntitlements`).
+
+Before done: `npm run verify:system:quick`; API changes must keep `activity-viewer-access.test.ts` as the contract.

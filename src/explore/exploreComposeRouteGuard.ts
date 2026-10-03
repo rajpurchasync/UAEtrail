@@ -1,5 +1,8 @@
 import { signInPathForReturn } from '../utils/authReturnContext';
-import { organizePublishGateHref } from '../utils/organizePublishGate';
+import {
+  organizePublishGateHref,
+  organizePublishGateInputFromHostGate,
+} from '../utils/organizePublishGate';
 import { isAddWizard, isFindWizard, isOrganizeWizard, type ExploreCompose } from './compose';
 import { explorePath } from './routing';
 
@@ -30,10 +33,14 @@ export const resolveComposeRouteChange = (
       const returnTo = explorePath({ compose: route });
       return {
         type: 'complete-profile',
-        href: organizePublishGateHref(returnTo, {
-          signupProfileComplete: ctx.signupProfileComplete,
-          canPublish: ctx.canPublish,
-        }),
+        href: organizePublishGateHref(
+          returnTo,
+          organizePublishGateInputFromHostGate({
+            viewerUserId: ctx.user?.id ?? null,
+            signupProfileComplete: ctx.signupProfileComplete,
+            canPublish: ctx.canPublish,
+          })
+        ),
       };
     }
   }

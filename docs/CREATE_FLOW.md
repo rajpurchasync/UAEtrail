@@ -160,6 +160,8 @@ participationMode: 'rsvp' | 'approval'
 | `rsvp` | **Iâ€™m going** | View details |
 | `approval` | **Request to join** | View details |
 
+**Full detail page vs map peek** is **not** `participationMode` or `joinMode` alone — it is **viewer access / detail exposure** (who may open `/activity/:id` with a full payload). Canonical model, policy matrix, and phased implementation: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15. Until **VA-3** ships, do not add new client-only detail policy outside that doc's interim list (§15.7).
+
 ---
 
 ## Demand (Find) — who is the host?

@@ -94,6 +94,7 @@ export type ExploreMapStageProps = {
   onCloseMobileBrowse: () => void;
   mobileBrowseSheet: ReactNode;
   onGuestGatedAction?: () => void;
+  onPlanTripFromVenue?: (item: import('@uaetrail/shared-types').ExploreMapItemDTO) => void;
   onInviteCrew?: () => void;
 };
 
@@ -161,6 +162,7 @@ export const ExploreMapStage = ({
   onCloseMobileBrowse,
   mobileBrowseSheet,
   onGuestGatedAction,
+  onPlanTripFromVenue,
   onInviteCrew,
 }: ExploreMapStageProps) => {
   const guestGatedAction = user ? undefined : onGuestGatedAction;
@@ -305,6 +307,7 @@ export const ExploreMapStage = ({
         <ExplorePlaceMapPreview
           item={selected}
           onClose={onCloseSelection}
+          onPlanTrip={onPlanTripFromVenue ?? (() => {})}
           onGuestGatedAction={guestGatedAction}
         />
       ) : selectedCard ? (

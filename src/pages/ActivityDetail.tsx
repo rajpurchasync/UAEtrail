@@ -4,6 +4,7 @@ import { Lock } from 'lucide-react';
 import type {
   ActivityDetailDTO,
   ActivityParticipationDTO,
+  ActivityViewerAccessDTO,
   MyActivityRequestDTO,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
@@ -25,6 +26,8 @@ import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
 import { useOrganisationGate } from '../hooks/useOrganisationGate';
 import { viewerHostsActivity } from '../utils/viewerHostsActivity';
 import { tripsPath } from '../trips/tripsRouting';
+import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
+
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -37,16 +40,19 @@ export const ActivityDetail = () => {
   const [participation, setParticipation] = useState<ActivityParticipationDTO | null | undefined>(undefined);
   const [myRequest, setMyRequest] = useState<MyActivityRequestDTO | null | undefined>(undefined);
   const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
+  const [viewerAccess, setViewerAccess] = useState<ActivityViewerAccessDTO | null>(null);
 
   const loadActivity = useCallback(() => {
     if (!id) return;
     setLoading(true);
     setParticipation(undefined);
     setMyRequest(undefined);
+    setViewerAccess(null);
     api
       .getPublicActivityDetail(id)
       .then((res) => {
         setActivity(res.data);
+        setViewerAccess(res.viewerAccess ?? null);
         setParticipation(res.data.myParticipation ?? null);
         setMyRequest(res.data.myRequest ?? null);
       })
@@ -156,7 +162,16 @@ export const ActivityDetail = () => {
     );
   }
 
-  if (activity.visibilityState === 'private') {
+  const detailExposure =
+    viewerAccess?.exposure ??
+    (activity.visibilityState === 'private'
+      ? 'none'
+      : activity.visibilityState === 'redacted'
+        ? 'redacted'
+        : 'full');
+
+  if (detailExposure === 'none') {
+    const guestPrivate = viewerAccess?.gateReason === 'sign_in' && !user;
     return (
       <>
         <PageMeta title="Private activity" noIndex path={id ? `/activity/${id}` : undefined} />
@@ -169,22 +184,32 @@ export const ActivityDetail = () => {
             <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
               {activity.message ?? 'This activity is private — only invited members can view it.'}
             </p>
-            <p className="mt-3 text-xs text-neutral-500 leading-relaxed">
-              If someone shared this link with you, sign in — or create a free account to request access.
-            </p>
-            {!user && (
-              <Link
-                to={signInPathForReturn(`/activity/${activity.id}`)}
-                className="mt-4 inline-block text-sm font-semibold text-emerald-700"
-              >
-                Sign up or log in
-              </Link>
+            {guestPrivate ? (
+              <div className="mt-6 text-left">
+                <ExploreGuestSignInCard intent="peek-details" compact />
+              </div>
+            ) : (
+              <>
+                <p className="mt-3 text-xs text-neutral-500 leading-relaxed">
+                  If someone shared this link with you, sign in — or create a free account to request access.
+                </p>
+                {!user && (
+                  <Link
+                    to={signInPathForReturn(`/activity/${activity.id}`)}
+                    className="mt-4 inline-block text-sm font-semibold text-emerald-700"
+                  >
+                    Sign up or log in
+                  </Link>
+                )}
+              </>
             )}
           </div>
         </MobileDetailShell>
       </>
     );
   }
+
+  const isRedactedPreview = detailExposure === 'redacted';
 
   const heroImage =
     activity.images?.[0] ??
@@ -216,13 +241,30 @@ export const ActivityDetail = () => {
       <PageMeta
         title={activity.title || activity.locationName}
         description={
-          activity.description?.slice(0, 160) ?? `Join this ${activity.activityType} activity in the UAE on UAE Trail`
+          activity.description?.slice(0, 160) ??
+          `Join this ${activity.activityType} activity in the UAE on UAE Trail`
         }
         path={`/activity/${activity.id}`}
         image={heroImage}
         imageAlt={activity.title || activity.locationName}
+        noIndex={isRedactedPreview}
       />
       <JsonLd data={activityEventSchema(activity)} id={`activity-${activity.id}`} />
+      {isRedactedPreview && viewerAccess?.gateReason === 'sign_in' && !user ? (
+        <div className="mx-auto max-w-3xl px-4 pt-4">
+          <ExploreGuestSignInCard intent="peek-details" compact />
+        </div>
+      ) : null}
+      {isRedactedPreview && viewerAccess?.gateReason === 'join_required' && user ? (
+        <p className="mx-auto max-w-3xl px-4 pt-4 text-sm font-medium text-neutral-700">
+          Request to join or RSVP to unlock the full plan — meeting point, host notes, and crew chat.
+        </p>
+      ) : null}
+      {isRedactedPreview && activity.message ? (
+        <p className="mx-auto max-w-3xl px-4 pt-4 text-sm leading-relaxed text-neutral-600">
+          {activity.message}
+        </p>
+      ) : null}
       <ActivityDetailView
         activity={activity}
         participation={participation ?? null}

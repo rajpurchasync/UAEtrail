@@ -25,6 +25,18 @@ import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
 import { useExploreOrganizeFromActivity } from './useExploreOrganizeFromActivity';
 import type { OrganizeWizardPrefill } from './organizeWizardPrefill';
+import { api } from '../../api/index';
+import { buildExploreCardModel } from '../exploreCardModel';
+import {
+  createDraftFromRegistryPlace,
+  resolveOrganizeComposeKindFromVenueCardKind,
+  resolveCreateActivityKindFromVenueCardKind,
+} from './organizeFromPlace';
+import type { CreateActivityDraft } from './organizeFlow';
+import {
+  organizePublishGateHref,
+  organizePublishGateInputFromHostGate,
+} from '../../utils/organizePublishGate';
 import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkRidesharePrefill';
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useExploreMapViewport } from './useExploreMapViewport';
@@ -35,13 +47,14 @@ import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
 import { AppButton } from '../../components/mobile/AppButton';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
-import { organizePublishGateHref } from '../../utils/organizePublishGate';
 
 export const ExploreExperience = () => {
   const { user } = useAuth();
   const {
     canPublish,
     signupProfileComplete,
+    isCommunityHost,
+    hostTiers,
     loading: hostGateLoading,
     tenantId,
     refresh: refreshHostGate,
@@ -49,6 +62,22 @@ export const ExploreExperience = () => {
     enabled: Boolean(user),
   });
   const navigate = useNavigate();
+  const navigateOrganizePublishGate = useCallback(
+    (returnPath: string) =>
+      navigate(
+        organizePublishGateHref(
+          returnPath,
+          organizePublishGateInputFromHostGate({
+            viewerUserId: user?.id ?? null,
+            signupProfileComplete,
+            canPublish,
+            isCommunityHost,
+            hostTiers,
+          })
+        )
+      ),
+    [navigate, user?.id, signupProfileComplete, canPublish, isCommunityHost, hostTiers]
+  );
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { pathname, search, state: locationState } = useLocation();
@@ -119,12 +148,18 @@ export const ExploreExperience = () => {
     setSelectedId,
   });
 
+  const [organizeFromPlacePrefill, setOrganizeFromPlacePrefill] = useState<CreateActivityDraft | null>(
+    null
+  );
+
   const organizeFrom = useExploreOrganizeFromActivity({
     user,
     tenantId,
     hostGateLoading,
     canPublish,
     signupProfileComplete,
+    isCommunityHost,
+    hostTiers,
     navigate,
     pathname,
     searchParams,
@@ -154,7 +189,7 @@ export const ExploreExperience = () => {
     }
     if (hostGateLoading) return;
     if (!canPublish) {
-      navigate(organizePublishGateHref(returnPath, { signupProfileComplete, canPublish }));
+      navigateOrganizePublishGate(returnPath);
       return;
     }
 
@@ -168,9 +203,7 @@ export const ExploreExperience = () => {
     search,
     user,
     hostGateLoading,
-    canPublish,
-    signupProfileComplete,
-    navigate,
+    navigateOrganizePublishGate,
     compose.setComposeRoute,
   ]);
 
@@ -193,8 +226,16 @@ export const ExploreExperience = () => {
         sourceActivityId: organizeFrom.organizeFromPrefill.sourceActivityId,
       };
     }
+    if (organizeFromPlacePrefill) {
+      return { draft: organizeFromPlacePrefill };
+    }
     return null;
-  }, [rideshareLinkParent, rideshareLinkDemand, organizeFrom.organizeFromPrefill]);
+  }, [
+    rideshareLinkParent,
+    rideshareLinkDemand,
+    organizeFrom.organizeFromPrefill,
+    organizeFromPlacePrefill,
+  ]);
 
   const inviteShare = useActivityInviteShareSheet();
 
@@ -357,8 +398,50 @@ export const ExploreExperience = () => {
   const closeCreateFlow = () => {
     compose.closeCompose();
     organizeFrom.clearOrganizeFromPrefill();
+    setOrganizeFromPlacePrefill(null);
     setRideshareLinkParent(null);
   };
+
+  const handlePlanTripFromVenue = useCallback(
+    async (item: ExploreMapItemDTO) => {
+      const returnPath = `${pathname}${search}`;
+      if (!user) {
+        navigate(buildSignInRedirect({ pathname, search }).href);
+        return;
+      }
+      if (hostGateLoading) return;
+      if (!canPublish) {
+        navigateOrganizePublishGate(returnPath);
+        return;
+      }
+
+      const placeId = item.locationCard?.id;
+      if (!placeId) return;
+
+      const card = buildExploreCardModel(item);
+      const composeKind = resolveOrganizeComposeKindFromVenueCardKind(card.kind);
+      const createKind = resolveCreateActivityKindFromVenueCardKind(card.kind);
+      compose.setComposeRoute({ intent: 'organize', kind: composeKind });
+
+      try {
+        const { data } = await api.getPublicPlaceDetail(placeId);
+        setOrganizeFromPlacePrefill(createDraftFromRegistryPlace(data, createKind));
+      } catch {
+        compose.closeCompose();
+      }
+    },
+    [
+      pathname,
+      search,
+      user,
+      hostGateLoading,
+      canPublish,
+      signupProfileComplete,
+      navigate,
+      compose.setComposeRoute,
+      compose.closeCompose,
+    ]
+  );
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
   const handleMapSearchCommit = (scope?: ExploreSearchScopeKey | null) => {
@@ -552,6 +635,7 @@ export const ExploreExperience = () => {
           onCloseMobileBrowse={browse.closeListPanel}
           mobileBrowseSheet={mobileBrowsePanel}
           onGuestGatedAction={selection.handleGuestGatedAction}
+          onPlanTripFromVenue={handlePlanTripFromVenue}
           onInviteCrew={
             selection.selected?.activity?.status === 'published' &&
             (selection.selectedCard?.showHostActions || selection.joinUiState?.kind === 'confirmed')
@@ -587,6 +671,7 @@ export const ExploreExperience = () => {
         onCloseCreateFlow={closeCreateFlow}
         onOrganizeBackToIntent={() => {
           organizeFrom.clearOrganizeFromPrefill();
+          setOrganizeFromPlacePrefill(null);
           setRideshareLinkParent(null);
           setRideshareLinkDemand(null);
           compose.setComposeRoute({ surface: 'menu', intent: 'organize' });
@@ -611,7 +696,7 @@ export const ExploreExperience = () => {
         onOpenHostApplication={() => {
           closeCreateFlow();
           const returnPath = `${pathname}${search}`;
-          navigate(organizePublishGateHref(returnPath, { signupProfileComplete, canPublish }));
+          navigateOrganizePublishGate(returnPath);
         }}
         onContributeSubmitted={selection.handleContributeSubmitted}
       />

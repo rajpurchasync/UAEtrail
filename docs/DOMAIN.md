@@ -157,6 +157,8 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 
 **Not** the same as `joinMode` (`open` \| `private`), which controls map visibility only.
 
+**Who may see full activity detail vs map peek** is **detail exposure** (viewer access), not `participationMode` or `joinMode`. Resolvers, policy matrix, and implementation phases: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.
+
 **Organize defaults:** Event → `rsvp`; Hiking, Camping, generic Activity → `approval`. Creator can toggle on all organize paths.
 
 ## Host vs Organisation in copy

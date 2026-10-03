@@ -1,3 +1,4 @@
+import { computeActivityDetailExposure } from '@uaetrail/shared-types';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { MembershipRole, RequestStatus } from '../src/domain/enums.js';
 
@@ -43,13 +44,15 @@ describe('resolveActivityViewerAccess', () => {
     vi.mocked(findTenantMembershipContext).mockResolvedValue(null);
   });
 
-  it('allows anyone to view open activities', async () => {
+  it('redacts open map activities for guests', async () => {
     const access = await resolveActivityViewerAccess({
       viewerUserId: null,
       activity: { ...activity, joinMode: 'open', requirements: ['Open: anyone can request to join'] },
     });
 
-    expect(access.canViewFullActivity).toBe(true);
+    expect(access.exposure).toBe('redacted');
+    expect(access.canViewFullActivity).toBe(false);
+    expect(access.gateReason).toBe('sign_in');
     expect(access.level).toBe('public');
   });
 
@@ -59,6 +62,7 @@ describe('resolveActivityViewerAccess', () => {
       activity,
     });
 
+    expect(access.exposure).toBe('none');
     expect(access.canViewFullActivity).toBe(false);
     expect(access.level).toBe('denied');
   });
@@ -133,13 +137,15 @@ describe('resolveActivityViewerAccess', () => {
     expect(access.level).toBe('activity_group_member');
   });
 
-  it('allows any signed-in member with the link to view a private activity', async () => {
+  it('redacts private link visits for signed-in non-roster members', async () => {
     const access = await resolveActivityViewerAccess({
       viewerUserId: 'member-with-link-1',
       activity,
     });
 
-    expect(access.canViewFullActivity).toBe(true);
+    expect(access.exposure).toBe('redacted');
+    expect(access.canViewFullActivity).toBe(false);
+    expect(access.gateReason).toBe('join_required');
     expect(access.level).toBe('link_holder');
   });
 
@@ -156,6 +162,18 @@ describe('resolveActivityViewerAccess', () => {
 
     expect(access.canViewFullActivity).toBe(true);
     expect(access.level).toBe('tenant_staff');
+  });
+});
+
+describe('computeActivityDetailExposure (shared policy)', () => {
+  it('redacts open map activities for guests', () => {
+    const result = computeActivityDetailExposure({
+      joinMode: 'open',
+      level: 'public',
+      viewerUserId: null,
+    });
+    expect(result.exposure).toBe('redacted');
+    expect(result.gateReason).toBe('sign_in');
   });
 });
 

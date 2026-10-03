@@ -40,7 +40,7 @@ Tier-2: ops (`DEV_RUN.md`, `DEPLOYMENT.md`, `PRE_DEPLOY_CHECKLIST.md`, …). Tie
 1. **Behavior / API** → `API_ROUTING.md` and/or `CREATE_FLOW.md` and/or `MEMBER_MODEL.md`
 2. **Routes** → `NAVIGATION.md` + `routingCatalog` / `surfacePaths`
 3. **Cross-context placement** → `SYSTEM_COHERENCE.md` §3 if a new write path
-4. **Names & call sites** → `DOMAIN_CANONICALS.md` §6–12
+4. **Names & call sites** → `DOMAIN_CANONICALS.md` §6–12 · **viewer access / detail exposure** → §15
 5. **Copy** → `src/content/*` per Cursor rules
 6. **FAB / compose QA** → `CREATE_FLOW.md` + `npm run test:explore-alignment`
 

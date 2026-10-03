@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { HostTierFlags } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
 import { api } from '../../api/index';
 import type { ExploreCompose, OrganizeComposeKind } from '../compose';
@@ -11,7 +12,10 @@ import {
   createDraftFromPastActivity,
   resolveOrganizeComposeKindFromActivity,
 } from './organizeFromActivity';
-import { organizePublishGateHref } from '../../utils/organizePublishGate';
+import {
+  organizePublishGateHref,
+  organizePublishGateInputFromHostGate,
+} from '../../utils/organizePublishGate';
 import type { CreateActivityDraft } from './organizeFlow';
 
 export type OrganizeFromActivityPrefill = {
@@ -25,6 +29,8 @@ type UseExploreOrganizeFromActivityArgs = {
   hostGateLoading: boolean;
   canPublish: boolean;
   signupProfileComplete: boolean;
+  isCommunityHost?: boolean;
+  hostTiers?: HostTierFlags;
   navigate: NavigateFunction;
   pathname: string;
   searchParams: URLSearchParams;
@@ -39,6 +45,8 @@ export const useExploreOrganizeFromActivity = ({
   hostGateLoading,
   canPublish,
   signupProfileComplete,
+  isCommunityHost,
+  hostTiers,
   navigate,
   pathname,
   searchParams,
@@ -68,7 +76,16 @@ export const useExploreOrganizeFromActivity = ({
 
     if (!canPublish) {
       navigate(
-        organizePublishGateHref(returnPath, { signupProfileComplete, canPublish })
+        organizePublishGateHref(
+          returnPath,
+          organizePublishGateInputFromHostGate({
+            viewerUserId: user.id,
+            signupProfileComplete,
+            canPublish,
+            isCommunityHost,
+            hostTiers,
+          })
+        )
       );
       return;
     }

@@ -446,6 +446,38 @@ export const findActivityParticipantByEventAndUser = async (
   return row ? toActivityParticipantRecord(row) : null;
 };
 
+/** Batch load for explore map `viewerAccess` hints (per viewer, not cached). */
+export const listActivityEngagementForUserOnActivities = async (
+  userId: string,
+  activityIds: string[]
+): Promise<{
+  participantActivityIds: Set<string>;
+  requestStatusByActivityId: Map<string, RequestStatus>;
+}> => {
+  const uniqueIds = [...new Set(activityIds.filter(Boolean))];
+  if (uniqueIds.length === 0) {
+    return { participantActivityIds: new Set(), requestStatusByActivityId: new Map() };
+  }
+
+  const [participantRows, requestRows] = await Promise.all([
+    activityParticipantsCollection()
+      .find({ userId, activityId: { $in: uniqueIds } })
+      .project({ activityId: 1 })
+      .toArray(),
+    activityRequestsCollection()
+      .find({ userId, activityId: { $in: uniqueIds } })
+      .toArray(),
+  ]);
+
+  const participantActivityIds = new Set(participantRows.map((row) => row.activityId));
+  const requestStatusByActivityId = new Map<string, RequestStatus>();
+  for (const row of requestRows) {
+    requestStatusByActivityId.set(row.activityId, row.status);
+  }
+
+  return { participantActivityIds, requestStatusByActivityId };
+};
+
 export const findActivityParticipantByIdAndActivity = async (
   id: string,
   activityId: string

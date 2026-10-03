@@ -16,7 +16,7 @@
 | [`CREATE_FLOW.md`](./CREATE_FLOW.md) | FAB, Organize, Find, Add, join modes |
 | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) | Person account, host tiers, capabilities, host/join/buddy **naming** |
 | [`DOMAIN.md`](./DOMAIN.md) | Entity glossary (Place, Activity, Demand, …) |
-| [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | TS symbols, URLs, API client, notifications, routing hygiene |
+| [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | TS symbols, URLs, API client, notifications, routing hygiene, **§15 viewer access** |
 | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | All domains, bounded contexts, **alignment matrix**, debt register |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo, deploy, layers |
 | [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/host/*`, explore, deprecations |
@@ -58,6 +58,7 @@ Which bounded context?     → SYSTEM_COHERENCE §3 + manifest
 Routes / deep links?       → NAVIGATION + DOMAIN_CANONICALS §3 + routingCatalog
 HTTP / handlers?           → API_ROUTING
 Who can Organize / host?   → MEMBER_MODEL
+Who sees full detail/peek? → DOMAIN_CANONICALS §15 (+ SYSTEM_COHERENCE C16 / S7)
 Map / FAB / publish?       → CREATE_FLOW + NORTHSTAR
 Names / api.* / meta?      → DOMAIN_CANONICALS §6–12
 Copy on map or home?       → exploreCopy / homeLanding + NORTHSTAR

@@ -1,4 +1,11 @@
-import { ActivityDTO, JoinRequestDTO, MyActivityDTO, ParticipantDTO, WithdrawReason } from '@uaetrail/shared-types';
+import {
+  ActivityDTO,
+  ActivityViewerAccessDTO,
+  JoinRequestDTO,
+  MyActivityDTO,
+  ParticipantDTO,
+  WithdrawReason,
+} from '@uaetrail/shared-types';
 import { apiRequest, getStoredSession } from '../client';
 import { organisationRequestHeaders } from '../orgHeaders';
 import type { ActivityDetail, ActivityRequestView } from '../types';
@@ -15,7 +22,9 @@ export const activitiesApi = {
     apiRequest<{ data: ActivityDTO[] }>(`/activities/featured?limit=${limit}`),
 
     getPublicActivityDetail: (id: string) =>
-    apiRequest<{ data: ActivityDetail }>(`/activities/${id}`, { auth: Boolean(getStoredSession()) }),
+    apiRequest<{ data: ActivityDetail; viewerAccess: ActivityViewerAccessDTO }>(`/activities/${id}`, {
+      auth: Boolean(getStoredSession()),
+    }),
 
     getActivityGroupChat: (activityId: string) =>
     apiRequest<{

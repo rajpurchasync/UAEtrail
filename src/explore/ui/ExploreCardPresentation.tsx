@@ -1,16 +1,18 @@
+import type { ReactNode } from 'react';
 import { explorePersonRoleLabel } from '@uaetrail/shared-types';
-import { ChevronRight, Clock, MapPin, Navigation, Route, Star, Tag, Users } from 'lucide-react';
+import { ChevronRight, Clock, MapPin, Route, Star, Tag, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel, ExploreCardTone } from '../exploreCardModel';
 import { exploreCardToneTextClass } from '../exploreCardModel';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ExploreCardDetail, ExploreCardDetailIcon, ExploreCardSections } from '../exploreCopy';
 import { personProfilePath, resolveOrganisationProfilePath } from '../../utils/organisationLinks';
-import { buildGoogleDriveUrl } from '../../utils/mapLinks';
+import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { capitalize } from '../../utils';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { ParticipantPreview } from '../../components/ui/ParticipantPreview';
 import { ExploreCardTypeIcon } from './ExploreCardTypeIcon';
+import type { ExplorePeekDetailAccess } from '../../access/mapViewerAccessToUi';
 
 const detailIcon = (icon: ExploreCardDetailIcon) => {
   switch (icon) {
@@ -29,43 +31,94 @@ const detailIcon = (icon: ExploreCardDetailIcon) => {
   }
 };
 
+const ExploreCardHeadlineShell = ({
+  detailAccess,
+  onGuestGatedDetail,
+  textClass,
+  children,
+}: {
+  detailAccess?: ExplorePeekDetailAccess | null;
+  onGuestGatedDetail?: () => void;
+  textClass: string;
+  children: ReactNode;
+}) => {
+  const titleLinkClass = `${EXPLORE_TYPE.title} ${textClass} text-left hover:underline decoration-neutral-400/60 underline-offset-2`;
+  const plainClass = `${EXPLORE_TYPE.title} ${textClass}`;
+
+  if (detailAccess?.kind === 'link') {
+    return (
+      <Link to={detailAccess.href} className={titleLinkClass}>
+        {children}
+      </Link>
+    );
+  }
+  if (detailAccess?.kind === 'guest_gate' && onGuestGatedDetail) {
+    return (
+      <button type="button" onClick={onGuestGatedDetail} className={titleLinkClass}>
+        {children}
+      </button>
+    );
+  }
+  return <p className={plainClass}>{children}</p>;
+};
+
 /** Primary title — one clear line, easy to scan. */
 export const ExploreCardHeadline = ({
   sections,
   size = 'lg',
   tone = 'hiking',
+  detailAccess,
+  onGuestGatedDetail,
 }: {
   sections: ExploreCardSections;
   size?: 'sm' | 'lg';
   tone?: ExploreCardTone;
+  detailAccess?: ExplorePeekDetailAccess | null;
+  onGuestGatedDetail?: () => void;
 }) => {
   const textClass = size === 'lg' ? 'text-xl font-bold leading-snug' : 'text-[17px] font-bold leading-snug';
   const highlightClass = exploreCardToneTextClass[tone];
 
   if (sections.plainTitle) {
-    return <p className={`${EXPLORE_TYPE.title} ${textClass}`}>{sections.plainTitle}</p>;
+    return (
+      <ExploreCardHeadlineShell
+        detailAccess={detailAccess}
+        onGuestGatedDetail={onGuestGatedDetail}
+        textClass={textClass}
+      >
+        {sections.plainTitle}
+      </ExploreCardHeadlineShell>
+    );
   }
 
   if (sections.titleText && sections.hostName) {
     return (
-      <p className={`${EXPLORE_TYPE.title} ${textClass}`}>
+      <ExploreCardHeadlineShell
+        detailAccess={detailAccess}
+        onGuestGatedDetail={onGuestGatedDetail}
+        textClass={textClass}
+      >
         {sections.titleText}
         <span className={`font-normal ${EXPLORE_TYPE.caption}`}> · </span>
         <span className={`font-bold ${EXPLORE_TYPE.body}`}>{sections.hostName}</span>
-      </p>
+      </ExploreCardHeadlineShell>
     );
   }
 
   if (sections.highlightName) {
     return (
-      <p className={`${EXPLORE_TYPE.title} ${textClass}`}>
+      <ExploreCardHeadlineShell
+        detailAccess={detailAccess}
+        onGuestGatedDetail={onGuestGatedDetail}
+        textClass={textClass}
+      >
         <span>{sections.highlightName}</span>
         {sections.suffix && <span>{sections.suffix}</span>}
         {sections.activityHighlight && (
           <span className={highlightClass}>{sections.activityHighlight}</span>
         )}
         {sections.dateHighlight && <span>{sections.dateHighlight}</span>}
-      </p>
+      </ExploreCardHeadlineShell>
     );
   }
 
@@ -113,17 +166,13 @@ export const ExploreCardDirectionsButton = ({
 }) => {
   if (latitude == null || longitude == null) return null;
   return (
-    <a
-      href={buildGoogleDriveUrl(latitude, longitude)}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(event) => event.stopPropagation()}
-      onPointerDown={(event) => event.stopPropagation()}
-      className={className}
-    >
-      <Navigation className="h-4 w-4 shrink-0" aria-hidden />
-      Get directions
-    </a>
+    <DirectionsControl
+      lat={latitude}
+      lng={longitude}
+      variant="button"
+      className="w-full"
+      buttonClassName={className}
+    />
   );
 };
 
@@ -146,17 +195,13 @@ export const ExploreCardLocationLink = ({
     'inline-flex items-center gap-1 font-medium text-emerald-700 underline decoration-emerald-700/30 underline-offset-2 hover:text-emerald-800 hover:decoration-emerald-800';
 
   const directionsAction = hasCoords ? (
-    <a
-      href={buildGoogleDriveUrl(latitude, longitude)}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(event) => event.stopPropagation()}
-      onPointerDown={(event) => event.stopPropagation()}
-      className={linkClass}
-    >
-      <Navigation className="h-3.5 w-3.5 shrink-0" aria-hidden />
-      Get Directions
-    </a>
+    <DirectionsControl
+      lat={latitude}
+      lng={longitude}
+      variant="link"
+      label="Get Directions"
+      linkClassName={linkClass}
+    />
   ) : null;
 
   return (

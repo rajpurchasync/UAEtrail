@@ -1,0 +1,103 @@
+import { describe, expect, it } from 'vitest';
+import { resolveCommerceMapViewerAccess } from '@uaetrail/shared-types';
+import {
+  attachExploreMapViewerAccess,
+  resolveDemandMapViewerAccess,
+} from '../src/lib/explore-map-viewer-access.js';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+
+describe('resolveDemandMapViewerAccess', () => {
+  it('gates guests with sign_in', () => {
+    const access = resolveDemandMapViewerAccess({
+      viewerUserId: null,
+      requesterUserId: 'owner',
+      joinRequestStatus: null,
+    });
+    expect(access.gateReason).toBe('sign_in');
+    expect(access.exposure).toBe('redacted');
+  });
+
+  it('grants full detail to requester', () => {
+    const access = resolveDemandMapViewerAccess({
+      viewerUserId: 'owner',
+      requesterUserId: 'owner',
+      joinRequestStatus: null,
+    });
+    expect(access.exposure).toBe('full');
+    expect(access.gateReason).toBeNull();
+  });
+});
+
+describe('resolveCommerceMapViewerAccess', () => {
+  it('requires sign-in for guests', () => {
+    const access = resolveCommerceMapViewerAccess(null);
+    expect(access.gateReason).toBe('sign_in');
+    expect(access.canOpenDetailPage).toBe(false);
+  });
+
+  it('allows members to open shop detail', () => {
+    const access = resolveCommerceMapViewerAccess('user-1');
+    expect(access.exposure).toBe('full');
+    expect(access.gateReason).toBeNull();
+  });
+});
+
+describe('attachExploreMapViewerAccess', () => {
+  it('attaches guest viewerAccess on open activities', () => {
+    const items: ExploreMapItemDTO[] = [
+      {
+        id: 'activity:a1',
+        kind: 'hiking',
+        source: 'activity',
+        title: 'Hike',
+        latitude: 25,
+        longitude: 55,
+        path: '/activity/a1',
+        activity: {
+          id: 'a1',
+          tenantId: 't1',
+          title: 'Hike',
+          joinMode: 'open',
+          requirements: [],
+        } as ExploreMapItemDTO['activity'],
+      },
+    ];
+
+    const enriched = attachExploreMapViewerAccess(items, {
+      viewerUserId: null,
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map(),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.gateReason).toBe('sign_in');
+    expect(enriched[0].viewerAccess?.canOpenDetailPage).toBe(true);
+  });
+
+  it('attaches commerce viewerAccess for shop rows', () => {
+    const items: ExploreMapItemDTO[] = [
+      {
+        id: 'shop:t1',
+        kind: 'shop',
+        source: 'shop',
+        title: 'Gear',
+        latitude: 25,
+        longitude: 55,
+        path: '/shop/t1',
+      },
+    ];
+
+    const enriched = attachExploreMapViewerAccess(items, {
+      viewerUserId: null,
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map(),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.gateReason).toBe('sign_in');
+  });
+});

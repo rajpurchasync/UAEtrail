@@ -5,7 +5,10 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
-import { organizePublishGateHref } from '../../utils/organizePublishGate';
+import {
+  organizePublishGateHref,
+  organizePublishGateInputFromHostGate,
+} from '../../utils/organizePublishGate';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import {
@@ -90,6 +93,8 @@ export const CreateActivityFlow = ({
   const {
     canPublish,
     signupProfileComplete,
+    isCommunityHost,
+    hostTiers,
     canHostPaidActivities,
     tenantId,
     loading: hostGateLoading,
@@ -362,7 +367,18 @@ export const CreateActivityFlow = ({
       if (onOpenHostApplication) {
         onOpenHostApplication();
       } else {
-        navigate(organizePublishGateHref(returnPath, { signupProfileComplete, canPublish }));
+        navigate(
+          organizePublishGateHref(
+            returnPath,
+            organizePublishGateInputFromHostGate({
+              viewerUserId: user?.id ?? null,
+              signupProfileComplete,
+              canPublish,
+              isCommunityHost,
+              hostTiers,
+            })
+          )
+        );
       }
       onClose();
       return;

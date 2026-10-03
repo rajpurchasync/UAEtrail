@@ -2,6 +2,7 @@ import type { GroupWallReplyPreviewDTO } from './group-wall.js';
 import type { ExploreCardPresentationDTO } from './explore-presentation.js';
 import type { ExploreMapPersonDTO } from './explore-person.js';
 import type { ActivityJoinMode } from './activity-join-mode.js';
+import type { ActivityViewerAccessDTO } from './activity-viewer-access.js';
 import type { ParticipationMode } from './activity-participation-mode.js';
 import type {
   ExplorePlanComposeIntent,
@@ -227,7 +228,7 @@ export interface ActivityDTO {
 
 
 export interface ActivityDetailDTO extends ActivityDTO {
-  visibilityState?: 'full' | 'private';
+  visibilityState?: 'full' | 'private' | 'redacted';
   message?: string;
   organizerId?: string;
   participants?: ParticipantPreviewDTO[];
@@ -727,6 +728,11 @@ export interface ExploreMapItemDTO {
   participationMode?: ParticipationMode | null;
   /** Rideshare activities linked to this parent plan (parent rows only). */
   linkedRideshareActivities?: ExploreLinkedRideshareDTO[];
+  /**
+   * Per-viewer peek/detail hints for hosted plans (activity + demand).
+   * Set on `GET /explore/map` after cache read — not stored in Redis payload.
+   */
+  viewerAccess?: ActivityViewerAccessDTO;
 }
 
 export interface ProductClick {
@@ -1111,6 +1117,33 @@ export {
   PRIVATE_JOIN_REQUIREMENT_PREFIX,
   type ActivityJoinMode,
 } from './activity-join-mode.js';
+
+export {
+  activityViewerLevelHasFullDetail,
+  computeActivityDetailExposure,
+  type ActivityViewerAccessDTO,
+  type ActivityViewerAccessLevel,
+  type DetailExposure,
+  type ViewerGateReason,
+} from './activity-viewer-access.js';
+
+export {
+  resolveCommerceMapViewerAccess,
+  resolvePublicPlaceMapViewerAccess,
+} from './catalog-viewer-access.js';
+
+export {
+  memberAudienceMayAttemptOrganize,
+  memberHasHostFootprintBadge,
+  organizeEntitlementDenial,
+  resolveMemberAudience,
+  resolvePaidMembershipSku,
+  type MemberAudience,
+  type MemberEntitlementDenial,
+  type MemberEntitlementId,
+  type PaidMembershipSku,
+  type HostStatusAudienceSnapshot,
+} from './member-access.js';
 
 export {
   APPROVAL_PARTICIPATION_REQUIREMENT,

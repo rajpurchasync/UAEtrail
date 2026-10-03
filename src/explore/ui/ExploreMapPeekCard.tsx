@@ -5,7 +5,7 @@ import { EXPLORE_PEEK } from '../../config/exploreTheme';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../components/ui/ShareButton';
 import { ExploreSaveButton } from './ExploreSaveButton';
-import { exploreCardHasMapCoords, exploreCardShowsInlineDirections } from '../exploreCardModel';
+import { exploreCardShowPeekBodyDirections } from '../exploreCardModel';
 import { PlaceDirectionLinks } from '../../components/ui/PlaceDirectionLinks';
 import {
   ExploreCardDetailList,
@@ -15,12 +15,17 @@ import {
   ExploreActivityPeekMeta,
   ExploreVenueImageBadges,
 } from './ExploreCardPresentation';
+import type { JoinRequestUiState } from '../../utils/joinRequestUi';
+import { resolveExplorePeekDetailAccess } from '../explorePeekDetailAccess';
 
 interface ExploreMapPeekCardProps {
   card: ExploreCardModel;
   onClose: () => void;
   footer: ReactNode;
   children?: ReactNode;
+  joinUiState?: JoinRequestUiState;
+  joinStateLoading?: boolean;
+  onGuestGatedAction?: () => void;
   /** Keep footer CTAs visible; scroll body only (desktop item sheet). */
   pinFooter?: boolean;
   /** Inline rail / list — hide dismiss controls on the card chrome. */
@@ -33,9 +38,18 @@ export const ExploreMapPeekCard = ({
   onClose,
   footer,
   children,
+  joinUiState,
+  joinStateLoading = false,
+  onGuestGatedAction,
   pinFooter = false,
   embedMode = false,
 }: ExploreMapPeekCardProps) => {
+  const titleDetailAccess = resolveExplorePeekDetailAccess(card, {
+    isGuest: Boolean(onGuestGatedAction),
+    joinUiState,
+    isHostOrOwner: Boolean(card.showHostActions || card.showDemandOwnerActions),
+    joinStateLoading,
+  });
   const shellClass = pinFooter
     ? `${EXPLORE_PEEK.shell} lg:flex lg:max-h-[min(85vh,640px)] lg:min-h-0 lg:flex-col lg:overflow-hidden`
     : EXPLORE_PEEK.shell;
@@ -100,7 +114,13 @@ export const ExploreMapPeekCard = ({
             : 'px-4 pt-3'
         }
       >
-        <ExploreCardHeadline sections={card.sections} size="lg" tone={card.tone} />
+        <ExploreCardHeadline
+          sections={card.sections}
+          size="lg"
+          tone={card.tone}
+          detailAccess={titleDetailAccess}
+          onGuestGatedDetail={onGuestGatedAction}
+        />
         {card.source === 'activity' ? <ExploreActivityPeekMeta card={card} /> : null}
         <ExploreCardRatingRow card={card} />
         <ExploreCardDetailList
@@ -109,7 +129,7 @@ export const ExploreMapPeekCard = ({
           mapLatitude={card.mapLatitude}
           mapLongitude={card.mapLongitude}
         />
-        {exploreCardHasMapCoords(card) && !exploreCardShowsInlineDirections(card) ? (
+        {exploreCardShowPeekBodyDirections(card) ? (
           <PlaceDirectionLinks
             lat={card.mapLatitude as number}
             lng={card.mapLongitude as number}

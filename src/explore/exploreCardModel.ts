@@ -1,4 +1,5 @@
 import type {
+  ActivityViewerAccessDTO,
   ExploreCardKind,
   ExploreCardSource,
   ExploreLinkedRideshareDTO,
@@ -79,6 +80,8 @@ export interface ExploreCardModel {
   mapLatitude?: number | null;
   mapLongitude?: number | null;
   linkedRideshares?: ExploreLinkedRideshareDTO[];
+  /** From `GET /explore/map` for activity/demand rows (per viewer). */
+  viewerAccess?: ActivityViewerAccessDTO | null;
 }
 
 const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
@@ -213,6 +216,7 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
       item.linkedRideshareActivities && item.linkedRideshareActivities.length > 0
         ? item.linkedRideshareActivities
         : undefined,
+    viewerAccess: item.viewerAccess ?? null,
   };
 };
 
@@ -241,6 +245,21 @@ export const exploreCardHasMapCoords = (card: ExploreCardModel): boolean =>
 export const exploreCardShowsInlineDirections = (card: ExploreCardModel): boolean =>
   exploreCardHasMapCoords(card) &&
   card.sections.details.some((detail) => detail.icon === 'location');
+
+/** Footer peek row already includes directions (join activities, shops with review CTAs). */
+export const exploreCardPeekFooterHasDirections = (card: ExploreCardModel): boolean => {
+  if (!exploreCardHasMapCoords(card) || exploreCardShowsInlineDirections(card)) return false;
+  if (card.source === 'venue') return true;
+  if (card.showJoinActions) return true;
+  if (card.source === 'shop' && card.reviewPath) return true;
+  return false;
+};
+
+/** Extra directions row in peek body — only when not inline and not in footer. */
+export const exploreCardShowPeekBodyDirections = (card: ExploreCardModel): boolean =>
+  exploreCardHasMapCoords(card) &&
+  !exploreCardShowsInlineDirections(card) &&
+  !exploreCardPeekFooterHasDirections(card);
 
 export type ExploreFavoriteTarget = {
   locationId?: string;

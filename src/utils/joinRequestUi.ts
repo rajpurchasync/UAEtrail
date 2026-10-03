@@ -9,8 +9,8 @@ export const resolveJoinRequestUiState = (input: {
   myRequest?: MyActivityRequestDTO | null;
   participation?: ActivityParticipationDTO | null;
 }): JoinRequestUiState => {
-  if (input.participation && input.myRequest?.id) {
-    return { kind: 'confirmed', requestId: input.myRequest.id };
+  if (input.participation) {
+    return { kind: 'confirmed', requestId: input.myRequest?.id ?? 'participation' };
   }
 
   if (!input.myRequest?.canWithdraw) {

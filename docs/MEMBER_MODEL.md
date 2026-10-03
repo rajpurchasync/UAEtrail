@@ -4,6 +4,8 @@
 
 Do **not** re-implement tier logic in React hooks — consume **`GET /me/host-status`** (`HostStatusDTO` in `@uaetrail/shared-types`).
 
+**Capabilities ≠ viewer access:** `canPublish` / `canAccessHostConsole` answer whether this member may **act** as a host. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`resolveActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
+
 **Naming (host vs join vs buddy):** § [Naming vocabulary](#naming-vocabulary) below · Cursor: `.cursor/rules/host-member-model.mdc` · verify: `npm run verify:host-member`.
 
 ---
@@ -107,6 +109,34 @@ Wire: `HostStatusDTO.hostTiers`, `HostStatusDTO.profileRoleLabel`, `HostStatusDT
 
 ---
 
+## Member audience ladder
+
+Product-facing **who is viewing** for **capabilities** (Organize, console, future paid SKUs). Orthogonal to **social** activity/profile detail ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15).
+
+| Audience (`MemberAudience`) | Who | Typical gates |
+|-----------------------------|-----|----------------|
+| `guest` | Not signed in | `gateReason: sign_in` — copy from `guestBrowseGateCopy` |
+| `member_incomplete` | Signed in; `signupProfileComplete === false` | `profile_required` → `/welcome` |
+| `member_basic` | Profile complete; community / buddy path | Organize when `canPublish`; map **Host** badge is separate (`isCommunityHost`) |
+| `member_professional` | Pro guide tenant (`hostTiers.professional`) | Console + Pro flows |
+| `member_business` | Agency / shop / team (`hostTiers.business`) | Console + `x-organisation-id` |
+
+**Vocabulary (do not conflate):**
+
+| User says | Code |
+|-----------|------|
+| Guest | `guest` |
+| Signed-in, incomplete profile | `member_incomplete` — not “basic” |
+| “Host” = can buddy Organize | `member_basic` + `canPublish` (profile complete + tenant) |
+| “Host” badge on profile | `isCommunityHost` — first activity or demand on map |
+| Paid membership (future) | `PaidMembershipSku` + layer **7** entitlements — **not** inferred from `hostTiers` alone |
+
+**Resolver:** `resolveMemberAudience({ viewerUserId, hostStatus })` in `packages/shared-types/src/member-access.ts`. **Organize FAB denial:** `organizeEntitlementDenial` (sign-in → welcome → publish capability). Client redirects: `organizePublishGateHref` + `organizePublishGateInputFromHostGate` in `src/utils/organizePublishGate.ts` (maps denial → routes).
+
+**Paid tiers:** stub `resolvePaidMembershipSku` → `'none'` until billing ships; enforce in `apps/api/src/services/member-entitlements.ts` **after** `resolveActivityViewerAccess` / social exposure.
+
+---
+
 ## HTTP routing (member vs host)
 
 | Intent | Auth | Route family |
@@ -126,6 +156,8 @@ Wire: `HostStatusDTO.hostTiers`, `HostStatusDTO.profileRoleLabel`, `HostStatusDT
 | Tier enum (wire) | `packages/shared-types/src/host-publishing-tier.ts` |
 | Tenant purpose (DB) | `apps/api/src/domain/tenant-publishing.ts`, `tenants.publishingPurpose` |
 | **Single resolver** | `apps/api/src/services/member-host-status.ts` → `GET /me/host-status` |
+| Member audience ladder | `packages/shared-types/src/member-access.ts` |
+| Paid / Pro detail (layer 7) | `apps/api/src/services/member-entitlements.ts` |
 | Community footprint | `apps/api/src/lib/community-host.ts` |
 | Buddy tenant | `apps/api/src/lib/buddy-host-tenant.ts` |
 | Client display strings | `src/member/memberProfileRoleLabel.ts` |

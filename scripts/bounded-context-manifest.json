@@ -5,10 +5,13 @@
     {
       "id": "discovery",
       "label": "Discovery",
-      "apiFiles": ["apps/api/src/lib/explore-map.ts"],
+      "apiFiles": [
+        "apps/api/src/lib/explore-map.ts",
+        "apps/api/src/lib/explore-map-viewer-access.ts"
+      ],
       "routeRegistrars": ["apps/api/src/routes/user/registerPublicActivityRoutes.ts"],
       "feDomains": ["src/api/domains/explore.ts"],
-      "feRoots": ["src/explore"]
+      "feRoots": ["src/explore", "src/access"]
     },
     {
       "id": "compose",
@@ -24,7 +27,12 @@
     {
       "id": "participation",
       "label": "Participation",
-      "apiFiles": ["apps/api/src/services/join-request.ts"],
+      "apiFiles": [
+        "apps/api/src/services/join-request.ts",
+        "apps/api/src/services/activity-viewer-access.ts",
+        "apps/api/src/services/compose-activity-viewer-access.ts",
+        "apps/api/src/services/member-entitlements.ts"
+      ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
         "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts",

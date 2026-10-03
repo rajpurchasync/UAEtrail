@@ -5,9 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { MapTileLayers } from './MapTileLayers';
 import { MapPlacePicker } from './MapPlacePicker';
 import { parseCoord } from '../../utils/coords';
-import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
-import { PlaceDirectionLinks } from './PlaceDirectionLinks';
-
+import { ViewOnMapLink } from './ViewOnMapLink';
 const previewIcon = L.divIcon({
   className: '',
   html: `<span style="display:flex;width:32px;height:32px;align-items:center;justify-content:center;border-radius:9999px;background:#059669;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2);border:2px solid #fff;font-size:16px;line-height:1;">📍</span>`,
@@ -41,10 +39,8 @@ interface MeetingPointMapProps {
   lng?: number | null;
   label?: string | null;
   hideExternalLink?: boolean;
-  /** Tap the map preview to open in Google Maps. */
+  /** Tap the map preview to open the pin in Google Maps (view). */
   clickable?: boolean;
-  /** Show Open in Maps / Get directions / Waze buttons. */
-  showDirections?: boolean;
 }
 
 /** Lightweight map preview + external maps link for meeting points. */
@@ -53,7 +49,6 @@ export const MeetingPointMap = ({
   lng,
   hideExternalLink = false,
   clickable = false,
-  showDirections = false,
 }: MeetingPointMapProps) => {
   const [mapReady, setMapReady] = useState(false);
 
@@ -62,8 +57,6 @@ export const MeetingPointMap = ({
   }, []);
 
   if (lat == null || lng == null) return null;
-
-  const mapsUrl = buildGoogleMapsSearchUrl(lat, lng);
 
   const mapPreview = (
     <div className="rounded-xl overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100">
@@ -90,34 +83,31 @@ export const MeetingPointMap = ({
   return (
     <div className="mt-3 space-y-2">
       {clickable ? (
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <ViewOnMapLink
+          lat={lat}
+          lng={lng}
+          ariaLabel="Open location in Google Maps"
           className="group block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-          aria-label="Open location in Google Maps"
         >
           <div className="relative overflow-hidden rounded-xl">
             {mapPreview}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-3 py-2.5">
-              <p className="text-xs font-semibold text-white">Tap map to open directions</p>
+              <p className="text-xs font-semibold text-white">Tap map to view on Google Maps</p>
             </div>
           </div>
-        </a>
+        </ViewOnMapLink>
       ) : (
         mapPreview
       )}
       {!hideExternalLink && !clickable && (
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <ViewOnMapLink
+          lat={lat}
+          lng={lng}
           className="inline-flex items-center text-sm font-medium text-emerald-700 hover:text-emerald-800"
         >
           Open in Google Maps →
-        </a>
+        </ViewOnMapLink>
       )}
-      {showDirections && <PlaceDirectionLinks lat={lat} lng={lng} />}
     </div>
   );
 };

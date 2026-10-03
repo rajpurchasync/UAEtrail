@@ -32,10 +32,9 @@ import {
   notifyParticipantJoinRequestWithdrawn,
 } from '../../services/join-request-notifications.js';
 import { notifyHostOfRequestWithdrawal } from '../../services/request-notifications.js';
-import {
-  PRIVATE_ACTIVITY_MESSAGE,
-  resolveActivityViewerAccess,
-} from '../../services/activity-viewer-access.js';
+import { buildActivityRedactedDetail } from '../../lib/activity-redacted-detail.js';
+import { PRIVATE_ACTIVITY_MESSAGE } from '../../services/activity-viewer-access.js';
+import { composeActivityViewerAccess } from '../../services/compose-activity-viewer-access.js';
 import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
 
 const updateRequestNoteSchema = z.object({
@@ -86,30 +85,21 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
 
-    const access = await resolveActivityViewerAccess({
-      viewerUserId: req.auth?.userId ?? null,
-      activity: {
-        id: event.id,
-        tenantId: event.tenantId,
-        hostId: event.hostId,
-        createdById: event.createdById,
-        joinMode: event.joinMode,
-        requirements: event.requirements,
-      },
-      isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
-    });
-
-    if (!access.canViewFullActivity) {
-      res.json({
-        data: {
-          visibilityState: 'private',
+    const access = await composeActivityViewerAccess(
+      {
+        viewerUserId: req.auth?.userId ?? null,
+        activity: {
           id: event.id,
-          joinMode: 'private',
-          message: PRIVATE_ACTIVITY_MESSAGE,
+          tenantId: event.tenantId,
+          hostId: event.hostId,
+          createdById: event.createdById,
+          joinMode: event.joinMode,
+          requirements: event.requirements,
         },
-      });
-      return;
-    }
+        isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
+      },
+      { viewerUserId: req.auth?.userId ?? null, hostStatus: null }
+    );
 
     let myParticipation = null;
     let myRequest = null;
@@ -127,6 +117,31 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
           canWithdraw: canWithdrawRequest(status)
         };
       }
+    }
+
+    if (access.exposure === 'none') {
+      res.json({
+        data: {
+          visibilityState: 'private',
+          id: event.id,
+          joinMode: 'private',
+          message: PRIVATE_ACTIVITY_MESSAGE,
+        },
+        viewerAccess: access,
+      });
+      return;
+    }
+
+    if (access.exposure === 'redacted') {
+      res.json({
+        data: {
+          ...buildActivityRedactedDetail(event),
+          myParticipation,
+          myRequest,
+        },
+        viewerAccess: access,
+      });
+      return;
     }
 
     let linkedRideshare = null;
@@ -160,7 +175,8 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
         location: toLocationDto(event.location),
         myParticipation,
         myRequest
-      }
+      },
+      viewerAccess: access,
     });
   } catch (error) {
     next(error);
