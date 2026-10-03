@@ -11,7 +11,6 @@ import {
   MembershipTier,
   NotificationType,
   HostApplicationStatus,
-  PostCategory,
   ProductStatus,
   RequestStatus,
   ReviewTargetType,
@@ -745,56 +744,6 @@ const upsertReview = async (input: {
   }
 
   await createSocialReview(input);
-};
-
-const upsertPost = async (input: {
-  id: string;
-  category: PostCategory;
-  title: string;
-  content: string;
-  images: string[];
-  locationId?: string;
-  authorId: string;
-}) => {
-  const now = new Date();
-  await db().collection('social_posts').updateOne(
-    { _id: input.id },
-    {
-      $set: {
-        category: input.category,
-        title: input.title,
-        content: input.content,
-        images: input.images,
-        locationId: input.locationId ?? null,
-        activityId: null,
-        authorId: input.authorId,
-        updatedAt: now
-      },
-      $setOnInsert: { createdAt: now }
-    },
-    { upsert: true }
-  );
-};
-
-const upsertPostReply = async (input: {
-  id: string;
-  postId: string;
-  authorId: string;
-  content: string;
-}) => {
-  const now = new Date();
-  await db().collection('social_post_replies').updateOne(
-    { _id: input.id },
-    {
-      $set: {
-        postId: input.postId,
-        authorId: input.authorId,
-        content: input.content
-      },
-      $setOnInsert: { createdAt: now }
-    },
-    { upsert: true }
-  );
 };
 
 const upsertNotification = async (input: {
@@ -1878,35 +1827,6 @@ Share your live location and carry extra water in summer months.`
     targetId: 'jebel-jais-summit-trail',
     rating: 4,
     comment: 'Challenging but rewarding summit trail. Start early and bring layers for the summit.'
-  });
-
-  await upsertPost({
-    id: 'seed-post-shawka-tips',
-    category: PostCategory.TIPS,
-    title: 'Best time to hike Wadi Shawka',
-    content:
-      'Early morning in winter is ideal — cooler temps and great light. Bring at least 2L of water per person.',
-    images: [],
-    locationId: 'wadi-shawka-loop',
-    authorId: agencyOwner._id
-  });
-
-  await upsertPostReply({
-    id: 'seed-reply-shawka-1',
-    postId: 'seed-post-shawka-tips',
-    authorId: participant._id,
-    content:
-      'Agreed — we went last January at 6am and it was perfect. Parking fills up by 8am on weekends.'
-  });
-
-  await upsertPost({
-    id: 'seed-post-gear-question',
-    category: PostCategory.QUESTIONS,
-    title: 'What shoes for Jebel Jais?',
-    content:
-      'Planning my first summit hike — are trail runners enough or do I need proper hiking boots?',
-    images: [],
-    authorId: participant._id
   });
 
   await upsertNotification({

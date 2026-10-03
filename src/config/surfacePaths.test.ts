@@ -11,9 +11,9 @@ describe('surfacePaths', () => {
   it('groupsPath builds catalog-safe group URLs', () => {
     expect(groupsPath()).toBe(GROUPS_PATH);
     expect(groupsPath({ create: true })).toBe(`${GROUPS_PATH}?create=1`);
-    expect(groupsPath({ from: 'community' })).toBe(`${GROUPS_PATH}?from=community`);
-    expect(groupsPath({ create: true, from: 'community' })).toBe(
-      `${GROUPS_PATH}?create=1&from=community`
+    expect(groupsPath({ from: 'profile' })).toBe(`${GROUPS_PATH}?from=profile`);
+    expect(groupsPath({ create: true, from: 'profile' })).toBe(
+      `${GROUPS_PATH}?create=1&from=profile`
     );
     expect(groupsPath({ invite: 'tok' })).toBe(`${GROUPS_PATH}?invite=tok`);
   });

@@ -25,10 +25,10 @@ const ENTITY_FILTER_OPTIONS = [
   { value: 'application' as const, label: 'Application' },
   { value: 'product' as const, label: 'Product' },
   { value: 'notification' as const, label: 'Notification' },
-  { value: 'post' as const, label: 'Post' },
+  { value: 'post' as const, label: 'Post (legacy feed)' },
   { value: 'review' as const, label: 'Review' },
   { value: 'message' as const, label: 'Message' },
-  { value: 'reply' as const, label: 'Reply' },
+  { value: 'reply' as const, label: 'Reply (legacy feed)' },
 ];
 
 export const AdminAuditLog = () => {

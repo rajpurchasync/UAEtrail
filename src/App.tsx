@@ -117,7 +117,6 @@ const LegacyMerchantPublicRedirect = lazy(() =>
   import('./pages/MerchantPublic').then((m) => ({ default: m.MerchantPublic }))
 );
 const ShopPublic = lazy(() => import('./pages/ShopPublic').then((m) => ({ default: m.ShopPublic })));
-const Community = lazy(() => import('./pages/Community').then((m) => ({ default: m.Community })));
 const ActivityDetail = lazy(() => import('./pages/ActivityDetail').then((m) => ({ default: m.ActivityDetail })));
 const OrganisationProfile = lazy(() => import('./pages/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
 const MemberProfile = lazy(() => import('./pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
@@ -525,7 +524,7 @@ function App() {
             }
           />
           <Route path="/merchant/:id" element={<LegacyMerchantPublicRedirect />} />
-          <Route path={COMMUNITY_PATH} element={<Community />} />
+          <Route path={COMMUNITY_PATH} element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route path={SIGNUP_PATH} element={<SignUp />} />
           <Route path={SIGNIN_PATH} element={<SignIn />} />
           <Route path="/signed-out" element={<Navigate to="/" replace />} />

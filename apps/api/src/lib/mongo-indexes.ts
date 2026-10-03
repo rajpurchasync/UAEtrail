@@ -154,22 +154,6 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { targetType: 1, targetId: 1, createdAt: -1 } },
       { key: { userId: 1, createdAt: -1 } }
     ]),
-    db.collection(COLLECTIONS.SOCIAL_POSTS).createIndexes([
-      { key: { category: 1, createdAt: -1 } },
-      { key: { authorId: 1, createdAt: -1 } }
-    ]),
-    db.collection(COLLECTIONS.SOCIAL_POST_REPLIES).createIndexes([
-      { key: { postId: 1, createdAt: 1 } },
-      { key: { authorId: 1 } }
-    ]),
-    db.collection(COLLECTIONS.SOCIAL_POST_REPLY_LIKES).createIndexes([
-      { key: { postId: 1, replyId: 1, userId: 1 }, unique: true },
-      { key: { userId: 1 } }
-    ]),
-    db.collection(COLLECTIONS.SOCIAL_POST_LIKES).createIndexes([
-      { key: { postId: 1, userId: 1 }, unique: true },
-      { key: { userId: 1 } }
-    ]),
     db.collection(COLLECTIONS.SHOP_ORDERS).createIndexes([
       { key: { userId: 1, createdAt: -1 } },
       { key: { status: 1, createdAt: -1 } },

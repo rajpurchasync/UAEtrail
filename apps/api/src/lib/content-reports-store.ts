@@ -7,6 +7,7 @@ import { findAuthUsersByIds } from './auth-users.js';
 export const CONTENT_REPORT_REASONS = ['spam', 'harassment', 'other'] as const;
 export type ContentReportReason = (typeof CONTENT_REPORT_REASONS)[number];
 
+/** `post` / `reply` retained for historical community-feed reports only (feature removed). */
 export const CONTENT_REPORT_TARGET_TYPES = ['user', 'message', 'post', 'review', 'reply'] as const;
 export type ContentReportTargetType = (typeof CONTENT_REPORT_TARGET_TYPES)[number];
 

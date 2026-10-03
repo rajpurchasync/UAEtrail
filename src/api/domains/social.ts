@@ -6,8 +6,6 @@ import {
   MemberFollowSummaryDTO,
   MemberHubStatsDTO,
   FavoriteDTO,
-  PostDTO,
-  PostReplyDTO,
   ReviewDTO,
   MyReviewDTO,
 } from '@uaetrail/shared-types';
@@ -288,60 +286,6 @@ export const socialApi = {
         rating: payload.rating,
         comment: payload.comment,
       }),
-    }),
-
-    getPosts: (filters?: { category?: string; locationId?: string; search?: string; page?: number }) => {
-    const params = new URLSearchParams();
-    if (filters?.category) params.set('category', filters.category);
-    if (filters?.locationId) params.set('locationId', filters.locationId);
-    if (filters?.search) params.set('search', filters.search);
-    if (filters?.page) params.set('page', String(filters.page));
-    params.set('pageSize', '50');
-    return apiRequest<{ data: PostDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
-      `/posts?${params.toString()}`,
-      { auth: Boolean(getStoredSession()) }
-    );
-  },
-
-    getPost: (id: string) => apiRequest<{ data: PostDTO }>(`/posts/${id}`, { auth: Boolean(getStoredSession()) }),
-
-    createPost: (payload: {
-    category: string;
-    title: string;
-    content: string;
-    images?: string[];
-    locationId?: string;
-    activityId?: string;
-  }) =>
-    apiRequest<{ data: PostDTO }>('/posts', {
-      method: 'POST',
-      auth: true,
-      body: JSON.stringify(payload)
-    }),
-
-    replyToPost: (postId: string, content: string) =>
-    apiRequest<{ data: PostReplyDTO }>(`/posts/${postId}/replies`, {
-      method: 'POST',
-      auth: true,
-      body: JSON.stringify({ content })
-    }),
-
-    togglePostLike: (postId: string) =>
-    apiRequest<{ data: { liked: boolean } }>(`/posts/${postId}/like`, {
-      method: 'POST',
-      auth: true
-    }),
-
-    toggleReplyLike: (postId: string, replyId: string) =>
-    apiRequest<{ data: { liked: boolean } }>(`/posts/${postId}/replies/${replyId}/like`, {
-      method: 'POST',
-      auth: true
-    }),
-
-    acceptPostReply: (postId: string, replyId: string) =>
-    apiRequest<{ data: PostDTO }>(`/posts/${postId}/replies/${replyId}/accept`, {
-      method: 'POST',
-      auth: true
     }),
 
     getMeFavorites: () => apiRequest<{ data: FavoriteDTO[] }>('/me/favorites', { auth: true }),

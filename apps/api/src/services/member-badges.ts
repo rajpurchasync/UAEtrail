@@ -22,8 +22,6 @@ const ACTION_LABELS: Record<RewardAction, string> = {
   ACTIVITY_PUBLISHED: 'Activity published',
   ACTIVITY_HOSTED: 'Activity hosted',
   ACTIVITY_ATTENDED: 'Activity attended',
-  COMMUNITY_POST: 'Community post',
-  COMMUNITY_REPLY: 'Community reply',
   REVIEW_WRITTEN: 'Review written',
 };
 

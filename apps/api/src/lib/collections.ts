@@ -33,15 +33,11 @@ export const COLLECTIONS = {
   PRODUCT_CLICKS: 'product_clicks',
   STRIPE_WEBHOOK_EVENTS: 'stripe_webhook_events',
 
-  // Social & community
+  // Social graph (reviews, chat, groups, buddies)
   CHAT_MESSAGES: 'chat_messages',
   CHAT_MESSAGE_REACTIONS: 'chat_message_reactions',
   CONTENT_REPORTS: 'content_reports',
   SOCIAL_REVIEWS: 'social_reviews',
-  SOCIAL_POSTS: 'social_posts',
-  SOCIAL_POST_REPLIES: 'social_post_replies',
-  SOCIAL_POST_REPLY_LIKES: 'social_post_reply_likes',
-  SOCIAL_POST_LIKES: 'social_post_likes',
   SOCIAL_GROUPS: 'social_groups',
   SOCIAL_GROUP_MEMBERS: 'social_group_members',
   SOCIAL_GROUP_INVITES: 'social_group_invites',

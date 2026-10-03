@@ -1,8 +1,7 @@
 import { ReactNode } from 'react';
 
-  /** One horizontal gutter for all landing sections — mobile px-5, desktop container. */
-export const landingShellClass =
-  'box-border w-full max-w-7xl px-5 md:mx-auto md:px-6 lg:px-8';
+  /** One horizontal gutter for all landing sections — uses `--landing-pad-inline` (index.css). */
+export const landingShellClass = 'landing-shell-gutter';
 
 interface LandingShellProps {
   children: ReactNode;

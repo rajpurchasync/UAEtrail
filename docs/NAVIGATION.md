@@ -11,7 +11,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/trips` | Account hub, settings stack, trips (upcoming / past / wishlist) |
-| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | Map · My trips · **Chat** bottom nav (`md:hidden`; route stays `/messages`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
+| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | Map · My trips · **Chat** bottom nav (`md:hidden`; route `/chat`); **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
 | **Entity detail** | `/trail`, `/camp`, `/event`, `/activity`, `/shop`, `/operator` | Single place, trip, or host |
 
 ### Profile hub (`/profile`)
@@ -57,12 +57,6 @@ Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
 
 - **List + manage:** create family/friends groups, members, invites, kids, **who can message** (wall post policy).
 - **Chat:** tap **Message** → `/messages?group=<id>` (single chat surface).
-
-### Community (`/community`)
-
-- **Secondary surface** (desktop nav link) — Q&A, activity reports, tips; **not** the product home (`/explore` is).
-- **Mobile:** route redirects to `/` (marketing); use explore + profile hubs for day-to-day discovery.
-- **Constants:** `COMMUNITY_PATH` in `src/config/surfacePaths.ts` (re-exported from `routingCatalog`).
 
 ### Post-auth member details (`/welcome`)
 
@@ -188,6 +182,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/shop` (bare) | `/explore?panel=shops` | 2026-Q4 |
 | `/activities` (any) | `/trips` (preserves query; `create=*` → explore compose) | 2026-Q4 |
 | `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
+| `/community` | `/explore` (`COMMUNITY_PATH` — legacy Q&A feed removed) | 2026-Q4 |
 | `/membership` | `/explore` (`Membership.tsx`; not product home) | 2026-Q4 or fold |
 | `/organizer/*` | `/host/*` | 2026-Q4 |
 | `/become-organizer` | `/become-host` | 2026-Q4 |

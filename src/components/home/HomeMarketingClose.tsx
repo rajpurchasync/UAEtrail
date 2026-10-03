@@ -1,8 +1,11 @@
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 
-import { HOME_CLOSE_HEADLINE, HOME_CLOSE_SUBLINE } from '../../content/homeLanding';
+import {
+  HOME_CLOSE_HEADLINE,
+  HOME_CLOSE_SUBLINE,
+  HOME_HERO_JOIN_CTA,
+  HOME_HERO_PRIMARY_CTA,
+} from '../../content/homeLanding';
 import { AppButtonLink } from '../mobile/AppButton';
 import { LandingShell } from './LandingShell';
 
@@ -17,28 +20,23 @@ export const HomeMarketingClose = ({ joinHref }: HomeMarketingCloseProps) => (
       <p className="mt-2 max-w-lg text-[13px] leading-snug text-white/80 md:mx-auto md:mt-3 md:text-base md:leading-relaxed">
         {HOME_CLOSE_SUBLINE}
       </p>
-      <div className="mt-6 flex flex-col gap-2 sm:flex-row md:mt-8 md:justify-center md:gap-3">
+      <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:justify-center md:mt-8 md:gap-3">
         <AppButtonLink
           to={EXPLORE_MAP_PATH}
           variant="inverse"
-          className="min-h-11 py-2.5 text-sm md:min-h-[var(--touch-min)] md:min-w-[11rem] md:text-[15px]"
+          fullWidth
+          className="min-h-11 py-2.5 text-sm sm:min-w-[11rem] sm:flex-1 sm:max-w-[14rem] md:min-h-[var(--touch-min)] md:max-w-none md:flex-none md:text-[15px]"
         >
-          Explore the map
+          {HOME_HERO_PRIMARY_CTA}
         </AppButtonLink>
         <AppButtonLink
           to={joinHref}
-          className="min-h-11 border border-white/25 bg-white/10 py-2.5 text-sm text-white shadow-none backdrop-blur-sm md:min-h-[var(--touch-min)] md:min-w-[11rem] md:text-[15px]"
+          fullWidth
+          className="landing-close-join min-h-11 border border-white/25 bg-white/10 py-2.5 text-sm text-white shadow-none backdrop-blur-sm hover:bg-white/15 sm:min-w-[11rem] sm:flex-1 sm:max-w-[14rem] md:min-h-[var(--touch-min)] md:max-w-none md:flex-none md:text-[15px]"
         >
-          Join free
+          {HOME_HERO_JOIN_CTA}
         </AppButtonLink>
       </div>
-      <Link
-        to={EXPLORE_MAP_PATH}
-        className="landing-text-cta landing-text-cta--on-dark mx-auto mt-4 inline-flex items-center gap-1 md:mt-5"
-      >
-        See what&apos;s live on the map this week
-        <ArrowRight className="h-4 w-4" aria-hidden />
-      </Link>
     </LandingShell>
   </section>
 );

@@ -38,14 +38,16 @@ const ActivityCard = ({ activity }: { activity: HomeLandingActivity }) => {
         </span>
       </div>
       <div className="flex flex-col p-4">
-        <p className="text-[15px] font-semibold leading-snug text-neutral-900">{activity.title}</p>
-        <p className="mt-2 flex items-center gap-1.5 text-[12px] text-neutral-500">
+        <p className="landing-type-body line-clamp-2 font-semibold leading-snug text-neutral-900">
+          {activity.title}
+        </p>
+        <p className="landing-type-caption mt-2 flex items-center gap-1.5 text-neutral-500">
           <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
           {activity.whenLabel}
         </p>
         <div className="mt-3 flex items-end justify-between gap-2">
           <span
-            className={`inline-flex max-w-[calc(100%-1.5rem)] rounded-lg px-2 py-0.5 text-[11px] font-bold leading-snug ${pricingBadge.bg} ${pricingBadge.text}`}
+            className={`landing-type-micro inline-flex max-w-[calc(100%-1.5rem)] rounded-lg px-2 py-0.5 font-bold leading-snug ${pricingBadge.bg} ${pricingBadge.text}`}
           >
             {pricingBadge.label}
           </span>
@@ -61,38 +63,60 @@ export const HomeLiveActivityRail = ({
   loading = false,
   fromLiveApi = false,
 }: HomeLiveActivityRailProps) => (
-  <section className="bg-white pb-6 pt-5 md:py-14" aria-label="Activities on the map">
-    <LandingShell>
-      <header className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1 text-center md:text-left">
-          <h2 className="landing-section-title">{HOME_LIVE_SECTION.title}</h2>
-          <p className={`landing-section-lead ${fromLiveApi ? 'hidden md:block' : ''}`}>
-            {fromLiveApi
-              ? HOME_LIVE_SECTION.subtitle
-              : 'Sample outings — open the map for live listings.'}
+  <section className="landing-live-rail bg-white pb-6 pt-5 md:py-14" aria-label="Activities on the map">
+    <LandingShell className="min-w-0">
+      <header className="flex items-start justify-between gap-3 md:gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {fromLiveApi && !loading ? (
+              <span className="landing-live-badge shrink-0">{HOME_LIVE_SECTION.liveBadgeLabel}</span>
+            ) : null}
+            <h2 className="landing-section-title min-w-0">{HOME_LIVE_SECTION.title}</h2>
+          </div>
+          <p className="landing-section-lead mt-1 pr-1 md:mt-1.5">
+            {fromLiveApi ? (
+              <>
+                <span className="md:hidden">{HOME_LIVE_SECTION.subtitleMobileLive}</span>
+                <span className="hidden md:inline">{HOME_LIVE_SECTION.subtitle}</span>
+              </>
+            ) : (
+              'Sample outings — open the map for live listings.'
+            )}
           </p>
         </div>
         <Link
           to={EXPLORE_MAP_PATH}
-          className="landing-text-cta shrink-0 pt-0.5 md:pt-1"
+          className="landing-text-cta shrink-0 pt-0.5"
         >
           {HOME_LIVE_SECTION.viewAllLabel}
         </Link>
       </header>
 
       {loading ? (
-        <div className="mt-5 space-y-3 md:grid md:grid-cols-3 md:gap-4 md:space-y-0">
-          {[0, 1, 2].map((key) => (
-            <div key={key} className="h-52 animate-pulse rounded-2xl bg-neutral-100 md:h-60" />
-          ))}
+        <div className="landing-live-rail-scroll mt-5 md:mt-5">
+          <div className="landing-live-rail-track md:grid md:grid-cols-3 md:gap-4">
+            {[0, 1, 2].map((key) => (
+              <div
+                key={key}
+                className={`landing-live-rail-card h-52 animate-pulse rounded-2xl bg-neutral-100 md:h-60 ${
+                  key >= 2 ? 'max-md:hidden' : ''
+                }`}
+              />
+            ))}
+          </div>
         </div>
       ) : (
-        <div className="mt-4 space-y-3 md:mt-5 md:grid md:grid-cols-3 md:gap-4 md:space-y-0">
-          {activities.slice(0, 6).map((activity, index) => (
-            <div key={activity.id} className={index >= 2 ? 'hidden md:block' : undefined}>
-              <ActivityCard activity={activity} />
-            </div>
-          ))}
+        <div className="landing-live-rail-scroll mt-4 md:mt-5">
+          <div className="landing-live-rail-track md:grid md:grid-cols-3 md:gap-4">
+            {activities.slice(0, 6).map((activity, index) => (
+              <div
+                key={activity.id}
+                className={`landing-live-rail-card ${index >= 2 ? 'max-md:hidden' : ''}`}
+              >
+                <ActivityCard activity={activity} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </LandingShell>

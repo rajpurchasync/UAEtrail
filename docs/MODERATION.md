@@ -9,7 +9,6 @@ Users can report from:
 | Surface | Target type | API |
 |---------|-------------|-----|
 | Messages | `user` | `POST /api/v1/reports` |
-| Community posts | `post` | same |
 | Reviews | `review` | same |
 
 Reports are stored as **audit logs** with `action: content_report`.
@@ -25,7 +24,7 @@ Reports are stored as **audit logs** with `action: content_report`.
 
 1. **Triage** within 24–48 hours for harassment/scam reports
 2. **Suspend user** via Admin → Users if repeat offender
-3. **Hide content** manually (delete post/review via DB or future admin tools)
+3. **Hide content** manually (delete review via DB or future admin tools; legacy `post` targets are historical only)
 4. Document outcome in audit log notes (future enhancement)
 
 ## Store compliance

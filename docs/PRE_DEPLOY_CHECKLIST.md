@@ -57,7 +57,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] Google sign-in (web/Android)
 - [ ] Join trip flow
 - [ ] Profile → Export data → Delete account (test user)
-- [ ] Report content on community post
+- [ ] Report content on review or message (legacy `post` reports in audit log only)
 - [ ] Admin → Audit log → filter `content_report`
 - [ ] Sign-in survives refresh/reload (cookie refresh + bearer retry flow)
 - [ ] Role switch (`visitor` <-> `original`) preserves same account identity

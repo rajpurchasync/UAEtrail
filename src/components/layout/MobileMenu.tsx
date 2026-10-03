@@ -2,7 +2,7 @@ import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Download, LogOut, Menu, RefreshCw, User, X } from 'lucide-react';
+import { Download, LogIn, LogOut, Menu, RefreshCw, User, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import {
   CONSUMER_HAMBURGER_MENU,
@@ -19,7 +19,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/index';
 import { setStoredSession } from '../../api/client';
 import { accountRouteByRole } from '../../utils/authRouting';
-import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 
@@ -284,6 +284,18 @@ export const MobileUserMenuButton = ({
         title={user?.displayName || 'UAE Trail'}
         ariaLabel="Landing navigation"
       >
+        {!user ? (
+          <Link
+            to={signInPathForReturn(EXPLORE_MAP_PATH)}
+            onClick={closeMenu}
+            className={navItemClass(pathname.startsWith('/signin'))}
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100">
+              <LogIn className="h-5 w-5 text-gray-600" strokeWidth={iconStroke.default} />
+            </span>
+            <span className="font-semibold">Log in</span>
+          </Link>
+        ) : null}
         {MOBILE_LANDING_USER_MENU.map((item) => {
           const active = 'match' in item ? isActive(item.match) : false;
           const Icon = MOBILE_NAV_ICON_MAP[item.label] ?? User;

@@ -9,7 +9,7 @@ export const openApiTags = [
   { name: 'Shop', description: 'Shop organisations, products, and checkout (`/shop/*`).' },
   { name: 'Members', description: 'Auth accounts, profiles, and admin member tools.' },
   { name: 'Explore', description: 'Map discovery and public browse endpoints.' },
-  { name: 'Social', description: 'Groups, favorites, and community features.' },
+  { name: 'Social', description: 'Reviews, favorites, buddies, and groups.' },
   { name: 'Media', description: 'Presigned upload and private media resolve.' },
   { name: 'Admin', description: 'Platform admin moderation and audit.' }
 ] as const;

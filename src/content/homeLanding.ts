@@ -1,42 +1,41 @@
 /** Marketing landing — signed-out guests only; members always use /explore. See docs/LANDING.md & docs/NORTHSTAR.md */
 
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import { PRODUCT_EXPLORE_CTA, PRODUCT_JOIN_CTA } from './productNorthStar';
 
-export const HOME_HERO_EYEBROW = 'Outdoor community · UAE & GCC';
+export const HOME_HERO_EYEBROW = 'Outdoor community · UAE';
 
-/** Compact eyebrow for mobile hero — avoids crowded all-caps tracking. */
-export const HOME_HERO_EYEBROW_MOBILE = 'UAE & GCC outdoors';
+export const HOME_HERO_HEADLINE = 'Find your hike, camp and outdoor crew';
 
-export const HOME_HERO_HEADLINE = 'Find your next hike, camp, or outdoor crew in the UAE';
-
-/** Mobile hero — short, emotional; fits one viewport without wrapping into a wall of text. */
-export const HOME_HERO_HEADLINE_MOBILE = 'Find your people. Get outside. Go together.';
+/** Mobile hero headline (guest `/` on small screens). */
+export const HOME_HERO_HEADLINE_MOBILE = HOME_HERO_HEADLINE;
 
 export const HOME_HERO_SUBLINE =
   'Discover trails and group outings on a live map, request to join with a verified host, and show up with people who actually follow through.';
 
 /** Shorter hero copy for mobile — outcome first; map/hosts live in sections below. */
 export const HOME_HERO_SUBLINE_MOBILE =
-  'Find company for hikes, camps, and outdoor plans near you.';
+  'Browse what’s on, join a trip, or post your own in the UAE — go together.';
 
-export const HOME_HERO_PRIMARY_CTA = 'Open Map';
-/** Desktop hero only — mobile keeps `HOME_HERO_PRIMARY_CTA`. */
-export const HOME_HERO_PRIMARY_CTA_DESKTOP = 'View on Map';
-export const HOME_HERO_JOIN_CTA = 'Join free';
-/** Desktop hero secondary button label (title case). */
-export const HOME_HERO_JOIN_CTA_DESKTOP = 'Join Free';
+export const HOME_HERO_PRIMARY_CTA = PRODUCT_EXPLORE_CTA;
+export const HOME_HERO_PRIMARY_CTA_DESKTOP = PRODUCT_EXPLORE_CTA;
+export const HOME_HERO_JOIN_CTA = PRODUCT_JOIN_CTA;
+export const HOME_HERO_JOIN_CTA_DESKTOP = PRODUCT_JOIN_CTA;
 
 export const HOME_PROOF_STATS = [
   {
     label: 'Verified Hosts',
+    shortLabel: 'Verified',
     detail: 'Every activity has a named host who approves who joins.',
   },
   {
     label: 'Community Driven',
+    shortLabel: 'Community',
     detail: 'Built by hikers for the UAE outdoor community.',
   },
   {
     label: 'Free to Join',
+    shortLabel: 'Free',
     detail: 'Browse the map free, then sign up when you’re ready to request a spot.',
   },
 ] as const;
@@ -49,8 +48,8 @@ export const HOME_PROOF_PILLS = HOME_PROOF_STATS.map((s) => ({
 
 export const HOME_VALUE_SECTION = {
   eyebrow: 'Why UAE Trail',
-  title: 'Find your people. Get outside. Go together.',
-  subtitle: 'Less scrolling group chats. More real plans on the map.',
+  title: 'Less scrolling group chats. More real plans on the map.',
+  subtitle: 'Discover outings, connect with hosts, and show up with people who follow through.',
 } as const;
 
 export const HOME_VALUE_PROPS = [
@@ -134,7 +133,10 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
 export const HOME_LIVE_SECTION = {
   title: 'Activities near you',
   subtitle: 'Real group plans posted by hosts and members — join from the map or say what you want.',
+  /** Shown on mobile when live API is healthy (full subtitle stays on desktop). */
+  subtitleMobileLive: 'Real group plans on the map — tap to browse.',
   viewAllLabel: 'View all',
+  liveBadgeLabel: 'Live',
 } as const;
 
 export const HOME_DAY_TIMELINE = {

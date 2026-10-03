@@ -59,7 +59,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Personal hub | `/trips`, `/profile` | `TRIPS_PATH`, `PROFILE_PATH` |
 | Member badges | `/profile/badges` | `PROFILE_BADGES_PATH` — achievements only (no Trail Points) |
 | Legacy rewards wallet | `/trail-points`, `/my-rewards`, `/rewards` | Redirect to `PROFILE_BADGES_PATH` |
-| Community (desktop) | `/community` | `COMMUNITY_PATH` — not product home (`/explore` is) |
+| Legacy community feed | `/community` | `COMMUNITY_PATH` → `/explore` redirect only (feed removed) |
 | Legacy membership marketing | `/membership` | `MEMBERSHIP_MARKETING_PATH` → explore redirect |
 | Pro / business | `/profile/pro-membership` | `PRO_MEMBERSHIP_PATH`, `proMembershipPath()` |
 | Host console | `/host/*` | `HOST_CONSOLE_LINKS` in `src/constants/index.ts` |

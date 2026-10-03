@@ -515,44 +515,6 @@ export interface MyReviewDTO extends ReviewDTO {
   targetPath: string;
 }
 
-export type PostCategory = 'questions' | 'activity-reports' | 'photos' | 'tips';
-
-export interface PostReplyDTO {
-  id: string;
-  authorId: string;
-  authorName: string;
-  authorAvatar?: string | null;
-  authorMembershipTier?: MembershipTierDTO | null;
-  content: string;
-  likedByMe: boolean;
-  likeCount: number;
-  isAccepted: boolean;
-  createdAt: string;
-}
-
-export interface PostDTO {
-  id: string;
-  category: PostCategory;
-  title: string;
-  content: string;
-  excerpt: string;
-  images: string[];
-  locationId?: string | null;
-  locationName?: string | null;
-  activityId?: string | null;
-  authorId: string;
-  authorName: string;
-  authorAvatar?: string | null;
-  authorMembershipTier?: MembershipTierDTO | null;
-  likedByMe: boolean;
-  likeCount: number;
-  replyCount: number;
-  acceptedReplyId?: string | null;
-  replies: PostReplyDTO[];
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface FavoriteDTO {
   id: string;
   locationId?: string | null;

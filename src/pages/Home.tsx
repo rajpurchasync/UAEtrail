@@ -1,4 +1,5 @@
 import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/routingCatalog';
+import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { DEFAULT_OG_IMAGE } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -30,6 +31,12 @@ export const Home = () => {
   const { user } = useAuth();
   const { activities, loading, fromLiveApi } = useHomeLandingActivities();
 
+  useEffect(() => {
+    if (user) return;
+    document.documentElement.classList.add('guest-landing');
+    return () => document.documentElement.classList.remove('guest-landing');
+  }, [user]);
+
   if (user) {
     return <Navigate to={EXPLORE_MAP_PATH} replace />;
   }
@@ -40,9 +47,9 @@ export const Home = () => {
   const hideProductPreviewOnMobile = fromLiveApi && !loading && activities.length >= 2;
 
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div className="guest-landing-page min-h-screen w-full max-w-full overflow-x-clip bg-white">
       <PageMeta
-        title="Find your outdoor crew in the UAE & GCC"
+        title="Find your outdoor crew in the UAE"
         description="Find people to get outside with — hikes, camps, runs, and group outings. Residents and visitors welcome. Browse free, connect, and go together."
         path="/"
         image={DEFAULT_OG_IMAGE}
@@ -53,7 +60,7 @@ export const Home = () => {
       <HomeMobileLaunch joinHref={joinHref} />
       <HomeDesktopHero joinHref={joinHref} signInHref={signInHref} />
 
-      <div className="home-landing-scroll bg-white">
+      <div className="home-landing-scroll home-landing-sheet min-w-0 max-w-full overflow-x-clip bg-white">
         <HomeProofStrip />
         <HomeLiveActivityRail activities={activities} loading={loading} fromLiveApi={fromLiveApi} />
         <HomeValueProps />

@@ -4,7 +4,7 @@ export const PROFILE_PATH = '/profile';
 export const PROFILE_BADGES_PATH = '/profile/badges';
 export const GROUPS_PATH = '/groups';
 
-export const MESSAGES_PATH = '/messages';
+export const MESSAGES_PATH = '/chat';
 export const HOST_MESSAGES_PATH = '/host/messages';
 export const MY_REQUESTS_PATH = '/my-requests';
 

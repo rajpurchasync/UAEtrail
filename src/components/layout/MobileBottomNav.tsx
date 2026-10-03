@@ -10,6 +10,7 @@ import { ClipboardList, Map, MessageSquare, type LucideIcon } from 'lucide-react
 
 import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
+import { MobileBottomNavSocials } from './MobileBottomNavSocials';
 
 const tabShellClass = (active: boolean) =>
   [
@@ -28,7 +29,7 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
   />
 );
 
-/** Mobile tab bar — Explore · Trips · Chat. */
+/** Mobile tab bar — socials row · Explore · Trips · Chat. */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname } = useLocation();
@@ -51,6 +52,7 @@ export const MobileBottomNav = () => {
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-[1200] border-t border-neutral-200/80 bg-white/95 backdrop-blur-md md:hidden"
     >
+      <MobileBottomNavSocials />
       <div className="mx-auto grid max-w-lg grid-cols-3 pb-[var(--safe-bottom)]">
         <NavLink
           to={EXPLORE_MAP_PATH}

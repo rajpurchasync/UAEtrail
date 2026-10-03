@@ -5,7 +5,6 @@
 
 import {
   BUDDIES_PATH,
-  COMMUNITY_PATH,
   CONTRIBUTIONS_PATH,
   GROUPS_PATH,
   MEMBERSHIP_MARKETING_PATH,
@@ -89,7 +88,6 @@ export const OPERATOR_PUBLIC_PATH_PREFIX = ORGANISATION_PUBLIC_PATH_PREFIX;
 export const DESKTOP_NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: EXPLORE_MAP_PATH, label: 'Explore' },
-  { to: COMMUNITY_PATH, label: 'Community' },
   { to: '/faq', label: 'Help' },
 ] as const;
 
@@ -97,10 +95,10 @@ export const DESKTOP_NAV_LINKS = [
 export const joinAuthPath = (redirect: string = PARTICIPANT_JOIN_REDIRECT): string =>
   `/signup?redirect=${encodeURIComponent(redirect)}`;
 
-/** Right-side user menu on landing (mobile/PWA) — Explore, Join, Contact only. */
+/** Right-side user menu on landing (mobile/PWA) — Explore, Join free, Contact (+ Log in in drawer). */
 export const MOBILE_LANDING_USER_MENU = [
   { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH] as const },
-  { label: 'Join', to: joinAuthPath(), match: ['/signin', '/signup'] as const },
+  { label: 'Join free', to: joinAuthPath(), match: ['/signin', '/signup'] as const },
   { label: 'Contact', href: 'mailto:support@uaetrail.com' },
 ] as const;
 
@@ -176,14 +174,6 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
  * - Platform Admin: full admin console
  * Accounts are ACTIVE on signup/OAuth; organizer tenants may still require approval.
  */
-
-/** Community MVP: location-anchored Q&A, activity reports, and photo posts — not a generic forum. */
-export const COMMUNITY_CATEGORIES = [
-  { id: 'questions', label: 'Questions' },
-  { id: 'activity-reports', label: 'Activity reports' },
-  { id: 'photos', label: 'Photos' },
-  { id: 'tips', label: 'Tips & Gear' },
-] as const;
 
 /** Feature toggles — flip without redeploying copy in many files. */
 export const FEATURE_FLAGS = {
@@ -332,7 +322,6 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/trips',
   '/trips/map',
   '/activities',
-  COMMUNITY_PATH,
   '/shop',
   PROFILE_PATH,
   GROUPS_PATH,
