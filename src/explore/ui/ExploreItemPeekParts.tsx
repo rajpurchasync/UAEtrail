@@ -19,7 +19,7 @@ import {
   ExploreCardPeopleRow,
   ExploreCardRequirementBadges,
 } from './ExploreCardPresentation';
-import { resolveExplorePeekDetailAccess } from '../explorePeekDetailAccess';
+import { resolvePeekDetailAccess } from '../../access/resolvePeekDetailAccess';
 
 export interface ExploreItemPeekFooterProps {
   card: ExploreCardModel;
@@ -68,10 +68,8 @@ export const ExploreItemPeekFooter = ({
   const gate = onGuestGatedAction;
 
   const detailLink = (to: string, label: string, className: string) => {
-    const access = resolveExplorePeekDetailAccess(card, {
+    const access = resolvePeekDetailAccess(card, {
       isGuest: Boolean(gate),
-      joinUiState,
-      isHostOrOwner: Boolean(card.showHostActions || card.showDemandOwnerActions),
       joinStateLoading,
     });
     if (!access || access.kind === 'members_only') return null;

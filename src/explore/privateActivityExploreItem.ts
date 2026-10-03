@@ -1,4 +1,4 @@
-import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityViewerAccessDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   buildExploreActivityDisplay,
   buildExploreFeaturedPerson,
@@ -13,7 +13,10 @@ import {
 const isRideshareActivity = (activity: ActivityDTO): boolean => activity.activityType === 'rideshare';
 
 /** Map peek row for link-only (`joinMode: private`) activities — not on public explore payload. */
-export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreMapItemDTO => {
+export const buildExploreMapItemFromActivity = (
+  activity: ActivityDTO,
+  viewerAccess?: ActivityViewerAccessDTO | null
+): ExploreMapItemDTO => {
   const rideshare = isRideshareActivity(activity);
   const hikingDual =
     !rideshare &&
@@ -68,6 +71,7 @@ export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreM
     fromLabel: display.fromLabel,
     toLabel: display.toLabel,
     activity,
+    viewerAccess: viewerAccess ?? null,
   };
 };
 

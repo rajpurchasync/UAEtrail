@@ -143,8 +143,7 @@ export const ActivityDetailView = ({
     locationName: activity.locationName,
   });
 
-  const showInviteShare =
-    !previewMode && activity.status === 'published' && activity.visibilityState !== 'private';
+  const showInviteShare = !previewMode && activity.status === 'published';
 
   const joinLabel = usesExternalSignup
     ? 'Sign up / Join'

@@ -83,7 +83,7 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 
 | Method | Path | Notes |
 |--------|------|--------|
-| GET | `/activities`, `/activities/:id` | Browse / detail — detail uses **`resolveActivityViewerAccess`** (`activity-viewer-access.ts`); target contract § [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) **§15.3** |
+| GET | `/activities`, `/activities/:id` | Browse / detail — **`composeActivityViewerAccess`** (social access + entitlements); response includes **`viewerAccess`** § [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) **§15** |
 | POST | `/activities/:id/requests` | Request to join |
 | POST | `/activities/:id/rsvp` | I'm going |
 | GET/PATCH | `/me/requests` | Member’s activity requests |

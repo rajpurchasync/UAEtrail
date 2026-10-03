@@ -28,7 +28,7 @@ globs:
 ## Rules
 
 1. **Policy lives on the API** — extend `resolveActivityViewerAccess` + tests before changing product rules.
-2. Peek policy must call **`computeActivityDetailExposure`** (`@uaetrail/shared-types`) — not duplicate rules in React.
+2. Peek/detail UI uses **`resolvePeekDetailAccess`** + API `viewerAccess` — never **`computeActivityDetailExposure`** in React.
 3. **Guest UI** — `guestBrowseGateCopy` / `openGuestSheet` when `gateReason === sign_in` only; `join_required` uses join/footer CTAs.
 4. **VA-3 done:** `GET /activities/:id` returns `viewerAccess`; Activity detail page must consume it.
 5. **Map peek:** `GET /explore/map` `viewerAccess` + `mapViewerAccessToExplorePeekDetail` — no `computeActivityDetailExposure` in React.

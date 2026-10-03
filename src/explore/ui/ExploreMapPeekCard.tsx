@@ -16,7 +16,7 @@ import {
   ExploreVenueImageBadges,
 } from './ExploreCardPresentation';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import { resolveExplorePeekDetailAccess } from '../explorePeekDetailAccess';
+import { resolvePeekDetailAccess } from '../../access/resolvePeekDetailAccess';
 
 interface ExploreMapPeekCardProps {
   card: ExploreCardModel;
@@ -44,10 +44,8 @@ export const ExploreMapPeekCard = ({
   pinFooter = false,
   embedMode = false,
 }: ExploreMapPeekCardProps) => {
-  const titleDetailAccess = resolveExplorePeekDetailAccess(card, {
+  const titleDetailAccess = resolvePeekDetailAccess(card, {
     isGuest: Boolean(onGuestGatedAction),
-    joinUiState,
-    isHostOrOwner: Boolean(card.showHostActions || card.showDemandOwnerActions),
     joinStateLoading,
   });
   const shellClass = pinFooter

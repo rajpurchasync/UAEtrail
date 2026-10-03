@@ -3,6 +3,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { NavigateFunction } from 'react-router-dom';
 import type { ActivityDTO, ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
 import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
+import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
 import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../privateActivityExploreItem';
 import { api } from '../../api/index';
 import { buildExploreCardModel } from '../exploreCardModel';
@@ -303,7 +304,10 @@ export const useExploreSelectionActions = ({
     async (activity: ActivityDTO) => {
       if (activity.joinMode === 'private') {
         await reloadExploreMap(queryClient);
-        const peekItem = buildExploreMapItemFromActivity(activity);
+        const peekItem = buildExploreMapItemFromActivity(
+          activity,
+          hostPublishedActivityPeekAccess(activity.joinMode === 'private' ? 'private' : 'open')
+        );
         setLinkOnlyPeekItems((prev) => {
           const rest = prev.filter((entry) => entry.id !== peekItem.id);
           return [...rest, peekItem];
@@ -351,13 +355,13 @@ export const useExploreSelectionActions = ({
 
       try {
         const res = await api.getPublicActivityDetail(activityId);
-        if (res.data.visibilityState === 'private') {
+        if (res.viewerAccess?.exposure === 'none') {
           setDemandNotice(
             res.data.message ?? 'This private plan is only available to signed-in members with the link.'
           );
           return 'denied';
         }
-        const peekItem = buildExploreMapItemFromActivity(res.data);
+        const peekItem = buildExploreMapItemFromActivity(res.data, res.viewerAccess);
         setLinkOnlyPeekItems((prev) => {
           const rest = prev.filter((entry) => entry.id !== peekItem.id);
           return [...rest, peekItem];

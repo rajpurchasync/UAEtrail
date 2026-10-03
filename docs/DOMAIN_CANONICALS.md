@@ -385,7 +385,7 @@ When `gateReason === 'join_required'`, use join/footer CTAs — **not** `guestBr
 
 ### 15.6 Frontend mapping (target — thin layer)
 
-**Target module:** `src/access/mapViewerAccessToUi.ts` (create in Phase 4)
+**Modules:** `src/access/mapViewerAccessToUi.ts`, `src/access/resolvePeekDetailAccess.ts`
 
 | `viewerAccess` | Peek title / detail CTA | Route guard |
 |----------------|-------------------------|-------------|
@@ -402,11 +402,9 @@ When `gateReason === 'join_required'`, use join/footer CTAs — **not** `guestBr
 
 | Location | Problem | Phase to remove |
 |----------|---------|-----------------|
-| `src/explore/explorePeekDetailAccess.ts` | Was client policy duplicate — now wire + catalog only | Removed in VA-6 ✅ |
-| `ActivityDetail.tsx` extra lock screen | Custom copy; bypassable vs `GET /activities/:id` | Phase 3–4 |
-| `visibilityState` only on DTO | No `exposure` / `gateReason` on wire | Phase 2–3 |
+| `visibilityState` on activity DTO (no `viewerAccess`) | Legacy clients | Prefer `viewerAccess`; keep `visibilityState` until API drops it |
 
-Do **not** add new call sites to `resolveExplorePeekDetailAccess` for policy — only wire through API `viewerAccess` once available.
+Peek/detail UI: `src/access/resolvePeekDetailAccess.ts` + `mapViewerAccessToUi.ts` only — no parallel policy modules.
 
 ---
 
@@ -420,7 +418,7 @@ Do **not** add new call sites to `resolveExplorePeekDetailAccess` for policy —
 | **VA-3** | `GET /activities/:id` → `viewerAccess` + redacted/full/none | `registerPublicActivityRoutes.ts` ✅ |
 | **VA-4** | `GET /explore/map` activity/demand items include `viewerAccess` hints | `explore-map-viewer-access.ts` (post-cache enrich) ✅ |
 | **VA-5** | `mapViewerAccessToUi`; peek + `ActivityDetail` consume wire; unify guest lock copy | `mapViewerAccessToUi.ts`, `ActivityDetail.tsx` ✅ |
-| **VA-6** | Delete `explorePeekDetailAccess` policy; optional `resolveDemandViewerAccess` | FE shim + API demand resolver ✅ (shim kept for catalog helpers) |
+| **VA-6** | Single FE peek resolver (`resolvePeekDetailAccess`) | `src/access/resolvePeekDetailAccess.ts` ✅ |
 | **VA-7** | Shop/commerce row in §15.4 + resolver | `catalog-viewer-access.ts` + map enrich ✅ |
 
 **Verify each phase:** `npm run verify:system:quick` minimum; API phases require `activity-viewer-access.test.ts` green before FE relies on fields.

@@ -95,10 +95,22 @@ export const ActivityDetail = () => {
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
   const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
 
+  const detailExposure = useMemo(() => {
+    if (!activity) return 'full' as const;
+    return (
+      viewerAccess?.exposure ??
+      (activity.visibilityState === 'private'
+        ? 'none'
+        : activity.visibilityState === 'redacted'
+          ? 'redacted'
+          : 'full')
+    );
+  }, [activity, viewerAccess]);
+
   const isViewerHost = Boolean(
     activity &&
       user &&
-      activity.visibilityState !== 'private' &&
+      detailExposure !== 'none' &&
       viewerHostsActivity(activity, user.id, gate.tenantId, gate.canPublish)
   );
 
@@ -161,14 +173,6 @@ export const ActivityDetail = () => {
       </>
     );
   }
-
-  const detailExposure =
-    viewerAccess?.exposure ??
-    (activity.visibilityState === 'private'
-      ? 'none'
-      : activity.visibilityState === 'redacted'
-        ? 'redacted'
-        : 'full');
 
   if (detailExposure === 'none') {
     const guestPrivate = viewerAccess?.gateReason === 'sign_in' && !user;
@@ -267,6 +271,7 @@ export const ActivityDetail = () => {
       ) : null}
       <ActivityDetailView
         activity={activity}
+        previewMode={isRedactedPreview}
         participation={participation ?? null}
         myRequest={myRequest ?? null}
         message={message}
