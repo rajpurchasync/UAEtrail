@@ -29,7 +29,7 @@ import {
   MeetingPointMap,
   ParticipantPreview,
   HostMessageButton,
-  ActivityCheckInPanel,
+  ActivityParticipationStatus,
   SecureAvatar,
   JoinRequestActions,
   DirectionsControl,
@@ -236,7 +236,7 @@ export const ActivityDetailView = ({
     ) : participation ? (
       <>
         {confirmedSidebarExtras}
-        <ActivityCheckInPanel participation={participation} />
+        <ActivityParticipationStatus participation={participation} />
         {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw && (
           <div className="hidden md:block">
             <JoinRequestActions

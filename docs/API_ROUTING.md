@@ -13,7 +13,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/activities`** | Public read; write via `/host` | Published **Organize** outings (join, RSVP, detail) |
 | **`/explore/map`** | Public | Discovery payload (activities, venues, shops, **demand**) |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
-| **`/host/*`** | Verified + **tenant** (`x-tenant-id`) | Organisation console: publish, check-in, **activity** join queue |
+| **`/host/*`** | Verified + **tenant** (`x-organisation-id`) | **Host console** (any publishing tier): publish, participant roster, **activity** join queue |
 | **`/users/*`** | Optional auth | Public member profiles |
 | **`/chat/*`**, **`/social/*`** | Auth | DMs, reviews, favorites |
 | **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
@@ -93,7 +93,7 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | GET | `/activities/:id` | Activity detail includes `myJoinInvite` when the signed-in viewer has a pending Join me invite (and is not already going) |
 | GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
 | POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
-| * | `/host/activities/*` | CRUD, publish, history (`registerHostActivityRoutes`) |
+| * | `/host/activities/*` | CRUD, publish, history (`registerHostActivityRoutes`) — FE: `listHostActivities`, `createHostActivity`, `publishHostActivity`, … (`activities.ts`) |
 | GET | `/host/activities/:id/participants` | Approved roster + flags (`registerHostActivityParticipantRoutes`) |
 | POST/DELETE | `/host/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
 | POST | `/host/activities/:id/participants/:participantId/revoke` | Remove joiner (note → notification) |
@@ -191,4 +191,6 @@ Prefer **`exploreApi`** for demand; avoid `fulfillParticipantIntent` on host for
 
 ## UI component naming (related)
 
-Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). Host folder is for **`/host/*`** activity console only.
+Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). **`src/components/host/*`** is for **`/host/*`** and Trips **hosted** manage (`ActivityManageSheet`, **`ActivityParticipantsPanel`** for roster / check-in / revoke / rate).
+
+Do **not** add `OrganisationActivity*` symbols or `*OrganisationActivity` client methods — one **Activity** model for community and business hosts; **organisation** naming is tenant storefront scope only ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Organisation in filenames). Member read-only attendance: **`ActivityParticipationStatus`** (not a host roster panel).

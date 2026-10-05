@@ -27,7 +27,7 @@ export { SecureAvatar } from './SecureAvatar';
 export { HostSelect } from './HostSelect';
 export { ReviewSection } from './ReviewSection';
 export { EmptyActivitiesBanner } from './EmptyActivitiesBanner';
-export { ActivityCheckInPanel } from './ActivityCheckInPanel';
+export { ActivityParticipationStatus, ActivityCheckInPanel } from './ActivityCheckInPanel';
 export { WithdrawRequestModal } from './WithdrawRequestModal';
 export { JoinRequestActions } from './JoinRequestActions';
 export { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_SELECT_CLASS, type AppSelectOption } from './AppSelect';

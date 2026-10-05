@@ -239,6 +239,8 @@ Host/member/join terms (do not duplicate in other docs — **update this section
 | `/become-host` in new UI | `PRO_MEMBERSHIP_PATH` or `/welcome` |
 | `OrganisationHubSections` / `useHostGate` | `ConsoleHubSections` (`src/console`), `useHostStatus` |
 | `api.listActivities` / `listOrganisationActivities` | `listHostActivities` (console), `getPublicActivities` or `getMeActivities` (browse/trips) |
+| `createOrganisationActivity` / `*OrganisationActivity*` (client) | `createHostActivity`, `publishHostActivity`, `updateHostActivity`, … (`activities.ts`) |
+| `OrganisationActivityCheckInPanel`, `OrganisationActivities` page | `ActivityParticipantsPanel`, `ActivityManageSheet`, `src/pages/host/Activities.tsx` |
 | `buddyUserId` in meta/API | `actorUserId` or `otherMemberUserId` |
 
 Host route files: `registerHostActivityRequestRoutes`, `registerHostTeamRoutes`, `registerHostDemandFulfillLegacy`, `registerMemberHostStatusRoutes` (under `routes/user/`).
@@ -256,8 +258,10 @@ Host route files: `registerHostActivityRequestRoutes`, `registerHostTeamRoutes`,
 | Retired (guard: `organisationNamingGuard.test.ts`) | Use instead |
 |----------------------------------------------------|-------------|
 | `pages/OrganisationActivities`, `OrganisationConsoleOverview`, … | `src/pages/host/*` |
+| `OrganisationActivityCheckInPanel`, `HostedSection` | `ActivityParticipantsPanel` in `src/components/host/` |
 | Activity form modals + `ActivityFormSessionContext` | Explore **Organize** (`CreateActivityFlow`) |
 | `useOrganisationGate` / `useOrganisationHubData` | `useHostStatus` / `useConsoleHubData` |
+| `api.*OrganisationActivity*` / `legacyApi.ts` | `api.createHostActivity`, `listHostActivities`, … |
 
 **Host console** UI roots: `src/pages/host/*`, `src/console/*`, `src/components/host/*`. Do not add new `pages/Organisation*` routes for host tools.
 

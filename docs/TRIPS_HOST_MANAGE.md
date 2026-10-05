@@ -40,7 +40,7 @@
 | Link / create rideshare on parent | ✓ | — | — |
 | Cancel / delete | ✓ | ✓ | delete draft |
 
-Code: `HostActivityManageSheet`, `useHostActivityManageActions`, `HostActivityManageCancelDialogs`, `hostActivityManageCapabilities`.
+Code: `ActivityManageSheet`, `ActivityParticipantsPanel`, `useHostActivityManageActions`, `HostActivityManageCancelDialogs`, `hostActivityManageCapabilities`.
 
 ## Looking for (demand / Find)
 
@@ -62,7 +62,7 @@ Not hosted under org tenant — **member intents** (`POST /me/participant-intent
 | **Share link** | Host, participants, anyone on `/activity/:id` | WhatsApp, copy link, email, native share — guests can **view**; **Join free** to participate |
 | **Connections** | Signed-in host / participant | DM with activity link (`ActivityInviteSharePanel`) |
 | **Family / friends groups** | Signed-in | Post link on group wall |
-| **Trips / org console** | Host org members | Share icon on hosted rows + full panel in manage sheet |
+| **Trips / host console** | Host (community or tenant) | Share icon on hosted rows + full panel in manage sheet |
 | **Explore map** | Host + confirmed joiners | **Invite your crew** on peek → same panel |
 | **Activity group chat** | Host + approved crew | In-app thread after join (not a public invite URL) |
 

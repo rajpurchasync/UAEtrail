@@ -114,7 +114,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | Layer | Use for | Examples |
 |-------|---------|----------|
 | **Product / UI** | Copy, nav labels | Place, Activity, **Organize** (FAB), Friends, Pro Membership — not **Compose** for FAB |
-| **Code (preferred)** | New TS symbols, files | `PlaceDTO` semantics, `Organisation*`, `getMemberHostStatus`, `PersonPublicProfile` |
+| **Code (preferred)** | New TS symbols, files | `PlaceDTO` semantics, **`Host*`** for activity console + publish (`createHostActivity`, `ActivityParticipantsPanel`), `getOrganisation*` only for **tenant storefront** wire, `getMemberHostStatus`, `PersonPublicProfile` |
 | **Wire / storage** | HTTP paths, Mongo | `/locations`, `LocationDTO`, `activity_requests`, `x-organisation-id` |
 
 **Rule:** Product says **Place**; API may still say `/locations` and `LocationDTO` until a deliberate migration. Do **not** introduce new `Location*` **product** names in UI.
@@ -168,7 +168,7 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 |-------|--------|--------|----------|
 | Public read | `/activities`, `/explore/map`, `/places` | — | Browse |
 | Member | `/me/*` | Bearer | `participant-intents`, `host-status`, profile |
-| Tenant console | `/host/*` | Bearer + `x-organisation-id` | `activities`, **`/host/requests`** (activity join queue) |
+| Host console (tenant scope) | `/host/*` | Bearer + `x-organisation-id` | `activities`, **`/host/requests`** (activity join queue) |
 | Person public | `/users/:id` | optional | Public profile |
 
 **Kebab-case plurals** on URLs: `participant-intents`, not `intents` or `demand`.
@@ -182,14 +182,16 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 | Prefer | Deprecated alias | Notes |
 |--------|------------------|-------|
 | `Place`, `getPublicPlaces` | Location (in UI) | `LocationDTO` = wire DTO |
-| `Organisation*`, `HOST_CONSOLE_LINKS` | HostOrganization*, `ORGANISATION_CONSOLE_LINKS` | Folder `organisation-console/` |
+| `getOrganisationProfile`, `ShopOrganisation*`, `organisation-console/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § Organisation in filenames |
+| `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiLegacyGuard`, `organisationNamingGuard` |
+| `HOST_CONSOLE_LINKS`, `src/pages/host/*`, `src/console/*` | `ORGANISATION_CONSOLE_LINKS`, `pages/OrganisationActivities` | Host **user** console at `/host/*` |
 | `getMemberHostStatus` | `getMyOrganisationStatus` | Tier flags |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
-| `ShopOrganisation*` | Merchant* (client) | Mongo `merchant_profiles` |
-| `buildHostActivityPublishPayload` | — | Single publish contract (`activityPublishPayload.ts`) |
+| `buildHostActivityPublishPayload`, `buildHostActivityMenuItems` | `buildOrganisationActivity*` | Single publish contract (`activityPublishPayload.ts`) |
 | `registerHostActivityRequestRoutes` | `*JoinRequest*` (host) | Activity join queue only |
 | `registerHostActivityRoutes` | `registerHostTenantActivityRoutes` | Host **Activity** CRUD/publish/history (`/host/activities/*`) |
 | `registerHostActivityParticipantRoutes` | — | Roster, check-in, revoke, host rating on same paths |
+| `ActivityParticipationStatus` | `ActivityCheckInPanel` (member shim) | Joiner read-only attendance — not host roster |
 
 **Demand vs activity join:** always qualify — “activity join request” vs “demand join request” ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary).
 

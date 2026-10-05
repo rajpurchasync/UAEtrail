@@ -28,6 +28,7 @@ const RETIRED_PATHS = [
   'src/components/activities/useOrganisationActivityFormModal.ts',
   'src/components/activities/activityFormState.ts',
   'src/utils/activityFormSessionStorage.ts',
+  'src/components/organisation-console/OrganisationActivityCheckInPanel.tsx',
 ];
 
 const DEPRECATED_HOST_PAGE_IMPORTS = RETIRED_PATHS.filter((p) => p.startsWith('src/pages/Organisation'));
