@@ -1,6 +1,7 @@
 import type { GroupWallReplyPreviewDTO } from './group-wall.js';
 import type { ExploreCardPresentationDTO } from './explore-presentation.js';
 import type { ExploreMapPersonDTO } from './explore-person.js';
+import type { ActivityJoinInviteForViewerDTO } from './activity-join-invite.js';
 import type { ActivityJoinMode } from './activity-join-mode.js';
 import type { ActivityViewerAccessDTO } from './activity-viewer-access.js';
 import type { ParticipationMode } from './activity-participation-mode.js';
@@ -235,6 +236,8 @@ export interface ActivityDetailDTO extends ActivityDTO {
   location?: LocationDTO;
   myParticipation?: ActivityParticipationDTO | null;
   myRequest?: MyActivityRequestDTO | null;
+  /** Set when the viewer has a pending Join me invite for this activity. */
+  myJoinInvite?: ActivityJoinInviteForViewerDTO | null;
 }
 
 export interface MyActivityDTO extends ActivityDTO {
@@ -301,6 +304,12 @@ export type {
   BuddyActivityPresenceRowDTO,
   ExploreActivityRefDTO,
 } from './buddy-activity-presence.js';
+export {
+  ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY,
+  ACTIVITY_JOIN_INVITE_WINDOW_MS,
+  type ActivityJoinInviteForViewerDTO,
+  type ActivityJoinInvitesSentDTO,
+} from './activity-join-invite.js';
 export type {
   HostPublishingTier,
   HostTierFlags,
@@ -1276,6 +1285,7 @@ export {
   EXPLORE_SHOPS_LIST_PATH,
   EXPLORE_SHOPS_PATH,
   activityDetailPath,
+  activityDetailInvitePath,
   memberProfilePath,
   normalizePlaceActivityType,
   organisationProfilePath,

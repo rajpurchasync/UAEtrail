@@ -29,8 +29,8 @@ Who's going is **Who** (people), not **Where** (places/shops). It complements th
 | **Segments** | `goingTab`: `people` \| `discover` \| `trips` (`ExploreGoingTab`) | Buddies presence, member-discovery roster, activity trips list |
 | **Buddies on map** | `GET /me/buddies/activity-presence` (`buildBuddyActivityPresenceRows`) | Buddy graph × explore **activities** |
 | **Profile links** | `/member/:id` from friend rows | Guests gated (`member-profile`); signed-in **public card** per P3 `viewerAccess` |
-| **Pro browse API** | `GET /users/browse` gated on **host** Pro/business tier | **Conflicts** with product ask (5 free for all members) — see §5 |
-| **Join me** | `ActivityInviteSharePanel` + **Buddies** tab **Join me** (`POST /activities/:id/invites`) | Multi-activity picker if viewer has several eligible outings (future) |
+| **Pro browse API** | `GET /users/browse` for all signed-in members (quota on profile open) | Shipped (WG-3) |
+| **Join me** | Explore Buddies tab + activity detail / host console `ActivityInviteSharePanel` (`GET/POST /activities/:id/invites`, sent **Invited** state) | Multi-activity picker on Explore when several eligible outings (future) |
 
 ---
 
@@ -157,8 +157,8 @@ Lead with **Join me on this outing** — emotional, not “send activity link.�
 | **WG-0** | Approve this plan; update Tier-1 (NAVIGATION, MEMBER_MODEL, DOMAIN_CANONICALS §15 row, COMMUNICATION); resolve Pro SKU question | `verify:docs` |
 | **WG-1** | Friends segment hardening: server-filtered friend trip rows; profile links use `viewerAccess` | No client-only privacy for rosters |
 | **WG-2** | Discover segment UI + quota API + gate on profile open from Discover | Free 5 / Pro unlimited enforced server-side |
-| **WG-3** | Repurpose `/users/browse` under quota; directory search in Discover | Align with §4.4 |
-| **WG-4** | Activity invites (`Join me`) + notifications | Host + approved participants |
+| **WG-3** | Repurpose `/users/browse` under quota; directory search in Discover | Shipped — roster + browse for signed-in members |
+| **WG-4** | Activity invites (`Join me`) + notifications | Shipped — `?invite=1` deep link + activity banner |
 | **WG-5** | Polish: empty states, Pro CTA copy, analytics (`source=discover`) | Shipped in `exploreGoingPanelCopy.ts` + Discover **Connect** (buddy request) |
 
 **Explicitly out of scope for WG-1–2:** Partner campaigns, paid trip checkout, host console publish-as.
@@ -171,7 +171,7 @@ Lead with **Join me on this outing** — emotional, not “send activity link.�
 2. **Window:** rolling 30 days vs calendar month?
 3. **Pro definition:** host Pro/business only vs future **consumer Pro** for unlimited discover?
 4. **Discover default source:** trip rosters only first, or directory + rosters day one?
-5. **Invite limits:** cap invites per activity per day (spam)?
+5. **Invite limits:** interim **20 / activity / sender / 24h** shipped (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) — tune with product.
 
 ---
 

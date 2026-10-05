@@ -26,6 +26,12 @@ export const activitiesApi = {
       auth: Boolean(getStoredSession()),
     }),
 
+    listActivityJoinInvitesSent: (activityId: string) =>
+      apiRequest<{ data: import('@uaetrail/shared-types').ActivityJoinInvitesSentDTO }>(
+        `/activities/${activityId}/invites`,
+        { auth: true }
+      ),
+
     sendActivityJoinInvite: (activityId: string, inviteeUserId: string) =>
       apiRequest<{ data: { id: string; status: 'pending' } }>(`/activities/${activityId}/invites`, {
         method: 'POST',

@@ -35,6 +35,7 @@ import { notifyHostOfRequestWithdrawal } from '../../services/request-notificati
 import { buildActivityRedactedDetail } from '../../lib/activity-redacted-detail.js';
 import { PRIVATE_ACTIVITY_MESSAGE } from '../../services/activity-viewer-access.js';
 import { composeActivityViewerAccess } from '../../services/compose-activity-viewer-access.js';
+import { resolveViewerPendingJoinInvite } from '../../services/activity-invite.js';
 import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
 
 const updateRequestNoteSchema = z.object({
@@ -103,6 +104,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
 
     let myParticipation = null;
     let myRequest = null;
+    let myJoinInvite = null;
     if (req.auth?.userId) {
       const mine = event.participants.find((p) => p.userId === req.auth!.userId);
       if (mine) {
@@ -116,6 +118,9 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
           status,
           canWithdraw: canWithdrawRequest(status)
         };
+      }
+      if (!myParticipation) {
+        myJoinInvite = await resolveViewerPendingJoinInvite(id, req.auth.userId);
       }
     }
 
@@ -137,6 +142,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
           ...buildActivityRedactedDetail(event),
           myParticipation,
           myRequest,
+          myJoinInvite,
         },
         viewerAccess: access,
       });
@@ -172,7 +178,8 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
         participants: toParticipantPreviews(event.participants),
         location: toLocationDto(event.location),
         myParticipation,
-        myRequest
+        myRequest,
+        myJoinInvite,
       },
       viewerAccess: access,
     });

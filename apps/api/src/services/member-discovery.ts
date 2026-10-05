@@ -8,7 +8,7 @@ const isPublicMemberProfile = (profileVisibility: unknown): boolean => {
   return visibility === 'public';
 };
 
-/** Paginated directory of members with `profileVisibility: public` (Pro browse). */
+/** Paginated directory of members with `profileVisibility: public` (Discover browse). */
 export const listBrowsablePublicMembers = async (input: {
   excludeUserId: string;
   /** Buddies and self — never listed in Discover directory. */

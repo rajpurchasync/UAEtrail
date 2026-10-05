@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSentActivityJoinInvites } from '../useSentActivityJoinInvites';
 import { Link } from 'react-router-dom';
 import { BUDDIES_PATH } from '../../config/routingCatalog';
 import { MessageCircle, UserPlus } from 'lucide-react';
@@ -10,6 +11,8 @@ import { messagesRouteForRole } from '../../utils/authRouting';
 import type { UserRole } from '@uaetrail/shared-types';
 import {
   EXPLORE_BUDDY_JOIN_ME_INVITE,
+  EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL,
+  JOIN_ME_INVITE_FINE_PRINT,
   exploreBuddyJoinMeInviteSent,
 } from '../../content/exploreGoingPanelCopy';
 import { api } from '../../api/index';
@@ -47,6 +50,22 @@ export const ExploreBuddyPresenceList = ({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteActivityByBuddy, setInviteActivityByBuddy] = useState<Record<string, string>>({});
 
+  const invitableActivityIds = useMemo(() => {
+    if (!listJoinInviteActivities) return [];
+    const ids = new Set<string>();
+    for (const row of rows) {
+      for (const target of listJoinInviteActivities(row)) {
+        ids.add(target.activityId);
+      }
+    }
+    return [...ids];
+  }, [rows, listJoinInviteActivities]);
+
+  const { sentInviteeIdsByActivity, refreshActivity } = useSentActivityJoinInvites(
+    invitableActivityIds,
+    isSignedIn && invitableActivityIds.length > 0
+  );
+
   const defaultInviteSelection = useMemo(() => {
     const next: Record<string, string> = {};
     for (const row of rows) {
@@ -68,6 +87,7 @@ export const ExploreBuddyPresenceList = ({
     setNotice(null);
     try {
       await api.sendActivityJoinInvite(activityId, row.buddy.userId);
+      await refreshActivity(activityId);
       setNotice(exploreBuddyJoinMeInviteSent(row.buddy.displayName));
     } catch (err) {
       setInviteError(err instanceof Error ? err.message : 'Could not send invite.');
@@ -102,8 +122,13 @@ export const ExploreBuddyPresenceList = ({
     );
   }
 
+  const showJoinMeFinePrint = invitableActivityIds.length > 0;
+
   return (
     <div className="space-y-2">
+      {showJoinMeFinePrint ? (
+        <p className="text-[11px] leading-relaxed text-neutral-500 px-0.5">{JOIN_ME_INVITE_FINE_PRINT}</p>
+      ) : null}
       {notice ? (
         <p className="rounded-xl border border-emerald-100 bg-emerald-50/90 px-3 py-2 text-xs font-medium text-emerald-900">
           {notice}
@@ -116,6 +141,9 @@ export const ExploreBuddyPresenceList = ({
         {rows.map((row) => {
           const inviteTargets = listJoinInviteActivities?.(row) ?? [];
           const inviteActivityId = resolveInviteActivityId(row, inviteTargets);
+          const alreadyInvited =
+            Boolean(inviteActivityId) &&
+            sentInviteeIdsByActivity[inviteActivityId]?.has(row.buddy.userId);
           const hint = activityHint(row);
           const activity = linkedActivity(row);
           return (
@@ -178,12 +206,18 @@ export const ExploreBuddyPresenceList = ({
                     ) : null}
                     <button
                       type="button"
-                      disabled={busyBuddyId === row.buddy.userId}
+                      disabled={busyBuddyId === row.buddy.userId || alreadyInvited}
                       onClick={() => void sendJoinInvite(row, inviteActivityId)}
-                      className="inline-flex h-9 items-center justify-center gap-1 rounded-full bg-emerald-600 px-2.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                      className={`inline-flex h-9 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-semibold disabled:opacity-60 ${
+                        alreadyInvited
+                          ? 'bg-neutral-100 text-neutral-600 ring-1 ring-neutral-200'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      }`}
                     >
                       <UserPlus className="h-3.5 w-3.5" aria-hidden />
-                      {EXPLORE_BUDDY_JOIN_ME_INVITE}
+                      {alreadyInvited
+                        ? EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL
+                        : EXPLORE_BUDDY_JOIN_ME_INVITE}
                     </button>
                   </div>
                 ) : null}

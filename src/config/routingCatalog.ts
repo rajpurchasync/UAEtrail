@@ -89,6 +89,7 @@ export { TRIPS_PATH, ACTIVITIES_PATH, HOST_CONSOLE_LINKS, ADMIN_LINKS } from '..
 export {
   placeDetailPath,
   activityDetailPath,
+  activityDetailInvitePath,
   organisationProfilePath,
   memberProfilePath,
   shopPublicPath,

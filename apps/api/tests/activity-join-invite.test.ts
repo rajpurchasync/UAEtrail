@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
+import { ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY } from '@uaetrail/shared-types';
 import { RequestStatus } from '../src/domain/enums.js';
 import { findAuthUserByEmail } from '../src/lib/auth-users.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
@@ -18,7 +19,7 @@ import {
 let app: Express;
 
 type NotificationRow = {
-  meta?: { kind?: string; activityId?: string; actorUserId?: string };
+  meta?: { kind?: string; activityId?: string; actorUserId?: string; path?: string };
 };
 
 const listNotifications = async (accessToken: string): Promise<NotificationRow[]> => {
@@ -89,12 +90,47 @@ describe('activity join invite', () => {
     expect(inviteRes.body.data.status).toBe('pending');
 
     const notifications = await listNotifications(invitee.accessToken);
-    expect(
-      notifications.some(
-        (row) =>
-          row.meta?.kind === 'activity_join_invite' && row.meta.activityId === fixture.activityId
-      )
-    ).toBe(true);
+    const inviteNotif = notifications.find(
+      (row) =>
+        row.meta?.kind === 'activity_join_invite' && row.meta.activityId === fixture.activityId
+    );
+    expect(inviteNotif).toBeTruthy();
+    expect(inviteNotif!.meta?.path).toBe(`/activity/${fixture.activityId}?invite=1`);
+
+    const detailRes = await request(app)
+      .get(`/api/v1/activities/${fixture.activityId}`)
+      .set('Authorization', `Bearer ${invitee.accessToken}`);
+    expect(detailRes.status).toBe(200);
+    expect(detailRes.body.data.myJoinInvite?.fromUserId).toBeTruthy();
+    expect(detailRes.body.data.myJoinInvite?.inviterDisplayName).toBeTruthy();
+
+    await cleanupEventFixture(fixture);
+    await getMongoClient()!
+      .db()
+      .collection(COLLECTIONS.ACTIVITY_INVITES)
+      .deleteMany({ activityId: fixture.activityId });
+  });
+
+  it('lists pending invites sent by the host', async () => {
+    const suffix = `join-invite-list-${Date.now()}`;
+    const fixture = await createPublishedEventFixture(suffix);
+    const invitee = await registerVerifiedVisitor(app, `${suffix}-guest`);
+    const inviteeUser = await findAuthUserByEmail(invitee.email);
+    expect(inviteeUser).toBeTruthy();
+
+    const hostToken = await loginOrganizer(suffix);
+
+    const inviteRes = await request(app)
+      .post(`/api/v1/activities/${fixture.activityId}/invites`)
+      .set('Authorization', `Bearer ${hostToken}`)
+      .send({ inviteeUserId: inviteeUser!._id });
+    expect(inviteRes.status).toBe(201);
+
+    const listRes = await request(app)
+      .get(`/api/v1/activities/${fixture.activityId}/invites`)
+      .set('Authorization', `Bearer ${hostToken}`);
+    expect(listRes.status).toBe(200);
+    expect(listRes.body.data.inviteeUserIds).toContain(inviteeUser!._id);
 
     await cleanupEventFixture(fixture);
     await getMongoClient()!
@@ -128,6 +164,39 @@ describe('activity join invite', () => {
       .db()
       .collection(COLLECTIONS.ACTIVITY_INVITES)
       .deleteMany({ activityId: fixture.activityId });
+  });
+
+  it('rate limits new invites per activity per day', async () => {
+    const suffix = `join-invite-limit-${Date.now()}`;
+    const fixture = await createPublishedEventFixture(suffix);
+    const hostToken = await loginOrganizer(suffix);
+    const target = await registerVerifiedVisitor(app, `${suffix}-target`);
+    const targetUser = await findAuthUserByEmail(target.email);
+    expect(targetUser).toBeTruthy();
+
+    const now = new Date();
+    const db = getMongoClient()!.db();
+    for (let i = 0; i < ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY; i++) {
+      await db.collection(COLLECTIONS.ACTIVITY_INVITES).insertOne({
+        _id: newEntityId(),
+        activityId: fixture.activityId,
+        fromUserId: fixture.organizerId,
+        toUserId: `synthetic-invitee-${i}`,
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    const denyRes = await request(app)
+      .post(`/api/v1/activities/${fixture.activityId}/invites`)
+      .set('Authorization', `Bearer ${hostToken}`)
+      .send({ inviteeUserId: targetUser!._id });
+    expect(denyRes.status).toBe(429);
+    expect(denyRes.body.error?.code).toBe('rate_limit');
+
+    await cleanupEventFixture(fixture);
+    await db.collection(COLLECTIONS.ACTIVITY_INVITES).deleteMany({ activityId: fixture.activityId });
   });
 
   it('rejects invites from members who are not host or going', async () => {

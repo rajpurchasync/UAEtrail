@@ -60,6 +60,8 @@ export interface ActivityDetailViewProps {
   selectedPackageIndex?: number;
   onSelectedPackageIndexChange?: (index: number) => void;
   joinDisabled?: boolean;
+  /** Confirmed participant — may send Join me invites to buddies (host uses console). */
+  canSendJoinInvites?: boolean;
 }
 
 export const ActivityDetailView = ({
@@ -80,6 +82,7 @@ export const ActivityDetailView = ({
   selectedPackageIndex: controlledPackageIndex,
   onSelectedPackageIndexChange,
   joinDisabled,
+  canSendJoinInvites = false,
 }: ActivityDetailViewProps) => {
   const [internalPackageIndex, setInternalPackageIndex] = useState(0);
   const selectedPackageIndex = controlledPackageIndex ?? internalPackageIndex;
@@ -291,6 +294,7 @@ export const ActivityDetailView = ({
                 date: activity.date,
                 locationName: activity.locationName,
               }}
+              canSendBuddyInvites={canSendJoinInvites}
             />
           ) : null}
 

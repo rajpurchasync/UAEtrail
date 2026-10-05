@@ -18,18 +18,35 @@ type ActivityInviteDoc = {
 const collection = (): Collection<ActivityInviteDoc> =>
   getMongoClient()!.db().collection<ActivityInviteDoc>(COLLECTIONS.ACTIVITY_INVITES);
 
+export const findPendingActivityInviteForInvitee = async (input: {
+  activityId: string;
+  toUserId: string;
+}): Promise<ActivityInviteDoc | null> =>
+  collection().findOne({
+    activityId: input.activityId,
+    toUserId: input.toUserId,
+    status: 'pending',
+  });
+
+export const findPendingActivityInviteForPair = async (input: {
+  activityId: string;
+  fromUserId: string;
+  toUserId: string;
+}): Promise<ActivityInviteDoc | null> =>
+  collection().findOne({
+    activityId: input.activityId,
+    fromUserId: input.fromUserId,
+    toUserId: input.toUserId,
+    status: 'pending',
+  });
+
 export const upsertActivityInvite = async (input: {
   activityId: string;
   fromUserId: string;
   toUserId: string;
 }): Promise<ActivityInviteDoc> => {
   const now = new Date();
-  const existing = await collection().findOne({
-    activityId: input.activityId,
-    fromUserId: input.fromUserId,
-    toUserId: input.toUserId,
-    status: 'pending',
-  });
+  const existing = await findPendingActivityInviteForPair(input);
   if (existing) return existing;
 
   const doc: ActivityInviteDoc = {
@@ -43,6 +60,32 @@ export const upsertActivityInvite = async (input: {
   };
   await collection().insertOne(doc);
   return doc;
+};
+
+export const countActivityJoinInvitesFromSenderSince = async (input: {
+  activityId: string;
+  fromUserId: string;
+  since: Date;
+}): Promise<number> =>
+  collection().countDocuments({
+    activityId: input.activityId,
+    fromUserId: input.fromUserId,
+    createdAt: { $gte: input.since },
+  });
+
+export const listPendingActivityInviteeIdsForSender = async (input: {
+  activityId: string;
+  fromUserId: string;
+}): Promise<string[]> => {
+  const rows = await collection()
+    .find({
+      activityId: input.activityId,
+      fromUserId: input.fromUserId,
+      status: 'pending',
+    })
+    .project({ toUserId: 1 })
+    .toArray();
+  return rows.map((row) => row.toUserId);
 };
 
 export const purgeActivityInvitesForUser = async (userId: string): Promise<void> => {

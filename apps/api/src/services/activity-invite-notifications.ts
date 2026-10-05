@@ -1,3 +1,4 @@
+import { activityDetailInvitePath } from '@uaetrail/shared-types';
 import { NotificationType } from '../domain/enums.js';
 import { findPublishedActivityWithPreviewsById } from '../lib/activities-store.js';
 import { dispatchNotification } from './notifications.js';
@@ -21,7 +22,7 @@ export const notifyActivityJoinInvite = async (input: {
       kind: 'activity_join_invite',
       actorUserId: input.fromUserId,
       activityId: input.activityId,
-      path: `/activity/${input.activityId}`,
+      path: activityDetailInvitePath(input.activityId),
     },
   }).catch(() => undefined);
 };

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import type {
   ActivityDetailDTO,
@@ -27,12 +27,15 @@ import { useOrganisationGate } from '../hooks/useOrganisationGate';
 import { viewerHostsActivity } from '../utils/viewerHostsActivity';
 import { tripsPath } from '../trips/tripsRouting';
 import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
+import { activityJoinInviteBanner } from '../content/exploreGoingPanelCopy';
 
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const gate = useOrganisationGate({ enabled: Boolean(user) });
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromJoinInvite = searchParams.get('invite') === '1';
   const [activity, setActivity] = useState<ActivityDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -247,6 +250,14 @@ export const ActivityDetail = () => {
         noIndex={isRedactedPreview}
       />
       <JsonLd data={activityEventSchema(activity)} id={`activity-${activity.id}`} />
+      {(fromJoinInvite || activity.myJoinInvite) && !isConfirmedParticipant ? (
+        <p
+          className="mx-auto max-w-3xl px-4 pt-4 text-sm font-medium text-emerald-900 bg-emerald-50 border border-emerald-100 rounded-xl py-3"
+          role="status"
+        >
+          {activityJoinInviteBanner(activity.myJoinInvite?.inviterDisplayName)}
+        </p>
+      ) : null}
       {isRedactedPreview && viewerAccess?.gateReason === 'sign_in' && !user ? (
         <div className="mx-auto max-w-3xl px-4 pt-4">
           <ExploreGuestSignInCard intent="peek-details" compact />
@@ -276,6 +287,7 @@ export const ActivityDetail = () => {
         selectedPackageIndex={selectedPackageIndex}
         onSelectedPackageIndexChange={setSelectedPackageIndex}
         joinDisabled={!packageSelected}
+        canSendJoinInvites={isConfirmedParticipant}
       />
       <WithdrawRequestModal
         open={joinActions.showWithdraw}

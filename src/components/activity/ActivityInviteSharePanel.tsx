@@ -10,9 +10,16 @@ import { GROUPS_PATH, PROFILE_PATH } from '../../config/routingCatalog';
 import { useAuth } from '../../context/AuthContext';
 import { buildActivitySharePayload, type ActivityShareInput } from '../../utils/activityShare';
 import type { SocialGroupView } from '../../api/types';
+import {
+  EXPLORE_BUDDY_JOIN_ME_INVITE,
+  EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL,
+  JOIN_ME_INVITE_FINE_PRINT,
+} from '../../content/exploreGoingPanelCopy';
 
 type ActivityInviteSharePanelProps = {
   activity: ActivityShareInput;
+  /** Host or confirmed participant — may send structured Join me invites to buddies. */
+  canSendBuddyInvites?: boolean;
   /** In-app buddy / group send requires sign-in. External share works for everyone. */
   compact?: boolean;
   className?: string;
@@ -23,6 +30,7 @@ const inviteableGroups = (groups: SocialGroupView[]) =>
 
 export const ActivityInviteSharePanel = ({
   activity,
+  canSendBuddyInvites = false,
   compact = false,
   className = '',
 }: ActivityInviteSharePanelProps) => {
@@ -40,8 +48,19 @@ export const ActivityInviteSharePanel = ({
       const res = await api.getMeBuddies();
       return res.data;
     },
-    enabled: Boolean(user) && showInApp,
+    enabled: Boolean(user) && showInApp && canSendBuddyInvites,
   });
+
+  const { data: sentInviteeIds = [], refetch: refetchSentInvites } = useQuery({
+    queryKey: ['activity-join-invites-sent', activity.id],
+    queryFn: async () => {
+      const res = await api.listActivityJoinInvitesSent(activity.id);
+      return res.data.inviteeUserIds;
+    },
+    enabled: Boolean(user) && canSendBuddyInvites && showInApp,
+  });
+
+  const sentInviteeSet = useMemo(() => new Set(sentInviteeIds), [sentInviteeIds]);
 
   const { data: groups = [], isLoading: groupsLoading } = useQuery({
     queryKey: ['me-groups', 'share'],
@@ -49,7 +68,7 @@ export const ActivityInviteSharePanel = ({
       const res = await api.getMeGroups();
       return inviteableGroups(res.data);
     },
-    enabled: Boolean(user) && showInApp,
+    enabled: Boolean(user) && showInApp && canSendBuddyInvites,
   });
 
   const sendToBuddy = async (buddy: BuddySummaryDTO) => {
@@ -58,6 +77,7 @@ export const ActivityInviteSharePanel = ({
     setNotice(null);
     try {
       await api.sendActivityJoinInvite(activity.id, buddy.userId);
+      await refetchSentInvites();
       setNotice(`Join invite sent to ${buddy.displayName || 'your connection'}.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send invite.');
@@ -91,8 +111,8 @@ export const ActivityInviteSharePanel = ({
             Join me
           </h3>
           <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
-            Invite friends in-app or share a link. They still join or request a spot on the outing —
-            crew chat opens after they&apos;re in.
+            Invite friends in-app or share a link. {JOIN_ME_INVITE_FINE_PRINT} Crew chat opens after
+            they&apos;re confirmed on the outing.
           </p>
         </div>
         <ShareButton title={share.title} text={share.text} path={share.path} iconOnly light />
@@ -104,7 +124,7 @@ export const ActivityInviteSharePanel = ({
         </div>
       ) : null}
 
-      {user ? (
+      {user && canSendBuddyInvites ? (
         <div className="mt-3 border-t border-neutral-100 pt-3">
           <button
             type="button"
@@ -132,11 +152,13 @@ export const ActivityInviteSharePanel = ({
                   </p>
                 ) : (
                   <ul className="space-y-1">
-                    {buddies.map((buddy) => (
+                    {buddies.map((buddy) => {
+                      const alreadyInvited = sentInviteeSet.has(buddy.userId);
+                      return (
                       <li key={buddy.userId}>
                         <button
                           type="button"
-                          disabled={busyBuddyId === buddy.userId}
+                          disabled={busyBuddyId === buddy.userId || alreadyInvited}
                           onClick={() => void sendToBuddy(buddy)}
                           className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left hover:bg-neutral-50 disabled:opacity-60"
                         >
@@ -148,10 +170,19 @@ export const ActivityInviteSharePanel = ({
                           <span className="min-w-0 flex-1 truncate text-sm font-medium text-neutral-900">
                             {buddy.displayName || 'Member'}
                           </span>
-                          <span className="text-xs font-semibold text-emerald-700">Join me</span>
+                          <span
+                            className={`text-xs font-semibold ${
+                              alreadyInvited ? 'text-neutral-500' : 'text-emerald-700'
+                            }`}
+                          >
+                            {alreadyInvited
+                              ? EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL
+                              : EXPLORE_BUDDY_JOIN_ME_INVITE}
+                          </span>
                         </button>
                       </li>
-                    ))}
+                    );
+                    })}
                   </ul>
                 )}
               </div>
@@ -188,14 +219,14 @@ export const ActivityInviteSharePanel = ({
             </div>
           ) : null}
         </div>
-      ) : (
+      ) : !user ? (
         <p className="mt-3 text-xs text-neutral-500">
           <Link to={`/signup?redirect=${encodeURIComponent(share.path)}`} className="font-semibold text-emerald-700">
             Sign up free
           </Link>{' '}
           to message connections or post to your groups.
         </p>
-      )}
+      ) : null}
 
       {notice ? <p className="mt-2 text-xs font-medium text-emerald-700">{notice}</p> : null}
       {error ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}

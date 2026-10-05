@@ -1,4 +1,5 @@
 import {
+  activityDetailInvitePath,
   activityDetailPath,
   ADMIN_HOSTS_PATH,
   ADMIN_PLACES_PATH,
@@ -50,12 +51,15 @@ export const inferNotificationPath = (
     return myRequestDetailPath(requestId);
   }
 
+  const kind = toStringValue(meta?.kind)?.toLowerCase() ?? '';
   const activityId = toStringValue(meta?.activityId);
+  if (kind === 'activity_join_invite' && activityId) {
+    return activityDetailInvitePath(activityId);
+  }
+
   if (activityId) {
     return activityDetailPath(activityId);
   }
-
-  const kind = toStringValue(meta?.kind)?.toLowerCase() ?? '';
   if (kind === 'message') {
     const actor = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.senderId);
     if (actor) return messagesToUserPath(actor);
@@ -64,10 +68,6 @@ export const inferNotificationPath = (
   if (legacySenderId) {
     return messagesToUserPath(legacySenderId);
   }
-  if (kind === 'activity_join_invite' && meta.activityId) {
-    return `/activity/${meta.activityId}`;
-  }
-
   if (kind === 'join_request_approved') {
     const groupId = toStringValue(meta?.groupId);
     if (groupId) return messagesGroupPath(groupId);

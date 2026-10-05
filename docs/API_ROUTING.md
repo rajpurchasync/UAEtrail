@@ -87,7 +87,9 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | POST | `/activities/:id/requests` | Request to join |
 | POST | `/activities/:id/rsvp` | I'm going |
 | GET/PATCH | `/me/requests` | Member’s activity requests |
-| POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (`registerActivityJoinInviteRoutes.ts`) |
+| GET | `/activities/:id` | Activity detail includes `myJoinInvite` when the signed-in viewer has a pending Join me invite (and is not already going) |
+| GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
+| POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
 | * | `/host/activities/*` | CRUD, publish, participants, check-in |
 | GET/PATCH | `/host/requests` | Host queue for **activities** only |
 

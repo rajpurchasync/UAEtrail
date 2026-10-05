@@ -137,19 +137,19 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - Filter/panel query params select map context; they do not imply list mode.
 - **Others drill-down (Activities tab):** `filter=others` → optional `subtype=events|activities`; when `subtype=activities`, optional `outingTopic` (`climbing`, `trail_run`, `workshop`, `community`, …). Helpers: `explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })`.
 
-## Who's going (Explore — planned expansion)
+## Who's going (Explore)
 
-**Wire today:** map control → browse `listMode=going` (URL `view=going`, `goingTab=people|discover|trips`). Data: `GET /me/buddies/activity-presence`, `GET /me/member-discovery/roster`. Guests → sign-in (`guestBrowseGateCopy` `explore-going`).
+Map control → browse `listMode=going` (URL `view=going`, `goingTab=people|discover|trips`). Copy: **Who's going?** (`exploreGoingPanelCopy.ts`). Guests → sign-in (`guestBrowseGateCopy` `explore-going`).
 
-**Product target (not shipped):** Who's going = **friends on trips** + **Discover** strangers (public member cards, buddy requests) + **Join me** invites from participants. Free tier: **5** discovery actions per window; **Pro** for more. Full plan: [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
+| Segment (`goingTab`) | Label | Data / actions |
+|----------------------|-------|----------------|
+| `people` | Buddies | `GET /me/buddies/activity-presence` · **Join me** to buddies (`POST /activities/:id/invites`) |
+| `discover` | Discover | `GET /me/member-discovery/roster` · quota on profile open · **Connect** (buddy request) |
+| `trips` | Trips | Outings with join context (browse trips list mode) |
 
-| Segment (planned) | Purpose |
-|-----------------|--------|
-| Friends | Buddies + which trip they're hosting or joining |
-| Discover | Meet members on upcoming outings / directory → `/member/:id` public card |
-| Trips | Trip list with friend context (today's `trips` segment) |
+**Join me** is a nudge only — invitees still RSVP or request to join; host approval applies when required. Plan / open product knobs: [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
 
-Profile links from this surface use **person** routes (`/member/:id`), not operator/shop storefronts.
+Profile links use **person** routes (`/member/:id?discover=1` from Discover), not operator/shop storefronts.
 
 ## Explore FAB (+)
 

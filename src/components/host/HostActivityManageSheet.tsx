@@ -217,6 +217,7 @@ export const HostActivityManageSheet = ({
                     date: activity.date,
                     locationName: activity.locationName,
                   }}
+                  canSendBuddyInvites
                   compact
                 />
               ) : null}

@@ -30,9 +30,25 @@ export const MEMBER_DISCOVERY_QUOTA_GATE_BODY =
   'Free members can open five new profiles from Discover each month. Pro members get unlimited discovery.';
 export const MEMBER_DISCOVERY_QUOTA_GATE_CTA = 'See Pro options';
 
+export const ACTIVITY_JOIN_INVITE_BANNER =
+  'A friend invited you to join this outing — RSVP or request to join. Host approval still applies when the outing requires it.';
+
+export const activityJoinInviteBanner = (inviterDisplayName?: string | null): string =>
+  inviterDisplayName?.trim()
+    ? `${inviterDisplayName.trim()} invited you to join this outing — RSVP or request to join. Host approval still applies when the outing requires it.`
+    : ACTIVITY_JOIN_INVITE_BANNER;
+
+/** Shown near Join me actions — invites are not auto-join. */
+export const JOIN_ME_INVITE_FINE_PRINT =
+  'Your friend still joins or requests a spot on their own; host approval applies where the outing requires it.';
+
 export const EXPLORE_BUDDY_JOIN_ME_INVITE = 'Join me';
+export const EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL = 'Invited';
 export const exploreBuddyJoinMeInviteSent = (name: string): string =>
   `Join invite sent to ${name}.`;
+
+export const JOIN_ME_INVITE_RATE_LIMIT =
+  'You have sent the maximum Join me invites for this outing today. Try again tomorrow or share the link instead.';
 
 export const EXPLORE_GOING_TAB_TRIPS_EMPTY =
   'No outings with people joining yet — widen the date filter or check back as more plans go live.';
