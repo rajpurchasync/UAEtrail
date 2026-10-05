@@ -1,8 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
+import { RequestStatus } from '../src/domain/enums.js';
 import { findAuthUserByEmail } from '../src/lib/auth-users.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
+import { newEntityId } from '../src/lib/entity-builders.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import {
@@ -25,6 +27,31 @@ const listNotifications = async (accessToken: string): Promise<NotificationRow[]
     .set('Authorization', `Bearer ${accessToken}`);
   expect(res.status).toBe(200);
   return res.body.data as NotificationRow[];
+};
+
+const seedApprovedParticipant = async (
+  fixture: PublishedEventFixture,
+  userId: string
+): Promise<void> => {
+  const requestId = newEntityId();
+  const now = new Date();
+  const db = getMongoClient()!.db();
+  await db.collection('activity_requests').insertOne({
+    _id: requestId,
+    activityId: fixture.activityId,
+    userId,
+    status: RequestStatus.APPROVED,
+    createdAt: now,
+    updatedAt: now
+  });
+  await db.collection('activity_participants').insertOne({
+    _id: newEntityId(),
+    activityId: fixture.activityId,
+    userId,
+    requestId,
+    approvedById: fixture.organizerId,
+    createdAt: now
+  });
 };
 
 const loginOrganizer = async (suffix: string): Promise<string> => {
@@ -68,6 +95,33 @@ describe('activity join invite', () => {
           row.meta?.kind === 'activity_join_invite' && row.meta.activityId === fixture.activityId
       )
     ).toBe(true);
+
+    await cleanupEventFixture(fixture);
+    await getMongoClient()!
+      .db()
+      .collection(COLLECTIONS.ACTIVITY_INVITES)
+      .deleteMany({ activityId: fixture.activityId });
+  });
+
+  it('lets an approved participant invite a member', async () => {
+    const suffix = `join-invite-participant-${Date.now()}`;
+    const fixture = await createPublishedEventFixture(suffix);
+    const going = await registerVerifiedVisitor(app, `${suffix}-going`);
+    const goingUser = await findAuthUserByEmail(going.email);
+    expect(goingUser).toBeTruthy();
+    await seedApprovedParticipant(fixture, goingUser!._id);
+
+    const invitee = await registerVerifiedVisitor(app, `${suffix}-invitee`);
+    const inviteeUser = await findAuthUserByEmail(invitee.email);
+    expect(inviteeUser).toBeTruthy();
+
+    const inviteRes = await request(app)
+      .post(`/api/v1/activities/${fixture.activityId}/invites`)
+      .set('Authorization', `Bearer ${going.accessToken}`)
+      .send({ inviteeUserId: inviteeUser!._id });
+
+    expect(inviteRes.status).toBe(201);
+    expect(inviteRes.body.data.status).toBe('pending');
 
     await cleanupEventFixture(fixture);
     await getMongoClient()!
