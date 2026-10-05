@@ -10,12 +10,12 @@ import { MemberProfileView } from '../components/profile/MemberProfileView';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import { messagesRouteForRole } from '../utils/authRouting';
-import { PRO_MEMBERSHIP_PATH, myActivitiesPath, SIGNIN_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, myActivitiesPath, proMembershipPath, SIGNIN_PATH } from '../config/routingCatalog';
 import {
-  WHOS_GOING_DISCOVERY_UPGRADE_BODY,
-  WHOS_GOING_DISCOVERY_UPGRADE_CTA,
-  WHOS_GOING_DISCOVERY_UPGRADE_TITLE,
-} from '../content/whosGoingCopy';
+  MEMBER_DISCOVERY_QUOTA_GATE_BODY,
+  MEMBER_DISCOVERY_QUOTA_GATE_CTA,
+  MEMBER_DISCOVERY_QUOTA_GATE_TITLE,
+} from '../content/exploreGoingPanelCopy';
 import { parseProfileReturnNavState } from '../utils/profileReturnNav';
 import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
 
@@ -203,13 +203,16 @@ export const MemberProfile = () => {
         </div>
       ) : discoveryUpgradeRequired ? (
         <GlassCard padding className="text-center">
-          <h1 className="text-lg font-bold text-neutral-900">{WHOS_GOING_DISCOVERY_UPGRADE_TITLE}</h1>
-          <p className="mt-2 text-sm text-neutral-600 leading-relaxed">{WHOS_GOING_DISCOVERY_UPGRADE_BODY}</p>
+          <h1 className="text-lg font-bold text-neutral-900">{MEMBER_DISCOVERY_QUOTA_GATE_TITLE}</h1>
+          <p className="mt-2 text-sm text-neutral-600 leading-relaxed">{MEMBER_DISCOVERY_QUOTA_GATE_BODY}</p>
           <Link
-            to={PRO_MEMBERSHIP_PATH}
+            to={proMembershipPath({
+              intent: 'discover-members',
+              redirect: `${EXPLORE_MAP_PATH}?view=going&goingTab=discover`,
+            })}
             className="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
           >
-            {WHOS_GOING_DISCOVERY_UPGRADE_CTA}
+            {MEMBER_DISCOVERY_QUOTA_GATE_CTA}
           </Link>
           <Link to={myActivitiesPath()} className="mt-3 block text-sm font-semibold text-emerald-700">
             Back to my activities

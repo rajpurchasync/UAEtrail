@@ -11,10 +11,13 @@ const isPublicMemberProfile = (profileVisibility: unknown): boolean => {
 /** Paginated directory of members with `profileVisibility: public` (Pro browse). */
 export const listBrowsablePublicMembers = async (input: {
   excludeUserId: string;
+  /** Buddies and self — never listed in Discover directory. */
+  excludeUserIds?: ReadonlySet<string>;
   search?: string;
   skip: number;
   take: number;
 }): Promise<MemberBrowseCardDTO[]> => {
+  const exclude = input.excludeUserIds ?? new Set<string>([input.excludeUserId]);
   const users = await listAuthUsers({
     status: 'ACTIVE',
     search: input.search?.trim() || undefined,
@@ -24,7 +27,7 @@ export const listBrowsablePublicMembers = async (input: {
   });
 
   return users
-    .filter((user) => user._id !== input.excludeUserId && isPublicMemberProfile(user.profile?.profileVisibility))
+    .filter((user) => !exclude.has(user._id) && isPublicMemberProfile(user.profile?.profileVisibility))
     .slice(0, input.take)
     .map((user) => {
       const city = user.profile?.city;

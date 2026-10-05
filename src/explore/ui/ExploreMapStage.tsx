@@ -46,10 +46,10 @@ export type ExploreMapStageProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
-  onWhosGoing: () => void;
-  whosGoingAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  whosGoingExtraCount?: number;
-  whosGoingTotalJoining?: number;
+  onOpenGoingPanel: () => void;
+  goingPanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
+  goingPanelExtraCount?: number;
+  goingPanelTotalJoining?: number;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
@@ -114,10 +114,10 @@ export const ExploreMapStage = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
-  onWhosGoing,
-  whosGoingAvatars,
-  whosGoingExtraCount,
-  whosGoingTotalJoining,
+  onOpenGoingPanel,
+  goingPanelAvatars,
+  goingPanelExtraCount,
+  goingPanelTotalJoining,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -205,10 +205,10 @@ export const ExploreMapStage = ({
         onMapFilterChange={onMapFilterChange}
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
-        onWhosGoing={onWhosGoing}
-        whosGoingAvatars={whosGoingAvatars}
-        whosGoingExtraCount={whosGoingExtraCount}
-        whosGoingTotalJoining={whosGoingTotalJoining}
+        onOpenGoingPanel={onOpenGoingPanel}
+        goingPanelAvatars={goingPanelAvatars}
+        goingPanelExtraCount={goingPanelExtraCount}
+        goingPanelTotalJoining={goingPanelTotalJoining}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}

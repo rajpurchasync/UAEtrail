@@ -5,7 +5,7 @@ export const PRO_MEMBERSHIP_PATH = '/profile/pro-membership';
 export const LEGACY_BECOME_HOST_PATH = '/become-host';
 
 export const proMembershipPath = (query?: {
-  intent?: 'add-guide' | 'add-agency' | 'add-shop';
+  intent?: 'add-guide' | 'add-agency' | 'add-shop' | 'discover-members';
   redirect?: string;
 }): string => {
   if (!query?.intent && !query?.redirect) return PRO_MEMBERSHIP_PATH;

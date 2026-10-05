@@ -1,13 +1,13 @@
 import { SecureAvatar } from '../../components/ui';
 import {
-  WHOS_GOING_MAP_BUTTON_LABEL,
-  whosGoingMapButtonAriaLabel,
-} from '../../content/whosGoingCopy';
+  EXPLORE_GOING_MAP_BUTTON_LABEL,
+  exploreGoingMapButtonAriaLabel,
+} from '../../content/exploreGoingPanelCopy';
 import { EXPLORE_MAP_TOOLBAR_FLOATING, EXPLORE_MAP_TOOLBAR_PILL_PADDING } from '../../config/exploreTheme';
 
 type Preview = { id: string; name: string; avatar?: string | null };
 
-type ExploreMapWhosGoingButtonProps = {
+type ExploreMapGoingPanelButtonProps = {
   avatars: Preview[];
   extraCount: number;
   totalJoining: number;
@@ -17,15 +17,15 @@ type ExploreMapWhosGoingButtonProps = {
 
 const PLACEHOLDER_SLOTS = 3;
 
-export const ExploreMapWhosGoingButton = ({
+export const ExploreMapGoingPanelButton = ({
   avatars,
   extraCount,
   totalJoining,
   onClick,
   className = '',
-}: ExploreMapWhosGoingButtonProps) => {
+}: ExploreMapGoingPanelButtonProps) => {
   const hasLivePeople = avatars.length > 0;
-  const ariaLabel = whosGoingMapButtonAriaLabel(totalJoining);
+  const ariaLabel = exploreGoingMapButtonAriaLabel(totalJoining);
 
   return (
     <button
@@ -62,7 +62,7 @@ export const ExploreMapWhosGoingButton = ({
           </span>
         )}
       </span>
-      <span className="whitespace-nowrap">{WHOS_GOING_MAP_BUTTON_LABEL}</span>
+      <span className="whitespace-nowrap">{EXPLORE_GOING_MAP_BUTTON_LABEL}</span>
     </button>
   );
 };

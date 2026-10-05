@@ -59,7 +59,7 @@ Explore and campaigns answer two questions. Do not merge them in copy or DTOs.
 | Lens | Question | Map / feed examples | Entity kinds |
 |------|----------|---------------------|--------------|
 | **Where** | What **place** or **pin** is here? | Trails, camps, venues, **shop pin**, future **partner pin** (hotel) | `place`, shop as **Place** + `shop` storefront |
-| **Who** | **Who** is going / hosting / open to connect? | Activities, demand, **Who’s going**, member cards | `activity`, `person`, host **storefront** when brand-led |
+| **Who** | **Who** is going / hosting / open to connect? | Activities, demand, Explore **going panel** (copy: “Who’s going?”), member cards | `activity`, `person`, **buddy**, **member-discovery** — not `whosGoing` in API/code |
 
 An **Activity** is **Who + When** (often anchored to **Where** via `locationId`). A **tour agency** is **Who** (brand + trips) without requiring a visit pin to participate. A **shop** is primarily **Where** (get directions) plus optional e-commerce on `/shop/:id`.
 
@@ -454,7 +454,7 @@ Computed server-side with `surface: 'explore_map'` so peek titles do not re-deri
 |--------|------|
 | `peek-details` | Guest tapped detail-adjacent surface on explore |
 | `join-activity` | Guest tapped join / gated plan trip |
-| `explore-browse` / `whos-going` | Browse / social entry |
+| `explore-browse` / `explore-going` | Browse list / Explore going panel (`view=going`) |
 
 **Rule:** Authorization outcome comes from **§15.2**; guest copy only explains **why to sign in**.
 

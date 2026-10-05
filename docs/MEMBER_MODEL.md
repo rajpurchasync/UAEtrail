@@ -125,7 +125,7 @@ Billing / `PaidMembershipSku` enforcement: layer **7** in `member-entitlements.t
 
 Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** exposure, not on the public card.
 
-**Member discovery (Who's going):** Explore **Who's going → Discover** — directory `GET /users/browse` (signed-in); profile opens use `?from=discover` with **5 unique profiles / 30d** (`GET /me/member-discovery-quota`); **Pro / business host** tiers = unlimited (`memberHasUnlimitedDiscovery`). **Join me:** `POST /activities/:id/invites`. See [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
+**Member discovery (Explore going panel — product copy “Who's going”):** **Buddies** — `GET /me/buddies/activity-presence` (`registerBuddyRoutes.ts`). **Discover** — `GET /me/member-discovery/roster`, `GET /me/member-discovery-quota`, `GET /users/browse` (`registerMemberDiscoveryRoutes.ts`); profile opens `GET /users/:id/public-profile?from=discover` (**5 unique profiles / 30d**; Pro unlimited). **Join me (participation):** `POST /activities/:id/invites` (`registerActivityJoinInviteRoutes.ts` · `activity_invites`). See [`API_ROUTING.md`](./API_ROUTING.md) and [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
 
 **Profile view analytics (shipped):** views recorded on `GET /users/:id/public-profile`; owners with host Pro/business see `GET /me/profile-view-stats`.
 

@@ -29,13 +29,17 @@ import {
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
-import type { ExploreBrowseListMode, WhosGoingSegment } from './useExploreBrowseUrlState';
-import { ExploreWhosGoingSegmentTabs } from './ExploreWhosGoingSegmentTabs';
-import { ExploreWhosGoingPeopleList } from './ExploreWhosGoingPeopleList';
-import { ExploreWhosGoingDiscoverList } from './ExploreWhosGoingDiscoverList';
-import { WHOS_GOING_PANEL_SUBCOPY, WHOS_GOING_PANEL_TITLE } from '../../content/whosGoingCopy';
-import type { WhosGoingFriendRow } from '../whosGoingFriends';
-import type { WhosGoingDiscoverTripRow } from '../whosGoingDiscover';
+import type { ExploreBrowseListMode, ExploreGoingTab } from './useExploreBrowseUrlState';
+import { ExploreGoingPanelTabs } from './ExploreGoingPanelTabs';
+import { ExploreBuddyPresenceList } from './ExploreBuddyPresenceList';
+import { ExploreMemberDiscoveryList } from './ExploreMemberDiscoveryList';
+import {
+  EXPLORE_GOING_PANEL_SUBCOPY,
+  EXPLORE_GOING_PANEL_TITLE,
+  EXPLORE_GOING_TAB_TRIPS_EMPTY,
+} from '../../content/exploreGoingPanelCopy';
+import type { ExploreActivityRefDTO, MemberDiscoveryOnTripRowDTO } from '@uaetrail/shared-types';
+import type { BuddyActivityPresenceRow } from '../buddyActivityPresence';
 import type { MemberBrowseCardDTO, MemberDiscoveryQuotaDTO } from '@uaetrail/shared-types';
 import type { UserRole } from '@uaetrail/shared-types';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
@@ -79,17 +83,19 @@ export interface ExploreBrowsePanelProps {
   onSearchScopePick: (scope?: ExploreSearchScopeKey | null) => void;
   searchFocusNonce?: number;
   listMode?: ExploreBrowseListMode;
-  whosGoingSegment?: WhosGoingSegment;
-  onWhosGoingSegmentChange?: (segment: WhosGoingSegment) => void;
-  whosGoingTripsCount?: number;
-  whosGoingPeopleCount?: number;
-  whosGoingFriendRows?: WhosGoingFriendRow[];
-  whosGoingFriendsLoading?: boolean;
-  whosGoingFriendsError?: string | null;
+  goingTab?: ExploreGoingTab;
+  onGoingTabChange?: (tab: ExploreGoingTab) => void;
+  goingTabTripCount?: number;
+  buddyPresenceCount?: number;
+  buddyPresenceRows?: BuddyActivityPresenceRow[];
+  buddyPresenceLoading?: boolean;
+  buddyPresenceError?: string | null;
+  onOpenBuddyActivity?: (activity: ExploreActivityRefDTO) => void;
+  listBuddyJoinInviteActivities?: (row: BuddyActivityPresenceRow) => ExploreActivityRefDTO[];
   isSignedIn?: boolean;
   userRole?: UserRole;
-  friendUserIds?: Set<string>;
-  discoverOnTrips?: WhosGoingDiscoverTripRow[];
+  buddyUserIds?: Set<string>;
+  discoverOnTrips?: MemberDiscoveryOnTripRowDTO[];
   discoverDirectory?: MemberBrowseCardDTO[];
   discoverQuota?: MemberDiscoveryQuotaDTO | null;
   discoverLoading?: boolean;
@@ -152,16 +158,18 @@ export const ExploreBrowsePanel = ({
   onSearchScopePick,
   searchFocusNonce = 0,
   listMode = 'default',
-  whosGoingSegment = 'people',
-  onWhosGoingSegmentChange,
-  whosGoingTripsCount = 0,
-  whosGoingPeopleCount = 0,
-  whosGoingFriendRows = [],
-  whosGoingFriendsLoading = false,
-  whosGoingFriendsError = null,
+  goingTab = 'people',
+  onGoingTabChange,
+  goingTabTripCount = 0,
+  buddyPresenceCount = 0,
+  buddyPresenceRows = [],
+  buddyPresenceLoading = false,
+  buddyPresenceError = null,
+  onOpenBuddyActivity,
+  listBuddyJoinInviteActivities,
   isSignedIn = false,
   userRole,
-  friendUserIds,
+  buddyUserIds,
   discoverOnTrips = [],
   discoverDirectory = [],
   discoverQuota = null,
@@ -170,12 +178,12 @@ export const ExploreBrowsePanel = ({
   onOpenTripFromDiscover,
   myTripsMode = false,
 }: ExploreBrowsePanelProps) => {
-  const whosGoing = listMode === 'whosGoing';
-  const whosGoingTrips = whosGoing && whosGoingSegment === 'trips';
-  const whosGoingPeople = whosGoing && whosGoingSegment === 'people';
-  const whosGoingDiscover = whosGoing && whosGoingSegment === 'discover';
-  const heading = whosGoing
-    ? WHOS_GOING_PANEL_TITLE
+  const goingPanel = listMode === 'going';
+  const goingTabTrips = goingPanel && goingTab === 'trips';
+  const goingTabBuddies = goingPanel && goingTab === 'people';
+  const goingTabDiscover = goingPanel && goingTab === 'discover';
+  const heading = goingPanel
+    ? EXPLORE_GOING_PANEL_TITLE
     : myTripsMode
       ? `My trips (${listItems.length})`
       : listHeading(isDesktop, desktopBrowseTab, sidebarPanel, listItems.length, mapFilter);
@@ -184,7 +192,7 @@ export const ExploreBrowsePanel = ({
   const searchScopeAnchorRef = useRef<HTMLDivElement>(null);
   const [searchScopeOpen, setSearchScopeOpen] = useState(false);
   const hasSearchQuery = query.trim().length > 0;
-  const showSearchScopeOverlay = !whosGoing && searchScopeOpen && hasSearchQuery;
+  const showSearchScopeOverlay = !goingPanel && searchScopeOpen && hasSearchQuery;
 
   useEffect(() => {
     if (!searchFocusNonce) return;
@@ -250,7 +258,7 @@ export const ExploreBrowsePanel = ({
 
       {myTripsMode ? <ExploreMyTripsModeNotice /> : null}
 
-      {whosGoing ? (
+      {goingPanel ? (
         <div
           className={`mb-2 flex shrink-0 flex-col gap-1 ${
             isDesktop ? 'border-b border-neutral-200 pb-2' : 'border-b border-neutral-200/80 pb-2'
@@ -260,7 +268,7 @@ export const ExploreBrowsePanel = ({
             <h2 className="min-w-0 truncate text-base font-bold text-gray-900">{heading}</h2>
             {closeButton}
           </div>
-          <p className="text-xs leading-relaxed text-neutral-600">{WHOS_GOING_PANEL_SUBCOPY}</p>
+          <p className="text-xs leading-relaxed text-neutral-600">{EXPLORE_GOING_PANEL_SUBCOPY}</p>
         </div>
       ) : (
         <div
@@ -323,16 +331,16 @@ export const ExploreBrowsePanel = ({
         </div>
       )}
 
-      {whosGoing && onWhosGoingSegmentChange ? (
-        <ExploreWhosGoingSegmentTabs
-          segment={whosGoingSegment}
-          onSegmentChange={onWhosGoingSegmentChange}
-          peopleCount={isSignedIn ? whosGoingPeopleCount : undefined}
-          tripsCount={whosGoingTripsCount}
+      {goingPanel && onGoingTabChange ? (
+        <ExploreGoingPanelTabs
+          tab={goingTab}
+          onTabChange={onGoingTabChange}
+          buddyPresenceCount={isSignedIn ? buddyPresenceCount : undefined}
+          tripActivityCount={goingTabTripCount}
         />
       ) : null}
 
-      {!whosGoing && isDesktop ? (
+      {!goingPanel && isDesktop ? (
         <h2 className="mb-2 shrink-0 text-lg font-bold text-gray-900 lg:text-xl">{heading}</h2>
       ) : null}
 
@@ -343,7 +351,7 @@ export const ExploreBrowsePanel = ({
             : 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain'
         }
       >
-        {whosGoing ? (
+        {goingPanel ? (
           <label className="mb-2 flex shrink-0 items-center gap-2 rounded-xl border border-neutral-200/80 bg-white px-3 py-2 shadow-sm">
             <input
               ref={queryInputRef}
@@ -351,9 +359,9 @@ export const ExploreBrowsePanel = ({
               onChange={(event) => onQueryChange(event.target.value)}
               onBlur={onQuerySync}
               placeholder={
-                whosGoingPeople
-                  ? 'Search friends…'
-                  : whosGoingDiscover
+                goingTabBuddies
+                  ? 'Search buddies…'
+                  : goingTabDiscover
                     ? 'Search members…'
                     : 'Search outings…'
               }
@@ -429,7 +437,7 @@ export const ExploreBrowsePanel = ({
           </div>
         )}
 
-        {!whosGoing ? (
+        {!goingPanel ? (
           <ExploreBrowseFilterChrome
             mapFilter={mapFilter}
             onMapFilterChange={onMapFilterChange}
@@ -456,18 +464,19 @@ export const ExploreBrowsePanel = ({
           }`}
           onMouseLeave={onListItemHoverEnd}
         >
-          {whosGoingPeople ? (
-            <ExploreWhosGoingPeopleList
-              rows={whosGoingFriendRows}
-              loading={whosGoingFriendsLoading}
-              error={whosGoingFriendsError}
+          {goingTabBuddies ? (
+            <ExploreBuddyPresenceList
+              rows={buddyPresenceRows}
+              loading={buddyPresenceLoading}
+              error={buddyPresenceError}
               isSignedIn={isSignedIn}
               userRole={userRole}
-              onOpenTrip={onOpenItem}
+              onOpenActivity={(activity) => onOpenBuddyActivity?.(activity)}
+              listJoinInviteActivities={listBuddyJoinInviteActivities}
             />
           ) : null}
-          {whosGoingDiscover ? (
-            <ExploreWhosGoingDiscoverList
+          {goingTabDiscover ? (
+            <ExploreMemberDiscoveryList
               isSignedIn={isSignedIn}
               loading={discoverLoading}
               error={discoverError}
@@ -477,10 +486,10 @@ export const ExploreBrowsePanel = ({
               onOpenTrip={(activityId) => onOpenTripFromDiscover?.(activityId)}
             />
           ) : null}
-          {!whosGoingPeople && !whosGoingDiscover && loading && listItems.length === 0 ? (
+          {!goingTabBuddies && !goingTabDiscover && loading && listItems.length === 0 ? (
             <ExploreListSkeleton rows={isDesktop ? 8 : 5} />
           ) : null}
-          {!whosGoingPeople && !whosGoingDiscover && !loading && listItems.length === 0 ? (
+          {!goingTabBuddies && !goingTabDiscover && !loading && listItems.length === 0 ? (
             myTripsMode ? (
               <div className={`py-10 text-center text-sm ${EXPLORE_TYPE.muted}`}>
                 <p className="font-medium text-neutral-700">Nothing on your map yet</p>
@@ -494,8 +503,8 @@ export const ExploreBrowsePanel = ({
               </div>
             ) : (
               <p className={`py-10 text-center text-sm font-medium ${EXPLORE_TYPE.muted}`}>
-                {whosGoingTrips
-                  ? 'No outings with people joining yet — check back soon.'
+                {goingTabTrips
+                  ? EXPLORE_GOING_TAB_TRIPS_EMPTY
                   : browseListEmptyMessage({
                       isDesktop,
                       desktopBrowseTab,
@@ -542,14 +551,14 @@ export const ExploreBrowsePanel = ({
                 </>
               )}
             </>
-          ) : !whosGoingPeople && !whosGoingDiscover ? (
+          ) : !goingTabBuddies && !goingTabDiscover ? (
             listItems.map((item) => (
               <ExploreListRow
                 key={item.id}
                 card={buildExploreCardModel(item)}
                 onClick={() => onOpenItem(item)}
-                showJoining={whosGoingTrips}
-                friendUserIds={friendUserIds}
+                showJoining={goingTabTrips}
+                buddyUserIds={buddyUserIds}
                 onPointerEnter={onListItemHover ? () => onListItemHover(item.id) : undefined}
               />
             ))

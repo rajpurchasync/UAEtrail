@@ -51,11 +51,13 @@ import {
   type ExplorePinKindFilter,
 } from '../explorePinKindFilter';
 
-export type ExploreBrowseListMode = 'default' | 'whosGoing';
+/** Browse list presentation — `going` maps to URL `view=going` (Who's going panel copy). */
+export type ExploreBrowseListMode = 'default' | 'going';
 
-export type WhosGoingSegment = 'people' | 'trips';
+/** URL `goingTab` — buddies, member discovery, or activity trips on the map. */
+export type ExploreGoingTab = 'people' | 'discover' | 'trips';
 
-const parseWhosGoingSegment = (value: string | null): WhosGoingSegment => {
+const parseExploreGoingTab = (value: string | null): ExploreGoingTab => {
   if (value === 'trips') return 'trips';
   if (value === 'discover') return 'discover';
   return 'people';
@@ -78,7 +80,7 @@ type SyncPatch = {
   topicPills?: ExploreMapFilterPillKey[];
   listMode?: ExploreBrowseListMode;
   searchScope?: ExploreSearchScopeKey | null;
-  whosGoingSegment?: WhosGoingSegment;
+  goingTab?: ExploreGoingTab;
 };
 
 type UseExploreBrowseUrlStateArgs = {
@@ -133,13 +135,13 @@ export const useExploreBrowseUrlState = ({
     parseExploreMapFilterPillsParam(searchParams.get('topics'))
   );
   const [listMode, setListMode] = useState<ExploreBrowseListMode>(() =>
-    searchParams.get('view') === 'going' ? 'whosGoing' : 'default'
+    searchParams.get('view') === 'going' ? 'going' : 'default'
   );
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(() =>
     parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
   );
-  const [whosGoingSegment, setWhosGoingSegment] = useState<WhosGoingSegment>(() =>
-    parseWhosGoingSegment(searchParams.get('goingTab'))
+  const [goingTab, setGoingTab] = useState<ExploreGoingTab>(() =>
+    parseExploreGoingTab(searchParams.get('goingTab'))
   );
 
   const syncExploreUrl = useCallback(
@@ -199,11 +201,11 @@ export const useExploreBrowseUrlState = ({
       if (serializedTopics) params.set('topics', serializedTopics);
       else params.delete('topics');
 
-      const whosGoingSegmentValue = next.whosGoingSegment ?? whosGoingSegment;
-      if (listModeValue === 'whosGoing') {
+      const goingTabValue = next.goingTab ?? goingTab;
+      if (listModeValue === 'going') {
         params.set('view', 'going');
-        if (whosGoingSegmentValue === 'trips') params.set('goingTab', 'trips');
-        else if (whosGoingSegmentValue === 'discover') params.set('goingTab', 'discover');
+        if (goingTabValue === 'trips') params.set('goingTab', 'trips');
+        else if (goingTabValue === 'discover') params.set('goingTab', 'discover');
         else params.delete('goingTab');
       } else {
         params.delete('view');
@@ -246,7 +248,7 @@ export const useExploreBrowseUrlState = ({
       topicPills,
       listMode,
       searchScope,
-      whosGoingSegment,
+      goingTab,
       searchParams,
       setSearchParams,
     ]
@@ -287,11 +289,11 @@ export const useExploreBrowseUrlState = ({
     );
     setPinKind(parseExplorePinKindFilter(searchParams.get('pinKind')));
     setTopicPills(parseExploreMapFilterPillsParam(searchParams.get('topics')));
-    setListMode(searchParams.get('view') === 'going' ? 'whosGoing' : 'default');
+    setListMode(searchParams.get('view') === 'going' ? 'going' : 'default');
     setSearchScope(
       parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
     );
-    setWhosGoingSegment(parseWhosGoingSegment(searchParams.get('goingTab')));
+    setGoingTab(parseExploreGoingTab(searchParams.get('goingTab')));
     if (isDesktop) {
       setDesktopBrowseTab(parseDesktopBrowseTab(nextPanel));
       if (searchParams.get('q')?.trim()) setSearchExpanded(true);
@@ -347,39 +349,39 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ topicPills: [], list: listOpen });
   };
 
-  const openWhosGoingList = (initialSegment: WhosGoingSegment = 'people') => {
+  const openGoingPanel = (initialTab: ExploreGoingTab = 'people') => {
     clearSelection();
-    setListMode('whosGoing');
-    setWhosGoingSegment(initialSegment);
+    setListMode('going');
+    setGoingTab(initialTab);
     setPanel('activities');
     setDesktopBrowseTab('activities');
     if (isDesktop) {
-      syncExploreUrl({ listMode: 'whosGoing', whosGoingSegment: initialSegment, panel: 'activities' });
+      syncExploreUrl({ listMode: 'going', goingTab: initialTab, panel: 'activities' });
       return;
     }
     setListOpen(true);
     syncExploreUrl({
-      listMode: 'whosGoing',
-      whosGoingSegment: initialSegment,
+      listMode: 'going',
+      goingTab: initialTab,
       panel: 'activities',
       list: true,
     });
   };
 
-  const closeWhosGoingPanel = () => {
+  const closeGoingPanel = () => {
     setListMode('default');
     clearSelection();
     syncExploreUrl({ listMode: 'default' });
   };
 
-  const applyWhosGoingSegment = (segment: WhosGoingSegment) => {
-    setWhosGoingSegment(segment);
-    syncExploreUrl({ whosGoingSegment: segment, list: listOpen });
+  const applyGoingTab = (tab: ExploreGoingTab) => {
+    setGoingTab(tab);
+    syncExploreUrl({ goingTab: tab, list: listOpen });
   };
 
   const closeListPanel = () => {
     setListOpen(false);
-    if (!isDesktop && listMode === 'whosGoing') {
+    if (!isDesktop && listMode === 'going') {
       setListMode('default');
       syncExploreUrl({ list: false, listMode: 'default' });
       return;
@@ -624,10 +626,10 @@ export const useExploreBrowseUrlState = ({
     topicPills,
     toggleMapTopicPill,
     clearMapTopicPills,
-    openWhosGoingList,
-    closeWhosGoingPanel,
-    whosGoingSegment,
-    applyWhosGoingSegment,
+    openGoingPanel,
+    closeGoingPanel,
+    goingTab,
+    applyGoingTab,
     listMode,
   };
 };

@@ -19,12 +19,13 @@ import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
 import { useExploreBrowseList } from './useExploreBrowseList';
-import { useWhosGoingFriends } from './useWhosGoingFriends';
-import { useWhosGoingDiscover } from './useWhosGoingDiscover';
+import { useBuddyActivityPresence } from './useBuddyActivityPresence';
+import { useMemberDiscoveryRoster } from './useMemberDiscoveryRoster';
+import type { BuddyActivityPresenceRow } from '../buddyActivityPresence';
 import {
-  buildDiscoverPeopleOnTrips,
-  filterDiscoverDirectory,
-} from '../whosGoingDiscover';
+  buildViewerInvitableActivityRefs,
+  listJoinInviteActivitiesForBuddy,
+} from '../viewerInvitableActivities';
 import { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
@@ -335,33 +336,40 @@ export const ExploreExperience = () => {
     };
   }, []);
 
-  const whosGoingFriends = useWhosGoingFriends({
+  const buddyActivityPresence = useBuddyActivityPresence({
     enabled: Boolean(user),
-    userId: user?.id,
-    mapItems,
     activityDatePreset: browse.activityDatePreset,
   });
 
-  const openWhosGoingList = useCallback(() => {
-    const segment = whosGoingFriends.friendIds.length > 0 ? 'people' : 'discover';
-    browse.openWhosGoingList(segment);
-  }, [browse, whosGoingFriends.friendIds.length]);
+  const openGoingPanel = useCallback(() => {
+    const tab = buddyActivityPresence.buddyUserIds.size > 0 ? 'people' : 'discover';
+    browse.openGoingPanel(tab);
+  }, [browse, buddyActivityPresence.buddyUserIds.size]);
 
-  const whosGoingDiscoverEnabled =
-    Boolean(user) && browse.listMode === 'whosGoing' && browse.whosGoingSegment === 'discover';
-  const whosGoingDiscover = useWhosGoingDiscover({
-    enabled: whosGoingDiscoverEnabled,
+  const openExploreActivityFromRef = useCallback(
+    (activity: { exploreItemId: string }) => {
+      const item = mapItems.find((entry) => entry.id === activity.exploreItemId);
+      if (item) selection.openItem(item);
+    },
+    [mapItems, selection]
+  );
+
+  const memberDiscoveryRosterEnabled =
+    Boolean(user) && browse.listMode === 'going' && browse.goingTab === 'discover';
+  const memberDiscoveryRoster = useMemberDiscoveryRoster({
+    enabled: memberDiscoveryRosterEnabled,
     search: browse.query,
+    activityDatePreset: browse.activityDatePreset,
   });
 
   const {
     mapPins,
     listItems,
     shopListSections,
-    whosGoingPreview,
+    goingPanelMapChip,
     searchScopeCounts,
-    whosGoingTripsCount,
-    whosGoingListItems,
+    goingTabTripCount,
+    goingTabTripActivities,
   } =
     useExploreBrowseList({
       items: mapItems,
@@ -371,9 +379,9 @@ export const ExploreExperience = () => {
       query: browse.query,
       activityDatePreset: browse.activityDatePreset,
       listMode: browse.listMode,
-      whosGoingSegment: browse.whosGoingSegment,
+      goingTab: browse.goingTab,
       searchScope: browse.searchScope,
-      friendIds: user ? whosGoingFriends.friendIds : undefined,
+      buddyUserIds: user ? buddyActivityPresence.buddyUserIds : undefined,
       sidebarPanel: browse.sidebarPanel,
       isDesktop,
       desktopBrowseTab: browse.desktopBrowseTab,
@@ -381,34 +389,36 @@ export const ExploreExperience = () => {
       outingTopic: browse.outingTopic,
     });
 
-  const discoverExcludeIds = useMemo(() => {
-    const ids = new Set<string>();
-    if (user?.id) ids.add(user.id);
-    whosGoingFriends.friendIds.forEach((id) => ids.add(id));
-    return ids;
-  }, [user?.id, whosGoingFriends.friendIds]);
+  const viewerInvitableActivities = useMemo(() => {
+    if (!user?.id) return [];
+    return buildViewerInvitableActivityRefs(mapItems, user.id, browse.activityDatePreset);
+  }, [mapItems, user?.id, browse.activityDatePreset]);
 
-  const discoverOnTrips = useMemo(
-    () => buildDiscoverPeopleOnTrips(whosGoingListItems, discoverExcludeIds),
-    [whosGoingListItems, discoverExcludeIds]
+  const listBuddyJoinInviteActivities = useCallback(
+    (row: BuddyActivityPresenceRow) => {
+      if (!user?.id) return [];
+      return listJoinInviteActivitiesForBuddy(viewerInvitableActivities, row, mapItems, user.id);
+    },
+    [viewerInvitableActivities, mapItems, user?.id]
   );
 
-  const discoverDirectoryFiltered = useMemo(
-    () =>
-      filterDiscoverDirectory(whosGoingDiscover.directory, discoverExcludeIds, browse.query),
-    [whosGoingDiscover.directory, discoverExcludeIds, browse.query]
-  );
+  useEffect(() => {
+    if (!memberDiscoveryRosterEnabled) return;
+    const refresh = () => void memberDiscoveryRoster.refreshQuota();
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, [memberDiscoveryRosterEnabled, memberDiscoveryRoster]);
 
-  const whosGoingFriendRowsFiltered = useMemo(() => {
+  const buddyPresenceRowsFiltered = useMemo(() => {
     const q = browse.query.trim().toLowerCase();
-    if (!q) return whosGoingFriends.friendRows;
-    return whosGoingFriends.friendRows.filter((row) => {
+    if (!q) return buddyActivityPresence.rows;
+    return buddyActivityPresence.rows.filter((row) => {
       const name = row.buddy.displayName.toLowerCase();
       const hosting = row.hosting?.title.toLowerCase() ?? '';
       const joining = row.joining?.title.toLowerCase() ?? '';
       return name.includes(q) || hosting.includes(q) || joining.includes(q);
     });
-  }, [whosGoingFriends.friendRows, browse.query]);
+  }, [buddyActivityPresence.rows, browse.query]);
 
   const exploreMapTiles = useMemo(
     () => getExploreMapTiles(viewport.exploreMapStyle),
@@ -517,21 +527,23 @@ export const ExploreExperience = () => {
     searchScopeCounts,
     onSearchScopePick: handleMapSearchCommit,
     searchFocusNonce,
-    whosGoingSegment: browse.whosGoingSegment,
-    onWhosGoingSegmentChange: browse.applyWhosGoingSegment,
-    whosGoingTripsCount,
-    whosGoingPeopleCount: whosGoingFriends.friendsOnTrips.length,
-    whosGoingFriendRows: whosGoingFriendRowsFiltered,
-    whosGoingFriendsLoading: whosGoingFriends.loading,
-    whosGoingFriendsError: whosGoingFriends.error,
+    goingTab: browse.goingTab,
+    onGoingTabChange: browse.applyGoingTab,
+    goingTabTripCount,
+    buddyPresenceCount: buddyActivityPresence.buddiesOnActivities.length,
+    buddyPresenceRows: buddyPresenceRowsFiltered,
+    buddyPresenceLoading: buddyActivityPresence.loading,
+    buddyPresenceError: buddyActivityPresence.error,
+    onOpenBuddyActivity: openExploreActivityFromRef,
+    listBuddyJoinInviteActivities,
     isSignedIn: Boolean(user),
     userRole: user?.role,
-    friendUserIds: user ? whosGoingFriends.friendIds : undefined,
-    discoverOnTrips,
-    discoverDirectory: discoverDirectoryFiltered,
-    discoverQuota: whosGoingDiscover.quota,
-    discoverLoading: whosGoingDiscover.loading,
-    discoverError: whosGoingDiscover.error,
+    buddyUserIds: user ? buddyActivityPresence.buddyUserIds : undefined,
+    discoverOnTrips: memberDiscoveryRoster.onTrips,
+    discoverDirectory: memberDiscoveryRoster.directory,
+    discoverQuota: memberDiscoveryRoster.quota,
+    discoverLoading: memberDiscoveryRoster.loading,
+    discoverError: memberDiscoveryRoster.error,
     onOpenTripFromDiscover: (activityId: string) => {
       const item = mapItems.find((entry) => entry.id === activityId);
       if (item) selection.openItem(item);
@@ -549,14 +561,14 @@ export const ExploreExperience = () => {
     />
   );
 
-  const desktopWhosGoingPanel = (
+  const desktopGoingPanel = (
     <ExploreBrowsePanel
       {...browsePanelShared}
-      listItems={whosGoingListItems}
-      onClose={browse.closeWhosGoingPanel}
+      listItems={goingTabTripActivities}
+      onClose={browse.closeGoingPanel}
       closePanelAriaLabel="Close Who's going panel"
       closeButtonVariant="dismiss"
-      listMode="whosGoing"
+      listMode="going"
     />
   );
 
@@ -564,8 +576,8 @@ export const ExploreExperience = () => {
     <ExploreBrowsePanel
       {...browsePanelShared}
       listItems={
-        browse.listMode === 'whosGoing' && browse.whosGoingSegment === 'trips'
-          ? whosGoingListItems
+        browse.listMode === 'going' && browse.goingTab === 'trips'
+          ? goingTabTripActivities
           : listItems
       }
       onClose={browse.closeListPanel}
@@ -610,10 +622,10 @@ export const ExploreExperience = () => {
           onMapFilterChange={browse.applyMapFilter}
           onActivityDatePresetChange={browse.applyActivityDatePreset}
           onVenueRegionsChange={browse.applyVenueRegions}
-          onWhosGoing={openWhosGoingList}
-          whosGoingAvatars={whosGoingPreview.avatars}
-          whosGoingExtraCount={whosGoingPreview.extraCount}
-          whosGoingTotalJoining={whosGoingPreview.totalJoining}
+          onOpenGoingPanel={openGoingPanel}
+          goingPanelAvatars={goingPanelMapChip.avatars}
+          goingPanelExtraCount={goingPanelMapChip.extraCount}
+          goingPanelTotalJoining={goingPanelMapChip.totalJoining}
           searchQuery={browse.query}
           onSearchQueryChange={browse.setQuery}
           onSearchCommit={handleMapSearchCommit}
@@ -690,11 +702,11 @@ export const ExploreExperience = () => {
 
         {inviteShare.sheet}
 
-        {isDesktop && browse.listMode === 'whosGoing' ? (
+        {isDesktop && browse.listMode === 'going' ? (
           <aside
             className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-l lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300"
           >
-            {desktopWhosGoingPanel}
+            {desktopGoingPanel}
           </aside>
         ) : null}
       </div>

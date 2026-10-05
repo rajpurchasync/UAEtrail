@@ -87,8 +87,36 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | POST | `/activities/:id/requests` | Request to join |
 | POST | `/activities/:id/rsvp` | I'm going |
 | GET/PATCH | `/me/requests` | Member’s activity requests |
+| POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (`registerActivityJoinInviteRoutes.ts`) |
 | * | `/host/activities/*` | CRUD, publish, participants, check-in |
 | GET/PATCH | `/host/requests` | Host queue for **activities** only |
+
+Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mongo-indexes.ts`.
+
+---
+
+## Buddies (`/me/buddies`)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/buddies` | List accepted buddy relationships |
+| GET | `/me/buddies/activity-presence` | Buddies × **published activities** on explore map (hosting / participant previews). Query: `date` (explore date preset). |
+
+Registration: `registerBuddyRoutes.ts` · service: `buddy-activity-presence.ts`.
+
+Explore **Who's going** panel (UI) loads this for the **Buddies** segment — not a separate `/whos-going/*` API.
+
+---
+
+## Member discovery (Explore Discover segment)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/member-discovery-quota` | Free vs Pro profile-open quota |
+| GET | `/me/member-discovery/roster` | Strangers on trips (`onTrips`) + public directory + `meta.quota`. Query: `date`, `q`, pagination |
+| GET | `/users/browse` | Directory only (paginated public members; excludes self + buddies) |
+
+Profile opens from Discover: `GET /users/:id/public-profile?from=discover` (quota). Registration: `registerMemberDiscoveryRoutes.ts` · roster: `member-discovery-roster.ts` · views: `member_profile_views` collection.
 
 ---
 

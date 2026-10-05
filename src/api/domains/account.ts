@@ -5,6 +5,8 @@ import type {
   MemberBrowseCardDTO,
   MemberDiscoveryQuotaDTO,
   ProfileViewerAccessDTO,
+  BuddyActivityPresenceRowDTO,
+  MemberDiscoveryOnTripRowDTO,
 } from '@uaetrail/shared-types';
 import type {
   AccountDeletionInfo,
@@ -169,5 +171,40 @@ export const accountApi = {
         `/users/browse?${params.toString()}`,
         { auth: true }
       );
+    },
+
+    getMeBuddyActivityPresence: (options?: { date?: string | null }) => {
+      const params = new URLSearchParams();
+      if (options?.date) params.set('date', options.date);
+      const qs = params.toString();
+      return apiRequest<{ data: { rows: BuddyActivityPresenceRowDTO[] } }>(
+        `/me/buddies/activity-presence${qs ? `?${qs}` : ''}`,
+        { auth: true }
+      );
+    },
+
+    getMeMemberDiscoveryRoster: (options?: {
+      page?: number;
+      pageSize?: number;
+      q?: string;
+      date?: string | null;
+    }) => {
+      const params = new URLSearchParams({
+        page: String(options?.page ?? 1),
+        pageSize: String(options?.pageSize ?? 30),
+      });
+      if (options?.q?.trim()) params.set('q', options.q.trim());
+      if (options?.date) params.set('date', options.date);
+      return apiRequest<{
+        data: {
+          onTrips: MemberDiscoveryOnTripRowDTO[];
+          directory: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
+        };
+        meta: {
+          page: number;
+          pageSize: number;
+          quota: MemberDiscoveryQuotaDTO;
+        };
+      }>(`/me/member-discovery/roster?${params.toString()}`, { auth: true });
     },
 } as const;

@@ -139,7 +139,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 ## Who's going (Explore — planned expansion)
 
-**Wire today:** map control → browse `listMode=whosGoing` (`view=going`); segments **`people`** (buddies hosting/joining) and **`trips`** (outings). Guests → sign-in (`guestBrowseGateCopy` `whos-going`).
+**Wire today:** map control → browse `listMode=going` (URL `view=going`, `goingTab=people|discover|trips`). Data: `GET /me/buddies/activity-presence`, `GET /me/member-discovery/roster`. Guests → sign-in (`guestBrowseGateCopy` `explore-going`).
 
 **Product target (not shipped):** Who's going = **friends on trips** + **Discover** strangers (public member cards, buddy requests) + **Join me** invites from participants. Free tier: **5** discovery actions per window; **Pro** for more. Full plan: [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
 

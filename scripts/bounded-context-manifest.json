@@ -31,12 +31,15 @@
         "apps/api/src/services/join-request.ts",
         "apps/api/src/services/activity-viewer-access.ts",
         "apps/api/src/services/compose-activity-viewer-access.ts",
-        "apps/api/src/services/member-entitlements.ts"
+        "apps/api/src/services/member-entitlements.ts",
+        "apps/api/src/services/activity-invite.ts",
+        "apps/api/src/lib/activity-invites-store.ts"
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
         "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts",
-        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
+        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
+        "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
       ],
       "feDomains": ["src/api/domains/activities.ts", "src/api/domains/explore.ts"],
       "feRoots": ["src/pages/JoinRequestDetail.tsx"]
@@ -85,7 +88,10 @@
     {
       "id": "social_graph",
       "label": "Social graph",
-      "apiFiles": ["apps/api/src/lib/buddy-store.ts"],
+      "apiFiles": [
+        "apps/api/src/lib/buddy-store.ts",
+        "apps/api/src/services/buddy-activity-presence.ts"
+      ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerBuddyRoutes.ts",
         "apps/api/src/routes/user/registerFollowRoutes.ts",
@@ -112,6 +118,23 @@
       "routeRegistrars": ["apps/api/src/routes/shop.ts"],
       "feDomains": ["src/api/domains/shop.ts"],
       "feRoots": ["src/pages/ShopPublic.tsx", "src/components/shop"]
+    },
+    {
+      "id": "member_discovery",
+      "label": "Member discovery",
+      "apiFiles": [
+        "apps/api/src/services/member-discovery-roster.ts",
+        "apps/api/src/services/member-discovery-quota.ts",
+        "apps/api/src/services/member-discovery.ts",
+        "apps/api/src/lib/member-profile-views-store.ts"
+      ],
+      "routeRegistrars": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
+      "feDomains": ["src/api/domains/account.ts"],
+      "feRoots": [
+        "src/explore/ui/useMemberDiscoveryRoster.ts",
+        "src/explore/ui/useBuddyActivityPresence.ts",
+        "src/explore/memberDiscoveryExplore.ts"
+      ]
     },
     {
       "id": "engagement",

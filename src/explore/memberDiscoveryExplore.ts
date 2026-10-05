@@ -1,28 +1,24 @@
-import type { ExploreMapItemDTO, MemberBrowseCardDTO } from '@uaetrail/shared-types';
+import type {
+  ExploreMapItemDTO,
+  MemberBrowseCardDTO,
+  MemberDiscoveryOnTripRowDTO,
+} from '@uaetrail/shared-types';
 
-/** Member profile from Discover — quota + analytics (`from=discover` on API). */
+/** Profile open from Explore Discover segment (`from=discover` on API). */
 export const memberDiscoverProfilePath = (userId: string): string =>
   `/member/${userId}?discover=1&source=discover`;
 
-export type WhosGoingDiscoverTripRow = {
-  userId: string;
-  displayName: string;
-  avatarUrl: string | null;
-  activityId: string;
-  activityTitle: string;
-};
-
-/** Non-buddy participants visible on current map activities (client-side; profile open is server-gated). */
-export const buildDiscoverPeopleOnTrips = (
+/** Client-side fallback when map items are already loaded (tests). */
+export const buildMemberDiscoveryOnTripRowsFromMapItems = (
   activities: ExploreMapItemDTO[],
   excludeUserIds: Set<string>
-): WhosGoingDiscoverTripRow[] => {
+): MemberDiscoveryOnTripRowDTO[] => {
   const seen = new Set<string>();
-  const rows: WhosGoingDiscoverTripRow[] = [];
+  const rows: MemberDiscoveryOnTripRowDTO[] = [];
 
   for (const item of activities) {
     if (item.source !== 'activity' || !item.activity) continue;
-    const activityId = item.id;
+    const activityId = item.activity.id;
     const activityTitle = item.activity.title ?? item.title ?? 'Outing';
     for (const preview of item.participantPreviews ?? []) {
       const userId = preview.id;

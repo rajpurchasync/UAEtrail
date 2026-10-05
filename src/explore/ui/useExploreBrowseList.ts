@@ -22,7 +22,7 @@ import {
   mapItemMatchesSearchScope,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
-import type { ExploreBrowseListMode, WhosGoingSegment } from './useExploreBrowseUrlState';
+import type { ExploreBrowseListMode, ExploreGoingTab } from './useExploreBrowseUrlState';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 import { countExploreSearchScopes, exploreItemMatchesQuery } from '../exploreSearchMatches';
 
@@ -35,9 +35,9 @@ type UseExploreBrowseListArgs = {
   query: string;
   activityDatePreset: ExploreActivityDatePreset;
   listMode: ExploreBrowseListMode;
-  whosGoingSegment: WhosGoingSegment;
+  goingTab: ExploreGoingTab;
   searchScope: ExploreSearchScopeKey | null;
-  friendIds?: Set<string>;
+  buddyUserIds?: Set<string>;
   sidebarPanel: ExplorePanel;
   isDesktop: boolean;
   desktopBrowseTab: DesktopBrowseTab;
@@ -75,9 +75,9 @@ export const useExploreBrowseList = ({
   query,
   activityDatePreset,
   listMode,
-  whosGoingSegment,
+  goingTab,
   searchScope,
-  friendIds,
+  buddyUserIds,
   sidebarPanel,
   isDesktop,
   desktopBrowseTab,
@@ -193,7 +193,7 @@ export const useExploreBrowseList = ({
     outingTopic,
   ]);
 
-  const whosGoingPreview = useMemo(() => {
+  const goingPanelMapChip = useMemo(() => {
     const activityJoinCount = (item: ExploreMapItemDTO) => {
       if (item.slotsTotal != null && item.slotsAvailable != null) {
         return Math.max(0, item.slotsTotal - item.slotsAvailable);
@@ -219,7 +219,7 @@ export const useExploreBrowseList = ({
       for (const preview of item.participantPreviews ?? []) {
         if (seen.has(preview.id)) continue;
         seen.add(preview.id);
-        if (friendIds?.has(preview.id)) friendFirst.push(preview);
+        if (buddyUserIds?.has(preview.id)) friendFirst.push(preview);
         else other.push(preview);
       }
     }
@@ -230,9 +230,9 @@ export const useExploreBrowseList = ({
 
     const extraCount = Math.max(0, seen.size - avatars.length);
     return { avatars, totalJoining, extraCount, peopleShown: seen.size };
-  }, [items, activityDatePreset, friendIds]);
+  }, [items, activityDatePreset, buddyUserIds]);
 
-  const whosGoingListItems = useMemo(() => {
+  const goingTabTripActivities = useMemo(() => {
     const matchesQuery = (item: ExploreMapItemDTO) => exploreItemMatchesQuery(item, query);
     const sorted = sortExploreActivities(
       items
@@ -248,8 +248,8 @@ export const useExploreBrowseList = ({
   }, [items, query, activityDatePreset]);
 
   const listItems = useMemo(() => {
-    if (browseListMode === 'whosGoing' && whosGoingSegment === 'trips') return whosGoingListItems;
-    if (browseListMode === 'whosGoing') return [];
+    if (browseListMode === 'going' && goingTab === 'trips') return goingTabTripActivities;
+    if (browseListMode === 'going') return [];
 
     const hasQuery = query.trim().length > 0;
     const matchesQuery = (item: ExploreMapItemDTO) => exploreItemMatchesQuery(item, query);
@@ -299,8 +299,8 @@ export const useExploreBrowseList = ({
     browseListBase,
     query,
     browseListMode,
-    whosGoingSegment,
-    whosGoingListItems,
+    goingTab,
+    goingTabTripActivities,
     searchScope,
     items,
     mapFilter,
@@ -331,9 +331,9 @@ export const useExploreBrowseList = ({
     mapPins,
     listItems,
     shopListSections,
-    whosGoingPreview,
+    goingPanelMapChip,
     searchScopeCounts,
-    whosGoingTripsCount: whosGoingListItems.length,
-    whosGoingListItems,
+    goingTabTripCount: goingTabTripActivities.length,
+    goingTabTripActivities,
   };
 };

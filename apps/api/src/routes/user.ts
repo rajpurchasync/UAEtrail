@@ -10,6 +10,7 @@ import {
   registerMeAccountSessionRoutes,
   registerMeActivityParticipationRoutes,
 } from './user/registerMeEngagementRoutes.js';
+import { registerActivityJoinInviteRoutes } from './user/registerActivityJoinInviteRoutes.js';
 import { registerMeParticipantIntentRoutes } from './user/registerMeParticipantIntentRoutes.js';
 import { registerMeBadgesRoutes } from './user/registerMeBadgesRoutes.js';
 import { registerMeGoalsRoutes } from './user/registerMeGoalsRoutes.js';
@@ -40,6 +41,7 @@ registerPublicMemberRoutes(userRouter);
 userRouter.use(requireAuth, requireVerifiedEmail);
 
 registerMeActivityParticipationRoutes(userRouter);
+registerActivityJoinInviteRoutes(userRouter);
 
 registerProfileRoutes(userRouter);
 registerMemberDiscoveryRoutes(userRouter);

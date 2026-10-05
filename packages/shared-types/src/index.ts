@@ -293,6 +293,15 @@ export {
   type MemberDiscoveryQuotaDTO,
 } from './member-discovery-quota.js';
 export type {
+  MemberDiscoveryOnTripRowDTO,
+  MemberDiscoveryRosterDTO,
+} from './member-discovery-roster.js';
+export type {
+  BuddyActivityPresenceDTO,
+  BuddyActivityPresenceRowDTO,
+  ExploreActivityRefDTO,
+} from './buddy-activity-presence.js';
+export type {
   HostPublishingTier,
   HostTierFlags,
   MemberProfileRoleLabel,

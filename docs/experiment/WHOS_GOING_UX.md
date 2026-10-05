@@ -1,6 +1,6 @@
 # Who's going — social discovery hub (plan)
 
-**Status:** **WG-1–WG-5 shipped** (segments, quota, invites, panel copy, `source=discover` profile links, default Discover when no friends). Optional: server-side Discover roster API, host list publish-as.  
+**Status:** Segments shipped. **API (object-centric):** `GET /me/buddies/activity-presence`, `GET /me/member-discovery/roster` — see [`API_ROUTING.md`](../API_ROUTING.md). **Explore wire:** URL `view=going` + `goingTab`; code `listMode=going` (panel title copy: “Who's going?” in `exploreGoingPanelCopy.ts` only).  
 **North star:** Find your people · get outside · go together ([`NORTHSTAR.md`](../NORTHSTAR.md)).  
 **Tier-1 hooks:** [`NAVIGATION.md`](../NAVIGATION.md) (Explore), [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) (buddies + quotas), [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md) §15 (profile exposure), [`COMMUNICATION.md`](../COMMUNICATION.md) (invites vs chat).
 
@@ -8,7 +8,7 @@
 
 ## 1. Job of the surface
 
-Tapping **Who's going** on Explore (`listMode=whosGoing`, URL `view=going`) is the **primary in-map place to**:
+Tapping **Who's going** on Explore (`listMode=going`, URL `view=going`) is the **primary in-map place to**:
 
 | Job | User story |
 |-----|------------|
@@ -25,12 +25,12 @@ Who's going is **Who** (people), not **Where** (places/shops). It complements th
 
 | Area | Today | Gap vs target |
 |------|--------|----------------|
-| **Entry** | `ExploreMapWhosGoingButton` → `browse.openWhosGoingList()` | OK as entry; copy/IA should state “friends + discover” |
-| **Segments** | `people` \| `trips` (`WhosGoingSegment`) | **People** = buddy rows only; **Trips** = outings with friends highlighted — no **Discover** strangers |
-| **Friends on map** | Client: `getMeBuddies()` + `buildWhosGoingFriendRows(mapItems)` | Privacy: roster/previews must stay **server-validated** (`profile-viewer-access`, redacted previews) |
+| **Entry** | `ExploreMapGoingPanelButton` → `browse.openGoingPanel()` | Panel title stays product copy “Who's going?” |
+| **Segments** | `goingTab`: `people` \| `discover` \| `trips` (`ExploreGoingTab`) | Buddies presence, member-discovery roster, activity trips list |
+| **Buddies on map** | `GET /me/buddies/activity-presence` (`buildBuddyActivityPresenceRows`) | Buddy graph × explore **activities** |
 | **Profile links** | `/member/:id` from friend rows | Guests gated (`member-profile`); signed-in **public card** per P3 `viewerAccess` |
 | **Pro browse API** | `GET /users/browse` gated on **host** Pro/business tier | **Conflicts** with product ask (5 free for all members) — see §5 |
-| **Join me** | `ActivityInviteSharePanel`: link, DM with URL, group wall | No structured **in-app invite** + notification; no Who's going shortcut |
+| **Join me** | `ActivityInviteSharePanel` + **Buddies** tab **Join me** (`POST /activities/:id/invites`) | Multi-activity picker if viewer has several eligible outings (future) |
 
 ---
 
@@ -42,7 +42,7 @@ Keep URL segment param; extend semantics:
 
 | Segment | Label (product) | Content |
 |---------|------------------|---------|
-| `people` | **Friends** | Buddy list + per-friend **Hosting** / **Joining** trip chips (current `ExploreWhosGoingPeopleList`) |
+| `people` | **Buddies** | `GET /me/buddies/activity-presence` — buddies × map activities |
 | `discover` | **Discover** | Members you don't know yet: from **trip rosters** (same date/filter as map) + optional **directory** search; profile card → buddy request |
 | `trips` | **Trips** | Outings where **any** friend appears (current trips list mode) |
 
@@ -59,7 +59,7 @@ Do **not** show private profiles in Discover. Co-participants on shared activiti
 
 | Viewer | Surface | Exposure |
 |--------|---------|----------|
-| Guest | Who's going | Sign-in sheet only (`guestBrowseGateCopy` `whos-going` / `member-profile`) |
+| Guest | Who's going panel | Sign-in sheet (`guestBrowseGateCopy` `explore-going` / `member-profile`) |
 | Signed-in | Friend row | `/member/:id` per relationship |
 | Signed-in | Discover row | `/member/:id` **public card**; counts toward **discovery quota** when opened from Discover (§5) |
 
@@ -138,15 +138,15 @@ Lead with **Join me on this outing** — emotional, not “send activity link.�
 
 | Context | Work |
 |---------|------|
-| **discovery** | Explore map: optional `discoverPeople` slice or dedicated `GET /explore/whos-going` aggregating friends + discover candidates (server-side privacy) |
+| **discovery** | Prefer existing `GET /me/member-discovery/roster` + map participant previews — no `/whos-going/*` aggregate API |
 | **social_graph** | Buddy request from Discover; quota check in `registerBuddyRoutes` |
 | **member_identity** | Quota store, `GET /me/discovery-quota`, profile opens with `source` |
 | **participation** | Activity invites registrar + policy (participant/host) |
 | **communication** | Notification kind + routing |
 
-**FE:** `ExploreExperience.tsx`, `ExploreBrowsePanel.tsx`, new `ExploreWhosGoingDiscoverList.tsx`, segment tabs, `Buddies` cross-links.
+**FE:** `ExploreExperience.tsx`, `ExploreBrowsePanel.tsx`, `ExploreBuddyPresenceList`, `ExploreMemberDiscoveryList`, `ExploreGoingPanelTabs`, `Buddies` cross-links.
 
-**Tests:** API quota + profile access; FE `whosGoingFriends` + entitlement guards.
+**Tests:** API quota + profile access; `buildBuddyActivityPresenceRows` + discover roster tests.
 
 ---
 
@@ -159,7 +159,7 @@ Lead with **Join me on this outing** — emotional, not “send activity link.�
 | **WG-2** | Discover segment UI + quota API + gate on profile open from Discover | Free 5 / Pro unlimited enforced server-side |
 | **WG-3** | Repurpose `/users/browse` under quota; directory search in Discover | Align with §4.4 |
 | **WG-4** | Activity invites (`Join me`) + notifications | Host + approved participants |
-| **WG-5** | Polish: empty states, Pro CTA copy, analytics (`source=discover`) | `exploreCopy` + north star voice |
+| **WG-5** | Polish: empty states, Pro CTA copy, analytics (`source=discover`) | Shipped in `exploreGoingPanelCopy.ts` + Discover **Connect** (buddy request) |
 
 **Explicitly out of scope for WG-1–2:** Partner campaigns, paid trip checkout, host console publish-as.
 
@@ -179,7 +179,7 @@ Lead with **Join me on this outing** — emotional, not “send activity link.�
 
 - Map chip: **Who's going** (unchanged wire).
 - Panel title: **Who's going** → subcopy: *See friends on upcoming trips and meet new people to go with.*
-- Segments: **Friends** · **Discover** · **Trips**
+- Segments: **Buddies** · **Discover** · **Trips**
 - Quota nudge: *You've viewed 5 member profiles this month. Go Pro to keep discovering people to go with.*
 
 Update [`src/explore/exploreCopy.ts`](../../src/explore/exploreCopy.ts) when implementing — not in WG-0.
