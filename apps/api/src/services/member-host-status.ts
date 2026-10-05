@@ -17,7 +17,9 @@ import {
   pickActivityTenant,
   resolveOwnedProfileType,
 } from '../lib/tenant-store.js';
+import { resolvePublishingProfileKind } from '@uaetrail/shared-types';
 import type { HostStatusDTO } from '@uaetrail/shared-types';
+import { inferTenantPublishingPurpose } from '../domain/tenant-publishing.js';
 
 /** Canonical resolver for `GET /me/host-status` — keep all tier logic here. */
 export const resolveMemberHostStatus = async (userId: string): Promise<HostStatusDTO> => {
@@ -48,12 +50,19 @@ export const resolveMemberHostStatus = async (userId: string): Promise<HostStatu
   }
 
   const ownedTenants = mergeActiveTenantsForHostStatus(ownedByOwnerId, memberships);
-  const ownedProfiles = ownedTenants.map((tenant) => ({
-    type: resolveOwnedProfileType(tenant),
-    tenantId: tenant.id,
-    name: tenant.name,
-    slug: tenant.slug,
-  }));
+  const ownedProfiles = ownedTenants.map((tenant) => {
+    const type = resolveOwnedProfileType(tenant);
+    return {
+      type,
+      tenantId: tenant.id,
+      name: tenant.name,
+      slug: tenant.slug,
+      publishingProfileKind: resolvePublishingProfileKind({
+        ownedType: type,
+        publishingTier: inferTenantPublishingPurpose(tenant),
+      }),
+    };
+  });
 
   const hasGuideProfile = ownedProfiles.some((profile) => profile.type === 'guide');
   const hasAgencyProfile = ownedProfiles.some((profile) => profile.type === 'agency');

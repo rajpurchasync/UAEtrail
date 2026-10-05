@@ -65,7 +65,7 @@ components/     layout/, ui/, seo/, explore/, host/, participant-intent/, shop/
 api/            client.ts → domains/* → services.ts (`api` facade) — see `src/api/index.ts`
 config/         platform.ts, regions.ts, exploreTheme.ts
 context/        AuthContext
-utils/          authRouting, exploreRouting, shopPaths
+utils/          authRouting, shopPaths — explore URL builders live in `src/explore/routing.ts` (`routingCatalog`)
 ```
 
 **Mobile IA:** Bottom tabs **Explore · Trips · Messages**; Profile via header avatar. Signed-in default landing is `/explore`. Guest marketing is `/` only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Trips manage surfaces link to Messages for crew chat — not embedded chat on `/trips`.

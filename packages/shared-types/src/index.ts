@@ -228,7 +228,7 @@ export interface ActivityDTO {
 
 
 export interface ActivityDetailDTO extends ActivityDTO {
-  visibilityState?: 'full' | 'private' | 'redacted';
+  /** Shown on redacted / private stubs when the viewer cannot see full detail. */
   message?: string;
   organizerId?: string;
   participants?: ParticipantPreviewDTO[];
@@ -284,12 +284,21 @@ import type { NotificationMeta } from './notification-meta.js';
 
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
 export type { MemberHubStatsDTO } from './member-hub-stats.js';
+export type { MemberBrowseCardDTO, MemberProfileViewStatsDTO } from './member-pro-engagement.js';
+export {
+  MEMBER_DISCOVERY_QUOTA_LIMIT,
+  MEMBER_DISCOVERY_WINDOW_DAYS,
+  buildMemberDiscoveryQuota,
+  memberHasUnlimitedDiscovery,
+  type MemberDiscoveryQuotaDTO,
+} from './member-discovery-quota.js';
 export type {
   HostPublishingTier,
   HostTierFlags,
   MemberProfileRoleLabel,
 } from './host-publishing-tier.js';
 import type { HostTierFlags, MemberProfileRoleLabel } from './host-publishing-tier.js';
+import type { PublishingProfileKind } from './publishing-profile-kind.js';
 
 export type HostApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
@@ -304,6 +313,8 @@ export interface OwnedHostProfileDTO {
   tenantId: string;
   name: string;
   slug: string;
+  /** Resolved storefront kind for publish-as UI and public links. */
+  publishingProfileKind?: PublishingProfileKind;
 }
 
 /**
@@ -1128,6 +1139,22 @@ export {
 } from './activity-viewer-access.js';
 
 export {
+  computeProfileDetailExposure,
+  type ProfileDetailExposure,
+  type ProfileVisibilitySetting,
+  type ProfileViewerAccessDTO,
+  type ProfileViewerAccessLevel,
+} from './profile-viewer-access.js';
+
+export {
+  type BusinessProSubtype,
+  type ProMembershipPath,
+  type PublishingProfileKind,
+  isOrganizeActivityHostProfileType,
+  resolvePublishingProfileKind,
+} from './publishing-profile-kind.js';
+
+export {
   resolveCommerceMapViewerAccess,
   resolvePublicPlaceMapViewerAccess,
 } from './catalog-viewer-access.js';
@@ -1138,6 +1165,8 @@ export {
   organizeEntitlementDenial,
   resolveMemberAudience,
   resolvePaidMembershipSku,
+  viewerMayBrowsePublicMemberDirectory,
+  viewerMaySeeProfileViewStats,
   type MemberAudience,
   type MemberEntitlementDenial,
   type MemberEntitlementId,

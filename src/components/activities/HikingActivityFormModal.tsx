@@ -16,6 +16,7 @@ import {
   SummaryStepHiking,
   TransportationStep,
 } from './activityFormSteps';
+import { OrganizePublishAsField } from '../../explore/ui/OrganizePublishAsField';
 import { useOrganisationActivityFormModal } from './useOrganisationActivityFormModal';
 
 export interface HikingActivityFormModalProps {
@@ -207,6 +208,17 @@ export const HikingActivityFormModal = ({
           onClose={() => modal.setPreviewActivity(null)}
           onSaveDraft={() => void modal.handleSave('draft')}
           onPublish={() => void modal.handleSave('publish')}
+          publishAsSlot={
+            modal.publishTenantOptions.length > 1 && modal.publishTenantId ? (
+              <OrganizePublishAsField
+                options={modal.publishTenantOptions}
+                value={modal.publishTenantId}
+                onChange={modal.setPublishTenantId}
+                memberDisplayName={modal.memberDisplayName}
+                disabled={modal.saving}
+              />
+            ) : null
+          }
         />
       )}
     </>

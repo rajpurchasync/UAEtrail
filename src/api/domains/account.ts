@@ -1,6 +1,11 @@
 import { NotificationDTO } from '@uaetrail/shared-types';
-import { apiRequest, downloadAuthenticatedFile } from '../client';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { apiRequest, downloadAuthenticatedFile, getStoredSession } from '../client';
+import type {
+  ActivityDTO,
+  MemberBrowseCardDTO,
+  MemberDiscoveryQuotaDTO,
+  ProfileViewerAccessDTO,
+} from '@uaetrail/shared-types';
 import type {
   AccountDeletionInfo,
   PublicMemberProfileDTO,
@@ -11,8 +16,22 @@ import type {
 export const accountApi = {
     getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
 
-    getPersonPublicProfile: (userId: string) =>
-    apiRequest<{ data: PublicMemberProfileDTO }>(`/users/${userId}/public-profile`),
+    getPersonPublicProfile: (userId: string, options?: { discover?: boolean }) => {
+      const qs = options?.discover ? '?from=discover' : '';
+      return apiRequest<{ data: PublicMemberProfileDTO; viewerAccess: ProfileViewerAccessDTO }>(
+        `/users/${userId}/public-profile${qs}`,
+        { auth: Boolean(getStoredSession()) }
+      );
+    },
+
+    getMeMemberDiscoveryQuota: () =>
+      apiRequest<{ data: MemberDiscoveryQuotaDTO }>('/me/member-discovery-quota', { auth: true }),
+
+    getMeProfilePublicPreview: () =>
+    apiRequest<{ data: PublicMemberProfileDTO; viewerAccess: ProfileViewerAccessDTO }>(
+      '/me/profile-public-preview',
+      { auth: true }
+    ),
 
     getPersonUpcomingActivities: (userId: string, limit = 8) =>
     apiRequest<{ data: ActivityDTO[] }>(
@@ -135,5 +154,20 @@ export const accountApi = {
     apiRequest<{ data: { id: string; displayName: string; avatarUrl: string | null } }>(
       `/users/${userId}/brief`,
       { auth: true }
-    )
+    ),
+
+    getMeProfileViewStats: () =>
+      apiRequest<{ data: import('@uaetrail/shared-types').MemberProfileViewStatsDTO }>(
+        '/me/profile-view-stats',
+        { auth: true }
+      ),
+
+    browsePublicMembers: (page = 1, pageSize = 20, q?: string) => {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+      if (q?.trim()) params.set('q', q.trim());
+      return apiRequest<{ data: import('@uaetrail/shared-types').MemberBrowseCardDTO[] }>(
+        `/users/browse?${params.toString()}`,
+        { auth: true }
+      );
+    },
 } as const;

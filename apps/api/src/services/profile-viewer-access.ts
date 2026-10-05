@@ -43,6 +43,9 @@ const ACTIVE_JOIN_REQUEST_STATUSES: RequestStatus[] = [
 
 export const PRIVATE_PROFILE_MESSAGE = 'User has set their account private';
 
+export const GUEST_MEMBER_PROFILE_MESSAGE =
+  'Sign in to view member profiles on UAE Trail.';
+
 /** Host may view a private profile when reviewing requests or managing their activity roster. */
 export const viewerIsHostOfTargetOnActivity = async (
   hostUserId: string,
@@ -124,10 +127,19 @@ export const resolveProfileViewerAccess = async (input: {
     };
   }
 
+  if (!viewerUserId) {
+    return {
+      level: 'denied',
+      canViewFullProfile: false,
+      sharesGroup,
+      sharesAcceptedActivity,
+    };
+  }
+
   if (visibility === 'public') {
     return {
       level: 'public',
-      canViewFullProfile: true,
+      canViewFullProfile: false,
       sharesGroup,
       sharesAcceptedActivity,
     };

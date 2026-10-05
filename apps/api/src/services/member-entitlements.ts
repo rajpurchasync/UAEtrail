@@ -1,4 +1,9 @@
-import type { ActivityViewerAccessDTO, HostStatusDTO } from '@uaetrail/shared-types';
+import type {
+  ActivityViewerAccessDTO,
+  HostStatusDTO,
+  ProfileViewerAccessDTO,
+} from '@uaetrail/shared-types';
+import { viewerMaySeeProfileViewStats } from '@uaetrail/shared-types';
 
 export type MemberEntitlementContext = {
   viewerUserId: string | null;
@@ -16,3 +21,15 @@ export const applyActivityViewEntitlements = (
   _ctx: MemberEntitlementContext,
   socialAccess: ActivityViewerAccessDTO
 ): ActivityViewerAccessDTO => socialAccess;
+
+/** Layer 7 — profile detail (passthrough until paid consumer rules ship). */
+export const applyProfileViewEntitlements = (
+  _ctx: MemberEntitlementContext,
+  socialAccess: ProfileViewerAccessDTO
+): ProfileViewerAccessDTO => socialAccess;
+
+export const maySeeProfileViewStats = (ctx: MemberEntitlementContext): boolean =>
+  viewerMaySeeProfileViewStats({
+    viewerUserId: ctx.viewerUserId,
+    hostStatus: ctx.hostStatus,
+  });

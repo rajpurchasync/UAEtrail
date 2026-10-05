@@ -32,7 +32,10 @@ import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
 import type { ExploreBrowseListMode, WhosGoingSegment } from './useExploreBrowseUrlState';
 import { ExploreWhosGoingSegmentTabs } from './ExploreWhosGoingSegmentTabs';
 import { ExploreWhosGoingPeopleList } from './ExploreWhosGoingPeopleList';
+import { ExploreWhosGoingDiscoverList } from './ExploreWhosGoingDiscoverList';
 import type { WhosGoingFriendRow } from '../whosGoingFriends';
+import type { WhosGoingDiscoverTripRow } from '../whosGoingDiscover';
+import type { MemberBrowseCardDTO, MemberDiscoveryQuotaDTO } from '@uaetrail/shared-types';
 import type { UserRole } from '@uaetrail/shared-types';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
@@ -85,6 +88,12 @@ export interface ExploreBrowsePanelProps {
   isSignedIn?: boolean;
   userRole?: UserRole;
   friendUserIds?: Set<string>;
+  discoverOnTrips?: WhosGoingDiscoverTripRow[];
+  discoverDirectory?: MemberBrowseCardDTO[];
+  discoverQuota?: MemberDiscoveryQuotaDTO | null;
+  discoverLoading?: boolean;
+  discoverError?: string | null;
+  onOpenTripFromDiscover?: (activityId: string) => void;
   /** Filtered explore: only member trips + wishlist pins (`myTrips=1`). */
   myTripsMode?: boolean;
 }
@@ -152,11 +161,18 @@ export const ExploreBrowsePanel = ({
   isSignedIn = false,
   userRole,
   friendUserIds,
+  discoverOnTrips = [],
+  discoverDirectory = [],
+  discoverQuota = null,
+  discoverLoading = false,
+  discoverError = null,
+  onOpenTripFromDiscover,
   myTripsMode = false,
 }: ExploreBrowsePanelProps) => {
   const whosGoing = listMode === 'whosGoing';
   const whosGoingTrips = whosGoing && whosGoingSegment === 'trips';
   const whosGoingPeople = whosGoing && whosGoingSegment === 'people';
+  const whosGoingDiscover = whosGoing && whosGoingSegment === 'discover';
   const heading = whosGoing
     ? "Who's going?"
     : myTripsMode
@@ -330,7 +346,13 @@ export const ExploreBrowsePanel = ({
               value={query}
               onChange={(event) => onQueryChange(event.target.value)}
               onBlur={onQuerySync}
-              placeholder={whosGoingPeople ? 'Search friends or trips…' : 'Search outings…'}
+              placeholder={
+                whosGoingPeople
+                  ? 'Search friends…'
+                  : whosGoingDiscover
+                    ? 'Search members…'
+                    : 'Search outings…'
+              }
               className={`min-w-0 flex-1 bg-transparent text-sm font-semibold ${EXPLORE_TYPE.title} outline-none placeholder:font-normal placeholder:text-neutral-500`}
             />
           </label>
@@ -440,10 +462,21 @@ export const ExploreBrowsePanel = ({
               onOpenTrip={onOpenItem}
             />
           ) : null}
-          {!whosGoingPeople && loading && listItems.length === 0 ? (
+          {whosGoingDiscover ? (
+            <ExploreWhosGoingDiscoverList
+              isSignedIn={isSignedIn}
+              loading={discoverLoading}
+              error={discoverError}
+              quota={discoverQuota}
+              onTrips={discoverOnTrips}
+              directory={discoverDirectory}
+              onOpenTrip={(activityId) => onOpenTripFromDiscover?.(activityId)}
+            />
+          ) : null}
+          {!whosGoingPeople && !whosGoingDiscover && loading && listItems.length === 0 ? (
             <ExploreListSkeleton rows={isDesktop ? 8 : 5} />
           ) : null}
-          {!whosGoingPeople && !loading && listItems.length === 0 ? (
+          {!whosGoingPeople && !whosGoingDiscover && !loading && listItems.length === 0 ? (
             myTripsMode ? (
               <div className={`py-10 text-center text-sm ${EXPLORE_TYPE.muted}`}>
                 <p className="font-medium text-neutral-700">Nothing on your map yet</p>
@@ -505,7 +538,7 @@ export const ExploreBrowsePanel = ({
                 </>
               )}
             </>
-          ) : !whosGoingPeople ? (
+          ) : !whosGoingPeople && !whosGoingDiscover ? (
             listItems.map((item) => (
               <ExploreListRow
                 key={item.id}

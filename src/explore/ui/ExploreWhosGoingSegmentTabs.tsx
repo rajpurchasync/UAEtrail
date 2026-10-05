@@ -1,6 +1,6 @@
 import { EXPLORE_BROWSE_SEGMENT_TAB } from '../../config/exploreTheme';
 
-type WhosGoingSegment = 'people' | 'trips';
+type WhosGoingSegment = 'people' | 'discover' | 'trips';
 
 type ExploreWhosGoingSegmentTabsProps = {
   segment: WhosGoingSegment;
@@ -27,7 +27,16 @@ export const ExploreWhosGoingSegmentTabs = ({
       className={segment === 'people' ? EXPLORE_BROWSE_SEGMENT_TAB.active : EXPLORE_BROWSE_SEGMENT_TAB.inactive}
       onClick={() => onSegmentChange('people')}
     >
-      People{peopleCount != null ? ` (${peopleCount})` : ''}
+      Friends{peopleCount != null ? ` (${peopleCount})` : ''}
+    </button>
+    <button
+      type="button"
+      role="tab"
+      aria-selected={segment === 'discover'}
+      className={segment === 'discover' ? EXPLORE_BROWSE_SEGMENT_TAB.active : EXPLORE_BROWSE_SEGMENT_TAB.inactive}
+      onClick={() => onSegmentChange('discover')}
+    >
+      Discover
     </button>
     <button
       type="button"

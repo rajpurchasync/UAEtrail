@@ -7,7 +7,6 @@ type ActivityDetailSource = Parameters<typeof buildActivityDto>[0];
 export const buildActivityRedactedDetail = (event: ActivityDetailSource): ActivityDetailDTO => {
   const dto = buildActivityDto(event);
   return {
-    visibilityState: 'redacted',
     id: dto.id,
     title: dto.title,
     activityType: dto.activityType,

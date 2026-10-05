@@ -14,8 +14,25 @@ import { formatDisplayNameFromParts, resolveProfilePersonNames } from '../../dom
 import { assertSignupProfileAge, completeSignupProfileSchema, isSignupProfileComplete } from '../../domain/user-profile.js';
 import { confirmEmailChangeSchema, requestEmailChangeSchema, roleSwitchSchema, SWITCHABLE_PRIVILEGED_ROLES, updateProfileSchema } from './schemas.js';
 import type { Router } from 'express';
+import { buildPublicMemberProfile } from '../../services/public-member-profile.js';
 
 export const registerProfileRoutes = (router: Router): void => {
+router.get('/me/profile-public-preview', async (req, res, next) => {
+  try {
+    const userId = req.auth!.userId;
+    const profile = await buildPublicMemberProfile(userId, {
+      viewerUserId: userId,
+      previewAsPublic: true,
+    });
+    if (!profile) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
+    }
+    res.json({ data: profile.data, viewerAccess: profile.viewerAccess });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/me/profile', async (req, res, next) => {
   try {
     const user = await findAuthUserById(req.auth!.userId);

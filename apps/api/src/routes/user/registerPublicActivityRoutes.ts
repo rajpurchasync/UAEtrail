@@ -122,7 +122,6 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
     if (access.exposure === 'none') {
       res.json({
         data: {
-          visibilityState: 'private',
           id: event.id,
           joinMode: 'private',
           message: PRIVATE_ACTIVITY_MESSAGE,
@@ -166,7 +165,6 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
 
     res.json({
       data: {
-        visibilityState: 'full',
         ...buildActivityDto(event),
         linkedRideshare,
         linkedParentActivity,

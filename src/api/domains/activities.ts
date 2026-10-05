@@ -26,6 +26,13 @@ export const activitiesApi = {
       auth: Boolean(getStoredSession()),
     }),
 
+    sendActivityJoinInvite: (activityId: string, inviteeUserId: string) =>
+      apiRequest<{ data: { id: string; status: 'pending' } }>(`/activities/${activityId}/invites`, {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify({ inviteeUserId }),
+      }),
+
     getActivityGroupChat: (activityId: string) =>
     apiRequest<{
       data: {

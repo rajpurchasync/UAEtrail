@@ -97,14 +97,7 @@ export const ActivityDetail = () => {
 
   const detailExposure = useMemo(() => {
     if (!activity) return 'full' as const;
-    return (
-      viewerAccess?.exposure ??
-      (activity.visibilityState === 'private'
-        ? 'none'
-        : activity.visibilityState === 'redacted'
-          ? 'redacted'
-          : 'full')
-    );
+    return viewerAccess?.exposure ?? 'full';
   }, [activity, viewerAccess]);
 
   const isViewerHost = Boolean(

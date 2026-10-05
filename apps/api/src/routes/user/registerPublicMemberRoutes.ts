@@ -8,6 +8,9 @@ import { validate } from '../../middleware/validate.js';
 import { listPublishedUpcomingActivitiesByMember } from '../../lib/activities-store.js';
 import { buildActivityDto } from '../../lib/mappers.js';
 import { resolveProfileViewerAccess } from '../../services/profile-viewer-access.js';
+import { recordMemberProfileView } from '../../lib/member-profile-views-store.js';
+import { assertAndRecordMemberDiscoveryProfileOpen } from '../../services/member-discovery-quota.js';
+import { resolveMemberHostStatus } from '../../services/member-host-status.js';
 import { buildPublicMemberProfile } from '../../services/public-member-profile.js';
 import { userBriefParamSchema } from './schemas.js';
 
@@ -55,14 +58,36 @@ export const registerPublicMemberRoutes = (router: Router): void => {
   router.get('/users/:userId/public-profile', optionalAuth, validate({ params: userBriefParamSchema }), async (req, res, next) => {
     try {
       const { userId } = req.params as z.infer<typeof userBriefParamSchema>;
+      const viewerUserId = req.auth?.userId ?? null;
+      const fromDiscover =
+        req.query.from === 'discover' || req.query.discover === '1' || req.query.discover === 'true';
+
       const profile = await buildPublicMemberProfile(userId, {
-        viewerUserId: req.auth?.userId ?? null,
+        viewerUserId,
         isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
       });
       if (!profile) {
         throw new ApiError(404, 'user_not_found', 'User not found.');
       }
-      res.json({ data: profile });
+
+      const mayCountView =
+        viewerUserId &&
+        viewerUserId !== userId &&
+        (profile.viewerAccess.exposure === 'public' || profile.viewerAccess.exposure === 'full');
+
+      if (fromDiscover && mayCountView && viewerUserId) {
+        const hostStatus = await resolveMemberHostStatus(viewerUserId);
+        await assertAndRecordMemberDiscoveryProfileOpen({
+          viewerUserId,
+          profileUserId: userId,
+          hostStatus,
+        });
+      } else if (mayCountView && !fromDiscover) {
+        void recordMemberProfileView({ profileUserId: userId, viewerUserId: viewerUserId! }).catch(
+          () => undefined
+        );
+      }
+      res.json({ data: profile.data, viewerAccess: profile.viewerAccess });
     } catch (error) {
       next(error);
     }
@@ -82,7 +107,7 @@ export const registerPublicMemberRoutes = (router: Router): void => {
         if (!profile) {
           throw new ApiError(404, 'user_not_found', 'User not found.');
         }
-        if (profile.visibilityState !== 'full') {
+        if (profile.viewerAccess.exposure !== 'full') {
           res.json({ data: [] });
           return;
         }

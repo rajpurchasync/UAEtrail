@@ -6,6 +6,10 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/host-st
 
 **Capabilities ≠ viewer access:** `canPublish` / `canAccessHostConsole` answer whether this member may **act** as a host. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`resolveActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
 
+**Host = always a user:** Every publish action has a `userId` actor. A **business** is a **tenant** the user may represent; use **publish as self / {business}** when the member has multiple activity-capable tenants (`GET /me/host-status` → `ownedProfiles[].publishingProfileKind`; Organize publish step `OrganizePublishAsField`). Host console publish-as: TBD.
+
+**Storefront kinds (`PublishingProfileKind`):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.3 — `community`, `pro_guide`, `agency`, `shop`, `ecommerce`, `hospitality`, `partner`. Wire `EntityKind.organisation` is the host storefront slug URL, not product copy.
+
 **Naming (host vs join vs buddy):** § [Naming vocabulary](#naming-vocabulary) below · Cursor: `.cursor/rules/host-member-model.mdc` · verify: `npm run verify:host-member`.
 
 ---
@@ -92,6 +96,38 @@ flowchart TB
 | `shop_owner` | Shop tenant |
 
 Wire: `HostStatusDTO.hostTiers`, `HostStatusDTO.profileRoleLabel`, `HostStatusDTO.isCommunityHost`.
+
+---
+
+## Pro membership ladder (product)
+
+All paths require a **signed-in user**. Upgrade entry: **`/profile/pro-membership`** (`PRO_MEMBERSHIP_PATH`).
+
+| Pro path | Who | Required choice | Storefront / capabilities (high level) |
+|----------|-----|-----------------|----------------------------------------|
+| **Individual** | Solo pro guide | — | `/operator/:slug` style guide profile; Organize as self + pro tenant |
+| **Business** | Company / brand | **Subtype required:** Shop · Tour agency · E-commerce · Hospitality · (extensible) | Tenant + console; paid trips / campaigns per subtype (detail later) |
+| **Partner** | Hotel / campaign partner | Detail later | Partner storefront + “What’s happening” campaigns (future) |
+
+**Business subtype** is **not** interchangeable: a **shop** is map/directions retail; a **tour agency** is trip operator without requiring a visit pin; **Partner** is a separate Pro path from generic business (see product split in `DOMAIN.md`).
+
+Billing / `PaidMembershipSku` enforcement: layer **7** in `member-entitlements.ts` (stub until billing ships).
+
+---
+
+## Profile visibility (person — not host tier)
+
+| `profileVisibility` | Guests | Other signed-in members (no relationship) |
+|---------------------|--------|-------------------------------------------|
+| `public` | Sign-in only — **no** member card (target policy P3) | **Public member card** on `/member/:id` |
+| `group_members` | Sign-in only | Denied unless group / allowed relationship |
+| `private` | Sign-in only | Denied unless buddy, co-participant, host-of-activity, etc. |
+
+Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** exposure, not on the public card.
+
+**Member discovery (Who's going):** Explore **Who's going → Discover** — directory `GET /users/browse` (signed-in); profile opens use `?from=discover` with **5 unique profiles / 30d** (`GET /me/member-discovery-quota`); **Pro / business host** tiers = unlimited (`memberHasUnlimitedDiscovery`). **Join me:** `POST /activities/:id/invites`. See [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
+
+**Profile view analytics (shipped):** views recorded on `GET /users/:id/public-profile`; owners with host Pro/business see `GET /me/profile-view-stats`.
 
 ---
 

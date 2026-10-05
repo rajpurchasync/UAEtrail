@@ -54,6 +54,8 @@ export const COLLECTIONS = {
   USER_BADGES: 'user_badges',
   USER_GOALS: 'user_goals',
   MEMBER_MAP_PINS: 'member_map_pins',
+  MEMBER_PROFILE_VIEWS: 'member_profile_views',
+  ACTIVITY_INVITES: 'activity_invites',
   PUSH_SUBSCRIPTIONS: 'push_subscriptions',
 
   // Platform

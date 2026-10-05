@@ -105,6 +105,7 @@ See [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) for manage capabilities and
 | **DM with link** | `ActivityInviteSharePanel` → `sendMessage` with activity context |
 | **Group wall post** | Share message + URL to family/friends group |
 | **Crew chat** | In-app thread for host + approved joiners only |
+| **Join me** (planned) | Structured activity invite from host or approved participant → notification + activity deep link — see [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md) §5 |
 
 Inviting does not add someone to crew chat; **join approval** (or host roster rules) does.
 

@@ -136,6 +136,28 @@ describe('resolveProfileViewerAccess', () => {
     expect(access.level).toBe('platform_admin');
   });
 
+  it('denies guests on public profiles', async () => {
+    const access = await resolveProfileViewerAccess({
+      viewerUserId: null,
+      targetUserId: attendeeB,
+      targetVisibility: 'public',
+    });
+
+    expect(access.canViewFullProfile).toBe(false);
+    expect(access.level).toBe('denied');
+  });
+
+  it('allows signed-in strangers public visibility without full profile flag', async () => {
+    const access = await resolveProfileViewerAccess({
+      viewerUserId: attendeeA,
+      targetUserId: attendeeB,
+      targetVisibility: 'public',
+    });
+
+    expect(access.level).toBe('public');
+    expect(access.canViewFullProfile).toBe(false);
+  });
+
   it('allows group co-members when visibility is group_members', async () => {
     vi.mocked(usersShareActiveGroup).mockResolvedValue(true);
 

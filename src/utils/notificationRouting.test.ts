@@ -62,6 +62,12 @@ describe('inferNotificationPath', () => {
     ).toBe('/member/legacy-b');
   });
 
+  it('routes activity join invites to the activity detail page', () => {
+    expect(
+      inferNotificationPath(notif({ kind: 'activity_join_invite', activityId: 'act-42' }))
+    ).toBe('/activity/act-42');
+  });
+
   it('routes chat message notifications to messages composer', () => {
     expect(
       inferNotificationPath(notif({ kind: 'message', actorUserId: 'user-c' }))

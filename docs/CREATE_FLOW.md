@@ -1,10 +1,14 @@
-# Create flow â€” FAB, organize, find, add
+# Create flow — FAB: Organize, Find, Add
 
-**Canonical product spec** for the explore map **+ FAB** compose experience. Read this before changing intent sheets, create wizards, join CTAs, or participation behavior.
+**Canonical product spec** for the explore map **+ FAB** (Organize · Find · Add). Read this before changing intent sheets, create wizards, join CTAs, or participation behavior.
+
+**Vocabulary:** In **UI and copy**, say **Organize**, **Find**, **Add** — not **Compose** (reserved for **message / email compose** later). On the wire, explore still uses the query param `?compose=organize:*` \| `find:*` \| `add:*` ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.1, §4).
+
+**Publishing:** The **host is always a signed-in user**. When the member has multiple activity host tenants (buddy + agency/guide), the Organize **publish** step shows **Publish as** (`OrganizePublishAsField`); wire uses `x-organisation-id` for the chosen `tenantId` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md) (why), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (publish gates), [`DOMAIN.md`](./DOMAIN.md) (entities), [`NAVIGATION.md`](./NAVIGATION.md) (routes), [`COMMUNICATION.md`](./COMMUNICATION.md) (DMs & crew chat), [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) (Trips manage & invites), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) (map card copy & CTAs).
 
-Code: `src/explore/compose.ts`, `src/explore/routing.ts`, `CreateIntentSheet.tsx`, `organizeFlow.ts`, `demandFlow.ts`, `contributeFlow.ts`.
+Code (wire names): `src/explore/compose.ts`, `src/explore/routing.ts`, `CreateIntentSheet.tsx`, `organizeFlow.ts`, `demandFlow.ts`, `contributeFlow.ts`.
 
 **Status:** Product spec **approved** Â· Implementation **in progress** (see [Implementation status](#implementation-status))
 
@@ -18,8 +22,8 @@ Code: `src/explore/compose.ts`, `src/explore/routing.ts`, `CreateIntentSheet.tsx
 
 | Prefer | Avoid |
 |--------|--------|
-| I would like toâ€¦ | Create |
-| Organize Â· Find Â· Add | Host Â· Find a group Â· Add a place |
+| I would like toâ€¦ | Create (OK in casual copy; FAB uses Organize) |
+| Organize Â· Find Â· Add | **Compose** (FAB), Host Â· Find a group Â· Add a place |
 | Going from | Meeting point Â· Leaving from (in activity flows) |
 | Iâ€™m going | Request to join (when RSVP mode) |
 | Request to join | Host approval workflow (in consumer copy) |

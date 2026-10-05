@@ -227,6 +227,15 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { followerId: 1, followingId: 1 }, unique: true },
       { key: { followingId: 1, createdAt: -1 } },
       { key: { followerId: 1, createdAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.MEMBER_PROFILE_VIEWS).createIndexes([
+      { key: { profileUserId: 1, viewedAt: -1 } },
+      { key: { profileUserId: 1, viewerUserId: 1, viewedOn: 1 } },
+      { key: { viewerUserId: 1, source: 1, viewedAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.ACTIVITY_INVITES).createIndexes([
+      { key: { activityId: 1, fromUserId: 1, toUserId: 1, status: 1 } },
+      { key: { toUserId: 1, status: 1, createdAt: -1 } }
     ])
   ]);
 };

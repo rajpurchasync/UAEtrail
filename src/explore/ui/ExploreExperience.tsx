@@ -20,6 +20,11 @@ import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
 import { useExploreBrowseList } from './useExploreBrowseList';
 import { useWhosGoingFriends } from './useWhosGoingFriends';
+import { useWhosGoingDiscover } from './useWhosGoingDiscover';
+import {
+  buildDiscoverPeopleOnTrips,
+  filterDiscoverDirectory,
+} from '../whosGoingDiscover';
 import { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
@@ -337,6 +342,13 @@ export const ExploreExperience = () => {
     activityDatePreset: browse.activityDatePreset,
   });
 
+  const whosGoingDiscoverEnabled =
+    Boolean(user) && browse.listMode === 'whosGoing' && browse.whosGoingSegment === 'discover';
+  const whosGoingDiscover = useWhosGoingDiscover({
+    enabled: whosGoingDiscoverEnabled,
+    search: browse.query,
+  });
+
   const {
     mapPins,
     listItems,
@@ -363,6 +375,24 @@ export const ExploreExperience = () => {
       buddySubtype: browse.buddySubtype,
       outingTopic: browse.outingTopic,
     });
+
+  const discoverExcludeIds = useMemo(() => {
+    const ids = new Set<string>();
+    if (user?.id) ids.add(user.id);
+    whosGoingFriends.friendIds.forEach((id) => ids.add(id));
+    return ids;
+  }, [user?.id, whosGoingFriends.friendIds]);
+
+  const discoverOnTrips = useMemo(
+    () => buildDiscoverPeopleOnTrips(whosGoingListItems, discoverExcludeIds),
+    [whosGoingListItems, discoverExcludeIds]
+  );
+
+  const discoverDirectoryFiltered = useMemo(
+    () =>
+      filterDiscoverDirectory(whosGoingDiscover.directory, discoverExcludeIds, browse.query),
+    [whosGoingDiscover.directory, discoverExcludeIds, browse.query]
+  );
 
   const whosGoingFriendRowsFiltered = useMemo(() => {
     const q = browse.query.trim().toLowerCase();
@@ -492,6 +522,15 @@ export const ExploreExperience = () => {
     isSignedIn: Boolean(user),
     userRole: user?.role,
     friendUserIds: user ? whosGoingFriends.friendIds : undefined,
+    discoverOnTrips,
+    discoverDirectory: discoverDirectoryFiltered,
+    discoverQuota: whosGoingDiscover.quota,
+    discoverLoading: whosGoingDiscover.loading,
+    discoverError: whosGoingDiscover.error,
+    onOpenTripFromDiscover: (activityId: string) => {
+      const item = mapItems.find((entry) => entry.id === activityId);
+      if (item) selection.openItem(item);
+    },
   };
 
   const desktopBrowsePanel = (

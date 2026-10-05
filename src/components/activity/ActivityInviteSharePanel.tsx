@@ -57,14 +57,10 @@ export const ActivityInviteSharePanel = ({
     setError(null);
     setNotice(null);
     try {
-      await messagingApi.direct.send({
-        receiverId: buddy.userId,
-        content: share.messageWithUrl,
-        activityId: activity.id,
-      });
-      setNotice(`Sent to ${buddy.displayName || 'your connection'}.`);
+      await api.sendActivityJoinInvite(activity.id, buddy.userId);
+      setNotice(`Join invite sent to ${buddy.displayName || 'your connection'}.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send message.');
+      setError(err instanceof Error ? err.message : 'Could not send invite.');
     } finally {
       setBusyBuddyId(null);
     }
@@ -92,11 +88,11 @@ export const ActivityInviteSharePanel = ({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 id="activity-invite-heading" className="text-sm font-bold text-neutral-900">
-            Invite your crew
+            Join me
           </h3>
           <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
-            Share a link on WhatsApp or anywhere. Friends can open the plan — sign up free to join or
-            request a spot.
+            Invite friends in-app or share a link. They still join or request a spot on the outing —
+            crew chat opens after they&apos;re in.
           </p>
         </div>
         <ShareButton title={share.title} text={share.text} path={share.path} iconOnly light />
@@ -152,7 +148,7 @@ export const ActivityInviteSharePanel = ({
                           <span className="min-w-0 flex-1 truncate text-sm font-medium text-neutral-900">
                             {buddy.displayName || 'Member'}
                           </span>
-                          <span className="text-xs font-semibold text-emerald-700">Send</span>
+                          <span className="text-xs font-semibold text-emerald-700">Join me</span>
                         </button>
                       </li>
                     ))}

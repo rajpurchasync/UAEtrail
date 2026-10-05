@@ -5,6 +5,8 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 import { useAuth } from '../../context/AuthContext';
 import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { setActiveTenantId } from '../../api/tenant';
+import { listOrganizePublishProfiles } from '../organizePublishTenants';
 import {
   organizePublishGateHref,
   organizePublishGateInputFromHostGate,
@@ -96,9 +98,33 @@ export const CreateActivityFlow = ({
     isCommunityHost,
     hostTiers,
     canHostPaidActivities,
-    tenantId,
+    tenantId: defaultTenantId,
+    ownedProfiles,
     loading: hostGateLoading,
   } = useOrganisationGate({ enabled: open && Boolean(user) });
+
+  const publishTenantOptions = useMemo(
+    () => listOrganizePublishProfiles(ownedProfiles),
+    [ownedProfiles]
+  );
+  const [publishTenantId, setPublishTenantIdState] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const pick =
+      (defaultTenantId && publishTenantOptions.some((p) => p.tenantId === defaultTenantId)
+        ? defaultTenantId
+        : publishTenantOptions[0]?.tenantId) ?? null;
+    setPublishTenantIdState(pick);
+  }, [open, defaultTenantId, publishTenantOptions]);
+
+  const setPublishTenantId = useCallback((id: string) => {
+    setPublishTenantIdState(id);
+    setActiveTenantId(id);
+  }, []);
+
+  const tenantId = publishTenantId ?? defaultTenantId;
+  const memberDisplayName = user?.displayName ?? null;
 
   const [step, setStep] = useState<FlowStep>('type');
   const [draft, setDraft] = useState<CreateActivityDraft>(emptyCreateActivityDraft);
@@ -481,6 +507,10 @@ export const CreateActivityFlow = ({
     demandPrefill: demandPrefill ?? null,
     error,
     tenantId,
+    publishTenantOptions,
+    publishTenantId: tenantId,
+    setPublishTenantId,
+    memberDisplayName,
     registryPlaces,
     canPublish,
     canHostPaidActivities,
@@ -522,6 +552,9 @@ export const CreateActivityFlow = ({
     demandPrefill,
     error,
     tenantId,
+    publishTenantOptions,
+    setPublishTenantId,
+    memberDisplayName,
     registryPlaces,
     canPublish,
     canHostPaidActivities,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO, ActivityDetailDTO, PlaceDTO, TenantListDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
@@ -9,6 +9,8 @@ import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { countWords } from '../../utils/activityFormHelpers';
 import { buildActivityDetailPreview } from '../../utils/buildActivityDetailPreview';
 import { resolveEventVenueLocationId } from '../../utils/eventVenue';
+import { listOrganizePublishProfiles } from '../../explore/organizePublishTenants';
+import { useOrganisationGate } from '../../hooks/useOrganisationGate';
 import { isBusinessHostOrg, isPlatformAdmin } from '../../utils/hostPermissions';
 import type { ActivityFormSessionSnapshot } from '../../utils/activityFormSessionStorage';
 import {
@@ -94,7 +96,44 @@ export const useOrganisationActivityFormModal = ({
 
   const isEdit = Boolean(editingActivity);
   const canPickHostTenant = isPlatformAdmin(user?.role);
-  const hostTenantId = canPickHostTenant ? form.tenantId : resolvedTenantId;
+  const { ownedProfiles, tenantId: gateDefaultTenantId } = useOrganisationGate({
+    enabled: open && Boolean(user) && !canPickHostTenant,
+  });
+  const publishTenantOptions = useMemo(
+    () => listOrganizePublishProfiles(ownedProfiles),
+    [ownedProfiles]
+  );
+  const [publishTenantId, setPublishTenantIdState] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open || canPickHostTenant) return;
+    const fallback =
+      tenantId || getActiveTenantId() || sessionSnapshot?.tenantId || resolvedTenantId || '';
+    const pick =
+      (gateDefaultTenantId && publishTenantOptions.some((p) => p.tenantId === gateDefaultTenantId)
+        ? gateDefaultTenantId
+        : publishTenantOptions[0]?.tenantId) || fallback || null;
+    setPublishTenantIdState(pick);
+  }, [
+    open,
+    canPickHostTenant,
+    gateDefaultTenantId,
+    publishTenantOptions,
+    tenantId,
+    sessionSnapshot?.tenantId,
+    resolvedTenantId,
+  ]);
+
+  const setPublishTenantId = useCallback((id: string) => {
+    setPublishTenantIdState(id);
+    setActiveTenantId(id);
+    setResolvedTenantId(id);
+    setForm((prev) => ({ ...prev, tenantId: id }));
+  }, []);
+
+  const hostTenantId = canPickHostTenant
+    ? form.tenantId
+    : publishTenantId || resolvedTenantId;
   const isBusinessOrg = isBusinessHostOrg(tenantType);
   const venueAddHref = '/host/places';
 
@@ -304,6 +343,12 @@ export const useOrganisationActivityFormModal = ({
   const resolveActiveTenantId = async (): Promise<string> => {
     if (canPickHostTenant) return form.tenantId;
 
+    if (publishTenantId?.trim()) {
+      setActiveTenantId(publishTenantId);
+      setResolvedTenantId(publishTenantId);
+      return publishTenantId;
+    }
+
     const known = [
       hostTenantId,
       tenantId,
@@ -500,6 +545,10 @@ export const useOrganisationActivityFormModal = ({
     goBack,
     goToStep,
     editingActivity,
+    publishTenantOptions,
+    publishTenantId,
+    setPublishTenantId,
+    memberDisplayName: user?.displayName ?? null,
   };
 };
 

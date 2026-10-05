@@ -1,0 +1,38 @@
+import type { MemberBrowseCardDTO } from '@uaetrail/shared-types';
+import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
+import { listAuthUsers } from '../lib/auth-users.js';
+import { normalizeProfileVisibility } from '../lib/media-access.js';
+
+const isPublicMemberProfile = (profileVisibility: unknown): boolean => {
+  const visibility = normalizeProfileVisibility(profileVisibility);
+  return visibility === 'public';
+};
+
+/** Paginated directory of members with `profileVisibility: public` (Pro browse). */
+export const listBrowsablePublicMembers = async (input: {
+  excludeUserId: string;
+  search?: string;
+  skip: number;
+  take: number;
+}): Promise<MemberBrowseCardDTO[]> => {
+  const users = await listAuthUsers({
+    status: 'ACTIVE',
+    search: input.search?.trim() || undefined,
+    profileVisibility: 'public',
+    skip: input.skip,
+    take: input.take + 5,
+  });
+
+  return users
+    .filter((user) => user._id !== input.excludeUserId && isPublicMemberProfile(user.profile?.profileVisibility))
+    .slice(0, input.take)
+    .map((user) => {
+      const city = user.profile?.city;
+      return {
+        id: user._id,
+        displayName: user.profile?.displayName ?? user.email.split('@')[0],
+        avatarUrl: user.profile?.avatarUrl ?? null,
+        city: city ? USER_CITY_LABELS[city as UserCity] ?? null : null,
+      };
+    });
+};

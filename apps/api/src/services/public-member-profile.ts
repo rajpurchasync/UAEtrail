@@ -3,7 +3,14 @@ import { resolveHostTiersFromTenants } from '../domain/member-host-tiers.js';
 import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js';
 import { isSignupProfileComplete } from '../domain/user-profile.js';
 import { resolveOwnedProfileType } from '../lib/tenant-store.js';
-import type { MemberProfileRoleLabel } from '@uaetrail/shared-types';
+import type { MemberProfileRoleLabel, ProfileViewerAccessLevel } from '@uaetrail/shared-types';
+import {
+  computeProfileDetailExposure,
+  organisationProfilePath,
+  shopPublicPath,
+} from '@uaetrail/shared-types';
+import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
+import type { TenantRecord } from '../lib/tenant-store.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import {
   countPublishedActivitiesHostedByUser,
@@ -17,7 +24,7 @@ import {
   type UserCity,
 } from '../domain/user-profile.js';
 import {
-  canViewProfileField,
+  GUEST_MEMBER_PROFILE_MESSAGE,
   PRIVATE_PROFILE_MESSAGE,
   resolveProfileViewerAccess,
 } from './profile-viewer-access.js';
@@ -71,12 +78,26 @@ const resolveHostProfileKind = (
   return null;
 };
 
-export type PublicMemberProfileBuildInput = {
-  viewerUserId?: string | null;
-  isPlatformAdmin?: boolean;
+const resolveHostProfilePath = (tenant: TenantRecord | null): string | null => {
+  if (!tenant) return null;
+  if (resolveOwnedProfileType(tenant) === 'shop') {
+    return shopPublicPath({ slug: tenant.slug });
+  }
+  return organisationProfilePath(tenant.slug);
 };
 
-export type PublicMemberProfileResponse =
+const toProfileAccessLevel = (level: string): ProfileViewerAccessLevel => {
+  if (level === 'self') return 'self';
+  if (level === 'platform_admin') return 'platform_admin';
+  if (level === 'public') return 'public';
+  if (level === 'group_member') return 'group_member';
+  if (level === 'accepted_buddy') return 'accepted_buddy';
+  if (level === 'activity_participant') return 'activity_participant';
+  if (level === 'host_of_activity') return 'host_of_activity';
+  return 'denied';
+};
+
+export type PublicMemberProfileData =
   | {
       visibilityState: 'private';
       id: string;
@@ -111,14 +132,29 @@ export type PublicMemberProfileResponse =
       yearGoal: MemberGoalPublicDTO | null;
     };
 
+export type PublicMemberProfileBuildInput = {
+  viewerUserId?: string | null;
+  isPlatformAdmin?: boolean;
+  /** Owner preview — show signed-in public card, not self full detail. */
+  previewAsPublic?: boolean;
+};
+
+export type PublicMemberProfileResult = {
+  data: PublicMemberProfileData;
+  viewerAccess: ProfileViewerAccessDTO;
+};
+
 export async function buildPublicMemberProfile(
   userId: string,
   input: PublicMemberProfileBuildInput = {}
-): Promise<PublicMemberProfileResponse | null> {
+): Promise<PublicMemberProfileResult | null> {
   const user = await findAuthUserById(userId);
   if (!user) return null;
 
   const visibility = normalizeProfileVisibility(user.profile?.profileVisibility);
+  const profileVisibility =
+    visibility === 'group_members' ? 'group_members' : visibility === 'private' ? 'private' : 'public';
+
   const access = await resolveProfileViewerAccess({
     viewerUserId: input.viewerUserId ?? null,
     targetUserId: userId,
@@ -126,24 +162,45 @@ export async function buildPublicMemberProfile(
     isPlatformAdmin: input.isPlatformAdmin,
   });
 
-  if (visibility === 'private' && !canViewProfileField(visibility, access, 'identity')) {
+  const accessLevel = toProfileAccessLevel(access.level);
+  const viewerUserId = input.viewerUserId ?? null;
+
+  let viewerAccess = computeProfileDetailExposure({
+    profileVisibility,
+    level: accessLevel,
+    viewerUserId,
+  });
+
+  if (input.previewAsPublic && viewerUserId === userId) {
+    viewerAccess = computeProfileDetailExposure({
+      profileVisibility,
+      level: 'public',
+      viewerUserId,
+    });
+  }
+
+  if (viewerAccess.exposure === 'none') {
+    const message = !viewerUserId ? GUEST_MEMBER_PROFILE_MESSAGE : PRIVATE_PROFILE_MESSAGE;
     return {
-      visibilityState: 'private',
-      id: user._id,
-      message: PRIVATE_PROFILE_MESSAGE,
+      data: {
+        visibilityState: 'private',
+        id: user._id,
+        message,
+      },
+      viewerAccess,
     };
   }
 
   const [activitiesAttended, activitiesHosted, demandPosts, ownedTenants, hostApplication, yearGoal, badges] =
     await Promise.all([
-    countUserCheckedInParticipations(userId),
-    countPublishedActivitiesHostedByUser(userId),
-    countParticipantIntentsByUser(userId),
-    listTenantsByOwnerId(userId),
-    findLatestHostApplicationByApplicant(userId),
-    getMemberGoalPublicSnapshot(userId),
-    listPublicMemberBadges(userId),
-  ]);
+      countUserCheckedInParticipations(userId),
+      countPublishedActivitiesHostedByUser(userId),
+      countParticipantIntentsByUser(userId),
+      listTenantsByOwnerId(userId),
+      findLatestHostApplicationByApplicant(userId),
+      getMemberGoalPublicSnapshot(userId),
+      listPublicMemberBadges(userId),
+    ]);
 
   const primaryTenant = ownedTenants[0] ?? null;
   const hostProfileKind = resolveHostProfileKind(primaryTenant);
@@ -167,30 +224,32 @@ export async function buildPublicMemberProfile(
     user.profile?.dateOfBirth ?? null,
     user.profile?.languages ?? null
   );
-  const showBio = canViewProfileField(visibility, access, 'bio');
-  const showCity = canViewProfileField(visibility, access, 'city');
-  const showLanguages = canViewProfileField(visibility, access, 'languages');
   const profileCity = user.profile?.city ?? null;
 
-  return {
+  const showTrustedFields = viewerAccess.exposure === 'full';
+  const earnedBadges = badges.filter((b) => b.earned);
+
+  const data: Extract<PublicMemberProfileData, { visibilityState: 'full' }> = {
     visibilityState: 'full',
     id: user._id,
     displayName: user.profile?.displayName ?? user.email.split('@')[0],
     avatarUrl: user.profile?.avatarUrl ?? null,
-    bio: showBio ? user.profile?.bio ?? null : null,
-    city: showCity && profileCity ? USER_CITY_LABELS[profileCity as UserCity] : null,
+    bio: showTrustedFields || profileVisibility === 'public' ? user.profile?.bio ?? null : null,
+    city: profileCity ? USER_CITY_LABELS[profileCity as UserCity] : null,
     memberSince: user.createdAt.toISOString(),
-    languages: showLanguages ? memberDetails.languages : null,
+    languages: memberDetails.languages,
     isHost,
     profileRoleLabel,
     isGuideStaff,
     hostProfileKind,
-    hostProfilePath: primaryTenant ? `/operator/${primaryTenant.slug}` : null,
-    badges,
+    hostProfilePath: resolveHostProfilePath(primaryTenant),
+    badges: showTrustedFields ? badges : earnedBadges,
     stats: {
       activitiesAttended,
       activitiesHosted,
     },
-    yearGoal,
+    yearGoal: showTrustedFields ? yearGoal : null,
   };
+
+  return { data, viewerAccess };
 }

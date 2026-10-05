@@ -55,8 +55,11 @@ export type ExploreBrowseListMode = 'default' | 'whosGoing';
 
 export type WhosGoingSegment = 'people' | 'trips';
 
-const parseWhosGoingSegment = (value: string | null): WhosGoingSegment =>
-  value === 'trips' ? 'trips' : 'people';
+const parseWhosGoingSegment = (value: string | null): WhosGoingSegment => {
+  if (value === 'trips') return 'trips';
+  if (value === 'discover') return 'discover';
+  return 'people';
+};
 
 export const UNIFIED_MAP_FILTER_KEYS: MapFilterKey[] = MAP_FILTER_PILLS.map((pill) => pill.key);
 
@@ -200,6 +203,7 @@ export const useExploreBrowseUrlState = ({
       if (listModeValue === 'whosGoing') {
         params.set('view', 'going');
         if (whosGoingSegmentValue === 'trips') params.set('goingTab', 'trips');
+        else if (whosGoingSegmentValue === 'discover') params.set('goingTab', 'discover');
         else params.delete('goingTab');
       } else {
         params.delete('view');

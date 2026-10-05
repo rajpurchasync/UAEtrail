@@ -1,4 +1,8 @@
 import { SecureAvatar } from '../../components/ui';
+import {
+  WHOS_GOING_MAP_BUTTON_LABEL,
+  whosGoingMapButtonAriaLabel,
+} from '../../content/whosGoingCopy';
 import { EXPLORE_MAP_TOOLBAR_FLOATING, EXPLORE_MAP_TOOLBAR_PILL_PADDING } from '../../config/exploreTheme';
 
 type Preview = { id: string; name: string; avatar?: string | null };
@@ -21,10 +25,7 @@ export const ExploreMapWhosGoingButton = ({
   className = '',
 }: ExploreMapWhosGoingButtonProps) => {
   const hasLivePeople = avatars.length > 0;
-  const ariaLabel =
-    totalJoining > 0
-      ? `Who's going? ${totalJoining} people joining outings`
-      : "Who's going? See outings people are joining";
+  const ariaLabel = whosGoingMapButtonAriaLabel(totalJoining);
 
   return (
     <button
@@ -61,7 +62,7 @@ export const ExploreMapWhosGoingButton = ({
           </span>
         )}
       </span>
-      <span className="whitespace-nowrap">Who&apos;s going?</span>
+      <span className="whitespace-nowrap">{WHOS_GOING_MAP_BUTTON_LABEL}</span>
     </button>
   );
 };

@@ -51,18 +51,36 @@ const buildUserQuery = (input: {
   status?: AuthUserRecord['status'];
   search?: string;
   userIds?: string[];
+  profileVisibility?: 'public';
 }): Record<string, unknown> => {
   const query: Record<string, unknown> = {};
   if (input.role) query.role = Array.isArray(input.role) ? { $in: input.role } : input.role;
   if (input.status) query.status = input.status;
+  const andClauses: Record<string, unknown>[] = [];
+  if (input.profileVisibility === 'public') {
+    andClauses.push({
+      $or: [
+        { 'profile.profileVisibility': 'public' },
+        { 'profile.profileVisibility': { $exists: false } },
+        { 'profile.profileVisibility': null },
+      ],
+    });
+  }
   if (input.userIds !== undefined) {
     query._id = input.userIds.length > 0 ? { $in: input.userIds } : { $in: ['__none__'] };
   }
   if (input.search) {
-    query.$or = [
-      { email: { $regex: input.search, $options: 'i' } },
-      { 'profile.displayName': { $regex: input.search, $options: 'i' } }
-    ];
+    andClauses.push({
+      $or: [
+        { email: { $regex: input.search, $options: 'i' } },
+        { 'profile.displayName': { $regex: input.search, $options: 'i' } },
+      ],
+    });
+  }
+  if (andClauses.length === 1) {
+    Object.assign(query, andClauses[0]);
+  } else if (andClauses.length > 1) {
+    query.$and = andClauses;
   }
   return query;
 };
@@ -92,6 +110,7 @@ export const listAuthUsers = async (input: {
   status?: AuthUserRecord['status'];
   search?: string;
   userIds?: string[];
+  profileVisibility?: 'public';
   skip?: number;
   take?: number;
 }): Promise<AuthUserRecord[]> => {
@@ -109,6 +128,7 @@ export const countAuthUsers = async (input: {
   status?: AuthUserRecord['status'];
   search?: string;
   userIds?: string[];
+  profileVisibility?: 'public';
 }): Promise<number> => usersCollection().countDocuments(buildUserQuery(input));
 
 export const findAuthUsersByIds = async (ids: string[]): Promise<AuthUserRecord[]> => {

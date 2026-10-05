@@ -1,4 +1,4 @@
-import type { PlaceDTO } from '@uaetrail/shared-types';
+import type { OwnedHostProfileDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { ReactNode } from 'react';
 import type { OrganizeComposeKind } from '../../compose';
 import type { OrganizeCatalogFlow } from '../organizeFlows';
@@ -27,6 +27,10 @@ export type OrganizeWizardContext = {
   demandPrefill: OrganizeWizardDemandPrefill;
   error: string | null;
   tenantId: string | null;
+  publishTenantOptions: OwnedHostProfileDTO[];
+  publishTenantId: string | null;
+  setPublishTenantId: (tenantId: string) => void;
+  memberDisplayName: string | null;
   registryPlaces: PlaceDTO[];
   canPublish: boolean;
   canHostPaidActivities: boolean;

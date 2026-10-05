@@ -38,7 +38,9 @@ export type MemberEntitlementId =
   | 'organize_publish'
   | 'host_console'
   | 'paid_consumer_detail'
-  | 'paid_host_commercial';
+  | 'paid_host_commercial'
+  | 'pro_member_directory'
+  | 'pro_profile_view_stats';
 
 export type MemberEntitlementDenial = {
   entitlement: MemberEntitlementId;
@@ -84,6 +86,21 @@ export const memberHasHostFootprintBadge = (
 export const resolvePaidMembershipSku = (
   _hostStatus: HostStatusAudienceSnapshot | null
 ): PaidMembershipSku => 'none';
+
+/** Signed-in members may open the Discover directory list (quota applies on profile open). */
+export const viewerMayBrowsePublicMemberDirectory = (input: {
+  viewerUserId: string | null;
+}): boolean => Boolean(input.viewerUserId);
+
+/** Host Pro / business — profile view analytics on `/me/profile-view-stats`. */
+export const viewerMaySeeProfileViewStats = (input: {
+  viewerUserId: string | null;
+  hostStatus: Pick<HostStatusAudienceSnapshot, 'hostTiers'> | null;
+}): boolean => {
+  if (!input.viewerUserId) return false;
+  const tiers = input.hostStatus?.hostTiers;
+  return Boolean(tiers?.professional || tiers?.business);
+};
 
 /** Map audience → primary entitlement denial for Organize FAB (capabilities, not activity detail). */
 export const organizeEntitlementDenial = (input: {

@@ -64,6 +64,10 @@ export const inferNotificationPath = (
   if (legacySenderId) {
     return messagesToUserPath(legacySenderId);
   }
+  if (kind === 'activity_join_invite' && meta.activityId) {
+    return `/activity/${meta.activityId}`;
+  }
+
   if (kind === 'join_request_approved') {
     const groupId = toStringValue(meta?.groupId);
     if (groupId) return messagesGroupPath(groupId);

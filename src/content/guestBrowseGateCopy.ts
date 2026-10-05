@@ -10,7 +10,8 @@ export type GuestBrowseGateIntent =
   | 'explore-browse'
   | 'whos-going'
   | 'peek-details'
-  | 'join-activity';
+  | 'join-activity'
+  | 'member-profile';
 
 type GateCopy = { title: string; body: string };
 
@@ -29,6 +30,10 @@ const GATE_COPY: Record<Exclude<GuestBrowseGateIntent, 'join-activity'>, GateCop
     title: GUEST_GATE_OOPS_TITLE,
     body:
       'Join the community today to meet hosts, say you’re going, save places you love, and message your crew before you head outside.',
+  },
+  'member-profile': {
+    title: GUEST_GATE_OOPS_TITLE,
+    body: 'Sign in to view member profiles and connect with people on upcoming outings.',
   },
 };
 

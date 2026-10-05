@@ -23,6 +23,13 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Wishlist:** `/trips?segment=wishlist` (legacy `/profile/wishlist` redirects). Settings → **Saved map & alerts** links to the same segment.
 - **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt).
 - **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, My Trips, Messages, Profile/Signup, Download → Android / iOS (deep-link to the matching settings hash). Notifications are the bell only, not in the drawer.
+- **View public card (eye):** opens `/member/:userId` — preview should match what **other signed-in members** see (`public` visibility), not the owner’s full hub (API P3).
+- **Pro membership:** `/profile/pro-membership` — Individual, Business (subtype required), or Partner paths ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
+
+### Member profile (`/member/:userId`)
+
+- **Person** surface (member card or trusted view) — not the business **storefront** (`/operator/:slug`, `/shop/:id`). Link from Who’s going, buddies, activity rosters.
+- **Guests:** sign-in prompt; no public member card (policy P3). **Signed-in** viewers follow `profileVisibility` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Profile visibility).
 
 ### Trips (`/trips`)
 
@@ -129,6 +136,20 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - **My trips map:** `explorePath({ myTrips: true, list: true })` sets `myTrips=1` and filters pins to the signed-in member’s wishlist + joined/pending activities.
 - Filter/panel query params select map context; they do not imply list mode.
 - **Others drill-down (Activities tab):** `filter=others` → optional `subtype=events|activities`; when `subtype=activities`, optional `outingTopic` (`climbing`, `trail_run`, `workshop`, `community`, …). Helpers: `explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })`.
+
+## Who's going (Explore — planned expansion)
+
+**Wire today:** map control → browse `listMode=whosGoing` (`view=going`); segments **`people`** (buddies hosting/joining) and **`trips`** (outings). Guests → sign-in (`guestBrowseGateCopy` `whos-going`).
+
+**Product target (not shipped):** Who's going = **friends on trips** + **Discover** strangers (public member cards, buddy requests) + **Join me** invites from participants. Free tier: **5** discovery actions per window; **Pro** for more. Full plan: [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
+
+| Segment (planned) | Purpose |
+|-----------------|--------|
+| Friends | Buddies + which trip they're hosting or joining |
+| Discover | Meet members on upcoming outings / directory → `/member/:id` public card |
+| Trips | Trip list with friend context (today's `trips` segment) |
+
+Profile links from this surface use **person** routes (`/member/:id`), not operator/shop storefronts.
 
 ## Explore FAB (+)
 
