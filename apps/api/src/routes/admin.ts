@@ -5,7 +5,6 @@ import {
   ActivityStatus,
   LocationStatus,
   NotificationType,
-  HostApplicationStatus,
   ProductStatus,
   TenantStatus,
   TenantType,
@@ -13,7 +12,7 @@ import {
   RewardAction,
   UserStatus
 } from '../domain/enums.js';
-import { placeDetailPath, shopPublicPath } from '@uaetrail/shared-types';
+import { placeDetailPath } from '@uaetrail/shared-types';
 import { Router } from 'express';
 import { z } from 'zod';
 import { mountActivityRoutes } from '../lib/activity-routes.js';
@@ -80,13 +79,6 @@ import {
 } from '../lib/auth-users.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
 import {
-  approveHostApplicationAndProvisionTenant,
-  countHostApplications,
-  findHostApplicationById,
-  listHostApplicationsDetailed,
-  markHostApplicationRejected
-} from '../lib/host-applications-store.js';
-import {
   EXPLORE_VENUES_LIST_PATH,
   GROUPS_PATH,
   HOST_ACTIVITIES_PATH,
@@ -103,6 +95,7 @@ import {
   listUserGroupsWithMembership,
   updateGroupStatus
 } from '../lib/social-groups-store.js';
+import { registerAdminHostApplicationRoutes } from './admin/registerAdminHostApplicationRoutes.js';
 
 const locationCreateSchema = z.object({
   name: z.string().min(2),
@@ -137,11 +130,6 @@ const locationCreateSchema = z.object({
 });
 
 const locationPatchSchema = locationCreateSchema.partial();
-
-const applicationPatchSchema = z.object({
-  status: z.enum(['approved', 'rejected']),
-  reviewerNote: z.string().max(300).optional()
-});
 
 const suspendCommentSchema = z.object({
   comment: z.string().trim().max(500).optional()
@@ -198,6 +186,8 @@ const toPrismaLocationStatus = (status?: 'draft' | 'active' | 'inactive'): Locat
 export const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireVerifiedEmail, requireRole([UserRole.PLATFORM_ADMIN]));
+
+registerAdminHostApplicationRoutes(adminRouter);
 
 const adminPlaceCollectionPaths = ['/locations', '/places'] as const;
 const adminPlaceItemPaths = ['/locations/:id', '/places/:id'] as const;
@@ -428,126 +418,6 @@ adminPlaceItemPaths.forEach((path) => {
   }
   });
 });
-
-adminRouter.get('/host-applications', async (req, res, next) => {
-  try {
-    const pg = paginationSchema.parse(req.query);
-    const [applications, total] = await Promise.all([
-      listHostApplicationsDetailed({
-        skip: (pg.page - 1) * pg.pageSize,
-        take: pg.pageSize
-      }),
-      countHostApplications()
-    ]);
-
-    res.json(paginatedResponse(
-      applications.map((item) => ({
-        id: item.id,
-        applicantId: item.applicantId,
-        applicantEmail: item.applicant.email,
-        applicantName: item.applicant.profile?.displayName ?? item.applicant.email,
-        requestedName: item.requestedName,
-        requestedType: item.requestedType.toLowerCase(),
-        requestedSlug: item.requestedSlug,
-        requestedTenantId: item.requestedTenantId,
-        status: item.status.toLowerCase(),
-        reviewerNote: item.reviewerNote,
-        reviewedAt: item.reviewedAt,
-        metadata: item.metadata,
-        createdAt: item.createdAt
-      })),
-      total,
-      pg
-    ));
-  } catch (error) {
-    next(error);
-  }
-});
-
-adminRouter.patch(
-  '/host-applications/:id',
-  validate({ params: idParamSchema, body: applicationPatchSchema }),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params as z.infer<typeof idParamSchema>;
-      const { status, reviewerNote } = req.body as z.infer<typeof applicationPatchSchema>;
-
-      const application = await findHostApplicationById(id);
-      if (!application) {
-        throw new ApiError(404, 'application_not_found', 'Host application was not found.');
-      }
-      if (application.status !== HostApplicationStatus.PENDING) {
-        throw new ApiError(400, 'application_finalized', 'Application is already finalized.');
-      }
-
-      if (status === 'approved') {
-        const appMeta = (application.metadata as Record<string, unknown> | null) ?? {};
-        const hostProfileType = String(appMeta.hostProfileType ?? '').toLowerCase();
-        const isShop = hostProfileType === 'shop';
-
-        await approveHostApplicationAndProvisionTenant({
-          applicationId: application.id,
-          reviewerId: req.auth!.userId,
-          reviewerNote
-        });
-
-        const approvedPath = isShop
-          ? shopPublicPath({ slug: application.requestedSlug })
-          : '/host/overview';
-        const approvedTitle = isShop ? 'Shop approved' : 'Host application approved';
-        const approvedBody = isShop
-          ? reviewerNote
-            ? `"${application.requestedName}" is on Explore. Note from reviewer: ${reviewerNote}`
-            : `"${application.requestedName}" is approved. Explorers can find your shop on the map.`
-          : reviewerNote
-            ? `You can now post activities. Note from reviewer: ${reviewerNote}`
-            : 'Your host profile was approved. You can now post activities and welcome participants.';
-
-        await notifyUserAdminAction({
-          userId: application.applicantId,
-          title: approvedTitle,
-          body: approvedBody,
-          reason: reviewerNote,
-          meta: {
-            kind: 'host_application_approved',
-            applicationId: application.id,
-            path: approvedPath,
-          },
-        });
-      } else {
-        await markHostApplicationRejected({
-          id: application.id,
-          reviewerId: req.auth!.userId,
-          reviewerNote
-        });
-        await notifyUserAdminAction({
-          userId: application.applicantId,
-          title: 'Host application not approved',
-          body: reviewerNote
-            ? reviewerNote
-            : 'Your host application was not approved at this time. You can update your profile and apply again.',
-          reason: reviewerNote,
-          meta: {
-            kind: 'host_application_rejected',
-            applicationId: application.id,
-            path: PRO_MEMBERSHIP_PATH
-          }
-        });
-      }
-
-      await createAuditLog({
-        actorId: req.auth!.userId,
-        action: `host_application.${status}`,
-        entityType: 'host_application',
-        entityId: id
-      });
-
-      res.json({ message: `Application ${status}.` });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
 
 // Activity creation for platform admins uses POST/PATCH /host/activities with x-tenant-id.
 

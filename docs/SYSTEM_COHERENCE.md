@@ -225,7 +225,7 @@ Ordered for **coherence**, not feature count:
 | **S0** | Single doc entry + automated phrase guards | `DOCS_INDEX`, `verify:docs` |
 | **S1** | One member capability resolver (`/me/host-status`) enforced server-side | `MEMBER_MODEL`, `verify:host-member` |
 | **S2** | Host route modularization + fulfill removal | `HOST_CLEANUP_ROADMAP` P1–P2 |
-| **S3** | API `user` router fully split (registrars only in `user.ts`) | [`API_ROUTING.md`](./API_ROUTING.md) |
+| **S3** | API `user` router fully split; **`admin.ts`** → `routes/admin/register*.ts` (host applications ✅; places/users/… queued) | [`API_ROUTING.md`](./API_ROUTING.md) |
 | **S4** | Frontend `api.*` stays domain-only | `apiLegacyGuard`, knip |
 | **S5** | Privacy notification matrix + viewer access everywhere | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **S6** | Place detail internal merge + SEO pass | ARCHITECTURE future |

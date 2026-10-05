@@ -49,7 +49,9 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Extract legacy fulfill route from `host.ts` | ✅ | `routes/host/registerHostDemandFulfillLegacy.ts` |
 | `GET /me/host-status` in dedicated registrar | ✅ | `registerMemberHostStatusRoutes.ts` |
 | Split `host.ts` — team + activity request queue | ✅ | `registerHostTeamRoutes`, `registerHostActivityRequestRoutes` (`/host/requests`) |
-| Split remainder of `host.ts` (activities CRUD, check-in; places stay on `host.ts`) | ✅ | `registerHostTenantActivityRoutes.ts` |
+| Split remainder of `host.ts` (activities CRUD, check-in) | ✅ | `registerHostTenantActivityRoutes.ts` |
+| Host submitted locations (`GET/POST /host/locations`) | ✅ | `registerHostSubmittedLocationRoutes.ts` |
+| Admin host-application review routes | ✅ | `registerAdminHostApplicationRoutes.ts` |
 | Shrink `legacyApi` / remove unused FE shims | ✅ | `legacyApi.ts` removed; canonical `api` only — `services.domain-aliases.test.ts` |
 
 ---
