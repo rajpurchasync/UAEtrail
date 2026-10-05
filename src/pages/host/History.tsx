@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api/index';
-import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
-import { formatActivityType } from '../utils/activityIdentity';
+import { api } from '../../api/index';
+import { ConsoleShell } from '../../console/ConsoleShell';
+import { formatActivityType } from '../../utils/activityIdentity';
 
 interface HistoryEvent {
   id: string;
@@ -15,7 +15,7 @@ interface HistoryEvent {
   checkedInCount: number;
 }
 
-export const OrganisationHistory = () => {
+export const History = () => {
   const [events, setEvents] = useState<HistoryEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ export const OrganisationHistory = () => {
   };
 
   return (
-    <OrganisationConsoleShell title="History">
+    <ConsoleShell title="History">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Past Events</h2>
 
       {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
@@ -93,6 +93,6 @@ export const OrganisationHistory = () => {
           </tbody>
         </table>
       </div>
-    </OrganisationConsoleShell>
+    </ConsoleShell>
   );
 };

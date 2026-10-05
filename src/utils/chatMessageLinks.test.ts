@@ -38,12 +38,12 @@ describe('splitChatMessageLinks', () => {
 
   it('keeps wrapping punctuation outside the link', () => {
     const segments = splitChatMessageLinks('Trail (https://uaetrail.com/explore)', opts);
-    expect(segments.at(-2)).toMatchObject({
+    expect(segments[segments.length - 2]).toMatchObject({
       kind: 'url',
       to: '/explore',
       value: 'https://uaetrail.com/explore',
     });
-    expect(segments.at(-1)).toEqual({ kind: 'text', value: ')' });
+    expect(segments[segments.length - 1]).toEqual({ kind: 'text', value: ')' });
   });
 
   it('maps local share URLs to in-app paths', () => {

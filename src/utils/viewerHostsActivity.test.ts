@@ -9,24 +9,18 @@ describe('viewerIsActivityHostUser', () => {
       viewerIsActivityHostUser({ hostUserId: 'other', tenantId: 't1' }, 'u2')
     ).toBe(false);
   });
+
+  it('does not treat tenant publish rights as host', () => {
+    expect(
+      viewerIsActivityHostUser({ hostUserId: 'other', tenantId: 't1' }, 'u2')
+    ).toBe(false);
+  });
 });
 
-describe('viewerHostsActivity', () => {
-  it('matches host user id', () => {
-    expect(
-      viewerHostsActivity({ hostUserId: 'u1', tenantId: 't1' }, 'u1', null, false)
-    ).toBe(true);
-  });
-
-  it('matches tenant when member can publish', () => {
-    expect(
-      viewerHostsActivity({ hostUserId: 'other', tenantId: 't1' }, 'u2', 't1', true)
-    ).toBe(true);
-  });
-
-  it('does not match unrelated viewers', () => {
-    expect(
-      viewerHostsActivity({ hostUserId: 'u1', tenantId: 't1' }, 'u2', 't9', false)
-    ).toBe(false);
+describe('viewerHostsActivity (alias)', () => {
+  it('matches viewerIsActivityHostUser', () => {
+    const activity = { hostUserId: 'u1', tenantId: 't1' };
+    expect(viewerHostsActivity(activity, 'u1')).toBe(true);
+    expect(viewerHostsActivity(activity, 'u2')).toBe(false);
   });
 });

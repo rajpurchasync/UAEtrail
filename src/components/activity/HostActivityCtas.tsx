@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
-import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
-import type { ExploreCardModel } from '../exploreCardModel';
-import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-import { EXPLORE_Z } from '../../config/exploreTheme';
+import type { ActivityDTO } from '@uaetrail/shared-types';
+import { EXPLORE_PEEK_CTA, EXPLORE_Z } from '../../config/exploreTheme';
+import { hostActivityManageCapabilities } from '../../host/hostActivityManageCapabilities';
+import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 
-export type ExploreHostPeekHandlers = {
+export type HostActivityCtaHandlers = {
   onChat: () => void;
   onViewParticipants: () => void;
   onInvite: () => void;
@@ -14,35 +13,35 @@ export type ExploreHostPeekHandlers = {
   onDuplicate: () => void;
 };
 
-type ExploreHostPeekActionsProps = {
-  card: ExploreCardModel;
+type HostActivityCtasProps = {
+  activity: ActivityDTO;
   linkRideshareTenantId: string | null;
-  handlers: ExploreHostPeekHandlers;
+  handlers: HostActivityCtaHandlers;
+  disabled?: boolean;
+  /** Map peek — sign-up instead of host actions. */
   onGuestGatedAction?: () => void;
 };
 
 const manageRowClass =
   'w-full rounded-xl border border-neutral-200 bg-white px-4 py-3.5 text-left text-sm font-semibold text-neutral-900 active:bg-neutral-50';
 
-/** Host’s own activity on the map — Chat + Manage (participants, invite, carpool, delete, duplicate). */
-export const ExploreHostPeekActions = ({
-  card,
+/** Host’s own activity — Chat + Manage on map peek and activity detail. */
+export const HostActivityCtas = ({
+  activity,
   linkRideshareTenantId,
   handlers,
+  disabled = false,
   onGuestGatedAction,
-}: ExploreHostPeekActionsProps) => {
+}: HostActivityCtasProps) => {
   const [manageOpen, setManageOpen] = useState(false);
-  const activity = card.activity;
-  const published = activity?.status === 'published';
-  const showCarpool =
-    Boolean(
-      handlers.onAddCarpool &&
-        linkRideshareTenantId &&
-        activity &&
-        canLinkRideshareToActivity(activity)
-    );
+  const caps = hostActivityManageCapabilities(activity);
+  const published = activity.status === 'published';
+  const showChat = caps.showGroupChat;
+  const showCarpool = Boolean(
+    handlers.onAddCarpool && linkRideshareTenantId && caps.showLinkRideshare
+  );
 
-  const runGated = (action: () => void) => {
+  const run = (action: () => void) => {
     if (onGuestGatedAction) {
       onGuestGatedAction();
       return;
@@ -52,23 +51,27 @@ export const ExploreHostPeekActions = ({
 
   const runManageAction = (action: () => void) => {
     setManageOpen(false);
-    runGated(action);
+    run(action);
   };
 
   return (
     <>
       <div className="flex gap-2">
+        {showChat ? (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => run(handlers.onChat)}
+            className={`min-w-0 flex-1 ${EXPLORE_PEEK_CTA.primary} disabled:opacity-50`}
+          >
+            Chat
+          </button>
+        ) : null}
         <button
           type="button"
-          onClick={() => runGated(handlers.onChat)}
-          className={`min-w-0 flex-1 ${EXPLORE_PEEK_CTA.primary}`}
-        >
-          Chat
-        </button>
-        <button
-          type="button"
-          onClick={() => runGated(() => setManageOpen(true))}
-          className={`min-w-0 flex-1 ${EXPLORE_PEEK_CTA.secondary}`}
+          disabled={disabled}
+          onClick={() => run(() => setManageOpen(true))}
+          className={`min-w-0 ${showChat ? 'flex-1' : 'w-full'} ${EXPLORE_PEEK_CTA.secondary} disabled:opacity-50`}
         >
           Manage
         </button>

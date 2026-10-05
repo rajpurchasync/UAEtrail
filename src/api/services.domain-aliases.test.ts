@@ -11,12 +11,15 @@ describe('api canonical surface', () => {
     expect(typeof api.submitPlace).toBe('function');
   });
 
-  it('exposes organisation console and member host status', () => {
+  it('exposes host activity console and member host status', () => {
     expect(typeof api.getOrganisationProfile).toBe('function');
-    expect(typeof api.getOrganisationJoinRequests).toBe('function');
+    expect(typeof api.getHostActivityJoinRequests).toBe('function');
+    expect(typeof api.decideHostActivityJoinRequest).toBe('function');
     expect(typeof api.getMemberHostStatus).toBe('function');
-    expect(typeof api.listOrganisationActivities).toBe('function');
-    expect(typeof api.publishOrganisationActivity).toBe('function');
+    expect(typeof api.listHostActivities).toBe('function');
+    expect(typeof api.publishHostActivity).toBe('function');
+    expect(typeof api.cancelHostActivity).toBe('function');
+    expect(typeof api.createHostActivity).toBe('function');
   });
 
   it('exposes person profile and admin members', () => {
@@ -31,6 +34,9 @@ describe('api canonical surface', () => {
     const legacy = api as Record<string, unknown>;
     expect(legacy.getPublicLocations).toBeUndefined();
     expect(legacy.getHostRequests).toBeUndefined();
+    expect(legacy.listOrganisationActivities).toBeUndefined();
+    expect(legacy.createOrganisationActivity).toBeUndefined();
+    expect(legacy.getOrganisationJoinRequests).toBeUndefined();
     expect(legacy.getMyHostStatus).toBeUndefined();
     expect(legacy.getTenantProfile).toBeUndefined();
     expect(legacy.getMerchantProducts).toBeUndefined();

@@ -13,7 +13,8 @@ export const organisationApi = {
   getOrganisationProfile: (slug: string) =>
     apiRequest<{ data: TenantPublicDTO }>(`/tenants/${slug}`),
 
-  getOrganisationJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
+  /** Activity join queue for host user (`GET /host/requests`). */
+  getHostActivityJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
     const params = new URLSearchParams({ pageSize: '100' });
     if (options?.activityId) {
       params.set('activityId', options.activityId);
@@ -24,7 +25,7 @@ export const organisationApi = {
     });
   },
 
-  decideOrganisationJoinRequest: (
+  decideHostActivityJoinRequest: (
     tenantId: string,
     requestId: string,
     status: 'approved' | 'rejected',

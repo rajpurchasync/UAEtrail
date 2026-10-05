@@ -2,7 +2,7 @@ import { activityOrganizeTopicToOutingTopic, type ActivityDTO } from '@uaetrail/
 import { api } from '../api/index';
 import { HOME_HERO_OG_PATH } from '../config/seo';
 import {
-  buildOrganisationActivityPublishPayload,
+  buildHostActivityPublishPayload,
   type ActivityPublishInput,
 } from '../utils/activityPublishPayload';
 import type { CreateActivityDraft } from '../explore/ui/organizeFlow';
@@ -256,13 +256,13 @@ export const publishOrganizeActivity = async (input: {
   const locationId = await resolveOrganizeActivityLocationId(ctx);
   const payload = buildOrganizeActivityPublishInput({ ...ctx, locationId });
   const parentLinkId = linkToParentActivityId?.trim() || null;
-  const publishBody = buildOrganisationActivityPublishPayload({
+  const publishBody = buildHostActivityPublishPayload({
     ...payload,
     clonedFromActivityId: sourceActivityId?.trim() || null,
     linkedActivityId: draft.kind === 'rideshare' && parentLinkId ? parentLinkId : null,
   });
-  const created = await api.createOrganisationActivity(tenantId, publishBody);
-  await api.publishOrganisationActivity(tenantId, created.data.id);
+  const created = await api.createHostActivity(tenantId, publishBody);
+  await api.publishHostActivity(tenantId, created.data.id);
 
   if (participantIntentId) {
     await api.linkParticipantIntentToActivity(participantIntentId, created.data.id);

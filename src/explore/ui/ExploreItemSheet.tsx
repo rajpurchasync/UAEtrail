@@ -3,11 +3,7 @@ import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { EXPLORE_PEEK, EXPLORE_Z } from '../../config/exploreTheme';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import {
-  ExploreItemPeekBody,
-  ExploreItemPeekActions,
-  type ExploreItemPeekActionsProps,
-} from './ExploreItemPeekParts';
+import { ExploreItemPeekBody, ExploreItemPeekActions } from './ExploreItemPeekParts';
 import { ExploreMapPeekCard, ExploreMapPeekPosition } from './ExploreMapPeekCard';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 
@@ -25,7 +21,7 @@ interface ExploreItemSheetProps {
   onDemandLinkRideshare?: () => void;
   onGuestGatedAction?: () => void;
   onActivityMapPeekAction?: (actionId: ActivityMapPeekActionId) => void;
-  hostPeekHandlers?: ExploreItemPeekActionsProps['hostPeekHandlers'];
+  hostActivityCtaHandlers?: import('../../components/activity/HostActivityCtas').HostActivityCtaHandlers | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
   joinInvitePeekBanner?: string | null;
   /** Map stage anchor vs portaled sheet (hosted activity manage from member hub, etc.). */
@@ -46,7 +42,7 @@ const ExploreItemPeekCard = ({
   onDemandLinkRideshare,
   onGuestGatedAction,
   onActivityMapPeekAction,
-  hostPeekHandlers = null,
+  hostActivityCtaHandlers = null,
   onOpenExploreItem,
   joinInvitePeekBanner = null,
 }: ExploreItemSheetProps) => (
@@ -71,7 +67,7 @@ const ExploreItemPeekCard = ({
         joinStateLoading={joinStateLoading}
         onGuestGatedAction={onGuestGatedAction}
         onActivityMapPeekAction={onActivityMapPeekAction}
-        hostPeekHandlers={hostPeekHandlers}
+        hostActivityCtaHandlers={hostActivityCtaHandlers}
       />
     }
   >

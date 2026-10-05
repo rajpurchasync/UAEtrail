@@ -94,7 +94,10 @@ describe('attachExploreMapViewerAccess', () => {
 
     expect(enriched[0].viewerAccess?.gateReason).toBe('sign_in');
     expect(enriched[0].viewerAccess?.canOpenDetailPage).toBe(true);
-    expect(enriched[0].viewerAccess?.mapPeekActions).toEqual([]);
+    expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
+      'request_join',
+      'view_detail',
+    ]);
   });
 
   it('attaches host mapPeekActions for activity host viewer', () => {
@@ -133,6 +136,7 @@ describe('attachExploreMapViewerAccess', () => {
       'open_crew_chat',
       'link_carpool',
       'invite_crew',
+      'view_detail',
     ]);
   });
 

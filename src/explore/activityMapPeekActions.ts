@@ -1,5 +1,6 @@
 import {
   computeActivityMapPeekActions,
+  type ActivityMapPeekAction,
   type ActivityViewerAccessLevel,
 } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from './exploreCardModel';
@@ -24,14 +25,23 @@ export const resolveActivityMapPeekActions = (
 ): ActivityMapPeekAction[] => {
   if (card.source !== 'activity') return [];
   const fromApi = card.viewerAccess?.mapPeekActions;
-  if (fromApi !== undefined) return fromApi;
+  if (fromApi !== undefined && fromApi.length > 0) return fromApi;
 
   const level = levelForPeekActions(card, joinUiState);
-  if (!level) return [];
+  if (!level) return fromApi ?? [];
+
+  const joinRequestStatus =
+    joinUiState?.kind === 'pending'
+      ? joinUiState.status === 'waitlisted'
+        ? 'waitlisted'
+        : 'pending'
+      : null;
 
   return computeActivityMapPeekActions({
     level,
     activityPublished: card.activity?.status === 'published',
+    joinMode: card.activity?.joinMode,
+    joinRequestStatus,
   });
 };
 

@@ -88,7 +88,7 @@ export type ExploreMapStageProps = {
   onDemandRemove?: () => void;
   onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
-  hostPeekHandlers?: import('./ExploreHostPeekActions').ExploreHostPeekHandlers | null;
+  hostActivityCtaHandlers?: import('../../components/activity/HostActivityCtas').HostActivityCtaHandlers | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onCloseMobileBrowse: () => void;
   mobileBrowseSheet: ReactNode;
@@ -155,7 +155,7 @@ export const ExploreMapStage = ({
   onDemandRemove,
   onDemandFullManage,
   onDemandLinkRideshare,
-  hostPeekHandlers = null,
+  hostActivityCtaHandlers = null,
   onOpenExploreItem,
   onCloseMobileBrowse,
   mobileBrowseSheet,
@@ -319,12 +319,12 @@ export const ExploreMapStage = ({
           onDemandRemove={onDemandRemove}
           onDemandFullManage={onDemandFullManage}
           onDemandLinkRideshare={onDemandLinkRideshare}
+          hostActivityCtaHandlers={hostActivityCtaHandlers}
           onOpenExploreItem={onOpenExploreItem}
           joinUiState={activityPeekSkipsJoinContext ? undefined : joinUiState}
           onWithdraw={onWithdraw}
           joinStateLoading={joinStateLoading}
           onActivityMapPeekAction={onActivityMapPeekAction}
-          hostPeekHandlers={hostPeekHandlers}
           joinInvitePeekBanner={joinInvitePeekBanner}
         />
       ) : null}

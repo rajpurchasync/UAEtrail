@@ -10,6 +10,18 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/host-st
 
 **Storefront kinds (`PublishingProfileKind`):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.3 — `community`, `pro_guide`, `agency`, `shop`, `ecommerce`, `hospitality`, `partner`. Wire `EntityKind.organisation` is the host storefront slug URL, not product copy.
 
+### One stack (person · community · Pro · tenant)
+
+| Concept | What it is | Product entry |
+|---------|------------|---------------|
+| **Member (user)** | One human account | Sign up · `/profile` |
+| **Community host** | Same user, profile complete — free **Organize** on the map | No Pro; auto **community** tenant |
+| **Pro membership** | Upgrade path for **individual** (pro guide) or **business** (shop, tour agency, e-commerce, hospitality, …) | `/profile/pro-membership` |
+| **Tenant** | Single persistence row for every storefront (`tenants`); wire name **organisation** in headers/API | `x-organisation-id`, `GET /host/*` when managing |
+| **Business subtype** | Which Pro business flavor (location-bound shop vs remote agency vs online e-commerce, etc.) | Chosen in Pro application — maps to `PublishingProfileKind` |
+
+There is **not** a second “organisation entity” beside tenants: shops, agencies, and e-commerce brands are **tenants** with different `PublishingProfileKind` / purpose. **Host** always means the **user** acting; **organisation** in code means **tenant scope** (storefront + console), not a parallel user type.
+
 **Naming (host vs join vs buddy):** § [Naming vocabulary](#naming-vocabulary) below · Cursor: `.cursor/rules/host-member-model.mdc` · verify: `npm run verify:host-member`.
 
 ---
@@ -199,7 +211,8 @@ Product-facing **who is viewing** for **capabilities** (Organize, console, futur
 | Community footprint | `apps/api/src/lib/community-host.ts` |
 | Buddy tenant | `apps/api/src/lib/buddy-host-tenant.ts` |
 | Client display strings | `src/member/memberProfileRoleLabel.ts` |
-| Client hook (thin) | `src/hooks/useOrganisationGate.ts` (`canPublish`, `canAccessHostConsole`) |
+| Client hook (thin) | `src/hooks/useHostStatus.ts` (`canPublish`, `canAccessHostConsole`) |
+| Host console hub data | `src/console/useHubData.ts` → `useConsoleHubData` (`/host/*` activities + join queue) |
 
 ---
 
@@ -211,7 +224,7 @@ Host/member/join terms (do not duplicate in other docs — **update this section
 |------|--------|-----------------|
 | **Community host (buddy)** | Profile complete → can Organize; optional **Host** label after first map post | `GET /me/host-status`, `publishingPurpose: community` |
 | **Pro / business host** | Agency, shop, professional guide | `/profile/pro-membership`, `host_applications` |
-| **Host console** | Tenant-scoped publish/manage | `/host/*`, `x-organisation-id` |
+| **Host console** | Tenant-scoped publish/manage (host **user** + active tenant) | `/host/*`, `x-organisation-id`, `src/console/*` |
 | **Activity join request** | Join a **published activity** (approval) | `activity_requests`, `/host/requests` |
 | **Demand join request** | Join a **Find** post | `participant_intent_requests`, `/me/participant-intents/.../requests` |
 | **Host application** | Pro/agency/shop onboarding | `host_applications` |
@@ -224,9 +237,29 @@ Host/member/join terms (do not duplicate in other docs — **update this section
 | “Join request” without **activity** or **demand** | Qualified phrase |
 | `isHostRole` for Organize / publish gates | `canPublish`, `canAccessHostConsole` from host-status |
 | `/become-host` in new UI | `PRO_MEMBERSHIP_PATH` or `/welcome` |
+| `OrganisationHubSections` / `useHostGate` | `ConsoleHubSections` (`src/console`), `useHostStatus` |
+| `api.listActivities` / `listOrganisationActivities` | `listHostActivities` (console), `getPublicActivities` or `getMeActivities` (browse/trips) |
 | `buddyUserId` in meta/API | `actorUserId` or `otherMemberUserId` |
 
 Host route files: `registerHostActivityRequestRoutes`, `registerHostTeamRoutes`, `registerHostDemandFulfillLegacy`, `registerMemberHostStatusRoutes` (under `routes/user/`).
+
+### Organisation in filenames (keep vs retire)
+
+| Keep `Organisation*` | Why |
+|----------------------|-----|
+| `src/api/domains/organisation.ts`, `orgHeaders.ts`, `getOrganisation*` | Wire: tenant scope, `x-organisation-id` |
+| `pages/OrganisationProfile.tsx` | Public storefront `/operator/:slug` |
+| `components/organisation/*`, `ShopOrganisation*` | Agency / shop tenant UI |
+| `organisation-console/` (Pro flow, `OrganisationPublicProfile`) | Tenant onboarding + public profile editor — **not** `/host/*` shell |
+| Deprecated shims in `organisation-console/` (`OrganisationConsoleShell` → `src/console`) | Import compatibility only |
+
+| Retired (guard: `organisationNamingGuard.test.ts`) | Use instead |
+|----------------------------------------------------|-------------|
+| `pages/OrganisationActivities`, `OrganisationConsoleOverview`, … | `src/pages/host/*` |
+| Activity form modals + `ActivityFormSessionContext` | Explore **Organize** (`CreateActivityFlow`) |
+| `useOrganisationGate` / `useOrganisationHubData` | `useHostStatus` / `useConsoleHubData` |
+
+**Host console** UI roots: `src/pages/host/*`, `src/console/*`, `src/components/host/*`. Do not add new `pages/Organisation*` routes for host tools.
 
 ---
 

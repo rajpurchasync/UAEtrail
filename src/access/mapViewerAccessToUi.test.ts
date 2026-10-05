@@ -50,19 +50,21 @@ describe('mapViewerAccessToExplorePeekDetail', () => {
     ).toEqual({ kind: 'link', href: '/activity/1' });
   });
 
-  it('members_only when detail page is blocked', () => {
-    expect(
-      mapViewerAccessToExplorePeekDetail(
-        {
-          exposure: 'redacted',
-          level: 'link_holder',
-          gateReason: 'upgrade_required',
-          canViewFullActivity: false,
-          canOpenDetailPage: false,
-          joinMode: 'open',
-        },
-        '/activity/1'
-      )
-    ).toEqual({ kind: 'members_only' });
+  it('upgrade_gate when Pro membership is required', () => {
+    const result = mapViewerAccessToExplorePeekDetail(
+      {
+        exposure: 'redacted',
+        level: 'link_holder',
+        gateReason: 'upgrade_required',
+        canViewFullActivity: false,
+        canOpenDetailPage: false,
+        joinMode: 'open',
+      },
+      '/activity/1'
+    );
+    expect(result?.kind).toBe('upgrade_gate');
+    if (result?.kind === 'upgrade_gate') {
+      expect(result.href).toContain('/profile/pro-membership');
+    }
   });
 });

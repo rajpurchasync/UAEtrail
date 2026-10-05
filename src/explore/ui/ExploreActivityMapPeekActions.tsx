@@ -3,7 +3,7 @@ import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { activityMapPeekActionLabel } from '../exploreMapPeekActionCopy';
 import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
 import type { ExploreCardModel } from '../exploreCardModel';
-import { resolvePeekDetailAccess } from '../../access/resolvePeekDetailAccess';
+import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
 
 type ExploreActivityMapPeekActionsProps = {
   card: ExploreCardModel;
@@ -12,6 +12,7 @@ type ExploreActivityMapPeekActionsProps = {
   onAction: (id: ActivityMapPeekActionId) => void;
   onGuestGatedAction?: () => void;
   joinStateLoading?: boolean;
+  onBeforeDetailNavigate?: () => void;
 };
 
 const prominenceClass = (prominence: ActivityMapPeekAction['prominence']): string => {
@@ -37,6 +38,7 @@ export const ExploreActivityMapPeekActions = ({
   onAction,
   onGuestGatedAction,
   joinStateLoading = false,
+  onBeforeDetailNavigate,
 }: ExploreActivityMapPeekActionsProps) => {
   const gate = onGuestGatedAction;
   const activity = card.activity;
@@ -60,29 +62,18 @@ export const ExploreActivityMapPeekActions = ({
     <div className="space-y-3">
       {visible.map((action) => {
         if (action.id === 'view_detail') {
-          const access = resolvePeekDetailAccess(card, {
-            isGuest: Boolean(gate),
-            joinStateLoading,
-          });
-          if (!access || access.kind === 'members_only') return null;
           const className = prominenceClass(action.prominence);
           const label = activityMapPeekActionLabel(action.id, action);
-          if (access.kind === 'guest_gate') {
-            return (
-              <button key={action.id} type="button" onClick={gate} className={className}>
-                {label}
-              </button>
-            );
-          }
           return (
-            <button
+            <ExplorePeekDetailLink
               key={action.id}
-              type="button"
-              onClick={() => onAction('view_detail')}
+              card={card}
+              label={label}
               className={className}
-            >
-              {label}
-            </button>
+              joinStateLoading={joinStateLoading}
+              onGuestGatedAction={gate}
+              onBeforeNavigate={onBeforeDetailNavigate}
+            />
           );
         }
 

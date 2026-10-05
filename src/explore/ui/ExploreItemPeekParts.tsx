@@ -1,15 +1,14 @@
-import { ExternalLink } from 'lucide-react';
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { ExploreActivityMapPeekActions } from './ExploreActivityMapPeekActions';
 import { ExploreDemandOwnerPeekActions } from './ExploreDemandOwnerPeekActions';
-import { ExploreHostPeekActions, type ExploreHostPeekHandlers } from './ExploreHostPeekActions';
+import { HostActivityCtas, type HostActivityCtaHandlers } from '../../components/activity/HostActivityCtas';
 import {
   activityMapPeekShowsJoinFlow,
   resolveActivityMapPeekActions,
 } from '../activityMapPeekActions';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
-import { PlaceCardActions } from '../../components/ui/PlaceCardActions';
+import { ExploreShopPeekActions } from './ExploreShopPeekActions';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreLinkedRidesharePeekIndication } from './ExploreLinkedRidesharePeekIndication';
 import {
@@ -36,7 +35,7 @@ export interface ExploreItemPeekActionsProps {
   onDemandRemove?: () => void;
   onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
-  hostPeekHandlers?: ExploreHostPeekHandlers | null;
+  hostActivityCtaHandlers?: HostActivityCtaHandlers | null;
   /** Guests — detail, join-adjacent, and profile navigation show sign-up instead. */
   onGuestGatedAction?: () => void;
 }
@@ -55,7 +54,7 @@ export const ExploreItemPeekActions = ({
   onDemandRemove,
   onDemandFullManage,
   onDemandLinkRideshare,
-  hostPeekHandlers = null,
+  hostActivityCtaHandlers = null,
   onGuestGatedAction,
 }: ExploreItemPeekActionsProps) => {
   const isShop = card.source === 'shop';
@@ -90,13 +89,19 @@ export const ExploreItemPeekActions = ({
           onLinkRideshare={onDemandLinkRideshare}
           onGuestGatedAction={gate}
         />
-      ) : card.showHostPeekActions && hostPeekHandlers ? (
-        <ExploreHostPeekActions
-          card={card}
-          linkRideshareTenantId={linkRideshareTenantId}
-          handlers={hostPeekHandlers}
-          onGuestGatedAction={gate}
-        />
+      ) : card.showHostActivityCtas && hostActivityCtaHandlers && card.activity ? (
+        <>
+          <HostActivityCtas
+            activity={card.activity}
+            linkRideshareTenantId={linkRideshareTenantId}
+            handlers={hostActivityCtaHandlers}
+            onGuestGatedAction={gate}
+          />
+          {detailLink(
+            card.secondaryCta ?? 'View details',
+            'block w-full py-2.5 text-center text-sm font-semibold text-gray-600'
+          )}
+        </>
       ) : activityMapPeekActions.length > 0 && onActivityMapPeekAction ? (
         <ExploreActivityMapPeekActions
           card={card}
@@ -105,6 +110,7 @@ export const ExploreItemPeekActions = ({
           onAction={onActivityMapPeekAction}
           onGuestGatedAction={gate}
           joinStateLoading={joinStateLoading}
+          onBeforeDetailNavigate={onClose}
         />
       ) : showActivityJoinFlow && joinUiState && !joinStateLoading ? (
         <>
@@ -208,44 +214,12 @@ export const ExploreItemPeekActions = ({
           Close
         </button>
       ) : isShop ? (
-        card.reviewPath ? (
-          <PlaceCardActions
-            detailPath={card.path}
-            reviewPath={card.reviewPath}
-            accent="emerald"
-            embedded
-            onGuestGatedAction={gate}
-            mapLatitude={card.mapLatitude}
-            mapLongitude={card.mapLongitude}
-            showGuestDirections={!exploreCardShowsInlineDirections(card)}
-          />
-        ) : (
-          <>
-            {detailLink(
-              card.primaryCta,
-              'block w-full rounded-2xl bg-emerald-500 py-3.5 text-center text-base font-bold text-white'
-            )}
-            {externalUrl ? (
-              <a
-                href={externalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full items-center justify-center gap-2 py-2.5 text-center text-sm font-semibold text-emerald-700"
-              >
-                {card.secondaryCta ?? 'Visit website'}
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            ) : (
-              <button
-                type="button"
-                onClick={onClose}
-                className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
-              >
-                Close
-              </button>
-            )}
-          </>
-        )
+        <ExploreShopPeekActions
+          card={card}
+          onClose={onClose}
+          onGuestGatedAction={gate}
+          externalUrl={externalUrl}
+        />
       ) : card.showJoinActions ? (
         <>
           {gate &&

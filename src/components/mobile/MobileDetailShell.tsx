@@ -1,4 +1,5 @@
-import { createPortal, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { MobileMenuButton } from '../layout/MobileMenu';
 import { ConsumerHeroBanner } from './ConsumerHeroBanner';
 import { MobileBackButton } from './MobileBackButton';

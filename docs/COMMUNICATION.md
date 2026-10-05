@@ -12,7 +12,7 @@
 | **Groups admin** | `/groups` | Create/manage groups, members, **who can message** — **no inline chat** |
 | **Activity detail** | `/activity/:id` | Crew callout (join/open chat), invite share panel |
 | **Trips** | `/trips` | Hosted/joined manage sheets → **Message crew** → `/messages?group=` |
-| **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (`open_crew_chat`, `message_host`, `request_join`, `pending_join`, …) or legacy join fallback when empty; withdraw on activity detail only |
+| **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (join, pending, participant, …); activity **host user** sees **Chat · Manage** + **View details** on own pins; shops use **`ExplorePeekDetailLink`** (View / Rate); cancel/delete via **`HostActivityCancelDialog`**; withdraw on activity detail only |
 
 Legacy: `/dashboard/messages` may still exist for older host console paths — prefer `/messages` and `/host/messages` for new UI.
 
@@ -130,7 +130,7 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 | Wall post policy (server) | `canMemberPostToGroupWall` | `apps/api/src/lib/group-wall-policy.ts` |
 | Direct chat thread | `DirectChatThread`, `useDirectChatThread` | `@/chat` |
 | Crew chat thread | `GroupChatThread` via `ChatThreadRouter` | `@/chat` |
-| Host actions | `useOrganisationActivityHostActions.openGroupChat` | `src/hooks/` |
+| Host activity manage | `useHostActivityManageActions` · `DELETE /host/activities/:id` via `api.cancelHostActivity` | `src/hooks/` |
 
 ## Trips / architecture rules
 

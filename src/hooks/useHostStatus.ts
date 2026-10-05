@@ -4,12 +4,12 @@ import { api } from '../api/index';
 import { setActiveTenantId } from '../api/tenant';
 import { useAuth } from '../context/AuthContext';
 
-interface UseOrganisationGateOptions {
+interface UseHostStatusOptions {
   enabled?: boolean;
 }
 
 /** Thin client for `GET /me/host-status` — tier logic lives in `member-host-status` (API). */
-export const useOrganisationGate = ({ enabled = true }: UseOrganisationGateOptions = {}) => {
+export const useHostStatus = ({ enabled = true }: UseHostStatusOptions = {}) => {
   const { user } = useAuth();
   const [status, setStatus] = useState<HostStatusDTO | null>(null);
   const [loading, setLoading] = useState(Boolean(enabled && user));
@@ -70,6 +70,3 @@ export const useOrganisationGate = ({ enabled = true }: UseOrganisationGateOptio
     refresh,
   };
 };
-
-/** @deprecated Use useOrganisationGate */
-export const useHostGate = useOrganisationGate;

@@ -164,11 +164,19 @@ export const ExploreMapPeekPosition = ({
   children: ReactNode;
   onClose?: () => void;
 }) => (
-  <div className={`${EXPLORE_PEEK.position} ${EXPLORE_SHEET.scrim}`}>
+  <div className={`${EXPLORE_PEEK.position} ${EXPLORE_SHEET.scrim} pointer-events-none`}>
     {onClose ? (
-      <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
+      <button
+        type="button"
+        className="pointer-events-auto absolute inset-0 z-0"
+        aria-label="Close"
+        onClick={onClose}
+      />
     ) : null}
-    <div className={`${EXPLORE_PEEK.inner} relative z-10`} data-explore-peek="card">
+    <div
+      className={`${EXPLORE_PEEK.inner} pointer-events-auto relative z-10`}
+      data-explore-peek="card"
+    >
       {children}
     </div>
   </div>

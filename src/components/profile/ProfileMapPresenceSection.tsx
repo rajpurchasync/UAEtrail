@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GlassCard } from '../mobile/GlassCard';
 import type { HostFlowIntent } from '../organisation-console/hostWizardFlow';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 import { HOST_OVERVIEW_PATH } from '../../config/routingCatalog';
 import { organisationManagePath } from '../../config/routingCatalog';
 
@@ -15,7 +15,7 @@ const HOST_PROFILE_CHIPS = [
 export const ProfileMapPresenceSection = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles } = useOrganisationGate();
+  const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles } = useHostStatus();
 
   const isActive = (key: (typeof HOST_PROFILE_CHIPS)[number]['key']) => {
     if (key === 'guide') return hasGuideProfile;

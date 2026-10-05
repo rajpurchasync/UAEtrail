@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
-import { api, TeamMember } from '../api/index';
-import { getActiveTenantId } from '../api/tenant';
-import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
-import { AppSelect } from '../components/ui/AppSelect';
-import { TenantSwitcher } from '../components/ui';
+import { api, TeamMember } from '../../api/index';
+import { getActiveTenantId } from '../../api/tenant';
+import { ConsoleShell } from '../../console/ConsoleShell';
+import { AppSelect } from '../../components/ui/AppSelect';
+import { TenantSwitcher } from '../../components/ui';
 
 const HOST_TEAM_ROLE_OPTIONS = [
   { value: 'tenant_guide' as const, label: 'Guide' },
   { value: 'tenant_admin' as const, label: 'Admin' },
 ];
 
-export const OrganisationTeam = () => {
+export const Team = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [roleDrafts, setRoleDrafts] = useState<Record<string, 'tenant_admin' | 'tenant_guide'>>({});
@@ -27,7 +27,7 @@ export const OrganisationTeam = () => {
       const response = await api.getOrganisationTeam(activeTenantId);
       setMembers(response.data);
       const drafts: Record<string, 'tenant_admin' | 'tenant_guide'> = {};
-      response.data.forEach((member) => {
+      response.data.forEach((member: TeamMember) => {
         if (member.role === 'tenant_admin' || member.role === 'tenant_guide') {
           drafts[member.id] = member.role;
         }
@@ -102,7 +102,7 @@ export const OrganisationTeam = () => {
   };
 
   return (
-    <OrganisationConsoleShell title="Team">
+    <ConsoleShell title="Team">
       <div className="space-y-4">
         <p className="text-sm text-gray-600">
           Add guides and admins who help run events. Your public profile lists team members separately.
@@ -208,6 +208,6 @@ export const OrganisationTeam = () => {
           </table>
         </section>
       </div>
-    </OrganisationConsoleShell>
+    </ConsoleShell>
   );
 };

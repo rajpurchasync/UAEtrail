@@ -1,18 +1,18 @@
-import { PRO_MEMBERSHIP_PATH } from '../config/routingCatalog';
+import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
 import { useEffect, useMemo } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { ConsumerShell } from '../components/mobile/ConsumerShell';
-import { AppSegmented } from '../components/mobile/AppSegmented';
-import { AgencyOrganisationPanel } from '../components/organisation/AgencyOrganisationPanel';
-import { ShopOrganisationPanel } from '../components/organisation/ShopOrganisationPanel';
-import { useOrganisationGate } from '../hooks/useOrganisationGate';
+import { ConsumerShell } from '../../components/mobile/ConsumerShell';
+import { AppSegmented } from '../../components/mobile/AppSegmented';
+import { AgencyOrganisationPanel } from '../../components/organisation/AgencyOrganisationPanel';
+import { ShopOrganisationPanel } from '../../components/organisation/ShopOrganisationPanel';
+import { useHostStatus } from '../../hooks/useHostStatus';
 
-import { parseOrganisationKind, type OrganisationKind } from '../config/routingCatalog';
+import { parseOrganisationKind, type OrganisationKind } from '../../config/routingCatalog';
 
-export const OrganisationManage = () => {
+export const Manage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const kindParam = parseOrganisationKind(searchParams.get('kind'));
-  const { loading, hasAgencyProfile, hasShopProfile } = useOrganisationGate();
+  const { loading, hasAgencyProfile, hasShopProfile } = useHostStatus();
 
   const hasMultipleKinds = hasAgencyProfile && hasShopProfile;
 

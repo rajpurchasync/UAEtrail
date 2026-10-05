@@ -8,7 +8,7 @@
 | Item | Status |
 |------|--------|
 | Hosted manage sheet (`HostActivityManageSheet`) | Done — Trips Hosted, `/host/activities` |
-| Shared host actions (`useOrganisationActivityHostActions`) | Done |
+| Shared host activity actions (`useHostActivityManageActions`) | Done |
 | Join decline reason + note (host → guest) | Done |
 | Explore host peek → Trips manage / check-in | Done |
 | My plans list + `ParticipantIntentManageSheet` | Done — `GET /me/participant-intents` |
@@ -40,7 +40,7 @@
 | Link / create rideshare on parent | ✓ | — | — |
 | Cancel / delete | ✓ | ✓ | delete draft |
 
-Code: `HostActivityManageSheet`, `useOrganisationActivityHostActions`, `hostActivityManageCapabilities`.
+Code: `HostActivityManageSheet`, `useHostActivityManageActions`, `HostActivityManageCancelDialogs`, `hostActivityManageCapabilities`.
 
 ## Looking for (demand / Find)
 

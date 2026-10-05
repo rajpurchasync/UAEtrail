@@ -2,19 +2,18 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
-import { useActivityFormSession } from '../context/ActivityFormSessionContext';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { navigateToReorganizeActivity } from '../explore/navigateReorganizeActivity';
 import { openPublishedActivityPreview } from '../components/activities';
 import { useReloadExploreMap } from './useReloadExploreMap';
 import { openActivityGroupChat } from '../utils/openActivityGroupChat';
 
-export function useOrganisationActivityHostActions(
+/** Host console actions for a single **activity** (`DELETE /host/activities/:id`, publish, duplicate, …). */
+export function useHostActivityManageActions(
   tenantId: string | null,
   onActivitiesChanged?: () => void | Promise<void>
 ) {
   const navigate = useNavigate();
-  const { openEdit } = useActivityFormSession();
   const reloadExploreMap = useReloadExploreMap();
   const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
@@ -49,21 +48,13 @@ export function useOrganisationActivityHostActions(
     [navigate]
   );
 
-  const editActivity = useCallback(
-    (activity: ActivityDTO) => {
-      if (!tenantId) return;
-      openEdit(activity, { tenantId });
-    },
-    [openEdit, tenantId]
-  );
-
   const publishActivity = useCallback(
     async (activityId: string) => {
       if (!tenantId) return;
       setBusy(true);
       setError(null);
       try {
-        await api.publishOrganisationActivity(tenantId, activityId);
+        await api.publishHostActivity(tenantId, activityId);
         await afterChange();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Could not publish.');
@@ -80,16 +71,16 @@ export function useOrganisationActivityHostActions(
       setBusy(true);
       setError(null);
       try {
-        const res = await api.duplicateOrganisationActivity(tenantId, activity.id);
+        const res = await api.duplicateHostActivity(tenantId, activity.id);
         await afterChange();
-        openEdit(res.data, { tenantId });
+        navigateToReorganizeActivity(navigate, res.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Could not duplicate.');
       } finally {
         setBusy(false);
       }
     },
-    [afterChange, openEdit, tenantId]
+    [afterChange, navigate, tenantId]
   );
 
   const reorganizeActivity = useCallback(
@@ -111,7 +102,7 @@ export function useOrganisationActivityHostActions(
     setBusy(true);
     setError(null);
     try {
-      await api.cancelOrganisationActivity(tenantId, confirmCancel.id);
+      await api.cancelHostActivity(tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await afterChange();
     } catch (err) {
@@ -126,7 +117,7 @@ export function useOrganisationActivityHostActions(
     setBusy(true);
     setError(null);
     try {
-      await api.cancelOrganisationActivity(tenantId, confirmDelete.id);
+      await api.cancelHostActivity(tenantId, confirmDelete.id);
       setConfirmDelete(null);
       await afterChange();
     } catch (err) {
@@ -147,7 +138,6 @@ export function useOrganisationActivityHostActions(
     confirmCancelActivity,
     confirmDeleteDraft,
     openGroupChat,
-    editActivity,
     publishActivity,
     duplicateActivity,
     reorganizeActivity,
@@ -155,3 +145,5 @@ export function useOrganisationActivityHostActions(
     previewPublished: openPublishedActivityPreview,
   };
 }
+
+export type HostActivityManageActions = ReturnType<typeof useHostActivityManageActions>;

@@ -2,38 +2,36 @@ import { useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bell, Calendar, Compass, Crown, MessageCircle, Plus, ShieldCheck } from 'lucide-react';
-import { api } from '../api/index';
-import { useAuth } from '../context/AuthContext';
-import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
-import { TenantSwitcher } from '../components/ui';
-import { GlassCard } from '../components/mobile/GlassCard';
+import { api } from '../../api/index';
+import { useAuth } from '../../context/AuthContext';
+import { ConsoleHubSections, ConsoleShell, useConsoleHubData } from '../../console';
+import { TenantSwitcher } from '../../components/ui';
+import { GlassCard } from '../../components/mobile/GlassCard';
 import {
   AccountEditModal,
   AccountIdentityBar,
   AccountLinkList,
   AccountSignOutButton,
-  OrganisationHubSections,
-} from '../components/account';
-import type { AccountEditSavePayload } from '../components/account/AccountEditModal';
-import { useParticipantHubData } from '../hooks/useParticipantHubData';
-import { useOrganisationHubData } from '../hooks/useOrganisationHubData';
-import { FEATURE_FLAGS } from '../config/platform';
+} from '../../components/account';
+import type { AccountEditSavePayload } from '../../components/account/AccountEditModal';
+import { useParticipantHubData } from '../../hooks/useParticipantHubData';
+import { FEATURE_FLAGS } from '../../config/platform';
 import {
   EXPLORE_MAP_PATH,
   HOST_ACTIVITIES_NEW_PATH,
   HOST_MESSAGES_PATH,
   MEMBERSHIP_MARKETING_PATH,
   tripsLegacyJoinedTabPath,
-} from '../config/routingCatalog';
-import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
-import { inferNotificationPath } from '../utils/notificationRouting';
+} from '../../config/routingCatalog';
+import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
+import { inferNotificationPath } from '../../utils/notificationRouting';
 
-export const OrganisationConsoleOverview = () => {
+export const Overview = () => {
   const { user, signOut, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const participant = useParticipantHubData();
-  const host = useOrganisationHubData();
+  const host = useConsoleHubData();
 
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -73,7 +71,7 @@ export const OrganisationConsoleOverview = () => {
   const displayName = participant.profile.displayName || user!.displayName || 'Host';
 
   return (
-    <OrganisationConsoleShell
+    <ConsoleShell
       title="Host"
       cta={
         <Link to={HOST_ACTIVITIES_NEW_PATH} className="app-cta-sm">
@@ -192,7 +190,7 @@ export const OrganisationConsoleOverview = () => {
           </div>
         ) : (
           <>
-            <OrganisationHubSections
+            <ConsoleHubSections
               activitiesCount={host.activities.length}
               pendingJoinRequests={host.pendingJoinRequests}
               upcomingActivitiesCount={host.upcomingActivitiesCount}
@@ -257,6 +255,6 @@ export const OrganisationConsoleOverview = () => {
         message={message}
         onSave={save}
       />
-    </OrganisationConsoleShell>
+    </ConsoleShell>
   );
 };

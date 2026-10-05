@@ -2,15 +2,15 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/index';
 import { getActiveTenantId, setActiveTenantId } from '../api/tenant';
-import { useOrganisationGate } from './useOrganisationGate';
+import { useHostStatus } from '../hooks/useHostStatus';
 import { useAuth } from '../context/AuthContext';
 
-const organisationHubKey = (tenantId: string) => ['organisation-hub', tenantId] as const;
+const consoleHubKey = (tenantId: string) => ['console-hub', tenantId] as const;
 
-async function fetchOrganisationHub(tenantId: string) {
+async function fetchConsoleHub(tenantId: string) {
   const [activitiesResponse, requestsResponse] = await Promise.all([
-    api.listOrganisationActivities(tenantId),
-    api.getOrganisationJoinRequests(tenantId),
+    api.listHostActivities(tenantId),
+    api.getHostActivityJoinRequests(tenantId),
   ]);
   const requests = requestsResponse.data;
   return {
@@ -20,23 +20,23 @@ async function fetchOrganisationHub(tenantId: string) {
   };
 }
 
-/** Organisation console hub data for the active tenant (`/host/*` routes). */
-export const useOrganisationHubData = () => {
+/** `/host/*` console: activities + join queue for active tenant. */
+export const useConsoleHubData = () => {
   const { user } = useAuth();
-  const gate = useOrganisationGate({ enabled: Boolean(user) });
+  const hostStatus = useHostStatus({ enabled: Boolean(user) });
   const storedTenantId = getActiveTenantId();
-  const tenantId = gate.tenantId ?? (storedTenantId || null);
+  const tenantId = hostStatus.tenantId ?? (storedTenantId || null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (gate.tenantId && gate.tenantId !== getActiveTenantId()) {
-      setActiveTenantId(gate.tenantId);
+    if (hostStatus.tenantId && hostStatus.tenantId !== getActiveTenantId()) {
+      setActiveTenantId(hostStatus.tenantId);
     }
-  }, [gate.tenantId]);
+  }, [hostStatus.tenantId]);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: tenantId ? organisationHubKey(tenantId) : ['organisation-hub', 'none'],
-    queryFn: () => fetchOrganisationHub(tenantId!),
+    queryKey: tenantId ? consoleHubKey(tenantId) : ['console-hub', 'none'],
+    queryFn: () => fetchConsoleHub(tenantId!),
     enabled: Boolean(tenantId),
   });
 
@@ -73,7 +73,7 @@ export const useOrganisationHubData = () => {
 
   const reload = useCallback(async () => {
     if (tenantId) {
-      await queryClient.invalidateQueries({ queryKey: organisationHubKey(tenantId) });
+      await queryClient.invalidateQueries({ queryKey: consoleHubKey(tenantId) });
     }
     await refetch();
   }, [queryClient, refetch, tenantId]);
@@ -85,7 +85,7 @@ export const useOrganisationHubData = () => {
     [requests]
   );
 
-  const loading = gate.loading || (Boolean(tenantId) && isLoading);
+  const loading = hostStatus.loading || (Boolean(tenantId) && isLoading);
 
   return {
     tenantId,
@@ -100,10 +100,7 @@ export const useOrganisationHubData = () => {
     pastActivitiesCount,
     upcomingActivities,
     loading,
-    error: error instanceof Error ? error.message : error ? 'Failed to load host data' : null,
+    error: error instanceof Error ? error.message : error ? 'Failed to load console data' : null,
     reload,
   };
 };
-
-/** @deprecated Use useOrganisationHubData */
-export const useHostHubData = useOrganisationHubData;

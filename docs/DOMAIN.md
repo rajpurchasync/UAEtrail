@@ -76,7 +76,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 | Trips UI | Domain data |
 |----------|-------------|
 | Upcoming rail / Joined list | `GET /me/activities`, `GET /me/requests` |
-| Hosted list + manage sheet | Organisation hub: `listOrganisationActivities`, join requests |
+| Hosted list + manage sheet | Host user: `listHostActivities`, `getHostActivityJoinRequests` |
 | Wishlist / Places / Shops layers | Favorites / place registry — not activities |
 | `/trips/map` (outdoor map) | `memberJourneyMapApi` → `/me/trips/map` (legacy path name on server) |
 
@@ -269,7 +269,10 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 | File / export | Route | Notes |
 |---------------|-------|-------|
 | `OrganisationProfile` | `/operator/:id` | Public guide/agency host profile |
-| `OrganisationConsoleOverview` | `/host/overview` | **Host console** in UI |
+| `pages/host/Overview` (`Overview`) | `/host/overview` | **Host console** hub |
+| `pages/host/Activities` (`Activities`) | `/host/activities` | Tenant activity list + manage sheet |
+| `pages/host/JoinRequests` (`JoinRequests`) | `/host/requests` | Activity join queue |
+| `pages/host/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |
 | `ProfileProMembership` (`BecomeHost` legacy export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Organize (`canPublish` via profile complete) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
 | `AdminOrganisations` | `/admin/hosts` | Admin copy: **Hosts** |
@@ -286,7 +289,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 
 **Organize hiking/camping** picks a **registry place** (`registryPlaceId`) or uses a **custom label** + **activity anchor** row. **Shops** use `PlaceKind.shop` on the map; host identity remains a **tenant** at `/shop/:id` until shop rows fully live in `locations`.
 
-**Publish pipeline (frontend):** `src/services/organizeActivityPublish.ts` → `POST /host/activities` via `buildOrganisationActivityPublishPayload`. Host console modals use the same payload builder with `form.locationId`.
+**Publish pipeline (frontend):** `src/services/organizeActivityPublish.ts` → `POST /host/activities` via `buildHostActivityPublishPayload`.
 
 ## Explore browse — `OutingCategory` and `OutingTopic`
 

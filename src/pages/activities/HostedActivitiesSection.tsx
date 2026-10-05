@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { useOrganisationHubData } from '../../hooks/useOrganisationHubData';
-import { useOrganisationActivityHostActions } from '../../hooks/useOrganisationActivityHostActions';
+import { useConsoleHubData } from '../../console/useHubData';
+import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import {
   ConsumerErrorCard,
   ConsumerInlineEmpty,
   ConsumerLoadingSpinner,
 } from '../../components/mobile/ConsumerFeedback';
-import { HostActivityManageSheet } from '../../components/host/HostActivityManageSheet';
+import { ActivityManageSheet } from '../../components/host/ActivityManageSheet';
 import { HostedActivityListRow } from '../../components/host/HostedActivityListRow';
-import { buildTripsHostedActivityMenuItems } from '../../components/host/buildTripsHostedActivityMenu';
 import {
   exploreOrganizePath,
   HOST_OVERVIEW_PATH,
@@ -31,7 +30,7 @@ const pendingCountForActivity = (activityId: string, requests: ActivityRequestVi
     return resolveJoinRequestActivity(request)?.id === activityId;
   }).length;
 
-/** Organisation-hosted activities list (Trips tab “Hosted”). */
+/** Host-user activities list (Trips tab “Hosted”) — same Activity entity, tenant manage projection. */
 export const HostedActivitiesSection = ({
   refreshKey = 0,
   searchQuery = '',
@@ -48,8 +47,8 @@ export const HostedActivitiesSection = ({
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const host = useOrganisationHubData();
-  const hostActions = useOrganisationActivityHostActions(host.tenantId, host.reload);
+  const host = useConsoleHubData();
+  const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
   const inviteShare = useActivityInviteShareSheet();
   const [activityTab, setActivityTab] = useState<ActivityTab>(timeScope ?? 'upcoming');
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
@@ -100,21 +99,6 @@ export const HostedActivitiesSection = ({
     setManageActivity(activity);
   };
 
-  const hostedMenuHandlers = {
-    onOpen: (activity: ActivityDTO) => {
-      if (activity.status === 'published') {
-        navigate(`/activity/${activity.id}`);
-        return;
-      }
-      openManage(activity);
-    },
-    onShare: (activity: ActivityDTO) => inviteShare.openInviteFromActivity(activity),
-    onEdit: hostActions.editActivity,
-    onDuplicate: hostActions.reorganizeActivity,
-    onCancel: hostActions.setConfirmCancel,
-    onCheckin: (activity: ActivityDTO) => openManage(activity, 'checkin'),
-  };
-
   const openedDeepLinkRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -152,15 +136,13 @@ export const HostedActivitiesSection = ({
     return (
       <>
         {inviteShare.sheet}
-        <HostActivityManageSheet
+        <ActivityManageSheet
           open={Boolean(manageActivity)}
           activity={manageActivity}
           tenantId={host.tenantId}
           pendingRequests={host.pendingRequests}
           actions={hostActions}
           initialView={manageInitialView}
-          onOpenPublicPage={(a) => navigate(`/activity/${a.id}`)}
-          onShare={(a) => inviteShare.openInviteFromActivity(a)}
           onClose={() => {
             setManageActivity(null);
             setManageInitialView('overview');
@@ -234,7 +216,6 @@ export const HostedActivitiesSection = ({
               key={activity.id}
               activity={activity}
               pendingRequestCount={pendingCountForActivity(activity.id, host.pendingRequests)}
-              menuItems={buildTripsHostedActivityMenuItems(activity, hostedMenuHandlers)}
               onOpenDetail={() => openManage(activity)}
             />
           ))}
@@ -243,7 +224,7 @@ export const HostedActivitiesSection = ({
 
       {inviteShare.sheet}
 
-      <HostActivityManageSheet
+      <ActivityManageSheet
         open={Boolean(manageActivity)}
         activity={manageActivity}
         tenantId={host.tenantId}

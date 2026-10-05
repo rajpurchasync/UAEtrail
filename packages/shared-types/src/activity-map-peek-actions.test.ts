@@ -7,6 +7,7 @@ describe('computeActivityMapPeekActions', () => {
       { id: 'open_crew_chat', prominence: 'primary' },
       { id: 'link_carpool', prominence: 'link' },
       { id: 'invite_crew', prominence: 'secondary' },
+      { id: 'view_detail', prominence: 'text' },
     ]);
   });
 
@@ -14,6 +15,7 @@ describe('computeActivityMapPeekActions', () => {
     expect(computeActivityMapPeekActions({ level: 'host', activityPublished: false })).toEqual([
       { id: 'open_crew_chat', prominence: 'primary' },
       { id: 'link_carpool', prominence: 'link' },
+      { id: 'view_detail', prominence: 'text' },
     ]);
   });
 
@@ -55,7 +57,10 @@ describe('computeActivityMapPeekActions', () => {
     ]);
   });
 
-  it('returns empty for public guests (join fallback / sign-in gate)', () => {
-    expect(computeActivityMapPeekActions({ level: 'public', activityPublished: true })).toEqual([]);
+  it('returns join + view detail for public guests', () => {
+    expect(computeActivityMapPeekActions({ level: 'public', activityPublished: true }).map((a) => a.id)).toEqual([
+      'request_join',
+      'view_detail',
+    ]);
   });
 });

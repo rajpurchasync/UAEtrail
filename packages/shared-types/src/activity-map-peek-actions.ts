@@ -45,7 +45,15 @@ export const computeActivityMapPeekActions = (
     if (activityPublished) {
       actions.push({ id: 'invite_crew', prominence: 'secondary' });
     }
+    actions.push({ id: 'view_detail', prominence: 'text' });
     return actions;
+  }
+
+  if (level === 'public') {
+    return [
+      { id: 'request_join', prominence: 'primary' },
+      { id: 'view_detail', prominence: 'text' },
+    ];
   }
 
   if (level === 'tenant_staff') {

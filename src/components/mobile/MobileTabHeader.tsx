@@ -12,7 +12,7 @@ import {
   TRIPS_PATH,
 } from '../../config/routingCatalog';
 import { joinedSubViewTitle } from '../../pages/activities/shared';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
@@ -39,7 +39,7 @@ const resolveCenter = (
 export const MobileTabHeader = () => {
   const { pathname, search } = useLocation();
   const { user } = useAuth();
-  const gate = useOrganisationGate({ enabled: Boolean(user) });
+  const gate = useHostStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
 
   const visible = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));

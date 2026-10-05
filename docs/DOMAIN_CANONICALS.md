@@ -40,7 +40,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | **Create** | Product verb (OK) | Same intent as Organize in casual copy (“create a plan”) | Replacing **Organize** in FAB labels without reason |
 | **Compose** | **Wire / code only** | Explore query `?compose=organize:*` \| `find:*` \| `add:*` (`compose.ts`, `composeFlowCatalog.ts`) | User-facing buttons, push copy, help text — reserved for **message compose**, email compose, post draft (future) |
 | **Host** | Product role | Anyone who **publishes** (buddy → pro guide → agency → shop owner → partner) | The Mongo `tenants` row name in UI |
-| **Organisation** | Code + wire | Tenant scope: `Organisation*`, `x-organisation-id`, `EntityKind: organisation` | Solo guide or shop in **consumer** copy — say **guide**, **agency**, **shop**, **partner** |
+| **Organisation** | Code + wire | **One tenant row** for all storefronts (guide, agency, shop, e-commerce, …): `Organisation*`, `x-organisation-id`, `EntityKind: organisation` | Solo guide or shop in **consumer** copy — say **guide**, **agency**, **shop**, **partner**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
 | **Organizer** | Legacy wire | `organizerId`, `organizerDetails` on old payloads | New product nouns — prefer **host** (activity) or **tenant** (storage) |
 | **Partner** | Product kind | Hotel / campaign / brand **host storefront** — not a shop, not a tour agency | Outdoor gear **shop**; do not call shops “partners” in UI |
 | **Agency** | Product kind | **Tour operator** — join trips remotely; storefront is **not** “visit this pin to join” | Gear **shop**; map **Place** venue |
@@ -186,7 +186,7 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 | `getMemberHostStatus` | `getMyOrganisationStatus` | Tier flags |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
 | `ShopOrganisation*` | Merchant* (client) | Mongo `merchant_profiles` |
-| `buildOrganisationActivityPublishPayload` | `buildHostActivityPublishPayload` | Single publish contract |
+| `buildHostActivityPublishPayload` | — | Single publish contract (`activityPublishPayload.ts`) |
 | `registerHostActivityRequestRoutes` | `*JoinRequest*` (host) | Activity queue only |
 
 **Demand vs activity join:** always qualify — “activity join request” vs “demand join request” ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary).
@@ -282,7 +282,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
-| **Host console** | `/host/*`, tenant | `organisation*`, `OrganisationConsole*` | `tenant` in consumer UI strings |
+| **Host console** | `/host/*`, tenant | `src/pages/host/*`, `src/console/*`, `useHostStatus`, `useConsoleHubData`, `listHostActivities` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
 
 **Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — personal history + wishlist pins on `/trips/map`; (3) **Place catalog** — venues/shops layers on Explore.
 

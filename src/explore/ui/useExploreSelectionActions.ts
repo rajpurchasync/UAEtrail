@@ -21,8 +21,6 @@ import { useParticipantIntentJoinContext } from '../../hooks/useParticipantInten
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
-import { navigateToHostedActivityManage } from '../../host/navigateHostedActivityManage';
-import { navigateToReorganizeActivity } from '../navigateReorganizeActivity';
 import { navigateToParticipantIntentManage } from '../../trips/navigateParticipantIntentManage';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
@@ -84,13 +82,11 @@ export const useExploreSelectionActions = ({
     if (!selected) return null;
     const card = finalizeExploreCardLinkedRideshare(buildExploreCardModel(selected), selected, items);
     const activity = card.activity;
-    const mapHostLevel = selected.viewerAccess?.level === 'host';
     const isOwnActivity = Boolean(
       user &&
         activity &&
         selected.source === 'activity' &&
-        viewerIsActivityHostUser(activity, user.id) &&
-        (selected.viewerAccess == null || mapHostLevel)
+        viewerIsActivityHostUser(activity, user.id)
     );
     const activityHostPeek = isOwnActivity;
     const isOwnDemand = Boolean(
@@ -112,7 +108,7 @@ export const useExploreSelectionActions = ({
     return {
       ...card,
       showJoinActions: false,
-      showHostPeekActions: true,
+      showHostActivityCtas: true,
     };
   }, [selected, items, user]);
 
@@ -272,38 +268,33 @@ export const useExploreSelectionActions = ({
     );
   }, [selected, user, navigate, setSelectedId, joinActions]);
 
-  const handleHostManage = useCallback(() => {
-    const activity = selected?.activity;
-    if (!activity) return;
-    setSelectedId(null);
-    navigateToHostedActivityManage(navigate, activity.id, 'overview');
-  }, [selected, navigate, setSelectedId]);
-
-  const handleHostCheckin = useCallback(() => {
-    const activity = selected?.activity;
-    if (!activity) return;
-    setSelectedId(null);
-    navigateToHostedActivityManage(navigate, activity.id, 'checkin');
-  }, [selected, navigate, setSelectedId]);
-
   const handleInviteCrew = useCallback(() => {
     const activity = selected?.activity;
     if (!activity || activity.status !== 'published') return;
     onInviteActivity?.(activity, { canSendBuddyInvites: true });
   }, [onInviteActivity, selected?.activity]);
 
-  const handleHostDuplicate = useCallback(() => {
-    const activity = selected?.activity;
-    if (!activity) return;
-    setSelectedId(null);
-    navigateToReorganizeActivity(navigate, activity);
-  }, [selected?.activity, navigate, setSelectedId]);
+  const requestHostRemove = useCallback((activity: ActivityDTO) => {
+    if (activity.status !== 'draft' && activity.status !== 'published') return;
+    setHostRemoveConfirm(activity);
+  }, []);
 
-  const handleHostAddCarpool = useCallback(() => {
-    const activity = selected?.activity;
-    if (!activity || !onCreateLinkedRideshare) return;
-    onCreateLinkedRideshare(activity);
-  }, [selected?.activity, onCreateLinkedRideshare]);
+  const confirmHostRemove = useCallback(async () => {
+    if (!hostRemoveConfirm || !tenantId) return;
+    setHostRemoveBusy(true);
+    try {
+      await api.cancelHostActivity(tenantId, hostRemoveConfirm.id);
+      const wasDraft = hostRemoveConfirm.status === 'draft';
+      setHostRemoveConfirm(null);
+      setSelectedId(null);
+      await reloadExploreMap(queryClient);
+      setVenueNotice(wasDraft ? 'Draft deleted.' : 'Activity cancelled.');
+    } catch (err) {
+      setVenueNotice(err instanceof Error ? err.message : 'Could not update activity.');
+    } finally {
+      setHostRemoveBusy(false);
+    }
+  }, [hostRemoveConfirm, tenantId, queryClient, setSelectedId]);
 
   const handleActivityMapPeekAction = useCallback(
     (actionId: ActivityMapPeekActionId) => {
@@ -323,12 +314,6 @@ export const useExploreSelectionActions = ({
             onCreateLinkedRideshare(activity);
           }
           return;
-        case 'view_detail':
-          if (selectedCard?.path) {
-            setSelectedId(null);
-            navigate(selectedCard.path);
-          }
-          return;
         case 'request_join':
           handleJoin();
           return;
@@ -340,7 +325,6 @@ export const useExploreSelectionActions = ({
     },
     [
       selected?.activity,
-      selectedCard?.path,
       handleHostMessage,
       handleMessageActivityHost,
       handleInviteCrew,
@@ -350,13 +334,6 @@ export const useExploreSelectionActions = ({
       setSelectedId,
     ]
   );
-
-  const requestHostRemove = useCallback(() => {
-    const activity = selected?.activity;
-    if (!activity) return;
-    if (activity.status !== 'draft' && activity.status !== 'published') return;
-    setHostRemoveConfirm(activity);
-  }, [selected?.activity]);
 
   const handleDemandManage = useCallback(() => {
     const intentId = selected?.participantIntentId;
@@ -386,23 +363,6 @@ export const useExploreSelectionActions = ({
       setDemandRemoveBusy(false);
     }
   }, [demandRemoveIntentId, queryClient, setSelectedId]);
-
-  const confirmHostRemove = useCallback(async () => {
-    if (!hostRemoveConfirm || !tenantId) return;
-    setHostRemoveBusy(true);
-    try {
-      await api.cancelOrganisationActivity(tenantId, hostRemoveConfirm.id);
-      const wasDraft = hostRemoveConfirm.status === 'draft';
-      setHostRemoveConfirm(null);
-      setSelectedId(null);
-      await reloadExploreMap(queryClient);
-      setVenueNotice(wasDraft ? 'Draft deleted.' : 'Activity cancelled.');
-    } catch (err) {
-      setVenueNotice(err instanceof Error ? err.message : 'Could not update activity.');
-    } finally {
-      setHostRemoveBusy(false);
-    }
-  }, [hostRemoveConfirm, tenantId, queryClient, setSelectedId]);
 
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
@@ -547,12 +507,8 @@ export const useExploreSelectionActions = ({
     handleGuestGatedAction,
     handleJoin,
     handleDemandMessage,
-    handleHostManage,
-    handleHostCheckin,
     handleHostMessage,
     handleInviteCrew,
-    handleHostDuplicate,
-    handleHostAddCarpool,
     requestHostRemove,
     hostRemoveConfirm,
     setHostRemoveConfirm,

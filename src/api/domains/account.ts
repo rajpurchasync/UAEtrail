@@ -2,7 +2,6 @@ import { NotificationDTO } from '@uaetrail/shared-types';
 import { apiRequest, downloadAuthenticatedFile, getStoredSession } from '../client';
 import type {
   ActivityDTO,
-  MemberBrowseCardDTO,
   MemberDiscoveryQuotaDTO,
   ProfileViewerAccessDTO,
   BuddyActivityPresenceRowDTO,

@@ -21,7 +21,6 @@ export { MeetingPointMap } from './MeetingPointMap';
 export { PlaceDirectionLinks } from './PlaceDirectionLinks';
 export { DirectionsControl } from './DirectionsControl';
 export { ViewOnMapLink } from './ViewOnMapLink';
-export { ActivityPlacePinField } from './ActivityPlacePinField';
 export { FormTabBar } from './FormTabBar';
 export { ImageUpload } from './ImageUpload';
 export { SecureAvatar } from './SecureAvatar';

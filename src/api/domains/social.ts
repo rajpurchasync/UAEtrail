@@ -12,7 +12,7 @@ import {
   ReviewDTO,
   MyReviewDTO,
 } from '@uaetrail/shared-types';
-import { apiRequest, getStoredSession } from '../client';
+import { apiRequest } from '../client';
 import type {
   ContentReportReason,
   ContentReportTargetType,

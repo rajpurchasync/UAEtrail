@@ -82,7 +82,7 @@ Any signed-in member â€” no host approval to post demand.
 
 **Add uses â€œpin on the mapâ€ / location** â€” not **Going from** (places are not trips).
 
-**Organize venue pick:** Hiking/camping use **`GET /places/registry`** (see `DOMAIN.md` § Place registry). Publish: `src/services/organizeActivityPublish.ts` (payload shape: `src/utils/activityPublishPayload.ts`; host console uses the same builder via `activityFormState.ts`).
+**Organize venue pick:** Hiking/camping use **`GET /places/registry`** (see `DOMAIN.md` § Place registry). Publish: `src/services/organizeActivityPublish.ts` (payload shape: `src/utils/activityPublishPayload.ts`). **Admin place/venue catalog** (trails, camps, event venues): `/admin/places` (`AdminPlaces.tsx`) — not the explore compose wizard.
 
 ---
 
@@ -254,7 +254,7 @@ Explore compose uses **one responsive stack** â€” not separate mobile/deskt
 | FAB menu | `CreateIntentSheet.tsx` | â€” |
 | Map pin | `CreatePlacePicker.tsx` | â€” |
 
-Host console editing (`CreateActivityModal`, `/host/*`) is a **separate surface** â€” do not merge with explore compose.
+Host console **lists** outings on `/host/activities`; **create / edit on map** uses the same explore **Organize** wizard (`CreateActivityFlow.tsx`, `navigateToReorganizeActivity`). Admin **location/venue detail** stays on `/admin/places`.
 
 ---
 

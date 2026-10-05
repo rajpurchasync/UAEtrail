@@ -11,7 +11,7 @@ import { AppButton, AppButtonLink } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
 import { api } from '../../api/index';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 import { useAuth } from '../../context/AuthContext';
 import { signInPathForReturn } from '../../utils/authReturnContext';
 import {
@@ -42,7 +42,7 @@ export const ParticipantIntentManageSheet = ({
 }: ParticipantIntentManageSheetProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const gate = useOrganisationGate({ enabled: Boolean(user) });
+  const gate = useHostStatus({ enabled: Boolean(user) });
   const reloadExploreMap = useReloadExploreMap();
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [editing, setEditing] = useState(false);

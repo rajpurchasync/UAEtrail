@@ -9,12 +9,12 @@ import { Plus, Sun } from 'lucide-react';
 
 
 import { useAuth } from '../../context/AuthContext';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 
 /** Shown when there are no upcoming activities. */
 export const EmptyActivitiesBanner = () => {
   const { user } = useAuth();
-  const { canAccessHostConsole, canPublish } = useOrganisationGate({ enabled: Boolean(user) });
+  const { canAccessHostConsole, canPublish } = useHostStatus({ enabled: Boolean(user) });
   const canHost = canAccessHostConsole;
   const memberHostCtaPath = canPublish ? EXPLORE_MAP_PATH : PRO_MEMBERSHIP_PATH;
 

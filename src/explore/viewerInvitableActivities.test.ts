@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { BuddyActivityPresenceRowDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, BuddyActivityPresenceRowDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   buildViewerInvitableActivityRefs,
   invitableActivitiesForBuddy,
@@ -22,7 +22,10 @@ describe('viewerInvitableActivities', () => {
   it('lists activities the viewer hosts or joins', () => {
     const items = [
       mapItem({ activityId: 'a1', participantPreviews: [{ id: 'host-me', name: 'Me', avatar: null }] }),
-      mapItem({ activityId: 'a2', activity: { id: 'a2', title: 'Other', hostUserId: 'other' } }),
+      mapItem({
+        activityId: 'a2',
+        activity: { id: 'a2', title: 'Other', hostUserId: 'other' } as ActivityDTO,
+      }),
     ];
     const refs = buildViewerInvitableActivityRefs(items, 'host-me', 'anyday');
     expect(refs.map((r) => r.activityId)).toEqual(['a1']);
@@ -44,8 +47,14 @@ describe('viewerInvitableActivities', () => {
       { exploreItemId: 'activity:a2', activityId: 'a2', title: 'My trip' },
     ];
     const items = [
-      mapItem({ activityId: 'a1', activity: { id: 'a1', title: 'Guest', hostUserId: 'other' } }),
-      mapItem({ activityId: 'a2', activity: { id: 'a2', title: 'My trip', hostUserId: 'host-me' } }),
+      mapItem({
+        activityId: 'a1',
+        activity: { id: 'a1', title: 'Guest', hostUserId: 'other' } as ActivityDTO,
+      }),
+      mapItem({
+        activityId: 'a2',
+        activity: { id: 'a2', title: 'My trip', hostUserId: 'host-me' } as ActivityDTO,
+      }),
     ];
     const row = {
       buddy: { userId: 'b1', displayName: 'Buddy', avatarUrl: null },
@@ -62,8 +71,14 @@ describe('viewerInvitableActivities', () => {
       { exploreItemId: 'activity:a2', activityId: 'a2', title: 'My trip' },
     ];
     const items = [
-      mapItem({ activityId: 'a1', activity: { id: 'a1', title: 'Guest', hostUserId: 'other' } }),
-      mapItem({ activityId: 'a2', activity: { id: 'a2', title: 'My trip', hostUserId: 'host-me' } }),
+      mapItem({
+        activityId: 'a1',
+        activity: { id: 'a1', title: 'Guest', hostUserId: 'other' } as ActivityDTO,
+      }),
+      mapItem({
+        activityId: 'a2',
+        activity: { id: 'a2', title: 'My trip', hostUserId: 'host-me' } as ActivityDTO,
+      }),
     ];
     const row = {
       buddy: { userId: 'b1', displayName: 'Buddy', avatarUrl: null },

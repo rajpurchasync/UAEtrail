@@ -3,7 +3,7 @@
  *
  * Entry points:
  * - Explore FAB: `src/services/organizeActivityPublish.ts` → `buildOrganizeActivityPublishInput` / `publishOrganizeActivity`
- * - Host console: `src/components/activities/activityFormState.ts` → `buildOrganisationActivityPayload`
+ * - Explore Organize: `src/services/organizeActivityPublish.ts` → `buildHostActivityPublishPayload`
  */
 import type { ActivityJoinMode, OutingCategory, OutingTopic, ParticipationMode } from '@uaetrail/shared-types';
 import {
@@ -126,7 +126,7 @@ export const mergeParticipationRequirements = (
 ];
 
 /** Build the POST/PATCH body for `/host/activities`. */
-export const buildOrganisationActivityPublishPayload = (input: ActivityPublishInput): Record<string, unknown> => {
+export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Record<string, unknown> => {
   const isRideshare = input.activityType === 'rideshare';
   const rideshare = input.rideshare ?? {};
   const { pricing, location } = input;
@@ -193,5 +193,3 @@ export const buildOrganisationActivityPublishPayload = (input: ActivityPublishIn
   return payload;
 };
 
-/** @deprecated Use {@link buildOrganisationActivityPublishPayload} */
-export const buildHostActivityPublishPayload = buildOrganisationActivityPublishPayload;

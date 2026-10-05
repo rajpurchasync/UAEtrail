@@ -10,6 +10,14 @@ import { apiRequest, getStoredSession } from '../client';
 import { organisationRequestHeaders } from '../orgHeaders';
 import type { ActivityDetail, ActivityRequestView } from '../types';
 
+/**
+ * Activity HTTP client — one entity (`activities`), different **routes** by surface:
+ * - Browse catalog: `getPublicActivities` / `getFeaturedActivities` → `GET /activities`
+ * - Member trips: `getMeActivities` → `GET /me/activities`
+ * - Host console (tenant + `x-organisation-id`): `listHostActivities` → `GET /host/activities`
+ *
+ * There is intentionally no `listActivities` on `api` — name was ambiguous (public vs tenant).
+ */
 export const activitiesApi = {
     getPublicActivities: (opts?: { when?: 'upcoming' | 'past' | 'all'; pageSize?: number }) => {
     const params = new URLSearchParams();
@@ -174,34 +182,35 @@ export const activitiesApi = {
       auth: true
     }),
 
-    listOrganisationActivities: (tenantId: string) =>
-    apiRequest<{ data: ActivityDTO[] }>('/host/activities?pageSize=100', {
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
+    /** Host user activity list (`GET /host/activities`, tenant scope header). */
+    listHostActivities: (tenantId: string) =>
+      apiRequest<{ data: ActivityDTO[] }>('/host/activities?pageSize=100', {
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+      }),
 
-    createOrganisationActivity: (tenantId: string, payload: Record<string, unknown>) =>
-    apiRequest<{ data: ActivityDTO }>('/host/activities', {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify(payload)
-    }),
+    createHostActivity: (tenantId: string, payload: Record<string, unknown>) =>
+      apiRequest<{ data: ActivityDTO }>('/host/activities', {
+        method: 'POST',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+        body: JSON.stringify(payload),
+      }),
 
-    updateOrganisationActivity: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
-    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}`, {
-      method: 'PATCH',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify(payload)
-    }),
+    updateHostActivity: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
+      apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}`, {
+        method: 'PATCH',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+        body: JSON.stringify(payload),
+      }),
 
-    publishOrganisationActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/host/activities/${activityId}/publish`, {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
+    publishHostActivity: (tenantId: string, activityId: string) =>
+      apiRequest(`/host/activities/${activityId}/publish`, {
+        method: 'POST',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+      }),
 
     /** @deprecated Prefer `exploreApi.linkParticipantIntentToActivity` (poster-owned demand). */
     fulfillParticipantIntent: (tenantId: string, intentId: string, activityId: string) =>
@@ -215,19 +224,19 @@ export const activitiesApi = {
       }
     ),
 
-    duplicateOrganisationActivity: (tenantId: string, activityId: string) =>
-    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}/duplicate`, {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
+    duplicateHostActivity: (tenantId: string, activityId: string) =>
+      apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}/duplicate`, {
+        method: 'POST',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+      }),
 
-    cancelOrganisationActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/host/activities/${activityId}`, {
-      method: 'DELETE',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
+    cancelHostActivity: (tenantId: string, activityId: string) =>
+      apiRequest(`/host/activities/${activityId}`, {
+        method: 'DELETE',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+      }),
 
     getActivityParticipants: (tenantId: string, activityId: string) =>
     apiRequest<{ data: { activityId: string; activityTitle: string; capacity: number; participants: ParticipantDTO[] } }>(

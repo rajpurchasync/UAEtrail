@@ -1,10 +1,12 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ActivityDTO, LocationDTO, TenantListDTO } from '@uaetrail/shared-types';
+import { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
-import { useActivityFormSession } from '../context/ActivityFormSessionContext';
 import { useReloadExploreMap } from '../hooks/useReloadExploreMap';
+import { Link } from 'react-router-dom';
+import { ADMIN_PLACES_PATH } from '../config/surfacePaths';
+import { navigateToExploreOrganize } from '../explore/navigateExploreOrganize';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import {
@@ -24,7 +26,6 @@ export const AdminActivities = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState<ActivityDTO[]>([]);
   const [locations, setLocations] = useState<LocationDTO[]>([]);
-  const [tenants, setTenants] = useState<TenantListDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('active');
@@ -58,13 +59,7 @@ export const AdminActivities = () => {
   const [previewActivity, setPreviewActivity] = useState<ActivityDTO | null>(null);
   const [previewPublishing, setPreviewPublishing] = useState(false);
   const [suspendComment, setSuspendComment] = useState('');
-  const { openCreate, openEdit, setOnSaved } = useActivityFormSession();
   const reloadExploreMap = useReloadExploreMap();
-
-  useEffect(() => {
-    setOnSaved(() => () => void loadEvents());
-    return () => setOnSaved(null);
-  }, [setOnSaved]);
 
   const loadEvents = async () => {
     setLoading(true);
@@ -80,9 +75,8 @@ export const AdminActivities = () => {
 
   const loadRefs = async () => {
     try {
-      const [locRes, tenRes] = await Promise.all([api.getAdminPlaces(), api.getAdminTenants()]);
+      const locRes = await api.getAdminPlaces();
       setLocations(locRes.data);
-      setTenants(tenRes.data);
     } catch { /* non-critical */ }
   };
 
@@ -168,18 +162,10 @@ export const AdminActivities = () => {
     }
   };
 
-  const openEditActivity = (event: ActivityDTO) => {
-    openEdit(event, {
-      tenantId: event.tenantId,
-      hostTenants: tenants,
-      venueLocations: locations,
-    });
-  };
-
   const publish = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      await api.publishOrganisationActivity(event.tenantId, event.id);
+      await api.publishHostActivity(event.tenantId, event.id);
       await reloadExploreMap();
       await loadEvents();
     } catch (err) {
@@ -190,13 +176,9 @@ export const AdminActivities = () => {
   const duplicateActivity = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      const res = await api.duplicateOrganisationActivity(event.tenantId, event.id);
+      const res = await api.duplicateHostActivity(event.tenantId, event.id);
       await loadEvents();
-      openEdit(res.data, {
-        tenantId: event.tenantId,
-        hostTenants: tenants,
-        venueLocations: locations,
-      });
+      navigateToReorganizeActivity(navigate, res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to duplicate activity');
     }
@@ -209,7 +191,7 @@ export const AdminActivities = () => {
   const deleteDraft = async () => {
     if (!confirmDelete?.tenantId) return;
     try {
-      await api.cancelOrganisationActivity(confirmDelete.tenantId, confirmDelete.id);
+      await api.cancelHostActivity(confirmDelete.tenantId, confirmDelete.id);
       setConfirmDelete(null);
       await loadEvents();
     } catch (err) {
@@ -221,7 +203,7 @@ export const AdminActivities = () => {
   const cancelActivity = async () => {
     if (!confirmCancel?.tenantId) return;
     try {
-      await api.cancelOrganisationActivity(confirmCancel.tenantId, confirmCancel.id);
+      await api.cancelHostActivity(confirmCancel.tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await loadEvents();
     } catch (err) {
@@ -242,7 +224,7 @@ export const AdminActivities = () => {
     if (!event.tenantId) return;
     setPreviewPublishing(true);
     try {
-      await api.publishOrganisationActivity(event.tenantId, event.id);
+      await api.publishHostActivity(event.tenantId, event.id);
       await reloadExploreMap();
       setPreviewActivity(null);
       await loadEvents();
@@ -275,13 +257,14 @@ export const AdminActivities = () => {
           <div className="flex items-center gap-3">
             <input type="text" placeholder="Search activities..." value={search} onChange={(e) => setSearch(e.target.value)}
               className="border rounded-lg px-3 py-1.5 text-sm w-56" />
+            <Link
+              to={ADMIN_PLACES_PATH}
+              className="px-4 py-2 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50 text-sm font-medium"
+            >
+              Add place / venue
+            </Link>
             <button
-              onClick={() =>
-                openCreate({
-                  hostTenants: tenants,
-                  venueLocations: locations,
-                })
-              }
+              onClick={() => navigateToExploreOrganize(navigate)}
               className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
               + Add Activity
             </button>
@@ -321,7 +304,7 @@ export const AdminActivities = () => {
                     className="border-t hover:bg-gray-50 cursor-pointer"
                     onClick={() => {
                       if (event.status === 'draft') {
-                        openEditActivity(event);
+                        reorganizeActivity(event);
                         return;
                       }
                       toggleExpanded(event.id);
@@ -350,7 +333,6 @@ export const AdminActivities = () => {
                       <ActivityActionsMenu
                         items={buildAdminActivityMenuItems(event, {
                           onPreview: openPreview,
-                          onEdit: openEditActivity,
                           onPublish: publish,
                           onDuplicate: duplicateActivity,
                           onReorganize: reorganizeActivity,

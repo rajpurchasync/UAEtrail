@@ -13,7 +13,7 @@ import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
 
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
-import { useOrganisationGate } from '../hooks/useOrganisationGate';
+import { useHostStatus } from '../hooks/useHostStatus';
 
 type FriendsTab = 'friends' | 'requests' | 'following';
 
@@ -48,7 +48,7 @@ export const Buddies = () => {
   >([]);
   const [findSearching, setFindSearching] = useState(false);
 
-  const { canAccessHostConsole } = useOrganisationGate({ enabled: Boolean(user) });
+  const { canAccessHostConsole } = useHostStatus({ enabled: Boolean(user) });
   const messagesPath = canAccessHostConsole ? HOST_MESSAGES_PATH : MESSAGES_PATH;
 
   const loadCore = useCallback(async () => {

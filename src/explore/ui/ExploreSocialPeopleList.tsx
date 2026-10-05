@@ -4,7 +4,7 @@ import { CalendarDays, MessageCircle, UserPlus } from 'lucide-react';
 import type { SocialPersonRowDTO } from '@uaetrail/shared-types';
 import { SecureAvatar } from '../../components/ui';
 import { BUDDIES_PATH, explorePlanWithBuddyPath } from '../../config/routingCatalog';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import type { UserRole } from '@uaetrail/shared-types';
@@ -44,7 +44,7 @@ export const ExploreSocialPeopleList = ({
   onRefresh,
 }: ExploreSocialPeopleListProps) => {
   const navigate = useNavigate();
-  const { canPublish } = useOrganisationGate({ enabled: isSignedIn });
+  const { canPublish } = useHostStatus({ enabled: isSignedIn });
   const [busyUserId, setBusyUserId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -155,7 +155,7 @@ export const ExploreSocialPeopleList = ({
                   <button
                     type="button"
                     disabled={!person.canMessage}
-                    onClick={() => navigate(messagesRouteForRole(userRole, person.userId))}
+                    onClick={() => navigate(messagesRouteForRole(userRole ?? 'participant', person.userId))}
                     className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-800 disabled:opacity-40"
                   >
                     <MessageCircle className="h-3.5 w-3.5" aria-hidden />
@@ -186,7 +186,7 @@ export const ExploreSocialPeopleList = ({
                   {person.canMessage ? (
                     <button
                       type="button"
-                      onClick={() => navigate(messagesRouteForRole(userRole, person.userId))}
+                      onClick={() => navigate(messagesRouteForRole(userRole ?? 'participant', person.userId))}
                       className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-800"
                     >
                       <MessageCircle className="h-3.5 w-3.5" aria-hidden />

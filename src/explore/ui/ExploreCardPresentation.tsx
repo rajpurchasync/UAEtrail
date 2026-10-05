@@ -65,6 +65,17 @@ const ExploreCardHeadlineShell = ({
       </button>
     );
   }
+  if (detailAccess?.kind === 'profile_gate' || detailAccess?.kind === 'upgrade_gate') {
+    return (
+      <Link
+        to={detailAccess.href}
+        className={titleLinkClass}
+        onClick={() => onBeforeDetailNavigate?.()}
+      >
+        {children}
+      </Link>
+    );
+  }
   return <p className={plainClass}>{children}</p>;
 };
 

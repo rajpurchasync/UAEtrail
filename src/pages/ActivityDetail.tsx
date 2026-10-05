@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
-import type {
-  ActivityDetailDTO,
-  ActivityParticipationDTO,
-  ActivityViewerAccessDTO,
-  MyActivityRequestDTO,
-  ReviewDTO,
+import {
+  type ActivityDetailDTO,
+  type ActivityDTO,
+  type ActivityParticipationDTO,
+  type ActivityViewerAccessDTO,
+  type MyActivityRequestDTO,
+  type ReviewDTO,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { detailBackPath } from '../config/routingCatalog';
@@ -24,16 +25,22 @@ import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
 import { PushEnableBanner } from '../components/ui/PushEnableBanner';
 import { ActivityDetailView } from '../components/activity/ActivityDetailView';
 import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
-import { useOrganisationGate } from '../hooks/useOrganisationGate';
-import { viewerHostsActivity } from '../utils/viewerHostsActivity';
-import { tripsPath } from '../trips/tripsRouting';
+import { useHostStatus } from '../hooks/useHostStatus';
+import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
 import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
 import { activityJoinInviteBanner } from '../content/exploreGoingPanelCopy';
+import { HostActivityCancelDialog } from '../components/activity/HostActivityCancelDialog';
+import { HostActivityCtas } from '../components/activity/HostActivityCtas';
+import { hostActivityCancelParticipantNotice } from '../host/hostActivityCancelParticipantNotice';
+import { hostActivityCtaHandlers as buildHostActivityCtaHandlers } from '../host/hostActivityCtaHandlers';
+import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
+import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
+import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const gate = useOrganisationGate({ enabled: Boolean(user) });
+  const gate = useHostStatus({ enabled: Boolean(user) });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromJoinInvite = searchParams.get('invite') === '1';
@@ -47,6 +54,9 @@ export const ActivityDetail = () => {
   const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
   const [viewerAccess, setViewerAccess] = useState<ActivityViewerAccessDTO | null>(null);
   const [activityReviews, setActivityReviews] = useState<ReviewDTO[]>([]);
+  const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
+  const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
+  const inviteShare = useActivityInviteShareSheet();
 
   const loadActivity = useCallback(() => {
     if (!id) return;
@@ -115,20 +125,43 @@ export const ActivityDetail = () => {
     return viewerAccess?.exposure ?? 'full';
   }, [activity, viewerAccess]);
 
-  const isViewerHost = Boolean(
+  const isActivityHostUser = Boolean(
     activity &&
       user &&
       detailExposure !== 'none' &&
-      viewerHostsActivity(activity, user.id, gate.tenantId, gate.canPublish)
+      viewerIsActivityHostUser(activity, user.id)
   );
 
-  useEffect(() => {
-    if (!isViewerHost || !activity) return;
-    const params = new URLSearchParams();
-    params.set('role', 'hosted');
-    params.set('peek', activity.id);
-    navigate(`${tripsPath()}?${params.toString()}`, { replace: true });
-  }, [isViewerHost, activity, navigate]);
+  const hostActivityCtaHandlers = useMemo(() => {
+    if (!isActivityHostUser || !activity) return null;
+    return buildHostActivityCtaHandlers({
+      activity,
+      navigate,
+      onInviteActivity: inviteShare.openInviteFromActivity,
+      onCreateLinkedRideshare: (parent) => navigateToCreateLinkedRideshare(navigate, parent),
+      onRequestDelete: setHostRemoveConfirm,
+      onChatError: setError,
+    });
+  }, [isActivityHostUser, activity, navigate, inviteShare.openInviteFromActivity]);
+
+  const hostRemoveParticipantNotice = useMemo(() => {
+    if (!hostRemoveConfirm) return null;
+    return hostActivityCancelParticipantNotice(hostRemoveConfirm, activity?.participants);
+  }, [hostRemoveConfirm, activity?.participants]);
+
+  const confirmHostRemove = useCallback(async () => {
+    if (!hostRemoveConfirm || !gate.tenantId) return;
+    setHostRemoveBusy(true);
+    try {
+      await api.cancelHostActivity(gate.tenantId, hostRemoveConfirm.id);
+      setHostRemoveConfirm(null);
+      navigate(EXPLORE_MAP_PATH);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update activity.');
+    } finally {
+      setHostRemoveBusy(false);
+    }
+  }, [hostRemoveConfirm, gate.tenantId, navigate]);
 
   const openJoinModal = () => {
     if (!id || !activity) return;
@@ -147,7 +180,7 @@ export const ActivityDetail = () => {
 
   useEffect(() => {
     if (!fromJoinInvite || loading || !activity || joinInviteAutoOpenRef.current) return;
-    if (isViewerHost) return;
+    if (isActivityHostUser) return;
     if (activity.status !== 'published') return;
     if (!user) return;
     if (joinUiState.kind !== 'open') return;
@@ -159,7 +192,7 @@ export const ActivityDetail = () => {
     activity,
     user,
     joinUiState.kind,
-    isViewerHost,
+    isActivityHostUser,
     openJoinModal,
   ]);
 
@@ -185,17 +218,6 @@ export const ActivityDetail = () => {
               View all activities
             </Link>
           </div>
-        </div>
-      </>
-    );
-  }
-
-  if (isViewerHost) {
-    return (
-      <>
-        <PageMeta title="Loading" path={id ? `/activity/${id}` : undefined} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
         </div>
       </>
     );
@@ -299,13 +321,33 @@ export const ActivityDetail = () => {
       <ActivityDetailView
         activity={activity}
         previewMode={isRedactedPreview}
-        participation={participation ?? null}
-        myRequest={myRequest ?? null}
+        participation={isActivityHostUser ? null : participation ?? null}
+        myRequest={isActivityHostUser ? null : myRequest ?? null}
         message={message}
         error={error}
-        onJoin={openJoinModal}
-        onWithdraw={() => joinActions.setShowWithdraw(true)}
-        confirmedSidebarExtras={confirmedSidebarExtras}
+        onJoin={isActivityHostUser ? undefined : openJoinModal}
+        onWithdraw={isActivityHostUser ? undefined : () => joinActions.setShowWithdraw(true)}
+        footerOverride={
+          isActivityHostUser && hostActivityCtaHandlers ? (
+            <HostActivityCtas
+              activity={activity}
+              linkRideshareTenantId={gate.tenantId}
+              handlers={hostActivityCtaHandlers}
+            />
+          ) : undefined
+        }
+        sidebarJoinOverride={
+          isActivityHostUser && hostActivityCtaHandlers ? (
+            <div className="hidden md:block">
+              <HostActivityCtas
+                activity={activity}
+                linkRideshareTenantId={gate.tenantId}
+                handlers={hostActivityCtaHandlers}
+              />
+            </div>
+          ) : undefined
+        }
+        confirmedSidebarExtras={isActivityHostUser ? null : confirmedSidebarExtras}
         selectedPackageIndex={selectedPackageIndex}
         onSelectedPackageIndexChange={setSelectedPackageIndex}
         joinDisabled={!packageSelected}
@@ -332,6 +374,14 @@ export const ActivityDetail = () => {
         isFull={activity.slotsAvailable <= 0}
         selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
         onSuccess={joinActions.handleJoinSuccess}
+      />
+      {inviteShare.sheet}
+      <HostActivityCancelDialog
+        activity={hostRemoveConfirm}
+        participantNotice={hostRemoveParticipantNotice}
+        busy={hostRemoveBusy}
+        onClose={() => setHostRemoveConfirm(null)}
+        onConfirm={() => void confirmHostRemove()}
       />
     </>
   );

@@ -1,22 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { api, type ActivityRequestView } from '../api/index';
-import { getActiveTenantId } from '../api/tenant';
+import { api, type ActivityRequestView } from '../../api/index';
+import { getActiveTenantId } from '../../api/tenant';
+import { parseActivityTypeParam } from '../../config/activityTypes';
 import {
-  parseActivityTypeParam,
   ActivityActionsMenu,
   ActivityListPreview,
-  buildOrganisationActivityMenuItems,
-} from '../components/activities';
-import { useActivityFormSession } from '../context/ActivityFormSessionContext';
-import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
-import { TenantSwitcher } from '../components/ui';
-import { ActivityHubInviteIconButton } from '../components/activity/ActivityHubInviteIconButton';
-import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
-import { HostActivityManageSheet } from '../components/host/HostActivityManageSheet';
-import { OrganisationActivityHostConfirmDialogs } from '../components/host/OrganisationActivityHostConfirmDialogs';
-import { useOrganisationActivityHostActions } from '../hooks/useOrganisationActivityHostActions';
+  buildHostActivityMenuItems,
+} from '../../components/activities';
+import {
+  activityTypeToOrganizeKind,
+  navigateToExploreOrganize,
+} from '../../explore/navigateExploreOrganize';
+import { ConsoleShell } from '../../console/ConsoleShell';
+import { TenantSwitcher } from '../../components/ui';
+import { ActivityHubInviteIconButton } from '../../components/activity/ActivityHubInviteIconButton';
+import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
+import { ActivityManageSheet } from '../../components/host/ActivityManageSheet';
+import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import {
   activityTypeBadgeClass,
   formatActivityCapacity,
@@ -25,16 +27,17 @@ import {
   resolveActivityHostLabel,
   resolveActivityLocationState,
   resolveActivityTitle,
-} from '../utils/activityIdentity';
+} from '../../utils/activityIdentity';
 
-export const OrganisationActivities = () => {
+/** Host console: tenant-scoped list of **activities** (`GET /host/activities`). */
+export const Activities = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [events, setEvents] = useState<ActivityDTO[]>([]);
   const [pendingRequests, setPendingRequests] = useState<ActivityRequestView[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const { openCreate, setOnSaved } = useActivityFormSession();
   const [previewActivity, setPreviewActivity] = useState<ActivityDTO | null>(null);
   const [previewPublishing, setPreviewPublishing] = useState(false);
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
@@ -44,8 +47,8 @@ export const OrganisationActivities = () => {
     if (!tid) return;
     try {
       const [activitiesRes, requestsRes] = await Promise.all([
-        api.listOrganisationActivities(tid),
-        api.getOrganisationJoinRequests(tid),
+        api.listHostActivities(tid),
+        api.getHostActivityJoinRequests(tid),
       ]);
       setEvents(activitiesRes.data);
       setPendingRequests(requestsRes.data.filter((request) => request.status === 'pending'));
@@ -55,7 +58,7 @@ export const OrganisationActivities = () => {
     }
   }, []);
 
-  const hostActions = useOrganisationActivityHostActions(tenantId, () => loadEvents(tenantId));
+  const hostActions = useHostActivityManageActions(tenantId, () => loadEvents(tenantId));
   const inviteShare = useActivityInviteShareSheet();
 
   useEffect(() => {
@@ -63,22 +66,14 @@ export const OrganisationActivities = () => {
   }, [tenantId, loadEvents]);
 
   const openCreateActivity = () => {
-    openCreate({ tenantId });
+    navigateToExploreOrganize(navigate);
   };
 
   useEffect(() => {
-    setOnSaved(() => () => void loadEvents(tenantId));
-    return () => setOnSaved(null);
-  }, [tenantId, setOnSaved, loadEvents]);
-
-  useEffect(() => {
-    if (location.pathname === '/host/activities/new') {
-      openCreate({
-        tenantId,
-        initialActivityType: parseActivityTypeParam(searchParams.get('type')),
-      });
-    }
-  }, [location.pathname, searchParams, tenantId, openCreate]);
+    if (location.pathname !== '/host/activities/new') return;
+    const type = parseActivityTypeParam(searchParams.get('type'));
+    navigateToExploreOrganize(navigate, type ? activityTypeToOrganizeKind(type) : null);
+  }, [location.pathname, navigate, searchParams]);
 
   const openManage = (activity: ActivityDTO, view: 'overview' | 'checkin' = 'overview') => {
     setManageInitialView(view);
@@ -141,7 +136,7 @@ export const OrganisationActivities = () => {
   const displayError = loadError ?? hostActions.error;
 
   return (
-    <OrganisationConsoleShell title="Activities">
+    <ConsoleShell title="Activities">
       <div className="space-y-4">
         <TenantSwitcher onChange={setTenantId} />
         {displayError && <p className="text-sm text-red-600">{displayError}</p>}
@@ -196,16 +191,15 @@ export const OrganisationActivities = () => {
                   <td className="px-4 py-3">{statusBadge(event.status)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
-                          {event.status === 'published' && (
-                            <ActivityHubInviteIconButton
-                              onClick={() => inviteShare.openInviteFromActivity(event)}
-                            />
-                          )}
+                      {event.status === 'published' && (
+                        <ActivityHubInviteIconButton
+                          onClick={() => inviteShare.openInviteFromActivity(event)}
+                        />
+                      )}
                       <ActivityActionsMenu
-                        items={buildOrganisationActivityMenuItems(event, {
+                        items={buildHostActivityMenuItems(event, {
                           onPreview: openPreview,
                           onManage: (e) => openManage(e, 'overview'),
-                          onEdit: hostActions.editActivity,
                           onPublish: (e) => void hostActions.publishActivity(e.id),
                           onDuplicate: (e) => void hostActions.duplicateActivity(e),
                           onReorganize: hostActions.reorganizeActivity,
@@ -238,17 +232,9 @@ export const OrganisationActivities = () => {
         onPublish={publishFromPreview}
       />
 
-      <OrganisationActivityHostConfirmDialogs
-        actions={hostActions}
-        onAfterConfirm={() => {
-          setManageActivity(null);
-          void loadEvents(tenantId);
-        }}
-      />
-
       {inviteShare.sheet}
 
-      <HostActivityManageSheet
+      <ActivityManageSheet
         open={Boolean(manageActivity)}
         activity={manageActivity}
         tenantId={tenantId}
@@ -261,6 +247,6 @@ export const OrganisationActivities = () => {
         }}
         onRequestsChanged={() => loadEvents(tenantId)}
       />
-    </OrganisationConsoleShell>
+    </ConsoleShell>
   );
 };

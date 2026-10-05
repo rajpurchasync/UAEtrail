@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { FavoriteDTO } from '@uaetrail/shared-types';
-import { resolveEntityPath } from '@uaetrail/shared-types';
+import { placeDetailPath, resolveEntityPath } from '@uaetrail/shared-types';
 import {
   EXPLORE_SOCIAL_EMPTY_FOLLOWED_EVENTS,
   EXPLORE_SOCIAL_EMPTY_FOLLOWED_PLACES,
@@ -54,7 +54,7 @@ export const ExploreFollowedSavedList = ({
     <div className="flex flex-col gap-2">
       {rows.map((favorite) => {
         if (segment === 'places' && favorite.location) {
-          const path = resolveEntityPath({ kind: 'trail', id: favorite.location.id });
+          const path = placeDetailPath('hiking', favorite.location.id);
           return (
             <Link
               key={favorite.id}

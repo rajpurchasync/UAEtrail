@@ -67,8 +67,8 @@
       "feRoots": ["src/member"]
     },
     {
-      "id": "organisation_console",
-      "label": "Organisation console",
+      "id": "host_console",
+      "label": "Host console",
       "apiFiles": ["apps/api/src/routes/host.ts"],
       "routeRegistrars": [
         "apps/api/src/routes/host.ts",
@@ -79,7 +79,12 @@
         "apps/api/src/routes/host/registerHostDemandFulfillLegacy.ts"
       ],
       "feDomains": ["src/api/domains/organisation.ts", "src/api/domains/activities.ts"],
-      "feRoots": ["src/pages/OrganisationManage.tsx", "src/components/organisation-console"]
+      "feRoots": [
+        "src/pages/host",
+        "src/console",
+        "src/components/host",
+        "src/components/organisation-console"
+      ]
     },
     {
       "id": "communication",

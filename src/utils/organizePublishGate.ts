@@ -12,7 +12,7 @@ export type OrganizePublishGateInput = {
   canPublish: boolean;
 };
 
-/** Build gate input from `useOrganisationGate` fields (single source with `organizeEntitlementDenial`). */
+/** Build gate input from `useHostStatus` fields (single source with `organizeEntitlementDenial`). */
 export const organizePublishGateInputFromHostGate = (args: {
   viewerUserId: string | null;
   signupProfileComplete: boolean;

@@ -48,10 +48,10 @@ export const linkParentToRideshareActivity = async (
     return;
   }
 
-  await api.updateOrganisationActivity(tenantId, rideshareActivityId, {
+  await api.updateHostActivity(tenantId, rideshareActivityId, {
     linkedActivityId: parentActivityId,
   });
-  await api.updateOrganisationActivity(tenantId, parentActivityId, {
+  await api.updateHostActivity(tenantId, parentActivityId, {
     linkedRideshareActivityId: rideshareActivityId,
   });
 };

@@ -3,14 +3,13 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const ALLOWLIST = new Set([
-  'src/components/activities/activityFormState.ts',
   'src/components/activities/ActivityActionsMenu.tsx',
   'src/components/activities/index.ts',
   'src/utils/activityPublishPayload.ts',
   'src/utils/activityPublishPayload.test.ts',
 ]);
 
-const DEPRECATED_BUILDERS = /\bbuildHostActivity(?:Payload|MenuItems|PublishPayload)\b/;
+const DEPRECATED_BUILDERS = /\bbuildOrganisationActivity(?:Payload|MenuItems|PublishPayload)\b/;
 
 const listTrackedSourceFiles = (): string[] =>
   execSync('git ls-files "src/**/*.ts" "src/**/*.tsx"', { encoding: 'utf8' })
@@ -19,7 +18,7 @@ const listTrackedSourceFiles = (): string[] =>
     .filter(Boolean);
 
 describe('activityPayloadLegacyGuard', () => {
-  it('app code uses Organisation* activity builders, not Host-named shims', () => {
+  it('app code uses Host* activity builders, not Organisation-named shims', () => {
     const violations: string[] = [];
 
     for (const file of listTrackedSourceFiles()) {

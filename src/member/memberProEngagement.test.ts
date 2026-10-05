@@ -15,13 +15,13 @@ describe('member Pro engagement gates', () => {
     expect(
       viewerMaySeeProfileViewStats({
         viewerUserId: 'u1',
-        hostStatus: { signupProfileComplete: true, hostTiers: { community: true, professional: false, business: false }, isCommunityHost: false },
+        hostStatus: { hostTiers: { community: true, professional: false, business: false } },
       })
     ).toBe(false);
     expect(
       viewerMaySeeProfileViewStats({
         viewerUserId: 'u1',
-        hostStatus: { signupProfileComplete: true, hostTiers: { community: true, professional: true, business: false }, isCommunityHost: false },
+        hostStatus: { hostTiers: { community: true, professional: true, business: false } },
       })
     ).toBe(true);
   });

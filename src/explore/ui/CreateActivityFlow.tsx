@@ -4,7 +4,7 @@ import { MapPin } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 import { useAuth } from '../../context/AuthContext';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 import { setActiveTenantId } from '../../api/tenant';
 import { listOrganizePublishProfiles } from '../organizePublishTenants';
 import {
@@ -103,7 +103,7 @@ export const CreateActivityFlow = ({
     tenantId: defaultTenantId,
     ownedProfiles,
     loading: hostGateLoading,
-  } = useOrganisationGate({ enabled: open && Boolean(user) });
+  } = useHostStatus({ enabled: open && Boolean(user) });
 
   const publishTenantOptions = useMemo(
     () => listOrganizePublishProfiles(ownedProfiles),

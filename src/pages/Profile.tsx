@@ -7,7 +7,7 @@ import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { AccountAvatarModal } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
-import { useOrganisationGate } from '../hooks/useOrganisationGate';
+import { useHostStatus } from '../hooks/useHostStatus';
 import type { MemberGoalDTO, MemberHubStatsDTO, MemberProfileViewStatsDTO } from '@uaetrail/shared-types';
 import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
 import { buildProfileCompletion } from '../utils/profileCompletion';
@@ -39,7 +39,7 @@ export const Profile = () => {
     hostTiers,
     loading: hostGateLoading,
     refresh: refreshHostGate,
-  } = useOrganisationGate({ enabled: Boolean(user) });
+  } = useHostStatus({ enabled: Boolean(user) });
 
   const [profileViewStats, setProfileViewStats] = useState<MemberProfileViewStatsDTO | null>(null);
 

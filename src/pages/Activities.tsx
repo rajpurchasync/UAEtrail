@@ -10,7 +10,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { TRIPS_PATH } from '../constants';
 
 import { explorePath } from '../explore/routing';
-import { useOrganisationGate } from '../hooks/useOrganisationGate';
+import { useHostStatus } from '../hooks/useHostStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { JoinedSection } from './activities/JoinedSection';
@@ -46,7 +46,7 @@ export const Activities = () => {
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [goalSheetOpen, setGoalSheetOpen] = useState(false);
-  const gate = useOrganisationGate({ enabled: Boolean(user) });
+  const gate = useHostStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
   const { goal, saving: goalSaving, saveGoal, clearGoal, reload: reloadGoal } = useMemberGoal(Boolean(user));
 

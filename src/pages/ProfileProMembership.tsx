@@ -10,9 +10,10 @@ import { useAuth } from '../context/AuthContext';
 import { BecomeHostFlow } from '../components/organisation-console/BecomeHostFlow';
 import {
   parseHostFlowIntent,
+  proMembershipPathIntent,
   type HostFlowIntent,
 } from '../components/organisation-console/hostWizardFlow';
-import { useOrganisationGate } from '../hooks/useOrganisationGate';
+import { useHostStatus } from '../hooks/useHostStatus';
 import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { resolveAuthRedirect } from '../utils/authRedirect';
 
@@ -24,11 +25,11 @@ export const ProfileProMembership = () => {
   const intent = parseHostFlowIntent(searchParams.get('intent'));
   const returnTo = resolveAuthRedirect(null, searchParams.get('redirect')) ?? EXPLORE_MAP_PATH;
 
-  const { refresh: refreshHostGate } = useOrganisationGate({ enabled: Boolean(user) });
+  const { refresh: refreshHostGate } = useHostStatus({ enabled: Boolean(user) });
   const [flowOpen, setFlowOpen] = useState(false);
 
   const proReturnPath = proMembershipPath({
-    intent: intent ?? undefined,
+    intent: proMembershipPathIntent(intent),
     redirect: searchParams.get('redirect') ?? undefined,
   });
   const signInHref = signInPath({ redirect: proReturnPath });

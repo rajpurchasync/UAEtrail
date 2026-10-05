@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { api, ActivityRequestView } from '../api/index';
-import { getActiveTenantId } from '../api/tenant';
-import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
-import { OrganisationJoinRequestCard } from '../components/organisation-console/OrganisationJoinRequestCard';
-import { TenantSwitcher } from '../components/ui';
-import { AppSegmented } from '../components/mobile/AppSegmented';
-import { GlassCard } from '../components/mobile/GlassCard';
-import { OrganisationJoinRequestDeclineDialog } from '../components/organisation-console/OrganisationJoinRequestDeclineDialog';
+import { api, ActivityRequestView } from '../../api/index';
+import { getActiveTenantId } from '../../api/tenant';
+import { ConsoleShell } from '../../console/ConsoleShell';
+import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
+import { TenantSwitcher } from '../../components/ui';
+import { AppSegmented } from '../../components/mobile/AppSegmented';
+import { GlassCard } from '../../components/mobile/GlassCard';
+import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
 
 type RequestFilter = 'pending' | 'all';
 
-export const OrganisationJoinRequests = () => {
+export const JoinRequests = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export const OrganisationJoinRequests = () => {
   const loadRequests = async (activeTenantId: string) => {
     if (!activeTenantId) return;
     try {
-      const res = await api.getOrganisationJoinRequests(activeTenantId);
+      const res = await api.getHostActivityJoinRequests(activeTenantId);
       setRequests(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load requests');
@@ -48,7 +48,7 @@ export const OrganisationJoinRequests = () => {
     if (!tenantId || !declineRequest) return;
     setBusyRequestId(declineRequest.id);
     try {
-      await api.decideOrganisationJoinRequest(
+      await api.decideHostActivityJoinRequest(
         tenantId,
         declineRequest.id,
         'rejected',
@@ -67,7 +67,7 @@ export const OrganisationJoinRequests = () => {
     if (!tenantId) return;
     setBusyRequestId(requestId);
     try {
-      await api.decideOrganisationJoinRequest(tenantId, requestId, status);
+      await api.decideHostActivityJoinRequest(tenantId, requestId, status);
       await loadRequests(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process request');
@@ -77,7 +77,7 @@ export const OrganisationJoinRequests = () => {
   };
 
   return (
-    <OrganisationConsoleShell title="Join Requests">
+    <ConsoleShell title="Join Requests">
       <div className="space-y-4">
         <TenantSwitcher onChange={setTenantId} />
         {error && (
@@ -112,7 +112,7 @@ export const OrganisationJoinRequests = () => {
         ) : (
           <div className="space-y-2">
             {filtered.map((request) => (
-              <OrganisationJoinRequestCard
+              <ActivityJoinRequestCard
                 key={request.id}
                 request={request}
                 busy={busyRequestId === request.id}
@@ -125,13 +125,13 @@ export const OrganisationJoinRequests = () => {
         )}
       </div>
 
-      <OrganisationJoinRequestDeclineDialog
+      <ActivityJoinRequestDeclineDialog
         open={Boolean(declineRequest)}
         request={declineRequest}
         submitting={Boolean(declineRequest && busyRequestId === declineRequest.id)}
         onClose={() => setDeclineRequest(null)}
         onConfirm={submitDecline}
       />
-    </OrganisationConsoleShell>
+    </ConsoleShell>
   );
 };

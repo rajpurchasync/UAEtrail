@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { PlaceDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
-import { getActiveTenantId } from '../api/tenant';
-import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
-import { TenantSwitcher, SubmitPlaceForm, ShareButton } from '../components/ui';
-import { placeSharePath } from '../utils/share';
+import { api } from '../../api/index';
+import { getActiveTenantId } from '../../api/tenant';
+import { ConsoleShell } from '../../console/ConsoleShell';
+import { TenantSwitcher, SubmitPlaceForm, ShareButton } from '../../components/ui';
+import { placeSharePath } from '../../utils/share';
 
 const statusLabel = (status: PlaceDTO['status']) => {
   if (status === 'draft') return 'Pending review';
@@ -13,7 +13,7 @@ const statusLabel = (status: PlaceDTO['status']) => {
 };
 
 /** Organisation console for submitting places. Canonical route: `/host/places`. */
-export const OrganisationPlaces = () => {
+export const Places = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [submitted, setSubmitted] = useState<PlaceDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -36,7 +36,7 @@ export const OrganisationPlaces = () => {
   }, [tenantId]);
 
   return (
-    <OrganisationConsoleShell title="Places">
+    <ConsoleShell title="Places">
       <div className="space-y-6 max-w-2xl">
         <TenantSwitcher onChange={setTenantId} />
         <div>
@@ -108,9 +108,8 @@ export const OrganisationPlaces = () => {
           </div>
         </div>
       </div>
-    </OrganisationConsoleShell>
+    </ConsoleShell>
   );
 };
 
-/** @deprecated Use OrganisationPlaces */
-export const HostPlaces = OrganisationPlaces;
+

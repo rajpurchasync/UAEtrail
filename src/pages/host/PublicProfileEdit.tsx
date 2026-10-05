@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { api } from '../api/index';
-import { setStoredSession } from '../api/client';
-import { getActiveTenantId } from '../api/tenant';
-import { useAuth } from '../context/AuthContext';
-import { TenantSwitcher } from '../components/ui';
-import { OrganisationPublicProfile } from '../components/organisation-console/OrganisationPublicProfile';
-import { OrganisationConsoleShell } from '../components/organisation-console/OrganisationConsoleShell';
-import { GlassCard } from '../components/mobile/GlassCard';
-import { HOST_PROFILE_PATH, signInPath } from '../config/routingCatalog';
-import { accountRouteByRole } from '../utils/authRouting';
+import { api } from '../../api/index';
+import { setStoredSession } from '../../api/client';
+import { getActiveTenantId } from '../../api/tenant';
+import { useAuth } from '../../context/AuthContext';
+import { TenantSwitcher } from '../../components/ui';
+import { OrganisationPublicProfile } from '../../components/organisation-console/OrganisationPublicProfile';
+import { ConsoleShell } from '../../console/ConsoleShell';
+import { GlassCard } from '../../components/mobile/GlassCard';
+import { HOST_PROFILE_PATH, signInPath } from '../../config/routingCatalog';
+import { accountRouteByRole } from '../../utils/authRouting';
 
-export const OrganisationPublicProfileEdit = () => {
+export const PublicProfileEdit = () => {
   const { user, initializing, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [tenantSlug, setTenantSlug] = useState('');
@@ -66,7 +66,7 @@ export const OrganisationPublicProfileEdit = () => {
   }
 
   return (
-    <OrganisationConsoleShell
+    <ConsoleShell
       title="Public profile"
       headerExtra={<TenantSwitcher onChange={(tenantId) => resolveSlug(tenantId)} />}
     >
@@ -99,6 +99,6 @@ export const OrganisationPublicProfileEdit = () => {
       ) : (
         <OrganisationPublicProfile slug={tenantSlug} mode="owner" />
       )}
-    </OrganisationConsoleShell>
+    </ConsoleShell>
   );
 };

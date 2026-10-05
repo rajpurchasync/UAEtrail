@@ -116,7 +116,7 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
             This is how your activity will look once published.
           </p>
         </div>
-        {props.variant !== 'list' && props.publishAsSlot ? props.publishAsSlot : null}
+        {variant === 'form' && props.publishAsSlot ? props.publishAsSlot : null}
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             type="button"

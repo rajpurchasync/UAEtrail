@@ -40,7 +40,7 @@ export const DirectMessageBubble = ({
     setReactionBusy(true);
     try {
       const res = await messagingApi.direct.toggleReaction(message.id, partnerUserId, kind);
-      onReactionsChange(message.id, res.data.reactions);
+      onReactionsChange(message.id, res.data.reactions ?? []);
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Could not update reaction.');
     } finally {

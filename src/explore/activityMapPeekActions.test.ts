@@ -52,7 +52,7 @@ describe('resolveActivityMapPeekActions', () => {
     expect(actions.map((a) => a.id)).toEqual(['message_host', 'view_detail']);
   });
 
-  it('shows legacy join flow when level has no wire affordances', () => {
+  it('computes public wire affordances when API sends an empty list', () => {
     const card = activityCard({
       viewerAccess: {
         exposure: 'redacted',
@@ -61,9 +61,14 @@ describe('resolveActivityMapPeekActions', () => {
         canViewFullActivity: false,
         canOpenDetailPage: true,
         joinMode: 'open',
+        mapPeekActions: [],
       },
     });
-    expect(activityMapPeekShowsJoinFlow(card, { kind: 'open' })).toBe(true);
+    expect(resolveActivityMapPeekActions(card).map((a) => a.id)).toEqual([
+      'request_join',
+      'view_detail',
+    ]);
+    expect(activityMapPeekShowsJoinFlow(card, { kind: 'open' })).toBe(false);
   });
 
   it('does not show legacy join flow when request_join is wired', () => {

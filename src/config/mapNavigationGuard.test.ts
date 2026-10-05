@@ -11,7 +11,6 @@ const MAP_URL_LITERAL_ALLOWLIST = new Set([
   'src/utils/mapLinks.test.ts',
   'src/utils/googleMapsUrl.ts',
   'src/components/ui/MapPinPicker.tsx',
-  'src/components/ui/ActivityPlacePinField.tsx',
   'src/config/mapNavigationGuard.test.ts',
 ]);
 

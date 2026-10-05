@@ -22,7 +22,7 @@ export const resolvePeekDetailAccess = (
   if (!href) return null;
 
   if (options.joinStateLoading) {
-    if (card.viewerAccess?.canOpenDetailPage === false) {
+    if (card.viewerAccess?.exposure === 'none' || card.viewerAccess?.canOpenDetailPage === false) {
       return { kind: 'members_only' };
     }
     return { kind: 'link', href };

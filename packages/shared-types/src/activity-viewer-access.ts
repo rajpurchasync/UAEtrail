@@ -18,6 +18,7 @@ export type ViewerGateReason =
 export type ActivityViewerAccessLevel =
   | 'platform_admin'
   | 'host'
+  /** Publishing-tenant team member — full detail when entitled; not the activity host user (no host peek CTAs). */
   | 'tenant_staff'
   | 'participant'
   | 'join_request'

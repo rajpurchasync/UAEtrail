@@ -5,7 +5,7 @@ import type { PlaceMapPin } from '../../components/ui/PlacesMap';
 import { describeExploreMapLoadError } from '../exploreMapErrors';
 import { PageMeta } from '../../components/seo/PageMeta';
 import { useAuth } from '../../context/AuthContext';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 import { useExploreMap, reloadExploreMap } from '../../hooks/useExploreMap';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
@@ -41,11 +41,10 @@ import {
   organizePublishGateInputFromHostGate,
 } from '../../utils/organizePublishGate';
 import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkRidesharePrefill';
-import {
-  activityHasJoinedParticipants,
-  type ActivityDTO,
-  type ExploreMapItemDTO,
-} from '@uaetrail/shared-types';
+import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { HostActivityCancelDialog } from '../../components/activity/HostActivityCancelDialog';
+import { hostActivityCancelParticipantNotice } from '../../host/hostActivityCancelParticipantNotice';
+import { hostActivityCtaHandlers as buildHostActivityCtaHandlers } from '../../host/hostActivityCtaHandlers';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
 import {
@@ -74,7 +73,7 @@ export const ExploreExperience = () => {
     loading: hostGateLoading,
     tenantId,
     refresh: refreshHostGate,
-  } = useOrganisationGate({
+  } = useHostStatus({
     enabled: Boolean(user),
   });
   const navigate = useNavigate();
@@ -282,51 +281,41 @@ export const ExploreExperience = () => {
     return activityJoinInviteBanner();
   }, [joinInvitePeekActivityId, selection.selectedCard, selection.peekJoinUiState]);
 
-  const hostPeekHandlers = useMemo(() => {
-    if (!selection.selectedCard?.showHostPeekActions) return null;
-    return {
-      onChat: () => void selection.handleHostMessage(),
-      onViewParticipants: selection.handleHostCheckin,
-      onInvite: selection.handleInviteCrew,
-      onAddCarpool: selection.handleHostAddCarpool,
-      onDelete: selection.requestHostRemove,
-      onDuplicate: selection.handleHostDuplicate,
-    };
+  const handleCloseMapSelection = useCallback(() => {
+    setJoinInvitePeekActivityId(null);
+    selection.handleCloseSelection();
+  }, [selection]);
+
+  const hostActivityCtaHandlers = useMemo(() => {
+    if (!selection.selectedCard?.showHostActivityCtas || !selection.selected?.activity) return null;
+    return buildHostActivityCtaHandlers({
+      activity: selection.selected.activity,
+      navigate,
+      onInviteActivity: inviteShare.openInviteFromActivity,
+      onCreateLinkedRideshare: handleCreateLinkedRideshare,
+      onRequestDelete: selection.requestHostRemove,
+      onBeforeNavigate: handleCloseMapSelection,
+      onChatError: (message) => selection.setDemandNotice(message),
+    });
   }, [
-    selection.selectedCard?.showHostPeekActions,
-    selection.handleHostMessage,
-    selection.handleHostCheckin,
-    selection.handleInviteCrew,
-    selection.handleHostAddCarpool,
+    selection.selectedCard?.showHostActivityCtas,
+    selection.selected?.activity,
     selection.requestHostRemove,
-    selection.handleHostDuplicate,
+    selection.setDemandNotice,
+    navigate,
+    inviteShare.openInviteFromActivity,
+    handleCreateLinkedRideshare,
+    handleCloseMapSelection,
   ]);
 
   const hostRemoveParticipantNotice = useMemo(() => {
     const activity = selection.hostRemoveConfirm;
     if (!activity) return null;
-    const previews = selection.selectedCard?.participantPreviews;
-    const hasJoiners = activityHasJoinedParticipants({
-      slotsAvailable: activity.slotsAvailable,
-      slotsTotal: activity.slotsTotal,
-      participantPreviews: previews,
-    });
-    if (!hasJoiners) return null;
-    let count = previews?.length ?? 0;
-    if (activity.slotsTotal != null && activity.slotsAvailable != null) {
-      count = Math.max(0, activity.slotsTotal - activity.slotsAvailable);
-    }
-    if (count <= 0) {
-      return 'People who joined will be notified that this outing is cancelled.';
-    }
-    const noun = count === 1 ? 'person has' : 'people have';
-    return `${count} ${noun} joined. They'll be notified that this outing is cancelled.`;
+    return hostActivityCancelParticipantNotice(
+      activity,
+      selection.selectedCard?.participantPreviews
+    );
   }, [selection.hostRemoveConfirm, selection.selectedCard?.participantPreviews]);
-
-  const handleCloseMapSelection = useCallback(() => {
-    setJoinInvitePeekActivityId(null);
-    selection.handleCloseSelection();
-  }, [selection]);
 
   const organizeFromPending = Boolean(parseOrganizeFromActivityId(searchParams));
   const organizeWizardOpen =
@@ -755,7 +744,7 @@ export const ExploreExperience = () => {
           onDemandLinkRideshare={
             selection.selectedCard?.showDemandLinkRideshare ? handleOfferRideshareForDemand : undefined
           }
-          hostPeekHandlers={hostPeekHandlers}
+          hostActivityCtaHandlers={hostActivityCtaHandlers}
           onOpenExploreItem={(exploreItemId) => {
             const item = selectionItems.find((entry) => entry.id === exploreItemId);
             if (item) selection.openItem(item);
@@ -825,41 +814,13 @@ export const ExploreExperience = () => {
         onContributeSubmitted={selection.handleContributeSubmitted}
       />
 
-      <Dialog
-        open={Boolean(selection.hostRemoveConfirm)}
+      <HostActivityCancelDialog
+        activity={selection.hostRemoveConfirm}
+        participantNotice={hostRemoveParticipantNotice}
+        busy={selection.hostRemoveBusy}
         onClose={() => selection.setHostRemoveConfirm(null)}
-        title={
-          selection.hostRemoveConfirm?.status === 'draft' ? 'Delete draft?' : 'Cancel activity?'
-        }
-      >
-        <p className="mb-4 space-y-2 text-sm text-neutral-600">
-          <span className="block">
-            {selection.hostRemoveConfirm?.status === 'draft'
-              ? `Remove "${selection.hostRemoveConfirm?.title}" permanently?`
-              : `Cancel "${selection.hostRemoveConfirm?.title}"?`}
-          </span>
-          {hostRemoveParticipantNotice ? (
-            <span className="block font-medium text-amber-900">{hostRemoveParticipantNotice}</span>
-          ) : null}
-        </p>
-        <div className="flex justify-end gap-2">
-          <AppButton
-            type="button"
-            variant="secondary"
-            onClick={() => selection.setHostRemoveConfirm(null)}
-          >
-            Keep
-          </AppButton>
-          <AppButton
-            type="button"
-            variant="destructive"
-            disabled={selection.hostRemoveBusy}
-            onClick={() => void selection.confirmHostRemove()}
-          >
-            {selection.hostRemoveConfirm?.status === 'draft' ? 'Delete' : 'Cancel activity'}
-          </AppButton>
-        </div>
-      </Dialog>
+        onConfirm={() => void selection.confirmHostRemove()}
+      />
 
       <Dialog
         open={Boolean(selection.demandRemoveIntentId)}
