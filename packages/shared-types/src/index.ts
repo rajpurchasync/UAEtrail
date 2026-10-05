@@ -10,6 +10,7 @@ import type {
   OutingCategory,
   OutingTopic,
 } from './explore-plan-projection.js';
+import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -430,6 +431,12 @@ export const formatHostJoinDeclineNote = (
   }
   return label;
 };
+
+/** Revoke-from-roster uses the same reason list as join decline. */
+export const HOST_PARTICIPANT_REVOKE_REASONS = HOST_JOIN_DECLINE_REASONS;
+export type HostParticipantRevokeReason = HostJoinDeclineReason;
+export const hostParticipantRevokeReasonLabel = hostJoinDeclineReasonLabel;
+export const formatHostParticipantRevokeNote = formatHostJoinDeclineNote;
 
 export interface NotificationDTO {
   id: string;
@@ -930,6 +937,8 @@ export interface TenantPublicDTO {
 
 // ─── Participant DTO ────────────────────────────────────────────────────────
 
+export type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
+
 export interface ParticipantDTO {
   id: string;
   userId: string;
@@ -939,6 +948,12 @@ export interface ParticipantDTO {
   avatarUrl?: string;
   checkedInAt?: string;
   joinedAt: string;
+  /** `going` until check-in; `attended` after host confirms attendance. */
+  status: HostParticipantRosterStatus;
+  hostRating?: ParticipantHostRatingDTO | null;
+  canConfirmAttendance: boolean;
+  canRevoke: boolean;
+  canRate: boolean;
 }
 
 // ─── Rewards / Trail Points ─────────────────────────────────────────────────

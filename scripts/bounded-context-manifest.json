@@ -72,7 +72,8 @@
       "apiFiles": ["apps/api/src/routes/host.ts"],
       "routeRegistrars": [
         "apps/api/src/routes/host.ts",
-        "apps/api/src/routes/host/registerHostTenantActivityRoutes.ts",
+        "apps/api/src/routes/host/registerHostActivityRoutes.ts",
+        "apps/api/src/routes/host/registerHostActivityParticipantRoutes.ts",
         "apps/api/src/routes/host/registerHostTeamRoutes.ts",
         "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts",
         "apps/api/src/routes/host/registerHostSubmittedLocationRoutes.ts",

@@ -187,7 +187,9 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
 | `ShopOrganisation*` | Merchant* (client) | Mongo `merchant_profiles` |
 | `buildHostActivityPublishPayload` | — | Single publish contract (`activityPublishPayload.ts`) |
-| `registerHostActivityRequestRoutes` | `*JoinRequest*` (host) | Activity queue only |
+| `registerHostActivityRequestRoutes` | `*JoinRequest*` (host) | Activity join queue only |
+| `registerHostActivityRoutes` | `registerHostTenantActivityRoutes` | Host **Activity** CRUD/publish/history (`/host/activities/*`) |
+| `registerHostActivityParticipantRoutes` | — | Roster, check-in, revoke, host rating on same paths |
 
 **Demand vs activity join:** always qualify — “activity join request” vs “demand join request” ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary).
 

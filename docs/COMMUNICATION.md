@@ -95,7 +95,7 @@ Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO`, `GroupWallRepl
 | Joined → row actions | Trips lists / `ActivityInviteSharePanel` | Same |
 | Check-in / roster | Manage sheet | Chat separate from roster |
 
-See [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) for manage capabilities and deep links (`peek=`, `checkin=`).
+See [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) for manage capabilities and deep links (`peek=`, `checkin=` / `roster=` → participants roster).
 
 ## Invites vs chat
 

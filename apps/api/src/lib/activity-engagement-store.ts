@@ -53,6 +53,9 @@ type MongoActivityParticipant = {
   userId: string;
   approvedById: string;
   checkedInAt: Date | null;
+  hostRatingScore?: number | null;
+  hostRatingComment?: string | null;
+  hostRatedAt?: Date | null;
   createdAt: Date;
 };
 
@@ -97,6 +100,9 @@ const toActivityParticipantRecord = (doc: MongoActivityParticipant): ActivityPar
   userId: doc.userId,
   approvedById: doc.approvedById,
   checkedInAt: doc.checkedInAt,
+  hostRatingScore: doc.hostRatingScore ?? null,
+  hostRatingComment: doc.hostRatingComment ?? null,
+  hostRatedAt: doc.hostRatedAt ?? null,
   createdAt: doc.createdAt
 });
 
@@ -937,6 +943,81 @@ export const cancelUserActivityRequestAndPromoteWaitlist = async (input: {
     }).catch(() => undefined);
   }
   await promoteNextWaitlisted(input.activityId);
+};
+
+export const revokeHostActivityParticipant = async (input: {
+  activityId: string;
+  participantId: string;
+  hostUserId: string;
+  organizerNote: string;
+}): Promise<{ requestId: string; userId: string }> => {
+  const participant = await findActivityParticipantByIdAndActivity(input.participantId, input.activityId);
+  if (!participant) {
+    throw new ApiError(404, 'participant_not_found', 'Participant not found.');
+  }
+  if (participant.checkedInAt) {
+    throw new ApiError(400, 'cannot_revoke_checked_in', 'Cannot revoke after attendance is confirmed.');
+  }
+
+  const cancelledAt = new Date();
+  await patchActivityRequestInMongo(participant.requestId, {
+    status: RequestStatus.CANCELLED,
+    organizerNote: input.organizerNote,
+    cancelReason: 'host_revoked',
+    cancelMessage: input.organizerNote,
+    cancelledAt
+  });
+
+  const deleted = await activityParticipantsCollection().deleteOne({ _id: participant.id });
+  if (deleted.deletedCount > 0) {
+    await releaseActivityParticipantSlot(input.activityId);
+    void removeParticipantFromActivityGroupChat({
+      activityId: input.activityId,
+      userId: participant.userId
+    }).catch(() => undefined);
+  }
+  await promoteNextWaitlisted(input.activityId);
+
+  return { requestId: participant.requestId, userId: participant.userId };
+};
+
+export const setHostParticipantRating = async (input: {
+  activityId: string;
+  participantId: string;
+  score: number;
+  comment?: string | null;
+  activityEnded: boolean;
+}): Promise<ActivityParticipant> => {
+  if (!input.activityEnded) {
+    throw new ApiError(400, 'activity_not_ended', 'You can rate participants after the outing ends.');
+  }
+  if (input.score < 1 || input.score > 5) {
+    throw new ApiError(400, 'invalid_rating', 'Rating must be between 1 and 5.');
+  }
+
+  const participant = await findActivityParticipantByIdAndActivity(input.participantId, input.activityId);
+  if (!participant) {
+    throw new ApiError(404, 'participant_not_found', 'Participant not found.');
+  }
+  if (!participant.checkedInAt) {
+    throw new ApiError(400, 'not_checked_in', 'Confirm attendance before rating.');
+  }
+  if (participant.hostRatedAt) {
+    throw new ApiError(400, 'already_rated', 'You already rated this participant.');
+  }
+
+  const ratedAt = new Date();
+  await patchActivityParticipantInMongo(participant.id, {
+    hostRatingScore: input.score,
+    hostRatingComment: input.comment?.trim() || null,
+    hostRatedAt: ratedAt
+  });
+
+  const updated = await findActivityParticipantByIdAndActivity(input.participantId, input.activityId);
+  if (!updated) {
+    throw new ApiError(500, 'rating_failed', 'Could not save rating.');
+  }
+  return updated;
 };
 
 export const listActivityRequestsForActivity = async (activityId: string): Promise<ActivityRequest[]> => {

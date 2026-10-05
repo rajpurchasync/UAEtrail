@@ -5,7 +5,7 @@ import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import { hostActivityManageCapabilities } from '../../host/hostActivityManageCapabilities';
 import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
-import { ActivityCheckInPanel } from './ActivityCheckInPanel';
+import { ActivityParticipantsPanel } from './ActivityParticipantsPanel';
 import { HostActivityManageCancelDialogs } from '../activity/HostActivityManageCancelDialogs';
 import { api } from '../../api/index';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
@@ -189,7 +189,7 @@ export const ActivityManageSheet = ({
                 See who is going and check people in on the day. Checked-in joiners can leave reviews and it counts
                 toward their goals.
               </p>
-              <ActivityCheckInPanel
+              <ActivityParticipantsPanel
                 tenantId={tenantId}
                 activityId={activity.id}
                 activityTitle={title}

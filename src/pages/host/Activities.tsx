@@ -99,15 +99,16 @@ export const Activities = () => {
   };
 
   useEffect(() => {
-    const checkinId = searchParams.get('checkin');
-    if (!checkinId || !tenantId || events.length === 0) return;
+    const rosterId = searchParams.get('roster') ?? searchParams.get('checkin');
+    if (!rosterId || !tenantId || events.length === 0) return;
 
-    const event = events.find((item) => item.id === checkinId);
+    const event = events.find((item) => item.id === rosterId);
     if (!event || event.status !== 'published') return;
 
     openManage(event, 'checkin');
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('checkin');
+    nextParams.delete('roster');
     setSearchParams(nextParams, { replace: true });
   }, [events, searchParams, setSearchParams, tenantId]);
 

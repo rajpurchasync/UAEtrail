@@ -171,6 +171,9 @@ export interface ActivityParticipant {
   requestId: string;
   approvedById: string;
   checkedInAt: Date | null;
+  hostRatingScore: number | null;
+  hostRatingComment: string | null;
+  hostRatedAt: Date | null;
   createdAt: Date;
 }
 

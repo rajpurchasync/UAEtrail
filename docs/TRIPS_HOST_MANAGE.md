@@ -10,7 +10,7 @@
 | Hosted manage sheet (`HostActivityManageSheet`) | Done — Trips Hosted, `/host/activities` |
 | Shared host activity actions (`useHostActivityManageActions`) | Done |
 | Join decline reason + note (host → guest) | Done |
-| Explore host peek → Trips manage / check-in | Done |
+| Explore host peek → Trips manage / view participants | Done |
 | My plans list + `ParticipantIntentManageSheet` | Done — `GET /me/participant-intents` |
 | Invite crew (`ActivityInviteSharePanel` / sheet) | Done — detail, manage sheet, explore peek, Trips joined/hosted, org table |
 | Edit demand intent (PATCH) | Done — `PATCH /me/participant-intents/:id` + **Edit plan** in manage sheet |
@@ -36,7 +36,7 @@
 | Duplicate / reorganize | ✓ | ✓ | duplicate only |
 | Join requests (approval mode) | ✓ | if approval | — |
 | Group chat | ✓ (approved crew + host) | ✓ | host only |
-| Check-in roster | ✓ | — | — |
+| View participants roster (attendance, chat, revoke, rate) | ✓ | — | — |
 | Link / create rideshare on parent | ✓ | — | — |
 | Cancel / delete | ✓ | ✓ | delete draft |
 
@@ -87,6 +87,6 @@ Future: optional `groupChatPolicy` on activity (host-only vs crew); SSE for grou
 ## Deep links
 
 - `/trips?role=hosted&peek=<activityId>` — open manage sheet  
-- `/trips?role=hosted&checkin=<activityId>` — manage sheet → check-in  
+- `/trips?role=hosted&checkin=<activityId>` — manage sheet → **View participants** roster (legacy param name; same as `roster=<activityId>`)  
 - `/trips?role=self&peek=<intentId>` — My plans manage sheet  
 - Explore `pin=demand:<intentId>` + `compose=organize:rideshare` — offer carpool (hosts)  

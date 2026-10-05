@@ -49,8 +49,8 @@ export const HostActivityManageOptionsSheet = ({
   const options: OptionRow[] = [
     {
       id: 'participants',
-      label: 'Participants',
-      description: 'Roster and check-in',
+      label: 'View participants',
+      description: 'Roster, attendance, chat, revoke',
       icon: Users,
       onClick: () => onSelectSubview('participants'),
     },

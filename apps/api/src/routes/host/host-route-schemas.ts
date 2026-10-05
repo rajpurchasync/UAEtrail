@@ -35,3 +35,12 @@ export const teamPatchSchema = z.object({
 
 export const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): MembershipRole =>
   role === 'tenant_admin' ? MembershipRole.TENANT_ADMIN : MembershipRole.TENANT_GUIDE;
+
+export const hostParticipantRevokeSchema = z.object({
+  organizerNote: z.string().trim().min(3).max(300),
+});
+
+export const hostParticipantRatingSchema = z.object({
+  score: z.number().int().min(1).max(5),
+  comment: z.string().trim().max(500).optional(),
+});

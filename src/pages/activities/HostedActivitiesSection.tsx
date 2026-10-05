@@ -42,7 +42,7 @@ export const HostedActivitiesSection = ({
   searchQuery?: string;
   timeScope?: 'upcoming' | 'past';
   layout?: 'page' | 'embedded';
-  /** Open manage sheet from `?peek=` / `?checkin=` without rendering the list. */
+  /** Open manage sheet from `?peek=` / `?roster=` / `?checkin=` without rendering the list. */
   peekBridgeOnly?: boolean;
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -102,16 +102,18 @@ export const HostedActivitiesSection = ({
   const openedDeepLinkRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const openId = searchParams.get('peek') ?? searchParams.get('checkin');
+    const rosterId = searchParams.get('roster') ?? searchParams.get('checkin');
+    const openId = searchParams.get('peek') ?? rosterId;
     if (!openId || host.loading || !host.tenantId) return;
     if (openedDeepLinkRef.current === openId) return;
     const activity = tripsHostedActivities.find((event) => event.id === openId);
     if (!activity) return;
     openedDeepLinkRef.current = openId;
-    openManage(activity, searchParams.get('checkin') ? 'checkin' : 'overview');
+    openManage(activity, rosterId ? 'checkin' : 'overview');
     const next = new URLSearchParams(searchParams);
     next.delete('peek');
     next.delete('checkin');
+    next.delete('roster');
     setSearchParams(next, { replace: true });
   }, [tripsHostedActivities, host.loading, host.tenantId, searchParams, setSearchParams]);
 
@@ -121,7 +123,7 @@ export const HostedActivitiesSection = ({
     if (fresh) setManageActivity(fresh);
   }, [host.activities, manageActivity?.id]);
 
-  const peekId = searchParams.get('peek') ?? searchParams.get('checkin');
+  const peekId = searchParams.get('peek') ?? searchParams.get('roster') ?? searchParams.get('checkin');
   const showList = !peekBridgeOnly;
 
   if (showList && host.loading) {

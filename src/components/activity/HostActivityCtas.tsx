@@ -93,7 +93,7 @@ export const HostActivityCtas = ({
             className={manageRowClass}
             onClick={() => runManageAction(handlers.onViewParticipants)}
           >
-            View participants
+            View participants:
           </button>
           {published ? (
             <button

@@ -239,10 +239,18 @@ export const activitiesApi = {
       }),
 
     getActivityParticipants: (tenantId: string, activityId: string) =>
-    apiRequest<{ data: { activityId: string; activityTitle: string; capacity: number; participants: ParticipantDTO[] } }>(
-      `/host/activities/${activityId}/participants`,
-      { auth: true, headers: organisationRequestHeaders(tenantId) }
-    ),
+    apiRequest<{
+      data: {
+        activityId: string;
+        activityTitle: string;
+        capacity: number;
+        activityEnded: boolean;
+        participants: ParticipantDTO[];
+      };
+    }>(`/host/activities/${activityId}/participants`, {
+      auth: true,
+      headers: organisationRequestHeaders(tenantId),
+    }),
 
     checkinParticipant: (tenantId: string, activityId: string, participantId: string) =>
     apiRequest(`/host/activities/${activityId}/participants/${participantId}/checkin`, {
@@ -257,6 +265,35 @@ export const activitiesApi = {
       auth: true,
       headers: organisationRequestHeaders(tenantId)
     }),
+
+    revokeActivityParticipant: (
+      tenantId: string,
+      activityId: string,
+      participantId: string,
+      organizerNote: string
+    ) =>
+      apiRequest(`/host/activities/${activityId}/participants/${participantId}/revoke`, {
+        method: 'POST',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+        body: JSON.stringify({ organizerNote }),
+      }),
+
+    rateActivityParticipant: (
+      tenantId: string,
+      activityId: string,
+      participantId: string,
+      payload: { score: number; comment?: string }
+    ) =>
+      apiRequest<{ data: { score: number; comment: string | null; ratedAt: string | null } }>(
+        `/host/activities/${activityId}/participants/${participantId}/rating`,
+        {
+          method: 'POST',
+          auth: true,
+          headers: organisationRequestHeaders(tenantId),
+          body: JSON.stringify(payload),
+        }
+      ),
 
     getActivityHistory: (tenantId: string) =>
     apiRequest<{ data: Array<{ id: string; title: string; locationName: string; activityType: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number }> }>(

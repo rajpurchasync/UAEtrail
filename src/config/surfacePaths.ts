@@ -95,8 +95,9 @@ export const signInPath = (options?: {
   return qs ? `${SIGNIN_PATH}?${qs}` : SIGNIN_PATH;
 };
 
+/** Host console → activity participants roster (`checkin=` still accepted on Trips). */
 export const hostActivitiesCheckInPath = (activityId: string): string =>
-  `${HOST_ACTIVITIES_PATH}?checkin=${encodeURIComponent(activityId)}`;
+  `${HOST_ACTIVITIES_PATH}?roster=${encodeURIComponent(activityId)}`;
 
 export const messagesToUserPath = (userId: string): string =>
   `${MESSAGES_PATH}?to=${encodeURIComponent(userId)}`;

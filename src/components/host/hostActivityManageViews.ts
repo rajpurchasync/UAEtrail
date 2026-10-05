@@ -13,7 +13,7 @@ export const hostActivityManageSubviewTitle = (
 ): string => {
   switch (view) {
     case 'participants':
-      return 'Participants';
+      return 'View participants';
     case 'invite':
       return 'Invite crew';
     case 'rideshare':

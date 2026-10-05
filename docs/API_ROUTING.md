@@ -93,7 +93,11 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | GET | `/activities/:id` | Activity detail includes `myJoinInvite` when the signed-in viewer has a pending Join me invite (and is not already going) |
 | GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
 | POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
-| * | `/host/activities/*` | CRUD, publish, participants, check-in |
+| * | `/host/activities/*` | CRUD, publish, history (`registerHostActivityRoutes`) |
+| GET | `/host/activities/:id/participants` | Approved roster + flags (`registerHostActivityParticipantRoutes`) |
+| POST/DELETE | `/host/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
+| POST | `/host/activities/:id/participants/:participantId/revoke` | Remove joiner (note → notification) |
+| POST | `/host/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
 | GET/PATCH | `/host/requests` | Host queue for **activities** only |
 
 Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mongo-indexes.ts`.
