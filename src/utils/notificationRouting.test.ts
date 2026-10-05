@@ -62,9 +62,21 @@ describe('inferNotificationPath', () => {
     ).toBe('/member/legacy-b');
   });
 
-  it('routes activity join invites to the activity detail page', () => {
+  it('routes activity join invites to activity detail join flow', () => {
     expect(
       inferNotificationPath(notif({ kind: 'activity_join_invite', activityId: 'act-42' }))
+    ).toBe('/activity/act-42?invite=1');
+  });
+
+  it('rewrites legacy explore invite paths to activity detail', () => {
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'activity_join_invite',
+          activityId: 'act-42',
+          path: '/explore?pin=activity:act-42&invite=1&list=1',
+        })
+      )
     ).toBe('/activity/act-42?invite=1');
   });
 

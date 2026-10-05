@@ -76,6 +76,18 @@ describe('connections API — buddy requests', () => {
     expect(buddiesRes.body.data.some((row: { userId: string }) => row.userId === recipientUser!._id)).toBe(
       true
     );
+
+    const senderFollowsRecipient = await request(app)
+      .get(`/api/v1/me/follow-state/${recipientUser!._id}`)
+      .set('Authorization', `Bearer ${sender.accessToken}`);
+    expect(senderFollowsRecipient.status).toBe(200);
+    expect(senderFollowsRecipient.body.data.isFollowing).toBe(true);
+
+    const recipientFollowsSender = await request(app)
+      .get(`/api/v1/me/follow-state/${(await findAuthUserByEmail(sender.email))!._id}`)
+      .set('Authorization', `Bearer ${recipient.accessToken}`);
+    expect(recipientFollowsSender.status).toBe(200);
+    expect(recipientFollowsSender.body.data.isFollowing).toBe(true);
   });
 
   it('allows recipient to decline and sender to cancel outgoing pending', async () => {

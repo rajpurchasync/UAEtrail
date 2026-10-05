@@ -3,6 +3,7 @@ import { UserRole } from '../../domain/enums.js';
 import { ApiError } from '../../lib/api-error.js';
 import { validate } from '../../middleware/validate.js';
 import { findAuthUserByEmail, findAuthUserById, updateAuthUserCore, updateAuthUserProfile } from '../../lib/auth-users.js';
+import { isPlatformMasterAdmin } from '../../lib/platform-master-admin.js';
 import { EMAIL_VERIFICATION_OTP_TTL_MS, EMAIL_VERIFICATION_OTP_TTL_SECONDS } from '../../lib/auth-constants.js';
 import { createEmailChangeToken, findEmailChangeTokenForUser, useEmailChangeToken } from '../../lib/auth-tokens.js';
 import { generateEmailOtp } from '../../lib/hash.js';
@@ -60,6 +61,8 @@ router.get('/me/profile', async (req, res, next) => {
         languages: user.profile?.languages ?? null,
         signupProfileComplete: isSignupProfileComplete(user.profile),
         memberSince: user.createdAt.toISOString(),
+        platformMasterAdmin:
+          user.role === UserRole.PLATFORM_ADMIN ? isPlatformMasterAdmin(user) : false,
       }
     });
   } catch (error) {

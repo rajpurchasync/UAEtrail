@@ -52,6 +52,15 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Split remainder of `host.ts` (activities CRUD, check-in) | ✅ | `registerHostTenantActivityRoutes.ts` |
 | Host submitted locations (`GET/POST /host/locations`) | ✅ | `registerHostSubmittedLocationRoutes.ts` |
 | Admin host-application review routes | ✅ | `registerAdminHostApplicationRoutes.ts` |
+| Admin activity moderation (`/admin/activities/*`) | ✅ | `registerAdminActivityModerationRoutes.ts` |
+| Admin place CRUD (`/admin/places`, `/admin/locations`) | ✅ | `registerAdminPlaceRoutes.ts` |
+| Admin dashboard metrics (`GET /admin/metrics`) | ✅ | `registerAdminMetricsRoutes.ts` |
+| Admin user list/detail/status (`/admin/users/*`) | ✅ | `registerAdminUserRoutes.ts` |
+| Admin tenant oversight (`/admin/tenants/*`) | ✅ | `registerAdminTenantRoutes.ts` |
+| Admin social groups (`/admin/groups/*`) | ✅ | `registerAdminGroupRoutes.ts` |
+| Admin reports, audit, notifications, products | ✅ | `registerAdminContentReportRoutes.ts`, `registerAdminAuditRoutes.ts`, `registerAdminNotificationRoutes.ts`, `registerAdminProductRoutes.ts` |
+| Platform staff grant/revoke (master only) | ✅ | `registerAdminPlatformStaffRoutes.ts` + `platform-master-admin.ts` |
+| `admin.ts` mount shell | ✅ | Registers modular `registerAdmin*` only |
 | Shrink `legacyApi` / remove unused FE shims | ✅ | `legacyApi.ts` removed; canonical `api` only — `services.domain-aliases.test.ts` |
 
 ---
@@ -64,7 +73,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Join queue: host sees requester identity | ✅ | By design (activity host) |
 | Notifications actor names respect `profileVisibility` | ✅ | `notification-actor-label.ts` (buddy, follow, group, publish fan-out) |
 | Favorites profile hydration PII | ✅ | `listUserFavoritesWithDetails` + `profileVisibility` |
-| FE smoke matrix (notification + profile edge cases) | ⬜ | Manual QA checklist — track here until automated |
+| FE smoke matrix (notification + profile edge cases) | 🔄 | API: `notification-actor-label.test.ts` in `verify:domain`; manual edge cases (group invite, private actor) still QA |
 
 ---
 
@@ -79,5 +88,5 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 
 ## Out of scope (other tracks)
 
-- Explore catalog density, wishlist E11, full `host.ts` modularization.
+- Explore catalog density, wishlist E11.
 - Pro **billing** (flags only today).

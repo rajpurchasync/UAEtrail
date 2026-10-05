@@ -19,6 +19,8 @@ import {
 let app: Express;
 
 type NotificationRow = {
+  title?: string;
+  body?: string;
   meta?: { kind?: string; activityId?: string; actorUserId?: string; path?: string };
 };
 
@@ -96,6 +98,8 @@ describe('activity join invite', () => {
     );
     expect(inviteNotif).toBeTruthy();
     expect(inviteNotif!.meta?.path).toBe(`/activity/${fixture.activityId}?invite=1`);
+    expect(inviteNotif!.body).toMatch(/invited you to join/);
+    expect(inviteNotif!.body).toMatch(/Tap to view and join/);
 
     const detailRes = await request(app)
       .get(`/api/v1/activities/${fixture.activityId}`)

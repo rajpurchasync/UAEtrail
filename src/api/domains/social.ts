@@ -5,6 +5,9 @@ import {
   MemberFollowStateDTO,
   MemberFollowSummaryDTO,
   MemberHubStatsDTO,
+  SocialPeopleDTO,
+  SocialPeoplePreviewDTO,
+  SocialPeopleSegment,
   FavoriteDTO,
   ReviewDTO,
   MyReviewDTO,
@@ -77,6 +80,12 @@ export const socialApi = {
 
     getMeFollowing: () =>
       apiRequest<{ data: MemberFollowSummaryDTO[] }>('/me/following', { auth: true }),
+
+    getSocialPeople: (segment: SocialPeopleSegment = 'all') =>
+      apiRequest<{ data: SocialPeopleDTO }>(`/social/people?segment=${segment}`, { auth: true }),
+
+    getSocialPeoplePreview: () =>
+      apiRequest<{ data: SocialPeoplePreviewDTO }>('/social/people/preview', { auth: true }),
 
     getMemberFollowState: (userId: string) =>
       apiRequest<{ data: MemberFollowStateDTO }>(`/me/follow-state/${userId}`, { auth: true }),
@@ -245,9 +254,18 @@ export const socialApi = {
       }),
     }),
 
-    getReviews: (targetType: 'location' | 'tenant', targetId: string, page = 1) =>
+    getReviews: (
+      targetType: 'location' | 'tenant' | 'activity',
+      targetId: string,
+      page = 1
+    ) =>
     apiRequest<{ data: ReviewDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
       `/reviews?targetType=${targetType}&targetId=${targetId}&page=${page}&pageSize=20`
+    ),
+
+  getActivityReviews: (activityId: string, page = 1) =>
+    apiRequest<{ data: ReviewDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
+      `/reviews?targetType=activity&targetId=${activityId}&page=${page}&pageSize=20`
     ),
 
   /** Reviews for a public place — wire targetType remains `location`. */
@@ -256,11 +274,28 @@ export const socialApi = {
       `/reviews?targetType=location&targetId=${placeId}&page=${page}&pageSize=20`
     ),
 
-    createReview: (payload: { targetType: 'location' | 'tenant'; targetId: string; rating: number; comment: string }) =>
+    createReview: (payload: {
+      targetType: 'location' | 'tenant' | 'activity';
+      targetId: string;
+      rating: number;
+      comment: string;
+    }) =>
     apiRequest<{ data: ReviewDTO }>('/reviews', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
+    }),
+
+  createActivityReview: (payload: { activityId: string; rating: number; comment: string }) =>
+    apiRequest<{ data: ReviewDTO }>('/reviews', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify({
+        targetType: 'activity',
+        targetId: payload.activityId,
+        rating: payload.rating,
+        comment: payload.comment,
+      }),
     }),
 
     getMyReviews: (page = 1, pageSize = 50) =>

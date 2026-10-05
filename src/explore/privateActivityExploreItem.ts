@@ -2,6 +2,7 @@ import type { ActivityDTO, ActivityViewerAccessDTO, ExploreMapItemDTO } from '@u
 import {
   buildExploreActivityDisplay,
   buildExploreFeaturedPerson,
+  computeActivityMapPeekActions,
   resolveActivityDisplayCoordinates,
   resolveActivityDestinationCoordinates,
   resolveActivityHostAvatar,
@@ -11,6 +12,22 @@ import {
 } from '@uaetrail/shared-types';
 
 const isRideshareActivity = (activity: ActivityDTO): boolean => activity.activityType === 'rideshare';
+
+const withMapPeekActions = (
+  access: ActivityViewerAccessDTO | null | undefined,
+  activity: ActivityDTO
+): ActivityViewerAccessDTO | null => {
+  if (!access) return null;
+  if (access.mapPeekActions?.length) return access;
+  return {
+    ...access,
+    mapPeekActions: computeActivityMapPeekActions({
+      level: access.level,
+      activityPublished: activity.status === 'published',
+      joinMode: access.joinMode,
+    }),
+  };
+};
 
 /** Map peek row for link-only (`joinMode: private`) activities — not on public explore payload. */
 export const buildExploreMapItemFromActivity = (
@@ -71,7 +88,7 @@ export const buildExploreMapItemFromActivity = (
     fromLabel: display.fromLabel,
     toLabel: display.toLabel,
     activity,
-    viewerAccess: viewerAccess ?? null,
+    viewerAccess: withMapPeekActions(viewerAccess, activity) ?? undefined,
   };
 };
 

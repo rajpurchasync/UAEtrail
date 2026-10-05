@@ -34,7 +34,7 @@ describe('mapViewerAccessToExplorePeekDetail', () => {
     ).toEqual({ kind: 'guest_gate' });
   });
 
-  it('members_only for join_required', () => {
+  it('links for join_required when detail page is allowed', () => {
     expect(
       mapViewerAccessToExplorePeekDetail(
         {
@@ -43,6 +43,22 @@ describe('mapViewerAccessToExplorePeekDetail', () => {
           gateReason: 'join_required',
           canViewFullActivity: false,
           canOpenDetailPage: true,
+          joinMode: 'open',
+        },
+        '/activity/1'
+      )
+    ).toEqual({ kind: 'link', href: '/activity/1' });
+  });
+
+  it('members_only when detail page is blocked', () => {
+    expect(
+      mapViewerAccessToExplorePeekDetail(
+        {
+          exposure: 'redacted',
+          level: 'link_holder',
+          gateReason: 'upgrade_required',
+          canViewFullActivity: false,
+          canOpenDetailPage: false,
           joinMode: 'open',
         },
         '/activity/1'

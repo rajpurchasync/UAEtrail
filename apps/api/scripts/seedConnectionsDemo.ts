@@ -63,11 +63,7 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
     message: 'Want to be trail buddies?',
   });
   if (incomingFromMaya.status === 'pending') {
-    await notifyBuddyRequestReceived({
-      requestId: incomingFromMaya.id,
-      fromUserId: incomingFromMaya.fromUserId,
-      toUserId: incomingFromMaya.toUserId,
-    });
+    await acceptBuddyRequest(incomingFromMaya.id, input.visitorId);
   }
 
   await createBuddyRequest({
@@ -96,6 +92,7 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
     followingUserId: input.visitorId,
   });
   await followUser(input.visitorId, input.organizerId);
+  await followUser(input.visitorId, input.hostId);
 
   console.log('[seed] Connections demo seeded for visitor@ (buddies, pending, follow notifications)');
 };
@@ -103,11 +100,11 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
 export const logConnectionsDemoPlaybook = (): void => {
   console.log(
     'Connections QA (log in as visitor@uaetrails.app / Visitor@12345):\n' +
-      '  • Buddies: Fatima (guide@) — connected; unfriend on profile or /buddies\n' +
-      '  • Incoming request: Maya (visitor2@) — accept or decline\n' +
+      '  • Buddies: Fatima (guide@) + Maya (visitor2@) — Explore Social → Friends\n' +
       '  • Outgoing pending: Omar (host@) — cancel on /buddies (Sent) or his profile\n' +
       '  • Declined history: Khalid (organizer@) — declined in DB; re-request allowed via profile\n' +
       '  • Friends group: Weekend Hikers UAE — log in as guide@ and use Leave group on /groups\n' +
-      '  • Notifications: follow alerts from Maya + Priya (shop@); follow Khalid from your profile'
+      '  • Social → Followed: Khalid (organizer@) + Omar (host@); pending buddy request still open to Omar\n' +
+      '  • Notifications: follow alerts from Maya + Priya (shop@)'
   );
 };

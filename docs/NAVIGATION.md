@@ -38,7 +38,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Completed:** Joined · Hosted · Self (**My plans** / demand intents) — **past** outings (`?view=completed&role=`).
 - **My trips map:** `/trips/map` (also the Map main tab).
 - **`/activities`** redirects to `/trips` for bookmarks and old links.
-- **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore host peek → **Message crew** opens **`/messages?group=<id>`** (not chat on `/trips`). Deep links: [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). Full messaging contract: [`COMMUNICATION.md`](./COMMUNICATION.md).
+- **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore map peek **`open_crew_chat`** → **`/messages?group=<id>`** (not chat on `/trips`). Deep links: [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). Full messaging contract: [`COMMUNICATION.md`](./COMMUNICATION.md).
 
 ### Host console (`/host/*`)
 
@@ -46,9 +46,19 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **`/host/overview`:** Host stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, messages, explore map).
 - **Member profile (`/profile`):** consumer hub only; hosts open **Hosting** → `/host/overview` (no host tool menu on profile).
 
+### Admin console (`/admin/*`)
+
+- **Audience:** `platform_admin` only (`ProtectedRoute`); signed-in members use `/explore`, not `/`.
+- **Shell nav:** `ADMIN_LINKS` in `src/constants/index.ts` — desktop sidebar + mobile admin drawer (`DashboardLayout`, `MobileMenu`).
+- **`/admin/overview`:** Metrics and recent activity shortcuts.
+- **`/admin/users`:** **Users** — search, suspend/activate, detail panel; master admin may grant/revoke platform staff (`MEMBER_MODEL.md`).
+- Other entries: Places, Hosts (applications), Activities moderation, Groups, Shop, Reports, Audit log, Broadcast (`/admin/settings`).
+- **Staff provisioning API:** `POST /admin/platform-admins`, `DELETE /admin/platform-admins/:userId` — not self-serve signup.
+
 ### Friends (`/buddies`)
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
+- **Explore → Social → Followed:** sub-segments **People** (member follows), **Places** and **Outings** (saved favorites from the map/detail); URL `followedKind=places|events`.
 
 ### Chat (`/messages`)
 
@@ -137,19 +147,18 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - Filter/panel query params select map context; they do not imply list mode.
 - **Others drill-down (Activities tab):** `filter=others` → optional `subtype=events|activities`; when `subtype=activities`, optional `outingTopic` (`climbing`, `trail_run`, `workshop`, `community`, …). Helpers: `explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })`.
 
-## Who's going (Explore)
+## Social (Explore)
 
-Map control → browse `listMode=going` (URL `view=going`, `goingTab=people|discover|trips`). Copy: **Who's going?** (`exploreGoingPanelCopy.ts`). Guests → sign-in (`guestBrowseGateCopy` `explore-going`).
+Map control → browse `listMode=social` (URL `view=social`, legacy `view=going` redirects; `socialTab=all|friends|followed|discover`). Copy: **Social** (`exploreSocialPanelCopy.ts`). Guests → sign-in (`guestBrowseGateCopy` `explore-social`).
 
-| Segment (`goingTab`) | Label | Data / actions |
-|----------------------|-------|----------------|
-| `people` | Buddies | `GET /me/buddies/activity-presence` · **Join me** to buddies (`POST /activities/:id/invites`) |
-| `discover` | Discover | `GET /me/member-discovery/roster` · quota on profile open · **Connect** (buddy request) |
-| `trips` | Trips | Outings with join context (browse trips list mode) |
+| Segment (`socialTab`) | Label | Data / actions |
+|-----------------------|-------|----------------|
+| `all` | All | `GET /social/people?segment=all` — friends + followed |
+| `friends` | Friends | Same API · **Message** · **Plan a trip** |
+| `followed` | Followed | Same API · profile · **Add friend** when allowed |
+| `discover` | Discover | `GET /me/member-discovery/roster` — strangers on outings + public directory; profile opens use discover quota (5 / 30d free, Pro unlimited). Map date filter scopes “on outings”. |
 
-**Join me** is a nudge only — invitees still RSVP or request to join; host approval applies when required. Plan / open product knobs: [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
-
-Profile links use **person** routes (`/member/:id?discover=1` from Discover), not operator/shop storefronts.
+Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **Social**, **Friends**, **Messages**. **Join me** on activity detail (`ActivityInviteSharePanel`). See [`API_ROUTING.md`](./API_ROUTING.md) § Social people roster.
 
 ## Explore FAB (+)
 

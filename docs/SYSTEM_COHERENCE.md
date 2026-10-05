@@ -98,7 +98,8 @@ Each context has **one write path** and **one public read model** where possible
 | **Discovery** | Map/list payload, pins, filters, card projection | `src/explore/*`, `ExploreExperience.tsx` | `lib/explore-map.ts`, `GET /explore/map` | `activities`, `locations`, `participant_intents`, `tenants` (shops) |
 | **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/ui/*`, `compose.ts`, `organizeFlow.ts` | `POST /host/activities`, `POST /me/participant-intents` | `activities`, `participant_intents` |
 | **Participation** | Join, waitlist, RSVP, demand requests, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, `registerActivityJoinInviteRoutes` | `activity_requests`, `participant_intent_requests`, `activity_participants`, `activity_invites` |
-| **Member discovery** | Stranger roster, directory browse, discovery quota (Explore **going** panel — copy “Who’s going?”) | `useMemberDiscoveryRoster`, `ExploreBuddyPresenceList` | `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | `member_profile_views` (quota), composes map + `auth_users` |
+| **Member discovery** | Directory browse, discovery quota (profile opens from discover) | `MemberProfile` quota gate | `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | `member_profile_views` (quota), composes map + `auth_users` |
+| **Social graph (Explore)** | Friends + followed roster on map | `ExploreSocialPeopleList`, `useSocialPeople` | `social-people.ts`, `registerSocialPeopleRoutes` | buddies, follows, explore map trip hints |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
 | **Host capabilities** | Who may publish & console access (not onboarding verb) | `useOrganisationGate`, `organizePublishGate` | **`services/member-host-status.ts` only** | `tenants`, `tenant_memberships` |
 | **Organisation console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/Organisation*`, `organisation-console/` | `routes/host/*` registrars | same + `activities` |
@@ -107,7 +108,7 @@ Each context has **one write path** and **one public read model** where possible
 | **Places** | Registry, contribute, venue detail | `PlaceDetail*`, `TrailDetail`, contribute flows | `place-registry`, `location-submit`, `/places` | `locations` |
 | **Commerce** | Shop public + merchant manage (affiliate) | `ShopPublic`, `ShopManage` | `routes/shop.ts` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, favorites | explore favorites, profile goals | `registerMeGoalsRoutes`, … | `user_goals`, `user_favorites` |
-| **Platform ops** | Admin, audit, applications | `src/pages/Admin*` | `routes/admin.ts` | `host_applications`, `audit_logs` |
+| **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/Admin*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
 
 **Rule:** If a change touches “who can do X,” find the row above first. Do not add a second resolver in a route file or a random hook.
 
@@ -132,7 +133,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | places | `locations` | `/places`, `/me/places` | `placeApi`, `placeRegistry` | `TrailDetail`, `CampDetail`, contribute |
 | commerce | `merchant_profiles`, `products` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
 | engagement | `user_badges`, `user_goals`, `user_favorites`, … | `/me/badges`, `/me/goals`, … | `badgesApi`, `goalsApi`, … | `ProfileBadges`, goals on profile |
-| platform_ops | `host_applications`, `audit_logs` | `/admin/*` | `adminApi` | `Admin*` pages |
+| platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `AdminOverview`, `AdminMembers` (Users) |
 
 **API mounts:** `/auth`, `/admin`, `/host`, `/chat`, `/shop`, `/media`, `/reports`, `/` (`user.ts` + `social.ts`) — see `apps/api/src/routes/index.ts`.
 
@@ -160,7 +161,7 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 
 **Mount order:** `apps/api/src/routes/index.ts` — `auth`, `admin`, `host`, `shop`, `chat`, `media`, `reports`, `social`, **`user`** (broad public + `/me`).
 
-**Thin routes:** `apps/api/src/routes/user/register*.ts` and `routes/host/register*.ts` — validate, call **service**, map DTO.
+**Thin routes:** `apps/api/src/routes/user/register*.ts`, `routes/host/register*.ts`, and `routes/admin/registerAdmin*.ts` — validate, call **service**, map DTO. Mount shells: `user.ts`, `host.ts`, `admin.ts`.
 
 **Domain rules:** Prefer `apps/api/src/domain/*` (pure) + `apps/api/src/services/*` (orchestration). Avoid new business rules in `lib/*-store.ts` without a service façade.
 
@@ -195,9 +196,9 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 
 | ID | Symptom | Why it hurts | Target state | Tracker |
 |----|---------|--------------|--------------|---------|
-| **C1** | Three permission notions (`UserRole`, `HostStatusDTO`, tenant middleware) | Wrong gates in UI; host console confused with Organize | Roles = shell; `HostStatusDTO` = product; tenant header = `/host` only | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), `host-member-model.mdc` |
+| **C1** | Three permission notions (`UserRole`, `HostStatusDTO`, tenant middleware) | Wrong gates in UI; host console confused with Organize | Roles = shell; `HostStatusDTO` = product; tenant header = `/host` only | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), `host-member-model.mdc`, `hostMemberGuard.test.ts` (no `isHostRole` in product gates) |
 | **C2** | Organisation/Host naming mix in UI | New code uses wrong copy or imports | Domain-only `api.*`; `Organisation*` folders, host user copy | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
-| **C3** | Large `host.ts` remainder (activities CRUD) | Hard to review; route naming drift | Split registrars like activity requests / team | HOST_CLEANUP P2 |
+| **C3** | ~~Large `host.ts` / `admin.ts` monoliths~~ | — | **Mitigated (Oct 2026):** host + admin mount shells with `register*` registrars | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **C4** | Parallel place detail pages (`Trail` / `Camp` / `Event`) | Duplicate SEO/loading patterns | Shared `PlaceDetail` internals | ARCHITECTURE “Future” |
 | **C5** | `components/activities/*` modals vs explore wizards | Two create UX paths | Explore compose only for consumer create | Mostly done — audit `components/activities` |
 | **C6** | Shop = `tenant` + `merchant_profile` | Two writes for one brand | Documented split; sync on ShopManage save | [`DOMAIN.md`](./DOMAIN.md) |
@@ -224,14 +225,14 @@ Ordered for **coherence**, not feature count:
 |-------|---------|-------------------------|
 | **S0** | Single doc entry + automated phrase guards | `DOCS_INDEX`, `verify:docs` |
 | **S1** | One member capability resolver (`/me/host-status`) enforced server-side | `MEMBER_MODEL`, `verify:host-member` |
-| **S2** | Host route modularization + fulfill removal | `HOST_CLEANUP_ROADMAP` P1–P2 |
-| **S3** | API `user` router fully split; **`admin.ts`** → `routes/admin/register*.ts` (host applications ✅; places/users/… queued) | [`API_ROUTING.md`](./API_ROUTING.md) |
+| **S2** | Host route modularization + fulfill removal | **Done** — `HOST_CLEANUP_ROADMAP` P1–P2 |
+| **S3** | API mount shells: **`user.ts`**, **`admin.ts`** → `register*` modules only | **Done** — admin registrars + platform master staff; user already modular |
 | **S4** | Frontend `api.*` stays domain-only | `apiLegacyGuard`, knip |
 | **S5** | Privacy notification matrix + viewer access everywhere | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **S6** | Place detail internal merge + SEO pass | ARCHITECTURE future |
 | **S7** | **Viewer access VA-1–VA-7** (activity detail + explore peek on API contract) | **Done** — §15.8; layer-7 hook `composeActivityViewerAccess` / `applyActivityViewEntitlements` |
 
-Phases **S0–S1** and **S7** are in place; **S2–S6** remain. **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
+Phases **S0–S3** and **S7** are in place; **S4–S6** remain. **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
 
 ---
 

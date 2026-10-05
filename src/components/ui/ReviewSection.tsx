@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import { ChevronDown, ChevronUp, Star } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
 import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
@@ -11,15 +11,24 @@ import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { myReviewElementId, scrollToReviewAnchor, myReviewHash } from './DetailReviewChrome';
 
 interface ReviewSectionProps {
-  targetType: 'location' | 'tenant' | 'place';
+  targetType: 'location' | 'tenant' | 'place' | 'activity';
   targetId: string;
   reviews: ReviewDTO[];
   onReviewSubmitted: (review: ReviewDTO) => void;
   accent?: 'emerald' | 'amber' | 'violet';
+  /** Activity reviews — host must check the member in first. Defaults to true for places/hosts. */
+  canWriteReview?: boolean;
+  /** Tap header to expand/collapse (e.g. activity detail). */
+  collapsible?: boolean;
+  defaultExpanded?: boolean;
 }
 
-const reviewWireTargetType = (targetType: ReviewSectionProps['targetType']): 'location' | 'tenant' =>
-  targetType === 'place' ? 'location' : targetType;
+const reviewWireTargetType = (
+  targetType: ReviewSectionProps['targetType']
+): 'location' | 'tenant' | 'activity' => {
+  if (targetType === 'place') return 'location';
+  return targetType;
+};
 
 export const ReviewSection = ({
   targetType,
@@ -27,8 +36,12 @@ export const ReviewSection = ({
   reviews,
   onReviewSubmitted,
   accent = 'emerald',
+  canWriteReview = true,
+  collapsible = false,
+  defaultExpanded = true,
 }: ReviewSectionProps) => {
   const { user } = useAuth();
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const navigate = useNavigate();
   const location = useLocation();
   const [rating, setRating] = useState(5);
@@ -82,17 +95,23 @@ export const ReviewSection = ({
     try {
       const wireTarget = reviewWireTargetType(targetType);
       const res =
-        wireTarget === 'tenant'
-          ? await api.createOrganisationReview({
-              organisationId: targetId,
+        wireTarget === 'activity'
+          ? await api.createActivityReview({
+              activityId: targetId,
               rating,
               comment: comment.trim(),
             })
-          : await api.createPlaceReview({
-              placeId: targetId,
-              rating,
-              comment: comment.trim(),
-            });
+          : wireTarget === 'tenant'
+            ? await api.createOrganisationReview({
+                organisationId: targetId,
+                rating,
+                comment: comment.trim(),
+              })
+            : await api.createPlaceReview({
+                placeId: targetId,
+                rating,
+                comment: comment.trim(),
+              });
       onReviewSubmitted(res.data);
       setComment('');
       setSuccess(true);
@@ -104,11 +123,41 @@ export const ReviewSection = ({
     }
   };
 
+  const reviewCountLabel = reviews.length > 0 ? ` (${reviews.length})` : '';
+
+  const header = collapsible ? (
+    <button
+      type="button"
+      onClick={() => setExpanded((open) => !open)}
+      aria-expanded={expanded}
+      className="mb-4 flex w-full items-center justify-between gap-2 rounded-xl border border-gray-100 bg-white px-4 py-3 text-left shadow-sm active:bg-gray-50"
+    >
+      <span className="text-lg md:text-xl font-bold text-gray-900">
+        Reviews{reviewCountLabel}
+      </span>
+      {expanded ? (
+        <ChevronUp className="h-5 w-5 shrink-0 text-gray-500" aria-hidden />
+      ) : (
+        <ChevronDown className="h-5 w-5 shrink-0 text-gray-500" aria-hidden />
+      )}
+    </button>
+  ) : (
+    <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Reviews{reviewCountLabel}</h2>
+  );
+
   return (
     <section id="reviews" className="scroll-mt-24" tabIndex={-1}>
-      <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Reviews</h2>
+      {header}
 
-      {user && !existingReview && !success && (
+      {collapsible && !expanded ? null : (
+        <>
+      {user && !existingReview && !success && !canWriteReview && targetType === 'activity' ? (
+        <p className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700">
+          Reviews open after your host checks you in on the outing.
+        </p>
+      ) : null}
+
+      {user && !existingReview && !success && canWriteReview && (
         <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-100 p-5 mb-6 space-y-3">
           <p className="text-sm font-medium text-gray-900">Share your experience</p>
           <div className="flex gap-1">
@@ -224,6 +273,8 @@ export const ReviewSection = ({
           );
           })}
         </div>
+      )}
+        </>
       )}
     </section>
   );

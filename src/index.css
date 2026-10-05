@@ -931,9 +931,14 @@
     padding-bottom: calc(var(--cta-height) + var(--safe-bottom) + 8px);
   }
 
+  .pb-detail-cta-safe {
+    padding-bottom: calc(4.75rem + var(--safe-bottom) + 8px);
+  }
+
   @media (min-width: 768px) {
     .pb-nav-safe,
     .pb-cta-safe,
+    .pb-detail-cta-safe,
     .pb-bottom-nav-safe,
     .pb-mobile-fab {
       padding-bottom: 0;

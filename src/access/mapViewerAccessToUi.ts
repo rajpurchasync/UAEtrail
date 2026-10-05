@@ -51,5 +51,7 @@ export const mapViewerAccessToExplorePeekDetail = (
   if (!ui) return null;
   if (ui.kind === 'link') return { kind: 'link', href: ui.href };
   if (ui.kind === 'guest_gate') return { kind: 'guest_gate' };
+  /** Map-listed activities (rideshare, hikes, …) — detail page is the join path. */
+  if (access?.canOpenDetailPage) return { kind: 'link', href };
   return { kind: 'members_only' };
 };

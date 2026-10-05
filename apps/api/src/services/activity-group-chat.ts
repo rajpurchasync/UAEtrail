@@ -2,7 +2,6 @@ import { RequestStatus } from '../domain/enums.js';
 import {
   findActivityParticipantByEventAndUser,
   findActivityRequestByEventAndUser,
-  listActivityParticipantsWithUsers,
 } from '../lib/activity-engagement-store.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
 import {
@@ -22,7 +21,7 @@ export const isActivityGroupChatOpen = (startAt: Date): boolean =>
 const resolveActivityHostUserId = (eventDoc: { hostId?: string | null; createdById?: string }): string | null =>
   eventDoc.hostId ?? eventDoc.createdById ?? null;
 
-/** Sync host + confirmed participants into the activity's existing group (no new group). */
+/** Ensure the activity host is in the group. Participants opt in via joinActivityGroupChatForUser. */
 export const syncActivityGroupChatRoster = async (
   activityId: string,
   groupId: string
@@ -39,18 +38,6 @@ export const syncActivityGroupChatRoster = async (
     role: 'admin',
     createdByUserId: hostUserId,
   });
-
-  const participants = await listActivityParticipantsWithUsers(activityId);
-  await Promise.all(
-    participants.map((participant) =>
-      ensureGroupMember({
-        groupId,
-        userId: participant.userId,
-        role: 'buddy',
-        createdByUserId: hostUserId,
-      })
-    )
-  );
 };
 
 /** Resolve the one group chat tied to this activity (does not create). */

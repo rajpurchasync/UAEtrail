@@ -2,12 +2,14 @@ import { Link } from 'react-router-dom';
 import {
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
+  exploreSocialPath,
   HOST_OVERVIEW_PATH,
+  MESSAGES_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_SETTINGS_PATH,
 } from '../../config/routingCatalog';
 import type { LucideIcon } from 'lucide-react';
-import { Award, MapPin, Mountain, Settings, Users } from 'lucide-react';
+import { Award, MapPin, MessageCircle, Mountain, Settings, UserRound, Users } from 'lucide-react';
 
 export type ProfileQuickLauncherItem = {
   key: string;
@@ -42,7 +44,7 @@ const LauncherTile = ({ item }: { item: ProfileQuickLauncherItem }) => {
   );
 };
 
-/** Above-fold shortcuts — non-tab destinations only (no Trips / Messages). */
+/** Above-fold shortcuts — non-tab destinations only (no Trips / Messages tab duplicate when absent). */
 export const ProfileQuickLauncher = ({ items }: ProfileQuickLauncherProps) => {
   if (items.length === 0) return null;
 
@@ -64,12 +66,26 @@ export const buildProfileQuickLauncherItems = (input: {
 }): ProfileQuickLauncherItem[] => {
   const items: ProfileQuickLauncherItem[] = [
     {
+      key: 'social',
+      label: 'Social',
+      to: exploreSocialPath(),
+      icon: UserRound,
+      iconWrapClassName: 'bg-emerald-50 text-emerald-800',
+    },
+    {
       key: 'friends',
       label: 'Friends',
       to: BUDDIES_PATH,
       icon: Users,
       iconWrapClassName: 'bg-blue-50 text-blue-700',
       badge: input.buddyBadge,
+    },
+    {
+      key: 'messages',
+      label: 'Messages',
+      to: MESSAGES_PATH,
+      icon: MessageCircle,
+      iconWrapClassName: 'bg-violet-50 text-violet-700',
     },
     {
       key: 'badges',

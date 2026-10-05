@@ -4,6 +4,7 @@ import {
   type GroupWallReplyTarget,
 } from '../../utils/groupWallReply';
 import { chatMessageTextClassName } from './chatMessageText';
+import { ChatLinkedText } from './ChatLinkedText';
 
 type QuotedWallMessage = Pick<GroupWallReplyTarget, 'authorName' | 'body'>;
 
@@ -74,6 +75,22 @@ const QuoteBlock = ({
   );
 };
 
+const MessageText = ({
+  text,
+  tone,
+  className = '',
+}: {
+  text: string;
+  tone: 'default' | 'onPrimary';
+  className?: string;
+}) => (
+  <p
+    className={`${className} ${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`.trim()}
+  >
+    <ChatLinkedText text={text} tone={tone} />
+  </p>
+);
+
 export const ChatMessageBody = ({
   body,
   replyToMessageId: replyToMessageIdProp,
@@ -95,11 +112,7 @@ export const ChatMessageBody = ({
           onScrollToQuotedMessage={onScrollToQuotedMessage}
           tone={tone}
         />
-        <p
-          className={`${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`}
-        >
-          {body}
-        </p>
+        <MessageText text={body} tone={tone} />
       </div>
     );
   }
@@ -116,11 +129,7 @@ export const ChatMessageBody = ({
             onScrollToQuotedMessage={onScrollToQuotedMessage}
             tone={tone}
           />
-          <p
-            className={`${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`}
-          >
-            {body}
-          </p>
+          <MessageText text={body} tone={tone} />
         </div>
       );
     }
@@ -128,11 +137,7 @@ export const ChatMessageBody = ({
 
   if (!parsed) {
     return (
-      <p
-        className={`mt-1 ${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`}
-      >
-        {body}
-      </p>
+      <MessageText text={body} tone={tone} className="mt-1" />
     );
   }
 
@@ -148,11 +153,7 @@ export const ChatMessageBody = ({
         onScrollToQuotedMessage={onScrollToQuotedMessage}
         tone={tone}
       />
-      <p
-        className={`${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`}
-      >
-        {replyText}
-      </p>
+      <MessageText text={replyText} tone={tone} />
     </div>
   );
 };

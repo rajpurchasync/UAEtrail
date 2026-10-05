@@ -1,9 +1,12 @@
 import { ExternalLink } from 'lucide-react';
-import type { ActivityDTO } from '@uaetrail/shared-types';
-import { ExploreHostPeekActions } from './ExploreHostPeekActions';
+import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
+import { ExploreActivityMapPeekActions } from './ExploreActivityMapPeekActions';
 import { ExploreDemandOwnerPeekActions } from './ExploreDemandOwnerPeekActions';
-import { ExploreParticipantPeekActions } from './ExploreParticipantPeekActions';
-import { Link } from 'react-router-dom';
+import { ExploreHostPeekActions, type ExploreHostPeekHandlers } from './ExploreHostPeekActions';
+import {
+  activityMapPeekShowsJoinFlow,
+  resolveActivityMapPeekActions,
+} from '../activityMapPeekActions';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { PlaceCardActions } from '../../components/ui/PlaceCardActions';
@@ -19,73 +22,63 @@ import {
   ExploreCardPeopleRow,
   ExploreCardRequirementBadges,
 } from './ExploreCardPresentation';
-import { resolvePeekDetailAccess } from '../../access/resolvePeekDetailAccess';
-
-export interface ExploreItemPeekFooterProps {
+import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
+export interface ExploreItemPeekActionsProps {
   card: ExploreCardModel;
   onClose: () => void;
   onJoin?: () => void;
   onMessage?: () => void;
-  onManage?: () => void;
-  onHostFullManage?: () => void;
-  onInviteCrew?: () => void;
+  onActivityMapPeekAction?: (actionId: ActivityMapPeekActionId) => void;
   joinUiState?: JoinRequestUiState;
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
   linkRideshareTenantId?: string | null;
-  onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
-  onHostRemove?: () => void;
   onDemandRemove?: () => void;
   onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
+  hostPeekHandlers?: ExploreHostPeekHandlers | null;
   /** Guests — detail, join-adjacent, and profile navigation show sign-up instead. */
   onGuestGatedAction?: () => void;
 }
 
-/** Map peek card footer — join, host, shop, and demand actions. */
-export const ExploreItemPeekFooter = ({
+/** Map peek card CTAs — activity affordances from API or join flow fallback. */
+export const ExploreItemPeekActions = ({
   card,
   onClose,
   onJoin,
   onMessage,
-  onManage,
-  onHostFullManage,
-  onInviteCrew,
+  onActivityMapPeekAction,
   joinUiState,
   onWithdraw,
   joinStateLoading = false,
   linkRideshareTenantId = null,
-  onCreateLinkedRideshare,
-  onHostRemove,
   onDemandRemove,
   onDemandFullManage,
   onDemandLinkRideshare,
+  hostPeekHandlers = null,
   onGuestGatedAction,
-}: ExploreItemPeekFooterProps) => {
+}: ExploreItemPeekActionsProps) => {
   const isShop = card.source === 'shop';
   const isDemand = card.source === 'demand';
   const externalUrl = card.websiteUrl?.trim() || null;
   const gate = onGuestGatedAction;
+  const activityMapPeekActions =
+    card.source === 'activity' ? resolveActivityMapPeekActions(card, joinUiState) : [];
+  const showActivityJoinFlow =
+    card.source === 'activity' && activityMapPeekShowsJoinFlow(card, joinUiState);
+  const peekWithdraw =
+    card.source === 'activity' ? undefined : onWithdraw;
 
-  const detailLink = (to: string, label: string, className: string) => {
-    const access = resolvePeekDetailAccess(card, {
-      isGuest: Boolean(gate),
-      joinStateLoading,
-    });
-    if (!access || access.kind === 'members_only') return null;
-    if (access.kind === 'guest_gate') {
-      return (
-        <button type="button" onClick={gate} className={className}>
-          {label}
-        </button>
-      );
-    }
-    return (
-      <Link to={access.href || to} className={className}>
-        {label}
-      </Link>
-    );
-  };
+  const detailLink = (label: string, className: string) => (
+    <ExplorePeekDetailLink
+      card={card}
+      label={label}
+      className={className}
+      joinStateLoading={joinStateLoading}
+      onGuestGatedAction={gate}
+      onBeforeNavigate={onClose}
+    />
+  );
 
   return (
     <>
@@ -97,24 +90,41 @@ export const ExploreItemPeekFooter = ({
           onLinkRideshare={onDemandLinkRideshare}
           onGuestGatedAction={gate}
         />
-      ) : card.showHostActions ? (
+      ) : card.showHostPeekActions && hostPeekHandlers ? (
         <ExploreHostPeekActions
           card={card}
           linkRideshareTenantId={linkRideshareTenantId}
-          onCreateLinkedRideshare={onCreateLinkedRideshare}
-          onMessage={onMessage}
-          onHostRemove={onHostRemove}
-          onFullManage={onHostFullManage}
-          onManage={onManage}
-          onInviteCrew={onInviteCrew}
+          handlers={hostPeekHandlers}
           onGuestGatedAction={gate}
         />
-      ) : joinUiState?.kind === 'confirmed' && card.activityId && onInviteCrew ? (
-        <ExploreParticipantPeekActions
-          activityId={card.activityId}
-          onInviteCrew={onInviteCrew}
+      ) : activityMapPeekActions.length > 0 && onActivityMapPeekAction ? (
+        <ExploreActivityMapPeekActions
+          card={card}
+          actions={activityMapPeekActions}
+          linkRideshareTenantId={linkRideshareTenantId}
+          onAction={onActivityMapPeekAction}
           onGuestGatedAction={gate}
+          joinStateLoading={joinStateLoading}
         />
+      ) : showActivityJoinFlow && joinUiState && !joinStateLoading ? (
+        <>
+          <JoinRequestActions
+            uiState={joinUiState}
+            joinLabel={card.primaryCta}
+            isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
+            onJoin={gate ?? onJoin}
+          />
+          {card.secondaryCta ? (
+            detailLink(
+              card.secondaryCta,
+              'block w-full py-2.5 text-center text-sm font-semibold text-gray-600'
+            )
+          ) : null}
+        </>
+      ) : showActivityJoinFlow && joinStateLoading ? (
+        <div className="flex justify-center py-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+        </div>
       ) : isDemand && joinUiState?.kind === 'confirmed' ? (
         <>
           <button
@@ -142,16 +152,16 @@ export const ExploreItemPeekFooter = ({
         >
           {card.primaryCta}
         </button>
-      ) : card.showJoinActions && joinUiState && !joinStateLoading ? (
+      ) : card.showJoinActions && isDemand && joinUiState && !joinStateLoading ? (
         <>
           <JoinRequestActions
             uiState={joinUiState}
             joinLabel={card.primaryCta}
             isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
             onJoin={gate ?? onJoin}
-            onWithdraw={card.source === 'activity' ? onWithdraw : undefined}
+            onWithdraw={peekWithdraw}
           />
-          {card.secondaryCta && isDemand && onMessage ? (
+          {card.secondaryCta && onMessage ? (
             <button
               type="button"
               onClick={gate ?? onMessage}
@@ -159,15 +169,9 @@ export const ExploreItemPeekFooter = ({
             >
               {card.secondaryCta}
             </button>
-          ) : card.secondaryCta && card.source === 'activity' ? (
-            detailLink(
-              card.path,
-              card.secondaryCta,
-              'block w-full py-2.5 text-center text-sm font-semibold text-gray-600'
-            )
           ) : null}
         </>
-      ) : card.showJoinActions && joinStateLoading ? (
+      ) : card.showJoinActions && isDemand && joinStateLoading ? (
         <div className="flex justify-center py-3">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
         </div>
@@ -190,7 +194,6 @@ export const ExploreItemPeekFooter = ({
             </button>
           ) : card.secondaryCta && card.source === 'activity' ? (
             detailLink(
-              card.path,
               card.secondaryCta,
               'block w-full py-2.5 text-center text-sm font-semibold text-gray-600'
             )
@@ -219,7 +222,6 @@ export const ExploreItemPeekFooter = ({
         ) : (
           <>
             {detailLink(
-              card.path,
               card.primaryCta,
               'block w-full rounded-2xl bg-emerald-500 py-3.5 text-center text-base font-bold text-white'
             )}
@@ -254,15 +256,13 @@ export const ExploreItemPeekFooter = ({
               longitude={card.mapLongitude}
             />
           ) : null}
-          {detailLink(
-            card.path,
-            card.primaryCta,
-            'block w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white'
-          )}
+            {detailLink(
+              card.primaryCta,
+              'block w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white'
+            )}
         </>
       ) : (
         detailLink(
-          card.path,
           card.secondaryCta ?? 'View details',
           'block w-full rounded-2xl bg-neutral-100 py-3.5 text-center text-base font-bold text-gray-900'
         )

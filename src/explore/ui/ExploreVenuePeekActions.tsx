@@ -1,8 +1,10 @@
 import type { ExploreCardModel } from '../exploreCardModel';
 import { exploreCardHasMapCoords } from '../exploreCardModel';
 import { ExploreCardDirectionsButton } from './ExploreCardPresentation';
+import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
 
 export const EXPLORE_VENUE_PLAN_TRIP_LABEL = 'Plan trip';
+const EXPLORE_VENUE_VIEW_DETAILS_LABEL = 'View details';
 
 const primaryButtonClass: Record<'emerald' | 'amber' | 'violet', string> = {
   emerald: 'bg-emerald-600 hover:bg-emerald-700',
@@ -16,19 +18,21 @@ const venuePeekAccent = (card: ExploreCardModel): 'emerald' | 'amber' | 'violet'
   return 'emerald';
 };
 
-interface ExploreVenuePeekFooterProps {
+interface ExploreVenuePeekActionsProps {
   card: ExploreCardModel;
   onPlanTrip: () => void;
+  onClose: () => void;
   /** Guests: sign-up before organizing. */
   onGuestGatedPlanTrip?: () => void;
 }
 
-/** Location / spot map peek — Plan trip (primary) and Get directions (secondary). */
-export const ExploreVenuePeekFooter = ({
+/** Location / spot map peek — Plan trip, view venue detail, optional directions. */
+export const ExploreVenuePeekActions = ({
   card,
   onPlanTrip,
+  onClose,
   onGuestGatedPlanTrip,
-}: ExploreVenuePeekFooterProps) => {
+}: ExploreVenuePeekActionsProps) => {
   const accent = venuePeekAccent(card);
   const primaryClass = `block w-full rounded-2xl py-3 text-center text-sm font-bold text-white transition-colors ${primaryButtonClass[accent]}`;
   const hasCoords = exploreCardHasMapCoords(card);
@@ -46,6 +50,13 @@ export const ExploreVenuePeekFooter = ({
   return (
     <div className="flex flex-col gap-2">
       {planTripControl}
+      <ExplorePeekDetailLink
+        card={card}
+        label={EXPLORE_VENUE_VIEW_DETAILS_LABEL}
+        className="block w-full rounded-2xl border border-neutral-200/80 bg-white py-3 text-center text-sm font-semibold text-gray-900 shadow-sm"
+        onGuestGatedAction={onGuestGatedPlanTrip}
+        onBeforeNavigate={onClose}
+      />
       {hasCoords ? (
         <ExploreCardDirectionsButton
           latitude={card.mapLatitude}

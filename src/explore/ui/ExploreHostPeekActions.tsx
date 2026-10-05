@@ -1,116 +1,131 @@
-import type { ActivityDTO } from '@uaetrail/shared-types';
-import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../createFlowCopy';
+import { useState } from 'react';
+import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
 import type { ExploreCardModel } from '../exploreCardModel';
+import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
+import { EXPLORE_Z } from '../../config/exploreTheme';
+
+export type ExploreHostPeekHandlers = {
+  onChat: () => void;
+  onViewParticipants: () => void;
+  onInvite: () => void;
+  onAddCarpool?: () => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
+};
 
 type ExploreHostPeekActionsProps = {
   card: ExploreCardModel;
   linkRideshareTenantId: string | null;
-  onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
-  onMessage?: () => void;
-  onHostRemove?: () => void;
-  /** Opens full manage sheet (Trips → Hosted). */
-  onFullManage?: () => void;
-  /** Check-in subview (optional underline link). */
-  onManage?: () => void;
-  onInviteCrew?: () => void;
+  handlers: ExploreHostPeekHandlers;
   onGuestGatedAction?: () => void;
 };
 
-const linkButtonClass =
-  'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950';
+const manageRowClass =
+  'w-full rounded-xl border border-neutral-200 bg-white px-4 py-3.5 text-left text-sm font-semibold text-neutral-900 active:bg-neutral-50';
 
-/** Host peek footer — Message + Delete; optional underlined check-in and link carpool. */
+/** Host’s own activity on the map — Chat + Manage (participants, invite, carpool, delete, duplicate). */
 export const ExploreHostPeekActions = ({
   card,
   linkRideshareTenantId,
-  onCreateLinkedRideshare,
-  onMessage,
-  onHostRemove,
-  onFullManage,
-  onManage,
-  onInviteCrew,
+  handlers,
   onGuestGatedAction,
 }: ExploreHostPeekActionsProps) => {
-  const gate = onGuestGatedAction;
+  const [manageOpen, setManageOpen] = useState(false);
   const activity = card.activity;
-
-  const canLinkRideshare = Boolean(
-    linkRideshareTenantId &&
-      activity &&
-      onCreateLinkedRideshare &&
-      canLinkRideshareToActivity(activity)
-  );
-
-  const showCheckIn = activity?.status === 'published' && Boolean(onManage);
+  const published = activity?.status === 'published';
+  const showCarpool =
+    Boolean(
+      handlers.onAddCarpool &&
+        linkRideshareTenantId &&
+        activity &&
+        canLinkRideshareToActivity(activity)
+    );
 
   const runGated = (action: () => void) => {
-    if (gate) {
-      gate();
+    if (onGuestGatedAction) {
+      onGuestGatedAction();
       return;
     }
     action();
   };
 
+  const runManageAction = (action: () => void) => {
+    setManageOpen(false);
+    runGated(action);
+  };
+
   return (
-    <div className="space-y-3">
-      {onFullManage ? (
+    <>
+      <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => runGated(onFullManage)}
-          className="w-full rounded-xl bg-neutral-900 py-3.5 text-sm font-bold text-white"
+          onClick={() => runGated(handlers.onChat)}
+          className={`min-w-0 flex-1 ${EXPLORE_PEEK_CTA.primary}`}
         >
-          Manage outing
+          Chat
         </button>
-      ) : null}
-      {onInviteCrew && activity?.status === 'published' ? (
         <button
           type="button"
-          onClick={() => runGated(onInviteCrew)}
-          className="w-full rounded-xl border border-neutral-200 bg-white py-3.5 text-sm font-bold text-neutral-900"
+          onClick={() => runGated(() => setManageOpen(true))}
+          className={`min-w-0 flex-1 ${EXPLORE_PEEK_CTA.secondary}`}
         >
-          Invite your crew
+          Manage
         </button>
-      ) : null}
-      <div className={onMessage && onHostRemove ? 'grid grid-cols-2 gap-2' : 'space-y-2'}>
-        {onMessage ? (
+      </div>
+
+      <ExploreResponsiveSheet
+        open={manageOpen}
+        onClose={() => setManageOpen(false)}
+        zClass={EXPLORE_Z.composeFlow}
+        maxWidthClass="max-w-md"
+        ariaLabel="Manage activity"
+      >
+        <div className="space-y-2 px-1 pb-[calc(var(--safe-bottom)+8px)] pt-1">
+          <p className="px-1 pb-1 text-center text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            Manage
+          </p>
           <button
             type="button"
-            onClick={() => runGated(onMessage)}
-            className="w-full rounded-xl bg-emerald-500 py-3.5 text-sm font-bold text-white"
+            className={manageRowClass}
+            onClick={() => runManageAction(handlers.onViewParticipants)}
           >
-            Message
+            View participants
           </button>
-        ) : null}
-        {onHostRemove ? (
+          {published ? (
+            <button
+              type="button"
+              className={manageRowClass}
+              onClick={() => runManageAction(handlers.onInvite)}
+            >
+              Invite
+            </button>
+          ) : null}
+          {showCarpool ? (
+            <button
+              type="button"
+              className={manageRowClass}
+              onClick={() => runManageAction(handlers.onAddCarpool!)}
+            >
+              Add carpool
+            </button>
+          ) : null}
           <button
             type="button"
-            onClick={() => runGated(onHostRemove)}
-            className="w-full rounded-xl border border-red-200 bg-white py-3.5 text-sm font-bold text-red-700"
+            className={manageRowClass}
+            onClick={() => runManageAction(handlers.onDuplicate)}
+          >
+            Duplicate
+          </button>
+          <button
+            type="button"
+            className="w-full rounded-xl border border-red-200 bg-white px-4 py-3.5 text-left text-sm font-bold text-red-700 active:bg-red-50"
+            onClick={() => runManageAction(handlers.onDelete)}
           >
             Delete
           </button>
-        ) : null}
-      </div>
-
-      {showCheckIn || canLinkRideshare ? (
-        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
-          {showCheckIn ? (
-            <button type="button" onClick={() => runGated(() => onManage!())} className={linkButtonClass}>
-              Check in attendees
-            </button>
-          ) : null}
-          {canLinkRideshare && activity ? (
-            <button
-              type="button"
-              onClick={() => runGated(() => onCreateLinkedRideshare!(activity))}
-              className={linkButtonClass}
-            >
-              {ORGANIZE_LINK_RIDESHARE_LABEL}
-            </button>
-          ) : null}
         </div>
-      ) : null}
-    </div>
+      </ExploreResponsiveSheet>
+    </>
   );
 };

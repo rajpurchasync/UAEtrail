@@ -70,8 +70,18 @@ const EXPLORE_PANELS = new Set<ExplorePanel>(['activities', 'venues', 'shops']);
 
 /** Open a specific explore map item (peek card), e.g. `demand:uuid` or `venue:uuid`. */
 export const EXPLORE_PIN_QUERY_KEY = 'pin';
+/** When `1`, activity peek shows join-invite banner (with `pin=activity:…`). */
+export const EXPLORE_JOIN_INVITE_QUERY_KEY = 'invite';
+/** Buddy user id — prefill post-publish invite after Plan a trip from Social. */
+export const PLAN_WITH_QUERY_KEY = 'planWith';
 /** When `1`, map/list show only the signed-in member's trips + wishlist pins. */
 export const MY_TRIPS_QUERY_KEY = 'myTrips';
+
+export const parsePlanWithUserId = (searchParams: Pick<URLSearchParams, 'get'>): string | null =>
+  searchParams.get(PLAN_WITH_QUERY_KEY)?.trim() || null;
+
+export const parseExploreJoinInvitePeek = (searchParams: Pick<URLSearchParams, 'get'>): boolean =>
+  searchParams.get(EXPLORE_JOIN_INVITE_QUERY_KEY) === '1';
 
 export const parseExplorePinMapItemId = (searchParams: Pick<URLSearchParams, 'get'>): string | null =>
   searchParams.get(EXPLORE_PIN_QUERY_KEY)?.trim() || null;
@@ -251,6 +261,12 @@ export const explorePath = (options?: {
   organizeFrom?: string;
   /** Limit pins to signed-in member trips + wishlist (requires auth). */
   myTrips?: boolean;
+  /** Open Explore Social people panel (`view=social`). */
+  social?: boolean;
+  /** Prefill compose — buddy to plan with (post-publish invite). */
+  planWith?: string;
+  /** Activity join-invite deep link — use with `pin=activity:{id}`. */
+  joinInvite?: boolean;
 }): string => {
   const params = new URLSearchParams();
   if (options?.filter && options.filter !== 'all') {
@@ -317,9 +333,40 @@ export const explorePath = (options?: {
   if (options?.myTrips) {
     params.set(MY_TRIPS_QUERY_KEY, '1');
   }
+  if (options?.social) {
+    params.set('view', 'social');
+    if (options.list !== false) {
+      params.set('list', '1');
+    }
+  }
+  if (options?.planWith?.trim()) {
+    params.set('planWith', options.planWith.trim());
+  }
+  if (options?.joinInvite) {
+    params.set(EXPLORE_JOIN_INVITE_QUERY_KEY, '1');
+  }
   const qs = params.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
 };
+
+/** Explore map with Social panel open. */
+export const exploreSocialPath = (options?: { list?: boolean }): string =>
+  explorePath({ social: true, list: options?.list ?? true });
+
+/** Start create flow with optional buddy to plan with. */
+export const explorePlanWithBuddyPath = (
+  buddyUserId: string,
+  mode: 'organize' | 'find'
+): string =>
+  explorePath({
+    list: true,
+    planWith: buddyUserId,
+    compose: mode === 'organize' ? { intent: 'organize', kind: 'activity' } : { intent: 'find' },
+  });
+
+/** Join me notification target — map peek with invite banner. */
+export const exploreActivityInvitePathFromRouting = (activityId: string): string =>
+  explorePath({ pin: `activity:${activityId}`, joinInvite: true, list: true });
 
 export const activityFilterToMapFilter = (activity: ActivityListFilterKey): MapFilterKey | undefined => {
   if (activity === 'all') return undefined;

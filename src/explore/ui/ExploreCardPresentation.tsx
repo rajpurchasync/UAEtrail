@@ -34,11 +34,13 @@ const detailIcon = (icon: ExploreCardDetailIcon) => {
 const ExploreCardHeadlineShell = ({
   detailAccess,
   onGuestGatedDetail,
+  onBeforeDetailNavigate,
   textClass,
   children,
 }: {
   detailAccess?: ExplorePeekDetailAccess | null;
   onGuestGatedDetail?: () => void;
+  onBeforeDetailNavigate?: () => void;
   textClass: string;
   children: ReactNode;
 }) => {
@@ -47,7 +49,11 @@ const ExploreCardHeadlineShell = ({
 
   if (detailAccess?.kind === 'link') {
     return (
-      <Link to={detailAccess.href} className={titleLinkClass}>
+      <Link
+        to={detailAccess.href}
+        className={titleLinkClass}
+        onClick={() => onBeforeDetailNavigate?.()}
+      >
         {children}
       </Link>
     );
@@ -69,12 +75,14 @@ export const ExploreCardHeadline = ({
   tone = 'hiking',
   detailAccess,
   onGuestGatedDetail,
+  onBeforeDetailNavigate,
 }: {
   sections: ExploreCardSections;
   size?: 'sm' | 'lg';
   tone?: ExploreCardTone;
   detailAccess?: ExplorePeekDetailAccess | null;
   onGuestGatedDetail?: () => void;
+  onBeforeDetailNavigate?: () => void;
 }) => {
   const textClass = size === 'lg' ? 'text-xl font-bold leading-snug' : 'text-[17px] font-bold leading-snug';
   const highlightClass = exploreCardToneTextClass[tone];
@@ -84,6 +92,7 @@ export const ExploreCardHeadline = ({
       <ExploreCardHeadlineShell
         detailAccess={detailAccess}
         onGuestGatedDetail={onGuestGatedDetail}
+        onBeforeDetailNavigate={onBeforeDetailNavigate}
         textClass={textClass}
       >
         {sections.plainTitle}
@@ -96,6 +105,7 @@ export const ExploreCardHeadline = ({
       <ExploreCardHeadlineShell
         detailAccess={detailAccess}
         onGuestGatedDetail={onGuestGatedDetail}
+        onBeforeDetailNavigate={onBeforeDetailNavigate}
         textClass={textClass}
       >
         {sections.titleText}
@@ -110,6 +120,7 @@ export const ExploreCardHeadline = ({
       <ExploreCardHeadlineShell
         detailAccess={detailAccess}
         onGuestGatedDetail={onGuestGatedDetail}
+        onBeforeDetailNavigate={onBeforeDetailNavigate}
         textClass={textClass}
       >
         <span>{sections.highlightName}</span>

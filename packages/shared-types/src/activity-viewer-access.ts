@@ -1,4 +1,5 @@
 import type { ActivityJoinMode } from './activity-join-mode.js';
+import type { ActivityMapPeekAction } from './activity-map-peek-actions.js';
 
 /** Payload depth for activity detail / peek surfaces. */
 export type DetailExposure = 'full' | 'redacted' | 'none';
@@ -33,6 +34,8 @@ export type ActivityViewerAccessDTO = {
   canViewFullActivity: boolean;
   canOpenDetailPage: boolean;
   joinMode: ActivityJoinMode;
+  /** Explore map peek footer — set on `GET /explore/map` activity rows only. */
+  mapPeekActions?: ActivityMapPeekAction[];
 };
 
 const ROSTER_FULL_LEVELS: ReadonlySet<ActivityViewerAccessLevel> = new Set([

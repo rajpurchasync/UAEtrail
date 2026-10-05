@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import type {
@@ -6,6 +6,7 @@ import type {
   ActivityParticipationDTO,
   ActivityViewerAccessDTO,
   MyActivityRequestDTO,
+  ReviewDTO,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { detailBackPath } from '../config/routingCatalog';
@@ -36,6 +37,7 @@ export const ActivityDetail = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromJoinInvite = searchParams.get('invite') === '1';
+  const joinInviteAutoOpenRef = useRef(false);
   const [activity, setActivity] = useState<ActivityDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +46,7 @@ export const ActivityDetail = () => {
   const [myRequest, setMyRequest] = useState<MyActivityRequestDTO | null | undefined>(undefined);
   const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
   const [viewerAccess, setViewerAccess] = useState<ActivityViewerAccessDTO | null>(null);
+  const [activityReviews, setActivityReviews] = useState<ReviewDTO[]>([]);
 
   const loadActivity = useCallback(() => {
     if (!id) return;
@@ -68,6 +71,14 @@ export const ActivityDetail = () => {
   useEffect(() => {
     loadActivity();
   }, [loadActivity]);
+
+  useEffect(() => {
+    if (!id || activity?.status !== 'published') {
+      setActivityReviews([]);
+      return;
+    }
+    void api.getActivityReviews(id).then((res) => setActivityReviews(res.data)).catch(() => setActivityReviews([]));
+  }, [id, activity?.status]);
 
   const joinUiState = resolveJoinRequestUiState({
     myRequest: myRequest ?? null,
@@ -97,6 +108,7 @@ export const ActivityDetail = () => {
   const hasMultiplePackages = pricePackages.length > 1;
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
   const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
+  const canWriteActivityReview = Boolean(participation?.checkedInAt);
 
   const detailExposure = useMemo(() => {
     if (!activity) return 'full' as const;
@@ -121,7 +133,8 @@ export const ActivityDetail = () => {
   const openJoinModal = () => {
     if (!id || !activity) return;
     if (!user) {
-      navigate(signInPathForReturn(`/activity/${id}`));
+      const returnPath = fromJoinInvite ? `/activity/${id}?invite=1` : `/activity/${id}`;
+      navigate(signInPathForReturn(returnPath));
       return;
     }
     if (!packageSelected) {
@@ -131,6 +144,24 @@ export const ActivityDetail = () => {
     setError(null);
     joinActions.openJoinModal();
   };
+
+  useEffect(() => {
+    if (!fromJoinInvite || loading || !activity || joinInviteAutoOpenRef.current) return;
+    if (isViewerHost) return;
+    if (activity.status !== 'published') return;
+    if (!user) return;
+    if (joinUiState.kind !== 'open') return;
+    joinInviteAutoOpenRef.current = true;
+    openJoinModal();
+  }, [
+    fromJoinInvite,
+    loading,
+    activity,
+    user,
+    joinUiState.kind,
+    isViewerHost,
+    openJoinModal,
+  ]);
 
   if (loading) {
     return (
@@ -220,20 +251,12 @@ export const ActivityDetail = () => {
         ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
         : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
-  const confirmedFooterExtras =
-    isConfirmedParticipant && id ? (
-      <>
-        <ActivityChatCallout activityId={id} />
-        <PushEnableBanner context="join" />
-      </>
-    ) : null;
-
   const confirmedSidebarExtras =
     isConfirmedParticipant && id ? (
-      <>
-        <ActivityChatCallout activityId={id} className="mb-4" />
-        <PushEnableBanner context="join" className="mb-4" />
-      </>
+      <div className="hidden md:block space-y-4">
+        <ActivityChatCallout activityId={id} />
+        <PushEnableBanner context="join" />
+      </div>
     ) : null;
 
   return (
@@ -282,12 +305,16 @@ export const ActivityDetail = () => {
         error={error}
         onJoin={openJoinModal}
         onWithdraw={() => joinActions.setShowWithdraw(true)}
-        confirmedExtras={confirmedFooterExtras}
         confirmedSidebarExtras={confirmedSidebarExtras}
         selectedPackageIndex={selectedPackageIndex}
         onSelectedPackageIndexChange={setSelectedPackageIndex}
         joinDisabled={!packageSelected}
         canSendJoinInvites={isConfirmedParticipant}
+        activityReviews={activityReviews}
+        onActivityReviewSubmitted={(review) =>
+          setActivityReviews((prev) => [review, ...prev.filter((row) => row.id !== review.id)])
+        }
+        canWriteActivityReview={canWriteActivityReview}
       />
       <WithdrawRequestModal
         open={joinActions.showWithdraw}

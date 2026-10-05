@@ -69,11 +69,14 @@
     {
       "id": "organisation_console",
       "label": "Organisation console",
-      "apiFiles": [],
+      "apiFiles": ["apps/api/src/routes/host.ts"],
       "routeRegistrars": [
+        "apps/api/src/routes/host.ts",
+        "apps/api/src/routes/host/registerHostTenantActivityRoutes.ts",
         "apps/api/src/routes/host/registerHostTeamRoutes.ts",
         "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts",
-        "apps/api/src/routes/host/registerHostSubmittedLocationRoutes.ts"
+        "apps/api/src/routes/host/registerHostSubmittedLocationRoutes.ts",
+        "apps/api/src/routes/host/registerHostDemandFulfillLegacy.ts"
       ],
       "feDomains": ["src/api/domains/organisation.ts", "src/api/domains/activities.ts"],
       "feRoots": ["src/pages/OrganisationManage.tsx", "src/components/organisation-console"]
@@ -91,15 +94,17 @@
       "label": "Social graph",
       "apiFiles": [
         "apps/api/src/lib/buddy-store.ts",
-        "apps/api/src/services/buddy-activity-presence.ts"
+        "apps/api/src/services/buddy-activity-presence.ts",
+        "apps/api/src/services/social-people.ts"
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerBuddyRoutes.ts",
         "apps/api/src/routes/user/registerFollowRoutes.ts",
-        "apps/api/src/routes/user/registerGroupRoutes.ts"
+        "apps/api/src/routes/user/registerGroupRoutes.ts",
+        "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
       ],
       "feDomains": ["src/api/domains/social.ts"],
-      "feRoots": ["src/pages/Buddies.tsx", "src/pages/Groups.tsx"]
+      "feRoots": ["src/pages/Buddies.tsx", "src/pages/Groups.tsx", "src/explore/ui/ExploreSocialPeopleList.tsx", "src/explore/ui/ExploreMemberDiscoveryList.tsx"]
     },
     {
       "id": "places",
@@ -131,11 +136,7 @@
       ],
       "routeRegistrars": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
       "feDomains": ["src/api/domains/account.ts"],
-      "feRoots": [
-        "src/explore/ui/useMemberDiscoveryRoster.ts",
-        "src/explore/ui/useBuddyActivityPresence.ts",
-        "src/explore/memberDiscoveryExplore.ts"
-      ]
+      "feRoots": ["src/pages/MemberProfile.tsx"]
     },
     {
       "id": "engagement",
@@ -157,13 +158,27 @@
     {
       "id": "platform_ops",
       "label": "Platform ops",
-      "apiFiles": ["apps/api/src/routes/admin.ts"],
+      "apiFiles": [
+        "apps/api/src/routes/admin.ts",
+        "apps/api/src/lib/platform-master-admin.ts"
+      ],
       "routeRegistrars": [
         "apps/api/src/routes/admin.ts",
-        "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts"
+        "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminPlaceRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminUserRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminTenantRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminGroupRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminAuditRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminNotificationRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminProductRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminPlatformStaffRoutes.ts"
       ],
       "feDomains": ["src/api/domains/admin.ts"],
-      "feRoots": ["src/pages/AdminOverview.tsx"]
+      "feRoots": ["src/pages/AdminOverview.tsx", "src/pages/AdminMembers.tsx"]
     }
   ],
   "apiMounts": [

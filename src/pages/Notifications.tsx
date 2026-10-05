@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { NotificationDTO } from '@uaetrail/shared-types';
 import { Award, Bell, ChevronRight } from 'lucide-react';
-import { GROUPS_PATH, PROFILE_BADGES_PATH, tripsPath } from '../config/routingCatalog';
+import { activityDetailInvitePath, GROUPS_PATH, PROFILE_BADGES_PATH, tripsPath } from '../config/routingCatalog';
 import { api } from '../api/index';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
@@ -46,6 +46,7 @@ const inferSection = (notif: NotificationDTO): NotificationSection => {
 
   if (kind === 'badge' || kind === 'reward' || kind === 'tier_upgrade') return 'Badges';
   if (kind === 'wishlist_match') return 'Activity updates';
+  if (kind === 'activity_join_invite') return 'Activity updates';
   if (kind.startsWith('join_request') || kind === 'request_withdrawal') return 'Activity updates';
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') return 'Buddy requests';
   if (kind === 'connection_member_followed') return 'Connections';
@@ -71,6 +72,12 @@ const inviteTokenFromMeta = (notif: NotificationDTO): string | null => {
   const meta = notif.meta as Record<string, unknown> | null | undefined;
   if (!meta || typeof meta.inviteToken !== 'string') return null;
   return meta.inviteToken;
+};
+
+const activityJoinInviteIdFromMeta = (notif: NotificationDTO): string | null => {
+  const meta = notif.meta as Record<string, unknown> | null | undefined;
+  if (!meta || meta.kind !== 'activity_join_invite') return null;
+  return typeof meta.activityId === 'string' ? meta.activityId : null;
 };
 
 export const Notifications = () => {
@@ -233,6 +240,18 @@ export const Notifications = () => {
                       className="inline-flex items-center gap-1 text-xs font-semibold text-amber-800 hover:text-amber-900"
                     >
                       View badges
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
+                {activityJoinInviteIdFromMeta(notif) && (
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100/80 pl-5">
+                    <Link
+                      to={activityDetailInvitePath(activityJoinInviteIdFromMeta(notif)!)}
+                      onClick={() => !notif.isRead && markRead(notif.id)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+                    >
+                      View outing and join
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>

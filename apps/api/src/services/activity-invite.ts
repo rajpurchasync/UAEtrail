@@ -85,6 +85,30 @@ export const createActivityJoinInvite = async (input: {
   return { id: invite._id, status: 'pending' };
 };
 
+export const createActivityJoinInvites = async (input: {
+  activityId: string;
+  fromUserId: string;
+  toUserIds: string[];
+}): Promise<{ sent: number; inviteeUserIds: string[] }> => {
+  const unique = [...new Set(input.toUserIds.filter((id) => id && id !== input.fromUserId))];
+  const inviteeUserIds: string[] = [];
+  for (const toUserId of unique) {
+    try {
+      await createActivityJoinInvite({
+        activityId: input.activityId,
+        fromUserId: input.fromUserId,
+        toUserId,
+      });
+      inviteeUserIds.push(toUserId);
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 'rate_limit') {
+        break;
+      }
+    }
+  }
+  return { sent: inviteeUserIds.length, inviteeUserIds };
+};
+
 export const resolveViewerPendingJoinInvite = async (
   activityId: string,
   viewerUserId: string

@@ -42,7 +42,8 @@ export interface ExploreCardModel {
   primaryCta: string;
   secondaryCta: string | null;
   showJoinActions: boolean;
-  showHostActions?: boolean;
+  /** Host viewing their own activity pin on Explore. */
+  showHostPeekActions?: boolean;
   /** Requester viewing their own active demand pin. */
   showDemandOwnerActions?: boolean;
   /** Hiking / camping / activity demand — host can publish a linked rideshare offer. */
@@ -246,8 +247,8 @@ export const exploreCardShowsInlineDirections = (card: ExploreCardModel): boolea
   exploreCardHasMapCoords(card) &&
   card.sections.details.some((detail) => detail.icon === 'location');
 
-/** Footer peek row already includes directions (join activities, shops with review CTAs). */
-export const exploreCardPeekFooterHasDirections = (card: ExploreCardModel): boolean => {
+/** Peek action row already includes directions (join activities, shops with review CTAs). */
+export const exploreCardPeekActionsHasDirections = (card: ExploreCardModel): boolean => {
   if (!exploreCardHasMapCoords(card) || exploreCardShowsInlineDirections(card)) return false;
   if (card.source === 'venue') return true;
   if (card.showJoinActions) return true;
@@ -255,11 +256,11 @@ export const exploreCardPeekFooterHasDirections = (card: ExploreCardModel): bool
   return false;
 };
 
-/** Extra directions row in peek body — only when not inline and not in footer. */
+/** Extra directions row in peek body — only when not inline and not in peek actions. */
 export const exploreCardShowPeekBodyDirections = (card: ExploreCardModel): boolean =>
   exploreCardHasMapCoords(card) &&
   !exploreCardShowsInlineDirections(card) &&
-  !exploreCardPeekFooterHasDirections(card);
+  !exploreCardPeekActionsHasDirections(card);
 
 export type ExploreFavoriteTarget = {
   locationId?: string;

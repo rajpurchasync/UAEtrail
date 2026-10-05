@@ -16,6 +16,9 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/host/*`** | Verified + **tenant** (`x-tenant-id`) | Organisation console: publish, check-in, **activity** join queue |
 | **`/users/*`** | Optional auth | Public member profiles |
 | **`/chat/*`**, **`/social/*`** | Auth | DMs, reviews, favorites |
+| **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
+| **`POST /admin/platform-admins`** | Master admin only | Grant `PLATFORM_ADMIN` to an existing member by email |
+| **`DELETE /admin/platform-admins/:userId`** | Master admin only | Revoke platform staff (not master accounts) |
 
 **Naming**
 
@@ -102,15 +105,41 @@ Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mong
 | Method | Path | Who |
 |--------|------|-----|
 | GET | `/me/buddies` | List accepted buddy relationships |
+| POST | `/me/buddy-requests/:id/accept` | Accept request — also upserts **mutual** `user_follows` (no follow notification) |
 | GET | `/me/buddies/activity-presence` | Buddies × **published activities** on explore map (hosting / participant previews). Query: `date` (explore date preset). |
 
 Registration: `registerBuddyRoutes.ts` · service: `buddy-activity-presence.ts`.
 
-Explore **Who's going** panel (UI) loads this for the **Buddies** segment — not a separate `/whos-going/*` API.
+Explore **Social** panel (UI) uses **`GET /social/people`** (see below) — `activity-presence` remains for map-adjacent tooling.
 
 ---
 
-## Member discovery (Explore Discover segment)
+## Social people roster (`/social`)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/social/people/preview` | Friend avatars + counts for Explore map pill |
+| GET | `/social/people` | Friends / following roster for Explore Social panel. Query: `segment=all\|friends\|followed` |
+| GET | `/me/member-discovery/roster` | Explore Social **Discover** tab — on-trip strangers + public directory (`q`, `date`, pagination); `meta.quota` |
+
+Registration: `apps/api/src/routes/social/registerSocialPeopleRoutes.ts` · service: `social-people.ts`.
+
+---
+
+## Reviews (`social_reviews`)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/reviews` | Public list. Query: `targetType=location\|tenant\|activity`, `targetId`, pagination |
+| POST | `/reviews` | Signed-in · place, host/shop, or **activity** (activity requires host check-in) |
+| GET | `/me/reviews` | Signed-in member's reviews |
+| PATCH | `/me/reviews/:id` | Edit own review |
+
+Registration: `registerSocialReviewRoutes.ts` (mounted on root `socialRouter` in `routes/social.ts`). Favorites remain on the same `socialRouter`.
+
+---
+
+## Member discovery (directory / quota)
 
 | Method | Path | Who |
 |--------|------|-----|

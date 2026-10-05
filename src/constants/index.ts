@@ -54,7 +54,7 @@ export const HOST_DASHBOARD_LINKS = HOST_CONSOLE_LINKS;
 export const ADMIN_LINKS = [
   { to: ADMIN_OVERVIEW_PATH, label: 'Overview' },
   { to: ADMIN_PLACES_PATH, label: 'Places' },
-  { to: ADMIN_USERS_PATH, label: 'Members' },
+  { to: ADMIN_USERS_PATH, label: 'Users' },
   { to: ADMIN_HOSTS_PATH, label: 'Hosts' },
   { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },
   { to: ADMIN_GROUPS_PATH, label: 'Groups' },

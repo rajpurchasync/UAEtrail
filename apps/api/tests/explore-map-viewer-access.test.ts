@@ -1,10 +1,30 @@
 import { describe, expect, it } from 'vitest';
+import { RequestStatus } from '../src/domain/enums.js';
 import { resolveCommerceMapViewerAccess } from '@uaetrail/shared-types';
 import {
   attachExploreMapViewerAccess,
   resolveDemandMapViewerAccess,
 } from '../src/lib/explore-map-viewer-access.js';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+
+const openActivityItem = (): ExploreMapItemDTO => ({
+  id: 'activity:a1',
+  kind: 'hiking',
+  source: 'activity',
+  title: 'Hike',
+  latitude: 25,
+  longitude: 55,
+  path: '/activity/a1',
+  activity: {
+    id: 'a1',
+    tenantId: 't1',
+    hostUserId: 'host-1',
+    status: 'published',
+    title: 'Hike',
+    joinMode: 'open',
+    requirements: [],
+  } as ExploreMapItemDTO['activity'],
+});
 
 describe('resolveDemandMapViewerAccess', () => {
   it('gates guests with sign_in', () => {
@@ -74,6 +94,133 @@ describe('attachExploreMapViewerAccess', () => {
 
     expect(enriched[0].viewerAccess?.gateReason).toBe('sign_in');
     expect(enriched[0].viewerAccess?.canOpenDetailPage).toBe(true);
+    expect(enriched[0].viewerAccess?.mapPeekActions).toEqual([]);
+  });
+
+  it('attaches host mapPeekActions for activity host viewer', () => {
+    const items: ExploreMapItemDTO[] = [
+      {
+        id: 'activity:a1',
+        kind: 'hiking',
+        source: 'activity',
+        title: 'Hike',
+        latitude: 25,
+        longitude: 55,
+        path: '/activity/a1',
+        activity: {
+          id: 'a1',
+          tenantId: 't1',
+          hostUserId: 'host-1',
+          status: 'published',
+          title: 'Hike',
+          joinMode: 'open',
+          requirements: [],
+        } as ExploreMapItemDTO['activity'],
+      },
+    ];
+
+    const enriched = attachExploreMapViewerAccess(items, {
+      viewerUserId: 'host-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map(),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.level).toBe('host');
+    expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
+      'open_crew_chat',
+      'link_carpool',
+      'invite_crew',
+    ]);
+  });
+
+  it('attaches participant mapPeekActions for approved roster viewer', () => {
+    const items: ExploreMapItemDTO[] = [
+      {
+        id: 'activity:a1',
+        kind: 'hiking',
+        source: 'activity',
+        title: 'Hike',
+        latitude: 25,
+        longitude: 55,
+        path: '/activity/a1',
+        activity: {
+          id: 'a1',
+          tenantId: 't1',
+          hostUserId: 'host-1',
+          status: 'published',
+          title: 'Hike',
+          joinMode: 'open',
+          requirements: [],
+        } as ExploreMapItemDTO['activity'],
+      },
+    ];
+
+    const enriched = attachExploreMapViewerAccess(items, {
+      viewerUserId: 'member-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(['a1']),
+      requestStatusByActivityId: new Map(),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.level).toBe('participant');
+    expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
+      'message_host',
+      'invite_crew',
+      'view_detail',
+    ]);
+  });
+
+  it('attaches request_join for signed-in non-roster member', () => {
+    const enriched = attachExploreMapViewerAccess([openActivityItem()], {
+      viewerUserId: 'member-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map(),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.level).toBe('link_holder');
+    expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
+      'request_join',
+      'view_detail',
+    ]);
+  });
+
+  it('attaches pending_join for pending join request', () => {
+    const enriched = attachExploreMapViewerAccess([openActivityItem()], {
+      viewerUserId: 'member-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map([['a1', RequestStatus.PENDING]]),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.level).toBe('join_request');
+    expect(enriched[0].viewerAccess?.mapPeekActions).toEqual([
+      { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
+      { id: 'view_detail', prominence: 'text' },
+    ]);
+  });
+
+  it('gives tenant staff view_detail only on another hosts pin', () => {
+    const enriched = attachExploreMapViewerAccess([openActivityItem()], {
+      viewerUserId: 'staff-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map(),
+      staffTenantIds: new Set(['t1']),
+      demandJoinStatusByIntentId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.level).toBe('tenant_staff');
+    expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual(['view_detail']);
   });
 
   it('attaches commerce viewerAccess for shop rows', () => {

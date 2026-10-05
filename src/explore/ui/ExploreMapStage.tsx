@@ -46,10 +46,10 @@ export type ExploreMapStageProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
-  onOpenGoingPanel: () => void;
-  goingPanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  goingPanelExtraCount?: number;
-  goingPanelTotalJoining?: number;
+  onOpenSocialPanel: () => void;
+  socialPanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
+  socialPanelExtraCount?: number;
+  socialPanelFriendCount?: number;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
@@ -81,21 +81,20 @@ export type ExploreMapStageProps = {
   onCloseSelection: () => void;
   onJoin: () => void;
   onMessage: () => void;
-  onManage?: () => void;
-  onHostFullManage?: () => void;
   onWithdraw: () => void;
+  activityPeekSkipsJoinContext?: boolean;
+  onActivityMapPeekAction?: (actionId: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
   linkRideshareTenantId?: string | null;
-  onCreateLinkedRideshare?: (parent: import('@uaetrail/shared-types').ActivityDTO) => void;
-  onHostRemove?: () => void;
   onDemandRemove?: () => void;
   onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
+  hostPeekHandlers?: import('./ExploreHostPeekActions').ExploreHostPeekHandlers | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onCloseMobileBrowse: () => void;
   mobileBrowseSheet: ReactNode;
   onGuestGatedAction?: () => void;
   onPlanTripFromVenue?: (item: import('@uaetrail/shared-types').ExploreMapItemDTO) => void;
-  onInviteCrew?: () => void;
+  joinInvitePeekBanner?: string | null;
 };
 
 export const ExploreMapStage = ({
@@ -114,10 +113,10 @@ export const ExploreMapStage = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
-  onOpenGoingPanel,
-  goingPanelAvatars,
-  goingPanelExtraCount,
-  goingPanelTotalJoining,
+  onOpenSocialPanel,
+  socialPanelAvatars,
+  socialPanelExtraCount,
+  socialPanelFriendCount,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -149,27 +148,26 @@ export const ExploreMapStage = ({
   onCloseSelection,
   onJoin,
   onMessage,
-  onManage,
-  onHostFullManage,
   onWithdraw,
+  activityPeekSkipsJoinContext = false,
+  onActivityMapPeekAction,
   linkRideshareTenantId = null,
-  onCreateLinkedRideshare,
-  onHostRemove,
   onDemandRemove,
   onDemandFullManage,
   onDemandLinkRideshare,
+  hostPeekHandlers = null,
   onOpenExploreItem,
   onCloseMobileBrowse,
   mobileBrowseSheet,
   onGuestGatedAction,
   onPlanTripFromVenue,
-  onInviteCrew,
+  joinInvitePeekBanner = null,
 }: ExploreMapStageProps) => {
   const guestGatedAction = user ? undefined : onGuestGatedAction;
 
   return (
   <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-    <div className="relative min-h-0 flex-1">
+    <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-[#eef2f6]" />}>
           <PlacesMap
@@ -205,10 +203,10 @@ export const ExploreMapStage = ({
         onMapFilterChange={onMapFilterChange}
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
-        onOpenGoingPanel={onOpenGoingPanel}
-        goingPanelAvatars={goingPanelAvatars}
-        goingPanelExtraCount={goingPanelExtraCount}
-        goingPanelTotalJoining={goingPanelTotalJoining}
+        onOpenSocialPanel={onOpenSocialPanel}
+        socialPanelAvatars={socialPanelAvatars}
+        socialPanelExtraCount={socialPanelExtraCount}
+        socialPanelFriendCount={socialPanelFriendCount}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
@@ -317,19 +315,17 @@ export const ExploreMapStage = ({
           onGuestGatedAction={guestGatedAction}
           onJoin={onJoin}
           onMessage={onMessage}
-          onManage={onManage}
-          onHostFullManage={onHostFullManage}
           linkRideshareTenantId={linkRideshareTenantId}
-          onCreateLinkedRideshare={onCreateLinkedRideshare}
-          onHostRemove={onHostRemove}
           onDemandRemove={onDemandRemove}
           onDemandFullManage={onDemandFullManage}
           onDemandLinkRideshare={onDemandLinkRideshare}
           onOpenExploreItem={onOpenExploreItem}
-          joinUiState={selectedCard.showHostActions ? undefined : joinUiState}
+          joinUiState={activityPeekSkipsJoinContext ? undefined : joinUiState}
           onWithdraw={onWithdraw}
           joinStateLoading={joinStateLoading}
-          onInviteCrew={onInviteCrew}
+          onActivityMapPeekAction={onActivityMapPeekAction}
+          hostPeekHandlers={hostPeekHandlers}
+          joinInvitePeekBanner={joinInvitePeekBanner}
         />
       ) : null}
     </div>

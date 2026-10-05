@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import type { ExploreCardModel } from '../exploreCardModel';
-import { EXPLORE_PEEK } from '../../config/exploreTheme';
+import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../config/exploreTheme';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../components/ui/ShareButton';
 import { ExploreSaveButton } from './ExploreSaveButton';
@@ -15,49 +15,47 @@ import {
   ExploreActivityPeekMeta,
   ExploreVenueImageBadges,
 } from './ExploreCardPresentation';
-import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { resolvePeekDetailAccess } from '../../access/resolvePeekDetailAccess';
 
 interface ExploreMapPeekCardProps {
   card: ExploreCardModel;
   onClose: () => void;
-  footer: ReactNode;
+  /** Peek card CTA block (not a page footer — actions from API or join flow). */
+  actions: ReactNode;
   children?: ReactNode;
-  joinUiState?: JoinRequestUiState;
   joinStateLoading?: boolean;
   onGuestGatedAction?: () => void;
-  /** Keep footer CTAs visible; scroll body only (desktop item sheet). */
-  pinFooter?: boolean;
   /** Inline rail / list — hide dismiss controls on the card chrome. */
   embedMode?: boolean;
+  /** Join-me invite nudge above peek actions. */
+  statusBanner?: string | null;
 }
 
 /** Unified floating peek card above map chrome — venues, activities, shops. */
 export const ExploreMapPeekCard = ({
   card,
   onClose,
-  footer,
+  actions,
   children,
-  joinUiState,
   joinStateLoading = false,
   onGuestGatedAction,
-  pinFooter = false,
   embedMode = false,
+  statusBanner = null,
 }: ExploreMapPeekCardProps) => {
   const titleDetailAccess = resolvePeekDetailAccess(card, {
     isGuest: Boolean(onGuestGatedAction),
     joinStateLoading,
   });
-  const shellClass = pinFooter
-    ? `${EXPLORE_PEEK.shell} lg:flex lg:max-h-[min(85vh,640px)] lg:min-h-0 lg:flex-col lg:overflow-hidden`
+  const shellClass = embedMode
+    ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
     : EXPLORE_PEEK.shell;
 
   return (
     <div className={shellClass}>
       {card.coverImage ? (
         <div
-          className={`relative aspect-[2/1] w-full shrink-0 overflow-hidden bg-neutral-100${
-            pinFooter ? ' lg:aspect-auto lg:max-h-[220px]' : ''
+          className={`relative w-full shrink-0 overflow-hidden bg-neutral-100${
+            embedMode ? ' aspect-[2/1]' : ' h-[min(28dvh,220px)]'
           }`}
         >
           <EnvironmentImage
@@ -107,9 +105,9 @@ export const ExploreMapPeekCard = ({
 
       <div
         className={
-          pinFooter
-            ? 'px-4 pt-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain'
-            : 'px-4 pt-3'
+          embedMode
+            ? 'px-4 pt-3'
+            : 'min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-3'
         }
       >
         <ExploreCardHeadline
@@ -118,6 +116,7 @@ export const ExploreMapPeekCard = ({
           tone={card.tone}
           detailAccess={titleDetailAccess}
           onGuestGatedDetail={onGuestGatedAction}
+          onBeforeDetailNavigate={onClose}
         />
         {card.source === 'activity' ? <ExploreActivityPeekMeta card={card} /> : null}
         <ExploreCardRatingRow card={card} />
@@ -135,23 +134,42 @@ export const ExploreMapPeekCard = ({
           />
         ) : null}
         {children}
+        {statusBanner ? (
+          <p
+            className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-sm font-medium leading-snug text-emerald-900"
+            role="status"
+          >
+            {statusBanner}
+          </p>
+        ) : null}
       </div>
 
       <div
         className={
-          pinFooter
-            ? 'shrink-0 space-y-2 border-t border-neutral-100 px-4 py-3 pb-safe'
-            : 'mt-3 space-y-2 border-t border-neutral-100 px-4 py-3 pb-safe'
+          embedMode
+            ? 'mt-3 space-y-2 border-t border-neutral-100 px-4 py-3'
+            : 'shrink-0 space-y-2 border-t border-neutral-100 px-4 py-3'
         }
       >
-        {footer}
+        {actions}
       </div>
     </div>
   );
 };
 
-export const ExploreMapPeekPosition = ({ children }: { children: ReactNode }) => (
-  <div className={EXPLORE_PEEK.position}>
-    <div className={EXPLORE_PEEK.inner}>{children}</div>
+export const ExploreMapPeekPosition = ({
+  children,
+  onClose,
+}: {
+  children: ReactNode;
+  onClose?: () => void;
+}) => (
+  <div className={`${EXPLORE_PEEK.position} ${EXPLORE_SHEET.scrim}`}>
+    {onClose ? (
+      <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
+    ) : null}
+    <div className={`${EXPLORE_PEEK.inner} relative z-10`} data-explore-peek="card">
+      {children}
+    </div>
   </div>
 );

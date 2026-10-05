@@ -9,7 +9,7 @@ import { OrganisationActivityCheckInPanel } from '../organisation-console/Organi
 import { OrganisationActivityHostConfirmDialogs } from './OrganisationActivityHostConfirmDialogs';
 import { api } from '../../api/index';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
-import { ActivityInviteSharePanel } from '../activity/ActivityInviteSharePanel';
+import { ActivityInviteLauncher } from '../activity/ActivityInviteLauncher';
 import type { useOrganisationActivityHostActions } from '../../hooks/useOrganisationActivityHostActions';
 import { HostActivityDetailView } from './HostActivityDetailView';
 import { buildTripsHostedActivityMenuItems } from './buildTripsHostedActivityMenu';
@@ -209,7 +209,7 @@ export const HostActivityManageSheet = ({
               <HostActivityDetailView activity={activity} />
 
               {activity.status === 'published' ? (
-                <ActivityInviteSharePanel
+                <ActivityInviteLauncher
                   activity={{
                     id: activity.id,
                     title,
@@ -218,7 +218,6 @@ export const HostActivityManageSheet = ({
                     locationName: activity.locationName,
                   }}
                   canSendBuddyInvites
-                  compact
                 />
               ) : null}
 

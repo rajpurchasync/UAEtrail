@@ -29,6 +29,7 @@ interface ExploreComposeHostProps {
   onContributeSubmitted: (result: ContributeSubmitResult) => void;
   onDemandSubmitted: (result: DemandSubmitResult) => void;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
+  planWithBuddyUserId?: string | null;
 }
 
 /** FAB compose menu and create wizards — mounted once at explore shell level. */
@@ -54,6 +55,7 @@ export const ExploreComposeHost = ({
   onContributeSubmitted,
   onDemandSubmitted,
   onCreateLinkedRideshare,
+  planWithBuddyUserId = null,
 }: ExploreComposeHostProps) => (
   <>
     {composeMenuOpen && exploreCompose && (
@@ -86,6 +88,7 @@ export const ExploreComposeHost = ({
         onPublished={onActivityPublished}
         onOpenHostApplication={onOpenHostApplication}
         signInHref={signInHref}
+        planWithBuddyUserId={planWithBuddyUserId}
       />
     )}
 

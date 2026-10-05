@@ -1,5 +1,6 @@
 import {
   computeActivityDetailExposure,
+  computeActivityMapPeekActions,
   resolveCommerceMapViewerAccess,
   resolvePublicPlaceMapViewerAccess,
   type ActivityJoinMode,
@@ -199,16 +200,30 @@ export const attachExploreMapViewerAccess = (
         requestStatusByActivityId: ctx.requestStatusByActivityId,
         staffTenantIds: ctx.staffTenantIds,
       });
+      const exposure = computeActivityDetailExposure({
+        joinMode,
+        level,
+        viewerUserId: ctx.viewerUserId,
+      });
+      const activityPublished = item.activity.status === 'published';
+      const rawRequestStatus = ctx.requestStatusByActivityId.get(item.activity.id);
+      const joinRequestStatus =
+        rawRequestStatus === RequestStatus.PENDING
+          ? 'pending'
+          : rawRequestStatus === RequestStatus.WAITLISTED
+            ? 'waitlisted'
+            : null;
       return {
         ...item,
-        viewerAccess: withEntitlements(
-          ctx,
-          computeActivityDetailExposure({
-            joinMode,
+        viewerAccess: withEntitlements(ctx, {
+          ...exposure,
+          mapPeekActions: computeActivityMapPeekActions({
             level,
-            viewerUserId: ctx.viewerUserId,
-          })
-        ),
+            activityPublished,
+            joinMode,
+            joinRequestStatus,
+          }),
+        }),
       };
     }
 

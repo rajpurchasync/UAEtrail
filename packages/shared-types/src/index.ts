@@ -304,6 +304,17 @@ export type {
   BuddyActivityPresenceRowDTO,
   ExploreActivityRefDTO,
 } from './buddy-activity-presence.js';
+export type {
+  SocialPeopleDTO,
+  SocialPeoplePreviewDTO,
+  SocialPeoplePreviewPersonDTO,
+  SocialPeopleSegment,
+  SocialPeopleRelationship,
+  SocialPersonBuddyRequestState,
+  SocialPersonRowDTO,
+  SocialPersonTripHintDTO,
+  SocialPersonTripRole,
+} from './social-people.js';
 export {
   ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY,
   ACTIVITY_JOIN_INVITE_WINDOW_MS,
@@ -437,6 +448,8 @@ export interface AuthUser {
   displayName?: string | null;
   avatarUrl?: string | null;
   switchedFromRole?: string | null;
+  /** May grant/revoke other platform admins (master admin). */
+  platformMasterAdmin?: boolean;
 }
 
 export interface AuthTokens {
@@ -524,7 +537,7 @@ export interface ProductDTO {
   region?: string | null;
 }
 
-export type ReviewTargetType = 'location' | 'tenant';
+export type ReviewTargetType = 'location' | 'tenant' | 'activity';
 
 export interface ReviewDTO {
   id: string;
@@ -1157,6 +1170,13 @@ export {
 } from './activity-viewer-access.js';
 
 export {
+  computeActivityMapPeekActions,
+  type ActivityMapPeekAction,
+  type ActivityMapPeekActionId,
+  type ActivityMapPeekActionProminence,
+} from './activity-map-peek-actions.js';
+
+export {
   computeProfileDetailExposure,
   type ProfileDetailExposure,
   type ProfileVisibilitySetting,
@@ -1286,6 +1306,7 @@ export {
   EXPLORE_SHOPS_PATH,
   activityDetailPath,
   activityDetailInvitePath,
+  exploreActivityInvitePath,
   memberProfilePath,
   normalizePlaceActivityType,
   organisationProfilePath,

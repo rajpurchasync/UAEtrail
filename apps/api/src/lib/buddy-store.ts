@@ -4,6 +4,7 @@ import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import { newEntityId } from './entity-builders.js';
 import { ApiError } from './api-error.js';
 import { getMongoClient } from './mongo.js';
+import { followUser } from './follow-store.js';
 
 const REQUESTS_COLLECTION = 'buddy_requests';
 const PAIRS_COLLECTION = 'buddy_pairs';
@@ -166,6 +167,12 @@ export const acceptBuddyRequest = async (
   }
 
   await ensurePairForAcceptedRequest(updated);
+
+  // Mutual follow (no follow notification — buddy accept already notifies).
+  await Promise.all([
+    followUser(updated.fromUserId, updated.toUserId),
+    followUser(updated.toUserId, updated.fromUserId),
+  ]);
 
   await requestsCollection().updateMany(
     {

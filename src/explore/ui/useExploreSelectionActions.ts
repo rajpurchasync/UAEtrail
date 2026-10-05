@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import type { NavigateFunction } from 'react-router-dom';
-import type { ActivityDTO, ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
-import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityMapPeekActionId, ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
+import { resolveActivityDisplayCoordinates, resolveActivityHostUserId } from '@uaetrail/shared-types';
 import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
 import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../privateActivityExploreItem';
 import { api } from '../../api/index';
@@ -11,13 +11,18 @@ import { finalizeExploreCardLinkedRideshare } from '../linkedRideshareExplore';
 import { canOfferRideshareForDemandItem } from '../linkActivityRideshareOffer';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
-import { viewerHostsActivity } from '../../utils/viewerHostsActivity';
+import {
+  activityMapPeekNeedsJoinContext,
+  activityMapPeekSkipsJoinContext,
+} from '../activityMapPeekActions';
+import { viewerIsActivityHostUser } from '../../utils/viewerHostsActivity';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useParticipantIntentJoinContext } from '../../hooks/useParticipantIntentJoinContext';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
 import { navigateToHostedActivityManage } from '../../host/navigateHostedActivityManage';
+import { navigateToReorganizeActivity } from '../navigateReorganizeActivity';
 import { navigateToParticipantIntentManage } from '../../trips/navigateParticipantIntentManage';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
@@ -38,7 +43,11 @@ type UseExploreSelectionActionsArgs = {
   closeCompose: () => void;
   handleFocusMapLocation: (coords: { lat: number; lng: number }) => void;
   setLinkOnlyPeekItems: Dispatch<SetStateAction<ExploreMapItemDTO[]>>;
-  onInviteActivity?: (activity: ActivityDTO) => void;
+  onInviteActivity?: (
+    activity: ActivityDTO,
+    options?: { canSendBuddyInvites?: boolean }
+  ) => void;
+  onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
 };
 
 export const useExploreSelectionActions = ({
@@ -55,6 +64,7 @@ export const useExploreSelectionActions = ({
   handleFocusMapLocation,
   setLinkOnlyPeekItems,
   onInviteActivity,
+  onCreateLinkedRideshare,
 }: UseExploreSelectionActionsArgs) => {
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
@@ -74,11 +84,15 @@ export const useExploreSelectionActions = ({
     if (!selected) return null;
     const card = finalizeExploreCardLinkedRideshare(buildExploreCardModel(selected), selected, items);
     const activity = card.activity;
+    const mapHostLevel = selected.viewerAccess?.level === 'host';
     const isOwnActivity = Boolean(
       user &&
         activity &&
-        viewerHostsActivity(activity, user.id, tenantId ?? null, Boolean(tenantId && user))
+        selected.source === 'activity' &&
+        viewerIsActivityHostUser(activity, user.id) &&
+        (selected.viewerAccess == null || mapHostLevel)
     );
+    const activityHostPeek = isOwnActivity;
     const isOwnDemand = Boolean(
       user &&
         selected.source === 'demand' &&
@@ -94,15 +108,20 @@ export const useExploreSelectionActions = ({
         showDemandLinkRideshare: canOfferRideshareForDemandItem(selected),
       };
     }
-    if (!isOwnActivity) return card;
+    if (!activityHostPeek) return card;
     return {
       ...card,
       showJoinActions: false,
-      showHostActions: true,
+      showHostPeekActions: true,
     };
-  }, [selected, items, user, tenantId]);
+  }, [selected, items, user]);
 
-  const joinContextEnabled = Boolean(selected?.activity?.id && !selectedCard?.showHostActions && user);
+  const joinContextEnabled = Boolean(
+    selected?.activity?.id &&
+      user &&
+      selectedCard &&
+      activityMapPeekNeedsJoinContext(selectedCard)
+  );
   const {
     context: joinContext,
     uiState: joinUiState,
@@ -130,10 +149,19 @@ export const useExploreSelectionActions = ({
     userId: user?.id,
   });
 
+  const activityPeekSkipsJoinContext = useMemo(
+    () =>
+      Boolean(
+        selectedCard &&
+          activityMapPeekSkipsJoinContext(selectedCard, joinUiState)
+      ),
+    [selectedCard, joinUiState]
+  );
+
   const peekJoinUiState =
     selected?.source === 'demand' && !selectedCard?.showDemandOwnerActions
       ? demandJoinUiState
-      : selectedCard?.showHostActions
+      : activityPeekSkipsJoinContext
         ? undefined
         : joinUiState;
   const peekJoinStateLoading =
@@ -227,6 +255,23 @@ export const useExploreSelectionActions = ({
     }
   }, [selected, navigate, setSelectedId]);
 
+  const handleMessageActivityHost = useCallback(() => {
+    const activity = selected?.activity;
+    if (!activity) return;
+    const hostUserId = resolveActivityHostUserId(activity);
+    if (!hostUserId) return;
+    if (!user) {
+      joinActions.openGuestSheet('activity');
+      return;
+    }
+    setSelectedId(null);
+    navigate(
+      messagesRouteForRole((user.role ?? 'participant') as UserRole, hostUserId, {
+        activityId: activity.id,
+      })
+    );
+  }, [selected, user, navigate, setSelectedId, joinActions]);
+
   const handleHostManage = useCallback(() => {
     const activity = selected?.activity;
     if (!activity) return;
@@ -244,8 +289,67 @@ export const useExploreSelectionActions = ({
   const handleInviteCrew = useCallback(() => {
     const activity = selected?.activity;
     if (!activity || activity.status !== 'published') return;
-    onInviteActivity?.(activity);
+    onInviteActivity?.(activity, { canSendBuddyInvites: true });
   }, [onInviteActivity, selected?.activity]);
+
+  const handleHostDuplicate = useCallback(() => {
+    const activity = selected?.activity;
+    if (!activity) return;
+    setSelectedId(null);
+    navigateToReorganizeActivity(navigate, activity);
+  }, [selected?.activity, navigate, setSelectedId]);
+
+  const handleHostAddCarpool = useCallback(() => {
+    const activity = selected?.activity;
+    if (!activity || !onCreateLinkedRideshare) return;
+    onCreateLinkedRideshare(activity);
+  }, [selected?.activity, onCreateLinkedRideshare]);
+
+  const handleActivityMapPeekAction = useCallback(
+    (actionId: ActivityMapPeekActionId) => {
+      const activity = selected?.activity;
+      switch (actionId) {
+        case 'open_crew_chat':
+          void handleHostMessage();
+          return;
+        case 'message_host':
+          handleMessageActivityHost();
+          return;
+        case 'invite_crew':
+          handleInviteCrew();
+          return;
+        case 'link_carpool':
+          if (activity && onCreateLinkedRideshare) {
+            onCreateLinkedRideshare(activity);
+          }
+          return;
+        case 'view_detail':
+          if (selectedCard?.path) {
+            setSelectedId(null);
+            navigate(selectedCard.path);
+          }
+          return;
+        case 'request_join':
+          handleJoin();
+          return;
+        case 'pending_join':
+          return;
+        default:
+          return;
+      }
+    },
+    [
+      selected?.activity,
+      selectedCard?.path,
+      handleHostMessage,
+      handleMessageActivityHost,
+      handleInviteCrew,
+      handleJoin,
+      onCreateLinkedRideshare,
+      navigate,
+      setSelectedId,
+    ]
+  );
 
   const requestHostRemove = useCallback(() => {
     const activity = selected?.activity;
@@ -428,6 +532,8 @@ export const useExploreSelectionActions = ({
   return {
     selected,
     selectedCard,
+    activityPeekSkipsJoinContext,
+    handleActivityMapPeekAction,
     joinUiState,
     joinStateLoading,
     peekJoinUiState,
@@ -441,10 +547,12 @@ export const useExploreSelectionActions = ({
     handleGuestGatedAction,
     handleJoin,
     handleDemandMessage,
-    handleHostMessage,
     handleHostManage,
     handleHostCheckin,
+    handleHostMessage,
     handleInviteCrew,
+    handleHostDuplicate,
+    handleHostAddCarpool,
     requestHostRemove,
     hostRemoveConfirm,
     setHostRemoveConfirm,

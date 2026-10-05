@@ -43,7 +43,7 @@ export const AdminOverview = () => {
   const metricCards = [
     { label: 'Pending host applications', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-800', icon: '📝', link: ADMIN_HOSTS_PATH },
     { label: 'Total places', value: metrics?.totalLocations ?? '-', color: 'bg-teal-50 text-teal-700', icon: '📍' },
-    { label: 'Total members', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥', link: ADMIN_USERS_PATH },
+    { label: 'Manage users', value: metrics?.totalUsers ?? '-', color: 'bg-blue-50 text-blue-700', icon: '👥', link: ADMIN_USERS_PATH },
     { label: 'Active activities', value: metrics?.activeActivities ?? '-', color: 'bg-emerald-50 text-emerald-700', icon: '🥾' }
   ];
 

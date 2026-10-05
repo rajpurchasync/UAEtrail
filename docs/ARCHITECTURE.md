@@ -28,7 +28,7 @@ HTTP → routes/ (thin controllers)
 - `/auth` — JWT + refresh
 - `/` (userRouter) — public `/activities`, `/explore/map`, `/me/*` (profile, **participant-intents**, groups, inbox)
 - `/host` — tenant-scoped **activities**, check-in, activity join approvals (legacy alias `/organizer`)
-- `/admin` — platform ops
+- `/admin` — platform ops (thin `admin.ts` → `routes/admin/registerAdmin*`; user management at `/admin/users`, staff grant at `/admin/platform-admins` for master admin)
 - `/shop` — shop profiles, featured picks, merchant CRUD (Stripe checkout retained but disabled in product)
 - `/social` — posts, reviews
 - `/chat`, `/media`

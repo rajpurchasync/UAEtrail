@@ -19,13 +19,10 @@ import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
 import { useExploreBrowseList } from './useExploreBrowseList';
-import { useBuddyActivityPresence } from './useBuddyActivityPresence';
-import { useMemberDiscoveryRoster } from './useMemberDiscoveryRoster';
-import type { BuddyActivityPresenceRow } from '../buddyActivityPresence';
-import {
-  buildViewerInvitableActivityRefs,
-  listJoinInviteActivitiesForBuddy,
-} from '../viewerInvitableActivities';
+import { useFollowedSaves } from '../../hooks/useFollowedSaves';
+import { useSocialPeople } from '../useSocialPeople';
+import { useSocialPeoplePreview } from '../useSocialPeoplePreview';
+import { useMemberDiscoveryRoster } from '../useMemberDiscoveryRoster';
 import { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
@@ -44,10 +41,23 @@ import {
   organizePublishGateInputFromHostGate,
 } from '../../utils/organizePublishGate';
 import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkRidesharePrefill';
-import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  activityHasJoinedParticipants,
+  type ActivityDTO,
+  type ExploreMapItemDTO,
+} from '@uaetrail/shared-types';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
-import { MY_TRIPS_QUERY_KEY, parseExplorePinMapItemId, parseOrganizeFromActivityId } from '../routing';
+import {
+  EXPLORE_JOIN_INVITE_QUERY_KEY,
+  MY_TRIPS_QUERY_KEY,
+  PLAN_WITH_QUERY_KEY,
+  parseExploreJoinInvitePeek,
+  parseExplorePinMapItemId,
+  parseOrganizeFromActivityId,
+  parsePlanWithUserId,
+} from '../routing';
+import { activityJoinInviteBanner } from '../../content/exploreGoingPanelCopy';
 import { useMemberJourneyMapPinIds } from '../../hooks/useMemberJourneyMapPinIds';
 import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
@@ -244,6 +254,8 @@ export const ExploreExperience = () => {
   ]);
 
   const inviteShare = useActivityInviteShareSheet();
+  const planWithBuddyUserId = parsePlanWithUserId(searchParams);
+  const [joinInvitePeekActivityId, setJoinInvitePeekActivityId] = useState<string | null>(null);
 
   const selection = useExploreSelectionActions({
     items: selectionItems,
@@ -259,7 +271,62 @@ export const ExploreExperience = () => {
     handleFocusMapLocation: viewport.handleFocusMapLocation,
     setLinkOnlyPeekItems,
     onInviteActivity: inviteShare.openInviteFromActivity,
+    onCreateLinkedRideshare: handleCreateLinkedRideshare,
   });
+
+  const joinInvitePeekBanner = useMemo(() => {
+    if (!joinInvitePeekActivityId || !selection.selectedCard) return null;
+    if (selection.selectedCard.source !== 'activity') return null;
+    if (selection.selectedCard.activityId !== joinInvitePeekActivityId) return null;
+    if (selection.peekJoinUiState?.kind === 'confirmed') return null;
+    return activityJoinInviteBanner();
+  }, [joinInvitePeekActivityId, selection.selectedCard, selection.peekJoinUiState]);
+
+  const hostPeekHandlers = useMemo(() => {
+    if (!selection.selectedCard?.showHostPeekActions) return null;
+    return {
+      onChat: () => void selection.handleHostMessage(),
+      onViewParticipants: selection.handleHostCheckin,
+      onInvite: selection.handleInviteCrew,
+      onAddCarpool: selection.handleHostAddCarpool,
+      onDelete: selection.requestHostRemove,
+      onDuplicate: selection.handleHostDuplicate,
+    };
+  }, [
+    selection.selectedCard?.showHostPeekActions,
+    selection.handleHostMessage,
+    selection.handleHostCheckin,
+    selection.handleInviteCrew,
+    selection.handleHostAddCarpool,
+    selection.requestHostRemove,
+    selection.handleHostDuplicate,
+  ]);
+
+  const hostRemoveParticipantNotice = useMemo(() => {
+    const activity = selection.hostRemoveConfirm;
+    if (!activity) return null;
+    const previews = selection.selectedCard?.participantPreviews;
+    const hasJoiners = activityHasJoinedParticipants({
+      slotsAvailable: activity.slotsAvailable,
+      slotsTotal: activity.slotsTotal,
+      participantPreviews: previews,
+    });
+    if (!hasJoiners) return null;
+    let count = previews?.length ?? 0;
+    if (activity.slotsTotal != null && activity.slotsAvailable != null) {
+      count = Math.max(0, activity.slotsTotal - activity.slotsAvailable);
+    }
+    if (count <= 0) {
+      return 'People who joined will be notified that this outing is cancelled.';
+    }
+    const noun = count === 1 ? 'person has' : 'people have';
+    return `${count} ${noun} joined. They'll be notified that this outing is cancelled.`;
+  }, [selection.hostRemoveConfirm, selection.selectedCard?.participantPreviews]);
+
+  const handleCloseMapSelection = useCallback(() => {
+    setJoinInvitePeekActivityId(null);
+    selection.handleCloseSelection();
+  }, [selection]);
 
   const organizeFromPending = Boolean(parseOrganizeFromActivityId(searchParams));
   const organizeWizardOpen =
@@ -288,27 +355,37 @@ export const ExploreExperience = () => {
     if (!deepLinkPinId || loading) return;
     if (openedDeepLinkPinRef.current === deepLinkPinId) return;
 
+    const joinInviteFromUrl = parseExploreJoinInvitePeek(searchParams);
+
     const clearPinParam = () => {
       openedDeepLinkPinRef.current = deepLinkPinId;
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
           next.delete('pin');
+          next.delete(EXPLORE_JOIN_INVITE_QUERY_KEY);
           return next;
         },
         { replace: true }
       );
     };
 
+    const captureJoinInvitePeek = () => {
+      if (!joinInviteFromUrl || !deepLinkPinId.startsWith('activity:')) return;
+      setJoinInvitePeekActivityId(deepLinkPinId.slice('activity:'.length));
+    };
+
     const item = selectionItems.find((entry) => entry.id === deepLinkPinId);
     if (item) {
       selection.openItem(item);
+      captureJoinInvitePeek();
       clearPinParam();
       return;
     }
 
     void selection.tryOpenActivityPinDeepLink(deepLinkPinId).then((result) => {
       if (result === 'opened') {
+        captureJoinInvitePeek();
         clearPinParam();
         return;
       }
@@ -336,15 +413,32 @@ export const ExploreExperience = () => {
     };
   }, []);
 
-  const buddyActivityPresence = useBuddyActivityPresence({
-    enabled: Boolean(user),
+  const socialPeoplePreview = useSocialPeoplePreview(Boolean(user));
+  const socialPanelOpen = Boolean(user) && browse.listMode === 'social';
+  const followedSavesEnabled =
+    socialPanelOpen && browse.socialTab === 'followed' && browse.followedSegment !== 'people';
+  const followedSaves = useFollowedSaves(followedSavesEnabled);
+  const socialPeopleEnabled =
+    socialPanelOpen &&
+    browse.socialTab !== 'discover' &&
+    !(browse.socialTab === 'followed' && browse.followedSegment !== 'people');
+  const memberDiscoveryEnabled = socialPanelOpen && browse.socialTab === 'discover';
+  const socialPeople = useSocialPeople({
+    enabled: socialPeopleEnabled,
+    segment:
+      browse.socialTab === 'friends' || browse.socialTab === 'followed'
+        ? browse.socialTab
+        : 'all',
+  });
+  const memberDiscovery = useMemberDiscoveryRoster({
+    enabled: memberDiscoveryEnabled,
+    search: browse.query,
     activityDatePreset: browse.activityDatePreset,
   });
 
-  const openGoingPanel = useCallback(() => {
-    const tab = buddyActivityPresence.buddyUserIds.size > 0 ? 'people' : 'discover';
-    browse.openGoingPanel(tab);
-  }, [browse, buddyActivityPresence.buddyUserIds.size]);
+  const openSocialPanel = useCallback(() => {
+    browse.openSocialPanel('all');
+  }, [browse]);
 
   const openExploreActivityFromRef = useCallback(
     (activity: { exploreItemId: string }) => {
@@ -354,22 +448,20 @@ export const ExploreExperience = () => {
     [mapItems, selection]
   );
 
-  const memberDiscoveryRosterEnabled =
-    Boolean(user) && browse.listMode === 'going' && browse.goingTab === 'discover';
-  const memberDiscoveryRoster = useMemberDiscoveryRoster({
-    enabled: memberDiscoveryRosterEnabled,
-    search: browse.query,
-    activityDatePreset: browse.activityDatePreset,
-  });
+  const openDiscoveryActivityOnMap = useCallback(
+    (activityId: string) => {
+      const exploreItemId = `activity:${activityId}`;
+      const item = mapItems.find((entry) => entry.id === exploreItemId);
+      if (item) selection.openItem(item);
+    },
+    [mapItems, selection]
+  );
 
   const {
     mapPins,
     listItems,
     shopListSections,
-    goingPanelMapChip,
     searchScopeCounts,
-    goingTabTripCount,
-    goingTabTripActivities,
   } =
     useExploreBrowseList({
       items: mapItems,
@@ -379,9 +471,7 @@ export const ExploreExperience = () => {
       query: browse.query,
       activityDatePreset: browse.activityDatePreset,
       listMode: browse.listMode,
-      goingTab: browse.goingTab,
       searchScope: browse.searchScope,
-      buddyUserIds: user ? buddyActivityPresence.buddyUserIds : undefined,
       sidebarPanel: browse.sidebarPanel,
       isDesktop,
       desktopBrowseTab: browse.desktopBrowseTab,
@@ -389,36 +479,20 @@ export const ExploreExperience = () => {
       outingTopic: browse.outingTopic,
     });
 
-  const viewerInvitableActivities = useMemo(() => {
-    if (!user?.id) return [];
-    return buildViewerInvitableActivityRefs(mapItems, user.id, browse.activityDatePreset);
-  }, [mapItems, user?.id, browse.activityDatePreset]);
-
-  const listBuddyJoinInviteActivities = useCallback(
-    (row: BuddyActivityPresenceRow) => {
-      if (!user?.id) return [];
-      return listJoinInviteActivitiesForBuddy(viewerInvitableActivities, row, mapItems, user.id);
-    },
-    [viewerInvitableActivities, mapItems, user?.id]
-  );
-
-  useEffect(() => {
-    if (!memberDiscoveryRosterEnabled) return;
-    const refresh = () => void memberDiscoveryRoster.refreshQuota();
-    window.addEventListener('focus', refresh);
-    return () => window.removeEventListener('focus', refresh);
-  }, [memberDiscoveryRosterEnabled, memberDiscoveryRoster]);
-
-  const buddyPresenceRowsFiltered = useMemo(() => {
-    const q = browse.query.trim().toLowerCase();
-    if (!q) return buddyActivityPresence.rows;
-    return buddyActivityPresence.rows.filter((row) => {
-      const name = row.buddy.displayName.toLowerCase();
-      const hosting = row.hosting?.title.toLowerCase() ?? '';
-      const joining = row.joining?.title.toLowerCase() ?? '';
-      return name.includes(q) || hosting.includes(q) || joining.includes(q);
-    });
-  }, [buddyActivityPresence.rows, browse.query]);
+  const socialPanelMapChip = useMemo(() => {
+    const preview = socialPeoplePreview.preview;
+    const avatars = (preview?.avatars ?? []).map((person) => ({
+      id: person.userId,
+      name: person.displayName,
+      avatar: person.avatarUrl,
+    }));
+    const friendCount = preview?.friendCount ?? 0;
+    return {
+      avatars,
+      extraCount: Math.max(0, friendCount - avatars.length),
+      friendCount,
+    };
+  }, [socialPeoplePreview.preview]);
 
   const exploreMapTiles = useMemo(
     () => getExploreMapTiles(viewport.exploreMapStyle),
@@ -445,6 +519,14 @@ export const ExploreExperience = () => {
     organizeFrom.clearOrganizeFromPrefill();
     setOrganizeFromPlacePrefill(null);
     setRideshareLinkParent(null);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete(PLAN_WITH_QUERY_KEY);
+        return next;
+      },
+      { replace: true }
+    );
   };
 
   const handlePlanTripFromVenue = useCallback(
@@ -527,27 +609,30 @@ export const ExploreExperience = () => {
     searchScopeCounts,
     onSearchScopePick: handleMapSearchCommit,
     searchFocusNonce,
-    goingTab: browse.goingTab,
-    onGoingTabChange: browse.applyGoingTab,
-    goingTabTripCount,
-    buddyPresenceCount: buddyActivityPresence.buddiesOnActivities.length,
-    buddyPresenceRows: buddyPresenceRowsFiltered,
-    buddyPresenceLoading: buddyActivityPresence.loading,
-    buddyPresenceError: buddyActivityPresence.error,
-    onOpenBuddyActivity: openExploreActivityFromRef,
-    listBuddyJoinInviteActivities,
+    socialTab: browse.socialTab,
+    onSocialTabChange: browse.applySocialTab,
+    socialAllCount: socialPeoplePreview.preview?.allCount,
+    socialFriendsCount: socialPeoplePreview.preview?.friendCount,
+    socialFollowedCount: socialPeoplePreview.preview?.followedCount,
+    socialPeople: socialPeople.people,
+    socialLoading: socialPeople.loading,
+    socialError: socialPeople.error,
+    onRefreshSocialPeople: socialPeople.refresh,
+    onOpenSocialActivity: openExploreActivityFromRef,
+    discoveryOnTrips: memberDiscovery.onTrips,
+    discoveryDirectory: memberDiscovery.directory,
+    discoveryQuota: memberDiscovery.quota,
+    discoveryLoading: memberDiscovery.loading,
+    discoveryError: memberDiscovery.error,
+    onOpenDiscoveryActivity: openDiscoveryActivityOnMap,
+    followedSegment: browse.followedSegment,
+    onFollowedSegmentChange: browse.applyFollowedSegment,
+    followedSaves: followedSaves.favorites,
+    followedSavesLoading: followedSaves.loading,
+    followedSavesError: followedSaves.error,
     isSignedIn: Boolean(user),
     userRole: user?.role,
-    buddyUserIds: user ? buddyActivityPresence.buddyUserIds : undefined,
-    discoverOnTrips: memberDiscoveryRoster.onTrips,
-    discoverDirectory: memberDiscoveryRoster.directory,
-    discoverQuota: memberDiscoveryRoster.quota,
-    discoverLoading: memberDiscoveryRoster.loading,
-    discoverError: memberDiscoveryRoster.error,
-    onOpenTripFromDiscover: (activityId: string) => {
-      const item = mapItems.find((entry) => entry.id === activityId);
-      if (item) selection.openItem(item);
-    },
+    buddyUserIds: user ? new Set(socialPeoplePreview.preview?.friendUserIds ?? []) : undefined,
   };
 
   const desktopBrowsePanel = (
@@ -561,25 +646,21 @@ export const ExploreExperience = () => {
     />
   );
 
-  const desktopGoingPanel = (
+  const desktopSocialPanel = (
     <ExploreBrowsePanel
       {...browsePanelShared}
-      listItems={goingTabTripActivities}
-      onClose={browse.closeGoingPanel}
-      closePanelAriaLabel="Close Who's going panel"
+      listItems={[]}
+      onClose={browse.closeSocialPanel}
+      closePanelAriaLabel="Close Social panel"
       closeButtonVariant="dismiss"
-      listMode="going"
+      listMode="social"
     />
   );
 
   const mobileBrowsePanel = (
     <ExploreBrowsePanel
       {...browsePanelShared}
-      listItems={
-        browse.listMode === 'going' && browse.goingTab === 'trips'
-          ? goingTabTripActivities
-          : listItems
-      }
+      listItems={browse.listMode === 'social' ? [] : listItems}
       onClose={browse.closeListPanel}
       listMode={browse.listMode}
     />
@@ -622,10 +703,10 @@ export const ExploreExperience = () => {
           onMapFilterChange={browse.applyMapFilter}
           onActivityDatePresetChange={browse.applyActivityDatePreset}
           onVenueRegionsChange={browse.applyVenueRegions}
-          onOpenGoingPanel={openGoingPanel}
-          goingPanelAvatars={goingPanelMapChip.avatars}
-          goingPanelExtraCount={goingPanelMapChip.extraCount}
-          goingPanelTotalJoining={goingPanelMapChip.totalJoining}
+          onOpenSocialPanel={openSocialPanel}
+          socialPanelAvatars={socialPanelMapChip.avatars}
+          socialPanelExtraCount={socialPanelMapChip.extraCount}
+          socialPanelFriendCount={socialPanelMapChip.friendCount}
           searchQuery={browse.query}
           onSearchQueryChange={browse.setQuery}
           onSearchCommit={handleMapSearchCommit}
@@ -658,22 +739,13 @@ export const ExploreExperience = () => {
           selectedCard={selection.selectedCard}
           joinUiState={selection.peekJoinUiState}
           joinStateLoading={selection.peekJoinStateLoading}
-          onCloseSelection={selection.handleCloseSelection}
+          onCloseSelection={handleCloseMapSelection}
+          joinInvitePeekBanner={joinInvitePeekBanner}
           onJoin={selection.handleJoin}
-          onMessage={
-            selection.selectedCard?.showHostActions
-              ? selection.handleHostMessage
-              : selection.handleDemandMessage
-          }
-          onHostFullManage={
-            selection.selectedCard?.showHostActions ? selection.handleHostManage : undefined
-          }
-          onManage={
-            selection.selectedCard?.showHostActions ? selection.handleHostCheckin : undefined
-          }
+          onMessage={selection.handleDemandMessage}
+          onActivityMapPeekAction={selection.handleActivityMapPeekAction}
+          activityPeekSkipsJoinContext={selection.activityPeekSkipsJoinContext}
           linkRideshareTenantId={tenantId}
-          onCreateLinkedRideshare={handleCreateLinkedRideshare}
-          onHostRemove={selection.selectedCard?.showHostActions ? selection.requestHostRemove : undefined}
           onDemandRemove={
             selection.selectedCard?.showDemandOwnerActions ? selection.requestDemandRemove : undefined
           }
@@ -683,6 +755,7 @@ export const ExploreExperience = () => {
           onDemandLinkRideshare={
             selection.selectedCard?.showDemandLinkRideshare ? handleOfferRideshareForDemand : undefined
           }
+          hostPeekHandlers={hostPeekHandlers}
           onOpenExploreItem={(exploreItemId) => {
             const item = selectionItems.find((entry) => entry.id === exploreItemId);
             if (item) selection.openItem(item);
@@ -692,21 +765,15 @@ export const ExploreExperience = () => {
           mobileBrowseSheet={mobileBrowsePanel}
           onGuestGatedAction={selection.handleGuestGatedAction}
           onPlanTripFromVenue={handlePlanTripFromVenue}
-          onInviteCrew={
-            selection.selected?.activity?.status === 'published' &&
-            (selection.selectedCard?.showHostActions || selection.joinUiState?.kind === 'confirmed')
-              ? selection.handleInviteCrew
-              : undefined
-          }
         />
 
         {inviteShare.sheet}
 
-        {isDesktop && browse.listMode === 'going' ? (
+        {isDesktop && browse.listMode === 'social' ? (
           <aside
             className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-l lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300"
           >
-            {desktopGoingPanel}
+            {desktopSocialPanel}
           </aside>
         ) : null}
       </div>
@@ -749,6 +816,7 @@ export const ExploreExperience = () => {
           void refreshHostGate();
         }}
         onCreateLinkedRideshare={handleCreateLinkedRideshare}
+        planWithBuddyUserId={planWithBuddyUserId}
         onOpenHostApplication={() => {
           closeCreateFlow();
           const returnPath = `${pathname}${search}`;
@@ -764,10 +832,15 @@ export const ExploreExperience = () => {
           selection.hostRemoveConfirm?.status === 'draft' ? 'Delete draft?' : 'Cancel activity?'
         }
       >
-        <p className="mb-4 text-sm text-neutral-600">
-          {selection.hostRemoveConfirm?.status === 'draft'
-            ? `Remove "${selection.hostRemoveConfirm?.title}" permanently?`
-            : `Cancel "${selection.hostRemoveConfirm?.title}"? People who joined will be notified.`}
+        <p className="mb-4 space-y-2 text-sm text-neutral-600">
+          <span className="block">
+            {selection.hostRemoveConfirm?.status === 'draft'
+              ? `Remove "${selection.hostRemoveConfirm?.title}" permanently?`
+              : `Cancel "${selection.hostRemoveConfirm?.title}"?`}
+          </span>
+          {hostRemoveParticipantNotice ? (
+            <span className="block font-medium text-amber-900">{hostRemoveParticipantNotice}</span>
+          ) : null}
         </p>
         <div className="flex justify-end gap-2">
           <AppButton

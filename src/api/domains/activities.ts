@@ -39,6 +39,16 @@ export const activitiesApi = {
         body: JSON.stringify({ inviteeUserId }),
       }),
 
+    sendActivityJoinInvites: (activityId: string, inviteeUserIds: string[]) =>
+      apiRequest<{ data: { sent: number; inviteeUserIds: string[] } }>(
+        `/activities/${activityId}/invites`,
+        {
+          method: 'POST',
+          auth: true,
+          body: JSON.stringify({ inviteeUserIds }),
+        }
+      ),
+
     getActivityGroupChat: (activityId: string) =>
     apiRequest<{
       data: {

@@ -1,52 +1,16 @@
-import { useState } from 'react';
 import { Bell, X } from 'lucide-react';
-import { registerPushNotifications } from '../../utils/push';
-
-const DISMISS_KEY = 'uaetrail:push-enable-dismissed';
-
-const isPushGranted = (): boolean =>
-  typeof Notification !== 'undefined' && Notification.permission === 'granted';
+import { usePushEnablePrompt } from '../../hooks/usePushEnablePrompt';
 
 interface PushEnableBannerProps {
   context?: 'join' | 'general';
   className?: string;
 }
 
-/** Lightweight prompt to enable web push (e.g. after joining an activity). */
+/** In-page card for notifications — use {@link ActivityDetailMobileFooter} on mobile sticky chrome. */
 export const PushEnableBanner = ({ context = 'general', className = '' }: PushEnableBannerProps) => {
-  const [dismissed, setDismissed] = useState(() => {
-    try {
-      return sessionStorage.getItem(DISMISS_KEY) === '1' || isPushGranted();
-    } catch {
-      return isPushGranted();
-    }
-  });
-  const [status, setStatus] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { visible, loading, status, dismiss, enable } = usePushEnablePrompt();
 
-  if (dismissed || typeof Notification === 'undefined') return null;
-
-  const dismiss = () => {
-    try {
-      sessionStorage.setItem(DISMISS_KEY, '1');
-    } catch {
-      /* ignore */
-    }
-    setDismissed(true);
-  };
-
-  const enable = async () => {
-    setLoading(true);
-    setStatus(null);
-    const ok = await registerPushNotifications();
-    setLoading(false);
-    if (ok) {
-      setStatus('Notifications enabled.');
-      setDismissed(true);
-      return;
-    }
-    setStatus('Could not enable notifications on this device.');
-  };
+  if (!visible) return null;
 
   const copy =
     context === 'join'

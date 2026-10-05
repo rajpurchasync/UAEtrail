@@ -35,9 +35,25 @@ export const inferNotificationPath = (
 ): string => {
   const meta = toMetaObject(notif.meta);
 
+  const activityIdFromMeta = toStringValue(meta?.activityId);
   const directPath = toStringValue(meta?.path);
   if (directPath && directPath.startsWith('/')) {
     if (isLegacyRewardsWalletPath(directPath)) return PROFILE_BADGES_PATH;
+    const kindEarly = toStringValue(meta?.kind)?.toLowerCase() ?? '';
+    if (
+      kindEarly === 'activity_join_invite' &&
+      activityIdFromMeta &&
+      directPath.startsWith('/explore')
+    ) {
+      return activityDetailInvitePath(activityIdFromMeta);
+    }
+    if (
+      activityIdFromMeta &&
+      directPath.includes('invite=1') &&
+      directPath.startsWith('/explore')
+    ) {
+      return activityDetailInvitePath(activityIdFromMeta);
+    }
     return directPath;
   }
 

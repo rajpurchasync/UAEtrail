@@ -1,7 +1,12 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Users, ChevronRight, CheckCircle2, Car } from 'lucide-react';
-import type { ActivityDetailDTO, MyActivityRequestDTO, ActivityParticipationDTO } from '@uaetrail/shared-types';
+import type {
+  ActivityDetailDTO,
+  MyActivityRequestDTO,
+  ActivityParticipationDTO,
+  ReviewDTO,
+} from '@uaetrail/shared-types';
 import { activityJoinCtaLabel } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
 import {
@@ -37,9 +42,11 @@ import {
 } from '../../utils/joinInstructions';
 import { activityRegistryPlacePath } from '../../utils/activityRegistryPlacePath';
 import { linkedParentRidesharePeekCopy } from '../../explore/exploreLinkedParentRideshareCopy';
-import { ActivityInviteSharePanel } from './ActivityInviteSharePanel';
+import { ActivityInviteLauncher } from './ActivityInviteLauncher';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '../../explore/createFlowCopy';
+import { ReviewSection } from '../ui/ReviewSection';
+import { ActivityDetailMobileFooter } from './ActivityDetailMobileFooter';
 
 export interface ActivityDetailViewProps {
   activity: ActivityDetailDTO;
@@ -54,14 +61,16 @@ export interface ActivityDetailViewProps {
   onWithdraw?: () => void;
   footerOverride?: ReactNode;
   sidebarJoinOverride?: ReactNode;
-  /** Shown above check-in when user is a confirmed participant (e.g. chat, push). */
-  confirmedExtras?: ReactNode;
+  /** Desktop sidebar — full crew chat / notifications cards (hidden on mobile; use footer shortcuts). */
   confirmedSidebarExtras?: ReactNode;
   selectedPackageIndex?: number;
   onSelectedPackageIndexChange?: (index: number) => void;
   joinDisabled?: boolean;
   /** Confirmed participant — may send Join me invites to buddies (host uses console). */
   canSendJoinInvites?: boolean;
+  activityReviews?: ReviewDTO[];
+  onActivityReviewSubmitted?: (review: ReviewDTO) => void;
+  canWriteActivityReview?: boolean;
 }
 
 export const ActivityDetailView = ({
@@ -77,12 +86,14 @@ export const ActivityDetailView = ({
   onWithdraw,
   footerOverride,
   sidebarJoinOverride,
-  confirmedExtras,
   confirmedSidebarExtras,
   selectedPackageIndex: controlledPackageIndex,
   onSelectedPackageIndexChange,
   joinDisabled,
   canSendJoinInvites = false,
+  activityReviews = [],
+  onActivityReviewSubmitted,
+  canWriteActivityReview = false,
 }: ActivityDetailViewProps) => {
   const [internalPackageIndex, setInternalPackageIndex] = useState(0);
   const selectedPackageIndex = controlledPackageIndex ?? internalPackageIndex;
@@ -172,49 +183,48 @@ export const ActivityDetailView = ({
     </div>
   );
 
-  const checkInFooter =
-    participation ? (
-      <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg space-y-2">
-        {confirmedExtras}
-        <ActivityCheckInPanel participation={participation} />
-        {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw && (
+  const wrapMobileFooter = (content: ReactNode, showParticipantShortcuts = false) =>
+    previewMode ? (
+      content
+    ) : (
+      <ActivityDetailMobileFooter
+        activityId={activity.id}
+        showParticipantShortcuts={showParticipantShortcuts}
+      >
+        {content}
+      </ActivityDetailMobileFooter>
+    );
+
+  const pendingOrConfirmedFooter =
+    (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw
+      ? wrapMobileFooter(
           <JoinRequestActions
             uiState={joinUiState}
             joinLabel={joinLabel}
             isFull={isFull}
             onWithdraw={onWithdraw}
             joinButtonClassName="ios-btn shadow-lg"
-          />
-        )}
-      </div>
-    ) : joinUiState.kind !== 'open' && onWithdraw ? (
-      <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-        <JoinRequestActions
-          uiState={joinUiState}
-          joinLabel={joinLabel}
-          isFull={isFull}
-          onWithdraw={onWithdraw}
-          joinButtonClassName="ios-btn shadow-lg"
-        />
-      </div>
-    ) : null;
+          />,
+          Boolean(participation)
+        )
+      : null;
 
   const joinButton =
     footerOverride ??
     (previewMode
       ? previewFooter
-      : checkInFooter ?? (
-          <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200/80 p-3 shadow-lg">
-            <JoinRequestActions
-              uiState={joinUiState}
-              joinLabel={joinLabel}
-              isFull={isFull}
-              onJoin={handleJoinClick}
-              onWithdraw={onWithdraw}
-              joinDisabled={joinActionDisabled}
-              joinButtonClassName="ios-btn shadow-lg"
-            />
-          </div>
+      : pendingOrConfirmedFooter ??
+        wrapMobileFooter(
+          <JoinRequestActions
+            uiState={joinUiState}
+            joinLabel={joinLabel}
+            isFull={isFull}
+            onJoin={handleJoinClick}
+            onWithdraw={onWithdraw}
+            joinDisabled={joinActionDisabled}
+            joinButtonClassName="ios-btn shadow-lg"
+          />,
+          Boolean(participation)
         ));
 
   const sidebarJoin =
@@ -225,24 +235,28 @@ export const ActivityDetailView = ({
       </p>
     ) : participation ? (
       <>
-        {confirmedSidebarExtras ?? confirmedExtras}
+        {confirmedSidebarExtras}
         <ActivityCheckInPanel participation={participation} />
         {(joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw && (
-          <JoinRequestActions
-            uiState={joinUiState}
-            joinLabel={joinLabel}
-            isFull={isFull}
-            onWithdraw={onWithdraw}
-          />
+          <div className="hidden md:block">
+            <JoinRequestActions
+              uiState={joinUiState}
+              joinLabel={joinLabel}
+              isFull={isFull}
+              onWithdraw={onWithdraw}
+            />
+          </div>
         )}
       </>
     ) : joinUiState.kind !== 'open' && onWithdraw ? (
-      <JoinRequestActions
-        uiState={joinUiState}
-        joinLabel={joinLabel}
-        isFull={isFull}
-        onWithdraw={onWithdraw}
-      />
+      <div className="hidden md:block">
+        <JoinRequestActions
+          uiState={joinUiState}
+          joinLabel={joinLabel}
+          isFull={isFull}
+          onWithdraw={onWithdraw}
+        />
+      </div>
     ) : (
       <button
         type="button"
@@ -285,8 +299,8 @@ export const ActivityDetailView = ({
     >
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          {showInviteShare ? (
-            <ActivityInviteSharePanel
+          {showInviteShare && canSendJoinInvites ? (
+            <ActivityInviteLauncher
               activity={{
                 id: activity.id,
                 title: activity.title || activity.locationName,
@@ -294,7 +308,7 @@ export const ActivityDetailView = ({
                 date: activity.date,
                 locationName: activity.locationName,
               }}
-              canSendBuddyInvites={canSendJoinInvites}
+              canSendBuddyInvites
             />
           ) : null}
 
@@ -590,6 +604,18 @@ export const ActivityDetailView = ({
               </div>
             </div>
           )}
+
+          {!previewMode && activity.status === 'published' && onActivityReviewSubmitted ? (
+            <ReviewSection
+              targetType="activity"
+              targetId={activity.id}
+              reviews={activityReviews}
+              onReviewSubmitted={onActivityReviewSubmitted}
+              canWriteReview={canWriteActivityReview}
+              collapsible
+              defaultExpanded={false}
+            />
+          ) : null}
         </div>
 
         <div className="space-y-4">

@@ -3,6 +3,16 @@ import { resolveActivityHostUserId } from '@uaetrail/shared-types';
 
 type ActivityLike = Pick<ActivityDTO, 'tenantId' | 'hostUserId' | 'hostId'> | ActivityDetailDTO;
 
+/** True when the signed-in member is the activity’s host user (map peek / host messaging). */
+export const viewerIsActivityHostUser = (
+  activity: ActivityLike | null | undefined,
+  viewerUserId: string | null | undefined
+): boolean => {
+  if (!activity || !viewerUserId) return false;
+  const hostUserId = resolveActivityHostUserId(activity);
+  return Boolean(hostUserId && hostUserId === viewerUserId);
+};
+
 /** True when the signed-in member hosts or manages this activity (not a joiner). */
 export const viewerHostsActivity = (
   activity: ActivityLike | null | undefined,

@@ -1,6 +1,6 @@
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { EXPLORE_MOBILE_MAP_CHROME, EXPLORE_Z } from '../../config/exploreTheme';
-import { ExploreMapGoingPanelButton } from './ExploreMapGoingPanelButton';
+import { ExploreMapSocialPanelButton } from './ExploreMapSocialPanelButton';
 import { ExploreMapMobileLayerChrome } from './ExploreMapMobileLayerChrome';
 import type { ExplorePanel, MapFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
@@ -18,10 +18,10 @@ type ExploreMapChromeBarProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
-  onOpenGoingPanel?: () => void;
-  goingPanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  goingPanelExtraCount?: number;
-  goingPanelTotalJoining?: number;
+  onOpenSocialPanel?: () => void;
+  socialPanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
+  socialPanelExtraCount?: number;
+  socialPanelFriendCount?: number;
 };
 
 /** Map toolbar — same Activities / Places browse context as the list panel. */
@@ -38,10 +38,10 @@ export const ExploreMapChromeBar = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
-  onOpenGoingPanel,
-  goingPanelAvatars = [],
-  goingPanelExtraCount = 0,
-  goingPanelTotalJoining = 0,
+  onOpenSocialPanel,
+  socialPanelAvatars = [],
+  socialPanelExtraCount = 0,
+  socialPanelFriendCount = 0,
 }: ExploreMapChromeBarProps) => (
   <div
     className={`pointer-events-none absolute inset-x-0 top-0 px-3 pt-2 lg:px-4 lg:pt-3 ${EXPLORE_MOBILE_MAP_CHROME.filterTop} ${EXPLORE_Z.mapFilters}`}
@@ -63,21 +63,21 @@ export const ExploreMapChromeBar = ({
         onSearchCommit={onSearchCommit}
         searchScopeCounts={searchScopeCounts}
       />
-      {onOpenGoingPanel ? (
-        <ExploreMapGoingPanelButton
-          avatars={goingPanelAvatars}
-          extraCount={goingPanelExtraCount}
-          totalJoining={goingPanelTotalJoining}
-          onClick={onOpenGoingPanel}
+      {onOpenSocialPanel ? (
+        <ExploreMapSocialPanelButton
+          avatars={socialPanelAvatars}
+          extraCount={socialPanelExtraCount}
+          friendCount={socialPanelFriendCount}
+          onClick={onOpenSocialPanel}
           className="col-start-2 row-start-1 shrink-0 justify-self-end lg:hidden"
         />
       ) : null}
-      {onOpenGoingPanel ? (
-        <ExploreMapGoingPanelButton
-          avatars={goingPanelAvatars}
-          extraCount={goingPanelExtraCount}
-          totalJoining={goingPanelTotalJoining}
-          onClick={onOpenGoingPanel}
+      {onOpenSocialPanel ? (
+        <ExploreMapSocialPanelButton
+          avatars={socialPanelAvatars}
+          extraCount={socialPanelExtraCount}
+          friendCount={socialPanelFriendCount}
+          onClick={onOpenSocialPanel}
           className="hidden shrink-0 lg:inline-flex"
         />
       ) : null}

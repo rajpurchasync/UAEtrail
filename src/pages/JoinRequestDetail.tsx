@@ -204,7 +204,7 @@ export const JoinRequestDetail = () => {
             onClick={() => setShowWithdraw(true)}
             className="ios-btn w-full glass text-red-500 min-h-[48px] font-semibold"
           >
-            {withdrawVariant === 'activity' ? 'Withdraw from activity' : 'Cancel join request'}
+            {withdrawVariant === 'activity' ? 'Withdraw request' : 'Cancel request'}
           </button>
         )}
       </div>

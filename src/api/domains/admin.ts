@@ -144,5 +144,18 @@ export const adminApi = {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify({ status })
-    })
+    }),
+
+    grantPlatformAdmin: (email: string) =>
+      apiRequest<{ data: { userId: string; email: string }; message: string }>('/admin/platform-admins', {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify({ email }),
+      }),
+
+    revokePlatformAdmin: (userId: string) =>
+      apiRequest(`/admin/platform-admins/${userId}`, {
+        method: 'DELETE',
+        auth: true,
+      }),
 } as const;

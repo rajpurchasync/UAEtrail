@@ -29,6 +29,8 @@ export type AuthUserRecord = {
     languages?: string | null;
     profileVisibility?: 'public' | 'group_members' | 'private';
     switchedFromRole?: 'PLATFORM_ADMIN' | 'MERCHANT_ADMIN' | 'TENANT_OWNER' | 'TENANT_ADMIN' | 'TENANT_GUIDE' | null;
+    /** When true, may grant/revoke other `PLATFORM_ADMIN` accounts. */
+    platformMasterAdmin?: boolean;
     rewardPoints?: number;
     membershipTier?: MembershipTier;
   };
@@ -206,6 +208,9 @@ export const updateAuthUserProfile = async (
   if (patch.languages !== undefined) setFields['profile.languages'] = patch.languages ?? null;
   if (patch.profileVisibility !== undefined) {
     setFields['profile.profileVisibility'] = patch.profileVisibility;
+  }
+  if (patch.platformMasterAdmin !== undefined) {
+    setFields['profile.platformMasterAdmin'] = patch.platformMasterAdmin;
   }
   await usersCollection().updateOne({ _id: userId }, { $set: setFields });
   if (patch.displayName !== undefined || patch.givenName !== undefined || patch.surname !== undefined) {

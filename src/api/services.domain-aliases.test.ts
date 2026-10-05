@@ -23,6 +23,8 @@ describe('api canonical surface', () => {
     expect(typeof api.getPersonPublicProfile).toBe('function');
     expect(typeof api.getAdminMembers).toBe('function');
     expect(typeof api.getAdminOrganisationApplications).toBe('function');
+    expect(typeof api.grantPlatformAdmin).toBe('function');
+    expect(typeof api.revokePlatformAdmin).toBe('function');
   });
 
   it('does not expose removed legacy facade names', () => {

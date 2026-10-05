@@ -70,8 +70,30 @@ describe('resolvePeekDetailAccess', () => {
     });
   });
 
-  it('blocks hosted peeks without viewerAccess wire', () => {
+  it('links hosted peeks for signed-in members when viewerAccess wire is absent', () => {
     const card = baseCard({});
-    expect(resolvePeekDetailAccess(card, { isGuest: false })).toEqual({ kind: 'members_only' });
+    expect(resolvePeekDetailAccess(card, { isGuest: false })).toEqual({
+      kind: 'link',
+      href: '/activity/1',
+    });
+  });
+
+  it('links rideshare-style peeks when API allows the detail page before join', () => {
+    const card = baseCard({
+      kind: 'rideshare',
+      path: '/activity/rs-1',
+      viewerAccess: {
+        exposure: 'redacted',
+        level: 'link_holder',
+        gateReason: 'join_required',
+        canViewFullActivity: false,
+        canOpenDetailPage: true,
+        joinMode: 'open',
+      },
+    });
+    expect(resolvePeekDetailAccess(card, { isGuest: false })).toEqual({
+      kind: 'link',
+      href: '/activity/rs-1',
+    });
   });
 });

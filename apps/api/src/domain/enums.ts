@@ -163,6 +163,7 @@ export type LocationUnlockSource = (typeof LocationUnlockSource)[keyof typeof Lo
 
 export const ReviewTargetType = {
   LOCATION: 'LOCATION',
-  TENANT: 'TENANT'
+  TENANT: 'TENANT',
+  ACTIVITY: 'ACTIVITY',
 } as const;
 export type ReviewTargetType = (typeof ReviewTargetType)[keyof typeof ReviewTargetType];

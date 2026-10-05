@@ -75,6 +75,7 @@ export interface CreateActivityFlowProps {
   catalogFlow?: OrganizeCatalogFlow | null;
   demandPrefill?: OrganizeWizardPrefill | null;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
+  planWithBuddyUserId?: string | null;
 }
 
 export const CreateActivityFlow = ({
@@ -88,6 +89,7 @@ export const CreateActivityFlow = ({
   catalogFlow = null,
   demandPrefill = null,
   onCreateLinkedRideshare,
+  planWithBuddyUserId = null,
 }: CreateActivityFlowProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -614,6 +616,7 @@ export const CreateActivityFlow = ({
         }}
         onRideshareLinkError={(message) => setRideshareOfferNotice(message)}
         onViewOnMap={handleViewOnMap}
+        planWithBuddyUserId={planWithBuddyUserId}
       />
     );
   }

@@ -22,7 +22,10 @@ export const resolvePeekDetailAccess = (
   if (!href) return null;
 
   if (options.joinStateLoading) {
-    return { kind: 'members_only' };
+    if (card.viewerAccess?.canOpenDetailPage === false) {
+      return { kind: 'members_only' };
+    }
+    return { kind: 'link', href };
   }
 
   if (!exploreCardIsHostedPlanPeek(card)) {
@@ -36,7 +39,8 @@ export const resolvePeekDetailAccess = (
   }
 
   if (!card.viewerAccess) {
-    return options.isGuest ? { kind: 'guest_gate' } : { kind: 'members_only' };
+    if (options.isGuest) return { kind: 'guest_gate' };
+    return { kind: 'link', href };
   }
 
   return mapViewerAccessToExplorePeekDetail(card.viewerAccess, href);

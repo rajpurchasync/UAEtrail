@@ -47,6 +47,8 @@ import {
   type TenantRecord
 } from '../src/lib/tenant-store.js';
 import { DEMO_ACCOUNTS } from '../src/lib/demo-accounts.js';
+import { createUserFavorite } from '../src/lib/favorites-store.js';
+import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import {
   createGroupWallMessage,
   createSocialGroup,
@@ -967,6 +969,7 @@ async function main() {
   }
 
   const admin = await upsertDemoUser('admin@uaetrails.app');
+  await updateAuthUserProfile(admin._id, { platformMasterAdmin: true });
 
   const participant = await upsertDemoUser('visitor@uaetrails.app');
 
@@ -1549,6 +1552,30 @@ Share your live location and carry extra water in summer months.`
   freeCampStart.setDate(freeCampStart.getDate() + 21);
   freeCampStart.setHours(15, 0, 0, 0);
 
+  const omarDraftStart = new Date();
+  omarDraftStart.setDate(omarDraftStart.getDate() + 30);
+  omarDraftStart.setHours(9, 0, 0, 0);
+
+  await upsertEvent('seed-event-omar-draft', {
+    tenant: { connect: { id: individualHostTenant.id } },
+    location: { connect: { id: 'fossil-rock-desert-camp' } },
+    createdBy: { connect: { id: individualHost._id } },
+    host: { connect: { id: individualHost._id } },
+    activityType: ActivityType.HIKING,
+    title: 'Omar — Wadi loop (draft)',
+    description: 'Draft plan for host QA — publish from Trips when ready.',
+    startAt: omarDraftStart,
+    meetingPoint: 'Sharjah — exact pin after publish',
+    meetingLat: 25.22,
+    meetingLng: 55.85,
+    priceAed: 0,
+    capacity: 8,
+    status: ActivityStatus.DRAFT,
+    itinerary: ['Draft — edit before publish'],
+    requirements: ['Water'],
+    outingCategory: 'hiking',
+  });
+
   await upsertEvent('seed-event-desert-meetup', {
     tenant: { connect: { id: individualHostTenant.id } },
     location: { connect: { id: 'fossil-rock-desert-camp' } },
@@ -1848,6 +1875,17 @@ Share your live location and carry extra water in summer months.`
     shawkaActivityId: 'seed-event-shawka-free',
   });
 
+  await seedParticipant('seed-event-desert-meetup', pendingParticipant._id, individualHost._id);
+
+  await createUserFavorite({
+    userId: participant._id,
+    locationId: 'fossil-rock-desert-camp',
+  });
+  await createUserFavorite({
+    userId: participant._id,
+    activityId: 'seed-event-fossil-camp',
+  });
+
   await seedConnectionsDemo({
     visitorId: participant._id,
     visitor2Id: pendingParticipant._id,
@@ -1857,6 +1895,7 @@ Share your live location and carry extra water in summer months.`
     shopOwnerId: shopOwner._id,
   });
   logConnectionsDemoPlaybook();
+  logOmarHostQaPlaybook();
 
   const participantRecord = await db().collection('activity_participants').findOne({
     activityId: event._id,

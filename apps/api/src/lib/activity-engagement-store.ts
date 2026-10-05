@@ -20,7 +20,7 @@ import { getMongoClient } from './mongo.js';
 import { parseStoredPricePackages } from './activity-pricing.js';
 import { myRequestDetailPath } from './member-routes.js';
 import { dispatchNotification } from '../services/notifications.js';
-import { addParticipantToActivityGroupChat, removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
+import { removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 import { assertParticipantMeetsWomenOnlyRequirement } from '../domain/activity-audience-requirements.js';
 
@@ -331,11 +331,6 @@ export async function createRsvpParticipation(opts: {
     await releaseActivityParticipantSlot(opts.activityId);
     throw error;
   }
-
-  await addParticipantToActivityGroupChat({
-    activityId: opts.activityId,
-    userId: opts.userId,
-  }).catch(() => undefined);
 
   const mongoRow = await activityRequestsCollection().findOne({ _id: requestId });
   if (!mongoRow) {
@@ -872,11 +867,6 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
     await releaseActivityParticipantSlot(opts.activityId);
     throw error;
   }
-
-  await addParticipantToActivityGroupChat({
-    activityId: opts.activityId,
-    userId: opts.userId,
-  }).catch(() => undefined);
 
   return 'enrolled';
 };
