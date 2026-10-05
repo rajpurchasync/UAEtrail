@@ -347,18 +347,23 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ topicPills: [], list: listOpen });
   };
 
-  const openWhosGoingList = () => {
+  const openWhosGoingList = (initialSegment: WhosGoingSegment = 'people') => {
     clearSelection();
     setListMode('whosGoing');
-    setWhosGoingSegment('people');
+    setWhosGoingSegment(initialSegment);
     setPanel('activities');
     setDesktopBrowseTab('activities');
     if (isDesktop) {
-      syncExploreUrl({ listMode: 'whosGoing', whosGoingSegment: 'people', panel: 'activities' });
+      syncExploreUrl({ listMode: 'whosGoing', whosGoingSegment: initialSegment, panel: 'activities' });
       return;
     }
     setListOpen(true);
-    syncExploreUrl({ listMode: 'whosGoing', whosGoingSegment: 'people', panel: 'activities', list: true });
+    syncExploreUrl({
+      listMode: 'whosGoing',
+      whosGoingSegment: initialSegment,
+      panel: 'activities',
+      list: true,
+    });
   };
 
   const closeWhosGoingPanel = () => {

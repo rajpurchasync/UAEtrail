@@ -11,7 +11,7 @@ import {
   whosGoingDiscoverQuotaLine,
 } from '../../content/whosGoingCopy';
 import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
-import type { WhosGoingDiscoverTripRow } from '../whosGoingDiscover';
+import { memberDiscoverProfilePath, type WhosGoingDiscoverTripRow } from '../whosGoingDiscover';
 
 type ExploreWhosGoingDiscoverListProps = {
   isSignedIn: boolean;
@@ -22,8 +22,6 @@ type ExploreWhosGoingDiscoverListProps = {
   directory: MemberBrowseCardDTO[];
   onOpenTrip: (activityId: string) => void;
 };
-
-const discoverProfileHref = (userId: string): string => `/member/${userId}?discover=1`;
 
 export const ExploreWhosGoingDiscoverList = ({
   isSignedIn,
@@ -79,7 +77,7 @@ export const ExploreWhosGoingDiscoverList = ({
                 key={`${row.userId}-${row.activityId}`}
                 className="flex items-center gap-3 rounded-2xl border border-neutral-200/75 bg-white p-3"
               >
-                <Link to={discoverProfileHref(row.userId)} className="shrink-0">
+                <Link to={memberDiscoverProfilePath(row.userId)} className="shrink-0">
                   <SecureAvatar
                     src={row.avatarUrl}
                     name={row.displayName}
@@ -88,7 +86,7 @@ export const ExploreWhosGoingDiscoverList = ({
                 </Link>
                 <div className="min-w-0 flex-1">
                   <Link
-                    to={discoverProfileHref(row.userId)}
+                    to={memberDiscoverProfilePath(row.userId)}
                     className="block truncate text-sm font-semibold text-neutral-900 hover:text-emerald-700 hover:underline"
                   >
                     {row.displayName}
@@ -121,7 +119,7 @@ export const ExploreWhosGoingDiscoverList = ({
                 key={card.id}
                 className="flex items-center gap-3 rounded-2xl border border-neutral-200/75 bg-white p-3"
               >
-                <Link to={discoverProfileHref(card.id)} className="shrink-0">
+                <Link to={memberDiscoverProfilePath(card.id)} className="shrink-0">
                   <SecureAvatar
                     src={card.avatarUrl}
                     name={card.displayName}
@@ -130,7 +128,7 @@ export const ExploreWhosGoingDiscoverList = ({
                 </Link>
                 <div className="min-w-0 flex-1">
                   <Link
-                    to={discoverProfileHref(card.id)}
+                    to={memberDiscoverProfilePath(card.id)}
                     className="block truncate text-sm font-semibold text-neutral-900 hover:text-emerald-700 hover:underline"
                   >
                     {card.displayName}

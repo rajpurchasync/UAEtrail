@@ -2,7 +2,11 @@
  * Who's going — browse panel + map entry copy (voice: docs/NORTHSTAR.md).
  */
 
-export const WHOS_GOING_MAP_BUTTON_LABEL = "Who's going?";
+export const WHOS_GOING_PANEL_TITLE = "Who's going?";
+export const WHOS_GOING_PANEL_SUBCOPY =
+  'See friends on upcoming trips and meet new people to go with.';
+
+export const WHOS_GOING_MAP_BUTTON_LABEL = WHOS_GOING_PANEL_TITLE;
 
 export const whosGoingMapButtonAriaLabel = (totalJoining: number): string =>
   totalJoining > 0

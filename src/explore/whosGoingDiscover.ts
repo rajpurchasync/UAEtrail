@@ -1,5 +1,9 @@
 import type { ExploreMapItemDTO, MemberBrowseCardDTO } from '@uaetrail/shared-types';
 
+/** Member profile from Discover — quota + analytics (`from=discover` on API). */
+export const memberDiscoverProfilePath = (userId: string): string =>
+  `/member/${userId}?discover=1&source=discover`;
+
 export type WhosGoingDiscoverTripRow = {
   userId: string;
   displayName: string;

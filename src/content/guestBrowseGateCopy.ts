@@ -24,7 +24,7 @@ const GATE_COPY: Record<Exclude<GuestBrowseGateIntent, 'join-activity'>, GateCop
   'whos-going': {
     title: GUEST_GATE_OOPS_TITLE,
     body:
-      "Join the community today to see who's heading out — friends, buddies, and people you follow on upcoming trips.",
+      'Sign in to see friends on upcoming trips and discover people to get outside with.',
   },
   'peek-details': {
     title: GUEST_GATE_OOPS_TITLE,

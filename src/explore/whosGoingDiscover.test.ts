@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildDiscoverPeopleOnTrips } from './whosGoingDiscover';
+import { buildDiscoverPeopleOnTrips, memberDiscoverProfilePath } from './whosGoingDiscover';
+
+describe('memberDiscoverProfilePath', () => {
+  it('tags discover opens for quota and analytics', () => {
+    expect(memberDiscoverProfilePath('user-1')).toBe('/member/user-1?discover=1&source=discover');
+  });
+});
 
 describe('buildDiscoverPeopleOnTrips', () => {
   it('collects non-buddy participant previews', () => {

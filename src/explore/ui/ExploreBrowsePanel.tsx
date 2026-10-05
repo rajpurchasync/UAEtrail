@@ -33,6 +33,7 @@ import type { ExploreBrowseListMode, WhosGoingSegment } from './useExploreBrowse
 import { ExploreWhosGoingSegmentTabs } from './ExploreWhosGoingSegmentTabs';
 import { ExploreWhosGoingPeopleList } from './ExploreWhosGoingPeopleList';
 import { ExploreWhosGoingDiscoverList } from './ExploreWhosGoingDiscoverList';
+import { WHOS_GOING_PANEL_SUBCOPY, WHOS_GOING_PANEL_TITLE } from '../../content/whosGoingCopy';
 import type { WhosGoingFriendRow } from '../whosGoingFriends';
 import type { WhosGoingDiscoverTripRow } from '../whosGoingDiscover';
 import type { MemberBrowseCardDTO, MemberDiscoveryQuotaDTO } from '@uaetrail/shared-types';
@@ -174,7 +175,7 @@ export const ExploreBrowsePanel = ({
   const whosGoingPeople = whosGoing && whosGoingSegment === 'people';
   const whosGoingDiscover = whosGoing && whosGoingSegment === 'discover';
   const heading = whosGoing
-    ? "Who's going?"
+    ? WHOS_GOING_PANEL_TITLE
     : myTripsMode
       ? `My trips (${listItems.length})`
       : listHeading(isDesktop, desktopBrowseTab, sidebarPanel, listItems.length, mapFilter);
@@ -251,12 +252,15 @@ export const ExploreBrowsePanel = ({
 
       {whosGoing ? (
         <div
-          className={`mb-2 flex shrink-0 items-center justify-between gap-2 ${
+          className={`mb-2 flex shrink-0 flex-col gap-1 ${
             isDesktop ? 'border-b border-neutral-200 pb-2' : 'border-b border-neutral-200/80 pb-2'
           }`}
         >
-          <h2 className="min-w-0 truncate text-base font-bold text-gray-900">{heading}</h2>
-          {closeButton}
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="min-w-0 truncate text-base font-bold text-gray-900">{heading}</h2>
+            {closeButton}
+          </div>
+          <p className="text-xs leading-relaxed text-neutral-600">{WHOS_GOING_PANEL_SUBCOPY}</p>
         </div>
       ) : (
         <div

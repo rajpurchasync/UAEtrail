@@ -1,6 +1,6 @@
 # Who's going — social discovery hub (plan)
 
-**Status:** **WG-1–WG-5 shipped** (Friends / Discover / Trips segments, 5+Pro quota, Join me invites, copy + discover upgrade UX). Host console publish-as on draft preview optional follow-up.  
+**Status:** **WG-1–WG-5 shipped** (segments, quota, invites, panel copy, `source=discover` profile links, default Discover when no friends). Optional: server-side Discover roster API, host list publish-as.  
 **North star:** Find your people · get outside · go together ([`NORTHSTAR.md`](../NORTHSTAR.md)).  
 **Tier-1 hooks:** [`NAVIGATION.md`](../NAVIGATION.md) (Explore), [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) (buddies + quotas), [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md) §15 (profile exposure), [`COMMUNICATION.md`](../COMMUNICATION.md) (invites vs chat).
 

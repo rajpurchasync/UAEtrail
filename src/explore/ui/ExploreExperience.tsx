@@ -336,11 +336,16 @@ export const ExploreExperience = () => {
   }, []);
 
   const whosGoingFriends = useWhosGoingFriends({
-    enabled: Boolean(user) && browse.listMode === 'whosGoing',
+    enabled: Boolean(user),
     userId: user?.id,
     mapItems,
     activityDatePreset: browse.activityDatePreset,
   });
+
+  const openWhosGoingList = useCallback(() => {
+    const segment = whosGoingFriends.friendIds.length > 0 ? 'people' : 'discover';
+    browse.openWhosGoingList(segment);
+  }, [browse, whosGoingFriends.friendIds.length]);
 
   const whosGoingDiscoverEnabled =
     Boolean(user) && browse.listMode === 'whosGoing' && browse.whosGoingSegment === 'discover';
@@ -605,7 +610,7 @@ export const ExploreExperience = () => {
           onMapFilterChange={browse.applyMapFilter}
           onActivityDatePresetChange={browse.applyActivityDatePreset}
           onVenueRegionsChange={browse.applyVenueRegions}
-          onWhosGoing={browse.openWhosGoingList}
+          onWhosGoing={openWhosGoingList}
           whosGoingAvatars={whosGoingPreview.avatars}
           whosGoingExtraCount={whosGoingPreview.extraCount}
           whosGoingTotalJoining={whosGoingPreview.totalJoining}
