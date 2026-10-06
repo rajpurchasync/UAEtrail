@@ -141,6 +141,11 @@ export const HOME_FINAL_CTA = {
 } as const;
 
 /** Guest homepage footer — short lines per founder (footer only). */
+export const HOME_FOOTER_FOUNDERS_HEADING = {
+  lead: 'Built by people who love the outdoors',
+  support: 'For anyone in the UAE & GCC looking for like-minded people'
+} as const;
+
 export const HOME_FOOTER_FOUNDERS = [
   {
     name: FOUNDER_PROFILES.founder.name,

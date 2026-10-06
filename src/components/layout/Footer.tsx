@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LLMS_TXT_PATH } from '../../config/seo';
-import { HOME_FOOTER_FOUNDERS } from '../../content/homeMarketing';
+import { HOME_FOOTER_FOUNDERS, HOME_FOOTER_FOUNDERS_HEADING } from '../../content/homeMarketing';
 
 const FOOTER_LINKS = [
   { label: 'About', to: '/about' },
@@ -23,12 +23,20 @@ export const Footer = () => {
             className="home-v2-font mb-8 rounded-2xl border border-emerald-700/35 bg-gradient-to-b from-emerald-950/50 to-gray-900/80 px-5 py-6 text-left shadow-[inset_0_1px_0_rgba(52,211,153,0.12)] sm:px-6 md:mb-10 md:px-8 md:py-8"
             aria-labelledby="home-footer-founders-heading"
           >
-            <p
+            <div
               id="home-footer-founders-heading"
-              className="mb-5 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-400 md:mb-6 md:text-xs"
+              className="mb-5 flex flex-col items-center gap-1.5 text-center md:mb-6 md:flex-row md:flex-wrap md:justify-center md:gap-x-2"
             >
-              Built by hikers who wanted a crew
-            </p>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-400 md:text-xs">
+                {HOME_FOOTER_FOUNDERS_HEADING.lead}
+              </span>
+              <span className="hidden shrink-0 text-emerald-200/45 md:inline" aria-hidden>
+                —
+              </span>
+              <span className="max-w-md text-[11px] font-normal normal-case leading-snug tracking-normal text-emerald-200/75 md:max-w-none md:text-xs">
+                {HOME_FOOTER_FOUNDERS_HEADING.support}
+              </span>
+            </div>
             <div className="grid gap-8 md:grid-cols-2 md:items-stretch md:gap-0">
               {HOME_FOOTER_FOUNDERS.map((person, index) => (
                 <figure
