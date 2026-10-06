@@ -19,29 +19,40 @@ export const Footer = () => {
     <footer className="bg-gray-900 text-gray-300 pb-safe">
       <div className="mx-auto max-w-7xl px-4 py-6 text-center sm:px-6 lg:px-8 md:py-8">
         {isHome ? (
-          <div className="mb-6 grid gap-6 md:mb-8 md:grid-cols-2 md:gap-0 md:text-left">
-            {HOME_FOOTER_FOUNDERS.map((person, index) => (
-              <figure
-                key={person.role}
-                className={[
-                  'mx-auto max-w-md text-center md:max-w-none md:px-8',
-                  index === 1 ? 'md:border-l md:border-gray-800' : ''
-                ].join(' ')}
-              >
-                <blockquote className="text-xs italic leading-relaxed text-gray-500 sm:text-sm">
-                  {person.lines.map((line, lineIndex) => (
-                    <p key={lineIndex} className={lineIndex > 0 ? 'mt-2' : undefined}>
-                      &ldquo;{line}&rdquo;
-                    </p>
-                  ))}
-                </blockquote>
-                <figcaption className="mt-2.5 text-[11px] font-semibold text-gray-400 sm:text-xs">
-                  {person.name}
-                  <span className="font-normal text-gray-500"> · {person.role}</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+          <section
+            className="home-v2-font mb-8 rounded-2xl border border-emerald-700/35 bg-gradient-to-b from-emerald-950/50 to-gray-900/80 px-5 py-6 text-left shadow-[inset_0_1px_0_rgba(52,211,153,0.12)] sm:px-6 md:mb-10 md:px-8 md:py-8"
+            aria-labelledby="home-footer-founders-heading"
+          >
+            <p
+              id="home-footer-founders-heading"
+              className="mb-5 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-400 md:mb-6 md:text-xs"
+            >
+              Built by hikers who wanted a crew
+            </p>
+            <div className="grid gap-8 md:grid-cols-2 md:items-stretch md:gap-0">
+              {HOME_FOOTER_FOUNDERS.map((person, index) => (
+                <figure
+                  key={person.name}
+                  className={[
+                    'mx-auto flex max-w-lg flex-col md:max-w-none md:px-6',
+                    index === 1 ? 'md:border-l md:border-emerald-800/40' : ''
+                  ].join(' ')}
+                >
+                  <blockquote className="flex-1 text-[15px] leading-relaxed text-gray-100 md:text-base md:leading-relaxed">
+                    {person.lines.map((line, lineIndex) => (
+                      <p key={lineIndex} className={lineIndex > 0 ? 'mt-3' : undefined}>
+                        &ldquo;{line}&rdquo;
+                      </p>
+                    ))}
+                  </blockquote>
+                  <figcaption className="mt-4 shrink-0 text-sm text-emerald-100/90 md:mt-5 md:text-[15px]">
+                    <span className="font-bold text-white">{person.name}</span>
+                    <span className="text-emerald-200/80"> · {person.role}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
         ) : null}
 
         <nav aria-label="Footer">
