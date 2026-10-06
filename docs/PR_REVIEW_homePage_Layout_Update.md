@@ -1,42 +1,18 @@
 # PR review: `homePage_Layout_Update`
 
-Use this in the GitHub pull request description after opening  
-https://github.com/uaetrail/main/compare/main...homePage_Layout_Update
+Paste into the GitHub pull request description (screenshots to be added separately in the PR thread).
 
 ## Summary
 
-- Guest homepage v2: hero carousel, proof chips → CTAs, upcoming outings (emirate flags), how it works, reviews + FAQ.
-- Copy in `src/content/homeMarketing.ts`; plan in `docs/UAE_Trail_Homepage.md`.
-- No Final CTA band on `/` (footer + hero CTAs only).
-
-## Screenshots (Oct 2026, local dev)
-
-### Desktop (1440px)
-
-**Hero**
-
-![Desktop hero](./homepage-screenshots/home-desktop-1440-hero.png)
-
-**Full page**
-
-![Desktop full page](./homepage-screenshots/home-desktop-1440-full.png)
-
-### Mobile (390px)
-
-**Hero**
-
-![Mobile hero](./homepage-screenshots/home-mobile-390-hero.png)
-
-**Full page**
-
-![Mobile full page](./homepage-screenshots/home-mobile-390-full.png)
-
-> Local captures may show the yellow **Backend unavailable** banner when the API is not running; staging/production with a healthy API will not.
+- Ship guest homepage v2: hero carousel with proof chips then CTAs, upcoming outings with emirate flag filters, how it works, reviews + FAQ.
+- Marketing copy centralized in `src/content/homeMarketing.ts`; plan updated in `docs/UAE_Trail_Homepage.md`, `docs/LANDING.md`, `docs/content.md`.
+- Final CTA dark band not rendered on `/` (hero + site footer only).
+- Includes follow-up commit with local API/mongo dev scripts on the same branch (review before merge).
 
 ## Test plan
 
-- [ ] Guest `/` — signed-out only; signed-in redirects to `/explore`
-- [ ] Hero carousel: pause, dots, activity chip link
-- [ ] Emirate filter + activity cards (live API or fallback)
-- [ ] FAQ accordion answers (no TBD)
-- [ ] 360 / 768 / 1440 responsive pass
+- [ ] Guest `/` only — signed-in users redirect to `/explore`
+- [ ] Hero: carousel controls, proof row, Explore the map / Join free, activity chip
+- [ ] Upcoming outings: emirate chips, cards (API or curated fallback)
+- [ ] FAQ answers render (no placeholders)
+- [ ] Responsive: ~360, 768, 1440
