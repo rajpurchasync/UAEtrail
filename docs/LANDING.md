@@ -35,31 +35,21 @@ Do **not** use Home to onboard signed-in users or document the full app.
 
 ## What belongs here (guest signup funnel)
 
+Homepage v2 (`src/components/home/v2/sections/*`, plan: [`UAE_Trail_Homepage.md`](./UAE_Trail_Homepage.md)):
+
 | Section | Component | Job |
 |---------|-----------|-----|
-| Hero | `HomeMobileLaunch`, `HomeDesktopHero` | Promise + CTAs |
-| Trust chips | `HomeProofStrip` | 3-second scan (no paragraphs on mobile) |
-| Live proof | `HomeLiveActivityRail` | Real upcoming outings — show early (public API + fallback) |
-| Why us | `HomeValueProps` | Outcomes only — see / say / connect (no duplicate headline on mobile) |
-| How it works | `HomeDayTimeline` | Numbered journey — only place for ordered steps |
-| Map preview | `HomeProductPreview` | Static mock when live rail is thin; hidden on mobile when live data is strong |
-| Social proof | `HomeTestimonials` | Featured quote on mobile; grid on desktop |
-| FAQ | `FaqPreview` in `Home.tsx` | Objections (2 items on mobile) |
-| Close CTA | `HomeMarketingClose` | Repeat hero conversion |
-| Founder | `HomeFounderStory` | Brand trust (desktop; hidden on mobile) |
+| Hero carousel | `HomeHeroSection` | Promise, proof chips, CTAs, live outing chip |
+| Upcoming outings | `HomeActivitiesSection` | Real upcoming outings, emirate filter (public API + curated fallback) |
+| How it works | `HomeHowItWorksSection` | Only place for ordered steps |
+| Reviews + FAQ | `HomeReviewsFaqSection` | Social proof + objections |
 
 **Scroll order** (must match `src/pages/Home.tsx`):
 
-1. Hero  
-2. Proof strip  
-3. Live activity rail  
-4. Value props  
-5. How it works  
-6. Product preview (conditional)  
-7. Testimonials  
-8. FAQ  
-9. Closing CTA  
-10. Founder story  
+1. Hero carousel  
+2. Upcoming outings  
+3. How it works  
+4. Reviews + FAQ  
 
 ## What does **not** belong here
 
@@ -76,33 +66,43 @@ Home may **mention** host-approved joins and the map — that is the acquisition
 
 ## Copy source of truth
 
-- All marketing strings: `src/content/homeLanding.ts`  
-- FAQ preview ids: `src/content/platformFaqs.ts` (`HOME_FAQ_PREVIEW`)  
-- Page shell: `src/pages/Home.tsx`  
-- Section UI: `src/components/home/*`  
+| What | Where |
+|------|--------|
+| Marketing strings | `src/content/homeMarketing.ts` |
+| Fallback activity cards (API empty/error) | `src/content/homeLanding.ts` |
+| Canonical CTA labels | `src/content/productNorthStar.ts` (`PRODUCT_EXPLORE_CTA`, `PRODUCT_JOIN_CTA`) |
+| Full FAQ corpus + JSON-LD | `src/content/platformFaqs.ts` |
+| Page shell | `src/pages/Home.tsx` |
+| Section UI | `src/components/home/v2/**` |
 
-Top-of-file comment in `homeLanding.ts` must stay: *visitors convert here; members live on map + profile*.
+## Hero (v2 — current)
 
-## Hero CTAs (current)
+**Order:** eyebrow → H1 → subcopy (one line) → **proof points** → **Explore the map** + **Join free** (side by side).
 
-- **Mobile:** Open Map (primary button) + Join free (underlined text link) — `HOME_HERO_PRIMARY_CTA`, `HOME_HERO_JOIN_CTA`
-- **Desktop primary:** View on Map → `/explore` (`HOME_HERO_PRIMARY_CTA_DESKTOP`)
-- **Desktop secondary:** Join Free → auth with return to `/explore` (glass pill button, not underlined — `HOME_HERO_JOIN_CTA_DESKTOP`)
-- Desktop header: Log in pill → sign-in with return  
+| Element | Copy source |
+|---------|-------------|
+| H1 | `HOME_HERO.headline` — *Find your people. Get outside together.* |
+| Subcopy | Activity scope + residents & visitors (no second paragraph; proof chips carry browse/join/trust) |
+| Proof | Host-approved groups · Residents & visitors · Free to join |
+| Primary CTA | Explore the map → `/explore` |
+| Secondary CTA | Join free → auth, return `/explore` |
+| Header | Log in · Join free (`HOME_HEADER_NAV`) |
 
-## Responsive rules
+Legacy v1 components (`HomeMobileLaunch`, `HomeProofStrip`, etc.) are not used on `/`.
 
-- **Mobile hero:** minimum height `--home-launch-min: max(22rem, min(52svh, 52dvh))` — uses **svh** for stable mobile browser chrome; the block **may grow taller** if headline/CTAs wrap (large text, long copy). Flex column: brand on top, copy/CTAs `margin-top: auto` with safe-area foot padding. No negative-margin overlap hacks. **Short screens** (`max-height: 720px` / `520px`) and **narrow** (`@container max-width: 360px`) tighten type and CTA width. Headline `HOME_HERO_HEADLINE`, subline `HOME_HERO_SUBLINE_MOBILE`.  
-- **Mobile (rest):** cap live rail to 2 cards; hide product preview when live API is healthy  
-- **Desktop:** left-aligned hero copy, full section subtitles, founder story visible  
-- Shared hero image overlays on **mobile and desktop:** `.landing-hero-overlay-r` (left scrim), `.landing-hero-overlay-t` (top/bottom). Same crop: `object-position: center 30%`.  
+## Responsive notes (v2)
+
+- Hero overlaps header via negative margin; carousel min-height from `--hero-height-mobile` / desktop cap in tokens.
+- **Upcoming outings:** horizontal card carousel on narrow viewports; emirate filter scrolls with edge fade.
+- **Reviews:** horizontal snap carousel on mobile.
+- Signed-in users never see this page — no mobile bottom nav conflict for guests on `/` beyond global Layout.
 
 ## Before changing Home
 
 1. Confirm change is for **guests only**  
 2. Ask: does this belong on signup funnel or on `/explore`?  
 3. Update this doc + `NAVIGATION.md` § Home if section order or jobs change  
-4. Avoid duplicate messages across proof strip and value props  
+4. Avoid duplicate messages across hero proof chips and FAQ
 
 ## Related docs
 

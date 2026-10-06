@@ -84,19 +84,13 @@ Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTH
 - **Not the product home** — members always land on and live on `/explore`.
 - **Goal:** convert visitors via **Open Map** (primary button) and **Join free** (underlined text link); post-auth → `/explore`.
 - **Guest hero:** headline + subline + **Open Map** + **Join free** link. Desktop header: Log in pill.
-- **Scroll order** (matches `Home.tsx`):
-  1. Hero (`HomeMobileLaunch` / `HomeDesktopHero`)
-  2. Proof strip (`HomeProofStrip`)
-  3. Live activity rail (`HomeLiveActivityRail` — public API + fallback)
-  4. Value props (`HomeValueProps`)
-  5. How it works (`HomeDayTimeline`)
-  6. Product preview (`HomeProductPreview` — conditional; hidden on mobile when live rail is healthy)
-  7. Testimonials (`HomeTestimonials`)
-  8. FAQ preview (2 on mobile)
-  9. Closing CTA (`HomeMarketingClose`)
-  10. Founder story (`HomeFounderStory` — desktop; hidden on mobile)
+- **Scroll order** (matches `Home.tsx`, v2 sections in `src/components/home/v2/sections/`):
+  1. Hero carousel (`HomeHeroSection` — includes trust chips)
+  2. Upcoming outings (`HomeActivitiesSection` — public API + curated fallback)
+  3. How it works (`HomeHowItWorksSection`)
+  4. Reviews + FAQ (`HomeReviewsFaqSection`)
 - **Do not add** demand posting, become-host, buddies, shops, or full map UX to Home — those belong on `/explore` or in-app.
-- **Copy:** `src/content/homeLanding.ts`. **Components:** `src/components/home/*`.
+- **Copy:** `src/content/homeMarketing.ts` · fallback cards: `homeLanding.ts` · **Components:** `src/components/home/v2/**`
 
 Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as browse) redirect via `App.tsx` — do not link to them from new UI. **`/activities` → `/trips`** is the personal hub exception.
 

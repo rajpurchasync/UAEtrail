@@ -28,6 +28,9 @@ const ALLOWLIST = new Set([
   'src/components/home/HomeDesktopHero.tsx',
   'src/components/home/HomeMobileLaunch.tsx',
   'src/components/home/HomeMarketingClose.tsx',
+  'src/components/home/v2/sections/HomeHeroSection.tsx',
+  'src/components/home/v2/sections/HomeHowItWorksSection.tsx',
+  'src/components/home/v2/sections/HomeFinalCtaSection.tsx',
   'src/content/productNorthStar.ts',
 ]);
 

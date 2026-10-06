@@ -87,6 +87,9 @@ export type HomeLandingActivity = {
   id: string;
   title: string;
   region: string;
+  /** ISO date (YYYY-MM-DD) for formatActivityTime */
+  date: string;
+  time?: string | null;
   whenLabel: string;
   activityType: 'hiking' | 'camping' | 'event' | 'rideshare';
   price: number;
@@ -102,6 +105,8 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
     id: 'fallback-jais',
     title: 'Jebel Jais sunrise hike',
     region: 'RAK',
+    date: '2026-10-11',
+    time: '05:30',
     whenLabel: 'Sat at 5:30 AM',
     activityType: 'hiking',
     price: 0,
@@ -112,6 +117,8 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
     id: 'fallback-wadi',
     title: 'Wadi Shawka family camp',
     region: 'RAK',
+    date: '2026-10-10',
+    time: '16:00',
     whenLabel: 'Fri at 4:00 PM',
     activityType: 'camping',
     price: 45,
@@ -122,6 +129,8 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
     id: 'fallback-dam',
     title: 'Hatta dam loop',
     region: 'Dubai',
+    date: '2026-10-12',
+    time: '07:00',
     whenLabel: 'Sun at 7:00 AM',
     activityType: 'hiking',
     price: 120,

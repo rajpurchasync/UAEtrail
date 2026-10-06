@@ -64,6 +64,7 @@ const MobileDrawer = ({ open, closeMenu, eyebrow, title, ariaLabel, children }: 
       open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
     }`}
     aria-hidden={!open}
+    {...(open ? {} : { inert: '' })}
   >
     <button type="button" className="absolute inset-0 bg-black/40" aria-label="Close menu" onClick={closeMenu} />
     <aside
@@ -452,6 +453,7 @@ const MobileMenuPanel = () => {
         open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
       aria-hidden={!open}
+      {...(open ? {} : { inert: '' })}
     >
       <button
         type="button"

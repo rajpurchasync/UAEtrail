@@ -28,6 +28,9 @@ export const toAbsoluteUrl = (pathOrUrl?: string | null): string | undefined => 
 
 export const DEFAULT_OG_IMAGE = toAbsoluteUrl(HOME_HERO_OG_PATH)!;
 
+/** Public machine-readable summary for LLM crawlers (`public/llms.txt`). */
+export const LLMS_TXT_PATH = '/llms.txt';
+
 export const DEFAULT_OG_IMAGE_ALT =
   'Group getting outdoors in the UAE — find your crew on UAE Trail';
 

@@ -14,3 +14,6 @@ Disallow: /my-rewards
 Disallow: /profile
 
 Sitemap: https://uaetrail.com/sitemap.xml
+
+# Machine-readable overview for AI assistants (optional convention)
+# https://uaetrail.com/llms.txt

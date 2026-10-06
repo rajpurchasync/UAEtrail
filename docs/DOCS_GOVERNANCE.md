@@ -19,7 +19,7 @@ Goal: **one coherent story** across product, routes, and API — especially **me
 
 1. **Behavior or API** → `MEMBER_MODEL.md` / `API_ROUTING.md` / `CREATE_FLOW.md` (whichever applies)
 2. **Routes or redirects** → `NAVIGATION.md` + `src/config/memberRoutes.ts` (or `platform.ts`)
-3. **User-facing strings** → `src/content/productNorthStar.ts`, `exploreCopy.ts`, or `homeLanding.ts` per `.cursor/rules`
+3. **User-facing strings** → `src/content/productNorthStar.ts`, `exploreCopy.ts`, or `homeMarketing.ts` (guest `/`) per `.cursor/rules`
 4. **Flow-level QA** → matching `docs/experiment/flows/FLOW-*.md` preconditions table
 5. **Rollout tracker** → `MEMBER_MODEL_PHASES.md` or `HOST_CLEANUP_ROADMAP.md` if the work was planned there
 

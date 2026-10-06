@@ -25,6 +25,33 @@ export default {
         black: '800'
       },
       colors: {
+        home: {
+          green: {
+            50: 'var(--green-50)',
+            600: 'var(--green-600)',
+            700: 'var(--green-700)'
+          },
+          ink: 'var(--ink)',
+          surface: 'var(--surface)',
+          muted: 'var(--surface-muted)',
+          tag: {
+            free: {
+              bg: 'var(--tag-free-bg)',
+              text: 'var(--tag-free-text)',
+              border: 'var(--tag-free-border)'
+            },
+            shared: {
+              bg: 'var(--tag-shared-bg)',
+              text: 'var(--tag-shared-text)',
+              border: 'var(--tag-shared-border)'
+            },
+            paid: {
+              bg: 'var(--tag-paid-bg)',
+              text: 'var(--tag-paid-text)',
+              border: 'var(--tag-paid-border)'
+            }
+          }
+        },
         ios: {
           bg: '#EEF6F3',
           grouped: '#FFFFFF',
@@ -59,6 +86,9 @@ export default {
         }
       },
       boxShadow: {
+        'home-card': 'var(--shadow-card)',
+        'home-card-hover': 'var(--shadow-card-hover)',
+        'home-header': 'var(--shadow-header)',
         ios: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)',
         'ios-sm': '0 2px 8px rgba(0, 0, 0, 0.06)',
         glass: '0 8px 32px rgba(16, 185, 129, 0.08), 0 2px 12px rgba(0, 0, 0, 0.04)',
@@ -66,6 +96,11 @@ export default {
         'glass-nav': '0 -4px 24px rgba(0, 0, 0, 0.06), 0 8px 32px rgba(16, 185, 129, 0.08)'
       },
       borderRadius: {
+        home: {
+          sm: 'var(--radius-sm)',
+          md: 'var(--radius-md)',
+          lg: 'var(--radius-lg)'
+        },
         ios: '12px',
         'ios-lg': '16px',
         glass: '22px'

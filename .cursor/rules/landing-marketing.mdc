@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Landing / marketing page (`/`)
 
-Read **`docs/NORTHSTAR.md`**, **`docs/LANDING.md`**, and **`docs/NAVIGATION.md` § Home** before changing Home, hero, or `homeLanding.ts`.
+Read **`docs/NORTHSTAR.md`**, **`docs/LANDING.md`**, and **`docs/NAVIGATION.md` § Home** before changing Home, hero, or `homeMarketing.ts`.
 
 ## Voice (north star)
 
@@ -42,19 +42,21 @@ Home may mention *host-approved joins* and *real outings on the map* as trust/su
 | What | Where |
 |------|--------|
 | Product concept | `docs/NORTHSTAR.md` |
-| Copy | `src/content/homeLanding.ts`, `src/content/productNorthStar.ts` |
+| Copy | `src/content/homeMarketing.ts`, `src/content/productNorthStar.ts` |
 | Section order & conditionals | `src/pages/Home.tsx` |
 | Section UI | `src/components/home/*` |
 | Explore copy (separate) | `src/explore/exploreCopy.ts`, `docs/experiment/explore-ux-spec.md` |
 
-## Section jobs (no duplicate messaging)
+## Section jobs (v2 — no duplicate messaging)
 
-- **Proof strip** — quick trust chips (Verified Hosts · Community Driven · Free to Join)  
-- **Value props** — outcomes: see / say / connect / go together (not duplicate of proof chips)  
-- **Live rail** — proof of real outings  
-- **How it works** — only place for step-by-step first-crew flow  
+| Section | Job |
+|---------|-----|
+| Hero | H1 + scope subcopy; **proof chips then CTAs**; carousel outing chip |
+| Upcoming outings | Live/curated plans + emirate filter |
+| How it works | Only ordered step-by-step flow |
+| Reviews + FAQ | Social proof + objections |
 
-When editing scroll order, update `docs/LANDING.md` and `docs/NAVIGATION.md` § Home to match `Home.tsx`.
+When editing scroll order, update `docs/LANDING.md`, `docs/UAE_Trail_Homepage.md`, and `docs/NAVIGATION.md` § Home to match `Home.tsx`.
 
 ## CTAs
 

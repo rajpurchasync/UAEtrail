@@ -1,3 +1,5 @@
+@import './styles/home-tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -380,6 +382,20 @@
     @apply font-bold tracking-tight text-white;
   }
 
+  @media (max-width: 767px) {
+    .home-hero-copy {
+      padding-inline: 0.375rem;
+      padding-block: 0.25rem;
+    }
+
+    .home-hero-copy .landing-hero-headline {
+      font-size: clamp(1.125rem, 3.2vw + 0.65rem, 1.65rem);
+      line-height: 1.18;
+      text-wrap: balance;
+      white-space: normal;
+    }
+  }
+
   .landing-hero-secondary-cta {
     @apply inline-flex min-h-11 items-center justify-center text-[13px] font-semibold text-white underline underline-offset-[3px];
   }
@@ -438,7 +454,7 @@
   }
 
   .home-hero-proof {
-    @apply rounded-full border border-white/15 bg-black/40 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md;
+    @apply rounded-full border border-white/15 bg-black/40 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-md;
   }
 
   .home-hero-proof-dot {
@@ -482,6 +498,33 @@
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     line-height: 1.25rem;
+  }
+
+  @media (max-width: 767px) {
+    .landing-hero-desktop-ctas .landing-hero-btn {
+      width: auto;
+      flex: 1 1 0;
+      min-width: 0;
+      padding-inline: 0.625rem;
+      font-size: 0.8125rem;
+    }
+
+    .landing-hero-join-cta {
+      min-height: 2.875rem;
+      border: 1px solid rgb(255 255 255 / 0.32);
+      background-color: rgb(255 255 255 / 0.14);
+      color: rgb(255 255 255 / 0.95);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+    }
+
+    .landing-hero-join-cta:hover {
+      color: white;
+      background-color: rgb(255 255 255 / 0.2);
+    }
   }
 
   @media (min-width: 768px) {

@@ -4,6 +4,7 @@ import {
   DEFAULT_OG_IMAGE_ALT,
   SITE_DESCRIPTION,
   SITE_NAME,
+  LLMS_TXT_PATH,
   SITE_ORIGIN,
   pageTitle,
   toAbsoluteUrl
@@ -81,6 +82,22 @@ export function PageMeta({
       robots.content = 'noindex, nofollow';
     } else if (robots) {
       robots.content = 'index, follow';
+    }
+
+    const llmsHref = toAbsoluteUrl(LLMS_TXT_PATH);
+    let llmsLink = document.querySelector('link[rel="alternate"][data-llms-summary]') as HTMLLinkElement | null;
+    if (!noIndex && llmsHref) {
+      if (!llmsLink) {
+        llmsLink = document.createElement('link');
+        llmsLink.rel = 'alternate';
+        llmsLink.type = 'text/plain';
+        llmsLink.setAttribute('data-llms-summary', 'true');
+        llmsLink.title = 'Machine-readable site summary for AI assistants';
+        document.head.appendChild(llmsLink);
+      }
+      llmsLink.href = llmsHref;
+    } else if (llmsLink) {
+      llmsLink.remove();
     }
   }, [title, description, path, image, imageAlt, noIndex]);
 

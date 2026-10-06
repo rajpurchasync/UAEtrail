@@ -197,6 +197,7 @@ const SecurityPrivacy = lazy(() =>
 const Terms = lazy(() => import('./pages/Terms').then((m) => ({ default: m.Terms })));
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })));
 const Faq = lazy(() => import('./pages/Faq').then((m) => ({ default: m.Faq })));
+const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 const PageLoader = () => (
@@ -535,6 +536,7 @@ function App() {
             }
           />
           <Route path="/faq" element={<Faq />} />
+          <Route path="/about" element={<About />} />
           <Route path="/verify" element={<VerifyOTP />} />
           <Route
             path="/welcome"
