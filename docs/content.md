@@ -92,9 +92,9 @@ Filter chip order when all are shown: `All · Dubai · Abu Dhabi · Sharjah · R
 
 | Element | Copy |
 |---------|------|
-| Eyebrow | OUTDOOR COMMUNITY · UAE & GCC |
-| H1 | Find your people. Get outside together. |
-| Subcopy | Hikes, camps, trail runs and group outings across the UAE & GCC — for residents and visitors alike. |
+| Eyebrow | HOSTED HIKES & CAMPS · UAE & GCC |
+| H1 | Find your people for hikes and camps in the UAE. |
+| Subcopy | The platform for hosted outdoor hiking and camping events — discover plans, connect with hosts and joiners, and go together. |
 | Primary button | Explore the map |
 | Secondary button | Join free |
 | Helper text (optional, not shipped) | Free to browse and sign up. Some activities are paid. |
@@ -109,11 +109,9 @@ Filter chip order when all are shown: `All · Dubai · Abu Dhabi · Sharjah · R
 | 2 | Residents & visitors |
 | 3 | Free to join |
 
-### Per-slide content (dynamic)
+### Carousel backgrounds (static)
 
-- **Activity chip** (links to activity):  
-  Pattern: `{Title} · {Emirate} · {formatActivityTime} · {price}`  
-  Example: `Jebel Jais Group Hike · RAK · Fri, 6:00 AM · AED 120`
+- **Images only** — curated hike/camp art (`MARKETING_HERO_CAROUSEL_SLIDES` / `buildHeroSlides()`). No per-slide activity chip or links; live plans are in **Upcoming outings**.
 
 ### Alt text pattern
 

@@ -38,7 +38,7 @@ export const Home = () => {
 
       <HomeMarketingHeader loginHref={signInHref} signupHref={joinHref} />
       <div className="relative -mt-[var(--header-height-mobile)] md:-mt-[var(--header-height-desktop)]">
-        <HomeHeroSection joinHref={joinHref} activities={activities} />
+        <HomeHeroSection joinHref={joinHref} />
       </div>
       <HomeActivitiesSection
         activities={activities}

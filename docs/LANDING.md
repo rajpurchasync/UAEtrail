@@ -39,7 +39,7 @@ Homepage v2 (`src/components/home/v2/sections/*`, plan: [`UAE_Trail_Homepage.md`
 
 | Section | Component | Job |
 |---------|-----------|-----|
-| Hero carousel | `HomeHeroSection` | Promise, proof chips, CTAs, live outing chip |
+| Hero carousel | `HomeHeroSection` | Promise, proof chips, CTAs; **static** photo carousel (no live outing cards) |
 | Upcoming outings | `HomeActivitiesSection` | Real upcoming outings, emirate filter (public API + curated fallback) |
 | How it works | `HomeHowItWorksSection` | Only place for ordered steps |
 | Reviews + FAQ | `HomeReviewsFaqSection` | Social proof + objections |
@@ -77,12 +77,12 @@ Home may **mention** host-approved joins and the map — that is the acquisition
 
 ## Hero (v2 — current)
 
-**Order:** eyebrow → H1 → subcopy (one line) → **proof points** → **Explore the map** + **Join free** (side by side).
+**Order:** eyebrow → H1 → subcopy (one line) → **proof points** → **Explore the map** + **Join free** (side by side). Background carousel uses **curated static images** only; real outings are in **Upcoming outings** below.
 
 | Element | Copy source |
 |---------|-------------|
-| H1 | `HOME_HERO.headline` — *Find your people. Get outside together.* |
-| Subcopy | Activity scope + residents & visitors (no second paragraph; proof chips carry browse/join/trust) |
+| H1 | `HOME_HERO.headline` — hosted hikes & camps in the UAE |
+| Subcopy | Platform for hosted hiking and camping events + discover / connect / go together |
 | Proof | Host-approved groups · Residents & visitors · Free to join |
 | Primary CTA | Explore the map → `/explore` |
 | Secondary CTA | Join free → auth, return `/explore` |

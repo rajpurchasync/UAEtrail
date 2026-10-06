@@ -1,53 +1,30 @@
-import { HOME_HERO_IMAGE_JPEG } from '../config/seo';
-import { resolveActivityTypeCoverImage } from '../config/activityCoverImages';
+import { ACTIVITY_TYPE_COVER_IMAGE_POOLS } from '../config/activityCoverImages';
+import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../config/seo';
 import type { HeroCarouselSlide } from '../components/home/v2/heroCarouselTypes';
-import type { HomeLandingActivity } from '../content/homeLanding';
-import { HOME_LANDING_FALLBACK_ACTIVITIES } from '../content/homeLanding';
-import { mapHomeLandingActivityToCard } from './mapHomeLandingActivity';
 
-const toSlide = (activity: HomeLandingActivity, imageUrl: string, alt: string): HeroCarouselSlide => {
-  const card = mapHomeLandingActivityToCard(activity);
-  return {
-    id: activity.id,
-    imageUrl,
-    alt,
-    title: card.title,
-    emirate: card.emirate,
-    startsAt: card.startsAt,
-    priceLabel: card.priceLabel,
-    href: card.href
-  };
-};
-
-const curatedFallbackSlides = (): HeroCarouselSlide[] =>
-  HOME_LANDING_FALLBACK_ACTIVITIES.slice(0, 3).map((activity, index) => {
-    const imageUrl =
-      index === 0
-        ? HOME_HERO_IMAGE_JPEG
-        : resolveActivityTypeCoverImage(activity.activityType, null, {
-            activityId: activity.id,
-            variantIndex: index
-          });
-    return toSlide(activity, imageUrl, `${activity.title} in ${activity.region}`);
-  });
-
-/** Up to 5 slides from live/cached activities; 2–3 curated slides when empty. */
-export const buildHeroSlides = (activities: HomeLandingActivity[]): HeroCarouselSlide[] => {
-  if (activities.length === 0) {
-    return curatedFallbackSlides();
+/** Curated marketing backgrounds only — live outings appear in `HomeActivitiesSection`. */
+export const MARKETING_HERO_CAROUSEL_SLIDES: readonly HeroCarouselSlide[] = [
+  {
+    id: 'hero-bundled',
+    imageUrl: HOME_HERO_IMAGE_JPEG,
+    imageSrcSet: `${HOME_HERO_IMAGE_WEBP} 1200w, ${HOME_HERO_IMAGE_JPEG} 1600w`,
+    alt: 'Group getting outdoors in the UAE'
+  },
+  {
+    id: 'hero-hike-hatta',
+    imageUrl: ACTIVITY_TYPE_COVER_IMAGE_POOLS.hiking[1],
+    alt: 'Hatta dam and Hajar mountain trails'
+  },
+  {
+    id: 'hero-camp-desert',
+    imageUrl: ACTIVITY_TYPE_COVER_IMAGE_POOLS.camping[0],
+    alt: 'Desert camping under UAE rock formations'
+  },
+  {
+    id: 'hero-hike-fujairah',
+    imageUrl: ACTIVITY_TYPE_COVER_IMAGE_POOLS.hiking[2],
+    alt: 'Hajar mountains along the Gulf of Oman'
   }
+];
 
-  return activities.slice(0, 5).map((activity) => {
-    const card = mapHomeLandingActivityToCard(activity);
-    return {
-      id: activity.id,
-      imageUrl: card.imageUrl,
-      alt: card.imageAlt,
-      title: card.title,
-      emirate: card.emirate,
-      startsAt: card.startsAt,
-      priceLabel: card.priceLabel,
-      href: card.href
-    };
-  });
-};
+export const buildHeroSlides = (): HeroCarouselSlide[] => [...MARKETING_HERO_CAROUSEL_SLIDES];

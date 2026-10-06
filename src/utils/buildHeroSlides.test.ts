@@ -1,20 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { buildHeroSlides } from './buildHeroSlides';
-import { HOME_LANDING_FALLBACK_ACTIVITIES } from '../content/homeLanding';
+import { buildHeroSlides, MARKETING_HERO_CAROUSEL_SLIDES } from './buildHeroSlides';
 
 describe('buildHeroSlides', () => {
-  it('returns curated fallbacks when no activities', () => {
-    const slides = buildHeroSlides([]);
-    expect(slides.length).toBeGreaterThanOrEqual(2);
-    expect(slides[0].title).toBe(HOME_LANDING_FALLBACK_ACTIVITIES[0].title);
-  });
-
-  it('caps live activities at five slides', () => {
-    const many = Array.from({ length: 8 }, (_, i) => ({
-      ...HOME_LANDING_FALLBACK_ACTIVITIES[0],
-      id: `act-${i}`,
-      title: `Activity ${i}`
-    }));
-    expect(buildHeroSlides(many)).toHaveLength(5);
+  it('returns curated static marketing slides only', () => {
+    const slides = buildHeroSlides();
+    expect(slides).toEqual([...MARKETING_HERO_CAROUSEL_SLIDES]);
+    expect(slides.length).toBeGreaterThanOrEqual(3);
+    for (const slide of slides) {
+      expect(slide.imageUrl).toBeTruthy();
+      expect(slide.alt).toBeTruthy();
+      expect(slide).not.toHaveProperty('href');
+    }
   });
 });

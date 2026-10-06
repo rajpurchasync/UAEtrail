@@ -10,11 +10,11 @@ export const HOME_HEADER_NAV = {
 } as const;
 
 export const HOME_HERO = {
-  eyebrow: 'OUTDOOR COMMUNITY · UAE & GCC',
-  eyebrowShort: 'UAE & GCC outdoors',
-  headline: 'Find your people. Get outside together.',
+  eyebrow: 'HOSTED HIKES & CAMPS · UAE & GCC',
+  eyebrowShort: 'Hikes & camps · UAE & GCC',
+  headline: 'Find your people for hikes and camps in the UAE.',
   subcopy:
-    'Hikes, camps, trail runs and group outings across the UAE & GCC — for residents and visitors alike.',
+    'The platform for hosted outdoor hiking and camping events — discover plans, connect with hosts and joiners, and go together.',
   primaryCta: PRODUCT_EXPLORE_CTA,
   secondaryCta: PRODUCT_JOIN_CTA,
   proofPoints: ['Host-approved groups', 'Residents & visitors', 'Free to join'] as const
