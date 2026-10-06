@@ -8,6 +8,28 @@ const configDir = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(configDir, '../../../../.env') });
 dotenv.config();
 
+/** `npm run dev:all` reads root .env; map test Atlas URI when only MONGODB_URI_TEST is set. */
+const resolveMongoUriForDev = (): void => {
+  if (process.env.MONGODB_URI?.trim()) {
+    return;
+  }
+
+  const runEnv = (process.env.RUN_ENV || 'test').toLowerCase();
+  const normalized = runEnv === 'local' ? 'test' : runEnv;
+  const key =
+    normalized === 'production'
+      ? 'MONGODB_URI_PROD'
+      : normalized === 'staging'
+        ? 'MONGODB_URI_STAGING'
+        : 'MONGODB_URI_TEST';
+  const fromFile = process.env[key]?.trim();
+  if (fromFile) {
+    process.env.MONGODB_URI = fromFile;
+  }
+};
+
+resolveMongoUriForDev();
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   RUN_ENV: z.enum(['test', 'staging', 'production', 'local']).optional(),

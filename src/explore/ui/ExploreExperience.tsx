@@ -324,6 +324,8 @@ export const ExploreExperience = () => {
       desktopBrowseTab: browse.desktopBrowseTab,
       buddySubtype: browse.buddySubtype,
       outingTopic: browse.outingTopic,
+      pinKind: browse.pinKind,
+      topicPills: browse.topicPills,
     });
 
   const whosGoingFriendRowsFiltered = useMemo(() => {

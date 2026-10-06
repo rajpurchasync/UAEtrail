@@ -16,5 +16,6 @@ export const useExploreMap = () =>
       const res = await api.getExploreMap();
       return res.data.items;
     },
-    staleTime: 60_000,
+    staleTime: 30_000,
+    refetchOnMount: 'always',
   });

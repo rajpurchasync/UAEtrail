@@ -6,6 +6,7 @@ import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../r
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
+import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import {
   expandMapPins,
   isBuddyMapItem,
@@ -16,10 +17,12 @@ import {
   layoutColocatedMapPins,
   matchesBuddyMapFilter,
   matchesPlacesMapFilter,
+  matchesUnifiedExploreMapItem,
 } from './exploreMapPinModel';
 import {
   mapItemMatchesFilterPills,
   mapItemMatchesSearchScope,
+  type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
 import type { ExploreBrowseListMode, WhosGoingSegment } from './useExploreBrowseUrlState';
@@ -43,6 +46,8 @@ type UseExploreBrowseListArgs = {
   desktopBrowseTab: DesktopBrowseTab;
   buddySubtype: ExploreBuddySubtypeKey;
   outingTopic: ExploreOutingTopicKey;
+  pinKind: ExplorePinKindFilter;
+  topicPills: readonly ExploreMapFilterPillKey[];
 };
 
 const dedupeExploreListById = (list: ExploreMapItemDTO[]): ExploreMapItemDTO[] => {
@@ -83,6 +88,8 @@ export const useExploreBrowseList = ({
   desktopBrowseTab,
   buddySubtype,
   outingTopic,
+  pinKind,
+  topicPills,
 }: UseExploreBrowseListArgs) => {
   const mapItems = useMemo(() => {
     const itemIds = new Set(items.map((entry) => entry.id));
@@ -90,26 +97,17 @@ export const useExploreBrowseList = ({
       ...items,
       ...ephemeralMapItems.filter((entry) => !itemIds.has(entry.id)),
     ];
-    let pool = merged;
-    if (isDesktop) {
-      pool = pool.filter((item) => mapItemMatchesFilterPills(item, []));
-      if (desktopBrowseTab === 'venues') {
-        pool = pool.filter(isPlacesMapItem);
-      } else {
-        pool = pool.filter(isBuddyMapItem);
-      }
-    } else if (sidebarPanel === 'venues') {
-      pool = pool
-        .filter(isPlacesMapItem)
-        .filter((item) => matchesPlacesMapFilter(item, mapFilter))
-        .filter((item) => venueItemMatchesRegions(item, venueRegions));
-    } else if (sidebarPanel === 'shops') {
-      pool = pool.filter(isShopListItem);
-    } else {
-      pool = pool
-        .filter(isBuddyMapItem)
-        .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic))
-        .filter((item) => matchesActivityDateFilter(item, activityDatePreset));
+    const unifiedMapInput = {
+      mapFilter,
+      pinKind,
+      buddySubtype,
+      outingTopic,
+      activityDatePreset,
+      venueRegions,
+    };
+    let pool = merged.filter((item) => matchesUnifiedExploreMapItem(item, unifiedMapInput));
+    if (topicPills.length > 0) {
+      pool = pool.filter((item) => mapItemMatchesFilterPills(item, topicPills));
     }
     if (query.trim()) {
       pool = pool.filter((item) => exploreItemMatchesQuery(item, query));
@@ -119,14 +117,13 @@ export const useExploreBrowseList = ({
     items,
     ephemeralMapItems,
     query,
-    isDesktop,
-    desktopBrowseTab,
-    sidebarPanel,
     mapFilter,
     activityDatePreset,
     venueRegions,
     buddySubtype,
     outingTopic,
+    pinKind,
+    topicPills,
   ]);
 
   const browseListMode: ExploreBrowseListMode = isDesktop ? 'default' : listMode;

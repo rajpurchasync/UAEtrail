@@ -513,11 +513,19 @@ export const usersShareActiveGroup = async (userA: string, userB: string): Promi
   if (!userA || !userB) return false;
   if (userA === userB) return true;
 
-  const groupIds = await membersCollection().distinct('groupId', {
-    userId: userA,
-    memberType: 'adult',
-    isActive: { $ne: false }
-  });
+  const groupIdRows = await membersCollection()
+    .aggregate<{ _id: string }>([
+      {
+        $match: {
+          userId: userA,
+          memberType: 'adult',
+          isActive: { $ne: false }
+        }
+      },
+      { $group: { _id: '$groupId' } }
+    ])
+    .toArray();
+  const groupIds = groupIdRows.map((row) => row._id).filter(Boolean);
   if (groupIds.length === 0) return false;
 
   const shared = await membersCollection().findOne({
