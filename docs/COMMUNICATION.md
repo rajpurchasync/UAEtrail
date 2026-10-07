@@ -1,7 +1,7 @@
 # Communication & messaging
 
 **North star:** Help people **connect and go together** — chat supports outings, not a separate social network.  
-**Not in scope here:** Explore **people browse** (who’s going, Buddies list, `view=social` panel, `/social/people` roster) — that is **member_discovery** / browse ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.2, [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew).  
+**Not in scope here:** Explore **people browse** (who’s going, Buddies list, map `view=people` panel, `/social/people` network roster) — that is **member_discovery** / browse ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.2, [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew).  
 **Navigation:** [`NAVIGATION.md`](./NAVIGATION.md) (routes) · **Trips / host:** [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) (crew chat from manage surfaces) · **Domain:** [`DOMAIN.md`](./DOMAIN.md).
 
 ## Surfaces (where users chat)

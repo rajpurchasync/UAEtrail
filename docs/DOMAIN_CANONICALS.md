@@ -59,7 +59,7 @@ Explore and campaigns answer two questions. Do not merge them in copy or DTOs.
 | Lens | Question | Map / feed examples | Entity kinds |
 |------|----------|---------------------|--------------|
 | **Where** | What **place** or **pin** is here? | Trails, camps, venues, **shop pin**, future **partner pin** (hotel) | `place`, shop as **Place** + `shop` storefront |
-| **Who** | Who can I go with — friends, followed, hosts, demand (“looking”) | Activities, demand, explore **people browse panel** (`view=social`, list **Buddies**), member cards | `activity`, `person`, **buddy**, member-discovery roster — not `whosGoing` in API/code. **`/social/people`** is a legacy HTTP path for browse reads, not chat. |
+| **Who** | Who can I go with — friends, followed, hosts, demand (“looking”) | Activities, demand, explore **people browse panel** (`view=people`, list **Buddies**), member cards | `activity`, `person`, **buddy**, member-discovery roster — not `whosGoing` in API/code. **`/social/people`** is a legacy HTTP mount for browse network reads, not chat. |
 
 An **Activity** is **Who + When** (often anchored to **Where** via `locationId`). A **tour agency** is **Who** (brand + trips) without requiring a visit pin to participate. A **shop** is primarily **Where** (get directions) plus optional e-commerce on `/shop/:id`.
 
