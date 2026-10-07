@@ -10,7 +10,6 @@ import {
 import { followUser } from '../src/lib/follow-store.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { getMongoClient } from '../src/lib/mongo.js';
-import { notifyBuddyRequestReceived } from '../src/services/buddy-notifications.js';
 import { notifyMemberFollowed } from '../src/services/social-notifications.js';
 
 export type ConnectionsDemoInput = {

@@ -15,11 +15,10 @@ import {
   listUserActivityRequestsPaginated,
 } from '../../lib/activity-engagement-store.js';
 import { registerActivityRoute } from '../../lib/activity-routes.js';
-import { findAuthUserById, listAuthUsers } from '../../lib/auth-users.js';
+import { listAuthUsers } from '../../lib/auth-users.js';
 import { buildActivityDto } from '../../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { removePushSubscription, upsertPushSubscription } from '../../lib/push-subscriptions.js';
-import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { buildParticipationDto } from '../../services/checkin.js';
 import {
