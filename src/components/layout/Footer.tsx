@@ -2,6 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { LLMS_TXT_PATH } from '../../config/seo';
 import { HOME_FOOTER_FOUNDERS, HOME_FOOTER_FOUNDERS_HEADING } from '../../content/homeMarketing';
 
+const HOME_FOOTER_FOUNDERS_SECTION_CLASS =
+  'mb-8 rounded-2xl border border-emerald-700/35 bg-gradient-to-b from-emerald-950/50 to-gray-900/80 px-5 py-6 text-left shadow-[inset_0_1px_0_rgba(52,211,153,0.12)] sm:px-6 md:mb-10 md:px-8 md:py-8';
+
 const FOOTER_LINKS = [
   { label: 'About', to: '/about' },
   { label: 'Terms and Conditions', to: '/terms' },
@@ -20,7 +23,7 @@ export const Footer = () => {
       <div className="mx-auto max-w-7xl px-4 py-6 text-center sm:px-6 lg:px-8 md:py-8">
         {isHome ? (
           <section
-            className="home-v2-font mb-8 rounded-2xl border border-emerald-700/35 bg-gradient-to-b from-emerald-950/50 to-gray-900/80 px-5 py-6 text-left shadow-[inset_0_1px_0_rgba(52,211,153,0.12)] sm:px-6 md:mb-10 md:px-8 md:py-8"
+            className={`home-v2-font ${HOME_FOOTER_FOUNDERS_SECTION_CLASS}`}
             aria-labelledby="home-footer-founders-heading"
           >
             <div
