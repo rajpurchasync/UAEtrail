@@ -6,8 +6,8 @@ Paste into the GitHub pull request description (screenshots to be added separate
 
 - Ship guest homepage v2: hero carousel with proof chips then CTAs, upcoming outings with emirate flag filters, how it works, reviews + FAQ.
 - Marketing copy centralized in `src/content/homeMarketing.ts`; plan updated in `docs/UAE_Trail_Homepage.md`, `docs/LANDING.md`, `docs/content.md`.
-- Final CTA dark band not rendered on `/` (hero + site footer only).
-- Includes follow-up commit with local API/mongo dev scripts on the same branch (review before merge).
+- Final CTA dark band not rendered on `/` (hero + site footer founders card in site footer).
+- Merged latest `main`; CI lint + buddy-notification contract test fixes included.
 
 ## Test plan
 
