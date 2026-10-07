@@ -355,9 +355,6 @@ export const explorePath = (options?: {
 export const explorePeopleBrowsePath = (options?: { list?: boolean }): string =>
   explorePath({ peopleBrowse: true, list: options?.list ?? true });
 
-/** @deprecated Use `explorePeopleBrowsePath`. */
-export const exploreSocialPath = explorePeopleBrowsePath;
-
 /** Start create flow with optional buddy to plan with. */
 export const explorePlanWithBuddyPath = (
   buddyUserId: string,

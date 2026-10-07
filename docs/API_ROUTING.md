@@ -114,7 +114,7 @@ Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mong
 
 Registration: `registerBuddyRoutes.ts` · service: `buddy-activity-presence.ts`.
 
-Explore **people browse panel** (map; legacy URL `view=social`) uses **`GET /social/people`** (see below) — `activity-presence` remains for map-adjacent tooling. **Chat** is `/chat/*` and `/messages` — not these routes.
+Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / `view=going`) uses **`GET /social/people`** (see below) — `activity-presence` remains for map-adjacent tooling. **Chat** is `/chat/*` and `/messages` — not these routes.
 
 ---
 
@@ -128,7 +128,7 @@ Explore **people browse panel** (map; legacy URL `view=social`) uses **`GET /soc
 | GET | `/social/people` | **Network roster** — friends / following for map people panel. Query: `segment=all\|friends\|followed` |
 | GET | `/me/member-discovery/roster` | **Discovery roster** — who’s going, hosts, looking-for, followed, directory (`q`, `date`, `omitDirectory`, pagination); `meta.quota`. Same list component as `/list?listCat=people` (**Buddies**) |
 
-Registration: `registerSocialPeopleRoutes.ts` · `registerMemberDiscoveryRoutes.ts` · services: `social-people.ts`, `member-discovery-roster.ts` (target: shared member-people read pipeline).
+Registration: `registerSocialPeopleRoutes.ts` · `registerMemberDiscoveryRoutes.ts` · services: `member-people-engagement.ts`, `member-discovery-roster.ts`.
 
 ---
 

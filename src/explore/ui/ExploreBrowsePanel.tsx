@@ -30,20 +30,20 @@ import {
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
-import type { ExploreBrowseListMode, ExploreSocialTab } from './useExploreBrowseUrlState';
-import { ExploreSocialPanelTabs } from './ExploreSocialPanelTabs';
+import type { ExploreBrowseListMode, ExplorePeopleBrowseTab } from './useExploreBrowseUrlState';
+import { ExplorePeopleBrowsePanelTabs } from './ExplorePeopleBrowsePanelTabs';
 import { ExploreFollowedSegmentTabs } from './ExploreFollowedSegmentTabs';
 import { ExploreFollowedEntityList } from './ExploreFollowedEntityList';
-import { ExploreMemberPeopleNetworkList } from './ExploreSocialPeopleList';
+import { ExploreMemberPeopleNetworkList } from './ExploreMemberPeopleNetworkList';
 import { ExploreMemberDiscoveryList } from './ExploreMemberDiscoveryList';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
-import { ListBuddiesSegmentPills } from '../../list/ui/ListBuddiesSegmentPills';
+import { ListBuddiesCategoryToolbar } from '../../list/ui/ListBuddiesCategoryToolbar';
 import {
-  EXPLORE_SOCIAL_DISCOVER_SEARCH_PLACEHOLDER,
-  EXPLORE_SOCIAL_PANEL_SUBCOPY,
-  EXPLORE_SOCIAL_PANEL_TITLE,
-  EXPLORE_SOCIAL_SEARCH_PLACEHOLDER,
-} from '../../content/exploreSocialPanelCopy';
+  EXPLORE_PEOPLE_BROWSE_DISCOVER_SEARCH_PLACEHOLDER,
+  EXPLORE_PEOPLE_BROWSE_PANEL_SUBCOPY,
+  EXPLORE_PEOPLE_BROWSE_PANEL_TITLE,
+  EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER,
+} from '../../content/explorePeopleBrowseCopy';
 import type {
   MemberBrowseCardDTO,
   MemberDiscoveryQuotaDTO,
@@ -94,16 +94,18 @@ export interface ExploreBrowsePanelProps {
   onSearchScopePick: (scope?: ExploreSearchScopeKey | null) => void;
   searchFocusNonce?: number;
   listMode?: ExploreBrowseListMode;
-  socialTab?: ExploreSocialTab;
-  onSocialTabChange?: (tab: ExploreSocialTab) => void;
-  socialAllCount?: number;
-  socialFriendsCount?: number;
-  socialFollowedCount?: number;
-  socialPeople?: SocialPersonRowDTO[];
-  socialLoading?: boolean;
-  socialError?: string | null;
-  onRefreshSocialPeople?: () => void;
-  onOpenSocialActivity?: (trip: { exploreItemId: string }) => void;
+  peopleBrowseTab?: ExplorePeopleBrowseTab;
+  onPeopleBrowseTabChange?: (tab: ExplorePeopleBrowseTab) => void;
+  buddiesDiscoverSegment?: BuddiesDiscoverySegment;
+  onBuddiesDiscoverSegmentChange?: (segment: BuddiesDiscoverySegment) => void;
+  memberPeopleAllCount?: number;
+  memberPeopleFriendsCount?: number;
+  memberPeopleFollowedCount?: number;
+  memberPeopleNetwork?: SocialPersonRowDTO[];
+  memberPeopleLoading?: boolean;
+  memberPeopleError?: string | null;
+  onRefreshMemberPeople?: () => void;
+  onOpenMemberPersonActivity?: (trip: { exploreItemId: string }) => void;
   discoveryFriendsGoing?: import('@uaetrail/shared-types').SocialPersonRowDTO[];
   discoveryHostsGoing?: import('@uaetrail/shared-types').SocialPersonRowDTO[];
   discoveryLookingFor?: import('@uaetrail/shared-types').MemberDiscoveryLookingRowDTO[];
@@ -129,7 +131,7 @@ export interface ExploreBrowsePanelProps {
   posterFeedCards?: ExploreCardModel[];
   /** Full-viewport browse modal (back affordance, no sheet handle). */
   fullscreenBrowse?: boolean;
-  /** Mobile map sheet — horizontal inset for chrome + lists (Social panel). */
+  /** Mobile map sheet — horizontal inset for chrome + lists (People browse panel). */
   mobileSheetChrome?: boolean;
 }
 
@@ -186,16 +188,18 @@ export const ExploreBrowsePanel = ({
   onSearchScopePick,
   searchFocusNonce = 0,
   listMode = 'default',
-  socialTab = 'all',
-  onSocialTabChange,
-  socialAllCount,
-  socialFriendsCount,
-  socialFollowedCount,
-  socialPeople = [],
-  socialLoading = false,
-  socialError = null,
-  onRefreshSocialPeople,
-  onOpenSocialActivity,
+  peopleBrowseTab = 'all',
+  onPeopleBrowseTabChange,
+  buddiesDiscoverSegment = 'going',
+  onBuddiesDiscoverSegmentChange,
+  memberPeopleAllCount,
+  memberPeopleFriendsCount,
+  memberPeopleFollowedCount,
+  memberPeopleNetwork = [],
+  memberPeopleLoading = false,
+  memberPeopleError = null,
+  onRefreshMemberPeople,
+  onOpenMemberPersonActivity,
   discoveryFriendsGoing = [],
   discoveryHostsGoing = [],
   discoveryLookingFor = [],
@@ -230,7 +234,7 @@ export const ExploreBrowsePanel = ({
   const posterCardsToRender =
     posterFeedCards.length > 0 ? posterFeedCards : posterFeedBuiltCards;
   const heading = peopleBrowsePanel
-    ? EXPLORE_SOCIAL_PANEL_TITLE
+    ? EXPLORE_PEOPLE_BROWSE_PANEL_TITLE
     : myTripsMode
       ? `My trips (${listItems.length})`
       : listHeading(isDesktop, desktopBrowseTab, sidebarPanel, listItems.length, mapFilter);
@@ -238,14 +242,13 @@ export const ExploreBrowsePanel = ({
   const queryInputRef = useRef<HTMLInputElement>(null);
   const searchScopeAnchorRef = useRef<HTMLDivElement>(null);
   const [searchScopeOpen, setSearchScopeOpen] = useState(false);
-  const [discoverSegment, setDiscoverSegment] = useState<BuddiesDiscoverySegment>('going');
   const hasSearchQuery = query.trim().length > 0;
   const showSearchScopeOverlay = !peopleBrowsePanel && searchScopeOpen && hasSearchQuery;
 
-  const socialRosterTab = socialTab === 'discover' ? 'all' : socialTab;
+  const memberPeopleRosterTab = peopleBrowseTab === 'discover' ? 'all' : peopleBrowseTab;
 
-  const socialPeopleFiltered = peopleBrowsePanel && socialTab !== 'discover'
-    ? socialPeople.filter((person) => {
+  const memberPeopleNetworkFiltered = peopleBrowsePanel && peopleBrowseTab !== 'discover'
+    ? memberPeopleNetwork.filter((person) => {
         const q = query.trim().toLowerCase();
         if (!q) return true;
         return (
@@ -254,7 +257,7 @@ export const ExploreBrowsePanel = ({
           (person.upcomingTrip?.title.toLowerCase().includes(q) ?? false)
         );
       })
-    : socialPeople;
+    : memberPeopleNetwork;
 
   useEffect(() => {
     if (!searchFocusNonce) return;
@@ -312,7 +315,7 @@ export const ExploreBrowsePanel = ({
         (sheetFillsViewport
           ? 'Back to map'
           : peopleBrowsePanel
-            ? 'Close Social'
+            ? 'Close People'
             : isDesktop
               ? 'Collapse list panel'
               : 'Close browse panel')
@@ -350,7 +353,7 @@ export const ExploreBrowsePanel = ({
             <div className="flex justify-end">{closeButton}</div>
           </div>
           <p className="px-1 text-center text-xs leading-relaxed text-neutral-600">
-            {EXPLORE_SOCIAL_PANEL_SUBCOPY}
+            {EXPLORE_PEOPLE_BROWSE_PANEL_SUBCOPY}
           </p>
         </div>
       ) : fullscreenBrowse && !isDesktop ? (
@@ -423,17 +426,17 @@ export const ExploreBrowsePanel = ({
         </div>
       )}
 
-      {peopleBrowsePanel && onSocialTabChange ? (
-        <ExploreSocialPanelTabs
-          tab={socialTab}
-          onTabChange={onSocialTabChange}
-          allCount={isSignedIn ? socialAllCount : undefined}
-          friendsCount={isSignedIn ? socialFriendsCount : undefined}
-          followedCount={isSignedIn ? socialFollowedCount : undefined}
+      {peopleBrowsePanel && onPeopleBrowseTabChange ? (
+        <ExplorePeopleBrowsePanelTabs
+          tab={peopleBrowseTab}
+          onTabChange={onPeopleBrowseTabChange}
+          allCount={isSignedIn ? memberPeopleAllCount : undefined}
+          friendsCount={isSignedIn ? memberPeopleFriendsCount : undefined}
+          followedCount={isSignedIn ? memberPeopleFollowedCount : undefined}
         />
       ) : null}
 
-      {peopleBrowsePanel && socialTab === 'followed' && onFollowedSegmentChange ? (
+      {peopleBrowsePanel && peopleBrowseTab === 'followed' && onFollowedSegmentChange ? (
         <ExploreFollowedSegmentTabs segment={followedSegment} onSegmentChange={onFollowedSegmentChange} />
       ) : null}
 
@@ -461,9 +464,9 @@ export const ExploreBrowsePanel = ({
                 onChange={(event) => onQueryChange(event.target.value)}
                 onBlur={onQuerySync}
                 placeholder={
-                  socialTab === 'discover'
-                    ? EXPLORE_SOCIAL_DISCOVER_SEARCH_PLACEHOLDER
-                    : EXPLORE_SOCIAL_SEARCH_PLACEHOLDER
+                  peopleBrowseTab === 'discover'
+                    ? EXPLORE_PEOPLE_BROWSE_DISCOVER_SEARCH_PLACEHOLDER
+                    : EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER
                 }
                 className={`min-w-0 flex-1 bg-transparent text-sm font-semibold ${EXPLORE_TYPE.title} outline-none placeholder:font-normal placeholder:text-neutral-500`}
               />
@@ -579,11 +582,14 @@ export const ExploreBrowsePanel = ({
           }`}
           onMouseLeave={onListItemHoverEnd}
         >
-          {peopleBrowsePanel && socialTab === 'discover' ? (
-            <div className="flex flex-col gap-3 px-3">
-              <ListBuddiesSegmentPills segment={discoverSegment} onSegmentChange={setDiscoverSegment} />
+          {peopleBrowsePanel && peopleBrowseTab === 'discover' ? (
+            <div className="flex flex-col gap-2 px-3">
+              <ListBuddiesCategoryToolbar
+                segment={buddiesDiscoverSegment}
+                onSegmentChange={(segment) => onBuddiesDiscoverSegmentChange?.(segment)}
+              />
               <ExploreMemberDiscoveryList
-                segment={discoverSegment}
+                segment={buddiesDiscoverSegment}
                 friendsGoing={discoveryFriendsGoing}
                 hostsGoing={discoveryHostsGoing}
                 lookingFor={discoveryLookingFor}
@@ -599,7 +605,7 @@ export const ExploreBrowsePanel = ({
               />
             </div>
           ) : null}
-          {peopleBrowsePanel && socialTab === 'followed' && followedSegment !== 'people' ? (
+          {peopleBrowsePanel && peopleBrowseTab === 'followed' && followedSegment !== 'people' ? (
             <ExploreFollowedEntityList
               segment={followedSegment}
               follows={entityFollows}
@@ -607,16 +613,16 @@ export const ExploreBrowsePanel = ({
               error={entityFollowsError}
             />
           ) : null}
-          {peopleBrowsePanel && socialTab !== 'discover' && !(socialTab === 'followed' && followedSegment !== 'people') ? (
+          {peopleBrowsePanel && peopleBrowseTab !== 'discover' && !(peopleBrowseTab === 'followed' && followedSegment !== 'people') ? (
             <ExploreMemberPeopleNetworkList
-              people={socialPeopleFiltered}
-              loading={socialLoading}
-              error={socialError}
+              people={memberPeopleNetworkFiltered}
+              loading={memberPeopleLoading}
+              error={memberPeopleError}
               isSignedIn={isSignedIn}
               userRole={userRole}
-              tab={socialRosterTab}
-              onOpenActivity={(trip) => onOpenSocialActivity?.(trip)}
-              onRefresh={() => onRefreshSocialPeople?.()}
+              tab={memberPeopleRosterTab}
+              onOpenActivity={(trip) => onOpenMemberPersonActivity?.(trip)}
+              onRefresh={() => onRefreshMemberPeople?.()}
             />
           ) : null}
           {!peopleBrowsePanel && loading && listItems.length === 0 ? (

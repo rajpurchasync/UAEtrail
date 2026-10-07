@@ -5,20 +5,20 @@ import type { UserRole } from '@uaetrail/shared-types';
 import { SecureAvatar } from '../../components/ui';
 import { BUDDIES_PATH } from '../../config/routingCatalog';
 import {
-  EXPLORE_SOCIAL_ACTION_ADD_FRIEND,
-  EXPLORE_SOCIAL_ACTION_MESSAGE,
-  EXPLORE_SOCIAL_ACTION_PLAN_TRIP,
-  socialPersonAttendedLine,
-  socialPersonTripHintLine,
-} from '../../content/exploreSocialPanelCopy';
+  EXPLORE_PEOPLE_BROWSE_ACTION_ADD_FRIEND,
+  EXPLORE_PEOPLE_BROWSE_ACTION_MESSAGE,
+  EXPLORE_PEOPLE_BROWSE_ACTION_PLAN_TRIP,
+  memberPersonAttendedLine,
+  memberPersonTripHintLine,
+} from '../../content/explorePeopleBrowseCopy';
 import { messagesRouteForRole } from '../../utils/authRouting';
 
-export type ExploreSocialPersonOutingHint = {
+export type ExploreMemberPersonOutingHint = {
   line: string;
   onClick?: () => void;
 };
 
-type ExploreSocialPersonCardProps = {
+type ExploreMemberPersonCardProps = {
   person: SocialPersonRowDTO;
   userRole?: UserRole;
   profileTo: string;
@@ -26,12 +26,12 @@ type ExploreSocialPersonCardProps = {
   showPlanTrip?: boolean;
   onPlanTrip?: (userId: string) => void;
   onOpenActivity: (trip: { exploreItemId: string }) => void;
-  outingHint?: ExploreSocialPersonOutingHint | null;
+  outingHint?: ExploreMemberPersonOutingHint | null;
   busy?: boolean;
   onSendBuddyRequest?: (userId: string) => void;
 };
 
-export const ExploreSocialPersonCard = ({
+export const ExploreMemberPersonCard = ({
   person,
   userRole,
   profileTo,
@@ -42,9 +42,9 @@ export const ExploreSocialPersonCard = ({
   outingHint = null,
   busy = false,
   onSendBuddyRequest,
-}: ExploreSocialPersonCardProps) => {
+}: ExploreMemberPersonCardProps) => {
   const navigate = useNavigate();
-  const metaLine = [person.cityLabel, socialPersonAttendedLine(person.activitiesAttended)]
+  const metaLine = [person.cityLabel, memberPersonAttendedLine(person.activitiesAttended)]
     .filter(Boolean)
     .join(' · ');
   const trip = person.upcomingTrip;
@@ -90,7 +90,7 @@ export const ExploreSocialPersonCard = ({
             className="mt-1 flex max-w-full items-start gap-1 text-left text-xs font-medium text-emerald-700 hover:underline"
           >
             <CalendarDays className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span className="line-clamp-2">{socialPersonTripHintLine(trip)}</span>
+            <span className="line-clamp-2">{memberPersonTripHintLine(trip)}</span>
           </button>
         ) : null}
       </div>
@@ -117,7 +117,7 @@ export const ExploreSocialPersonCard = ({
               className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-800 disabled:opacity-40"
             >
               <MessageCircle className="h-3.5 w-3.5" aria-hidden />
-              {EXPLORE_SOCIAL_ACTION_MESSAGE}
+              {EXPLORE_PEOPLE_BROWSE_ACTION_MESSAGE}
             </button>
             {showPlanTrip && onPlanTrip ? (
               <button
@@ -126,7 +126,7 @@ export const ExploreSocialPersonCard = ({
                 className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
               >
                 <CalendarDays className="h-3.5 w-3.5" aria-hidden />
-                {EXPLORE_SOCIAL_ACTION_PLAN_TRIP}
+                {EXPLORE_PEOPLE_BROWSE_ACTION_PLAN_TRIP}
               </button>
             ) : null}
           </>
@@ -140,7 +140,7 @@ export const ExploreSocialPersonCard = ({
                 className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 disabled:opacity-40"
               >
                 <UserPlus className="h-3.5 w-3.5" aria-hidden />
-                {EXPLORE_SOCIAL_ACTION_ADD_FRIEND}
+                {EXPLORE_PEOPLE_BROWSE_ACTION_ADD_FRIEND}
               </button>
             ) : null}
             {person.buddyRequestState === 'incoming' ? (
@@ -158,7 +158,7 @@ export const ExploreSocialPersonCard = ({
                 className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-800"
               >
                 <MessageCircle className="h-3.5 w-3.5" aria-hidden />
-                {EXPLORE_SOCIAL_ACTION_MESSAGE}
+                {EXPLORE_PEOPLE_BROWSE_ACTION_MESSAGE}
               </button>
             ) : null}
           </>

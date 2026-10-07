@@ -88,7 +88,7 @@ export const EXPLORE_BROWSE_PANEL_TAB = {
   inactive: 'text-neutral-500 hover:text-neutral-800',
 } as const;
 
-/** Explore Social panel segment tabs (All | Friends | Followed). */
+/** Explore People browse panel segment tabs (All | Friends | Followed | Discover). */
 export const EXPLORE_BROWSE_SEGMENT_TAB = {
   row: `${EXPLORE_BROWSE_PANEL_TAB.row} gap-3`,
   active: `${EXPLORE_BROWSE_PANEL_TAB.tab} ${EXPLORE_BROWSE_PANEL_TAB.active}`,

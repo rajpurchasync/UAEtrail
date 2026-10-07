@@ -125,6 +125,3 @@ export const buildExploreMemberPeopleMapChip = (input: {
     friendCount,
   };
 };
-
-/** @deprecated Use `buildExploreMemberPeopleMapChip`. */
-export const buildExploreSocialMapChip = buildExploreMemberPeopleMapChip;

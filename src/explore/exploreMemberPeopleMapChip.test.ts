@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreSocialMapChip, collectGoingPeopleFromMapItems } from './exploreSocialMapChip';
+import { buildExploreMemberPeopleMapChip, collectGoingPeopleFromMapItems } from './exploreMemberPeopleMapChip';
 
 const activityItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
   ({
@@ -50,9 +50,9 @@ describe('collectGoingPeopleFromMapItems', () => {
   });
 });
 
-describe('buildExploreSocialMapChip', () => {
+describe('buildExploreMemberPeopleMapChip', () => {
   it('fills the chip from map going when network preview is empty', () => {
-    const chip = buildExploreSocialMapChip({
+    const chip = buildExploreMemberPeopleMapChip({
       preview: null,
       mapItems: [activityItem()],
       viewerUserId: 'viewer',
@@ -62,7 +62,7 @@ describe('buildExploreSocialMapChip', () => {
   });
 
   it('merges friends first then map going faces', () => {
-    const chip = buildExploreSocialMapChip({
+    const chip = buildExploreMemberPeopleMapChip({
       preview: {
         avatars: [{ userId: 'f1', displayName: 'Friend', avatarUrl: null }],
         friendUserIds: ['f1'],

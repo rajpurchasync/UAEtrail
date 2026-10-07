@@ -1,13 +1,13 @@
 import { SecureAvatar } from '../../components/ui';
 import {
-  EXPLORE_SOCIAL_MAP_BUTTON_LABEL,
-  exploreSocialMapButtonAriaLabel,
-} from '../../content/exploreSocialPanelCopy';
+  EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL,
+  explorePeopleBrowseMapButtonAriaLabel,
+} from '../../content/explorePeopleBrowseCopy';
 import { EXPLORE_MAP_TOOLBAR_FLOATING, EXPLORE_MAP_TOOLBAR_PILL_PADDING } from '../../config/exploreTheme';
 
 type Preview = { id: string; name: string; avatar?: string | null };
 
-type ExploreMapSocialPanelButtonProps = {
+type ExploreMapPeopleBrowseButtonProps = {
   avatars: Preview[];
   extraCount: number;
   friendCount: number;
@@ -17,15 +17,15 @@ type ExploreMapSocialPanelButtonProps = {
 
 const PLACEHOLDER_SLOTS = 3;
 
-export const ExploreMapSocialPanelButton = ({
+export const ExploreMapPeopleBrowseButton = ({
   avatars,
   extraCount,
   friendCount,
   onClick,
   className = '',
-}: ExploreMapSocialPanelButtonProps) => {
+}: ExploreMapPeopleBrowseButtonProps) => {
   const hasLivePeople = avatars.length > 0;
-  const ariaLabel = exploreSocialMapButtonAriaLabel(friendCount);
+  const ariaLabel = explorePeopleBrowseMapButtonAriaLabel(friendCount);
 
   return (
     <button
@@ -62,7 +62,7 @@ export const ExploreMapSocialPanelButton = ({
           </span>
         )}
       </span>
-      <span className="whitespace-nowrap">{EXPLORE_SOCIAL_MAP_BUTTON_LABEL}</span>
+      <span className="whitespace-nowrap">{EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL}</span>
     </button>
   );
 };

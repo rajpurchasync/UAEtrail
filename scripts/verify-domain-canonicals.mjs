@@ -46,7 +46,7 @@ execSync(
 );
 
 execSync(
-  'npm --workspace @uaetrail/api run test -- --run tests/naming-coherence.test.ts tests/wishlist-naming-guard.test.ts tests/entity-follow-contract.test.ts tests/member-goals-contract.test.ts tests/engagement-openapi-contract.test.ts tests/data-export-contract.test.ts tests/bounded-context-alignment.test.ts tests/member-routes-alignment.test.ts tests/admin-route-registrars.test.ts tests/platform-master-admin.test.ts tests/user-route-shell.test.ts tests/host-route-shell.test.ts tests/notification-actor-label.test.ts tests/social-people-contract.test.ts tests/social-review-contract.test.ts tests/participant-roster-dto.test.ts',
+  'npm --workspace @uaetrail/api run test -- --run tests/naming-coherence.test.ts tests/wishlist-naming-guard.test.ts tests/entity-follow-contract.test.ts tests/member-goals-contract.test.ts tests/engagement-openapi-contract.test.ts tests/data-export-contract.test.ts tests/bounded-context-alignment.test.ts tests/member-routes-alignment.test.ts tests/admin-route-registrars.test.ts tests/platform-master-admin.test.ts tests/user-route-shell.test.ts tests/host-route-shell.test.ts tests/notification-actor-label.test.ts tests/member-people-routes-contract.test.ts tests/social-review-contract.test.ts tests/participant-roster-dto.test.ts',
   { cwd: root, stdio: 'inherit' }
 );
 

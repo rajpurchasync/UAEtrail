@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { SocialPeopleSegment } from '@uaetrail/shared-types';
 import { api } from '../api/index';
-import { memberPeopleNetworkQueryKey } from './memberDiscoveryQueryKeys';
+import { memberPeopleNetworkQueryKey } from './memberPeopleQueryKeys';
 
 type UseMemberPeopleArgs = {
   enabled: boolean;
@@ -17,7 +17,7 @@ export const useMemberPeople = ({ enabled, segment }: UseMemberPeopleArgs) => {
     enabled,
     staleTime: MEMBER_PEOPLE_STALE_MS,
     queryFn: async () => {
-      const response = await api.getSocialPeople(segment);
+      const response = await api.getMemberPeopleNetwork(segment);
       return response.data;
     },
   });

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/index';
-import { memberPeopleNetworkPreviewQueryKey } from './memberDiscoveryQueryKeys';
+import { memberPeopleNetworkPreviewQueryKey } from './memberPeopleQueryKeys';
 
 const MEMBER_PEOPLE_PREVIEW_STALE_MS = 120_000;
 
@@ -11,7 +11,7 @@ export const useMemberPeopleNetworkPreview = (enabled: boolean) => {
     enabled,
     staleTime: MEMBER_PEOPLE_PREVIEW_STALE_MS,
     queryFn: async () => {
-      const response = await api.getSocialPeoplePreview();
+      const response = await api.getMemberPeopleNetworkPreview();
       return response.data;
     },
   });

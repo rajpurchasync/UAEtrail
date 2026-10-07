@@ -5,6 +5,9 @@ import type {
   MemberDiscoveryQuotaDTO,
   ProfileViewerAccessDTO,
   BuddyActivityPresenceRowDTO,
+  SocialPeopleDTO,
+  SocialPeoplePreviewDTO,
+  SocialPeopleSegment,
 } from '@uaetrail/shared-types';
 import type {
   AccountDeletionInfo,
@@ -26,6 +29,13 @@ export const accountApi = {
 
     getMeMemberDiscoveryQuota: () =>
       apiRequest<{ data: MemberDiscoveryQuotaDTO }>('/me/member-discovery-quota', { auth: true }),
+
+    /** Browse people network roster (map panel — friends / following). HTTP: `/social/people`. */
+    getMemberPeopleNetwork: (segment: SocialPeopleSegment = 'all') =>
+      apiRequest<{ data: SocialPeopleDTO }>(`/social/people?segment=${segment}`, { auth: true }),
+
+    getMemberPeopleNetworkPreview: () =>
+      apiRequest<{ data: SocialPeoplePreviewDTO }>('/social/people/preview', { auth: true }),
 
     getMeProfilePublicPreview: () =>
     apiRequest<{ data: PublicMemberProfileDTO; viewerAccess: ProfileViewerAccessDTO }>(

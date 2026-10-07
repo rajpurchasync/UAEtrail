@@ -6,12 +6,12 @@ import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { SecureAvatar } from '../../../components/ui/SecureAvatar';
 import { BUDDIES_PATH } from '../../../config/routingCatalog';
 import {
-  EXPLORE_SOCIAL_ACTION_ADD_FRIEND,
-  EXPLORE_SOCIAL_ACTION_MESSAGE,
-  socialPersonAttendedLine,
-  socialPersonTripHintLine,
-} from '../../../content/exploreSocialPanelCopy';
-import type { ExploreSocialPersonOutingHint } from '../../../explore/ui/ExploreSocialPersonCard';
+  EXPLORE_PEOPLE_BROWSE_ACTION_ADD_FRIEND,
+  EXPLORE_PEOPLE_BROWSE_ACTION_MESSAGE,
+  memberPersonAttendedLine,
+  memberPersonTripHintLine,
+} from '../../../content/explorePeopleBrowseCopy';
+import type { ExploreMemberPersonOutingHint } from '../../../explore/ui/ExploreMemberPersonCard';
 import { messagesRouteForRole } from '../../../utils/authRouting';
 import { LIST_FEED } from '../../listFeedTheme';
 
@@ -32,7 +32,7 @@ export type ListFeedPersonCardProps = {
   profileDisabled?: boolean;
   userRole?: UserRole;
   edgeToEdge?: boolean;
-  outingHint?: ExploreSocialPersonOutingHint | null;
+  outingHint?: ExploreMemberPersonOutingHint | null;
   busy?: boolean;
   onSendBuddyRequest?: (userId: string) => void;
   onOpenActivity: (trip: { exploreItemId: string }) => void;
@@ -51,10 +51,10 @@ export const ListFeedPersonCard = ({
 }: ListFeedPersonCardProps) => {
   const navigate = useNavigate();
   const trip = person.upcomingTrip;
-  const metaLine = [person.cityLabel, socialPersonAttendedLine(person.activitiesAttended)]
+  const metaLine = [person.cityLabel, memberPersonAttendedLine(person.activitiesAttended)]
     .filter(Boolean)
     .join(' · ');
-  const tripLine = outingHint?.line ?? (trip ? socialPersonTripHintLine(trip) : null);
+  const tripLine = outingHint?.line ?? (trip ? memberPersonTripHintLine(trip) : null);
 
   const frameClass = edgeToEdge ? LIST_FEED.feedCardFrameEdge : LIST_FEED.feedCardFrame;
   const articleClass = edgeToEdge ? LIST_FEED.articleEdge : LIST_FEED.article;
@@ -147,7 +147,7 @@ export const ListFeedPersonCard = ({
               onClick={() => navigate(messagesRouteForRole(userRole ?? 'participant', person.userId))}
             >
               <MessageCircle className="h-[1.35rem] w-[1.35rem]" strokeWidth={2} aria-hidden />
-              <span className={actionLabel}>{EXPLORE_SOCIAL_ACTION_MESSAGE}</span>
+              <span className={actionLabel}>{EXPLORE_PEOPLE_BROWSE_ACTION_MESSAGE}</span>
             </button>
           ) : (
             <>
@@ -159,7 +159,7 @@ export const ListFeedPersonCard = ({
                   onClick={() => onSendBuddyRequest(person.userId)}
                 >
                   <UserPlus className="h-[1.35rem] w-[1.35rem]" strokeWidth={2} aria-hidden />
-                  <span className={actionLabel}>{EXPLORE_SOCIAL_ACTION_ADD_FRIEND}</span>
+                  <span className={actionLabel}>{EXPLORE_PEOPLE_BROWSE_ACTION_ADD_FRIEND}</span>
                 </button>
               ) : null}
               {person.buddyRequestState === 'incoming' ? (
@@ -192,7 +192,7 @@ export const ListFeedPersonCard = ({
               onClick={() => navigate(messagesRouteForRole(userRole ?? 'participant', person.userId))}
             >
               <MessageCircle className="h-[1.35rem] w-[1.35rem]" strokeWidth={2} aria-hidden />
-              <span className={actionLabel}>{EXPLORE_SOCIAL_ACTION_MESSAGE}</span>
+              <span className={actionLabel}>{EXPLORE_PEOPLE_BROWSE_ACTION_MESSAGE}</span>
             </button>
           ) : null}
         </div>

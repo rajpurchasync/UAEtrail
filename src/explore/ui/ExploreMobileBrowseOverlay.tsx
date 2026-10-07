@@ -8,7 +8,7 @@ type ExploreMobileBrowseOverlayProps = {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
-  /** Social / light panels — height follows content; discover list stays tall. */
+  /** People browse / light panels — height follows content; discover list stays tall. */
   sheetSize?: 'full' | 'content';
 };
 
@@ -45,7 +45,7 @@ export const ExploreMobileBrowseOverlay = ({
         onClick={(event) => event.stopPropagation()}
       >
         <h2 id={titleId} className="sr-only">
-          {contentSized ? 'Social' : 'Discover plans and places'}
+          {contentSized ? 'People' : 'Discover plans and places'}
         </h2>
         <div className={`mb-0.5 mt-1 shrink-0 ${EXPLORE_SHAPE.sheetHandle}`} aria-hidden />
         <div

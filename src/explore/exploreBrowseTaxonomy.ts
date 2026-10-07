@@ -2,7 +2,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION,
   EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
-} from '../content/exploreSocialPanelCopy';
+} from '../content/explorePeopleBrowseCopy';
 import type { ExplorePanel } from './routing';
 import type { ExplorePinKindFilter } from './explorePinKindFilter';
 import type { DesktopBrowseTab } from './ui/exploreBrowsePanelCopy';

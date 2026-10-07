@@ -20,7 +20,7 @@ import type { ListDiscoveryView } from '../listDiscoveryMode';
 
 import { listDiscoveryEmbeddedOnExplore, type ListDiscoverySurface } from '../listDiscoverySurface';
 
-import { EXPLORE_SOCIAL_DISCOVER_SEARCH_PLACEHOLDER } from '../../content/exploreSocialPanelCopy';
+import { EXPLORE_PEOPLE_BROWSE_DISCOVER_SEARCH_PLACEHOLDER } from '../../content/explorePeopleBrowseCopy';
 import { LIST_APP_BAR, LIST_CHROME, LIST_DESKTOP_MAP_LINK } from '../listChromeTheme';
 
 import { ListDiscoverySearchField } from './ListDiscoverySearchField';
@@ -194,7 +194,7 @@ export const ListDiscoveryHeader = ({
 
       className="!mt-0"
 
-      placeholder={buddiesCategory ? EXPLORE_SOCIAL_DISCOVER_SEARCH_PLACEHOLDER : undefined}
+      placeholder={buddiesCategory ? EXPLORE_PEOPLE_BROWSE_DISCOVER_SEARCH_PLACEHOLDER : undefined}
 
       enableScopeHints={!buddiesCategory}
 

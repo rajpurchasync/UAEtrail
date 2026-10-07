@@ -41,10 +41,10 @@ export type ExploreMapStageProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
-  onOpenSocialPanel: () => void;
-  socialPanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  socialPanelExtraCount?: number;
-  socialPanelFriendCount?: number;
+  onOpenPeopleBrowsePanel: () => void;
+  peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
+  peopleBrowsePanelExtraCount?: number;
+  peopleBrowsePanelFriendCount?: number;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
@@ -106,10 +106,10 @@ export const ExploreMapStage = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
-  onOpenSocialPanel,
-  socialPanelAvatars,
-  socialPanelExtraCount,
-  socialPanelFriendCount,
+  onOpenPeopleBrowsePanel,
+  peopleBrowsePanelAvatars,
+  peopleBrowsePanelExtraCount,
+  peopleBrowsePanelFriendCount,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -194,10 +194,10 @@ export const ExploreMapStage = ({
         onMapFilterChange={onMapFilterChange}
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
-        onOpenSocialPanel={onOpenSocialPanel}
-        socialPanelAvatars={socialPanelAvatars}
-        socialPanelExtraCount={socialPanelExtraCount}
-        socialPanelFriendCount={socialPanelFriendCount}
+        onOpenPeopleBrowsePanel={onOpenPeopleBrowsePanel}
+        peopleBrowsePanelAvatars={peopleBrowsePanelAvatars}
+        peopleBrowsePanelExtraCount={peopleBrowsePanelExtraCount}
+        peopleBrowsePanelFriendCount={peopleBrowsePanelFriendCount}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}

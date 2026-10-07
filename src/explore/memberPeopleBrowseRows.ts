@@ -1,6 +1,6 @@
 import type { MemberBrowseCardDTO, SocialPersonRowDTO } from '@uaetrail/shared-types';
 
-export const socialPersonRowFromBrowseCard = (card: MemberBrowseCardDTO): SocialPersonRowDTO => ({
+export const memberPersonRowFromBrowseCard = (card: MemberBrowseCardDTO): SocialPersonRowDTO => ({
   userId: card.id,
   displayName: card.displayName,
   avatarUrl: card.avatarUrl,

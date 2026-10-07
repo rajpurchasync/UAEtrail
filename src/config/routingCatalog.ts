@@ -120,7 +120,6 @@ export {
   exploreActivitiesPath,
   exploreOrganizePath,
   explorePeopleBrowsePath,
-  exploreSocialPath,
   explorePlanWithBuddyPath,
   detailBackPath,
   myActivitiesPath,

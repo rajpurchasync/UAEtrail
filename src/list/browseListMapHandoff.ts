@@ -2,6 +2,7 @@ import { parseExplorePinKindFilter, serializeExplorePinKindFilter } from '../exp
 import type { ExplorePinKindFilter } from '../explore/explorePinKindFilter';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
+import { BUDDIES_SEGMENT_URL_PARAM, serializeBuddiesDiscoverySegment } from './buddiesDiscoverySegment';
 import { LIST_CAT_PARAM, serializeBrowseListSearchParams } from './browseListUrlState';
 
 /** Explore `pinKind` when opening the map from list browse state. */
@@ -34,6 +35,8 @@ export const inferListCatFromExploreHandoff = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): BrowseMainCategoryKey | null => {
   if (searchParams.get('searchScope') === 'people') return 'people';
+  const view = searchParams.get('view');
+  if (view === 'people' || view === 'social' || view === 'going') return 'people';
 
   const pinKind = parseExplorePinKindFilter(searchParams.get('pinKind'));
   if (pinKind === 'places') return 'venues';
@@ -60,10 +63,22 @@ export const serializeBrowseListToExploreSearchParams = (
     params.delete('date');
   }
 
-  const pinKind = resolveListBrowseExplorePinKind(state, options?.listCat ?? null);
+  const listCat = options?.listCat ?? null;
+  const pinKind = resolveListBrowseExplorePinKind(state, listCat);
   const serializedPinKind = pinKind ? serializeExplorePinKindFilter(pinKind) : null;
   if (serializedPinKind) params.set('pinKind', serializedPinKind);
   else params.delete('pinKind');
+
+  if (listCat === 'people') {
+    params.set('view', 'people');
+    params.set('peopleTab', 'discover');
+    params.set('list', '1');
+    const serializedBuddies = serializeBuddiesDiscoverySegment(state.buddiesSegment);
+    if (serializedBuddies) params.set(BUDDIES_SEGMENT_URL_PARAM, serializedBuddies);
+    else params.delete(BUDDIES_SEGMENT_URL_PARAM);
+    params.delete('date');
+    params.delete('when');
+  }
 
   return params;
 };

@@ -23,9 +23,3 @@ export const memberPeopleNetworkQueryKey = (segment: string) =>
 
 export const memberPeopleNetworkPreviewQueryKey = () =>
   ['member-people', 'network-preview'] as const;
-
-/** @deprecated Use `memberPeopleNetworkQueryKey`. */
-export const socialPeopleQueryKey = memberPeopleNetworkQueryKey;
-
-/** @deprecated Use `memberPeopleNetworkPreviewQueryKey`. */
-export const socialPeoplePreviewQueryKey = memberPeopleNetworkPreviewQueryKey;

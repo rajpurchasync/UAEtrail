@@ -1,26 +1,26 @@
 import { EXPLORE_BROWSE_SEGMENT_TAB } from '../../config/exploreTheme';
-import { EXPLORE_SOCIAL_TAB_DISCOVER } from '../../content/exploreSocialPanelCopy';
-import type { ExploreSocialTab } from './useExploreBrowseUrlState';
+import { EXPLORE_PEOPLE_BROWSE_TAB_DISCOVER } from '../../content/explorePeopleBrowseCopy';
+import type { ExplorePeopleBrowseTab } from './useExploreBrowseUrlState';
 
-type ExploreSocialPanelTabsProps = {
-  tab: ExploreSocialTab;
-  onTabChange: (tab: ExploreSocialTab) => void;
+type ExplorePeopleBrowsePanelTabsProps = {
+  tab: ExplorePeopleBrowseTab;
+  onTabChange: (tab: ExplorePeopleBrowseTab) => void;
   allCount?: number;
   friendsCount?: number;
   followedCount?: number;
 };
 
-export const ExploreSocialPanelTabs = ({
+export const ExplorePeopleBrowsePanelTabs = ({
   tab,
   onTabChange,
   allCount,
   friendsCount,
   followedCount,
-}: ExploreSocialPanelTabsProps) => (
+}: ExplorePeopleBrowsePanelTabsProps) => (
   <div
     className={`${EXPLORE_BROWSE_SEGMENT_TAB.row} mb-2 min-w-0 max-w-full overflow-x-auto scroll-smooth scrollbar-none`}
     role="tablist"
-    aria-label="Social views"
+    aria-label="People browse views"
   >
     <button
       type="button"
@@ -56,7 +56,7 @@ export const ExploreSocialPanelTabs = ({
       className={tab === 'discover' ? EXPLORE_BROWSE_SEGMENT_TAB.active : EXPLORE_BROWSE_SEGMENT_TAB.inactive}
       onClick={() => onTabChange('discover')}
     >
-      {EXPLORE_SOCIAL_TAB_DISCOVER}
+      {EXPLORE_PEOPLE_BROWSE_TAB_DISCOVER}
     </button>
   </div>
 );

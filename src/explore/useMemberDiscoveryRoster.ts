@@ -4,7 +4,7 @@ import { api } from '../api/index';
 import {
   memberDiscoveryRosterQueryKey,
   type MemberDiscoveryRosterQueryParams,
-} from './memberDiscoveryQueryKeys';
+} from './memberPeopleQueryKeys';
 import {
   serializeExploreActivityDatePreset,
   type ExploreActivityDatePreset,

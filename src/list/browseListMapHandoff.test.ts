@@ -52,10 +52,28 @@ describe('browseListMapHandoff', () => {
       { listCat: 'people' }
     );
     expect(params.get('pinKind')).toBeNull();
+    expect(params.get('view')).toBe('people');
+    expect(params.get('peopleTab')).toBe('discover');
+    expect(params.get('buddies')).toBeNull();
+  });
+
+  it('hands off Buddies segment and clears date on map', () => {
+    const params = serializeBrowseListToExploreSearchParams(
+      { ...baseState, categories: ['people'], buddiesSegment: 'looking', activityDatePreset: 'today' },
+      [],
+      { listCat: 'people' }
+    );
+    expect(params.get('buddies')).toBe('looking');
+    expect(params.get('date')).toBeNull();
   });
 
   it('infers listCat=people from explore searchScope=people', () => {
     const listCat = inferListCatFromExploreHandoff(baseState, new URLSearchParams('searchScope=people'));
+    expect(listCat).toBe('people');
+  });
+
+  it('infers listCat=people from explore view=people', () => {
+    const listCat = inferListCatFromExploreHandoff(baseState, new URLSearchParams('view=people&peopleTab=discover'));
     expect(listCat).toBe('people');
   });
 });

@@ -5,9 +5,6 @@ import {
   MemberFollowStateDTO,
   MemberFollowSummaryDTO,
   MemberHubStatsDTO,
-  SocialPeopleDTO,
-  SocialPeoplePreviewDTO,
-  SocialPeopleSegment,
   EntityFollowCheckDTO,
   EntityFollowDTO,
   WishlistItemDTO,
@@ -82,12 +79,6 @@ export const socialApi = {
 
     getMeFollowing: () =>
       apiRequest<{ data: MemberFollowSummaryDTO[] }>('/me/following', { auth: true }),
-
-    getSocialPeople: (segment: SocialPeopleSegment = 'all') =>
-      apiRequest<{ data: SocialPeopleDTO }>(`/social/people?segment=${segment}`, { auth: true }),
-
-    getSocialPeoplePreview: () =>
-      apiRequest<{ data: SocialPeoplePreviewDTO }>('/social/people/preview', { auth: true }),
 
     getMemberFollowState: (userId: string) =>
       apiRequest<{ data: MemberFollowStateDTO }>(`/me/follow-state/${userId}`, { auth: true }),

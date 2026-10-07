@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom';
 import type { EntityFollowDTO } from '@uaetrail/shared-types';
 import { hostBrandProfilePath, placeDetailPath, shopPublicPath } from '@uaetrail/shared-types';
 import {
-  EXPLORE_SOCIAL_EMPTY_FOLLOWED_HOSTS,
-  EXPLORE_SOCIAL_EMPTY_FOLLOWED_PLACES,
-  EXPLORE_SOCIAL_LOADING,
-} from '../../content/exploreSocialPanelCopy';
+  EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED_HOSTS,
+  EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED_PLACES,
+  EXPLORE_PEOPLE_BROWSE_LOADING,
+} from '../../content/explorePeopleBrowseCopy';
 import type { ExploreFollowedSegment } from './useExploreBrowseUrlState';
 
 type ExploreFollowedEntityListProps = {
@@ -22,7 +22,7 @@ export const ExploreFollowedEntityList = ({
   error,
 }: ExploreFollowedEntityListProps) => {
   if (loading) {
-    return <p className="py-8 text-center text-sm text-gray-500">{EXPLORE_SOCIAL_LOADING}</p>;
+    return <p className="py-8 text-center text-sm text-gray-500">{EXPLORE_PEOPLE_BROWSE_LOADING}</p>;
   }
   if (error) {
     return <p className="py-8 text-center text-sm text-red-600">{error}</p>;
@@ -35,7 +35,7 @@ export const ExploreFollowedEntityList = ({
 
   if (segment !== 'people' && rows.length === 0) {
     const empty =
-      segment === 'places' ? EXPLORE_SOCIAL_EMPTY_FOLLOWED_PLACES : EXPLORE_SOCIAL_EMPTY_FOLLOWED_HOSTS;
+      segment === 'places' ? EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED_PLACES : EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED_HOSTS;
     return (
       <div className="rounded-2xl border border-dashed border-emerald-200/80 bg-emerald-50/30 px-4 py-8 text-center">
         <p className="text-sm text-neutral-600">{empty}</p>

@@ -158,16 +158,16 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 **Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/messages`](#chat-messages) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
-Map control opens browse `listMode=people` (URL `view=people`; legacy `view=social` and `view=going` still parse). Query `socialTab=all|friends|followed|discover` (legacy name). Panel title **People** (`exploreSocialPanelCopy.ts`) — same family as list **Buddies** (`listCat=people`). Guests → sign-in (`guestBrowseGateCopy` `explore-people-browse` or `explore-social`).
+Map control opens browse `listMode=people` (URL `view=people`; legacy `view=social` and `view=going` still parse). Query `peopleTab=all|friends|followed|discover` (legacy `socialTab` still parses). Panel title **People** (`explorePeopleBrowseCopy.ts`) — same family as list **Buddies** (`listCat=people`). Guests → sign-in (`guestBrowseGateCopy` intent `explore-people-browse`).
 
-| Segment (`socialTab`) | Label | Data / actions |
+| Segment (`peopleTab`; legacy `socialTab`) | Label | Data / actions |
 |-----------------------|-------|----------------|
 | `all` | All | `GET /social/people?segment=all` — friends + followed (network roster + outing hints) |
 | `friends` | Friends | Same API · **Message** (→ `/messages`) · **Plan a trip** |
 | `followed` | Followed | Same API · profile · **Add friend** when allowed |
-| `discover` | Discover | `GET /me/member-discovery/roster` — who’s going / looking / followed hosts + public directory; profile opens use discover quota (5 / 30d free, Pro unlimited). List **Buddies** uses the same roster (segments: Who’s going · Looking for · Followed). |
+| `discover` | Discover | `GET /me/member-discovery/roster` — who’s going / looking / followed hosts + public directory; profile opens use discover quota (5 / 30d free, Pro unlimited). Discover sub-segments share list **Buddies** query `buddies=going|looking|followed` (default going). List **Buddies** (`listCat=people`) → map handoff sets `view=people`, `peopleTab=discover`, and `buddies`. |
 
-Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher may show **Social** (opens this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteSharePanel`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
+Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteSharePanel`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
 
 ## Explore FAB (+)
 

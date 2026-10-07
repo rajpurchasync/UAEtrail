@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type {
   MemberBrowseCardDTO,
@@ -10,32 +9,32 @@ import type { UserRole } from '@uaetrail/shared-types';
 import { proMembershipPath } from '../../config/routingCatalog';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import { LIST_SECTION_TITLE } from '../../list/listChromeTheme';
-import { socialPersonRowFromBrowseCard } from '../memberDiscoverySocialRows';
+import { memberPersonRowFromBrowseCard } from '../memberPeopleBrowseRows';
 import { memberDiscoverProfilePath } from '../memberDiscoveryExplore';
 import { exploreMapItemSharePath } from '../routing';
 import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
 import { ListFeedPersonCard } from '../../list/ui/feed/ListFeedPersonCard';
 import { LIST_FEED } from '../../list/listFeedTheme';
-import { ExploreSocialPersonCard } from './ExploreSocialPersonCard';
+import { ExploreMemberPersonCard } from './ExploreMemberPersonCard';
 import {
   BUDDIES_DISCOVERY_INTRO,
-  EXPLORE_SOCIAL_DISCOVER_DIRECTORY_TITLE,
-  EXPLORE_SOCIAL_DISCOVER_FRIENDS_GOING_TITLE,
-  EXPLORE_SOCIAL_DISCOVER_HOSTS_GOING_TITLE,
-  EXPLORE_SOCIAL_DISCOVER_LOOKING_TITLE,
-  EXPLORE_SOCIAL_EMPTY_DISCOVER,
-  EXPLORE_SOCIAL_EMPTY_DISCOVER_FOLLOWED,
-  EXPLORE_SOCIAL_EMPTY_DISCOVER_LOOKING,
-  EXPLORE_SOCIAL_FOLLOWED_SEGMENT_PEOPLE,
-  EXPLORE_SOCIAL_LOADING,
-  exploreSocialDiscoverQuotaLine,
-} from '../../content/exploreSocialPanelCopy';
+  EXPLORE_PEOPLE_BROWSE_DISCOVER_DIRECTORY_TITLE,
+  EXPLORE_PEOPLE_BROWSE_DISCOVER_FRIENDS_GOING_TITLE,
+  EXPLORE_PEOPLE_BROWSE_DISCOVER_HOSTS_GOING_TITLE,
+  EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE,
+  EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER,
+  EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_FOLLOWED,
+  EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING,
+  EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PEOPLE,
+  EXPLORE_PEOPLE_BROWSE_LOADING,
+  explorePeopleBrowseDiscoverQuotaLine,
+} from '../../content/explorePeopleBrowseCopy';
 import {
   MEMBER_DISCOVERY_QUOTA_GATE_BODY,
   MEMBER_DISCOVERY_QUOTA_GATE_CTA,
   MEMBER_DISCOVERY_QUOTA_GATE_TITLE,
 } from '../../content/exploreGoingPanelCopy';
-import { api } from '../../api/index';
+import { useMemberPersonBuddyRequest } from '../useMemberPersonBuddyRequest';
 
 type ExploreMemberDiscoveryListProps = {
   variant?: 'panel' | 'list';
@@ -73,12 +72,12 @@ export const ExploreMemberDiscoveryList = ({
   const navigate = useNavigate();
   const listLayout = variant === 'list';
   const sectionTitleClass = `mb-2 ${LIST_SECTION_TITLE}`;
-  const [busyUserId, setBusyUserId] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const { busyUserId, notice, actionError, sendBuddyRequest } = useMemberPersonBuddyRequest({
+    onSuccess: onRefresh,
+  });
 
   if (!isSignedIn) {
-    return <ExploreGuestSignInCard intent="explore-social" compact />;
+    return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
   }
 
   if (loading) {
@@ -91,7 +90,7 @@ export const ExploreMemberDiscoveryList = ({
           />
         ))}
         <p className={`text-center text-sm text-gray-500 ${listLayout ? 'mt-4' : ''}`}>
-          {EXPLORE_SOCIAL_LOADING}
+          {EXPLORE_PEOPLE_BROWSE_LOADING}
         </p>
       </div>
     );
@@ -123,27 +122,12 @@ export const ExploreMemberDiscoveryList = ({
 
   const emptyCopy =
     segment === 'looking'
-      ? EXPLORE_SOCIAL_EMPTY_DISCOVER_LOOKING
+      ? EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING
       : segment === 'followed'
-        ? EXPLORE_SOCIAL_EMPTY_DISCOVER_FOLLOWED
-        : EXPLORE_SOCIAL_EMPTY_DISCOVER;
+        ? EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_FOLLOWED
+        : EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER;
 
   const showQuota = segment !== 'followed';
-
-  const sendBuddyRequest = async (userId: string) => {
-    setBusyUserId(userId);
-    setActionError(null);
-    setNotice(null);
-    try {
-      await api.sendBuddyRequest({ targetUserId: userId });
-      setNotice('Buddy request sent.');
-      onRefresh?.();
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Could not send request.');
-    } finally {
-      setBusyUserId(null);
-    }
-  };
 
   const openActivityFromTrip = (trip: { exploreItemId: string }) => {
     const activityId = trip.exploreItemId.replace(/^activity:/, '');
@@ -164,7 +148,7 @@ export const ExploreMemberDiscoveryList = ({
         onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
       />
     ) : (
-      <ExploreSocialPersonCard
+      <ExploreMemberPersonCard
         person={person}
         userRole={userRole}
         profileTo={profilePathFor(person.userId)}
@@ -193,7 +177,7 @@ export const ExploreMemberDiscoveryList = ({
 
       {quota && showQuota && !listLayout ? (
         <p className="text-xs font-medium tabular-nums text-neutral-500">
-          {exploreSocialDiscoverQuotaLine(quota)}
+          {explorePeopleBrowseDiscoverQuotaLine(quota)}
         </p>
       ) : null}
 
@@ -224,7 +208,7 @@ export const ExploreMemberDiscoveryList = ({
         <section>
           {!listLayout && friendsGoing.length > 0 ? (
             <>
-              <h3 className={sectionTitleClass}>{EXPLORE_SOCIAL_DISCOVER_FRIENDS_GOING_TITLE}</h3>
+              <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_DISCOVER_FRIENDS_GOING_TITLE}</h3>
               <ul className="flex flex-col gap-2">
                 {friendsGoing.map((person) => (
                   <li key={person.userId}>{renderPerson(person)}</li>
@@ -234,7 +218,7 @@ export const ExploreMemberDiscoveryList = ({
           ) : null}
           {!listLayout && hostsGoing.length > 0 ? (
             <>
-              <h3 className={sectionTitleClass}>{EXPLORE_SOCIAL_DISCOVER_HOSTS_GOING_TITLE}</h3>
+              <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_DISCOVER_HOSTS_GOING_TITLE}</h3>
               <ul className="flex flex-col gap-2">
                 {hostsGoing.map((person) => (
                   <li key={person.userId}>{renderPerson(person)}</li>
@@ -257,13 +241,13 @@ export const ExploreMemberDiscoveryList = ({
 
       {showLooking && lookingFor.length > 0 ? (
         <section>
-          {!listLayout ? <h3 className={sectionTitleClass}>{EXPLORE_SOCIAL_DISCOVER_LOOKING_TITLE}</h3> : null}
+          {!listLayout ? <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE}</h3> : null}
           <ul className={listLayout ? listFeedClass : 'flex flex-col gap-2'}>
             {lookingFor.map((row) => {
               const enrich = directory.find((card) => card.id === row.userId);
               const person = enrich
-                ? socialPersonRowFromBrowseCard(enrich)
-                : socialPersonRowFromBrowseCard({
+                ? memberPersonRowFromBrowseCard(enrich)
+                : memberPersonRowFromBrowseCard({
                     id: row.userId,
                     displayName: row.displayName,
                     avatarUrl: row.avatarUrl,
@@ -287,7 +271,7 @@ export const ExploreMemberDiscoveryList = ({
                       onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
                     />
                   ) : (
-                    <ExploreSocialPersonCard
+                    <ExploreMemberPersonCard
                       person={person}
                       userRole={userRole}
                       profileTo={profilePathFor(row.userId)}
@@ -308,13 +292,13 @@ export const ExploreMemberDiscoveryList = ({
 
       {showFollowed && followed.length > 0 ? (
         <section>
-          {!listLayout ? <h3 className={sectionTitleClass}>{EXPLORE_SOCIAL_FOLLOWED_SEGMENT_PEOPLE}</h3> : null}
+          {!listLayout ? <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PEOPLE}</h3> : null}
           <ul className={listLayout ? listFeedClass : 'flex flex-col gap-2'}>
             {followed.map((card) => (
               <li key={card.id}>
                 {listLayout ? (
                   <ListFeedPersonCard
-                    person={socialPersonRowFromBrowseCard(card)}
+                    person={memberPersonRowFromBrowseCard(card)}
                     userRole={userRole}
                     profileTo={profilePathFor(card.id)}
                     profileDisabled={false}
@@ -323,8 +307,8 @@ export const ExploreMemberDiscoveryList = ({
                     onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
                   />
                 ) : (
-                  <ExploreSocialPersonCard
-                    person={socialPersonRowFromBrowseCard(card)}
+                  <ExploreMemberPersonCard
+                    person={memberPersonRowFromBrowseCard(card)}
                     userRole={userRole}
                     profileTo={profilePathFor(card.id)}
                     profileDisabled={false}
@@ -342,12 +326,12 @@ export const ExploreMemberDiscoveryList = ({
 
       {showDirectory && directoryOnly.length > 0 ? (
         <section>
-          <h3 className={sectionTitleClass}>{EXPLORE_SOCIAL_DISCOVER_DIRECTORY_TITLE}</h3>
+          <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_DISCOVER_DIRECTORY_TITLE}</h3>
           <ul className="flex flex-col gap-2">
             {directoryOnly.map((card) => (
               <li key={card.id}>
-                <ExploreSocialPersonCard
-                  person={socialPersonRowFromBrowseCard(card)}
+                <ExploreMemberPersonCard
+                  person={memberPersonRowFromBrowseCard(card)}
                   userRole={userRole}
                   profileTo={profilePathFor(card.id)}
                   profileDisabled={quotaExhausted}

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { SocialPersonRowDTO } from '@uaetrail/shared-types';
 import { BUDDIES_PATH, explorePlanWithBuddyPath } from '../../config/routingCatalog';
@@ -6,22 +5,22 @@ import { useHostStatus } from '../../hooks/useHostStatus';
 import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
 import type { UserRole } from '@uaetrail/shared-types';
 import {
-  EXPLORE_SOCIAL_EMPTY_ALL,
-  EXPLORE_SOCIAL_EMPTY_FOLLOWED,
-  EXPLORE_SOCIAL_EMPTY_FRIENDS,
-  EXPLORE_SOCIAL_LOADING,
-} from '../../content/exploreSocialPanelCopy';
-import type { ExploreSocialTab } from './useExploreBrowseUrlState';
-import { api } from '../../api/index';
-import { ExploreSocialPersonCard } from './ExploreSocialPersonCard';
+  EXPLORE_PEOPLE_BROWSE_EMPTY_ALL,
+  EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED,
+  EXPLORE_PEOPLE_BROWSE_EMPTY_FRIENDS,
+  EXPLORE_PEOPLE_BROWSE_LOADING,
+} from '../../content/explorePeopleBrowseCopy';
+import type { ExplorePeopleBrowseTab } from './useExploreBrowseUrlState';
+import { useMemberPersonBuddyRequest } from '../useMemberPersonBuddyRequest';
+import { ExploreMemberPersonCard } from './ExploreMemberPersonCard';
 
-type ExploreSocialPeopleListProps = {
+type ExploreMemberPeopleNetworkListProps = {
   people: SocialPersonRowDTO[];
   loading: boolean;
   error: string | null;
   isSignedIn: boolean;
   userRole: UserRole | undefined;
-  tab: ExploreSocialTab;
+  tab: ExplorePeopleBrowseTab;
   onOpenActivity: (trip: { exploreItemId: string }) => void;
   onRefresh: () => void;
 };
@@ -35,19 +34,19 @@ export const ExploreMemberPeopleNetworkList = ({
   tab,
   onOpenActivity,
   onRefresh,
-}: ExploreSocialPeopleListProps) => {
+}: ExploreMemberPeopleNetworkListProps) => {
   const navigate = useNavigate();
   const { canPublish } = useHostStatus({ enabled: isSignedIn });
-  const [busyUserId, setBusyUserId] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const { busyUserId, notice, actionError, sendBuddyRequest } = useMemberPersonBuddyRequest({
+    onSuccess: onRefresh,
+  });
 
   if (!isSignedIn) {
-    return <ExploreGuestSignInCard intent="explore-social" compact />;
+    return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
   }
 
   if (loading) {
-    return <p className="py-8 text-center text-sm text-gray-500">{EXPLORE_SOCIAL_LOADING}</p>;
+    return <p className="py-8 text-center text-sm text-gray-500">{EXPLORE_PEOPLE_BROWSE_LOADING}</p>;
   }
 
   if (error) {
@@ -57,10 +56,10 @@ export const ExploreMemberPeopleNetworkList = ({
   if (people.length === 0) {
     const emptyCopy =
       tab === 'friends'
-        ? EXPLORE_SOCIAL_EMPTY_FRIENDS
+        ? EXPLORE_PEOPLE_BROWSE_EMPTY_FRIENDS
         : tab === 'followed'
-          ? EXPLORE_SOCIAL_EMPTY_FOLLOWED
-          : EXPLORE_SOCIAL_EMPTY_ALL;
+          ? EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED
+          : EXPLORE_PEOPLE_BROWSE_EMPTY_ALL;
     return (
       <div className="rounded-2xl border border-dashed border-emerald-200/80 bg-emerald-50/30 px-4 py-8 text-center">
         <p className="text-sm text-neutral-600">{emptyCopy}</p>
@@ -71,21 +70,6 @@ export const ExploreMemberPeopleNetworkList = ({
     );
   }
 
-  const sendBuddyRequest = async (userId: string) => {
-    setBusyUserId(userId);
-    setActionError(null);
-    setNotice(null);
-    try {
-      await api.sendBuddyRequest({ targetUserId: userId });
-      setNotice('Buddy request sent.');
-      onRefresh();
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Could not send request.');
-    } finally {
-      setBusyUserId(null);
-    }
-  };
-
   const planTrip = (buddyUserId: string) => {
     navigate(explorePlanWithBuddyPath(buddyUserId, canPublish ? 'organize' : 'find'));
   };
@@ -95,7 +79,7 @@ export const ExploreMemberPeopleNetworkList = ({
       {notice ? <p className="text-xs font-medium text-emerald-700">{notice}</p> : null}
       {actionError ? <p className="text-xs font-medium text-red-600">{actionError}</p> : null}
       {people.map((person) => (
-        <ExploreSocialPersonCard
+        <ExploreMemberPersonCard
           key={person.userId}
           person={person}
           userRole={userRole}
@@ -110,6 +94,3 @@ export const ExploreMemberPeopleNetworkList = ({
     </div>
   );
 };
-
-/** @deprecated Use `ExploreMemberPeopleNetworkList`. */
-export const ExploreSocialPeopleList = ExploreMemberPeopleNetworkList;

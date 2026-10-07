@@ -137,7 +137,6 @@
         "apps/api/src/services/member-discovery-quota.ts",
         "apps/api/src/services/member-discovery.ts",
         "apps/api/src/services/member-people-engagement.ts",
-        "apps/api/src/services/social-people.ts",
         "apps/api/src/lib/member-profile-views-store.ts"
       ],
       "routeRegistrars": [
@@ -148,7 +147,7 @@
       "feRoots": [
         "src/pages/MemberProfile.tsx",
         "src/explore/ui/ExploreMemberDiscoveryList.tsx",
-        "src/explore/ui/ExploreSocialPeopleList.tsx",
+        "src/explore/ui/ExploreMemberPeopleNetworkList.tsx",
         "src/list/ui/ListDiscoverPeopleView.tsx"
       ]
     },
