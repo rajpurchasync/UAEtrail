@@ -7,6 +7,10 @@
     "apps/*",
     "packages/*"
   ],
+  "overrides": {
+    "@emnapi/core": "1.11.3",
+    "@emnapi/runtime": "1.11.3"
+  },
   "scripts": {
     "dev": "vite",
     "dev:api": "npm --workspace @uaetrail/api run dev",
@@ -57,6 +61,8 @@
     "@capacitor/android": "^8.4.1",
     "@capacitor/cli": "^8.4.1",
     "@capacitor/ios": "^8.4.1",
+    "@emnapi/core": "1.11.3",
+    "@emnapi/runtime": "1.11.3",
     "@eslint/js": "^9.9.1",
     "@types/leaflet": "^1.9.21",
     "@types/react": "^18.3.5",
