@@ -14,7 +14,7 @@ import {
  * Map URL still uses `topics=trips,looking` when Trips is selected so `/explore` matches.
  * @see docs/experiment/explore-browse-ia.md (Plans = Organize + Demand)
  */
-export type BrowseMainCategoryKey = 'trips' | 'venues' | 'shops' | 'guides' | 'agencies';
+export type BrowseMainCategoryKey = 'trips' | 'venues' | 'shops' | 'people' | 'guides' | 'agencies';
 
 const isGuideBrandItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'agency' && item.path.includes('/guide/');
@@ -38,6 +38,8 @@ export const mapItemMatchesBrowseMainCategory = (
       return mapItemMatchesSpotsPill(item);
     case 'shops':
       return mapItemMatchesShopsPill(item) && item.source === 'shop';
+    case 'people':
+      return false;
     case 'guides':
       return isGuideBrandItem(item);
     case 'agencies':
@@ -95,6 +97,7 @@ export const BROWSE_MAIN_CATEGORY_LABELS: ReadonlyArray<{ key: BrowseMainCategor
   { key: 'trips', label: 'Activities' },
   { key: 'venues', label: 'Places' },
   { key: 'shops', label: 'Shops' },
-  { key: 'guides', label: 'Buddies' },
+  { key: 'people', label: 'Buddies' },
+  { key: 'guides', label: 'Guides' },
   { key: 'agencies', label: 'Agencies' },
 ];

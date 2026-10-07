@@ -112,13 +112,22 @@ describe('list module hygiene', () => {
     expect(browseCategoriesForSearchScope('facilities' as ExploreSearchScopeKey)).toBeNull();
   });
 
-  it('people search scope enables looking-only trips filter', () => {
+  it('people search scope opens member discovery list category (not demand)', () => {
     expect(browseListFilterPatchForSearchScope('people')).toEqual({
-      categories: ['trips'],
-      tripLookingOnly: true,
+      categories: ['people'],
+      tripLookingOnly: false,
       tripTopics: [],
       placeTopics: [],
     });
+  });
+
+  it('list discover people category uses member discovery roster (not map poster feed)', () => {
+    const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
+    const peopleView = readFileSync(join(process.cwd(), 'src/list/ui/ListDiscoverPeopleView.tsx'), 'utf8');
+    expect(experience).toMatch(/ListDiscoverPeopleView/);
+    expect(experience).toMatch(/listCat: 'people'/);
+    expect(peopleView).toMatch(/useMemberDiscoveryRoster/);
+    expect(peopleView).toMatch(/ExploreMemberDiscoveryList/);
   });
 
   it('builds enriched cards through buildListFeedCards', () => {

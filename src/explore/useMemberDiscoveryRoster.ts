@@ -1,8 +1,9 @@
 import { useCallback, useDeferredValue, useEffect, useState } from 'react';
 import type {
   MemberBrowseCardDTO,
-  MemberDiscoveryOnTripRowDTO,
+  MemberDiscoveryLookingRowDTO,
   MemberDiscoveryQuotaDTO,
+  SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import {
@@ -22,7 +23,10 @@ export const useMemberDiscoveryRoster = ({
   activityDatePreset,
 }: UseMemberDiscoveryRosterArgs) => {
   const deferredSearch = useDeferredValue(search.trim());
-  const [onTrips, setOnTrips] = useState<MemberDiscoveryOnTripRowDTO[]>([]);
+  const [friendsGoing, setFriendsGoing] = useState<SocialPersonRowDTO[]>([]);
+  const [hostsGoing, setHostsGoing] = useState<SocialPersonRowDTO[]>([]);
+  const [lookingFor, setLookingFor] = useState<MemberDiscoveryLookingRowDTO[]>([]);
+  const [followed, setFollowed] = useState<MemberBrowseCardDTO[]>([]);
   const [directory, setDirectory] = useState<MemberBrowseCardDTO[]>([]);
   const [quota, setQuota] = useState<MemberDiscoveryQuotaDTO | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,7 +34,10 @@ export const useMemberDiscoveryRoster = ({
 
   const refresh = useCallback(async () => {
     if (!enabled) {
-      setOnTrips([]);
+      setFriendsGoing([]);
+      setHostsGoing([]);
+      setLookingFor([]);
+      setFollowed([]);
       setDirectory([]);
       setQuota(null);
       setError(null);
@@ -45,12 +52,18 @@ export const useMemberDiscoveryRoster = ({
         q: deferredSearch || undefined,
         date: date || undefined,
       });
-      setOnTrips(response.data.onTrips);
+      setFriendsGoing(response.data.friendsGoing ?? []);
+      setHostsGoing(response.data.hostsGoing ?? []);
+      setLookingFor(response.data.lookingFor ?? []);
+      setFollowed(response.data.followed ?? []);
       setDirectory(response.data.directory);
       setQuota(response.meta.quota);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load discover roster.');
-      setOnTrips([]);
+      setFriendsGoing([]);
+      setHostsGoing([]);
+      setLookingFor([]);
+      setFollowed([]);
       setDirectory([]);
       setQuota(null);
     } finally {
@@ -63,7 +76,10 @@ export const useMemberDiscoveryRoster = ({
   }, [refresh]);
 
   return {
-    onTrips,
+    friendsGoing,
+    hostsGoing,
+    lookingFor,
+    followed,
     directory,
     quota,
     loading,

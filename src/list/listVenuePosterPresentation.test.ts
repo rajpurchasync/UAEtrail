@@ -16,17 +16,21 @@ const venueItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDT
     latitude: 25.1,
     longitude: 56.2,
     path: '/trail/v1',
+    subtitle: 'Wadi Ghalilah',
     locationCard: {
       id: 'v1',
       activityType: 'hiking',
       region: 'RAK',
       description: 'Trail',
       difficulty: 'moderate',
+      distance: 8.5,
       childFriendly: true,
       accessibility: 'remote',
       season: ['winter'],
       images: [],
       featured: false,
+      parkingLat: 25.1,
+      parkingLng: 56.2,
     },
     presentation: {
       kind: 'hiking',
@@ -35,6 +39,7 @@ const venueItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDT
       headline: 'Wadi Shawka',
       listTitle: 'Wadi Shawka',
       listHost: null,
+      subtitle: 'Wadi Ghalilah',
       primaryCta: 'View trail',
       secondaryCta: null,
       sections: { details: [] },
@@ -50,8 +55,11 @@ describe('listVenuePosterPresentation', () => {
     expect(copy.heroTitle).toBe('Wadi Shawka');
     expect(copy.titleLines.line1).toContain('Wadi');
     expect(resolveListVenuePosterFactLabels(card)).toEqual([
+      'Wadi Ghalilah',
       'Child-friendly',
+      'Parking',
       'Moderate',
+      '8.5 km',
       '4x4 required',
     ]);
   });

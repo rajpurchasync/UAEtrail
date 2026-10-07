@@ -75,7 +75,7 @@ export const ListPosterCategoryOverlay = ({
           ) : null}
           {hasRequirements ? (
             <div className={`${LIST_FEED.overlayLabelRow} justify-center gap-1.5 ${shadow}`}>
-              {requirementLabels.slice(0, 4).map((label) => (
+              {requirementLabels.slice(0, 6).map((label) => (
                 <span key={label} className={`${LIST_FEED.labelRequirement} ${LIST_FEED.labelOnPhoto}`}>
                   {label}
                 </span>

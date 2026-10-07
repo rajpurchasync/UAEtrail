@@ -28,7 +28,23 @@ const togglePrice = (price: BrowsePriceFilter, key: 'free' | 'paid'): BrowsePric
 const toggleWhen = (when: BrowseWhenFilter, key: 'week' | 'weekend'): BrowseWhenFilter =>
   when === key ? 'any' : key;
 
-const REGION_PILLS = ['Dubai', 'Abu Dhabi', 'Sharjah', 'RAK', 'Fujairah', 'Al Ain'] as const;
+export const LIST_VENUE_REGION_PILLS = [
+  'Dubai',
+  'Abu Dhabi',
+  'Sharjah',
+  'RAK',
+  'Fujairah',
+  'Al Ain',
+] as const;
+
+const REGION_PILLS = LIST_VENUE_REGION_PILLS;
+
+export const toggleListVenueRegion = (selected: readonly string[], region: string): string[] => {
+  const set = new Set(selected);
+  if (set.has(region)) set.delete(region);
+  else set.add(region);
+  return REGION_PILLS.filter((r) => set.has(r));
+};
 
 export const listCategorySecondaryFiltersActive = (
   category: BrowseMainCategoryKey,
@@ -47,6 +63,9 @@ export const listCategorySecondaryFiltersActive = (
   }
   if (category === 'venues') {
     return venueRegions.length > 0 || filters.placeTopics.length > 0;
+  }
+  if (category === 'people') {
+    return filters.activityDatePreset !== 'anyday';
   }
   if (category === 'guides' || category === 'agencies') {
     return venueRegions.length > 0;
@@ -86,7 +105,7 @@ export const buildListCategoryPrimaryPills = (
     ];
   }
 
-  if (category === 'shops' || category === 'guides' || category === 'agencies') {
+  if (category === 'people' || category === 'shops' || category === 'guides' || category === 'agencies') {
     return [];
   }
 

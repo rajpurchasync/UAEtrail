@@ -4,11 +4,15 @@ export const LIST_CATEGORY_PAGE_TITLE: Record<BrowseMainCategoryKey, string> = {
   trips: 'Activities',
   venues: 'Places',
   shops: 'Shops',
-  guides: 'Buddies',
+  people: 'Buddies',
+  guides: 'Guides',
   agencies: 'Agencies',
 };
 
-export const listCategoryResultsLabel = (count: number, category: BrowseMainCategoryKey): string => {
+export const listCategoryResultsLabel = (
+  count: number,
+  category: BrowseMainCategoryKey
+): string | null => {
   if (category === 'trips') {
     const n = count.toLocaleString();
     return count === 1 ? 'Found 1 activity' : `Found ${n} activities`;
@@ -16,8 +20,11 @@ export const listCategoryResultsLabel = (count: number, category: BrowseMainCate
   if (category === 'shops') {
     return count === 1 ? '1 shop' : `${count.toLocaleString()} shops`;
   }
+  if (category === 'people') {
+    return 'Find people to go with';
+  }
   if (category === 'guides') {
-    return count === 1 ? 'Found 1 buddy' : `Found ${count.toLocaleString()} buddies`;
+    return count === 1 ? 'Found 1 guide' : `Found ${count.toLocaleString()} guides`;
   }
   if (category === 'agencies') {
     return count === 1 ? '1 agency' : `${count.toLocaleString()} agencies`;

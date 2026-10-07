@@ -1,4 +1,9 @@
-import { encodeShopContributeTags } from '@uaetrail/shared-types';
+import {
+  deriveVenueAccessibilityFromAccessibleBy,
+  encodeShopContributeTags,
+  mergeVenueAreaTag,
+} from '@uaetrail/shared-types';
+import { Accessibility } from '../domain/enums.js';
 import { ActivityType, Difficulty, LocationStatus } from '../domain/enums.js';
 import { toPrismaActivityType } from '../domain/activity-type.js';
 import type { LocationSubmitBody } from '../domain/location-submit.js';
@@ -19,6 +24,9 @@ export type LocationCreateData = {
   countryCode: string;
   emirate?: string;
   region: string;
+  areaLabel?: string | null;
+  childFriendly?: boolean;
+  accessibility?: Accessibility;
   activityType: ActivityType;
   description: string;
   difficulty?: Difficulty;
@@ -46,6 +54,18 @@ export type LocationCreateData = {
 
 const isShopSubmit = (body: LocationSubmitBody): boolean => body.activityType.toLowerCase() === 'shop';
 
+const toAccessibility = (
+  body: LocationSubmitBody
+): Accessibility | undefined => {
+  if (body.accessibility === 'car-accessible') return Accessibility.CAR_ACCESSIBLE;
+  if (body.accessibility === 'remote') return Accessibility.REMOTE;
+  return deriveVenueAccessibilityFromAccessibleBy(body.accessibleBy) === 'car-accessible'
+    ? Accessibility.CAR_ACCESSIBLE
+    : deriveVenueAccessibilityFromAccessibleBy(body.accessibleBy) === 'remote'
+      ? Accessibility.REMOTE
+      : undefined;
+};
+
 export const buildLocationCreateData = (
   body: LocationSubmitBody,
   submittedById: string
@@ -65,20 +85,26 @@ export const buildLocationCreateData = (
       ? [body.shopProductsServices.trim()]
       : body.highlights ?? [];
 
+  const baseTags = shop ? shopTags : body.tags ?? [];
+  const tags = shop ? baseTags : mergeVenueAreaTag(baseTags, body.areaLabel);
+
   return {
   name: body.name,
   countryCode: body.countryCode.toUpperCase(),
   emirate: body.emirate,
   region: body.region,
+  areaLabel: body.areaLabel?.trim() || null,
   activityType: toActivityType(body.activityType),
   description: body.description,
   difficulty: shop ? undefined : toDifficulty(body.difficulty),
   distance: body.distance,
   duration: body.duration,
   elevation: body.elevation,
+  childFriendly: body.childFriendly ?? false,
+  accessibility: shop ? undefined : toAccessibility(body),
   surfaceType: body.surfaceType ?? [],
   highlights: shop ? shopHighlights : body.highlights ?? [],
-  tags: shop ? shopTags : body.tags ?? [],
+  tags,
   accessibleBy: body.accessibleBy ?? [],
   latitude: body.latitude,
   longitude: body.longitude,

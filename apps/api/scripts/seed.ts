@@ -1309,14 +1309,17 @@ async function main() {
     }
   });
 
+  /** Catalog rows for list Places poster QA — area tags, parking pins, accessibility, surfaces. */
   const seedLocations: Array<{ id: string; data: LocationCreateInput }> = [
     {
       id: 'jebel-jais-summit-trail',
       data: {
         name: 'Jebel Jais Summit Trail',
         region: 'RAK',
+        areaLabel: 'Jebel Jais Viewing Deck',
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.HARD,
+        accessibility: Accessibility.REMOTE,
         description:
           'A demanding mountain route with panoramic views of the Hajar Mountains. The trail traverses rugged terrain with steep ascents and descents, rewarding hikers with breathtaking vistas from the highest peak in the UAE.',
         season: ['winter', 'year-round'],
@@ -1330,9 +1333,11 @@ async function main() {
         longitude: 56.273,
         highlights: ['Summit views', 'Rock formations', 'Wildlife spotting', 'Via Ferrata option'],
         surfaceType: ['rocky', 'gravel'],
-        tags: ['summit', 'mountain', 'hard'],
+        tags: ['summit', 'mountain', 'hard', 'area:Jebel Jais Viewing Deck'],
         accessibleBy: ['car', '4x4'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Jebel+Jais+Viewing+Deck+Parking',
+        parkingLat: 25.9434,
+        parkingLng: 56.2448,
         gpxKey: 'locations/jebel-jais-summit-trail.gpx',
         unlockPriceAed: 29,
         guidePreview:
@@ -1362,8 +1367,10 @@ Your unlock includes access to our guide support line during your hike window (s
       data: {
         name: 'Wadi Shawka Loop',
         region: 'RAK',
+        areaLabel: 'Wadi Shawka Dam',
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.MODERATE,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
         description:
           'Scenic wadi route suitable for groups with beautiful pools and rock formations. The trail follows the seasonal riverbed through dramatic canyon walls.',
         season: ['winter', 'year-round'],
@@ -1381,11 +1388,14 @@ Your unlock includes access to our guide support line during your hike window (s
           'wadi',
           'family',
           'pools',
+          'area:Wadi Shawka Dam',
           'facility:Toilet at dam car park',
           'nearby:Fuel & shop ~10 km toward Kalba (plan a stop)',
         ],
         accessibleBy: ['car', '4x4'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Wadi+Shawka+Dam',
+        parkingLat: 25.3382,
+        parkingLng: 56.1178,
         gpxKey: 'locations/wadi-shawka-loop.gpx',
         unlockPriceAed: 19,
         guidePreview:
@@ -1409,6 +1419,7 @@ Unlock includes same-day guide support while you're on the trail.`
       data: {
         name: 'Fossil Rock Desert Camp',
         region: 'Sharjah',
+        areaLabel: 'Fossil Rock dunes',
         activityType: ActivityType.CAMPING,
         description:
           'Popular desert camping location for group overnights near the iconic Fossil Rock formation. Perfect for stargazing and exploring the surrounding desert landscape.',
@@ -1423,9 +1434,11 @@ Unlock includes same-day guide support while you're on the trail.`
         longitude: 55.85,
         highlights: ['Stargazing', 'Fossil hunting', 'Desert sunrise', 'BBQ area'],
         surfaceType: ['sand'],
-        tags: ['desert', 'camping', 'stargazing'],
+        tags: ['desert', 'camping', 'stargazing', 'area:Fossil Rock dunes'],
         accessibleBy: ['4x4', 'car'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Fossil+Rock+Sharjah',
+        parkingLat: 25.2185,
+        parkingLng: 55.8482,
         unlockPriceAed: 25,
         guidePreview: 'Desert camp setup guide — access tracks, wind shelter spots, and stargazing orientation.',
         guideMarkdown: `## Access
@@ -1444,6 +1457,7 @@ Overnight checklist, emergency contacts, and best months for clear skies.`
       data: {
         name: 'Dibba Beach Camp',
         region: 'Fujairah',
+        areaLabel: 'Dibba public beach',
         activityType: ActivityType.CAMPING,
         description:
           'Beach camping on the Gulf of Oman with the Hajar Mountains as a backdrop. Popular weekend spot for swimming, snorkelling, and stargazing.',
@@ -1458,9 +1472,11 @@ Overnight checklist, emergency contacts, and best months for clear skies.`
         longitude: 56.2728,
         highlights: ['Mountain views', 'Calm water', 'Beach camping', 'Snorkelling'],
         surfaceType: ['sand', 'rocky'],
-        tags: ['beach', 'dibba', 'camping', 'fujairah'],
+        tags: ['beach', 'dibba', 'camping', 'fujairah', 'area:Dibba public beach'],
         accessibleBy: ['car', '4x4'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Dibba+Beach+Fujairah',
+        parkingLat: 25.6188,
+        parkingLng: 56.2715,
         unlockPriceAed: 19,
         guidePreview: 'Beach camp zones, tide notes, and snorkel spots along the Dibba shoreline.',
         guideMarkdown: `## Getting there
@@ -1479,8 +1495,10 @@ Wind shelter notes, BBQ etiquette, and nearby shop stops.`
       data: {
         name: 'Hatta Dam Loop',
         region: 'Dubai',
+        areaLabel: 'Hatta Dam visitor park',
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
         description:
           'Easy lakeside loop around Hatta Dam with Hajar mountain views. Ideal for families and first-time hikers in the UAE.',
         season: ['winter', 'year-round'],
@@ -1494,9 +1512,11 @@ Wind shelter notes, BBQ etiquette, and nearby shop stops.`
         longitude: 56.1136,
         highlights: ['Dam views', 'Kayak rentals', 'Mountain backdrop', 'Family friendly'],
         surfaceType: ['gravel', 'rocky'],
-        tags: ['hatta', 'dam', 'family', 'easy'],
+        tags: ['hatta', 'dam', 'family', 'easy', 'area:Hatta Dam visitor park'],
         accessibleBy: ['car'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Hatta+Dam',
+        parkingLat: 24.7855,
+        parkingLng: 56.1142,
         unlockPriceAed: 15,
         guidePreview: 'Short dam loop with parking, kayak hire, and shaded picnic stops.',
         guideMarkdown: `## Getting there
@@ -1515,6 +1535,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Al Ain Desert Camp',
         region: 'Al Ain',
+        areaLabel: 'Remah dune field',
         activityType: ActivityType.CAMPING,
         description:
           'Open desert camping south of Al Ain among rolling dunes. Quiet overnight spot for stargazing away from city lights.',
@@ -1529,9 +1550,11 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         longitude: 55.55,
         highlights: ['Sand dunes', 'Stargazing', 'Sunrise views', 'Quiet desert'],
         surfaceType: ['sand'],
-        tags: ['desert', 'camping', 'al ain', 'dunes'],
+        tags: ['desert', 'camping', 'al ain', 'dunes', 'area:Remah dune field'],
         accessibleBy: ['4x4', 'car'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Al+Ain+desert+camping',
+        parkingLat: 24.0488,
+        parkingLng: 55.5521,
         unlockPriceAed: 19,
         guidePreview: 'Dune camp access tracks, wind orientation, and leave-no-trace checklist.',
         guideMarkdown: `## Access

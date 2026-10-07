@@ -6,7 +6,7 @@ import {
   NotificationType,
   RewardAction,
 } from '../../domain/enums.js';
-import { placeDetailPath } from '@uaetrail/shared-types';
+import { mergeVenueAreaTag, placeDetailPath } from '@uaetrail/shared-types';
 import { Router } from 'express';
 import { z } from 'zod';
 import { createAuditLog } from '../../lib/audit.js';
@@ -36,6 +36,7 @@ import { notifyUserAdminAction } from '../../services/admin-notifications.js';
 const locationCreateSchema = z.object({
   name: z.string().min(2),
   region: z.string().min(2),
+  areaLabel: z.string().min(2).max(120).optional().nullable(),
   activityType: z.enum(['hiking', 'camping', 'event', 'shop', 'EVENT', 'community_activity', 'COMMUNITY_ACTIVITY']),
   description: z.string().min(20),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
@@ -56,6 +57,8 @@ const locationCreateSchema = z.object({
   surfaceType: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
   parkingLink: z.string().max(500).optional().nullable(),
+  parkingLat: z.number().min(-90).max(90).optional().nullable(),
+  parkingLng: z.number().min(-180).max(180).optional().nullable(),
   accessibleBy: z.array(z.string()).default([]),
   countryCode: z.string().length(2).optional(),
   gpxKey: z.string().max(500).optional().nullable(),
@@ -121,9 +124,12 @@ export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
     adminRouter.post(path, validate({ body: locationCreateSchema }), async (req, res, next) => {
       try {
         const body = req.body as z.infer<typeof locationCreateSchema>;
+        const areaLabel = body.areaLabel?.trim() || null;
+        const baseTags = body.tags ?? [];
         const created = await createAdminLocation({
           name: body.name,
           region: body.region,
+          areaLabel,
           activityType: toPrismaActivityType(body.activityType),
           description: body.description,
           difficulty: toPrismaDifficulty(body.difficulty),
@@ -142,8 +148,10 @@ export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
           longitude: body.longitude,
           highlights: body.highlights ?? [],
           surfaceType: body.surfaceType ?? [],
-          tags: body.tags ?? [],
+          tags: mergeVenueAreaTag(baseTags, areaLabel),
           parkingLink: body.parkingLink,
+          parkingLat: body.parkingLat ?? undefined,
+          parkingLng: body.parkingLng ?? undefined,
           accessibleBy: body.accessibleBy ?? [],
           countryCode: body.countryCode?.toUpperCase() ?? 'AE',
         });
@@ -219,13 +227,24 @@ export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
 
         const isCatalogVenue =
           existing.externalSource === VENUE_CATALOG_EXTERNAL_SOURCE || locationHasCatalogImportTag(existing.tags);
+        const nextAreaLabel =
+          body.areaLabel !== undefined ? body.areaLabel?.trim() || null : existing.areaLabel ?? null;
+        const baseTagsForUpdate =
+          body.tags !== undefined ? body.tags : existing.tags;
+        const tagsWithArea =
+          body.areaLabel !== undefined
+            ? mergeVenueAreaTag(baseTagsForUpdate, nextAreaLabel)
+            : baseTagsForUpdate;
         const tagsForUpdate = isCatalogVenue
-          ? withCatalogAdminEditedTag(body.tags ?? existing.tags)
-          : body.tags;
+          ? withCatalogAdminEditedTag(tagsWithArea)
+          : body.tags !== undefined || body.areaLabel !== undefined
+            ? tagsWithArea
+            : undefined;
 
         const updated = await updateAdminLocation(id, {
           name: body.name,
           region: body.region,
+          areaLabel: body.areaLabel !== undefined ? nextAreaLabel : undefined,
           countryCode: body.countryCode?.toUpperCase(),
           activityType: body.activityType ? toPrismaActivityType(body.activityType) : undefined,
           description: body.description,
@@ -248,6 +267,8 @@ export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
           surfaceType: body.surfaceType,
           tags: tagsForUpdate,
           parkingLink: body.parkingLink,
+          parkingLat: body.parkingLat !== undefined ? body.parkingLat : undefined,
+          parkingLng: body.parkingLng !== undefined ? body.parkingLng : undefined,
           accessibleBy: body.accessibleBy,
           gpxKey: body.gpxKey,
           guidePdfKey: body.guidePdfKey,

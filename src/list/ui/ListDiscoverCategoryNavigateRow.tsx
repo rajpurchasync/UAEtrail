@@ -9,7 +9,7 @@ interface ListDiscoverCategoryNavigateRowProps {
 const CATEGORY_ROW_SCROLL =
   'flex gap-3 overflow-x-auto pb-1 scroll-smooth snap-x snap-mandatory [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
-/** Five category entry points — horizontal scroll on narrow screens. */
+/** Category entry points — horizontal scroll on narrow screens. */
 export const ListDiscoverCategoryNavigateRow = ({ onOpenCategory }: ListDiscoverCategoryNavigateRowProps) => (
   <div className={CATEGORY_ROW_SCROLL}>
     {BROWSE_CATEGORY_TILES.map((tile) => (

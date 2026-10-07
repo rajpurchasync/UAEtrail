@@ -3,7 +3,11 @@ import {
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
-import { exploreSearchScopesForQuery, exploreSearchScopeTitleMatchesQuery } from '../exploreSearchScopeUi';
+import {
+  exploreSearchScopesForQuery,
+  exploreSearchScopeTitleMatchesQuery,
+  exploreSearchScopeUsesMapMatchCounts,
+} from '../exploreSearchScopeUi';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 
 type ExploreSearchScopeHintsProps = {
@@ -29,8 +33,9 @@ export const ExploreSearchScopeHints = ({
       {scopes.map((scope) => {
         const { label, description, shipped } = EXPLORE_SEARCH_SCOPE_COPY[scope];
         const count = counts[scope];
+        const usesMapCounts = exploreSearchScopeUsesMapMatchCounts(scope);
         const titleMatch = exploreSearchScopeTitleMatchesQuery(scope, query);
-        const disabled = !shipped || (count === 0 && !titleMatch);
+        const disabled = !shipped || (usesMapCounts && count === 0 && !titleMatch);
         return (
           <li key={scope} role="presentation">
             <button
@@ -47,7 +52,7 @@ export const ExploreSearchScopeHints = ({
                 <span className={`block truncate text-xs font-medium ${EXPLORE_TYPE.muted}`}>{description}</span>
               </span>
               <span className={`shrink-0 text-xs font-bold tabular-nums ${EXPLORE_TYPE.body}`}>
-                {shipped ? formatCount(count) : 'Soon'}
+                {shipped ? (usesMapCounts ? formatCount(count) : 'Search') : 'Soon'}
               </span>
             </button>
           </li>

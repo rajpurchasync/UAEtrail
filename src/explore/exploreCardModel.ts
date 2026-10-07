@@ -80,6 +80,8 @@ export interface ExploreCardModel {
   /** Trail/camp catalog — emirate or area label for list venue posters. */
   venueRegion?: string | null;
   venueAccessibility?: 'car-accessible' | 'remote' | null;
+  venueHasParking?: boolean;
+  venueDistanceKm?: number | null;
   requirementBadges?: string[];
   mapLatitude?: number | null;
   mapLongitude?: number | null;
@@ -205,6 +207,11 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     surfaceTypes: item.locationCard?.surfaceType ?? [],
     venueRegion: item.locationCard?.region ?? null,
     venueAccessibility: item.locationCard?.accessibility ?? null,
+    venueHasParking: Boolean(
+      item.locationCard?.parkingPoint?.trim() ||
+        (item.locationCard?.parkingLat != null && item.locationCard?.parkingLng != null)
+    ),
+    venueDistanceKm: item.locationCard?.distance ?? null,
     requirementBadges: enrichExploreActivityRequirementBadges(activity?.requirements, {
       kind,
       rideshareEnabled: Boolean(

@@ -25,6 +25,9 @@ type ListDiscoverySearchFieldProps = {
   compactTop?: boolean;
   hideMapLink?: boolean;
   className?: string;
+  placeholder?: string;
+  /** When false, Enter commits query only — no multi-scope dropdown (e.g. Buddies category). */
+  enableScopeHints?: boolean;
 };
 
 /** List discover — same scope hints + prompt as `ExploreBrowseSearchModal` (inline bar + dropdown). */
@@ -41,13 +44,16 @@ export const ListDiscoverySearchField = ({
   compactTop = false,
   hideMapLink = false,
   className = '',
+  placeholder = EXPLORE_SEARCH_OPEN_PLACEHOLDER,
+  enableScopeHints = true,
 }: ListDiscoverySearchFieldProps) => {
   const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const hasQuery = query.trim().length > 0;
-  const visibleScopes = hasQuery ? exploreSearchScopesForQuery(query, searchScopeCounts) : [];
-  const showScopePanel = panelOpen && visibleScopes.length > 0;
+  const visibleScopes =
+    enableScopeHints && hasQuery ? exploreSearchScopesForQuery(query, searchScopeCounts) : [];
+  const showScopePanel = enableScopeHints && panelOpen && visibleScopes.length > 0;
 
   useEffect(() => {
     if (!panelOpen) return;
@@ -69,7 +75,7 @@ export const ListDiscoverySearchField = ({
 
   const handleQueryChange = (value: string) => {
     onQueryChange(value);
-    setPanelOpen(value.trim().length > 0);
+    setPanelOpen(enableScopeHints && value.trim().length > 0);
   };
 
   const commitSearch = (scope?: ExploreSearchScopeKey | null) => {
@@ -110,7 +116,7 @@ export const ListDiscoverySearchField = ({
                   commitSearch(null);
                 }
               }}
-              placeholder={EXPLORE_SEARCH_OPEN_PLACEHOLDER}
+              placeholder={placeholder}
               className={LIST_SEARCH.input}
               enterKeyHint="search"
               autoComplete="off"

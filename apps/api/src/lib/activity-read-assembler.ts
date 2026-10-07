@@ -141,6 +141,7 @@ const fallbackLocationFromActivityDoc = (doc: MongoActivityDoc): Location =>
     id: doc.locationId,
     name: doc.title,
     region: '',
+    areaLabel: null,
     activityType: ActivityType.HIKING,
     description: doc.description,
     difficulty: null,

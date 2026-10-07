@@ -9,6 +9,7 @@ export const resolveListBrowseExplorePinKind = (
   state: BrowseListFilterState,
   listCat: BrowseMainCategoryKey | null
 ): ExplorePinKindFilter | null => {
+  if (listCat === 'people') return null;
   if (listCat === 'venues') return 'places';
   if (listCat === 'shops') return 'shops';
   if (listCat === 'trips') return state.tripLookingOnly ? 'looking' : 'trips';
@@ -32,6 +33,8 @@ export const inferListCatFromExploreHandoff = (
   state: BrowseListFilterState,
   searchParams: Pick<URLSearchParams, 'get'>
 ): BrowseMainCategoryKey | null => {
+  if (searchParams.get('searchScope') === 'people') return 'people';
+
   const pinKind = parseExplorePinKindFilter(searchParams.get('pinKind'));
   if (pinKind === 'places') return 'venues';
   if (pinKind === 'shops') return 'shops';

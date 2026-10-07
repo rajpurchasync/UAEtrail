@@ -14,10 +14,8 @@ interface ExploreMapDateFilterProps {
   includeAnyday?: boolean;
   /** Browse toolbar — calendar icon only (label in aria-label / title). */
   iconOnly?: boolean;
-  /** List category bar — text label + chevron (e.g. anyday). */
+  /** List category bar — text label + chevron (default label “When” when unset). */
   textTrigger?: boolean;
-  /** When `textTrigger`, show “anyday” instead of “Anyday”. */
-  lowercaseAnyday?: boolean;
   /** Optional class for text trigger button (list category pills). */
   textTriggerClassName?: string;
 }
@@ -29,7 +27,6 @@ export const ExploreMapDateFilter = ({
   includeAnyday = true,
   iconOnly = false,
   textTrigger = false,
-  lowercaseAnyday = false,
   textTriggerClassName,
 }: ExploreMapDateFilterProps) => {
   const [open, setOpen] = useState(false);
@@ -68,10 +65,6 @@ export const ExploreMapDateFilter = ({
   };
 
   const active = activityDatePreset !== 'anyday';
-  const textLabel =
-    lowercaseAnyday && activityDatePreset === 'anyday'
-      ? 'anyday'
-      : buttonLabel;
 
   return (
     <div ref={rootRef} className="relative shrink-0">
@@ -96,7 +89,7 @@ export const ExploreMapDateFilter = ({
       >
         {textTrigger ? (
           <>
-            <span className="max-w-[7rem] truncate">{textLabel}</span>
+            <span className="max-w-[7rem] truncate">{buttonLabel}</span>
             <ChevronDown className="h-4 w-4 shrink-0 text-neutral-500" strokeWidth={2.25} aria-hidden />
           </>
         ) : (

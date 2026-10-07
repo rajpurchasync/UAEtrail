@@ -51,6 +51,8 @@ export interface Location {
   id: string;
   name: string;
   region: string;
+  /** Trailhead / wadi / beach zone for explore list subtitle and poster location chip. */
+  areaLabel: string | null;
   activityType: ActivityType;
   description: string;
   difficulty: Difficulty | null;

@@ -57,6 +57,8 @@ export interface LocationDTO {
   id: string;
   name: string;
   region: string;
+  /** Trailhead, wadi, or beach zone — list poster location chip (emirate stays in `region`). */
+  areaLabel?: string | null;
   /** @deprecated Prefer {@link PlaceKind} in new code — persisted as `activityType` on Mongo today. */
   activityType: PlaceActivityType;
   description: string;
@@ -301,6 +303,7 @@ export {
   type MemberDiscoveryQuotaDTO,
 } from './member-discovery-quota.js';
 export type {
+  MemberDiscoveryLookingRowDTO,
   MemberDiscoveryOnTripRowDTO,
   MemberDiscoveryRosterDTO,
 } from './member-discovery-roster.js';
@@ -670,6 +673,9 @@ export interface ExploreLocationCardDTO {
   surfaceType?: string[];
   images: string[];
   featured: boolean;
+  parkingLat?: number | null;
+  parkingLng?: number | null;
+  parkingPoint?: string | null;
 }
 
 /** Published rideshare linked to a parent hike/camp/event (explore map + peek). */
@@ -1134,6 +1140,11 @@ export {
 export {
   VENUE_NAME_AR_TAG_PREFIX,
   VENUE_NAME_EN_TAG_PREFIX,
+  VENUE_AREA_TAG_PREFIX,
+  deriveVenueAccessibilityFromAccessibleBy,
+  formatVenueAreaTag,
+  mergeVenueAreaTag,
+  readVenueAreaFromTags,
   readVenueArabicNameFromTags,
   readVenueEnglishNameFromTags,
   resolvePlaceDisplayTitle,

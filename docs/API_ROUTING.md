@@ -218,7 +218,7 @@ JSON download of profile, join requests, participations, **wishlist**, **entity 
 | Method | Path | Who |
 |--------|------|-----|
 | GET | `/me/member-discovery-quota` | Free vs Pro profile-open quota |
-| GET | `/me/member-discovery/roster` | Strangers on trips (`onTrips`) + public directory + `meta.quota`. Query: `date`, `q`, pagination |
+| GET | `/me/member-discovery/roster` | `friendsGoing`, `hostsGoing`, `lookingFor`, `followed`, paginated `directory`, `meta.quota`. Query: `date`, `q` |
 | GET | `/users/browse` | Directory only (paginated public members; excludes self + buddies) |
 
 Profile opens from Discover: `GET /users/:id/public-profile?from=discover` (quota). Registration: `registerMemberDiscoveryRoutes.ts` · roster: `member-discovery-roster.ts` · views: `member_profile_views` collection.

@@ -36,6 +36,8 @@ import { ExploreFollowedSegmentTabs } from './ExploreFollowedSegmentTabs';
 import { ExploreFollowedEntityList } from './ExploreFollowedEntityList';
 import { ExploreSocialPeopleList } from './ExploreSocialPeopleList';
 import { ExploreMemberDiscoveryList } from './ExploreMemberDiscoveryList';
+import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
+import { ListBuddiesSegmentPills } from '../../list/ui/ListBuddiesSegmentPills';
 import {
   EXPLORE_SOCIAL_DISCOVER_SEARCH_PLACEHOLDER,
   EXPLORE_SOCIAL_PANEL_SUBCOPY,
@@ -44,7 +46,6 @@ import {
 } from '../../content/exploreSocialPanelCopy';
 import type {
   MemberBrowseCardDTO,
-  MemberDiscoveryOnTripRowDTO,
   MemberDiscoveryQuotaDTO,
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
@@ -103,12 +104,16 @@ export interface ExploreBrowsePanelProps {
   socialError?: string | null;
   onRefreshSocialPeople?: () => void;
   onOpenSocialActivity?: (trip: { exploreItemId: string }) => void;
-  discoveryOnTrips?: MemberDiscoveryOnTripRowDTO[];
+  discoveryFriendsGoing?: import('@uaetrail/shared-types').SocialPersonRowDTO[];
+  discoveryHostsGoing?: import('@uaetrail/shared-types').SocialPersonRowDTO[];
+  discoveryLookingFor?: import('@uaetrail/shared-types').MemberDiscoveryLookingRowDTO[];
+  discoveryFollowed?: MemberBrowseCardDTO[];
   discoveryDirectory?: MemberBrowseCardDTO[];
   discoveryQuota?: MemberDiscoveryQuotaDTO | null;
   discoveryLoading?: boolean;
   discoveryError?: string | null;
   onOpenDiscoveryActivity?: (activityId: string) => void;
+  onRefreshMemberDiscovery?: () => void;
   followedSegment?: import('./useExploreBrowseUrlState').ExploreFollowedSegment;
   onFollowedSegmentChange?: (segment: import('./useExploreBrowseUrlState').ExploreFollowedSegment) => void;
   entityFollows?: import('@uaetrail/shared-types').EntityFollowDTO[];
@@ -191,12 +196,16 @@ export const ExploreBrowsePanel = ({
   socialError = null,
   onRefreshSocialPeople,
   onOpenSocialActivity,
-  discoveryOnTrips = [],
+  discoveryFriendsGoing = [],
+  discoveryHostsGoing = [],
+  discoveryLookingFor = [],
+  discoveryFollowed = [],
   discoveryDirectory = [],
   discoveryQuota = null,
   discoveryLoading = false,
   discoveryError = null,
   onOpenDiscoveryActivity,
+  onRefreshMemberDiscovery,
   followedSegment = 'people',
   onFollowedSegmentChange,
   entityFollows = [],
@@ -229,6 +238,7 @@ export const ExploreBrowsePanel = ({
   const queryInputRef = useRef<HTMLInputElement>(null);
   const searchScopeAnchorRef = useRef<HTMLDivElement>(null);
   const [searchScopeOpen, setSearchScopeOpen] = useState(false);
+  const [discoverSegment, setDiscoverSegment] = useState<BuddiesDiscoverySegment>('going');
   const hasSearchQuery = query.trim().length > 0;
   const showSearchScopeOverlay = !socialPanel && searchScopeOpen && hasSearchQuery;
 
@@ -577,15 +587,24 @@ export const ExploreBrowsePanel = ({
           onMouseLeave={onListItemHoverEnd}
         >
           {socialPanel && socialTab === 'discover' ? (
-            <ExploreMemberDiscoveryList
-              onTrips={discoveryOnTrips}
-              directory={discoveryDirectory}
-              quota={discoveryQuota}
-              loading={discoveryLoading}
-              error={discoveryError}
-              isSignedIn={isSignedIn}
-              onOpenActivity={(activityId) => onOpenDiscoveryActivity?.(activityId)}
-            />
+            <div className="flex flex-col gap-3 px-3">
+              <ListBuddiesSegmentPills segment={discoverSegment} onSegmentChange={setDiscoverSegment} />
+              <ExploreMemberDiscoveryList
+                segment={discoverSegment}
+                friendsGoing={discoveryFriendsGoing}
+                hostsGoing={discoveryHostsGoing}
+                lookingFor={discoveryLookingFor}
+                followed={discoveryFollowed}
+                directory={discoveryDirectory}
+                quota={discoveryQuota}
+                loading={discoveryLoading}
+                error={discoveryError}
+                isSignedIn={isSignedIn}
+                userRole={userRole}
+                onRefresh={onRefreshMemberDiscovery}
+                onOpenActivity={(activityId) => onOpenDiscoveryActivity?.(activityId)}
+              />
+            </div>
           ) : null}
           {socialPanel && socialTab === 'followed' && followedSegment !== 'people' ? (
             <ExploreFollowedEntityList

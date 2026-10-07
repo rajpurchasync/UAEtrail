@@ -14,6 +14,11 @@ import {
   serializeBrowseMainCategoriesToTopics,
   type BrowseMainCategoryKey,
 } from './browseListTaxonomy';
+import {
+  BUDDIES_SEGMENT_URL_PARAM,
+  parseBuddiesDiscoverySegment,
+  serializeBuddiesDiscoverySegment,
+} from './buddiesDiscoverySegment';
 
 const PRICE_PARAM = 'price';
 const WHEN_PARAM = 'when';
@@ -26,6 +31,7 @@ export const parseListCatParam = (value: string | null): BrowseMainCategoryKey |
     value === 'trips' ||
     value === 'venues' ||
     value === 'shops' ||
+    value === 'people' ||
     value === 'guides' ||
     value === 'agencies'
   ) {
@@ -128,6 +134,7 @@ export const parseBrowseListFilterState = (
     price: parseBrowseListPriceParam(searchParams.get(PRICE_PARAM)),
     when: whenNormalized,
     activityDatePreset,
+    buddiesSegment: parseBuddiesDiscoverySegment(searchParams.get(BUDDIES_SEGMENT_URL_PARAM)),
   };
 };
 
@@ -164,6 +171,9 @@ export const serializeBrowseListSearchParams = (
   }
 
   if (regions.length > 0) params.set('regions', regions.join(','));
+
+  const buddies = serializeBuddiesDiscoverySegment(state.buddiesSegment);
+  if (buddies) params.set(BUDDIES_SEGMENT_URL_PARAM, buddies);
 
   return params;
 };

@@ -5,7 +5,6 @@ import type {
   MemberDiscoveryQuotaDTO,
   ProfileViewerAccessDTO,
   BuddyActivityPresenceRowDTO,
-  MemberDiscoveryOnTripRowDTO,
 } from '@uaetrail/shared-types';
 import type {
   AccountDeletionInfo,
@@ -196,7 +195,10 @@ export const accountApi = {
       if (options?.date) params.set('date', options.date);
       return apiRequest<{
         data: {
-          onTrips: MemberDiscoveryOnTripRowDTO[];
+          friendsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
+          hostsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
+          lookingFor: import('@uaetrail/shared-types').MemberDiscoveryLookingRowDTO[];
+          followed: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
           directory: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
         };
         meta: {

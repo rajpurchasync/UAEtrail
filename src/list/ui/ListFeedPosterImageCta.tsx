@@ -34,9 +34,9 @@ export const ListFeedPosterImageCta = ({
           lng={primary.lng}
           variant="button"
           label={primary.label}
-          className="w-full"
-          buttonClassName={`flex min-h-11 w-full items-center justify-center px-4 py-3 text-sm font-bold active:opacity-95 ${EXPLORE_BRAND_ACTIVE}`}
-          showAppPickerAffordance
+          className="w-full [&>button]:w-full"
+          buttonClassName={`flex min-h-11 w-full flex-1 items-center justify-center gap-2 rounded-none px-4 py-3 text-sm font-bold active:opacity-95 ${EXPLORE_BRAND_ACTIVE}`}
+          showAppPickerAffordance={false}
         />
       </div>
     );

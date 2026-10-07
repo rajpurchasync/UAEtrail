@@ -617,6 +617,18 @@ export const useExploreBrowseUrlState = ({
       setPanel(syncedPanel);
       setDesktopBrowseTab(syncedTab);
       setPinKind(syncedPinKind);
+      if (resolved === 'people') {
+        syncExploreUrl({
+          q: query,
+          list: true,
+          listMode: 'default',
+          panel: syncedPanel,
+          pinKind: syncedPinKind,
+          searchScope: resolved,
+          listCat: 'people',
+        });
+        return;
+      }
       syncExploreUrl({
         q: query,
         list: listOpen,
@@ -624,6 +636,7 @@ export const useExploreBrowseUrlState = ({
         panel: syncedPanel,
         pinKind: syncedPinKind,
         searchScope: resolved,
+        listCat: null,
       });
       return;
     }

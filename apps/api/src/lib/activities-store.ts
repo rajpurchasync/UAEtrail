@@ -61,7 +61,7 @@ const activitiesCollection = (): Collection<MongoActivityDoc> =>
 
 const mapMongoLocation = (doc: MongoLocationDoc): Location => {
   const { _id, ...rest } = doc;
-  return { id: _id, ...rest };
+  return { id: _id, ...rest, areaLabel: rest.areaLabel ?? null };
 };
 
 export const findLocationById = async (locationId: string) => findLocationInMongo(locationId);

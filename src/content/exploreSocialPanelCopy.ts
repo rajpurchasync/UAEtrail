@@ -30,7 +30,26 @@ export const EXPLORE_SOCIAL_DISCOVER_SEARCH_PLACEHOLDER = 'Search by name or cit
 
 export const EXPLORE_SOCIAL_TAB_DISCOVER = 'Discover';
 
+/** Search scope + list **Buddies** category — member discovery (not demand / “looking for” posts). */
+export const EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL = 'Buddies';
+export const EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION =
+  'Find members on outings and public profiles — connect with hosts and hikers (Pro unlocks more)';
+/** @deprecated Use {@link EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL} */
+export const EXPLORE_SEARCH_SCOPE_DISCOVER_PEOPLE_LABEL = EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL;
+/** @deprecated Use {@link EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION} */
+export const EXPLORE_SEARCH_SCOPE_DISCOVER_PEOPLE_DESCRIPTION = EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION;
+
 export const EXPLORE_SOCIAL_DISCOVER_ON_TRIPS_TITLE = 'On outings';
+export const EXPLORE_SOCIAL_DISCOVER_FRIENDS_GOING_TITLE = 'Friends';
+export const EXPLORE_SOCIAL_DISCOVER_HOSTS_GOING_TITLE = 'Hosts';
+export const EXPLORE_SOCIAL_DISCOVER_LOOKING_TITLE = 'Looking for company';
+export const EXPLORE_SOCIAL_EMPTY_DISCOVER_LOOKING =
+  'No one is posting “looking for” right now — try another date or check back later.';
+export const EXPLORE_SOCIAL_EMPTY_DISCOVER_FOLLOWED =
+  'You are not following anyone yet — follow hosts and members from their profile.';
+export const BUDDIES_DISCOVERY_INTRO =
+  'Find members on live outings or browse public profiles — add friends, message, or plan something together.';
+
 export const EXPLORE_SOCIAL_DISCOVER_DIRECTORY_TITLE = 'Public profiles';
 export const EXPLORE_SOCIAL_EMPTY_DISCOVER =
   'No one matches right now — try another day on the map filter or check back when more outings are live.';

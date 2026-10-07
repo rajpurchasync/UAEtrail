@@ -31,10 +31,6 @@ export const countExploreSearchScopes = (
       counts.activities += 1;
       continue;
     }
-    if (mapItemMatchesSearchScope(item, 'people')) {
-      counts.people += 1;
-      continue;
-    }
     if (
       mapItemMatchesSearchScope(item, 'places') &&
       venueItemMatchesRegions(item, venueRegions)

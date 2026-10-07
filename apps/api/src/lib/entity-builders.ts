@@ -15,6 +15,7 @@ export type RelationConnect = { connect?: { id?: string }; disconnect?: true };
 export type LocationCreateInput = {
   name: string;
   region?: string;
+  areaLabel?: string | null;
   activityType: ActivityType | string;
   description?: string;
   difficulty?: Difficulty | string | null;
@@ -156,6 +157,7 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     id,
     name: data.name,
     region: data.region ?? '',
+    areaLabel: data.areaLabel?.trim() ? data.areaLabel.trim() : null,
     activityType: data.activityType as Location['activityType'],
     description: data.description ?? '',
     difficulty: (data.difficulty as Location['difficulty']) ?? null,

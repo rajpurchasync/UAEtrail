@@ -8,7 +8,7 @@ describe('listDiscoverySearchCommit', () => {
   it('maps explore scopes to list categories', () => {
     expect(browseCategoriesForSearchScope('activities')).toEqual(['trips']);
     expect(browseCategoriesForSearchScope('places')).toEqual(['venues']);
-    expect(browseCategoriesForSearchScope('people')).toEqual(['trips']);
+    expect(browseCategoriesForSearchScope('people')).toEqual(['people']);
     expect(browseCategoriesForSearchScope('shops')).toEqual(['shops']);
     expect(browseCategoriesForSearchScope('agencies')).toEqual(['agencies']);
     expect(browseCategoriesForSearchScope('facilities')).toBeNull();
@@ -16,8 +16,8 @@ describe('listDiscoverySearchCommit', () => {
 
   it('builds filter patch for people scope', () => {
     expect(browseListFilterPatchForSearchScope('people')).toEqual({
-      categories: ['trips'],
-      tripLookingOnly: true,
+      categories: ['people'],
+      tripLookingOnly: false,
       tripTopics: [],
       placeTopics: [],
     });

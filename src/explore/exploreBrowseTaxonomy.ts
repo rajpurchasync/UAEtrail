@@ -1,4 +1,8 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION,
+  EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
+} from '../content/exploreSocialPanelCopy';
 import type { ExplorePanel } from './routing';
 import type { ExplorePinKindFilter } from './explorePinKindFilter';
 import type { DesktopBrowseTab } from './ui/exploreBrowsePanelCopy';
@@ -62,8 +66,8 @@ export const EXPLORE_SEARCH_SCOPE_COPY: Record<
     shipped: true,
   },
   people: {
-    label: 'People',
-    description: 'Looking for company — find-a-group posts',
+    label: EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
+    description: EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION,
     shipped: true,
   },
   shops: {
@@ -132,7 +136,7 @@ export const mapItemMatchesSearchScope = (
     case 'places':
       return mapItemMatchesSpotsPill(item);
     case 'people':
-      return mapItemMatchesLookingPill(item);
+      return false;
     case 'shops':
       return mapItemMatchesShopsPill(item);
     case 'agencies':
@@ -220,7 +224,7 @@ export const pinKindForSearchScope = (scope: ExploreSearchScopeKey): ExplorePinK
   if (scope === 'places') return 'places';
   if (scope === 'shops' || scope === 'agencies') return 'shops';
   if (scope === 'activities') return 'trips';
-  if (scope === 'people') return 'looking';
+  if (scope === 'people') return 'all';
   return 'all';
 };
 

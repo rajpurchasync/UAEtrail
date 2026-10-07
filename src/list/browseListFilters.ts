@@ -14,6 +14,7 @@ import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import { matchesListVenuePlaceTopic } from './listVenuePlaceTopicFilter';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
+import type { BuddiesDiscoverySegment } from './buddiesDiscoverySegment';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
 export type BrowseCategoryKey = BrowseMainCategoryKey;
 
@@ -35,6 +36,8 @@ export type BrowseListFilterState = {
   when: BrowseWhenFilter;
   /** Aligns with explore map `?date=` (today · tomorrow · week · month). */
   activityDatePreset: ExploreActivityDatePreset;
+  /** Buddies list category — who's going · looking for · followed. */
+  buddiesSegment: BuddiesDiscoverySegment;
 };
 
 export const BROWSE_PRICE_OPTIONS: ReadonlyArray<{ key: BrowsePriceFilter; label: string }> = [

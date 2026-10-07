@@ -5,6 +5,7 @@ import {
   mapItemMatchesSearchScope,
   parseExploreMapFilterPillsParam,
   parseExploreSearchScope,
+  pinKindForSearchScope,
   toggleExploreMapFilterPill,
 } from './exploreBrowseTaxonomy';
 
@@ -43,7 +44,8 @@ describe('exploreBrowseTaxonomy', () => {
     const demand = item({ id: 'd1', source: 'demand', kind: 'hiking' });
     const agency = item({ id: 'g1', source: 'agency', kind: 'agency' });
     expect(mapItemMatchesSearchScope(hosted, 'activities')).toBe(true);
-    expect(mapItemMatchesSearchScope(demand, 'people')).toBe(true);
+    expect(mapItemMatchesSearchScope(demand, 'people')).toBe(false);
+    expect(pinKindForSearchScope('people')).toBe('all');
     expect(mapItemMatchesSearchScope(agency, 'agencies')).toBe(true);
   });
 

@@ -1,9 +1,18 @@
 import { DEMAND_EMOJI } from '../../explore/exploreCopy';
-import { ExploreFilterIcon } from '../../explore/ui/ExploreFilterIcon';
+import {
+  ExploreFilterIcon,
+  type ExploreFilterEmojiContext,
+} from '../../explore/ui/ExploreFilterIcon';
 import { LIST_CHIP_SCROLL } from '../listChromeTheme';
 import type { ListCategoryPill } from '../listCategoryFilterPills';
 
-const TopicEmoji = ({ pill }: { pill: ListCategoryPill }) => {
+const TopicEmoji = ({
+  pill,
+  context,
+}: {
+  pill: ListCategoryPill;
+  context: ExploreFilterEmojiContext;
+}) => {
   if (pill.id === 'topic-looking') {
     return (
       <span className="font-emoji text-[1.35rem] leading-none sm:text-[1.45rem]" aria-hidden>
@@ -15,7 +24,7 @@ const TopicEmoji = ({ pill }: { pill: ListCategoryPill }) => {
     return (
       <ExploreFilterIcon
         filter={pill.filterKey}
-        context="activity"
+        context={context}
         className="text-[1.35rem] leading-none sm:text-[1.45rem]"
       />
     );
@@ -38,7 +47,7 @@ const topicButtonClass = (active: boolean) =>
 
 const topicLabelClass = (active: boolean) =>
   [
-    'w-full text-center text-[11px] font-semibold leading-snug sm:text-xs',
+    'flex min-h-[2rem] w-full items-center justify-center text-center text-[11px] font-semibold leading-tight sm:text-xs',
     active ? 'text-neutral-900' : 'text-neutral-600',
   ].join(' ');
 
@@ -52,19 +61,21 @@ interface ListCategoryTopicCircleFilterProps {
   pills: ListCategoryPill[];
   /** Leave room for floating filter affordance on the right. */
   reserveFilterSpace?: boolean;
+  emojiContext?: ExploreFilterEmojiContext;
 }
 
 /** Trips category — tight outline ring around emoji + label (no fill). */
 export const ListCategoryTopicCircleFilter = ({
   pills,
   reserveFilterSpace = false,
+  emojiContext = 'activity',
 }: ListCategoryTopicCircleFilterProps) => {
   const useGrid = reserveFilterSpace || pills.length <= 4;
 
   if (useGrid) {
     return (
       <div
-        className={`grid w-full min-w-0 ${gridColsClass(pills.length)} gap-x-1 gap-y-1 ${
+        className={`grid w-full min-w-0 ${gridColsClass(pills.length)} gap-x-0.5 gap-y-1 justify-items-center ${
           reserveFilterSpace ? 'pr-[3.25rem]' : ''
         }`}
       >
@@ -73,12 +84,12 @@ export const ListCategoryTopicCircleFilter = ({
             key={pill.id}
             type="button"
             onClick={pill.onToggle}
-            className={topicButtonClass(pill.active)}
+            className={`${topicButtonClass(pill.active)} w-full max-w-[5.5rem]`}
             aria-pressed={pill.active}
             aria-label={pill.label}
           >
             <span className={emojiRingClass(pill.active)}>
-              <TopicEmoji pill={pill} />
+              <TopicEmoji pill={pill} context={emojiContext} />
             </span>
             <span className={topicLabelClass(pill.active)}>{pill.label}</span>
           </button>
@@ -99,7 +110,7 @@ export const ListCategoryTopicCircleFilter = ({
           aria-label={pill.label}
         >
           <span className={emojiRingClass(pill.active)}>
-            <TopicEmoji pill={pill} />
+            <TopicEmoji pill={pill} context={emojiContext} />
           </span>
           <span className={topicLabelClass(pill.active)}>{pill.label}</span>
         </button>

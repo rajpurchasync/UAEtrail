@@ -12,7 +12,19 @@ import {
   serializeBrowseListSearchParams,
 } from './browseListUrlState';
 
-const LIST_FILTER_PARAM_KEYS = ['q', 'topics', 'filter', 'price', 'when', 'date', 'regions', LIST_CAT_PARAM] as const;
+import { BUDDIES_SEGMENT_URL_PARAM } from './buddiesDiscoverySegment';
+
+const LIST_FILTER_PARAM_KEYS = [
+  'q',
+  'topics',
+  'filter',
+  'price',
+  'when',
+  'date',
+  'regions',
+  LIST_CAT_PARAM,
+  BUDDIES_SEGMENT_URL_PARAM,
+] as const;
 
 /** Explore-only keys — keep when list overlay updates browse filters. */
 const EXPLORE_PRESERVE_PARAM_KEYS = [

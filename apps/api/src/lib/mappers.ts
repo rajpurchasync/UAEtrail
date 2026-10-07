@@ -142,6 +142,7 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
   id: location.id,
   name: location.name,
   region: location.region,
+  areaLabel: location.areaLabel ?? null,
   activityType: mapPlaceActivityType(location.activityType),
   description: location.description,
   difficulty: location.difficulty ? enumMap<'easy' | 'moderate' | 'hard'>(location.difficulty) : undefined,

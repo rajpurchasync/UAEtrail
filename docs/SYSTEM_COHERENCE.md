@@ -124,7 +124,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | compose | `activities`, `participant_intents` | `POST /host/activities`, `POST /me/participant-intents` | `exploreApi`, `organisationApi` | `src/explore/ui/*` |
 | participation | `activity_requests`, `participant_intent_requests`, `activity_participants`, `activity_invites` | `/activities/.../requests`, `GET/POST /activities/:id/invites`, `/host/requests` | `activitiesApi`, `exploreApi` | Activity detail, `JoinRequestDetail` |
 | *(cross-cut)* | — | `GET /activities/:id` (`viewerAccess`, `myJoinInvite`) | — | **`activity-viewer-access.ts`**, **`activity-invite.ts`** |
-| member_discovery | `member_profile_views` (+ read-only compose from map/users) | `/me/member-discovery/*`, `/users/browse`, `public-profile?from=discover` | `accountApi` | Explore `view=going`, `MemberProfile` discover |
+| member_discovery | `member_profile_views` (+ read-only compose from map/users) | `/me/member-discovery/*`, `/users/browse`, `public-profile?from=discover` | `accountApi` | Explore Social **Discover** tab, `/list?listCat=people`, `MemberProfile` discover |
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
 | host_capabilities | `tenants`, `tenant_memberships` | `GET /me/host-status` | `memberApi` | `useHostStatus`, `src/hooks/useHostStatus.ts` |
 | host_console | + `activities` | `/host/*` + tenant header | `organisationApi`, `activitiesApi` | `src/pages/host/*`, `src/console/*`, `components/host/*` |

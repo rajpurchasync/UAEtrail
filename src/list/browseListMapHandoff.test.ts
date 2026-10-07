@@ -15,6 +15,7 @@ const baseState: BrowseListFilterState = {
   price: 'all',
   when: 'any',
   activityDatePreset: 'anyday',
+  buddiesSegment: 'going',
 };
 
 describe('browseListMapHandoff', () => {
@@ -41,5 +42,20 @@ describe('browseListMapHandoff', () => {
     expect(
       resolveListBrowseExplorePinKind({ ...baseState, categories: ['trips'], tripLookingOnly: true }, 'trips')
     ).toBe('looking');
+  });
+
+  it('omits pinKind for Buddies list category', () => {
+    expect(resolveListBrowseExplorePinKind({ ...baseState, categories: ['people'] }, 'people')).toBeNull();
+    const params = serializeBrowseListToExploreSearchParams(
+      { ...baseState, categories: ['people'] },
+      [],
+      { listCat: 'people' }
+    );
+    expect(params.get('pinKind')).toBeNull();
+  });
+
+  it('infers listCat=people from explore searchScope=people', () => {
+    const listCat = inferListCatFromExploreHandoff(baseState, new URLSearchParams('searchScope=people'));
+    expect(listCat).toBe('people');
   });
 });

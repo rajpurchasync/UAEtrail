@@ -37,7 +37,7 @@ export const BROWSE_CATEGORY_TILES: readonly BrowseCategoryTileDef[] = [
     gradient: 'from-rose-100 via-rose-50 to-pink-100',
   },
   {
-    key: 'guides',
+    key: 'people',
     label: 'Buddies',
     imageSrc: categoryTilePhoto('photo-1529156069898-49953e39b3ac'),
     gradient: 'from-sky-100 via-sky-50 to-cyan-100',

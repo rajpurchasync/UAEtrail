@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { parseBrowseListFilterState, serializeBrowseListSearchParams } from './browseListUrlState';
 
 describe('browseListUrlState trip topics', () => {
+  it('parses buddies segment for people list', () => {
+    const params = new URLSearchParams('listCat=people&buddies=looking');
+    const state = parseBrowseListFilterState(params);
+    expect(state.buddiesSegment).toBe('looking');
+    const serialized = serializeBrowseListSearchParams(state, []);
+    expect(serialized.get('buddies')).toBe('looking');
+  });
+
   it('round-trips multiple filter topics', () => {
     const params = new URLSearchParams('filter=hiking,rideshare');
     const state = parseBrowseListFilterState(params);
@@ -32,6 +40,7 @@ describe('browseListUrlState trip topics', () => {
         price: 'all',
         when: 'any',
         activityDatePreset: 'anyday',
+        buddiesSegment: 'going',
       },
       []
     );

@@ -34,6 +34,8 @@ import { BrowseListPageShell } from './ui/BrowseListPageShell';
 import { ListCategoryDedicatedView } from './ui/ListCategoryDedicatedView';
 import { ListCategoryFilterBar } from './ui/ListCategoryFilterBar';
 import { ListDiscoverHome } from './ui/ListDiscoverHome';
+import { ListBuddiesCategoryToolbar } from './ui/ListBuddiesCategoryToolbar';
+import { ListDiscoverPeopleView } from './ui/ListDiscoverPeopleView';
 import { ListDiscoveryHeader } from './ui/ListDiscoveryHeader';
 import { ListDiscoveryResults } from './ui/ListDiscoveryResults';
 import { ListRefineSheet } from './ui/ListRefineSheet';
@@ -129,8 +131,13 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   const browseUrl = useListDiscoveryUrlState({ mapOverlay: embeddedOnExplore });
   const { filters, syncUrl, venueRegions, listCat } = browseUrl;
   const { view, category } = resolveListDiscoveryView(filters, venueRegions, listCat);
+  const isPeopleCategory = view === 'category' && category === 'people';
   const feedFilters =
-    view === 'category' && category ? { ...filters, categories: [category] } : filters;
+    isPeopleCategory
+      ? { ...filters, categories: [] }
+      : view === 'category' && category
+        ? { ...filters, categories: [category] }
+        : filters;
   const { cards, items, isLoading, isError, refetch: reloadMap, isFetching } = useBrowseListFeed({
     filters: feedFilters,
     venueRegions,
@@ -192,10 +199,21 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
 
   const handleSearchCommit = (scope?: ExploreSearchScopeKey | null) => {
     if (scope === 'facilities') return;
+    if (scope === 'people') {
+      syncUrl({
+        query: draftQuery,
+        listCat: 'people',
+        categories: ['people'],
+        tripLookingOnly: false,
+        tripTopics: [],
+        placeTopics: [],
+      });
+      return;
+    }
     if (scope) {
       const patch = browseListFilterPatchForSearchScope(scope);
       if (patch) {
-        syncUrl({ query: draftQuery, ...patch });
+        syncUrl({ query: draftQuery, listCat: null, ...patch });
         return;
       }
     }
@@ -217,6 +235,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
       price: 'all',
       when: 'any',
       activityDatePreset: 'anyday',
+      buddiesSegment: 'going',
       regions: [],
     });
     setDraftQuery('');
@@ -248,6 +267,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
       price: 'all',
       when: 'any',
       activityDatePreset: 'anyday',
+      buddiesSegment: 'going',
       regions: [],
     });
   };
@@ -261,6 +281,15 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   }, [embeddedOnExplore, search, searchParams]);
 
   const renderFeed = () => {
+    if (isPeopleCategory) {
+      return (
+        <ListDiscoverPeopleView
+          searchQuery={filters.query}
+          segment={filters.buddiesSegment}
+          activityDatePreset={filters.activityDatePreset}
+        />
+      );
+    }
     if (isLoading) {
       return view === 'category' ? (
         <CategoryFeedSkeleton venues={category === 'venues'} />
@@ -322,7 +351,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     <>
         <BrowseListPageShell
           surface={surface}
-          feedFullBleed={view === 'category'}
+          feedFullBleed={view === 'category' && category !== 'people'}
           floatingAction={
             embeddedOnExplore ? null : <BrowseListCreateFab onClick={compose.handleCreateTap} />
           }
@@ -346,7 +375,14 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
                 categoryResultsLabel={categoryResultsLabel}
                 onBackFromCategory={view === 'category' ? backToHome : undefined}
                 categoryFilterRow={
-                  view === 'category' && category ? (
+                  view === 'category' && category === 'people' ? (
+                    <ListBuddiesCategoryToolbar
+                      segment={filters.buddiesSegment}
+                      onSegmentChange={(segment) => syncUrl({ buddiesSegment: segment })}
+                      activityDatePreset={filters.activityDatePreset}
+                      onActivityDatePresetChange={(preset) => syncUrl({ activityDatePreset: preset })}
+                    />
+                  ) : view === 'category' && category ? (
                     <ListCategoryFilterBar
                       embedded
                       category={category}

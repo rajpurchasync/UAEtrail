@@ -12,6 +12,7 @@ import type { ListCategoryPill } from '../listCategoryFilterPills';
 
 import { ListCategoryMoreFiltersMenu } from './ListCategoryMoreFiltersMenu';
 
+import { ListCategoryRegionPills } from './ListCategoryRegionPills';
 import { ListCategoryTopicCircleFilter } from './ListCategoryTopicCircleFilter';
 
 
@@ -68,6 +69,8 @@ export const ListCategoryFilterBar = ({
 
   venueRegions = [],
 
+  onVenueRegionsChange,
+
   appliedFilters,
 
   onMoreFiltersApply,
@@ -76,7 +79,11 @@ export const ListCategoryFilterBar = ({
 
   const showMore = showMoreButton && category && appliedFilters && onMoreFiltersApply;
 
-  const useTopicCircles = category === 'trips' && pills.length > 0;
+  const useTopicCircles =
+    (category === 'trips' || category === 'venues') && pills.length > 0;
+
+  const showRegionPills =
+    category === 'venues' && Boolean(onVenueRegionsChange);
 
 
 
@@ -136,7 +143,11 @@ export const ListCategoryFilterBar = ({
 
           <div className="relative w-full min-w-0">
 
-            <ListCategoryTopicCircleFilter pills={pills} reserveFilterSpace={Boolean(showMore)} />
+            <ListCategoryTopicCircleFilter
+              pills={pills}
+              reserveFilterSpace={Boolean(showMore)}
+              emojiContext={category === 'venues' ? 'venue' : 'activity'}
+            />
 
             {showMore ? (
 
@@ -199,6 +210,13 @@ export const ListCategoryFilterBar = ({
           </div>
 
         )}
+
+        {showRegionPills ? (
+          <ListCategoryRegionPills
+            selected={venueRegions}
+            onChange={(regions) => onVenueRegionsChange?.(regions)}
+          />
+        ) : null}
 
       </div>
 

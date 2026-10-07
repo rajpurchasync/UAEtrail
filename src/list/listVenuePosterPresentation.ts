@@ -15,12 +15,25 @@ const emptySchedule: BrowsePosterScheduleGrid = {
   priceLabel: null,
 };
 
+const normalize = (value: string | null | undefined): string =>
+  value?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
+
 const resolveVenuePlaceName = (card: ExploreCardModel): string => {
   const listTitle = card.listTitle?.trim();
   if (listTitle) return listTitle;
   const headline = card.headline?.trim();
   if (headline) return headline.split(' - ')[0]?.trim() || headline;
   return 'Outdoor place';
+};
+
+/** Trail / wadi line under emirate — subtitle when it differs from region eyebrow. */
+const resolveVenueLocationFact = (card: ExploreCardModel): string | null => {
+  const subtitle = card.subtitle?.trim();
+  if (!subtitle) return null;
+  const region = card.venueRegion?.trim();
+  if (region && normalize(subtitle) === normalize(region)) return null;
+  if (normalize(subtitle) === normalize(resolveVenuePlaceName(card))) return null;
+  return subtitle;
 };
 
 const resolveReachabilityLabel = (card: ExploreCardModel): string | null => {
@@ -33,25 +46,42 @@ const resolveReachabilityLabel = (card: ExploreCardModel): string | null => {
 const resolveParkingLabel = (card: ExploreCardModel): string | null => {
   const parkingDetail = card.sections.details.find((d) => d.icon === 'parking');
   if (parkingDetail?.label?.trim()) return parkingDetail.label.trim();
+  if (card.venueHasParking) return 'Parking';
+  if (card.venueAccessibility === 'car-accessible') return 'Parking access';
   return null;
 };
 
 const resolveDifficultyLabel = (card: ExploreCardModel): string | null => {
   const difficulty = card.difficulty;
   if (!difficulty) return null;
+  if (difficulty === 'moderate') return 'Moderate';
   return capitalize(difficulty);
 };
 
 const resolveSurfaceLabels = (card: ExploreCardModel): string[] => {
   const surfaces = card.surfaceTypes ?? [];
-  return surfaces.map((s) => capitalize(s.replace(/_/g, ' '))).filter(Boolean).slice(0, 2);
+  return surfaces
+    .map((s) => capitalize(s.replace(/_/g, ' ')))
+    .filter(Boolean)
+    .slice(0, 2);
 };
 
-/** Fact pills on venue posters — hike vs camp matrix from `locationCard` projection on the card model. */
+const resolveDistanceLabel = (card: ExploreCardModel): string | null => {
+  const km = card.venueDistanceKm;
+  if (km == null || !Number.isFinite(km) || km <= 0) return null;
+  const rounded = km % 1 === 0 ? String(km) : km.toFixed(1);
+  return `${rounded} km`;
+};
+
+/** Fact pills on venue posters — hike vs camp matrix from `locationCard` on the card model. */
 export const resolveListVenuePosterFactLabels = (card: ExploreCardModel): string[] => {
   if (card.source !== 'venue') return [];
 
   const labels: string[] = [];
+
+  const location = resolveVenueLocationFact(card);
+  if (location) labels.push(location);
+
   if (card.childFriendly) labels.push('Child-friendly');
 
   const parking = resolveParkingLabel(card);
@@ -60,16 +90,19 @@ export const resolveListVenuePosterFactLabels = (card: ExploreCardModel): string
   if (card.kind === 'hiking') {
     const difficulty = resolveDifficultyLabel(card);
     if (difficulty) labels.push(difficulty);
+    const distance = resolveDistanceLabel(card);
+    if (distance) labels.push(distance);
   }
 
   if (card.kind === 'camping') {
-    labels.push(...resolveSurfaceLabels(card));
+    const surfaces = resolveSurfaceLabels(card);
+    if (surfaces.length) labels.push(...surfaces);
   }
 
   const reach = resolveReachabilityLabel(card);
   if (reach) labels.push(reach);
 
-  return [...new Set(labels)].slice(0, 4);
+  return [...new Set(labels)].slice(0, 6);
 };
 
 export type ListVenuePosterCopy = {

@@ -13,7 +13,8 @@ describe('exploreSearchScopeUi', () => {
   it('filters scopes by title while typing', () => {
     const counts = emptyExploreSearchScopeCounts();
     expect(exploreSearchScopesForQuery('act', counts).some((s) => s === 'activities')).toBe(true);
-    expect(exploreSearchScopesForQuery('xyz', counts)).toEqual([]);
+    expect(exploreSearchScopesForQuery('x', counts)).toEqual([]);
+    expect(exploreSearchScopesForQuery('xyz', counts)).toContain('people');
   });
 
   it('includes scopes with matches even when title does not match', () => {
@@ -24,5 +25,7 @@ describe('exploreSearchScopeUi', () => {
   it('matches scope titles', () => {
     expect(exploreSearchScopeTitleMatchesQuery('agencies', 'agen')).toBe(true);
     expect(exploreSearchScopeTitleMatchesQuery('shops', 'trip')).toBe(false);
+    expect(exploreSearchScopeTitleMatchesQuery('people', 'host')).toBe(true);
+    expect(exploreSearchScopeTitleMatchesQuery('people', 'buddy')).toBe(true);
   });
 });
