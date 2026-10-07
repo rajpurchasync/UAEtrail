@@ -14,11 +14,11 @@ export const resolveListDiscoveryView = (
   venueRegions: string[],
   listCat: BrowseMainCategoryKey | null
 ): ListDiscoveryViewState => {
-  if (filters.query.trim()) {
-    return { view: 'search', category: null };
-  }
   if (listCat) {
     return { view: 'category', category: listCat };
+  }
+  if (filters.query.trim()) {
+    return { view: 'search', category: null };
   }
   if (filters.categories.length > 1) {
     return { view: 'search', category: null };
@@ -43,3 +43,17 @@ export const listDiscoveryHasActiveFilters = (
   venueRegions: string[],
   listCat: BrowseMainCategoryKey | null
 ): boolean => resolveListDiscoveryView(filters, venueRegions, listCat).view !== 'home';
+
+/** Title/back chrome — dedicated category page or single-category search (e.g. Places + topic pills). */
+export const resolveListCategoryHeaderFocus = (
+  filters: BrowseListFilterState,
+  venueRegions: string[],
+  listCat: BrowseMainCategoryKey | null
+): BrowseMainCategoryKey | null => {
+  const resolved = resolveListDiscoveryView(filters, venueRegions, listCat);
+  if (resolved.view === 'category' && resolved.category) return resolved.category;
+  if (resolved.view === 'search' && filters.categories.length === 1) {
+    return filters.categories[0];
+  }
+  return null;
+};

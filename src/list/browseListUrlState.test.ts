@@ -29,6 +29,13 @@ describe('browseListUrlState trip topics', () => {
     expect(state.tripTopics).toEqual([]);
   });
 
+  it('parses trip topics only when listCat is trips (hiking is not a place topic)', () => {
+    const params = new URLSearchParams('listCat=trips&filter=hiking');
+    const state = parseBrowseListFilterState(params);
+    expect(state.tripTopics).toEqual(['hiking']);
+    expect(state.placeTopics).toEqual([]);
+  });
+
   it('serializes place topics when trip topics are empty', () => {
     const serialized = serializeBrowseListSearchParams(
       {

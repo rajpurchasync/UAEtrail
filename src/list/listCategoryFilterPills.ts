@@ -86,7 +86,7 @@ export const buildListCategoryPrimaryPills = (
       active: !filters.tripLookingOnly && filters.tripTopics.includes(key as BrowseTripTopicKey),
       onToggle: () => {
         const nextTopics = toggleBrowseTripTopicInList(filters.tripTopics, key as BrowseTripTopicKey);
-        sync({ tripTopics: nextTopics, tripLookingOnly: false });
+        sync({ tripTopics: nextTopics, tripLookingOnly: false, placeTopics: [] });
       },
     }));
     return [
@@ -96,10 +96,11 @@ export const buildListCategoryPrimaryPills = (
         label: 'Looking for',
         active: filters.tripLookingOnly,
         onToggle: () =>
-          sync({
-            tripLookingOnly: !filters.tripLookingOnly,
-            tripTopics: [],
-          }),
+        sync({
+          tripLookingOnly: !filters.tripLookingOnly,
+          tripTopics: [],
+          placeTopics: [],
+        }),
       },
     ];
   }

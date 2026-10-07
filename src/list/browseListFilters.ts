@@ -81,15 +81,20 @@ export const filterExploreMapItemsForList = (
     pool = pool.filter((item) => mapItemMatchesBrowseMainCategories(item, state.categories));
   }
 
-  if (state.tripLookingOnly) {
+  const tripsCategoryInScope =
+    state.categories.length === 0 || state.categories.includes('trips');
+  const placesCategoryInScope =
+    state.categories.length === 0 || state.categories.includes('venues');
+
+  if (tripsCategoryInScope && state.tripLookingOnly) {
     pool = pool.filter((item) => item.source === 'demand');
-  } else if (state.tripTopics.length > 0) {
+  } else if (tripsCategoryInScope && state.tripTopics.length > 0) {
     pool = pool.filter((item) =>
       state.tripTopics.some((topic) => matchesUnifiedTopicFilter(item, topic, 'all', 'all'))
     );
   }
 
-  if (state.placeTopics.length > 0) {
+  if (placesCategoryInScope && state.placeTopics.length > 0) {
     pool = pool.filter((item) => {
       if (item.source !== 'venue' && item.source !== 'shop') return false;
       return state.placeTopics.some((topic) => matchesListVenuePlaceTopic(item, topic));

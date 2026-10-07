@@ -124,6 +124,8 @@ export const ListDiscoveryHeader = ({
 
   const isHome = view === 'home';
 
+  const dedicatedCategoryChrome = Boolean(categoryFocus);
+
   const topPad = mapOverlay
 
     ? 'pt-0.5'
@@ -190,7 +192,7 @@ export const ListDiscoveryHeader = ({
 
       compactTop
 
-      hideMapLink={isHome || isCategory ? true : mapOverlay ? false : !showMapLink}
+      hideMapLink={isHome || dedicatedCategoryChrome || embeddedOnExplore ? true : !showMapLink}
 
       className="!mt-0"
 
@@ -220,17 +222,15 @@ export const ListDiscoveryHeader = ({
 
           isHome
             ? 'space-y-2.5 pb-2'
-            : isCategory
+            : dedicatedCategoryChrome || view === 'search'
               ? 'space-y-3 pb-3'
-              : view === 'search'
-                ? 'space-y-3 pb-3'
-                : 'pb-3'
+              : 'pb-3'
 
         }`}
 
       >
 
-        {isCategory && categoryFocus && onBackFromCategory ? (
+        {categoryFocus && onBackFromCategory ? (
 
           <div className={`grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1 ${mapOverlay ? 'min-h-10' : 'min-h-11'}`}>
 
@@ -320,7 +320,7 @@ export const ListDiscoveryHeader = ({
 
           </>
 
-        ) : embeddedOnExplore ? (
+        ) : embeddedOnExplore && !categoryFocus ? (
 
           <div className="flex justify-end gap-1">{closeButton}</div>
 
@@ -338,6 +338,8 @@ export const ListDiscoveryHeader = ({
 
         {view === 'search' ? searchField : null}
 
+        {dedicatedCategoryChrome && categoryFocus !== 'people' && view === 'category' ? searchField : null}
+
 
 
         {searchActiveFiltersRow}
@@ -348,7 +350,7 @@ export const ListDiscoveryHeader = ({
 
 
 
-        {showMapLink && !isCategory && !embeddedOnExplore && !isHome ? (
+        {showMapLink && !dedicatedCategoryChrome && !embeddedOnExplore && !isHome ? (
 
           <Link to={mapHref} className={`${LIST_DESKTOP_MAP_LINK} mt-2 hidden md:inline-flex`}>
 

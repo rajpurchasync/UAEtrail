@@ -12,8 +12,8 @@ export const LIST_VENUE_PLACE_TOPIC_FILTERS: ReadonlyArray<{
   label: string;
   filterKey: MapFilterKey | 'facilities' | 'shops';
 }> = [
-  { key: 'hiking', label: 'Hiking', filterKey: 'hiking' },
-  { key: 'camping', label: 'Camping', filterKey: 'camping' },
+  { key: 'hiking', label: 'Trails', filterKey: 'hiking' },
+  { key: 'camping', label: 'Spots', filterKey: 'camping' },
   { key: 'shop', label: 'Shops', filterKey: 'shops' },
   { key: 'facilities', label: 'Facilities', filterKey: 'facilities' },
   { key: 'others', label: 'Others', filterKey: 'others' },
@@ -22,7 +22,7 @@ export const LIST_VENUE_PLACE_TOPIC_FILTERS: ReadonlyArray<{
 /** Facilities = future location amenities — filter TBD on `Location`. */
 export const LIST_VENUE_FACILITIES_TOPIC_SHIPPED = false;
 
-/** Topic pills on Places category (Hiking · Camping · Shops). */
+/** Topic pills on Places category (Trails · Spots · Shops). */
 export const listVenuePlaceTopicsForUi = (): typeof LIST_VENUE_PLACE_TOPIC_FILTERS =>
   LIST_VENUE_PLACE_TOPIC_FILTERS.filter((t) => t.key === 'hiking' || t.key === 'camping' || t.key === 'shop');
 

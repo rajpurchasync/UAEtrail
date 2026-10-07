@@ -22,7 +22,7 @@ import { listDiscoveryHasActiveFilters } from './listDiscoveryMode';
 import { buildListFeedCards } from './buildListFeedCards';
 import { buildListCategoryPrimaryPills, listCategorySecondaryFiltersActive } from './listCategoryFilterPills';
 import { listCategoryResultsLabel } from './listCategoryCopy';
-import { resolveListDiscoveryView } from './listDiscoveryMode';
+import { resolveListCategoryHeaderFocus, resolveListDiscoveryView } from './listDiscoveryMode';
 import { BROWSE_LIST_EMPTY } from './browseListCopy';
 import { countExploreSearchScopes } from '../explore/exploreSearchMatches';
 import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
@@ -132,6 +132,10 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   const browseUrl = useListDiscoveryUrlState({ mapOverlay: embeddedOnExplore });
   const { filters, syncUrl, venueRegions, listCat } = browseUrl;
   const { view, category } = resolveListDiscoveryView(filters, venueRegions, listCat);
+  const categoryHeaderFocus = useMemo(
+    () => resolveListCategoryHeaderFocus(filters, venueRegions, listCat),
+    [filters, venueRegions, listCat]
+  );
   const isPeopleCategory = view === 'category' && category === 'people';
   const memberRoster = useMemberDiscoveryRoster({
     enabled: isPeopleCategory && Boolean(user),
@@ -217,13 +221,13 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   ]);
 
   const categoryResultsLabel = useMemo(() => {
-    if (view !== 'category' || !category) return null;
-    if (category === 'people') {
+    if (!categoryHeaderFocus) return null;
+    if (categoryHeaderFocus === 'people') {
       if (memberRoster.loading) return null;
-      return listCategoryResultsLabel(peopleResultCount, category);
+      return listCategoryResultsLabel(peopleResultCount, categoryHeaderFocus);
     }
-    return listCategoryResultsLabel(cards.length, category);
-  }, [view, category, cards.length, peopleResultCount, memberRoster.loading]);
+    return listCategoryResultsLabel(cards.length, categoryHeaderFocus);
+  }, [categoryHeaderFocus, cards.length, peopleResultCount, memberRoster.loading]);
 
   const commitQuery = () => {
     syncUrl({ query: draftQuery });
@@ -246,7 +250,15 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     if (scope) {
       const patch = browseListFilterPatchForSearchScope(scope);
       if (patch) {
-        syncUrl({ query: draftQuery, listCat: null, ...patch });
+        const listCatForScope =
+          scope === 'activities'
+            ? 'trips'
+            : scope === 'places' || scope === 'shops'
+              ? 'venues'
+              : scope === 'agencies'
+                ? 'agencies'
+                : null;
+        syncUrl({ query: draftQuery, listCat: listCatForScope, ...patch });
         return;
       }
     }
@@ -404,9 +416,9 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
                 showMapLink={surface === 'standalone'}
                 onCloseMapOverlay={embeddedOnExplore ? onCloseMapOverlay : undefined}
                 closeVariant={surface === 'exploreSidebar' ? 'collapse' : 'dismiss'}
-                categoryFocus={view === 'category' ? category : null}
+                categoryFocus={categoryHeaderFocus}
                 categoryResultsLabel={categoryResultsLabel}
-                onBackFromCategory={view === 'category' ? backToHome : undefined}
+                onBackFromCategory={categoryHeaderFocus ? backToHome : undefined}
                 categoryFilterRow={
                   view === 'category' && category === 'people' ? (
                     <ListBuddiesCategoryToolbar
@@ -419,10 +431,13 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
                       category={category}
                       pills={categoryPrimaryPills}
                       moreFiltersActive={categoryMoreFiltersActive}
+                      showMoreButton={category !== 'venues'}
                       activityDatePreset={filters.activityDatePreset}
                       onActivityDatePresetChange={(preset) => syncUrl({ activityDatePreset: preset })}
                       venueRegions={venueRegions}
-                      onVenueRegionsChange={(regions) => syncUrl({ regions })}
+                      onVenueRegionsChange={
+                        category === 'venues' ? undefined : (regions) => syncUrl({ regions })
+                      }
                       appliedFilters={filters}
                       onMoreFiltersApply={(patch) => syncUrl(patch)}
                     />

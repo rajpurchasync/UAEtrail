@@ -85,6 +85,7 @@ const parseTripAndPlaceTopics = (
   const tripTopics: BrowseTripTopicKey[] = [];
   const placeTopics: ListVenuePlaceTopicKey[] = [];
   const venuesContext = listCat === 'venues';
+  const tripsContext = listCat === 'trips';
 
   for (const part of filterParam.split(',')) {
     const trimmed = part.trim();
@@ -92,6 +93,12 @@ const parseTripAndPlaceTopics = (
     if (venuesContext) {
       if (isListVenuePlaceTopicKey(trimmed) && !placeTopics.includes(trimmed)) {
         placeTopics.push(trimmed);
+      }
+      continue;
+    }
+    if (tripsContext) {
+      if (isBrowseTripTopicKey(parsed) && !tripTopics.includes(parsed)) {
+        tripTopics.push(parsed);
       }
       continue;
     }

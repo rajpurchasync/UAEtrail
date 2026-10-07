@@ -24,11 +24,11 @@ describe('buildListCategoryPrimaryPills', () => {
     expect(labels).toEqual(['Hiking', 'Camping', 'Rideshare', 'Looking for']);
   });
 
-  it('exposes hiking, camping, and others on Places category', () => {
+  it('exposes trails, spots, and shops on Places category', () => {
     const filters: BrowseListFilterState = { ...baseFilters, categories: ['venues'], placeTopics: [] };
     const labels = buildListCategoryPrimaryPills('venues', filters, (patch) => {
       Object.assign(filters, patch);
     }).map((pill) => pill.label);
-    expect(labels).toEqual(['Hiking', 'Camping', 'Shops']);
+    expect(labels).toEqual(['Trails', 'Spots', 'Shops']);
   });
 });
