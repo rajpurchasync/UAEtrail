@@ -16,9 +16,9 @@
 | 4 | Reviews + FAQ | `HomeReviewsFaqSection` |
 | — | Footer | Site `Footer` via `Layout` (not v2 marketing footer) |
 
-**Not on `/` (by PO choice):** dark **Final CTA** band (`HomeFinalCtaSection` exists but is not rendered). Hero ends with proof chips → **Explore the map** / **Join free**; no separate helper line under buttons.
+**Not on `/`:** dark final CTA band and v1 launch sections (removed from codebase).
 
-**Hero content order:** eyebrow → H1 → subcopy (one line) → **proof points** → CTAs → linked activity chip on carousel.
+**Hero content order:** eyebrow → H1 → subcopy → **Explore the map** / **Join free**. Background carousel is static photos only (no outing chip).
 
 ---
 
@@ -93,7 +93,7 @@ Footer — global Layout Footer
 | Breakpoints | 360 (min), 640, 768, 1024, 1280 |
 
 **Core components to build (each with states: default, hover, focus, active, disabled, loading)**
-`Button` (primary, secondary, ghost, on-dark), `Chip` (filter, selected), `PriceTag`, `InfoPopover (ⓘ)`, `ActivityCard`, `HeroCarousel`, `ProofPoint`, `StepCard`, `ReviewCard`, `FaqAccordion`, `SectionHeader`, `Header`, `Footer`.
+`Button` (primary, secondary, ghost, on-dark), `Chip` (filter, selected), `PriceTag`, `InfoPopover (ⓘ)`, `ActivityCard`, `HeroCarousel`, `StepCard`, `ReviewCard`, `FaqAccordion`, `SectionHeader`, `Header`, `Footer`.
 
 **Content readiness (blocks quality, not code)**
 - [ ] 5 real photos, each matching the activity location (see 3.1).
@@ -189,14 +189,7 @@ Footer — global Layout Footer
 **FAQ**
 - Six questions; answers in `HOME_FAQ`; link **All FAQs →** to `/faq`.
 
-### 4.5 Final CTA (deferred)
-
-Component: `HomeFinalCtaSection` — **not rendered on `/`** (PO, Oct 2026). Re-enable in `Home.tsx` if a closing band is needed again.
-
-Spec (if re-enabled):
-- Dark band (`--ink`), centered. H2 "Ready to get outside with your crew?" · subcopy · **Explore the map** / **Join free** · optional founder one-liner.
-
-### 4.6 Footer
+### 4.5 Footer
 - Columns: **Explore** (Map, Events) · **Host** (Host with us) · **Company** (About, Contact, FAQ) · **Legal** (Privacy, Terms, Community Guidelines) · Socials.
 - Links to pages not built yet: either hide or point to a simple placeholder, decision by PO. Do not ship dead links.
 - © 2026 UAE Trail line.

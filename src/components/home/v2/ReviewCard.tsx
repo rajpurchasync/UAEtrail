@@ -23,12 +23,12 @@ export const ReviewCard = ({
 }: ReviewCardProps) => (
   <figure
     className={[
-      'home-v2-font flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-home-card ring-1 ring-black/[0.06]',
+      'home-v2-font home-marketing-card flex flex-col gap-3 p-5',
       className
     ].join(' ')}
   >
     <Stars count={rating} />
-    <blockquote className="flex-1 text-[15px] leading-snug text-home-ink line-clamp-4">
+    <blockquote className="min-w-0 flex-1 text-[length:var(--text-base)] leading-[var(--leading-body)] text-home-ink line-clamp-5">
       “{quote}”
     </blockquote>
     <figcaption className="flex items-center gap-3">

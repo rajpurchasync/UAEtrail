@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { formatActivityTime } from '../../../utils/formatActivityTime';
 import { InfoPopover } from './InfoPopover';
@@ -6,6 +7,7 @@ import { PriceTag, type PriceTagVariant } from './PriceTag';
 export interface ActivityCardProps {
   href: string;
   title: string;
+  description?: string | null;
   imageUrl: string;
   imageAlt: string;
   emirate: string;
@@ -17,9 +19,10 @@ export interface ActivityCardProps {
   fixedTime?: boolean;
 }
 
-export const ActivityCard = ({
+const ActivityCardInner = ({
   href,
   title,
+  description,
   imageUrl,
   imageAlt,
   emirate,
@@ -31,13 +34,14 @@ export const ActivityCard = ({
   fixedTime
 }: ActivityCardProps) => {
   const timeLabel = formatActivityTime(startsAt);
+  const descriptionText = description?.trim();
 
   return (
     <Link
       to={href}
-      className="home-v2-font home-focus-ring group flex flex-col overflow-hidden rounded-home-md bg-home-surface shadow-home-card transition-[transform,box-shadow] duration-[var(--duration-ui)] ease-[var(--ease-out)] motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-home-card-hover"
+      className="home-v2-font home-marketing-card home-focus-ring group flex h-full flex-col transition-[transform,box-shadow] duration-[var(--duration-ui)] ease-[var(--ease-out)] motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-home-card-hover"
     >
-      <div className="relative aspect-video overflow-hidden bg-home-muted">
+      <div className="relative aspect-[4/3] overflow-hidden bg-home-muted sm:aspect-[3/2]">
         <img
           src={imageUrl}
           alt={imageAlt}
@@ -54,6 +58,11 @@ export const ActivityCard = ({
         <h3 className="line-clamp-2 text-[length:var(--text-lg)] font-bold leading-[var(--leading-heading)] text-home-ink">
           {title}
         </h3>
+        {descriptionText ? (
+          <p className="line-clamp-3 text-[length:var(--text-sm)] leading-[var(--leading-body)] text-home-ink/75">
+            {descriptionText}
+          </p>
+        ) : null}
         <p className="flex flex-wrap items-center gap-2 text-[length:var(--text-sm)] text-home-ink/80">
           <span aria-hidden>🕐</span>
           <span>{timeLabel}</span>
@@ -80,14 +89,17 @@ export const ActivityCard = ({
   );
 };
 
+export const ActivityCard = memo(ActivityCardInner);
+
 export const ActivityCardSkeleton = () => (
   <div
-    className="flex flex-col overflow-hidden rounded-home-md bg-home-surface shadow-home-card"
+    className="home-marketing-card flex flex-col"
     aria-hidden
   >
-    <div className="aspect-video animate-pulse bg-home-muted" />
+    <div className="aspect-[4/3] animate-pulse bg-home-muted sm:aspect-[3/2]" />
     <div className="space-y-3 p-4">
       <div className="h-5 w-4/5 animate-pulse rounded bg-home-muted" />
+      <div className="h-10 w-full animate-pulse rounded bg-home-muted" />
       <div className="h-4 w-1/2 animate-pulse rounded bg-home-muted" />
       <div className="h-6 w-1/3 animate-pulse rounded bg-home-muted" />
     </div>

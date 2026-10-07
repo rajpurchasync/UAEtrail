@@ -4,6 +4,18 @@ import { Mountain } from 'lucide-react';
 import { HOME_HEADER_NAV } from '../../../content/homeMarketing';
 import { AppButtonLink } from '../../mobile/AppButton';
 
+/** Hero signup counts as on-screen only when most of the control is visible (not a clipped sliver). */
+const isHeroSignupMeaningfullyVisible = (entry: IntersectionObserverEntry) => {
+  if (!entry.isIntersecting) return false;
+  const { height } = entry.boundingClientRect;
+  if (height <= 0) return false;
+  const visiblePx =
+    Math.min(entry.boundingClientRect.bottom, window.innerHeight) -
+    Math.max(entry.boundingClientRect.top, 0);
+  const minVisible = Math.min(44, height * 0.55);
+  return visiblePx >= minVisible || entry.intersectionRatio >= 0.55;
+};
+
 export interface HomeMarketingHeaderLink {
   label: string;
   href: string;
@@ -24,6 +36,8 @@ export const HomeMarketingHeader = ({
   forceOverHero = false
 }: HomeMarketingHeaderProps) => {
   const [solid, setSolid] = useState(!forceOverHero);
+  /** Hide header signup CTA while the hero signup control is on screen (avoids duplicate CTAs). */
+  const [heroSignupInView, setHeroSignupInView] = useState(true);
 
   useEffect(() => {
     if (forceOverHero) {
@@ -35,6 +49,34 @@ export const HomeMarketingHeader = ({
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [forceOverHero]);
+
+  useEffect(() => {
+    const heroSignup = document.getElementById('home-hero-signup-cta');
+    if (!heroSignup) {
+      setHeroSignupInView(false);
+      return;
+    }
+    const syncFromRect = () => {
+      const rect = heroSignup.getBoundingClientRect();
+      const visiblePx = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+      const minVisible = Math.min(44, rect.height * 0.55);
+      const ratio = rect.height > 0 ? visiblePx / rect.height : 0;
+      setHeroSignupInView(visiblePx >= minVisible || ratio >= 0.55);
+    };
+
+    syncFromRect();
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setHeroSignupInView(isHeroSignupMeaningfullyVisible(entry)),
+      { threshold: [0, 0.25, 0.55, 0.75, 1] }
+    );
+    observer.observe(heroSignup);
+    window.addEventListener('resize', syncFromRect, { passive: true });
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', syncFromRect);
+    };
+  }, []);
 
   const overHero = forceOverHero || !solid;
 
@@ -90,13 +132,15 @@ export const HomeMarketingHeader = ({
           <Link to={loginHref} className={`${loginDesktopClass} hidden md:inline-flex`}>
             {HOME_HEADER_NAV.login}
           </Link>
-          <AppButtonLink
-            to={signupHref}
-            variant={overHero ? 'inverse' : 'primary'}
-            className="min-h-10 px-4 text-[14px]"
-          >
-            {HOME_HEADER_NAV.signup}
-          </AppButtonLink>
+          {!heroSignupInView ? (
+            <AppButtonLink
+              to={signupHref}
+              variant="primary"
+              className="min-h-10 px-4 text-[14px]"
+            >
+              {HOME_HEADER_NAV.signup}
+            </AppButtonLink>
+          ) : null}
         </div>
       </div>
     </header>

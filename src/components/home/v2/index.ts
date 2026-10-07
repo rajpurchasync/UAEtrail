@@ -8,12 +8,7 @@ export { ReviewCard, type ReviewCardProps } from './ReviewCard';
 export { FaqAccordion, type FaqAccordionProps, type FaqItem } from './FaqAccordion';
 export { SectionHeader, type SectionHeaderProps } from './SectionHeader';
 export { HomeMarketingHeader, type HomeMarketingHeaderProps } from './HomeMarketingHeader';
-export {
-  HomeMarketingFooter,
-  type HomeMarketingFooterProps,
-  type HomeFooterLink,
-  type HomeFooterFounderNote
-} from './HomeMarketingFooter';
+export { HomeHeroPreload } from './HomeHeroPreload';
 export { ReviewCardCarousel, type ReviewCardCarouselProps } from './ReviewCardCarousel';
 export { HeroCarousel, type HeroCarouselProps } from './HeroCarousel';
 export { ActivityCardCarousel, type ActivityCardCarouselProps } from './ActivityCardCarousel';

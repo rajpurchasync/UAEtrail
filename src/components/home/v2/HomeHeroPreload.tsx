@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { HOME_HERO_IMAGE_WEBP } from '../../config/seo';
+import { HOME_HERO_IMAGE_WEBP } from '../../../config/seo';
 
 /** Preload LCP hero only on guest `/` — avoids unused preload on /explore and signed-in redirects. */
 export const HomeHeroPreload = () => {

@@ -92,22 +92,13 @@ Filter chip order when all are shown: `All · Dubai · Abu Dhabi · Sharjah · R
 
 | Element | Copy |
 |---------|------|
-| Eyebrow | HOSTED HIKES & CAMPS · UAE & GCC |
-| H1 | Find your people for hikes and camps in the UAE. |
-| Subcopy | The platform for hosted outdoor hiking and camping events — discover plans, connect with hosts and joiners, and go together. |
+| Eyebrow | HOSTED HIKES & CAMPS · UAE |
+| H1 | Find your hiking or camping crew in the UAE |
+| Subcopy | `HOME_HERO.subcopy` in `homeMarketing.ts` |
 | Primary button | Explore the map |
 | Secondary button | Join free |
-| Helper text (optional, not shipped) | Free to browse and sign up. Some activities are paid. |
 
-**Hero order (shipped):** proof points row **above** primary/secondary buttons.
-
-### Proof points (12px pills; green dot)
-
-| # | Label |
-|---|--------|
-| 1 | Host-approved groups |
-| 2 | Residents & visitors |
-| 3 | Free to join |
+**Hero order (shipped):** eyebrow → H1 → subcopy → primary/secondary buttons.
 
 ### Carousel backgrounds (static)
 
@@ -236,21 +227,6 @@ Omit **All FAQs →** if `/faq` (or equivalent) is not shipped.
 Accordion: one open at a time; answers remain in the DOM for accessibility.
 
 ---
-
-## §4.5 Final CTA (deferred)
-
-**Not rendered on `/`** (Oct 2026). Component `HomeFinalCtaSection` remains in codebase for optional re-enable.
-
-| Element | Copy (if re-enabled) |
-|---------|----------------------|
-| H2 | Ready to get outside with your crew? |
-| Subcopy | Browse what's on, connect with like-minded people, and join your first outing. |
-| Primary button | Explore the map |
-| Secondary button | Join free |
-| Link | See what's live this week → |
-| Founder note | "Built by hikers who wanted a crew." – Raj, Founder |
-
-Use real names only; no duplicated role labels (e.g. not “Co-founder · Co-founder”).
 
 ---
 

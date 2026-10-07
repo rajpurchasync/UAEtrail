@@ -78,7 +78,7 @@ export const HomeActivitiesSection = ({
               <ActivityCardCarousel
                 cards={filtered}
                 loading={loading}
-                skeletonCount={6}
+                skeletonCount={4}
                 emptyState={
                   emptyEmirate ? (
                     <p className="text-neutral-600">

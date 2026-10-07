@@ -23,6 +23,7 @@ const resolveWhenSuffix = (activity: ActivityDTO): 'flexible' | 'fixed' | null =
 const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
   id: activity.id,
   title: activity.title || activity.locationName,
+  description: activity.description?.trim() || null,
   region: activity.region ?? 'UAE',
   date: activity.date,
   time: activity.time,

@@ -46,6 +46,7 @@ export const mapHomeLandingActivityToCard = (
   return {
     href,
     title: activity.title,
+    description: activity.description,
     imageUrl: cover,
     imageAlt: `${activity.title} in ${activity.region}`,
     emirate: activity.region,

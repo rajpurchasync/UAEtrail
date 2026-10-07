@@ -19,7 +19,9 @@ export const HomeReviewsFaqSection = () => (
   >
     <div className="mx-auto max-w-[var(--content-max-width)] px-[var(--gutter-mobile)] md:px-[var(--gutter-desktop)]">
       <SectionHeader id="home-reviews-heading" title={HOME_REVIEWS.title} />
-      <ReviewCardCarousel reviews={reviewItems} />
+      <div className="overflow-visible pt-1">
+        <ReviewCardCarousel reviews={reviewItems} />
+      </div>
 
       <div className="mt-8 border-t border-[var(--gray-200)]/70 pt-8 md:mt-10 md:pt-9">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">

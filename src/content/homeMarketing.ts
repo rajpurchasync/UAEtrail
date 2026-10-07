@@ -10,14 +10,14 @@ export const HOME_HEADER_NAV = {
 } as const;
 
 export const HOME_HERO = {
-  eyebrow: 'HOSTED HIKES & CAMPS · UAE & GCC',
-  eyebrowShort: 'Hikes & camps · UAE & GCC',
-  headline: 'Find your people for hikes and camps in the UAE.',
+  eyebrow: 'HOSTED HIKES & CAMPS · UAE',
+  eyebrowShort: 'Hikes & camps · UAE',
+  headline: 'Find your hiking or camping crew in the UAE',
+  /** One scan below the H1: what it is, how it works, who it's for — no separate proof row. */
   subcopy:
-    'The platform for hosted outdoor hiking and camping events — discover plans, connect with hosts and joiners, and go together.',
+    'Real group plans on the map — join host-approved outings, connect in chat, and go together. Free for residents and visitors.',
   primaryCta: PRODUCT_EXPLORE_CTA,
-  secondaryCta: PRODUCT_JOIN_CTA,
-  proofPoints: ['Host-approved groups', 'Residents & visitors', 'Free to join'] as const
+  secondaryCta: PRODUCT_JOIN_CTA
 } as const;
 
 export const HOME_ACTIVITIES = {
@@ -129,21 +129,10 @@ export const HOME_FAQ = {
   ] as const
 } as const;
 
-export const HOME_FINAL_CTA = {
-  headline: 'Ready to get outside with your crew?',
-  subcopy: "Browse what's on, connect with like-minded people, and join your first outing.",
-  primaryCta: PRODUCT_EXPLORE_CTA,
-  secondaryCta: PRODUCT_JOIN_CTA,
-  liveLink: "See what's live this week →",
-  founderQuote: 'Built by hikers who wanted a crew.',
-  founderName: 'Raj',
-  founderRole: 'Founder'
-} as const;
-
-/** Guest homepage footer — short lines per founder (footer only). */
+/** Site footer founder lines (global `Footer.tsx`, not the guest `/` page shell). */
 export const HOME_FOOTER_FOUNDERS_HEADING = {
   lead: 'Built by people who love the outdoors',
-  support: 'For anyone in the UAE & GCC looking for like-minded people'
+  support: 'For anyone in the UAE looking for like-minded people'
 } as const;
 
 export const HOME_FOOTER_FOUNDERS = [
