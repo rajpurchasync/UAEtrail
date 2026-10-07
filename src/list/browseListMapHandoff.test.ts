@@ -28,12 +28,17 @@ describe('browseListMapHandoff', () => {
     expect(params.get('pinKind')).toBe('places');
     expect(params.get('listCat')).toBeNull();
     expect(params.get('filter')).toBe('hiking');
-    expect(params.get('topics')).toBe('spots');
+    expect(params.get('topics')).toBe('spots,shops');
   });
 
   it('infers listCat=venues from explore places pinKind', () => {
     const state: BrowseListFilterState = { ...baseState, categories: ['venues'] };
     const listCat = inferListCatFromExploreHandoff(state, new URLSearchParams('pinKind=places'));
+    expect(listCat).toBe('venues');
+  });
+
+  it('infers listCat=venues from explore shops pinKind (shops live under Places)', () => {
+    const listCat = inferListCatFromExploreHandoff(baseState, new URLSearchParams('pinKind=shops'));
     expect(listCat).toBe('venues');
   });
 

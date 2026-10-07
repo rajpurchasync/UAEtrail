@@ -60,9 +60,6 @@ export const listCategorySecondaryFiltersActive = (
       filters.activityDatePreset !== 'anyday'
     );
   }
-  if (category === 'shops') {
-    return filters.price !== 'all' || venueRegions.length > 0;
-  }
   if (category === 'venues') {
     return venueRegions.length > 0 || filters.placeTopics.length > 0;
   }
@@ -107,7 +104,7 @@ export const buildListCategoryPrimaryPills = (
     ];
   }
 
-  if (category === 'people' || category === 'shops' || category === 'guides' || category === 'agencies') {
+  if (category === 'people' || category === 'guides' || category === 'agencies') {
     return [];
   }
 
@@ -115,7 +112,12 @@ export const buildListCategoryPrimaryPills = (
     return listVenuePlaceTopicsForUi().map(({ key, label, filterKey }) => ({
       id: `place-topic-${key}`,
       label,
-      filterKey: filterKey === 'facilities' ? undefined : (filterKey as MapFilterKey),
+      filterKey:
+        filterKey === 'facilities'
+          ? undefined
+          : filterKey === 'shops'
+            ? 'shops'
+            : (filterKey as MapFilterKey),
       active: filters.placeTopics.includes(key),
       onToggle: () =>
         sync({
@@ -210,28 +212,7 @@ export const buildListCategoryPillGroups = (
     });
   }
 
-  if (category === 'shops') {
-    groups.push({
-      id: 'sort',
-      label: 'Price',
-      pills: [
-        {
-          id: 'price-free',
-          label: 'Free',
-          active: filters.price === 'free',
-          onToggle: () => sync({ price: togglePrice(filters.price, 'free') }),
-        },
-        {
-          id: 'price-paid',
-          label: 'Paid',
-          active: filters.price === 'paid',
-          onToggle: () => sync({ price: togglePrice(filters.price, 'paid') }),
-        },
-      ],
-    });
-  }
-
-  if (category === 'venues' || category === 'shops') {
+  if (category === 'venues') {
     groups.push({
       id: 'area',
       label: 'Area',

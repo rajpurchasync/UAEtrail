@@ -91,7 +91,7 @@ export const filterExploreMapItemsForList = (
 
   if (state.placeTopics.length > 0) {
     pool = pool.filter((item) => {
-      if (item.source !== 'venue') return true;
+      if (item.source !== 'venue' && item.source !== 'shop') return false;
       return state.placeTopics.some((topic) => matchesListVenuePlaceTopic(item, topic));
     });
   }

@@ -99,11 +99,11 @@ export const ListCategoryMoreFiltersMenu = ({
     };
   }, [open]);
 
-  const showPrice = category === 'trips' || category === 'shops';
+  const showPrice = category === 'trips';
   const showWhen = category === 'trips';
   const showDate = category === 'trips' && Boolean(onActivityDatePresetChange);
   const showArea =
-    category === 'venues' || category === 'shops' || category === 'guides' || category === 'agencies';
+    category === 'venues' || category === 'guides' || category === 'agencies';
 
   const reset = () => {
     setPrice('all');

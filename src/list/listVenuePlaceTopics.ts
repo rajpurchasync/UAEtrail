@@ -2,31 +2,29 @@ import type { MapFilterKey } from '../config/routingCatalog';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
 /**
- * Places category (`listCat=venues`) — topic pills aligned with explore map venue emojis
- * (`ExploreFilterIcon` context `venue`). Multi-select on list; wire: `placeTopics` URL param (Phase 1).
+ * Places category (`listCat=venues`) — hiking · camping · shops (location-bounded).
+ * Multi-select on list; wire: `filter=` URL param when `listCat=venues`.
  */
-export type ListVenuePlaceTopicKey = 'hiking' | 'camping' | 'facilities' | 'others';
+export type ListVenuePlaceTopicKey = 'hiking' | 'camping' | 'shop' | 'facilities' | 'others';
 
 export const LIST_VENUE_PLACE_TOPIC_FILTERS: ReadonlyArray<{
   key: ListVenuePlaceTopicKey;
   label: string;
-  /** Map filter for emoji resolution; `facilities` uses dedicated emoji until location amenities ship. */
-  filterKey: MapFilterKey | 'facilities';
+  filterKey: MapFilterKey | 'facilities' | 'shops';
 }> = [
   { key: 'hiking', label: 'Hiking', filterKey: 'hiking' },
   { key: 'camping', label: 'Camping', filterKey: 'camping' },
+  { key: 'shop', label: 'Shops', filterKey: 'shops' },
   { key: 'facilities', label: 'Facilities', filterKey: 'facilities' },
   { key: 'others', label: 'Others', filterKey: 'others' },
 ];
 
-/** Facilities = future location amenities (toilets, grocery, shop at trailhead, etc.) — filter TBD on `Location`. */
+/** Facilities = future location amenities — filter TBD on `Location`. */
 export const LIST_VENUE_FACILITIES_TOPIC_SHIPPED = false;
 
-/** Topic pills shown in Places category UI (Facilities omitted until amenities ship). */
+/** Topic pills on Places category (Hiking · Camping · Shops). */
 export const listVenuePlaceTopicsForUi = (): typeof LIST_VENUE_PLACE_TOPIC_FILTERS =>
-  LIST_VENUE_FACILITIES_TOPIC_SHIPPED
-    ? LIST_VENUE_PLACE_TOPIC_FILTERS
-    : LIST_VENUE_PLACE_TOPIC_FILTERS.filter((t) => t.key !== 'facilities');
+  LIST_VENUE_PLACE_TOPIC_FILTERS.filter((t) => t.key === 'hiking' || t.key === 'camping' || t.key === 'shop');
 
 /** Place topic pills on list search when results are scoped to venues. */
 export const browseListShowsPlaceTopicRow = (categories: readonly BrowseMainCategoryKey[]): boolean =>

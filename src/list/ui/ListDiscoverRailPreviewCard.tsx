@@ -10,6 +10,8 @@ import {
   ListPosterDiscoverScheduleBody,
   resolveListPosterCopy,
 } from './poster/ListPosterHeroChrome';
+import { ListPosterCatalogHeroHeader } from './poster/ListPosterCatalogHeroHeader';
+import { resolveListVenuePosterCopy } from '../listVenuePosterPresentation';
 
 interface ListDiscoverRailPreviewCardProps {
   card: ExploreCardModel;
@@ -21,6 +23,8 @@ export const ListDiscoverRailPreviewCard = ({ card }: ListDiscoverRailPreviewCar
   const [imageFailed, setImageFailed] = useState(false);
   const showPhoto = Boolean(coverUrl) && !imageFailed;
   const copy = resolveListPosterCopy(card);
+  const catalogCopy =
+    card.source === 'venue' || card.source === 'shop' ? resolveListVenuePosterCopy(card) : null;
 
   return (
     <article className={LIST_DISCOVER_HOME.railArticle}>
@@ -48,11 +52,17 @@ export const ListDiscoverRailPreviewCard = ({ card }: ListDiscoverRailPreviewCar
             </div>
           )}
 
-          <ListPosterDiscoverHeroEyebrow
-            activityTypeLabel={copy.activityTypeLabel}
-            placeLine={copy.placeLine}
+          {catalogCopy ? (
+            <ListPosterCatalogHeroHeader name={catalogCopy.heroTitle} card={card} />
+          ) : (
+            <ListPosterDiscoverHeroEyebrow
+              activityTypeLabel={copy.activityTypeLabel}
+              placeLine={copy.placeLine}
+            />
+          )}
+          <ListPosterDiscoverHeroRequirements
+            labels={catalogCopy?.requirementLabels ?? copy.requirementLabels}
           />
-          <ListPosterDiscoverHeroRequirements labels={copy.requirementLabels} />
         </div>
 
         <ListPosterDiscoverScheduleBody schedule={copy.schedule} className={LIST_DISCOVER_HOME.body} />

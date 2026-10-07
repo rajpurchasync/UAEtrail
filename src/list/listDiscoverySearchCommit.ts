@@ -14,7 +14,7 @@ export const browseCategoriesForSearchScope = (
     case 'people':
       return ['people'];
     case 'shops':
-      return ['shops'];
+      return ['venues'];
     case 'agencies':
       return ['agencies'];
     case 'facilities':
@@ -38,6 +38,9 @@ export const browseListFilterPatchForSearchScope = (
   }
   if (scope === 'places') {
     return { categories, tripLookingOnly: false, tripTopics: [], placeTopics: [] };
+  }
+  if (scope === 'shops') {
+    return { categories, tripLookingOnly: false, tripTopics: [], placeTopics: ['shop'] };
   }
   return { categories };
 };

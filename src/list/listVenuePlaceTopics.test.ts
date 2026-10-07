@@ -8,7 +8,7 @@ import {
 describe('listVenuePlaceTopics', () => {
   it('reserves facilities in catalog; UI omits until location amenities ship', () => {
     expect(LIST_VENUE_PLACE_TOPIC_FILTERS.map((t) => t.key)).toContain('facilities');
-    expect(listVenuePlaceTopicsForUi().map((t) => t.label)).toEqual(['Hiking', 'Camping', 'Others']);
+    expect(listVenuePlaceTopicsForUi().map((t) => t.label)).toEqual(['Hiking', 'Camping', 'Shops']);
   });
 
   it('toggles place topics independently', () => {

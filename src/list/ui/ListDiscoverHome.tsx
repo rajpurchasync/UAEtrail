@@ -9,7 +9,7 @@ import { ListDiscoverRailPreviewCard } from './ListDiscoverRailPreviewCard';
 interface ListDiscoverHomeProps {
   cards: ExploreCardModel[];
   mapItems: ExploreMapItemDTO[];
-  onOpenCategory: (key: BrowseMainCategoryKey) => void;
+  onOpenCategory: (key: BrowseMainCategoryKey, patch?: { placeTopics?: import('../listVenuePlaceTopics').ListVenuePlaceTopicKey[] }) => void;
 }
 
 const RAIL_SCROLL =
@@ -55,7 +55,15 @@ export const ListDiscoverHome = ({ cards, mapItems, onOpenCategory }: ListDiscov
       {rails.length > 0 ? (
         <div className="space-y-6">
           {rails.map((rail) => (
-            <DiscoverRailSection key={rail.id} rail={rail} onSeeAll={() => onOpenCategory(rail.id)} />
+            <DiscoverRailSection
+              key={rail.id}
+              rail={rail}
+              onSeeAll={() =>
+                rail.id === 'shops'
+                  ? onOpenCategory('venues', { placeTopics: ['shop'] })
+                  : onOpenCategory(rail.id)
+              }
+            />
           ))}
         </div>
       ) : null}

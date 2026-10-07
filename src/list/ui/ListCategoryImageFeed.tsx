@@ -15,7 +15,7 @@ export const ListCategoryImageFeed = ({ cards, category, edgeToEdge = false }: L
   <ul className={edgeToEdge ? LIST_FEED.categoryList : LIST_FEED.list}>
     {cards.map((card) => (
       <li key={card.id}>
-        {category === 'venues' || card.source === 'venue' ? (
+        {category === 'venues' || card.source === 'venue' || card.source === 'shop' ? (
           <ListFeedVenuePosterCard card={card} edgeToEdge={edgeToEdge} />
         ) : (
           <ListFeedPosterCard card={card} edgeToEdge={edgeToEdge} />

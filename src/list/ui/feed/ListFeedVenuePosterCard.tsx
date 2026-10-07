@@ -21,7 +21,7 @@ interface ListFeedVenuePosterCardProps {
   edgeToEdge?: boolean;
 }
 
-/** Places category — region above name, fact pills, Get directions; no host header. */
+/** Places category — venue / shop catalog poster (name + rating on image, Like · Share · Follow). */
 export const ListFeedVenuePosterCard = ({ card, edgeToEdge = false }: ListFeedVenuePosterCardProps) => {
   const { footerModel } = useListFeedActions();
   const showImageCta = shouldShowListFeedImageCta(footerModel(card));
@@ -69,6 +69,7 @@ export const ListFeedVenuePosterCard = ({ card, edgeToEdge = false }: ListFeedVe
         schedule={copy.schedule}
         requirementLabels={copy.requirementLabels}
         captionScrim={scrim}
+        catalogHero={{ name: copy.heroTitle, card }}
       />
     </div>
   );

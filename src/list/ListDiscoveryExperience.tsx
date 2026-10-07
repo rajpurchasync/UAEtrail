@@ -278,12 +278,15 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     syncUrl({ ...state, regions });
   };
 
-  const openCategoryPage = (key: BrowseMainCategoryKey) => {
+  const openCategoryPage = (
+    key: BrowseMainCategoryKey,
+    patch?: Partial<Pick<typeof filters, 'placeTopics'>>
+  ) => {
     syncUrl({
       categories: [key],
       listCat: key,
       tripTopics: [],
-      placeTopics: [],
+      placeTopics: patch?.placeTopics ?? [],
       tripLookingOnly: false,
       price: 'all',
       when: 'any',

@@ -18,7 +18,8 @@ export const ListFeedPosterEngagementBar = ({ card }: ListFeedPosterEngagementBa
   const { canSave, saved, busy: saveBusy, toggle: toggleSave } = useExploreWishlistSave(card);
   const { canFollow, following, busy: followBusy, toggle: toggleFollow } = useExploreEntityFollow(card);
   const isHost = card.viewerAccess?.level === 'host';
-  const showLike = !isHost && canSave;
+  const isShop = card.source === 'shop';
+  const showLike = !isHost && canSave && !isShop;
   const showFollow = !isHost && canFollow;
 
   return (

@@ -1,9 +1,5 @@
 import type { ExploreCardModel } from '../explore/exploreCardModel';
-import {
-  formatListFeedPosterTitleLines,
-  type BrowsePosterScheduleGrid,
-  type ListFeedPosterTitleLines,
-} from './listPosterPresentation';
+import type { BrowsePosterScheduleGrid, ListFeedPosterTitleLines } from './listPosterPresentation';
 
 const capitalize = (value: string): string =>
   value.length ? value.charAt(0).toUpperCase() + value.slice(1) : value;
@@ -18,7 +14,7 @@ const emptySchedule: BrowsePosterScheduleGrid = {
 const normalize = (value: string | null | undefined): string =>
   value?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
 
-const resolveVenuePlaceName = (card: ExploreCardModel): string => {
+export const resolveCatalogEntityName = (card: ExploreCardModel): string => {
   const listTitle = card.listTitle?.trim();
   if (listTitle) return listTitle;
   const headline = card.headline?.trim();
@@ -32,7 +28,7 @@ const resolveVenueLocationFact = (card: ExploreCardModel): string | null => {
   if (!subtitle) return null;
   const region = card.venueRegion?.trim();
   if (region && normalize(subtitle) === normalize(region)) return null;
-  if (normalize(subtitle) === normalize(resolveVenuePlaceName(card))) return null;
+  if (normalize(subtitle) === normalize(resolveCatalogEntityName(card))) return null;
   return subtitle;
 };
 
@@ -71,8 +67,19 @@ const resolveDistanceLabel = (card: ExploreCardModel): string | null => {
   return `${rounded} km`;
 };
 
-/** Fact pills on venue posters — hike vs camp matrix from `locationCard` on the card model. */
+const resolveShopPosterFactLabels = (card: ExploreCardModel): string[] => {
+  const labels: string[] = [];
+  const region = card.venueRegion?.trim() || card.subtitle?.trim();
+  if (region && normalize(region) !== normalize(resolveCatalogEntityName(card))) {
+    labels.push(region);
+  }
+  labels.push('Outdoor shop');
+  return [...new Set(labels)].slice(0, 6);
+};
+
+/** Fact pills on place / shop posters. */
 export const resolveListVenuePosterFactLabels = (card: ExploreCardModel): string[] => {
+  if (card.source === 'shop') return resolveShopPosterFactLabels(card);
   if (card.source !== 'venue') return [];
 
   const labels: string[] = [];
@@ -112,13 +119,16 @@ export type ListVenuePosterCopy = {
 };
 
 export const resolveListVenuePosterCopy = (card: ExploreCardModel): ListVenuePosterCopy => {
-  const heroTitle = resolveVenuePlaceName(card);
+  const heroTitle = resolveCatalogEntityName(card);
   const region = card.venueRegion?.trim() || card.subtitle?.trim() || null;
+  const nameNorm = normalize(heroTitle);
+  const regionNorm = region ? normalize(region) : '';
+  const placeLine = region && regionNorm !== nameNorm ? region : null;
 
   return {
-    placeLine: region,
+    placeLine,
     heroTitle,
-    titleLines: formatListFeedPosterTitleLines(heroTitle, 6, 3),
+    titleLines: { line1: '', line2: null },
     schedule: emptySchedule,
     requirementLabels: resolveListVenuePosterFactLabels(card),
   };

@@ -1,7 +1,9 @@
+import type { ExploreCardModel } from '../../../explore/exploreCardModel';
 import type { BrowsePosterScheduleGrid } from '../../listPosterPresentation';
 import type { formatListFeedPosterTitleLines } from '../../listPosterPresentation';
 import { LIST_FEED } from '../../listFeedTheme';
 import { LIST_FEED_CAPTION_BOTTOM_SCRIM_CLASS, type ListFeedCaptionScrim } from '../../listFeedCaptionContrast';
+import { ListPosterCatalogHeroHeader } from './ListPosterCatalogHeroHeader';
 
 type TitleLines = ReturnType<typeof formatListFeedPosterTitleLines>;
 
@@ -14,12 +16,15 @@ export const ListPosterCategoryOverlay = ({
   schedule,
   requirementLabels = [],
   captionScrim,
+  catalogHero,
 }: {
   placeLine: string | null;
   titleLines: TitleLines;
   schedule: BrowsePosterScheduleGrid;
   requirementLabels?: string[];
   captionScrim: ListFeedCaptionScrim;
+  /** Venue / shop name + rating on top of image. */
+  catalogHero?: { name: string; card: ExploreCardModel } | null;
 }) => {
   const shadow = LIST_FEED.overlayTextShadow;
   const hasSchedule =
@@ -35,21 +40,28 @@ export const ListPosterCategoryOverlay = ({
     .filter(Boolean)
     .join(' ');
 
+  const showCenterTitle = Boolean(titleLines.line1?.trim());
+
   return (
     <div className={rootClass}>
-      <div className={LIST_FEED.overlayHeroCenter}>
-        <div className={LIST_FEED.overlayHeroCopy}>
-          {placeLine ? (
-            <p className={`${LIST_FEED.placeLine} ${LIST_FEED.placeOnPhoto} ${shadow} line-clamp-2 w-full`}>
-              {placeLine}
-            </p>
-          ) : null}
-          <h2 className={`${LIST_FEED.title} ${LIST_FEED.titleFeed} ${LIST_FEED.titleOnPhoto} ${shadow} w-full`}>
-            <span className="block">{titleLines.line1}</span>
-            {titleLines.line2 ? <span className="mt-0.5 block">{titleLines.line2}</span> : null}
-          </h2>
+      {catalogHero ? <ListPosterCatalogHeroHeader name={catalogHero.name} card={catalogHero.card} /> : null}
+      {showCenterTitle || placeLine ? (
+        <div className={LIST_FEED.overlayHeroCenter}>
+          <div className={LIST_FEED.overlayHeroCopy}>
+            {placeLine ? (
+              <p className={`${LIST_FEED.placeLine} ${LIST_FEED.placeOnPhoto} ${shadow} line-clamp-2 w-full`}>
+                {placeLine}
+              </p>
+            ) : null}
+            {showCenterTitle ? (
+              <h2 className={`${LIST_FEED.title} ${LIST_FEED.titleFeed} ${LIST_FEED.titleOnPhoto} ${shadow} w-full`}>
+                <span className="block">{titleLines.line1}</span>
+                {titleLines.line2 ? <span className="mt-0.5 block">{titleLines.line2}</span> : null}
+              </h2>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {hasSchedule || hasRequirements ? (
         <div

@@ -6,12 +6,15 @@ import {
   LIST_DISCOVER_RAIL_TRIPS,
 } from './browseListCopy';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
+
+/** Discover home horizontal rails — `shops` is a Places sub-topic, not a main list category. */
+export type ListDiscoverRailId = BrowseMainCategoryKey | 'shops';
 import { buildDiscoverShopPlaceholderCards } from './listDiscoverShopPlaceholders';
 
 export const DISCOVER_RAIL_LIMIT = 5;
 
 export type ListDiscoverRail = {
-  id: BrowseMainCategoryKey;
+  id: ListDiscoverRailId;
   title: string;
   items: ExploreCardModel[];
 };

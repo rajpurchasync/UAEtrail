@@ -53,7 +53,8 @@ describe('listVenuePosterPresentation', () => {
     const copy = resolveListVenuePosterCopy(card);
     expect(copy.placeLine).toBe('RAK');
     expect(copy.heroTitle).toBe('Wadi Shawka');
-    expect(copy.titleLines.line1).toContain('Wadi');
+    expect(copy.titleLines.line1).toBe('');
+    expect(copy.heroTitle).toContain('Wadi');
     expect(resolveListVenuePosterFactLabels(card)).toEqual([
       'Wadi Ghalilah',
       'Child-friendly',

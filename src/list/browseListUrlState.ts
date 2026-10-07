@@ -27,10 +27,10 @@ const WHEN_PARAM = 'when';
 export const LIST_CAT_PARAM = 'listCat';
 
 export const parseListCatParam = (value: string | null): BrowseMainCategoryKey | null => {
+  if (value === 'shops') return 'venues';
   if (
     value === 'trips' ||
     value === 'venues' ||
-    value === 'shops' ||
     value === 'people' ||
     value === 'guides' ||
     value === 'agencies'
@@ -125,12 +125,19 @@ export const parseBrowseListFilterState = (
   const when = parseBrowseListWhenParam(whenParam, dateParam);
   const activityDatePreset = resolveBrowseActivityDatePreset(whenParam, dateParam);
   const whenNormalized = when === 'week' && activityDatePreset === 'week' ? 'any' : when;
-  const listCat = parseListCatParam(searchParams.get(LIST_CAT_PARAM));
+  const rawListCat = searchParams.get(LIST_CAT_PARAM);
+  const listCat = parseListCatParam(rawListCat);
+  const topicParse = parseTripAndPlaceTopics(searchParams.get('filter'), listCat);
+  const placeTopics =
+    rawListCat === 'shops' && !topicParse.placeTopics.includes('shop')
+      ? [...topicParse.placeTopics, 'shop' as const]
+      : topicParse.placeTopics;
 
   return {
     query: searchParams.get('q')?.trim() ?? '',
     categories: parseBrowseMainCategoriesFromTopics(searchParams.get('topics')),
-    ...parseTripAndPlaceTopics(searchParams.get('filter'), listCat),
+    ...topicParse,
+    placeTopics,
     price: parseBrowseListPriceParam(searchParams.get(PRICE_PARAM)),
     when: whenNormalized,
     activityDatePreset,

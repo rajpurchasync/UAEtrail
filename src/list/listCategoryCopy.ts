@@ -3,7 +3,6 @@ import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 export const LIST_CATEGORY_PAGE_TITLE: Record<BrowseMainCategoryKey, string> = {
   trips: 'Activities',
   venues: 'Places',
-  shops: 'Shops',
   people: 'Buddies',
   guides: 'Guides',
   agencies: 'Agencies',
@@ -16,9 +15,6 @@ export const listCategoryResultsLabel = (
   if (category === 'trips') {
     const n = count.toLocaleString();
     return count === 1 ? 'Found 1 activity' : `Found ${n} activities`;
-  }
-  if (category === 'shops') {
-    return count === 1 ? '1 shop' : `${count.toLocaleString()} shops`;
   }
   if (category === 'people') {
     const n = count.toLocaleString();

@@ -9,9 +9,18 @@ describe('listDiscoverySearchCommit', () => {
     expect(browseCategoriesForSearchScope('activities')).toEqual(['trips']);
     expect(browseCategoriesForSearchScope('places')).toEqual(['venues']);
     expect(browseCategoriesForSearchScope('people')).toEqual(['people']);
-    expect(browseCategoriesForSearchScope('shops')).toEqual(['shops']);
+    expect(browseCategoriesForSearchScope('shops')).toEqual(['venues']);
     expect(browseCategoriesForSearchScope('agencies')).toEqual(['agencies']);
     expect(browseCategoriesForSearchScope('facilities')).toBeNull();
+  });
+
+  it('builds filter patch for shops scope under Places', () => {
+    expect(browseListFilterPatchForSearchScope('shops')).toEqual({
+      categories: ['venues'],
+      tripLookingOnly: false,
+      tripTopics: [],
+      placeTopics: ['shop'],
+    });
   });
 
   it('builds filter patch for people scope', () => {

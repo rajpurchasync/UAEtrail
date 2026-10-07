@@ -29,14 +29,6 @@ export const BROWSE_CATEGORY_TILES: readonly BrowseCategoryTileDef[] = [
     gradient: 'from-amber-100 via-orange-50 to-amber-100',
   },
   {
-    key: 'shops',
-    label: 'Shops',
-    /** Outdoor backpack — same asset as shop rail placeholders; zoomed for circular crop. */
-    imageSrc: categoryTilePhoto('photo-1553062407-98eeb64c6a62'),
-    coverClassName: 'object-cover object-[center_45%] scale-[1.2]',
-    gradient: 'from-rose-100 via-rose-50 to-pink-100',
-  },
-  {
     key: 'people',
     label: 'Buddies',
     imageSrc: categoryTilePhoto('photo-1529156069898-49953e39b3ac'),

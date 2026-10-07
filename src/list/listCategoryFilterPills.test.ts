@@ -29,6 +29,6 @@ describe('buildListCategoryPrimaryPills', () => {
     const labels = buildListCategoryPrimaryPills('venues', filters, (patch) => {
       Object.assign(filters, patch);
     }).map((pill) => pill.label);
-    expect(labels).toEqual(['Hiking', 'Camping', 'Others']);
+    expect(labels).toEqual(['Hiking', 'Camping', 'Shops']);
   });
 });

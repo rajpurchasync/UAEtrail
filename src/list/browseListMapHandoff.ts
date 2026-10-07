@@ -11,8 +11,10 @@ export const resolveListBrowseExplorePinKind = (
   listCat: BrowseMainCategoryKey | null
 ): ExplorePinKindFilter | null => {
   if (listCat === 'people') return null;
-  if (listCat === 'venues') return 'places';
-  if (listCat === 'shops') return 'shops';
+  if (listCat === 'venues') {
+    if (state.placeTopics.length === 1 && state.placeTopics[0] === 'shop') return 'shops';
+    return 'places';
+  }
   if (listCat === 'trips') return state.tripLookingOnly ? 'looking' : 'trips';
 
   if (state.tripLookingOnly) return 'looking';
@@ -20,11 +22,12 @@ export const resolveListBrowseExplorePinKind = (
   const cats = new Set(state.categories);
   const hasTrips = cats.has('trips');
   const hasVenues = cats.has('venues');
-  const hasShops = cats.has('shops');
 
-  if (hasVenues && !hasTrips && !hasShops) return 'places';
-  if (hasShops && !hasTrips && !hasVenues) return 'shops';
-  if (hasTrips && !hasVenues && !hasShops) return 'trips';
+  if (hasVenues && !hasTrips) {
+    if (state.placeTopics.length === 1 && state.placeTopics[0] === 'shop') return 'shops';
+    return 'places';
+  }
+  if (hasTrips && !hasVenues) return 'trips';
 
   return null;
 };
@@ -40,7 +43,7 @@ export const inferListCatFromExploreHandoff = (
 
   const pinKind = parseExplorePinKindFilter(searchParams.get('pinKind'));
   if (pinKind === 'places') return 'venues';
-  if (pinKind === 'shops') return 'shops';
+  if (pinKind === 'shops') return 'venues';
   if (pinKind === 'trips' || pinKind === 'looking') return 'trips';
 
   const cats = state.categories;
