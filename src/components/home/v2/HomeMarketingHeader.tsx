@@ -80,13 +80,11 @@ export const HomeMarketingHeader = ({
 
   const overHero = forceOverHero || !solid;
 
-  const loginMobileClass = overHero
-    ? 'home-focus-ring inline-flex min-h-10 items-center justify-center rounded-full border border-white/40 bg-white/10 px-4 text-[14px] font-semibold text-white backdrop-blur-sm transition hover:bg-white/15'
-    : 'home-focus-ring inline-flex min-h-10 items-center justify-center rounded-full px-4 text-[14px] font-semibold text-home-ink transition hover:bg-home-muted';
+  const loginOverHeroClass =
+    'home-focus-ring inline-flex min-h-10 items-center justify-center rounded-full border border-white/40 bg-white/10 px-4 text-[14px] font-semibold text-white shadow-sm shadow-black/10 backdrop-blur-md transition hover:bg-white/15 md:text-[length:var(--text-sm)]';
 
-  const loginDesktopClass = overHero
-    ? 'home-focus-ring rounded-home-sm px-3 py-2 text-[length:var(--text-sm)] font-medium text-white hover:bg-white/10'
-    : 'home-focus-ring rounded-home-sm px-3 py-2 text-[length:var(--text-sm)] font-medium';
+  const loginSolidClass =
+    'home-focus-ring inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--gray-200)] bg-home-surface px-4 text-[14px] font-semibold text-home-ink shadow-sm transition hover:bg-home-muted md:text-[length:var(--text-sm)]';
 
   return (
     <header
@@ -126,10 +124,10 @@ export const HomeMarketingHeader = ({
         ) : null}
 
         <div className="flex items-center gap-2 md:ml-auto md:gap-3">
-          <Link to={loginHref} className={`${loginMobileClass} md:hidden`}>
-            {HOME_HEADER_NAV.login}
-          </Link>
-          <Link to={loginHref} className={`${loginDesktopClass} hidden md:inline-flex`}>
+          <Link
+            to={loginHref}
+            className={overHero ? loginOverHeroClass : loginSolidClass}
+          >
             {HOME_HEADER_NAV.login}
           </Link>
           {!heroSignupInView ? (
