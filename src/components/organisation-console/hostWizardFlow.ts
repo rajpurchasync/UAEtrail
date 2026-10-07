@@ -32,6 +32,14 @@ export const parseHostFlowIntent = (value: string | null | undefined): HostFlowI
   return 'become-host';
 };
 
+/** Map wizard intent → `proMembershipPath` query (excludes legacy `become-host`). */
+export const proMembershipPathIntent = (
+  intent: HostFlowIntent
+): 'add-guide' | 'add-agency' | 'add-shop' | undefined => {
+  if (intent === 'add-guide' || intent === 'add-agency' || intent === 'add-shop') return intent;
+  return undefined;
+};
+
 export const PROFILE_TYPE_OPTIONS: Array<{
   key: HostProfileType;
   title: string;

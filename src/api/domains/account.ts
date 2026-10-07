@@ -1,6 +1,12 @@
 import { NotificationDTO } from '@uaetrail/shared-types';
-import { apiRequest, downloadAuthenticatedFile } from '../client';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { apiRequest, downloadAuthenticatedFile, getStoredSession } from '../client';
+import type {
+  ActivityDTO,
+  MemberDiscoveryQuotaDTO,
+  ProfileViewerAccessDTO,
+  BuddyActivityPresenceRowDTO,
+  MemberDiscoveryOnTripRowDTO,
+} from '@uaetrail/shared-types';
 import type {
   AccountDeletionInfo,
   PublicMemberProfileDTO,
@@ -11,8 +17,22 @@ import type {
 export const accountApi = {
     getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
 
-    getPersonPublicProfile: (userId: string) =>
-    apiRequest<{ data: PublicMemberProfileDTO }>(`/users/${userId}/public-profile`),
+    getPersonPublicProfile: (userId: string, options?: { discover?: boolean }) => {
+      const qs = options?.discover ? '?from=discover' : '';
+      return apiRequest<{ data: PublicMemberProfileDTO; viewerAccess: ProfileViewerAccessDTO }>(
+        `/users/${userId}/public-profile${qs}`,
+        { auth: Boolean(getStoredSession()) }
+      );
+    },
+
+    getMeMemberDiscoveryQuota: () =>
+      apiRequest<{ data: MemberDiscoveryQuotaDTO }>('/me/member-discovery-quota', { auth: true }),
+
+    getMeProfilePublicPreview: () =>
+    apiRequest<{ data: PublicMemberProfileDTO; viewerAccess: ProfileViewerAccessDTO }>(
+      '/me/profile-public-preview',
+      { auth: true }
+    ),
 
     getPersonUpcomingActivities: (userId: string, limit = 8) =>
     apiRequest<{ data: ActivityDTO[] }>(
@@ -135,5 +155,55 @@ export const accountApi = {
     apiRequest<{ data: { id: string; displayName: string; avatarUrl: string | null } }>(
       `/users/${userId}/brief`,
       { auth: true }
-    )
+    ),
+
+    getMeProfileViewStats: () =>
+      apiRequest<{ data: import('@uaetrail/shared-types').MemberProfileViewStatsDTO }>(
+        '/me/profile-view-stats',
+        { auth: true }
+      ),
+
+    browsePublicMembers: (page = 1, pageSize = 20, q?: string) => {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+      if (q?.trim()) params.set('q', q.trim());
+      return apiRequest<{ data: import('@uaetrail/shared-types').MemberBrowseCardDTO[] }>(
+        `/users/browse?${params.toString()}`,
+        { auth: true }
+      );
+    },
+
+    getMeBuddyActivityPresence: (options?: { date?: string | null }) => {
+      const params = new URLSearchParams();
+      if (options?.date) params.set('date', options.date);
+      const qs = params.toString();
+      return apiRequest<{ data: { rows: BuddyActivityPresenceRowDTO[] } }>(
+        `/me/buddies/activity-presence${qs ? `?${qs}` : ''}`,
+        { auth: true }
+      );
+    },
+
+    getMeMemberDiscoveryRoster: (options?: {
+      page?: number;
+      pageSize?: number;
+      q?: string;
+      date?: string | null;
+    }) => {
+      const params = new URLSearchParams({
+        page: String(options?.page ?? 1),
+        pageSize: String(options?.pageSize ?? 30),
+      });
+      if (options?.q?.trim()) params.set('q', options.q.trim());
+      if (options?.date) params.set('date', options.date);
+      return apiRequest<{
+        data: {
+          onTrips: MemberDiscoveryOnTripRowDTO[];
+          directory: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
+        };
+        meta: {
+          page: number;
+          pageSize: number;
+          quota: MemberDiscoveryQuotaDTO;
+        };
+      }>(`/me/member-discovery/roster?${params.toString()}`, { auth: true });
+    },
 } as const;

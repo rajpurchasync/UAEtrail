@@ -8,9 +8,10 @@ import {
 /** Where a guest hit a members-only surface. */
 export type GuestBrowseGateIntent =
   | 'explore-browse'
-  | 'whos-going'
+  | 'explore-social'
   | 'peek-details'
-  | 'join-activity';
+  | 'join-activity'
+  | 'member-profile';
 
 type GateCopy = { title: string; body: string };
 
@@ -20,15 +21,18 @@ const GATE_COPY: Record<Exclude<GuestBrowseGateIntent, 'join-activity'>, GateCop
     body:
       'Join the community today to search the list, use filters, and open full details on every plan near you.',
   },
-  'whos-going': {
+  'explore-social': {
     title: GUEST_GATE_OOPS_TITLE,
-    body:
-      "Join the community today to see who's heading out — friends, buddies, and people you follow on upcoming trips.",
+    body: 'Sign in to see your friends, people you follow, and message your crew.',
   },
   'peek-details': {
     title: GUEST_GATE_OOPS_TITLE,
     body:
       'Join the community today to meet hosts, say you’re going, save places you love, and message your crew before you head outside.',
+  },
+  'member-profile': {
+    title: GUEST_GATE_OOPS_TITLE,
+    body: 'Sign in to view member profiles and connect with people on upcoming outings.',
   },
 };
 

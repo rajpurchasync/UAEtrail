@@ -11,7 +11,6 @@ import {
   MembershipTier,
   NotificationType,
   HostApplicationStatus,
-  PostCategory,
   ProductStatus,
   RequestStatus,
   ReviewTargetType,
@@ -48,6 +47,8 @@ import {
   type TenantRecord
 } from '../src/lib/tenant-store.js';
 import { DEMO_ACCOUNTS } from '../src/lib/demo-accounts.js';
+import { createUserFavorite } from '../src/lib/favorites-store.js';
+import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import {
   createGroupWallMessage,
   createSocialGroup,
@@ -747,56 +748,6 @@ const upsertReview = async (input: {
   await createSocialReview(input);
 };
 
-const upsertPost = async (input: {
-  id: string;
-  category: PostCategory;
-  title: string;
-  content: string;
-  images: string[];
-  locationId?: string;
-  authorId: string;
-}) => {
-  const now = new Date();
-  await db().collection('social_posts').updateOne(
-    { _id: input.id },
-    {
-      $set: {
-        category: input.category,
-        title: input.title,
-        content: input.content,
-        images: input.images,
-        locationId: input.locationId ?? null,
-        activityId: null,
-        authorId: input.authorId,
-        updatedAt: now
-      },
-      $setOnInsert: { createdAt: now }
-    },
-    { upsert: true }
-  );
-};
-
-const upsertPostReply = async (input: {
-  id: string;
-  postId: string;
-  authorId: string;
-  content: string;
-}) => {
-  const now = new Date();
-  await db().collection('social_post_replies').updateOne(
-    { _id: input.id },
-    {
-      $set: {
-        postId: input.postId,
-        authorId: input.authorId,
-        content: input.content
-      },
-      $setOnInsert: { createdAt: now }
-    },
-    { upsert: true }
-  );
-};
-
 const upsertNotification = async (input: {
   id: string;
   userId: string;
@@ -1018,6 +969,7 @@ async function main() {
   }
 
   const admin = await upsertDemoUser('admin@uaetrails.app');
+  await updateAuthUserProfile(admin._id, { platformMasterAdmin: true });
 
   const participant = await upsertDemoUser('visitor@uaetrails.app');
 
@@ -1600,6 +1552,30 @@ Share your live location and carry extra water in summer months.`
   freeCampStart.setDate(freeCampStart.getDate() + 21);
   freeCampStart.setHours(15, 0, 0, 0);
 
+  const omarDraftStart = new Date();
+  omarDraftStart.setDate(omarDraftStart.getDate() + 30);
+  omarDraftStart.setHours(9, 0, 0, 0);
+
+  await upsertEvent('seed-event-omar-draft', {
+    tenant: { connect: { id: individualHostTenant.id } },
+    location: { connect: { id: 'fossil-rock-desert-camp' } },
+    createdBy: { connect: { id: individualHost._id } },
+    host: { connect: { id: individualHost._id } },
+    activityType: ActivityType.HIKING,
+    title: 'Omar — Wadi loop (draft)',
+    description: 'Draft plan for host QA — publish from Trips when ready.',
+    startAt: omarDraftStart,
+    meetingPoint: 'Sharjah — exact pin after publish',
+    meetingLat: 25.22,
+    meetingLng: 55.85,
+    priceAed: 0,
+    capacity: 8,
+    status: ActivityStatus.DRAFT,
+    itinerary: ['Draft — edit before publish'],
+    requirements: ['Water'],
+    outingCategory: 'hiking',
+  });
+
   await upsertEvent('seed-event-desert-meetup', {
     tenant: { connect: { id: individualHostTenant.id } },
     location: { connect: { id: 'fossil-rock-desert-camp' } },
@@ -1880,35 +1856,6 @@ Share your live location and carry extra water in summer months.`
     comment: 'Challenging but rewarding summit trail. Start early and bring layers for the summit.'
   });
 
-  await upsertPost({
-    id: 'seed-post-shawka-tips',
-    category: PostCategory.TIPS,
-    title: 'Best time to hike Wadi Shawka',
-    content:
-      'Early morning in winter is ideal — cooler temps and great light. Bring at least 2L of water per person.',
-    images: [],
-    locationId: 'wadi-shawka-loop',
-    authorId: agencyOwner._id
-  });
-
-  await upsertPostReply({
-    id: 'seed-reply-shawka-1',
-    postId: 'seed-post-shawka-tips',
-    authorId: participant._id,
-    content:
-      'Agreed — we went last January at 6am and it was perfect. Parking fills up by 8am on weekends.'
-  });
-
-  await upsertPost({
-    id: 'seed-post-gear-question',
-    category: PostCategory.QUESTIONS,
-    title: 'What shoes for Jebel Jais?',
-    content:
-      'Planning my first summit hike — are trail runners enough or do I need proper hiking boots?',
-    images: [],
-    authorId: participant._id
-  });
-
   await upsertNotification({
     id: 'seed-notif-visitor-approved',
     userId: participant._id,
@@ -1928,6 +1875,17 @@ Share your live location and carry extra water in summer months.`
     shawkaActivityId: 'seed-event-shawka-free',
   });
 
+  await seedParticipant('seed-event-desert-meetup', pendingParticipant._id, individualHost._id);
+
+  await createUserFavorite({
+    userId: participant._id,
+    locationId: 'fossil-rock-desert-camp',
+  });
+  await createUserFavorite({
+    userId: participant._id,
+    activityId: 'seed-event-fossil-camp',
+  });
+
   await seedConnectionsDemo({
     visitorId: participant._id,
     visitor2Id: pendingParticipant._id,
@@ -1937,6 +1895,7 @@ Share your live location and carry extra water in summer months.`
     shopOwnerId: shopOwner._id,
   });
   logConnectionsDemoPlaybook();
+  logOmarHostQaPlaybook();
 
   const participantRecord = await db().collection('activity_participants').findOne({
     activityId: event._id,

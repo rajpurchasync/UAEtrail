@@ -1,4 +1,7 @@
 import type {
+  ActivityViewerAccessDTO,
+  ExploreCardKind,
+  ExploreCardSource,
   ExploreLinkedRideshareDTO,
   ExploreMapItemDTO,
   ExploreMapPersonDTO,
@@ -17,10 +20,9 @@ import { enrichExploreActivityRequirementBadges } from './exploreRequirementBadg
 import { exploreMapItemSharePath } from './routing';
 import { resolveExploreCoverImage } from './exploreCoverImage';
 
-export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
-export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+export type { ExploreCardKind, ExploreCardSource } from '@uaetrail/shared-types';
 
-export type ExploreCardTone = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
+export type ExploreCardTone = ExploreCardKind;
 
 export interface ExploreCardModel {
   id: string;
@@ -40,7 +42,8 @@ export interface ExploreCardModel {
   primaryCta: string;
   secondaryCta: string | null;
   showJoinActions: boolean;
-  showHostActions?: boolean;
+  /** Host viewing their own activity — Chat · Manage CTAs (not join/wire peek). */
+  showHostActivityCtas?: boolean;
   /** Requester viewing their own active demand pin. */
   showDemandOwnerActions?: boolean;
   /** Hiking / camping / activity demand — host can publish a linked rideshare offer. */
@@ -78,6 +81,8 @@ export interface ExploreCardModel {
   mapLatitude?: number | null;
   mapLongitude?: number | null;
   linkedRideshares?: ExploreLinkedRideshareDTO[];
+  /** From `GET /explore/map` for activity/demand rows (per viewer). */
+  viewerAccess?: ActivityViewerAccessDTO | null;
 }
 
 const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
@@ -212,6 +217,7 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
       item.linkedRideshareActivities && item.linkedRideshareActivities.length > 0
         ? item.linkedRideshareActivities
         : undefined,
+    viewerAccess: item.viewerAccess ?? null,
   };
 };
 
@@ -240,6 +246,21 @@ export const exploreCardHasMapCoords = (card: ExploreCardModel): boolean =>
 export const exploreCardShowsInlineDirections = (card: ExploreCardModel): boolean =>
   exploreCardHasMapCoords(card) &&
   card.sections.details.some((detail) => detail.icon === 'location');
+
+/** Peek action row already includes directions (join activities, shops with review CTAs). */
+export const exploreCardPeekActionsHasDirections = (card: ExploreCardModel): boolean => {
+  if (!exploreCardHasMapCoords(card) || exploreCardShowsInlineDirections(card)) return false;
+  if (card.source === 'venue') return true;
+  if (card.showJoinActions) return true;
+  if (card.source === 'shop' && card.reviewPath) return true;
+  return false;
+};
+
+/** Extra directions row in peek body — only when not inline and not in peek actions. */
+export const exploreCardShowPeekBodyDirections = (card: ExploreCardModel): boolean =>
+  exploreCardHasMapCoords(card) &&
+  !exploreCardShowsInlineDirections(card) &&
+  !exploreCardPeekActionsHasDirections(card);
 
 export type ExploreFavoriteTarget = {
   locationId?: string;
@@ -273,7 +294,7 @@ const watchMetaFromCard = (card: ExploreCardModel) => ({
 export const resolveExploreFavoriteTarget = (card: ExploreCardModel): ExploreFavoriteTarget | null => {
   const watch = watchMetaFromCard(card);
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
-  // Demand = public participation on Explore — not wishlist saves (see `src/trips/demandVsWishlist.ts`).
+  // Demand = public participation on Explore — not wishlist saves (see `src/trips/favoriteDemandBookmark.ts`).
   if (card.source === 'demand') return null;
   if (card.source === 'venue' && card.locationId) return { locationId: card.locationId, ...watch };
   if (card.source === 'shop' || card.source === 'agency') {

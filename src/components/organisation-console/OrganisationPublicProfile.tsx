@@ -19,6 +19,7 @@ import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
 import { HostMessageButton } from '../ui/HostMessageButton';
 import { MemberFollowControls } from '../profile/MemberFollowControls';
+import { HOST_ACTIVITIES_PATH, HOST_TEAM_PATH, SIGNIN_PATH } from '../../config/routingCatalog';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';
@@ -27,7 +28,7 @@ import { PublicProfileSectionHeading } from '../profile/PublicProfileSectionHead
 import { AccountSectionHeader } from '../account/AccountSectionHeader';
 import { useAuth } from '../../context/AuthContext';
 import { COUNTRIES } from '../../constants';
-import { hostNotFoundLabel, hostProfileLabel, hostPublicProfileLabel, normalizeHostKind } from '../../utils/hostCopy';
+import { hostNotFoundLabel, hostProfileLabel, hostPublicProfileLabel, normalizeHostKind } from '../../host/hostCopy';
 import { detailBackPath } from '../../config/routingCatalog';
 
 const EXPERIENCE_OPTIONS = [
@@ -250,7 +251,7 @@ export const OrganisationPublicProfile = ({
               <MemberFollowControls targetUserId={tenant.ownerId} />
             ) : (
               <Link
-                to="/signin"
+                to={SIGNIN_PATH}
                 state={{ from: `/operator/${slug}` }}
                 className="block text-center text-sm font-semibold text-emerald-700"
               >
@@ -429,7 +430,7 @@ export const OrganisationPublicProfile = ({
             ))}
           </div>
           {isOwner && (
-            <Link to="/host/team" className="mt-3 inline-block text-sm font-semibold text-emerald-700">
+            <Link to={HOST_TEAM_PATH} className="mt-3 inline-block text-sm font-semibold text-emerald-700">
               Manage team →
             </Link>
           )}
@@ -448,7 +449,7 @@ export const OrganisationPublicProfile = ({
           </div>
         )}
         {isOwner && (
-          <Link to="/host/activities" className="inline-block text-sm font-semibold text-emerald-700">
+          <Link to={HOST_ACTIVITIES_PATH} className="inline-block text-sm font-semibold text-emerald-700">
             Manage events →
           </Link>
         )}

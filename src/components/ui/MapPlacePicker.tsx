@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { MAP_CONFIG } from '../../config/platform';
 import { MapTileLayers } from './MapTileLayers';
 import { formatCoord, parseCoord } from '../../utils/coords';
+import { ViewOnMapLink } from './ViewOnMapLink';
 
 const pickerIcon = L.divIcon({
   className: '',
@@ -143,15 +144,14 @@ export const MapPlacePicker = ({
           )}
         </MapContainer>
       </div>
-      {(pinLat != null && pinLng != null) && (
-        <a
-          href={`https://www.google.com/maps/search/?api=1&query=${pinLat},${pinLng}`}
-          target="_blank"
-          rel="noopener noreferrer"
+      {pinLat != null && pinLng != null && (
+        <ViewOnMapLink
+          lat={pinLat}
+          lng={pinLng}
           className="inline-flex text-xs font-medium text-emerald-700 hover:text-emerald-800"
         >
           Open pin in Google Maps →
-        </a>
+        </ViewOnMapLink>
       )}
     </div>
   );

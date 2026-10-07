@@ -2,10 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
-import { describeExploreMapLoadError } from '../../utils/exploreMapErrors';
+import { describeExploreMapLoadError } from '../exploreMapErrors';
 import { PageMeta } from '../../components/seo/PageMeta';
 import { useAuth } from '../../context/AuthContext';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 import { useExploreMap, reloadExploreMap } from '../../hooks/useExploreMap';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
@@ -19,36 +19,80 @@ import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
 import { useExploreBrowseList } from './useExploreBrowseList';
-import { useWhosGoingFriends } from './useWhosGoingFriends';
+import { useFollowedSaves } from '../../hooks/useFollowedSaves';
+import { useSocialPeople } from '../useSocialPeople';
+import { useSocialPeoplePreview } from '../useSocialPeoplePreview';
+import { useMemberDiscoveryRoster } from '../useMemberDiscoveryRoster';
 import { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
 import { useExploreOrganizeFromActivity } from './useExploreOrganizeFromActivity';
 import type { OrganizeWizardPrefill } from './organizeWizardPrefill';
+import { api } from '../../api/index';
+import { buildExploreCardModel } from '../exploreCardModel';
+import {
+  createDraftFromRegistryPlace,
+  resolveOrganizeComposeKindFromVenueCardKind,
+  resolveCreateActivityKindFromVenueCardKind,
+} from './organizeFromPlace';
+import type { CreateActivityDraft } from './organizeFlow';
+import {
+  organizePublishGateHref,
+  organizePublishGateInputFromHostGate,
+} from '../../utils/organizePublishGate';
 import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkRidesharePrefill';
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { HostActivityCancelDialog } from '../../components/activity/HostActivityCancelDialog';
+import { hostActivityCancelParticipantNotice } from '../../host/hostActivityCancelParticipantNotice';
+import { hostActivityCtaHandlers as buildHostActivityCtaHandlers } from '../../host/hostActivityCtaHandlers';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
-import { MY_TRIPS_QUERY_KEY, parseExplorePinMapItemId, parseOrganizeFromActivityId } from '../routing';
+import {
+  EXPLORE_JOIN_INVITE_QUERY_KEY,
+  MY_TRIPS_QUERY_KEY,
+  PLAN_WITH_QUERY_KEY,
+  parseExploreJoinInvitePeek,
+  parseExplorePinMapItemId,
+  parseOrganizeFromActivityId,
+  parsePlanWithUserId,
+} from '../routing';
+import { activityJoinInviteBanner } from '../../content/exploreGoingPanelCopy';
 import { useMemberJourneyMapPinIds } from '../../hooks/useMemberJourneyMapPinIds';
 import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
 import { AppButton } from '../../components/mobile/AppButton';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
-import { organizePublishGateHref } from '../../utils/organizePublishGate';
 
 export const ExploreExperience = () => {
   const { user } = useAuth();
   const {
     canPublish,
     signupProfileComplete,
+    isCommunityHost,
+    hostTiers,
     loading: hostGateLoading,
     tenantId,
     refresh: refreshHostGate,
-  } = useOrganisationGate({
+  } = useHostStatus({
     enabled: Boolean(user),
   });
   const navigate = useNavigate();
+  const navigateOrganizePublishGate = useCallback(
+    (returnPath: string) =>
+      navigate(
+        organizePublishGateHref(
+          returnPath,
+          organizePublishGateInputFromHostGate({
+            viewerUserId: user?.id ?? null,
+            signupProfileComplete,
+            canPublish,
+            isCommunityHost,
+            hostTiers,
+          })
+        )
+      ),
+    [navigate, user?.id, signupProfileComplete, canPublish, isCommunityHost, hostTiers]
+  );
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { pathname, search, state: locationState } = useLocation();
@@ -119,12 +163,18 @@ export const ExploreExperience = () => {
     setSelectedId,
   });
 
+  const [organizeFromPlacePrefill, setOrganizeFromPlacePrefill] = useState<CreateActivityDraft | null>(
+    null
+  );
+
   const organizeFrom = useExploreOrganizeFromActivity({
     user,
     tenantId,
     hostGateLoading,
     canPublish,
     signupProfileComplete,
+    isCommunityHost,
+    hostTiers,
     navigate,
     pathname,
     searchParams,
@@ -154,7 +204,7 @@ export const ExploreExperience = () => {
     }
     if (hostGateLoading) return;
     if (!canPublish) {
-      navigate(organizePublishGateHref(returnPath, { signupProfileComplete, canPublish }));
+      navigateOrganizePublishGate(returnPath);
       return;
     }
 
@@ -168,9 +218,7 @@ export const ExploreExperience = () => {
     search,
     user,
     hostGateLoading,
-    canPublish,
-    signupProfileComplete,
-    navigate,
+    navigateOrganizePublishGate,
     compose.setComposeRoute,
   ]);
 
@@ -193,10 +241,20 @@ export const ExploreExperience = () => {
         sourceActivityId: organizeFrom.organizeFromPrefill.sourceActivityId,
       };
     }
+    if (organizeFromPlacePrefill) {
+      return { draft: organizeFromPlacePrefill };
+    }
     return null;
-  }, [rideshareLinkParent, rideshareLinkDemand, organizeFrom.organizeFromPrefill]);
+  }, [
+    rideshareLinkParent,
+    rideshareLinkDemand,
+    organizeFrom.organizeFromPrefill,
+    organizeFromPlacePrefill,
+  ]);
 
   const inviteShare = useActivityInviteShareSheet();
+  const planWithBuddyUserId = parsePlanWithUserId(searchParams);
+  const [joinInvitePeekActivityId, setJoinInvitePeekActivityId] = useState<string | null>(null);
 
   const selection = useExploreSelectionActions({
     items: selectionItems,
@@ -209,13 +267,55 @@ export const ExploreExperience = () => {
     browse,
     isDesktop,
     closeCompose: compose.closeCompose,
-    clearFulfillPrefill: () => {},
-    fulfillIntentPrefill: null,
-    clearFulfillAfterPublish: () => {},
     handleFocusMapLocation: viewport.handleFocusMapLocation,
     setLinkOnlyPeekItems,
     onInviteActivity: inviteShare.openInviteFromActivity,
+    onCreateLinkedRideshare: handleCreateLinkedRideshare,
   });
+
+  const joinInvitePeekBanner = useMemo(() => {
+    if (!joinInvitePeekActivityId || !selection.selectedCard) return null;
+    if (selection.selectedCard.source !== 'activity') return null;
+    if (selection.selectedCard.activityId !== joinInvitePeekActivityId) return null;
+    if (selection.peekJoinUiState?.kind === 'confirmed') return null;
+    return activityJoinInviteBanner();
+  }, [joinInvitePeekActivityId, selection.selectedCard, selection.peekJoinUiState]);
+
+  const handleCloseMapSelection = useCallback(() => {
+    setJoinInvitePeekActivityId(null);
+    selection.handleCloseSelection();
+  }, [selection]);
+
+  const hostActivityCtaHandlers = useMemo(() => {
+    if (!selection.selectedCard?.showHostActivityCtas || !selection.selected?.activity) return null;
+    return buildHostActivityCtaHandlers({
+      activity: selection.selected.activity,
+      navigate,
+      onInviteActivity: inviteShare.openInviteFromActivity,
+      onCreateLinkedRideshare: handleCreateLinkedRideshare,
+      onRequestDelete: selection.requestHostRemove,
+      onBeforeNavigate: handleCloseMapSelection,
+      onChatError: (message) => selection.setDemandNotice(message),
+    });
+  }, [
+    selection.selectedCard?.showHostActivityCtas,
+    selection.selected?.activity,
+    selection.requestHostRemove,
+    selection.setDemandNotice,
+    navigate,
+    inviteShare.openInviteFromActivity,
+    handleCreateLinkedRideshare,
+    handleCloseMapSelection,
+  ]);
+
+  const hostRemoveParticipantNotice = useMemo(() => {
+    const activity = selection.hostRemoveConfirm;
+    if (!activity) return null;
+    return hostActivityCancelParticipantNotice(
+      activity,
+      selection.selectedCard?.participantPreviews
+    );
+  }, [selection.hostRemoveConfirm, selection.selectedCard?.participantPreviews]);
 
   const organizeFromPending = Boolean(parseOrganizeFromActivityId(searchParams));
   const organizeWizardOpen =
@@ -244,27 +344,37 @@ export const ExploreExperience = () => {
     if (!deepLinkPinId || loading) return;
     if (openedDeepLinkPinRef.current === deepLinkPinId) return;
 
+    const joinInviteFromUrl = parseExploreJoinInvitePeek(searchParams);
+
     const clearPinParam = () => {
       openedDeepLinkPinRef.current = deepLinkPinId;
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
           next.delete('pin');
+          next.delete(EXPLORE_JOIN_INVITE_QUERY_KEY);
           return next;
         },
         { replace: true }
       );
     };
 
+    const captureJoinInvitePeek = () => {
+      if (!joinInviteFromUrl || !deepLinkPinId.startsWith('activity:')) return;
+      setJoinInvitePeekActivityId(deepLinkPinId.slice('activity:'.length));
+    };
+
     const item = selectionItems.find((entry) => entry.id === deepLinkPinId);
     if (item) {
       selection.openItem(item);
+      captureJoinInvitePeek();
       clearPinParam();
       return;
     }
 
     void selection.tryOpenActivityPinDeepLink(deepLinkPinId).then((result) => {
       if (result === 'opened') {
+        captureJoinInvitePeek();
         clearPinParam();
         return;
       }
@@ -292,21 +402,55 @@ export const ExploreExperience = () => {
     };
   }, []);
 
-  const whosGoingFriends = useWhosGoingFriends({
-    enabled: Boolean(user) && browse.listMode === 'whosGoing',
-    userId: user?.id,
-    mapItems,
+  const socialPeoplePreview = useSocialPeoplePreview(Boolean(user));
+  const socialPanelOpen = Boolean(user) && browse.listMode === 'social';
+  const followedSavesEnabled =
+    socialPanelOpen && browse.socialTab === 'followed' && browse.followedSegment !== 'people';
+  const followedSaves = useFollowedSaves(followedSavesEnabled);
+  const socialPeopleEnabled =
+    socialPanelOpen &&
+    browse.socialTab !== 'discover' &&
+    !(browse.socialTab === 'followed' && browse.followedSegment !== 'people');
+  const memberDiscoveryEnabled = socialPanelOpen && browse.socialTab === 'discover';
+  const socialPeople = useSocialPeople({
+    enabled: socialPeopleEnabled,
+    segment:
+      browse.socialTab === 'friends' || browse.socialTab === 'followed'
+        ? browse.socialTab
+        : 'all',
+  });
+  const memberDiscovery = useMemberDiscoveryRoster({
+    enabled: memberDiscoveryEnabled,
+    search: browse.query,
     activityDatePreset: browse.activityDatePreset,
   });
+
+  const openSocialPanel = useCallback(() => {
+    browse.openSocialPanel('all');
+  }, [browse]);
+
+  const openExploreActivityFromRef = useCallback(
+    (activity: { exploreItemId: string }) => {
+      const item = mapItems.find((entry) => entry.id === activity.exploreItemId);
+      if (item) selection.openItem(item);
+    },
+    [mapItems, selection]
+  );
+
+  const openDiscoveryActivityOnMap = useCallback(
+    (activityId: string) => {
+      const exploreItemId = `activity:${activityId}`;
+      const item = mapItems.find((entry) => entry.id === exploreItemId);
+      if (item) selection.openItem(item);
+    },
+    [mapItems, selection]
+  );
 
   const {
     mapPins,
     listItems,
     shopListSections,
-    whosGoingPreview,
     searchScopeCounts,
-    whosGoingTripsCount,
-    whosGoingListItems,
   } =
     useExploreBrowseList({
       items: mapItems,
@@ -316,9 +460,7 @@ export const ExploreExperience = () => {
       query: browse.query,
       activityDatePreset: browse.activityDatePreset,
       listMode: browse.listMode,
-      whosGoingSegment: browse.whosGoingSegment,
       searchScope: browse.searchScope,
-      friendIds: user ? whosGoingFriends.friendIds : undefined,
       sidebarPanel: browse.sidebarPanel,
       isDesktop,
       desktopBrowseTab: browse.desktopBrowseTab,
@@ -328,16 +470,20 @@ export const ExploreExperience = () => {
       topicPills: browse.topicPills,
     });
 
-  const whosGoingFriendRowsFiltered = useMemo(() => {
-    const q = browse.query.trim().toLowerCase();
-    if (!q) return whosGoingFriends.friendRows;
-    return whosGoingFriends.friendRows.filter((row) => {
-      const name = row.buddy.displayName.toLowerCase();
-      const hosting = row.hosting?.title.toLowerCase() ?? '';
-      const joining = row.joining?.title.toLowerCase() ?? '';
-      return name.includes(q) || hosting.includes(q) || joining.includes(q);
-    });
-  }, [whosGoingFriends.friendRows, browse.query]);
+  const socialPanelMapChip = useMemo(() => {
+    const preview = socialPeoplePreview.preview;
+    const avatars = (preview?.avatars ?? []).map((person) => ({
+      id: person.userId,
+      name: person.displayName,
+      avatar: person.avatarUrl,
+    }));
+    const friendCount = preview?.friendCount ?? 0;
+    return {
+      avatars,
+      extraCount: Math.max(0, friendCount - avatars.length),
+      friendCount,
+    };
+  }, [socialPeoplePreview.preview]);
 
   const exploreMapTiles = useMemo(
     () => getExploreMapTiles(viewport.exploreMapStyle),
@@ -362,8 +508,58 @@ export const ExploreExperience = () => {
   const closeCreateFlow = () => {
     compose.closeCompose();
     organizeFrom.clearOrganizeFromPrefill();
+    setOrganizeFromPlacePrefill(null);
     setRideshareLinkParent(null);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete(PLAN_WITH_QUERY_KEY);
+        return next;
+      },
+      { replace: true }
+    );
   };
+
+  const handlePlanTripFromVenue = useCallback(
+    async (item: ExploreMapItemDTO) => {
+      const returnPath = `${pathname}${search}`;
+      if (!user) {
+        navigate(buildSignInRedirect({ pathname, search }).href);
+        return;
+      }
+      if (hostGateLoading) return;
+      if (!canPublish) {
+        navigateOrganizePublishGate(returnPath);
+        return;
+      }
+
+      const placeId = item.locationCard?.id;
+      if (!placeId) return;
+
+      const card = buildExploreCardModel(item);
+      const composeKind = resolveOrganizeComposeKindFromVenueCardKind(card.kind);
+      const createKind = resolveCreateActivityKindFromVenueCardKind(card.kind);
+      compose.setComposeRoute({ intent: 'organize', kind: composeKind });
+
+      try {
+        const { data } = await api.getPublicPlaceDetail(placeId);
+        setOrganizeFromPlacePrefill(createDraftFromRegistryPlace(data, createKind));
+      } catch {
+        compose.closeCompose();
+      }
+    },
+    [
+      pathname,
+      search,
+      user,
+      hostGateLoading,
+      canPublish,
+      signupProfileComplete,
+      navigate,
+      compose.setComposeRoute,
+      compose.closeCompose,
+    ]
+  );
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
   const handleMapSearchCommit = (scope?: ExploreSearchScopeKey | null) => {
@@ -404,16 +600,30 @@ export const ExploreExperience = () => {
     searchScopeCounts,
     onSearchScopePick: handleMapSearchCommit,
     searchFocusNonce,
-    whosGoingSegment: browse.whosGoingSegment,
-    onWhosGoingSegmentChange: browse.applyWhosGoingSegment,
-    whosGoingTripsCount,
-    whosGoingPeopleCount: whosGoingFriends.friendsOnTrips.length,
-    whosGoingFriendRows: whosGoingFriendRowsFiltered,
-    whosGoingFriendsLoading: whosGoingFriends.loading,
-    whosGoingFriendsError: whosGoingFriends.error,
+    socialTab: browse.socialTab,
+    onSocialTabChange: browse.applySocialTab,
+    socialAllCount: socialPeoplePreview.preview?.allCount,
+    socialFriendsCount: socialPeoplePreview.preview?.friendCount,
+    socialFollowedCount: socialPeoplePreview.preview?.followedCount,
+    socialPeople: socialPeople.people,
+    socialLoading: socialPeople.loading,
+    socialError: socialPeople.error,
+    onRefreshSocialPeople: socialPeople.refresh,
+    onOpenSocialActivity: openExploreActivityFromRef,
+    discoveryOnTrips: memberDiscovery.onTrips,
+    discoveryDirectory: memberDiscovery.directory,
+    discoveryQuota: memberDiscovery.quota,
+    discoveryLoading: memberDiscovery.loading,
+    discoveryError: memberDiscovery.error,
+    onOpenDiscoveryActivity: openDiscoveryActivityOnMap,
+    followedSegment: browse.followedSegment,
+    onFollowedSegmentChange: browse.applyFollowedSegment,
+    followedSaves: followedSaves.favorites,
+    followedSavesLoading: followedSaves.loading,
+    followedSavesError: followedSaves.error,
     isSignedIn: Boolean(user),
     userRole: user?.role,
-    friendUserIds: user ? whosGoingFriends.friendIds : undefined,
+    buddyUserIds: user ? new Set(socialPeoplePreview.preview?.friendUserIds ?? []) : undefined,
   };
 
   const desktopBrowsePanel = (
@@ -427,25 +637,21 @@ export const ExploreExperience = () => {
     />
   );
 
-  const desktopWhosGoingPanel = (
+  const desktopSocialPanel = (
     <ExploreBrowsePanel
       {...browsePanelShared}
-      listItems={whosGoingListItems}
-      onClose={browse.closeWhosGoingPanel}
-      closePanelAriaLabel="Close Who's going panel"
+      listItems={[]}
+      onClose={browse.closeSocialPanel}
+      closePanelAriaLabel="Close Social panel"
       closeButtonVariant="dismiss"
-      listMode="whosGoing"
+      listMode="social"
     />
   );
 
   const mobileBrowsePanel = (
     <ExploreBrowsePanel
       {...browsePanelShared}
-      listItems={
-        browse.listMode === 'whosGoing' && browse.whosGoingSegment === 'trips'
-          ? whosGoingListItems
-          : listItems
-      }
+      listItems={browse.listMode === 'social' ? [] : listItems}
       onClose={browse.closeListPanel}
       listMode={browse.listMode}
     />
@@ -488,10 +694,10 @@ export const ExploreExperience = () => {
           onMapFilterChange={browse.applyMapFilter}
           onActivityDatePresetChange={browse.applyActivityDatePreset}
           onVenueRegionsChange={browse.applyVenueRegions}
-          onWhosGoing={browse.openWhosGoingList}
-          whosGoingAvatars={whosGoingPreview.avatars}
-          whosGoingExtraCount={whosGoingPreview.extraCount}
-          whosGoingTotalJoining={whosGoingPreview.totalJoining}
+          onOpenSocialPanel={openSocialPanel}
+          socialPanelAvatars={socialPanelMapChip.avatars}
+          socialPanelExtraCount={socialPanelMapChip.extraCount}
+          socialPanelFriendCount={socialPanelMapChip.friendCount}
           searchQuery={browse.query}
           onSearchQueryChange={browse.setQuery}
           onSearchCommit={handleMapSearchCommit}
@@ -524,22 +730,13 @@ export const ExploreExperience = () => {
           selectedCard={selection.selectedCard}
           joinUiState={selection.peekJoinUiState}
           joinStateLoading={selection.peekJoinStateLoading}
-          onCloseSelection={selection.handleCloseSelection}
+          onCloseSelection={handleCloseMapSelection}
+          joinInvitePeekBanner={joinInvitePeekBanner}
           onJoin={selection.handleJoin}
-          onMessage={
-            selection.selectedCard?.showHostActions
-              ? selection.handleHostMessage
-              : selection.handleDemandMessage
-          }
-          onHostFullManage={
-            selection.selectedCard?.showHostActions ? selection.handleHostManage : undefined
-          }
-          onManage={
-            selection.selectedCard?.showHostActions ? selection.handleHostCheckin : undefined
-          }
+          onMessage={selection.handleDemandMessage}
+          onActivityMapPeekAction={selection.handleActivityMapPeekAction}
+          activityPeekSkipsJoinContext={selection.activityPeekSkipsJoinContext}
           linkRideshareTenantId={tenantId}
-          onCreateLinkedRideshare={handleCreateLinkedRideshare}
-          onHostRemove={selection.selectedCard?.showHostActions ? selection.requestHostRemove : undefined}
           onDemandRemove={
             selection.selectedCard?.showDemandOwnerActions ? selection.requestDemandRemove : undefined
           }
@@ -549,6 +746,7 @@ export const ExploreExperience = () => {
           onDemandLinkRideshare={
             selection.selectedCard?.showDemandLinkRideshare ? handleOfferRideshareForDemand : undefined
           }
+          hostActivityCtaHandlers={hostActivityCtaHandlers}
           onOpenExploreItem={(exploreItemId) => {
             const item = selectionItems.find((entry) => entry.id === exploreItemId);
             if (item) selection.openItem(item);
@@ -557,21 +755,16 @@ export const ExploreExperience = () => {
           onCloseMobileBrowse={browse.closeListPanel}
           mobileBrowseSheet={mobileBrowsePanel}
           onGuestGatedAction={selection.handleGuestGatedAction}
-          onInviteCrew={
-            selection.selected?.activity?.status === 'published' &&
-            (selection.selectedCard?.showHostActions || selection.joinUiState?.kind === 'confirmed')
-              ? selection.handleInviteCrew
-              : undefined
-          }
+          onPlanTripFromVenue={handlePlanTripFromVenue}
         />
 
         {inviteShare.sheet}
 
-        {isDesktop && browse.listMode === 'whosGoing' ? (
+        {isDesktop && browse.listMode === 'social' ? (
           <aside
             className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-l lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300"
           >
-            {desktopWhosGoingPanel}
+            {desktopSocialPanel}
           </aside>
         ) : null}
       </div>
@@ -585,13 +778,14 @@ export const ExploreExperience = () => {
         organizeKind={compose.organizeRoute?.kind ?? null}
         findKind={compose.findRoute?.kind}
         addKind={compose.addRoute?.kind ?? null}
-        fulfillIntentPrefill={organizeWizardPrefill}
+        organizeWizardPrefill={organizeWizardPrefill}
         signInHref={buildSignInRedirect({ pathname, search }).href}
         onComposeRouteChange={compose.handleComposeRouteChange}
         onCloseCompose={compose.closeCompose}
         onCloseCreateFlow={closeCreateFlow}
         onOrganizeBackToIntent={() => {
           organizeFrom.clearOrganizeFromPrefill();
+          setOrganizeFromPlacePrefill(null);
           setRideshareLinkParent(null);
           setRideshareLinkDemand(null);
           compose.setComposeRoute({ surface: 'menu', intent: 'organize' });
@@ -613,44 +807,22 @@ export const ExploreExperience = () => {
           void refreshHostGate();
         }}
         onCreateLinkedRideshare={handleCreateLinkedRideshare}
+        planWithBuddyUserId={planWithBuddyUserId}
         onOpenHostApplication={() => {
           closeCreateFlow();
           const returnPath = `${pathname}${search}`;
-          navigate(organizePublishGateHref(returnPath, { signupProfileComplete, canPublish }));
+          navigateOrganizePublishGate(returnPath);
         }}
         onContributeSubmitted={selection.handleContributeSubmitted}
       />
 
-      <Dialog
-        open={Boolean(selection.hostRemoveConfirm)}
+      <HostActivityCancelDialog
+        activity={selection.hostRemoveConfirm}
+        participantNotice={hostRemoveParticipantNotice}
+        busy={selection.hostRemoveBusy}
         onClose={() => selection.setHostRemoveConfirm(null)}
-        title={
-          selection.hostRemoveConfirm?.status === 'draft' ? 'Delete draft?' : 'Cancel activity?'
-        }
-      >
-        <p className="mb-4 text-sm text-neutral-600">
-          {selection.hostRemoveConfirm?.status === 'draft'
-            ? `Remove "${selection.hostRemoveConfirm?.title}" permanently?`
-            : `Cancel "${selection.hostRemoveConfirm?.title}"? People who joined will be notified.`}
-        </p>
-        <div className="flex justify-end gap-2">
-          <AppButton
-            type="button"
-            variant="secondary"
-            onClick={() => selection.setHostRemoveConfirm(null)}
-          >
-            Keep
-          </AppButton>
-          <AppButton
-            type="button"
-            variant="destructive"
-            disabled={selection.hostRemoveBusy}
-            onClick={() => void selection.confirmHostRemove()}
-          >
-            {selection.hostRemoveConfirm?.status === 'draft' ? 'Delete' : 'Cancel activity'}
-          </AppButton>
-        </div>
-      </Dialog>
+        onConfirm={() => void selection.confirmHostRemove()}
+      />
 
       <Dialog
         open={Boolean(selection.demandRemoveIntentId)}

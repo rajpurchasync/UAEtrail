@@ -72,6 +72,20 @@ describe('activity RSVP flow integration', () => {
 
     expect(detailRes.status).toBe(200);
     expect(detailRes.body.data.myParticipation?.status).toBe('confirmed');
+
+    const chatStatusRes = await request(app)
+      .get(`/api/v1/activities/${rsvpFixture.activityId}/group-chat/status`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(chatStatusRes.status).toBe(200);
+    expect(chatStatusRes.body.data.isMember).toBe(false);
+
+    const joinChatRes = await request(app)
+      .post(`/api/v1/activities/${rsvpFixture.activityId}/group-chat/join`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(joinChatRes.status).toBe(200);
+    expect(joinChatRes.body.data.isMember).toBe(true);
   });
 
   it('rejects join requests on RSVP activities', async () => {

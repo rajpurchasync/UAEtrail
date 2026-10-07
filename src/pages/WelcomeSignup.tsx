@@ -13,7 +13,7 @@ import {
   PRODUCT_SIGNUP_FINISH_SUBLINE,
   PRODUCT_SIGNUP_FINISH_TITLE,
 } from '../content/productNorthStar';
-import { EXPLORE_WELCOME_FINISH_STATE } from '../utils/exploreWelcomeNavigation';
+import { EXPLORE_WELCOME_FINISH_STATE } from '../explore/exploreWelcomeNavigation';
 
 type WelcomeLocationState = {
   redirectTo?: string;

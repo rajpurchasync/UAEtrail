@@ -1,4 +1,4 @@
-import type { ActivityDTO, OutdoorMapEntryCategory, OutdoorMapEntryDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, JourneyMapEntryCategory, JourneyMapEntryDTO } from '@uaetrail/shared-types';
 import { activityDetailPath } from '@uaetrail/shared-types';
 import { listHostedActivityIdsForUser, listActivitiesForRequestViews } from '../lib/activities-store.js';
 import { buildActivityDto } from '../lib/mappers.js';
@@ -19,8 +19,8 @@ const coordsFromActivity = (activity: ActivityDTO): { latitude: number | null; l
   longitude: activity.displayLongitude ?? activity.locationLongitude ?? null,
 });
 
-const entryFromPin = (pin: MemberMapPinDTO): OutdoorMapEntryDTO => {
-  const categories: OutdoorMapEntryCategory[] = [];
+const entryFromPin = (pin: MemberMapPinDTO): JourneyMapEntryDTO => {
+  const categories: JourneyMapEntryCategory[] = [];
   if (pin.kind === 'wishlist') categories.push('wishlist');
   else if (pin.source === 'manual') categories.push('self');
   if (pin.source === 'activity_check_in') categories.push('joined');
@@ -50,7 +50,7 @@ const entryFromPin = (pin: MemberMapPinDTO): OutdoorMapEntryDTO => {
 const entryFromJoinedActivity = (
   activity: ActivityDTO,
   checkedInAt: string | null | undefined
-): OutdoorMapEntryDTO => {
+): JourneyMapEntryDTO => {
   const { latitude, longitude } = coordsFromActivity(activity);
   const type =
     parseMemberMapPinActivityType(activity.activityType) ??
@@ -72,7 +72,7 @@ const entryFromJoinedActivity = (
   };
 };
 
-const entryFromHostedActivity = (activity: ActivityDTO): OutdoorMapEntryDTO => {
+const entryFromHostedActivity = (activity: ActivityDTO): JourneyMapEntryDTO => {
   const { latitude, longitude } = coordsFromActivity(activity);
   const type =
     parseMemberMapPinActivityType(activity.activityType) ??
@@ -95,12 +95,12 @@ const entryFromHostedActivity = (activity: ActivityDTO): OutdoorMapEntryDTO => {
 };
 
 const mergeCategories = (
-  a: OutdoorMapEntryCategory[],
-  b: OutdoorMapEntryCategory[]
-): OutdoorMapEntryCategory[] => [...new Set([...a, ...b])];
+  a: JourneyMapEntryCategory[],
+  b: JourneyMapEntryCategory[]
+): JourneyMapEntryCategory[] => [...new Set([...a, ...b])];
 
 const mergeStatusLabel = (
-  categories: OutdoorMapEntryCategory[],
+  categories: JourneyMapEntryCategory[],
   a: string | null,
   b: string | null
 ): string | null => {
@@ -113,7 +113,7 @@ const mergeStatusLabel = (
   return a ?? b;
 };
 
-const mergeEntries = (base: OutdoorMapEntryDTO, incoming: OutdoorMapEntryDTO): OutdoorMapEntryDTO => {
+const mergeEntries = (base: JourneyMapEntryDTO, incoming: JourneyMapEntryDTO): JourneyMapEntryDTO => {
   const categories = mergeCategories(base.categories, incoming.categories);
   return {
     ...base,
@@ -125,11 +125,11 @@ const mergeEntries = (base: OutdoorMapEntryDTO, incoming: OutdoorMapEntryDTO): O
   };
 };
 
-export const buildOutdoorMapEntries = async (
+export const buildJourneyMapEntries = async (
   userId: string,
   pins: MemberMapPinDTO[]
-): Promise<OutdoorMapEntryDTO[]> => {
-  const byId = new Map<string, OutdoorMapEntryDTO>();
+): Promise<JourneyMapEntryDTO[]> => {
+  const byId = new Map<string, JourneyMapEntryDTO>();
 
   for (const pin of pins) {
     const entry = entryFromPin(pin);
@@ -173,3 +173,6 @@ export const buildOutdoorMapEntries = async (
 
   return [...byId.values()].sort((a, b) => b.placeDate.localeCompare(a.placeDate));
 };
+
+/** @deprecated Use {@link buildJourneyMapEntries} */
+export const buildOutdoorMapEntries = buildJourneyMapEntries;

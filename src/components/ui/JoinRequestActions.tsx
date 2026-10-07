@@ -1,3 +1,8 @@
+import {
+  JOIN_CANCEL_REQUEST_BUTTON,
+  JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON,
+  JOIN_WITHDRAW_PENDING_HINT,
+} from '../../content/joinWithdrawCopy';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { pendingApprovalLabel } from '../../utils/joinRequestUi';
 
@@ -38,10 +43,10 @@ export const JoinRequestActions = ({
             onClick={onWithdraw}
             className="w-full py-2.5 text-center text-sm font-semibold text-red-600"
           >
-          Cancel request
+            {JOIN_CANCEL_REQUEST_BUTTON}
           </button>
         )}
-        <p className="text-center text-xs text-neutral-500">We&apos;ll let you know when the host replies</p>
+        <p className="text-center text-xs text-neutral-500">{JOIN_WITHDRAW_PENDING_HINT}</p>
       </div>
     );
   }
@@ -54,7 +59,7 @@ export const JoinRequestActions = ({
           onClick={onWithdraw}
           className="w-full rounded-2xl border-2 border-red-200 bg-white py-3.5 text-base font-bold text-red-600"
         >
-          Leave activity
+          {JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON}
         </button>
       </div>
     );

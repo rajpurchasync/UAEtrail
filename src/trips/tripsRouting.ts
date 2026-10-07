@@ -232,7 +232,7 @@ export const tripsHostedActivityPath = (
   params.set('view', 'plans');
   params.set('role', 'hosted');
   if (view === 'checkin') {
-    params.set('checkin', activityId);
+    params.set('roster', activityId);
   } else {
     params.set('peek', activityId);
   }

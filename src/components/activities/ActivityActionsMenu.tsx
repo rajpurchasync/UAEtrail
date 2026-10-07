@@ -155,7 +155,8 @@ export const ActivityActionsMenu = ({ items, align = 'right' }: ActivityActionsM
 
 type HostMenuHandlers = {
   onPreview?: (activity: ActivityDTO) => void;
-  onEdit: (activity: ActivityDTO) => void;
+  /** @deprecated Use onReorganize — explore Organize wizard. */
+  onEdit?: (activity: ActivityDTO) => void;
   onPublish?: (activity: ActivityDTO) => void;
   onDuplicate: (activity: ActivityDTO) => void;
   /** Explore organize wizard prefill — new activity id on publish. */
@@ -166,12 +167,14 @@ type HostMenuHandlers = {
   onManage?: (activity: ActivityDTO) => void;
 };
 
-export const buildOrganisationActivityMenuItems = (
+/** Row actions for a hosted **activity** (host user console / trips). */
+export const buildHostActivityMenuItems = (
   activity: ActivityDTO,
   handlers: HostMenuHandlers
 ): ActivityMenuItem[] => {
   const status = activity.status;
   const canEdit = status === 'draft' || status === 'published' || status === 'suspended';
+  const editOnMap = handlers.onReorganize ?? handlers.onEdit;
 
   return [
     {
@@ -188,9 +191,9 @@ export const buildOrganisationActivityMenuItems = (
     },
     {
       id: 'edit',
-      label: 'Edit',
-      onClick: () => handlers.onEdit(activity),
-      hidden: !canEdit,
+      label: 'Edit on map',
+      onClick: () => editOnMap?.(activity),
+      hidden: !canEdit || !editOnMap,
     },
     {
       id: 'publish',
@@ -202,12 +205,6 @@ export const buildOrganisationActivityMenuItems = (
       id: 'duplicate',
       label: 'Duplicate',
       onClick: () => handlers.onDuplicate(activity),
-    },
-    {
-      id: 'reorganize',
-      label: 'Reorganize on map',
-      onClick: () => handlers.onReorganize?.(activity),
-      hidden: !handlers.onReorganize,
     },
     {
       id: 'checkin',
@@ -243,7 +240,7 @@ export const buildAdminActivityMenuItems = (
   activity: ActivityDTO,
   handlers: AdminMenuHandlers
 ): ActivityMenuItem[] => [
-  ...buildOrganisationActivityMenuItems(activity, handlers),
+  ...buildHostActivityMenuItems(activity, handlers),
   {
     id: 'feature',
     label: activity.featured ? 'Remove featured' : 'Feature on home',
@@ -267,6 +264,4 @@ export const buildAdminActivityMenuItems = (
       handlers.canSuspend?.(activity) === false,
   },
 ];
-/** @deprecated Use {@link buildOrganisationActivityMenuItems} */
-export const buildHostActivityMenuItems = buildOrganisationActivityMenuItems;
 

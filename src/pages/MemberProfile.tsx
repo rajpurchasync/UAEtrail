@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
 import { Loader2, Lock } from 'lucide-react';
 import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import { api, type PersonPublicProfileDTO } from '../api/index';
@@ -9,7 +10,14 @@ import { MemberProfileView } from '../components/profile/MemberProfileView';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import { messagesRouteForRole } from '../utils/authRouting';
-import { myActivitiesPath } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, myActivitiesPath, proMembershipPath, SIGNIN_PATH } from '../config/routingCatalog';
+import {
+  MEMBER_DISCOVERY_QUOTA_GATE_BODY,
+  MEMBER_DISCOVERY_QUOTA_GATE_CTA,
+  MEMBER_DISCOVERY_QUOTA_GATE_TITLE,
+} from '../content/exploreGoingPanelCopy';
+import { parseProfileReturnNavState } from '../utils/profileReturnNav';
+import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
 
 const isFullProfile = (
   profile: PersonPublicProfileDTO
@@ -20,6 +28,11 @@ export const MemberProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const previewAsPublic = searchParams.get('view') === 'public';
+  const fromDiscover = searchParams.get('discover') === '1';
+  const profileReturn = parseProfileReturnNavState(location.state);
   const [profile, setProfile] = useState<PersonPublicProfileDTO | null>(null);
   const [buddyRel, setBuddyRel] = useState<BuddyRelationshipDTO | null>(null);
   const [buddyBusy, setBuddyBusy] = useState(false);
@@ -27,20 +40,39 @@ export const MemberProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [upcomingActivities, setUpcomingActivities] = useState<ActivityDTO[]>([]);
+  const [viewerAccess, setViewerAccess] = useState<ProfileViewerAccessDTO | null>(null);
+  const [discoveryUpgradeRequired, setDiscoveryUpgradeRequired] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
     setError(null);
-    void api
-      .getPersonPublicProfile(userId)
-      .then((res) => setProfile(res.data))
-      .catch((err) => setError(err instanceof Error ? err.message : 'We couldn\'t find this profile'))
+    setDiscoveryUpgradeRequired(false);
+    const load =
+      previewAsPublic && user?.id === userId
+        ? api.getMeProfilePublicPreview()
+        : api.getPersonPublicProfile(userId, { discover: fromDiscover });
+    void load
+      .then((res) => {
+        setProfile(res.data);
+        setViewerAccess(res.viewerAccess ?? null);
+      })
+      .catch((err) => {
+        const apiErr = err as Error & { code?: string };
+        if (apiErr.code === 'upgrade_required' && fromDiscover) {
+          setDiscoveryUpgradeRequired(true);
+          setError(null);
+          setProfile(null);
+          return;
+        }
+        const message = err instanceof Error ? err.message : 'We couldn\'t find this profile';
+        setError(message);
+      })
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [userId, previewAsPublic, fromDiscover, user?.id]);
 
   useEffect(() => {
-    if (!userId || profile?.visibilityState !== 'full') {
+    if (!userId || viewerAccess?.exposure !== 'full') {
       setUpcomingActivities([]);
       return;
     }
@@ -48,7 +80,7 @@ export const MemberProfile = () => {
       .getPersonUpcomingActivities(userId)
       .then((res) => setUpcomingActivities(res.data))
       .catch(() => setUpcomingActivities([]));
-  }, [userId, profile?.visibilityState]);
+  }, [userId, viewerAccess?.exposure]);
 
   const loadBuddyRelationship = () => {
     if (!userId || !user || user.id === userId) return;
@@ -81,7 +113,10 @@ export const MemberProfile = () => {
       );
       setBuddyMessage(res.data.status === 'accepted' ? 'You are now friends.' : 'Friend request sent.');
       if (res.data.status === 'accepted') {
-        void api.getPersonPublicProfile(userId).then((profileRes) => setProfile(profileRes.data));
+        void api.getPersonPublicProfile(userId).then((profileRes) => {
+          setProfile(profileRes.data);
+          setViewerAccess(profileRes.viewerAccess ?? null);
+        });
       }
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not send buddy request.');
@@ -99,7 +134,10 @@ export const MemberProfile = () => {
       setBuddyMessage('Friend request accepted.');
       loadBuddyRelationship();
       if (userId) {
-        void api.getPersonPublicProfile(userId).then((profileRes) => setProfile(profileRes.data));
+        void api.getPersonPublicProfile(userId).then((profileRes) => {
+          setProfile(profileRes.data);
+          setViewerAccess(profileRes.viewerAccess ?? null);
+        });
       }
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not accept request.');
@@ -141,7 +179,9 @@ export const MemberProfile = () => {
   const fullProfile = profile && isFullProfile(profile) ? profile : null;
 
   const isSelf = user?.id === userId;
-  const isPrivate = profile?.visibilityState === 'private';
+  const guestSignInRequired = viewerAccess?.gateReason === 'sign_in' && !user;
+  const isPrivate =
+    profile?.visibilityState === 'private' && viewerAccess?.exposure === 'none' && !guestSignInRequired;
   const pageTitle = fullProfile?.displayName ?? 'Member';
 
   return (
@@ -150,7 +190,10 @@ export const MemberProfile = () => {
       title={pageTitle}
       navTitle={pageTitle.length > 18 ? `${pageTitle.slice(0, 16)}…` : pageTitle}
       showJourney={false}
-      back={{ fallbackTo: myActivitiesPath(), label: 'My trips' }}
+      back={{
+        fallbackTo: profileReturn?.from ?? myActivitiesPath(),
+        label: profileReturn?.backLabel ?? 'My trips',
+      }}
     >
       <PageMeta title={pageTitle} noIndex />
 
@@ -158,6 +201,23 @@ export const MemberProfile = () => {
         <div className="flex justify-center py-16">
           <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
+      ) : discoveryUpgradeRequired ? (
+        <GlassCard padding className="text-center">
+          <h1 className="text-lg font-bold text-neutral-900">{MEMBER_DISCOVERY_QUOTA_GATE_TITLE}</h1>
+          <p className="mt-2 text-sm text-neutral-600 leading-relaxed">{MEMBER_DISCOVERY_QUOTA_GATE_BODY}</p>
+          <Link
+            to={proMembershipPath({
+              intent: 'discover-members',
+              redirect: `${EXPLORE_MAP_PATH}?view=social&list=1`,
+            })}
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+          >
+            {MEMBER_DISCOVERY_QUOTA_GATE_CTA}
+          </Link>
+          <Link to={myActivitiesPath()} className="mt-3 block text-sm font-semibold text-emerald-700">
+            Back to my activities
+          </Link>
+        </GlassCard>
       ) : error || !profile ? (
         <GlassCard padding className="text-center">
           <p className="text-sm text-neutral-600">{error ?? 'We couldn\'t find this profile'}</p>
@@ -165,22 +225,24 @@ export const MemberProfile = () => {
             Back to my activities
           </Link>
         </GlassCard>
+      ) : guestSignInRequired ? (
+        <ExploreGuestSignInCard intent="member-profile" />
       ) : isPrivate ? (
         <GlassCard padding className="!p-5 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
             <Lock className="h-7 w-7 text-neutral-500" />
           </div>
-          <h1 className="mt-4 text-lg font-bold text-neutral-900">Private profile</h1>
+          <h1 className="mt-4 text-lg font-bold text-neutral-900">Profile not available</h1>
           <p className="mt-2 text-sm text-neutral-600 leading-relaxed">{profile.message}</p>
-          {!user && (
+          {!user ? (
             <Link
-              to="/signin"
+              to={SIGNIN_PATH}
               state={{ from: `/member/${profile.id}` }}
               className="mt-4 inline-block text-sm font-semibold text-emerald-700"
             >
-              Log in if you are friends or share an activity
+              Sign in
             </Link>
-          )}
+          ) : null}
         </GlassCard>
       ) : fullProfile && userId ? (
         <MemberProfileView

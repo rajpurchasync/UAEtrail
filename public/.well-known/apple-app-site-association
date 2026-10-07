@@ -8,7 +8,6 @@
           "/activity/*",
           "/trail/*",
           "/camp/*",
-          "/community",
           "/profile",
           "/shop",
           "/signin",

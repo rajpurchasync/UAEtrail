@@ -15,6 +15,7 @@ import { listBuddiesForUser } from '../lib/buddy-store.js';
 import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
 import { listFollowerIdsForUser } from '../lib/follow-store.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
+import { activityDetailPath, exploreDemandPinPath } from '../lib/member-routes.js';
 import { logger } from '../lib/logger.js';
 
 export type MemberPublishEvent =
@@ -24,18 +25,20 @@ export type MemberPublishEvent =
 const notificationCopy = (
   actorName: string,
   event: MemberPublishEvent
-): { title: string; body: string; path: string } => {
+): { title: string; body: string; path: string; kind: string } => {
   if (event.publishType === 'activity') {
     return {
       title: `${actorName} is hosting an outing`,
       body: event.title,
-      path: `/activity/${event.activityId}`,
+      path: activityDetailPath(event.activityId),
+      kind: 'friend_activity_published',
     };
   }
   return {
     title: `${actorName} posted on the map`,
     body: event.title,
-    path: `/explore?pin=demand:${event.intentId}&list=1&panel=activities`,
+    path: exploreDemandPinPath(event.intentId),
+    kind: 'friend_published',
   };
 };
 
@@ -62,24 +65,23 @@ export const notifyMemberPublishSubscribers = async (
     const recipientIds = await listPublishSubscriberIds(publisherUserId, event);
     if (recipientIds.length === 0) return;
 
-    const metaBase: Record<string, string> = {
-      kind: 'member_published',
-      publishType: event.publishType,
-      actorUserId: publisherUserId,
-    };
-    if (event.publishType === 'activity') metaBase.activityId = event.activityId;
-    else metaBase.intentId = event.intentId;
-
     const rows = await Promise.all(
       recipientIds.map(async (userId) => {
         const actorName = await resolveNotificationActorDisplayName(publisherUserId, userId);
-        const { title, body, path } = notificationCopy(actorName, event);
+        const { title, body, path, kind } = notificationCopy(actorName, event);
+        const meta: Record<string, string> = {
+          kind,
+          actorUserId: publisherUserId,
+          path,
+        };
+        if (event.publishType === 'activity') meta.activityId = event.activityId;
+        else meta.intentId = event.intentId;
         return {
           userId,
           title,
           body,
           type: NotificationType.ACTIVITY,
-          meta: { ...metaBase, path },
+          meta,
         };
       })
     );

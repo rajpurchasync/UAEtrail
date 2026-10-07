@@ -4,6 +4,7 @@ import type {
   AdminMetrics,
   AdminSocialGroupDetail,
   AdminSocialGroupListItem,
+  AdminContentReportEntry,
   AuditLogEntry,
   HostApplication,
   TenantDetail,
@@ -83,6 +84,17 @@ export const adminApi = {
       body: JSON.stringify({ status, comment })
     }),
 
+    getAdminContentReports: (page?: number, pageSize?: number) => {
+    const params = new URLSearchParams();
+    if (page) params.set('page', String(page));
+    if (pageSize) params.set('pageSize', String(pageSize));
+    const qs = params.toString();
+    return apiRequest<{
+      data: AdminContentReportEntry[];
+      pagination: { total: number; page: number; pageSize: number; totalPages: number };
+    }>(`/admin/reports${qs ? `?${qs}` : ''}`, { auth: true });
+  },
+
     getAdminAuditLogs: (filters?: { action?: string; entityType?: string; page?: number; pageSize?: number }) => {
     const params = new URLSearchParams();
     if (filters?.action) params.set('action', filters.action);
@@ -132,5 +144,18 @@ export const adminApi = {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify({ status })
-    })
+    }),
+
+    grantPlatformAdmin: (email: string) =>
+      apiRequest<{ data: { userId: string; email: string }; message: string }>('/admin/platform-admins', {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify({ email }),
+      }),
+
+    revokePlatformAdmin: (userId: string) =>
+      apiRequest(`/admin/platform-admins/${userId}`, {
+        method: 'DELETE',
+        auth: true,
+      }),
 } as const;

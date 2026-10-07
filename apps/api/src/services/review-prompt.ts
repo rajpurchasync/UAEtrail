@@ -33,10 +33,12 @@ export async function promptPostActivityReview(opts: {
     body: `Share your experience at ${opts.locationName} to help fellow hikers.`,
     type: NotificationType.REVIEW_PROMPT,
     meta: {
+      kind: 'review_prompt',
       activityId: opts.activityId,
       locationId: opts.locationId,
+      path: reviewPath,
       reviewPath,
-      activityType: opts.activityType
-    }
+      activityType: opts.activityType,
+    },
   });
 }

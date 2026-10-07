@@ -1,5 +1,6 @@
 import type { Collection } from 'mongodb';
-import { groupWallBodySnippet, type GroupWallReplyPreviewDTO } from '@uaetrail/shared-types';
+import type { GroupWallReplyPreviewDTO } from '@uaetrail/shared-types';
+import { buildGroupWallReplyPreview } from './reply-preview.js';
 import { newEntityId } from './entity-builders.js';
 import { findAuthUsersByIds } from './auth-users.js';
 import { getMongoClient } from './mongo.js';
@@ -296,10 +297,24 @@ export const createActivityGroup = async (input: {
 export const updateGroupWallPostPolicy = async (
   groupId: string,
   wallPostPolicy: GroupWallPostPolicy
+): Promise<GroupRecord | null> =>
+  updateGroupChatSettings(groupId, { wallPostPolicy });
+
+export const updateGroupChatSettings = async (
+  groupId: string,
+  patch: { wallPostPolicy?: GroupWallPostPolicy; photoUrl?: string | null }
 ): Promise<GroupRecord | null> => {
+  const $set: Record<string, unknown> = { updatedAt: new Date() };
+  if (patch.wallPostPolicy !== undefined) {
+    $set.wallPostPolicy = patch.wallPostPolicy;
+  }
+  if (patch.photoUrl !== undefined) {
+    $set.photoUrl = patch.photoUrl?.trim() || null;
+  }
+
   const result = await groupsCollection().findOneAndUpdate(
     { _id: groupId },
-    { $set: { wallPostPolicy, updatedAt: new Date() } },
+    { $set },
     { returnDocument: 'after' }
   );
   return result ? mapGroup(result) : null;
@@ -513,19 +528,13 @@ export const usersShareActiveGroup = async (userA: string, userB: string): Promi
   if (!userA || !userB) return false;
   if (userA === userB) return true;
 
-  const groupIdRows = await membersCollection()
-    .aggregate<{ _id: string }>([
-      {
-        $match: {
-          userId: userA,
-          memberType: 'adult',
-          isActive: { $ne: false }
-        }
-      },
-      { $group: { _id: '$groupId' } }
-    ])
+  const memberships = await membersCollection()
+    .find(
+      { userId: userA, memberType: 'adult', isActive: { $ne: false } },
+      { projection: { groupId: 1 } }
+    )
     .toArray();
-  const groupIds = groupIdRows.map((row) => row._id).filter(Boolean);
+  const groupIds = [...new Set(memberships.map((row) => row.groupId).filter(Boolean))];
   if (groupIds.length === 0) return false;
 
   const shared = await membersCollection().findOne({
@@ -867,11 +876,11 @@ const presentGroupWallMessages = async (
     const parentUser = parent ? userMap.get(parent.authorUserId) : undefined;
     const replyToPreview =
       replyId && parent
-        ? {
-            messageId: replyId,
-            authorDisplayName: displayNameForUser(parentUser),
-            bodySnippet: groupWallBodySnippet(parent.body),
-          }
+        ? buildGroupWallReplyPreview(
+            replyId,
+            displayNameForUser(parentUser),
+            parent.body
+          )
         : null;
 
     return {

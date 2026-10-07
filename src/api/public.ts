@@ -19,14 +19,6 @@ export const fetchPublicPlaces = async (countryCode?: string): Promise<Place[]> 
   return mapLocationsToPlaces(response.data);
 };
 
-export const fetchPublicExploreCatalog = async (): Promise<{
-  places: Place[];
-  activities: ActivityDTO[];
-}> => {
-  const [places, activities] = await Promise.all([fetchPublicPlaces(), fetchApiActivities()]);
-  return { places, activities };
-};
-
 export const fetchApiActivities = async (when: 'upcoming' | 'past' = 'upcoming'): Promise<ActivityDTO[]> => {
   const events = await api.getPublicActivities({ when, pageSize: 100 });
   return events.data;

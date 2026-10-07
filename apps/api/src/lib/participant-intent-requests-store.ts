@@ -215,6 +215,32 @@ export const listApprovedParticipantIntentJoinerUserIds = async (
   return docs.map((doc) => doc.userId).filter((userId) => userId !== intent.userId);
 };
 
+/** Batch map for explore map demand `viewerAccess` (per viewer). */
+export const mapIntentJoinRequestStatusByIntentIdsForUser = async (
+  userId: string,
+  intentIds: string[]
+): Promise<Map<string, 'pending' | 'approved'>> => {
+  const uniqueIds = [...new Set(intentIds.filter(Boolean))];
+  if (uniqueIds.length === 0) return new Map();
+
+  const docs = await requestsCollection()
+    .find({
+      userId,
+      intentId: { $in: uniqueIds },
+      status: { $in: ['pending', 'approved'] },
+    })
+    .project({ intentId: 1, status: 1 })
+    .toArray();
+
+  const result = new Map<string, 'pending' | 'approved'>();
+  for (const doc of docs) {
+    if (doc.status === 'pending' || doc.status === 'approved') {
+      result.set(doc.intentId, doc.status);
+    }
+  }
+  return result;
+};
+
 export const findParticipantIntentJoinRequestForUser = async (
   intentId: string,
   userId: string

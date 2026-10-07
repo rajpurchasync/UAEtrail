@@ -1,9 +1,10 @@
 import { createPortal } from 'react-dom';
+import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../exploreCardModel';
-import { EXPLORE_PEEK, EXPLORE_SHEET, EXPLORE_Z } from '../../config/exploreTheme';
+import { EXPLORE_PEEK, EXPLORE_Z } from '../../config/exploreTheme';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import { ExploreItemPeekBody, ExploreItemPeekFooter } from './ExploreItemPeekParts';
-import { ExploreMapPeekCard } from './ExploreMapPeekCard';
+import { ExploreItemPeekBody, ExploreItemPeekActions } from './ExploreItemPeekParts';
+import { ExploreMapPeekCard, ExploreMapPeekPosition } from './ExploreMapPeekCard';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 
 interface ExploreItemSheetProps {
@@ -11,20 +12,18 @@ interface ExploreItemSheetProps {
   onClose: () => void;
   onJoin?: () => void;
   onMessage?: () => void;
-  onManage?: () => void;
-  onHostFullManage?: () => void;
   joinUiState?: JoinRequestUiState;
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
   linkRideshareTenantId?: string | null;
-  onCreateLinkedRideshare?: (parent: import('@uaetrail/shared-types').ActivityDTO) => void;
-  onHostRemove?: () => void;
   onDemandRemove?: () => void;
   onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
   onGuestGatedAction?: () => void;
-  onInviteCrew?: () => void;
+  onActivityMapPeekAction?: (actionId: ActivityMapPeekActionId) => void;
+  hostActivityCtaHandlers?: import('../../components/activity/HostActivityCtas').HostActivityCtaHandlers | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
+  joinInvitePeekBanner?: string | null;
   /** Map stage anchor vs portaled sheet (hosted activity manage from member hub, etc.). */
   presentation?: 'map' | 'modal';
 }
@@ -34,36 +33,32 @@ const ExploreItemPeekCard = ({
   onClose,
   onJoin,
   onMessage,
-  onManage,
-  onHostFullManage,
   joinUiState,
   onWithdraw,
   joinStateLoading = false,
   linkRideshareTenantId = null,
-  onCreateLinkedRideshare,
-  onHostRemove,
   onDemandRemove,
   onDemandFullManage,
   onDemandLinkRideshare,
   onGuestGatedAction,
-  onInviteCrew,
+  onActivityMapPeekAction,
+  hostActivityCtaHandlers = null,
   onOpenExploreItem,
+  joinInvitePeekBanner = null,
 }: ExploreItemSheetProps) => (
   <ExploreMapPeekCard
     card={card}
     onClose={onClose}
-    pinFooter
-    footer={
-      <ExploreItemPeekFooter
+    joinStateLoading={joinStateLoading}
+    onGuestGatedAction={onGuestGatedAction}
+    statusBanner={joinInvitePeekBanner}
+    actions={
+      <ExploreItemPeekActions
         card={card}
         onClose={onClose}
         onJoin={onJoin}
         onMessage={onMessage}
-        onManage={onManage}
-        onHostFullManage={onHostFullManage}
         linkRideshareTenantId={linkRideshareTenantId}
-        onCreateLinkedRideshare={onCreateLinkedRideshare}
-        onHostRemove={onHostRemove}
         onDemandRemove={onDemandRemove}
         onDemandFullManage={onDemandFullManage}
         onDemandLinkRideshare={onDemandLinkRideshare}
@@ -71,7 +66,8 @@ const ExploreItemPeekCard = ({
         onWithdraw={onWithdraw}
         joinStateLoading={joinStateLoading}
         onGuestGatedAction={onGuestGatedAction}
-        onInviteCrew={onInviteCrew}
+        onActivityMapPeekAction={onActivityMapPeekAction}
+        hostActivityCtaHandlers={hostActivityCtaHandlers}
       />
     }
   >
@@ -105,18 +101,8 @@ export const ExploreItemSheet = ({ presentation = 'map', ...props }: ExploreItem
   }
 
   return (
-    <div
-      className={`${EXPLORE_PEEK.position} lg:fixed lg:inset-0 ${EXPLORE_Z.peekCard} lg:flex lg:items-center lg:justify-center ${EXPLORE_SHEET.scrim} lg:p-6 lg:pb-6`}
-    >
-      <button
-        type="button"
-        className="absolute inset-0 hidden lg:block"
-        aria-label="Close"
-        onClick={props.onClose}
-      />
-      <div className={EXPLORE_PEEK.inner}>
-        <ExploreItemPeekCard {...props} />
-      </div>
-    </div>
+    <ExploreMapPeekPosition onClose={props.onClose}>
+      <ExploreItemPeekCard {...props} />
+    </ExploreMapPeekPosition>
   );
 };

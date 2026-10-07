@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "description": "Maps SYSTEM_COHERENCE §3 bounded contexts to API, FE client, and UI roots. Used by verify:system — do not duplicate in new markdown files.",
+  "contexts": [
+    {
+      "id": "discovery",
+      "label": "Discovery",
+      "apiFiles": [
+        "apps/api/src/lib/explore-map.ts",
+        "apps/api/src/lib/explore-map-viewer-access.ts"
+      ],
+      "routeRegistrars": ["apps/api/src/routes/user/registerPublicActivityRoutes.ts"],
+      "feDomains": ["src/api/domains/explore.ts"],
+      "feRoots": ["src/explore", "src/access"]
+    },
+    {
+      "id": "compose",
+      "label": "Compose",
+      "apiFiles": ["apps/api/src/services/member-publish-gate.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
+        "apps/api/src/routes/host.ts"
+      ],
+      "feDomains": ["src/api/domains/explore.ts"],
+      "feRoots": ["src/explore/ui"]
+    },
+    {
+      "id": "participation",
+      "label": "Participation",
+      "apiFiles": [
+        "apps/api/src/services/join-request.ts",
+        "apps/api/src/services/activity-viewer-access.ts",
+        "apps/api/src/services/compose-activity-viewer-access.ts",
+        "apps/api/src/services/member-entitlements.ts",
+        "apps/api/src/services/activity-invite.ts",
+        "apps/api/src/lib/activity-invites-store.ts"
+      ],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
+        "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts",
+        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
+        "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/activities.ts", "src/api/domains/explore.ts"],
+      "feRoots": ["src/pages/JoinRequestDetail.tsx"]
+    },
+    {
+      "id": "member_identity",
+      "label": "Member identity",
+      "apiFiles": [
+        "apps/api/src/services/public-member-profile.ts",
+        "apps/api/src/services/profile-viewer-access.ts"
+      ],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerProfileRoutes.ts",
+        "apps/api/src/routes/user/registerPublicMemberRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/account.ts", "src/api/domains/member.ts"],
+      "feRoots": ["src/pages/Profile.tsx", "src/member"]
+    },
+    {
+      "id": "host_capabilities",
+      "label": "Host capabilities",
+      "apiFiles": ["apps/api/src/services/member-host-status.ts"],
+      "routeRegistrars": ["apps/api/src/routes/user/registerMemberHostStatusRoutes.ts"],
+      "feDomains": ["src/api/domains/member.ts"],
+      "feRoots": ["src/member"]
+    },
+    {
+      "id": "host_console",
+      "label": "Host console",
+      "apiFiles": ["apps/api/src/routes/host.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/host.ts",
+        "apps/api/src/routes/host/registerHostActivityRoutes.ts",
+        "apps/api/src/routes/host/registerHostActivityParticipantRoutes.ts",
+        "apps/api/src/routes/host/registerHostTeamRoutes.ts",
+        "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts",
+        "apps/api/src/routes/host/registerHostSubmittedLocationRoutes.ts",
+        "apps/api/src/routes/host/registerHostDemandFulfillLegacy.ts"
+      ],
+      "feDomains": ["src/api/domains/organisation.ts", "src/api/domains/activities.ts"],
+      "feRoots": [
+        "src/pages/host",
+        "src/console",
+        "src/components/host",
+        "src/components/organisation-console"
+      ]
+    },
+    {
+      "id": "communication",
+      "label": "Communication",
+      "apiFiles": ["apps/api/src/routes/chat.ts"],
+      "routeRegistrars": ["apps/api/src/routes/chat.ts"],
+      "feDomains": ["src/api/domains/chat.ts", "src/api/domains/messaging.ts"],
+      "feRoots": ["src/pages/Messages.tsx", "src/messaging", "src/components/chat"]
+    },
+    {
+      "id": "social_graph",
+      "label": "Social graph",
+      "apiFiles": [
+        "apps/api/src/lib/buddy-store.ts",
+        "apps/api/src/services/buddy-activity-presence.ts",
+        "apps/api/src/services/social-people.ts"
+      ],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerBuddyRoutes.ts",
+        "apps/api/src/routes/user/registerFollowRoutes.ts",
+        "apps/api/src/routes/user/registerGroupRoutes.ts",
+        "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/social.ts"],
+      "feRoots": ["src/pages/Buddies.tsx", "src/pages/Groups.tsx", "src/explore/ui/ExploreSocialPeopleList.tsx", "src/explore/ui/ExploreMemberDiscoveryList.tsx"]
+    },
+    {
+      "id": "places",
+      "label": "Places",
+      "apiFiles": [],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerPublicPlaceRoutes.ts",
+        "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/places.ts", "src/api/domains/placeRegistry.ts"],
+      "feRoots": ["src/pages/TrailDetail.tsx", "src/pages/CampDetail.tsx"]
+    },
+    {
+      "id": "commerce",
+      "label": "Commerce",
+      "apiFiles": ["apps/api/src/routes/shop.ts"],
+      "routeRegistrars": ["apps/api/src/routes/shop.ts"],
+      "feDomains": ["src/api/domains/shop.ts"],
+      "feRoots": ["src/pages/ShopPublic.tsx", "src/components/shop"]
+    },
+    {
+      "id": "member_discovery",
+      "label": "Member discovery",
+      "apiFiles": [
+        "apps/api/src/services/member-discovery-roster.ts",
+        "apps/api/src/services/member-discovery-quota.ts",
+        "apps/api/src/services/member-discovery.ts",
+        "apps/api/src/lib/member-profile-views-store.ts"
+      ],
+      "routeRegistrars": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
+      "feDomains": ["src/api/domains/account.ts"],
+      "feRoots": ["src/pages/MemberProfile.tsx"]
+    },
+    {
+      "id": "engagement",
+      "label": "Engagement",
+      "apiFiles": ["apps/api/src/services/member-badges.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerMeBadgesRoutes.ts",
+        "apps/api/src/routes/user/registerMeGoalsRoutes.ts",
+        "apps/api/src/routes/user/registerMeEngagementRoutes.ts",
+        "apps/api/src/routes/user/registerMeMapPinsRoutes.ts"
+      ],
+      "feDomains": [
+        "src/api/domains/badges.ts",
+        "src/api/domains/goals.ts",
+        "src/api/domains/memberJourneyMap.ts"
+      ],
+      "feRoots": ["src/pages/ProfileBadges.tsx"]
+    },
+    {
+      "id": "platform_ops",
+      "label": "Platform ops",
+      "apiFiles": [
+        "apps/api/src/routes/admin.ts",
+        "apps/api/src/lib/platform-master-admin.ts"
+      ],
+      "routeRegistrars": [
+        "apps/api/src/routes/admin.ts",
+        "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminPlaceRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminUserRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminTenantRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminGroupRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminAuditRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminNotificationRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminProductRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminPlatformStaffRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/admin.ts"],
+      "feRoots": ["src/pages/AdminOverview.tsx", "src/pages/AdminMembers.tsx"]
+    }
+  ],
+  "apiMounts": [
+    { "prefix": "/auth", "file": "apps/api/src/routes/auth.ts" },
+    { "prefix": "/admin", "file": "apps/api/src/routes/admin.ts" },
+    { "prefix": "/host", "file": "apps/api/src/routes/host.ts" },
+    { "prefix": "/chat", "file": "apps/api/src/routes/chat.ts" },
+    { "prefix": "/shop", "file": "apps/api/src/routes/shop.ts" },
+    { "prefix": "/media", "file": "apps/api/src/routes/media.ts" },
+    { "prefix": "/reports", "file": "apps/api/src/routes/reports.ts" },
+    { "prefix": "/user+social", "file": "apps/api/src/routes/user.ts", "note": "user router + social router on /" }
+  ],
+  "feDomainModules": [
+    "account",
+    "activities",
+    "admin",
+    "badges",
+    "chat",
+    "explore",
+    "goals",
+    "media",
+    "member",
+    "memberJourneyMap",
+    "messaging",
+    "organisation",
+    "placeRegistry",
+    "places",
+    "shop",
+    "social"
+  ],
+  "removedProducts": {
+    "trailPointsWallet": {
+      "bannedRouteFiles": [
+        "apps/api/src/routes/user/registerMeRewardsRoutes.ts",
+        "apps/api/src/routes/user/registerPublicRewardsRoutes.ts"
+      ],
+      "bannedFeDomains": ["src/api/domains/rewards.ts"]
+    }
+  }
+}

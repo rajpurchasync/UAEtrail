@@ -7,8 +7,8 @@ import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { AccountAvatarModal } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
-import { useOrganisationGate } from '../hooks/useOrganisationGate';
-import type { MemberGoalDTO, MemberHubStatsDTO } from '@uaetrail/shared-types';
+import { useHostStatus } from '../hooks/useHostStatus';
+import type { MemberGoalDTO, MemberHubStatsDTO, MemberProfileViewStatsDTO } from '@uaetrail/shared-types';
 import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
@@ -36,9 +36,12 @@ export const Profile = () => {
     canAccessHostConsole,
     profileRoleLabel: profileRoleKey,
     isCommunityHost: gateCommunityHost,
+    hostTiers,
     loading: hostGateLoading,
     refresh: refreshHostGate,
-  } = useOrganisationGate({ enabled: Boolean(user) });
+  } = useHostStatus({ enabled: Boolean(user) });
+
+  const [profileViewStats, setProfileViewStats] = useState<MemberProfileViewStatsDTO | null>(null);
 
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
@@ -62,11 +65,16 @@ export const Profile = () => {
     if (!user) return;
     void api.getActiveGoal().then((res) => setGoal(res.data)).catch(() => undefined);
     void api.getMeMemberHubStats().then((res) => setHubStats(res.data)).catch(() => undefined);
+    if (hostTiers.professional || hostTiers.business) {
+      void api.getMeProfileViewStats().then((res) => setProfileViewStats(res.data)).catch(() => undefined);
+    } else {
+      setProfileViewStats(null);
+    }
     void api
       .getMemberBadges()
       .then((res) => setBadgesEarnedCount(res.data.filter((b) => b.earned).length))
       .catch(() => undefined);
-  }, [user]);
+  }, [user, hostTiers.professional, hostTiers.business]);
 
   useEffect(() => {
     const state = location.state as { openEdit?: boolean } | null;
@@ -149,8 +157,16 @@ export const Profile = () => {
       });
     }
 
+    if (profileViewStats) {
+      stats.push({
+        key: 'profile-views',
+        label: 'Profile views (30d)',
+        value: profileViewStats.totalViews,
+      });
+    }
+
     return stats;
-  }, [hubStats, isActivityHost]);
+  }, [hubStats, isActivityHost, profileViewStats]);
 
   const saveGoal = useCallback(
     async (input: {
@@ -181,7 +197,7 @@ export const Profile = () => {
 
   const openPublicProfile = useCallback(() => {
     if (!user?.id) return;
-    navigate(`/member/${user.id}`);
+    navigate(`/member/${user.id}?view=public`);
   }, [navigate, user?.id]);
 
   const openEdit = useCallback(() => {

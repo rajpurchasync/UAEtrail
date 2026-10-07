@@ -2,6 +2,13 @@ import { Bell, KeyRound, Shield } from 'lucide-react';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { PullToRefresh } from '../mobile/PullToRefresh';
 import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
+import {
+  PROFILE_SETTINGS_ACCOUNT_PATH,
+  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
+  PROFILE_SETTINGS_PRIVACY_PATH,
+} from '../../config/routingCatalog';
+import { AndroidInstallSettingsSection } from '../pwa/AndroidInstallSettingsSection';
+import { IosInstallSettingsSection } from '../pwa/IosInstallSettingsSection';
 import { ProfileWishlistSettingsLink } from './ProfileWishlistSettingsLink';
 
 type ProfileSettingsIndexProps = {
@@ -14,23 +21,25 @@ export const ProfileSettingsIndex = ({ onRefresh }: ProfileSettingsIndexProps) =
       <SettingsMenuGroup>
         <SettingsMenuRow
           label="Account"
-          to="/profile/settings/account"
+          to={PROFILE_SETTINGS_ACCOUNT_PATH}
           icon={KeyRound}
           subtitle="Email, password, sign out"
         />
         <SettingsMenuRow
           label="Privacy"
-          to="/profile/settings/privacy"
+          to={PROFILE_SETTINGS_PRIVACY_PATH}
           icon={Shield}
           subtitle="Profile visibility and host profiles"
         />
         <SettingsMenuRow
           label="Notifications"
-          to="/profile/settings/notifications"
+          to={PROFILE_SETTINGS_NOTIFICATIONS_PATH}
           icon={Bell}
           subtitle="Inbox and saved-map alerts"
         />
       </SettingsMenuGroup>
+      <IosInstallSettingsSection />
+      <AndroidInstallSettingsSection />
       <ProfileWishlistSettingsLink />
       <p className="px-1 text-xs text-neutral-500">
         Date of birth is set when you join and cannot be changed here. Update name, location, and speaks from Edit profile

@@ -15,11 +15,11 @@ export const withdrawReasonSchema = z
     message: z.string().max(500).optional()
   })
   .superRefine((data, ctx) => {
-    if (data.reason === 'other' && (!data.message || data.message.trim().length < 3)) {
+    if (!data.message || data.message.trim().length < 3) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Please add a short note when selecting Other.',
-        path: ['message']
+        message: 'A short comment for the host is required.',
+        path: ['message'],
       });
     }
   });

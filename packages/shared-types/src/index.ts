@@ -1,12 +1,16 @@
+import type { GroupWallReplyPreviewDTO } from './group-wall.js';
 import type { ExploreCardPresentationDTO } from './explore-presentation.js';
 import type { ExploreMapPersonDTO } from './explore-person.js';
+import type { ActivityJoinInviteForViewerDTO } from './activity-join-invite.js';
 import type { ActivityJoinMode } from './activity-join-mode.js';
+import type { ActivityViewerAccessDTO } from './activity-viewer-access.js';
 import type { ParticipationMode } from './activity-participation-mode.js';
 import type {
   ExplorePlanComposeIntent,
   OutingCategory,
   OutingTopic,
 } from './explore-plan-projection.js';
+import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -226,13 +230,15 @@ export interface ActivityDTO {
 
 
 export interface ActivityDetailDTO extends ActivityDTO {
-  visibilityState?: 'full' | 'private';
+  /** Shown on redacted / private stubs when the viewer cannot see full detail. */
   message?: string;
   organizerId?: string;
   participants?: ParticipantPreviewDTO[];
   location?: LocationDTO;
   myParticipation?: ActivityParticipationDTO | null;
   myRequest?: MyActivityRequestDTO | null;
+  /** Set when the viewer has a pending Join me invite for this activity. */
+  myJoinInvite?: ActivityJoinInviteForViewerDTO | null;
 }
 
 export interface MyActivityDTO extends ActivityDTO {
@@ -277,14 +283,52 @@ export type {
   BuddyUserPreviewDTO,
 } from './buddy-connection.js';
 
+export type { NotificationKind, NotificationMeta } from './notification-meta.js';
+import type { NotificationMeta } from './notification-meta.js';
+
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
 export type { MemberHubStatsDTO } from './member-hub-stats.js';
+export type { MemberBrowseCardDTO, MemberProfileViewStatsDTO } from './member-pro-engagement.js';
+export {
+  MEMBER_DISCOVERY_QUOTA_LIMIT,
+  MEMBER_DISCOVERY_WINDOW_DAYS,
+  buildMemberDiscoveryQuota,
+  memberHasUnlimitedDiscovery,
+  type MemberDiscoveryQuotaDTO,
+} from './member-discovery-quota.js';
+export type {
+  MemberDiscoveryOnTripRowDTO,
+  MemberDiscoveryRosterDTO,
+} from './member-discovery-roster.js';
+export type {
+  BuddyActivityPresenceDTO,
+  BuddyActivityPresenceRowDTO,
+  ExploreActivityRefDTO,
+} from './buddy-activity-presence.js';
+export type {
+  SocialPeopleDTO,
+  SocialPeoplePreviewDTO,
+  SocialPeoplePreviewPersonDTO,
+  SocialPeopleSegment,
+  SocialPeopleRelationship,
+  SocialPersonBuddyRequestState,
+  SocialPersonRowDTO,
+  SocialPersonTripHintDTO,
+  SocialPersonTripRole,
+} from './social-people.js';
+export {
+  ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY,
+  ACTIVITY_JOIN_INVITE_WINDOW_MS,
+  type ActivityJoinInviteForViewerDTO,
+  type ActivityJoinInvitesSentDTO,
+} from './activity-join-invite.js';
 export type {
   HostPublishingTier,
   HostTierFlags,
   MemberProfileRoleLabel,
 } from './host-publishing-tier.js';
 import type { HostTierFlags, MemberProfileRoleLabel } from './host-publishing-tier.js';
+import type { PublishingProfileKind } from './publishing-profile-kind.js';
 
 export type HostApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
@@ -299,6 +343,8 @@ export interface OwnedHostProfileDTO {
   tenantId: string;
   name: string;
   slug: string;
+  /** Resolved storefront kind for publish-as UI and public links. */
+  publishingProfileKind?: PublishingProfileKind;
 }
 
 /**
@@ -386,13 +432,19 @@ export const formatHostJoinDeclineNote = (
   return label;
 };
 
+/** Revoke-from-roster uses the same reason list as join decline. */
+export const HOST_PARTICIPANT_REVOKE_REASONS = HOST_JOIN_DECLINE_REASONS;
+export type HostParticipantRevokeReason = HostJoinDeclineReason;
+export const hostParticipantRevokeReasonLabel = hostJoinDeclineReasonLabel;
+export const formatHostParticipantRevokeNote = formatHostJoinDeclineNote;
+
 export interface NotificationDTO {
   id: string;
   title: string;
   body: string;
   type: 'request_update' | 'system' | 'activity' | 'review_prompt';
   isRead: boolean;
-  meta?: Record<string, unknown> | null;
+  meta?: NotificationMeta | null;
   createdAt: string;
 }
 
@@ -403,6 +455,8 @@ export interface AuthUser {
   displayName?: string | null;
   avatarUrl?: string | null;
   switchedFromRole?: string | null;
+  /** May grant/revoke other platform admins (master admin). */
+  platformMasterAdmin?: boolean;
 }
 
 export interface AuthTokens {
@@ -427,14 +481,33 @@ export interface ChatConversationDTO {
   unreadCount: number;
 }
 
+export type ChatMessageReactionKind =
+  | 'like'
+  | 'dislike'
+  | 'happy'
+  | 'heart'
+  | 'laugh'
+  | 'mountain'
+  | 'camping'
+  | 'car';
+
+export interface ChatMessageReactionDTO {
+  kind: ChatMessageReactionKind;
+  count: number;
+  reactedByMe: boolean;
+}
+
 export interface ChatMessageDTO {
   id: string;
   senderId: string;
   receiverId: string;
   content: string;
   activityId?: string;
+  replyToMessageId?: string;
+  replyToPreview?: GroupWallReplyPreviewDTO;
   readAt?: string;
   createdAt: string;
+  reactions?: ChatMessageReactionDTO[];
 }
 
 // ─── Shop DTOs ──────────────────────────────────────────────────────────────
@@ -471,7 +544,7 @@ export interface ProductDTO {
   region?: string | null;
 }
 
-export type ReviewTargetType = 'location' | 'tenant';
+export type ReviewTargetType = 'location' | 'tenant' | 'activity';
 
 export interface ReviewDTO {
   id: string;
@@ -490,44 +563,6 @@ export interface ReviewDTO {
 export interface MyReviewDTO extends ReviewDTO {
   targetLabel: string;
   targetPath: string;
-}
-
-export type PostCategory = 'questions' | 'activity-reports' | 'photos' | 'tips';
-
-export interface PostReplyDTO {
-  id: string;
-  authorId: string;
-  authorName: string;
-  authorAvatar?: string | null;
-  authorMembershipTier?: MembershipTierDTO | null;
-  content: string;
-  likedByMe: boolean;
-  likeCount: number;
-  isAccepted: boolean;
-  createdAt: string;
-}
-
-export interface PostDTO {
-  id: string;
-  category: PostCategory;
-  title: string;
-  content: string;
-  excerpt: string;
-  images: string[];
-  locationId?: string | null;
-  locationName?: string | null;
-  activityId?: string | null;
-  authorId: string;
-  authorName: string;
-  authorAvatar?: string | null;
-  authorMembershipTier?: MembershipTierDTO | null;
-  likedByMe: boolean;
-  likeCount: number;
-  replyCount: number;
-  acceptedReplyId?: string | null;
-  replies: PostReplyDTO[];
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface FavoriteDTO {
@@ -742,6 +777,11 @@ export interface ExploreMapItemDTO {
   participationMode?: ParticipationMode | null;
   /** Rideshare activities linked to this parent plan (parent rows only). */
   linkedRideshareActivities?: ExploreLinkedRideshareDTO[];
+  /**
+   * Per-viewer peek/detail hints for hosted plans (activity + demand).
+   * Set on `GET /explore/map` after cache read — not stored in Redis payload.
+   */
+  viewerAccess?: ActivityViewerAccessDTO;
 }
 
 export interface ProductClick {
@@ -897,6 +937,8 @@ export interface TenantPublicDTO {
 
 // ─── Participant DTO ────────────────────────────────────────────────────────
 
+export type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
+
 export interface ParticipantDTO {
   id: string;
   userId: string;
@@ -906,6 +948,12 @@ export interface ParticipantDTO {
   avatarUrl?: string;
   checkedInAt?: string;
   joinedAt: string;
+  /** `going` until check-in; `attended` after host confirms attendance. */
+  status: HostParticipantRosterStatus;
+  hostRating?: ParticipantHostRatingDTO | null;
+  canConfirmAttendance: boolean;
+  canRevoke: boolean;
+  canRate: boolean;
 }
 
 // ─── Rewards / Trail Points ─────────────────────────────────────────────────
@@ -1128,6 +1176,58 @@ export {
 } from './activity-join-mode.js';
 
 export {
+  activityViewerLevelHasFullDetail,
+  computeActivityDetailExposure,
+  type ActivityViewerAccessDTO,
+  type ActivityViewerAccessLevel,
+  type DetailExposure,
+  type ViewerGateReason,
+} from './activity-viewer-access.js';
+
+export {
+  computeActivityMapPeekActions,
+  type ActivityMapPeekAction,
+  type ActivityMapPeekActionId,
+  type ActivityMapPeekActionProminence,
+} from './activity-map-peek-actions.js';
+
+export {
+  computeProfileDetailExposure,
+  type ProfileDetailExposure,
+  type ProfileVisibilitySetting,
+  type ProfileViewerAccessDTO,
+  type ProfileViewerAccessLevel,
+} from './profile-viewer-access.js';
+
+export {
+  type BusinessProSubtype,
+  type ProMembershipPath,
+  type PublishingProfileKind,
+  isOrganizeActivityHostProfileType,
+  resolvePublishingProfileKind,
+} from './publishing-profile-kind.js';
+
+export {
+  resolveCommerceMapViewerAccess,
+  resolvePublicPlaceMapViewerAccess,
+} from './catalog-viewer-access.js';
+
+export {
+  memberAudienceMayAttemptOrganize,
+  memberHasHostFootprintBadge,
+  organizeEntitlementDenial,
+  resolveMemberAudience,
+  resolvePaidMembershipSku,
+  viewerMayBrowsePublicMemberDirectory,
+  viewerMaySeeProfileViewStats,
+  type MemberAudience,
+  type MemberEntitlementDenial,
+  type MemberEntitlementId,
+  type PaidMembershipSku,
+  type HostStatusAudienceSnapshot,
+} from './member-access.js';
+
+export {
   APPROVAL_PARTICIPATION_REQUIREMENT,
   RSVP_PARTICIPATION_REQUIREMENT,
   activityJoinCtaLabel,
@@ -1168,6 +1268,9 @@ export type {
 } from './member-map-pins.js';
 
 export type {
+  JourneyMapEntryCategory,
+  JourneyMapEntryDTO,
+  JourneyMapFilterCategory,
   OutdoorMapEntryCategory,
   OutdoorMapEntryDTO,
   OutdoorMapFilterCategory,
@@ -1217,6 +1320,8 @@ export {
   EXPLORE_SHOPS_LIST_PATH,
   EXPLORE_SHOPS_PATH,
   activityDetailPath,
+  activityDetailInvitePath,
+  exploreActivityInvitePath,
   memberProfilePath,
   normalizePlaceActivityType,
   organisationProfilePath,

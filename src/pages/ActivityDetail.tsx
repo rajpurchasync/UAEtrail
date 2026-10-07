@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
-import type {
-  ActivityDetailDTO,
-  ActivityParticipationDTO,
-  MyActivityRequestDTO,
+import {
+  type ActivityDetailDTO,
+  type ActivityDTO,
+  type ActivityParticipationDTO,
+  type ActivityViewerAccessDTO,
+  type MyActivityRequestDTO,
+  type ReviewDTO,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { detailBackPath } from '../config/routingCatalog';
@@ -22,14 +25,26 @@ import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
 import { PushEnableBanner } from '../components/ui/PushEnableBanner';
 import { ActivityDetailView } from '../components/activity/ActivityDetailView';
 import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
-import { useOrganisationGate } from '../hooks/useOrganisationGate';
-import { viewerHostsActivity } from '../utils/viewerHostsActivity';
-import { tripsPath } from '../trips/tripsRouting';
+import { useHostStatus } from '../hooks/useHostStatus';
+import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
+import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
+import { activityJoinInviteBanner } from '../content/exploreGoingPanelCopy';
+import { HostActivityCancelDialog } from '../components/activity/HostActivityCancelDialog';
+import { HostActivityCtas } from '../components/activity/HostActivityCtas';
+import { hostActivityCancelParticipantNotice } from '../host/hostActivityCancelParticipantNotice';
+import { hostActivityCtaHandlers as buildHostActivityCtaHandlers } from '../host/hostActivityCtaHandlers';
+import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
+import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
+import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const gate = useOrganisationGate({ enabled: Boolean(user) });
+  const gate = useHostStatus({ enabled: Boolean(user) });
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromJoinInvite = searchParams.get('invite') === '1';
+  const joinInviteAutoOpenRef = useRef(false);
   const [activity, setActivity] = useState<ActivityDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,16 +52,23 @@ export const ActivityDetail = () => {
   const [participation, setParticipation] = useState<ActivityParticipationDTO | null | undefined>(undefined);
   const [myRequest, setMyRequest] = useState<MyActivityRequestDTO | null | undefined>(undefined);
   const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
+  const [viewerAccess, setViewerAccess] = useState<ActivityViewerAccessDTO | null>(null);
+  const [activityReviews, setActivityReviews] = useState<ReviewDTO[]>([]);
+  const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
+  const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
+  const inviteShare = useActivityInviteShareSheet();
 
   const loadActivity = useCallback(() => {
     if (!id) return;
     setLoading(true);
     setParticipation(undefined);
     setMyRequest(undefined);
+    setViewerAccess(null);
     api
       .getPublicActivityDetail(id)
       .then((res) => {
         setActivity(res.data);
+        setViewerAccess(res.viewerAccess ?? null);
         setParticipation(res.data.myParticipation ?? null);
         setMyRequest(res.data.myRequest ?? null);
       })
@@ -59,6 +81,14 @@ export const ActivityDetail = () => {
   useEffect(() => {
     loadActivity();
   }, [loadActivity]);
+
+  useEffect(() => {
+    if (!id || activity?.status !== 'published') {
+      setActivityReviews([]);
+      return;
+    }
+    void api.getActivityReviews(id).then((res) => setActivityReviews(res.data)).catch(() => setActivityReviews([]));
+  }, [id, activity?.status]);
 
   const joinUiState = resolveJoinRequestUiState({
     myRequest: myRequest ?? null,
@@ -88,26 +118,56 @@ export const ActivityDetail = () => {
   const hasMultiplePackages = pricePackages.length > 1;
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
   const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
+  const canWriteActivityReview = Boolean(participation?.checkedInAt);
 
-  const isViewerHost = Boolean(
+  const detailExposure = useMemo(() => {
+    if (!activity) return 'full' as const;
+    return viewerAccess?.exposure ?? 'full';
+  }, [activity, viewerAccess]);
+
+  const isActivityHostUser = Boolean(
     activity &&
       user &&
-      activity.visibilityState !== 'private' &&
-      viewerHostsActivity(activity, user.id, gate.tenantId, gate.canPublish)
+      detailExposure !== 'none' &&
+      viewerIsActivityHostUser(activity, user.id)
   );
 
-  useEffect(() => {
-    if (!isViewerHost || !activity) return;
-    const params = new URLSearchParams();
-    params.set('role', 'hosted');
-    params.set('peek', activity.id);
-    navigate(`${tripsPath()}?${params.toString()}`, { replace: true });
-  }, [isViewerHost, activity, navigate]);
+  const hostActivityCtaHandlers = useMemo(() => {
+    if (!isActivityHostUser || !activity) return null;
+    return buildHostActivityCtaHandlers({
+      activity,
+      navigate,
+      onInviteActivity: inviteShare.openInviteFromActivity,
+      onCreateLinkedRideshare: (parent) => navigateToCreateLinkedRideshare(navigate, parent),
+      onRequestDelete: setHostRemoveConfirm,
+      onChatError: setError,
+    });
+  }, [isActivityHostUser, activity, navigate, inviteShare.openInviteFromActivity]);
+
+  const hostRemoveParticipantNotice = useMemo(() => {
+    if (!hostRemoveConfirm) return null;
+    return hostActivityCancelParticipantNotice(hostRemoveConfirm, activity?.participants);
+  }, [hostRemoveConfirm, activity?.participants]);
+
+  const confirmHostRemove = useCallback(async () => {
+    if (!hostRemoveConfirm || !gate.tenantId) return;
+    setHostRemoveBusy(true);
+    try {
+      await api.cancelHostActivity(gate.tenantId, hostRemoveConfirm.id);
+      setHostRemoveConfirm(null);
+      navigate(EXPLORE_MAP_PATH);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update activity.');
+    } finally {
+      setHostRemoveBusy(false);
+    }
+  }, [hostRemoveConfirm, gate.tenantId, navigate]);
 
   const openJoinModal = () => {
     if (!id || !activity) return;
     if (!user) {
-      navigate(signInPathForReturn(`/activity/${id}`));
+      const returnPath = fromJoinInvite ? `/activity/${id}?invite=1` : `/activity/${id}`;
+      navigate(signInPathForReturn(returnPath));
       return;
     }
     if (!packageSelected) {
@@ -117,6 +177,24 @@ export const ActivityDetail = () => {
     setError(null);
     joinActions.openJoinModal();
   };
+
+  useEffect(() => {
+    if (!fromJoinInvite || loading || !activity || joinInviteAutoOpenRef.current) return;
+    if (isActivityHostUser) return;
+    if (activity.status !== 'published') return;
+    if (!user) return;
+    if (joinUiState.kind !== 'open') return;
+    joinInviteAutoOpenRef.current = true;
+    openJoinModal();
+  }, [
+    fromJoinInvite,
+    loading,
+    activity,
+    user,
+    joinUiState.kind,
+    isActivityHostUser,
+    openJoinModal,
+  ]);
 
   if (loading) {
     return (
@@ -145,18 +223,8 @@ export const ActivityDetail = () => {
     );
   }
 
-  if (isViewerHost) {
-    return (
-      <>
-        <PageMeta title="Loading" path={id ? `/activity/${id}` : undefined} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-        </div>
-      </>
-    );
-  }
-
-  if (activity.visibilityState === 'private') {
+  if (detailExposure === 'none') {
+    const guestPrivate = viewerAccess?.gateReason === 'sign_in' && !user;
     return (
       <>
         <PageMeta title="Private activity" noIndex path={id ? `/activity/${id}` : undefined} />
@@ -169,22 +237,32 @@ export const ActivityDetail = () => {
             <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
               {activity.message ?? 'This activity is private — only invited members can view it.'}
             </p>
-            <p className="mt-3 text-xs text-neutral-500 leading-relaxed">
-              If someone shared this link with you, sign in — or create a free account to request access.
-            </p>
-            {!user && (
-              <Link
-                to={signInPathForReturn(`/activity/${activity.id}`)}
-                className="mt-4 inline-block text-sm font-semibold text-emerald-700"
-              >
-                Sign up or log in
-              </Link>
+            {guestPrivate ? (
+              <div className="mt-6 text-left">
+                <ExploreGuestSignInCard intent="peek-details" compact />
+              </div>
+            ) : (
+              <>
+                <p className="mt-3 text-xs text-neutral-500 leading-relaxed">
+                  If someone shared this link with you, sign in — or create a free account to request access.
+                </p>
+                {!user && (
+                  <Link
+                    to={signInPathForReturn(`/activity/${activity.id}`)}
+                    className="mt-4 inline-block text-sm font-semibold text-emerald-700"
+                  >
+                    Sign up or log in
+                  </Link>
+                )}
+              </>
             )}
           </div>
         </MobileDetailShell>
       </>
     );
   }
+
+  const isRedactedPreview = detailExposure === 'redacted';
 
   const heroImage =
     activity.images?.[0] ??
@@ -195,20 +273,12 @@ export const ActivityDetail = () => {
         ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
         : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
-  const confirmedFooterExtras =
-    isConfirmedParticipant && id ? (
-      <>
-        <ActivityChatCallout activityId={id} />
-        <PushEnableBanner context="join" />
-      </>
-    ) : null;
-
   const confirmedSidebarExtras =
     isConfirmedParticipant && id ? (
-      <>
-        <ActivityChatCallout activityId={id} className="mb-4" />
-        <PushEnableBanner context="join" className="mb-4" />
-      </>
+      <div className="hidden md:block space-y-4">
+        <ActivityChatCallout activityId={id} />
+        <PushEnableBanner context="join" />
+      </div>
     ) : null;
 
   return (
@@ -216,26 +286,77 @@ export const ActivityDetail = () => {
       <PageMeta
         title={activity.title || activity.locationName}
         description={
-          activity.description?.slice(0, 160) ?? `Join this ${activity.activityType} activity in the UAE on UAE Trail`
+          activity.description?.slice(0, 160) ??
+          `Join this ${activity.activityType} activity in the UAE on UAE Trail`
         }
         path={`/activity/${activity.id}`}
         image={heroImage}
         imageAlt={activity.title || activity.locationName}
+        noIndex={isRedactedPreview}
       />
       <JsonLd data={activityEventSchema(activity)} id={`activity-${activity.id}`} />
+      {(fromJoinInvite || activity.myJoinInvite) && !isConfirmedParticipant ? (
+        <p
+          className="mx-auto max-w-3xl px-4 pt-4 text-sm font-medium text-emerald-900 bg-emerald-50 border border-emerald-100 rounded-xl py-3"
+          role="status"
+        >
+          {activityJoinInviteBanner(activity.myJoinInvite?.inviterDisplayName)}
+        </p>
+      ) : null}
+      {isRedactedPreview && viewerAccess?.gateReason === 'sign_in' && !user ? (
+        <div className="mx-auto max-w-3xl px-4 pt-4">
+          <ExploreGuestSignInCard intent="peek-details" compact />
+        </div>
+      ) : null}
+      {isRedactedPreview && viewerAccess?.gateReason === 'join_required' && user ? (
+        <p className="mx-auto max-w-3xl px-4 pt-4 text-sm font-medium text-neutral-700">
+          Request to join or RSVP to unlock the full plan — meeting point, host notes, and crew chat.
+        </p>
+      ) : null}
+      {isRedactedPreview && activity.message ? (
+        <p className="mx-auto max-w-3xl px-4 pt-4 text-sm leading-relaxed text-neutral-600">
+          {activity.message}
+        </p>
+      ) : null}
       <ActivityDetailView
         activity={activity}
-        participation={participation ?? null}
-        myRequest={myRequest ?? null}
+        previewMode={isRedactedPreview}
+        participation={isActivityHostUser ? null : participation ?? null}
+        myRequest={isActivityHostUser ? null : myRequest ?? null}
         message={message}
         error={error}
-        onJoin={openJoinModal}
-        onWithdraw={() => joinActions.setShowWithdraw(true)}
-        confirmedExtras={confirmedFooterExtras}
-        confirmedSidebarExtras={confirmedSidebarExtras}
+        onJoin={isActivityHostUser ? undefined : openJoinModal}
+        onWithdraw={isActivityHostUser ? undefined : () => joinActions.setShowWithdraw(true)}
+        footerOverride={
+          isActivityHostUser && hostActivityCtaHandlers ? (
+            <HostActivityCtas
+              activity={activity}
+              linkRideshareTenantId={gate.tenantId}
+              handlers={hostActivityCtaHandlers}
+            />
+          ) : undefined
+        }
+        sidebarJoinOverride={
+          isActivityHostUser && hostActivityCtaHandlers ? (
+            <div className="hidden md:block">
+              <HostActivityCtas
+                activity={activity}
+                linkRideshareTenantId={gate.tenantId}
+                handlers={hostActivityCtaHandlers}
+              />
+            </div>
+          ) : undefined
+        }
+        confirmedSidebarExtras={isActivityHostUser ? null : confirmedSidebarExtras}
         selectedPackageIndex={selectedPackageIndex}
         onSelectedPackageIndexChange={setSelectedPackageIndex}
         joinDisabled={!packageSelected}
+        canSendJoinInvites={isConfirmedParticipant}
+        activityReviews={activityReviews}
+        onActivityReviewSubmitted={(review) =>
+          setActivityReviews((prev) => [review, ...prev.filter((row) => row.id !== review.id)])
+        }
+        canWriteActivityReview={canWriteActivityReview}
       />
       <WithdrawRequestModal
         open={joinActions.showWithdraw}
@@ -253,6 +374,14 @@ export const ActivityDetail = () => {
         isFull={activity.slotsAvailable <= 0}
         selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
         onSuccess={joinActions.handleJoinSuccess}
+      />
+      {inviteShare.sheet}
+      <HostActivityCancelDialog
+        activity={hostRemoveConfirm}
+        participantNotice={hostRemoveParticipantNotice}
+        busy={hostRemoveBusy}
+        onClose={() => setHostRemoveConfirm(null)}
+        onConfirm={() => void confirmHostRemove()}
       />
     </>
   );

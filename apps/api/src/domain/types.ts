@@ -171,6 +171,9 @@ export interface ActivityParticipant {
   requestId: string;
   approvedById: string;
   checkedInAt: Date | null;
+  hostRatingScore: number | null;
+  hostRatingComment: string | null;
+  hostRatedAt: Date | null;
   createdAt: Date;
 }
 
@@ -193,6 +196,7 @@ export interface ChatMessage {
   receiverId: string;
   activityId: string | null;
   content: string;
+  replyToMessageId: string | null;
   readAt: Date | null;
   createdAt: Date;
 }

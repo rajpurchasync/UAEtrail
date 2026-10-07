@@ -1,6 +1,10 @@
-import { useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Loader2, Send } from 'lucide-react';
 import { EmojiPickerButton } from './EmojiPickerButton';
+
+export type ChatComposeBarHandle = {
+  focus: () => void;
+};
 
 interface ChatComposeBarProps {
   value: string;
@@ -12,16 +16,25 @@ interface ChatComposeBarProps {
   className?: string;
 }
 
-export const ChatComposeBar = ({
-  value,
-  onChange,
-  onSend,
-  sending = false,
-  placeholder = 'Type a message…',
-  multiline = false,
-  className = '',
-}: ChatComposeBarProps) => {
+export const ChatComposeBar = forwardRef<ChatComposeBarHandle, ChatComposeBarProps>(function ChatComposeBar(
+  {
+    value,
+    onChange,
+    onSend,
+    sending = false,
+    placeholder = 'Type a message…',
+    multiline = false,
+    className = '',
+  },
+  ref
+) {
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    },
+  }));
 
   const insertEmoji = (emoji: string) => {
     const el = inputRef.current;
@@ -102,4 +115,4 @@ export const ChatComposeBar = ({
       </button>
     </form>
   );
-};
+});

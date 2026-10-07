@@ -1,10 +1,14 @@
-# Create flow â€” FAB, organize, find, add
+# Create flow — FAB: Organize, Find, Add
 
-**Canonical product spec** for the explore map **+ FAB** compose experience. Read this before changing intent sheets, create wizards, join CTAs, or participation behavior.
+**Canonical product spec** for the explore map **+ FAB** (Organize · Find · Add). Read this before changing intent sheets, create wizards, join CTAs, or participation behavior.
+
+**Vocabulary:** In **UI and copy**, say **Organize**, **Find**, **Add** — not **Compose** (reserved for **message / email compose** later). On the wire, explore still uses the query param `?compose=organize:*` \| `find:*` \| `add:*` ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.1, §4).
+
+**Publishing:** The **host is always a signed-in user**. When the member has multiple activity host tenants (buddy + agency/guide), the Organize **publish** step shows **Publish as** (`OrganizePublishAsField`); wire uses `x-organisation-id` for the chosen `tenantId` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md) (why), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (publish gates), [`DOMAIN.md`](./DOMAIN.md) (entities), [`NAVIGATION.md`](./NAVIGATION.md) (routes), [`COMMUNICATION.md`](./COMMUNICATION.md) (DMs & crew chat), [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) (Trips manage & invites), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) (map card copy & CTAs).
 
-Code: `src/explore/compose.ts`, `src/explore/routing.ts`, `CreateIntentSheet.tsx`, `organizeFlow.ts`, `demandFlow.ts`, `contributeFlow.ts`.
+Code (wire names): `src/explore/compose.ts`, `src/explore/routing.ts`, `CreateIntentSheet.tsx`, `organizeFlow.ts`, `demandFlow.ts`, `contributeFlow.ts`.
 
 **Status:** Product spec **approved** Â· Implementation **in progress** (see [Implementation status](#implementation-status))
 
@@ -18,8 +22,8 @@ Code: `src/explore/compose.ts`, `src/explore/routing.ts`, `CreateIntentSheet.tsx
 
 | Prefer | Avoid |
 |--------|--------|
-| I would like toâ€¦ | Create |
-| Organize Â· Find Â· Add | Host Â· Find a group Â· Add a place |
+| I would like toâ€¦ | Create (OK in casual copy; FAB uses Organize) |
+| Organize Â· Find Â· Add | **Compose** (FAB), Host Â· Find a group Â· Add a place |
 | Going from | Meeting point Â· Leaving from (in activity flows) |
 | Iâ€™m going | Request to join (when RSVP mode) |
 | Request to join | Host approval workflow (in consumer copy) |
@@ -78,7 +82,7 @@ Any signed-in member â€” no host approval to post demand.
 
 **Add uses â€œpin on the mapâ€ / location** â€” not **Going from** (places are not trips).
 
-**Organize venue pick:** Hiking/camping use **`GET /places/registry`** (see `DOMAIN.md` § Place registry). Publish: `src/services/organizeActivityPublish.ts` (payload shape: `src/utils/activityPublishPayload.ts`; host console uses the same builder via `activityFormState.ts`).
+**Organize venue pick:** Hiking/camping use **`GET /places/registry`** (see `DOMAIN.md` § Place registry). Publish: `src/services/organizeActivityPublish.ts` → **`POST /host/activities`** + **`POST /host/activities/:id/publish`** with active tenant header (`buildHostActivityPublishPayload` in `activityPublishPayload.ts`; client: `createHostActivity` / `publishHostActivity` — not `*OrganisationActivity*`). **Admin place/venue catalog** (trails, camps, event venues): `/admin/places` (`AdminPlaces.tsx`) — not the explore compose wizard.
 
 ---
 
@@ -95,7 +99,7 @@ Any signed-in member â€” no host approval to post demand.
 
 **Storage (v1):** `activityType: event`, `outingCategory: activities`, `outingTopic` from type chip, `participationMode` default `approval`.
 
-Hiking / Camping / **Event** / **Rideshare** remain **separate** organize branches (see [`FLOW-05`](./experiment/flows/FLOW-05-organize-activities.md)).
+Hiking / Camping / **Event** / **Rideshare** remain **separate** organize branches (Activity = `organize.activities` in `composeFlowCatalog.ts`).
 
 ---
 
@@ -160,6 +164,8 @@ participationMode: 'rsvp' | 'approval'
 | `rsvp` | **Iâ€™m going** | View details |
 | `approval` | **Request to join** | View details |
 
+**Full detail page vs map peek** is **not** `participationMode` or `joinMode` alone — it is **viewer access / detail exposure** (who may open `/activity/:id` with a full payload). Canonical model: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15. UI maps API `viewerAccess` via `src/access/resolvePeekDetailAccess.ts` — do not add client-side policy.
+
 ---
 
 ## Demand (Find) — who is the host?
@@ -187,7 +193,7 @@ When the poster is ready to run a dated outing on the map, they **Organize → p
 
 **Not used:** third-party “fulfill / convert” (another member publishing on behalf of the poster). Legacy `?fulfillIntent=` links only reopen the pin.
 
-Registry: [`experiment/explore-flow-registry.md`](./experiment/explore-flow-registry.md) · E2E: [`experiment/flows/FLOW-DEMAND-E2E.md`](./experiment/flows/FLOW-DEMAND-E2E.md).
+**Catalog:** `src/explore/composeFlowCatalog.ts` (one entry per FAB path). **Tests:** `npm run test:explore-alignment`, `demandFlow.test.ts`.
 
 ---
 
@@ -248,7 +254,7 @@ Explore compose uses **one responsive stack** â€” not separate mobile/deskt
 | FAB menu | `CreateIntentSheet.tsx` | â€” |
 | Map pin | `CreatePlacePicker.tsx` | â€” |
 
-Host console editing (`CreateActivityModal`, `/host/*`) is a **separate surface** â€” do not merge with explore compose.
+Host console **lists** outings on `/host/activities`; **create / edit on map** uses the same explore **Organize** wizard (`CreateActivityFlow.tsx`, `navigateToReorganizeActivity`). Admin **location/venue detail** stays on `/admin/places`.
 
 ---
 

@@ -24,10 +24,28 @@ export const chatApi = {
     );
   },
 
-    sendMessage: (payload: { receiverId: string; content: string; activityId?: string }) =>
+    sendMessage: (payload: {
+      receiverId: string;
+      content: string;
+      activityId?: string;
+      replyToMessageId?: string;
+    }) =>
     apiRequest<{ data: ChatMessageDTO }>('/chat/messages', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
-    })
+    }),
+
+    toggleMessageReaction: (
+      messageId: string,
+      payload: { partnerUserId: string; kind: string }
+    ) =>
+      apiRequest<{ data: { reactions: ChatMessageDTO['reactions'] } }>(
+        `/chat/messages/${messageId}/reactions`,
+        {
+          method: 'POST',
+          auth: true,
+          body: JSON.stringify(payload),
+        }
+      ),
 } as const;

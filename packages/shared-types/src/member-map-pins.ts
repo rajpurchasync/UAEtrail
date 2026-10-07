@@ -1,7 +1,7 @@
 /** Personal journey map pins — wishlist, visited (manual or from app check-in). */
 
 import type { MemberMapPinActivityType } from './member-map-pin-activity-type.js';
-import type { OutdoorMapEntryDTO } from './outdoor-map-entries.js';
+import type { JourneyMapEntryDTO } from './outdoor-map-entries.js';
 
 export type MemberMapPinKind = 'wishlist' | 'visited';
 
@@ -53,6 +53,6 @@ export interface MemberJourneyMapStatsDTO {
 
 export interface MemberJourneyMapDTO {
   pins: MemberMapPinDTO[];
-  entries: OutdoorMapEntryDTO[];
+  entries: JourneyMapEntryDTO[];
   stats: MemberJourneyMapStatsDTO;
 }

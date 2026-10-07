@@ -12,7 +12,7 @@ const VISIBILITY_OPTIONS: Array<{
   {
     value: 'public',
     label: 'Public',
-    description: 'Anyone with your link can view your member profile.',
+    description: 'Other signed-in members can view your public member card. Guests must sign in first.',
   },
   {
     value: 'group_members',
@@ -56,7 +56,7 @@ export const ProfileVisibilitySection = () => {
     <GlassCard padding>
       <h2 className="text-sm font-semibold text-neutral-900">Profile visibility</h2>
       <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
-        Who can open your public member profile from a link or activity.
+        Who can open your member profile. Guests are always asked to sign in first.
       </p>
       <div className="mt-3 space-y-2">
         {VISIBILITY_OPTIONS.map((option) => {

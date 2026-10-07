@@ -1,5 +1,6 @@
 import { NotificationType } from '../domain/enums.js';
 import { formatActivityLocal } from '../lib/datetime.js';
+import { activityDetailPath } from '../lib/member-routes.js';
 import { dispatchNotification } from './notifications.js';
 
 export const scheduleInstantChanged = (
@@ -41,7 +42,13 @@ export async function notifyParticipantsOfScheduleChange(params: {
         title,
         body,
         type: NotificationType.ACTIVITY,
-        meta: { activityId, kind: 'schedule_change', previousStartAt: previousStartAt.toISOString(), newStartAt: newStartAt.toISOString() }
+        meta: {
+          kind: 'schedule_change',
+          activityId,
+          path: activityDetailPath(activityId),
+          previousStartAt: previousStartAt.toISOString(),
+          newStartAt: newStartAt.toISOString(),
+        },
       })
     )
   );

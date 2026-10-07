@@ -18,8 +18,9 @@ import {
 } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { parseStoredPricePackages } from './activity-pricing.js';
+import { myRequestDetailPath } from './member-routes.js';
 import { dispatchNotification } from '../services/notifications.js';
-import { addParticipantToActivityGroupChat, removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
+import { removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 import { assertParticipantMeetsWomenOnlyRequirement } from '../domain/activity-audience-requirements.js';
 
@@ -52,6 +53,9 @@ type MongoActivityParticipant = {
   userId: string;
   approvedById: string;
   checkedInAt: Date | null;
+  hostRatingScore?: number | null;
+  hostRatingComment?: string | null;
+  hostRatedAt?: Date | null;
   createdAt: Date;
 };
 
@@ -96,6 +100,9 @@ const toActivityParticipantRecord = (doc: MongoActivityParticipant): ActivityPar
   userId: doc.userId,
   approvedById: doc.approvedById,
   checkedInAt: doc.checkedInAt,
+  hostRatingScore: doc.hostRatingScore ?? null,
+  hostRatingComment: doc.hostRatingComment ?? null,
+  hostRatedAt: doc.hostRatedAt ?? null,
   createdAt: doc.createdAt
 });
 
@@ -331,11 +338,6 @@ export async function createRsvpParticipation(opts: {
     throw error;
   }
 
-  await addParticipantToActivityGroupChat({
-    activityId: opts.activityId,
-    userId: opts.userId,
-  }).catch(() => undefined);
-
   const mongoRow = await activityRequestsCollection().findOne({ _id: requestId });
   if (!mongoRow) {
     throw new ApiError(500, 'request_persist_failed', 'Failed to persist RSVP.');
@@ -375,7 +377,12 @@ async function promoteNextWaitlisted(activityId: string): Promise<boolean> {
     title: 'A spot opened up!',
     body: 'Your waitlisted activity now has availability. Your request is pending organizer approval.',
     type: NotificationType.REQUEST_UPDATE,
-    meta: { activityId, requestId: next._id, fromWaitlist: true }
+    meta: {
+      kind: 'join_request_pending',
+      activityId,
+      requestId: String(next._id),
+      path: myRequestDetailPath(String(next._id)),
+    },
   });
 
   return true;
@@ -438,6 +445,38 @@ export const findActivityParticipantByEventAndUser = async (
 ): Promise<ActivityParticipant | null> => {
   const row = await activityParticipantsCollection().findOne({ activityId, userId });
   return row ? toActivityParticipantRecord(row) : null;
+};
+
+/** Batch load for explore map `viewerAccess` hints (per viewer, not cached). */
+export const listActivityEngagementForUserOnActivities = async (
+  userId: string,
+  activityIds: string[]
+): Promise<{
+  participantActivityIds: Set<string>;
+  requestStatusByActivityId: Map<string, RequestStatus>;
+}> => {
+  const uniqueIds = [...new Set(activityIds.filter(Boolean))];
+  if (uniqueIds.length === 0) {
+    return { participantActivityIds: new Set(), requestStatusByActivityId: new Map() };
+  }
+
+  const [participantRows, requestRows] = await Promise.all([
+    activityParticipantsCollection()
+      .find({ userId, activityId: { $in: uniqueIds } })
+      .project({ activityId: 1 })
+      .toArray(),
+    activityRequestsCollection()
+      .find({ userId, activityId: { $in: uniqueIds } })
+      .toArray(),
+  ]);
+
+  const participantActivityIds = new Set(participantRows.map((row) => row.activityId));
+  const requestStatusByActivityId = new Map<string, RequestStatus>();
+  for (const row of requestRows) {
+    requestStatusByActivityId.set(row.activityId, row.status);
+  }
+
+  return { participantActivityIds, requestStatusByActivityId };
 };
 
 export const findActivityParticipantByIdAndActivity = async (
@@ -596,7 +635,10 @@ export const usersShareActivity = async (userA: string, userB: string): Promise<
   if (!userA || !userB) return false;
   if (userA === userB) return true;
 
-  const eventIds = await activityParticipantsCollection().distinct('activityId', { userId: userA });
+  const participantRows = await activityParticipantsCollection()
+    .find({ userId: userA }, { projection: { activityId: 1 } })
+    .toArray();
+  const eventIds = [...new Set(participantRows.map((row) => row.activityId).filter(Boolean))];
   if (eventIds.length > 0) {
     const shared = await activityParticipantsCollection().findOne({
       userId: userB,
@@ -832,11 +874,6 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
     throw error;
   }
 
-  await addParticipantToActivityGroupChat({
-    activityId: opts.activityId,
-    userId: opts.userId,
-  }).catch(() => undefined);
-
   return 'enrolled';
 };
 
@@ -906,6 +943,81 @@ export const cancelUserActivityRequestAndPromoteWaitlist = async (input: {
     }).catch(() => undefined);
   }
   await promoteNextWaitlisted(input.activityId);
+};
+
+export const revokeHostActivityParticipant = async (input: {
+  activityId: string;
+  participantId: string;
+  hostUserId: string;
+  organizerNote: string;
+}): Promise<{ requestId: string; userId: string }> => {
+  const participant = await findActivityParticipantByIdAndActivity(input.participantId, input.activityId);
+  if (!participant) {
+    throw new ApiError(404, 'participant_not_found', 'Participant not found.');
+  }
+  if (participant.checkedInAt) {
+    throw new ApiError(400, 'cannot_revoke_checked_in', 'Cannot revoke after attendance is confirmed.');
+  }
+
+  const cancelledAt = new Date();
+  await patchActivityRequestInMongo(participant.requestId, {
+    status: RequestStatus.CANCELLED,
+    organizerNote: input.organizerNote,
+    cancelReason: 'host_revoked',
+    cancelMessage: input.organizerNote,
+    cancelledAt
+  });
+
+  const deleted = await activityParticipantsCollection().deleteOne({ _id: participant.id });
+  if (deleted.deletedCount > 0) {
+    await releaseActivityParticipantSlot(input.activityId);
+    void removeParticipantFromActivityGroupChat({
+      activityId: input.activityId,
+      userId: participant.userId
+    }).catch(() => undefined);
+  }
+  await promoteNextWaitlisted(input.activityId);
+
+  return { requestId: participant.requestId, userId: participant.userId };
+};
+
+export const setHostParticipantRating = async (input: {
+  activityId: string;
+  participantId: string;
+  score: number;
+  comment?: string | null;
+  activityEnded: boolean;
+}): Promise<ActivityParticipant> => {
+  if (!input.activityEnded) {
+    throw new ApiError(400, 'activity_not_ended', 'You can rate participants after the outing ends.');
+  }
+  if (input.score < 1 || input.score > 5) {
+    throw new ApiError(400, 'invalid_rating', 'Rating must be between 1 and 5.');
+  }
+
+  const participant = await findActivityParticipantByIdAndActivity(input.participantId, input.activityId);
+  if (!participant) {
+    throw new ApiError(404, 'participant_not_found', 'Participant not found.');
+  }
+  if (!participant.checkedInAt) {
+    throw new ApiError(400, 'not_checked_in', 'Confirm attendance before rating.');
+  }
+  if (participant.hostRatedAt) {
+    throw new ApiError(400, 'already_rated', 'You already rated this participant.');
+  }
+
+  const ratedAt = new Date();
+  await patchActivityParticipantInMongo(participant.id, {
+    hostRatingScore: input.score,
+    hostRatingComment: input.comment?.trim() || null,
+    hostRatedAt: ratedAt
+  });
+
+  const updated = await findActivityParticipantByIdAndActivity(input.participantId, input.activityId);
+  if (!updated) {
+    throw new ApiError(500, 'rating_failed', 'Could not save rating.');
+  }
+  return updated;
 };
 
 export const listActivityRequestsForActivity = async (activityId: string): Promise<ActivityRequest[]> => {

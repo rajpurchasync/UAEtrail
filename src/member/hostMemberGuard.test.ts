@@ -61,7 +61,7 @@ describe('hostMemberGuard', () => {
     for (const file of files) {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (/\bisHostRole\s*\(/.test(content)) {
-        violations.push(`${file}: use useMemberHostStatus / canAccessHostConsole`);
+        violations.push(`${file}: use useHostStatus / canAccessHostConsole`);
       }
     }
 

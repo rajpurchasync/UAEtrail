@@ -134,9 +134,14 @@ export const groupWallListQuerySchema = z
     { message: 'Use only one of since, before, or beforeMessageId' }
   );
 
-export const groupSettingsPatchSchema = z.object({
-  wallPostPolicy: z.enum(['all_members', 'admins_only'])
-});
+export const groupSettingsPatchSchema = z
+  .object({
+    wallPostPolicy: z.enum(['all_members', 'admins_only']).optional(),
+    photoUrl: z.union([mediaUrlSchema, z.literal(''), z.null()]).optional(),
+  })
+  .refine((body) => body.wallPostPolicy !== undefined || body.photoUrl !== undefined, {
+    message: 'Provide wallPostPolicy and/or photoUrl.',
+  });
 
 export const SWITCHABLE_PRIVILEGED_ROLES: UserRole[] = [
   UserRole.PLATFORM_ADMIN,

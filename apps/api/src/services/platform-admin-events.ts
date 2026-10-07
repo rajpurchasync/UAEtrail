@@ -1,8 +1,9 @@
+import {
+  ADMIN_ACTIVITIES_PATH,
+  ADMIN_PLACES_PATH,
+  ADMIN_USERS_PATH,
+} from '../lib/member-routes.js';
 import { notifyPlatformAdmins } from './admin-notifications.js';
-
-const ADMIN_USERS_PATH = '/admin/users';
-const ADMIN_ACTIVITIES_PATH = '/admin/activities';
-const ADMIN_PLACES_PATH = '/admin/places';
 
 export const notifyAdminsLocationSubmitted = (input: {
   locationId: string;

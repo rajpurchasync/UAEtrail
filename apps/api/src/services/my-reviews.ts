@@ -1,9 +1,12 @@
 import {
+  activityDetailPath,
   organisationProfilePath,
   placeDetailPath,
   shopPublicPath,
 } from '@uaetrail/shared-types';
 import { ReviewTargetType, TenantBusinessMode } from '../domain/enums.js';
+import { reviewTargetEnumToWire } from '../domain/review-target-wire.js';
+import { findPublishedActivityWithPreviewsById } from '../lib/activities-store.js';
 import { findLocationInMongo } from '../lib/entity-sync.js';
 import { findMerchantProfileByTenantId } from '../lib/shop-store.js';
 import {
@@ -29,6 +32,14 @@ const resolveTargetMeta = async (
     return {
       targetLabel: location.name,
       targetPath: `${placeDetailPath(location.activityType, location.id)}${reviewsHash}`,
+    };
+  }
+
+  if (review.targetType === ReviewTargetType.ACTIVITY) {
+    const activity = await findPublishedActivityWithPreviewsById(review.targetId);
+    return {
+      targetLabel: activity?.title?.trim() || 'Outing',
+      targetPath: `${activityDetailPath(review.targetId)}${reviewsHash}`,
     };
   }
 
@@ -59,7 +70,7 @@ const toMyReviewDto = async (
   target: { targetLabel: string; targetPath: string }
 ) => ({
   id: review.id,
-  targetType: review.targetType === ReviewTargetType.LOCATION ? ('location' as const) : ('tenant' as const),
+  targetType: reviewTargetEnumToWire(review.targetType),
   targetId: review.targetId,
   userId: review.userId,
   userName: author?.profile.displayName ?? author?.email.split('@')[0] ?? 'You',

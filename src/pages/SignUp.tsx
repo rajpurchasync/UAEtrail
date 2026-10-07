@@ -10,6 +10,7 @@ import { getPasswordValidationError } from '../utils/passwordPolicy';
 import { PageMeta } from '../components/seo/PageMeta';
 import { api } from '../api/index';
 import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
+import { signInPath } from '../config/routingCatalog';
 import { PRODUCT_AUTH_SIGNUP_SUBLINE } from '../content/productNorthStar';
 import { PERSON_NAME_MAX, PERSON_NAME_MIN, sanitizePersonNameInput, validatePersonName } from '../utils/personName';
 
@@ -120,9 +121,7 @@ export const SignUp = () => {
     }
   };
 
-  const signInHref = redirectTo
-    ? `/signin?redirect=${encodeURIComponent(redirectTo)}`
-    : '/signin';
+  const signInHref = signInPath(redirectTo ? { redirect: redirectTo } : undefined);
 
   const fieldClass = 'ios-input text-[17px] border border-neutral-300 bg-white';
 

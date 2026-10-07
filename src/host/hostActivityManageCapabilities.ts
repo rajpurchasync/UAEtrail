@@ -7,8 +7,6 @@ export type HostManageCapabilities = {
   showJoinRequests: boolean;
   /** FLOW-04 link / create rideshare on parent hike/camp/event */
   showLinkRideshare: boolean;
-  /** Roster check-in (published outings) */
-  showCheckIn: boolean;
   /** Activity group chat */
   showGroupChat: boolean;
   kindLabel: string;
@@ -37,7 +35,6 @@ export const hostActivityManageCapabilities = (activity: ActivityDTO): HostManag
   return {
     showJoinRequests: mode === 'approval' && published,
     showLinkRideshare: canLinkRideshareToActivity(activity) && published,
-    showCheckIn: published && activity.activityType !== 'rideshare',
     showGroupChat: published,
     kindLabel: kindLabel(activity),
   };

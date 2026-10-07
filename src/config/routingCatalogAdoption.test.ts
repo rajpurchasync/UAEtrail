@@ -5,11 +5,6 @@ import { join, relative } from 'node:path';
 const ROOT = join(process.cwd(), 'src');
 const SCAN_DIRS = ['pages', 'components', 'utils', 'hooks', 'content'];
 
-const ALLOW_EXPLORE_ROUTING_SHIM = new Set([
-  'src/utils/exploreRouting.ts',
-  'src/utils/exploreRouting.test.ts',
-]);
-
 const collectFiles = (dir: string, acc: string[] = []): string[] => {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
@@ -27,7 +22,6 @@ describe('routingCatalog adoption', () => {
     for (const sub of SCAN_DIRS) {
       const base = join(ROOT, sub);
       for (const file of collectFiles(base)) {
-        if (ALLOW_EXPLORE_ROUTING_SHIM.has(file)) continue;
         const content = readFileSync(join(process.cwd(), file), 'utf8');
         if (/from ['"][^'"]*utils\/exploreRouting['"]/.test(content)) {
           violations.push(file);
@@ -41,6 +35,19 @@ describe('routingCatalog adoption', () => {
     } else {
       expect(violations).toEqual([]);
     }
+  });
+
+  it('pages and components import organisation paths via routingCatalog', () => {
+    const violations: string[] = [];
+    for (const sub of ['pages', 'components'] as const) {
+      for (const file of collectFiles(join(ROOT, sub))) {
+        const content = readFileSync(join(process.cwd(), file), 'utf8');
+        if (/from ['"][^'"]*member\/organisationPaths['"]/.test(content)) {
+          violations.push(file);
+        }
+      }
+    }
+    expect(violations).toEqual([]);
   });
 
   it('pages and components do not import path constants from config/platform', () => {

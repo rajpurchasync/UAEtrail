@@ -12,6 +12,7 @@ import {
   listPublishedUpcomingActivitiesByLocation,
 } from '../../lib/activities-store.js';
 import { buildExploreMapPayload } from '../../lib/explore-map.js';
+import { enrichExploreMapPayloadViewerAccess } from '../../lib/explore-map-viewer-access.js';
 import { listActiveLocations } from '../../lib/location-query.js';
 import { buildActivityDto, toLocationDto } from '../../lib/mappers.js';
 import { paginatedResponse } from '../../lib/pagination.js';
@@ -54,9 +55,13 @@ const listLocationActivitiesHandler: RequestHandler = async (req, res, next) => 
 
 /** Public explore map + place (`/locations`) discovery and premium access. */
 export const registerPublicPlaceRoutes = (router: Router): void => {
-  router.get('/explore/map', async (_req, res, next) => {
+  router.get('/explore/map', optionalAuth, async (req, res, next) => {
     try {
-      const data = await buildExploreMapPayload();
+      const cached = await buildExploreMapPayload();
+      const data = await enrichExploreMapPayloadViewerAccess(cached, {
+        viewerUserId: req.auth?.userId ?? null,
+        userRole: req.auth?.role ?? null,
+      });
       res.json({ data });
     } catch (error) {
       next(error);

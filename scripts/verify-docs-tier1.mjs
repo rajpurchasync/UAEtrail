@@ -15,7 +15,6 @@ const TIER1 = [
   'docs/LANDING.md',
   'docs/CREATE_FLOW.md',
   'docs/MEMBER_MODEL.md',
-  'docs/NAMING_HOST_MEMBER.md',
   'docs/DOMAIN.md',
   'docs/ARCHITECTURE.md',
   'docs/API_ROUTING.md',
@@ -26,7 +25,7 @@ const TIER1 = [
 ];
 
 /** Files that may mention legacy paths in redirect/legacy tables only */
-const LEGACY_PATH_ALLOWLIST = new Set(['docs/NAVIGATION.md', 'docs/DOMAIN.md', 'docs/NAMING_HOST_MEMBER.md']);
+const LEGACY_PATH_ALLOWLIST = new Set(['docs/NAVIGATION.md', 'docs/DOMAIN.md']);
 
 /** Documents that intentionally list banned phrases as guidance */
 const BANNED_PHRASE_ALLOWLIST = new Set(['docs/DOCS_GOVERNANCE.md']);

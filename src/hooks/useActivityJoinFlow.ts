@@ -147,7 +147,7 @@ export const useActivityJoinActions = ({
         setShowWithdraw(false);
         onMessage?.(
           uiState.kind === 'confirmed'
-            ? 'You have withdrawn from this activity.'
+            ? 'Your request to join has been withdrawn.'
             : 'Join request cancelled.'
         );
         await onReload();

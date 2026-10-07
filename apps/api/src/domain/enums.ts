@@ -130,8 +130,6 @@ export const RewardAction = {
   ACTIVITY_PUBLISHED: 'ACTIVITY_PUBLISHED',
   ACTIVITY_HOSTED: 'ACTIVITY_HOSTED',
   ACTIVITY_ATTENDED: 'ACTIVITY_ATTENDED',
-  COMMUNITY_POST: 'COMMUNITY_POST',
-  COMMUNITY_REPLY: 'COMMUNITY_REPLY',
   REVIEW_WRITTEN: 'REVIEW_WRITTEN'
 } as const;
 export type RewardAction = (typeof RewardAction)[keyof typeof RewardAction];
@@ -165,14 +163,7 @@ export type LocationUnlockSource = (typeof LocationUnlockSource)[keyof typeof Lo
 
 export const ReviewTargetType = {
   LOCATION: 'LOCATION',
-  TENANT: 'TENANT'
+  TENANT: 'TENANT',
+  ACTIVITY: 'ACTIVITY',
 } as const;
 export type ReviewTargetType = (typeof ReviewTargetType)[keyof typeof ReviewTargetType];
-
-export const PostCategory = {
-  QUESTIONS: 'QUESTIONS',
-  ACTIVITY_REPORTS: 'ACTIVITY_REPORTS',
-  PHOTOS: 'PHOTOS',
-  TIPS: 'TIPS'
-} as const;
-export type PostCategory = (typeof PostCategory)[keyof typeof PostCategory];

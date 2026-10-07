@@ -26,6 +26,7 @@ import { findTenantByOwnerId } from '../../lib/activities-store.js';
 import { listTenantsByOwnerId, tenantMatchesHostProfileType } from '../../lib/tenant-store.js';
 import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
+import { ADMIN_HOSTS_PATH } from '../../lib/member-routes.js';
 import { notifyPlatformAdmins } from '../../services/admin-notifications.js';
 import { hostDetailsSchema } from './schemas.js';
 
@@ -178,7 +179,7 @@ export const registerHostApplicationRoutes = (router: Router): void => {
           meta: {
             kind: 'host_application_submitted',
             applicationId: application.id,
-            path: '/admin/hosts',
+            path: ADMIN_HOSTS_PATH,
           },
         });
 

@@ -1,6 +1,7 @@
 import {
   Bell,
   Compass,
+  LogIn,
   Map,
   MessageCircle,
   ShoppingBag,
@@ -8,11 +9,10 @@ import {
   type LucideIcon
 } from 'lucide-react';
 
-/** Shared outline icons for mobile nav + participant UI (keep in sync with MOBILE_DRAWER_MENU). */
+/** Shared outline icons for mobile nav + participant UI (landing drawer + legacy labels). */
 export const NAV_ICONS = {
   explore: Map,
   activities: Compass,
-  community: MessageCircle,
   shop: ShoppingBag,
   profile: User
 } satisfies Record<string, LucideIcon>;
@@ -20,7 +20,6 @@ export const NAV_ICONS = {
 export const MOBILE_NAV_ICON_MAP: Record<
   | 'Explore'
   | 'Activities'
-  | 'Community'
   | 'Shop'
   | 'Profile'
   | 'Trail catalog'
@@ -32,15 +31,18 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'My trips'
   | 'Notifications'
   | 'Join'
+  | 'Join free'
+  | 'Log in'
   | 'Contact',
   LucideIcon
 > = {
   'Explore Map': NAV_ICONS.explore,
   Explore: NAV_ICONS.explore,
   Join: NAV_ICONS.activities,
+  'Join free': NAV_ICONS.activities,
+  'Log in': LogIn,
   Contact: MessageCircle,
   Activities: NAV_ICONS.activities,
-  Community: NAV_ICONS.community,
   Shop: NAV_ICONS.shop,
   Profile: NAV_ICONS.profile,
   'My Profile': NAV_ICONS.profile,

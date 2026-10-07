@@ -1,8 +1,23 @@
-import { ActivityDTO, JoinRequestDTO, MyActivityDTO, ParticipantDTO, WithdrawReason } from '@uaetrail/shared-types';
+import {
+  ActivityDTO,
+  ActivityViewerAccessDTO,
+  JoinRequestDTO,
+  MyActivityDTO,
+  ParticipantDTO,
+  WithdrawReason,
+} from '@uaetrail/shared-types';
 import { apiRequest, getStoredSession } from '../client';
 import { organisationRequestHeaders } from '../orgHeaders';
 import type { ActivityDetail, ActivityRequestView } from '../types';
 
+/**
+ * Activity HTTP client — one entity (`activities`), different **routes** by surface:
+ * - Browse catalog: `getPublicActivities` / `getFeaturedActivities` → `GET /activities`
+ * - Member trips: `getMeActivities` → `GET /me/activities`
+ * - Host console (tenant + `x-organisation-id`): `listHostActivities` → `GET /host/activities`
+ *
+ * There is intentionally no `listActivities` on `api` — name was ambiguous (public vs tenant).
+ */
 export const activitiesApi = {
     getPublicActivities: (opts?: { when?: 'upcoming' | 'past' | 'all'; pageSize?: number }) => {
     const params = new URLSearchParams();
@@ -15,7 +30,32 @@ export const activitiesApi = {
     apiRequest<{ data: ActivityDTO[] }>(`/activities/featured?limit=${limit}`),
 
     getPublicActivityDetail: (id: string) =>
-    apiRequest<{ data: ActivityDetail }>(`/activities/${id}`, { auth: Boolean(getStoredSession()) }),
+    apiRequest<{ data: ActivityDetail; viewerAccess: ActivityViewerAccessDTO }>(`/activities/${id}`, {
+      auth: Boolean(getStoredSession()),
+    }),
+
+    listActivityJoinInvitesSent: (activityId: string) =>
+      apiRequest<{ data: import('@uaetrail/shared-types').ActivityJoinInvitesSentDTO }>(
+        `/activities/${activityId}/invites`,
+        { auth: true }
+      ),
+
+    sendActivityJoinInvite: (activityId: string, inviteeUserId: string) =>
+      apiRequest<{ data: { id: string; status: 'pending' } }>(`/activities/${activityId}/invites`, {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify({ inviteeUserId }),
+      }),
+
+    sendActivityJoinInvites: (activityId: string, inviteeUserIds: string[]) =>
+      apiRequest<{ data: { sent: number; inviteeUserIds: string[] } }>(
+        `/activities/${activityId}/invites`,
+        {
+          method: 'POST',
+          auth: true,
+          body: JSON.stringify({ inviteeUserIds }),
+        }
+      ),
 
     getActivityGroupChat: (activityId: string) =>
     apiRequest<{
@@ -142,34 +182,35 @@ export const activitiesApi = {
       auth: true
     }),
 
-    listOrganisationActivities: (tenantId: string) =>
-    apiRequest<{ data: ActivityDTO[] }>('/host/activities?pageSize=100', {
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
+    /** Host user activity list (`GET /host/activities`, tenant scope header). */
+    listHostActivities: (tenantId: string) =>
+      apiRequest<{ data: ActivityDTO[] }>('/host/activities?pageSize=100', {
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+      }),
 
-    createOrganisationActivity: (tenantId: string, payload: Record<string, unknown>) =>
-    apiRequest<{ data: ActivityDTO }>('/host/activities', {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify(payload)
-    }),
+    createHostActivity: (tenantId: string, payload: Record<string, unknown>) =>
+      apiRequest<{ data: ActivityDTO }>('/host/activities', {
+        method: 'POST',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+        body: JSON.stringify(payload),
+      }),
 
-    updateOrganisationActivity: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
-    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}`, {
-      method: 'PATCH',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify(payload)
-    }),
+    updateHostActivity: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
+      apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}`, {
+        method: 'PATCH',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+        body: JSON.stringify(payload),
+      }),
 
-    publishOrganisationActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/host/activities/${activityId}/publish`, {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
+    publishHostActivity: (tenantId: string, activityId: string) =>
+      apiRequest(`/host/activities/${activityId}/publish`, {
+        method: 'POST',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+      }),
 
     /** @deprecated Prefer `exploreApi.linkParticipantIntentToActivity` (poster-owned demand). */
     fulfillParticipantIntent: (tenantId: string, intentId: string, activityId: string) =>
@@ -183,25 +224,33 @@ export const activitiesApi = {
       }
     ),
 
-    duplicateOrganisationActivity: (tenantId: string, activityId: string) =>
-    apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}/duplicate`, {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
+    duplicateHostActivity: (tenantId: string, activityId: string) =>
+      apiRequest<{ data: ActivityDTO }>(`/host/activities/${activityId}/duplicate`, {
+        method: 'POST',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+      }),
 
-    cancelOrganisationActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/host/activities/${activityId}`, {
-      method: 'DELETE',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
+    cancelHostActivity: (tenantId: string, activityId: string) =>
+      apiRequest(`/host/activities/${activityId}`, {
+        method: 'DELETE',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+      }),
 
     getActivityParticipants: (tenantId: string, activityId: string) =>
-    apiRequest<{ data: { activityId: string; activityTitle: string; capacity: number; participants: ParticipantDTO[] } }>(
-      `/host/activities/${activityId}/participants`,
-      { auth: true, headers: organisationRequestHeaders(tenantId) }
-    ),
+    apiRequest<{
+      data: {
+        activityId: string;
+        activityTitle: string;
+        capacity: number;
+        activityEnded: boolean;
+        participants: ParticipantDTO[];
+      };
+    }>(`/host/activities/${activityId}/participants`, {
+      auth: true,
+      headers: organisationRequestHeaders(tenantId),
+    }),
 
     checkinParticipant: (tenantId: string, activityId: string, participantId: string) =>
     apiRequest(`/host/activities/${activityId}/participants/${participantId}/checkin`, {
@@ -216,6 +265,35 @@ export const activitiesApi = {
       auth: true,
       headers: organisationRequestHeaders(tenantId)
     }),
+
+    revokeActivityParticipant: (
+      tenantId: string,
+      activityId: string,
+      participantId: string,
+      organizerNote: string
+    ) =>
+      apiRequest(`/host/activities/${activityId}/participants/${participantId}/revoke`, {
+        method: 'POST',
+        auth: true,
+        headers: organisationRequestHeaders(tenantId),
+        body: JSON.stringify({ organizerNote }),
+      }),
+
+    rateActivityParticipant: (
+      tenantId: string,
+      activityId: string,
+      participantId: string,
+      payload: { score: number; comment?: string }
+    ) =>
+      apiRequest<{ data: { score: number; comment: string | null; ratedAt: string | null } }>(
+        `/host/activities/${activityId}/participants/${participantId}/rating`,
+        {
+          method: 'POST',
+          auth: true,
+          headers: organisationRequestHeaders(tenantId),
+          body: JSON.stringify(payload),
+        }
+      ),
 
     getActivityHistory: (tenantId: string) =>
     apiRequest<{ data: Array<{ id: string; title: string; locationName: string; activityType: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number }> }>(

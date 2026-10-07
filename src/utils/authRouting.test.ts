@@ -44,7 +44,7 @@ describe('auth routing by role', () => {
     expect(participantDashboardRedirect('overview')).toBe('/profile');
     expect(participantDashboardRedirect('requests')).toBe('/my-requests');
     expect(participantDashboardRedirect('activities')).toBe('/trips');
-    expect(participantDashboardRedirect('messages')).toBe('/messages');
+    expect(participantDashboardRedirect('messages')).toBe('/chat');
     expect(participantDashboardRedirect('profile')).toBe('/profile');
     expect(participantDashboardRedirect('unknown')).toBe('/profile');
   });

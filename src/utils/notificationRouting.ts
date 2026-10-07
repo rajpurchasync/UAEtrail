@@ -1,20 +1,30 @@
 import {
+  activityDetailInvitePath,
   activityDetailPath,
+  ADMIN_HOSTS_PATH,
   ADMIN_PLACES_PATH,
   EXPLORE_MAP_PATH,
   explorePath,
   isLegacyRewardsWalletPath,
   memberProfilePath,
+  BUDDIES_PATH,
+  GROUPS_PATH,
+  groupsPath,
+  HOST_OVERVIEW_PATH,
+  HOST_REQUESTS_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
+  messagesGroupPath,
+  messagesToUserPath,
+  myRequestDetailPath,
   tripsLegacyJoinedTabPath,
   tripsLegacyUpcomingSegmentPath,
 } from '../config/routingCatalog';
 import { NotificationDTO, placeDetailPath } from '@uaetrail/shared-types';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
-  meta && typeof meta === 'object' ? meta : null;
+  meta && typeof meta === 'object' ? (meta as Record<string, unknown>) : null;
 
 const toStringValue = (value: unknown): string | null =>
   typeof value === 'string' && value.trim().length > 0 ? value : null;
@@ -25,9 +35,25 @@ export const inferNotificationPath = (
 ): string => {
   const meta = toMetaObject(notif.meta);
 
+  const activityIdFromMeta = toStringValue(meta?.activityId);
   const directPath = toStringValue(meta?.path);
   if (directPath && directPath.startsWith('/')) {
     if (isLegacyRewardsWalletPath(directPath)) return PROFILE_BADGES_PATH;
+    const kindEarly = toStringValue(meta?.kind)?.toLowerCase() ?? '';
+    if (
+      kindEarly === 'activity_join_invite' &&
+      activityIdFromMeta &&
+      directPath.startsWith('/explore')
+    ) {
+      return activityDetailInvitePath(activityIdFromMeta);
+    }
+    if (
+      activityIdFromMeta &&
+      directPath.includes('invite=1') &&
+      directPath.startsWith('/explore')
+    ) {
+      return activityDetailInvitePath(activityIdFromMeta);
+    }
     return directPath;
   }
 
@@ -38,23 +64,29 @@ export const inferNotificationPath = (
 
   const requestId = toStringValue(meta?.requestId);
   if (requestId) {
-    return `/my-requests/${requestId}`;
-  }
-
-  const activityId = toStringValue(meta?.activityId);
-  if (activityId) {
-    return activityDetailPath(activityId);
-  }
-
-  const senderId = toStringValue(meta?.senderId);
-  if (senderId) {
-    return `/messages?to=${encodeURIComponent(senderId)}`;
+    return myRequestDetailPath(requestId);
   }
 
   const kind = toStringValue(meta?.kind)?.toLowerCase() ?? '';
+  const activityId = toStringValue(meta?.activityId);
+  if (kind === 'activity_join_invite' && activityId) {
+    return activityDetailInvitePath(activityId);
+  }
+
+  if (activityId) {
+    return activityDetailPath(activityId);
+  }
+  if (kind === 'message') {
+    const actor = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.senderId);
+    if (actor) return messagesToUserPath(actor);
+  }
+  const legacySenderId = toStringValue(meta?.senderId);
+  if (legacySenderId) {
+    return messagesToUserPath(legacySenderId);
+  }
   if (kind === 'join_request_approved') {
     const groupId = toStringValue(meta?.groupId);
-    if (groupId) return `/messages?group=${encodeURIComponent(groupId)}`;
+    if (groupId) return messagesGroupPath(groupId);
     return tripsLegacyJoinedTabPath();
   }
   if (
@@ -67,22 +99,22 @@ export const inferNotificationPath = (
   }
   if (kind === 'group_message') {
     const groupId = toStringValue(meta?.groupId);
-    if (groupId) return `/messages?group=${encodeURIComponent(groupId)}`;
+    if (groupId) return messagesGroupPath(groupId);
   }
   if (kind === 'group_invite') {
     const inviteToken = toStringValue(meta?.inviteToken);
-    if (inviteToken) return `/groups?invite=${encodeURIComponent(inviteToken)}`;
+    if (inviteToken) return groupsPath({ invite: inviteToken });
     const groupId = toStringValue(meta?.groupId);
-    if (groupId) return `/messages?group=${encodeURIComponent(groupId)}`;
-    return '/groups';
+    if (groupId) return messagesGroupPath(groupId);
+    return GROUPS_PATH;
   }
   if (kind === 'group_invite_accepted') {
     const groupId = toStringValue(meta?.groupId);
-    if (groupId) return `/messages?group=${encodeURIComponent(groupId)}`;
-    return '/groups';
+    if (groupId) return messagesGroupPath(groupId);
+    return GROUPS_PATH;
   }
   if (kind === 'request_withdrawal') {
-    return '/host/requests';
+    return HOST_REQUESTS_PATH;
   }
   if (kind === 'badge') {
     return PROFILE_BADGES_PATH;
@@ -97,9 +129,12 @@ export const inferNotificationPath = (
     return tripsLegacyJoinedTabPath();
   }
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') {
-    const buddyUserId = toStringValue(meta?.buddyUserId) ?? toStringValue(meta?.fromUserId);
-    if (buddyUserId) return memberProfilePath(buddyUserId) ?? '/buddies';
-    return '/buddies';
+    const actorUserId =
+      toStringValue(meta?.actorUserId) ??
+      toStringValue(meta?.fromUserId) ??
+      toStringValue(meta?.buddyUserId);
+    if (actorUserId) return memberProfilePath(actorUserId) ?? BUDDIES_PATH;
+    return BUDDIES_PATH;
   }
   if (kind === 'connection_member_followed') {
     const followerUserId = toStringValue(meta?.followerUserId);
@@ -120,8 +155,8 @@ export const inferNotificationPath = (
   }
   if (kind === 'buddy_request' && toStringValue(meta?.groupId)) {
     const inviteToken = toStringValue(meta?.inviteToken);
-    if (inviteToken) return `/groups?invite=${encodeURIComponent(inviteToken)}`;
-    return '/groups';
+    if (inviteToken) return groupsPath({ invite: inviteToken });
+    return GROUPS_PATH;
   }
   if (kind === 'location_approved') {
     const locationId = toStringValue(meta?.locationId);
@@ -132,18 +167,18 @@ export const inferNotificationPath = (
     return explorePath({ panel: 'venues' });
   }
   if (kind === 'host_application_submitted' || kind === 'organizer_application_submitted') {
-    return '/admin/hosts';
+    return ADMIN_HOSTS_PATH;
   }
   if (kind === 'host_application_approved' || kind === 'organizer_application_approved') {
     const shopPath = toStringValue(meta?.path);
     if (shopPath && shopPath.startsWith('/shop/')) return shopPath;
-    return '/host/overview';
+    return HOST_OVERVIEW_PATH;
   }
   if (kind === 'host_application_rejected' || kind === 'organizer_application_rejected') {
     return PRO_MEMBERSHIP_PATH;
   }
   if (kind === 'host_suspended' || kind === 'host_reopened') {
-    return kind === 'host_suspended' ? PRO_MEMBERSHIP_PATH : '/host/overview';
+    return kind === 'host_suspended' ? PRO_MEMBERSHIP_PATH : HOST_OVERVIEW_PATH;
   }
   if (kind === 'user_suspended' || kind === 'user_reactivated') {
     return PROFILE_PATH;
@@ -167,7 +202,7 @@ export const inferNotificationPath = (
       kind === 'organizer_application_submitted' ||
       toStringValue(meta?.applicationId)
     ) {
-      return '/admin/hosts';
+      return ADMIN_HOSTS_PATH;
     }
     if (toStringValue(meta?.userId)) return '/admin/users';
     if (toStringValue(meta?.groupId)) return '/admin/groups';
@@ -176,7 +211,7 @@ export const inferNotificationPath = (
     if (toStringValue(meta?.productId)) return '/admin/shop';
 
     const adminText = `${notif.title} ${notif.body}`.toLowerCase();
-    if (adminText.includes('application') || adminText.includes('host')) return '/admin/hosts';
+    if (adminText.includes('application') || adminText.includes('host')) return ADMIN_HOSTS_PATH;
     if (adminText.includes('user')) return '/admin/users';
     if (adminText.includes('group')) return '/admin/groups';
     if (adminText.includes('activity')) return '/admin/activities';

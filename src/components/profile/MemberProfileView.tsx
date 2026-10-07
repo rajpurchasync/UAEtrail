@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { SIGNIN_PATH } from '../../config/routingCatalog';
 import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import { MemberFollowControls } from './MemberFollowControls';
 import { MemberProfileBuddyActions } from './MemberProfileBuddyActions';
@@ -122,7 +123,7 @@ export const MemberProfileView = ({
 
           {!isSelf && !userLoggedIn ? (
             <Link
-              to="/signin"
+              to={SIGNIN_PATH}
               state={{ from: `/member/${profile.id}` }}
               className="mt-4 inline-block text-sm font-semibold text-emerald-700"
             >

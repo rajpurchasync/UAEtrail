@@ -1,18 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { useOrganisationHubData } from '../../hooks/useOrganisationHubData';
-import { useOrganisationActivityHostActions } from '../../hooks/useOrganisationActivityHostActions';
+import { useConsoleHubData } from '../../console/useHubData';
+import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import {
   ConsumerErrorCard,
   ConsumerInlineEmpty,
   ConsumerLoadingSpinner,
 } from '../../components/mobile/ConsumerFeedback';
-import { HostActivityManageSheet } from '../../components/host/HostActivityManageSheet';
+import { ActivityManageSheet } from '../../components/host/ActivityManageSheet';
 import { HostedActivityListRow } from '../../components/host/HostedActivityListRow';
-import { buildTripsHostedActivityMenuItems } from '../../components/host/buildTripsHostedActivityMenu';
-import { exploreOrganizePath } from '../../config/routingCatalog';
+import {
+  exploreOrganizePath,
+  HOST_OVERVIEW_PATH,
+  HOST_REQUESTS_PATH,
+} from '../../config/routingCatalog';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 import type { ActivityRequestView } from '../../api/index';
@@ -27,7 +30,7 @@ const pendingCountForActivity = (activityId: string, requests: ActivityRequestVi
     return resolveJoinRequestActivity(request)?.id === activityId;
   }).length;
 
-/** Organisation-hosted activities list (Trips tab “Hosted”). */
+/** Host-user activities list (Trips tab “Hosted”) — same Activity entity, tenant manage projection. */
 export const HostedActivitiesSection = ({
   refreshKey = 0,
   searchQuery = '',
@@ -39,13 +42,13 @@ export const HostedActivitiesSection = ({
   searchQuery?: string;
   timeScope?: 'upcoming' | 'past';
   layout?: 'page' | 'embedded';
-  /** Open manage sheet from `?peek=` / `?checkin=` without rendering the list. */
+  /** Open manage sheet from `?peek=` / `?roster=` / `?checkin=` without rendering the list. */
   peekBridgeOnly?: boolean;
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const host = useOrganisationHubData();
-  const hostActions = useOrganisationActivityHostActions(host.tenantId, host.reload);
+  const host = useConsoleHubData();
+  const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
   const inviteShare = useActivityInviteShareSheet();
   const [activityTab, setActivityTab] = useState<ActivityTab>(timeScope ?? 'upcoming');
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
@@ -96,34 +99,21 @@ export const HostedActivitiesSection = ({
     setManageActivity(activity);
   };
 
-  const hostedMenuHandlers = {
-    onOpen: (activity: ActivityDTO) => {
-      if (activity.status === 'published') {
-        navigate(`/activity/${activity.id}`);
-        return;
-      }
-      openManage(activity);
-    },
-    onShare: (activity: ActivityDTO) => inviteShare.openInviteFromActivity(activity),
-    onEdit: hostActions.editActivity,
-    onDuplicate: hostActions.reorganizeActivity,
-    onCancel: hostActions.setConfirmCancel,
-    onCheckin: (activity: ActivityDTO) => openManage(activity, 'checkin'),
-  };
-
   const openedDeepLinkRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const openId = searchParams.get('peek') ?? searchParams.get('checkin');
+    const rosterId = searchParams.get('roster') ?? searchParams.get('checkin');
+    const openId = searchParams.get('peek') ?? rosterId;
     if (!openId || host.loading || !host.tenantId) return;
     if (openedDeepLinkRef.current === openId) return;
     const activity = tripsHostedActivities.find((event) => event.id === openId);
     if (!activity) return;
     openedDeepLinkRef.current = openId;
-    openManage(activity, searchParams.get('checkin') ? 'checkin' : 'overview');
+    openManage(activity, rosterId ? 'checkin' : 'overview');
     const next = new URLSearchParams(searchParams);
     next.delete('peek');
     next.delete('checkin');
+    next.delete('roster');
     setSearchParams(next, { replace: true });
   }, [tripsHostedActivities, host.loading, host.tenantId, searchParams, setSearchParams]);
 
@@ -133,7 +123,7 @@ export const HostedActivitiesSection = ({
     if (fresh) setManageActivity(fresh);
   }, [host.activities, manageActivity?.id]);
 
-  const peekId = searchParams.get('peek') ?? searchParams.get('checkin');
+  const peekId = searchParams.get('peek') ?? searchParams.get('roster') ?? searchParams.get('checkin');
   const showList = !peekBridgeOnly;
 
   if (showList && host.loading) {
@@ -148,15 +138,13 @@ export const HostedActivitiesSection = ({
     return (
       <>
         {inviteShare.sheet}
-        <HostActivityManageSheet
+        <ActivityManageSheet
           open={Boolean(manageActivity)}
           activity={manageActivity}
           tenantId={host.tenantId}
           pendingRequests={host.pendingRequests}
           actions={hostActions}
           initialView={manageInitialView}
-          onOpenPublicPage={(a) => navigate(`/activity/${a.id}`)}
-          onShare={(a) => inviteShare.openInviteFromActivity(a)}
           onClose={() => {
             setManageActivity(null);
             setManageInitialView('overview');
@@ -173,7 +161,7 @@ export const HostedActivitiesSection = ({
       <ConsumerInlineEmpty
         message="Host profile is still loading — try again in a moment, or open the host console."
         actionLabel="Host console"
-        actionTo="/host/overview"
+        actionTo={HOST_OVERVIEW_PATH}
       />
     );
   }
@@ -190,7 +178,7 @@ export const HostedActivitiesSection = ({
             <h3 className="text-sm font-bold text-neutral-800">
               Incoming requests ({host.pendingRequests.length})
             </h3>
-            <Link to="/host/requests" className="text-xs font-semibold text-emerald-600">
+            <Link to={HOST_REQUESTS_PATH} className="text-xs font-semibold text-emerald-600">
               View all
             </Link>
           </div>
@@ -230,7 +218,6 @@ export const HostedActivitiesSection = ({
               key={activity.id}
               activity={activity}
               pendingRequestCount={pendingCountForActivity(activity.id, host.pendingRequests)}
-              menuItems={buildTripsHostedActivityMenuItems(activity, hostedMenuHandlers)}
               onOpenDetail={() => openManage(activity)}
             />
           ))}
@@ -239,7 +226,7 @@ export const HostedActivitiesSection = ({
 
       {inviteShare.sheet}
 
-      <HostActivityManageSheet
+      <ActivityManageSheet
         open={Boolean(manageActivity)}
         activity={manageActivity}
         tenantId={host.tenantId}

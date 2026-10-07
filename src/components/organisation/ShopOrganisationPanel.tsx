@@ -11,7 +11,7 @@ import { AppSegmented } from '../mobile/AppSegmented';
 import { ImageUpload } from '../ui';
 import { AppSelect } from '../ui/AppSelect';
 
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 
 type Tab = 'shop' | 'products';
 
@@ -42,7 +42,7 @@ const productDefaults = {
 };
 
 export const ShopOrganisationPanel = () => {
-  const { hasShopProfile, loading: gateLoading } = useOrganisationGate();
+  const { hasShopProfile, loading: gateLoading } = useHostStatus();
   const [tab, setTab] = useState<Tab>('shop');
   const [stores, setStores] = useState<ShopOrganisationDTO[]>([]);
   const [storesLoaded, setStoresLoaded] = useState(false);

@@ -2,8 +2,13 @@ import { z } from 'zod';
 import { validate } from '../../middleware/validate.js';
 import { acceptBuddyRequest, cancelBuddyRequest, createBuddyRequest, declineBuddyRequest, getBuddyRelationship, listBuddyRequestsForUser, listBuddiesForUser, unfriendBuddy } from '../../lib/buddy-store.js';
 import { notifyBuddyRequestAccepted, notifyBuddyRequestReceived } from '../../services/buddy-notifications.js';
+import { loadBuddyActivityPresence } from '../../services/buddy-activity-presence.js';
 import { buddyRelationshipParamSchema, buddyRequestIdParamSchema, createBuddyRequestSchema, listBuddyRequestsQuerySchema } from './schemas.js';
 import type { Router } from 'express';
+
+const buddyActivityPresenceQuerySchema = z.object({
+  date: z.string().trim().max(32).optional(),
+});
 
 export const registerBuddyRoutes = (router: Router): void => {
 router.get('/me/buddies', async (req, res, next) => {
@@ -14,6 +19,24 @@ router.get('/me/buddies', async (req, res, next) => {
     next(error);
   }
 });
+
+router.get(
+  '/me/buddies/activity-presence',
+  validate({ query: buddyActivityPresenceQuerySchema }),
+  async (req, res, next) => {
+    try {
+      const query = buddyActivityPresenceQuerySchema.parse(req.query);
+      const data = await loadBuddyActivityPresence({
+        viewerUserId: req.auth!.userId,
+        userRole: req.auth!.role,
+        datePresetRaw: query.date,
+      });
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.post(
   '/me/buddies/:userId/unfriend',

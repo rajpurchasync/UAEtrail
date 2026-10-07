@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin } from 'lucide-react';
 import { GlassCard } from '../mobile/GlassCard';
+import { tripsPath } from '../../config/routingCatalog';
 
 /** Settings stack entry — wishlist is managed on Profile, not explore chrome. */
 export const ProfileWishlistSettingsLink = () => (
   <GlassCard padding className="!p-0 overflow-hidden animate-fade-up">
     <Link
-      to="/trips?layer=places"
+      to={tripsPath({ layer: 'places' })}
       className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-neutral-50"
     >
       <span

@@ -12,7 +12,7 @@ interface ExploreSaveButtonProps {
 export const ExploreSaveButton = ({ card, light = false }: ExploreSaveButtonProps) => {
   const { canSave, saved, busy, notice, toggle } = useExploreSaveFavorite(card);
 
-  if (card.showHostActions || !canSave) return null;
+  if (card.viewerAccess?.level === 'host' || !canSave) return null;
 
   const afterSavePath =
     card.source === 'shop' || card.source === 'agency'

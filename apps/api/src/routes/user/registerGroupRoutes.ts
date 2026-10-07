@@ -5,12 +5,13 @@ import { validate } from '../../middleware/validate.js';
 import { env } from '../../config/env.js';
 import { findAuthUserByEmail, findAuthUserById } from '../../lib/auth-users.js';
 import { findActivityDocInMongo } from '../../lib/entity-sync.js';
+import { messagesGroupPath } from '../../lib/member-routes.js';
 import { createNotificationRecord } from '../../lib/notifications-store.js';
 import { isActivityGroupChatOpen } from '../../services/activity-group-chat.js';
 import { notifyGroupInvite, notifyGroupWallPost } from '../../services/social-notifications.js';
 import { publishGroupWallStreamToMembers } from '../../services/group-wall-stream.js';
 import { canMemberPostToGroupWall } from '../../lib/group-wall-policy.js';
-import { acceptGroupInviteByToken, createGroupInvite, createGroupWallMessage, createKidGroupMember, createSocialGroup, deleteSocialGroup, findGroupById, findGroupMemberById, getGroupMembership, listGroupInvites, listGroupMembersDetailed, listGroupsForUserWithChatPreview, listGroupWallMessages, markGroupWallRead, presentGroupWallMessage, removeGroupMembership, setGroupMembershipActiveState, toggleGroupWallReaction, updateGroupMemberRole, updateGroupWallPostPolicy } from '../../lib/social-groups-store.js';
+import { acceptGroupInviteByToken, createGroupInvite, createGroupWallMessage, createKidGroupMember, createSocialGroup, deleteSocialGroup, findGroupById, findGroupMemberById, getGroupMembership, listGroupInvites, listGroupMembersDetailed, listGroupsForUserWithChatPreview, listGroupWallMessages, markGroupWallRead, presentGroupWallMessage, removeGroupMembership, setGroupMembershipActiveState, toggleGroupWallReaction, updateGroupChatSettings, updateGroupMemberRole } from '../../lib/social-groups-store.js';
 import { acceptInviteSchema, createGroupSchema, createKidSchema, createWallPostSchema, groupIdParamSchema, groupInviteSchema, groupMembershipIdParamSchema, groupMembershipPatchSchema, groupSettingsPatchSchema, groupWallListQuerySchema, groupWallMessageIdParamSchema, groupWallReactionSchema } from './schemas.js';
 import type { Router } from 'express';
 
@@ -86,7 +87,17 @@ router.patch(
         throw new ApiError(404, 'group_not_found', 'Group not found.');
       }
 
-      const updated = await updateGroupWallPostPolicy(groupId, body.wallPostPolicy);
+      const photoUrl =
+        body.photoUrl === undefined
+          ? undefined
+          : body.photoUrl === '' || body.photoUrl === null
+            ? null
+            : body.photoUrl;
+
+      const updated = await updateGroupChatSettings(groupId, {
+        wallPostPolicy: body.wallPostPolicy,
+        photoUrl,
+      });
       if (!updated) {
         throw new ApiError(404, 'group_not_found', 'Group not found.');
       }
@@ -204,8 +215,9 @@ router.post('/me/group-invites/accept', validate({ body: acceptInviteSchema }), 
         meta: {
           kind: 'group_invite_accepted',
           groupId: accepted.groupId,
-          path: '/groups'
-        }
+          actorUserId: user._id,
+          path: messagesGroupPath(accepted.groupId),
+        },
       }).catch(() => undefined);
     }
 

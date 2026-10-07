@@ -44,15 +44,12 @@ All defined in `docker-compose.yml`.
 - SSH access to the VPS
 - MongoDB Atlas URIs for test, staging, and production
 
-## performance_crossPlatform_bugfix Persisted Notes
+## Auth & env (production)
 
-Reference: `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`
-
-Deployment-critical carry-forward:
-
-- Keep refresh token cookie flow enabled end-to-end (frontend requests must continue using `credentials: include`).
-- Ensure `APP_BASE_URL` and `APP_BASE_URLS` are correct for production origin(s), otherwise refresh and auth flows may fail cross-platform.
-- Do not regress frontend session persistence assumptions (`uaetrail_session` in localStorage).
+- Env template: `.env.production.example` — validate with `npm run validate:env:prod` on the server.
+- Bootstrap order and first admin: see former `MIGRATION.md` content in **§ First admin** below; local dev: [`DEV_RUN.md`](./DEV_RUN.md).
+- Keep refresh cookie + `credentials: include` end-to-end; set `APP_BASE_URL` / `APP_BASE_URLS` to real origins.
+- Optional observability (Grafana/Loki/Prometheus): configs under repo `monitoring/` — not started by default dev launchers.
 
 ---
 
@@ -258,6 +255,16 @@ docker compose down
 # Stop and remove volumes (DESTROYS DATA)
 docker compose down -v
 ```
+
+---
+
+## First admin (dev/staging only)
+
+```bash
+SEED_DATA=true npm run seed
+```
+
+Creates `admin@uaetrails.app` / `Admin@12345` — change immediately. Production blocks demo seed (`NODE_ENV=production`).
 
 ---
 

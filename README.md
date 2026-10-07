@@ -57,13 +57,9 @@ When someone says "dev run", use the VS Code hot-reload workflow with cloud test
 - Use `RUN_ENV=test` with `MONGODB_URI_TEST` from root `.env`.
 - Do not start Grafana, Prometheus, Loki, or other monitoring containers unless explicitly requested.
 
-## performance_crossPlatform_bugfix Baseline
+## Auth & session baseline
 
-Canonical persisted instructions for this workstream are in:
-
-- `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`
-
-Future agents/workspaces should treat that file as the source of truth for auth/session, access management, and social/performance guardrails introduced on the `performance_crossPlatform_bugfix` branch.
+See [`docs/DEV_RUN.md`](docs/DEV_RUN.md) (§ Auth & session baseline). System alignment: `npm run verify:system:quick`.
 
 ## Dependency Model
 
@@ -79,9 +75,7 @@ The workspace dependencies are also handled automatically: if `node_modules` is 
 
 If a newer Node.js, Docker, or installer requirement is introduced later, update the launcher scripts and this table together so the README stays aligned with the actual bootstrap behavior.
 
-## Mobile & store deployment
-
-See **[docs/MOBILE_DEPLOYMENT_PLAN.md](docs/MOBILE_DEPLOYMENT_PLAN.md)** for the full checklist.
+## Documentation & deployment
 
 | Guide | Purpose |
 |-------|---------|
@@ -89,17 +83,15 @@ See **[docs/MOBILE_DEPLOYMENT_PLAN.md](docs/MOBILE_DEPLOYMENT_PLAN.md)** for the
 | [SYSTEM_COHERENCE.md](docs/SYSTEM_COHERENCE.md) | Whole product — capabilities, modules, API contexts, debt register |
 | [DOCS_GOVERNANCE.md](docs/DOCS_GOVERNANCE.md) | How to keep docs aligned; `npm run verify:docs` |
 | [NORTHSTAR.md](docs/NORTHSTAR.md) | Product concept, voice, surface jobs |
-| [MEMBER_MODEL.md](docs/MEMBER_MODEL.md) | Member tiers, `GET /me/host-status`, buddy Organize |
+| [MEMBER_MODEL.md](docs/MEMBER_MODEL.md) | Member tiers, host/join naming, `GET /me/host-status`, buddy Organize |
 | [HOST_CLEANUP_ROADMAP.md](docs/HOST_CLEANUP_ROADMAP.md) | P0–P3 host/tenant/fulfill cleanup tracker |
-| [NAMING_HOST_MEMBER.md](docs/NAMING_HOST_MEMBER.md) | Glossary: activity join vs host onboarding |
 | [DOMAIN_CANONICALS.md](docs/DOMAIN_CANONICALS.md) | Entities, URL/API canon, `routingCatalog`, routing hygiene |
 | [DOMAIN.md](docs/DOMAIN.md) | Full domain glossary (Place, Activity, Trips UI vs Activity) |
 | [API_ROUTING.md](docs/API_ROUTING.md) | `/me/*` vs `/host/*` conventions |
 | [DEV_RUN.md](docs/DEV_RUN.md) | VS Code hot-reload dev convention |
 | [NAVIGATION.md](docs/NAVIGATION.md) | Routes, surfaces, auth redirects |
 | [LANDING.md](docs/LANDING.md) | Guest-only marketing page (`/`) scope |
-| [RELEASE_READINESS.md](docs/RELEASE_READINESS.md) | QA gates, UAT scripts, go/no-go |
-| [PRE_DEPLOY_CHECKLIST.md](docs/PRE_DEPLOY_CHECKLIST.md) | Go-live on VPS |
+| [PRE_DEPLOY_CHECKLIST.md](docs/PRE_DEPLOY_CHECKLIST.md) | Go-live + release gates (`verify:system`) |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker + HTTPS |
 | [ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md) | Play Store AAB |
 | [IOS_RELEASE.md](docs/IOS_RELEASE.md) | TestFlight / App Store |

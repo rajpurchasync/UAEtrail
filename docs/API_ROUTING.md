@@ -2,7 +2,7 @@
 
 **Branch:** `main` · **Base path:** `/api/v1` (see `apps/api/src/routes/index.ts`).
 
-Companion: [`DOMAIN.md`](./DOMAIN.md), [`experiment/explore-backend-alignment.md`](./experiment/explore-backend-alignment.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md).
+Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 ---
 
@@ -13,9 +13,12 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`experiment/explore-backend-alignment.md
 | **`/activities`** | Public read; write via `/host` | Published **Organize** outings (join, RSVP, detail) |
 | **`/explore/map`** | Public | Discovery payload (activities, venues, shops, **demand**) |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
-| **`/host/*`** | Verified + **tenant** (`x-tenant-id`) | Organisation console: publish, check-in, **activity** join queue |
+| **`/host/*`** | Verified + **tenant** (`x-organisation-id`) | **Host console** (any publishing tier): publish, participant roster, **activity** join queue |
 | **`/users/*`** | Optional auth | Public member profiles |
 | **`/chat/*`**, **`/social/*`** | Auth | DMs, reviews, favorites |
+| **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
+| **`POST /admin/platform-admins`** | Master admin only | Grant `PLATFORM_ADMIN` to an existing member by email |
+| **`DELETE /admin/platform-admins/:userId`** | Master admin only | Revoke platform staff (not master accounts) |
 
 **Naming**
 
@@ -64,7 +67,18 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 
 **Publish gate:** `POST /host/activities` and `POST /host/activities/:id/publish` require `signupProfileComplete` + `canPublish` (see `member-publish-gate.ts`), except platform admin acting on a tenant.
 
-Registration: `registerMeParticipantIntentRoutes.ts` (not mixed with `/me/rewards`).
+Registration: `registerMeParticipantIntentRoutes.ts`.
+
+---
+
+## Member badges (`GET /me/badges`)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/badges` | Signed-in member — earned + in-progress achievement badges |
+
+Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.  
+**Removed (do not reintroduce):** `/me/rewards`, `/rewards/catalog`, `/rewards/leaderboard` — Trail Points wallet product retired; badge progress still records via `awardPoints` shim in `rewards.ts`.
 
 ---
 
@@ -72,12 +86,72 @@ Registration: `registerMeParticipantIntentRoutes.ts` (not mixed with `/me/reward
 
 | Method | Path | Notes |
 |--------|------|--------|
-| GET | `/activities`, `/activities/:id` | Public browse / detail |
+| GET | `/activities`, `/activities/:id` | Browse / detail — **`composeActivityViewerAccess`** (social access + entitlements); response includes **`viewerAccess`** § [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) **§15** |
 | POST | `/activities/:id/requests` | Request to join |
 | POST | `/activities/:id/rsvp` | I'm going |
 | GET/PATCH | `/me/requests` | Member’s activity requests |
-| * | `/host/activities/*` | CRUD, publish, participants, check-in |
+| GET | `/activities/:id` | Activity detail includes `myJoinInvite` when the signed-in viewer has a pending Join me invite (and is not already going) |
+| GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
+| POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
+| * | `/host/activities/*` | CRUD, publish, history (`registerHostActivityRoutes`) — FE: `listHostActivities`, `createHostActivity`, `publishHostActivity`, … (`activities.ts`) |
+| GET | `/host/activities/:id/participants` | Approved roster + flags (`registerHostActivityParticipantRoutes`) |
+| POST/DELETE | `/host/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
+| POST | `/host/activities/:id/participants/:participantId/revoke` | Remove joiner (note → notification) |
+| POST | `/host/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
 | GET/PATCH | `/host/requests` | Host queue for **activities** only |
+
+Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mongo-indexes.ts`.
+
+---
+
+## Buddies (`/me/buddies`)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/buddies` | List accepted buddy relationships |
+| POST | `/me/buddy-requests/:id/accept` | Accept request — also upserts **mutual** `user_follows` (no follow notification) |
+| GET | `/me/buddies/activity-presence` | Buddies × **published activities** on explore map (hosting / participant previews). Query: `date` (explore date preset). |
+
+Registration: `registerBuddyRoutes.ts` · service: `buddy-activity-presence.ts`.
+
+Explore **Social** panel (UI) uses **`GET /social/people`** (see below) — `activity-presence` remains for map-adjacent tooling.
+
+---
+
+## Social people roster (`/social`)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/social/people/preview` | Friend avatars + counts for Explore map pill |
+| GET | `/social/people` | Friends / following roster for Explore Social panel. Query: `segment=all\|friends\|followed` |
+| GET | `/me/member-discovery/roster` | Explore Social **Discover** tab — on-trip strangers + public directory (`q`, `date`, pagination); `meta.quota` |
+
+Registration: `apps/api/src/routes/social/registerSocialPeopleRoutes.ts` · service: `social-people.ts`.
+
+---
+
+## Reviews (`social_reviews`)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/reviews` | Public list. Query: `targetType=location\|tenant\|activity`, `targetId`, pagination |
+| POST | `/reviews` | Signed-in · place, host/shop, or **activity** (activity requires host check-in) |
+| GET | `/me/reviews` | Signed-in member's reviews |
+| PATCH | `/me/reviews/:id` | Edit own review |
+
+Registration: `registerSocialReviewRoutes.ts` (mounted on root `socialRouter` in `routes/social.ts`). Favorites remain on the same `socialRouter`.
+
+---
+
+## Member discovery (directory / quota)
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/member-discovery-quota` | Free vs Pro profile-open quota |
+| GET | `/me/member-discovery/roster` | Strangers on trips (`onTrips`) + public directory + `meta.quota`. Query: `date`, `q`, pagination |
+| GET | `/users/browse` | Directory only (paginated public members; excludes self + buddies) |
+
+Profile opens from Discover: `GET /users/:id/public-profile?from=discover` (quota). Registration: `registerMemberDiscoveryRoutes.ts` · roster: `member-discovery-roster.ts` · views: `member_profile_views` collection.
 
 ---
 
@@ -96,7 +170,7 @@ Signed-in **member contract** for publish gates, host console access, and profil
 
 Canonical frontend client: `memberApi.getMemberHostStatus()` (`src/api/domains/member.ts`). Legacy: `organisationApi.getMyOrganisationStatus`.
 
-Implementation phases: [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md) · map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
+Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · `GET /me/host-status`.
 
 ---
 
@@ -105,6 +179,7 @@ Implementation phases: [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md) · m
 | Domain module | Routes |
 |---------------|--------|
 | `member.ts` | **`/me/host-status`** |
+| `badges.ts` | **`/me/badges`** |
 | `activities.ts` | `/activities`, `/me/requests`, `/host/activities`, `/host/requests` |
 | `explore.ts` | `/explore/map`, **`/me/participant-intents`** (+ requests, link-activity) |
 | `social.ts`, `chat.ts` | Groups, DMs, inbox |
@@ -116,4 +191,6 @@ Prefer **`exploreApi`** for demand; avoid `fulfillParticipantIntent` on host for
 
 ## UI component naming (related)
 
-Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). Host folder is for **`/host/*`** activity console only.
+Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). **`src/components/host/*`** is for **`/host/*`** and Trips **hosted** manage (`ActivityManageSheet`, **`ActivityParticipantsPanel`** for roster / check-in / revoke / rate).
+
+Do **not** add `OrganisationActivity*` symbols or `*OrganisationActivity` client methods — one **Activity** model for community and business hosts; **organisation** naming is tenant storefront scope only ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Organisation in filenames). Member read-only attendance: **`ActivityParticipationStatus`** (not a host roster panel).

@@ -9,6 +9,7 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
 import { WithdrawRequestModal } from '../components/ui/WithdrawRequestModal';
 import { requestStatusLabel } from '../utils/joinRequestUi';
+import { MY_REQUESTS_PATH, messagesToUserPath } from '../config/routingCatalog';
 
 const statusBadge: Record<string, string> = {
   pending: 'bg-amber-500/15 text-amber-700',
@@ -64,7 +65,7 @@ export const JoinRequestDetail = () => {
     setError(null);
     try {
       await api.cancelJoinRequest(request.activity.id, request.id, payload);
-      navigate('/my-requests', { replace: true });
+      navigate(MY_REQUESTS_PATH, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Couldn\'t cancel your request — try again.');
       setShowWithdraw(false);
@@ -79,12 +80,12 @@ export const JoinRequestDetail = () => {
       setError('You can\'t message this host from here yet.');
       return;
     }
-    navigate(`/messages?to=${hostUserId}`);
+    navigate(messagesToUserPath(hostUserId));
   };
 
   if (loading) {
     return (
-      <MobileScreen title="Request" backTo="/my-requests">
+      <MobileScreen title="Request" backTo={MY_REQUESTS_PATH}>
         <div className="flex justify-center py-16">
           <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -94,10 +95,10 @@ export const JoinRequestDetail = () => {
 
   if (!request) {
     return (
-      <MobileScreen title="Request" backTo="/my-requests">
+      <MobileScreen title="Request" backTo={MY_REQUESTS_PATH}>
         <GlassCard padding className="text-center">
           <p className="text-neutral-600 mb-4">{error ?? 'We couldn\'t find this request.'}</p>
-          <Link to="/my-requests" className="text-emerald-600 font-semibold text-sm">
+          <Link to={MY_REQUESTS_PATH} className="text-emerald-600 font-semibold text-sm">
             Back to requests
           </Link>
         </GlassCard>
@@ -110,7 +111,7 @@ export const JoinRequestDetail = () => {
   const withdrawVariant = request.status === 'approved' ? 'activity' : 'request';
 
   return (
-    <MobileScreen title="Join request" backTo="/my-requests" backLabel="Requests">
+    <MobileScreen title="Join request" backTo={MY_REQUESTS_PATH} backLabel="Requests">
       {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
       {message && <p className="text-sm text-emerald-700 mb-3 font-medium">{message}</p>}
 
@@ -203,7 +204,7 @@ export const JoinRequestDetail = () => {
             onClick={() => setShowWithdraw(true)}
             className="ios-btn w-full glass text-red-500 min-h-[48px] font-semibold"
           >
-            {withdrawVariant === 'activity' ? 'Withdraw from activity' : 'Cancel join request'}
+            {withdrawVariant === 'activity' ? 'Withdraw request' : 'Cancel request'}
           </button>
         )}
       </div>

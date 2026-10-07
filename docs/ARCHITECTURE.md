@@ -28,7 +28,7 @@ HTTP → routes/ (thin controllers)
 - `/auth` — JWT + refresh
 - `/` (userRouter) — public `/activities`, `/explore/map`, `/me/*` (profile, **participant-intents**, groups, inbox)
 - `/host` — tenant-scoped **activities**, check-in, activity join approvals (legacy alias `/organizer`)
-- `/admin` — platform ops
+- `/admin` — platform ops (thin `admin.ts` → `routes/admin/registerAdmin*`; user management at `/admin/users`, staff grant at `/admin/platform-admins` for master admin)
 - `/shop` — shop profiles, featured picks, merchant CRUD (Stripe checkout retained but disabled in product)
 - `/social` — posts, reviews
 - `/chat`, `/media`
@@ -65,7 +65,7 @@ components/     layout/, ui/, seo/, explore/, host/, participant-intent/, shop/
 api/            client.ts → domains/* → services.ts (`api` facade) — see `src/api/index.ts`
 config/         platform.ts, regions.ts, exploreTheme.ts
 context/        AuthContext
-utils/          authRouting, exploreRouting, shopPaths
+utils/          authRouting, shopPaths — explore URL builders live in `src/explore/routing.ts` (`routingCatalog`)
 ```
 
 **Mobile IA:** Bottom tabs **Explore · Trips · Messages**; Profile via header avatar. Signed-in default landing is `/explore`. Guest marketing is `/` only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Trips manage surfaces link to Messages for crew chat — not embedded chat on `/trips`.
@@ -83,7 +83,7 @@ utils/          authRouting, exploreRouting, shopPaths
 
 ## Cross-Platform Session + Access Addendum (2026-08)
 
-See `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md` for the persisted baseline from branch `performance_crossPlatform_bugfix`.
+Auth/session invariants for dev and deploy: [`DEV_RUN.md`](./DEV_RUN.md) § Auth & session baseline.
 
 Architecture-level invariants:
 
@@ -116,7 +116,7 @@ Unit tests cover capacity, JWT, datetime (GCC), and waitlist logic.
 | 1 | [`DOCS_INDEX.md`](./DOCS_INDEX.md) § Tier 1 | Canonical — must match shipped behavior |
 | 2 | Release, ops, rollout trackers | Must not contradict Tier 1 on semantics |
 | 3 | [`experiment/`](./experiment/) | Flow QA; defer to `CREATE_FLOW.md` / `MEMBER_MODEL.md` |
-| 4 | `IMPLEMENTATION_GUIDE.md`, `DOMAIN_ADOPTION_PLAN.md`, … | Historical — superseded banners at top |
+| 4 | [`archive/README.md`](./archive/README.md) | Removed snapshots — git history only |
 
 Checks: `npm run verify:docs` · `npm run verify:host-member`
 

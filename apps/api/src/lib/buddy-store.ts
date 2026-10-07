@@ -4,6 +4,7 @@ import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import { newEntityId } from './entity-builders.js';
 import { ApiError } from './api-error.js';
 import { getMongoClient } from './mongo.js';
+import { followUser } from './follow-store.js';
 
 const REQUESTS_COLLECTION = 'buddy_requests';
 const PAIRS_COLLECTION = 'buddy_pairs';
@@ -167,6 +168,12 @@ export const acceptBuddyRequest = async (
 
   await ensurePairForAcceptedRequest(updated);
 
+  // Mutual follow (no follow notification — buddy accept already notifies).
+  await Promise.all([
+    followUser(updated.fromUserId, updated.toUserId),
+    followUser(updated.toUserId, updated.fromUserId),
+  ]);
+
   await requestsCollection().updateMany(
     {
       status: 'pending',
@@ -286,12 +293,13 @@ export const listBuddiesForUser = async (userId: string): Promise<BuddySummaryDT
 };
 
 /** Ends a buddy connection for both users. Silent — no notification is sent. */
-export const unfriendBuddy = async (actorUserId: string, buddyUserId: string): Promise<void> => {
-  if (actorUserId === buddyUserId) {
+/** Remove mutual buddy link — `otherMemberUserId` is the other person's account id (`BuddySummaryDTO.userId`). */
+export const unfriendBuddy = async (actorUserId: string, otherMemberUserId: string): Promise<void> => {
+  if (actorUserId === otherMemberUserId) {
     throw new ApiError(400, 'invalid_buddy_request', 'You cannot unfriend yourself.');
   }
 
-  const pairId = buddyPairKey(actorUserId, buddyUserId);
+  const pairId = buddyPairKey(actorUserId, otherMemberUserId);
   const result = await pairsCollection().deleteOne({ _id: pairId });
   if (result.deletedCount === 0) {
     throw new ApiError(404, 'buddy_not_found', 'You are not connected with this member.');
@@ -302,8 +310,8 @@ export const unfriendBuddy = async (actorUserId: string, buddyUserId: string): P
     {
       status: 'pending',
       $or: [
-        { fromUserId: actorUserId, toUserId: buddyUserId },
-        { fromUserId: buddyUserId, toUserId: actorUserId },
+        { fromUserId: actorUserId, toUserId: otherMemberUserId },
+        { fromUserId: otherMemberUserId, toUserId: actorUserId },
       ],
     },
     { $set: { status: 'cancelled', updatedAt: now, respondedAt: now } }

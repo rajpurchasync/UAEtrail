@@ -16,6 +16,7 @@ import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
 import { requireOrgRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import { ensureActivityGroupChat } from '../../services/activity-group-chat.js';
+import { messagesGroupPath, TRIPS_JOINED_TAB_PATH } from '../../lib/member-routes.js';
 import { dispatchNotification } from '../../services/notifications.js';
 import { activityRequestDecisionSchema, idParamSchema } from './host-route-schemas.js';
 
@@ -126,8 +127,9 @@ export const registerHostActivityRequestRoutes = (hostRouter: Router): void => {
               activityId: request.activityId,
               requestId: request.id,
               groupId: groupId ?? null,
+              actorUserId: req.auth!.userId,
               organizerNote: organizerNote?.trim() || null,
-              path: groupId ? `/groups?group=${groupId}` : '/trips?segment=upcoming&tab=joined',
+              path: groupId ? messagesGroupPath(groupId) : TRIPS_JOINED_TAB_PATH,
             },
           });
         } else {
@@ -149,8 +151,9 @@ export const registerHostActivityRequestRoutes = (hostRouter: Router): void => {
               kind: 'join_request_rejected',
               activityId: request.activityId,
               requestId: request.id,
+              actorUserId: req.auth!.userId,
               organizerNote: organizerNote?.trim() || null,
-              path: '/trips?segment=upcoming&tab=joined',
+              path: TRIPS_JOINED_TAB_PATH,
             },
           });
         }

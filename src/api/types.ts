@@ -297,7 +297,21 @@ export interface AccountDeletionInfo {
 }
 
 export type ContentReportTargetType = 'user' | 'message' | 'post' | 'review' | 'reply';
-export type ContentReportReason = 'spam' | 'harassment' | 'inappropriate' | 'scam' | 'other';
+export type ContentReportReason = 'spam' | 'harassment' | 'other';
+
+export interface AdminContentReportEntry {
+  id: string;
+  targetType: ContentReportTargetType;
+  targetId: string;
+  reason: ContentReportReason;
+  details: string | null;
+  createdAt: string;
+  reporter: {
+    id: string;
+    email: string;
+    displayName: string | null;
+  };
+}
 
 export type ActivityDetail = ActivityDetailDTO;
 

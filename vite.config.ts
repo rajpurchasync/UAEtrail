@@ -1,6 +1,10 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { devQrPlugin } from './scripts/vite-plugin-dev-qr.mjs';
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -12,6 +16,16 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), devQrPlugin()],
+    resolve: {
+      alias: [
+        // More specific paths before `@` → `src` (otherwise `@/chat` becomes `src/chat`).
+        {
+          find: '@/chat',
+          replacement: path.resolve(projectRoot, 'src/components/chat/index.ts'),
+        },
+        { find: '@', replacement: path.resolve(projectRoot, 'src') },
+      ],
+    },
     server: {
       port: 5175,
       strictPort: true,

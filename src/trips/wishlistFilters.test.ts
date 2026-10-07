@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FavoriteDTO } from '@uaetrail/shared-types';
-import { favoriteIsDemandBookmark } from './demandVsWishlist';
+import { favoriteIsDemandBookmark } from './favoriteDemandBookmark';
 import { favoriteIsPersonalWishlist, favoriteMatchesTripsHubLayer } from './wishlistFilters';
 
 const fav = (overrides: Partial<FavoriteDTO>): FavoriteDTO =>

@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import type { NavigateFunction } from 'react-router-dom';
-import type { ActivityDTO, ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
-import { resolveActivityDisplayCoordinates } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityMapPeekActionId, ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
+import { resolveActivityDisplayCoordinates, resolveActivityHostUserId } from '@uaetrail/shared-types';
+import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
 import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../privateActivityExploreItem';
 import { api } from '../../api/index';
 import { buildExploreCardModel } from '../exploreCardModel';
@@ -10,13 +11,16 @@ import { finalizeExploreCardLinkedRideshare } from '../linkedRideshareExplore';
 import { canOfferRideshareForDemandItem } from '../linkActivityRideshareOffer';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
-import { viewerHostsActivity } from '../../utils/viewerHostsActivity';
+import {
+  activityMapPeekNeedsJoinContext,
+  activityMapPeekSkipsJoinContext,
+} from '../activityMapPeekActions';
+import { viewerIsActivityHostUser } from '../../utils/viewerHostsActivity';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useParticipantIntentJoinContext } from '../../hooks/useParticipantIntentJoinContext';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
-import { navigateToHostedActivityManage } from '../../host/navigateHostedActivityManage';
 import { navigateToParticipantIntentManage } from '../../trips/navigateParticipantIntentManage';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
@@ -35,12 +39,13 @@ type UseExploreSelectionActionsArgs = {
   browse: BrowseState;
   isDesktop: boolean;
   closeCompose: () => void;
-  clearFulfillPrefill: () => void;
-  fulfillIntentPrefill: unknown;
-  clearFulfillAfterPublish: () => void;
   handleFocusMapLocation: (coords: { lat: number; lng: number }) => void;
   setLinkOnlyPeekItems: Dispatch<SetStateAction<ExploreMapItemDTO[]>>;
-  onInviteActivity?: (activity: ActivityDTO) => void;
+  onInviteActivity?: (
+    activity: ActivityDTO,
+    options?: { canSendBuddyInvites?: boolean }
+  ) => void;
+  onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
 };
 
 export const useExploreSelectionActions = ({
@@ -54,12 +59,10 @@ export const useExploreSelectionActions = ({
   browse,
   isDesktop,
   closeCompose,
-  clearFulfillPrefill,
-  fulfillIntentPrefill,
-  clearFulfillAfterPublish,
   handleFocusMapLocation,
   setLinkOnlyPeekItems,
   onInviteActivity,
+  onCreateLinkedRideshare,
 }: UseExploreSelectionActionsArgs) => {
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
@@ -82,8 +85,10 @@ export const useExploreSelectionActions = ({
     const isOwnActivity = Boolean(
       user &&
         activity &&
-        viewerHostsActivity(activity, user.id, tenantId ?? null, Boolean(tenantId && user))
+        selected.source === 'activity' &&
+        viewerIsActivityHostUser(activity, user.id)
     );
+    const activityHostPeek = isOwnActivity;
     const isOwnDemand = Boolean(
       user &&
         selected.source === 'demand' &&
@@ -99,15 +104,20 @@ export const useExploreSelectionActions = ({
         showDemandLinkRideshare: canOfferRideshareForDemandItem(selected),
       };
     }
-    if (!isOwnActivity) return card;
+    if (!activityHostPeek) return card;
     return {
       ...card,
       showJoinActions: false,
-      showHostActions: true,
+      showHostActivityCtas: true,
     };
-  }, [selected, items, user, tenantId]);
+  }, [selected, items, user]);
 
-  const joinContextEnabled = Boolean(selected?.activity?.id && !selectedCard?.showHostActions && user);
+  const joinContextEnabled = Boolean(
+    selected?.activity?.id &&
+      user &&
+      selectedCard &&
+      activityMapPeekNeedsJoinContext(selectedCard)
+  );
   const {
     context: joinContext,
     uiState: joinUiState,
@@ -135,10 +145,19 @@ export const useExploreSelectionActions = ({
     userId: user?.id,
   });
 
+  const activityPeekSkipsJoinContext = useMemo(
+    () =>
+      Boolean(
+        selectedCard &&
+          activityMapPeekSkipsJoinContext(selectedCard, joinUiState)
+      ),
+    [selectedCard, joinUiState]
+  );
+
   const peekJoinUiState =
     selected?.source === 'demand' && !selectedCard?.showDemandOwnerActions
       ? demandJoinUiState
-      : selectedCard?.showHostActions
+      : activityPeekSkipsJoinContext
         ? undefined
         : joinUiState;
   const peekJoinStateLoading =
@@ -159,13 +178,12 @@ export const useExploreSelectionActions = ({
   const openItem = useCallback(
     (item: ExploreMapItemDTO) => {
       closeCompose();
-      clearFulfillPrefill();
       setSelectedId(item.id);
       if (!isDesktop) {
         browse.setListOpen(false);
       }
     },
-    [closeCompose, clearFulfillPrefill, isDesktop, browse, setSelectedId]
+    [closeCompose, isDesktop, browse, setSelectedId]
   );
 
   const respondToDemand = useCallback(
@@ -233,32 +251,89 @@ export const useExploreSelectionActions = ({
     }
   }, [selected, navigate, setSelectedId]);
 
-  const handleHostManage = useCallback(() => {
+  const handleMessageActivityHost = useCallback(() => {
     const activity = selected?.activity;
     if (!activity) return;
+    const hostUserId = resolveActivityHostUserId(activity);
+    if (!hostUserId) return;
+    if (!user) {
+      joinActions.openGuestSheet('activity');
+      return;
+    }
     setSelectedId(null);
-    navigateToHostedActivityManage(navigate, activity.id, 'overview');
-  }, [selected, navigate, setSelectedId]);
-
-  const handleHostCheckin = useCallback(() => {
-    const activity = selected?.activity;
-    if (!activity) return;
-    setSelectedId(null);
-    navigateToHostedActivityManage(navigate, activity.id, 'checkin');
-  }, [selected, navigate, setSelectedId]);
+    navigate(
+      messagesRouteForRole((user.role ?? 'participant') as UserRole, hostUserId, {
+        activityId: activity.id,
+      })
+    );
+  }, [selected, user, navigate, setSelectedId, joinActions]);
 
   const handleInviteCrew = useCallback(() => {
     const activity = selected?.activity;
     if (!activity || activity.status !== 'published') return;
-    onInviteActivity?.(activity);
+    onInviteActivity?.(activity, { canSendBuddyInvites: true });
   }, [onInviteActivity, selected?.activity]);
 
-  const requestHostRemove = useCallback(() => {
-    const activity = selected?.activity;
-    if (!activity) return;
+  const requestHostRemove = useCallback((activity: ActivityDTO) => {
     if (activity.status !== 'draft' && activity.status !== 'published') return;
     setHostRemoveConfirm(activity);
-  }, [selected?.activity]);
+  }, []);
+
+  const confirmHostRemove = useCallback(async () => {
+    if (!hostRemoveConfirm || !tenantId) return;
+    setHostRemoveBusy(true);
+    try {
+      await api.cancelHostActivity(tenantId, hostRemoveConfirm.id);
+      const wasDraft = hostRemoveConfirm.status === 'draft';
+      setHostRemoveConfirm(null);
+      setSelectedId(null);
+      await reloadExploreMap(queryClient);
+      setVenueNotice(wasDraft ? 'Draft deleted.' : 'Activity cancelled.');
+    } catch (err) {
+      setVenueNotice(err instanceof Error ? err.message : 'Could not update activity.');
+    } finally {
+      setHostRemoveBusy(false);
+    }
+  }, [hostRemoveConfirm, tenantId, queryClient, setSelectedId]);
+
+  const handleActivityMapPeekAction = useCallback(
+    (actionId: ActivityMapPeekActionId) => {
+      const activity = selected?.activity;
+      switch (actionId) {
+        case 'open_crew_chat':
+          void handleHostMessage();
+          return;
+        case 'message_host':
+          handleMessageActivityHost();
+          return;
+        case 'invite_crew':
+          handleInviteCrew();
+          return;
+        case 'link_carpool':
+          if (activity && onCreateLinkedRideshare) {
+            onCreateLinkedRideshare(activity);
+          }
+          return;
+        case 'request_join':
+          handleJoin();
+          return;
+        case 'pending_join':
+          return;
+        default:
+          return;
+      }
+    },
+    [
+      selected?.activity,
+      handleHostMessage,
+      handleMessageActivityHost,
+      handleInviteCrew,
+      handleJoin,
+      onCreateLinkedRideshare,
+      navigate,
+      setSelectedId,
+    ]
+  );
 
   const handleDemandManage = useCallback(() => {
     const intentId = selected?.participantIntentId;
@@ -289,28 +364,14 @@ export const useExploreSelectionActions = ({
     }
   }, [demandRemoveIntentId, queryClient, setSelectedId]);
 
-  const confirmHostRemove = useCallback(async () => {
-    if (!hostRemoveConfirm || !tenantId) return;
-    setHostRemoveBusy(true);
-    try {
-      await api.cancelOrganisationActivity(tenantId, hostRemoveConfirm.id);
-      const wasDraft = hostRemoveConfirm.status === 'draft';
-      setHostRemoveConfirm(null);
-      setSelectedId(null);
-      await reloadExploreMap(queryClient);
-      setVenueNotice(wasDraft ? 'Draft deleted.' : 'Activity cancelled.');
-    } catch (err) {
-      setVenueNotice(err instanceof Error ? err.message : 'Could not update activity.');
-    } finally {
-      setHostRemoveBusy(false);
-    }
-  }, [hostRemoveConfirm, tenantId, queryClient, setSelectedId]);
-
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
       if (activity.joinMode === 'private') {
         await reloadExploreMap(queryClient);
-        const peekItem = buildExploreMapItemFromActivity(activity);
+        const peekItem = buildExploreMapItemFromActivity(
+          activity,
+          hostPublishedActivityPeekAccess(activity.joinMode === 'private' ? 'private' : 'open')
+        );
         setLinkOnlyPeekItems((prev) => {
           const rest = prev.filter((entry) => entry.id !== peekItem.id);
           return [...rest, peekItem];
@@ -339,15 +400,7 @@ export const useExploreSelectionActions = ({
       }
 
     },
-    [
-      queryClient,
-      browse,
-      handleFocusMapLocation,
-      fulfillIntentPrefill,
-      clearFulfillAfterPublish,
-      setSelectedId,
-      setLinkOnlyPeekItems,
-    ]
+    [queryClient, browse, handleFocusMapLocation, setSelectedId, setLinkOnlyPeekItems]
   );
 
   type ActivityPinDeepLinkResult = 'opened' | 'not_activity' | 'auth_required' | 'denied' | 'error';
@@ -366,13 +419,13 @@ export const useExploreSelectionActions = ({
 
       try {
         const res = await api.getPublicActivityDetail(activityId);
-        if (res.data.visibilityState === 'private') {
+        if (res.viewerAccess?.exposure === 'none') {
           setDemandNotice(
             res.data.message ?? 'This private plan is only available to signed-in members with the link.'
           );
           return 'denied';
         }
-        const peekItem = buildExploreMapItemFromActivity(res.data);
+        const peekItem = buildExploreMapItemFromActivity(res.data, res.viewerAccess);
         setLinkOnlyPeekItems((prev) => {
           const rest = prev.filter((entry) => entry.id !== peekItem.id);
           return [...rest, peekItem];
@@ -439,6 +492,8 @@ export const useExploreSelectionActions = ({
   return {
     selected,
     selectedCard,
+    activityPeekSkipsJoinContext,
+    handleActivityMapPeekAction,
     joinUiState,
     joinStateLoading,
     peekJoinUiState,
@@ -453,8 +508,6 @@ export const useExploreSelectionActions = ({
     handleJoin,
     handleDemandMessage,
     handleHostMessage,
-    handleHostManage,
-    handleHostCheckin,
     handleInviteCrew,
     requestHostRemove,
     hostRemoveConfirm,

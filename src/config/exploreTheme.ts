@@ -86,7 +86,7 @@ export const EXPLORE_BROWSE_PANEL_TAB = {
   inactive: 'text-neutral-500 hover:text-neutral-800',
 } as const;
 
-/** Who's going list — People | Trips (same panel tab chrome). */
+/** Explore Social panel segment tabs (All | Friends | Followed). */
 export const EXPLORE_BROWSE_SEGMENT_TAB = {
   row: `${EXPLORE_BROWSE_PANEL_TAB.row} gap-3`,
   active: `${EXPLORE_BROWSE_PANEL_TAB.tab} ${EXPLORE_BROWSE_PANEL_TAB.active}`,
@@ -150,15 +150,15 @@ export const EXPLORE_INTENT = {
   },
 } as const;
 
-/** Date / secondary map chips — slightly stronger edge than toolbar search & Who's going. */
+/** Date / secondary map chips — slightly stronger edge than toolbar search & Social. */
 export const EXPLORE_FLOATING_CONTROL =
   'inline-flex items-center rounded-full border border-neutral-200/90 bg-white text-neutral-950 shadow-[0_2px_12px_rgba(15,23,42,.16)] backdrop-blur-sm';
 
-/** Search + Who's going on the map — original frosted pill (unchanged with filter pill styling). */
+/** Search + Social on the map — original frosted pill (unchanged with filter pill styling). */
 export const EXPLORE_MAP_TOOLBAR_FLOATING =
   'inline-flex items-center rounded-full bg-white/95 shadow-[0_2px_12px_rgba(15,23,42,.14)] backdrop-blur-sm';
 
-/** Shared vertical padding for map toolbar pills (Who's going + intent menu). */
+/** Shared vertical padding for map toolbar pills (Social + intent menu). */
 export const EXPLORE_MAP_TOOLBAR_PILL_PADDING = 'py-2';
 
 /** Mobile explore — offsets for floating map chrome below the solid header. */
@@ -181,13 +181,13 @@ export const EXPLORE_Z = {
   guestJoinSheet: 'z-[6600]',
 } as const;
 
-/** Compact map peek card — same silhouette for venues and activities. */
+/** Compact map peek card — centered overlay so it cannot grow into the header. */
 export const EXPLORE_PEEK = {
   position:
-    `pointer-events-none absolute inset-x-0 bottom-0 ${EXPLORE_Z.peekCard} px-4 pb-[calc(var(--explore-float-base)+var(--explore-map-fab-inset)+7.5rem)] lg:px-6 lg:pb-6`,
-  inner: 'pointer-events-auto mx-auto w-full max-w-md',
+    `absolute inset-0 ${EXPLORE_Z.peekCard} flex items-center justify-center px-4 pt-3 pb-[calc(var(--explore-float-base)+0.5rem)] lg:p-6`,
+  inner: 'relative mx-auto flex max-h-full w-full max-w-md flex-col',
   shell:
-    'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5',
+    'flex min-h-0 max-h-full flex-col overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5',
 } as const;
 
 export const EXPLORE_LIST_FILTER_INACTIVE =
@@ -243,3 +243,12 @@ export const exploreMapPinRingColor = (
       return '#059669';
   }
 };
+
+/** Map peek card footer CTAs — brand primary, neutral secondary. */
+export const EXPLORE_PEEK_CTA = {
+  primary: 'w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-emerald-700',
+  secondary:
+    'block w-full rounded-xl border border-neutral-200 bg-white py-3.5 text-center text-sm font-bold text-neutral-800',
+  secondaryText: 'w-full py-2.5 text-center text-sm font-semibold text-neutral-700',
+  link: 'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950',
+} as const;

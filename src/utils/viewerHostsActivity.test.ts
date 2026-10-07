@@ -1,22 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { viewerHostsActivity } from './viewerHostsActivity';
+import { viewerHostsActivity, viewerIsActivityHostUser } from './viewerHostsActivity';
 
-describe('viewerHostsActivity', () => {
-  it('matches host user id', () => {
+describe('viewerIsActivityHostUser', () => {
+  it('is true only for the host user id', () => {
+    expect(viewerIsActivityHostUser({ hostUserId: 'u1', tenantId: 't1' }, 'u1')).toBe(true);
+    expect(viewerIsActivityHostUser({ hostUserId: 'u1', tenantId: 't1' }, 'u2')).toBe(false);
     expect(
-      viewerHostsActivity({ hostUserId: 'u1', tenantId: 't1' }, 'u1', null, false)
-    ).toBe(true);
-  });
-
-  it('matches tenant when member can publish', () => {
-    expect(
-      viewerHostsActivity({ hostUserId: 'other', tenantId: 't1' }, 'u2', 't1', true)
-    ).toBe(true);
-  });
-
-  it('does not match unrelated viewers', () => {
-    expect(
-      viewerHostsActivity({ hostUserId: 'u1', tenantId: 't1' }, 'u2', 't9', false)
+      viewerIsActivityHostUser({ hostUserId: 'other', tenantId: 't1' }, 'u2')
     ).toBe(false);
+  });
+
+  it('does not treat tenant publish rights as host', () => {
+    expect(
+      viewerIsActivityHostUser({ hostUserId: 'other', tenantId: 't1' }, 'u2')
+    ).toBe(false);
+  });
+});
+
+describe('viewerHostsActivity (alias)', () => {
+  it('matches viewerIsActivityHostUser', () => {
+    const activity = { hostUserId: 'u1', tenantId: 't1' };
+    expect(viewerHostsActivity(activity, 'u1')).toBe(true);
+    expect(viewerHostsActivity(activity, 'u2')).toBe(false);
   });
 });

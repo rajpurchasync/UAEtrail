@@ -2,37 +2,35 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
-import type {
-  ChatConversationDTO,
-  ChatMessageDTO,
-  GroupWallStreamEventDTO,
-} from '@uaetrail/shared-types';
+import type { ChatConversationDTO, GroupWallStreamEventDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
+import { messagingApi } from '../messaging';
 import type { SocialGroupView, SocialGroupWallMessageView } from '../api/index';
 import { useAuth } from '../context/AuthContext';
 import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
-import { MessagesComposeSheet } from '../components/messages/MessagesComposeSheet';
-import { MessagesInboxList } from '../components/messages/MessagesInboxList';
-import { MessagesInboxToolbar } from '../components/messages/MessagesInboxToolbar';
 import {
+  ChatThreadRouter,
   ConversationListPanel,
-  MessageThreadPanel,
+  MessagesComposeSheet,
+  MessagesInboxList,
+  MessagesInboxToolbar,
   NewChatModal,
-} from '../components/messages/MessagePanels';
-import {
-  GroupWallThreadPanel,
-  type GroupWallActivityPayload,
-} from '../components/messages/GroupWallThreadPanel';
+  useDirectChatThread,
+  type DirectChatThreadProps,
+  type GroupChatActivityPayload,
+} from '../components/chat';
 import { formatWallInboxPreview } from '../utils/wallMessagePreview';
+import { groupsPath, HOST_MESSAGES_PATH } from '../config/routingCatalog';
 import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';
 import { useChatStream } from '../hooks/useChatStream';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
 import {
   filterInboxThreads,
   loadGroupThreadPreviews,
+  patchGroupInboxThread,
   sortInboxThreads,
   toDirectThread,
   type InboxFilter,
@@ -71,7 +69,7 @@ export const MessagesGate = () => {
   if (!user) {
     return (
       <GuestTabPlaceholder
-        title="Messages"
+        title="Chat"
         description="Sign in to chat with hosts and your crew."
         intent="peek-details"
       />
@@ -85,26 +83,22 @@ export const Messages = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
-  const isHostMessages = location.pathname === '/host/messages';
+  const isHostMessages = location.pathname === HOST_MESSAGES_PATH;
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [groupThreads, setGroupThreads] = useState<InboxThread[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('to'));
   const selectedGroupId = searchParams.get('group');
   const [contextActivityId, setContextActivityId] = useState<string | null>(searchParams.get('activity'));
-  const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
-  const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const [loadingMessages, setLoadingMessages] = useState(false);
-  const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
   const [composeQuery, setComposeQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [searching, setSearching] = useState(false);
   const [mobileShowThread, setMobileShowThread] = useState(!!searchParams.get('to'));
-  const [partnerBrief, setPartnerBrief] = useState<{ displayName: string; avatarUrl?: string | null } | null>(null);
   const [showReport, setShowReport] = useState(false);
+  const openReportDialog = useCallback(() => setShowReport(true), []);
   const [inboxQuery, setInboxQuery] = useState('');
   const [inboxFilter, setInboxFilter] = useState<InboxFilter>('all');
 
@@ -122,7 +116,30 @@ export const Messages = () => {
     selectedGroupIdRef.current = selectedGroupId;
   }, [selectedGroupId]);
 
-  const handleGroupWallActivity = useCallback((payload: GroupWallActivityPayload) => {
+  const loadInbox = useCallback(async () => {
+    try {
+      const inboxRes = await messagingApi.getInbox();
+      setConversations(inboxRes.data.direct);
+      setGroupThreads(loadGroupThreadPreviews(inboxRes.data.groups as SocialGroupView[]));
+    } catch {
+      /* stream / retry fallback */
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const directChat = useDirectChatThread({
+    currentUserId: user?.id,
+    partnerUserId: selectedUserId,
+    contextActivityId,
+    conversations,
+    setConversations,
+    loadInbox,
+    setPageError: setError,
+    queryClient,
+  });
+
+  const handleGroupChatActivity = useCallback((payload: GroupChatActivityPayload) => {
     setGroupThreads((prev) =>
       sortInboxThreads(
         prev.map((thread) =>
@@ -150,45 +167,12 @@ export const Messages = () => {
     );
   }, [selectedGroupId]);
 
-  const loadInbox = useCallback(async () => {
-    try {
-      const inboxRes = await api.getInbox();
-      setConversations(inboxRes.data.direct);
-      setGroupThreads(loadGroupThreadPreviews(inboxRes.data.groups as SocialGroupView[]));
-    } catch {
-      /* stream / retry fallback */
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadMessages = useCallback(async (userId: string, silent = false) => {
-    if (!silent) setLoadingMessages(true);
-    try {
-      const res = await api.getMessages(userId, 1, 100);
-      setMessages(res.data.reverse());
-      setConversations((prev) =>
-        prev.map((conversation) =>
-          conversation.userId === userId ? { ...conversation, unreadCount: 0 } : conversation
-        )
-      );
-      if (user?.id) {
-        void queryClient.invalidateQueries({ queryKey: ['inbox-unread', user.id] });
-      }
-    } catch (e) {
-      if (!silent) setError(e instanceof Error ? e.message : 'Failed to load messages');
-    } finally {
-      setLoadingMessages(false);
-    }
-  }, [queryClient, user?.id]);
-
   useEffect(() => {
     void loadInbox();
   }, [loadInbox]);
 
   useEffect(() => {
     if (selectedUserId) {
-      void loadMessages(selectedUserId);
       setSearchParams((prev) => {
         prev.set('to', selectedUserId);
         if (contextActivityId) prev.set('activity', contextActivityId);
@@ -196,7 +180,7 @@ export const Messages = () => {
         return prev;
       });
     }
-  }, [selectedUserId, contextActivityId, loadMessages, setSearchParams]);
+  }, [selectedUserId, contextActivityId, setSearchParams]);
 
   useEffect(() => {
     const toUser = searchParams.get('to');
@@ -220,21 +204,6 @@ export const Messages = () => {
       setSelectedUserId(null);
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!selectedUserId) {
-      setPartnerBrief(null);
-      return;
-    }
-    const conv = conversations.find((conversation) => conversation.userId === selectedUserId);
-    if (conv) {
-      setPartnerBrief({ displayName: conv.displayName, avatarUrl: conv.avatarUrl });
-      return;
-    }
-    api.getUserBrief(selectedUserId)
-      .then((res) => setPartnerBrief(res.data))
-      .catch(() => setPartnerBrief(null));
-  }, [selectedUserId, conversations]);
 
   const handleGroupWallStream = useCallback((payload: GroupWallStreamEventDTO) => {
       const openGroupId = selectedGroupIdRef.current;
@@ -263,47 +232,11 @@ export const Messages = () => {
     enabled: !!user,
     onGroupWallMessage: handleGroupWallStream,
     onMessage: (message) => {
-      const partnerId = selectedUserIdRef.current;
-      if (partnerId && (message.senderId === partnerId || message.receiverId === partnerId)) {
-        setMessages((prev) => {
-          if (prev.some((item) => item.id === message.id)) return prev;
-          return [...prev, message];
-        });
-      }
-
-      setConversations((prev) => {
-        const partner = message.senderId === user?.id ? message.receiverId : message.senderId;
-        const existing = prev.find((conversation) => conversation.userId === partner);
-        if (!existing) {
-          void loadInbox();
-          return prev;
-        }
-
-        return prev
-          .map((conversation) =>
-            conversation.userId === partner
-              ? {
-                  ...conversation,
-                  lastMessage: message.content,
-                  lastMessageAt: message.createdAt,
-                  unreadCount:
-                    partnerId === partner && message.senderId === partner
-                      ? 0
-                      : message.senderId === partner
-                        ? conversation.unreadCount + 1
-                        : conversation.unreadCount,
-                }
-              : conversation
-          )
-          .sort(
-            (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
-          );
-      });
+      directChat.handleStreamMessage(message, selectedUserIdRef.current);
     },
     onReconnect: () => {
       void loadInbox();
-      const partnerId = selectedUserIdRef.current;
-      if (partnerId) void loadMessages(partnerId, true);
+      directChat.reloadSilent();
     },
   });
 
@@ -336,42 +269,8 @@ export const Messages = () => {
     [threads, inboxFilter, inboxQuery]
   );
 
-  const handleSend = async () => {
-    if (!user || !selectedUserId || !newMessage.trim()) return;
-    setSending(true);
-    setError(null);
-    try {
-      const res = await api.sendMessage({
-        receiverId: selectedUserId,
-        content: newMessage.trim(),
-        ...(contextActivityId ? { activityId: contextActivityId } : {}),
-      });
-      const sent = res.data;
-      setNewMessage('');
-      setMessages((prev) => [...prev, sent]);
-      setConversations((prev) => {
-        const partnerId = selectedUserId;
-        const existing = prev.find((conversation) => conversation.userId === partnerId);
-        if (!existing) {
-          void loadInbox();
-          return prev;
-        }
-        const updated = {
-          ...existing,
-          lastMessage: sent.content,
-          lastMessageAt: sent.createdAt,
-        };
-        return [updated, ...prev.filter((conversation) => conversation.userId !== partnerId)];
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
-    } finally {
-      setSending(false);
-    }
-  };
-
   const startConversation = (userResult: SearchUser) => {
-    setPartnerBrief({
+    directChat.seedPartnerBrief({
       displayName: userLabel(userResult),
       avatarUrl: userResult.avatarUrl,
     });
@@ -409,7 +308,11 @@ export const Messages = () => {
 
   const chatReturnTo = parseMessagesChatReturnTo(location.state);
 
-  const backToList = () => {
+  const handleGroupMetaUpdated = useCallback((group: SocialGroupView) => {
+    setGroupThreads((prev) => patchGroupInboxThread(prev, group));
+  }, []);
+
+  const backToList = useCallback(() => {
     if (selectedGroupId && chatReturnTo) {
       navigate(chatReturnTo, { replace: true });
       return;
@@ -418,22 +321,54 @@ export const Messages = () => {
     setSelectedUserId(null);
     setContextActivityId(null);
     setSearchParams({});
-  };
+  }, [chatReturnTo, navigate, selectedGroupId, setSearchParams]);
 
   const inGroupThread = Boolean(selectedGroupId);
   const inDirectThread = mobileShowThread && !!selectedUserId;
   const inThread = inGroupThread || inDirectThread;
 
-  const selectedConversation = conversations.find((conversation) => conversation.userId === selectedUserId);
-  const threadPartnerName = selectedConversation?.displayName ?? partnerBrief?.displayName ?? 'User';
-  const threadPartnerAvatar = selectedConversation?.avatarUrl ?? partnerBrief?.avatarUrl ?? undefined;
-
   const openCreateGroup = () => {
     setShowNewChat(false);
     setComposeQuery('');
     setSearchResults([]);
-    navigate('/groups?create=1');
+    navigate(groupsPath({ create: true }));
   };
+
+  const directThreadProps = useMemo(
+    (): DirectChatThreadProps => ({
+      mobileShowThread,
+      partnerUserId: selectedUserId,
+      currentUserId: user!.id,
+      partnerName: directChat.partnerName,
+      partnerAvatar: directChat.partnerAvatar,
+      loadingMessages: directChat.loadingMessages,
+      messages: directChat.messages,
+      draft: directChat.draft,
+      sending: directChat.sending,
+      onBack: backToList,
+      onReport: openReportDialog,
+      onDraftChange: directChat.setDraft,
+      onSend: directChat.send,
+      onMessageReactionsChange: directChat.updateMessageReactions,
+      onReactionError: setError,
+    }),
+    [
+      mobileShowThread,
+      selectedUserId,
+      user,
+      directChat.partnerName,
+      directChat.partnerAvatar,
+      directChat.loadingMessages,
+      directChat.messages,
+      directChat.draft,
+      directChat.sending,
+      directChat.setDraft,
+      directChat.send,
+      directChat.updateMessageReactions,
+      backToList,
+      openReportDialog,
+    ]
+  );
 
   const newChatModal = isHostMessages ? (
     <NewChatModal
@@ -475,20 +410,66 @@ export const Messages = () => {
         onClose={() => setShowReport(false)}
         targetType="user"
         targetId={selectedUserId}
-        title="Report user"
+        title="Report as"
       />
     ) : null;
+
+  const threadFullscreen = inThread ? (
+    <>
+      <div
+        className="fixed inset-0 z-[1300] flex h-[100dvh] w-full max-w-[100vw] flex-col overflow-hidden bg-white"
+      >
+        {error ? (
+          <div className="flex shrink-0 items-center justify-between border-b border-red-200 bg-red-50 p-3">
+            <p className="text-sm text-red-700">{error}</p>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center text-red-400"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : null}
+        <div className="flex min-h-0 flex-1 flex-col">
+          {inGroupThread && selectedGroupId ? (
+            <ChatThreadRouter
+              mode="group"
+              group={{
+                groupId: selectedGroupId,
+                onBack: backToList,
+                onGroupActivity: handleGroupChatActivity,
+                streamedMessage: streamedWallMessage,
+                onStreamedMessageApplied: () => setStreamedWallMessage(null),
+                onGroupUpdated: handleGroupMetaUpdated,
+              }}
+            />
+          ) : (
+            <ChatThreadRouter
+              mode="direct"
+              direct={{ ...directThreadProps, mobileShowThread: true }}
+            />
+          )}
+        </div>
+      </div>
+      {newChatModal}
+      {reportDialog}
+    </>
+  ) : null;
+
+  if (isHostMessages && inThread) {
+    return threadFullscreen;
+  }
 
   if (isHostMessages) {
     return (
       <MobileScreen
-        title="Messages"
+        title="Chat"
         backTo="/host/overview"
         backLabel="Host console"
-        hideHeader={inThread}
         showBanner={false}
       >
-        <div className={`flex min-h-0 flex-1 flex-col ${inThread ? 'px-0 -mx-1' : ''}`}>
+        <div className="flex min-h-0 flex-1 flex-col">
           {error && (
             <div className="mb-3 flex shrink-0 items-center justify-between rounded-ios border border-red-200 bg-red-50 p-3">
               <p className="text-sm text-red-700">{error}</p>
@@ -501,11 +482,7 @@ export const Messages = () => {
               </button>
             </div>
           )}
-          <div
-            className={`flex min-h-0 flex-1 overflow-hidden rounded-ios-lg border bg-white shadow-ios-sm ${
-              inThread ? '' : 'border-neutral-200'
-            }`}
-          >
+          <div className="flex min-h-0 flex-1 overflow-hidden rounded-ios-lg border border-neutral-200 bg-white shadow-ios-sm">
             <ConversationListPanel
               mobileShowThread={mobileShowThread}
               loading={loading}
@@ -515,20 +492,7 @@ export const Messages = () => {
               onSelect={selectConversation}
               formatTime={formatTime}
             />
-            <MessageThreadPanel
-              mobileShowThread={mobileShowThread}
-              selectedUserId={selectedUserId}
-              threadPartnerName={threadPartnerName}
-              threadPartnerAvatar={threadPartnerAvatar}
-              loadingMessages={loadingMessages}
-              messages={messages}
-              newMessage={newMessage}
-              sending={sending}
-              onBack={backToList}
-              onReport={() => setShowReport(true)}
-              onMessageChange={setNewMessage}
-              onSend={handleSend}
-            />
+            <ChatThreadRouter mode="direct" direct={directThreadProps} />
           </div>
           {newChatModal}
           {reportDialog}
@@ -538,59 +502,14 @@ export const Messages = () => {
   }
 
   if (inThread) {
-    return (
-      <>
-        <div
-          className="fixed inset-0 z-[1300] flex h-[100dvh] w-full max-w-[100vw] flex-col overflow-hidden bg-white"
-        >
-          {error ? (
-            <div className="flex shrink-0 items-center justify-between border-b border-red-200 bg-red-50 p-3">
-              <p className="text-sm text-red-700">{error}</p>
-              <button
-                type="button"
-                onClick={() => setError(null)}
-                className="flex min-h-[44px] min-w-[44px] items-center justify-center text-red-400"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ) : null}
-          {inGroupThread && selectedGroupId ? (
-            <GroupWallThreadPanel
-              groupId={selectedGroupId}
-              onBack={backToList}
-              onWallActivity={handleGroupWallActivity}
-              streamedMessage={streamedWallMessage}
-              onStreamedMessageApplied={() => setStreamedWallMessage(null)}
-            />
-          ) : (
-            <MessageThreadPanel
-              mobileShowThread={mobileShowThread}
-              selectedUserId={selectedUserId}
-              threadPartnerName={threadPartnerName}
-              threadPartnerAvatar={threadPartnerAvatar}
-              loadingMessages={loadingMessages}
-              messages={messages}
-              newMessage={newMessage}
-              sending={sending}
-              onBack={backToList}
-              onReport={() => setShowReport(true)}
-              onMessageChange={setNewMessage}
-              onSend={handleSend}
-            />
-          )}
-        </div>
-        {newChatModal}
-        {reportDialog}
-      </>
-    );
+    return threadFullscreen;
   }
 
   return (
     <>
       <ConsumerShell
         layout="tab"
-        title="Messages"
+        title="Chat"
         suppressMobileHeader
         suppressMobileToolbarBorder
         maxWidth="4xl"

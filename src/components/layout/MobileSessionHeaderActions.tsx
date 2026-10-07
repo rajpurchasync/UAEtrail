@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
+import { NOTIFICATIONS_PATH } from '../../config/routingCatalog';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
 
@@ -9,12 +10,15 @@ interface MobileSessionHeaderActionsProps {
   /** `bar` = icons on solid white header; `light` = on dark hero; `overlay` = floating on map; `default` = white circles. */
   tone?: 'light' | 'default' | 'overlay' | 'bar';
   className?: string;
+  /** When bell + menu live in {@link ConsumerHeaderActions}. */
+  profileOnly?: boolean;
 }
 
 /** Signed-in: notifications + profile. Signed-out: user icon → sign in. */
 export const MobileSessionHeaderActions = ({
   tone = 'default',
   className = '',
+  profileOnly = false,
 }: MobileSessionHeaderActionsProps) => {
   const { user } = useAuth();
   const { pathname, search } = useLocation();
@@ -51,9 +55,9 @@ export const MobileSessionHeaderActions = ({
 
   return (
     <div className={`flex shrink-0 items-center gap-2.5 ${className}`}>
-      {user && (
+      {user && !profileOnly && (
         <Link
-          to="/notifications"
+          to={NOTIFICATIONS_PATH}
           className={notificationActionClass}
           aria-label="Notifications"
         >

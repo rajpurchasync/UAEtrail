@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { sortExploreActivities, sortExploreVenues } from '../../utils/exploreListSort';
+import { sortExploreActivities, sortExploreVenues } from '../exploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
@@ -25,7 +25,7 @@ import {
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
-import type { ExploreBrowseListMode, WhosGoingSegment } from './useExploreBrowseUrlState';
+import type { ExploreBrowseListMode } from './useExploreBrowseUrlState';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 import { countExploreSearchScopes, exploreItemMatchesQuery } from '../exploreSearchMatches';
 
@@ -38,9 +38,7 @@ type UseExploreBrowseListArgs = {
   query: string;
   activityDatePreset: ExploreActivityDatePreset;
   listMode: ExploreBrowseListMode;
-  whosGoingSegment: WhosGoingSegment;
   searchScope: ExploreSearchScopeKey | null;
-  friendIds?: Set<string>;
   sidebarPanel: ExplorePanel;
   isDesktop: boolean;
   desktopBrowseTab: DesktopBrowseTab;
@@ -80,9 +78,7 @@ export const useExploreBrowseList = ({
   query,
   activityDatePreset,
   listMode,
-  whosGoingSegment,
   searchScope,
-  friendIds,
   sidebarPanel,
   isDesktop,
   desktopBrowseTab,
@@ -190,63 +186,8 @@ export const useExploreBrowseList = ({
     outingTopic,
   ]);
 
-  const whosGoingPreview = useMemo(() => {
-    const activityJoinCount = (item: ExploreMapItemDTO) => {
-      if (item.slotsTotal != null && item.slotsAvailable != null) {
-        return Math.max(0, item.slotsTotal - item.slotsAvailable);
-      }
-      return item.participantPreviews?.length ?? 0;
-    };
-
-    const activities = items
-      .filter((item) => item.source === 'activity')
-      .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
-      .filter((item) => activityJoinCount(item) > 0 || (item.participantPreviews?.length ?? 0) > 0);
-
-    const sorted = [...activities].sort((a, b) => activityJoinCount(b) - activityJoinCount(a));
-    const seen = new Set<string>();
-    const avatars: Array<{ id: string; name: string; avatar?: string | null }> = [];
-    let totalJoining = 0;
-
-    const friendFirst: Array<{ id: string; name: string; avatar?: string | null }> = [];
-    const other: Array<{ id: string; name: string; avatar?: string | null }> = [];
-
-    for (const item of sorted) {
-      totalJoining += activityJoinCount(item);
-      for (const preview of item.participantPreviews ?? []) {
-        if (seen.has(preview.id)) continue;
-        seen.add(preview.id);
-        if (friendIds?.has(preview.id)) friendFirst.push(preview);
-        else other.push(preview);
-      }
-    }
-
-    for (const preview of [...friendFirst, ...other]) {
-      if (avatars.length < 3) avatars.push(preview);
-    }
-
-    const extraCount = Math.max(0, seen.size - avatars.length);
-    return { avatars, totalJoining, extraCount, peopleShown: seen.size };
-  }, [items, activityDatePreset, friendIds]);
-
-  const whosGoingListItems = useMemo(() => {
-    const matchesQuery = (item: ExploreMapItemDTO) => exploreItemMatchesQuery(item, query);
-    const sorted = sortExploreActivities(
-      items
-        .filter((item) => item.source === 'activity')
-        .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
-        .filter(matchesQuery)
-    );
-    return [...sorted].sort((a, b) => {
-      const aGoing = (a.slotsTotal ?? 0) - (a.slotsAvailable ?? 0);
-      const bGoing = (b.slotsTotal ?? 0) - (b.slotsAvailable ?? 0);
-      return bGoing - aGoing;
-    });
-  }, [items, query, activityDatePreset]);
-
   const listItems = useMemo(() => {
-    if (browseListMode === 'whosGoing' && whosGoingSegment === 'trips') return whosGoingListItems;
-    if (browseListMode === 'whosGoing') return [];
+    if (browseListMode === 'social') return [];
 
     const hasQuery = query.trim().length > 0;
     const matchesQuery = (item: ExploreMapItemDTO) => exploreItemMatchesQuery(item, query);
@@ -296,8 +237,6 @@ export const useExploreBrowseList = ({
     browseListBase,
     query,
     browseListMode,
-    whosGoingSegment,
-    whosGoingListItems,
     searchScope,
     items,
     mapFilter,
@@ -328,9 +267,6 @@ export const useExploreBrowseList = ({
     mapPins,
     listItems,
     shopListSections,
-    whosGoingPreview,
     searchScopeCounts,
-    whosGoingTripsCount: whosGoingListItems.length,
-    whosGoingListItems,
   };
 };

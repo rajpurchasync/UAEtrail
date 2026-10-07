@@ -1,15 +1,20 @@
-import { EXPLORE_MAP_PATH, PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
+import {
+  EXPLORE_MAP_PATH,
+  HOST_ACTIVITIES_PATH,
+  PRO_MEMBERSHIP_PATH,
+  SIGNUP_PATH,
+} from '../../config/routingCatalog';
 import { Link } from 'react-router-dom';
 import { Plus, Sun } from 'lucide-react';
 
 
 import { useAuth } from '../../context/AuthContext';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 
 /** Shown when there are no upcoming activities. */
 export const EmptyActivitiesBanner = () => {
   const { user } = useAuth();
-  const { canAccessHostConsole, canPublish } = useOrganisationGate({ enabled: Boolean(user) });
+  const { canAccessHostConsole, canPublish } = useHostStatus({ enabled: Boolean(user) });
   const canHost = canAccessHostConsole;
   const memberHostCtaPath = canPublish ? EXPLORE_MAP_PATH : PRO_MEMBERSHIP_PATH;
 
@@ -26,7 +31,7 @@ export const EmptyActivitiesBanner = () => {
       <div className="mt-6 flex justify-center">
         {canHost ? (
           <Link
-            to="/host/activities"
+            to={HOST_ACTIVITIES_PATH}
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -42,7 +47,7 @@ export const EmptyActivitiesBanner = () => {
           </Link>
         ) : (
           <Link
-            to="/signup"
+            to={SIGNUP_PATH}
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />

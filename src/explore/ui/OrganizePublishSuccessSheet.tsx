@@ -16,6 +16,8 @@ import {
 import type { CreateActivityDraft, CreateActivityKind } from './organizeFlow';
 import { formatOrganizePricePreview, resolveOrganizeDifficultyLabel } from './organizeFlow';
 import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
+import { ActivityInviteLauncher } from '../../components/activity/ActivityInviteLauncher';
+import { activityShareInputFromActivity } from '../../utils/activityShare';
 
 type OrganizePublishSuccessSheetProps = {
   open: boolean;
@@ -30,6 +32,8 @@ type OrganizePublishSuccessSheetProps = {
   onRideshareLinked: () => void;
   onRideshareLinkError: (message: string) => void;
   onViewOnMap: () => void;
+  /** Buddy from Social “Plan a trip” — pre-select on post-publish invite. */
+  planWithBuddyUserId?: string | null;
 };
 
 const SuccessDetailRow = ({ label, value }: { label: string; value: string }) => (
@@ -55,6 +59,7 @@ export const OrganizePublishSuccessSheet = ({
   onRideshareLinked,
   onRideshareLinkError,
   onViewOnMap,
+  planWithBuddyUserId = null,
 }: OrganizePublishSuccessSheetProps) => {
   const [pasteOpen, setPasteOpen] = useState(false);
 
@@ -120,6 +125,17 @@ export const OrganizePublishSuccessSheet = ({
           >
             {rideshareNotice}
           </p>
+        ) : null}
+
+        {planWithBuddyUserId ? (
+          <div className="mt-4 min-w-0">
+            <ActivityInviteLauncher
+              activity={activityShareInputFromActivity(publishedActivity)}
+              canSendBuddyInvites
+              initialSelectedBuddyIds={[planWithBuddyUserId]}
+              defaultOpen
+            />
+          </div>
         ) : null}
 
         {showLinkRideshare && pasteOpen ? (

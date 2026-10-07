@@ -1,6 +1,5 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { Calendar, MapPin, Users } from 'lucide-react';
-import { ActivityActionsMenu, type ActivityMenuItem } from '../activities/ActivityActionsMenu';
+import { Calendar, ChevronRight, MapPin, Users } from 'lucide-react';
 import { ParticipantPreview } from '../ui/ParticipantPreview';
 import {
   formatActivityCapacity,
@@ -18,15 +17,13 @@ const statusPillClass: Record<string, string> = {
 
 type HostedActivityListRowProps = {
   activity: ActivityDTO;
-  menuItems: ActivityMenuItem[];
   pendingRequestCount?: number;
   onOpenDetail: () => void;
 };
 
-/** Hosted outings list — title, schedule, venue, participants, overflow menu. */
+/** Hosted outings list — title, schedule, venue, participants; tap opens host detail. */
 export const HostedActivityListRow = ({
   activity,
-  menuItems,
   pendingRequestCount = 0,
   onOpenDetail,
 }: HostedActivityListRowProps) => {
@@ -37,12 +34,12 @@ export const HostedActivityListRow = ({
   const capacityLabel = formatActivityCapacity(activity);
 
   return (
-    <div className="glass-card-interactive flex w-full items-stretch gap-0 overflow-hidden">
-      <button
-        type="button"
-        onClick={onOpenDetail}
-        className="flex min-w-0 flex-1 flex-col gap-2 p-3.5 text-left"
-      >
+    <button
+      type="button"
+      onClick={onOpenDetail}
+      className="glass-card-interactive flex w-full items-stretch gap-2 p-3.5 text-left"
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
           <p className="line-clamp-2 text-[15px] font-semibold leading-snug text-neutral-900">{title}</p>
           <span
@@ -83,11 +80,11 @@ export const HostedActivityListRow = ({
             {pendingRequestCount} join request{pendingRequestCount === 1 ? '' : 's'} pending
           </p>
         ) : null}
-      </button>
-
-      <div className="flex shrink-0 items-start border-l border-neutral-100/90 px-0.5 pt-1">
-        <ActivityActionsMenu items={menuItems} align="right" />
       </div>
-    </div>
+
+      <div className="flex shrink-0 items-center self-center text-neutral-400" aria-hidden>
+        <ChevronRight className="h-5 w-5" />
+      </div>
+    </button>
   );
 };

@@ -18,7 +18,7 @@ const VISIBILITY_OPTIONS: Array<{
   {
     value: 'public',
     label: 'Public',
-    description: 'Anyone can open your member profile from a link or activity context.',
+    description: 'Other signed-in members can view your public member card. Guests must sign in first.',
   },
   {
     value: 'group_members',
@@ -154,8 +154,8 @@ export const SecurityPrivacy = () => {
               <div className="flex-1">
                 <h2 className="text-sm font-semibold text-gray-900">Profile visibility</h2>
                 <p className="text-xs text-gray-600 mt-1 mb-3 leading-relaxed">
-                  Controls who can open your member profile. Hosts still appear on their activity cards. Friends and
-                  activity co-participants can always view private profiles when authorized.
+                  Controls who can open your member profile after sign-in. Hosts still appear on their activity cards.
+                  Friends and activity co-participants can view private profiles when allowed.
                 </p>
                 <div className="space-y-2">
                   {VISIBILITY_OPTIONS.map((option) => {

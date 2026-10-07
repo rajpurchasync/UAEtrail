@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Camera, Eye, Pencil } from 'lucide-react';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { ShareButton } from '../ui/ShareButton';
+import { PROFILE_SETTINGS_PRIVACY_PATH } from '../../config/routingCatalog';
 type ProfileHubStat = {
   key: string;
   label: string;
@@ -160,7 +161,7 @@ export const ProfileHubIdentityCard = ({
 
       {visibilityLabel ? (
         <Link
-          to="/profile/settings/privacy"
+          to={PROFILE_SETTINGS_PRIVACY_PATH}
           className="mt-1.5 inline-block text-[11px] font-semibold text-emerald-700 underline-offset-2 hover:underline"
         >
           {visibilityLabel}

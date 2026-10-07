@@ -4,8 +4,13 @@ import { MapPin } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 import { useAuth } from '../../context/AuthContext';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
-import { organizePublishGateHref } from '../../utils/organizePublishGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
+import { setActiveTenantId } from '../../api/tenant';
+import { listOrganizePublishProfiles } from '../organizePublishTenants';
+import {
+  organizePublishGateHref,
+  organizePublishGateInputFromHostGate,
+} from '../../utils/organizePublishGate';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import {
@@ -70,6 +75,7 @@ export interface CreateActivityFlowProps {
   catalogFlow?: OrganizeCatalogFlow | null;
   demandPrefill?: OrganizeWizardPrefill | null;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
+  planWithBuddyUserId?: string | null;
 }
 
 export const CreateActivityFlow = ({
@@ -83,6 +89,7 @@ export const CreateActivityFlow = ({
   catalogFlow = null,
   demandPrefill = null,
   onCreateLinkedRideshare,
+  planWithBuddyUserId = null,
 }: CreateActivityFlowProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -90,10 +97,36 @@ export const CreateActivityFlow = ({
   const {
     canPublish,
     signupProfileComplete,
+    isCommunityHost,
+    hostTiers,
     canHostPaidActivities,
-    tenantId,
+    tenantId: defaultTenantId,
+    ownedProfiles,
     loading: hostGateLoading,
-  } = useOrganisationGate({ enabled: open && Boolean(user) });
+  } = useHostStatus({ enabled: open && Boolean(user) });
+
+  const publishTenantOptions = useMemo(
+    () => listOrganizePublishProfiles(ownedProfiles),
+    [ownedProfiles]
+  );
+  const [publishTenantId, setPublishTenantIdState] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const pick =
+      (defaultTenantId && publishTenantOptions.some((p) => p.tenantId === defaultTenantId)
+        ? defaultTenantId
+        : publishTenantOptions[0]?.tenantId) ?? null;
+    setPublishTenantIdState(pick);
+  }, [open, defaultTenantId, publishTenantOptions]);
+
+  const setPublishTenantId = useCallback((id: string) => {
+    setPublishTenantIdState(id);
+    setActiveTenantId(id);
+  }, []);
+
+  const tenantId = publishTenantId ?? defaultTenantId;
+  const memberDisplayName = user?.displayName ?? null;
 
   const [step, setStep] = useState<FlowStep>('type');
   const [draft, setDraft] = useState<CreateActivityDraft>(emptyCreateActivityDraft);
@@ -362,7 +395,18 @@ export const CreateActivityFlow = ({
       if (onOpenHostApplication) {
         onOpenHostApplication();
       } else {
-        navigate(organizePublishGateHref(returnPath, { signupProfileComplete, canPublish }));
+        navigate(
+          organizePublishGateHref(
+            returnPath,
+            organizePublishGateInputFromHostGate({
+              viewerUserId: user?.id ?? null,
+              signupProfileComplete,
+              canPublish,
+              isCommunityHost,
+              hostTiers,
+            })
+          )
+        );
       }
       onClose();
       return;
@@ -465,6 +509,10 @@ export const CreateActivityFlow = ({
     demandPrefill: demandPrefill ?? null,
     error,
     tenantId,
+    publishTenantOptions,
+    publishTenantId: tenantId,
+    setPublishTenantId,
+    memberDisplayName,
     registryPlaces,
     canPublish,
     canHostPaidActivities,
@@ -506,6 +554,9 @@ export const CreateActivityFlow = ({
     demandPrefill,
     error,
     tenantId,
+    publishTenantOptions,
+    setPublishTenantId,
+    memberDisplayName,
     registryPlaces,
     canPublish,
     canHostPaidActivities,
@@ -565,6 +616,7 @@ export const CreateActivityFlow = ({
         }}
         onRideshareLinkError={(message) => setRideshareOfferNotice(message)}
         onViewOnMap={handleViewOnMap}
+        planWithBuddyUserId={planWithBuddyUserId}
       />
     );
   }

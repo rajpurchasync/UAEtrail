@@ -28,3 +28,14 @@ export const buildJoinRejectedBody = (organizerNote?: string | null): string => 
   }
   return "The host couldn't fit you on this activity this time.";
 };
+
+export const buildParticipantRevokedBody = (
+  activityTitle: string,
+  organizerNote?: string | null
+): string => {
+  const note = organizerNote?.trim();
+  if (note) {
+    return `The host removed you from "${activityTitle}". From the host: ${note}`;
+  }
+  return `The host removed you from "${activityTitle}".`;
+};

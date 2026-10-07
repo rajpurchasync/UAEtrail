@@ -1,8 +1,8 @@
 # Host / explore cleanup roadmap
 
-Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tiers and gates: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · [`MEMBER_MODEL_PHASES.md`](./MEMBER_MODEL_PHASES.md).
+Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tiers and gates: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
-**Enforcement (Oct 2026):** [`NAMING_HOST_MEMBER.md`](./NAMING_HOST_MEMBER.md) · `.cursor/rules/host-member-model.mdc` · **`npm run verify:host-member`** (in CI after `typecheck:api`).
+**Enforcement (Oct 2026):** [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (§ Naming vocabulary) · `.cursor/rules/host-member-model.mdc` · **`npm run verify:host-member`** (in CI after `typecheck:api`).
 
 **Status:** ✅ done · 🔄 partial · ⬜ queued
 
@@ -16,7 +16,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Migration: missing owner `tenant_memberships` | ✅ | `mongo-migrations.ts` → `backfillTenantOwnerMemberships` |
 | `canPublish` + `signupProfileComplete` on `/me/host-status` | ✅ | `member-host-status.ts` |
 | Server enforce on create/publish | ✅ | `member-publish-gate.ts` |
-| Product docs (`CREATE_FLOW`, `DOMAIN`, `NORTHSTAR` mechanisms) | ✅ | `DOMAIN`, `RELEASE_READINESS`, flow docs; archive index for historical plans |
+| Product docs (`CREATE_FLOW`, `DOMAIN`, `NORTHSTAR` mechanisms) | ✅ | Tier-1 only; [`archive/README.md`](./archive/README.md) for removed plans |
 
 ---
 
@@ -28,7 +28,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Explore `?fulfillIntent=` clears param; no third-party fulfill wizard | ✅ | `useExploreFulfillIntent.ts` |
 | Publish links demand via `POST /me/.../link-activity` | ✅ | `organizeActivityPublish.ts`, `exploreApi` |
 | FE guard: no `api.fulfillParticipantIntent` | ✅ | `apiLegacyGuard.test.ts` |
-| Remove fulfill prefill props from compose (optional shrink) | ⬜ | `ExploreComposeHost` still accepts `fulfillIntentPrefill` for reorganize |
+| Remove legacy fulfill prefill wiring from explore selection/compose | ✅ | `organizeWizardPrefill` only; `useExploreFulfillIntent` clears deep links |
 
 ---
 
@@ -38,7 +38,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 |------|--------|--------|
 | Archive index for superseded docs | ✅ | [`docs/archive/README.md`](./archive/README.md) |
 | README doc map (member model, API routing, cleanup) | ✅ | `README.md` |
-| Experiment flow docs aligned to `/welcome` + Pro Membership | 🔄 | `FLOW-01` etc. |
+| Compose gates aligned to `/welcome` + Pro Membership | ✅ | `CREATE_FLOW.md`, `composeFlowCatalog.ts` |
 
 ---
 
@@ -49,12 +49,23 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Extract legacy fulfill route from `host.ts` | ✅ | `routes/host/registerHostDemandFulfillLegacy.ts` |
 | `GET /me/host-status` in dedicated registrar | ✅ | `registerMemberHostStatusRoutes.ts` |
 | Split `host.ts` — team + activity request queue | ✅ | `registerHostTeamRoutes`, `registerHostActivityRequestRoutes` (`/host/requests`) |
-| Split remainder of `host.ts` (activities CRUD, check-in, places) | ⬜ | `tenantActivitiesRouter` still in `host.ts` |
-| Shrink `legacyApi` / remove unused FE shims | ⬜ | Keep aliases until knip pass |
+| Split remainder of `host.ts` (activities CRUD, roster) | ✅ | `registerHostActivityRoutes.ts`, `registerHostActivityParticipantRoutes.ts` |
+| Host submitted locations (`GET/POST /host/locations`) | ✅ | `registerHostSubmittedLocationRoutes.ts` |
+| Admin host-application review routes | ✅ | `registerAdminHostApplicationRoutes.ts` |
+| Admin activity moderation (`/admin/activities/*`) | ✅ | `registerAdminActivityModerationRoutes.ts` |
+| Admin place CRUD (`/admin/places`, `/admin/locations`) | ✅ | `registerAdminPlaceRoutes.ts` |
+| Admin dashboard metrics (`GET /admin/metrics`) | ✅ | `registerAdminMetricsRoutes.ts` |
+| Admin user list/detail/status (`/admin/users/*`) | ✅ | `registerAdminUserRoutes.ts` |
+| Admin tenant oversight (`/admin/tenants/*`) | ✅ | `registerAdminTenantRoutes.ts` |
+| Admin social groups (`/admin/groups/*`) | ✅ | `registerAdminGroupRoutes.ts` |
+| Admin reports, audit, notifications, products | ✅ | `registerAdminContentReportRoutes.ts`, `registerAdminAuditRoutes.ts`, `registerAdminNotificationRoutes.ts`, `registerAdminProductRoutes.ts` |
+| Platform staff grant/revoke (master only) | ✅ | `registerAdminPlatformStaffRoutes.ts` + `platform-master-admin.ts` |
+| `admin.ts` mount shell | ✅ | Registers modular `registerAdmin*` only |
+| Shrink `legacyApi` / remove unused FE shims | ✅ | `legacyApi.ts` removed; canonical `api` only — `services.domain-aliases.test.ts` |
 
 ---
 
-## P2 — Privacy 7.6 (REMEDIATION)
+## P2 — Privacy & notification actor labels
 
 | Item | Status | Where |
 |------|--------|--------|
@@ -62,7 +73,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Join queue: host sees requester identity | ✅ | By design (activity host) |
 | Notifications actor names respect `profileVisibility` | ✅ | `notification-actor-label.ts` (buddy, follow, group, publish fan-out) |
 | Favorites profile hydration PII | ✅ | `listUserFavoritesWithDetails` + `profileVisibility` |
-| 7.7 FE smoke matrix | ⬜ | `REMEDIATION.md` Phase 7 |
+| FE smoke matrix (notification + profile edge cases) | 🔄 | API: `notification-actor-label.test.ts` in `verify:domain`; manual edge cases (group invite, private actor) still QA |
 
 ---
 
@@ -77,5 +88,5 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 
 ## Out of scope (other tracks)
 
-- Explore catalog density, wishlist E11, full `host.ts` modularization.
+- Explore catalog density, wishlist E11.
 - Pro **billing** (flags only today).

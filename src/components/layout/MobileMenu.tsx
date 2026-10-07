@@ -1,20 +1,32 @@
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogIn, LogOut, Menu, RefreshCw, ShoppingBag, User, X } from 'lucide-react';
+import { Download, LogIn, LogOut, Menu, RefreshCw, User, X } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
-import { isConsumerChromeHidden, MOBILE_DRAWER_MENU, MOBILE_LANDING_USER_MENU } from '../../config/platform';
+import {
+  CONSUMER_HAMBURGER_MENU,
+  isConsumerChromeHidden,
+  MOBILE_LANDING_USER_MENU,
+} from '../../config/platform';
+import {
+  ANDROID_INSTALL_SETTINGS_HASH,
+  IOS_INSTALL_SETTINGS_HASH,
+} from '../../config/phoneAppInstall';
+import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
 import { ADMIN_LINKS, HOST_CONSOLE_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/index';
 import { setStoredSession } from '../../api/client';
 import { accountRouteByRole } from '../../utils/authRouting';
-import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
-import { isMerchantRole } from '../../utils/roles';
 
-type MobileMenuTone = 'default' | 'light';
+export type MobileMenuTone = 'default' | 'light';
+
+/** Above map chrome (1100), below dialogs (1400). Portaled to escape `isolation` on marketing hero. */
+const MOBILE_MENU_OVERLAY_Z = 'z-[2000]';
 
 type DashboardNavLink = { to: string; label: string };
 
@@ -52,49 +64,61 @@ const isPathActive = (pathname: string, to: string) =>
 type MobileDrawerProps = {
   open: boolean;
   closeMenu: () => void;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   ariaLabel: string;
   children: ReactNode;
 };
 
-const MobileDrawer = ({ open, closeMenu, eyebrow, title, ariaLabel, children }: MobileDrawerProps) => (
-  <div
-    className={`fixed inset-0 z-[70] transition-opacity duration-200 ${
-      open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-    }`}
-    aria-hidden={!open}
-    {...(open ? {} : { inert: '' })}
-  >
-    <button type="button" className="absolute inset-0 bg-black/40" aria-label="Close menu" onClick={closeMenu} />
-    <aside
-      role="dialog"
-      aria-modal="true"
-      aria-label={ariaLabel}
-      className={`absolute inset-y-0 right-0 w-[min(100vw-3rem,20rem)] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
-        open ? 'translate-x-0' : 'translate-x-full'
+const MobileDrawer = ({ open, closeMenu, eyebrow, title, ariaLabel, children }: MobileDrawerProps) => {
+  if (typeof document === 'undefined') return null;
+
+  const overlay = (
+    <div
+      className={`fixed inset-0 ${MOBILE_MENU_OVERLAY_Z} transition-opacity duration-200 ${
+        open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
+      aria-hidden={!open}
     >
-      <div className="flex items-center justify-between gap-3 px-4 pt-safe-plus-2 pb-4 border-b border-gray-100">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">{eyebrow}</p>
-          <p className="text-lg font-bold text-gray-900 truncate">{title}</p>
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
+        aria-label="Close menu"
+        onClick={closeMenu}
+      />
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabel}
+        className={`absolute inset-y-0 right-0 flex w-[min(100vw-3rem,20rem)] max-w-full flex-col border-l border-neutral-100 bg-white shadow-2xl transition-transform duration-300 ease-out ${
+          open ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-neutral-100 px-4 pb-4 pt-safe-plus-2">
+          <div className="min-w-0">
+            {eyebrow ? (
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">{eyebrow}</p>
+            ) : null}
+            <p className="truncate text-lg font-bold text-gray-900">{title}</p>
+          </div>
+          <button
+            type="button"
+            onClick={closeMenu}
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={closeMenu}
-          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
-          aria-label="Close menu"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-      <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe" aria-label={ariaLabel}>
-        <div className="space-y-0.5">{children}</div>
-      </nav>
-    </aside>
-  </div>
-);
+        <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe" aria-label={ariaLabel}>
+          <div className="space-y-0.5">{children}</div>
+        </nav>
+      </aside>
+    </div>
+  );
+
+  return createPortal(overlay, document.body);
+};
 
 const DashboardDrawerLinks = ({
   links,
@@ -180,29 +204,19 @@ interface MobileMenuButtonProps {
 
 export const MobileMenuButton = ({ tone = 'default', className = '', showOnDesktop = false }: MobileMenuButtonProps) => {
   const { openMenu } = useMobileMenu();
-  const unreadCount = useNotificationUnreadCount();
   const toneClass =
     tone === 'light'
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
       : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
 
-  const badgeRing = tone === 'light' ? 'ring-white' : 'ring-emerald-50';
-
   return (
     <button
       type="button"
       onClick={openMenu}
-      className={`${showOnDesktop ? '' : 'md:hidden'} relative h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
-      aria-label={unreadCount > 0 ? `Open menu, ${unreadCount} unread notifications` : 'Open menu'}
+      className={`${showOnDesktop ? '' : 'md:hidden'} h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
+      aria-label="Open menu"
     >
       <Menu className="w-5 h-5" strokeWidth={2.25} />
-      {unreadCount > 0 && (
-        <span
-          className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ${badgeRing}`}
-        >
-          {unreadCount > 99 ? '99+' : unreadCount}
-        </span>
-      )}
     </button>
   );
 };
@@ -270,6 +284,18 @@ export const MobileUserMenuButton = ({
         title={user?.displayName || 'UAE Trail'}
         ariaLabel="Landing navigation"
       >
+        {!user ? (
+          <Link
+            to={signInPathForReturn(EXPLORE_MAP_PATH)}
+            onClick={closeMenu}
+            className={navItemClass(pathname.startsWith('/signin'))}
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100">
+              <LogIn className="h-5 w-5 text-gray-600" strokeWidth={iconStroke.default} />
+            </span>
+            <span className="font-semibold">Log in</span>
+          </Link>
+        ) : null}
         {MOBILE_LANDING_USER_MENU.map((item) => {
           const active = 'match' in item ? isActive(item.match) : false;
           const Icon = MOBILE_NAV_ICON_MAP[item.label] ?? User;
@@ -359,11 +385,11 @@ const MobileMenuPanel = () => {
       prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(`${prefix}/`)
     );
 
-  const drawerItems = MOBILE_DRAWER_MENU.map((item) => ({
-    ...item,
-    icon: MOBILE_NAV_ICON_MAP[item.label],
-    destination: 'profileLink' in item && item.profileLink ? profileDestination : item.to,
-  }));
+  const openPwaInstall = (action: 'pwa-android' | 'pwa-ios') => {
+    closeMenu();
+    const hash = action === 'pwa-ios' ? IOS_INSTALL_SETTINGS_HASH : ANDROID_INSTALL_SETTINGS_HASH;
+    navigate(`${PROFILE_SETTINGS_PATH}${hash}`);
+  };
 
   const switchRole = async (target: 'participant' | 'original') => {
     closeMenu();
@@ -448,53 +474,54 @@ const MobileMenuPanel = () => {
   }
 
   return (
-    <div
-      className={`fixed inset-0 z-[70] transition-opacity duration-200 ${
-        open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-      }`}
-      aria-hidden={!open}
-      {...(open ? {} : { inert: '' })}
-    >
-      <button
-        type="button"
-        className="absolute inset-0 bg-black/40"
-        aria-label="Close menu"
-        onClick={closeMenu}
-      />
+    <MobileDrawer open={open} closeMenu={closeMenu} title="UAE Trail" ariaLabel="Main menu">
+      {CONSUMER_HAMBURGER_MENU.map((item) => {
+            if (item.kind === 'download') {
+              return (
+                <div key={item.title} className="mt-2 border-t border-neutral-100 pt-2" role="group" aria-label={item.title}>
+                  <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-neutral-500">
+                    {item.title}
+                  </p>
+                  {item.items.map((sub) => {
+                    const isAndroid = sub.action === 'pwa-android';
+                    return (
+                      <button
+                        key={sub.label}
+                        type="button"
+                        onClick={() => openPwaInstall(sub.action)}
+                        className={`w-full ${navItemClass(false)}`}
+                      >
+                        <span
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-lg ${
+                            isAndroid ? 'bg-emerald-50' : 'bg-sky-50'
+                          }`}
+                          aria-hidden
+                        >
+                          {sub.emoji}
+                        </span>
+                        <span className="min-w-0 flex-1 text-left font-semibold">{sub.label}</span>
+                        <Download
+                          className={`h-4 w-4 shrink-0 ${isAndroid ? 'text-emerald-600' : 'text-sky-600'}`}
+                          strokeWidth={2.25}
+                          aria-hidden
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            }
 
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label="Main menu"
-        className={`absolute inset-y-0 right-0 w-[min(100vw-3rem,20rem)] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
-          open ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between gap-3 px-4 pt-safe-plus-2 pb-4 border-b border-gray-100">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">Menu</p>
-            <p className="text-lg font-bold text-gray-900 truncate">UAE Trail</p>
-          </div>
-          <button
-            type="button"
-            onClick={closeMenu}
-            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
-            aria-label="Close menu"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe space-y-1" aria-label="App navigation">
-          {drawerItems.map((item) => {
             const active = isActive(item.match);
-            const Icon = item.icon;
-            const showAvatar = item.label === 'My Profile' && user;
+            const label = user || !item.labelGuest ? item.label : item.labelGuest;
+            const emoji = user || !item.emojiGuest ? item.emoji : item.emojiGuest;
+            const destination = item.profileLink ? (user ? profileDestination : signInHref) : item.to;
+            const showAvatar = item.profileLink && user;
 
             return (
               <Link
                 key={item.label}
-                to={item.destination}
+                to={destination}
                 onClick={closeMenu}
                 className={navItemClass(active)}
                 aria-current={active ? 'page' : undefined}
@@ -507,38 +534,18 @@ const MobileMenuPanel = () => {
                   />
                 ) : (
                   <span
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-lg ${
                       active ? 'bg-emerald-600/12' : 'bg-gray-100'
                     }`}
+                    aria-hidden
                   >
-                    <Icon
-                      className={`w-5 h-5 ${active ? 'text-emerald-700' : 'text-gray-600'}`}
-                      strokeWidth={active ? iconStroke.active : iconStroke.default}
-                    />
+                    {emoji}
                   </span>
                 )}
-                <span className="font-semibold">{item.label}</span>
-                {item.label === 'Notifications' && unreadNotifications > 0 && (
-                  <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center">
-                    {unreadNotifications > 99 ? '99+' : unreadNotifications}
-                  </span>
-                )}
+                <span className="font-semibold">{label}</span>
               </Link>
             );
           })}
-
-          {user && !isMerchantRole(user.role) && (
-            <Link
-              to="/profile/pro-membership#host-profiles"
-              onClick={closeMenu}
-              className={navItemClass(pathname.startsWith('/profile/pro-membership'))}
-            >
-              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
-                <ShoppingBag className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
-              </span>
-              <span className="font-semibold">Host profiles</span>
-            </Link>
-          )}
 
           {canSwitchBack && (
             <button
@@ -567,20 +574,7 @@ const MobileMenuPanel = () => {
               </span>
               <span className="font-semibold">Sign Out</span>
             </button>
-          ) : (
-            <Link
-              to={signInHref}
-              onClick={closeMenu}
-              className={navItemClass(false)}
-            >
-              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-600">
-                <LogIn className="w-5 h-5 text-white" strokeWidth={iconStroke.default} />
-              </span>
-              <span className="font-semibold">Sign In</span>
-            </Link>
-          )}
-        </nav>
-      </aside>
-    </div>
+          ) : null}
+    </MobileDrawer>
   );
 };

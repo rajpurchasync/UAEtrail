@@ -14,13 +14,45 @@ See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing r
 |--------|------------|----------------|------------|-------------|
 | **Place** | One map/catalog POI — typed, not a separate “venue” or “location” product | `locations`, `PlaceDTO` / `LocationDTO` | See [Place kinds](#place-one-entity-placekind) | Yes (venue / shop pins) |
 | **Activity** | A scheduled outing hosted at a place | `activities`, `ActivityDTO` | `/activity/:id` | Yes |
-| **Event (organize chip)** | Compose label — public happening; default **I’m going** RSVP | Same **Activity** row (`activityType: event`) | `/activity/:id` | Yes |
-| **Activity (organize chip)** | Compose label — generic buddy plan (run, jog, …); default **request to join** | Same **Activity** row (see CREATE_FLOW for `activityType`) | `/activity/:id` | Yes |
-| **Host** (publishing) | Anyone who publishes trips and may have a public profile — **guide**, **agency**, or **shop** | `tenants`, `TenantProfile`, `merchant_profiles` (shops) | Guide/agency: `/operator/:slug` · Shop: `/shop/:id` | Physical shops only |
-| **Person** | A member's public identity on the platform | `users` (profile fields), `/member/:id` | `/profile`, `/member/:id` | Via demand cards |
+| **Event (organize chip)** | **Organize** FAB label — public happening; default **I’m going** RSVP | Same **Activity** row (`activityType: event`) | `/activity/:id` | Yes |
+| **Activity (organize chip)** | **Organize** FAB label — generic buddy plan (run, jog, …); default **request to join** | Same **Activity** row (see CREATE_FLOW for `activityType`) | `/activity/:id` | Yes |
+| **Host** (publishing) | Always a **signed-in user** who publishes; may act **as self** or **on behalf of a business** they’re linked to | `createdById`, `hostId`, `tenantId` on activities; `tenants`, storefronts | See [Host storefronts](#host-storefronts-where-vs-who) | Via activities / demand |
+| **Person** | A member's identity (member card at `/member/:id`) | `users` (profile fields) | `/profile`, `/member/:id` | Via demand cards |
 | **User** | Auth account (login, roles, suspension) | `users`, `UserDTO`, `AuthContext` | `/signin`, `/signup` | — |
 
-**Participation** links **Person ↔ Activity ↔ Place**. **Publishing** links **Host (tenant) ↔ Activity**. Shops also link **featured outbound picks**.
+**Participation** links **Person ↔ Activity ↔ Place**. **Publishing** always has a **user** actor; activities may also reference a **business tenant** when published on behalf of a brand.
+
+### Account funnel (product)
+
+Everything starts with **sign-in** as a **user**. Guests may browse parts of the map; member profiles, buddies, and Pro flows require authentication.
+
+```text
+Sign in → User (member profile, Organize as self)
+  → Optional Pro membership (/profile/pro-membership)
+        ├─ Individual Pro   → pro guide storefront
+        ├─ Business Pro     → required subtype: Shop | Tour agency | E-commerce | Hospitality | …
+        └─ Partner Pro      → campaigns / partner storefront (detail later)
+```
+
+Business capabilities (campaigns, paid trips, team) attach to **business tenants**, not to the person card alone. Canonical vocabulary: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.1–1.5.
+
+### Host storefronts (Where vs Who)
+
+| Lens | Examples | Not the same as |
+|------|----------|-----------------|
+| **Where** | Trail, camp, **shop pin**, future partner/hotel pin | Tour **agency** (join trips without visiting a pin) |
+| **Who** | Activity, demand, member card, guide/agency **storefront** | Calling a gear **shop** a “partner” |
+
+**Publish as:** when a user is linked to a business (`tenant_memberships`), Organize / host console should offer **self** vs **{business}** (dropdown). The **host on the activity is still the user**; `x-organisation-id` scopes the brand. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
+
+### Member profile visibility
+
+| Setting | Signed-in strangers | Guests |
+|---------|---------------------|--------|
+| **public** | **Public member card** (target; P3 API) | Sign in to view — **no** public card |
+| **group_members** / **private** | Denied or trusted per relationship rules | Sign in to view |
+
+“Public” in settings means **visible to other signed-in members**, not the open internet. Profile preview in settings should show that card, not the owner’s full self view.
 
 ### Scheduled outings — one entity, many labels (avoid “Trip” in code)
 
@@ -44,7 +76,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 | Trips UI | Domain data |
 |----------|-------------|
 | Upcoming rail / Joined list | `GET /me/activities`, `GET /me/requests` |
-| Hosted list + manage sheet | Organisation hub: `listOrganisationActivities`, join requests |
+| Hosted list + manage sheet | Host user: `listHostActivities`, `getHostActivityJoinRequests` |
 | Wishlist / Places / Shops layers | Favorites / place registry — not activities |
 | `/trips/map` (outdoor map) | `memberJourneyMapApi` → `/me/trips/map` (legacy path name on server) |
 
@@ -112,18 +144,21 @@ This is **not** hosting. No tenant is created until profile is complete and the 
 
 ### Become a host (publish trips)
 
-**Hosts are either individuals or businesses** (same `tenants` row; different type and pricing rules).
+A **host is always a user** (human actor on the activity). They publish **as themselves** (buddy / individual pro) or **on behalf of a business** they own or belong to (`x-organisation-id`). Businesses are **tenants** with a **storefront** — not a substitute for the user account.
 
-| Host kind | Product | Paid trips? | Code |
-|-----------|---------|-------------|------|
-| **Individual host** (guide) | Person-led community trips | **No** — **free** or **shared cost** only | `hostProfileType: individual` → guide tenant; `assertActivityPricingAllowed` blocks `paid` unless `TenantType.COMPANY` |
-| **Business host** (agency) | Licensed operator | **Yes** — paid pricing modes | `hostProfileType: agency` → `TenantType.COMPANY` / `businessMode: AGENCY` |
-| **Shop** (optional third line) | Gear partner, not trip inventory | N/A (featured picks) | `hostProfileType: shop` → shop public `/shop/:id` |
+| Path | Product | Paid trips? | Code (today) |
+|------|---------|-------------|--------------|
+| **Community (buddy)** | Free / shared-cost outings after profile complete | **No** | `publishingPurpose: community`, `canPublish` |
+| **Pro — Individual** | Licensed-style **guide** brand | Future Pro rules | `hostProfileType: individual`, professional tenant |
+| **Pro — Business** | Must pick **subtype** (Shop, Tour agency, E-commerce, Hospitality, …) | Agency / business rules | `hostProfileType` + `TenantBusinessMode` |
+| **Pro — Partner** | Campaign / hospitality partner (detail later) | Campaign-linked | Planned |
 
-**Shop provisioning (today):** platform **admin** or an authenticated user can create a shop tenant via **Pro Membership** (`/profile/pro-membership`) / admin flows. **Shop claim** — an existing brick-and-mortar business verifies ownership and takes over a listing — is **planned**, not built yet.
+**Do not conflate:** **Shop** = outdoor retail + directions (often a map pin). **Tour agency** = operator you join remotely. **Partner** = campaign/hotel-style host — not a gear shop.
 
-**Buddy host (Organize on map):** **profile completion** (`signupProfileComplete`) → `canPublish` on `GET /me/host-status`; API auto-provisions a guide-owned tenant. Gate UX → `/welcome` (incomplete profile). **Host** profile label → `isCommunityHost` after first published activity **or** demand post.  
-**Pro / business:** `/profile/pro-membership` (legacy `/become-host` redirects) — agency, shop, professional guide applications via `host_applications` where required.
+**Shop listing lifecycle:** **catalog** (admin-added place/shop) → **claimed** (Pro verification) → **managed** (owner console). See `DOMAIN_CANONICALS` §1.4.
+
+**Buddy host (Organize on map):** **profile completion** (`signupProfileComplete`) → `canPublish`; API auto-provisions a community tenant. **Host** badge → `isCommunityHost` after first activity **or** demand.  
+**Pro:** `/profile/pro-membership` — Individual, Business (subtype required), or Partner applications via `host_applications` where required.
 
 ### Business account from profile
 
@@ -133,8 +168,8 @@ Any member may add a **business hosting identity** without replacing their perso
 |---------|---------|------|
 | Business creator | Becomes **tenant owner / admin** | `MembershipRole.TENANT_OWNER` on new tenant |
 | Team | Owner invites **admins** and **guides** | `/host/team`, `POST` org team APIs; roles `TENANT_ADMIN`, `TENANT_GUIDE` |
-| Publish on behalf of business | Activity is under **tenant** (`x-tenant-id`); host picker in console | `/host/activities` |
-| Publish as self | Separate **individual** tenant (`add-guide` / own guide profile) | Second tenant + membership; same user, two publishing contexts |
+| Publish on behalf of business | Same **user** publishes with **tenant** scope (`x-organisation-id`); picker in console / Organize when linked | `/host/activities` |
+| Publish as self | Individual or community tenant | Same user; no business header |
 
 Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/become-host` redirects) or **`/organisation/manage?kind=agency`** (and shop variant). There is not yet a single “create business” toggle that skips the host-application flow.
 
@@ -146,7 +181,7 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 | **Host public profile** | The **business or guide brand** (tenant) | `/operator/:slug` (guide/agency) |
 | **Self hub** | Signed-in account settings | `/profile` |
 
-**Follow** and **map publish notifications** attach to the **user id** of whoever published (owner or guide user on the activity), not to the tenant slug. See experiment notes in [`experiment/WHOS_GOING_UX.md`](./experiment/WHOS_GOING_UX.md).
+**Follow** and **map publish notifications** attach to the **user id** of whoever published (owner or guide user on the activity), not to the tenant slug. See [`COMMUNICATION.md`](./COMMUNICATION.md) and `profile-viewer-access` for peek visibility rules.
 
 ### Participation modes (planned — see [`CREATE_FLOW.md`](./CREATE_FLOW.md))
 
@@ -156,6 +191,8 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 | **`approval`** | **Request to join** — host approves | Approve / reject queue |
 
 **Not** the same as `joinMode` (`open` \| `private`), which controls map visibility only.
+
+**Who may see full activity detail vs map peek** is **detail exposure** (viewer access), not `participationMode` or `joinMode`. Resolvers, policy matrix, and implementation phases: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.
 
 **Organize defaults:** Event → `rsvp`; Hiking, Camping, generic Activity → `approval`. Creator can toggle on all organize paths.
 
@@ -209,7 +246,10 @@ The route `/member/:userId` uses a user id in the URL (storage key). In UI, pref
 |---------|------|----------|--------|
 | **Guide** | Individual host; public intro at `/operator/:slug` | No | `/host/*` console; buddy Organize via `canPublish` |
 | **Agency** | Business host; paid trips | No | `/host/*`, `/organisation/manage?kind=agency` |
-| **Shop** | Physical or online gear partner | Physical only | `/shop/:id`, `/organisation/manage?kind=shop` |
+| **Shop** | Outdoor retail (pin + `/shop/:id`) | Physical pin typical | `/shop/:id` |
+| **E-commerce** (Business Pro) | Online-first retail | Optional pin | TBD |
+| **Hospitality** (Business Pro) | Hotels / venues | Often pin + campaigns | TBD |
+| **Partner** (Partner Pro) | Campaign host | Pin + feeds (future) | TBD |
 
 Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (ShopManage), linked via `merchant_profiles.tenantId`.
 
@@ -229,7 +269,10 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 | File / export | Route | Notes |
 |---------------|-------|-------|
 | `OrganisationProfile` | `/operator/:id` | Public guide/agency host profile |
-| `OrganisationConsoleOverview` | `/host/overview` | **Host console** in UI |
+| `pages/host/Overview` (`Overview`) | `/host/overview` | **Host console** hub |
+| `pages/host/Activities` (`Activities`) | `/host/activities` | Tenant activity list + manage sheet |
+| `pages/host/JoinRequests` (`JoinRequests`) | `/host/requests` | Activity join queue |
+| `pages/host/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |
 | `ProfileProMembership` (`BecomeHost` legacy export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Organize (`canPublish` via profile complete) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
 | `AdminOrganisations` | `/admin/hosts` | Admin copy: **Hosts** |
@@ -246,7 +289,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 
 **Organize hiking/camping** picks a **registry place** (`registryPlaceId`) or uses a **custom label** + **activity anchor** row. **Shops** use `PlaceKind.shop` on the map; host identity remains a **tenant** at `/shop/:id` until shop rows fully live in `locations`.
 
-**Publish pipeline (frontend):** `src/services/organizeActivityPublish.ts` → `POST /host/activities` via `buildOrganisationActivityPublishPayload`. Host console modals use the same payload builder with `form.locationId`.
+**Publish pipeline (frontend):** `src/services/organizeActivityPublish.ts` → `POST /host/activities` via `buildHostActivityPublishPayload`.
 
 ## Explore browse — `OutingCategory` and `OutingTopic`
 
@@ -259,7 +302,7 @@ Scheduled outings and **demand** posts on the **Activities** map layer carry pla
 
 **Browse filters:** map pills (`filter=hiking`, …) use category; under **Others**, `subtype=events|activities` then optional `outingTopic` for general activities. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse defaults.
 
-**Compose intents (separate lifecycles):** **Organize** → `activities` collection; **Demand** → `participant_intents`; **Add** → place catalog. Architecture detail: [`experiment/explore-backend-alignment.md`](./experiment/explore-backend-alignment.md).
+**Compose intents (separate lifecycles):** **Organize** → `activities` collection; **Demand** → `participant_intents`; **Add** → place catalog. Product detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) · `src/explore/composeFlowCatalog.ts`.
 
 ## Identity, routing, and audit
 
@@ -295,4 +338,4 @@ Reorganize never updates the source row; venue registry ids are **reused** when 
 5. API paths may say `locations` / `merchant`; product copy says place / shop.
 6. FAB compose taxonomy and participation — [`CREATE_FLOW.md`](./CREATE_FLOW.md).
 
-**Adoption roadmap:** [`DOMAIN_ADOPTION_PLAN.md`](./DOMAIN_ADOPTION_PLAN.md) — frontend migration complete. Deferred: Phase 6b tenant/merchant collapse.
+**Naming adoption:** complete for frontend symbols — see [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md). Deferred: tenant/merchant collapse (shop dual-write) in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §7 **C6**.

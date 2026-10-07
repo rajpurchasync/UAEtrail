@@ -18,12 +18,12 @@ describe('hostActivityManageCapabilities', () => {
     const caps = hostActivityManageCapabilities(base({ activityType: 'hiking' }));
     expect(caps.showLinkRideshare).toBe(true);
     expect(caps.showJoinRequests).toBe(true);
-    expect(caps.showCheckIn).toBe(true);
+    expect(caps.showGroupChat).toBe(true);
   });
 
   it('disables link rideshare for rideshare activity', () => {
     const caps = hostActivityManageCapabilities(base({ activityType: 'rideshare' }));
     expect(caps.showLinkRideshare).toBe(false);
-    expect(caps.showCheckIn).toBe(false);
+    expect(caps.showGroupChat).toBe(true);
   });
 });

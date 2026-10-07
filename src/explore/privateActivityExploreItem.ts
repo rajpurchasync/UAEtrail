@@ -1,7 +1,8 @@
-import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityViewerAccessDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   buildExploreActivityDisplay,
   buildExploreFeaturedPerson,
+  computeActivityMapPeekActions,
   resolveActivityDisplayCoordinates,
   resolveActivityDestinationCoordinates,
   resolveActivityHostAvatar,
@@ -12,8 +13,27 @@ import {
 
 const isRideshareActivity = (activity: ActivityDTO): boolean => activity.activityType === 'rideshare';
 
+const withMapPeekActions = (
+  access: ActivityViewerAccessDTO | null | undefined,
+  activity: ActivityDTO
+): ActivityViewerAccessDTO | null => {
+  if (!access) return null;
+  if (access.mapPeekActions?.length) return access;
+  return {
+    ...access,
+    mapPeekActions: computeActivityMapPeekActions({
+      level: access.level,
+      activityPublished: activity.status === 'published',
+      joinMode: access.joinMode,
+    }),
+  };
+};
+
 /** Map peek row for link-only (`joinMode: private`) activities — not on public explore payload. */
-export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreMapItemDTO => {
+export const buildExploreMapItemFromActivity = (
+  activity: ActivityDTO,
+  viewerAccess?: ActivityViewerAccessDTO | null
+): ExploreMapItemDTO => {
   const rideshare = isRideshareActivity(activity);
   const hikingDual =
     !rideshare &&
@@ -68,6 +88,7 @@ export const buildExploreMapItemFromActivity = (activity: ActivityDTO): ExploreM
     fromLabel: display.fromLabel,
     toLabel: display.toLabel,
     activity,
+    viewerAccess: withMapPeekActions(viewerAccess, activity) ?? undefined,
   };
 };
 

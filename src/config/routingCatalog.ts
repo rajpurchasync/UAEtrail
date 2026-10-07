@@ -18,27 +18,79 @@ export {
   PRO_MEMBERSHIP_PATH,
   LEGACY_BECOME_HOST_PATH,
   proMembershipPath,
+  proMembershipAnchorPath,
 } from './memberRoutes';
 
 export {
   PROFILE_PATH,
+  PROFILE_EDIT_PATH,
+  PROFILE_REVIEWS_PATH,
+  PROFILE_SETTINGS_PATH,
+  PROFILE_SETTINGS_ACCOUNT_PATH,
+  PROFILE_SETTINGS_PRIVACY_PATH,
+  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
   PROFILE_BADGES_PATH,
   COMMUNITY_PATH,
   MEMBERSHIP_MARKETING_PATH,
   GROUPS_PATH,
+  groupsPath,
+  NOTIFICATIONS_PATH,
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
+  CHAT_PATH,
+  MESSAGES_PATH,
+  LEGACY_MESSAGES_PATH,
+  HOST_MESSAGES_PATH,
+  MY_REQUESTS_PATH,
+  HOST_OVERVIEW_PATH,
+  HOST_ACTIVITIES_PATH,
+  HOST_ACTIVITIES_NEW_PATH,
+  HOST_REQUESTS_PATH,
+  HOST_TEAM_PATH,
+  HOST_PROFILE_PATH,
+  HOST_HISTORY_PATH,
+  SIGNIN_PATH,
+  SIGNUP_PATH,
+  WELCOME_PATH,
+  VERIFY_PATH,
+  FORGOT_PASSWORD_PATH,
+  signInPath,
+  hostActivitiesCheckInPath,
+  messagesToUserPath,
+  messagesGroupPath,
+  myRequestDetailPath,
   LEGACY_TRAIL_POINTS_PATH,
   LEGACY_MY_REWARDS_PATH,
   LEGACY_REWARDS_PATH,
   isLegacyRewardsWalletPath,
 } from './surfacePaths';
 
+export {
+  ADMIN_OVERVIEW_PATH,
+  ADMIN_USERS_PATH,
+  ADMIN_HOSTS_PATH,
+  ADMIN_ACTIVITIES_PATH,
+  ADMIN_GROUPS_PATH,
+  ADMIN_SHOP_PATH,
+  ADMIN_NOTIFICATIONS_PATH,
+  ADMIN_AUDIT_LOG_PATH,
+  ADMIN_SETTINGS_PATH,
+} from './adminSurfacePaths';
+
+export {
+  ORGANISATION_MANAGE_PATH,
+  organisationManagePath,
+  parseOrganisationKind,
+  type OrganisationKind,
+} from '../member/organisationPaths';
+
 export { TRIPS_PATH, ACTIVITIES_PATH, HOST_CONSOLE_LINKS, ADMIN_LINKS } from '../constants';
 
 export {
   placeDetailPath,
   activityDetailPath,
+  activityDetailInvitePath,
+  exploreActivityInvitePath,
   organisationProfilePath,
   memberProfilePath,
   shopPublicPath,
@@ -60,6 +112,8 @@ export {
   exploreShopsPath,
   exploreActivitiesPath,
   exploreOrganizePath,
+  exploreSocialPath,
+  explorePlanWithBuddyPath,
   detailBackPath,
   myActivitiesPath,
   legacyCreateParamToOrganizePath,
@@ -73,6 +127,7 @@ export {
 } from '../explore/routing';
 
 export {
+  tripsPath,
   tripsPlansPath,
   tripsCompletedPath,
   tripsMapPath,

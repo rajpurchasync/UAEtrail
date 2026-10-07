@@ -16,7 +16,7 @@ interface ExploreComposeHostProps {
   organizeKind: OrganizeComposeKind | null;
   findKind: FindComposeKind | null | undefined;
   addKind: ContributeVenueKind | null;
-  fulfillIntentPrefill: import('./organizeWizardPrefill').OrganizeWizardPrefill | null;
+  organizeWizardPrefill: import('./organizeWizardPrefill').OrganizeWizardPrefill | null;
   signInHref: string;
   onComposeRouteChange: (route: ExploreCompose | null) => void;
   onCloseCompose: () => void;
@@ -29,6 +29,7 @@ interface ExploreComposeHostProps {
   onContributeSubmitted: (result: ContributeSubmitResult) => void;
   onDemandSubmitted: (result: DemandSubmitResult) => void;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
+  planWithBuddyUserId?: string | null;
 }
 
 /** FAB compose menu and create wizards — mounted once at explore shell level. */
@@ -41,7 +42,7 @@ export const ExploreComposeHost = ({
   organizeKind,
   findKind,
   addKind,
-  fulfillIntentPrefill,
+  organizeWizardPrefill,
   signInHref,
   onComposeRouteChange,
   onCloseCompose,
@@ -54,6 +55,7 @@ export const ExploreComposeHost = ({
   onContributeSubmitted,
   onDemandSubmitted,
   onCreateLinkedRideshare,
+  planWithBuddyUserId = null,
 }: ExploreComposeHostProps) => (
   <>
     {composeMenuOpen && exploreCompose && (
@@ -80,12 +82,13 @@ export const ExploreComposeHost = ({
         open={organizeWizardOpen}
         onClose={onCloseCreateFlow}
         organizeKind={organizeKind}
-        demandPrefill={fulfillIntentPrefill}
+        demandPrefill={organizeWizardPrefill}
         onCreateLinkedRideshare={onCreateLinkedRideshare}
         onBackToIntent={onOrganizeBackToIntent}
         onPublished={onActivityPublished}
         onOpenHostApplication={onOpenHostApplication}
         signInHref={signInHref}
+        planWithBuddyUserId={planWithBuddyUserId}
       />
     )}
 

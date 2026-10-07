@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GlassCard } from '../mobile/GlassCard';
 import type { HostFlowIntent } from '../organisation-console/hostWizardFlow';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
-import { organisationManagePath } from '../../utils/organisationPaths';
+import { useHostStatus } from '../../hooks/useHostStatus';
+import { HOST_OVERVIEW_PATH } from '../../config/routingCatalog';
+import { organisationManagePath } from '../../config/routingCatalog';
 
 const HOST_PROFILE_CHIPS = [
   { key: 'guide' as const, intent: 'add-guide' as HostFlowIntent, label: 'Guide', emoji: '🥾' },
@@ -14,7 +15,7 @@ const HOST_PROFILE_CHIPS = [
 export const ProfileMapPresenceSection = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles } = useOrganisationGate();
+  const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles } = useHostStatus();
 
   const isActive = (key: (typeof HOST_PROFILE_CHIPS)[number]['key']) => {
     if (key === 'guide') return hasGuideProfile;
@@ -59,7 +60,7 @@ export const ProfileMapPresenceSection = () => {
                     ? organisationManagePath('shop')
                     : chip.key === 'agency'
                       ? organisationManagePath('agency')
-                      : '/host/overview';
+                      : HOST_OVERVIEW_PATH;
                 const className = `inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold ${
                   chip.key === 'guide'
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-800'

@@ -32,10 +32,10 @@ import {
   notifyParticipantJoinRequestWithdrawn,
 } from '../../services/join-request-notifications.js';
 import { notifyHostOfRequestWithdrawal } from '../../services/request-notifications.js';
-import {
-  PRIVATE_ACTIVITY_MESSAGE,
-  resolveActivityViewerAccess,
-} from '../../services/activity-viewer-access.js';
+import { buildActivityRedactedDetail } from '../../lib/activity-redacted-detail.js';
+import { PRIVATE_ACTIVITY_MESSAGE } from '../../services/activity-viewer-access.js';
+import { composeActivityViewerAccess } from '../../services/compose-activity-viewer-access.js';
+import { resolveViewerPendingJoinInvite } from '../../services/activity-invite.js';
 import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
 
 const updateRequestNoteSchema = z.object({
@@ -86,33 +86,25 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
 
-    const access = await resolveActivityViewerAccess({
-      viewerUserId: req.auth?.userId ?? null,
-      activity: {
-        id: event.id,
-        tenantId: event.tenantId,
-        hostId: event.hostId,
-        createdById: event.createdById,
-        joinMode: event.joinMode,
-        requirements: event.requirements,
-      },
-      isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
-    });
-
-    if (!access.canViewFullActivity) {
-      res.json({
-        data: {
-          visibilityState: 'private',
+    const access = await composeActivityViewerAccess(
+      {
+        viewerUserId: req.auth?.userId ?? null,
+        activity: {
           id: event.id,
-          joinMode: 'private',
-          message: PRIVATE_ACTIVITY_MESSAGE,
+          tenantId: event.tenantId,
+          hostId: event.hostId,
+          createdById: event.createdById,
+          joinMode: event.joinMode,
+          requirements: event.requirements,
         },
-      });
-      return;
-    }
+        isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
+      },
+      { viewerUserId: req.auth?.userId ?? null, hostStatus: null }
+    );
 
     let myParticipation = null;
     let myRequest = null;
+    let myJoinInvite = null;
     if (req.auth?.userId) {
       const mine = event.participants.find((p) => p.userId === req.auth!.userId);
       if (mine) {
@@ -127,6 +119,34 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
           canWithdraw: canWithdrawRequest(status)
         };
       }
+      if (!myParticipation) {
+        myJoinInvite = await resolveViewerPendingJoinInvite(id, req.auth.userId);
+      }
+    }
+
+    if (access.exposure === 'none') {
+      res.json({
+        data: {
+          id: event.id,
+          joinMode: 'private',
+          message: PRIVATE_ACTIVITY_MESSAGE,
+        },
+        viewerAccess: access,
+      });
+      return;
+    }
+
+    if (access.exposure === 'redacted') {
+      res.json({
+        data: {
+          ...buildActivityRedactedDetail(event),
+          myParticipation,
+          myRequest,
+          myJoinInvite,
+        },
+        viewerAccess: access,
+      });
+      return;
     }
 
     let linkedRideshare = null;
@@ -151,7 +171,6 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
 
     res.json({
       data: {
-        visibilityState: 'full',
         ...buildActivityDto(event),
         linkedRideshare,
         linkedParentActivity,
@@ -159,8 +178,10 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
         participants: toParticipantPreviews(event.participants),
         location: toLocationDto(event.location),
         myParticipation,
-        myRequest
-      }
+        myRequest,
+        myJoinInvite,
+      },
+      viewerAccess: access,
     });
   } catch (error) {
     next(error);

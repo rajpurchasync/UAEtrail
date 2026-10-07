@@ -44,6 +44,7 @@ const parseStoredUser = (raw: string): AuthUser | null => {
       displayName: typeof parsed.displayName === 'string' ? parsed.displayName : undefined,
       avatarUrl: typeof parsed.avatarUrl === 'string' ? parsed.avatarUrl : undefined,
       switchedFromRole: typeof parsed.switchedFromRole === 'string' ? parsed.switchedFromRole : null,
+      platformMasterAdmin: parsed.platformMasterAdmin === true,
     };
   } catch {
     return null;
@@ -90,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return () => setSessionInvalidatedHandler(null);
     }
 
-    apiRequest<{ data: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string; switchedFromRole?: string | null } }>('/me/profile', { auth: true })
+    apiRequest<{ data: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string; switchedFromRole?: string | null; platformMasterAdmin?: boolean } }>('/me/profile', { auth: true })
       .then((res) => {
         const profile = res.data;
         const revalidatedUser: AuthUser = {
@@ -100,6 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           displayName: typeof profile.displayName === 'string' ? profile.displayName : undefined,
           avatarUrl: typeof profile.avatarUrl === 'string' ? profile.avatarUrl : undefined,
           switchedFromRole: profile.switchedFromRole ?? null,
+          platformMasterAdmin: profile.platformMasterAdmin === true,
         };
         setStoredUser(revalidatedUser);
         setUser(revalidatedUser);
@@ -119,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const hydrateUserFromProfile = async (fallback: AuthUser): Promise<AuthUser> => {
     try {
-      const res = await apiRequest<{ data: { displayName?: string; avatarUrl?: string; switchedFromRole?: string | null } }>('/me/profile', { auth: true });
+      const res = await apiRequest<{ data: { displayName?: string; avatarUrl?: string; switchedFromRole?: string | null; platformMasterAdmin?: boolean } }>('/me/profile', { auth: true });
       const profile = res.data;
       // Role comes from the login response (token), not the profile endpoint — avoids stale DB reads
       return {
@@ -127,6 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         displayName: typeof profile.displayName === 'string' ? profile.displayName : fallback.displayName,
         avatarUrl: typeof profile.avatarUrl === 'string' ? profile.avatarUrl : undefined,
         switchedFromRole: profile.switchedFromRole ?? null,
+        platformMasterAdmin: profile.platformMasterAdmin === true,
       };
     } catch {
       return fallback;
@@ -292,7 +295,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const session = getStoredSession();
     if (!session?.accessToken) return;
     const res = await apiRequest<{
-      data: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string };
+      data: {
+        id: string;
+        email: string;
+        role: string;
+        displayName?: string;
+        avatarUrl?: string;
+        switchedFromRole?: string | null;
+        platformMasterAdmin?: boolean;
+      };
     }>('/me/profile', { auth: true });
     const profile = res.data;
     const next: AuthUser = {
@@ -301,7 +312,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       role: profile.role as AuthUser['role'],
       displayName: profile.displayName,
       avatarUrl: profile.avatarUrl,
-      switchedFromRole: (profile as { switchedFromRole?: string | null }).switchedFromRole ?? null,
+      switchedFromRole: profile.switchedFromRole ?? null,
+      platformMasterAdmin: profile.platformMasterAdmin === true,
     };
     setStoredUser(next);
     setUser(next);

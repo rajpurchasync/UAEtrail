@@ -39,7 +39,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 <Header />
               </div>
               <MobileTabHeader />
-              <div className="relative min-h-0 flex-1 overflow-hidden">{children}</div>
+              <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">{children}</div>
               <MobileBottomNav />
             </div>
         </MobileMenuProvider>
@@ -50,6 +50,8 @@ export const Layout = ({ children }: LayoutProps) => {
   const showMobileConsumerNavBar =
     showConsumerChrome &&
     !hasConsumerSelfHeader(location.pathname);
+
+  const guestMarketingHome = location.pathname === '/';
 
   const main = (
     <main className="flex-1 scroll-touch min-w-0 max-w-full overflow-x-clip">
@@ -67,7 +69,11 @@ export const Layout = ({ children }: LayoutProps) => {
   return (
     <ComposeRailProvider>
       <MobileMenuProvider>
-          <div className="min-h-screen flex flex-col consumer-bg md:bg-gray-50 overflow-x-clip max-w-full">
+          <div
+            className={`flex min-h-screen w-full max-w-full flex-col overflow-x-clip ${
+              guestMarketingHome ? 'max-md:bg-white md:bg-gray-50' : 'consumer-bg md:bg-gray-50'
+            }`}
+          >
             <ApiStatusBanner />
             {showMobileConsumerNavBar && <MobileConsumerNavBar />}
             {showConsumerChrome && location.pathname !== '/' && (
@@ -76,7 +82,12 @@ export const Layout = ({ children }: LayoutProps) => {
               </div>
             )}
             <MobileTabHeader />
-            {showConsumerChrome ? (
+            {guestMarketingHome ? (
+              <div className="flex min-h-0 w-full max-w-full flex-1 flex-col">
+                {main}
+                {siteFooter}
+              </div>
+            ) : showConsumerChrome ? (
             <div className="flex flex-1 min-h-0 w-full md:flex-row">
               <div className="flex flex-1 min-w-0 flex-col min-h-0">
                 {main}

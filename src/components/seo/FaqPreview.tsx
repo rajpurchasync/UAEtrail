@@ -41,8 +41,8 @@ export const FaqPreview = ({
           <summary
             className={
               minimal
-                ? 'flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-neutral-900 text-[15px]'
-                : 'flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 font-semibold text-gray-900 text-[15px] md:px-5 md:py-4'
+                ? 'flex cursor-pointer list-none items-center justify-between gap-3 rounded-sm font-semibold text-neutral-900 text-[15px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/45'
+                : 'flex cursor-pointer list-none items-center justify-between gap-3 rounded-sm px-4 py-3.5 font-semibold text-gray-900 text-[15px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/45 md:px-5 md:py-4'
             }
           >
             <span>{item.question}</span>

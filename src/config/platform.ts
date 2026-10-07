@@ -5,21 +5,24 @@
 
 import {
   BUDDIES_PATH,
-  COMMUNITY_PATH,
   CONTRIBUTIONS_PATH,
   GROUPS_PATH,
   MEMBERSHIP_MARKETING_PATH,
+  MESSAGES_PATH,
+  MY_REQUESTS_PATH,
+  NOTIFICATIONS_PATH,
   PROFILE_PATH,
+  TRIPS_PATH,
+  ADMIN_PLACES_PATH,
+  HOST_PLACES_PATH,
+  HOST_MESSAGES_PATH,
 } from './surfacePaths';
 import { LEGACY_BECOME_HOST_PATH } from './memberRoutes';
 
+export { ADMIN_PLACES_PATH, HOST_PLACES_PATH };
+
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
-
-/** Admin console — places (trails, camps, event venues). */
-export const ADMIN_PLACES_PATH = '/admin/places' as const;
-/** Host console — organisation place submissions. */
-export const HOST_PLACES_PATH = '/host/places' as const;
 
 /** @deprecated Use {@link ADMIN_PLACES_PATH} */
 export const ADMIN_LOCATIONS_PATH = ADMIN_PLACES_PATH;
@@ -85,7 +88,6 @@ export const OPERATOR_PUBLIC_PATH_PREFIX = ORGANISATION_PUBLIC_PATH_PREFIX;
 export const DESKTOP_NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: EXPLORE_MAP_PATH, label: 'Explore' },
-  { to: COMMUNITY_PATH, label: 'Community' },
   { to: '/faq', label: 'Help' },
 ] as const;
 
@@ -93,25 +95,76 @@ export const DESKTOP_NAV_LINKS = [
 export const joinAuthPath = (redirect: string = PARTICIPANT_JOIN_REDIRECT): string =>
   `/signup?redirect=${encodeURIComponent(redirect)}`;
 
-/** Right-side user menu on landing (mobile/PWA) — Explore, Join, Contact only. */
+/** Right-side user menu on landing (mobile/PWA) — Explore, Join free, Contact (+ Log in in drawer). */
 export const MOBILE_LANDING_USER_MENU = [
   { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH] as const },
-  { label: 'Join', to: joinAuthPath(), match: ['/signin', '/signup'] as const },
+  { label: 'Join free', to: joinAuthPath(), match: ['/signin', '/signup'] as const },
   { label: 'Contact', href: 'mailto:support@uaetrail.com' },
 ] as const;
 
-/** Right-side hamburger drawer order (mobile/PWA only). */
-export const MOBILE_DRAWER_MENU = [
+export type ConsumerHamburgerMenuItem =
+  | {
+      kind: 'link';
+      label: string;
+      emoji: string;
+      to: string;
+      match: readonly string[];
+      profileLink?: true;
+      labelGuest?: string;
+      emojiGuest?: string;
+    }
+  | {
+      kind: 'download';
+      title: string;
+      items: readonly {
+        label: string;
+        emoji: string;
+        action: 'pwa-android' | 'pwa-ios';
+      }[];
+    };
+
+/** Hamburger drawer — emoji labels; notifications live in the header bell. */
+export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   {
-    label: 'My Profile',
+    kind: 'link',
+    label: 'Explore',
+    emoji: '🗺️',
+    to: EXPLORE_MAP_PATH,
+    match: [EXPLORE_MAP_PATH, '/discovery'],
+  },
+  {
+    kind: 'link',
+    label: 'My Trips',
+    emoji: '🧳',
+    to: TRIPS_PATH,
+    match: ['/trips', '/activities', '/activity'],
+  },
+  {
+    kind: 'link',
+    label: 'Messages',
+    emoji: '💬',
+    to: MESSAGES_PATH,
+    match: [MESSAGES_PATH],
+  },
+  {
+    kind: 'link',
+    label: 'Profile',
+    labelGuest: 'Sign in',
+    emoji: '👤',
+    emojiGuest: '👤',
     to: PROFILE_PATH,
-    match: [PROFILE_PATH, '/my-requests', '/messages'],
+    match: [PROFILE_PATH, MY_REQUESTS_PATH, '/signin', '/signup'],
     profileLink: true,
   },
-  { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH, '/discovery'] },
-  { label: 'Notifications', to: '/notifications', match: ['/notifications'] },
-  { label: 'My trips', to: '/trips', match: ['/trips', '/activities', '/activity'] },
-] as const;
+  {
+    kind: 'download',
+    title: 'Download',
+    items: [
+      { label: 'Android', emoji: '🤖', action: 'pwa-android' },
+      { label: 'iOS', emoji: '🍎', action: 'pwa-ios' },
+    ],
+  },
+];
 
 /**
  * User taxonomy (admin + product):
@@ -121,14 +174,6 @@ export const MOBILE_DRAWER_MENU = [
  * - Platform Admin: full admin console
  * Accounts are ACTIVE on signup/OAuth; organizer tenants may still require approval.
  */
-
-/** Community MVP: location-anchored Q&A, activity reports, and photo posts — not a generic forum. */
-export const COMMUNITY_CATEGORIES = [
-  { id: 'questions', label: 'Questions' },
-  { id: 'activity-reports', label: 'Activity reports' },
-  { id: 'photos', label: 'Photos' },
-  { id: 'tips', label: 'Tips & Gear' },
-] as const;
 
 /** Feature toggles — flip without redeploying copy in many files. */
 export const FEATURE_FLAGS = {
@@ -277,15 +322,14 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/trips',
   '/trips/map',
   '/activities',
-  COMMUNITY_PATH,
   '/shop',
   PROFILE_PATH,
   GROUPS_PATH,
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
-  '/messages',
-  '/notifications',
-  '/my-requests',
+  MESSAGES_PATH,
+  NOTIFICATIONS_PATH,
+  MY_REQUESTS_PATH,
   LEGACY_BECOME_HOST_PATH,
   '/profile/pro-membership',
   '/become-organizer',
@@ -311,8 +355,8 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
   CONSUMER_SELF_HEADER_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
   isMobileDetailRoute(pathname);
 
-/** Signed-in mobile tab shell — Map · Activities · Messages. */
-export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/trips', '/messages'] as const;
+/** Signed-in mobile tab shell — Explore · Trips · Chat (`MESSAGES_PATH`). */
+export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/trips', MESSAGES_PATH] as const;
 
 export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number];
 
@@ -325,7 +369,7 @@ export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
   GROUPS_PATH,
-  '/my-requests',
+  MY_REQUESTS_PATH,
 ] as const;
 
 const MOBILE_BOTTOM_NAV_PROFILE_PREFIXES = ['/profile/'] as const;
@@ -341,7 +385,10 @@ export const shouldShowMobileBottomNav = (
   signedIn: boolean
 ): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
-  if (pathname === '/messages' && new URLSearchParams(search).get('to')) return false;
+  if (pathname === MESSAGES_PATH || pathname === HOST_MESSAGES_PATH) {
+    const params = new URLSearchParams(search);
+    if (params.get('to') || params.get('group')) return false;
+  }
   if (!signedIn) return isMobileBottomNavTabPath(pathname);
   if (isMobileBottomNavTabPath(pathname)) return true;
   if (isMobileBottomNavProfilePath(pathname)) return true;

@@ -8,9 +8,9 @@
 | Item | Status |
 |------|--------|
 | Hosted manage sheet (`HostActivityManageSheet`) | Done — Trips Hosted, `/host/activities` |
-| Shared host actions (`useOrganisationActivityHostActions`) | Done |
+| Shared host activity actions (`useHostActivityManageActions`) | Done |
 | Join decline reason + note (host → guest) | Done |
-| Explore host peek → Trips manage / check-in | Done |
+| Explore host peek → Trips manage / view participants | Done |
 | My plans list + `ParticipantIntentManageSheet` | Done — `GET /me/participant-intents` |
 | Invite crew (`ActivityInviteSharePanel` / sheet) | Done — detail, manage sheet, explore peek, Trips joined/hosted, org table |
 | Edit demand intent (PATCH) | Done — `PATCH /me/participant-intents/:id` + **Edit plan** in manage sheet |
@@ -36,11 +36,11 @@
 | Duplicate / reorganize | ✓ | ✓ | duplicate only |
 | Join requests (approval mode) | ✓ | if approval | — |
 | Group chat | ✓ (approved crew + host) | ✓ | host only |
-| Check-in roster | ✓ | — | — |
+| View participants roster (attendance, chat, revoke, rate) | ✓ | — | — |
 | Link / create rideshare on parent | ✓ | — | — |
 | Cancel / delete | ✓ | ✓ | delete draft |
 
-Code: `HostActivityManageSheet`, `useOrganisationActivityHostActions`, `hostActivityManageCapabilities`.
+Code: `ActivityManageSheet`, `ActivityParticipantsPanel`, `useHostActivityManageActions`, `HostActivityManageCancelDialogs`, `hostActivityManageCapabilities`.
 
 ## Looking for (demand / Find)
 
@@ -62,7 +62,7 @@ Not hosted under org tenant — **member intents** (`POST /me/participant-intent
 | **Share link** | Host, participants, anyone on `/activity/:id` | WhatsApp, copy link, email, native share — guests can **view**; **Join free** to participate |
 | **Connections** | Signed-in host / participant | DM with activity link (`ActivityInviteSharePanel`) |
 | **Family / friends groups** | Signed-in | Post link on group wall |
-| **Trips / org console** | Host org members | Share icon on hosted rows + full panel in manage sheet |
+| **Trips / host console** | Host (community or tenant) | Share icon on hosted rows + full panel in manage sheet |
 | **Explore map** | Host + confirmed joiners | **Invite your crew** on peek → same panel |
 | **Activity group chat** | Host + approved crew | In-app thread after join (not a public invite URL) |
 
@@ -87,6 +87,6 @@ Future: optional `groupChatPolicy` on activity (host-only vs crew); SSE for grou
 ## Deep links
 
 - `/trips?role=hosted&peek=<activityId>` — open manage sheet  
-- `/trips?role=hosted&checkin=<activityId>` — manage sheet → check-in  
+- `/trips?role=hosted&checkin=<activityId>` — manage sheet → **View participants** roster (legacy param name; same as `roster=<activityId>`)  
 - `/trips?role=self&peek=<intentId>` — My plans manage sheet  
 - Explore `pin=demand:<intentId>` + `compose=organize:rideshare` — offer carpool (hosts)  

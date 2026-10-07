@@ -10,6 +10,10 @@ interface ProfilePhotoEditorFieldProps {
   name?: string;
   onChange: (url: string) => void;
   disabled?: boolean;
+  label?: string;
+  editorTitle?: string;
+  keyPrefix?: string;
+  kind?: string;
 }
 
 export const ProfilePhotoEditorField = ({
@@ -17,6 +21,10 @@ export const ProfilePhotoEditorField = ({
   name = 'Profile',
   onChange,
   disabled = false,
+  label = 'Profile photo',
+  editorTitle = 'Edit profile photo',
+  keyPrefix = 'avatars',
+  kind = 'avatar',
 }: ProfilePhotoEditorFieldProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +41,7 @@ export const ProfilePhotoEditorField = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">Profile photo</label>
+        <label className="text-sm font-medium text-gray-700">{label}</label>
       </div>
 
       <div className="flex items-center gap-3">
@@ -84,7 +92,7 @@ export const ProfilePhotoEditorField = ({
       <PhotoEditorDialog
         open={Boolean(editorFile)}
         file={editorFile}
-        title="Edit profile photo"
+        title={editorTitle}
         onClose={() => setEditorFile(null)}
         applying={uploading}
         shape={IMAGE_UPLOAD_PRESETS.profile.shape}
@@ -98,8 +106,8 @@ export const ProfilePhotoEditorField = ({
             const url = await uploadMediaBlob({
               blob,
               originalName: editorFile.name,
-              keyPrefix: 'avatars',
-              kind: 'avatar',
+              keyPrefix,
+              kind,
               filenameSuffix: 'avatar',
             });
             onChange(url);

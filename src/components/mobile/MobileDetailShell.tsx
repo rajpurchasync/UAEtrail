@@ -1,7 +1,22 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { MobileMenuButton } from '../layout/MobileMenu';
 import { ConsumerHeroBanner } from './ConsumerHeroBanner';
 import { MobileBackButton } from './MobileBackButton';
+
+const MOBILE_DETAIL_FOOTER_Z = 'z-[1100]';
+
+const MobileDetailFooterPortal = ({ children }: { children: ReactNode }) => {
+  if (typeof document === 'undefined') return null;
+  return createPortal(
+    <div
+      className={`md:hidden pointer-events-none fixed inset-x-0 bottom-0 ${MOBILE_DETAIL_FOOTER_Z} px-4 pb-safe`}
+    >
+      <div className="pointer-events-auto mx-auto w-full max-w-6xl">{children}</div>
+    </div>,
+    document.body
+  );
+};
 
 interface MobileDetailShellProps {
   backTo: string;
@@ -39,7 +54,7 @@ export const MobileDetailShell = ({
   banner,
   footer,
 }: MobileDetailShellProps) => (
-  <div className={`min-h-screen consumer-bg md:bg-gray-50 ${footer ? 'pb-cta-safe md:pb-8' : ''}`}>
+  <div className={`min-h-screen consumer-bg md:bg-gray-50 ${footer ? 'pb-detail-cta-safe md:pb-8' : ''}`}>
     {banner && (
       <div className="hidden md:block">
         <ConsumerHeroBanner
@@ -77,8 +92,6 @@ export const MobileDetailShell = ({
       </div>
     </div>
     {children}
-    {footer && (
-      <div className="md:hidden fixed inset-x-0 bottom-0 z-40 px-4 pb-safe">{footer}</div>
-    )}
+    {footer ? <MobileDetailFooterPortal>{footer}</MobileDetailFooterPortal> : null}
   </div>
 );

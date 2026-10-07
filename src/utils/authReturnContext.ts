@@ -1,3 +1,5 @@
+import { signInPath } from '../config/routingCatalog';
+
 interface LocationLike {
   pathname: string;
   search: string;
@@ -19,32 +21,28 @@ const buildPathFromLocation = (location: LocationLike, overrideHash?: string): s
   return `${location.pathname}${location.search}${hash}`;
 };
 
-/** Build `/signin?redirect=…` for a known return path (no scroll capture). */
+/** Build sign-in URL for a known return path (no scroll capture). */
 export const signInPathForReturn = (
   returnPath: string,
   options?: { focusSelector?: string }
-): string => {
-  const params = new URLSearchParams({ redirect: returnPath });
-  if (options?.focusSelector) {
-    params.set('focus', options.focusSelector);
-  }
-  return `/signin?${params.toString()}`;
-};
+): string =>
+  signInPath({ redirect: returnPath, focus: options?.focusSelector });
 
 export const buildSignInRedirect = (
   location: LocationLike,
   options?: { focusSelector?: string; hash?: string }
 ): { href: string; from: string } => {
   const from = buildPathFromLocation(location, options?.hash);
-  const params = new URLSearchParams({ redirect: from });
   const win = getSafeWindow();
-  if (win) {
-    params.set('scrollY', String(Math.max(0, Math.round(win.scrollY))));
-  }
-  if (options?.focusSelector) {
-    params.set('focus', options.focusSelector);
-  }
-  return { href: `/signin?${params.toString()}`, from };
+  const scrollY = win ? Math.max(0, Math.round(win.scrollY)) : undefined;
+  return {
+    href: signInPath({
+      redirect: from,
+      focus: options?.focusSelector,
+      scrollY,
+    }),
+    from,
+  };
 };
 
 export const parseAuthReturnContextFromSearch = (
@@ -76,7 +74,7 @@ export const loadAuthReturnContext = (): AuthReturnContext | null => {
     return {
       from: parsed.from,
       scrollY: Number.isFinite(parsed.scrollY) && parsed.scrollY >= 0 ? parsed.scrollY : 0,
-      focusSelector: parsed.focusSelector?.trim() || undefined
+      focusSelector: parsed.focusSelector?.trim() || undefined,
     };
   } catch {
     return null;

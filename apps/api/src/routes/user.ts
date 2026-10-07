@@ -10,6 +10,7 @@ import {
   registerMeAccountSessionRoutes,
   registerMeActivityParticipationRoutes,
 } from './user/registerMeEngagementRoutes.js';
+import { registerActivityJoinInviteRoutes } from './user/registerActivityJoinInviteRoutes.js';
 import { registerMeParticipantIntentRoutes } from './user/registerMeParticipantIntentRoutes.js';
 import { registerMeBadgesRoutes } from './user/registerMeBadgesRoutes.js';
 import { registerMeGoalsRoutes } from './user/registerMeGoalsRoutes.js';
@@ -19,6 +20,7 @@ import { registerMeSubmittedPlaceRoutes } from './user/registerMeSubmittedPlaceR
 import { registerNotificationRoutes } from './user/registerNotificationRoutes.js';
 import { registerProfileRoutes } from './user/registerProfileRoutes.js';
 import { registerPublicActivityRoutes } from './user/registerPublicActivityRoutes.js';
+import { registerMemberDiscoveryRoutes } from './user/registerMemberDiscoveryRoutes.js';
 import { registerPublicMemberRoutes } from './user/registerPublicMemberRoutes.js';
 import { registerPublicPlaceRoutes } from './user/registerPublicPlaceRoutes.js';
 import { registerPublicTenantRoutes } from './user/registerPublicTenantRoutes.js';
@@ -39,8 +41,10 @@ registerPublicMemberRoutes(userRouter);
 userRouter.use(requireAuth, requireVerifiedEmail);
 
 registerMeActivityParticipationRoutes(userRouter);
+registerActivityJoinInviteRoutes(userRouter);
 
 registerProfileRoutes(userRouter);
+registerMemberDiscoveryRoutes(userRouter);
 registerNotificationRoutes(userRouter);
 registerBuddyRoutes(userRouter);
 registerFollowRoutes(userRouter);

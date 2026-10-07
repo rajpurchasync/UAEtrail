@@ -29,10 +29,24 @@ import {
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
-import type { ExploreBrowseListMode, WhosGoingSegment } from './useExploreBrowseUrlState';
-import { ExploreWhosGoingSegmentTabs } from './ExploreWhosGoingSegmentTabs';
-import { ExploreWhosGoingPeopleList } from './ExploreWhosGoingPeopleList';
-import type { WhosGoingFriendRow } from '../whosGoingFriends';
+import type { ExploreBrowseListMode, ExploreSocialTab } from './useExploreBrowseUrlState';
+import { ExploreSocialPanelTabs } from './ExploreSocialPanelTabs';
+import { ExploreFollowedSegmentTabs } from './ExploreFollowedSegmentTabs';
+import { ExploreFollowedSavedList } from './ExploreFollowedSavedList';
+import { ExploreSocialPeopleList } from './ExploreSocialPeopleList';
+import { ExploreMemberDiscoveryList } from './ExploreMemberDiscoveryList';
+import {
+  EXPLORE_SOCIAL_DISCOVER_SEARCH_PLACEHOLDER,
+  EXPLORE_SOCIAL_PANEL_SUBCOPY,
+  EXPLORE_SOCIAL_PANEL_TITLE,
+  EXPLORE_SOCIAL_SEARCH_PLACEHOLDER,
+} from '../../content/exploreSocialPanelCopy';
+import type {
+  MemberBrowseCardDTO,
+  MemberDiscoveryOnTripRowDTO,
+  MemberDiscoveryQuotaDTO,
+  SocialPersonRowDTO,
+} from '@uaetrail/shared-types';
 import type { UserRole } from '@uaetrail/shared-types';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
@@ -75,16 +89,30 @@ export interface ExploreBrowsePanelProps {
   onSearchScopePick: (scope?: ExploreSearchScopeKey | null) => void;
   searchFocusNonce?: number;
   listMode?: ExploreBrowseListMode;
-  whosGoingSegment?: WhosGoingSegment;
-  onWhosGoingSegmentChange?: (segment: WhosGoingSegment) => void;
-  whosGoingTripsCount?: number;
-  whosGoingPeopleCount?: number;
-  whosGoingFriendRows?: WhosGoingFriendRow[];
-  whosGoingFriendsLoading?: boolean;
-  whosGoingFriendsError?: string | null;
+  socialTab?: ExploreSocialTab;
+  onSocialTabChange?: (tab: ExploreSocialTab) => void;
+  socialAllCount?: number;
+  socialFriendsCount?: number;
+  socialFollowedCount?: number;
+  socialPeople?: SocialPersonRowDTO[];
+  socialLoading?: boolean;
+  socialError?: string | null;
+  onRefreshSocialPeople?: () => void;
+  onOpenSocialActivity?: (trip: { exploreItemId: string }) => void;
+  discoveryOnTrips?: MemberDiscoveryOnTripRowDTO[];
+  discoveryDirectory?: MemberBrowseCardDTO[];
+  discoveryQuota?: MemberDiscoveryQuotaDTO | null;
+  discoveryLoading?: boolean;
+  discoveryError?: string | null;
+  onOpenDiscoveryActivity?: (activityId: string) => void;
+  followedSegment?: import('./useExploreBrowseUrlState').ExploreFollowedSegment;
+  onFollowedSegmentChange?: (segment: import('./useExploreBrowseUrlState').ExploreFollowedSegment) => void;
+  followedSaves?: import('@uaetrail/shared-types').FavoriteDTO[];
+  followedSavesLoading?: boolean;
+  followedSavesError?: string | null;
   isSignedIn?: boolean;
   userRole?: UserRole;
-  friendUserIds?: Set<string>;
+  buddyUserIds?: Set<string>;
   /** Filtered explore: only member trips + wishlist pins (`myTrips=1`). */
   myTripsMode?: boolean;
 }
@@ -142,23 +170,35 @@ export const ExploreBrowsePanel = ({
   onSearchScopePick,
   searchFocusNonce = 0,
   listMode = 'default',
-  whosGoingSegment = 'people',
-  onWhosGoingSegmentChange,
-  whosGoingTripsCount = 0,
-  whosGoingPeopleCount = 0,
-  whosGoingFriendRows = [],
-  whosGoingFriendsLoading = false,
-  whosGoingFriendsError = null,
+  socialTab = 'all',
+  onSocialTabChange,
+  socialAllCount,
+  socialFriendsCount,
+  socialFollowedCount,
+  socialPeople = [],
+  socialLoading = false,
+  socialError = null,
+  onRefreshSocialPeople,
+  onOpenSocialActivity,
+  discoveryOnTrips = [],
+  discoveryDirectory = [],
+  discoveryQuota = null,
+  discoveryLoading = false,
+  discoveryError = null,
+  onOpenDiscoveryActivity,
+  followedSegment = 'people',
+  onFollowedSegmentChange,
+  followedSaves = [],
+  followedSavesLoading = false,
+  followedSavesError = null,
   isSignedIn = false,
   userRole,
-  friendUserIds,
+  buddyUserIds,
   myTripsMode = false,
 }: ExploreBrowsePanelProps) => {
-  const whosGoing = listMode === 'whosGoing';
-  const whosGoingTrips = whosGoing && whosGoingSegment === 'trips';
-  const whosGoingPeople = whosGoing && whosGoingSegment === 'people';
-  const heading = whosGoing
-    ? "Who's going?"
+  const socialPanel = listMode === 'social';
+  const heading = socialPanel
+    ? EXPLORE_SOCIAL_PANEL_TITLE
     : myTripsMode
       ? `My trips (${listItems.length})`
       : listHeading(isDesktop, desktopBrowseTab, sidebarPanel, listItems.length, mapFilter);
@@ -167,7 +207,21 @@ export const ExploreBrowsePanel = ({
   const searchScopeAnchorRef = useRef<HTMLDivElement>(null);
   const [searchScopeOpen, setSearchScopeOpen] = useState(false);
   const hasSearchQuery = query.trim().length > 0;
-  const showSearchScopeOverlay = !whosGoing && searchScopeOpen && hasSearchQuery;
+  const showSearchScopeOverlay = !socialPanel && searchScopeOpen && hasSearchQuery;
+
+  const socialRosterTab = socialTab === 'discover' ? 'all' : socialTab;
+
+  const socialPeopleFiltered = socialPanel && socialTab !== 'discover'
+    ? socialPeople.filter((person) => {
+        const q = query.trim().toLowerCase();
+        if (!q) return true;
+        return (
+          person.displayName.toLowerCase().includes(q) ||
+          (person.cityLabel?.toLowerCase().includes(q) ?? false) ||
+          (person.upcomingTrip?.title.toLowerCase().includes(q) ?? false)
+        );
+      })
+    : socialPeople;
 
   useEffect(() => {
     if (!searchFocusNonce) return;
@@ -233,14 +287,17 @@ export const ExploreBrowsePanel = ({
 
       {myTripsMode ? <ExploreMyTripsModeNotice /> : null}
 
-      {whosGoing ? (
+      {socialPanel ? (
         <div
-          className={`mb-2 flex shrink-0 items-center justify-between gap-2 ${
+          className={`mb-2 flex shrink-0 flex-col gap-1 ${
             isDesktop ? 'border-b border-neutral-200 pb-2' : 'border-b border-neutral-200/80 pb-2'
           }`}
         >
-          <h2 className="min-w-0 truncate text-base font-bold text-gray-900">{heading}</h2>
-          {closeButton}
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="min-w-0 truncate text-base font-bold text-gray-900">{heading}</h2>
+            {closeButton}
+          </div>
+          <p className="text-xs leading-relaxed text-neutral-600">{EXPLORE_SOCIAL_PANEL_SUBCOPY}</p>
         </div>
       ) : (
         <div
@@ -303,16 +360,21 @@ export const ExploreBrowsePanel = ({
         </div>
       )}
 
-      {whosGoing && onWhosGoingSegmentChange ? (
-        <ExploreWhosGoingSegmentTabs
-          segment={whosGoingSegment}
-          onSegmentChange={onWhosGoingSegmentChange}
-          peopleCount={isSignedIn ? whosGoingPeopleCount : undefined}
-          tripsCount={whosGoingTripsCount}
+      {socialPanel && onSocialTabChange ? (
+        <ExploreSocialPanelTabs
+          tab={socialTab}
+          onTabChange={onSocialTabChange}
+          allCount={isSignedIn ? socialAllCount : undefined}
+          friendsCount={isSignedIn ? socialFriendsCount : undefined}
+          followedCount={isSignedIn ? socialFollowedCount : undefined}
         />
       ) : null}
 
-      {!whosGoing && isDesktop ? (
+      {socialPanel && socialTab === 'followed' && onFollowedSegmentChange ? (
+        <ExploreFollowedSegmentTabs segment={followedSegment} onSegmentChange={onFollowedSegmentChange} />
+      ) : null}
+
+      {!socialPanel && isDesktop ? (
         <h2 className="mb-2 shrink-0 text-lg font-bold text-gray-900 lg:text-xl">{heading}</h2>
       ) : null}
 
@@ -323,17 +385,30 @@ export const ExploreBrowsePanel = ({
             : 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain'
         }
       >
-        {whosGoing ? (
-          <label className="mb-2 flex shrink-0 items-center gap-2 rounded-xl border border-neutral-200/80 bg-white px-3 py-2 shadow-sm">
-            <input
-              ref={queryInputRef}
-              value={query}
-              onChange={(event) => onQueryChange(event.target.value)}
-              onBlur={onQuerySync}
-              placeholder={whosGoingPeople ? 'Search friends or trips…' : 'Search outings…'}
-              className={`min-w-0 flex-1 bg-transparent text-sm font-semibold ${EXPLORE_TYPE.title} outline-none placeholder:font-normal placeholder:text-neutral-500`}
-            />
-          </label>
+        {socialPanel ? (
+          <div className="mb-2 flex shrink-0 items-stretch gap-2">
+            <label className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-neutral-200/80 bg-white px-3 py-2 shadow-sm">
+              <input
+                ref={queryInputRef}
+                value={query}
+                onChange={(event) => onQueryChange(event.target.value)}
+                onBlur={onQuerySync}
+                placeholder={
+                  socialTab === 'discover'
+                    ? EXPLORE_SOCIAL_DISCOVER_SEARCH_PLACEHOLDER
+                    : EXPLORE_SOCIAL_SEARCH_PLACEHOLDER
+                }
+                className={`min-w-0 flex-1 bg-transparent text-sm font-semibold ${EXPLORE_TYPE.title} outline-none placeholder:font-normal placeholder:text-neutral-500`}
+              />
+            </label>
+            {socialTab === 'discover' ? (
+              <ExploreMapDateFilter
+                activityDatePreset={activityDatePreset}
+                onActivityDatePresetChange={onActivityDatePresetChange}
+                iconOnly
+              />
+            ) : null}
+          </div>
         ) : (
           <div ref={searchScopeAnchorRef} className="relative mb-2 shrink-0">
             <p className={`mb-1.5 text-sm font-bold ${EXPLORE_TYPE.title} lg:hidden`}>{EXPLORE_SEARCH_PROMPT}</p>
@@ -403,7 +478,7 @@ export const ExploreBrowsePanel = ({
           </div>
         )}
 
-        {!whosGoing ? (
+        {!socialPanel ? (
           <ExploreBrowseFilterChrome
             mapFilter={mapFilter}
             onMapFilterChange={onMapFilterChange}
@@ -430,20 +505,42 @@ export const ExploreBrowsePanel = ({
           }`}
           onMouseLeave={onListItemHoverEnd}
         >
-          {whosGoingPeople ? (
-            <ExploreWhosGoingPeopleList
-              rows={whosGoingFriendRows}
-              loading={whosGoingFriendsLoading}
-              error={whosGoingFriendsError}
+          {socialPanel && socialTab === 'discover' ? (
+            <ExploreMemberDiscoveryList
+              onTrips={discoveryOnTrips}
+              directory={discoveryDirectory}
+              quota={discoveryQuota}
+              loading={discoveryLoading}
+              error={discoveryError}
               isSignedIn={isSignedIn}
-              userRole={userRole}
-              onOpenTrip={onOpenItem}
+              onOpenActivity={(activityId) => onOpenDiscoveryActivity?.(activityId)}
             />
           ) : null}
-          {!whosGoingPeople && loading && listItems.length === 0 ? (
+          {socialPanel && socialTab === 'followed' && followedSegment !== 'people' ? (
+            <ExploreFollowedSavedList
+              segment={followedSegment}
+              favorites={followedSaves}
+              loading={followedSavesLoading}
+              error={followedSavesError}
+              onOpenActivity={onOpenDiscoveryActivity}
+            />
+          ) : null}
+          {socialPanel && socialTab !== 'discover' && !(socialTab === 'followed' && followedSegment !== 'people') ? (
+            <ExploreSocialPeopleList
+              people={socialPeopleFiltered}
+              loading={socialLoading}
+              error={socialError}
+              isSignedIn={isSignedIn}
+              userRole={userRole}
+              tab={socialRosterTab}
+              onOpenActivity={(trip) => onOpenSocialActivity?.(trip)}
+              onRefresh={() => onRefreshSocialPeople?.()}
+            />
+          ) : null}
+          {!socialPanel && loading && listItems.length === 0 ? (
             <ExploreListSkeleton rows={isDesktop ? 8 : 5} />
           ) : null}
-          {!whosGoingPeople && !loading && listItems.length === 0 ? (
+          {!socialPanel && !loading && listItems.length === 0 ? (
             myTripsMode ? (
               <div className={`py-10 text-center text-sm ${EXPLORE_TYPE.muted}`}>
                 <p className="font-medium text-neutral-700">Nothing on your map yet</p>
@@ -457,9 +554,7 @@ export const ExploreBrowsePanel = ({
               </div>
             ) : (
               <p className={`py-10 text-center text-sm font-medium ${EXPLORE_TYPE.muted}`}>
-                {whosGoingTrips
-                  ? 'No outings with people joining yet — check back soon.'
-                  : browseListEmptyMessage({
+                {browseListEmptyMessage({
                       isDesktop,
                       desktopBrowseTab,
                       sidebarPanel,
@@ -505,14 +600,13 @@ export const ExploreBrowsePanel = ({
                 </>
               )}
             </>
-          ) : !whosGoingPeople ? (
+          ) : !socialPanel ? (
             listItems.map((item) => (
               <ExploreListRow
                 key={item.id}
                 card={buildExploreCardModel(item)}
                 onClick={() => onOpenItem(item)}
-                showJoining={whosGoingTrips}
-                friendUserIds={friendUserIds}
+                buddyUserIds={buddyUserIds}
                 onPointerEnter={onListItemHover ? () => onListItemHover(item.id) : undefined}
               />
             ))

@@ -3,6 +3,7 @@ import { UserRole } from '../../domain/enums.js';
 import { ApiError } from '../../lib/api-error.js';
 import { validate } from '../../middleware/validate.js';
 import { findAuthUserByEmail, findAuthUserById, updateAuthUserCore, updateAuthUserProfile } from '../../lib/auth-users.js';
+import { isPlatformMasterAdmin } from '../../lib/platform-master-admin.js';
 import { EMAIL_VERIFICATION_OTP_TTL_MS, EMAIL_VERIFICATION_OTP_TTL_SECONDS } from '../../lib/auth-constants.js';
 import { createEmailChangeToken, findEmailChangeTokenForUser, useEmailChangeToken } from '../../lib/auth-tokens.js';
 import { generateEmailOtp } from '../../lib/hash.js';
@@ -14,8 +15,25 @@ import { formatDisplayNameFromParts, resolveProfilePersonNames } from '../../dom
 import { assertSignupProfileAge, completeSignupProfileSchema, isSignupProfileComplete } from '../../domain/user-profile.js';
 import { confirmEmailChangeSchema, requestEmailChangeSchema, roleSwitchSchema, SWITCHABLE_PRIVILEGED_ROLES, updateProfileSchema } from './schemas.js';
 import type { Router } from 'express';
+import { buildPublicMemberProfile } from '../../services/public-member-profile.js';
 
 export const registerProfileRoutes = (router: Router): void => {
+router.get('/me/profile-public-preview', async (req, res, next) => {
+  try {
+    const userId = req.auth!.userId;
+    const profile = await buildPublicMemberProfile(userId, {
+      viewerUserId: userId,
+      previewAsPublic: true,
+    });
+    if (!profile) {
+      throw new ApiError(404, 'user_not_found', 'User not found.');
+    }
+    res.json({ data: profile.data, viewerAccess: profile.viewerAccess });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/me/profile', async (req, res, next) => {
   try {
     const user = await findAuthUserById(req.auth!.userId);
@@ -43,6 +61,8 @@ router.get('/me/profile', async (req, res, next) => {
         languages: user.profile?.languages ?? null,
         signupProfileComplete: isSignupProfileComplete(user.profile),
         memberSince: user.createdAt.toISOString(),
+        platformMasterAdmin:
+          user.role === UserRole.PLATFORM_ADMIN ? isPlatformMasterAdmin(user) : false,
       }
     });
   } catch (error) {

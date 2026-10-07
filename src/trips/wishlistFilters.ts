@@ -1,9 +1,6 @@
 import type { FavoriteDTO } from '@uaetrail/shared-types';
 import type { TripsHubLayer } from './tripsRouting';
-import { favoriteIsDemandBookmark } from './demandVsWishlist';
-
-/** @deprecated Use {@link favoriteIsDemandBookmark} */
-export const favoriteIsLookingForWatch = favoriteIsDemandBookmark;
+import { favoriteIsDemandBookmark } from './favoriteDemandBookmark';
 
 /** Personal wishlist (intent + alerts) — never demand participation bookmarks. */
 export const favoriteIsPersonalWishlist = (item: FavoriteDTO): boolean => !favoriteIsDemandBookmark(item);

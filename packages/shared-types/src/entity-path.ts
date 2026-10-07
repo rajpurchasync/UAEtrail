@@ -36,6 +36,14 @@ export const placeDetailPath = (activityType: string, placeId: string): string =
 
 export const activityDetailPath = (activityId: string): string => `/activity/${activityId}`;
 
+/** Deep link from `activity_join_invite` notifications — nudges join on activity detail. */
+export const activityDetailInvitePath = (activityId: string): string =>
+  `${activityDetailPath(activityId)}?invite=1`;
+
+/** Opens explore map peek with join-invite banner (`pin=activity:{id}&invite=1`). */
+export const exploreActivityInvitePath = (activityId: string): string =>
+  `/explore?pin=activity:${activityId}&invite=1&list=1`;
+
 /** Public organisation profile URL (tenant slug). */
 export const organisationProfilePath = (tenantSlug?: string | null): string | null =>
   tenantSlug ? `/operator/${tenantSlug}` : null;

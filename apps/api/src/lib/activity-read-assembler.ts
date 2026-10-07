@@ -16,6 +16,9 @@ type MongoActivityParticipant = {
   userId: string;
   approvedById: string;
   checkedInAt: Date | null;
+  hostRatingScore?: number | null;
+  hostRatingComment?: string | null;
+  hostRatedAt?: Date | null;
   createdAt: Date;
 };
 
@@ -251,6 +254,9 @@ const assembleEventsWithPublicRelations = async (
       userId: participant.userId,
       approvedById: participant.approvedById,
       checkedInAt: participant.checkedInAt,
+      hostRatingScore: participant.hostRatingScore ?? null,
+      hostRatingComment: participant.hostRatingComment ?? null,
+      hostRatedAt: participant.hostRatedAt ?? null,
       createdAt: participant.createdAt,
       user: toParticipantUser(userMap.get(participant.userId))
     }));
@@ -506,6 +512,9 @@ const assembleEventsForExploreMap = async (
       userId: participant.userId,
       approvedById: participant.approvedById,
       checkedInAt: participant.checkedInAt,
+      hostRatingScore: participant.hostRatingScore ?? null,
+      hostRatingComment: participant.hostRatingComment ?? null,
+      hostRatedAt: participant.hostRatedAt ?? null,
       createdAt: participant.createdAt,
       user: toParticipantUser(userMap.get(participant.userId))
     }));

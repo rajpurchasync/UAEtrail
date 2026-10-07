@@ -8,7 +8,7 @@ import { cleanupTestUsers, registerVerifiedVisitor } from './helpers/fixtures.js
 let app: Express;
 
 type NotificationRow = {
-  meta?: { kind?: string; requestId?: string; fromUserId?: string; buddyUserId?: string };
+  meta?: { kind?: string; requestId?: string; fromUserId?: string; actorUserId?: string };
 };
 
 const listNotifications = async (accessToken: string): Promise<NotificationRow[]> => {
@@ -76,6 +76,18 @@ describe('connections API — buddy requests', () => {
     expect(buddiesRes.body.data.some((row: { userId: string }) => row.userId === recipientUser!._id)).toBe(
       true
     );
+
+    const senderFollowsRecipient = await request(app)
+      .get(`/api/v1/me/follow-state/${recipientUser!._id}`)
+      .set('Authorization', `Bearer ${sender.accessToken}`);
+    expect(senderFollowsRecipient.status).toBe(200);
+    expect(senderFollowsRecipient.body.data.isFollowing).toBe(true);
+
+    const recipientFollowsSender = await request(app)
+      .get(`/api/v1/me/follow-state/${(await findAuthUserByEmail(sender.email))!._id}`)
+      .set('Authorization', `Bearer ${recipient.accessToken}`);
+    expect(recipientFollowsSender.status).toBe(200);
+    expect(recipientFollowsSender.body.data.isFollowing).toBe(true);
   });
 
   it('allows recipient to decline and sender to cancel outgoing pending', async () => {
@@ -178,7 +190,7 @@ describe('connections API — buddy requests', () => {
     const acceptedNotifs = senderNotifs.filter((n) => n.meta?.kind === 'connection_buddy_accepted');
     expect(acceptedNotifs.length).toBe(1);
     expect(acceptedNotifs[0]?.meta?.requestId).toBe(requestId);
-    expect(acceptedNotifs[0]?.meta?.buddyUserId).toBe(recipientUser!._id);
+    expect(acceptedNotifs[0]?.meta?.actorUserId).toBe(recipientUser!._id);
   });
 });
 

@@ -1,3 +1,4 @@
+import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../createFlowCopy';
 
 type ExploreDemandOwnerPeekActionsProps = {
@@ -7,9 +8,6 @@ type ExploreDemandOwnerPeekActionsProps = {
   onLinkRideshare?: () => void;
   onGuestGatedAction?: () => void;
 };
-
-const linkButtonClass =
-  'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950';
 
 /** Requester peek on their own demand — Delete + optional rideshare offer (no check-in). */
 export const ExploreDemandOwnerPeekActions = ({
@@ -33,7 +31,7 @@ export const ExploreDemandOwnerPeekActions = ({
         <button
           type="button"
           onClick={() => runGated(onFullManage)}
-          className="w-full rounded-xl bg-neutral-900 py-3.5 text-sm font-bold text-white"
+          className={EXPLORE_PEEK_CTA.primary}
         >
           Manage plan
         </button>
@@ -51,7 +49,7 @@ export const ExploreDemandOwnerPeekActions = ({
           <button
             type="button"
             onClick={() => runGated(onLinkRideshare)}
-            className={linkButtonClass}
+            className={`block w-full text-center ${EXPLORE_PEEK_CTA.link}`}
           >
             {ORGANIZE_LINK_RIDESHARE_LABEL}
           </button>

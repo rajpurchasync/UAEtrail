@@ -17,7 +17,8 @@ export const notifyBuddyRequestReceived = async (input: {
     meta: {
       kind: 'connection_buddy_request',
       requestId: input.requestId,
-      fromUserId: input.fromUserId,
+      /** Member who sent the request (profile link target). */
+      actorUserId: input.fromUserId,
       path: `/member/${input.fromUserId}`,
     },
   }).catch(() => undefined);
@@ -38,7 +39,8 @@ export const notifyBuddyRequestAccepted = async (input: {
     meta: {
       kind: 'connection_buddy_accepted',
       requestId: input.requestId,
-      buddyUserId: input.toUserId,
+      /** Member who accepted (now connected — same id as in `BuddySummaryDTO.userId`). */
+      actorUserId: input.toUserId,
       path: `/member/${input.toUserId}`,
     },
   }).catch(() => undefined);

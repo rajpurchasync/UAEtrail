@@ -4,13 +4,13 @@ import { ExternalLink } from 'lucide-react';
 import { AppSegmented } from '../mobile/AppSegmented';
 import { OrganisationPublicProfile } from '../organisation-console/OrganisationPublicProfile';
 import { AgencyTeamSection } from '../organisation-console/AgencyTeamSection';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
-import { organisationManagePath } from '../../utils/organisationPaths';
+import { useHostStatus } from '../../hooks/useHostStatus';
+import { organisationManagePath } from '../../config/routingCatalog';
 
 type Tab = 'profile' | 'team';
 
 export const AgencyOrganisationPanel = () => {
-  const { loading, ownedProfiles } = useOrganisationGate();
+  const { loading, ownedProfiles } = useHostStatus();
   const [tab, setTab] = useState<Tab>('profile');
 
   const agency = useMemo(

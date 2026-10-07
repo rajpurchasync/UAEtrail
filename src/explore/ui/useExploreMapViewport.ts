@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { MAP_CONFIG, readExploreMapStyle, EXPLORE_MAP_STYLE_STORAGE_KEY, type ExploreMapStyle } from '../../config/platform';
 import { useExploreDeviceLocation } from '../../hooks/useExploreDeviceLocation';
-import { shouldOpenExploreLocationPromptFromWelcome } from '../../utils/exploreWelcomeNavigation';
+import { shouldOpenExploreLocationPromptFromWelcome } from '../exploreWelcomeNavigation';
 
 type UseExploreMapViewportArgs = {
   user: { id: string } | null | undefined;

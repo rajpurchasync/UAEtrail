@@ -1,4 +1,26 @@
-import { ADMIN_PLACES_PATH, HOST_PLACES_PATH } from '../config/platform';
+import {
+  ADMIN_ACTIVITIES_PATH,
+  ADMIN_AUDIT_LOG_PATH,
+  ADMIN_REPORTS_PATH,
+  ADMIN_GROUPS_PATH,
+  ADMIN_HOSTS_PATH,
+  ADMIN_OVERVIEW_PATH,
+  ADMIN_SETTINGS_PATH,
+  ADMIN_SHOP_PATH,
+  ADMIN_USERS_PATH,
+} from '../config/adminSurfacePaths';
+import {
+  ADMIN_PLACES_PATH,
+  HOST_ACTIVITIES_PATH,
+  HOST_HISTORY_PATH,
+  HOST_MESSAGES_PATH,
+  HOST_OVERVIEW_PATH,
+  HOST_PLACES_PATH,
+  HOST_PROFILE_PATH,
+  HOST_REQUESTS_PATH,
+  HOST_TEAM_PATH,
+  TRIPS_PATH,
+} from '../config/surfacePaths';
 
 export const DIFFICULTY_COLORS = {
   easy: 'bg-green-100 text-green-800',
@@ -7,20 +29,20 @@ export const DIFFICULTY_COLORS = {
 };
 
 /** Public activities browse + dashboard tab. */
-export const TRIPS_PATH = '/trips';
+export { TRIPS_PATH };
 /** @deprecated Use {@link TRIPS_PATH} */
 export const ACTIVITIES_PATH = TRIPS_PATH;
 
 /** Host publishing console nav — tools live under /host routes. */
 export const HOST_CONSOLE_LINKS = [
-  { to: '/host/overview', label: 'Overview' },
-  { to: '/host/profile', label: 'Public profile' },
-  { to: '/host/activities', label: 'Activities' },
-  { to: '/host/requests', label: 'Join requests' },
-  { to: '/host/team', label: 'Team' },
+  { to: HOST_OVERVIEW_PATH, label: 'Overview' },
+  { to: HOST_PROFILE_PATH, label: 'Public profile' },
+  { to: HOST_ACTIVITIES_PATH, label: 'Activities' },
+  { to: HOST_REQUESTS_PATH, label: 'Join requests' },
+  { to: HOST_TEAM_PATH, label: 'Team' },
   { to: HOST_PLACES_PATH, label: 'Places' },
-  { to: '/host/messages', label: 'Messages' },
-  { to: '/host/history', label: 'History' },
+  { to: HOST_MESSAGES_PATH, label: 'Messages' },
+  { to: HOST_HISTORY_PATH, label: 'History' },
 ];
 
 /** @deprecated Use HOST_CONSOLE_LINKS */
@@ -30,15 +52,16 @@ export const ORGANISATION_CONSOLE_LINKS = HOST_CONSOLE_LINKS;
 export const HOST_DASHBOARD_LINKS = HOST_CONSOLE_LINKS;
 
 export const ADMIN_LINKS = [
-  { to: '/admin/overview', label: 'Overview' },
+  { to: ADMIN_OVERVIEW_PATH, label: 'Overview' },
   { to: ADMIN_PLACES_PATH, label: 'Places' },
-  { to: '/admin/users', label: 'Members' },
-  { to: '/admin/hosts', label: 'Hosts' },
-  { to: '/admin/activities', label: 'Activities' },
-  { to: '/admin/groups', label: 'Groups' },
-  { to: '/admin/shop', label: 'Shop' },
-  { to: '/admin/audit-log', label: 'Audit Log' },
-  { to: '/admin/settings', label: 'Broadcast' }
+  { to: ADMIN_USERS_PATH, label: 'Users' },
+  { to: ADMIN_HOSTS_PATH, label: 'Hosts' },
+  { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },
+  { to: ADMIN_GROUPS_PATH, label: 'Groups' },
+  { to: ADMIN_SHOP_PATH, label: 'Shop' },
+  { to: ADMIN_REPORTS_PATH, label: 'Reports' },
+  { to: ADMIN_AUDIT_LOG_PATH, label: 'Audit Log' },
+  { to: ADMIN_SETTINGS_PATH, label: 'Broadcast' },
 ];
 
 export const COUNTRIES = [

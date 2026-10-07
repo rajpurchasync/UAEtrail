@@ -15,20 +15,24 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { DashboardRedirect } from './components/auth/DashboardRedirect';
 import { NativeDeepLinkHandler } from './components/NativeDeepLinkHandler';
 import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
-import { ActivityFormSessionProvider } from './context/ActivityFormSessionContext';
 import { useAuth } from './context/AuthContext';
 import { Home } from './pages/Home';
 import { Membership } from './pages/Membership';
 import { ExploreExperience } from './explore';
 
 import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter } from './config/routingCatalog';
-import { organisationManagePath } from './utils/organisationPaths';
+import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
 import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
 
 const LegacyHostPathRedirect = () => {
   const { pathname, search, hash } = useLocation();
   const next = pathname.replace(/^\/organizer/, '/host');
   return <Navigate to={`${next}${search}${hash}`} replace />;
+};
+
+const LegacyMessagesRedirect = () => {
+  const { search, hash } = useLocation();
+  return <Navigate to={`/chat${search}${hash}`} replace />;
 };
 
 const EventSpotRedirect = () => {
@@ -112,7 +116,6 @@ const LegacyMerchantPublicRedirect = lazy(() =>
   import('./pages/MerchantPublic').then((m) => ({ default: m.MerchantPublic }))
 );
 const ShopPublic = lazy(() => import('./pages/ShopPublic').then((m) => ({ default: m.ShopPublic })));
-const Community = lazy(() => import('./pages/Community').then((m) => ({ default: m.Community })));
 const ActivityDetail = lazy(() => import('./pages/ActivityDetail').then((m) => ({ default: m.ActivityDetail })));
 const OrganisationProfile = lazy(() => import('./pages/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
 const MemberProfile = lazy(() => import('./pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
@@ -130,39 +133,32 @@ const AdminActivities = lazy(() => import('./pages/AdminActivities').then((m) =>
 const AdminMembers = lazy(() => import('./pages/AdminMembers').then((m) => ({ default: m.AdminMembers })));
 const AdminGroups = lazy(() => import('./pages/AdminGroups').then((m) => ({ default: m.AdminGroups })));
 const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog').then((m) => ({ default: m.AdminAuditLog })));
+const AdminReports = lazy(() => import('./pages/AdminReports').then((m) => ({ default: m.AdminReports })));
 const AdminSettings = lazy(() => import('./pages/AdminSettings').then((m) => ({ default: m.AdminSettings })));
 const AdminShop = lazy(() => import('./pages/AdminShop').then((m) => ({ default: m.AdminShop })));
 const AdminNotifications = lazy(() =>
   import('./pages/AdminNotifications').then((m) => ({ default: m.AdminNotifications }))
 );
-const OrganisationConsoleOverview = lazy(() =>
-  import('./pages/OrganisationConsoleOverview').then((m) => ({ default: m.OrganisationConsoleOverview }))
+const HostOverview = lazy(() =>
+  import('./pages/host/Overview').then((m) => ({ default: m.Overview }))
 );
-const OrganisationActivities = lazy(() =>
-  import('./pages/OrganisationActivities').then((m) => ({ default: m.OrganisationActivities }))
+const HostActivities = lazy(() =>
+  import('./pages/host/Activities').then((m) => ({ default: m.Activities }))
 );
-const OrganisationJoinRequests = lazy(() =>
-  import('./pages/OrganisationJoinRequests').then((m) => ({ default: m.OrganisationJoinRequests }))
+const HostJoinRequests = lazy(() =>
+  import('./pages/host/JoinRequests').then((m) => ({ default: m.JoinRequests }))
 );
-const OrganisationTeam = lazy(() =>
-  import('./pages/OrganisationTeam').then((m) => ({ default: m.OrganisationTeam }))
+const HostTeam = lazy(() => import('./pages/host/Team').then((m) => ({ default: m.Team })));
+const HostPublicProfileEdit = lazy(() =>
+  import('./pages/host/PublicProfileEdit').then((m) => ({ default: m.PublicProfileEdit }))
 );
-const OrganisationPublicProfileEdit = lazy(() =>
-  import('./pages/OrganisationPublicProfileEdit').then((m) => ({ default: m.OrganisationPublicProfileEdit }))
-);
-const OrganisationPlaces = lazy(() =>
-  import('./pages/OrganisationPlaces').then((m) => ({ default: m.OrganisationPlaces }))
-);
-const OrganisationHistory = lazy(() =>
-  import('./pages/OrganisationHistory').then((m) => ({ default: m.OrganisationHistory }))
-);
+const HostPlaces = lazy(() => import('./pages/host/Places').then((m) => ({ default: m.Places })));
+const HostHistory = lazy(() => import('./pages/host/History').then((m) => ({ default: m.History })));
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
 const MessagesGate = lazy(() => import('./pages/Messages').then((m) => ({ default: m.MessagesGate })));
 const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} replace />;
-const OrganisationManage = lazy(() =>
-  import('./pages/OrganisationManage').then((m) => ({ default: m.OrganisationManage }))
-);
+const HostManage = lazy(() => import('./pages/host/Manage').then((m) => ({ default: m.Manage })));
 const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
 const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
@@ -278,7 +274,6 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <ActivityFormSessionProvider>
         <NativeDeepLinkHandler />
         <AuthReturnContextRestorer />
         <Layout>
@@ -442,8 +437,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/messages" element={<LegacyMessagesRedirect />} />
           <Route
-            path="/messages"
+            path="/chat"
             element={
               <Suspense fallback={<PageLoader />}>
                 <MessagesGate />
@@ -519,12 +515,12 @@ function App() {
             }
           />
           <Route path="/merchant/:id" element={<LegacyMerchantPublicRedirect />} />
-          <Route path={COMMUNITY_PATH} element={<Community />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/signin" element={<SignIn />} />
+          <Route path={COMMUNITY_PATH} element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
+          <Route path={SIGNUP_PATH} element={<SignUp />} />
+          <Route path={SIGNIN_PATH} element={<SignIn />} />
           <Route path="/signed-out" element={<Navigate to="/" replace />} />
-          <Route path="/sign-up" element={<AuthAliasRedirect to="/signup" />} />
-          <Route path="/sign-in" element={<AuthAliasRedirect to="/signin" />} />
+          <Route path="/sign-up" element={<AuthAliasRedirect to={SIGNUP_PATH} />} />
+          <Route path="/sign-in" element={<AuthAliasRedirect to={SIGNIN_PATH} />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route
@@ -603,6 +599,14 @@ function App() {
             }
           />
           <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminReports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/audit-log"
             element={
               <ProtectedRoute roles={['platform_admin']}>
@@ -638,7 +642,7 @@ function App() {
             path="/host/overview"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganisationConsoleOverview />
+                <HostOverview />
               </ProtectedRoute>
             }
           />
@@ -646,7 +650,7 @@ function App() {
             path="/host/activities"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganisationActivities />
+                <HostActivities />
               </ProtectedRoute>
             }
           />
@@ -654,7 +658,7 @@ function App() {
             path="/host/activities/new"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganisationActivities />
+                <HostActivities />
               </ProtectedRoute>
             }
           />
@@ -662,7 +666,7 @@ function App() {
             path="/host/requests"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganisationJoinRequests />
+                <HostJoinRequests />
               </ProtectedRoute>
             }
           />
@@ -670,7 +674,7 @@ function App() {
             path="/host/team"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganisationTeam />
+                <HostTeam />
               </ProtectedRoute>
             }
           />
@@ -678,7 +682,7 @@ function App() {
             path="/host/profile"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganisationPublicProfileEdit />
+                <HostPublicProfileEdit />
               </ProtectedRoute>
             }
           />
@@ -694,7 +698,7 @@ function App() {
             path="/host/places"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganisationPlaces />
+                <HostPlaces />
               </ProtectedRoute>
             }
           />
@@ -703,7 +707,7 @@ function App() {
             path="/host/history"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OrganisationHistory />
+                <HostHistory />
               </ProtectedRoute>
             }
           />
@@ -748,7 +752,7 @@ function App() {
             path="/organisation/manage"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'merchant_admin']}>
-                <OrganisationManage />
+                <HostManage />
               </ProtectedRoute>
             }
           />
@@ -780,7 +784,6 @@ function App() {
         </Routes>
         </Suspense>
       </Layout>
-        </ActivityFormSessionProvider>
     </Router>
     </ErrorBoundary>
   );

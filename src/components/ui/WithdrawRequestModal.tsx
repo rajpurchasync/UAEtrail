@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
 import { WITHDRAW_REASONS, WithdrawReason } from '@uaetrail/shared-types';
+import {
+  WITHDRAW_MODAL_COMMENT_LABEL,
+  WITHDRAW_MODAL_COMMENT_REQUIRED_HINT,
+  WITHDRAW_MODAL_CONFIRM_APPROVED,
+  WITHDRAW_MODAL_CONFIRM_PENDING,
+  WITHDRAW_MODAL_KEEP_SPOT,
+  WITHDRAW_MODAL_REASON_LABEL,
+  WITHDRAW_MODAL_TITLE_APPROVED,
+  WITHDRAW_MODAL_TITLE_PENDING,
+} from '../../content/joinWithdrawCopy';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from './AppSelect';
 import { Dialog } from './Dialog';
@@ -15,6 +25,8 @@ export interface WithdrawRequestModalProps {
   onConfirm: (payload: { reason: WithdrawReason; message?: string }) => void | Promise<void>;
 }
 
+const MIN_COMMENT_LENGTH = 3;
+
 export const WithdrawRequestModal = ({
   open,
   onClose,
@@ -22,7 +34,7 @@ export const WithdrawRequestModal = ({
   activityDate,
   variant = 'request',
   submitting = false,
-  onConfirm
+  onConfirm,
 }: WithdrawRequestModalProps) => {
   const [reason, setReason] = useState<WithdrawReason | ''>('');
   const [message, setMessage] = useState('');
@@ -35,24 +47,25 @@ export const WithdrawRequestModal = ({
     setError(null);
   }, [open, activityTitle]);
 
-  const title = variant === 'activity' ? 'Leaving this activity?' : 'Cancel your request?';
-  const confirmLabel = variant === 'activity' ? 'Yes, withdraw' : 'Yes, cancel';
-  const needsMessage = reason === 'other';
-  const canSubmit = Boolean(reason) && (!needsMessage || message.trim().length >= 3);
+  const title = variant === 'activity' ? WITHDRAW_MODAL_TITLE_APPROVED : WITHDRAW_MODAL_TITLE_PENDING;
+  const confirmLabel =
+    variant === 'activity' ? WITHDRAW_MODAL_CONFIRM_APPROVED : WITHDRAW_MODAL_CONFIRM_PENDING;
+  const canSubmit =
+    Boolean(reason) && message.trim().length >= MIN_COMMENT_LENGTH;
 
   const handleSubmit = async () => {
     if (!reason) {
       setError('Pick a reason so the host knows what happened.');
       return;
     }
-    if (needsMessage && message.trim().length < 3) {
-      setError('Tell us a little more when you pick Other.');
+    if (message.trim().length < MIN_COMMENT_LENGTH) {
+      setError(WITHDRAW_MODAL_COMMENT_REQUIRED_HINT);
       return;
     }
     setError(null);
     await onConfirm({
       reason,
-      message: message.trim() || undefined
+      message: message.trim(),
     });
   };
 
@@ -65,13 +78,15 @@ export const WithdrawRequestModal = ({
   return (
     <Dialog open={open} onClose={handleClose} title={title}>
       <p className="text-sm text-neutral-600 mb-4">
-        {variant === 'activity' ? 'You are withdrawing from' : 'You are cancelling your request for'}{' '}
+        {variant === 'activity'
+          ? 'You are withdrawing your approved request for'
+          : 'You are cancelling your request for'}{' '}
         <strong>{activityTitle}</strong>
         {activityDate ? <> on {activityDate}</> : null}.
       </p>
 
       <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-        Why are you leaving? <span className="text-red-500">*</span>
+        {WITHDRAW_MODAL_REASON_LABEL} <span className="text-red-500">*</span>
       </label>
       <AppSelect
         value={reason}
@@ -87,15 +102,11 @@ export const WithdrawRequestModal = ({
       />
 
       <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-        {needsMessage ? 'Tell us more' : 'Anything else for the host? (optional)'}
+        {WITHDRAW_MODAL_COMMENT_LABEL} <span className="text-red-500">*</span>
       </label>
       <textarea
         className="ios-input text-[15px] min-h-[88px] resize-none mb-2"
-        placeholder={
-          needsMessage
-            ? 'Briefly explain why you are withdrawing…'
-            : 'Add any details for the host (optional)…'
-        }
+        placeholder="Briefly tell the host what changed…"
         value={message}
         onChange={(e) => {
           setMessage(e.target.value);
@@ -110,7 +121,7 @@ export const WithdrawRequestModal = ({
 
       <div className="flex gap-3">
         <AppButton variant="secondary" fullWidth onClick={handleClose} disabled={submitting}>
-          Keep spot
+          {WITHDRAW_MODAL_KEEP_SPOT}
         </AppButton>
         <AppButton variant="destructive" fullWidth onClick={handleSubmit} disabled={submitting || !canSubmit}>
           {submitting ? 'Submitting…' : confirmLabel}

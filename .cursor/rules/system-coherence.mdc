@@ -1,0 +1,24 @@
+---
+description: System-wide alignment — all bounded contexts; update Tier-1 docs in place, never add parallel doc files
+alwaysApply: true
+---
+
+# System coherence (breadth-first, lean docs)
+
+**Map:** `docs/SYSTEM_COHERENCE.md` (§3 contexts + §3.1 matrix) · **Names/routes/API:** `docs/DOMAIN_CANONICALS.md` · **Index:** `docs/DOCS_INDEX.md` · **Policy:** `docs/DOCS_GOVERNANCE.md` (closed Tier-1 — **no new canonical markdown**)
+
+## Alignment work
+
+1. Pick **bounded context** from SYSTEM_COHERENCE §3 (discovery, places, commerce, social_graph, …) — not host-only.
+2. **`npm run verify:system`** before done.
+3. **Horizontal pass:** API registrar + `src/api/domains/*` + UI + **one** Tier-1 doc section (table in DOCS_GOVERNANCE).
+
+## Documentation
+
+- **Never** add `NAMING_*`, `ALIGNMENT_*`, or duplicate “audit” docs — extend `DOMAIN_CANONICALS`, `SYSTEM_COHERENCE`, or `MEMBER_MODEL`.
+- Superseded filenames stay as **one-line stubs** only (`verify:docs` enforces).
+
+## Do not
+
+- Treat `host-member-model.mdc` as whole-product scope.
+- Ship doc-only or single-file fixes that leave API/FE/docs for other contexts inconsistent.

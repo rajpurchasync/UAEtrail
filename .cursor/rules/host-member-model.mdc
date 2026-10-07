@@ -3,9 +3,12 @@ description: Member/host tiers, naming, and gates — avoid confusing join-reque
 alwaysApply: true
 ---
 
-# Host & member model (enforcement)
+# Host & member model (one bounded context — not whole-product alignment)
 
-**Canonical docs:** `docs/MEMBER_MODEL.md` · `docs/NAMING_HOST_MEMBER.md` · `docs/DOMAIN_CANONICALS.md` (entities & routes) · `docs/HOST_CLEANUP_ROADMAP.md`
+**Whole system:** `docs/SYSTEM_COHERENCE.md` · `npm run verify:system`  
+**This rule scope:** host capabilities + Pro/buddy publish gates only.
+
+**Canonical docs:** `docs/MEMBER_MODEL.md` (§ Naming vocabulary) · `docs/DOMAIN_CANONICALS.md` · `docs/HOST_CLEANUP_ROADMAP.md`
 
 ## Product truth (do not invert)
 
@@ -16,7 +19,7 @@ alwaysApply: true
 | **Join an outing** | `activity_requests`, `POST /activities/:id/requests` | Host onboarding |
 | **Host reviews joiners** | `GET/PATCH /host/requests` (**activity** queue) | `registerHost*JoinRequest*` without **Activity** in the name |
 
-**`UserRole` (TENANT_GUIDE, …) ≠ host publishing tier.** UI gates use **`HostStatusDTO`** from `api.getMemberHostStatus()` / `useMemberHostStatus`.
+**`UserRole` (TENANT_GUIDE, …) ≠ host publishing tier.** UI gates use **`HostStatusDTO`** from `api.getMemberHostStatus()` / `useOrganisationGate`.
 
 ## Code placement
 
@@ -30,7 +33,7 @@ alwaysApply: true
 
 ## Before finishing host/member changes
 
-1. Run **`npm run verify:host-member`** (typecheck + contract tests).
+1. Run **`npm run verify:system:quick`** (includes host-member + domain/naming guards). Full pass: `npm run verify:system`.
 2. New `/host/*` registrars: name must include **Activity**, **Team**, **Tenant**, or **Legacy** — never ambiguous `JoinRequest` alone.
 3. Domain types: use **`TenantPublishingPurpose`**, not `string`, for `publishingPurpose`.
 4. Grep: no new `path: '/become-host'` in `apps/api/src` (use `PRO_MEMBERSHIP_PATH`).

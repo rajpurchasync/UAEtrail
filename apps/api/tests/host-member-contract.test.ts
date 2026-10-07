@@ -34,6 +34,14 @@ describe('host-member API contracts', () => {
     expect(violations).toEqual([]);
   });
 
+  it('host activity routes use Activity-named registrars (not TenantActivity)', () => {
+    expect(existsSync(join(HOST_ROUTES_DIR, 'registerHostActivityRoutes.ts'))).toBe(true);
+    expect(existsSync(join(HOST_ROUTES_DIR, 'registerHostActivityParticipantRoutes.ts'))).toBe(true);
+    const hostMount = readFileSync(join(API_SRC, 'routes', 'host.ts'), 'utf8');
+    expect(hostMount).toMatch(/registerHostActivityRoutes/);
+    expect(hostMount).not.toMatch(/registerHostTenantActivityRoutes/);
+  });
+
   it('notification meta uses PRO_MEMBERSHIP_PATH constant instead of raw /become-host', () => {
     const scanRoots = [join(API_SRC, 'routes'), join(API_SRC, 'services')];
     const violations: string[] = [];
@@ -56,5 +64,14 @@ describe('host-member API contracts', () => {
     const content = readFileSync(path, 'utf8');
     expect(content).not.toMatch(/publishingPurpose\?:\s*string/);
     expect(content).toMatch(/TenantPublishingPurpose/);
+  });
+
+  it('does not reintroduce Trail Points wallet route registrars', () => {
+    const userRoutes = join(API_SRC, 'routes', 'user');
+    expect(existsSync(join(userRoutes, 'registerMeRewardsRoutes.ts'))).toBe(false);
+    expect(existsSync(join(userRoutes, 'registerPublicRewardsRoutes.ts'))).toBe(false);
+    const userRouter = readFileSync(join(API_SRC, 'routes', 'user.ts'), 'utf8');
+    expect(userRouter).not.toMatch(/registerMeRewardsRoutes|registerPublicRewardsRoutes/);
+    expect(userRouter).toMatch(/registerMeBadgesRoutes/);
   });
 });

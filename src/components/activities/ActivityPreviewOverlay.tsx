@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { ActivityDetailView } from '../activity/ActivityDetailView';
@@ -13,6 +14,7 @@ type ActivityPreviewOverlayProps = {
       variant?: 'form';
       onSaveDraft: () => void;
       onPublish: () => void;
+      publishAsSlot?: ReactNode;
     }
   | {
       variant: 'list';
@@ -114,6 +116,7 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
             This is how your activity will look once published.
           </p>
         </div>
+        {variant === 'form' && props.publishAsSlot ? props.publishAsSlot : null}
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             type="button"

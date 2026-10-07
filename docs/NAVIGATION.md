@@ -11,7 +11,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/trips` | Account hub, settings stack, trips (upcoming / past / wishlist) |
-| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | Map · My trips · Messages bottom nav (`md:hidden`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
+| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | Map · My trips · **Chat** bottom nav (`md:hidden`; route `/chat`); **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
 | **Entity detail** | `/trail`, `/camp`, `/event`, `/activity`, `/shop`, `/operator` | Single place, trip, or host |
 
 ### Profile hub (`/profile`)
@@ -21,7 +21,15 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
 - **Wishlist:** `/trips?segment=wishlist` (legacy `/profile/wishlist` redirects). Settings → **Saved map & alerts** links to the same segment.
-- **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes.
+- **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt).
+- **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, My Trips, Messages, Profile/Signup, Download → Android / iOS (deep-link to the matching settings hash). Notifications are the bell only, not in the drawer.
+- **View public card (eye):** opens `/member/:userId` — preview should match what **other signed-in members** see (`public` visibility), not the owner’s full hub (API P3).
+- **Pro membership:** `/profile/pro-membership` — Individual, Business (subtype required), or Partner paths ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
+
+### Member profile (`/member/:userId`)
+
+- **Person** surface (member card or trusted view) — not the business **storefront** (`/operator/:slug`, `/shop/:id`). Link from Who’s going, buddies, activity rosters.
+- **Guests:** sign-in prompt; no public member card (policy P3). **Signed-in** viewers follow `profileVisibility` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Profile visibility).
 
 ### Trips (`/trips`)
 
@@ -30,13 +38,30 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Completed:** Joined · Hosted · Self (**My plans** / demand intents) — **past** outings (`?view=completed&role=`).
 - **My trips map:** `/trips/map` (also the Map main tab).
 - **`/activities`** redirects to `/trips` for bookmarks and old links.
-- **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore host peek → **Message crew** opens **`/messages?group=<id>`** (not chat on `/trips`). Deep links: [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). Full messaging contract: [`COMMUNICATION.md`](./COMMUNICATION.md).
+- **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore map peek **`open_crew_chat`** → **`/messages?group=<id>`** (not chat on `/trips`). Deep links: [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). Full messaging contract: [`COMMUNICATION.md`](./COMMUNICATION.md).
+
+### Host console (`/host/*`)
+
+- **Host = user kind** (capabilities from `GET /me/host-status`); console is **tenant-scoped** manage UI, not a second activity entity.
+- **Shell nav:** `HOST_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/host/*`.
+- **`/host/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, messages, explore map).
+- **Member profile (`/profile`):** consumer hub only; hosts open **Hosting** → `/host/overview` (no host tool menu on profile).
+
+### Admin console (`/admin/*`)
+
+- **Audience:** `platform_admin` only (`ProtectedRoute`); signed-in members use `/explore`, not `/`.
+- **Shell nav:** `ADMIN_LINKS` in `src/constants/index.ts` — desktop sidebar + mobile admin drawer (`DashboardLayout`, `MobileMenu`).
+- **`/admin/overview`:** Metrics and recent activity shortcuts.
+- **`/admin/users`:** **Users** — search, suspend/activate, detail panel; master admin may grant/revoke platform staff (`MEMBER_MODEL.md`).
+- Other entries: Places, Hosts (applications), Activities moderation, Groups, Shop, Reports, Audit log, Broadcast (`/admin/settings`).
+- **Staff provisioning API:** `POST /admin/platform-admins`, `DELETE /admin/platform-admins/:userId` — not self-serve signup.
 
 ### Friends (`/buddies`)
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
+- **Explore → Social → Followed:** sub-segments **People** (member follows), **Places** and **Outings** (saved favorites from the map/detail); URL `followedKind=places|events`.
 
-### Messages (`/messages`)
+### Chat (`/messages`)
 
 Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
 
@@ -50,12 +75,6 @@ Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
 
 - **List + manage:** create family/friends groups, members, invites, kids, **who can message** (wall post policy).
 - **Chat:** tap **Message** → `/messages?group=<id>` (single chat surface).
-
-### Community (`/community`)
-
-- **Secondary surface** (desktop nav link) — Q&A, activity reports, tips; **not** the product home (`/explore` is).
-- **Mobile:** route redirects to `/` (marketing); use explore + profile hubs for day-to-day discovery.
-- **Constants:** `COMMUNITY_PATH` in `src/config/surfacePaths.ts` (re-exported from `routingCatalog`).
 
 ### Post-auth member details (`/welcome`)
 
@@ -98,10 +117,10 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 | Intent | Helper | File |
 |--------|--------|------|
-| Explore URLs | `explorePath()`, `exploreActivitiesPath()`, `explorePlacesPath()`, `exploreShopsPath()` | `src/utils/exploreRouting.ts` |
-| Back from detail | `detailBackPath(kind)` | `src/utils/exploreRouting.ts` |
-| My activities hub | `myActivitiesPath('joined' \| 'hosted')` | `src/utils/exploreRouting.ts` |
-| Fulfill participant intent (return from auth) | `explorePath({ fulfillIntent })`, `exploreFulfillIntentReturnPath()` | `src/utils/exploreRouting.ts` |
+| Explore URLs | `explorePath()`, `exploreActivitiesPath()`, `explorePlacesPath()`, `exploreShopsPath()` | `src/explore/routing.ts` · import via `config/routingCatalog` in app code |
+| Back from detail | `detailBackPath(kind)` | `src/explore/routing.ts` |
+| My activities hub | `myActivitiesPath('joined' \| 'hosted')` | `src/explore/routing.ts` |
+| Fulfill participant intent (return from auth) | `explorePath({ fulfillIntent })`, `exploreFulfillIntentReturnPath()` | `src/explore/routing.ts` |
 | Platform nav constants | `EXPLORE_MAP_PATH`, `joinAuthPath()` | `src/config/platform.ts` |
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |
@@ -122,6 +141,19 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - **My trips map:** `explorePath({ myTrips: true, list: true })` sets `myTrips=1` and filters pins to the signed-in member’s wishlist + joined/pending activities.
 - Filter/panel query params select map context; they do not imply list mode.
 - **Others drill-down (Activities tab):** `filter=others` → optional `subtype=events|activities`; when `subtype=activities`, optional `outingTopic` (`climbing`, `trail_run`, `workshop`, `community`, …). Helpers: `explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })`.
+
+## Social (Explore)
+
+Map control → browse `listMode=social` (URL `view=social`, legacy `view=going` redirects; `socialTab=all|friends|followed|discover`). Copy: **Social** (`exploreSocialPanelCopy.ts`). Guests → sign-in (`guestBrowseGateCopy` `explore-social`).
+
+| Segment (`socialTab`) | Label | Data / actions |
+|-----------------------|-------|----------------|
+| `all` | All | `GET /social/people?segment=all` — friends + followed |
+| `friends` | Friends | Same API · **Message** · **Plan a trip** |
+| `followed` | Followed | Same API · profile · **Add friend** when allowed |
+| `discover` | Discover | `GET /me/member-discovery/roster` — strangers on outings + public directory; profile opens use discover quota (5 / 30d free, Pro unlimited). Map date filter scopes “on outings”. |
+
+Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **Social**, **Friends**, **Messages**. **Join me** on activity detail (`ActivityInviteSharePanel`). See [`API_ROUTING.md`](./API_ROUTING.md) § Social people roster.
 
 ## Explore FAB (+)
 
@@ -175,6 +207,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/shop` (bare) | `/explore?panel=shops` | 2026-Q4 |
 | `/activities` (any) | `/trips` (preserves query; `create=*` → explore compose) | 2026-Q4 |
 | `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
+| `/community` | `/explore` (`COMMUNITY_PATH` — legacy Q&A feed removed) | 2026-Q4 |
 | `/membership` | `/explore` (`Membership.tsx`; not product home) | 2026-Q4 or fold |
 | `/organizer/*` | `/host/*` | 2026-Q4 |
 | `/become-organizer` | `/become-host` | 2026-Q4 |
@@ -237,5 +270,5 @@ API integration coverage: `apps/api/tests/connections-flow.test.ts`.
 ## Adding new links
 
 1. Pick the surface (browse / personal / detail).
-2. Use the helper from `exploreRouting.ts` — no raw `/explore?…` strings outside that module and `platform.ts`.
+2. Use helpers from `src/explore/routing.ts` (or `routingCatalog`) — no raw `/explore?…` strings outside those modules and `platform.ts`.
 3. Detail pages pass `backTo={detailBackPath('…')}` unless a tighter parent context exists.

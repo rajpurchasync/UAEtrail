@@ -5,7 +5,7 @@ export const PRO_MEMBERSHIP_PATH = '/profile/pro-membership';
 export const LEGACY_BECOME_HOST_PATH = '/become-host';
 
 export const proMembershipPath = (query?: {
-  intent?: 'add-guide' | 'add-agency' | 'add-shop';
+  intent?: 'add-guide' | 'add-agency' | 'add-shop' | 'discover-members';
   redirect?: string;
 }): string => {
   if (!query?.intent && !query?.redirect) return PRO_MEMBERSHIP_PATH;
@@ -15,3 +15,7 @@ export const proMembershipPath = (query?: {
   const qs = params.toString();
   return qs ? `${PRO_MEMBERSHIP_PATH}?${qs}` : PRO_MEMBERSHIP_PATH;
 };
+
+/** Pro membership screen with in-page anchor (e.g. host profiles). */
+export const proMembershipAnchorPath = (fragment: string): string =>
+  `${PRO_MEMBERSHIP_PATH}#${fragment.replace(/^#/, '')}`;

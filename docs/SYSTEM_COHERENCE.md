@@ -4,7 +4,7 @@
 
 **Not a duplicate of:** [`ARCHITECTURE.md`](./ARCHITECTURE.md) (deployment & layer diagram), [`DOMAIN.md`](./DOMAIN.md) (entity glossary), [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (naming & route builders), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (person vs host tier). **This file ties them together.**
 
-**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:docs` · `npm run verify:host-member` · `npm run test:explore-alignment`
+**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json`
 
 ---
 
@@ -97,18 +97,45 @@ Each context has **one write path** and **one public read model** where possible
 |---------|----------------|---------------|----------|--------------------------------|
 | **Discovery** | Map/list payload, pins, filters, card projection | `src/explore/*`, `ExploreExperience.tsx` | `lib/explore-map.ts`, `GET /explore/map` | `activities`, `locations`, `participant_intents`, `tenants` (shops) |
 | **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/ui/*`, `compose.ts`, `organizeFlow.ts` | `POST /host/activities`, `POST /me/participant-intents` | `activities`, `participant_intents` |
-| **Participation** | Join, waitlist, RSVP, demand requests | `useActivityJoin*`, detail + explore selection | `services/join-request.ts`, intent request stores | `activity_requests`, `participant_intent_requests`, `activity_participants` |
-| **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `users` / profile fields |
-| **Host capabilities** | Who may publish & console access (not onboarding verb) | `useMemberHostStatus`, `organizePublishGate` | **`services/member-host-status.ts` only** | `tenants`, `tenant_memberships` |
-| **Organisation console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/Organisation*`, `organisation-console/` | `routes/host/*` registrars | same + `activities` |
-| **Communication** | DM, inbox, crew wall | `Messages.tsx`, `messages/*` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
-| **Social graph** | Buddies, follows, groups (non-crew) | `Buddies.tsx`, `Groups.tsx` | `registerBuddyRoutes`, `registerGroupRoutes`, `registerFollowRoutes` | `buddy_*`, `user_follows`, `social_groups` |
+| **Participation** | Join, waitlist, RSVP, demand requests, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, `registerActivityJoinInviteRoutes` | `activity_requests`, `participant_intent_requests`, `activity_participants`, `activity_invites` |
+| **Member discovery** | Directory browse, discovery quota (profile opens from discover) | `MemberProfile` quota gate | `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | `member_profile_views` (quota), composes map + `auth_users` |
+| **Social graph (Explore)** | Friends + followed roster on map | `ExploreSocialPeopleList`, `useSocialPeople` | `social-people.ts`, `registerSocialPeopleRoutes` | buddies, follows, explore map trip hints |
+| **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
+| **Host capabilities** | Who may publish & console access (host **user kind**, not onboarding verb) | `useHostStatus`, `organizePublishGate` | **`services/member-host-status.ts` only** | `tenants`, `tenant_memberships` |
+| **Host console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/host/*`, `src/console/*`, `components/host/` | `routes/host/*` registrars | same + `activities` |
+| **Communication** | DM, inbox, crew wall | `Messages.tsx`, `src/messaging`, `@/chat` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
+| **Social graph** | Buddies, follows, groups (non-crew); buddy × activity presence | `Buddies.tsx`, `Groups.tsx`, Explore Buddies tab | `registerBuddyRoutes`, `buddy-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `buddy_*`, `user_follows`, `social_groups*` |
 | **Places** | Registry, contribute, venue detail | `PlaceDetail*`, `TrailDetail`, contribute flows | `place-registry`, `location-submit`, `/places` | `locations` |
 | **Commerce** | Shop public + merchant manage (affiliate) | `ShopPublic`, `ShopManage` | `routes/shop.ts` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, favorites | explore favorites, profile goals | `registerMeGoalsRoutes`, … | `user_goals`, `user_favorites` |
-| **Platform ops** | Admin, audit, applications | `src/pages/Admin*` | `routes/admin.ts` | `host_applications`, `audit_logs` |
+| **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/Admin*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
 
 **Rule:** If a change touches “who can do X,” find the row above first. Do not add a second resolver in a route file or a random hook.
+
+**Viewer access (read vs act):** **Capabilities** = may publish / host console (`host_capabilities`). **Detail exposure** = may see full entity payload (`activity-viewer-access`, `profile-viewer-access`). **Guest sheets** = sign-in copy only — not authorization. Canonical model: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.
+
+### 3.1 Context alignment matrix (API · FE · storage)
+
+Pick a **context id** when changing code; touch registrar + `src/api/domains/*` + UI roots together. Machine-readable paths: `scripts/bounded-context-manifest.json`.
+
+| Context | Collections (wire) | Key HTTP | FE domain module | UI roots |
+|---------|-------------------|----------|------------------|----------|
+| discovery | `activities`, `locations`, `participant_intents`, shop tenants | `GET /explore/map` | `exploreApi` | `src/explore/*` |
+| compose | `activities`, `participant_intents` | `POST /host/activities`, `POST /me/participant-intents` | `exploreApi`, `organisationApi` | `src/explore/ui/*` |
+| participation | `activity_requests`, `participant_intent_requests`, `activity_participants`, `activity_invites` | `/activities/.../requests`, `GET/POST /activities/:id/invites`, `/host/requests` | `activitiesApi`, `exploreApi` | Activity detail, `JoinRequestDetail` |
+| *(cross-cut)* | — | `GET /activities/:id` (`viewerAccess`, `myJoinInvite`) | — | **`activity-viewer-access.ts`**, **`activity-invite.ts`** |
+| member_discovery | `member_profile_views` (+ read-only compose from map/users) | `/me/member-discovery/*`, `/users/browse`, `public-profile?from=discover` | `accountApi` | Explore `view=going`, `MemberProfile` discover |
+| member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
+| host_capabilities | `tenants`, `tenant_memberships` | `GET /me/host-status` | `memberApi` | `useHostStatus`, `src/hooks/useHostStatus.ts` |
+| host_console | + `activities` | `/host/*` + tenant header | `organisationApi`, `activitiesApi` | `src/pages/host/*`, `src/console/*`, `components/host/*` |
+| communication | `chat_messages`, group wall | `/chat/*`, group wall | `messagingApi` (`chatApi` + wall via `socialApi`) | `Messages.tsx`, `src/messaging` |
+| social_graph | `buddy_*`, `user_follows`, `social_groups*` | `/me/buddies`, `/me/buddies/activity-presence`, `/me/groups`, … | `socialApi` | `Buddies`, `Groups`, Explore Buddies tab |
+| places | `locations` | `/places`, `/me/places` | `placeApi`, `placeRegistry` | `TrailDetail`, `CampDetail`, contribute |
+| commerce | `merchant_profiles`, `products` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
+| engagement | `user_badges`, `user_goals`, `user_favorites`, … | `/me/badges`, `/me/goals`, … | `badgesApi`, `goalsApi`, … | `ProfileBadges`, goals on profile |
+| platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `AdminOverview`, `AdminMembers` (Users) |
+
+**API mounts:** `/auth`, `/admin`, `/host`, `/chat`, `/shop`, `/media`, `/reports`, `/` (`user.ts` + `social.ts`) — see `apps/api/src/routes/index.ts`.
 
 ---
 
@@ -134,7 +161,7 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 
 **Mount order:** `apps/api/src/routes/index.ts` — `auth`, `admin`, `host`, `shop`, `chat`, `media`, `reports`, `social`, **`user`** (broad public + `/me`).
 
-**Thin routes:** `apps/api/src/routes/user/register*.ts` and `routes/host/register*.ts` — validate, call **service**, map DTO.
+**Thin routes:** `apps/api/src/routes/user/register*.ts`, `routes/host/register*.ts`, and `routes/admin/registerAdmin*.ts` — validate, call **service**, map DTO. Mount shells: `user.ts`, `host.ts`, `admin.ts`.
 
 **Domain rules:** Prefer `apps/api/src/domain/*` (pure) + `apps/api/src/services/*` (orchestration). Avoid new business rules in `lib/*-store.ts` without a service façade.
 
@@ -152,14 +179,15 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 |-------|------|
 | `src/pages/*` | Route shells — lazy in `App.tsx` |
 | `src/explore/*` | **Product core** — map, compose, browse panel, join overlays |
-| `src/components/organisation-console/*` | Host console UI (implementation name; user copy “host”) |
+| `src/pages/host/*`, `src/console/*` | **`/host/*` console** — shell, hub stats (`ConsoleHubSections`), join queue |
+| `src/components/organisation-console/*` | Pro onboarding, public tenant profile editors (wire: organisation) |
 | `src/api/domains/*` | HTTP clients per context — composed in `services.ts` as `api` |
 | `src/config/*`, `src/content/*` | Routes helpers and canonical copy |
 | `src/member/*` | Host-status display helpers and guards |
 
-**API client:** Prefer `api.getMemberHostStatus()`, `exploreApi.*`, `organisationApi.*`. **`legacyApi`** is a shrinking alias layer — do not add methods; see `apiLegacyGuard.test.ts`.
+**API client:** Prefer `api.getMemberHostStatus()`, `exploreApi.*`, `organisationApi.*`. Domain modules only — `legacyApi.ts` removed; see `apiLegacyGuard.test.ts`.
 
-**Publish payload:** Single builder `activityPublishPayload.ts` for explore Organize and host console forms ([`ENGINEERING_PLAN.md`](./ENGINEERING_PLAN.md) Phase 3).
+**Publish payload:** Single builder `activityPublishPayload.ts` for explore Organize and host console forms (shared across surfaces).
 
 ---
 
@@ -169,18 +197,24 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 
 | ID | Symptom | Why it hurts | Target state | Tracker |
 |----|---------|--------------|--------------|---------|
-| **C1** | Three permission notions (`UserRole`, `HostStatusDTO`, tenant middleware) | Wrong gates in UI; host console confused with Organize | Roles = shell; `HostStatusDTO` = product; tenant header = `/host` only | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), `host-member-model.mdc` |
-| **C2** | `legacyApi` + Organisation/Host naming mix | New code calls wrong alias; grep noise | Domain-only `api.*`; delete aliases when knip-clean | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
-| **C3** | Large `host.ts` remainder (activities CRUD) | Hard to review; route naming drift | Split registrars like activity requests / team | HOST_CLEANUP P2 |
+| **C1** | Three permission notions (`UserRole`, `HostStatusDTO`, tenant middleware) | Wrong gates in UI; host console confused with Organize | Roles = shell; `HostStatusDTO` = product; tenant header = `/host` only | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), `host-member-model.mdc`, `hostMemberGuard.test.ts` (no `isHostRole` in product gates) |
+| **C2** | Organisation/Host naming mix in UI | New code uses wrong copy or imports | `Host*` + `Activity*` for publish/roster; `Organisation*` only for tenant storefront wire; host user copy | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Organisation in filenames |
+| **C3** | ~~Large `host.ts` / `admin.ts` monoliths~~ | — | **Mitigated (Oct 2026):** host + admin mount shells with `register*` registrars | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **C4** | Parallel place detail pages (`Trail` / `Camp` / `Event`) | Duplicate SEO/loading patterns | Shared `PlaceDetail` internals | ARCHITECTURE “Future” |
-| **C5** | `components/activities/*` modals vs explore wizards | Two create UX paths | Explore compose only for consumer create | ENGINEERING Phase 4 (mostly done) |
-| **C6** | Shop = `tenant` + `merchant_profile` | Two writes for one brand | Documented split; sync on ShopManage save | [`DOMAIN.md`](./DOMAIN.md), schema-audit |
-| **C7** | Premium location unlock + old membership page | Feb 2026 guide vision vs north star | Tier 4 docs only; product TBD | `IMPLEMENTATION_GUIDE.md` banner |
-| **C8** | `/community`, `/membership` routes | Secondary surfaces vs explore-first IA | `/membership` → explore; `/community` desktop hub (constants in `surfacePaths.ts`) | [`NAVIGATION.md`](./NAVIGATION.md) legacy table |
-| **C9** | Notification + privacy matrix incomplete | Inconsistent actor labels in edge kinds | Phase 7.7 smoke | `REMEDIATION.md`, HOST_CLEANUP P2 |
+| **C5** | `components/activities/*` modals vs explore wizards | Two create UX paths | Explore compose only for consumer create | Mostly done — audit `components/activities` |
+| **C6** | Shop = `tenant` + `merchant_profile` | Two writes for one brand | Documented split; sync on ShopManage save | [`DOMAIN.md`](./DOMAIN.md) |
+| **C7** | Premium location unlock + old membership page | Legacy freemium copy vs north star | Product TBD | [`NORTHSTAR.md`](./NORTHSTAR.md) |
+| **C8** | `/community`, `/membership` routes | Secondary surfaces vs explore-first IA | Both redirect to `/explore`; `COMMUNITY_PATH` kept for inbound links only | [`NAVIGATION.md`](./NAVIGATION.md) legacy table |
+| **C9** | Notification + privacy matrix incomplete | Inconsistent actor labels in edge kinds | FE smoke matrix | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **C10** | 100+ markdown files, multiple “plans” | Agents read wrong doc | **Tier 1** only for truth; experiment defers | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) |
+| **C11** | Long flat `api.*` surface | Wrong facade | Domain modules in `src/api/domains/*` | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §10–12 |
+| **C12** | Notification meta dialects | Routing sprawl | `NotificationMeta` + `actorUserId` | §11 |
+| **C13** | Many `*Routing.ts` helpers | Import confusion | `routingCatalog` + `inferNotificationPath` | §10 |
+| **C14** | Doc corpus duplication | Contradictory terms | **Update Tier-1 only** — [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) | |
+| **C15** | Buddy/friend vocabulary | Fake entity ids | User ids only | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary |
+| **C16** | ~~Parallel detail policy~~ | — | **Mitigated (Oct 2026):** API `viewerAccess`, map enrich, `mapViewerAccessToUi`; FE shim is wire-only | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15 |
 
-**Not debt (intentional):** stable URLs (`/trail`, `/host`, `/operator`); Mongo collection names; `Organisation*` folder name with host user copy.
+**Not debt (intentional):** stable URLs (`/trail`, `/host`, `/operator`); Mongo collection names; `x-organisation-id` header; `getOrganisationProfile` / `organisation-console/` for **storefront** — not for activity roster or `createHostActivity`.
 
 ---
 
@@ -192,13 +226,14 @@ Ordered for **coherence**, not feature count:
 |-------|---------|-------------------------|
 | **S0** | Single doc entry + automated phrase guards | `DOCS_INDEX`, `verify:docs` |
 | **S1** | One member capability resolver (`/me/host-status`) enforced server-side | `MEMBER_MODEL`, `verify:host-member` |
-| **S2** | Host route modularization + fulfill removal | `HOST_CLEANUP_ROADMAP` P1–P2 |
-| **S3** | API `user` router fully split (registrars only in `user.ts`) | `ENGINEERING_PLAN` Phase 5 |
-| **S4** | Frontend delete `legacyApi` usage | `apiLegacyGuard`, knip |
-| **S5** | Privacy notification matrix + viewer access everywhere | `REMEDIATION` Phase 7 |
+| **S2** | Host route modularization + fulfill removal | **Done** — `HOST_CLEANUP_ROADMAP` P1–P2 |
+| **S3** | API mount shells: **`user.ts`**, **`admin.ts`** → `register*` modules only | **Done** — admin registrars + platform master staff; user already modular |
+| **S4** | Frontend `api.*` stays domain-only | `apiLegacyGuard`, knip |
+| **S5** | Privacy notification matrix + viewer access everywhere | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **S6** | Place detail internal merge + SEO pass | ARCHITECTURE future |
+| **S7** | **Viewer access VA-1–VA-7** (activity detail + explore peek on API contract) | **Done** — §15.8; layer-7 hook `composeActivityViewerAccess` / `applyActivityViewEntitlements` |
 
-Phases **S0–S1** are largely in place; **S2–S6** are the production-grade cohesion work remaining.
+Phases **S0–S3** and **S7** are in place; **S4–S6** remain. **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
 
 ---
 
@@ -207,7 +242,7 @@ Phases **S0–S1** are largely in place; **S2–S6** are the production-grade co
 1. Which **capability** (§1) and **context** (§3) does this touch?
 2. Does it introduce a **second write path** for the same entity? If yes, stop and extend the existing service.
 3. Update **Tier 1** doc(s): `CREATE_FLOW`, `NAVIGATION`, `API_ROUTING`, or `MEMBER_MODEL` — not only experiment plans.
-4. Run `npm run verify:docs`, `npm run verify:host-member`, and relevant tests (`test:explore-alignment` for explore).
+4. Run **`npm run verify:system`** (or `verify:system:quick` before push); explore work also needs `test:explore-alignment`.
 
 ---
 
@@ -219,7 +254,8 @@ Phases **S0–S1** are largely in place; **S2–S6** are the production-grade co
 | What entities exist | `DOMAIN.md` |
 | Who can publish / host console | `MEMBER_MODEL.md` |
 | FAB and join behavior | `CREATE_FLOW.md` |
+| Who sees full detail vs peek | `DOMAIN_CANONICALS.md` §15 |
 | HTTP paths | `API_ROUTING.md` |
 | Deploy & monorepo layers | `ARCHITECTURE.md` |
-| Engineering burn-down detail | `ENGINEERING_PLAN.md` |
+| System-wide debt register | §7–8 (this file) |
 | Host/tenant cleanup tasks | `HOST_CLEANUP_ROADMAP.md` |

@@ -7,12 +7,12 @@
 
 | Surface | Route | What it is |
 |---------|--------|------------|
-| **Messages inbox** | `/messages` | One inbox: **Direct**, **Groups** (family/friends), **Outing chats** (activity crew) |
+| **Chat inbox** (UI label; route `/messages`) | `/messages` | One inbox: **Direct**, **Groups** (family/friends), **Outing chats** (activity crew) |
 | **Host org inbox** | `/host/messages` | Same `Messages` UI in host shell; same `?to=` / `?group=` deep links |
 | **Groups admin** | `/groups` | Create/manage groups, members, **who can message** — **no inline chat** |
 | **Activity detail** | `/activity/:id` | Crew callout (join/open chat), invite share panel |
 | **Trips** | `/trips` | Hosted/joined manage sheets → **Message crew** → `/messages?group=` |
-| **Explore** | `/explore` | Peek sheet → host/joiner actions → crew chat or DM per policy |
+| **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (join, pending, participant, …); activity **host user** sees **Chat · Manage** + **View details** on own pins; shops use **`ExplorePeekDetailLink`** (View / Rate); cancel/delete via **`HostActivityCancelDialog`**; withdraw on activity detail only |
 
 Legacy: `/dashboard/messages` may still exist for older host console paths — prefer `/messages` and `/host/messages` for new UI.
 
@@ -25,6 +25,22 @@ Legacy: `/dashboard/messages` may still exist for older host console paths — p
 
 Do **not** merge transports in storage without a product decision — inbox already unifies **threads** in the UI.
 
+## Frontend architecture (scalable)
+
+| Layer | Canonical | Notes |
+|--------|-----------|--------|
+| **Route** | `MESSAGES_PATH` (`/messages`), `messagesToUserPath`, `messagesGroupPath` | Stable URLs — do not rename to `/chat` |
+| **Product copy** | **Chat** | Tab label, headers (`NAVIGATION.md`) |
+| **Feature entry** | `src/messaging` | `messagingApi`, `socialApi` (group metadata), path helpers |
+| **HTTP (app code)** | `messagingApi` | `direct.*` = DM; `crew.*` = group wall; inbox + stream ticket on root |
+| **Wire impl** | `chatApi`, `socialApi` in `src/api/domains/*` | Used only behind `messagingApi` / facade — not from pages |
+| **Page** | `Messages.tsx` | Inbox + fullscreen `ChatThreadRouter` |
+| **Thread UI** | `@/chat` (`src/components/chat`) | `ChatThreadRouter`, `ChatMessageBubble`, `useDirectChatThread` |
+
+**Guards:** `src/messaging/clientGuard.test.ts` (CI) and ESLint `uaetrail/no-legacy-messaging-api` — no `api.getInbox` / `api.sendMessage` / wall methods or deep `components/messages/*` imports in app code.
+
+**Shared FE (DM + group wall):** `ChatThreadRouter` → `DirectChatThread` | `GroupChatThread`; `useDirectChatThread` (DM data); `ChatThreadShell`, `ChatThreadHeaderBar`, `useThreadReply`, `ChatReplyComposer`, `ChatMessageBody`, `MessageSwipeReplyShell` under `@/chat`. **Shared API:** `apps/api/src/lib/reply-preview.ts` for `replyToPreview` enrichment.
+
 ### Unified inbox
 
 - **`GET /chat/inbox`** or **`GET /me/inbox`** — same payload: `{ direct: ChatConversationDTO[], groups: MemberInboxGroupDTO[] }` (preferred for Messages tab and nav badge).
@@ -34,8 +50,9 @@ Do **not** merge transports in storage without a product decision — inbox alre
 
 - **List:** `GET /chat/conversations` (subset of inbox `direct`)
 - **Thread:** `GET /chat/messages/:userId` (paginated)
-- **Send:** `POST /chat/messages` — body max **2000** chars; `assertCanMessageUser` + rate limit
-- **Policy:** `apps/api/src/services/chat-policy.ts` — buddies and/or shared activity / join-request context
+- **Send:** `POST /chat/messages` — body max **2000** chars; optional `replyToMessageId` (must be in the same 1:1 thread); returns **`replyToPreview`** when replying. Thread **GET** and SSE use the same enrichment. UI: swipe/long-press reply (no reactions on DMs).
+- **Policy:** `assertCanMessageUser` + rate limit on send; thread read uses the same relationship rules (activity inquiry alone does not unlock **GET** without a lasting buddy/join link).
+- **Policy detail:** `apps/api/src/services/chat-policy.ts` — buddies and/or shared activity / join-request context
 - **Deep link:** `/messages?to=<userId>` optional `activity=<activityId>` for context banner
 
 ### Group wall (`/me/groups/.../wall`)
@@ -61,7 +78,7 @@ Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO`, `GroupWallRepl
 | Concern | Implementation |
 |---------|----------------|
 | Create group | `ensureActivityGroupChat` on publish / organize (`activity-group-chat.ts`) |
-| Roster | Host + **confirmed** participants synced on join approve (`syncActivityGroupChatRoster`) |
+| Roster | Host always in group; **confirmed** joiners opt in via `POST …/group-chat/join` (`joinActivityGroupChatForUser`) |
 | Resolve id | `GET` activity group chat endpoints on activities domain; `groupChatId` on activity DTO when known |
 | Open thread | `openActivityGroupChat()` → `navigateToActivityGroupChat()` → `/messages?group=` |
 | Return after chat | `messagesReturnTo` router state — e.g. back to Trips manage sheet |
@@ -78,7 +95,7 @@ Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO`, `GroupWallRepl
 | Joined → row actions | Trips lists / `ActivityInviteSharePanel` | Same |
 | Check-in / roster | Manage sheet | Chat separate from roster |
 
-See [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) for manage capabilities and deep links (`peek=`, `checkin=`).
+See [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) for manage capabilities and deep links (`peek=`, `checkin=` / `roster=` → participants roster).
 
 ## Invites vs chat
 
@@ -88,6 +105,7 @@ See [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) for manage capabilities and
 | **DM with link** | `ActivityInviteSharePanel` → `sendMessage` with activity context |
 | **Group wall post** | Share message + URL to family/friends group |
 | **Crew chat** | In-app thread for host + approved joiners only |
+| **Join me** | `POST /activities/:id/invites` (`inviteeUserId` or `inviteeUserIds[]`) — host or going member → in-app notification (friend name + outing type + date) + `/explore?pin=activity:{id}&invite=1` (map peek banner). **Does not auto-join** — invitee uses RSVP / request flow; host approval where required. UI: `ActivityInviteSharePanel` (link + multi-friend select); explore peek **Invite crew** opens the same sheet. **Plan a trip** (`planWith` query) pre-selects buddy on publish success. |
 
 Inviting does not add someone to crew chat; **join approval** (or host roster rules) does.
 
@@ -110,8 +128,9 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 | Inbox preview text | `formatWallInboxPreview` | `src/utils/wallMessagePreview.ts` |
 | Wall post policy (client) | `canMemberPostToGroupWall` | `src/utils/groupWallPostPolicy.ts` |
 | Wall post policy (server) | `canMemberPostToGroupWall` | `apps/api/src/lib/group-wall-policy.ts` |
-| Crew chat UI | `GroupWallThreadPanel` | `src/components/messages/` |
-| Host actions | `useOrganisationActivityHostActions.openGroupChat` | `src/hooks/` |
+| Direct chat thread | `DirectChatThread`, `useDirectChatThread` | `@/chat` |
+| Crew chat thread | `GroupChatThread` via `ChatThreadRouter` | `@/chat` |
+| Host activity manage | `useHostActivityManageActions` · `DELETE /host/activities/:id` via `api.cancelHostActivity` | `src/hooks/` |
 
 ## Trips / architecture rules
 
@@ -123,3 +142,11 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 
 - Dedicated group-wall SSE channel (today: reuses `/chat/stream` + `group_wall_message` event)
 - Optional per-activity `groupChatPolicy` (host-only vs full crew)
+
+### Unified thread API (deferred — product decision)
+
+**Today (intentional):** `GET /chat/inbox` unifies the **list**; **thread bodies** use two transports — `GET /chat/messages/:userId` (DM) and `GET /me/groups/:groupId/wall` (crew). The app hides this behind `messagingApi.direct` and `messagingApi.crew`.
+
+**Not required for scale** while inbox + `messagingApi` + `@/chat` stay the FE contract.
+
+**If product later wants one thread wire:** add a projection route (e.g. `GET /me/threads/:threadId/messages`) that routes internally to DM or wall — **without** merging `chat_messages` and `social_group_wall` storage unless explicitly approved. Pagination, reactions, and post policy must stay equivalent to today’s endpoints. Until then, do not add parallel “thread” CRUD in routes or clients.

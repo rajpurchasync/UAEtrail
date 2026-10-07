@@ -7,6 +7,7 @@ import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { placeDetailPath } from '@uaetrail/shared-types';
+import { PROFILE_REVIEWS_PATH } from '../config/routingCatalog';
 
 export const Contributions = () => {
   const [places, setPlaces] = useState<LocationDTO[]>([]);
@@ -39,7 +40,7 @@ export const Contributions = () => {
     >
       <PullToRefresh onRefresh={load}>
         <div className="space-y-3 pb-nav-safe animate-fade-up">
-          <Link to="/profile/reviews" className="block">
+          <Link to={PROFILE_REVIEWS_PATH} className="block">
             <GlassCard padding className="glass-card-interactive !py-3.5">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700">

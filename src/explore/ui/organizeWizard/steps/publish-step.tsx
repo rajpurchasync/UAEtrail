@@ -15,6 +15,7 @@ import { GOING_FROM_NOTES_PREVIEW_LABEL, JOIN_RULES_PREVIEW_LABEL, ORGANIZE_INTR
 import { OrganizePinReviewLine, OrganizePublishPreviewBlock } from '../../organizeLocationReview';
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
+import { OrganizePublishAsField } from '../../OrganizePublishAsField';
 
 export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null {
   const {
@@ -31,6 +32,10 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
     goBack,
     handleClose,
     handlePublish,
+    publishTenantOptions,
+    publishTenantId,
+    setPublishTenantId,
+    memberDisplayName,
     hikingFlow,
     campingFlow,
     eventFlow,
@@ -313,6 +318,16 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
       {!canPublish && !hostGateLoading && (
         <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{ORGANIZE_INTRO_PROMPT}</p>
       )}
+
+      {canPublish && publishTenantId ? (
+        <OrganizePublishAsField
+          options={publishTenantOptions}
+          value={publishTenantId}
+          onChange={setPublishTenantId}
+          memberDisplayName={memberDisplayName}
+          disabled={submitting || hostGateLoading}
+        />
+      ) : null}
 
       <OrganizeWizardStepError error={error} />
 

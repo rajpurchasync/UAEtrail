@@ -5,13 +5,14 @@ import {
   MemberFollowStateDTO,
   MemberFollowSummaryDTO,
   MemberHubStatsDTO,
+  SocialPeopleDTO,
+  SocialPeoplePreviewDTO,
+  SocialPeopleSegment,
   FavoriteDTO,
-  PostDTO,
-  PostReplyDTO,
   ReviewDTO,
   MyReviewDTO,
 } from '@uaetrail/shared-types';
-import { apiRequest, getStoredSession } from '../client';
+import { apiRequest } from '../client';
 import type {
   ContentReportReason,
   ContentReportTargetType,
@@ -80,6 +81,12 @@ export const socialApi = {
     getMeFollowing: () =>
       apiRequest<{ data: MemberFollowSummaryDTO[] }>('/me/following', { auth: true }),
 
+    getSocialPeople: (segment: SocialPeopleSegment = 'all') =>
+      apiRequest<{ data: SocialPeopleDTO }>(`/social/people?segment=${segment}`, { auth: true }),
+
+    getSocialPeoplePreview: () =>
+      apiRequest<{ data: SocialPeoplePreviewDTO }>('/social/people/preview', { auth: true }),
+
     getMemberFollowState: (userId: string) =>
       apiRequest<{ data: MemberFollowStateDTO }>(`/me/follow-state/${userId}`, { auth: true }),
 
@@ -126,7 +133,13 @@ export const socialApi = {
       };
     }>(`/me/groups/${groupId}`, { auth: true }),
 
-    updateMeGroupSettings: (groupId: string, payload: { wallPostPolicy: 'all_members' | 'admins_only' }) =>
+    updateMeGroupSettings: (
+      groupId: string,
+      payload: {
+        wallPostPolicy?: 'all_members' | 'admins_only';
+        photoUrl?: string | null;
+      }
+    ) =>
     apiRequest<{ data: SocialGroupView }>(`/me/groups/${groupId}`, {
       method: 'PATCH',
       auth: true,
@@ -241,9 +254,18 @@ export const socialApi = {
       }),
     }),
 
-    getReviews: (targetType: 'location' | 'tenant', targetId: string, page = 1) =>
+    getReviews: (
+      targetType: 'location' | 'tenant' | 'activity',
+      targetId: string,
+      page = 1
+    ) =>
     apiRequest<{ data: ReviewDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
       `/reviews?targetType=${targetType}&targetId=${targetId}&page=${page}&pageSize=20`
+    ),
+
+  getActivityReviews: (activityId: string, page = 1) =>
+    apiRequest<{ data: ReviewDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
+      `/reviews?targetType=activity&targetId=${activityId}&page=${page}&pageSize=20`
     ),
 
   /** Reviews for a public place — wire targetType remains `location`. */
@@ -252,11 +274,28 @@ export const socialApi = {
       `/reviews?targetType=location&targetId=${placeId}&page=${page}&pageSize=20`
     ),
 
-    createReview: (payload: { targetType: 'location' | 'tenant'; targetId: string; rating: number; comment: string }) =>
+    createReview: (payload: {
+      targetType: 'location' | 'tenant' | 'activity';
+      targetId: string;
+      rating: number;
+      comment: string;
+    }) =>
     apiRequest<{ data: ReviewDTO }>('/reviews', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload)
+    }),
+
+  createActivityReview: (payload: { activityId: string; rating: number; comment: string }) =>
+    apiRequest<{ data: ReviewDTO }>('/reviews', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify({
+        targetType: 'activity',
+        targetId: payload.activityId,
+        rating: payload.rating,
+        comment: payload.comment,
+      }),
     }),
 
     getMyReviews: (page = 1, pageSize = 50) =>
@@ -282,60 +321,6 @@ export const socialApi = {
         rating: payload.rating,
         comment: payload.comment,
       }),
-    }),
-
-    getPosts: (filters?: { category?: string; locationId?: string; search?: string; page?: number }) => {
-    const params = new URLSearchParams();
-    if (filters?.category) params.set('category', filters.category);
-    if (filters?.locationId) params.set('locationId', filters.locationId);
-    if (filters?.search) params.set('search', filters.search);
-    if (filters?.page) params.set('page', String(filters.page));
-    params.set('pageSize', '50');
-    return apiRequest<{ data: PostDTO[]; meta: { page: number; pageSize: number; total: number; totalPages: number } }>(
-      `/posts?${params.toString()}`,
-      { auth: Boolean(getStoredSession()) }
-    );
-  },
-
-    getPost: (id: string) => apiRequest<{ data: PostDTO }>(`/posts/${id}`, { auth: Boolean(getStoredSession()) }),
-
-    createPost: (payload: {
-    category: string;
-    title: string;
-    content: string;
-    images?: string[];
-    locationId?: string;
-    activityId?: string;
-  }) =>
-    apiRequest<{ data: PostDTO }>('/posts', {
-      method: 'POST',
-      auth: true,
-      body: JSON.stringify(payload)
-    }),
-
-    replyToPost: (postId: string, content: string) =>
-    apiRequest<{ data: PostReplyDTO }>(`/posts/${postId}/replies`, {
-      method: 'POST',
-      auth: true,
-      body: JSON.stringify({ content })
-    }),
-
-    togglePostLike: (postId: string) =>
-    apiRequest<{ data: { liked: boolean } }>(`/posts/${postId}/like`, {
-      method: 'POST',
-      auth: true
-    }),
-
-    toggleReplyLike: (postId: string, replyId: string) =>
-    apiRequest<{ data: { liked: boolean } }>(`/posts/${postId}/replies/${replyId}/like`, {
-      method: 'POST',
-      auth: true
-    }),
-
-    acceptPostReply: (postId: string, replyId: string) =>
-    apiRequest<{ data: PostDTO }>(`/posts/${postId}/replies/${replyId}/accept`, {
-      method: 'POST',
-      auth: true
     }),
 
     getMeFavorites: () => apiRequest<{ data: FavoriteDTO[] }>('/me/favorites', { auth: true }),

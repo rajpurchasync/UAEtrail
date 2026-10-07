@@ -3,23 +3,15 @@ import { resolveActivityHostUserId } from '@uaetrail/shared-types';
 
 type ActivityLike = Pick<ActivityDTO, 'tenantId' | 'hostUserId' | 'hostId'> | ActivityDetailDTO;
 
-/** True when the signed-in member hosts or manages this activity (not a joiner). */
-export const viewerHostsActivity = (
+/** True when the signed-in member is this activity’s host user (Chat · Manage CTAs, not tenant-wide staff). */
+export const viewerIsActivityHostUser = (
   activity: ActivityLike | null | undefined,
-  viewerUserId: string | null | undefined,
-  viewerTenantId?: string | null,
-  canPublishOnTenant?: boolean
+  viewerUserId: string | null | undefined
 ): boolean => {
   if (!activity || !viewerUserId) return false;
   const hostUserId = resolveActivityHostUserId(activity);
-  if (hostUserId && hostUserId === viewerUserId) return true;
-  if (
-    canPublishOnTenant &&
-    viewerTenantId &&
-    activity.tenantId &&
-    activity.tenantId === viewerTenantId
-  ) {
-    return true;
-  }
-  return false;
+  return Boolean(hostUserId && hostUserId === viewerUserId);
 };
+
+/** @deprecated Use `viewerIsActivityHostUser` — same behavior; tenant publish rights do not confer host CTAs. */
+export const viewerHostsActivity = viewerIsActivityHostUser;

@@ -1,80 +1,101 @@
-import { EXPLORE_MAP_PATH, ADMIN_PLACES_PATH } from '../config/routingCatalog';
+import {
+  EXPLORE_MAP_PATH,
+  ADMIN_ACTIVITIES_PATH,
+  ADMIN_AUDIT_LOG_PATH,
+  ADMIN_GROUPS_PATH,
+  ADMIN_HOSTS_PATH,
+  ADMIN_NOTIFICATIONS_PATH,
+  ADMIN_OVERVIEW_PATH,
+  ADMIN_PLACES_PATH,
+  ADMIN_SETTINGS_PATH,
+  ADMIN_SHOP_PATH,
+  ADMIN_USERS_PATH,
+  HOST_ACTIVITIES_PATH,
+  HOST_OVERVIEW_PATH,
+  HOST_PROFILE_PATH,
+  HOST_REQUESTS_PATH,
+  MESSAGES_PATH,
+  HOST_MESSAGES_PATH,
+  MY_REQUESTS_PATH,
+  PROFILE_PATH,
+  messagesToUserPath,
+} from '../config/routingCatalog';
 import { UserRole } from '@uaetrail/shared-types';
 
 import { myActivitiesPath } from '../explore/routing';
-import { organisationManagePath } from './organisationPaths';
+import { organisationManagePath } from '../config/routingCatalog';
 import { isPlatformAdmin } from './roles';
 
 export const defaultRouteByRole = (role: UserRole): string => {
-  if (isPlatformAdmin(role)) return '/admin/overview';
+  if (isPlatformAdmin(role)) return ADMIN_OVERVIEW_PATH;
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    return '/host/overview';
+    return HOST_OVERVIEW_PATH;
   }
   return EXPLORE_MAP_PATH;
 };
 
 /** Participant account home — all explorers including hosts and shop owners. */
 export const accountRouteByRole = (role: UserRole): string => {
-  if (isPlatformAdmin(role)) return '/admin/overview';
-  return '/profile';
+  if (isPlatformAdmin(role)) return ADMIN_OVERVIEW_PATH;
+  return PROFILE_PATH;
 };
 
 export const participantDashboardRedirect = (subpath: string): string => {
   switch (subpath) {
     case 'overview':
-      return '/profile';
+      return PROFILE_PATH;
     case 'requests':
-      return '/my-requests';
+      return MY_REQUESTS_PATH;
     case 'activities':
       return myActivitiesPath();
     case 'messages':
-      return '/messages';
+      return MESSAGES_PATH;
     case 'profile':
-      return '/profile';
+      return PROFILE_PATH;
     default:
-      return '/profile';
+      return PROFILE_PATH;
   }
 };
 
 export const hostDashboardRedirect = (subpath: string): string => {
   switch (subpath) {
     case 'messages':
-      return '/host/messages';
+      return HOST_MESSAGES_PATH;
     case 'requests':
-      return '/host/requests';
+      return HOST_REQUESTS_PATH;
     case 'activities':
-      return '/host/activities';
+      return HOST_ACTIVITIES_PATH;
     case 'profile':
-      return '/host/profile';
+      return HOST_PROFILE_PATH;
     default:
-      return '/host/overview';
+      return HOST_OVERVIEW_PATH;
   }
 };
 
 export const adminDashboardRedirect = (subpath: string): string => {
   switch (subpath) {
     case 'users':
-      return '/admin/users';
+      return ADMIN_USERS_PATH;
     case 'activities':
-      return '/admin/activities';
+      return ADMIN_ACTIVITIES_PATH;
     case 'locations':
     case 'places':
       return ADMIN_PLACES_PATH;
     case 'hosts':
     case 'organizers':
-      return '/admin/hosts';
+      return ADMIN_HOSTS_PATH;
     case 'groups':
-      return '/admin/groups';
+      return ADMIN_GROUPS_PATH;
     case 'shop':
-      return '/admin/shop';
+      return ADMIN_SHOP_PATH;
     case 'notifications':
-      return '/admin/notifications';
+      return ADMIN_NOTIFICATIONS_PATH;
     case 'audit-log':
-      return '/admin/audit-log';
+      return ADMIN_AUDIT_LOG_PATH;
     case 'settings':
-      return '/admin/settings';
+      return ADMIN_SETTINGS_PATH;
     default:
-      return '/admin/overview';
+      return ADMIN_OVERVIEW_PATH;
   }
 };
 
@@ -88,12 +109,17 @@ export const messagesRouteForRole = (
   options?: { activityId?: string }
 ): string => {
   if (role === 'platform_admin') return '/admin/overview';
-  if (role === 'merchant_admin') return '/messages';
-  const params = new URLSearchParams({ to: userId });
-  if (options?.activityId) params.set('activity', options.activityId);
-  const query = params.toString();
-  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    return `/host/messages?${query}`;
+  if (role === 'merchant_admin') return MESSAGES_PATH;
+  const base = messagesToUserPath(userId);
+  if (!options?.activityId) {
+    if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
+      return `${HOST_MESSAGES_PATH}?${new URLSearchParams({ to: userId }).toString()}`;
+    }
+    return base;
   }
-  return `/messages?${query}`;
+  const params = new URLSearchParams({ to: userId, activity: options.activityId });
+  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
+    return `${HOST_MESSAGES_PATH}?${params.toString()}`;
+  }
+  return `${MESSAGES_PATH}?${params.toString()}`;
 };

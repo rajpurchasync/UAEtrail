@@ -1,6 +1,6 @@
 # iOS release (App Store) — UAE Trail
 
-Cross-platform auth/session/access baseline for this repo is persisted in `docs/PERFORMANCE_CROSS_PLATFORM_BUGFIX.md`.
+Auth/session baseline: [`DEV_RUN.md`](./DEV_RUN.md) § Auth & session baseline.
 
 ## Prerequisites
 

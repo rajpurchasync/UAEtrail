@@ -1,5 +1,6 @@
 import { NotificationType } from '../domain/enums.js';
 import { findGroupById, listGroupMembersDetailed } from '../lib/social-groups-store.js';
+import { messagesGroupPath } from '../lib/member-routes.js';
 import { dispatchNotification } from './notifications.js';
 import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
 
@@ -27,9 +28,9 @@ export const notifyGroupInvite = async (input: {
       inviteToken: input.inviteToken,
       groupId: input.groupId,
       groupName,
-      invitedByUserId: input.invitedByUserId,
-      path: `/groups?invite=${encodeURIComponent(input.inviteToken)}`
-    }
+      actorUserId: input.invitedByUserId,
+      path: `/groups?invite=${encodeURIComponent(input.inviteToken)}`,
+    },
   }).catch(() => undefined);
 };
 
@@ -49,6 +50,7 @@ export const notifyMemberFollowed = async (input: {
     type: NotificationType.SYSTEM,
     meta: {
       kind: 'connection_member_followed',
+      actorUserId: input.followerUserId,
       followerUserId: input.followerUserId,
       path: `/member/${input.followerUserId}`,
     },
@@ -87,9 +89,9 @@ export const notifyGroupWallPost = async (input: {
           groupId: input.groupId,
           groupName,
           messageId: input.messageId,
-          authorUserId: input.authorUserId,
-          path: `/groups?group=${encodeURIComponent(input.groupId)}`
-        }
+          actorUserId: input.authorUserId,
+          path: messagesGroupPath(input.groupId),
+        },
       }).catch(() => undefined);
     })
   );

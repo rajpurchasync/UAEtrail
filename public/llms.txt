@@ -8,7 +8,6 @@
 - Website: https://uaetrail.com
 - Explore map: https://uaetrail.com/explore
 - Activities and trips: https://uaetrail.com/activities
-- Community: https://uaetrail.com/community
 - Outdoor gear shop: https://uaetrail.com/shop
 - Trail Points rewards: https://uaetrail.com/trail-points
 - FAQ: https://uaetrail.com/faq
@@ -30,7 +29,7 @@
 ## What we offer
 - Curated trail and camping location guides with difficulty, distance, and region
 - Bookable group hikes and camping trips hosted by verified organizers
-- Community Q&A, trip reports, and tips tied to real locations
+- Location reviews and group chats tied to real outings
 - Outdoor gear catalog with member discounts
 
 ## Contact

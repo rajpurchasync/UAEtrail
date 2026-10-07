@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Mountain } from 'lucide-react';
 import { apiRequest } from '../api/client';
 import { OtpInput } from '../components/auth/OtpInput';
+import { SIGNIN_PATH } from '../config/routingCatalog';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 
@@ -206,7 +207,7 @@ export const VerifyOTP = () => {
             Start over
           </Link>
           {' · '}
-          <Link to="/signin" className="text-emerald-600 font-medium">
+          <Link to={SIGNIN_PATH} className="text-emerald-600 font-medium">
             Sign in to resend code
           </Link>
         </p>

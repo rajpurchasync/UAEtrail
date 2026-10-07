@@ -2,15 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
 import { MapContainer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { OutdoorPinStyle } from '../../trips/outdoorMapPinStyle';
-import { outdoorMapPendingPinIcon, outdoorMapPinDivIcon } from '../../trips/outdoorMapPinIcon';
+import type { JourneyPinStyle } from '../../trips/journeyMapPinStyle';
+import { journeyMapPendingPinIcon, journeyMapPinDivIcon } from '../../trips/journeyMapPinIcon';
 import { MapTileLayers } from '../ui/MapTileLayers';
 
 export type JourneyMapMarker = {
   id: string;
   latitude: number;
   longitude: number;
-  pinStyle: OutdoorPinStyle;
+  pinStyle: JourneyPinStyle;
 };
 
 const MapResize = () => {
@@ -148,12 +148,12 @@ export const TripsJourneyMap = ({
           <Marker
             key={marker.id}
             position={[marker.latitude, marker.longitude]}
-            icon={outdoorMapPinDivIcon(marker.pinStyle)}
+            icon={journeyMapPinDivIcon(marker.pinStyle)}
             eventHandlers={{ click: () => onMarkerTap(marker.id) }}
           />
         ))}
         {pendingLatLng ? (
-          <Marker position={[pendingLatLng.lat, pendingLatLng.lng]} icon={outdoorMapPendingPinIcon()} />
+          <Marker position={[pendingLatLng.lat, pendingLatLng.lng]} icon={journeyMapPendingPinIcon()} />
         ) : null}
       </MapContainer>
       {pickMode ? (

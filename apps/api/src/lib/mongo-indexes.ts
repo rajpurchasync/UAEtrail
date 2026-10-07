@@ -154,22 +154,6 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { targetType: 1, targetId: 1, createdAt: -1 } },
       { key: { userId: 1, createdAt: -1 } }
     ]),
-    db.collection(COLLECTIONS.SOCIAL_POSTS).createIndexes([
-      { key: { category: 1, createdAt: -1 } },
-      { key: { authorId: 1, createdAt: -1 } }
-    ]),
-    db.collection(COLLECTIONS.SOCIAL_POST_REPLIES).createIndexes([
-      { key: { postId: 1, createdAt: 1 } },
-      { key: { authorId: 1 } }
-    ]),
-    db.collection(COLLECTIONS.SOCIAL_POST_REPLY_LIKES).createIndexes([
-      { key: { postId: 1, replyId: 1, userId: 1 }, unique: true },
-      { key: { userId: 1 } }
-    ]),
-    db.collection(COLLECTIONS.SOCIAL_POST_LIKES).createIndexes([
-      { key: { postId: 1, userId: 1 }, unique: true },
-      { key: { userId: 1 } }
-    ]),
     db.collection(COLLECTIONS.SHOP_ORDERS).createIndexes([
       { key: { userId: 1, createdAt: -1 } },
       { key: { status: 1, createdAt: -1 } },
@@ -243,6 +227,15 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { followerId: 1, followingId: 1 }, unique: true },
       { key: { followingId: 1, createdAt: -1 } },
       { key: { followerId: 1, createdAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.MEMBER_PROFILE_VIEWS).createIndexes([
+      { key: { profileUserId: 1, viewedAt: -1 } },
+      { key: { profileUserId: 1, viewerUserId: 1, viewedOn: 1 } },
+      { key: { viewerUserId: 1, source: 1, viewedAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.ACTIVITY_INVITES).createIndexes([
+      { key: { activityId: 1, fromUserId: 1, toUserId: 1, status: 1 } },
+      { key: { toUserId: 1, status: 1, createdAt: -1 } }
     ])
   ]);
 };

@@ -34,7 +34,7 @@ import {
   type HostFlowStep,
   type HostFlowStepId,
 } from './hostWizardFlow';
-import { useOrganisationGate } from '../../hooks/useOrganisationGate';
+import { useHostStatus } from '../../hooks/useHostStatus';
 
 const CreatePlacePicker = lazy(() =>
   import('../../explore/ui/CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -115,7 +115,7 @@ export const BecomeHostFlow = ({
 }: BecomeHostFlowProps) => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
-  const { hasGuideProfile, hasAgencyProfile, hasShopProfile } = useOrganisationGate({
+  const { hasGuideProfile, hasAgencyProfile, hasShopProfile } = useHostStatus({
     enabled: open && Boolean(user),
   });
 

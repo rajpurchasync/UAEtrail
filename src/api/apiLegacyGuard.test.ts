@@ -10,8 +10,19 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getUserPublicProfile\b/, hint: 'Use api.getPersonPublicProfile' },
   { pattern: /\bapi\.getHostSubmittedPlaces\b/, hint: 'Use api.getOrganisationSubmittedPlaces' },
   { pattern: /\bapi\.getHostSubmittedLocations\b/, hint: 'Use api.getOrganisationSubmittedPlaces' },
-  { pattern: /\bapi\.(create|publish|list|update|cancel|duplicate)HostActivity\b/, hint: 'Use *OrganisationActivity' },
-  { pattern: /\bapi\.(getHostRequests|decideHostRequest|getHostTeam)\b/, hint: 'Use Organisation* join/team methods' },
+  {
+    pattern: /\bapi\.(create|publish|list|update|cancel|duplicate)OrganisationActivity\b/,
+    hint: 'Use *HostActivity (routes under /host/activities)',
+  },
+  {
+    pattern: /\bapi\.(getOrganisationJoinRequests|decideOrganisationJoinRequest)\b/,
+    hint: 'Use getHostActivityJoinRequests / decideHostActivityJoinRequest',
+  },
+  { pattern: /\buseOrganisationGate\b/, hint: 'Use useHostStatus' },
+  { pattern: /\buseOrganisationHubData\b/, hint: 'Use useConsoleHubData' },
+  { pattern: /\bOrganisationHubSections\b/, hint: 'Use ConsoleHubSections from src/console' },
+  { pattern: /\bapi\.listActivities\b/, hint: 'Use api.listHostActivities (host console tenant scope)' },
+  { pattern: /\bapi\.(getHostRequests|decideHostRequest|getHostTeam)\b/, hint: 'Use getHostActivityJoinRequests / getOrganisationTeam' },
   { pattern: /\bapi\.(getMyHostStatus|getMyHostApplication|submitHostApplication)\b/, hint: 'Use getMyOrganisation* / submitOrganisationApplication' },
   { pattern: /\bapi\.fulfillParticipantIntent\b/, hint: 'Use api.linkParticipantIntentToActivity (demand poster)' },
   { pattern: /\bapi\.updateHostDetails\b/, hint: 'Use api.updateOrganisationDetails' },
@@ -29,9 +40,22 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.updateMerchantProduct\b/, hint: 'Use api.updateShopOrganisationProduct' },
   { pattern: /\bapi\.deleteMerchantProduct\b/, hint: 'Use api.deleteShopOrganisationProduct' },
   { pattern: /from ['"][^'"]*\/api\/services['"]/, hint: 'Import from api/index' },
+  { pattern: /from ['"].*legacyApi/, hint: 'legacyApi removed — use src/api/domains/* canonical methods' },
+  { pattern: /\.\.\.legacyApi\b/, hint: 'Do not spread legacyApi on api' },
 ];
 
 const SKIP_PREFIXES = ['src/api/', 'src/api\\'];
+
+const LEGACY_SYMBOL_ALLOW = new Set([
+  'src/console/ConsoleHubSections.tsx',
+  'src/components/account/OrganisationHubSections.tsx',
+  'src/components/account/index.ts',
+  'src/components/organisation-console/OrganisationConsoleShell.tsx',
+  'src/components/organisation-console/OrganisationJoinRequestCard.tsx',
+  'src/components/organisation-console/OrganisationJoinRequestDeclineDialog.tsx',
+  'src/components/organisation-console/OrganisationRatingChip.tsx',
+  'src/member/organisationNamingGuard.test.ts',
+]);
 
 const collectSourceFiles = (dir: string): string[] => {
   const entries = readdirSync(dir);
@@ -56,6 +80,7 @@ describe('apiLegacyGuard', () => {
     const violations: string[] = [];
 
     for (const file of files) {
+      if (LEGACY_SYMBOL_ALLOW.has(file)) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       for (const { pattern, hint } of BANNED_CALLS) {
         if (pattern.test(content)) {

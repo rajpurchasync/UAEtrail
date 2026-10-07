@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Mountain } from 'lucide-react';
+import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
+import { ConsumerHeaderActions } from './ConsumerHeaderActions';
 import { MobileMenuButton, MobileUserMenuButton } from './MobileMenu';
 import { MobileSessionHeaderActions } from './MobileSessionHeaderActions';
 
@@ -11,8 +13,12 @@ interface MobileBrandBarProps {
   backLabel?: string;
   /** Show hamburger on desktop (banner chrome pages like Profile). */
   menuOnDesktop?: boolean;
-  /** `user` = visitor menu; `session` = map-style bell + profile when signed in. */
-  menuVariant?: 'hamburger' | 'user' | 'session';
+  /** `user` = visitor menu; `session` = map-style bell + profile; `landingJoin` = Join free pill (guest hero). */
+  menuVariant?: 'hamburger' | 'user' | 'session' | 'landingJoin';
+  /** Required when `menuVariant` is `landingJoin`. */
+  joinHref?: string;
+  /** Logo only on narrow screens (guest landing hero). */
+  compactBrand?: boolean;
   /** Extra action (e.g. cart) shown next to the menu button on desktop only. */
   desktopAction?: ReactNode;
 }
@@ -25,10 +31,12 @@ export const MobileBrandBar = ({
   backLabel = 'Back',
   menuOnDesktop = false,
   menuVariant = 'hamburger',
+  joinHref,
+  compactBrand = false,
   desktopAction,
 }: MobileBrandBarProps) => (
-  <div className={`flex justify-between items-center gap-3 ${className}`}>
-    <div className="flex items-center gap-2 min-w-0">
+  <div className={`flex items-center justify-between gap-2 sm:gap-3 ${className}`}>
+    <div className="flex min-w-0 flex-1 items-center gap-2">
       {backTo && (
         <Link
           to={backTo}
@@ -48,9 +56,9 @@ export const MobileBrandBar = ({
           <Mountain className="w-4 h-4 text-white" />
         </div>
         <span
-          className={`text-base font-bold tracking-tight truncate ${
-            tone === 'light' ? 'text-white' : 'text-gray-900'
-          }`}
+          className={`text-sm font-bold tracking-tight whitespace-nowrap sm:text-base ${
+            compactBrand ? 'max-[359px]:hidden' : ''
+          } ${tone === 'light' ? 'text-white' : 'text-gray-900'}`}
         >
           UAE Trail
         </span>
@@ -59,7 +67,21 @@ export const MobileBrandBar = ({
     <div className="flex shrink-0 items-center gap-2 sm:gap-3">
       {desktopAction && <div className="hidden md:flex items-center">{desktopAction}</div>}
       {menuVariant === 'session' ? (
-        <MobileSessionHeaderActions tone={tone} />
+        <>
+          <ConsumerHeaderActions tone={tone} showOnDesktop={menuOnDesktop} />
+          <MobileSessionHeaderActions tone={tone} profileOnly />
+        </>
+      ) : menuVariant === 'landingJoin' && joinHref ? (
+        <Link
+          to={joinHref}
+          className={`landing-hero-join-pill inline-flex h-9 min-h-9 shrink-0 items-center justify-center rounded-full px-3 text-[11px] font-semibold leading-none transition-colors active:scale-[0.97] sm:px-3.5 sm:text-xs ${
+            tone === 'light'
+              ? 'border border-white/28 bg-white/12 text-white backdrop-blur-sm hover:bg-white/20'
+              : 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+          }`}
+        >
+          {PRODUCT_JOIN_CTA}
+        </Link>
       ) : menuVariant === 'user' ? (
         <MobileUserMenuButton tone={tone} showOnDesktop={menuOnDesktop} />
       ) : (

@@ -5,6 +5,7 @@ import { AdminUserDetail, AdminUserDetailPanel } from '../components/admin/Admin
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';
+import { useAuth } from '../context/AuthContext';
 
 import { MEMBER_TYPE_BADGE, MEMBER_TYPE_LABELS } from '../constants/userTypes';
 
@@ -45,6 +46,8 @@ interface MemberRow {
 }
 
 export const AdminMembers = () => {
+  const { user: authUser } = useAuth();
+  const isMasterAdmin = authUser?.platformMasterAdmin === true;
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -59,6 +62,9 @@ export const AdminMembers = () => {
   const [confirmTarget, setConfirmTarget] = useState<MemberRow | null>(null);
   const [suspendComment, setSuspendComment] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [grantEmail, setGrantEmail] = useState('');
+  const [grantLoading, setGrantLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -112,6 +118,41 @@ export const AdminMembers = () => {
     }
   };
 
+  const grantPlatformAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = grantEmail.trim();
+    if (!email) return;
+    setGrantLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      await api.grantPlatformAdmin(email);
+      setGrantEmail('');
+      setSuccessMessage(`Platform admin access granted to ${email}.`);
+      await loadUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to grant platform admin');
+    } finally {
+      setGrantLoading(false);
+    }
+  };
+
+  const revokePlatformAdmin = async (row: MemberRow) => {
+    if (!window.confirm(`Remove platform admin access for ${row.displayName || row.email}?`)) return;
+    setActionLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      await api.revokePlatformAdmin(row.id);
+      setSuccessMessage('Platform admin access removed.');
+      await loadUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to revoke platform admin');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const openDetail = async (id: string) => {
     try {
       const res = await api.getAdminMemberDetail(id);
@@ -137,7 +178,37 @@ export const AdminMembers = () => {
   };
 
   return (
-    <DashboardLayout title="Members" links={ADMIN_LINKS}>
+    <DashboardLayout title="Users" links={ADMIN_LINKS}>
+      <p className="text-sm text-gray-600 mb-4">
+        Search members, review accounts, suspend or activate access. Platform staff roles are managed separately below.
+      </p>
+
+      {isMasterAdmin && (
+        <section className="mb-6 rounded-xl border border-purple-100 bg-purple-50/60 p-4">
+          <h2 className="text-sm font-semibold text-purple-900">Platform admin staff</h2>
+          <p className="text-xs text-purple-800/80 mt-1 mb-3">
+            Master admin only — grant console access to an existing account by email. They must already have signed up.
+          </p>
+          <form onSubmit={grantPlatformAdmin} className="flex flex-wrap gap-2 items-center">
+            <input
+              type="email"
+              required
+              placeholder="member@example.com"
+              value={grantEmail}
+              onChange={(e) => setGrantEmail(e.target.value)}
+              className="border rounded-md px-3 py-1.5 text-sm min-w-[220px] bg-white"
+            />
+            <button
+              type="submit"
+              disabled={grantLoading}
+              className="bg-purple-700 text-white px-3 py-1.5 rounded-md text-sm hover:bg-purple-800 disabled:opacity-60"
+            >
+              {grantLoading ? 'Granting…' : 'Grant platform admin'}
+            </button>
+          </form>
+        </section>
+      )}
+
       <div className="flex flex-wrap gap-3 mb-4">
         <form onSubmit={handleSearch} className="flex gap-2">
           <input type="text" placeholder="Search email or name..." value={search} onChange={(e) => setSearch(e.target.value)}
@@ -179,6 +250,7 @@ export const AdminMembers = () => {
         />
       </div>
 
+      {successMessage && <p className="text-emerald-700 text-sm mb-3">{successMessage}</p>}
       {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
 
       <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
@@ -224,12 +296,22 @@ export const AdminMembers = () => {
                   {u.lastActiveAt ? new Date(u.lastActiveAt).toLocaleString() : '—'}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button onClick={() => openDetail(u.id)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">View</button>
                     {u.role !== 'platform_admin' && (
                       <button onClick={() => { setConfirmTarget(u); setSuspendComment(''); }}
                         className={`px-2 py-1 rounded text-xs ${u.status === 'active' ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}>
                         {u.status === 'active' ? 'Suspend' : 'Activate'}
+                      </button>
+                    )}
+                    {isMasterAdmin && u.role === 'platform_admin' && u.id !== authUser?.id && (
+                      <button
+                        type="button"
+                        disabled={actionLoading}
+                        onClick={() => void revokePlatformAdmin(u)}
+                        className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-900 hover:bg-purple-200 disabled:opacity-60"
+                      >
+                        Revoke admin
                       </button>
                     )}
                   </div>

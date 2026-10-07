@@ -33,7 +33,7 @@ describe('inferNotificationPath', () => {
       inferNotificationPath(
         notif({ kind: 'join_request_approved', groupId: 'g-1' })
       )
-    ).toBe('/messages?group=g-1');
+    ).toBe('/chat?group=g-1');
   });
 
   it('routes member goal milestones to profile or trips', () => {
@@ -42,6 +42,51 @@ describe('inferNotificationPath', () => {
     expect(inferNotificationPath(notif({ kind: 'goal_behind_pace' }))).toBe(
       '/trips?segment=upcoming&tab=joined'
     );
+  });
+
+  it('routes buddy connection notifications to the acting member profile', () => {
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'connection_buddy_request', actorUserId: 'user-a' })
+      )
+    ).toBe('/member/user-a');
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'connection_buddy_accepted', actorUserId: 'user-b' })
+      )
+    ).toBe('/member/user-b');
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'connection_buddy_accepted', buddyUserId: 'legacy-b' })
+      )
+    ).toBe('/member/legacy-b');
+  });
+
+  it('routes activity join invites to activity detail join flow', () => {
+    expect(
+      inferNotificationPath(notif({ kind: 'activity_join_invite', activityId: 'act-42' }))
+    ).toBe('/activity/act-42?invite=1');
+  });
+
+  it('rewrites legacy explore invite paths to activity detail', () => {
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'activity_join_invite',
+          activityId: 'act-42',
+          path: '/explore?pin=activity:act-42&invite=1&list=1',
+        })
+      )
+    ).toBe('/activity/act-42?invite=1');
+  });
+
+  it('routes chat message notifications to messages composer', () => {
+    expect(
+      inferNotificationPath(notif({ kind: 'message', actorUserId: 'user-c' }))
+    ).toBe('/chat?to=user-c');
+    expect(
+      inferNotificationPath(notif({ kind: 'message', senderId: 'legacy-sender' }))
+    ).toBe('/chat?to=legacy-sender');
   });
 
   it('rewrites legacy rewards wallet paths to badges', () => {

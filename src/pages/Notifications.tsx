@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { NotificationDTO } from '@uaetrail/shared-types';
-import { Bell, ChevronRight } from 'lucide-react';
+import { Award, Bell, ChevronRight } from 'lucide-react';
+import { activityDetailInvitePath, GROUPS_PATH, PROFILE_BADGES_PATH, tripsPath } from '../config/routingCatalog';
 import { api } from '../api/index';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
@@ -20,6 +21,7 @@ type NotificationSection =
   | 'Group chat'
   | 'Buddy requests'
   | 'Connections'
+  | 'Badges'
   | 'Comments approved'
   | 'Comments liked'
   | 'Other';
@@ -31,6 +33,7 @@ const sectionOrder: NotificationSection[] = [
   'Group chat',
   'Buddy requests',
   'Connections',
+  'Badges',
   'Comments approved',
   'Comments liked',
   'Other'
@@ -41,7 +44,9 @@ const inferSection = (notif: NotificationDTO): NotificationSection => {
   const kind = typeof meta?.kind === 'string' ? meta.kind.toLowerCase() : '';
   const text = `${notif.title} ${notif.body}`.toLowerCase();
 
+  if (kind === 'badge' || kind === 'reward' || kind === 'tier_upgrade') return 'Badges';
   if (kind === 'wishlist_match') return 'Activity updates';
+  if (kind === 'activity_join_invite') return 'Activity updates';
   if (kind.startsWith('join_request') || kind === 'request_withdrawal') return 'Activity updates';
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') return 'Buddy requests';
   if (kind === 'connection_member_followed') return 'Connections';
@@ -67,6 +72,12 @@ const inviteTokenFromMeta = (notif: NotificationDTO): string | null => {
   const meta = notif.meta as Record<string, unknown> | null | undefined;
   if (!meta || typeof meta.inviteToken !== 'string') return null;
   return meta.inviteToken;
+};
+
+const activityJoinInviteIdFromMeta = (notif: NotificationDTO): string | null => {
+  const meta = notif.meta as Record<string, unknown> | null | undefined;
+  if (!meta || meta.kind !== 'activity_join_invite') return null;
+  return typeof meta.activityId === 'string' ? meta.activityId : null;
 };
 
 export const Notifications = () => {
@@ -168,12 +179,13 @@ export const Notifications = () => {
                 <div className="space-y-2">
                   {items.map((notif) => {
             const reasonLine = notificationReasonLine(notif);
+            const isBadge = inferSection(notif) === 'Badges';
 
             return (
               <div
                 key={notif.id}
                 className={`glass-card-interactive p-4 ${
-                  !notif.isRead ? 'ring-2 ring-emerald-500/20' : ''
+                  !notif.isRead ? 'ring-2 ring-emerald-500/20' : isBadge ? 'ring-1 ring-amber-200/80' : ''
                 }`}
               >
                 <button
@@ -182,9 +194,13 @@ export const Notifications = () => {
                   className="w-full text-left"
                 >
                   <div className="flex items-start gap-3">
-                    {!notif.isRead && (
+                    {isBadge ? (
+                      <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-800">
+                        <Award className="h-4 w-4" aria-hidden />
+                      </span>
+                    ) : !notif.isRead ? (
                       <span className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0" />
-                    )}
+                    ) : null}
                     <div className={`flex-1 min-w-0 ${notif.isRead ? 'pl-0' : ''}`}>
                       <p className="font-semibold text-neutral-900 text-[15px]">{notif.title}</p>
                       <p className="text-sm text-neutral-600 mt-1 leading-relaxed">{notif.body}</p>
@@ -209,10 +225,34 @@ export const Notifications = () => {
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                     <Link
-                      to="/trips?layer=places"
+                      to={tripsPath({ layer: 'places' })}
                       className="text-xs font-medium text-neutral-600"
                     >
                       Saved map
+                    </Link>
+                  </div>
+                )}
+                {isBadge && (
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100/80 pl-5">
+                    <Link
+                      to={PROFILE_BADGES_PATH}
+                      onClick={() => !notif.isRead && markRead(notif.id)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-amber-800 hover:text-amber-900"
+                    >
+                      View badges
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
+                {activityJoinInviteIdFromMeta(notif) && (
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100/80 pl-5">
+                    <Link
+                      to={activityDetailInvitePath(activityJoinInviteIdFromMeta(notif)!)}
+                      onClick={() => !notif.isRead && markRead(notif.id)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+                    >
+                      View outing and join
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
                 )}
@@ -232,7 +272,7 @@ export const Notifications = () => {
                       Accept invite
                       <ChevronRight className="w-3.5 h-3.5" />
                     </button>
-                    <Link to="/groups" className="text-xs font-medium text-neutral-600">
+                    <Link to={GROUPS_PATH} className="text-xs font-medium text-neutral-600">
                       View groups
                     </Link>
                   </div>
