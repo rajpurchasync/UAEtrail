@@ -15,14 +15,17 @@ import {
   organizePublishGateHref,
   organizePublishGateInputFromHostGate,
 } from '../utils/organizePublishGate';
-import { buildListActiveFilterChips } from './listActiveFilterChips';
-import { browseCategoriesForSearchScope } from './listDiscoverySearchCommit';
+import { browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
+import { browseListShowsTripTopicRow } from './browseListTripTopics';
+import { browseListShowsPlaceTopicRow } from './listVenuePlaceTopics';
+import { listDiscoveryHasActiveFilters } from './listDiscoveryMode';
+import { buildListFeedCards } from './buildListFeedCards';
 import { buildListCategoryPrimaryPills, listCategorySecondaryFiltersActive } from './listCategoryFilterPills';
+import { listCategoryResultsLabel } from './listCategoryCopy';
 import { resolveListDiscoveryView } from './listDiscoveryMode';
 import { BROWSE_LIST_EMPTY } from './browseListCopy';
 import { countExploreSearchScopes } from '../explore/exploreSearchMatches';
 import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
-import { buildBrowseCardsFromMapItems } from './buildBrowseCardsFromMapItems';
 import { useBrowseListFeed } from './useBrowseListFeed';
 import { useListDiscoveryUrlState } from './useListDiscoveryUrlState';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
@@ -30,33 +33,39 @@ import { BrowseListCreateFab } from './ui/BrowseListCreateFab';
 import { BrowseListPageShell } from './ui/BrowseListPageShell';
 import { ListCategoryDedicatedView } from './ui/ListCategoryDedicatedView';
 import { ListCategoryFilterBar } from './ui/ListCategoryFilterBar';
-import { ListActiveFilterChipsRow } from './ui/ListActiveFilterChipsRow';
 import { ListDiscoverHome } from './ui/ListDiscoverHome';
 import { ListDiscoveryHeader } from './ui/ListDiscoveryHeader';
 import { ListDiscoveryResults } from './ui/ListDiscoveryResults';
 import { ListRefineSheet } from './ui/ListRefineSheet';
 import { ListFeedActionsProvider } from './ui/ListFeedActionsProvider';
 import { exploreMapPathFromListSearch } from './routing';
-
 import { listDiscoveryEmbeddedOnExplore, type ListDiscoverySurface } from './listDiscoverySurface';
 
-const FeedSkeleton = () => (
+const DiscoverHomeSkeleton = () => (
   <div className="space-y-6" aria-hidden>
-    <div className="aspect-[4/5] animate-pulse rounded-3xl bg-neutral-200" />
-    <div className="flex gap-3">
+    <div className="h-20 animate-pulse rounded-2xl bg-neutral-200" />
+    <div className="flex gap-3 overflow-hidden">
       {[0, 1, 2].map((k) => (
-        <div key={k} className="h-44 w-36 shrink-0 animate-pulse rounded-2xl bg-neutral-200" />
+        <div key={k} className="w-[14.5rem] shrink-0 overflow-hidden rounded-2xl bg-neutral-200 sm:w-[15.5rem]">
+          <div className="aspect-[5/3] w-full bg-neutral-300/80" />
+          <div className="space-y-1.5 p-2.5">
+            <div className="h-2.5 w-full rounded bg-neutral-300/80" />
+            <div className="h-2 w-4/5 rounded bg-neutral-300/80" />
+          </div>
+        </div>
       ))}
     </div>
   </div>
 );
 
-const CategoryFeedSkeleton = () => (
+const CategoryFeedSkeleton = ({ venues = false }: { venues?: boolean }) => (
   <div className="py-5" aria-hidden>
-    <div className="mb-8 flex items-center gap-3">
-      <div className="h-10 w-10 animate-pulse rounded-full bg-neutral-200" />
-      <div className="h-4 w-32 animate-pulse rounded-lg bg-neutral-200" />
-    </div>
+    {!venues ? (
+      <div className="mb-8 flex items-center gap-3">
+        <div className="h-10 w-10 animate-pulse rounded-full bg-neutral-200" />
+        <div className="h-4 w-32 animate-pulse rounded-lg bg-neutral-200" />
+      </div>
+    ) : null}
     <div className="aspect-[4/5] w-full animate-pulse rounded-[24px] bg-neutral-200" />
   </div>
 );
@@ -118,16 +127,16 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   }, [queryClient, refreshHostGate]);
 
   const browseUrl = useListDiscoveryUrlState({ mapOverlay: embeddedOnExplore });
-  const { filters, syncUrl, venueRegions } = browseUrl;
+  const { filters, syncUrl, venueRegions, listCat } = browseUrl;
+  const { view, category } = resolveListDiscoveryView(filters, venueRegions, listCat);
+  const feedFilters =
+    view === 'category' && category ? { ...filters, categories: [category] } : filters;
   const { cards, items, isLoading, isError, refetch: reloadMap, isFetching } = useBrowseListFeed({
-    filters,
+    filters: feedFilters,
     venueRegions,
   });
 
-  const discoverHomeCards = useMemo(
-    () => buildBrowseCardsFromMapItems(items, user),
-    [items, user]
-  );
+  const discoverHomeCards = useMemo(() => buildListFeedCards(items, user), [items, user]);
 
   const [draftQuery, setDraftQuery] = useState(filters.query);
   const [refineOpen, setRefineOpen] = useState(false);
@@ -146,20 +155,35 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     [items, draftQuery, filters.activityDatePreset, venueRegions]
   );
 
-  const { view, category } = resolveListDiscoveryView(filters, venueRegions);
-  const chips = useMemo(
-    () => buildListActiveFilterChips(filters, venueRegions),
-    [filters, venueRegions]
-  );
-
   const categoryPrimaryPills = useMemo(
     () => (category ? buildListCategoryPrimaryPills(category, filters, syncUrl) : []),
     [category, filters, syncUrl]
   );
 
+  const searchTripPills = useMemo(
+    () => buildListCategoryPrimaryPills('trips', filters, syncUrl),
+    [filters, syncUrl]
+  );
+
+  const searchPlacePills = useMemo(
+    () => buildListCategoryPrimaryPills('venues', filters, syncUrl),
+    [filters, syncUrl]
+  );
+
+  const showSearchTripTopicRow = view === 'search' && browseListShowsTripTopicRow(filters.categories);
+  const showSearchPlaceTopicRow = view === 'search' && browseListShowsPlaceTopicRow(filters.categories);
+
+  const hasActiveFilters = listDiscoveryHasActiveFilters(filters, venueRegions, listCat);
+
   const categoryMoreFiltersActive = useMemo(
     () => (category ? listCategorySecondaryFiltersActive(category, filters, venueRegions) : false),
     [category, filters, venueRegions]
+  );
+
+  const categoryResultsLabel = useMemo(
+    () =>
+      view === 'category' && category ? listCategoryResultsLabel(cards.length, category) : null,
+    [view, category, cards.length]
   );
 
   const commitQuery = () => {
@@ -168,10 +192,12 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
 
   const handleSearchCommit = (scope?: ExploreSearchScopeKey | null) => {
     if (scope === 'facilities') return;
-    const categories = scope ? browseCategoriesForSearchScope(scope) : undefined;
-    if (categories) {
-      syncUrl({ query: draftQuery, categories });
-      return;
+    if (scope) {
+      const patch = browseListFilterPatchForSearchScope(scope);
+      if (patch) {
+        syncUrl({ query: draftQuery, ...patch });
+        return;
+      }
     }
     syncUrl({ query: draftQuery });
   };
@@ -184,7 +210,9 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     syncUrl({
       query: '',
       categories: [],
-      tripTopic: 'all',
+      listCat: null,
+      tripTopics: [],
+      placeTopics: [],
       tripLookingOnly: false,
       price: 'all',
       when: 'any',
@@ -198,19 +226,12 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     syncUrl({ ...state, regions });
   };
 
-  const handleClearChip = (chip: (typeof chips)[number]) => {
-    if (chip.clear.regions !== undefined) {
-      syncUrl({ ...chip.clear, regions: chip.clear.regions });
-      return;
-    }
-    syncUrl(chip.clear);
-    if (chip.clear.query === '') setDraftQuery('');
-  };
-
   const openCategoryPage = (key: BrowseMainCategoryKey) => {
     syncUrl({
       categories: [key],
-      tripTopic: 'all',
+      listCat: key,
+      tripTopics: [],
+      placeTopics: [],
       tripLookingOnly: false,
       price: 'all',
       when: 'any',
@@ -220,7 +241,9 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   const backToHome = () => {
     syncUrl({
       categories: [],
-      tripTopic: 'all',
+      listCat: null,
+      tripTopics: [],
+      placeTopics: [],
       tripLookingOnly: false,
       price: 'all',
       when: 'any',
@@ -239,7 +262,11 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
 
   const renderFeed = () => {
     if (isLoading) {
-      return view === 'category' ? <CategoryFeedSkeleton /> : <FeedSkeleton />;
+      return view === 'category' ? (
+        <CategoryFeedSkeleton venues={category === 'venues'} />
+      ) : (
+        <DiscoverHomeSkeleton />
+      );
     }
     if (isError) {
       return (
@@ -257,7 +284,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     }
     if (cards.length === 0) {
       return (
-        <div className="rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-black/[0.04]">
+        <div className="rounded-3xl bg-white p-8 text-center shadow-sm">
           <p className="text-sm font-medium text-neutral-600">{BROWSE_LIST_EMPTY}</p>
           <button type="button" onClick={clearAllFilters} className="mt-4 text-sm font-semibold text-emerald-700">
             Clear filters
@@ -266,19 +293,26 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
       );
     }
     if (view === 'category' && category) {
-      return <ListCategoryDedicatedView category={category} cards={cards} />;
+      return (
+        <ListFeedActionsProvider>
+          <ListCategoryDedicatedView category={category} cards={cards} />
+        </ListFeedActionsProvider>
+      );
     }
     if (view === 'search') {
       return (
-        <ListDiscoveryResults cards={cards} chipsCount={chips.length} onClearAll={clearAllFilters} />
+        <ListFeedActionsProvider>
+          <ListDiscoveryResults
+            cards={cards}
+            showClearAll={hasActiveFilters}
+            onClearAll={clearAllFilters}
+            placesOnly={browseListShowsPlaceTopicRow(filters.categories) && !browseListShowsTripTopicRow(filters.categories)}
+          />
+        </ListFeedActionsProvider>
       );
     }
     return (
-      <ListDiscoverHome
-        cards={discoverHomeCards}
-        mapItems={items}
-        onOpenCategory={openCategoryPage}
-      />
+      <ListDiscoverHome cards={discoverHomeCards} mapItems={items} onOpenCategory={openCategoryPage} />
     );
   };
 
@@ -286,7 +320,6 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
 
   return (
     <>
-      <ListFeedActionsProvider>
         <BrowseListPageShell
           surface={surface}
           feedFullBleed={view === 'category'}
@@ -310,6 +343,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
                 onCloseMapOverlay={embeddedOnExplore ? onCloseMapOverlay : undefined}
                 closeVariant={surface === 'exploreSidebar' ? 'collapse' : 'dismiss'}
                 categoryFocus={view === 'category' ? category : null}
+                categoryResultsLabel={categoryResultsLabel}
                 onBackFromCategory={view === 'category' ? backToHome : undefined}
                 categoryFilterRow={
                   view === 'category' && category ? (
@@ -322,20 +356,42 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
                       onActivityDatePresetChange={(preset) => syncUrl({ activityDatePreset: preset })}
                       venueRegions={venueRegions}
                       onVenueRegionsChange={(regions) => syncUrl({ regions })}
-                      tripTopic={filters.tripTopic}
-                      tripLookingOnly={filters.tripLookingOnly}
-                      onTripPlanTypeChange={(patch) => syncUrl(patch)}
                       appliedFilters={filters}
                       onMoreFiltersApply={(patch) => syncUrl(patch)}
                     />
-                  ) : null
-                }
-                searchActiveFiltersRow={
-                  view === 'search' && chips.length > 0 ? (
-                    <div className="mt-2">
-                      <ListActiveFilterChipsRow chips={chips} onClear={handleClearChip} />
-                    </div>
-                  ) : null
+                  ) : (
+                    <>
+                      {showSearchPlaceTopicRow ? (
+                        <ListCategoryFilterBar
+                          embedded
+                          category="venues"
+                          pills={searchPlacePills}
+                          moreFiltersActive={listCategorySecondaryFiltersActive('venues', filters, venueRegions)}
+                          showMoreButton={false}
+                          activityDatePreset={filters.activityDatePreset}
+                          onActivityDatePresetChange={(preset) => syncUrl({ activityDatePreset: preset })}
+                          venueRegions={venueRegions}
+                          onVenueRegionsChange={(regions) => syncUrl({ regions })}
+                          appliedFilters={filters}
+                          onMoreFiltersApply={(patch) => syncUrl(patch)}
+                        />
+                      ) : null}
+                      {showSearchTripTopicRow ? (
+                        <ListCategoryFilterBar
+                          embedded
+                          category="trips"
+                          pills={searchTripPills}
+                          moreFiltersActive={categoryMoreFiltersActive}
+                          showMoreButton={false}
+                          activityDatePreset={filters.activityDatePreset}
+                          onActivityDatePresetChange={(preset) => syncUrl({ activityDatePreset: preset })}
+                          venueRegions={venueRegions}
+                          appliedFilters={filters}
+                          onMoreFiltersApply={(patch) => syncUrl(patch)}
+                        />
+                      ) : null}
+                    </>
+                  )
                 }
               />
               <ListRefineSheet
@@ -353,7 +409,6 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
             <p className="mt-4 text-center text-xs font-medium text-neutral-500">Updating…</p>
           ) : null}
         </BrowseListPageShell>
-      </ListFeedActionsProvider>
 
       <ExploreComposeHost
         exploreCompose={compose.exploreCompose}

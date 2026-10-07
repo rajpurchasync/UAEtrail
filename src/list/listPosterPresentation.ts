@@ -1,10 +1,22 @@
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import { buildExploreListMeta } from '../explore/exploreCardModel';
+import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
+import { resolveListFeedPosterRequirementLabels } from './listFeedPosterStandard';
 
 export type BrowsePosterMetaPart = { key: string; label: string };
 
 /** Small eye row — venue / meeting place name. */
 export const resolveBrowsePosterPlaceLine = (card: ExploreCardModel): string | null => {
+  if (card.source === 'activity' || card.source === 'demand') {
+    const activity = card.activity;
+    const fromActivity =
+      activity?.locationName?.trim() ||
+      activity?.meetingPoint?.trim() ||
+      activity?.startPoint?.trim() ||
+      null;
+    if (fromActivity) return fromActivity;
+  }
+
   if (card.subtitle?.trim()) return card.subtitle.trim();
   const locationDetail = card.sections.details.find((d) => d.icon === 'location');
   if (locationDetail?.label?.trim()) return locationDetail.label.trim();
@@ -55,7 +67,7 @@ export const resolveBrowsePosterHeroTitle = (card: ExploreCardModel): string => 
   if (card.sections.activityHighlight?.trim()) {
     return [card.sections.activityHighlight.trim(), card.sections.dateHighlight?.trim()]
       .filter(Boolean)
-      .join('');
+      .join(' ');
   }
 
   if (card.routeLabel?.trim()) return card.routeLabel.trim();
@@ -128,6 +140,25 @@ const resolveListFeedPriceLabel = (card: ExploreCardModel): string | null => {
   return null;
 };
 
+const resolveListFeedSpotsLabel = (card: ExploreCardModel): string | null => {
+  if (card.source !== 'activity' && card.source !== 'demand') return null;
+
+  const activity = card.activity;
+  if (activity && card.source === 'activity') {
+    const avail = activity.slotsAvailable;
+    if (typeof avail === 'number' && avail >= 0) {
+      return `${avail} spot${avail === 1 ? '' : 's'}`;
+    }
+  }
+
+  if (card.spotsLabel?.trim()) {
+    const match = card.spotsLabel.match(/(\d+)\s*spots?/i);
+    return match ? `${match[1]} spots` : card.spotsLabel.trim();
+  }
+
+  return null;
+};
+
 /** Two-row overlay: date | time · spots | price (list feed poster). */
 export const resolveBrowsePosterScheduleGrid = (card: ExploreCardModel): BrowsePosterScheduleGrid => {
   const dateSource = card.activity?.date ?? card.sections.listWhen ?? null;
@@ -159,11 +190,7 @@ export const resolveBrowsePosterScheduleGrid = (card: ExploreCardModel): BrowseP
     timeLabel = withStartsTimePrefix(timeLabel);
   }
 
-  let spotsLabel: string | null = null;
-  if (card.spotsLabel?.trim() && (card.source === 'activity' || card.source === 'demand')) {
-    const match = card.spotsLabel.match(/(\d+)\s*spots?/i);
-    spotsLabel = match ? `${match[1]} spots` : card.spotsLabel.trim();
-  }
+  const spotsLabel = resolveListFeedSpotsLabel(card);
 
   const priceLabel = resolveListFeedPriceLabel(card);
 
@@ -187,9 +214,8 @@ export const resolveBrowsePosterScheduleFacts = (card: ExploreCardModel): string
 
   if (card.price?.badge?.trim()) facts.push(card.price.badge.trim());
 
-  if (card.spotsLabel?.trim() && (card.source === 'activity' || card.source === 'demand')) {
-    facts.push(card.spotsLabel.trim());
-  }
+  const spotsFact = resolveListFeedSpotsLabel(card);
+  if (spotsFact) facts.push(spotsFact);
 
   if (facts.length === 0) {
     const meta = buildExploreListMeta(card);
@@ -223,18 +249,38 @@ export const resolveBrowsePosterMetaParts = (card: ExploreCardModel): BrowsePost
   return parts.slice(0, 5);
 };
 
+/** Outing kind for posters — Hiking, Camping, Event, etc. (not Trip / Spot chips). */
+export const resolveBrowsePosterActivityTypeLabel = (card: ExploreCardModel): string | null => {
+  const activityType = card.activity?.activityType;
+  if (activityType && activityType in ACTIVITY_TYPE_LABELS) {
+    return ACTIVITY_TYPE_LABELS[activityType as ActivityType];
+  }
+  if (card.kind === 'hiking' || card.kind === 'camping' || card.kind === 'event') {
+    return ACTIVITY_TYPE_LABELS[card.kind as ActivityType];
+  }
+  if (card.kind === 'rideshare') return 'Rideshare';
+  if (card.source === 'demand' && card.sections.activityHighlight?.trim()) {
+    const word = card.sections.activityHighlight.trim().split(/\s+/)[0];
+    if (word) return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }
+  return null;
+};
+
+/** Audience / policy tags — women only, pets welcome, etc. */
+export const resolveBrowsePosterRequirementLabels = resolveListFeedPosterRequirementLabels;
+
+/** Category feed overlay chips — source + kind + requirements. */
 export const resolveBrowsePosterLabels = (card: ExploreCardModel): string[] => {
   const labels: string[] = [];
   if (card.source === 'activity') labels.push('Trip');
   if (card.source === 'demand') labels.push('Looking for');
   if (card.source === 'venue') labels.push('Spot');
   if (card.source === 'shop') labels.push('Shop');
-  if (card.kind === 'hiking') labels.push('Hiking');
-  if (card.kind === 'camping') labels.push('Camping');
-  if (card.kind === 'rideshare') labels.push('Rideshare');
-  if (card.kind === 'event') labels.push('Event');
-  if (card.requirementBadges?.length) {
-    labels.push(...card.requirementBadges.slice(0, 2));
+  const typeLabel = resolveBrowsePosterActivityTypeLabel(card);
+  if (typeLabel) labels.push(typeLabel);
+  const requirementLabels = resolveListFeedPosterRequirementLabels(card);
+  if (requirementLabels.length) {
+    labels.push(...requirementLabels.slice(0, 2));
   }
   return [...new Set(labels)].slice(0, 4);
 };

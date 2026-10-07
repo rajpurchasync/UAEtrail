@@ -108,7 +108,7 @@ describe('routingHygiene', () => {
     const files = collectSourceFiles(SCAN_ROOT);
     const violations: string[] = [];
     const linkPattern =
-      /(?:to|href)=\{?[`"']\/operator\/|(?:to|href)=["']\/operator\/|navigate\(\s*[`"']\/operator\//;
+      /(?:to|href)=\{?[`"']\/operator\/|(?:to|href)=["']\/operator\/|navigate\(\s*[`"']\/operator\/|`\/operator\/\$\{/;
 
     for (const file of files) {
       if (LEGACY_OPERATOR_PATH_ALLOWLIST.has(file)) continue;

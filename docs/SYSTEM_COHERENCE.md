@@ -152,7 +152,7 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 | Host console | `/host/*` | Buddy Organize (map FAB, `/welcome` gate) |
 | Pro / business | `/profile/pro-membership` | `/become-host` as product entry (redirect only) |
 | Messaging | `/messages` (+ `?group=` / `?to=`) | Chat embedded on `/trips` |
-| List layout (browse) | `/list?…` | A second product home or `/map` |
+| List layout (browse) | `/list?…` (handoff) · mobile **List** pill on `/explore` | A second product home, `/map`, or **List bottom-nav tab** |
 
 **Auth shells:** `ProtectedRoute` uses **`UserRole`** for coarse access (admin, host console shell). **Product gates** (Organize, paid host, profile chips) use **`HostStatusDTO`** from `GET /me/host-status`. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — mixing these layers is a top source of incoherence.
 
@@ -160,7 +160,7 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 
 Aligned with [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4.1 and [`NORTHSTAR.md`](./NORTHSTAR.md):
 
-- **Few browse surfaces, many filterable views** — `/explore` (map-first; list panel via `list=1`) and `/list` (full-screen poster/list) share query vocabulary (`src/list/routing.ts` ↔ `explorePath()`).
+- **Few browse surfaces, many filterable views** — `/explore` (map-first; list panel via `list=1` or the mobile map **List** pill) and optional `/list` (full-screen handoff) share query vocabulary (`src/list/routing.ts` ↔ `explorePath()`). **Mobile bottom nav stays three tabs** — Explore · Trips · Chat ([`NAVIGATION.md`](./NAVIGATION.md)).
 - **One discovery read path on the server** — `GET /explore/map` (+ query). Map stage, explore list sheet, and list discovery UI are **projections**; avoid separate “catalog” endpoints per category unless a new bounded context is approved in Tier-1.
 - **Many entity URLs where identity matters** — `/activity`, place paths, `/shop`, brand paths: sharing, notifications, per-id cache and `viewerAccess`. These are **not** browse department homepages.
 - **Private engagement off the public map** — wishlist, entity follow, member follow, goals: `/me/*` and trips/profile UI ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Follow · Wishlist · Goal).

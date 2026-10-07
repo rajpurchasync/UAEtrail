@@ -45,6 +45,8 @@ import {
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
+import type { BrowseMainCategoryKey } from '../../list/browseListTaxonomy';
+import { LIST_CAT_PARAM } from '../../list/browseListUrlState';
 import {
   parseExplorePinKindFilter,
   serializeExplorePinKindFilter,
@@ -98,6 +100,8 @@ type SyncPatch = {
   searchScope?: ExploreSearchScopeKey | null;
   socialTab?: ExploreSocialTab;
   followedSegment?: ExploreFollowedSegment;
+  /** Clear list category page when opening browse home from the map List pill. */
+  listCat?: BrowseMainCategoryKey | null;
 };
 
 type UseExploreBrowseUrlStateArgs = {
@@ -259,6 +263,9 @@ export const useExploreBrowseUrlState = ({
       params.delete('contribute');
       params.delete('request');
       clearFulfillIntentMapItemParams(params);
+
+      if (next.listCat === null) params.delete(LIST_CAT_PARAM);
+      else if (next.listCat) params.set(LIST_CAT_PARAM, next.listCat);
 
       setSearchParams(params, { replace: true });
     },
@@ -521,8 +528,9 @@ export const useExploreBrowseUrlState = ({
 
   const openBrowse = () => {
     clearSelection();
+    setListMode('default');
     setListOpen(true);
-    syncExploreUrl({ list: true, panel });
+    syncExploreUrl({ list: true, panel, listCat: null, listMode: 'default' });
   };
 
   const applyVenueFilter = (next: VenueListFilterKey) => {
@@ -595,7 +603,8 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ venueRegions: next, list: listOpen });
   };
 
-  const commitMapSearch = (scope?: ExploreSearchScopeKey | null) => {
+  /** Apply explore search (`q` + optional scope) to map filters — does not open list discover. */
+  const commitExploreSearch = (scope?: ExploreSearchScopeKey | null) => {
     if (scope === 'facilities') return;
     clearSelection();
     setListMode('default');
@@ -610,17 +619,15 @@ export const useExploreBrowseUrlState = ({
       setPinKind(syncedPinKind);
       syncExploreUrl({
         q: query,
-        list: true,
+        list: listOpen,
         listMode: 'default',
         panel: syncedPanel,
         pinKind: syncedPinKind,
         searchScope: resolved,
       });
-      setListOpen(true);
       return;
     }
-    syncExploreUrl({ q: query, list: true, listMode: 'default', searchScope: null });
-    setListOpen(true);
+    syncExploreUrl({ q: query, list: listOpen, listMode: 'default', searchScope: null });
   };
 
   const placesMode = isDesktop ? desktopBrowseTab === 'venues' : panel === 'venues';
@@ -662,7 +669,7 @@ export const useExploreBrowseUrlState = ({
     outingTopic,
     applyOutingTopic,
     searchScope,
-    commitMapSearch,
+    commitExploreSearch,
     pinKind,
     applyPinKindFilter,
     mapFilterKeys: UNIFIED_MAP_FILTER_KEYS,

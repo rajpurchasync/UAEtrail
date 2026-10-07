@@ -22,6 +22,7 @@ type ExploreMapChromeBarProps = {
   socialPanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
   socialPanelExtraCount?: number;
   socialPanelFriendCount?: number;
+  onOpenExploreSearch?: () => void;
 };
 
 /** Map toolbar — same Activities / Places browse context as the list panel. */
@@ -42,6 +43,7 @@ export const ExploreMapChromeBar = ({
   socialPanelAvatars = [],
   socialPanelExtraCount = 0,
   socialPanelFriendCount = 0,
+  onOpenExploreSearch,
 }: ExploreMapChromeBarProps) => (
   <div
     className={`pointer-events-none absolute inset-x-0 top-0 px-3 pt-2 lg:px-4 lg:pt-3 ${EXPLORE_MOBILE_MAP_CHROME.filterTop} ${EXPLORE_Z.mapFilters}`}
@@ -62,6 +64,7 @@ export const ExploreMapChromeBar = ({
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
         searchScopeCounts={searchScopeCounts}
+        onOpenExploreSearch={onOpenExploreSearch}
       />
       {onOpenSocialPanel ? (
         <ExploreMapSocialPanelButton

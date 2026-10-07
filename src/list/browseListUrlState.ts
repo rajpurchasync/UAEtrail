@@ -6,6 +6,9 @@ import {
 import { parseMapFilter, type MapFilterKey } from '../explore/routing';
 import { parseVenueRegionsParam } from '../explore/routing';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
+import type { BrowseTripTopicKey } from './browseListTripTopics';
+import { isListVenuePlaceTopicKey } from './listVenuePlaceTopicFilter';
+import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import {
   parseBrowseMainCategoriesFromTopics,
   serializeBrowseMainCategoriesToTopics,
@@ -14,6 +17,22 @@ import {
 
 const PRICE_PARAM = 'price';
 const WHEN_PARAM = 'when';
+
+/** List-only: dedicated category page (decoupled from map `topics` pills). */
+export const LIST_CAT_PARAM = 'listCat';
+
+export const parseListCatParam = (value: string | null): BrowseMainCategoryKey | null => {
+  if (
+    value === 'trips' ||
+    value === 'venues' ||
+    value === 'shops' ||
+    value === 'guides' ||
+    value === 'agencies'
+  ) {
+    return value;
+  }
+  return null;
+};
 
 export const parseBrowseListPriceParam = (value: string | null): BrowsePriceFilter => {
   if (value === 'free' || value === 'paid') return value;
@@ -39,13 +58,45 @@ export const browseWhenToExploreDatePreset = (when: BrowseWhenFilter): ExploreAc
   return 'anyday';
 };
 
-const parseTripTopic = (filterParam: string | null): { tripTopic: MapFilterKey; tripLookingOnly: boolean } => {
-  if (filterParam === 'looking') return { tripTopic: 'all', tripLookingOnly: true };
-  const parsed = parseMapFilter(filterParam);
-  if (parsed === 'hiking' || parsed === 'camping' || parsed === 'rideshare') {
-    return { tripTopic: parsed, tripLookingOnly: false };
+const isBrowseTripTopicKey = (key: MapFilterKey): key is BrowseTripTopicKey =>
+  key === 'hiking' || key === 'camping' || key === 'rideshare';
+
+const parseTripAndPlaceTopics = (
+  filterParam: string | null,
+  listCat: BrowseMainCategoryKey | null
+): {
+  tripTopics: BrowseTripTopicKey[];
+  tripLookingOnly: boolean;
+  placeTopics: ListVenuePlaceTopicKey[];
+} => {
+  if (!filterParam || filterParam === 'all') {
+    return { tripTopics: [], tripLookingOnly: false, placeTopics: [] };
   }
-  return { tripTopic: 'all', tripLookingOnly: false };
+  if (filterParam === 'looking') {
+    return { tripTopics: [], tripLookingOnly: true, placeTopics: [] };
+  }
+
+  const tripTopics: BrowseTripTopicKey[] = [];
+  const placeTopics: ListVenuePlaceTopicKey[] = [];
+  const venuesContext = listCat === 'venues';
+
+  for (const part of filterParam.split(',')) {
+    const trimmed = part.trim();
+    const parsed = parseMapFilter(trimmed);
+    if (venuesContext) {
+      if (isListVenuePlaceTopicKey(trimmed) && !placeTopics.includes(trimmed)) {
+        placeTopics.push(trimmed);
+      }
+      continue;
+    }
+    if (isBrowseTripTopicKey(parsed) && !tripTopics.includes(parsed)) {
+      tripTopics.push(parsed);
+    }
+    if (isListVenuePlaceTopicKey(trimmed) && !placeTopics.includes(trimmed)) {
+      placeTopics.push(trimmed);
+    }
+  }
+  return { tripTopics, tripLookingOnly: false, placeTopics };
 };
 
 const resolveBrowseActivityDatePreset = (
@@ -68,11 +119,12 @@ export const parseBrowseListFilterState = (
   const when = parseBrowseListWhenParam(whenParam, dateParam);
   const activityDatePreset = resolveBrowseActivityDatePreset(whenParam, dateParam);
   const whenNormalized = when === 'week' && activityDatePreset === 'week' ? 'any' : when;
+  const listCat = parseListCatParam(searchParams.get(LIST_CAT_PARAM));
 
   return {
     query: searchParams.get('q')?.trim() ?? '',
     categories: parseBrowseMainCategoriesFromTopics(searchParams.get('topics')),
-    ...parseTripTopic(searchParams.get('filter')),
+    ...parseTripAndPlaceTopics(searchParams.get('filter'), listCat),
     price: parseBrowseListPriceParam(searchParams.get(PRICE_PARAM)),
     when: whenNormalized,
     activityDatePreset,
@@ -95,8 +147,10 @@ export const serializeBrowseListSearchParams = (
 
   if (state.tripLookingOnly) {
     params.set('filter', 'looking');
-  } else if (state.tripTopic !== 'all') {
-    params.set('filter', state.tripTopic);
+  } else if (state.tripTopics.length > 0) {
+    params.set('filter', state.tripTopics.join(','));
+  } else if (state.placeTopics.length > 0) {
+    params.set('filter', state.placeTopics.join(','));
   }
 
   const price = serializeBrowseListPriceParam(state.price);
@@ -114,18 +168,7 @@ export const serializeBrowseListSearchParams = (
   return params;
 };
 
-/** Params shared with `/explore` map browse (drops list-only keys where needed). */
-export const serializeBrowseListToExploreSearchParams = (
-  state: BrowseListFilterState,
-  regions: string[]
-): URLSearchParams => {
-  const params = serializeBrowseListSearchParams(state, regions);
-  params.delete(PRICE_PARAM);
-  if (state.when === 'weekend') {
-    params.delete(WHEN_PARAM);
-    params.delete('date');
-  }
-  return params;
-};
+/** Re-export — implementation in `browseListMapHandoff.ts` (map pinKind + listCat stripping). */
+export { serializeBrowseListToExploreSearchParams } from './browseListMapHandoff';
 
 export type { BrowseMainCategoryKey };

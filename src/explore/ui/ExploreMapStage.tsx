@@ -32,6 +32,7 @@ export type ExploreMapStageProps = {
   onSearchQueryChange?: (value: string) => void;
   onSearchCommit?: (scope?: ExploreSearchScopeKey | null) => void;
   searchScopeCounts?: ExploreSearchScopeCounts;
+  onOpenExploreSearch?: () => void;
   panel: ExplorePanel;
   mapFilter: MapFilterKey;
   venueRegions: string[];
@@ -96,6 +97,7 @@ export const ExploreMapStage = ({
   onSearchQueryChange,
   onSearchCommit,
   searchScopeCounts,
+  onOpenExploreSearch,
   panel,
   mapFilter,
   venueRegions,
@@ -200,6 +202,7 @@ export const ExploreMapStage = ({
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
         searchScopeCounts={searchScopeCounts}
+        onOpenExploreSearch={onOpenExploreSearch}
       />
 
       {user && !listOpen ? (

@@ -68,20 +68,25 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
   push(terms, item.activity?.activityType);
   push(terms, item.participationMode ?? undefined);
 
-  if (item.source === 'activity' || item.source === 'demand') {
+  if (item.source === 'activity') {
     terms.push('trip', 'trips', 'outing', 'outings', 'activity', 'activities');
-    push(terms, EXPLORE_SEARCH_SCOPE_COPY.trips.label);
+    push(terms, EXPLORE_SEARCH_SCOPE_COPY.activities.label);
   }
   if (item.source === 'demand') {
-    terms.push('looking for', 'looking', 'demand', 'buddy');
+    terms.push('looking for', 'looking', 'demand', 'buddy', 'people', 'person');
+    push(terms, EXPLORE_SEARCH_SCOPE_COPY.people.label);
   }
   if (item.source === 'venue') {
     terms.push('spot', 'spots', 'place', 'places', 'trail', 'trails', 'venue');
-    push(terms, EXPLORE_SEARCH_SCOPE_COPY.spots.label);
+    push(terms, EXPLORE_SEARCH_SCOPE_COPY.places.label);
   }
   if (item.source === 'shop' || item.kind === 'shop') {
     terms.push('shop', 'shops', 'gear');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.shops.label);
+  }
+  if (item.source === 'agency') {
+    terms.push('agency', 'agencies', 'operator', 'operators', 'guide', 'guides');
+    push(terms, EXPLORE_SEARCH_SCOPE_COPY.agencies.label);
   }
 
   switch (item.kind) {

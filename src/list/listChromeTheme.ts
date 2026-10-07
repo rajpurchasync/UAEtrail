@@ -24,7 +24,7 @@ export const LIST_SEARCH = {
   icon: 'h-[17px] w-[17px] shrink-0 text-neutral-400',
   /** Map / refine / category filters — aligned row height. */
   sideAction:
-    'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,.04)] transition active:scale-[0.97] hover:bg-neutral-50',
+    'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-neutral-100 bg-white shadow-[0_1px_3px_rgba(15,23,42,.06)] transition active:scale-[0.97] hover:bg-neutral-50',
   sideActionMap: '!text-emerald-700',
 } as const;
 
@@ -54,6 +54,10 @@ export const LIST_CATEGORY_TILE = {
 } as const;
 
 export const listFilterIconButtonClass = (): string => LIST_SEARCH.sideAction;
+
+/** Category topic row — floating filters control (over scroll/grid). */
+export const LIST_CATEGORY_FLOATING_FILTER =
+  'inline-flex h-11 w-11 items-center justify-center rounded-full border border-neutral-200/80 bg-white text-neutral-800 shadow-[0_4px_18px_rgba(15,23,42,.14)] transition active:scale-[0.97] hover:bg-neutral-50';
 
 export const LIST_SECTION_TITLE = 'text-[15px] font-semibold text-neutral-500';
 

@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { shouldShowMobileBottomNav } from '../config/platform';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  LIST_DISCOVERY_PATH,
+  MOBILE_BOTTOM_NAV_TAB_PATHS,
+  shouldShowMobileBottomNav,
+} from '../config/platform';
+
+describe('mobile bottom nav contract', () => {
+  it('has exactly three tabs and never includes list discovery as a tab', () => {
+    expect(MOBILE_BOTTOM_NAV_TAB_PATHS).toHaveLength(3);
+    expect(MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).not.toContain(LIST_DISCOVERY_PATH);
+  });
+
+  it('does not link to /list from the tab bar component', () => {
+    const source = readFileSync(join(process.cwd(), 'src/components/layout/MobileBottomNav.tsx'), 'utf8');
+    expect(source).not.toMatch(/to=\{LIST_DISCOVERY_PATH\}/);
+    expect(source).not.toMatch(/to=["']\/list["']/);
+  });
+});
 
 describe('shouldShowMobileBottomNav', () => {
   it('shows on signed-in root tabs', () => {

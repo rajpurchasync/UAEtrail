@@ -77,6 +77,9 @@ export interface ExploreCardModel {
   childFriendly?: boolean;
   difficulty?: 'easy' | 'moderate' | 'hard' | null;
   surfaceTypes?: string[];
+  /** Trail/camp catalog — emirate or area label for list venue posters. */
+  venueRegion?: string | null;
+  venueAccessibility?: 'car-accessible' | 'remote' | null;
   requirementBadges?: string[];
   mapLatitude?: number | null;
   mapLongitude?: number | null;
@@ -200,6 +203,8 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     childFriendly: item.locationCard?.childFriendly ?? false,
     difficulty: item.locationCard?.difficulty ?? null,
     surfaceTypes: item.locationCard?.surfaceType ?? [],
+    venueRegion: item.locationCard?.region ?? null,
+    venueAccessibility: item.locationCard?.accessibility ?? null,
     requirementBadges: enrichExploreActivityRequirementBadges(activity?.requirements, {
       kind,
       rideshareEnabled: Boolean(

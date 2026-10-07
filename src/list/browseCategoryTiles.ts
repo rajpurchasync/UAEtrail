@@ -1,32 +1,52 @@
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
+/** Square crop for discover-home category circles — same URL shape as activity cover placeholders. */
+const categoryTilePhoto = (photoId: string) =>
+  `https://images.unsplash.com/${photoId}?w=400&h=400&fit=crop&q=80`;
+
 export type BrowseCategoryTileDef = {
   key: BrowseMainCategoryKey;
   label: string;
   /** Cover photo inside the category circle (same sources as explore seed imagery). */
   imageSrc: string;
   gradient: string;
+  /** Optional `object-*` tailwind classes for small circular crops. */
+  coverClassName?: string;
 };
 
 /** Main list buckets — photo in soft circle, label below (discover home). */
 export const BROWSE_CATEGORY_TILES: readonly BrowseCategoryTileDef[] = [
   {
     key: 'trips',
-    label: 'Trips & Plans',
-    imageSrc: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=400&fit=crop',
+    label: 'Activities',
+    imageSrc: categoryTilePhoto('photo-1551632811-561732d1e306'),
     gradient: 'from-emerald-100 via-emerald-50 to-teal-100',
   },
   {
     key: 'venues',
-    label: 'Trails & Spots',
-    imageSrc: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&h=400&fit=crop',
+    label: 'Places',
+    imageSrc: categoryTilePhoto('photo-1509316785289-025f5b846b35'),
     gradient: 'from-amber-100 via-orange-50 to-amber-100',
   },
   {
     key: 'shops',
-    label: 'Shops & Gear',
-    imageSrc: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=400&fit=crop&q=80',
+    label: 'Shops',
+    /** Outdoor backpack — same asset as shop rail placeholders; zoomed for circular crop. */
+    imageSrc: categoryTilePhoto('photo-1553062407-98eeb64c6a62'),
+    coverClassName: 'object-cover object-[center_45%] scale-[1.2]',
     gradient: 'from-rose-100 via-rose-50 to-pink-100',
+  },
+  {
+    key: 'guides',
+    label: 'Buddies',
+    imageSrc: categoryTilePhoto('photo-1529156069898-49953e39b3ac'),
+    gradient: 'from-sky-100 via-sky-50 to-cyan-100',
+  },
+  {
+    key: 'agencies',
+    label: 'Agencies',
+    imageSrc: categoryTilePhoto('photo-1454165804606-c3d57bc86b40'),
+    gradient: 'from-violet-100 via-indigo-50 to-violet-100',
   },
 ] as const;
 

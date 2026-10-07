@@ -1,124 +1,211 @@
-import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
-import { ExploreMapDateFilter } from '../../explore/ui/ExploreMapDateFilter';
-import type { MapFilterKey } from '../../config/routingCatalog';
-import type { BrowseListFilterState } from '../browseListFilters';
-import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
-import { LIST_CHIP_SCROLL, LIST_CHROME, listCategoryPillClass } from '../listChromeTheme';
-import type { ListCategoryPill } from '../listCategoryFilterPills';
-import { ListCategoryMoreFiltersMenu } from './ListCategoryMoreFiltersMenu';
-import { ListCategoryTripTypeFilter } from './ListCategoryTripTypeFilter';
-import { ListCategoryVenueRegionFilter } from './ListCategoryVenueRegionFilter';
-
-interface ListCategoryFilterBarProps {
-  pills: ListCategoryPill[];
-  moreFiltersActive: boolean;
-  showMoreButton?: boolean;
-  /** Venue category uses spot emojis on hiking/camping pills. */
-  category?: BrowseMainCategoryKey;
-  embedded?: boolean;
-  activityDatePreset?: ExploreActivityDatePreset;
-  onActivityDatePresetChange?: (preset: ExploreActivityDatePreset) => void;
-  venueRegions?: string[];
-  onVenueRegionsChange?: (regions: string[]) => void;
-  tripTopic?: MapFilterKey;
-  tripLookingOnly?: boolean;
-  onTripPlanTypeChange?: (patch: { tripTopic: MapFilterKey; tripLookingOnly: boolean }) => void;
-  appliedFilters?: BrowseListFilterState;
-  onMoreFiltersApply?: (patch: Partial<BrowseListFilterState> & { regions?: string[] }) => void;
-}
-
-export const ListCategoryFilterBar = ({
-  pills,
-  moreFiltersActive,
-  showMoreButton = true,
-  category = 'trips',
-  embedded = false,
-  activityDatePreset = 'anyday',
-  onActivityDatePresetChange,
-  venueRegions = [],
-  onVenueRegionsChange,
-  tripTopic = 'all',
-  tripLookingOnly = false,
-  onTripPlanTypeChange,
-  appliedFilters,
-  onMoreFiltersApply,
-}: ListCategoryFilterBarProps) => {
-  const showTripsDate = category === 'trips' && onActivityDatePresetChange;
-  const showTripsType = category === 'trips' && onTripPlanTypeChange;
-  const showVenueAreas = category === 'venues' && onVenueRegionsChange;
-  const showMore =
-    showMoreButton && category && appliedFilters && onMoreFiltersApply && category !== 'venues';
-
-  if (
-    pills.length === 0 &&
-    !showMore &&
-    !showTripsDate &&
-    !showTripsType &&
-    !showVenueAreas
-  ) {
-    return null;
-  }
-
-  return (
-    <div className={embedded ? 'pt-2.5' : 'shrink-0 border-b border-neutral-100 bg-white'}>
-      <div
-        className={
-          embedded
-            ? 'flex w-full items-center gap-2'
-            : `${LIST_CHROME.maxWidth} flex w-full items-center gap-2 py-2 ${LIST_CHROME.horizontalPad}`
-        }
-      >
-        {showTripsDate ? (
-          <ExploreMapDateFilter
-            activityDatePreset={activityDatePreset}
-            onActivityDatePresetChange={onActivityDatePresetChange}
-            includeAnyday
-            textTrigger
-            lowercaseAnyday
-            textTriggerClassName={listCategoryPillClass(activityDatePreset !== 'anyday')}
-          />
-        ) : null}
-        {showTripsType ? (
-          <ListCategoryTripTypeFilter
-            tripTopic={tripTopic}
-            tripLookingOnly={tripLookingOnly}
-            onChange={onTripPlanTypeChange}
-          />
-        ) : null}
-        {showVenueAreas ? (
-          <ListCategoryVenueRegionFilter
-            venueRegions={venueRegions}
-            onVenueRegionsChange={onVenueRegionsChange}
-          />
-        ) : null}
-        {pills.length > 0 ? (
-          <div className={`min-w-0 flex-1 ${LIST_CHIP_SCROLL}`}>
-            {pills.map((pill) => (
-              <button
-                key={pill.id}
-                type="button"
-                onClick={pill.onToggle}
-                className={listCategoryPillClass(pill.active)}
-                aria-pressed={pill.active}
-              >
-                {pill.label}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="min-w-0 flex-1" />
-        )}
-        {showMore ? (
-          <ListCategoryMoreFiltersMenu
-            category={category}
-            applied={appliedFilters}
-            regions={venueRegions}
-            moreFiltersActive={moreFiltersActive}
-            onApply={onMoreFiltersApply}
-          />
-        ) : null}
-      </div>
-    </div>
-  );
-};
-
+import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
+
+import type { MapFilterKey } from '../../config/routingCatalog';
+
+import type { BrowseListFilterState } from '../browseListFilters';
+
+import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
+
+import { LIST_CHIP_SCROLL, LIST_CHROME, listCategoryPillClass } from '../listChromeTheme';
+
+import type { ListCategoryPill } from '../listCategoryFilterPills';
+
+import { ListCategoryMoreFiltersMenu } from './ListCategoryMoreFiltersMenu';
+
+import { ListCategoryTopicCircleFilter } from './ListCategoryTopicCircleFilter';
+
+
+
+interface ListCategoryFilterBarProps {
+
+  pills: ListCategoryPill[];
+
+  moreFiltersActive: boolean;
+
+  showMoreButton?: boolean;
+
+  category?: BrowseMainCategoryKey;
+
+  embedded?: boolean;
+
+  activityDatePreset?: ExploreActivityDatePreset;
+
+  onActivityDatePresetChange?: (preset: ExploreActivityDatePreset) => void;
+
+  venueRegions?: string[];
+
+  onVenueRegionsChange?: (regions: string[]) => void;
+
+  tripTopic?: MapFilterKey;
+
+  tripLookingOnly?: boolean;
+
+  onTripPlanTypeChange?: (patch: { tripTopic: MapFilterKey; tripLookingOnly: boolean }) => void;
+
+  appliedFilters?: BrowseListFilterState;
+
+  onMoreFiltersApply?: (patch: Partial<BrowseListFilterState> & { regions?: string[] }) => void;
+
+}
+
+
+
+export const ListCategoryFilterBar = ({
+
+  pills,
+
+  moreFiltersActive,
+
+  showMoreButton = true,
+
+  category = 'trips',
+
+  embedded = false,
+
+  activityDatePreset = 'anyday',
+
+  onActivityDatePresetChange,
+
+  venueRegions = [],
+
+  appliedFilters,
+
+  onMoreFiltersApply,
+
+}: ListCategoryFilterBarProps) => {
+
+  const showMore = showMoreButton && category && appliedFilters && onMoreFiltersApply;
+
+  const useTopicCircles = category === 'trips' && pills.length > 0;
+
+
+
+  if (pills.length === 0 && !showMore) {
+
+    return null;
+
+  }
+
+
+
+  const moreFilters = showMore ? (
+
+    <ListCategoryMoreFiltersMenu
+
+      category={category}
+
+      applied={appliedFilters!}
+
+      regions={venueRegions}
+
+      activityDatePreset={activityDatePreset}
+
+      onActivityDatePresetChange={onActivityDatePresetChange}
+
+      moreFiltersActive={moreFiltersActive}
+
+      onApply={onMoreFiltersApply!}
+
+      floating={useTopicCircles}
+
+    />
+
+  ) : null;
+
+
+
+  return (
+
+    <div className={embedded ? 'pt-1 pb-0.5' : 'shrink-0 border-b border-neutral-100 bg-white'}>
+
+      <div
+
+        className={
+
+          embedded
+
+            ? 'w-full'
+
+            : `${LIST_CHROME.maxWidth} w-full py-3 ${LIST_CHROME.horizontalPad}`
+
+        }
+
+      >
+
+        {useTopicCircles ? (
+
+          <div className="relative w-full min-w-0">
+
+            <ListCategoryTopicCircleFilter pills={pills} reserveFilterSpace={Boolean(showMore)} />
+
+            {showMore ? (
+
+              <div
+
+                className="pointer-events-none absolute inset-y-0 right-0 z-[2] flex w-[4.25rem] items-center justify-end bg-gradient-to-l from-white from-55% via-white/90 to-transparent pl-2"
+
+                aria-hidden
+
+              >
+
+                <div className="pointer-events-auto py-1">{moreFilters}</div>
+
+              </div>
+
+            ) : null}
+
+          </div>
+
+        ) : (
+
+          <div className="flex w-full items-center gap-2">
+
+            {pills.length > 0 ? (
+
+              <div className={`min-w-0 flex-1 ${LIST_CHIP_SCROLL}`}>
+
+                {pills.map((pill) => (
+
+                  <button
+
+                    key={pill.id}
+
+                    type="button"
+
+                    onClick={pill.onToggle}
+
+                    className={listCategoryPillClass(pill.active)}
+
+                    aria-pressed={pill.active}
+
+                  >
+
+                    {pill.label}
+
+                  </button>
+
+                ))}
+
+              </div>
+
+            ) : (
+
+              <div className="min-w-0 flex-1" />
+
+            )}
+
+            {moreFilters}
+
+          </div>
+
+        )}
+
+      </div>
+
+    </div>
+
+  );
+
+};
+
+

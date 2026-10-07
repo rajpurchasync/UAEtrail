@@ -1,10 +1,15 @@
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
 import type { BrowseListFilterState } from './browseListFilters';
 import {
+  inferListCatFromExploreHandoff,
+  serializeBrowseListToExploreSearchParams,
+} from './browseListMapHandoff';
+import {
+  LIST_CAT_PARAM,
   parseBrowseListFilterState,
   parseBrowseListVenueRegions,
+  parseListCatParam,
   serializeBrowseListSearchParams,
-  serializeBrowseListToExploreSearchParams,
 } from './browseListUrlState';
 
 export type ListDiscoveryPathOptions = Partial<BrowseListFilterState> & {
@@ -16,7 +21,8 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
   const state: BrowseListFilterState = {
     query: options?.query ?? '',
     categories: options?.categories ?? [],
-    tripTopic: options?.tripTopic ?? 'all',
+    tripTopics: options?.tripTopics ?? [],
+    placeTopics: options?.placeTopics ?? [],
     tripLookingOnly: options?.tripLookingOnly ?? false,
     price: options?.price ?? 'all',
     when: options?.when ?? 'any',
@@ -31,7 +37,8 @@ export const exploreMapPathFromListSearch = (search: string): string => {
   const params = new URLSearchParams(search.replace(/^\?/, '').trim());
   const state = parseBrowseListFilterState(params);
   const regions = parseBrowseListVenueRegions(params);
-  const exploreParams = serializeBrowseListToExploreSearchParams(state, regions);
+  const listCat = parseListCatParam(params.get(LIST_CAT_PARAM));
+  const exploreParams = serializeBrowseListToExploreSearchParams(state, regions, { listCat });
   const qs = exploreParams.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
 };
@@ -44,6 +51,9 @@ export const listDiscoveryPathFromExploreSearch = (search: string): string => {
   const params = new URLSearchParams(search.replace(/^\?/, '').trim());
   const state = parseBrowseListFilterState(params);
   const regions = parseBrowseListVenueRegions(params);
-  const qs = serializeBrowseListSearchParams(state, regions).toString();
+  const listParams = serializeBrowseListSearchParams(state, regions);
+  const inferredListCat = inferListCatFromExploreHandoff(state, params);
+  if (inferredListCat) listParams.set(LIST_CAT_PARAM, inferredListCat);
+  const qs = listParams.toString();
   return qs ? `${LIST_DISCOVERY_PATH}?${qs}` : LIST_DISCOVERY_PATH;
 };

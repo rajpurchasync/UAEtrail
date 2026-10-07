@@ -1,7 +1,6 @@
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import type { BrowseCategoryTileDef } from '../browseCategoryTiles';
 import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
-import { LIST_CATEGORY_TILE } from '../listChromeTheme';
 
 interface BrowseCategoryTileProps {
   tile: BrowseCategoryTileDef;
@@ -22,17 +21,17 @@ export const BrowseCategoryTile = ({
     <button
       type="button"
       onClick={() => onToggle(tile.key)}
-      className={`flex w-full min-w-0 flex-col items-center gap-2.5 px-0.5 transition-opacity active:scale-[0.98] ${dimmed ? 'opacity-40' : ''}`}
+      className={`flex w-full min-w-0 flex-col items-center gap-2.5 px-0.5 transition-opacity active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-2xl ${dimmed ? 'opacity-40' : ''}`}
       aria-pressed={selected}
       aria-label={tile.label}
     >
       <span
-        className={`relative flex h-[4.25rem] w-[4.25rem] shrink-0 overflow-hidden rounded-full bg-gradient-to-br shadow-[0_2px_8px_rgba(15,23,42,.08)] ring-1 ring-black/[0.06] ${tile.gradient} ${LIST_CATEGORY_TILE.ring(selected)}`}
+        className={`relative flex h-[4.25rem] w-[4.25rem] shrink-0 overflow-hidden rounded-full bg-gradient-to-br shadow-[0_2px_10px_rgba(15,23,42,.1)] ${tile.gradient} ${selected ? 'ring-2 ring-emerald-500/40' : ''}`}
       >
         <EnvironmentImage
           src={tile.imageSrc}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          className={`absolute inset-0 h-full w-full ${tile.coverClassName ?? 'object-cover'}`}
           loading="lazy"
           decoding="async"
         />

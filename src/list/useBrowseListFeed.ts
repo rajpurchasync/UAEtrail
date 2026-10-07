@@ -1,10 +1,8 @@
 import { useMemo } from 'react';
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
-import { buildExploreCardModel, type ExploreCardModel } from '../explore/exploreCardModel';
+import type { ExploreCardModel } from '../explore/exploreCardModel';
 import { useExploreMap } from '../hooks/useExploreMap';
-import { buildVenueCoverByLocationId, enrichBrowsePosterCover } from './browsePosterCover';
-import { enrichListFeedCardModel } from './enrichListFeedCard';
+import { buildListFeedCards } from './buildListFeedCards';
 import {
   cardMatchesBrowsePrice,
   filterExploreMapItemsForList,
@@ -18,9 +16,8 @@ type UseBrowseListFeedArgs = {
 
 export const useBrowseListFeed = ({ filters, venueRegions }: UseBrowseListFeedArgs) => {
   const { user } = useAuth();
-  const { data: items = [], isLoading, isError, error, refetch, isFetching } = useExploreMap();
-
-  const venueCoverByLocationId = useMemo(() => buildVenueCoverByLocationId(items), [items]);
+  const { data: items = [], isError, error, refetch, isFetching, isPending } = useExploreMap();
+  const feedLoading = isPending && items.length === 0;
 
   const filteredItems = useMemo(
     () => filterExploreMapItemsForList(items, filters, venueRegions),
@@ -28,18 +25,14 @@ export const useBrowseListFeed = ({ filters, venueRegions }: UseBrowseListFeedAr
   );
 
   const cards: ExploreCardModel[] = useMemo(() => {
-    const built = filteredItems
-      .map((item: ExploreMapItemDTO) => {
-        const card = enrichBrowsePosterCover(buildExploreCardModel(item), venueCoverByLocationId);
-        return enrichListFeedCardModel(card, item, items, user);
-      });
+    const built = buildListFeedCards(filteredItems, user, items);
     return built.filter((card) => cardMatchesBrowsePrice(card, filters.price));
-  }, [filteredItems, filters.price, venueCoverByLocationId, items, user]);
+  }, [filteredItems, filters.price, items, user]);
 
   return {
     cards,
     items,
-    isLoading,
+    isLoading: feedLoading,
     isError,
     error,
     refetch,

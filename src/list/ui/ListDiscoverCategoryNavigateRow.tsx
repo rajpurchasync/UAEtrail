@@ -6,17 +6,21 @@ interface ListDiscoverCategoryNavigateRowProps {
   onOpenCategory: (key: BrowseMainCategoryKey) => void;
 }
 
-/** Three category entry points — equal columns so labels stay readable. */
+const CATEGORY_ROW_SCROLL =
+  'flex gap-3 overflow-x-auto pb-1 scroll-smooth snap-x snap-mandatory [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+
+/** Five category entry points — horizontal scroll on narrow screens. */
 export const ListDiscoverCategoryNavigateRow = ({ onOpenCategory }: ListDiscoverCategoryNavigateRowProps) => (
-  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+  <div className={CATEGORY_ROW_SCROLL}>
     {BROWSE_CATEGORY_TILES.map((tile) => (
-      <BrowseCategoryTile
-        key={tile.key}
-        tile={tile}
-        selected={false}
-        selectionMode={false}
-        onToggle={onOpenCategory}
-      />
+      <div key={tile.key} className="w-[4.75rem] shrink-0 snap-start sm:w-[5.25rem]">
+        <BrowseCategoryTile
+          tile={tile}
+          selected={false}
+          selectionMode={false}
+          onToggle={onOpenCategory}
+        />
+      </div>
     ))}
   </div>
 );

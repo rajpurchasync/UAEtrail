@@ -16,6 +16,7 @@ import { ListFeedActionsProvider } from '../../list/ui/ListFeedActionsProvider';
 import { ExploreComposeHost } from './ExploreComposeHost';
 import { ExploreJoinOverlays } from './ExploreJoinOverlays';
 import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
+import { ExploreBrowseSearchModal } from './ExploreBrowseSearchModal';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreBrowsePanel } from './ExploreBrowsePanel';
@@ -561,10 +562,15 @@ export const ExploreExperience = () => {
   );
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
-  const handleMapSearchCommit = (scope?: ExploreSearchScopeKey | null) => {
-    browse.commitMapSearch(scope);
-    setSearchFocusNonce((n) => n + 1);
-  };
+  const [exploreSearchModalOpen, setExploreSearchModalOpen] = useState(false);
+
+  const handleExploreSearchCommit = useCallback(
+    (scope?: ExploreSearchScopeKey | null) => {
+      browse.commitExploreSearch(scope);
+      setSearchFocusNonce((n) => n + 1);
+    },
+    [browse]
+  );
 
   const browsePanelShared = {
     isDesktop,
@@ -597,7 +603,7 @@ export const ExploreExperience = () => {
     },
     onOpenItem: selection.openItem,
     searchScopeCounts,
-    onSearchScopePick: handleMapSearchCommit,
+    onSearchScopePick: handleExploreSearchCommit,
     searchFocusNonce,
     socialTab: browse.socialTab,
     onSocialTabChange: browse.applySocialTab,
@@ -640,20 +646,27 @@ export const ExploreExperience = () => {
     />
   );
 
-  const mobileBrowsePanel =
-    browse.listMode === 'social' ? (
-      <ListFeedActionsProvider>
-        <ExploreBrowsePanel
-          {...browsePanelShared}
-          listItems={[]}
-          onClose={browse.closeListPanel}
-          listMode="social"
-          fullscreenBrowse
-        />
-      </ListFeedActionsProvider>
-    ) : (
-      <ListDiscoveryExperience surface="mapOverlay" onCloseMapOverlay={browse.closeListPanel} />
-    );
+  const mobileListSocialPanel = (
+    <ListFeedActionsProvider key="explore-list-social">
+      <ExploreBrowsePanel
+        {...browsePanelShared}
+        listItems={[]}
+        onClose={browse.closeListPanel}
+        closePanelAriaLabel="Close Social"
+        closeButtonVariant="dismiss"
+        listMode="social"
+        mobileSheetChrome
+      />
+    </ListFeedActionsProvider>
+  );
+
+  const mobileListDiscoverPanel = (
+    <ListDiscoveryExperience
+      key="explore-list-discover"
+      surface="mapOverlay"
+      onCloseMapOverlay={browse.closeListPanel}
+    />
+  );
 
   const primaryFabLabel = 'Add New';
 
@@ -697,7 +710,7 @@ export const ExploreExperience = () => {
           socialPanelFriendCount={socialPanelMapChip.friendCount}
           searchQuery={browse.query}
           onSearchQueryChange={browse.setQuery}
-          onSearchCommit={handleMapSearchCommit}
+          onOpenExploreSearch={() => setExploreSearchModalOpen(true)}
           searchScopeCounts={searchScopeCounts}
           exploreMapStyle={viewport.exploreMapStyle}
           exploreMapTiles={exploreMapTiles}
@@ -754,8 +767,12 @@ export const ExploreExperience = () => {
         />
 
         {browse.showListPanel && !isDesktop ? (
-          <ExploreMobileBrowseOverlay open onClose={browse.closeListPanel}>
-            {mobileBrowsePanel}
+          <ExploreMobileBrowseOverlay
+            open
+            onClose={browse.closeListPanel}
+            sheetSize={browse.listMode === 'social' ? 'content' : 'full'}
+          >
+            {browse.listMode === 'social' ? mobileListSocialPanel : mobileListDiscoverPanel}
           </ExploreMobileBrowseOverlay>
         ) : null}
 
@@ -853,6 +870,15 @@ export const ExploreExperience = () => {
       </Dialog>
 
       <ExploreJoinOverlays activity={selection.selected?.activity} joinActions={selection.joinActions} />
+
+      <ExploreBrowseSearchModal
+        open={exploreSearchModalOpen}
+        onClose={() => setExploreSearchModalOpen(false)}
+        query={browse.query}
+        onQueryChange={browse.setQuery}
+        onCommit={handleExploreSearchCommit}
+        scopeCounts={searchScopeCounts}
+      />
 
       <ExploreResponsiveSheet
         open={compose.guestComposeSignInOpen}

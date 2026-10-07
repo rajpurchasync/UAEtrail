@@ -26,31 +26,37 @@ export const BROWSE_TRIP_PLAN_TYPE_OPTIONS: ReadonlyArray<{
 ];
 
 export const resolveBrowseTripPlanType = (
-  tripTopic: MapFilterKey,
+  tripTopics: readonly BrowseTripTopicKey[],
   tripLookingOnly: boolean
 ): BrowseTripPlanTypeKey => {
   if (tripLookingOnly) return 'looking';
-  if (tripTopic === 'hiking' || tripTopic === 'camping' || tripTopic === 'rideshare') return tripTopic;
+  if (tripTopics.length === 1) return tripTopics[0];
   return 'all';
 };
 
 export const browseTripPlanTypeToState = (
   key: BrowseTripPlanTypeKey
-): { tripTopic: MapFilterKey; tripLookingOnly: boolean } => {
-  if (key === 'looking') return { tripTopic: 'all', tripLookingOnly: true };
-  if (key === 'all') return { tripTopic: 'all', tripLookingOnly: false };
-  return { tripTopic: key, tripLookingOnly: false };
+): { tripTopics: BrowseTripTopicKey[]; tripLookingOnly: boolean } => {
+  if (key === 'looking') return { tripTopics: [], tripLookingOnly: true };
+  if (key === 'all') return { tripTopics: [], tripLookingOnly: false };
+  return { tripTopics: [key], tripLookingOnly: false };
 };
 
 export const browseTripTopicIsActive = (
-  tripTopic: MapFilterKey,
+  tripTopics: readonly BrowseTripTopicKey[],
   key: BrowseTripTopicKey
-): boolean => tripTopic === key;
+): boolean => tripTopics.includes(key);
 
-export const toggleBrowseTripTopic = (
-  tripTopic: MapFilterKey,
+/** Multi-select topic pills — empty list means all trip types. */
+export const toggleBrowseTripTopicInList = (
+  selected: readonly BrowseTripTopicKey[],
   key: BrowseTripTopicKey
-): MapFilterKey => (tripTopic === key ? 'all' : key);
+): BrowseTripTopicKey[] => {
+  const set = new Set(selected);
+  if (set.has(key)) set.delete(key);
+  else set.add(key);
+  return BROWSE_TRIP_TOPIC_FILTERS.map((t) => t.key).filter((k) => set.has(k));
+};
 
 export const browseListShowsTripTopicRow = (categories: readonly BrowseMainCategoryKey[]): boolean =>
   categories.length === 0 || categories.includes('trips');

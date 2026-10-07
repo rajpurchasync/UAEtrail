@@ -3,11 +3,11 @@ export const LIST_FEED_POSTER_ASPECT = 'aspect-[4/5]' as const;
 
 export const LIST_FEED = {
   list: 'flex flex-col gap-8 py-2 sm:gap-10 sm:py-4',
-  categoryList: 'flex flex-col gap-6 py-1 sm:gap-8 sm:py-3',
+  categoryList: 'flex flex-col gap-6 pt-4 pb-2 sm:gap-8 sm:pt-5 sm:pb-3',
   article: 'flex flex-col',
   articleEdge: 'flex flex-col max-md:-mx-0',
   header: 'mb-2.5 flex items-center justify-between gap-3 px-1',
-  headerEdge: 'mb-2 flex items-center justify-between gap-3 px-4',
+  headerEdge: 'mb-2.5 flex items-center justify-between gap-3 px-4 pt-1',
   publisherLink: 'flex min-w-0 flex-1 items-center gap-3 active:opacity-85',
   publisherStatic: 'flex min-w-0 flex-1 items-center gap-3',
   publisherName: 'truncate text-[15px] font-semibold leading-tight text-neutral-900',
@@ -21,40 +21,44 @@ export const LIST_FEED = {
   mediaOnly: `relative ${LIST_FEED_POSTER_ASPECT} w-full overflow-hidden bg-neutral-100`,
   media:
     `relative ${LIST_FEED_POSTER_ASPECT} w-full overflow-hidden rounded-[22px] bg-neutral-100 ring-1 ring-black/[0.05]`,
-  overlayBottom:
-    'pointer-events-none absolute inset-0 z-[2] flex h-full min-h-0 flex-col px-4 pb-3.5 pt-11 text-left',
-  overlayCaptionHeader: 'flex min-w-0 flex-col items-start justify-center gap-1',
-  overlayCaptionHeaderSlot: 'flex shrink-0 flex-col justify-start pt-[3.5rem] sm:pt-14',
-  overlayCaptionSpacer: 'min-h-0 flex-1',
-  overlayCaptionFooter: 'mt-auto flex w-full shrink-0 flex-col gap-0.5 pb-0.5',
-  overlayCaptionFooterWithCta: 'pb-1',
-  /** Base for adaptive bottom gradient — see listFeedCaptionContrast.ts */
+  overlayRoot:
+    'pointer-events-none absolute inset-0 z-[2] flex h-full min-h-0 flex-col px-4 pb-4 pt-4',
+  overlayHeroCenter:
+    'absolute inset-x-0 top-[16%] flex flex-col items-center px-4 text-center sm:top-[18%]',
+  overlayHeroCopy: 'flex w-full max-w-[min(92%,20rem)] flex-col items-center gap-1.5 text-center',
+  overlayFooterStack: 'flex w-full flex-col gap-2',
+  /** Lifts facts + label row above the hero bottom (join CTA sits below image). */
+  overlayFooterLift: 'mb-9 sm:mb-11',
+  overlayFactsPanel:
+    'w-full max-w-[min(100%,17.5rem)] mx-auto rounded-xl bg-black/35 px-3 py-2.5 ring-1 ring-white/10 backdrop-blur-[2px]',
+  overlayFactsGrid: 'grid w-full grid-cols-2 gap-x-2 gap-y-1 text-[15px] font-semibold leading-snug text-white sm:text-base',
+  overlayFactsCellLeft: 'min-w-0 truncate text-left',
+  overlayFactsCellRight: 'min-w-0 truncate text-right tabular-nums',
+  overlayLabelRow: 'flex flex-wrap gap-1.5',
+  overlayRequirementLine: 'text-center text-[11px] font-medium leading-snug text-white/90',
+  /** Base + top lift for title — bottom band from listFeedCaptionContrast.ts */
   overlayPhotoScrimBase:
-    'before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-t',
+    'before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-b before:from-black/50 before:from-0% before:via-transparent before:via-[38%] before:to-transparent',
+  overlayPhotoScrimBottom:
+    'after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:-z-10 after:h-[58%] after:bg-gradient-to-t after:from-black/85 after:via-black/45 after:to-transparent',
   overlayTextShadow:
     '[text-shadow:0_1px_3px_rgba(0,0,0,.55),0_4px_16px_rgba(0,0,0,.35)]',
   factsLine: 'w-full text-sm leading-snug',
   factsOnPhoto: 'font-semibold text-white',
   factsOnFallback: 'font-medium text-neutral-700',
-  placeLine: 'text-[11px] font-semibold tracking-wide',
+  placeLine: 'text-center text-[11px] font-semibold tracking-wide',
   placeOnPhoto: 'text-white/90',
   placeOnFallback: 'text-emerald-900',
-  title: 'font-extrabold leading-[1.08] tracking-tight',
-  titleFeed: 'text-[1.85rem] sm:text-[2.45rem]',
+  title: 'text-center font-extrabold leading-[1.08] tracking-tight',
+  titleFeed: 'text-[2.05rem] sm:text-[2.75rem]',
   scheduleRow: 'flex w-full items-baseline justify-between gap-3 text-sm font-semibold',
   scheduleLeft: 'min-w-0 truncate text-left',
   scheduleRight: 'shrink-0 text-right tabular-nums',
   titleOnPhoto: 'text-white',
   titleOnFallback: 'text-neutral-900',
   labelPill: 'rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+  /** Audience / policy tags under facts panel — readable chips, not shouty caps. */
+  labelRequirement: 'rounded-full px-2.5 py-1 text-[10px] font-semibold leading-tight normal-case tracking-normal',
   labelOnPhoto: 'bg-black/40 text-white ring-1 ring-white/35 backdrop-blur-[3px]',
   labelOnFallback: 'bg-white/70 text-neutral-700',
-  railArticle: 'w-[17.5rem] shrink-0 snap-start',
-  railMedia:
-    `relative ${LIST_FEED_POSTER_ASPECT} w-full overflow-hidden rounded-[20px] bg-neutral-100 ring-1 ring-black/[0.06]`,
-  railOverlayBottom:
-    'pointer-events-none absolute inset-0 z-[2] flex h-full min-h-0 flex-col px-3 pb-2.5 pt-8 text-left',
-  railOverlayCaptionHeaderSlot: 'flex shrink-0 flex-col justify-start pt-10',
-  railFactsLine: 'w-full text-[11px] font-semibold leading-snug',
-  railTitle: 'text-[1.25rem] font-extrabold leading-[1.12] tracking-tight',
 } as const;

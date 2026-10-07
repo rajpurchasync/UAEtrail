@@ -18,7 +18,7 @@ export const ExploreSocialPanelTabs = ({
   followedCount,
 }: ExploreSocialPanelTabsProps) => (
   <div
-    className={`${EXPLORE_BROWSE_SEGMENT_TAB.row} min-w-0 overflow-x-auto scroll-smooth scrollbar-none`}
+    className={`${EXPLORE_BROWSE_SEGMENT_TAB.row} mb-2 min-w-0 max-w-full overflow-x-auto scroll-smooth scrollbar-none`}
     role="tablist"
     aria-label="Social views"
   >

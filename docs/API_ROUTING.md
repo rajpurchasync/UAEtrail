@@ -174,9 +174,42 @@ Registration: `registerEntityFollowRoutes.ts` · store: `entity-follow-store.ts`
 
 ---
 
+## Member follow (`/me/following`)
+
+**People** you follow for social graph and publish alerts — not entity follows (`/me/entity-follows`) or wishlist.
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/following` | List followed members (summary rows) |
+| POST | `/me/following/:userId` | Follow a member |
+| DELETE | `/me/following/:userId` | Unfollow |
+| GET | `/me/follow-state/:userId` | `{ isFollowing, canFollow }` |
+
+Registration: `registerFollowRoutes.ts` · store: `follow-store.ts` (`user_follows`).
+
+---
+
+## Personal goals (`/me/goals`)
+
+Time-bounded outdoor targets — progress from joined/hosted outings and visited map pins in the goal window. Mongo: `user_goals`. Not wishlist saves.
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/goals` | List up to **3** concurrent goals (`MemberGoalDTO`) |
+| POST | `/me/goals` | Create goal (`activityFilter`, `countMode`, `targetCount`, `targetDate`) |
+| PATCH | `/me/goals/:id` | Update goal |
+| DELETE | `/me/goals/:id` | Remove goal |
+| GET | `/me/goals/active` | Legacy primary goal only |
+| PUT | `/me/goals/active` | Legacy upsert primary |
+| DELETE | `/me/goals/active` | Legacy clear primary |
+
+Registration: `registerMeGoalsRoutes.ts` · store: `member-goals-store.ts`.
+
+---
+
 ## Account data export (`GET /me/export`)
 
-JSON download of profile, join requests, participations, **wishlist**, **entity follows**, shop orders, and push subscription count. Registration: `registerAccountLifecycleRoutes.ts` · `buildUserDataExport` in `data-export.ts`. Rate-limited (`sensitiveDataLimiter`).
+JSON download of profile, join requests, participations, **wishlist**, **entity follows**, **member following**, **goals**, **badges**, **journey map pins**, shop orders, and push subscription count. Registration: `registerAccountLifecycleRoutes.ts` · `buildUserDataExport` in `data-export.ts`. Rate-limited (`sensitiveDataLimiter`).
 
 ---
 

@@ -1,8 +1,12 @@
 import type { MapFilterKey } from '../config/routingCatalog';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
-import { BROWSE_TRIP_TOPIC_FILTERS, toggleBrowseTripTopic, type BrowseTripTopicKey } from './browseListTripTopics';
-
+import {
+  BROWSE_TRIP_TOPIC_FILTERS,
+  toggleBrowseTripTopicInList,
+  type BrowseTripTopicKey,
+} from './browseListTripTopics';
+import { listVenuePlaceTopicsForUi, toggleListVenuePlaceTopic } from './listVenuePlaceTopics';
 export type ListCategoryPill = {
   id: string;
   label: string;
@@ -32,12 +36,19 @@ export const listCategorySecondaryFiltersActive = (
   venueRegions: string[]
 ): boolean => {
   if (category === 'trips') {
-    return filters.price !== 'all' || filters.when !== 'any';
+    return (
+      filters.price !== 'all' ||
+      filters.when !== 'any' ||
+      filters.activityDatePreset !== 'anyday'
+    );
   }
   if (category === 'shops') {
     return filters.price !== 'all' || venueRegions.length > 0;
   }
   if (category === 'venues') {
+    return venueRegions.length > 0 || filters.placeTopics.length > 0;
+  }
+  if (category === 'guides' || category === 'agencies') {
     return venueRegions.length > 0;
   }
   return false;
@@ -49,20 +60,52 @@ export const buildListCategoryPrimaryPills = (
   filters: BrowseListFilterState,
   sync: (patch: Partial<BrowseListFilterState> & { regions?: string[] }) => void
 ): ListCategoryPill[] => {
-  if (category === 'shops' || category === 'trips') return [];
+  if (category === 'trips') {
+    const topicPills = BROWSE_TRIP_TOPIC_FILTERS.map(({ key, label }) => ({
+      id: `topic-${key}`,
+      label,
+      filterKey: key,
+      active: !filters.tripLookingOnly && filters.tripTopics.includes(key as BrowseTripTopicKey),
+      onToggle: () => {
+        const nextTopics = toggleBrowseTripTopicInList(filters.tripTopics, key as BrowseTripTopicKey);
+        sync({ tripTopics: nextTopics, tripLookingOnly: false });
+      },
+    }));
+    return [
+      ...topicPills,
+      {
+        id: 'topic-looking',
+        label: 'Looking for',
+        active: filters.tripLookingOnly,
+        onToggle: () =>
+          sync({
+            tripLookingOnly: !filters.tripLookingOnly,
+            tripTopics: [],
+          }),
+      },
+    ];
+  }
 
-  const topics =
-    category === 'venues'
-      ? BROWSE_TRIP_TOPIC_FILTERS.filter((t) => t.key !== 'rideshare')
-      : BROWSE_TRIP_TOPIC_FILTERS;
+  if (category === 'shops' || category === 'guides' || category === 'agencies') {
+    return [];
+  }
 
-  return topics.map(({ key, label }) => ({
-    id: `topic-${key}`,
-    label,
-    filterKey: key,
-    active: filters.tripTopic === key,
-    onToggle: () => sync({ tripTopic: toggleBrowseTripTopic(filters.tripTopic, key as BrowseTripTopicKey) }),
-  }));
+  if (category === 'venues') {
+    return listVenuePlaceTopicsForUi().map(({ key, label, filterKey }) => ({
+      id: `place-topic-${key}`,
+      label,
+      filterKey: filterKey === 'facilities' ? undefined : (filterKey as MapFilterKey),
+      active: filters.placeTopics.includes(key),
+      onToggle: () =>
+        sync({
+          placeTopics: toggleListVenuePlaceTopic(filters.placeTopics, key),
+          tripTopics: [],
+          tripLookingOnly: false,
+        }),
+    }));
+  }
+
+  return [];
 };
 
 /** @deprecated Use primary pills + ListCategoryMoreFiltersSheet */
@@ -74,21 +117,35 @@ export const buildListCategoryPillGroups = (
 ): ListCategoryPillGroup[] => {
   const groups: ListCategoryPillGroup[] = [];
 
-  if (category === 'trips' || category === 'venues') {
-    const topics =
-      category === 'venues'
-        ? BROWSE_TRIP_TOPIC_FILTERS.filter((t) => t.key !== 'rideshare')
-        : BROWSE_TRIP_TOPIC_FILTERS;
+  if (category === 'trips') {
     groups.push({
       id: 'type',
-      label: category === 'trips' ? 'Activity' : 'Place type',
-      pills: topics.map(({ key, label }) => ({
+      label: 'Activity',
+      pills: BROWSE_TRIP_TOPIC_FILTERS.map(({ key, label }) => ({
         id: `topic-${key}`,
         label,
         filterKey: key,
-        active: filters.tripTopic === key,
+        active: filters.tripTopics.includes(key as BrowseTripTopicKey),
         onToggle: () =>
-          sync({ tripTopic: toggleBrowseTripTopic(filters.tripTopic, key as BrowseTripTopicKey) }),
+          sync({ tripTopics: toggleBrowseTripTopicInList(filters.tripTopics, key as BrowseTripTopicKey) }),
+      })),
+    });
+  }
+
+  if (category === 'venues') {
+    groups.push({
+      id: 'type',
+      label: 'Place type',
+      pills: listVenuePlaceTopicsForUi().map(({ key, label, filterKey }) => ({
+        id: `place-topic-${key}`,
+        label,
+        filterKey: filterKey === 'facilities' ? undefined : (filterKey as MapFilterKey),
+        active: filters.placeTopics.includes(key),
+        onToggle: () =>
+          sync({
+            placeTopics: toggleListVenuePlaceTopic(filters.placeTopics, key),
+            tripTopics: [],
+          }),
       })),
     });
   }

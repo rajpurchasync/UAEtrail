@@ -4,7 +4,7 @@ import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
 import { LIST_CHROME } from '../listChromeTheme';
 import { buildListDiscoverRails, type ListDiscoverRail } from '../listDiscoverRails';
 import { ListDiscoverCategoryNavigateRow } from './ListDiscoverCategoryNavigateRow';
-import { ListFeedPosterCard } from './feed/ListFeedPosterCard';
+import { ListDiscoverRailPreviewCard } from './ListDiscoverRailPreviewCard';
 
 interface ListDiscoverHomeProps {
   cards: ExploreCardModel[];
@@ -37,7 +37,7 @@ const DiscoverRailSection = ({
     </div>
     <div className={RAIL_SCROLL}>
       {rail.items.map((card) => (
-        <ListFeedPosterCard key={card.id} card={card} variant="rail" />
+        <ListDiscoverRailPreviewCard key={card.id} card={card} />
       ))}
     </div>
   </section>

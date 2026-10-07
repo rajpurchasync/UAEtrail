@@ -3,14 +3,15 @@ import { buildExploreCardModel, type ExploreCardModel } from '../explore/explore
 import { buildVenueCoverByLocationId, enrichBrowsePosterCover } from './browsePosterCover';
 import { enrichListFeedCardModel } from './enrichListFeedCard';
 
-/** Full explore map → poster cards (discover home rails — not list filter state). */
-export const buildBrowseCardsFromMapItems = (
+/** Map explore items → enriched list poster card models (`listFeedPosterStandard.ts`). */
+export const buildListFeedCards = (
   items: ExploreMapItemDTO[],
-  user: { id: string } | null | undefined
+  user: { id: string } | null | undefined,
+  mapPool: ExploreMapItemDTO[] = items
 ): ExploreCardModel[] => {
-  const venueCoverByLocationId = buildVenueCoverByLocationId(items);
+  const venueCoverByLocationId = buildVenueCoverByLocationId(mapPool);
   return items.map((item) => {
     const card = enrichBrowsePosterCover(buildExploreCardModel(item), venueCoverByLocationId);
-    return enrichListFeedCardModel(card, item, items, user);
+    return enrichListFeedCardModel(card, item, mapPool, user);
   });
 };

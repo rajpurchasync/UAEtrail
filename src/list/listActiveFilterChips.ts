@@ -46,14 +46,16 @@ export const buildListActiveFilterChips = (
       label: 'Looking for',
       clear: { tripLookingOnly: false },
     });
-  } else if (filters.tripTopic !== 'all') {
-    const label = tripTopicLabel(filters.tripTopic);
-    if (label) {
-      chips.push({
-        key: 'topic',
-        label,
-        clear: { tripTopic: 'all' },
-      });
+  } else if (filters.tripTopics.length > 0) {
+    for (const topic of filters.tripTopics) {
+      const label = tripTopicLabel(topic);
+      if (label) {
+        chips.push({
+          key: `topic-${topic}`,
+          label,
+          clear: { tripTopics: filters.tripTopics.filter((t) => t !== topic) },
+        });
+      }
     }
   }
 

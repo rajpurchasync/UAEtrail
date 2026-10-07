@@ -57,7 +57,7 @@ const dedupeExploreListById = (list: ExploreMapItemDTO[]): ExploreMapItemDTO[] =
 const listFromPool = (pool: ExploreMapItemDTO[], matchesQuery: (item: ExploreMapItemDTO) => boolean) => {
   const matching = dedupeExploreListById(pool.filter(matchesQuery));
   const plans = matching.filter((item) => item.source === 'activity' || item.source === 'demand');
-  const spots = matching.filter((item) => mapItemMatchesSearchScope(item, 'spots'));
+  const spots = matching.filter((item) => mapItemMatchesSearchScope(item, 'places'));
   const shops = matching.filter((item) => mapItemMatchesSearchScope(item, 'shops'));
   return dedupeExploreListById([
     ...sortExploreActivities(plans),
@@ -208,9 +208,14 @@ export const useExploreBrowseList = ({
 
     const hostedTripsPool = () =>
       items
-        .filter((item) => mapItemMatchesSearchScope(item, 'trips'))
+        .filter((item) => mapItemMatchesSearchScope(item, 'activities'))
         .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic))
         .filter((item) => matchesActivityDateFilter(item, activityDatePreset));
+
+    const peopleListPool = () =>
+      items
+        .filter((item) => mapItemMatchesSearchScope(item, 'people'))
+        .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic));
 
     const placesListPool = () =>
       items
@@ -218,16 +223,24 @@ export const useExploreBrowseList = ({
         .filter((item) => matchesPlacesMapFilter(item, mapFilter))
         .filter((item) => venueItemMatchesRegions(item, venueRegions));
 
-    if (hasQuery && searchScope === 'trips') {
+    if (hasQuery && searchScope === 'activities') {
       return sortExploreActivities(hostedTripsPool().filter(matchesQuery));
     }
 
-    if (hasQuery && searchScope === 'spots') {
+    if (hasQuery && searchScope === 'people') {
+      return sortExploreActivities(peopleListPool().filter(matchesQuery));
+    }
+
+    if (hasQuery && searchScope === 'places') {
       return sortExploreVenues(placesListPool().filter(matchesQuery));
     }
 
     if (hasQuery && searchScope === 'shops') {
       return sortExploreVenues(items.filter(isShopListItem).filter(matchesQuery));
+    }
+
+    if (hasQuery && searchScope === 'agencies') {
+      return sortExploreVenues(items.filter((item) => item.source === 'agency').filter(matchesQuery));
     }
 
     if (hasQuery && searchScope === null) {

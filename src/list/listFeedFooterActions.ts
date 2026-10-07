@@ -5,13 +5,15 @@ import {
   resolveActivityMapPeekActions,
 } from '../explore/activityMapPeekActions';
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
+import { exploreCardHasMapCoords } from '../explore/exploreCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 
 export type ListFeedFooterButton =
   | { kind: 'link'; label: string; href: string }
   | { kind: 'action'; label: string; actionId: ActivityMapPeekActionId }
   | { kind: 'disabled'; label: string }
-  | { kind: 'guest_gate'; label: string };
+  | { kind: 'guest_gate'; label: string }
+  | { kind: 'directions'; label: string; lat: number; lng: number };
 
 export type ListFeedFooterModel = {
   primary: ListFeedFooterButton;
@@ -22,7 +24,12 @@ export type ListFeedFooterModel = {
 /** Join / gate primary on poster image — details open via full-card tap. */
 export const shouldShowListFeedImageCta = (model: ListFeedFooterModel): boolean => {
   const kind = model.primary.kind;
-  return kind === 'action' || kind === 'guest_gate' || kind === 'disabled';
+  return (
+    kind === 'action' ||
+    kind === 'guest_gate' ||
+    kind === 'disabled' ||
+    kind === 'directions'
+  );
 };
 
 const detailButton = (card: ExploreCardModel): ListFeedFooterButton => ({
@@ -39,6 +46,19 @@ export const resolveListFeedFooterModel = (
   }
 ): ListFeedFooterModel => {
   const { isGuest, joinUiState } = options;
+
+  if (card.source === 'venue' && exploreCardHasMapCoords(card)) {
+    return {
+      primary: {
+        kind: 'directions',
+        label: 'Get directions',
+        lat: card.mapLatitude!,
+        lng: card.mapLongitude!,
+      },
+      secondary: null,
+      usesJoinFlow: false,
+    };
+  }
 
   if (isGuest && (card.source === 'activity' || card.source === 'demand') && card.showJoinActions) {
     return {

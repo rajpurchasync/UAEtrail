@@ -12,7 +12,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
 | **List discovery** | `/list` | Full-screen poster/list browse (same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/trips` | Account hub, settings stack, trips (upcoming / past / wishlist) |
-| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | Map · My trips · **Chat** bottom nav (`md:hidden`; route `/chat`); **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
+| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | **Three tabs only** — Map · My trips · **Chat** (`md:hidden`; route `/chat`). **No List tab.** Browse list on mobile opens from the **List** pill on the explore map (`list=1` / overlay), not bottom nav. Optional full-screen `/list` only via handoff (`listDiscoveryPathFromExploreSearch()`), not a tab target. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
 | **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/guide`, `/agency`, `/partner` | Place, scheduled outing, shop, or brand profile |
 
 ### Profile hub (`/profile`)
@@ -144,6 +144,8 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - **Desktop (`lg+`):** browse **list panel open** by default (`list=1` synced to URL). Mobile: map-first (`list=0` unless opened).
 - **Map framing:** upper-UAE overview (zoom ~8); optional GPS / **Locate** recenters at the same regional zoom (not street-level).
 - Landing on `/explore` without `list` → desktop opens list; mobile stays map-only.
+- **Mobile list entry:** **List** floating pill on the map (`ExploreMapStage` → `onOpenBrowse`) — not a fourth bottom-nav item. Do not add `/list` to `MOBILE_BOTTOM_NAV_TAB_PATHS`.
+- **Embedded list → full screen:** explore sidebar / map overlay expose **Full screen browse** → `/list` with the same query (`listDiscoveryPathFromExploreSearch()`).
 - **Mobile map filters:** horizontal scroll — All · Hiking · Camping · Rideshare · Activities · Shops (no “More” sheet).
 - **Guest join:** tapping Join on an activity opens a signup sheet (returns to map after auth).
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.

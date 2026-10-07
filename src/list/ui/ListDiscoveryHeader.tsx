@@ -1,4 +1,4 @@
-import { ChevronLeft, Map, PanelLeftClose, X } from 'lucide-react';
+import { ChevronLeft, PanelLeftClose, X } from 'lucide-react';
 
 import type { ReactNode } from 'react';
 
@@ -62,6 +62,9 @@ interface ListDiscoveryHeaderProps {
 
   closeVariant?: 'collapse' | 'dismiss';
 
+  /** Shown under centered category title (e.g. “7 activities”). */
+  categoryResultsLabel?: string | null;
+
 }
 
 
@@ -102,6 +105,8 @@ export const ListDiscoveryHeader = ({
 
   closeVariant = 'dismiss',
 
+  categoryResultsLabel = null,
+
 }: ListDiscoveryHeaderProps) => {
 
   const { user } = useAuth();
@@ -138,7 +143,7 @@ export const ListDiscoveryHeader = ({
 
       onClick={onCloseMapOverlay}
 
-      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-800 active:bg-neutral-100"
+      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-800 active:bg-neutral-100 focus:outline-none focus-visible:outline-none"
 
       aria-label={closeVariant === 'collapse' ? 'Collapse list panel' : 'Close discover panel'}
 
@@ -157,8 +162,6 @@ export const ListDiscoveryHeader = ({
     </button>
 
   ) : null;
-
-
 
   const searchField = (
 
@@ -184,7 +187,7 @@ export const ListDiscoveryHeader = ({
 
       compactTop
 
-      hideMapLink={mapOverlay ? false : !showMapLink}
+      hideMapLink={isHome || isCategory ? true : mapOverlay ? false : !showMapLink}
 
       className="!mt-0"
 
@@ -208,7 +211,13 @@ export const ListDiscoveryHeader = ({
 
         className={`${chromeWidth} ${
 
-          isHome ? 'space-y-2.5 pb-2' : isCategory ? (mapOverlay ? 'space-y-2 pb-1.5' : 'pb-2.5') : 'pb-3'
+          isHome
+            ? 'space-y-2.5 pb-2'
+            : isCategory
+              ? 'space-y-3 pb-3'
+              : view === 'search'
+                ? 'space-y-3 pb-3'
+                : 'pb-3'
 
         }`}
 
@@ -216,7 +225,7 @@ export const ListDiscoveryHeader = ({
 
         {isCategory && categoryFocus && onBackFromCategory ? (
 
-          <div className={`${LIST_APP_BAR.row} ${mapOverlay ? 'min-h-10' : 'min-h-11'} items-center gap-1`}>
+          <div className={`grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1 ${mapOverlay ? 'min-h-10' : 'min-h-11'}`}>
 
             <button
 
@@ -224,51 +233,43 @@ export const ListDiscoveryHeader = ({
 
               onClick={onBackFromCategory}
 
-              className="flex min-w-0 flex-1 items-center gap-0.5 text-left active:opacity-80"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-900 active:bg-neutral-100 focus:outline-none focus-visible:outline-none"
+
+              aria-label={`Back from ${LIST_CATEGORY_PAGE_TITLE[categoryFocus]}`}
 
             >
 
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full active:bg-neutral-100">
-
-                <ChevronLeft className="h-6 w-6 text-neutral-900" aria-hidden />
-
-              </span>
-
-              <span className="truncate text-lg font-bold tracking-tight text-neutral-900">
-
-                {LIST_CATEGORY_PAGE_TITLE[categoryFocus]}
-
-              </span>
+              <ChevronLeft className="h-6 w-6" aria-hidden />
 
             </button>
 
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="min-w-0 px-1 text-center">
 
-              {showMapLink ? (
+              <h2 className="truncate text-lg font-bold leading-tight tracking-tight text-neutral-900">
 
-                <Link
+                {LIST_CATEGORY_PAGE_TITLE[categoryFocus]}
 
-                  to={mapHref}
+              </h2>
 
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-900 active:scale-95 md:hidden"
+              {categoryResultsLabel ? (
 
-                  aria-label={BROWSE_LIST_MAP_CTA}
+                <p className="mt-0.5 truncate text-xs font-semibold tabular-nums text-neutral-600">
 
-                >
+                  {categoryResultsLabel}
 
-                  <Map className="h-[18px] w-[18px] text-emerald-600" aria-hidden />
-
-                </Link>
+                </p>
 
               ) : null}
 
-              {embeddedOnExplore ? closeButton : null}
+            </div>
 
-              {!embeddedOnExplore ? (
+            <div className="flex items-center justify-end">
+
+              {embeddedOnExplore ? closeButton : (
 
                 <MobileMenuButton tone="default" showOnDesktop className={LIST_CHROME.menuButton} />
 
-              ) : null}
+              )}
 
             </div>
 
@@ -278,43 +279,35 @@ export const ListDiscoveryHeader = ({
 
           <>
 
-            {embeddedOnExplore ? (
+            <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1 min-h-10">
 
-              <div className="flex items-center gap-2">
+              <span className="w-10 shrink-0" aria-hidden />
 
-                <h2 className="min-w-0 flex-1 text-left text-lg font-bold leading-tight tracking-tight text-neutral-900">
+              <h2 className="min-w-0 px-1 text-center text-lg font-bold leading-tight tracking-tight text-neutral-900">
 
-                  {LIST_DISCOVER_LOOKING_PROMPT}
+                {LIST_DISCOVER_LOOKING_PROMPT}
 
-                </h2>
+              </h2>
 
-                {closeButton}
+              <div className="flex items-center justify-end">
+
+                {embeddedOnExplore ? (
+
+                  closeButton
+
+                ) : user ? (
+
+                  <MobileMenuButton tone="default" showOnDesktop className={LIST_CHROME.menuButton} />
+
+                ) : (
+
+                  <span className="w-10 shrink-0" aria-hidden />
+
+                )}
 
               </div>
 
-            ) : (
-
-              <>
-
-                {user ? (
-
-                  <div className="flex justify-end">
-
-                    <MobileMenuButton tone="default" showOnDesktop className={LIST_CHROME.menuButton} />
-
-                  </div>
-
-                ) : null}
-
-                <h2 className="text-left text-lg font-bold leading-tight tracking-tight text-neutral-900">
-
-                  {LIST_DISCOVER_LOOKING_PROMPT}
-
-                </h2>
-
-              </>
-
-            )}
+            </div>
 
             {searchField}
 
@@ -322,7 +315,7 @@ export const ListDiscoveryHeader = ({
 
         ) : embeddedOnExplore ? (
 
-          <div className="flex justify-end">{closeButton}</div>
+          <div className="flex justify-end gap-1">{closeButton}</div>
 
         ) : !embeddedOnExplore && user ? (
 
@@ -336,7 +329,7 @@ export const ListDiscoveryHeader = ({
 
 
 
-        {!isHome ? searchField : null}
+        {view === 'search' ? searchField : null}
 
 
 

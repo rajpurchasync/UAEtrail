@@ -1,5 +1,4 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { MapFilterKey } from '../config/routingCatalog';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import {
   matchesActivityDateFilter,
@@ -12,6 +11,9 @@ import { resolveExploreItemScheduleDate } from '../explore/ui/exploreMapPinModel
 import { venueItemMatchesRegions } from '../utils/venueRegionFilter';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
+import type { BrowseTripTopicKey } from './browseListTripTopics';
+import { matchesListVenuePlaceTopic } from './listVenuePlaceTopicFilter';
+import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
 export type BrowseCategoryKey = BrowseMainCategoryKey;
 
@@ -23,10 +25,12 @@ export type BrowseListFilterState = {
   query: string;
   /** Main buckets: Trips (activity + demand) · Venues · Shops */
   categories: BrowseMainCategoryKey[];
-  /** Hosted trip topic — explore `filter=` (hiking · camping · rideshare · all) */
-  tripTopic: MapFilterKey;
+  /** Hosted trip topics — empty = all; OR match when multiple selected. */
+  tripTopics: BrowseTripTopicKey[];
   /** Demand-only — explore pin kind `looking` (`filter=looking`). */
   tripLookingOnly: boolean;
+  /** Places category — hiking · camping · others (see `listVenuePlaceTopics.ts`). */
+  placeTopics: ListVenuePlaceTopicKey[];
   price: BrowsePriceFilter;
   when: BrowseWhenFilter;
   /** Aligns with explore map `?date=` (today · tomorrow · week · month). */
@@ -76,8 +80,17 @@ export const filterExploreMapItemsForList = (
 
   if (state.tripLookingOnly) {
     pool = pool.filter((item) => item.source === 'demand');
-  } else if (state.tripTopic !== 'all') {
-    pool = pool.filter((item) => matchesUnifiedTopicFilter(item, state.tripTopic, 'all', 'all'));
+  } else if (state.tripTopics.length > 0) {
+    pool = pool.filter((item) =>
+      state.tripTopics.some((topic) => matchesUnifiedTopicFilter(item, topic, 'all', 'all'))
+    );
+  }
+
+  if (state.placeTopics.length > 0) {
+    pool = pool.filter((item) => {
+      if (item.source !== 'venue') return true;
+      return state.placeTopics.some((topic) => matchesListVenuePlaceTopic(item, topic));
+    });
   }
 
   if (state.query.trim()) {

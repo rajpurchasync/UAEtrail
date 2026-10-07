@@ -3,6 +3,10 @@ import { SlidersHorizontal } from 'lucide-react';
 import { EXPLORE_BRAND_ACTIVE } from '../../config/exploreTheme';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import {
+  EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS,
+  type ExploreActivityDatePreset,
+} from '../../explore/exploreActivityDateFilter';
+import {
   BROWSE_PRICE_OPTIONS,
   BROWSE_WHEN_OPTIONS,
   type BrowseListFilterState,
@@ -10,14 +14,23 @@ import {
   type BrowseWhenFilter,
 } from '../browseListFilters';
 import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
-import { LIST_FILTERS_CHIP_BADGE, listChipClass, listFilterIconButtonClass } from '../listChromeTheme';
+import {
+  LIST_CATEGORY_FLOATING_FILTER,
+  LIST_FILTERS_CHIP_BADGE,
+  listChipClass,
+  listFilterIconButtonClass,
+} from '../listChromeTheme';
 
 interface ListCategoryMoreFiltersMenuProps {
   category: BrowseMainCategoryKey;
   applied: BrowseListFilterState;
   regions: string[];
+  activityDatePreset?: ExploreActivityDatePreset;
+  onActivityDatePresetChange?: (preset: ExploreActivityDatePreset) => void;
   moreFiltersActive: boolean;
   onApply: (patch: Partial<BrowseListFilterState> & { regions?: string[] }) => void;
+  /** Rounded floating control on category topic row. */
+  floating?: boolean;
 }
 
 const SegmentRow = <T extends string>({
@@ -48,23 +61,28 @@ export const ListCategoryMoreFiltersMenu = ({
   category,
   applied,
   regions,
+  activityDatePreset = 'anyday',
+  onActivityDatePresetChange,
   moreFiltersActive,
   onApply,
+  floating = false,
 }: ListCategoryMoreFiltersMenuProps) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const [price, setPrice] = useState<BrowsePriceFilter>(applied.price);
   const [when, setWhen] = useState<BrowseWhenFilter>(applied.when);
+  const [datePreset, setDatePreset] = useState<ExploreActivityDatePreset>(activityDatePreset);
   const [draftRegions, setDraftRegions] = useState(regions);
 
   useEffect(() => {
     if (open) {
       setPrice(applied.price);
       setWhen(applied.when);
+      setDatePreset(activityDatePreset);
       setDraftRegions(regions);
     }
-  }, [open, applied.price, applied.when, regions]);
+  }, [open, applied.price, applied.when, activityDatePreset, regions]);
 
   useEffect(() => {
     if (!open) return;
@@ -83,11 +101,14 @@ export const ListCategoryMoreFiltersMenu = ({
 
   const showPrice = category === 'trips' || category === 'shops';
   const showWhen = category === 'trips';
-  const showArea = category === 'venues' || category === 'shops';
+  const showDate = category === 'trips' && Boolean(onActivityDatePresetChange);
+  const showArea =
+    category === 'venues' || category === 'shops' || category === 'guides' || category === 'agencies';
 
   const reset = () => {
     setPrice('all');
     setWhen('any');
+    setDatePreset('anyday');
     setDraftRegions([]);
   };
 
@@ -95,6 +116,7 @@ export const ListCategoryMoreFiltersMenu = ({
     onApply({
       price: showPrice ? price : applied.price,
       when: showWhen ? when : applied.when,
+      activityDatePreset: showDate ? datePreset : applied.activityDatePreset,
       regions: showArea ? draftRegions : regions,
     });
     setOpen(false);
@@ -105,7 +127,7 @@ export const ListCategoryMoreFiltersMenu = ({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className={`relative ${listFilterIconButtonClass()}`}
+        className={`relative ${floating ? LIST_CATEGORY_FLOATING_FILTER : listFilterIconButtonClass()}`}
         aria-expanded={open}
         aria-controls={panelId}
         aria-haspopup="dialog"
@@ -126,13 +148,24 @@ export const ListCategoryMoreFiltersMenu = ({
             <div className="flex items-start justify-between gap-3 border-b border-neutral-100 px-4 py-3">
               <div>
                 <p className="text-sm font-bold text-neutral-950">Filters</p>
-                <p className="text-xs text-neutral-500">Price, timing, and area</p>
+                <p className="text-xs text-neutral-500">Date, price, and area</p>
               </div>
               <button type="button" onClick={reset} className="text-xs font-semibold text-emerald-700">
                 Reset
               </button>
             </div>
             <div className="max-h-[min(50dvh,20rem)] space-y-5 overflow-y-auto px-4 py-4">
+              {showDate ? (
+                <SegmentRow
+                  label="Date"
+                  options={EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS.map((option) => ({
+                    key: option.value,
+                    label: option.label,
+                  }))}
+                  value={datePreset}
+                  onChange={setDatePreset}
+                />
+              ) : null}
               {showPrice ? (
                 <SegmentRow label="Price" options={BROWSE_PRICE_OPTIONS} value={price} onChange={setPrice} />
               ) : null}

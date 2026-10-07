@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Share2, Facebook, Link as LinkIcon, Mail, Check } from 'lucide-react';
+import { Share2, Send, Facebook, Link as LinkIcon, Mail, Check } from 'lucide-react';
 import { buildShareText, buildShareUrl } from '../../utils/share';
 
 interface ShareButtonProps {
@@ -16,6 +16,9 @@ interface ShareButtonProps {
   light?: boolean;
   /** Icon-only on photos — no circular background (list feed). */
   bare?: boolean;
+  /** Instagram-style paper plane instead of share nodes. */
+  icon?: 'share' | 'send';
+  iconClassName?: string;
   disabled?: boolean;
   className?: string;
 }
@@ -34,6 +37,8 @@ export const ShareButton = ({
   iconOnly = false,
   light = false,
   bare = false,
+  icon = 'share',
+  iconClassName,
   disabled = false,
   className = '',
 }: ShareButtonProps) => {
@@ -114,7 +119,15 @@ export const ShareButton = ({
         className={`${buttonClass}${disabled ? ' opacity-50 pointer-events-none' : ''}`}
         aria-label="Share"
       >
-        <Share2 className={iconOnly ? 'w-3.5 h-3.5' : 'w-5 h-5'} />
+        {icon === 'send' ? (
+          <Send
+            className={iconClassName ?? (iconOnly ? 'h-[1.35rem] w-[1.35rem]' : 'h-5 w-5')}
+            strokeWidth={2}
+            aria-hidden
+          />
+        ) : (
+          <Share2 className={iconClassName ?? (iconOnly ? 'w-3.5 h-3.5' : 'w-5 h-5')} aria-hidden />
+        )}
         {!compact && !iconOnly && 'Share'}
       </button>
 

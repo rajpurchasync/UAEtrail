@@ -41,12 +41,12 @@ if (failed) {
 console.log('[verify:domain] docs + catalog OK');
 
 execSync(
-  'npx vitest run src/list/routing.test.ts src/config/routingHygiene.test.ts src/config/routingCatalogAdoption.test.ts src/config/systemCoherenceGuard.test.ts src/config/boundedContextAlignment.test.ts src/config/mapNavigationGuard.test.ts src/member/hostMemberGuard.test.ts src/member/organisationNamingGuard.test.ts src/wishlist/wishlistNamingGuard.test.ts src/member/archivedDocsGuard.test.ts src/api/apiLegacyGuard.test.ts src/api/services.domain-aliases.test.ts src/messaging/clientGuard.test.ts src/utils/notificationRouting.test.ts src/utils/notificationCategories.test.ts src/utils/notificationTopics.test.ts src/utils/notificationSearch.test.ts src/utils/mapLinks.test.ts src/utils/preferredNavigationApp.test.ts',
+  'npx vitest run src/list/routing.test.ts src/list/listDiscoveryMode.test.ts src/config/mobileBottomNav.test.ts src/config/routingHygiene.test.ts src/config/routingCatalogAdoption.test.ts src/config/systemCoherenceGuard.test.ts src/config/boundedContextAlignment.test.ts src/config/mapNavigationGuard.test.ts src/member/hostMemberGuard.test.ts src/member/organisationNamingGuard.test.ts src/wishlist/wishlistNamingGuard.test.ts src/member/archivedDocsGuard.test.ts src/api/apiLegacyGuard.test.ts src/api/services.domain-aliases.test.ts src/messaging/clientGuard.test.ts src/utils/notificationRouting.test.ts src/utils/notificationCategories.test.ts src/utils/notificationTopics.test.ts src/utils/notificationSearch.test.ts src/utils/mapLinks.test.ts src/utils/preferredNavigationApp.test.ts',
   { cwd: root, stdio: 'inherit' }
 );
 
 execSync(
-  'npm --workspace @uaetrail/api run test -- --run tests/naming-coherence.test.ts tests/wishlist-naming-guard.test.ts tests/entity-follow-contract.test.ts tests/data-export-contract.test.ts tests/bounded-context-alignment.test.ts tests/member-routes-alignment.test.ts tests/admin-route-registrars.test.ts tests/platform-master-admin.test.ts tests/user-route-shell.test.ts tests/host-route-shell.test.ts tests/notification-actor-label.test.ts tests/social-people-contract.test.ts tests/social-review-contract.test.ts tests/participant-roster-dto.test.ts',
+  'npm --workspace @uaetrail/api run test -- --run tests/naming-coherence.test.ts tests/wishlist-naming-guard.test.ts tests/entity-follow-contract.test.ts tests/member-goals-contract.test.ts tests/engagement-openapi-contract.test.ts tests/data-export-contract.test.ts tests/bounded-context-alignment.test.ts tests/member-routes-alignment.test.ts tests/admin-route-registrars.test.ts tests/platform-master-admin.test.ts tests/user-route-shell.test.ts tests/host-route-shell.test.ts tests/notification-actor-label.test.ts tests/social-people-contract.test.ts tests/social-review-contract.test.ts tests/participant-roster-dto.test.ts',
   { cwd: root, stdio: 'inherit' }
 );
 

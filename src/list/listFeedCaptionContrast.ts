@@ -57,14 +57,13 @@ export const resolveListFeedCaptionScrim = (bottomLuminance: number | null): Lis
   return 'light';
 };
 
-/** Tailwind `before:` gradient stops — paired with `LIST_FEED.overlayPhotoScrimBase`. */
-export const LIST_FEED_CAPTION_SCRIM_CLASS: Record<ListFeedCaptionScrim, string> = {
-  default:
-    'before:from-black/80 before:from-0% before:via-black/50 before:via-[45%] before:to-transparent before:to-100%',
-  strong:
-    'before:from-black/92 before:from-0% before:via-black/65 before:via-[52%] before:to-transparent before:to-100%',
-  medium:
-    'before:from-black/78 before:from-0% before:via-black/48 before:via-[42%] before:to-transparent before:to-100%',
-  light:
-    'before:from-black/62 before:from-0% before:via-black/32 before:via-[34%] before:to-transparent before:to-100%',
+/** Tailwind `after:` bottom band — paired with `LIST_FEED.overlayPhotoScrimBottom`. */
+export const LIST_FEED_CAPTION_BOTTOM_SCRIM_CLASS: Record<ListFeedCaptionScrim, string> = {
+  default: 'after:from-black/85 after:via-black/45',
+  strong: 'after:from-black/92 after:via-black/65',
+  medium: 'after:from-black/78 after:via-black/48',
+  light: 'after:from-black/62 after:via-black/32',
 };
+
+/** @deprecated Use LIST_FEED_CAPTION_BOTTOM_SCRIM_CLASS with overlayPhotoScrimBottom */
+export const LIST_FEED_CAPTION_SCRIM_CLASS = LIST_FEED_CAPTION_BOTTOM_SCRIM_CLASS;

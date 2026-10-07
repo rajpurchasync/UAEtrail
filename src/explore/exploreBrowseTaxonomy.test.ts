@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   mapItemMatchesFilterPill,
+  mapItemMatchesSearchScope,
   parseExploreMapFilterPillsParam,
+  parseExploreSearchScope,
   toggleExploreMapFilterPill,
 } from './exploreBrowseTaxonomy';
 
@@ -27,6 +29,22 @@ describe('exploreBrowseTaxonomy', () => {
     expect(mapItemMatchesFilterPill(hosted, 'trips')).toBe(true);
     expect(mapItemMatchesFilterPill(demand, 'looking')).toBe(true);
     expect(mapItemMatchesFilterPill(hosted, 'looking')).toBe(false);
+  });
+
+  it('parses legacy and new search scopes', () => {
+    expect(parseExploreSearchScope('trips')).toBe('activities');
+    expect(parseExploreSearchScope('spots')).toBe('places');
+    expect(parseExploreSearchScope('people')).toBe('people');
+    expect(parseExploreSearchScope('agencies')).toBe('agencies');
+  });
+
+  it('maps search scopes to item sources', () => {
+    const hosted = item({ id: 'a1', source: 'activity', kind: 'event' });
+    const demand = item({ id: 'd1', source: 'demand', kind: 'hiking' });
+    const agency = item({ id: 'g1', source: 'agency', kind: 'agency' });
+    expect(mapItemMatchesSearchScope(hosted, 'activities')).toBe(true);
+    expect(mapItemMatchesSearchScope(demand, 'people')).toBe(true);
+    expect(mapItemMatchesSearchScope(agency, 'agencies')).toBe(true);
   });
 
 });

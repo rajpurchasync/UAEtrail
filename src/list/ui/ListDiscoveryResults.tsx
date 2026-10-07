@@ -1,30 +1,57 @@
 import type { ExploreCardModel } from '../../explore/exploreCardModel';
+
 import { browseListResultsFoundLabel } from '../browseListCopy';
-import { ListFeedPosterCard } from './feed/ListFeedPosterCard';
+
+import { ListCategoryImageFeed } from './ListCategoryImageFeed';
+
+
 
 interface ListDiscoveryResultsProps {
+
   cards: ExploreCardModel[];
-  chipsCount: number;
+
+  showClearAll: boolean;
+
   onClearAll: () => void;
+
+  /** When search is places-only, venue posters + topic pills align with Places category. */
+  placesOnly?: boolean;
+
 }
 
-export const ListDiscoveryResults = ({ cards, chipsCount, onClearAll }: ListDiscoveryResultsProps) => (
-  <div className="space-y-4">
+
+
+export const ListDiscoveryResults = ({
+  cards,
+  showClearAll,
+  onClearAll,
+  placesOnly = false,
+}: ListDiscoveryResultsProps) => (
+
+  <div className="space-y-5 pt-1">
+
     <div className="flex flex-wrap items-center justify-between gap-2">
+
       <p className="text-sm font-semibold tabular-nums text-neutral-700">{browseListResultsFoundLabel(cards.length)}</p>
-      {chipsCount > 0 ? (
+
+      {showClearAll ? (
+
         <button type="button" onClick={onClearAll} className="text-sm font-semibold text-emerald-700">
+
           Clear all
+
         </button>
+
       ) : null}
+
     </div>
 
-    <ul className="flex flex-col gap-8">
-      {cards.map((card) => (
-        <li key={card.id}>
-          <ListFeedPosterCard card={card} variant="feed" />
-        </li>
-      ))}
-    </ul>
+
+
+    <ListCategoryImageFeed cards={cards} category={placesOnly ? 'venues' : undefined} />
+
   </div>
+
 );
+
+

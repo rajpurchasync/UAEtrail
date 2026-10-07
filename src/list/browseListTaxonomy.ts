@@ -14,7 +14,14 @@ import {
  * Map URL still uses `topics=trips,looking` when Trips is selected so `/explore` matches.
  * @see docs/experiment/explore-browse-ia.md (Plans = Organize + Demand)
  */
-export type BrowseMainCategoryKey = 'trips' | 'venues' | 'shops';
+export type BrowseMainCategoryKey = 'trips' | 'venues' | 'shops' | 'guides' | 'agencies';
+
+const isGuideBrandItem = (item: ExploreMapItemDTO): boolean =>
+  item.source === 'agency' && item.path.includes('/guide/');
+
+const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
+  item.source === 'agency' &&
+  (item.path.includes('/agency/') || item.path.includes('/partner/'));
 
 /** Plans layer — activity + demand (not a separate list bucket). */
 export const mapItemMatchesBrowseTripsCategory = (item: ExploreMapItemDTO): boolean =>
@@ -30,7 +37,11 @@ export const mapItemMatchesBrowseMainCategory = (
     case 'venues':
       return mapItemMatchesSpotsPill(item);
     case 'shops':
-      return mapItemMatchesShopsPill(item);
+      return mapItemMatchesShopsPill(item) && item.source === 'shop';
+    case 'guides':
+      return isGuideBrandItem(item);
+    case 'agencies':
+      return isAgencyBrandItem(item) || (item.source === 'agency' && !isGuideBrandItem(item));
     default:
       return false;
   }
@@ -81,7 +92,9 @@ export const browseMainCategoriesToTopicPills = (
 };
 
 export const BROWSE_MAIN_CATEGORY_LABELS: ReadonlyArray<{ key: BrowseMainCategoryKey; label: string }> = [
-  { key: 'trips', label: 'Trips' },
-  { key: 'venues', label: 'Venues' },
+  { key: 'trips', label: 'Activities' },
+  { key: 'venues', label: 'Places' },
   { key: 'shops', label: 'Shops' },
+  { key: 'guides', label: 'Buddies' },
+  { key: 'agencies', label: 'Agencies' },
 ];

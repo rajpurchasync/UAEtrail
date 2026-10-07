@@ -6,7 +6,8 @@ import {
   EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS,
   type ExploreActivityDatePreset,
 } from '../../explore/exploreActivityDateFilter';
-import type { MapFilterKey } from '../../explore/routing';
+import type { BrowseTripTopicKey } from '../browseListTripTopics';
+import { toggleBrowseTripTopicInList } from '../browseListTripTopics';
 import { BROWSE_MAIN_CATEGORY_LABELS } from '../browseListTaxonomy';
 import {
   BROWSE_PRICE_OPTIONS,
@@ -74,7 +75,8 @@ export const ListRefineSheet = ({ open, onClose, applied, regions, onApply }: Li
     setDraft({
       query: draft.query,
       categories: [],
-      tripTopic: 'all',
+      tripTopics: [],
+      placeTopics: [],
       tripLookingOnly: false,
       price: 'all',
       when: 'any',
@@ -129,8 +131,8 @@ export const ListRefineSheet = ({ open, onClose, applied, regions, onApply }: Li
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setDraft((p) => ({ ...p, tripTopic: 'all' }))}
-              className={listChipClass(draft.tripTopic === 'all')}
+              onClick={() => setDraft((p) => ({ ...p, tripTopics: [], tripLookingOnly: false }))}
+              className={listChipClass(draft.tripTopics.length === 0 && !draft.tripLookingOnly)}
             >
               All
             </button>
@@ -138,8 +140,14 @@ export const ListRefineSheet = ({ open, onClose, applied, regions, onApply }: Li
               <button
                 key={key}
                 type="button"
-                onClick={() => setDraft((p) => ({ ...p, tripTopic: key as MapFilterKey }))}
-                className={listChipClass(draft.tripTopic === key)}
+                onClick={() =>
+                  setDraft((p) => ({
+                    ...p,
+                    tripTopics: toggleBrowseTripTopicInList(p.tripTopics, key as BrowseTripTopicKey),
+                    tripLookingOnly: false,
+                  }))
+                }
+                className={listChipClass(draft.tripTopics.includes(key as BrowseTripTopicKey))}
               >
                 {label}
               </button>

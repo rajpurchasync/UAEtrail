@@ -6,6 +6,7 @@ export const LIST_DISCOVER_RAIL_PLACES = 'Near you';
 export const LIST_DISCOVER_RAIL_SHOPS = 'Gear Shops';
 export const BROWSE_LIST_SEARCH_PLACEHOLDER = 'Search…';
 export const BROWSE_LIST_MAP_CTA = 'Map';
+export const BROWSE_LIST_FULL_SCREEN_CTA = 'Full screen browse';
 export const browseListResultsFoundLabel = (count: number): string =>
   count === 1 ? '1 found' : `${count.toLocaleString()} found`;
 export const BROWSE_LIST_SECTION_SOON = 'Happening soon';

@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
-import type { MapFilterKey } from '../../config/routingCatalog';
 import { DEMAND_EMOJI } from '../../explore/exploreCopy';
 import { ExploreFilterIcon } from '../../explore/ui/ExploreFilterIcon';
 import {
@@ -11,10 +10,12 @@ import {
 } from '../browseListTripTopics';
 import { listCategoryPillClass } from '../listChromeTheme';
 
+import type { BrowseTripTopicKey } from '../browseListTripTopics';
+
 interface ListCategoryTripTypeFilterProps {
-  tripTopic: MapFilterKey;
+  tripTopics: BrowseTripTopicKey[];
   tripLookingOnly: boolean;
-  onChange: (patch: { tripTopic: MapFilterKey; tripLookingOnly: boolean }) => void;
+  onChange: (patch: { tripTopics: BrowseTripTopicKey[]; tripLookingOnly: boolean }) => void;
 }
 
 const OptionEmoji = ({ planType }: { planType: BrowseTripPlanTypeKey }) => {
@@ -33,14 +34,14 @@ const OptionEmoji = ({ planType }: { planType: BrowseTripPlanTypeKey }) => {
 
 /** Trips — plan type as text + dropdown (hiking · camping · rideshare · looking for). */
 export const ListCategoryTripTypeFilter = ({
-  tripTopic,
+  tripTopics,
   tripLookingOnly,
   onChange,
 }: ListCategoryTripTypeFilterProps) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
-  const selected = resolveBrowseTripPlanType(tripTopic, tripLookingOnly);
+  const selected = resolveBrowseTripPlanType(tripTopics, tripLookingOnly);
   const active = selected !== 'all';
   const triggerLabel =
     BROWSE_TRIP_PLAN_TYPE_OPTIONS.find((o) => o.key === selected)?.label.toLowerCase() ?? 'all types';

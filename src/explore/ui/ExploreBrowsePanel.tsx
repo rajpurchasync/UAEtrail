@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PanelLeftClose, Search, X, ChevronLeft } from 'lucide-react';
 import type { ExploreCardModel } from '../exploreCardModel';
@@ -54,6 +54,7 @@ import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import { ExploreMyTripsModeNotice } from './ExploreMyTripsModeNotice';
 import { ListFeedPosterCard } from '../../list/ui/feed/ListFeedPosterCard';
 import { LIST_FEED } from '../../list/listFeedTheme';
+import { buildListFeedCards } from '../../list/buildListFeedCards';
 
 export interface ExploreBrowsePanelProps {
   isDesktop: boolean;
@@ -123,6 +124,8 @@ export interface ExploreBrowsePanelProps {
   posterFeedCards?: ExploreCardModel[];
   /** Full-viewport browse modal (back affordance, no sheet handle). */
   fullscreenBrowse?: boolean;
+  /** Mobile map sheet — horizontal inset for chrome + lists (Social panel). */
+  mobileSheetChrome?: boolean;
 }
 
 const listHeading = (
@@ -206,8 +209,17 @@ export const ExploreBrowsePanel = ({
   usePosterFeed = false,
   posterFeedCards = [],
   fullscreenBrowse = false,
+  mobileSheetChrome = false,
 }: ExploreBrowsePanelProps) => {
   const socialPanel = listMode === 'social';
+  const mobileSheetPad = !isDesktop && (mobileSheetChrome || fullscreenBrowse);
+  const sheetFillsViewport = fullscreenBrowse && !isDesktop && !socialPanel;
+  const posterFeedBuiltCards = useMemo(
+    () => (usePosterFeed ? buildListFeedCards(listItems, undefined, listItems) : []),
+    [usePosterFeed, listItems]
+  );
+  const posterCardsToRender =
+    posterFeedCards.length > 0 ? posterFeedCards : posterFeedBuiltCards;
   const heading = socialPanel
     ? EXPLORE_SOCIAL_PANEL_TITLE
     : myTripsMode
@@ -271,38 +283,45 @@ export const ExploreBrowsePanel = ({
     onSearchScopePick(scope);
   };
 
+  const showMobileDismiss = !isDesktop && (socialPanel || closeButtonVariant === 'dismiss');
   const closeButton = (
     <button
       type="button"
       onClick={onClose}
       className={
-        fullscreenBrowse && !isDesktop
+        showMobileDismiss
           ? 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-800 active:bg-neutral-100'
-          : isDesktop
-            ? 'rounded-full p-2 text-gray-500 hover:bg-neutral-50 hover:text-gray-800'
-            : 'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-neutral-100'
+          : sheetFillsViewport
+            ? 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-800 active:bg-neutral-100'
+            : isDesktop
+              ? 'rounded-full p-2 text-gray-500 hover:bg-neutral-50 hover:text-gray-800'
+              : 'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-neutral-100'
       }
       aria-label={
         closePanelAriaLabel ??
-        (fullscreenBrowse && !isDesktop
+        (sheetFillsViewport
           ? 'Back to map'
-          : isDesktop
-            ? 'Collapse list panel'
-            : 'Close browse panel')
+          : socialPanel
+            ? 'Close Social'
+            : isDesktop
+              ? 'Collapse list panel'
+              : 'Close browse panel')
       }
     >
-      {fullscreenBrowse && !isDesktop ? (
+      {sheetFillsViewport ? (
         <ChevronLeft className="h-6 w-6" aria-hidden />
       ) : isDesktop && closeButtonVariant === 'collapse' ? (
         <PanelLeftClose className="h-4 w-4" />
       ) : (
-        <X className="h-4 w-4" />
+        <X className={showMobileDismiss ? 'h-5 w-5' : 'h-4 w-4'} aria-hidden />
       )}
     </button>
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div
+      className={`flex min-h-0 flex-col overflow-hidden ${sheetFillsViewport || (!socialPanel && !isDesktop) ? 'flex-1' : ''} ${mobileSheetPad ? 'px-4' : ''}`}
+    >
       {!fullscreenBrowse ? (
         <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
       ) : null}
@@ -311,15 +330,18 @@ export const ExploreBrowsePanel = ({
 
       {socialPanel ? (
         <div
-          className={`mb-2 flex shrink-0 flex-col gap-1 ${
-            isDesktop ? 'border-b border-neutral-200 pb-2' : 'border-b border-neutral-200/80 pb-2'
+          className={`mb-2 shrink-0 flex flex-col gap-2 border-b border-neutral-200/80 pb-3 ${
+            isDesktop ? 'border-neutral-200' : ''
           }`}
         >
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="min-w-0 truncate text-base font-bold text-gray-900">{heading}</h2>
-            {closeButton}
+          <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1">
+            <span className="w-10 shrink-0" aria-hidden />
+            <h2 className="min-w-0 truncate text-center text-base font-bold text-gray-900">{heading}</h2>
+            <div className="flex justify-end">{closeButton}</div>
           </div>
-          <p className="text-xs leading-relaxed text-neutral-600">{EXPLORE_SOCIAL_PANEL_SUBCOPY}</p>
+          <p className="px-1 text-center text-xs leading-relaxed text-neutral-600">
+            {EXPLORE_SOCIAL_PANEL_SUBCOPY}
+          </p>
         </div>
       ) : fullscreenBrowse && !isDesktop ? (
         <div className="shrink-0 border-b border-neutral-200/70 px-2 pb-2 pt-1">
@@ -413,9 +435,11 @@ export const ExploreBrowsePanel = ({
         className={
           isDesktop
             ? 'flex min-h-0 flex-1 flex-col overflow-visible'
-            : fullscreenBrowse
+            : sheetFillsViewport
               ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
-              : 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain'
+              : socialPanel && !isDesktop
+                ? 'flex min-h-0 flex-col overflow-hidden'
+                : 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain'
         }
       >
         {socialPanel ? (
@@ -508,6 +532,7 @@ export const ExploreBrowsePanel = ({
                 onMouseDown={(event) => event.preventDefault()}
               >
                 <ExploreSearchScopeHints
+                  query={query}
                   counts={searchScopeCounts}
                   onPick={(scope) => handleSearchScopePick(scope)}
                 />
@@ -539,11 +564,15 @@ export const ExploreBrowsePanel = ({
 
         <div
           className={`${EXPLORE_SHEET.browseList} ${
+            mobileSheetPad && socialPanel ? '!px-0' : ''
+          } ${
             isDesktop
               ? 'min-h-0 flex-1 overflow-y-auto lg:pb-8'
-              : fullscreenBrowse
-                ? 'min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 pb-4'
-                : 'overflow-visible pb-[calc(var(--safe-bottom)+12px)]'
+              : sheetFillsViewport
+                ? 'min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-4'
+                : socialPanel && !isDesktop
+                  ? 'min-h-0 max-h-[50dvh] overflow-y-auto overscroll-y-contain pb-[calc(var(--safe-bottom)+12px)]'
+                  : 'overflow-visible pb-[calc(var(--safe-bottom)+12px)]'
           }`}
           onMouseLeave={onListItemHoverEnd}
         >
@@ -642,9 +671,9 @@ export const ExploreBrowsePanel = ({
               )}
             </>
           ) : !socialPanel ? (
-            usePosterFeed && posterFeedCards.length > 0 ? (
+            usePosterFeed && posterCardsToRender.length > 0 ? (
               <ul className={LIST_FEED.categoryList}>
-                {posterFeedCards.map((card) => (
+                {posterCardsToRender.map((card) => (
                   <li key={card.id}>
                     <ListFeedPosterCard card={card} />
                   </li>
