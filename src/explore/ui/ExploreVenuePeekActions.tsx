@@ -1,6 +1,6 @@
 import type { ExploreCardModel } from '../exploreCardModel';
 import { exploreCardHasMapCoords } from '../exploreCardModel';
-import { LIST_FEED_CTA_GET_DIRECTIONS, LIST_FEED_CTA_VIEW_DETAILS } from '../../list/listFeedCtaCopy';
+import { LIST_FEED_CTA_VIEW_DETAILS } from '../../list/listFeedCtaCopy';
 import { ExploreCardDirectionsButton } from './ExploreCardPresentation';
 import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
 

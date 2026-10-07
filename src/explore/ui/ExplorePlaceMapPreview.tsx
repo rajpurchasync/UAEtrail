@@ -6,7 +6,6 @@ import { ExploreVenuePeekActions } from './ExploreVenuePeekActions';
 interface ExplorePlaceMapPreviewProps {
   item: ExploreMapItemDTO;
   onClose: () => void;
-  onPlanTrip: (item: ExploreMapItemDTO) => void;
   onGuestGatedAction?: () => void;
 }
 
@@ -14,7 +13,6 @@ interface ExplorePlaceMapPreviewProps {
 export const ExplorePlaceMapPreview = ({
   item,
   onClose,
-  onPlanTrip,
   onGuestGatedAction,
 }: ExplorePlaceMapPreviewProps) => {
   const card = buildExploreCardModel(item);

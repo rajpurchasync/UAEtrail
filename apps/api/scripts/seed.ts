@@ -8,7 +8,6 @@ import {
   ActivityStatus,
   LocationStatus,
   MembershipRole,
-  MembershipTier,
   NotificationType,
   HostApplicationStatus,
   ProductStatus,

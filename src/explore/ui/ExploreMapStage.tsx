@@ -86,7 +86,6 @@ export type ExploreMapStageProps = {
   hostActivityCtaHandlers?: import('../../components/activity/HostActivityCtas').HostActivityCtaHandlers | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onGuestGatedAction?: () => void;
-  onPlanTripFromVenue?: (item: import('@uaetrail/shared-types').ExploreMapItemDTO) => void;
   joinInvitePeekBanner?: string | null;
 };
 
@@ -151,7 +150,6 @@ export const ExploreMapStage = ({
   hostActivityCtaHandlers = null,
   onOpenExploreItem,
   onGuestGatedAction,
-  onPlanTripFromVenue,
   joinInvitePeekBanner = null,
 }: ExploreMapStageProps) => {
   const guestGatedAction = user ? undefined : onGuestGatedAction;
@@ -297,7 +295,6 @@ export const ExploreMapStage = ({
         <ExplorePlaceMapPreview
           item={selected}
           onClose={onCloseSelection}
-          onPlanTrip={onPlanTripFromVenue ?? (() => {})}
           onGuestGatedAction={guestGatedAction}
         />
       ) : selectedCard ? (

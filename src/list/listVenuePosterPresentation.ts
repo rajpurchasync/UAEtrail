@@ -44,8 +44,6 @@ const resolveReachabilityLabel = (card: ExploreCardModel): string | null => {
 };
 
 const resolveParkingLabel = (card: ExploreCardModel): string | null => {
-  const parkingDetail = card.sections.details.find((d) => d.icon === 'parking');
-  if (parkingDetail?.label?.trim()) return parkingDetail.label.trim();
   if (card.venueHasParking) return 'Parking';
   if (card.venueAccessibility === 'car-accessible') return 'Parking access';
   return null;

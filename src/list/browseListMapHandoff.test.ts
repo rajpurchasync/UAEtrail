@@ -32,7 +32,7 @@ describe('browseListMapHandoff', () => {
   });
 
   it('infers listCat=venues from explore places pinKind', () => {
-    const state = { ...baseState, categories: ['venues'] };
+    const state: BrowseListFilterState = { ...baseState, categories: ['venues'] };
     const listCat = inferListCatFromExploreHandoff(state, new URLSearchParams('pinKind=places'));
     expect(listCat).toBe('venues');
   });

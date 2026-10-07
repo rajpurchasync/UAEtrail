@@ -179,7 +179,7 @@ describe('connections API — buddy requests', () => {
     const requestNotifs = recipientNotifs.filter((n) => n.meta?.kind === 'connection_buddy_request');
     expect(requestNotifs.length).toBe(1);
     expect(requestNotifs[0]?.meta?.requestId).toBe(requestId);
-    expect(requestNotifs[0]?.meta?.fromUserId).toBe(senderUser!._id);
+    expect(requestNotifs[0]?.meta?.actorUserId).toBe(senderUser!._id);
 
     const acceptRes = await request(app)
       .post(`/api/v1/me/buddy-requests/${requestId}/accept`)

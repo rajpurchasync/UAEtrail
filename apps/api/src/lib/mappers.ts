@@ -13,7 +13,6 @@ import {
   resolveActivityDisplayCoordinates,
   inferHostStorefrontKindFromTenantWire,
   resolveActivityPublisherDisplayName,
-  resolveHostPersonDisplayName,
   type PublishingProfileKind,
   TenantBusinessMode,
   TenantType,

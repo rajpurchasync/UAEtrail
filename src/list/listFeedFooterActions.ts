@@ -109,7 +109,7 @@ export const resolveListFeedFooterModel = (
     joinUiState?: JoinRequestUiState;
   }
 ): ListFeedFooterModel => {
-  const { isGuest, joinUiState } = options;
+  const { isGuest } = options;
 
   if (card.source === 'venue' && exploreCardHasMapCoords(card)) {
     return {

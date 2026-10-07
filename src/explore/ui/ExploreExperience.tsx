@@ -33,14 +33,6 @@ import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
 import { useExploreOrganizeFromActivity } from './useExploreOrganizeFromActivity';
 import type { OrganizeWizardPrefill } from './organizeWizardPrefill';
-import { api } from '../../api/index';
-import { buildExploreCardModel } from '../exploreCardModel';
-import {
-  createDraftFromRegistryPlace,
-  resolveOrganizeComposeKindFromVenueCardKind,
-  resolveCreateActivityKindFromVenueCardKind,
-} from './organizeFromPlace';
-import type { CreateActivityDraft } from './organizeFlow';
 import {
   organizePublishGateHref,
   organizePublishGateInputFromHostGate,
@@ -167,10 +159,6 @@ export const ExploreExperience = () => {
     setSelectedId,
   });
 
-  const [organizeFromPlacePrefill, setOrganizeFromPlacePrefill] = useState<CreateActivityDraft | null>(
-    null
-  );
-
   const organizeFrom = useExploreOrganizeFromActivity({
     user,
     tenantId,
@@ -245,16 +233,8 @@ export const ExploreExperience = () => {
         sourceActivityId: organizeFrom.organizeFromPrefill.sourceActivityId,
       };
     }
-    if (organizeFromPlacePrefill) {
-      return { draft: organizeFromPlacePrefill };
-    }
     return null;
-  }, [
-    rideshareLinkParent,
-    rideshareLinkDemand,
-    organizeFrom.organizeFromPrefill,
-    organizeFromPlacePrefill,
-  ]);
+  }, [rideshareLinkParent, rideshareLinkDemand, organizeFrom.organizeFromPrefill]);
 
   const inviteShare = useActivityInviteShareSheet();
   const planWithBuddyUserId = parsePlanWithUserId(searchParams);
@@ -505,7 +485,6 @@ export const ExploreExperience = () => {
   const closeCreateFlow = () => {
     compose.closeCompose();
     organizeFrom.clearOrganizeFromPrefill();
-    setOrganizeFromPlacePrefill(null);
     setRideshareLinkParent(null);
     setSearchParams(
       (prev) => {
@@ -516,47 +495,6 @@ export const ExploreExperience = () => {
       { replace: true }
     );
   };
-
-  const handlePlanTripFromVenue = useCallback(
-    async (item: ExploreMapItemDTO) => {
-      const returnPath = `${pathname}${search}`;
-      if (!user) {
-        navigate(buildSignInRedirect({ pathname, search }).href);
-        return;
-      }
-      if (hostGateLoading) return;
-      if (!canPublish) {
-        navigateOrganizePublishGate(returnPath);
-        return;
-      }
-
-      const placeId = item.locationCard?.id;
-      if (!placeId) return;
-
-      const card = buildExploreCardModel(item);
-      const composeKind = resolveOrganizeComposeKindFromVenueCardKind(card.kind);
-      const createKind = resolveCreateActivityKindFromVenueCardKind(card.kind);
-      compose.setComposeRoute({ intent: 'organize', kind: composeKind });
-
-      try {
-        const { data } = await api.getPublicPlaceDetail(placeId);
-        setOrganizeFromPlacePrefill(createDraftFromRegistryPlace(data, createKind));
-      } catch {
-        compose.closeCompose();
-      }
-    },
-    [
-      pathname,
-      search,
-      user,
-      hostGateLoading,
-      canPublish,
-      signupProfileComplete,
-      navigate,
-      compose.setComposeRoute,
-      compose.closeCompose,
-    ]
-  );
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
   const [exploreSearchModalOpen, setExploreSearchModalOpen] = useState(false);
@@ -766,7 +704,6 @@ export const ExploreExperience = () => {
           }}
           onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
           onGuestGatedAction={selection.handleGuestGatedAction}
-          onPlanTripFromVenue={handlePlanTripFromVenue}
         />
 
         {browse.showListPanel && !isDesktop ? (
@@ -806,7 +743,6 @@ export const ExploreExperience = () => {
         onCloseCreateFlow={closeCreateFlow}
         onOrganizeBackToIntent={() => {
           organizeFrom.clearOrganizeFromPrefill();
-          setOrganizeFromPlacePrefill(null);
           setRideshareLinkParent(null);
           setRideshareLinkDemand(null);
           compose.setComposeRoute({ surface: 'menu', intent: 'organize' });

@@ -12,6 +12,7 @@ import {
 } from './listPosterPresentation';
 import { listCategoryResultsLabel } from './listCategoryCopy';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
+import type { ExploreCardModel } from '../explore/exploreCardModel';
 
 describe('list poster presentation', () => {
   it('joins demand highlight and date with a space', () => {
@@ -192,7 +193,7 @@ describe('listCategoryResultsLabel', () => {
 
 describe('resolveListFeedFooterModel', () => {
   it('guest-gates join on activities', () => {
-    const card = {
+    const card: ExploreCardModel = {
       ...buildExploreCardModel({
         id: 'activity:a1',
         kind: 'hiking',

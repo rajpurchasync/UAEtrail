@@ -11,7 +11,7 @@ export const enrichListFeedCardModel = (
   items: ExploreMapItemDTO[],
   user: { id: string } | null | undefined
 ): ExploreCardModel => {
-  let next = finalizeExploreCardLinkedRideshare(card, item, items);
+  const next = finalizeExploreCardLinkedRideshare(card, item, items);
 
   const activity = next.activity;
   const isOwnActivity = Boolean(
