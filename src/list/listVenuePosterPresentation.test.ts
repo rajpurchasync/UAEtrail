@@ -3,6 +3,7 @@ import { buildExploreCardModel } from '../explore/exploreCardModel';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
 import {
+  resolveCatalogHeaderAreaLocationLine,
   resolveListVenuePosterCopy,
   resolveListVenuePosterFactLabels,
 } from './listVenuePosterPresentation';
@@ -52,9 +53,9 @@ describe('listVenuePosterPresentation', () => {
     const card = buildExploreCardModel(venueItem());
     const copy = resolveListVenuePosterCopy(card);
     expect(copy.placeLine).toBe('RAK');
+    expect(resolveCatalogHeaderAreaLocationLine(card)).toBe('RAK · Wadi Ghalilah');
     expect(copy.heroTitle).toBe('Wadi Shawka');
-    expect(copy.titleLines.line1).toBe('');
-    expect(copy.heroTitle).toContain('Wadi');
+    expect(copy.titleLines.line1).toContain('Wadi');
     expect(resolveListVenuePosterFactLabels(card)).toEqual([
       'Wadi Ghalilah',
       'Child-friendly',

@@ -1,6 +1,9 @@
 import type { ExploreCardModel } from '../explore/exploreCardModel';
-import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
-import type { BrowsePosterScheduleGrid, ListFeedPosterTitleLines } from './listPosterPresentation';
+import {
+  formatListFeedPosterTitleLines,
+  type BrowsePosterScheduleGrid,
+  type ListFeedPosterTitleLines,
+} from './listPosterPresentation';
 
 const capitalize = (value: string): string =>
   value.length ? value.charAt(0).toUpperCase() + value.slice(1) : value;
@@ -15,23 +18,33 @@ const emptySchedule: BrowsePosterScheduleGrid = {
 const normalize = (value: string | null | undefined): string =>
   value?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
 
-/** Venue kind line under location name (catalog poster header). */
-export const resolveCatalogVenueKindLabel = (card: ExploreCardModel): string | null => {
-  if (card.source === 'shop') return 'Outdoor shop';
-  if (card.kind === 'hiking' || card.kind === 'camping' || card.kind === 'event') {
-    return ACTIVITY_TYPE_LABELS[card.kind as ActivityType];
-  }
-  if (card.kind === 'shop') return 'Outdoor shop';
-  if (card.source === 'venue') return 'Outdoor place';
-  return null;
-};
-
 export const resolveCatalogEntityName = (card: ExploreCardModel): string => {
   const listTitle = card.listTitle?.trim();
   if (listTitle) return listTitle;
   const headline = card.headline?.trim();
   if (headline) return headline.split(' - ')[0]?.trim() || headline;
   return 'Outdoor place';
+};
+
+/** Area + location under place name in catalog header (not venue kind). */
+export const resolveCatalogHeaderAreaLocationLine = (card: ExploreCardModel): string | null => {
+  const nameNorm = normalize(resolveCatalogEntityName(card));
+  const region = card.venueRegion?.trim() || null;
+  const subtitle = card.subtitle?.trim() || null;
+
+  const regionPart =
+    region && normalize(region) !== nameNorm ? region : null;
+  const locationPart =
+    subtitle && normalize(subtitle) !== nameNorm ? subtitle : null;
+
+  if (
+    regionPart &&
+    locationPart &&
+    normalize(regionPart) !== normalize(locationPart)
+  ) {
+    return `${regionPart} · ${locationPart}`;
+  }
+  return locationPart || regionPart || null;
 };
 
 /** Trail / wadi line under emirate — subtitle when it differs from region eyebrow. */
@@ -133,14 +146,11 @@ export type ListVenuePosterCopy = {
 export const resolveListVenuePosterCopy = (card: ExploreCardModel): ListVenuePosterCopy => {
   const heroTitle = resolveCatalogEntityName(card);
   const region = card.venueRegion?.trim() || card.subtitle?.trim() || null;
-  const nameNorm = normalize(heroTitle);
-  const regionNorm = region ? normalize(region) : '';
-  const placeLine = region && regionNorm !== nameNorm ? region : null;
 
   return {
-    placeLine,
+    placeLine: region,
     heroTitle,
-    titleLines: { line1: '', line2: null },
+    titleLines: formatListFeedPosterTitleLines(heroTitle, 6, 3),
     schedule: emptySchedule,
     requirementLabels: resolveListVenuePosterFactLabels(card),
   };
