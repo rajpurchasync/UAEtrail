@@ -19,7 +19,7 @@ import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
 import { ExploreBrowseSearchModal } from './ExploreBrowseSearchModal';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
-import { ExploreBrowsePanel } from './ExploreBrowsePanel';
+import { ExplorePeopleBrowsePanel } from './ExplorePeopleBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
 import { ExploreMobileBrowseOverlay } from './ExploreMobileBrowseOverlay';
 import { useExploreBrowseList } from './useExploreBrowseList';
@@ -430,11 +430,7 @@ export const ExploreExperience = () => {
     [mapItems, selection]
   );
 
-  const {
-    mapPins,
-    shopListSections,
-    searchScopeCounts,
-  } =
+  const { mapPins, searchScopeCounts } =
     useExploreBrowseList({
       items: mapItems,
       ephemeralMapItems: linkOnlyPeekItems,
@@ -507,38 +503,11 @@ export const ExploreExperience = () => {
     [browse]
   );
 
-  const browsePanelShared = {
+  const peopleBrowsePanelProps = {
     isDesktop,
-    loading: mapLoading,
-    myTripsMode,
-    shopListSections,
-    desktopBrowseTab: browse.desktopBrowseTab,
-    mapFilter: browse.mapFilter,
-    browseFilterKeys: browse.browseFilterKeys,
-    placesMode: browse.placesMode,
-    onMapFilterChange: browse.applyMapFilter,
-    activityDatePreset: browse.activityDatePreset,
-    onActivityDatePresetChange: browse.applyActivityDatePreset,
-    venueRegions: browse.venueRegions,
-    onVenueRegionsChange: browse.applyVenueRegions,
-    onDesktopBrowseTabChange: browse.applyDesktopBrowseTab,
-    panel: browse.panel,
-    sidebarPanel: browse.sidebarPanel,
-    onPanelChange: browse.applyPanel,
-    buddySubtype: browse.buddySubtype,
-    onBuddySubtypeChange: browse.applyBuddySubtype,
-    outingTopic: browse.outingTopic,
-    onOutingTopicChange: browse.applyOutingTopic,
     query: browse.query,
     onQueryChange: browse.setQuery,
     onQuerySync: () => browse.syncExploreUrl({ q: browse.query }),
-    onClearQuery: () => {
-      browse.setQuery('');
-      browse.syncExploreUrl({ q: '' });
-    },
-    onOpenItem: selection.openItem,
-    searchScopeCounts,
-    onSearchScopePick: handleExploreSearchCommit,
     searchFocusNonce,
     peopleBrowseTab: browse.peopleBrowseTab,
     onPeopleBrowseTabChange: browse.applyPeopleBrowseTab,
@@ -569,7 +538,6 @@ export const ExploreExperience = () => {
     entityFollowsError: entityFollows.error,
     isSignedIn: Boolean(user),
     userRole: user?.role,
-    buddyUserIds: user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined,
   };
 
   const desktopBrowsePanel = (
@@ -577,25 +545,21 @@ export const ExploreExperience = () => {
   );
 
   const desktopPeopleBrowsePanel = (
-    <ExploreBrowsePanel
-      {...browsePanelShared}
-      listItems={[]}
+    <ExplorePeopleBrowsePanel
+      {...peopleBrowsePanelProps}
       onClose={browse.closePeopleBrowsePanel}
       closePanelAriaLabel="Close People panel"
       closeButtonVariant="dismiss"
-      listMode="people"
     />
   );
 
   const mobileListPeopleBrowsePanel = (
     <ListFeedActionsProvider key="explore-list-people-browse">
-      <ExploreBrowsePanel
-        {...browsePanelShared}
-        listItems={[]}
+      <ExplorePeopleBrowsePanel
+        {...peopleBrowsePanelProps}
         onClose={browse.closeListPanel}
         closePanelAriaLabel="Close People"
         closeButtonVariant="dismiss"
-        listMode="people"
         mobileSheetChrome
       />
     </ListFeedActionsProvider>

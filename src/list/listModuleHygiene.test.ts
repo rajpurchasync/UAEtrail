@@ -122,6 +122,15 @@ describe('list module hygiene', () => {
     });
   });
 
+  it('keeps explore People panel separate from legacy map list shell', () => {
+    const experience = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
+    const peoplePanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExplorePeopleBrowsePanel.tsx'), 'utf8');
+    expect(experience).toMatch(/ExplorePeopleBrowsePanel/);
+    expect(experience).toMatch(/ListDiscoveryExperience/);
+    expect(peoplePanel).not.toMatch(/ExploreListRow/);
+    expect(peoplePanel).not.toMatch(/buildListFeedCards/);
+  });
+
   it('list discover people category uses member discovery roster (not map poster feed)', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     const peopleView = readFileSync(join(process.cwd(), 'src/list/ui/ListDiscoverPeopleView.tsx'), 'utf8');
@@ -134,11 +143,10 @@ describe('list module hygiene', () => {
   it('builds enriched cards through buildListFeedCards', () => {
     const feed = readFileSync(join(process.cwd(), 'src/list/useBrowseListFeed.ts'), 'utf8');
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
-    const browsePanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreBrowsePanel.tsx'), 'utf8');
     expect(feed).toMatch(/buildListFeedCards/);
     expect(experience).toMatch(/buildListFeedCards/);
-    expect(browsePanel).toMatch(/buildListFeedCards/);
     expect(experience).not.toMatch(/buildBrowseCardsFromMapItems/);
+    expect(experience).not.toMatch(/ExploreBrowsePanel/);
   });
 
   it('search results use topic pills only (no duplicate removable chip row)', () => {
