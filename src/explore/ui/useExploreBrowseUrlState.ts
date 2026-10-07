@@ -53,11 +53,14 @@ import {
   type ExplorePinKindFilter,
 } from '../explorePinKindFilter';
 
-/** Browse list presentation — `social` maps to URL `view=social` (Explore Social panel). */
-export type ExploreBrowseListMode = 'default' | 'social';
+/** Browse list presentation — `people` maps to URL `view=people` (member people panel on map). */
+export type ExploreBrowseListMode = 'default' | 'people';
 
-/** URL `socialTab` — crew roster segments or member discovery. */
-export type ExploreSocialTab = 'all' | 'friends' | 'followed' | 'discover';
+/** URL `socialTab` — network roster segments or member discovery (legacy query name). */
+export type ExplorePeopleBrowseTab = 'all' | 'friends' | 'followed' | 'discover';
+
+/** @deprecated Use `ExplorePeopleBrowseTab`. */
+export type ExploreSocialTab = ExplorePeopleBrowseTab;
 
 /** Sub-segment on Social → Followed (people vs entity-follow places vs hosts/shops). */
 export type ExploreFollowedSegment = 'people' | 'places' | 'events';
@@ -67,10 +70,10 @@ export const parseExploreFollowedSegment = (raw: string | null): ExploreFollowed
   return 'people';
 };
 
-export const parseExploreSocialTab = (
+export const parseExplorePeopleBrowseTab = (
   socialTab: string | null,
   legacyGoingTab: string | null
-): ExploreSocialTab => {
+): ExplorePeopleBrowseTab => {
   if (socialTab === 'friends' || socialTab === 'followed' || socialTab === 'discover') return socialTab;
   if (socialTab === 'all') return 'all';
   if (legacyGoingTab === 'people') return 'friends';
@@ -79,7 +82,11 @@ export const parseExploreSocialTab = (
   return 'all';
 };
 
-const isSocialListView = (view: string | null): boolean => view === 'social' || view === 'going';
+/** @deprecated Use `parseExplorePeopleBrowseTab`. */
+export const parseExploreSocialTab = parseExplorePeopleBrowseTab;
+
+const isPeopleBrowseListView = (view: string | null): boolean =>
+  view === 'people' || view === 'social' || view === 'going';
 
 export const UNIFIED_MAP_FILTER_KEYS: MapFilterKey[] = MAP_FILTER_PILLS.map((pill) => pill.key);
 
@@ -98,7 +105,7 @@ type SyncPatch = {
   topicPills?: ExploreMapFilterPillKey[];
   listMode?: ExploreBrowseListMode;
   searchScope?: ExploreSearchScopeKey | null;
-  socialTab?: ExploreSocialTab;
+  socialTab?: ExplorePeopleBrowseTab;
   followedSegment?: ExploreFollowedSegment;
   /** Clear list category page when opening browse home from the map List pill. */
   listCat?: BrowseMainCategoryKey | null;
@@ -156,13 +163,13 @@ export const useExploreBrowseUrlState = ({
     parseExploreMapFilterPillsParam(searchParams.get('topics'))
   );
   const [listMode, setListMode] = useState<ExploreBrowseListMode>(() =>
-    isSocialListView(searchParams.get('view')) ? 'social' : 'default'
+    isPeopleBrowseListView(searchParams.get('view')) ? 'people' : 'default'
   );
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(() =>
     parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
   );
-  const [socialTab, setSocialTab] = useState<ExploreSocialTab>(() =>
-    parseExploreSocialTab(searchParams.get('socialTab'), searchParams.get('goingTab'))
+  const [socialTab, setSocialTab] = useState<ExplorePeopleBrowseTab>(() =>
+    parseExplorePeopleBrowseTab(searchParams.get('socialTab'), searchParams.get('goingTab'))
   );
   const [followedSegment, setFollowedSegment] = useState<ExploreFollowedSegment>(() =>
     parseExploreFollowedSegment(searchParams.get('followedKind'))
@@ -226,8 +233,8 @@ export const useExploreBrowseUrlState = ({
       else params.delete('topics');
 
       const socialTabValue = next.socialTab ?? socialTab;
-      if (listModeValue === 'social') {
-        params.set('view', 'social');
+      if (listModeValue === 'people') {
+        params.set('view', 'people');
         params.delete('goingTab');
         if (socialTabValue === 'all') params.delete('socialTab');
         else params.set('socialTab', socialTabValue);
@@ -239,7 +246,7 @@ export const useExploreBrowseUrlState = ({
       }
 
       const followedSegmentValue = next.followedSegment ?? followedSegment;
-      if (listModeValue === 'social' && socialTabValue === 'followed' && followedSegmentValue !== 'people') {
+      if (listModeValue === 'people' && socialTabValue === 'followed' && followedSegmentValue !== 'people') {
         params.set('followedKind', followedSegmentValue);
       } else {
         params.delete('followedKind');
@@ -326,7 +333,7 @@ export const useExploreBrowseUrlState = ({
     );
     setPinKind(parseExplorePinKindFilter(searchParams.get('pinKind')));
     setTopicPills(parseExploreMapFilterPillsParam(searchParams.get('topics')));
-    setListMode(isSocialListView(searchParams.get('view')) ? 'social' : 'default');
+    setListMode(isPeopleBrowseListView(searchParams.get('view')) ? 'people' : 'default');
     setSearchScope(
       parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
     );
@@ -387,32 +394,37 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ topicPills: [], list: listOpen });
   };
 
-  const openSocialPanel = (initialTab: ExploreSocialTab = 'all') => {
+  const openPeopleBrowsePanel = (initialTab: ExplorePeopleBrowseTab = 'all') => {
     clearSelection();
-    setListMode('social');
+    setListMode('people');
     setSocialTab(initialTab);
     setPanel('activities');
     setDesktopBrowseTab('activities');
     if (isDesktop) {
-      syncExploreUrl({ listMode: 'social', socialTab: initialTab, panel: 'activities' });
+      syncExploreUrl({ listMode: 'people', socialTab: initialTab, panel: 'activities' });
       return;
     }
     setListOpen(true);
     syncExploreUrl({
-      listMode: 'social',
+      listMode: 'people',
       socialTab: initialTab,
       panel: 'activities',
       list: true,
     });
   };
 
-  const closeSocialPanel = () => {
+  /** @deprecated Use `openPeopleBrowsePanel`. */
+  const openSocialPanel = openPeopleBrowsePanel;
+
+  const closePeopleBrowsePanel = () => {
     setListMode('default');
     clearSelection();
     syncExploreUrl({ listMode: 'default' });
   };
 
-  const applySocialTab = (tab: ExploreSocialTab) => {
+  const closeSocialPanel = closePeopleBrowsePanel;
+
+  const applyPeopleBrowseTab = (tab: ExplorePeopleBrowseTab) => {
     setSocialTab(tab);
     if (tab !== 'followed') {
       setFollowedSegment('people');
@@ -424,6 +436,9 @@ export const useExploreBrowseUrlState = ({
     });
   };
 
+  /** @deprecated Use `applyPeopleBrowseTab`. */
+  const applySocialTab = applyPeopleBrowseTab;
+
   const applyFollowedSegment = (segment: ExploreFollowedSegment) => {
     setFollowedSegment(segment);
     syncExploreUrl({ followedSegment: segment, socialTab: 'followed', list: listOpen });
@@ -431,7 +446,7 @@ export const useExploreBrowseUrlState = ({
 
   const closeListPanel = () => {
     setListOpen(false);
-    if (!isDesktop && listMode === 'social') {
+    if (!isDesktop && listMode === 'people') {
       setListMode('default');
       syncExploreUrl({ list: false, listMode: 'default' });
       return;
@@ -689,10 +704,14 @@ export const useExploreBrowseUrlState = ({
     topicPills,
     toggleMapTopicPill,
     clearMapTopicPills,
-    openSocialPanel,
-    closeSocialPanel,
+    openPeopleBrowsePanel,
+    closePeopleBrowsePanel,
+    /** @deprecated */ openSocialPanel,
+    /** @deprecated */ closeSocialPanel,
     socialTab,
-    applySocialTab,
+    peopleBrowseTab: socialTab,
+    applyPeopleBrowseTab,
+    /** @deprecated */ applySocialTab,
     followedSegment,
     applyFollowedSegment,
     listMode,

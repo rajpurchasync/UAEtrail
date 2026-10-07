@@ -87,7 +87,7 @@ const previewNetworkAvatars = (preview: SocialPeoplePreviewDTO | null): SocialMa
     avatar: person.avatarUrl,
   }));
 
-export const buildExploreSocialMapChip = (input: {
+export const buildExploreMemberPeopleMapChip = (input: {
   preview: SocialPeoplePreviewDTO | null;
   mapItems: ExploreMapItemDTO[];
   viewerUserId?: string | null;
@@ -125,3 +125,6 @@ export const buildExploreSocialMapChip = (input: {
     friendCount,
   };
 };
+
+/** @deprecated Use `buildExploreMemberPeopleMapChip`. */
+export const buildExploreSocialMapChip = buildExploreMemberPeopleMapChip;

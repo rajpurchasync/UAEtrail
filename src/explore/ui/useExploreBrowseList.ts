@@ -190,7 +190,7 @@ export const useExploreBrowseList = ({
   ]);
 
   const listItems = useMemo(() => {
-    if (browseListMode === 'social') return [];
+    if (browseListMode === 'people') return [];
 
     const hasQuery = query.trim().length > 0;
     const matchesQuery = (item: ExploreMapItemDTO) => exploreItemMatchesQuery(item, query);

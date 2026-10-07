@@ -9,9 +9,14 @@ export const reloadExploreMap = async (queryClient: QueryClient): Promise<void> 
   await queryClient.refetchQueries({ queryKey: exploreMapQueryKey, type: 'active' });
 };
 
-export const useExploreMap = () =>
+type UseExploreMapOptions = {
+  enabled?: boolean;
+};
+
+export const useExploreMap = (options?: UseExploreMapOptions) =>
   useQuery({
     queryKey: exploreMapQueryKey,
+    enabled: options?.enabled ?? true,
     queryFn: async (): Promise<ExploreMapItemDTO[]> => {
       const res = await api.getExploreMap();
       return res.data.items;

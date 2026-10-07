@@ -114,19 +114,21 @@ Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mong
 
 Registration: `registerBuddyRoutes.ts` · service: `buddy-activity-presence.ts`.
 
-Explore **Social** panel (UI) uses **`GET /social/people`** (see below) — `activity-presence` remains for map-adjacent tooling.
+Explore **people browse panel** (map; legacy URL `view=social`) uses **`GET /social/people`** (see below) — `activity-presence` remains for map-adjacent tooling. **Chat** is `/chat/*` and `/messages` — not these routes.
 
 ---
 
-## Social people roster (`/social`)
+## Member people reads (browse)
+
+**Bounded context:** `member_discovery` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.2). **Mount:** `/social` is historical; paths below are **browse** (relationship + outing status), not messaging.
 
 | Method | Path | Who |
 |--------|------|-----|
-| GET | `/social/people/preview` | Friend avatars + counts for Explore map pill |
-| GET | `/social/people` | Friends / following roster for Explore Social panel. Query: `segment=all\|friends\|followed` |
-| GET | `/me/member-discovery/roster` | Explore Social **Discover** tab — on-trip strangers + public directory (`q`, `date`, pagination); `meta.quota` |
+| GET | `/social/people/preview` | Network avatars + counts for explore map people pill (map-going faces merged on client from `GET /explore/map`) |
+| GET | `/social/people` | **Network roster** — friends / following for map people panel. Query: `segment=all\|friends\|followed` |
+| GET | `/me/member-discovery/roster` | **Discovery roster** — who’s going, hosts, looking-for, followed, directory (`q`, `date`, `omitDirectory`, pagination); `meta.quota`. Same list component as `/list?listCat=people` (**Buddies**) |
 
-Registration: `apps/api/src/routes/social/registerSocialPeopleRoutes.ts` · service: `social-people.ts`.
+Registration: `registerSocialPeopleRoutes.ts` · `registerMemberDiscoveryRoutes.ts` · services: `social-people.ts`, `member-discovery-roster.ts` (target: shared member-people read pipeline).
 
 ---
 

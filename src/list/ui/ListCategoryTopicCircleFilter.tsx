@@ -13,6 +13,13 @@ const TopicEmoji = ({
   pill: ListCategoryPill;
   context: ExploreFilterEmojiContext;
 }) => {
+  if (pill.segmentEmoji) {
+    return (
+      <span className="font-emoji text-[1.35rem] leading-none sm:text-[1.45rem]" aria-hidden>
+        {pill.segmentEmoji}
+      </span>
+    );
+  }
   if (pill.id === 'topic-looking') {
     return (
       <span className="font-emoji text-[1.35rem] leading-none sm:text-[1.45rem]" aria-hidden>

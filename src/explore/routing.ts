@@ -261,7 +261,9 @@ export const explorePath = (options?: {
   organizeFrom?: string;
   /** Limit pins to signed-in member trips + wishlist (requires auth). */
   myTrips?: boolean;
-  /** Open Explore Social people panel (`view=social`). */
+  /** Open browse member people panel (`view=people`). */
+  peopleBrowse?: boolean;
+  /** @deprecated Use `peopleBrowse` — writes `view=people`. */
   social?: boolean;
   /** Prefill compose — buddy to plan with (post-publish invite). */
   planWith?: string;
@@ -333,8 +335,8 @@ export const explorePath = (options?: {
   if (options?.myTrips) {
     params.set(MY_TRIPS_QUERY_KEY, '1');
   }
-  if (options?.social) {
-    params.set('view', 'social');
+  if (options?.peopleBrowse || options?.social) {
+    params.set('view', 'people');
     if (options.list !== false) {
       params.set('list', '1');
     }
@@ -349,9 +351,12 @@ export const explorePath = (options?: {
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
 };
 
-/** Explore map with Social panel open. */
-export const exploreSocialPath = (options?: { list?: boolean }): string =>
-  explorePath({ social: true, list: options?.list ?? true });
+/** Explore map with member people browse panel open. */
+export const explorePeopleBrowsePath = (options?: { list?: boolean }): string =>
+  explorePath({ peopleBrowse: true, list: options?.list ?? true });
+
+/** @deprecated Use `explorePeopleBrowsePath`. */
+export const exploreSocialPath = explorePeopleBrowsePath;
 
 /** Start create flow with optional buddy to plan with. */
 export const explorePlanWithBuddyPath = (

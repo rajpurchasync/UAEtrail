@@ -21,7 +21,8 @@ export const listCategoryResultsLabel = (
     return count === 1 ? '1 shop' : `${count.toLocaleString()} shops`;
   }
   if (category === 'people') {
-    return 'Find people to go with';
+    const n = count.toLocaleString();
+    return count === 1 ? 'Found 1 person' : `Found ${n} people`;
   }
   if (category === 'guides') {
     return count === 1 ? 'Found 1 guide' : `Found ${count.toLocaleString()} guides`;

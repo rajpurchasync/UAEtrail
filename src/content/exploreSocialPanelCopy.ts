@@ -1,15 +1,21 @@
 import type { SocialPersonTripHintDTO } from '@uaetrail/shared-types';
 
-export const EXPLORE_SOCIAL_PANEL_TITLE = 'Social';
-export const EXPLORE_SOCIAL_PANEL_SUBCOPY =
-  'Friends and people you follow — message or plan something together.';
+export const EXPLORE_PEOPLE_BROWSE_PANEL_TITLE = 'People';
+export const EXPLORE_SOCIAL_PANEL_TITLE = EXPLORE_PEOPLE_BROWSE_PANEL_TITLE;
+
+export const EXPLORE_PEOPLE_BROWSE_PANEL_SUBCOPY =
+  'Who’s going, who you follow, and who’s looking for a crew — find your next outing together.';
+export const EXPLORE_SOCIAL_PANEL_SUBCOPY = EXPLORE_PEOPLE_BROWSE_PANEL_SUBCOPY;
 
 export const EXPLORE_SOCIAL_MAP_BUTTON_LABEL = EXPLORE_SOCIAL_PANEL_TITLE;
 
-export const exploreSocialMapButtonAriaLabel = (friendCount: number): string =>
+export const explorePeopleBrowseMapButtonAriaLabel = (friendCount: number): string =>
   friendCount > 0
-    ? `Social. ${friendCount} friends`
-    : 'Social. Your friends and people you follow';
+    ? `People. ${friendCount} friends`
+    : 'People. See who’s going and your crew';
+
+/** @deprecated Use `explorePeopleBrowseMapButtonAriaLabel`. */
+export const exploreSocialMapButtonAriaLabel = explorePeopleBrowseMapButtonAriaLabel;
 
 export const EXPLORE_SOCIAL_LOADING = 'Loading your people…';
 export const EXPLORE_SOCIAL_EMPTY_ALL =

@@ -34,7 +34,7 @@ import type { ExploreBrowseListMode, ExploreSocialTab } from './useExploreBrowse
 import { ExploreSocialPanelTabs } from './ExploreSocialPanelTabs';
 import { ExploreFollowedSegmentTabs } from './ExploreFollowedSegmentTabs';
 import { ExploreFollowedEntityList } from './ExploreFollowedEntityList';
-import { ExploreSocialPeopleList } from './ExploreSocialPeopleList';
+import { ExploreMemberPeopleNetworkList } from './ExploreSocialPeopleList';
 import { ExploreMemberDiscoveryList } from './ExploreMemberDiscoveryList';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import { ListBuddiesSegmentPills } from '../../list/ui/ListBuddiesSegmentPills';
@@ -220,16 +220,16 @@ export const ExploreBrowsePanel = ({
   fullscreenBrowse = false,
   mobileSheetChrome = false,
 }: ExploreBrowsePanelProps) => {
-  const socialPanel = listMode === 'social';
+  const peopleBrowsePanel = listMode === 'people';
   const mobileSheetPad = !isDesktop && (mobileSheetChrome || fullscreenBrowse);
-  const sheetFillsViewport = fullscreenBrowse && !isDesktop && !socialPanel;
+  const sheetFillsViewport = fullscreenBrowse && !isDesktop && !peopleBrowsePanel;
   const posterFeedBuiltCards = useMemo(
     () => (usePosterFeed ? buildListFeedCards(listItems, undefined, listItems) : []),
     [usePosterFeed, listItems]
   );
   const posterCardsToRender =
     posterFeedCards.length > 0 ? posterFeedCards : posterFeedBuiltCards;
-  const heading = socialPanel
+  const heading = peopleBrowsePanel
     ? EXPLORE_SOCIAL_PANEL_TITLE
     : myTripsMode
       ? `My trips (${listItems.length})`
@@ -240,11 +240,11 @@ export const ExploreBrowsePanel = ({
   const [searchScopeOpen, setSearchScopeOpen] = useState(false);
   const [discoverSegment, setDiscoverSegment] = useState<BuddiesDiscoverySegment>('going');
   const hasSearchQuery = query.trim().length > 0;
-  const showSearchScopeOverlay = !socialPanel && searchScopeOpen && hasSearchQuery;
+  const showSearchScopeOverlay = !peopleBrowsePanel && searchScopeOpen && hasSearchQuery;
 
   const socialRosterTab = socialTab === 'discover' ? 'all' : socialTab;
 
-  const socialPeopleFiltered = socialPanel && socialTab !== 'discover'
+  const socialPeopleFiltered = peopleBrowsePanel && socialTab !== 'discover'
     ? socialPeople.filter((person) => {
         const q = query.trim().toLowerCase();
         if (!q) return true;
@@ -293,7 +293,7 @@ export const ExploreBrowsePanel = ({
     onSearchScopePick(scope);
   };
 
-  const showMobileDismiss = !isDesktop && (socialPanel || closeButtonVariant === 'dismiss');
+  const showMobileDismiss = !isDesktop && (peopleBrowsePanel || closeButtonVariant === 'dismiss');
   const closeButton = (
     <button
       type="button"
@@ -311,7 +311,7 @@ export const ExploreBrowsePanel = ({
         closePanelAriaLabel ??
         (sheetFillsViewport
           ? 'Back to map'
-          : socialPanel
+          : peopleBrowsePanel
             ? 'Close Social'
             : isDesktop
               ? 'Collapse list panel'
@@ -330,7 +330,7 @@ export const ExploreBrowsePanel = ({
 
   return (
     <div
-      className={`flex min-h-0 flex-col overflow-hidden ${sheetFillsViewport || (!socialPanel && !isDesktop) ? 'flex-1' : ''} ${mobileSheetPad ? 'px-4' : ''}`}
+      className={`flex min-h-0 flex-col overflow-hidden ${sheetFillsViewport || (!peopleBrowsePanel && !isDesktop) ? 'flex-1' : ''} ${mobileSheetPad ? 'px-4' : ''}`}
     >
       {!fullscreenBrowse ? (
         <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
@@ -338,7 +338,7 @@ export const ExploreBrowsePanel = ({
 
       {myTripsMode ? <ExploreMyTripsModeNotice /> : null}
 
-      {socialPanel ? (
+      {peopleBrowsePanel ? (
         <div
           className={`mb-2 shrink-0 flex flex-col gap-2 border-b border-neutral-200/80 pb-3 ${
             isDesktop ? 'border-neutral-200' : ''
@@ -423,7 +423,7 @@ export const ExploreBrowsePanel = ({
         </div>
       )}
 
-      {socialPanel && onSocialTabChange ? (
+      {peopleBrowsePanel && onSocialTabChange ? (
         <ExploreSocialPanelTabs
           tab={socialTab}
           onTabChange={onSocialTabChange}
@@ -433,11 +433,11 @@ export const ExploreBrowsePanel = ({
         />
       ) : null}
 
-      {socialPanel && socialTab === 'followed' && onFollowedSegmentChange ? (
+      {peopleBrowsePanel && socialTab === 'followed' && onFollowedSegmentChange ? (
         <ExploreFollowedSegmentTabs segment={followedSegment} onSegmentChange={onFollowedSegmentChange} />
       ) : null}
 
-      {!socialPanel && isDesktop ? (
+      {!peopleBrowsePanel && isDesktop ? (
         <h2 className="mb-2 shrink-0 text-lg font-bold text-gray-900 lg:text-xl">{heading}</h2>
       ) : null}
 
@@ -447,12 +447,12 @@ export const ExploreBrowsePanel = ({
             ? 'flex min-h-0 flex-1 flex-col overflow-visible'
             : sheetFillsViewport
               ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
-              : socialPanel && !isDesktop
+              : peopleBrowsePanel && !isDesktop
                 ? 'flex min-h-0 flex-col overflow-hidden'
                 : 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain'
         }
       >
-        {socialPanel ? (
+        {peopleBrowsePanel ? (
           <div className="mb-2 flex shrink-0 items-stretch gap-2">
             <label className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-neutral-200/80 bg-white px-3 py-2 shadow-sm">
               <input
@@ -468,13 +468,6 @@ export const ExploreBrowsePanel = ({
                 className={`min-w-0 flex-1 bg-transparent text-sm font-semibold ${EXPLORE_TYPE.title} outline-none placeholder:font-normal placeholder:text-neutral-500`}
               />
             </label>
-            {socialTab === 'discover' ? (
-              <ExploreMapDateFilter
-                activityDatePreset={activityDatePreset}
-                onActivityDatePresetChange={onActivityDatePresetChange}
-                iconOnly
-              />
-            ) : null}
           </div>
         ) : (
           <div
@@ -551,7 +544,7 @@ export const ExploreBrowsePanel = ({
           </div>
         )}
 
-        {!socialPanel ? (
+        {!peopleBrowsePanel ? (
           <ExploreBrowseFilterChrome
             mapFilter={mapFilter}
             onMapFilterChange={onMapFilterChange}
@@ -574,19 +567,19 @@ export const ExploreBrowsePanel = ({
 
         <div
           className={`${EXPLORE_SHEET.browseList} ${
-            mobileSheetPad && socialPanel ? '!px-0' : ''
+            mobileSheetPad && peopleBrowsePanel ? '!px-0' : ''
           } ${
             isDesktop
               ? 'min-h-0 flex-1 overflow-y-auto lg:pb-8'
               : sheetFillsViewport
                 ? 'min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-4'
-                : socialPanel && !isDesktop
+                : peopleBrowsePanel && !isDesktop
                   ? 'min-h-0 max-h-[50dvh] overflow-y-auto overscroll-y-contain pb-[calc(var(--safe-bottom)+12px)]'
                   : 'overflow-visible pb-[calc(var(--safe-bottom)+12px)]'
           }`}
           onMouseLeave={onListItemHoverEnd}
         >
-          {socialPanel && socialTab === 'discover' ? (
+          {peopleBrowsePanel && socialTab === 'discover' ? (
             <div className="flex flex-col gap-3 px-3">
               <ListBuddiesSegmentPills segment={discoverSegment} onSegmentChange={setDiscoverSegment} />
               <ExploreMemberDiscoveryList
@@ -606,7 +599,7 @@ export const ExploreBrowsePanel = ({
               />
             </div>
           ) : null}
-          {socialPanel && socialTab === 'followed' && followedSegment !== 'people' ? (
+          {peopleBrowsePanel && socialTab === 'followed' && followedSegment !== 'people' ? (
             <ExploreFollowedEntityList
               segment={followedSegment}
               follows={entityFollows}
@@ -614,8 +607,8 @@ export const ExploreBrowsePanel = ({
               error={entityFollowsError}
             />
           ) : null}
-          {socialPanel && socialTab !== 'discover' && !(socialTab === 'followed' && followedSegment !== 'people') ? (
-            <ExploreSocialPeopleList
+          {peopleBrowsePanel && socialTab !== 'discover' && !(socialTab === 'followed' && followedSegment !== 'people') ? (
+            <ExploreMemberPeopleNetworkList
               people={socialPeopleFiltered}
               loading={socialLoading}
               error={socialError}
@@ -626,10 +619,10 @@ export const ExploreBrowsePanel = ({
               onRefresh={() => onRefreshSocialPeople?.()}
             />
           ) : null}
-          {!socialPanel && loading && listItems.length === 0 ? (
+          {!peopleBrowsePanel && loading && listItems.length === 0 ? (
             <ExploreListSkeleton rows={isDesktop ? 8 : 5} />
           ) : null}
-          {!socialPanel && !loading && listItems.length === 0 ? (
+          {!peopleBrowsePanel && !loading && listItems.length === 0 ? (
             myTripsMode ? (
               <div className={`py-10 text-center text-sm ${EXPLORE_TYPE.muted}`}>
                 <p className="font-medium text-neutral-700">Nothing on your map yet</p>
@@ -689,7 +682,7 @@ export const ExploreBrowsePanel = ({
                 </>
               )}
             </>
-          ) : !socialPanel ? (
+          ) : !peopleBrowsePanel ? (
             usePosterFeed && posterCardsToRender.length > 0 ? (
               <ul className={LIST_FEED.categoryList}>
                 {posterCardsToRender.map((card) => (

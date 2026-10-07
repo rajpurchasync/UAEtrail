@@ -26,7 +26,7 @@ type ExploreSocialPeopleListProps = {
   onRefresh: () => void;
 };
 
-export const ExploreSocialPeopleList = ({
+export const ExploreMemberPeopleNetworkList = ({
   people,
   loading,
   error,
@@ -110,3 +110,6 @@ export const ExploreSocialPeopleList = ({
     </div>
   );
 };
+
+/** @deprecated Use `ExploreMemberPeopleNetworkList`. */
+export const ExploreSocialPeopleList = ExploreMemberPeopleNetworkList;

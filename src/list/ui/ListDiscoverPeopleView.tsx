@@ -1,30 +1,21 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
 import { ExploreMemberDiscoveryList } from '../../explore/ui/ExploreMemberDiscoveryList';
-import { useMemberDiscoveryRoster } from '../../explore/useMemberDiscoveryRoster';
+import type { useMemberDiscoveryRoster } from '../../explore/useMemberDiscoveryRoster';
 import { activityDetailPath } from '../../config/routingCatalog';
 import type { BuddiesDiscoverySegment } from '../buddiesDiscoverySegment';
 
+type MemberDiscoveryRosterState = ReturnType<typeof useMemberDiscoveryRoster>;
+
 type ListDiscoverPeopleViewProps = {
-  searchQuery: string;
   segment: BuddiesDiscoverySegment;
-  activityDatePreset: ExploreActivityDatePreset;
+  roster: MemberDiscoveryRosterState;
 };
 
-export const ListDiscoverPeopleView = ({
-  searchQuery,
-  segment,
-  activityDatePreset,
-}: ListDiscoverPeopleViewProps) => {
+export const ListDiscoverPeopleView = ({ segment, roster }: ListDiscoverPeopleViewProps) => {
   const { user } = useAuth();
   const userRole = user?.role;
   const navigate = useNavigate();
-  const roster = useMemberDiscoveryRoster({
-    enabled: Boolean(user),
-    search: searchQuery,
-    activityDatePreset,
-  });
 
   return (
     <ExploreMemberDiscoveryList

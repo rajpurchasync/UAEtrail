@@ -12,6 +12,8 @@ export type ListCategoryPill = {
   label: string;
   /** Topic pills — map filter key for emoji chip. */
   filterKey?: MapFilterKey;
+  /** Static emoji when not using `filterKey` (e.g. Buddies segments). */
+  segmentEmoji?: string;
   active: boolean;
   onToggle: () => void;
 };
@@ -65,7 +67,7 @@ export const listCategorySecondaryFiltersActive = (
     return venueRegions.length > 0 || filters.placeTopics.length > 0;
   }
   if (category === 'people') {
-    return filters.activityDatePreset !== 'anyday';
+    return false;
   }
   if (category === 'guides' || category === 'agencies') {
     return venueRegions.length > 0;

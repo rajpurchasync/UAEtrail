@@ -523,6 +523,25 @@ export const countUserActivityParticipants = async (userId: string): Promise<num
 export const countUserCheckedInParticipations = async (userId: string): Promise<number> =>
   activityParticipantsCollection().countDocuments({ userId, checkedInAt: { $ne: null } });
 
+export const countCheckedInParticipationsForUserIds = async (
+  userIds: string[]
+): Promise<Map<string, number>> => {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  const counts = new Map<string, number>();
+  for (const userId of unique) counts.set(userId, 0);
+  if (unique.length === 0) return counts;
+
+  const rows = await activityParticipantsCollection()
+    .aggregate<{ _id: string; count: number }>([
+      { $match: { userId: { $in: unique }, checkedInAt: { $ne: null } } },
+      { $group: { _id: '$userId', count: { $sum: 1 } } },
+    ])
+    .toArray();
+
+  for (const row of rows) counts.set(row._id, row.count);
+  return counts;
+};
+
 export const countPublishedActivitiesHostedByUser = async (userId: string): Promise<number> =>
   activitiesCollection().countDocuments({
     status: ActivityStatus.PUBLISHED,

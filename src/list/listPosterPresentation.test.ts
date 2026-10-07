@@ -221,10 +221,18 @@ describe('resolveListFeedFooterModel', () => {
       showJoinActions: true,
       primaryCta: 'Request to join',
       secondaryCta: 'View details',
+      viewerAccess: {
+        exposure: 'redacted',
+        level: 'public',
+        gateReason: 'sign_in',
+        canViewFullActivity: false,
+        canOpenDetailPage: true,
+        joinMode: 'open',
+      },
     };
 
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary.kind).toBe('guest_gate');
-    expect(model.secondary).toBeNull();
+    expect(model.secondary).toMatchObject({ kind: 'guest_gate', label: 'Message Host' });
   });
 });

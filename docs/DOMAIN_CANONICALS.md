@@ -59,7 +59,7 @@ Explore and campaigns answer two questions. Do not merge them in copy or DTOs.
 | Lens | Question | Map / feed examples | Entity kinds |
 |------|----------|---------------------|--------------|
 | **Where** | What **place** or **pin** is here? | Trails, camps, venues, **shop pin**, future **partner pin** (hotel) | `place`, shop as **Place** + `shop` storefront |
-| **Who** | Friends, followed people, crew on outings | Activities, demand, Explore **Social** panel (`view=social`), member cards | `activity`, `person`, **buddy**, `/social/people` — not `whosGoing` in API/code |
+| **Who** | Who can I go with — friends, followed, hosts, demand (“looking”) | Activities, demand, explore **people browse panel** (`view=social`, list **Buddies**), member cards | `activity`, `person`, **buddy**, member-discovery roster — not `whosGoing` in API/code. **`/social/people`** is a legacy HTTP path for browse reads, not chat. |
 
 An **Activity** is **Who + When** (often anchored to **Where** via `locationId`). A **tour agency** is **Who** (brand + trips) without requiring a visit pin to participate. A **shop** is primarily **Where** (get directions) plus optional e-commerce on `/shop/:id`.
 
@@ -503,7 +503,7 @@ Computed server-side with `surface: 'explore_map'` (`computeActivityMapPeekActio
 |--------|------|
 | `peek-details` | Guest tapped detail-adjacent surface on explore |
 | `join-activity` | Guest tapped join / gated plan trip |
-| `explore-browse` / `explore-social` | Browse list / Explore Social panel (`view=social`; legacy `view=going`) |
+| `explore-browse` / `explore-people-browse` / `explore-social` | Activities/places list / **browse people panel** on map (`view=people`; legacy `view=social`, `view=going`) — **not** Messages or group chat |
 
 **Rule:** Authorization outcome comes from **§15.2**; guest copy only explains **why to sign in**.
 

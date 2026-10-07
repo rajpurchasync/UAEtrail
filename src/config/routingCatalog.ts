@@ -119,6 +119,7 @@ export {
   exploreShopsPath,
   exploreActivitiesPath,
   exploreOrganizePath,
+  explorePeopleBrowsePath,
   exploreSocialPath,
   explorePlanWithBuddyPath,
   detailBackPath,

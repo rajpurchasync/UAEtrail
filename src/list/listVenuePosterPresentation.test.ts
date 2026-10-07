@@ -64,11 +64,16 @@ describe('listVenuePosterPresentation', () => {
     ]);
   });
 
-  it('uses Get directions as venue poster primary CTA', () => {
+  it('uses Get Directions + View Details on venue posters', () => {
     const card = buildExploreCardModel(venueItem());
-    expect(resolveListFeedFooterModel(card, { isGuest: true }).primary).toMatchObject({
+    const model = resolveListFeedFooterModel(card, { isGuest: true });
+    expect(model.primary).toMatchObject({
       kind: 'directions',
-      label: 'Get directions',
+      label: 'Get Directions',
+    });
+    expect(model.secondary).toMatchObject({
+      kind: 'link',
+      label: 'View Details',
     });
   });
 });

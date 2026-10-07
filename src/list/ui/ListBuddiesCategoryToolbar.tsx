@@ -1,33 +1,33 @@
-import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
-import { ExploreMapDateFilter } from '../../explore/ui/ExploreMapDateFilter';
+import { DEMAND_EMOJI } from '../../explore/exploreCopy';
 import type { BuddiesDiscoverySegment } from '../buddiesDiscoverySegment';
-import { listCategoryPillClass } from '../listChromeTheme';
-import { ListBuddiesSegmentPills } from './ListBuddiesSegmentPills';
+import { BUDDIES_DISCOVERY_SEGMENTS } from '../buddiesDiscoverySegment';
+import type { ListCategoryPill } from '../listCategoryFilterPills';
+import { ListCategoryTopicCircleFilter } from './ListCategoryTopicCircleFilter';
+
+const BUDDIES_SEGMENT_EMOJI: Record<BuddiesDiscoverySegment, string> = {
+  going: '🧑‍🤝‍🧑',
+  looking: DEMAND_EMOJI,
+  followed: '⭐',
+};
 
 type ListBuddiesCategoryToolbarProps = {
   segment: BuddiesDiscoverySegment;
   onSegmentChange: (segment: BuddiesDiscoverySegment) => void;
-  activityDatePreset: ExploreActivityDatePreset;
-  onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
 };
 
-/** Buddies list — segment pills + outing date (applies to Who's going / Looking for). */
-export const ListBuddiesCategoryToolbar = ({
-  segment,
-  onSegmentChange,
-  activityDatePreset,
-  onActivityDatePresetChange,
-}: ListBuddiesCategoryToolbarProps) => (
-  <div className="flex w-full items-center gap-2 pt-0.5">
-    <ListBuddiesSegmentPills segment={segment} onSegmentChange={onSegmentChange} />
-    {segment !== 'followed' ? (
-      <ExploreMapDateFilter
-        activityDatePreset={activityDatePreset}
-        onActivityDatePresetChange={onActivityDatePresetChange}
-        includeAnyday={false}
-        textTrigger
-        textTriggerClassName={listCategoryPillClass(activityDatePreset !== 'anyday')}
-      />
-    ) : null}
-  </div>
-);
+/** Buddies list — segment circles aligned with Activities category filters. */
+export const ListBuddiesCategoryToolbar = ({ segment, onSegmentChange }: ListBuddiesCategoryToolbarProps) => {
+  const pills: ListCategoryPill[] = BUDDIES_DISCOVERY_SEGMENTS.map(({ key, label }) => ({
+    id: `buddies-${key}`,
+    label,
+    segmentEmoji: BUDDIES_SEGMENT_EMOJI[key],
+    active: segment === key,
+    onToggle: () => onSegmentChange(key),
+  }));
+
+  return (
+    <div className="w-full pt-1 pb-0.5">
+      <ListCategoryTopicCircleFilter pills={pills} emojiContext="activity" />
+    </div>
+  );
+};

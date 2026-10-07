@@ -13,6 +13,12 @@ export const readExploreMapMemoryCache = <T>(now = Date.now()): T | null => {
   return exploreMapMemoryCache.payload as T;
 };
 
+/** Changes when the in-process explore map payload is refreshed (for viewer-enrich reuse). */
+export const readExploreMapMemoryCacheGeneration = (now = Date.now()): number | null => {
+  if (!exploreMapMemoryCache || exploreMapMemoryCache.expiresAt <= now) return null;
+  return exploreMapMemoryCache.expiresAt;
+};
+
 export const writeExploreMapMemoryCache = <T>(payload: T, now = Date.now()): void => {
   exploreMapMemoryCache = { expiresAt: now + EXPLORE_MAP_CACHE_MS, payload };
 };
@@ -20,6 +26,8 @@ export const writeExploreMapMemoryCache = <T>(payload: T, now = Date.now()): voi
 /** Drop in-process and Redis explore map payloads after data writes. */
 export const invalidateExploreMapCache = async (): Promise<void> => {
   exploreMapMemoryCache = null;
+  const { invalidateExploreMapMemberEngagementCache } = await import('./explore-map-member-engagement.js');
+  invalidateExploreMapMemberEngagementCache();
   const redis = await getRedisClient();
   if (!redis) return;
   try {

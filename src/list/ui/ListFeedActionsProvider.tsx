@@ -8,12 +8,14 @@ import {
   type ReactNode,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
+import type { ActivityMapPeekActionId, UserRole } from '@uaetrail/shared-types';
+import { resolveActivityHostUserId } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { joinAuthPath } from '../../config/routingCatalog';
 import type { ExploreCardModel } from '../../explore/exploreCardModel';
 import { ExploreJoinOverlays } from '../../explore/ui/ExploreJoinOverlays';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
+import { messagesRouteForRole } from '../../utils/authRouting';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
@@ -110,7 +112,13 @@ export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) =
       }
 
       if (actionId === 'message_host' && card.activity) {
-        navigate(`/activity/${card.activity.id}`);
+        const hostUserId = resolveActivityHostUserId(card.activity);
+        if (!hostUserId) return;
+        navigate(
+          messagesRouteForRole((user.role ?? 'participant') as UserRole, hostUserId, {
+            activityId: card.activity.id,
+          })
+        );
         return;
       }
 
@@ -151,19 +159,29 @@ export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) =
     [footerModel, user, joinActions, navigate, runPeekAction]
   );
 
-  const   onSecondaryFooter = useCallback(
+  const onSecondaryFooter = useCallback(
     (card: ExploreCardModel) => {
       const secondary = footerModel(card).secondary;
       if (!secondary) return;
+      if (secondary.kind === 'guest_gate') {
+        if (!user) {
+          joinActions.openGuestSheet('activity');
+          return;
+        }
+      }
       if (!user && card.source === 'activity') {
         navigate(joinAuthPath(card.path));
         return;
       }
       if (secondary.kind === 'link') {
         navigate(secondary.href);
+        return;
+      }
+      if (secondary.kind === 'action') {
+        runPeekAction(card, secondary.actionId);
       }
     },
-    [footerModel, user, navigate]
+    [footerModel, user, navigate, joinActions, runPeekAction]
   );
 
   const value = useMemo(

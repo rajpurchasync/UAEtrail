@@ -24,9 +24,10 @@ import { ExploreMapStage } from './ExploreMapStage';
 import { ExploreMobileBrowseOverlay } from './ExploreMobileBrowseOverlay';
 import { useExploreBrowseList } from './useExploreBrowseList';
 import { useEntityFollows } from '../../hooks/useEntityFollows';
-import { useSocialPeople } from '../useSocialPeople';
-import { useSocialPeoplePreview } from '../useSocialPeoplePreview';
+import { useMemberPeople } from '../useMemberPeople';
+import { useMemberPeopleNetworkPreview } from '../useMemberPeopleNetworkPreview';
 import { useMemberDiscoveryRoster } from '../useMemberDiscoveryRoster';
+import { buildExploreMemberPeopleMapChip } from '../exploreSocialMapChip';
 import { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import { useExploreComposeRoute } from './useExploreComposeRoute';
 import { useExploreFulfillIntent } from './useExploreFulfillIntent';
@@ -405,17 +406,17 @@ export const ExploreExperience = () => {
     };
   }, []);
 
-  const socialPeoplePreview = useSocialPeoplePreview(Boolean(user));
-  const socialPanelOpen = Boolean(user) && browse.listMode === 'social';
+  const memberPeoplePreview = useMemberPeopleNetworkPreview(Boolean(user));
+  const peopleBrowsePanelOpen = Boolean(user) && browse.listMode === 'people';
   const entityFollowsEnabled =
-    socialPanelOpen && browse.socialTab === 'followed' && browse.followedSegment !== 'people';
+    peopleBrowsePanelOpen && browse.socialTab === 'followed' && browse.followedSegment !== 'people';
   const entityFollows = useEntityFollows(entityFollowsEnabled);
   const socialPeopleEnabled =
-    socialPanelOpen &&
+    peopleBrowsePanelOpen &&
     browse.socialTab !== 'discover' &&
     !(browse.socialTab === 'followed' && browse.followedSegment !== 'people');
-  const memberDiscoveryEnabled = socialPanelOpen && browse.socialTab === 'discover';
-  const socialPeople = useSocialPeople({
+  const memberDiscoveryEnabled = peopleBrowsePanelOpen && browse.socialTab === 'discover';
+  const memberPeople = useMemberPeople({
     enabled: socialPeopleEnabled,
     segment:
       browse.socialTab === 'friends' || browse.socialTab === 'followed'
@@ -425,11 +426,11 @@ export const ExploreExperience = () => {
   const memberDiscovery = useMemberDiscoveryRoster({
     enabled: memberDiscoveryEnabled,
     search: browse.query,
-    activityDatePreset: browse.activityDatePreset,
+    activityDatePreset: 'anyday',
   });
 
-  const openSocialPanel = useCallback(() => {
-    browse.openSocialPanel('all');
+  const openPeopleBrowsePanel = useCallback(() => {
+    browse.openPeopleBrowsePanel('all');
   }, [browse]);
 
   const openExploreActivityFromRef = useCallback(
@@ -470,20 +471,16 @@ export const ExploreExperience = () => {
       outingTopic: browse.outingTopic,
     });
 
-  const socialPanelMapChip = useMemo(() => {
-    const preview = socialPeoplePreview.preview;
-    const avatars = (preview?.avatars ?? []).map((person) => ({
-      id: person.userId,
-      name: person.displayName,
-      avatar: person.avatarUrl,
-    }));
-    const friendCount = preview?.friendCount ?? 0;
-    return {
-      avatars,
-      extraCount: Math.max(0, friendCount - avatars.length),
-      friendCount,
-    };
-  }, [socialPeoplePreview.preview]);
+  const socialPanelMapChip = useMemo(
+    () =>
+      buildExploreMemberPeopleMapChip({
+        preview: memberPeoplePreview.preview,
+        mapItems,
+        viewerUserId: user?.id,
+        activityDatePreset: browse.activityDatePreset,
+      }),
+    [memberPeoplePreview.preview, mapItems, user?.id, browse.activityDatePreset]
+  );
 
   const exploreMapTiles = useMemo(
     () => getExploreMapTiles(viewport.exploreMapStyle),
@@ -606,14 +603,14 @@ export const ExploreExperience = () => {
     onSearchScopePick: handleExploreSearchCommit,
     searchFocusNonce,
     socialTab: browse.socialTab,
-    onSocialTabChange: browse.applySocialTab,
-    socialAllCount: socialPeoplePreview.preview?.allCount,
-    socialFriendsCount: socialPeoplePreview.preview?.friendCount,
-    socialFollowedCount: socialPeoplePreview.preview?.followedCount,
-    socialPeople: socialPeople.people,
-    socialLoading: socialPeople.loading,
-    socialError: socialPeople.error,
-    onRefreshSocialPeople: socialPeople.refresh,
+    onSocialTabChange: browse.applyPeopleBrowseTab,
+    socialAllCount: memberPeoplePreview.preview?.allCount,
+    socialFriendsCount: memberPeoplePreview.preview?.friendCount,
+    socialFollowedCount: memberPeoplePreview.preview?.followedCount,
+    socialPeople: memberPeople.people,
+    socialLoading: memberPeople.loading,
+    socialError: memberPeople.error,
+    onRefreshSocialPeople: memberPeople.refresh,
     onOpenSocialActivity: openExploreActivityFromRef,
     discoveryFriendsGoing: memberDiscovery.friendsGoing,
     discoveryHostsGoing: memberDiscovery.hostsGoing,
@@ -632,7 +629,7 @@ export const ExploreExperience = () => {
     entityFollowsError: entityFollows.error,
     isSignedIn: Boolean(user),
     userRole: user?.role,
-    buddyUserIds: user ? new Set(socialPeoplePreview.preview?.friendUserIds ?? []) : undefined,
+    buddyUserIds: user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined,
   };
 
   const desktopBrowsePanel = (
@@ -643,10 +640,10 @@ export const ExploreExperience = () => {
     <ExploreBrowsePanel
       {...browsePanelShared}
       listItems={[]}
-      onClose={browse.closeSocialPanel}
+      onClose={browse.closePeopleBrowsePanel}
       closePanelAriaLabel="Close Social panel"
       closeButtonVariant="dismiss"
-      listMode="social"
+      listMode="people"
     />
   );
 
@@ -658,7 +655,7 @@ export const ExploreExperience = () => {
         onClose={browse.closeListPanel}
         closePanelAriaLabel="Close Social"
         closeButtonVariant="dismiss"
-        listMode="social"
+        listMode="people"
         mobileSheetChrome
       />
     </ListFeedActionsProvider>
@@ -691,7 +688,7 @@ export const ExploreExperience = () => {
       />
 
       <div className="relative flex min-h-0 flex-1 lg:flex-row">
-        {browse.showListPanel && isDesktop && browse.listMode !== 'social' ? (
+        {browse.showListPanel && isDesktop && browse.listMode !== 'people' ? (
           <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-r lg:border-neutral-200 lg:bg-neutral-50 lg:px-4 lg:py-4 lg:transition-[width] lg:duration-300">
             {desktopBrowsePanel}
           </aside>
@@ -708,7 +705,7 @@ export const ExploreExperience = () => {
           onMapFilterChange={browse.applyMapFilter}
           onActivityDatePresetChange={browse.applyActivityDatePreset}
           onVenueRegionsChange={browse.applyVenueRegions}
-          onOpenSocialPanel={openSocialPanel}
+          onOpenSocialPanel={openPeopleBrowsePanel}
           socialPanelAvatars={socialPanelMapChip.avatars}
           socialPanelExtraCount={socialPanelMapChip.extraCount}
           socialPanelFriendCount={socialPanelMapChip.friendCount}
@@ -774,15 +771,15 @@ export const ExploreExperience = () => {
           <ExploreMobileBrowseOverlay
             open
             onClose={browse.closeListPanel}
-            sheetSize={browse.listMode === 'social' ? 'content' : 'full'}
+            sheetSize={browse.listMode === 'people' ? 'content' : 'full'}
           >
-            {browse.listMode === 'social' ? mobileListSocialPanel : mobileListDiscoverPanel}
+            {browse.listMode === 'people' ? mobileListSocialPanel : mobileListDiscoverPanel}
           </ExploreMobileBrowseOverlay>
         ) : null}
 
         {inviteShare.sheet}
 
-        {isDesktop && browse.listMode === 'social' ? (
+        {isDesktop && browse.listMode === 'people' ? (
           <aside
             className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-l lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300"
           >

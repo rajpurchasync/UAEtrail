@@ -15,9 +15,11 @@ describe('social people API contract', () => {
     expect(registrar).toMatch(/\/people\/preview'/);
   });
 
-  it('loads roster via social-people service', () => {
-    const service = read('src/services/social-people.ts');
-    expect(service).toMatch(/loadSocialPeople/);
-    expect(service).toMatch(/loadSocialPeoplePreview/);
+  it('loads roster via member-people-engagement (social-people facade)', () => {
+    const engagement = read('src/services/member-people-engagement.ts');
+    expect(engagement).toMatch(/loadMemberPeopleNetworkRoster/);
+    expect(engagement).toMatch(/loadMemberPeopleNetworkPreview/);
+    const facade = read('src/services/social-people.ts');
+    expect(facade).toMatch(/loadSocialPeople/);
   });
 });

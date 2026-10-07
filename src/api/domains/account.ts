@@ -186,6 +186,7 @@ export const accountApi = {
       pageSize?: number;
       q?: string;
       date?: string | null;
+      omitDirectory?: boolean;
     }) => {
       const params = new URLSearchParams({
         page: String(options?.page ?? 1),
@@ -193,6 +194,7 @@ export const accountApi = {
       });
       if (options?.q?.trim()) params.set('q', options.q.trim());
       if (options?.date) params.set('date', options.date);
+      if (options?.omitDirectory) params.set('omitDirectory', '1');
       return apiRequest<{
         data: {
           friendsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];

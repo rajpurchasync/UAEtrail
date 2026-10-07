@@ -22,7 +22,6 @@ export const ExplorePlaceMapPreview = ({
   const actions = (
     <ExploreVenuePeekActions
       card={card}
-      onPlanTrip={() => onPlanTrip(item)}
       onClose={onClose}
       onGuestGatedPlanTrip={onGuestGatedAction}
     />

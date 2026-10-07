@@ -12,31 +12,40 @@ import {
 type UseBrowseListFeedArgs = {
   filters: BrowseListFilterState;
   venueRegions: string[];
+  /** Buddies category uses member-discovery only — skip map fetch. */
+  mapEnabled?: boolean;
 };
 
-export const useBrowseListFeed = ({ filters, venueRegions }: UseBrowseListFeedArgs) => {
+export const useBrowseListFeed = ({
+  filters,
+  venueRegions,
+  mapEnabled = true,
+}: UseBrowseListFeedArgs) => {
   const { user } = useAuth();
-  const { data: items = [], isError, error, refetch, isFetching, isPending } = useExploreMap();
-  const feedLoading = isPending && items.length === 0;
+  const { data: items = [], isError, error, refetch, isFetching, isPending } = useExploreMap({
+    enabled: mapEnabled,
+  });
+  const feedLoading = mapEnabled && isPending && items.length === 0;
 
   const filteredItems = useMemo(
-    () => filterExploreMapItemsForList(items, filters, venueRegions),
-    [items, filters, venueRegions]
+    () => (mapEnabled ? filterExploreMapItemsForList(items, filters, venueRegions) : []),
+    [mapEnabled, items, filters, venueRegions]
   );
 
   const cards: ExploreCardModel[] = useMemo(() => {
+    if (!mapEnabled) return [];
     const built = buildListFeedCards(filteredItems, user, items);
     return built.filter((card) => cardMatchesBrowsePrice(card, filters.price));
-  }, [filteredItems, filters.price, items, user]);
+  }, [mapEnabled, filteredItems, filters.price, items, user]);
 
   return {
     cards,
-    items,
+    items: mapEnabled ? items : [],
     isLoading: feedLoading,
-    isError,
-    error,
+    isError: mapEnabled ? isError : false,
+    error: mapEnabled ? error : null,
     refetch,
-    isFetching,
-    itemCount: items.length,
+    isFetching: mapEnabled ? isFetching : false,
+    itemCount: mapEnabled ? items.length : 0,
   };
 };

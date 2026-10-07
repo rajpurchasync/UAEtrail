@@ -14,8 +14,7 @@ import {
   parseExploreActivityDatePreset,
   type ExploreActivityDatePreset,
 } from '../lib/explore-activity-date-filter.js';
-import { buildExploreMapPayload } from '../lib/explore-map.js';
-import { enrichExploreMapPayloadViewerAccess } from '../lib/explore-map-viewer-access.js';
+import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';
 import { enrichMemberBrowseDirectory } from './member-discovery-directory-enrich.js';
 import {
   buildMemberDiscoveryFriendsGoing,
@@ -105,17 +104,21 @@ export const loadMemberDiscoveryRoster = async (input: {
   search?: string;
   skip: number;
   take: number;
+  omitDirectory?: boolean;
 }): Promise<{
   data: MemberDiscoveryRosterDTO & { directory: MemberBrowseCardDTO[] };
   quota: MemberDiscoveryQuotaDTO;
 }> => {
   const datePreset = parseExploreActivityDatePreset(input.datePresetRaw);
-  const hostStatus = await resolveMemberHostStatus(input.viewerUserId);
-  const [payload, buddies, quota] = await Promise.all([
-    buildExploreMapPayload(),
+  const [hostStatus, mapItems, buddies] = await Promise.all([
+    resolveMemberHostStatus(input.viewerUserId),
+    loadExploreMapItemsForMemberEngagement({
+      viewerUserId: input.viewerUserId,
+      userRole: input.userRole,
+    }),
     listBuddiesForUser(input.viewerUserId),
-    resolveMemberDiscoveryQuota(input.viewerUserId, hostStatus),
   ]);
+  const quota = await resolveMemberDiscoveryQuota(input.viewerUserId, hostStatus);
 
   const excludeUserIds = new Set<string>([input.viewerUserId]);
   const buddyIds = new Set<string>();
@@ -126,29 +129,51 @@ export const loadMemberDiscoveryRoster = async (input: {
     }
   }
 
-  const directoryRaw = await listBrowsablePublicMembers({
-    excludeUserId: input.viewerUserId,
-    excludeUserIds,
-    search: input.search,
-    skip: input.skip,
-    take: input.take,
-  });
-  const directory = await enrichMemberBrowseDirectory(input.viewerUserId, directoryRaw);
+  const directoryPromise = input.omitDirectory
+    ? Promise.resolve([] as MemberBrowseCardDTO[])
+    : listBrowsablePublicMembers({
+        excludeUserId: input.viewerUserId,
+        excludeUserIds,
+        search: input.search,
+        skip: input.skip,
+        take: input.take,
+      }).then((directoryRaw) => enrichMemberBrowseDirectory(input.viewerUserId, directoryRaw));
 
-  const enriched = await enrichExploreMapPayloadViewerAccess(payload, {
-    viewerUserId: input.viewerUserId,
-    userRole: input.userRole,
-  });
+  const directory = await directoryPromise;
 
-  const [friendsGoing, hostsGoing] = await Promise.all([
-    buildMemberDiscoveryFriendsGoing(input.viewerUserId, buddies, enriched.items, datePreset),
+  const followedPromise = buildFollowedBrowseCards(input.viewerUserId, buddyIds, input.search).then(
+    async (followedRaw) => {
+      const followedUsers = await findAuthUsersByIds(followedRaw.map((card) => card.id));
+      const followedWithCity = followedRaw.map((card) => {
+        const user = followedUsers.find((u) => u._id === card.id);
+        const city = user?.profile?.city;
+        return {
+          ...card,
+          city: city ? USER_CITY_LABELS[city as UserCity] ?? null : null,
+        };
+      });
+      return enrichMemberBrowseDirectory(input.viewerUserId, followedWithCity);
+    }
+  );
+
+  const [friendsGoing, hostsGoing, lookingFor, followed] = await Promise.all([
+    buildMemberDiscoveryFriendsGoing(input.viewerUserId, buddies, mapItems, datePreset),
     buildMemberDiscoveryHostsGoing(
       input.viewerUserId,
       buddyIds,
-      enriched.items,
+      mapItems,
       datePreset,
       input.search
     ),
+    Promise.resolve(
+      buildMemberDiscoveryLookingRowsFromMapItems(mapItems, {
+        viewerUserId: input.viewerUserId,
+        excludeUserIds,
+        datePreset,
+        search: input.search,
+      })
+    ),
+    followedPromise,
   ]);
 
   const friendsFiltered = friendsGoing.filter((row) =>
@@ -157,25 +182,6 @@ export const loadMemberDiscoveryRoster = async (input: {
       input.search
     )
   );
-
-  const lookingFor = buildMemberDiscoveryLookingRowsFromMapItems(enriched.items, {
-    viewerUserId: input.viewerUserId,
-    excludeUserIds,
-    datePreset,
-    search: input.search,
-  });
-
-  const followedRaw = await buildFollowedBrowseCards(input.viewerUserId, buddyIds, input.search);
-  const followedUsers = await findAuthUsersByIds(followedRaw.map((card) => card.id));
-  const followedWithCity = followedRaw.map((card) => {
-    const user = followedUsers.find((u) => u._id === card.id);
-    const city = user?.profile?.city;
-    return {
-      ...card,
-      city: city ? USER_CITY_LABELS[city as UserCity] ?? null : null,
-    };
-  });
-  const followed = await enrichMemberBrowseDirectory(input.viewerUserId, followedWithCity);
 
   return {
     data: { friendsGoing: friendsFiltered, hostsGoing, lookingFor, followed, directory },

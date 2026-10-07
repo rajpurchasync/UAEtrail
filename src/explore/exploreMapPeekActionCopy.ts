@@ -12,7 +12,7 @@ export const activityMapPeekActionLabel = (
     case 'link_carpool':
       return ORGANIZE_LINK_RIDESHARE_LABEL;
     case 'message_host':
-      return 'Message host';
+      return 'Message Host';
     case 'invite_crew':
       return 'Ask your crew to join';
     case 'view_detail':

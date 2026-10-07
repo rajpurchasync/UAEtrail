@@ -336,7 +336,7 @@ export const ListDiscoveryHeader = ({
 
 
 
-        {view === 'search' || (isCategory && categoryFocus === 'people') ? searchField : null}
+        {view === 'search' ? searchField : null}
 
 
 

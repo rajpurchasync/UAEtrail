@@ -1,20 +1,15 @@
 import type {
   BuddySummaryDTO,
   ExploreMapItemDTO,
-  SocialPersonBuddyRequestState,
   SocialPersonRowDTO,
   SocialPersonTripHintDTO,
 } from '@uaetrail/shared-types';
-import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
-import { countUserCheckedInParticipations } from '../lib/activity-engagement-store.js';
-import { findAuthUsersByIds } from '../lib/auth-users.js';
-import { listBuddyRequestsForUser } from '../lib/buddy-store.js';
 import {
   matchesExploreActivityDateFilter,
   type ExploreActivityDatePreset,
 } from '../lib/explore-activity-date-filter.js';
-import { canMessageUser } from './chat-policy.js';
 import { buildBuddyActivityPresenceRows } from './buddy-activity-presence.js';
+import { enrichMemberPersonRows } from './member-people-engagement.js';
 
 const activityHostUserId = (item: ExploreMapItemDTO): string | null => {
   if (item.source !== 'activity') return null;
@@ -32,81 +27,6 @@ const toTripHint = (
   time: item.time ?? null,
   role,
 });
-
-const buddyRequestStateForTarget = (
-  targetUserId: string,
-  pendingIncoming: Set<string>,
-  pendingOutgoing: Set<string>
-): SocialPersonBuddyRequestState => {
-  if (pendingIncoming.has(targetUserId)) return 'incoming';
-  if (pendingOutgoing.has(targetUserId)) return 'outgoing';
-  return 'none';
-};
-
-const enrichSocialRows = async (
-  viewerUserId: string,
-  buddyIds: Set<string>,
-  seeds: Array<{ userId: string; displayName: string; avatarUrl: string | null; upcomingTrip: SocialPersonTripHintDTO | null }>
-): Promise<SocialPersonRowDTO[]> => {
-  if (seeds.length === 0) return [];
-
-  const userIds = seeds.map((s) => s.userId);
-  const [users, requests, attendedPairs, messagePairs] = await Promise.all([
-    findAuthUsersByIds(userIds),
-    listBuddyRequestsForUser(viewerUserId, 'all'),
-    Promise.all(userIds.map(async (id) => [id, await countUserCheckedInParticipations(id)] as const)),
-    Promise.all(
-      userIds.map(async (id) => {
-        if (buddyIds.has(id)) return [id, true] as const;
-        return [id, await canMessageUser(viewerUserId, id)] as const;
-      })
-    ),
-  ]);
-
-  const userMap = new Map(users.map((u) => [u._id, u]));
-  const attendedMap = new Map(attendedPairs);
-  const messageMap = new Map(messagePairs);
-  const pendingIncoming = new Set(
-    requests
-      .filter((r) => r.status === 'pending' && r.toUserId === viewerUserId)
-      .map((r) => r.fromUserId)
-      .filter(Boolean) as string[]
-  );
-  const pendingOutgoing = new Set(
-    requests
-      .filter((r) => r.status === 'pending' && r.fromUserId === viewerUserId)
-      .map((r) => r.toUserId)
-      .filter(Boolean) as string[]
-  );
-
-  return seeds.map((seed) => {
-    const user = userMap.get(seed.userId);
-    const city = user?.profile?.city;
-    const cityLabel =
-      city && city in USER_CITY_LABELS ? USER_CITY_LABELS[city as UserCity] : null;
-    const relationship = buddyIds.has(seed.userId) ? 'friend' : 'following';
-    const buddyRequestState = buddyRequestStateForTarget(
-      seed.userId,
-      pendingIncoming,
-      pendingOutgoing
-    );
-    const areBuddies = relationship === 'friend';
-
-    return {
-      userId: seed.userId,
-      displayName: seed.displayName,
-      avatarUrl: seed.avatarUrl,
-      cityLabel,
-      activitiesAttended: attendedMap.get(seed.userId) ?? 0,
-      relationship,
-      buddyRequestState,
-      canMessage: messageMap.get(seed.userId) ?? false,
-      canSendBuddyRequest:
-        !areBuddies && buddyRequestState === 'none' && seed.userId !== viewerUserId,
-      upcomingTrip: seed.upcomingTrip,
-    };
-  });
-};
 
 /** Accepted buddies on outings for the date filter (hosting or joining). */
 export const buildMemberDiscoveryFriendsGoing = async (
@@ -148,7 +68,7 @@ export const buildMemberDiscoveryFriendsGoing = async (
     };
   });
 
-  const rows = await enrichSocialRows(viewerUserId, buddyIds, seeds);
+  const rows = await enrichMemberPersonRows(viewerUserId, buddyIds, seeds);
   return [...rows].sort((a, b) => a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }));
 };
 
@@ -196,6 +116,6 @@ export const buildMemberDiscoveryHostsGoing = async (
     upcomingTrip: toTripHint(row.item, 'hosting'),
   }));
 
-  const rows = await enrichSocialRows(viewerUserId, buddyIds, seeds);
+  const rows = await enrichMemberPersonRows(viewerUserId, buddyIds, seeds);
   return [...rows].sort((a, b) => a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }));
 };

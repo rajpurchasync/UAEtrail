@@ -100,17 +100,15 @@
       "label": "Social graph",
       "apiFiles": [
         "apps/api/src/lib/buddy-store.ts",
-        "apps/api/src/services/buddy-activity-presence.ts",
-        "apps/api/src/services/social-people.ts"
+        "apps/api/src/services/buddy-activity-presence.ts"
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerBuddyRoutes.ts",
         "apps/api/src/routes/user/registerFollowRoutes.ts",
-        "apps/api/src/routes/user/registerGroupRoutes.ts",
-        "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
+        "apps/api/src/routes/user/registerGroupRoutes.ts"
       ],
       "feDomains": ["src/api/domains/social.ts"],
-      "feRoots": ["src/pages/Buddies.tsx", "src/pages/Groups.tsx", "src/explore/ui/ExploreSocialPeopleList.tsx", "src/explore/ui/ExploreMemberDiscoveryList.tsx"]
+      "feRoots": ["src/pages/Buddies.tsx", "src/pages/Groups.tsx"]
     },
     {
       "id": "places",
@@ -133,16 +131,26 @@
     },
     {
       "id": "member_discovery",
-      "label": "Member discovery",
+      "label": "Member discovery (browse people)",
       "apiFiles": [
         "apps/api/src/services/member-discovery-roster.ts",
         "apps/api/src/services/member-discovery-quota.ts",
         "apps/api/src/services/member-discovery.ts",
+        "apps/api/src/services/member-people-engagement.ts",
+        "apps/api/src/services/social-people.ts",
         "apps/api/src/lib/member-profile-views-store.ts"
       ],
-      "routeRegistrars": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
-      "feDomains": ["src/api/domains/account.ts"],
-      "feRoots": ["src/pages/MemberProfile.tsx"]
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts",
+        "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/account.ts", "src/api/domains/social.ts"],
+      "feRoots": [
+        "src/pages/MemberProfile.tsx",
+        "src/explore/ui/ExploreMemberDiscoveryList.tsx",
+        "src/explore/ui/ExploreSocialPeopleList.tsx",
+        "src/list/ui/ListDiscoverPeopleView.tsx"
+      ]
     },
     {
       "id": "engagement",

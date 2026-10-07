@@ -1,0 +1,23 @@
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../api/index';
+import { memberPeopleNetworkPreviewQueryKey } from './memberDiscoveryQueryKeys';
+
+const MEMBER_PEOPLE_PREVIEW_STALE_MS = 120_000;
+
+/** Network counts + avatars for explore map people pill (map-going merged client-side). */
+export const useMemberPeopleNetworkPreview = (enabled: boolean) => {
+  const query = useQuery({
+    queryKey: memberPeopleNetworkPreviewQueryKey(),
+    enabled,
+    staleTime: MEMBER_PEOPLE_PREVIEW_STALE_MS,
+    queryFn: async () => {
+      const response = await api.getSocialPeoplePreview();
+      return response.data;
+    },
+  });
+
+  return {
+    preview: query.data ?? null,
+    refresh: () => query.refetch(),
+  };
+};

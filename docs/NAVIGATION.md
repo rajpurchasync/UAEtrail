@@ -60,7 +60,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Friends (`/buddies`)
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
-- **Explore → Social → Followed:** sub-segments **People** (member follows), **Places** and **Hosts & shops** (entity follows from map/profile); URL `followedKind=places|events`. Private **wishlist** saves (venues + activities) live under **Trips → Wishlist** (`/profile/wishlist` redirects to trips).
+- **Explore map people panel → Followed:** sub-segments **People** (member follows), **Places** and **Hosts & shops** (entity follows from map/profile); URL `followedKind=places|events`. (Panel URL `view=social` — browse people, not chat; see § Browse — people & crew below.) Private **wishlist** saves (venues + activities) live under **Trips → Wishlist** (`/profile/wishlist` redirects to trips).
 
 ### Chat (`/messages`)
 
@@ -154,18 +154,20 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - Filter/panel query params select map context; they do not imply list mode.
 - **Others drill-down (Activities tab):** `filter=others` → optional `subtype=events|activities`; when `subtype=activities`, optional `outingTopic` (`climbing`, `trail_run`, `workshop`, `community`, …). Helpers: `explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })`.
 
-## Social (Explore)
+## Browse — people & crew (Explore map panel)
 
-Map control → browse `listMode=social` (URL `view=social`, legacy `view=going` redirects; `socialTab=all|friends|followed|discover`). Copy: **Social** (`exploreSocialPanelCopy.ts`). Guests → sign-in (`guestBrowseGateCopy` `explore-social`).
+**Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/messages`](#chat-messages) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
+
+Map control opens browse `listMode=people` (URL `view=people`; legacy `view=social` and `view=going` still parse). Query `socialTab=all|friends|followed|discover` (legacy name). Panel title **People** (`exploreSocialPanelCopy.ts`) — same family as list **Buddies** (`listCat=people`). Guests → sign-in (`guestBrowseGateCopy` `explore-people-browse` or `explore-social`).
 
 | Segment (`socialTab`) | Label | Data / actions |
 |-----------------------|-------|----------------|
-| `all` | All | `GET /social/people?segment=all` — friends + followed |
-| `friends` | Friends | Same API · **Message** · **Plan a trip** |
+| `all` | All | `GET /social/people?segment=all` — friends + followed (network roster + outing hints) |
+| `friends` | Friends | Same API · **Message** (→ `/messages`) · **Plan a trip** |
 | `followed` | Followed | Same API · profile · **Add friend** when allowed |
-| `discover` | Discover | `GET /me/member-discovery/roster` — strangers on outings + public directory; profile opens use discover quota (5 / 30d free, Pro unlimited). Map date filter scopes “on outings”. |
+| `discover` | Discover | `GET /me/member-discovery/roster` — who’s going / looking / followed hosts + public directory; profile opens use discover quota (5 / 30d free, Pro unlimited). List **Buddies** uses the same roster (segments: Who’s going · Looking for · Followed). |
 
-Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **Social**, **Friends**, **Messages**. **Join me** on activity detail (`ActivityInviteSharePanel`). See [`API_ROUTING.md`](./API_ROUTING.md) § Social people roster.
+Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher may show **Social** (opens this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteSharePanel`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
 
 ## Explore FAB (+)
 

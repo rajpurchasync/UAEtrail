@@ -20,6 +20,7 @@ const memberBrowseQuerySchema = paginationSchema.extend({
 const memberDiscoveryRosterQuerySchema = paginationSchema.extend({
   q: z.string().trim().max(80).optional(),
   date: z.string().trim().max(32).optional(),
+  omitDirectory: z.literal('1').optional(),
 });
 
 const PROFILE_VIEW_STATS_WINDOW_DAYS = 30;
@@ -39,6 +40,7 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
           search: pg.q,
           skip: (pg.page - 1) * pg.pageSize,
           take: pg.pageSize,
+          omitDirectory: pg.omitDirectory === '1',
         });
         res.json({
           data,
