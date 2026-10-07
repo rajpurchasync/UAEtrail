@@ -10,6 +10,8 @@ import {
   listAdminTenantsPaged,
   updateAdminTenantStatus,
 } from '../../lib/admin-store.js';
+import { findTenantById, setTenantDiscoverFeatured } from '../../lib/tenant-store.js';
+import { TenantBusinessMode } from '../../domain/enums.js';
 import { validate } from '../../middleware/validate.js';
 import { HOST_OVERVIEW_PATH, PRO_MEMBERSHIP_PATH } from '../../lib/member-routes.js';
 import { notifyUserAdminAction } from '../../services/admin-notifications.js';
@@ -39,6 +41,10 @@ const tenantStatusSchema = suspendCommentSchema
     status: z.enum(['active', 'suspended']),
   })
   .superRefine((data, ctx) => requireSuspendComment(data, data.status === 'suspended', ctx));
+
+const discoverFeaturedSchema = z.object({
+  featured: z.boolean(),
+});
 
 /** Platform admin tenant list, detail, and suspend/activate (`/admin/tenants/*`). */
 export const registerAdminTenantRoutes = (adminRouter: Router): void => {
@@ -81,6 +87,8 @@ export const registerAdminTenantRoutes = (adminRouter: Router): void => {
 
       if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
 
+      const mongoTenant = await findTenantById(id);
+
       res.json({
         data: {
           id: tenant.id,
@@ -88,6 +96,8 @@ export const registerAdminTenantRoutes = (adminRouter: Router): void => {
           slug: tenant.slug,
           type: tenant.type.toLowerCase(),
           status: tenant.status.toLowerCase(),
+          businessMode: mongoTenant?.businessMode?.toLowerCase() ?? null,
+          discoverFeatured: mongoTenant?.discoverFeatured ?? false,
           owner: {
             id: tenant.owner.id,
             email: tenant.owner.email,
@@ -159,6 +169,39 @@ export const registerAdminTenantRoutes = (adminRouter: Router): void => {
         });
 
         res.json({ message: `Tenant ${status === 'active' ? 'activated' : 'suspended'}.` });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  adminRouter.patch(
+    '/tenants/:id/discover-featured',
+    validate({ params: idParamSchema, body: discoverFeaturedSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof idParamSchema>;
+        const { featured } = req.body as z.infer<typeof discoverFeaturedSchema>;
+
+        const mongoTenant = await findTenantById(id);
+        if (!mongoTenant || mongoTenant.businessMode !== TenantBusinessMode.SHOP) {
+          throw new ApiError(400, 'shop_tenant_required', 'Discover featuring applies to gear shop tenants only.');
+        }
+
+        const updated = await setTenantDiscoverFeatured(id, featured);
+        if (!updated) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
+
+        await createAuditLog({
+          actorId: req.auth!.userId,
+          action: featured ? 'tenant.discover_feature' : 'tenant.discover_unfeature',
+          entityType: 'tenant',
+          entityId: id,
+        });
+
+        res.json({
+          message: featured ? 'Shop featured on discover home.' : 'Shop removed from discover home.',
+          discoverFeatured: updated.discoverFeatured ?? false,
+        });
       } catch (error) {
         next(error);
       }

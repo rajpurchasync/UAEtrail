@@ -37,6 +37,7 @@ export type NotificationKind =
   | 'tier_upgrade'
   | 'user_registered'
   | 'activity_published'
+  | 'entity_activity_published'
   | 'wishlist_match'
   | (string & {});
 
@@ -60,5 +61,8 @@ export interface NotificationMeta {
   senderId?: string;
   followerUserId?: string;
   locationId?: string;
+  tenantId?: string;
   userId?: string;
+  /** Wishlist row that triggered a geographic/category match alert. */
+  wishlistItemId?: string;
 }

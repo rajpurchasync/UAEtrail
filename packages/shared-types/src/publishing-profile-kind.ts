@@ -37,3 +37,20 @@ export const resolvePublishingProfileKind = (input: {
 /** Tenants that may host Organize activities (not shop-only storefronts). */
 export const isOrganizeActivityHostProfileType = (ownedType: 'guide' | 'agency' | 'shop'): boolean =>
   ownedType === 'guide' || ownedType === 'agency';
+
+/** Map public tenant wire fields → storefront kind (explore links, redirects). */
+export const inferHostStorefrontKindFromTenantWire = (tenant: {
+  type?: string | null;
+  businessMode?: string | null;
+  publishingPurpose?: string | null;
+}): PublishingProfileKind => {
+  const businessMode = tenant.businessMode?.toUpperCase() ?? '';
+  const type = tenant.type?.toUpperCase() ?? '';
+  if (businessMode === 'SHOP') return 'shop';
+  if (businessMode === 'AGENCY' || type === 'COMPANY') return 'agency';
+  const purpose = tenant.publishingPurpose?.toLowerCase();
+  if (purpose === 'professional') return 'pro_guide';
+  if (purpose === 'business') return 'agency';
+  if (purpose === 'community') return 'community';
+  return 'pro_guide';
+};

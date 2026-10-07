@@ -2,17 +2,17 @@ import type { Db } from 'mongodb';
 import { COLLECTIONS } from './collections.js';
 
 export const ensureMongoIndexes = async (db: Db): Promise<void> => {
-  const userFavorites = db.collection(COLLECTIONS.USER_FAVORITES);
-  let existingFavoriteIndexes: Awaited<ReturnType<typeof userFavorites.indexes>> = [];
+  const userWishlist = db.collection(COLLECTIONS.USER_WISHLIST);
+  let existingWishlistIndexes: Awaited<ReturnType<typeof userWishlist.indexes>> = [];
   try {
-    existingFavoriteIndexes = await userFavorites.indexes();
+    existingWishlistIndexes = await userWishlist.indexes();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (!/ns does not exist|NamespaceNotFound/i.test(message)) {
       throw error;
     }
   }
-  const legacyFavoriteIndexNames = new Set([
+  const legacyWishlistIndexNames = new Set([
     'userId_1_locationId_1',
     'userId_1_eventId_1',
     'userId_1_activityId_1',
@@ -20,11 +20,11 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
   ]);
 
   await Promise.all(
-    existingFavoriteIndexes
+    existingWishlistIndexes
       .map((index) => index.name)
       .filter((indexName): indexName is string => typeof indexName === 'string')
-      .filter((indexName) => legacyFavoriteIndexNames.has(indexName))
-      .map((indexName) => userFavorites.dropIndex(indexName))
+      .filter((indexName) => legacyWishlistIndexNames.has(indexName))
+      .map((indexName) => userWishlist.dropIndex(indexName))
   );
 
   await Promise.all([
@@ -63,7 +63,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { locationId: 1 } }
     ]),
     db.collection(COLLECTIONS.NOTIFICATIONS).createIndexes([{ key: { userId: 1, createdAt: -1 } }]),
-    userFavorites.createIndexes([
+    userWishlist.createIndexes([
       { key: { userId: 1, createdAt: -1 } },
       {
         key: { userId: 1, locationId: 1 },
@@ -226,6 +226,11 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.USER_FOLLOWS).createIndexes([
       { key: { followerId: 1, followingId: 1 }, unique: true },
       { key: { followingId: 1, createdAt: -1 } },
+      { key: { followerId: 1, createdAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.ENTITY_FOLLOWS).createIndexes([
+      { key: { followerId: 1, kind: 1, targetId: 1 }, unique: true },
+      { key: { kind: 1, targetId: 1, createdAt: -1 } },
       { key: { followerId: 1, createdAt: -1 } }
     ]),
     db.collection(COLLECTIONS.MEMBER_PROFILE_VIEWS).createIndexes([

@@ -16,7 +16,10 @@ export const registerSocialPeopleRoutes = (router: Router): void => {
     requireVerifiedEmail,
     async (req, res, next) => {
       try {
-        const data = await loadSocialPeoplePreview({ viewerUserId: req.auth!.userId });
+        const data = await loadSocialPeoplePreview({
+          viewerUserId: req.auth!.userId,
+          userRole: req.auth!.role,
+        });
         res.json({ data });
       } catch (error) {
         next(error);

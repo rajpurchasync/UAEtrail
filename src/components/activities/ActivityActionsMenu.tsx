@@ -243,7 +243,7 @@ export const buildAdminActivityMenuItems = (
   ...buildHostActivityMenuItems(activity, handlers),
   {
     id: 'feature',
-    label: activity.featured ? 'Remove featured' : 'Feature on home',
+    label: activity.featured ? 'Remove from Upcoming rail' : 'Feature on discover (Upcoming)',
     onClick: () => handlers.onFeature?.(activity),
     hidden: activity.status !== 'published' || !handlers.onFeature,
   },

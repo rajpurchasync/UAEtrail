@@ -1,14 +1,10 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense } from 'react';
 import { List, Plus } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
-import {
-  EXPLORE_FLOATING_CONTROL,
-  EXPLORE_SHEET,
-  EXPLORE_Z,
-} from '../../config/exploreTheme';
+import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
 import type { ExploreCardModel } from '../exploreCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreCoachMarks } from './ExploreCoachMarks';
@@ -19,7 +15,6 @@ import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
 import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
-import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExplorePanel, MapFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
@@ -33,7 +28,6 @@ const PlacesMap = lazy(() =>
 export type ExploreMapStageProps = {
   isDesktop: boolean;
   listOpen: boolean;
-  showListPanel: boolean;
   searchQuery?: string;
   onSearchQueryChange?: (value: string) => void;
   onSearchCommit?: (scope?: ExploreSearchScopeKey | null) => void;
@@ -90,8 +84,6 @@ export type ExploreMapStageProps = {
   onDemandLinkRideshare?: () => void;
   hostActivityCtaHandlers?: import('../../components/activity/HostActivityCtas').HostActivityCtaHandlers | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
-  onCloseMobileBrowse: () => void;
-  mobileBrowseSheet: ReactNode;
   onGuestGatedAction?: () => void;
   onPlanTripFromVenue?: (item: import('@uaetrail/shared-types').ExploreMapItemDTO) => void;
   joinInvitePeekBanner?: string | null;
@@ -100,7 +92,6 @@ export type ExploreMapStageProps = {
 export const ExploreMapStage = ({
   isDesktop,
   listOpen,
-  showListPanel,
   searchQuery,
   onSearchQueryChange,
   onSearchCommit,
@@ -157,8 +148,6 @@ export const ExploreMapStage = ({
   onDemandLinkRideshare,
   hostActivityCtaHandlers = null,
   onOpenExploreItem,
-  onCloseMobileBrowse,
-  mobileBrowseSheet,
   onGuestGatedAction,
   onPlanTripFromVenue,
   joinInvitePeekBanner = null,
@@ -329,19 +318,6 @@ export const ExploreMapStage = ({
         />
       ) : null}
     </div>
-
-    {showListPanel && !isDesktop ? (
-      <ExploreResponsiveSheet
-        open
-        onClose={onCloseMobileBrowse}
-        zClass={EXPLORE_Z.browseSheet}
-        maxWidthClass="lg:max-w-lg"
-        showHandle={false}
-        panelClassName={`${EXPLORE_SHEET.browseHeight} px-3 pt-1.5 lg:px-5 lg:pt-3`}
-      >
-        {mobileBrowseSheet}
-      </ExploreResponsiveSheet>
-    ) : null}
   </div>
   );
 };

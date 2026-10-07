@@ -271,7 +271,7 @@ export const CreateContributeFlow = ({
     } else if (type === 'camping') {
       navigate(`/camp/${submitResult.location.id}`);
     } else if (type === 'event') {
-      navigate(`/event/${submitResult.location.id}`);
+      navigate(`/venue/${submitResult.location.id}`);
     } else {
       navigate(`/trail/${submitResult.location.id}`);
     }

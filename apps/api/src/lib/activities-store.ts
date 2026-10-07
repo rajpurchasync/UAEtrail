@@ -266,14 +266,27 @@ export const publishActivityById = async (activityId: string) => {
     throw new Error('Failed to publish event.');
   }
   await invalidateExploreMapCache();
-  const { notifyWishlistForPublishedActivity } = await import('../services/wishlist-alerts.js');
-  void notifyWishlistForPublishedActivity(activityId);
   const actorUserId = mongoDoc.hostId ?? mongoDoc.createdById;
   const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
   void notifyMemberPublishSubscribers(actorUserId, {
     publishType: 'activity',
     activityId,
     title: mongoDoc.title,
+  });
+  const location = mongoDoc.locationId ? await findLocationById(mongoDoc.locationId) : null;
+  const { findTenantById } = await import('./tenant-store.js');
+  const tenant = mongoDoc.tenantId ? await findTenantById(mongoDoc.tenantId) : null;
+  const { notifyEntityFollowersOnActivityPublished } = await import(
+    '../services/entity-publish-notifications.js'
+  );
+  void notifyEntityFollowersOnActivityPublished({
+    activityId,
+    title: mongoDoc.title,
+    hostUserId: actorUserId,
+    locationId: mongoDoc.locationId ?? null,
+    tenantId: mongoDoc.tenantId ?? null,
+    locationName: location?.name ?? null,
+    tenantName: tenant?.name ?? null,
   });
   return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.PUBLISHED, publishedAt });
 };

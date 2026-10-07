@@ -10,9 +10,10 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 |---------|-------|---------|
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
+| **List discovery** | `/list` | Full-screen poster/list browse (same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/trips` | Account hub, settings stack, trips (upcoming / past / wishlist) |
 | **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | Map · My trips · **Chat** bottom nav (`md:hidden`; route `/chat`); **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
-| **Entity detail** | `/trail`, `/camp`, `/event`, `/activity`, `/shop`, `/operator` | Single place, trip, or host |
+| **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/guide`, `/agency`, `/partner` | Place, scheduled outing, shop, or brand profile |
 
 ### Profile hub (`/profile`)
 
@@ -28,7 +29,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Member profile (`/member/:userId`)
 
-- **Person** surface (member card or trusted view) — not the business **storefront** (`/operator/:slug`, `/shop/:id`). Link from Who’s going, buddies, activity rosters.
+- **Person** surface (member card or trusted view) — not the business **storefront** (`/guide/:slug`, `/agency/:slug`, `/shop/:id`). Link from Who’s going, buddies, activity rosters.
 - **Guests:** sign-in prompt; no public member card (policy P3). **Signed-in** viewers follow `profileVisibility` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Profile visibility).
 
 ### Trips (`/trips`)
@@ -59,7 +60,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Friends (`/buddies`)
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
-- **Explore → Social → Followed:** sub-segments **People** (member follows), **Places** and **Outings** (saved favorites from the map/detail); URL `followedKind=places|events`.
+- **Explore → Social → Followed:** sub-segments **People** (member follows), **Places** and **Hosts & shops** (entity follows from map/profile); URL `followedKind=places|events`. Private **wishlist** saves (venues + activities) live under **Trips → Wishlist** (`/profile/wishlist` redirects to trips).
 
 ### Chat (`/messages`)
 
@@ -131,6 +132,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |
 | Trips hub URLs | `tripsPlansPath()`, `parseTripsSegment`, … | `src/trips/tripsRouting.ts` |
+| List discovery URLs | `listDiscoveryPath()`, `listDiscoveryPathFromExploreSearch()` | `src/list/routing.ts` |
 | Crew chat deep link | `activityGroupChatPath()`, `navigateToActivityGroupChat()` | `src/utils/activityGroupChatNav.ts` |
 | Open crew chat from activity id | `openActivityGroupChat()` | `src/utils/openActivityGroupChat.ts` |
 | Notification → route | `resolveNotificationPath()` | `src/utils/notificationRouting.ts` |
@@ -222,7 +224,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/admin/organizers` | `/admin/hosts` | 2026-Q4 |
 | `/admin/locations` | `/admin/places` | 2026-Q4 |
 | `/host/locations` | `/host/places` | 2026-Q4 |
-| `/event-spot/:id`, `/community-activity/:id` | `/event/:id` | 2026-Q4 |
+| `/event-spot/:id`, `/community-activity/:id`, `/event/:id` (place) | `/venue/:id` | 2026-Q4 |
 | `/merchant/:id` | legacy merchant page | TBD |
 | `/sign-up`, `/sign-in` | auth aliases | keep |
 

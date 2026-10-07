@@ -15,7 +15,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
 | **`/host/*`** | Verified + **tenant** (`x-organisation-id`) | **Host console** (any publishing tier): publish, participant roster, **activity** join queue |
 | **`/users/*`** | Optional auth | Public member profiles |
-| **`/chat/*`**, **`/social/*`** | Auth | DMs, reviews, favorites |
+| **`/chat/*`**, **`/social/*`** | Auth | DMs, reviews, people discovery |
 | **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
 | **`POST /admin/platform-admins`** | Master admin only | Grant `PLATFORM_ADMIN` to an existing member by email |
 | **`DELETE /admin/platform-admins/:userId`** | Master admin only | Revoke platform staff (not master accounts) |
@@ -139,7 +139,44 @@ Registration: `apps/api/src/routes/social/registerSocialPeopleRoutes.ts` · serv
 | GET | `/me/reviews` | Signed-in member's reviews |
 | PATCH | `/me/reviews/:id` | Edit own review |
 
-Registration: `registerSocialReviewRoutes.ts` (mounted on root `socialRouter` in `routes/social.ts`). Favorites remain on the same `socialRouter`.
+Registration: `registerSocialReviewRoutes.ts` (mounted on root `socialRouter` in `routes/social.ts`).
+
+---
+
+## Wishlist (`/me/wishlist`)
+
+Private saves — **venue** (`locationId`) or **activity** (`activityId`) only. Mongo: `user_favorites` (`COLLECTIONS.USER_WISHLIST`). Not demand, not member follows.
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/wishlist` | List wishlist rows with hydrated place/activity labels |
+| POST | `/me/wishlist` | Create (exactly one of `locationId`, `activityId`) |
+| PATCH | `/me/wishlist/:id` | Toggle `alertOnMatch` for geographic/category alerts |
+| DELETE | `/me/wishlist/:id` | Remove row |
+| GET | `/me/wishlist/check` | Query `locationId` or `activityId` → `{ saved, wishlistItemId }` |
+
+Registration: `registerMeWishlistRoutes.ts` · store: `wishlist-store.ts` · match alerts: `wishlist-alerts.ts`.
+
+---
+
+## Entity follow (`/me/entity-follows`)
+
+Public **follow** for places, host brands, and shops — outing alerts when followed entities publish (not private wishlist).
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/entity-follows` | List follows with hydrated labels |
+| POST | `/me/entity-follows` | Follow (`locationId` \| `tenantId` \| `merchantId`) |
+| DELETE | `/me/entity-follows/:id` | Unfollow |
+| GET | `/me/entity-follows/check` | Query one target → `{ following, followId }` |
+
+Registration: `registerEntityFollowRoutes.ts` · store: `entity-follow-store.ts` · publish fan-out: `entity-publish-notifications.ts`.
+
+---
+
+## Account data export (`GET /me/export`)
+
+JSON download of profile, join requests, participations, **wishlist**, **entity follows**, shop orders, and push subscription count. Registration: `registerAccountLifecycleRoutes.ts` · `buildUserDataExport` in `data-export.ts`. Rate-limited (`sensitiveDataLimiter`).
 
 ---
 

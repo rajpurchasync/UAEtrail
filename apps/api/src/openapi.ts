@@ -9,7 +9,8 @@ export const openApiTags = [
   { name: 'Shop', description: 'Shop organisations, products, and checkout (`/shop/*`).' },
   { name: 'Members', description: 'Auth accounts, profiles, and admin member tools.' },
   { name: 'Explore', description: 'Map discovery and public browse endpoints.' },
-  { name: 'Social', description: 'Reviews, favorites, buddies, and groups.' },
+  { name: 'Social', description: 'Reviews, buddies, and groups.' },
+  { name: 'Engagement', description: 'Wishlist saves, entity follows, goals, badges, and map pins.' },
   { name: 'Media', description: 'Presigned upload and private media resolve.' },
   { name: 'Admin', description: 'Platform admin moderation and audit.' }
 ] as const;
@@ -164,6 +165,57 @@ export const openApiSpec = swaggerJsdoc({
           responses: {
             200: { description: 'Public shop profile and active products.' }
           }
+        }
+      },
+      '/me/wishlist': {
+        get: {
+          tags: ['Engagement', 'Members'],
+          summary: 'List wishlist items',
+          description:
+            'Private venue and activity saves (`user_favorites` collection). Not demand bookmarks or entity follows.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Hydrated wishlist rows.' } }
+        },
+        post: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Add wishlist item',
+          description: 'Body: exactly one of `locationId` or `activityId`. Optional match-alert watch fields.',
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Created or existing row.' } }
+        }
+      },
+      '/me/wishlist/check': {
+        get: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Check wishlist save state',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: '{ saved, wishlistItemId }' } }
+        }
+      },
+      '/me/entity-follows': {
+        get: {
+          tags: ['Engagement', 'Members'],
+          summary: 'List entity follows',
+          description: 'Followed places, host brands, and shops for publish alerts.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Hydrated follow rows.' } }
+        },
+        post: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Follow an entity',
+          description: 'Body: exactly one of `locationId`, `tenantId`, `merchantId`.',
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Follow row.' } }
+        }
+      },
+      '/me/export': {
+        get: {
+          tags: ['Members'],
+          summary: 'Download account data (JSON)',
+          description:
+            'Includes profile, activity requests, participations, wishlist, entity follows, shop orders, and push subscription count.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'JSON attachment.' } }
         }
       },
       '/media/resolve': {

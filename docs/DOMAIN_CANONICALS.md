@@ -20,7 +20,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 |------|--------------|--------------|-----------|
 | `place` | **Place** | `locations`, `LocationDTO` | Second “Venue” entity |
 | `activity` | **Activity** (outing / plan) | `activities`, `ActivityDTO` | `Trip`, `TripDTO`, `Event` row |
-| `organisation` | **Host storefront** (guide / agency / partner tenant) — wire name `organisation`; see §1.5 | `tenants`, `/operator/:slug` (partner route TBD) | A second “organizer” entity table |
+| `organisation` | **Host storefront** (guide / agency / partner tenant) — wire name `organisation`; see §1.5 | `tenants`, `/guide` · `/agency` · `/partner` | A second “organizer” entity table |
 | `shop` | **Shop** (outdoor retail brand + catalog) | `merchant_profiles` + SHOP `tenants` | “Merchant”, “Partner” for shops |
 | `person` | **Person** / member | `users` (profile fields) | “User” in consumer copy |
 
@@ -72,12 +72,12 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | Kind | Product | Map pin? | Join / book model | Public URL (today) |
 |------|---------|----------|-------------------|-------------------|
 | `community` | Buddy host (no brand page) | Via activities/demand only | Organize on map | `/member/:userId` only |
-| `pro_guide` | Pro individual guide | Optional | Activity join / request | `/operator/:slug` |
-| `agency` | Tour agency | **No** — not “go to this pin to join” | Activities + paid trips | `/operator/:slug` |
+| `pro_guide` | Pro individual guide | Optional | Activity join / request | `/guide/:slug` |
+| `agency` | Tour agency | **No** — not “go to this pin to join” | Activities + paid trips | `/agency/:slug` |
 | `shop` | Outdoor shop | **Yes** (Place pin) + online catalog | Directions, featured picks; not trip inventory | `/shop/:id` |
 | `ecommerce` | Business Pro — online retail | Optional pin | Catalog / campaigns; not a tour agency | `/shop/:id` or brand URL (TBD) |
 | `hospitality` | Business Pro — hotels, venues | Often **yes** | Stays + linked campaigns (future) | TBD |
-| `partner` | **Partner** Pro path (top-level) | Often **yes** (campaign pin) | Campaigns + linked Activities (future) | `/partner/:slug` (planned); may alias `/operator` interim |
+| `partner` | **Partner** Pro path (top-level) | Often **yes** (campaign pin) | Campaigns + linked Activities (future) | `/partner/:slug` |
 
 **Shops ≠ agencies ≠ partners ≠ e-commerce** — separate Pro applications and map rules. Code today: `hostProfileType` `individual` \| `agency` \| `shop`; extend with business **subtype** on Pro Business path ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Pro membership ladder).
 
@@ -103,9 +103,24 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `activity` | Scheduled outing | Host tenant + participation |
 | `person` | Member card | `profileVisibility` + profile `viewerAccess` (§15) |
 | `shop` | Shop **storefront** + commerce DTO | `PublishingProfileKind: shop` |
-| `organisation` | Host **storefront** slug (guide/agency/partner on `/operator` today) | `PublishingProfileKind`: `pro_guide` \| `agency` \| `partner` |
+| `organisation` | Host **storefront** slug (`/guide`, `/agency`, `/partner`) | `PublishingProfileKind`: `pro_guide` \| `agency` \| `partner` |
 
 **Do not** rename `EntityKind.organisation` in a drive-by PR. Add `PublishingProfileKind` in `shared-types` and resolve from `tenants` + `host_applications`. Consumer copy: **host profile** / **guide** / **agency** / **shop** / **partner** — not “organisation” or “operator.”
+
+---
+
+### 1.6 Member engagement: Follow · Wishlist · Goal (not “favorites”)
+
+| Product | What | Storage / API | Notes |
+|---------|------|---------------|--------|
+| **Follow** | People you want updates from | `user_follows` · `POST /me/following/:userId` | **Friends** (buddies) auto-follow on accept |
+| **Follow** | Venues and brands you watch | `entity_follows` · `/me/entity-follows` | Map/list **Follow** control — not the wishlist star |
+| **Wishlist** | Private “save for later” | `user_favorites` · `/me/wishlist` | **Venues** (`locationId`) and **activities** (`activityId`) only — not demand, not people |
+| **Goal** | Time-bounded target count | `user_goals` · `/me/goals` | Progress from joined/hosted outings + visited map pins — not wishlist saves |
+
+**Journey map** (`/trips/map`, `POST /me/map-pins`): personal **visited** vs **want to go** pins — complements wishlist; goal progress uses **visited** + attendance, not wishlist rows.
+
+**Retired product term:** “Favorites” — do not use in UI or new API paths.
 
 ---
 
@@ -129,10 +144,14 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 |--------|---------|---------|
 | Place (hike) | `/trail/:id` | `placeDetailPath('hiking', id)` |
 | Place (camp) | `/camp/:id` | `placeDetailPath('camping', id)` |
-| Place (event venue) | `/event/:id` | `placeDetailPath('event', id)` |
-| Activity | `/activity/:id` | `activityDetailPath(id)` |
-| Organisation | `/operator/:slug` | `organisationProfilePath(slug)` |
-| Person | `/member/:userId` | `memberProfilePath(userId)` |
+| Place (event venue) | `/venue/:id` | `placeDetailPath('event', id)` |
+| Activity (all outing types, incl. `activityType: event`) | `/activity/:id` | `activityDetailPath(id)` |
+| Legacy place URL | `/event/:id` → `/venue/:id` | redirect only |
+| Guide brand | `/guide/:slug` | `guideProfilePath(slug)` · `hostBrandProfilePath(slug, 'pro_guide')` |
+| Agency brand | `/agency/:slug` | `agencyProfilePath(slug)` |
+| Partner brand | `/partner/:slug` | `partnerProfilePath(slug)` |
+| Legacy operator URL | `/operator/:slug` → guide/agency/partner/shop | redirect only |
+| Person (community host) | `/member/:userId` | `memberProfilePath(userId)` |
 | Shop | `/shop/:id` | `shopPublicPath({ id })` |
 | Browse | `/explore` (+ query) | `explorePath()` in `src/explore/routing.ts` |
 | Personal hub | `/trips`, `/profile` | `TRIPS_PATH`, `PROFILE_PATH` |
@@ -278,10 +297,12 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 |-------------------|------------|------------------------------|-------------------------|
 | **Find** (FAB) | `participant_intents` | `participantIntent*`, `demandFlow.ts`, explore `source: 'demand'` | “wishlist”, “lookingFor” in filenames |
 | **Demand pin** (public map) | same | `ExploreCardSource` `'demand'`, `participantIntentId` on DTOs | Mixing with personal save |
-| **Saved map & alerts** (profile/trips) | `user_favorites` (+ watch fields) | `favoriteIsPersonalWishlist`, trips `wishlist` segment | “demand” in wishlist UI |
-| **Demand bookmark** (legacy favorite row) | `favorite.participantIntentId` | `favoriteIsDemandBookmark` (`favoriteDemandBookmark.ts`) | Treating as wishlist |
+| **Follow** (venue / host brand / shop alerts) | `entity_follows` | `EntityFollowDTO`, `GET/POST /me/entity-follows` | Wishlist UI, “favorites”, `user_favorites` |
+| **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
+| **Wishlist** (private saves) | `user_favorites` (wire) | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
+| **Goal** (time + count) | `user_goals` | `MemberGoalDTO`, `GET/POST /me/goals` | Wishlist rows, visited map pins as goal progress |
 | **Organize** (FAB) | `activities` publish | `organizeFlow*`, `organizeActivityPublish` | `hostActivity` in consumer explore |
-| **Trips** (tab) | joined/hosted/self + favorites | `src/trips/tripsRouting.ts`, `components/trips/*` | `/activities` hub naming |
+| **Trips** (tab) | joined/hosted/self plans | `src/trips/tripsRouting.ts`, `components/trips/*` | `/activities` hub naming, wishlist segment |
 | **My trips map** (`/trips/map`) | `GET /me/trips/map`, `JourneyMapEntryDTO` (`OutdoorMapEntryDTO` deprecated alias) | `journeyMap*` (`src/trips/journeyMap*`, `JourneyMap*` components) | `outdoorMap*` (removed from FE) |
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
@@ -305,7 +326,7 @@ Track progress here and in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §7 (`
 | NC-D | Remove `legacyApi` spread — **done** |
 | NC-E | Optional dot-style notification `kind` migration |
 | NC-F | **Frontend naming** — `outdoorMap*` → `journeyMap*` **done** (FE); explore pin types unified via shared-types **done**; explore helpers moved to `src/explore/` **done**; remaining `src/utils/` domain files (§12) |
-| NC-G | **Demand vs wishlist** — `favoriteDemandBookmark.ts` **done**; removed `favoriteIsLookingForWatch` |
+| NC-G | **Demand vs wishlist** — demand not saved to wishlist; API `/me/wishlist` (venues + activities only); no “favorites” in UI |
 
 **Verify:** `npm run verify:system` · `apps/api/tests/naming-coherence.test.ts`
 

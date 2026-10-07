@@ -62,7 +62,7 @@ describe('explore featured person', () => {
       })
     ).toBe('Alex');
     expect(explorePersonRoleLabel('requester')).toBe('Posted this request');
-    expect(explorePersonRoleLabel('host')).toBe('Organisation');
+    expect(explorePersonRoleLabel('host')).toBe('Host');
     expect(explorePersonRoleLabel('contact')).toBe('Shop contact');
   });
 });

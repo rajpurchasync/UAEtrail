@@ -6,7 +6,7 @@ import { loadHostDetailsForUser } from '../../lib/host-display-details.js';
 import { buildActivityDto, mapTenantBusinessMode, mapTenantType } from '../../lib/mappers.js';
 import { findMerchantProfilesByUserIds, findMerchantPublicById } from '../../lib/shop-store.js';
 
-/** Public organisation/operator profile by slug (`/operator/:slug` alias). */
+/** Public host tenant profile by slug (guide · agency · partner storefronts). */
 export const registerPublicTenantRoutes = (router: Router): void => {
   router.get('/tenants/:slug', async (req, res, next) => {
     try {

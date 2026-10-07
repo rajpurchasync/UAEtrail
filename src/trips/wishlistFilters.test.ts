@@ -1,27 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import type { FavoriteDTO } from '@uaetrail/shared-types';
-import { favoriteIsDemandBookmark } from './favoriteDemandBookmark';
-import { favoriteIsPersonalWishlist, favoriteMatchesTripsHubLayer } from './wishlistFilters';
+import type { WishlistItemDTO } from '@uaetrail/shared-types';
+import { wishlistItemIsDemandBookmark } from './wishlistDemandBookmark';
+import { wishlistItemIsPersonal, wishlistItemMatchesTripsHubLayer } from './wishlistFilters';
 
-const fav = (overrides: Partial<FavoriteDTO>): FavoriteDTO =>
+const item = (overrides: Partial<WishlistItemDTO>): WishlistItemDTO =>
   ({
-    id: 'f1',
-    createdAt: new Date().toISOString(),
-    alertOnMatch: true,
+    id: 'w1',
+    locationId: null,
+    activityId: null,
     ...overrides,
-  }) as FavoriteDTO;
+  }) as WishlistItemDTO;
 
-describe('demand vs wishlist', () => {
-  it('treats participant intent favorites as demand bookmarks, not wishlist', () => {
-    expect(favoriteIsDemandBookmark(fav({ participantIntentId: 'd1' }))).toBe(true);
-    expect(favoriteIsPersonalWishlist(fav({ participantIntentId: 'd1' }))).toBe(false);
-    expect(favoriteMatchesTripsHubLayer(fav({ participantIntentId: 'd1' }), 'trips')).toBe(false);
+describe('wishlistFilters', () => {
+  it('demand bookmarks are never stored as wishlist rows', () => {
+    expect(wishlistItemIsDemandBookmark(item({}))).toBe(false);
+    expect(wishlistItemIsPersonal(item({}))).toBe(true);
   });
 
-  it('routes personal saves by hub layer', () => {
-    expect(favoriteMatchesTripsHubLayer(fav({ locationId: 'loc-1' }), 'places')).toBe(true);
-    expect(favoriteMatchesTripsHubLayer(fav({ locationId: 'loc-1' }), 'trips')).toBe(false);
-    expect(favoriteMatchesTripsHubLayer(fav({ activityId: 'a1' }), 'trips')).toBe(true);
-    expect(favoriteMatchesTripsHubLayer(fav({ merchantId: 'm1' }), 'shops')).toBe(true);
+  it('maps hub layers for venue and activity saves', () => {
+    expect(wishlistItemMatchesTripsHubLayer(item({ locationId: 'loc-1' }), 'places')).toBe(true);
+    expect(wishlistItemMatchesTripsHubLayer(item({ locationId: 'loc-1' }), 'trips')).toBe(false);
+    expect(wishlistItemMatchesTripsHubLayer(item({ activityId: 'a1' }), 'trips')).toBe(true);
+    expect(wishlistItemMatchesTripsHubLayer(item({ activityId: 'a1' }), 'shops')).toBe(false);
   });
 });

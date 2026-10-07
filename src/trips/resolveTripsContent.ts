@@ -2,7 +2,6 @@ import type { TripsMainView, TripsPlansRole, TripsRole } from './tripsRouting';
 
 /** Exactly one main list/hub on /trips — avoids Joined + Hosted UI stacking. */
 export type TripsContentKey =
-  | 'wishlist'
   | 'plans-all'
   | 'plans-joined'
   | 'plans-hosted'
@@ -21,7 +20,6 @@ export const resolveTripsContent = (input: {
 }): TripsContentKey => {
   if (!input.signedIn) return 'signed-out';
   if (input.mainView === 'plans') {
-    if (input.plansRole === 'wishlist') return 'wishlist';
     if (input.plansRole === 'hosted') {
       if (!input.canHost) return 'hosted-needs-approval';
       return 'plans-hosted';

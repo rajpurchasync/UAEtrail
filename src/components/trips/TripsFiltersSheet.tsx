@@ -1,51 +1,23 @@
-import { SlidersHorizontal, Target } from 'lucide-react';
-import type { TripsSavedLayer, TripsSegment } from '../../trips/tripsRouting';
+import { Target } from 'lucide-react';
 import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
-import { FilterChips } from '../mobile/FilterChips';
 
 type TripsFiltersSheetProps = {
   open: boolean;
   onClose: () => void;
-  segment: TripsSegment;
   hasActiveGoal: boolean;
-  savedLayer: TripsSavedLayer;
-  onSavedLayerChange: (layer: TripsSavedLayer) => void;
   onOpenGoal: () => void;
 };
 
-/** Extra trips filters — saved places/shops and outdoor goal (role pills live on the toolbar). */
+/** Extra trips filters — outdoor goal (role pills live on the toolbar). */
 export const TripsFiltersSheet = ({
   open,
   onClose,
-  segment,
   hasActiveGoal,
-  savedLayer,
-  onSavedLayerChange,
   onOpenGoal,
 }: TripsFiltersSheetProps) => {
   return (
     <ConsumerBottomSheet open={open} title="More filters" onClose={onClose}>
       <div className="space-y-5 px-1 pb-2">
-        {segment === 'wishlist' ? (
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2">Saved on map</p>
-            <FilterChips
-              variant="brand"
-              options={[
-                { key: 'trips', label: 'Plans' },
-                { key: 'places', label: 'Places' },
-                { key: 'shops', label: 'Shops' },
-              ]}
-              value={savedLayer}
-              onChange={onSavedLayerChange}
-            />
-          </div>
-        ) : (
-          <p className="text-sm text-neutral-600">
-            Open <strong>Wishlist</strong> to filter saved plans, places, and shops.
-          </p>
-        )}
-
         <button
           type="button"
           onClick={() => {
@@ -80,16 +52,16 @@ const filterTriggerClass =
 type TripsFilterTriggerProps = {
   active: boolean;
   onClick: () => void;
+  'aria-label': string;
 };
 
-export const TripsFilterTrigger = ({ active, onClick }: TripsFilterTriggerProps) => (
+export const TripsFilterTrigger = ({ active, onClick, 'aria-label': ariaLabel }: TripsFilterTriggerProps) => (
   <button
     type="button"
     onClick={onClick}
-    className={`${filterTriggerClass} relative ${active ? 'ring-2 ring-emerald-500/40' : ''}`}
-    aria-label="Filter trips"
-    title="Filter"
+    className={`${filterTriggerClass} ${active ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : ''}`}
+    aria-label={ariaLabel}
   >
-    <SlidersHorizontal className="h-5 w-5" strokeWidth={2.25} aria-hidden />
+    <Target className="h-5 w-5" strokeWidth={2.25} aria-hidden />
   </button>
 );

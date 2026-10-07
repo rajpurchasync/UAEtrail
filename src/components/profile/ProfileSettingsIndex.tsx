@@ -9,7 +9,6 @@ import {
 } from '../../config/routingCatalog';
 import { AndroidInstallSettingsSection } from '../pwa/AndroidInstallSettingsSection';
 import { IosInstallSettingsSection } from '../pwa/IosInstallSettingsSection';
-import { ProfileWishlistSettingsLink } from './ProfileWishlistSettingsLink';
 
 type ProfileSettingsIndexProps = {
   onRefresh?: () => Promise<void>;
@@ -35,12 +34,11 @@ export const ProfileSettingsIndex = ({ onRefresh }: ProfileSettingsIndexProps) =
           label="Notifications"
           to={PROFILE_SETTINGS_NOTIFICATIONS_PATH}
           icon={Bell}
-          subtitle="Inbox and saved-map alerts"
+          subtitle="Inbox and outing alerts"
         />
       </SettingsMenuGroup>
       <IosInstallSettingsSection />
       <AndroidInstallSettingsSection />
-      <ProfileWishlistSettingsLink />
       <p className="px-1 text-xs text-neutral-500">
         Date of birth is set when you join and cannot be changed here. Update name, location, and speaks from Edit profile
         on your profile hub.

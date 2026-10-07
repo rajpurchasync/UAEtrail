@@ -57,7 +57,7 @@ export type ExploreBrowseListMode = 'default' | 'social';
 /** URL `socialTab` — crew roster segments or member discovery. */
 export type ExploreSocialTab = 'all' | 'friends' | 'followed' | 'discover';
 
-/** Sub-segment on Social → Followed (people follows vs saved places/outings). */
+/** Sub-segment on Social → Followed (people vs entity-follow places vs hosts/shops). */
 export type ExploreFollowedSegment = 'people' | 'places' | 'events';
 
 export const parseExploreFollowedSegment = (raw: string | null): ExploreFollowedSegment => {

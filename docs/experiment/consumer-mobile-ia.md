@@ -31,9 +31,11 @@ Consumer pattern (not Settings-style chevron lists on the hub):
 
 ## Personal goals
 
-- **API:** `GET/PUT/DELETE /me/goals/active` — one active goal per member (`user_goals`).
-- **Progress:** Checked-in outings in the calendar year; filter `hiking` | `camping` | `all_outings`.
-- **UI:** Goal card on `/profile`; wishlist saves do **not** count.
+- **API:** `GET/POST/PATCH/DELETE /me/goals` — up to **3** goals per member (`user_goals`); `countMode` `join` | `host`. Legacy `GET/PUT/DELETE /me/goals/active` = primary goal only.
+- **Progress (join):** Visited pins on **My Map** (`/trips/map`) — manual logs, trip check-ins — in the goal window; filter `hiking` | `camping` | `all_outings` (aligned with pin activity types).
+- **Progress (host):** Published outings you lead in the window (no host profile required).
+- **Log outing:** Goal sheet → **Log an outing** → `POST /me/map-pins` (`kind: visited`, date, venue, type). Wishlist saves do **not** count.
+- **UI:** Goal card on `/profile` and Trips upcoming.
 - **Notifications:** Halfway + complete on check-in; optional behind-pace nudge when loading your goal (≤1×/28d).
 - **Public profile:** `yearGoal` strip when the member has a current-year goal and full visibility.
 
@@ -59,10 +61,10 @@ Canonical contract: [`../COMMUNICATION.md`](../COMMUNICATION.md) · routes in [`
 
 - **Wishlist layers** (personal, not public map): **Trips** · **Places** · **Shops** (`?layer=`). Private saves + match alerts — **not** the same as Explore **Looking for** (public demand pins).
 - **Segments (Trips layer only):** **Upcoming** · **Completed** · **Wishlist** (`?segment=`; legacy `past` → `completed`). Wishlist segment = saved **outings** only; places/shops use layer pills.
-- **Looking for (demand)** stays on **`/explore`** — public participation (`participant_intents`). Not wishlist rows; Explore **Save** is disabled on demand cards. API rejects `participantIntentId` on `POST /me/favorites`.
+- **Looking for (demand)** stays on **`/explore`** — public participation (`participant_intents`). Not wishlist rows; Explore **Save** is disabled on demand cards. API rejects `participantIntentId` on `POST /me/wishlist`.
 - **Match notifications** (`wishlist_match`) are intent alerts only — they deep-link to the new public plan/demand pin; they do not mean demand was added to wishlist.
 
-Canonical code comments: `src/trips/favoriteDemandBookmark.ts`.
+Canonical code comments: `src/trips/wishlistDemandBookmark.ts`.
 - **Role chips** (Upcoming & Completed): **Joined** · **Hosted** (hosts) · **My plans** (`?role=self`; legacy `tab=` normalized away).
 - **Upcoming + Joined:** goal card + upcoming carousel + suggestions (no nested Past tab).
 - **Completed + Joined:** attended outings only; **Hosted:** past hosted; **My plans:** demand intents via `GET /me/participant-intents` + `ParticipantIntentManageSheet` (no crew chat until organized).

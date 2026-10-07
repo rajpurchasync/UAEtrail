@@ -1,3 +1,5 @@
+import { exploreActivityPublisherTypeLabel } from './activity-publisher-display.js';
+import type { PublishingProfileKind } from './publishing-profile-kind.js';
 import { isRolePlaceholderDisplayName } from './host-display.js';
 
 /** How a featured user relates to an explore map/list item. */
@@ -44,7 +46,10 @@ export const explorePersonFirstName = (person?: ExploreMapPersonDTO | null): str
   return displayName.split(/\s+/)[0];
 };
 
-export const explorePersonRoleLabel = (role: ExploreMapPersonRole): string => {
+export const explorePersonRoleLabel = (
+  role: ExploreMapPersonRole,
+  publishingProfileKind?: PublishingProfileKind | null
+): string => {
   switch (role) {
     case 'requester':
       return 'Posted this request';
@@ -52,7 +57,7 @@ export const explorePersonRoleLabel = (role: ExploreMapPersonRole): string => {
       return 'Shop contact';
     case 'host':
     default:
-      return 'Organisation';
+      return exploreActivityPublisherTypeLabel(publishingProfileKind);
   }
 };
 

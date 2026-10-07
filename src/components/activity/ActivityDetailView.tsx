@@ -17,7 +17,7 @@ import {
   activityPricingModeLabel,
 } from '../../utils/activityPricing';
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../../utils/hostLabels';
-import { resolveOrganisationProfilePath } from '../../utils/organisationLinks';
+import { resolveActivityPublisherProfilePath } from '@uaetrail/shared-types';
 import { activityDetailEyebrow } from '../../config/activityTypes';
 import { detailBackPath } from '../../config/routingCatalog';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
@@ -125,15 +125,18 @@ export const ActivityDetailView = ({
 
   const participants = activity.participants ?? [];
   const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
+  const publishingProfileKind = activity.publishingProfileKind ?? 'community';
   const hostPath = previewMode
     ? null
-    : resolveOrganisationProfilePath({
+    : resolveActivityPublisherProfilePath({
+        publishingProfileKind,
         tenantSlug: activity.tenantSlug,
         hostUserId: activityHostUserId(activity),
       });
-  const hostProfileHint = activity.tenantSlug
-    ? 'Runs this activity · view host profile'
-    : 'Runs this activity · view profile';
+  const hostProfileHint =
+    publishingProfileKind && publishingProfileKind !== 'community'
+      ? 'Runs this activity · view host profile'
+      : 'Runs this activity · view profile';
   const isFull = (activity.slotsAvailable ?? 0) <= 0;
   const accessLat =
     activity.startLat ?? activity.meetingLat ?? activity.parkingLat ?? activity.location?.latitude ?? null;

@@ -39,7 +39,7 @@ export const parseTripsPlansRole = (
   roleRaw: string | null,
   canHost: boolean
 ): TripsPlansRole => {
-  if (segment === 'wishlist') return 'wishlist';
+  if (segment === 'wishlist' || roleRaw === 'wishlist') return 'all';
   if (roleRaw === 'hosted' && canHost) return 'hosted';
   if (roleRaw === 'joined') return 'joined';
   return 'all';
@@ -49,7 +49,6 @@ export const tripsPlansRoleChips = (canHost: boolean): { id: TripsPlansRole; lab
   const chips: { id: TripsPlansRole; label: string }[] = [{ id: 'all', label: 'All' }];
   if (canHost) chips.push({ id: 'hosted', label: 'Hosted' });
   chips.push({ id: 'joined', label: 'Joined' });
-  chips.push({ id: 'wishlist', label: 'Wishlist' });
   return chips;
 };
 
@@ -95,7 +94,7 @@ export const parseTripsHubLayer = (raw: string | null): TripsHubLayer => {
 };
 
 export const parseTripsSegment = (raw: string | null): TripsSegment => {
-  if (raw === 'wishlist' || raw === 'saved') return 'wishlist';
+  if (raw === 'wishlist' || raw === 'saved') return 'upcoming';
   if (raw === 'past' || raw === 'completed') return 'completed';
   return 'upcoming';
 };
@@ -148,8 +147,11 @@ export const normalizeTripsSearchParams = (
     if (seg === 'completed') {
       params.delete('segment');
       changed = true;
-    } else if (seg === 'saved') {
-      params.set('segment', 'wishlist');
+    } else if (seg === 'saved' || seg === 'wishlist') {
+      params.delete('segment');
+      params.set('view', 'plans');
+      params.set('role', 'all');
+      params.delete('saved');
       changed = true;
     }
     const plansRole = params.get('role');
@@ -171,8 +173,7 @@ export const normalizeTripsSearchParams = (
   if (legacyLayer === 'places' || legacyLayer === 'shops') {
     params.delete('layer');
     params.set('view', 'plans');
-    params.set('segment', 'wishlist');
-    params.set('saved', legacyLayer);
+    params.set('role', 'all');
     changed = true;
   } else if (legacyLayer) {
     params.delete('layer');

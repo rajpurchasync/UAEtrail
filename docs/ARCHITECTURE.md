@@ -39,7 +39,7 @@ HTTP → routes/ (thin controllers)
 2. **Post-event review** — host check-in triggers `REVIEW_PROMPT` notification if user has not reviewed the location.
 3. **Explore map** — unified `/explore/map` payload: activities, location venues, shop partners (physical + online), participant demand.
 4. **Shop** — affiliate-style public pages at `/shop/:id` with outbound links; physical shops get map pins, online partners are list-only.
-5. **Host profiles** — guides and agencies host trips (`/operator/:slug`); they do **not** appear as explore map pins.
+5. **Host profiles** — guides and agencies host trips (`/guide/:slug`, `/agency/:slug`); they do **not** appear as explore map pins.
 6. **Push** — Web Push (VAPID) via `PushSubscription` model; optional when keys configured.
 7. **Communication** — Direct chat (`/chat`, SSE to client) and group/crew walls (`/me/groups/:id/wall` on `social_groups`). Activity crew: one group per activity, roster sync on join approve. Inbox previews on `GET /me/groups`. See [`COMMUNICATION.md`](./COMMUNICATION.md) and [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md).
 
@@ -53,7 +53,7 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 | Activity (scheduled trip) | `activities` | `/activity/:id` | Yes |
 | Demand (participant intent) | `participant_intents` | via explore card | Yes |
 | Shop (organisation) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only |
-| Guide / agency (organisation) | `tenants` (guide/agency) | `/operator/:slug` | No |
+| Guide / agency (organisation) | `tenants` (guide/agency) | `/guide/:slug`, `/agency/:slug` | No |
 
 Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (ShopManage: contact, featured picks). Saving in ShopManage syncs both and invalidates the explore map cache.
 

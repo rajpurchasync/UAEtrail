@@ -94,6 +94,27 @@ describe('inferNotificationPath', () => {
     expect(inferNotificationPath(notif({ path: '/trail-points?ref=abc' }))).toBe('/profile/badges');
   });
 
+  it('routes wishlist match alerts via meta.path (activity or demand pin)', () => {
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'wishlist_match',
+          path: '/activity/act-9',
+          wishlistItemId: 'wl-9',
+        })
+      )
+    ).toBe('/activity/act-9');
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'wishlist_match',
+          path: '/explore?pin=demand:int-1',
+          wishlistItemId: 'wl-2',
+        })
+      )
+    ).toBe('/explore?pin=demand:int-1');
+  });
+
   it('prefers explicit meta.path when present', () => {
     expect(
       inferNotificationPath(

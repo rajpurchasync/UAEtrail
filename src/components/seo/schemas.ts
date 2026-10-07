@@ -1,4 +1,9 @@
-import { ActivityDetailDTO, ProductDTO, ReviewDTO } from '@uaetrail/shared-types';
+import {
+  ActivityDetailDTO,
+  ProductDTO,
+  ReviewDTO,
+  resolveActivityPublisherProfilePath,
+} from '@uaetrail/shared-types';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
 import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types/place';
 import { placeDetailPath } from '../../utils/placePaths';
@@ -126,7 +131,14 @@ export const activityEventSchema = (activity: ActivityDetailDTO) => ({
   organizer: {
     '@type': 'Organization',
     name: activityHostName(activity),
-    url: activity.tenantSlug ? `${SITE_ORIGIN}/operator/${activity.tenantSlug}` : undefined
+    url: (() => {
+      const path = resolveActivityPublisherProfilePath({
+        publishingProfileKind: activity.publishingProfileKind ?? 'pro_guide',
+        tenantSlug: activity.tenantSlug,
+        hostUserId: activity.hostUserId,
+      });
+      return path ? `${SITE_ORIGIN}${path}` : undefined;
+    })()
   },
   offers: {
     '@type': 'Offer',
@@ -169,15 +181,16 @@ const averageRating = (reviews: ReviewDTO[]) => {
 
 export const organizationSchema = (
   tenant: TenantProfile,
-  slug: string,
-  reviews: ReviewDTO[] = []
+  _slug: string,
+  reviews: ReviewDTO[] = [],
+  publicProfilePath: string
 ) => {
   const rating = averageRating(reviews);
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: tenant.name,
-    url: `${SITE_ORIGIN}/operator/${slug}`,
+    url: `${SITE_ORIGIN}${publicProfilePath}`,
     description: tenant.ownerBio ?? `Outdoor activities and hikes with ${tenant.name} in the UAE.`,
     logo: absImage(tenant.ownerAvatar),
     areaServed: { '@type': 'Country', name: 'United Arab Emirates' },

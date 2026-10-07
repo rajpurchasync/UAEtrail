@@ -200,8 +200,10 @@ export interface ActivityDTO {
   hostUserId?: string;
   hostAvatar?: string;
   hostBio?: string | null;
-  /** Organization or guide brand running the activity */
+  /** Guide / agency brand name when posting as business (not community). */
   tenantName?: string;
+  /** How this activity was published — drives public name + profile link on explore/list. */
+  publishingProfileKind?: PublishingProfileKind;
   /** @deprecated Removed from API responses — use hostName */
   organizerName?: string;
   /** @deprecated Removed from API responses — use hostAvatar */
@@ -287,6 +289,8 @@ export type { NotificationKind, NotificationMeta } from './notification-meta.js'
 import type { NotificationMeta } from './notification-meta.js';
 
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
+export type { EntityFollowCheckDTO, EntityFollowDTO, EntityFollowKind } from './entity-follow.js';
+export type { WishlistCheckDTO, WishlistItemDTO } from './wishlist.js';
 export type { MemberHubStatsDTO } from './member-hub-stats.js';
 export type { MemberBrowseCardDTO, MemberProfileViewStatsDTO } from './member-pro-engagement.js';
 export {
@@ -565,40 +569,6 @@ export interface MyReviewDTO extends ReviewDTO {
   targetPath: string;
 }
 
-export interface FavoriteDTO {
-  id: string;
-  locationId?: string | null;
-  activityId?: string | null;
-  participantIntentId?: string | null;
-  alertOnMatch?: boolean;
-  watchOutingCategory?: OutingCategory | null;
-  watchLatitude?: number | null;
-  watchLongitude?: number | null;
-  productId?: string | null;
-  merchantId?: string | null;
-  tenantId?: string | null;
-  profileUserId?: string | null;
-  location?: { id: string; name: string; images: string[] } | null;
-  /** @deprecated Prefer `activity` — API returns `activity`. */
-  event?: { id: string; title: string; locationName: string | null } | null;
-  activity?: { id: string; title: string; locationName: string | null } | null;
-  participantIntent?: { id: string; title: string } | null;
-  merchant?: { id: string; shopName: string; logo?: string | null } | null;
-  tenant?: { id: string; name: string; logoUrl?: string | null; slug?: string | null } | null;
-  profile?: { id: string; displayName: string; avatarUrl?: string | null } | null;
-  product?: {
-    id: string;
-    merchantId: string;
-    merchantName: string | null;
-    name: string;
-    images: string[];
-    priceAed: number;
-    discountPercent?: number | null;
-    category: string;
-  } | null;
-  createdAt: string;
-}
-
 export type ShopPresence = 'physical' | 'online';
 
 export interface MerchantProfileDTO {
@@ -767,6 +737,8 @@ export interface ExploreMapItemDTO {
   tenantId?: string | null;
   /** Gear shop map presence — physical stores get pins; online partners are list-only. */
   shopPresence?: ShopPresence | null;
+  /** Discover home “Gear Shops” rail — platform admin only. */
+  discoverFeatured?: boolean;
   /** Plan browse projection (organize vs demand). Null for venue/shop catalog rows. */
   composeIntent?: ExplorePlanComposeIntent | null;
   /** Buddy/activities browse family. Null for venue/shop. */
@@ -1090,6 +1062,13 @@ export {
 } from './host-display.js';
 
 export {
+  exploreActivityPublisherTypeLabel,
+  publishesActivityAsIndividual,
+  resolveActivityPublisherDisplayName,
+  resolveActivityPublisherProfilePath,
+} from './activity-publisher-display.js';
+
+export {
   HIKING_ACTIVITY_EMOJI,
   HIKING_VENUE_EMOJI,
   CAMPING_ACTIVITY_EMOJI,
@@ -1205,6 +1184,7 @@ export {
   type PublishingProfileKind,
   isOrganizeActivityHostProfileType,
   resolvePublishingProfileKind,
+  inferHostStorefrontKindFromTenantWire,
 } from './publishing-profile-kind.js';
 
 export {
@@ -1245,8 +1225,11 @@ export {
   type WomenOnlyJoinEligibility,
 } from './activity-audience-requirements.js';
 
+export { MAX_MEMBER_GOALS } from './member-goals.js';
+
 export type {
   MemberGoalActivityFilter,
+  MemberGoalCountMode,
   MemberGoalDTO,
   MemberGoalPublicDTO,
   UpsertMemberGoalInput,
@@ -1322,9 +1305,19 @@ export {
   activityDetailPath,
   activityDetailInvitePath,
   exploreActivityInvitePath,
+  AGENCY_PROFILE_PATH_PREFIX,
+  GUIDE_PROFILE_PATH_PREFIX,
+  LEGACY_EVENT_PLACE_PATH_PREFIX,
+  LEGACY_OPERATOR_PROFILE_PATH_PREFIX,
+  PARTNER_PROFILE_PATH_PREFIX,
+  VENUE_PLACE_PATH_PREFIX,
+  agencyProfilePath,
+  guideProfilePath,
+  hostBrandProfilePath,
   memberProfilePath,
   normalizePlaceActivityType,
   organisationProfilePath,
+  partnerProfilePath,
   parseEntityRefFromPathname,
   placeDetailPath,
   resolveEntityPath,

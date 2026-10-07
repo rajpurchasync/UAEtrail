@@ -11,6 +11,8 @@ import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { getExploreMapTiles } from '../../config/platform';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
+import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
+import { ListFeedActionsProvider } from '../../list/ui/ListFeedActionsProvider';
 import { ExploreComposeHost } from './ExploreComposeHost';
 import { ExploreJoinOverlays } from './ExploreJoinOverlays';
 import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
@@ -18,8 +20,9 @@ import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
+import { ExploreMobileBrowseOverlay } from './ExploreMobileBrowseOverlay';
 import { useExploreBrowseList } from './useExploreBrowseList';
-import { useFollowedSaves } from '../../hooks/useFollowedSaves';
+import { useEntityFollows } from '../../hooks/useEntityFollows';
 import { useSocialPeople } from '../useSocialPeople';
 import { useSocialPeoplePreview } from '../useSocialPeoplePreview';
 import { useMemberDiscoveryRoster } from '../useMemberDiscoveryRoster';
@@ -114,7 +117,6 @@ export const ExploreExperience = () => {
   const [linkOnlyPeekItems, setLinkOnlyPeekItems] = useState<ExploreMapItemDTO[]>([]);
   const [rideshareLinkParent, setRideshareLinkParent] = useState<ActivityDTO | null>(null);
   const [rideshareLinkDemand, setRideshareLinkDemand] = useState<ExploreMapItemDTO | null>(null);
-  const [hoveredListItemId, setHoveredListItemId] = useState<string | null>(null);
   const clearSelection = useCallback(() => setSelectedId(null), []);
 
   const browse = useExploreBrowseUrlState({
@@ -404,9 +406,9 @@ export const ExploreExperience = () => {
 
   const socialPeoplePreview = useSocialPeoplePreview(Boolean(user));
   const socialPanelOpen = Boolean(user) && browse.listMode === 'social';
-  const followedSavesEnabled =
+  const entityFollowsEnabled =
     socialPanelOpen && browse.socialTab === 'followed' && browse.followedSegment !== 'people';
-  const followedSaves = useFollowedSaves(followedSavesEnabled);
+  const entityFollows = useEntityFollows(entityFollowsEnabled);
   const socialPeopleEnabled =
     socialPanelOpen &&
     browse.socialTab !== 'discover' &&
@@ -448,7 +450,6 @@ export const ExploreExperience = () => {
 
   const {
     mapPins,
-    listItems,
     shopListSections,
     searchScopeCounts,
   } =
@@ -616,23 +617,16 @@ export const ExploreExperience = () => {
     onOpenDiscoveryActivity: openDiscoveryActivityOnMap,
     followedSegment: browse.followedSegment,
     onFollowedSegmentChange: browse.applyFollowedSegment,
-    followedSaves: followedSaves.favorites,
-    followedSavesLoading: followedSaves.loading,
-    followedSavesError: followedSaves.error,
+    entityFollows: entityFollows.follows,
+    entityFollowsLoading: entityFollows.loading,
+    entityFollowsError: entityFollows.error,
     isSignedIn: Boolean(user),
     userRole: user?.role,
     buddyUserIds: user ? new Set(socialPeoplePreview.preview?.friendUserIds ?? []) : undefined,
   };
 
   const desktopBrowsePanel = (
-    <ExploreBrowsePanel
-      {...browsePanelShared}
-      listItems={listItems}
-      onClose={browse.closeListPanel}
-      listMode="default"
-      onListItemHover={(id) => setHoveredListItemId(id)}
-      onListItemHoverEnd={() => setHoveredListItemId(null)}
-    />
+    <ListDiscoveryExperience surface="exploreSidebar" onCloseMapOverlay={browse.closeListPanel} />
   );
 
   const desktopSocialPanel = (
@@ -646,14 +640,20 @@ export const ExploreExperience = () => {
     />
   );
 
-  const mobileBrowsePanel = (
-    <ExploreBrowsePanel
-      {...browsePanelShared}
-      listItems={browse.listMode === 'social' ? [] : listItems}
-      onClose={browse.closeListPanel}
-      listMode={browse.listMode}
-    />
-  );
+  const mobileBrowsePanel =
+    browse.listMode === 'social' ? (
+      <ListFeedActionsProvider>
+        <ExploreBrowsePanel
+          {...browsePanelShared}
+          listItems={[]}
+          onClose={browse.closeListPanel}
+          listMode="social"
+          fullscreenBrowse
+        />
+      </ListFeedActionsProvider>
+    ) : (
+      <ListDiscoveryExperience surface="mapOverlay" onCloseMapOverlay={browse.closeListPanel} />
+    );
 
   const primaryFabLabel = 'Add New';
 
@@ -667,23 +667,22 @@ export const ExploreExperience = () => {
         }
         description={
           myTripsMode
-            ? 'See your upcoming outings and wishlist pins on the UAE Trail map.'
+            ? 'See your upcoming outings on the UAE Trail map.'
             : 'Find live hiking, camping, events, and shops on the map across the UAE.'
         }
         path={EXPLORE_MAP_PATH}
       />
 
       <div className="relative flex min-h-0 flex-1 lg:flex-row">
-        {browse.showListPanel && isDesktop && (
-          <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-r lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300">
+        {browse.showListPanel && isDesktop && browse.listMode !== 'social' ? (
+          <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-r lg:border-neutral-200 lg:bg-neutral-50 lg:px-4 lg:py-4 lg:transition-[width] lg:duration-300">
             {desktopBrowsePanel}
           </aside>
-        )}
+        ) : null}
 
         <ExploreMapStage
           isDesktop={isDesktop}
           listOpen={browse.listOpen}
-          showListPanel={browse.showListPanel}
           panel={browse.panel}
           mapFilter={browse.mapFilter}
           venueRegions={browse.venueRegions}
@@ -705,7 +704,7 @@ export const ExploreExperience = () => {
           onToggleMapStyle={viewport.toggleExploreMapStyle}
           mapPins={mapPins}
           selectedId={selectedId}
-          highlightedExploreItemId={isDesktop ? hoveredListItemId : null}
+          highlightedExploreItemId={null}
           recenterTo={viewport.recenterTo}
           exploreMapCenter={viewport.exploreMapCenter}
           onPinClick={handleMapPinClick}
@@ -750,11 +749,15 @@ export const ExploreExperience = () => {
             if (item) selection.openItem(item);
           }}
           onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
-          onCloseMobileBrowse={browse.closeListPanel}
-          mobileBrowseSheet={mobileBrowsePanel}
           onGuestGatedAction={selection.handleGuestGatedAction}
           onPlanTripFromVenue={handlePlanTripFromVenue}
         />
+
+        {browse.showListPanel && !isDesktop ? (
+          <ExploreMobileBrowseOverlay open onClose={browse.closeListPanel}>
+            {mobileBrowsePanel}
+          </ExploreMobileBrowseOverlay>
+        ) : null}
 
         {inviteShare.sheet}
 

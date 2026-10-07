@@ -188,13 +188,13 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     averageRating: item.averageRating ?? null,
     reviewCount: item.reviewCount ?? 0,
     reviewPath: catalogSource ? `${item.path}#reviews` : null,
-    locationId: item.locationCard?.id ?? null,
+    locationId: item.locationCard?.id ?? item.activity?.locationId ?? null,
     activityId: item.activity?.id ?? null,
     participantIntentId: item.participantIntentId ?? null,
     outingCategory: item.outingCategory ?? null,
     composeIntent: item.composeIntent ?? null,
     merchantId: item.merchantId ?? null,
-    tenantId: item.tenantId ?? null,
+    tenantId: item.tenantId ?? item.activity?.tenantId ?? null,
     profileUserId: featuredPerson?.userId ?? item.requesterUserId ?? item.activity?.hostUserId ?? null,
     featuredPerson,
     childFriendly: item.locationCard?.childFriendly ?? false,
@@ -262,13 +262,33 @@ export const exploreCardShowPeekBodyDirections = (card: ExploreCardModel): boole
   !exploreCardShowsInlineDirections(card) &&
   !exploreCardPeekActionsHasDirections(card);
 
-export type ExploreFavoriteTarget = {
+export type ExploreEntityFollowPayload = {
+  locationId?: string;
+  tenantId?: string;
+  merchantId?: string;
+};
+
+/** Resolve place / host team / shop follow target for this explore card. */
+export const resolveExploreEntityFollowTarget = (
+  card: ExploreCardModel
+): ExploreEntityFollowPayload | null => {
+  if (card.source === 'demand') return null;
+  if (card.source === 'venue' && card.locationId) return { locationId: card.locationId };
+  if (card.source === 'activity') {
+    if (card.locationId) return { locationId: card.locationId };
+    if (card.tenantId) return { tenantId: card.tenantId };
+    return null;
+  }
+  if (card.source === 'shop' || card.source === 'agency') {
+    if (card.merchantId) return { merchantId: card.merchantId };
+    if (card.tenantId) return { tenantId: card.tenantId };
+  }
+  return null;
+};
+
+export type ExploreWishlistTarget = {
   locationId?: string;
   activityId?: string;
-  participantIntentId?: string;
-  merchantId?: string;
-  tenantId?: string;
-  profileUserId?: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: OutingCategory | null;
   watchLatitude?: number | null;
@@ -279,7 +299,7 @@ const outingCategoryFromCardKind = (card: ExploreCardModel): OutingCategory | nu
   if (card.outingCategory) return card.outingCategory;
   if (card.kind === 'rideshare') return 'rideshare';
   if (card.kind === 'hiking' || card.kind === 'camping') return card.kind;
-  if (card.kind === 'event') return card.source === 'venue' ? 'events' : 'events';
+  if (card.kind === 'event') return 'events';
   return null;
 };
 
@@ -290,16 +310,11 @@ const watchMetaFromCard = (card: ExploreCardModel) => ({
   watchLongitude: card.mapLongitude ?? null,
 });
 
-/** Resolve which favorite key applies to this explore card. */
-export const resolveExploreFavoriteTarget = (card: ExploreCardModel): ExploreFavoriteTarget | null => {
+/** Wishlist = private venue or activity save — not demand, shops, or people (use Follow). */
+export const resolveExploreWishlistTarget = (card: ExploreCardModel): ExploreWishlistTarget | null => {
   const watch = watchMetaFromCard(card);
-  if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
-  // Demand = public participation on Explore — not wishlist saves (see `src/trips/favoriteDemandBookmark.ts`).
   if (card.source === 'demand') return null;
+  if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
   if (card.source === 'venue' && card.locationId) return { locationId: card.locationId, ...watch };
-  if (card.source === 'shop' || card.source === 'agency') {
-    if (card.merchantId) return { merchantId: card.merchantId, ...watch };
-    if (card.tenantId) return { tenantId: card.tenantId, ...watch };
-  }
   return null;
 };

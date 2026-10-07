@@ -11,7 +11,7 @@
       ],
       "routeRegistrars": ["apps/api/src/routes/user/registerPublicActivityRoutes.ts"],
       "feDomains": ["src/api/domains/explore.ts"],
-      "feRoots": ["src/explore", "src/access"]
+      "feRoots": ["src/explore", "src/access", "src/list"]
     },
     {
       "id": "compose",
@@ -147,19 +147,32 @@
     {
       "id": "engagement",
       "label": "Engagement",
-      "apiFiles": ["apps/api/src/services/member-badges.ts"],
+      "apiFiles": [
+        "apps/api/src/services/member-badges.ts",
+        "apps/api/src/lib/wishlist-store.ts",
+        "apps/api/src/lib/entity-follow-store.ts",
+        "apps/api/src/services/wishlist-alerts.ts",
+        "apps/api/src/services/entity-publish-notifications.ts"
+      ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerMeBadgesRoutes.ts",
         "apps/api/src/routes/user/registerMeGoalsRoutes.ts",
         "apps/api/src/routes/user/registerMeEngagementRoutes.ts",
-        "apps/api/src/routes/user/registerMeMapPinsRoutes.ts"
+        "apps/api/src/routes/user/registerMeMapPinsRoutes.ts",
+        "apps/api/src/routes/user/registerMeWishlistRoutes.ts",
+        "apps/api/src/routes/user/registerEntityFollowRoutes.ts"
       ],
       "feDomains": [
         "src/api/domains/badges.ts",
         "src/api/domains/goals.ts",
-        "src/api/domains/memberJourneyMap.ts"
+        "src/api/domains/memberJourneyMap.ts",
+        "src/api/domains/social.ts"
       ],
-      "feRoots": ["src/pages/ProfileBadges.tsx"]
+      "feRoots": [
+        "src/pages/ProfileBadges.tsx",
+        "src/hooks/useEntityFollows.ts",
+        "src/wishlist"
+      ]
     },
     {
       "id": "platform_ops",

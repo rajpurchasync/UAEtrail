@@ -14,6 +14,8 @@ interface ShareButtonProps {
   iconOnly?: boolean;
   /** Icon button on light card backgrounds (default is dark overlay for photos) */
   light?: boolean;
+  /** Icon-only on photos — no circular background (list feed). */
+  bare?: boolean;
   disabled?: boolean;
   className?: string;
 }
@@ -31,6 +33,7 @@ export const ShareButton = ({
   compact = false,
   iconOnly = false,
   light = false,
+  bare = false,
   disabled = false,
   className = '',
 }: ShareButtonProps) => {
@@ -93,9 +96,11 @@ export const ShareButton = ({
   };
 
   const buttonClass = iconOnly
-    ? light
-      ? 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors'
-      : 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white hover:bg-black/50 transition-colors'
+    ? bare
+      ? 'inline-flex h-9 w-9 items-center justify-center text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)] transition-opacity hover:opacity-90'
+      : light
+        ? 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors'
+        : 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white hover:bg-black/50 transition-colors'
     : compact
       ? 'inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/55 transition-colors'
       : 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full glass text-neutral-800 text-sm font-semibold hover:bg-white/90 transition-colors';

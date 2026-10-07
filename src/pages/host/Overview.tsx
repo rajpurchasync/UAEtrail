@@ -21,8 +21,10 @@ import {
   HOST_ACTIVITIES_NEW_PATH,
   HOST_MESSAGES_PATH,
   MEMBERSHIP_MARKETING_PATH,
+  NOTIFICATIONS_PATH,
   tripsLegacyJoinedTabPath,
 } from '../../config/routingCatalog';
+import { NotificationListItem } from '../../components/notifications/NotificationListItem';
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
 import { inferNotificationPath } from '../../utils/notificationRouting';
 
@@ -129,34 +131,45 @@ export const Overview = () => {
       />
 
       {showNotifPopover && (
-        <GlassCard padding className="mb-3 border border-emerald-100/80">
+        <GlassCard padding className="mb-3 border border-emerald-100/80 bg-emerald-50/20">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <p className="text-sm font-semibold text-neutral-900">Notifications</p>
-            {participant.unreadNotifications > 0 && (
-              <button
-                type="button"
-                onClick={async () => {
-                  await api.markAllNotificationsRead();
-                  setShowNotifPopover(false);
-                  await participant.reload();
-                  if (user?.id) {
-                    void invalidateNotificationUnreadBadge(queryClient, user.id);
-                  }
-                }}
+            <p className="text-sm font-semibold text-neutral-900">Unread messages &amp; chat</p>
+            <div className="flex items-center gap-2">
+              <Link
+                to={NOTIFICATIONS_PATH}
+                onClick={() => setShowNotifPopover(false)}
                 className="text-xs font-semibold text-emerald-700"
               >
-                Mark all read
-              </button>
-            )}
+                View all
+              </Link>
+              {participant.unreadNotifications > 0 && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await api.markAllNotificationsRead();
+                    setShowNotifPopover(false);
+                    await participant.reload();
+                    if (user?.id) {
+                      void invalidateNotificationUnreadBadge(queryClient, user.id);
+                    }
+                  }}
+                  className="text-xs font-semibold text-neutral-600"
+                >
+                  Mark all read
+                </button>
+              )}
+            </div>
           </div>
           {participant.notifications.length === 0 ? (
-            <p className="text-xs text-neutral-600">No notifications yet.</p>
+            <p className="text-xs text-neutral-600">No unread messages or chat alerts.</p>
           ) : (
             <div className="space-y-2">
               {participant.notifications.map((notif) => (
-                <button
+                <NotificationListItem
                   key={notif.id}
-                  type="button"
+                  notif={notif}
+                  compact
+                  showTimestamp={false}
                   onClick={async () => {
                     if (!notif.isRead) {
                       await api.markNotificationRead(notif.id).catch(() => undefined);
@@ -168,15 +181,7 @@ export const Overview = () => {
                     await participant.reload();
                     navigate(inferNotificationPath(notif));
                   }}
-                  className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors ${
-                    notif.isRead
-                      ? 'border-neutral-100 bg-white hover:bg-neutral-50'
-                      : 'border-emerald-100 bg-emerald-50/60 hover:bg-emerald-50'
-                  }`}
-                >
-                  <p className="text-sm font-semibold text-neutral-900 line-clamp-1">{notif.title}</p>
-                  <p className="text-xs text-neutral-600 mt-0.5 line-clamp-2">{notif.body}</p>
-                </button>
+                />
               ))}
             </div>
           )}

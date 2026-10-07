@@ -74,6 +74,19 @@ flowchart TB
 
 ---
 
+## Follow · Wishlist · Goal (not “favorites”)
+
+| Product | Meaning | API |
+|---------|---------|-----|
+| **Follow (people)** | Host/crew updates in Social | `POST /me/following/:userId` — **buddies auto-follow** on accept |
+| **Follow (venue / brand)** | Alerts when something is published at a place or storefront | `POST /me/entity-follows` |
+| **Wishlist** | Private save — **venues + activities** to join later | `GET/POST /me/wishlist` (Mongo `user_favorites`) |
+| **Goal** | Time-bounded count (e.g. N hikes by date) | `GET/POST /me/goals` — progress from outings + visited map pins |
+
+Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.6.
+
+---
+
 ## Layers (do not confuse)
 
 | Layer | What it is | Examples |
@@ -83,7 +96,7 @@ flowchart TB
 | **Host publishing tier** | How they publish on the map | `community`, `professional`, `business` |
 | **Tenant** | Publishing organisation row | `tenants.publishingPurpose`, `x-organisation-id` |
 | **MembershipRole** | Person ↔ tenant (team) | `TENANT_OWNER`, `TENANT_GUIDE` |
-| **Public operator brand** | Business/guide storefront | `/operator/:slug`, `/shop/:id` |
+| **Public brand profile** | Guide / agency / partner storefront | `/guide/:slug`, `/agency/:slug`, `/partner/:slug`, `/shop/:id` |
 
 **UserRole ≠ host tier.** A `PARTICIPANT` can be a **community** host (`canPublish` + community tenant). A **business** guide is often `TENANT_GUIDE` with no owned tenant.
 
@@ -119,7 +132,7 @@ All paths require a **signed-in user**. Upgrade entry: **`/profile/pro-membershi
 
 | Pro path | Who | Required choice | Storefront / capabilities (high level) |
 |----------|-----|-----------------|----------------------------------------|
-| **Individual** | Solo pro guide | — | `/operator/:slug` style guide profile; Organize as self + pro tenant |
+| **Individual** | Solo pro guide | — | `/guide/:slug` storefront; Organize as self + pro tenant |
 | **Business** | Company / brand | **Subtype required:** Shop · Tour agency · E-commerce · Hospitality · (extensible) | Tenant + console; paid trips / campaigns per subtype (detail later) |
 | **Partner** | Hotel / campaign partner | Detail later | Partner storefront + “What’s happening” campaigns (future) |
 
@@ -250,7 +263,7 @@ Host route files: `registerHostActivityRequestRoutes`, `registerHostTeamRoutes`,
 | Keep `Organisation*` | Why |
 |----------------------|-----|
 | `src/api/domains/organisation.ts`, `orgHeaders.ts`, `getOrganisation*` | Wire: tenant scope, `x-organisation-id` |
-| `pages/OrganisationProfile.tsx` | Public storefront `/operator/:slug` |
+| `pages/OrganisationProfile.tsx` | Public storefront `/guide` · `/agency` · `/partner` |
 | `components/organisation/*`, `ShopOrganisation*` | Agency / shop tenant UI |
 | `organisation-console/` (Pro flow, `OrganisationPublicProfile`) | Tenant onboarding + public profile editor — **not** `/host/*` shell |
 | Deprecated shims in `organisation-console/` (`OrganisationConsoleShell` → `src/console`) | Import compatibility only |
@@ -262,6 +275,7 @@ Host route files: `registerHostActivityRequestRoutes`, `registerHostTeamRoutes`,
 | Activity form modals + `ActivityFormSessionContext` | Explore **Organize** (`CreateActivityFlow`) |
 | `useOrganisationGate` / `useOrganisationHubData` | `useHostStatus` / `useConsoleHubData` |
 | `api.*OrganisationActivity*` / `legacyApi.ts` | `api.createHostActivity`, `listHostActivities`, … |
+| `FavoriteDTO`, `getMeFavorites`, `/me/favorites`, `favorites-store` (guard: `wishlistNamingGuard.test.ts`) | `WishlistItemDTO`, `getMeWishlist`, `/me/wishlist`, `wishlist-store` |
 
 **Host console** UI roots: `src/pages/host/*`, `src/console/*`, `src/components/host/*`. Do not add new `pages/Organisation*` routes for host tools.
 

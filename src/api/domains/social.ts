@@ -8,7 +8,9 @@ import {
   SocialPeopleDTO,
   SocialPeoplePreviewDTO,
   SocialPeopleSegment,
-  FavoriteDTO,
+  EntityFollowCheckDTO,
+  EntityFollowDTO,
+  WishlistItemDTO,
   ReviewDTO,
   MyReviewDTO,
 } from '@uaetrail/shared-types';
@@ -323,57 +325,67 @@ export const socialApi = {
       }),
     }),
 
-    getMeFavorites: () => apiRequest<{ data: FavoriteDTO[] }>('/me/favorites', { auth: true }),
+    getMeEntityFollows: () =>
+      apiRequest<{ data: EntityFollowDTO[] }>('/me/entity-follows', { auth: true }),
 
-    checkFavorite: (target: {
-    locationId?: string;
-    activityId?: string;
-    participantIntentId?: string;
-    productId?: string;
-    merchantId?: string;
-    tenantId?: string;
-    profileUserId?: string;
-  }) => {
-    const params = new URLSearchParams();
-    if (target.locationId) params.set('locationId', target.locationId);
-    if (target.activityId) params.set('activityId', target.activityId);
-    if (target.participantIntentId) params.set('participantIntentId', target.participantIntentId);
-    if (target.productId) params.set('productId', target.productId);
-    if (target.merchantId) params.set('merchantId', target.merchantId);
-    if (target.tenantId) params.set('tenantId', target.tenantId);
-    if (target.profileUserId) params.set('profileUserId', target.profileUserId);
-    return apiRequest<{ data: { saved: boolean; favoriteId: string | null } }>(
-      `/me/favorites/check?${params.toString()}`,
-      { auth: true }
-    );
-  },
+    checkEntityFollow: (target: { locationId?: string; tenantId?: string; merchantId?: string }) => {
+      const params = new URLSearchParams();
+      if (target.locationId) params.set('locationId', target.locationId);
+      if (target.tenantId) params.set('tenantId', target.tenantId);
+      if (target.merchantId) params.set('merchantId', target.merchantId);
+      return apiRequest<{ data: EntityFollowCheckDTO }>(
+        `/me/entity-follows/check?${params.toString()}`,
+        { auth: true }
+      );
+    },
 
-    addFavorite: (payload: {
-    locationId?: string;
-    activityId?: string;
-    participantIntentId?: string;
-    productId?: string;
-    merchantId?: string;
-    tenantId?: string;
-    profileUserId?: string;
-    alertOnMatch?: boolean;
-    watchOutingCategory?: string | null;
-    watchLatitude?: number | null;
-    watchLongitude?: number | null;
-  }) =>
-    apiRequest<{ data: FavoriteDTO }>('/me/favorites', {
-      method: 'POST',
-      auth: true,
-      body: JSON.stringify(payload)
-    }),
+    followEntity: (payload: { locationId?: string; tenantId?: string; merchantId?: string }) =>
+      apiRequest<{ data: EntityFollowDTO }>('/me/entity-follows', {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify(payload),
+      }),
 
-    removeFavorite: (id: string) =>
-    apiRequest(`/me/favorites/${id}`, { method: 'DELETE', auth: true }),
+    unfollowEntity: (id: string) =>
+      apiRequest(`/me/entity-follows/${encodeURIComponent(id)}`, { method: 'DELETE', auth: true }),
 
-    patchFavoriteAlerts: (id: string, alertOnMatch: boolean) =>
-    apiRequest<{ data: { id: string; alertOnMatch: boolean } }>(`/me/favorites/${id}`, {
-      method: 'PATCH',
-      auth: true,
-      body: JSON.stringify({ alertOnMatch }),
-    }),
+    getMeWishlist: () => apiRequest<{ data: WishlistItemDTO[] }>('/me/wishlist', { auth: true }),
+
+    checkWishlist: (target: { locationId?: string; activityId?: string }) => {
+      const params = new URLSearchParams();
+      if (target.locationId) params.set('locationId', target.locationId);
+      if (target.activityId) params.set('activityId', target.activityId);
+      return apiRequest<{ data: { saved: boolean; wishlistItemId: string | null } }>(
+        `/me/wishlist/check?${params.toString()}`,
+        { auth: true }
+      );
+    },
+
+    addWishlistItem: (payload: {
+      locationId?: string;
+      activityId?: string;
+      alertOnMatch?: boolean;
+      watchOutingCategory?: string | null;
+      watchLatitude?: number | null;
+      watchLongitude?: number | null;
+    }) =>
+      apiRequest<{ data: WishlistItemDTO }>('/me/wishlist', {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify(payload),
+      }),
+
+    removeWishlistItem: (id: string) =>
+      apiRequest(`/me/wishlist/${encodeURIComponent(id)}`, { method: 'DELETE', auth: true }),
+
+    patchWishlistAlerts: (id: string, alertOnMatch: boolean) =>
+      apiRequest<{ data: { id: string; alertOnMatch: boolean } }>(
+        `/me/wishlist/${encodeURIComponent(id)}`,
+        {
+          method: 'PATCH',
+          auth: true,
+          body: JSON.stringify({ alertOnMatch }),
+        }
+      ),
+
 } as const;

@@ -19,11 +19,11 @@ export const EXPLORE_SOCIAL_EMPTY_FOLLOWED =
   'You are not following anyone yet — follow hosts and members from their profile.';
 export const EXPLORE_SOCIAL_FOLLOWED_SEGMENT_PEOPLE = 'People';
 export const EXPLORE_SOCIAL_FOLLOWED_SEGMENT_PLACES = 'Places';
-export const EXPLORE_SOCIAL_FOLLOWED_SEGMENT_EVENTS = 'Outings';
+export const EXPLORE_SOCIAL_FOLLOWED_SEGMENT_EVENTS = 'Hosts & shops';
 export const EXPLORE_SOCIAL_EMPTY_FOLLOWED_PLACES =
-  'No saved places yet — heart a trail or camp on the map to follow it here.';
-export const EXPLORE_SOCIAL_EMPTY_FOLLOWED_EVENTS =
-  'No saved outings yet — save an activity from its detail page to follow it here.';
+  'No followed places yet — follow a trail or camp on the map for outing alerts.';
+export const EXPLORE_SOCIAL_EMPTY_FOLLOWED_HOSTS =
+  'No followed hosts or shops yet — follow from their profile or a shop on the map.';
 
 export const EXPLORE_SOCIAL_SEARCH_PLACEHOLDER = 'Search people…';
 export const EXPLORE_SOCIAL_DISCOVER_SEARCH_PLACEHOLDER = 'Search by name or city…';

@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { tripsPlansPath } from '../config/routingCatalog';
+import { tripsPlansPath } from '../trips/tripsRouting';
 
-/** Wishlist lives under Trips → Wishlist. */
-export const ProfileWishlist = () => <Navigate to={tripsPlansPath('wishlist')} replace />;
+/** Legacy saved-map URL → trips plans. */
+export const ProfileWishlist = () => <Navigate to={tripsPlansPath('all')} replace />;

@@ -47,7 +47,6 @@ import {
   type TenantRecord
 } from '../src/lib/tenant-store.js';
 import { DEMO_ACCOUNTS } from '../src/lib/demo-accounts.js';
-import { createUserFavorite } from '../src/lib/favorites-store.js';
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import {
   createGroupWallMessage,
@@ -448,6 +447,7 @@ const upsertTenant = async (input: {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  discoverFeatured?: boolean;
 }): Promise<TenantRecord> => {
   const existing = await findTenantBySlug(input.slug);
   if (existing) {
@@ -465,6 +465,7 @@ const upsertTenant = async (input: {
       latitude: input.latitude ?? existing.latitude ?? null,
       longitude: input.longitude ?? existing.longitude ?? null,
       region: input.region ?? existing.region ?? null,
+      discoverFeatured: input.discoverFeatured ?? existing.discoverFeatured ?? false,
       updatedAt: new Date()
     };
     await writeTenantToMongo(updated);
@@ -489,6 +490,7 @@ const upsertTenant = async (input: {
     latitude: input.latitude ?? null,
     longitude: input.longitude ?? null,
     region: input.region ?? null,
+    discoverFeatured: input.discoverFeatured ?? false,
     updatedAt: new Date()
   };
   await writeTenantToMongo(enriched);
@@ -1160,7 +1162,8 @@ async function main() {
     logoUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
     latitude: 25.1972,
     longitude: 55.2744,
-    region: 'Dubai'
+    region: 'Dubai',
+    discoverFeatured: true,
   });
 
   await upsertTenantMembership({
@@ -1200,6 +1203,90 @@ async function main() {
       region: shopTenant.region
     }
   });
+
+  const extraDiscoverShops = [
+    {
+      id: 'tenant-wadi-gear-hub',
+      name: 'Wadi Gear Hub',
+      slug: 'wadi-gear-hub',
+      description: 'Hydration, trekking poles, and desert camp kits for Hatta weekends.',
+      logoUrl: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400',
+      latitude: 24.8007,
+      longitude: 56.1153,
+      region: 'Hatta',
+      discoverFeatured: true,
+    },
+    {
+      id: 'tenant-sandpeak-outdoor',
+      name: 'SandPeak Outdoor',
+      slug: 'sandpeak-outdoor',
+      description: 'Trail shoes and day packs for Sharjah and Dubai crews.',
+      logoUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
+      latitude: 25.3463,
+      longitude: 55.4209,
+      region: 'Sharjah',
+      discoverFeatured: true,
+    },
+    {
+      id: 'tenant-summit-supply-rak',
+      name: 'Summit Supply RAK',
+      slug: 'summit-supply-rak',
+      description: 'Mountain layers and headlamps for Jebel Jais and RAK hikes.',
+      logoUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400',
+      latitude: 25.9434,
+      longitude: 56.1778,
+      region: 'RAK',
+      discoverFeatured: false,
+    },
+    {
+      id: 'tenant-gulf-trail-outfitters',
+      name: 'Gulf Trail Outfitters',
+      slug: 'gulf-trail-outfitters',
+      description: 'Group camp stoves, tents, and shared gear for bigger outings.',
+      logoUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400',
+      latitude: 25.0657,
+      longitude: 55.1713,
+      region: 'Dubai',
+      discoverFeatured: false,
+    },
+  ] as const;
+
+  for (const shopSeed of extraDiscoverShops) {
+    const tenant = await upsertTenant({
+      id: shopSeed.id,
+      name: shopSeed.name,
+      slug: shopSeed.slug,
+      type: TenantType.COMPANY,
+      businessMode: TenantBusinessMode.SHOP,
+      status: TenantStatus.ACTIVE,
+      ownerId: shopOwner._id,
+      description: shopSeed.description,
+      logoUrl: shopSeed.logoUrl,
+      latitude: shopSeed.latitude,
+      longitude: shopSeed.longitude,
+      region: shopSeed.region,
+      discoverFeatured: shopSeed.discoverFeatured,
+    });
+    await upsertTenantMembership({
+      tenantId: tenant.id,
+      userId: shopOwner._id,
+      role: MembershipRole.TENANT_OWNER,
+    });
+    await upsertMerchantProfile(
+      [shopOwner._id],
+      {
+        shopName: shopSeed.name,
+        description: shopSeed.description,
+        logo: shopSeed.logoUrl,
+        contactEmail: 'shop@uaetrails.app',
+        contactPhone: '+971501100221',
+        latitude: shopSeed.latitude,
+        longitude: shopSeed.longitude,
+        region: shopSeed.region,
+      },
+      { tenantId: tenant.id }
+    );
+  }
 
   await upsertHostApplication({
     id: 'seed-app-pending',
@@ -1876,15 +1963,6 @@ Share your live location and carry extra water in summer months.`
   });
 
   await seedParticipant('seed-event-desert-meetup', pendingParticipant._id, individualHost._id);
-
-  await createUserFavorite({
-    userId: participant._id,
-    locationId: 'fossil-rock-desert-camp',
-  });
-  await createUserFavorite({
-    userId: participant._id,
-    activityId: 'seed-event-fossil-camp',
-  });
 
   await seedConnectionsDemo({
     visitorId: participant._id,

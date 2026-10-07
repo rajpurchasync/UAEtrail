@@ -5,7 +5,7 @@ import { AppSegmented } from '../mobile/AppSegmented';
 import { OrganisationPublicProfile } from '../organisation-console/OrganisationPublicProfile';
 import { AgencyTeamSection } from '../organisation-console/AgencyTeamSection';
 import { useHostStatus } from '../../hooks/useHostStatus';
-import { organisationManagePath } from '../../config/routingCatalog';
+import { agencyProfilePath, organisationManagePath } from '../../config/routingCatalog';
 
 type Tab = 'profile' | 'team';
 
@@ -22,7 +22,7 @@ export const AgencyOrganisationPanel = () => {
     <div className="space-y-3 animate-fade-up">
       {agency && (
         <Link
-          to={`/operator/${agency.slug}`}
+          to={agencyProfilePath(agency.slug) ?? '/explore'}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700"
         >
           View public agency page

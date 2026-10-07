@@ -14,6 +14,7 @@ import { listBuddiesForUser, listBuddyRequestsForUser } from '../lib/buddy-store
 import { listFollowingForUser } from '../lib/follow-store.js';
 import { buildExploreMapPayload } from '../lib/explore-map.js';
 import { enrichExploreMapPayloadViewerAccess } from '../lib/explore-map-viewer-access.js';
+import { collectExploreSocialMapPreviewPeople } from '../lib/explore-social-map-preview.js';
 import { canMessageUser } from './chat-policy.js';
 import { buildMemberTripHintMap } from './member-trip-hints.js';
 
@@ -181,20 +182,50 @@ export const loadSocialPeople = async (input: {
 
 export const loadSocialPeoplePreview = async (input: {
   viewerUserId: string;
+  userRole?: string | null;
 }): Promise<SocialPeoplePreviewDTO> => {
-  const [buddies, following] = await Promise.all([
+  const [buddies, following, mapPayload] = await Promise.all([
     listBuddiesForUser(input.viewerUserId),
     listFollowingForUser(input.viewerUserId),
+    buildExploreMapPayload(),
   ]);
   const buddyIds = new Set(buddies.map((b) => b.userId));
   const followedOnly = following.filter((row) => !buddyIds.has(row.userId));
-  const avatars = buddies.slice(0, 3).map((buddy) => ({
-    userId: buddy.userId,
-    displayName: buddy.displayName,
-    avatarUrl: buddy.avatarUrl,
-  }));
+
+  const enriched = await enrichExploreMapPayloadViewerAccess(mapPayload, {
+    viewerUserId: input.viewerUserId,
+    userRole: input.userRole ?? null,
+  });
+  const mapGoing = collectExploreSocialMapPreviewPeople(enriched.items, input.viewerUserId);
+
+  const merged: Array<{ userId: string; displayName: string; avatarUrl: string | null }> = [];
+  const seen = new Set<string>();
+  const push = (row: { userId: string; displayName: string; avatarUrl: string | null }) => {
+    if (!row.userId || seen.has(row.userId)) return;
+    seen.add(row.userId);
+    merged.push(row);
+  };
+
+  for (const buddy of buddies) {
+    push({
+      userId: buddy.userId,
+      displayName: buddy.displayName,
+      avatarUrl: buddy.avatarUrl,
+    });
+  }
+  for (const row of followedOnly) {
+    push({
+      userId: row.userId,
+      displayName: row.displayName,
+      avatarUrl: row.avatarUrl,
+    });
+  }
+  for (const row of mapGoing) {
+    push(row);
+  }
+
   return {
-    avatars,
+    avatars: merged.slice(0, 3),
     friendUserIds: buddies.map((buddy) => buddy.userId),
     friendCount: buddies.length,
     followedCount: followedOnly.length,

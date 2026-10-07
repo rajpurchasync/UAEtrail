@@ -5,7 +5,7 @@ export const WISHLIST_MATCH_RADIUS_KM = 45;
 
 export type WishlistWatchRow = {
   userId: string;
-  favoriteId: string;
+  wishlistItemId: string;
   alertOnMatch: boolean;
   watchOutingCategory: OutingCategory | null;
   watchLatitude: number | null;

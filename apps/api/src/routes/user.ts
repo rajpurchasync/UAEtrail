@@ -4,6 +4,7 @@ import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { registerAccountLifecycleRoutes } from './user/registerAccountLifecycleRoutes.js';
 import { registerBuddyRoutes } from './user/registerBuddyRoutes.js';
 import { registerFollowRoutes } from './user/registerFollowRoutes.js';
+import { registerEntityFollowRoutes } from './user/registerEntityFollowRoutes.js';
 import { registerGroupRoutes } from './user/registerGroupRoutes.js';
 import { registerHostApplicationRoutes } from './user/registerHostApplicationRoutes.js';
 import {
@@ -15,6 +16,7 @@ import { registerMeParticipantIntentRoutes } from './user/registerMeParticipantI
 import { registerMeBadgesRoutes } from './user/registerMeBadgesRoutes.js';
 import { registerMeGoalsRoutes } from './user/registerMeGoalsRoutes.js';
 import { registerMeMapPinsRoutes } from './user/registerMeMapPinsRoutes.js';
+import { registerMeWishlistRoutes } from './user/registerMeWishlistRoutes.js';
 import { registerMemberHostStatusRoutes } from './user/registerMemberHostStatusRoutes.js';
 import { registerMeSubmittedPlaceRoutes } from './user/registerMeSubmittedPlaceRoutes.js';
 import { registerNotificationRoutes } from './user/registerNotificationRoutes.js';
@@ -48,6 +50,7 @@ registerMemberDiscoveryRoutes(userRouter);
 registerNotificationRoutes(userRouter);
 registerBuddyRoutes(userRouter);
 registerFollowRoutes(userRouter);
+registerEntityFollowRoutes(userRouter);
 registerGroupRoutes(userRouter);
 registerHostApplicationRoutes(userRouter);
 
@@ -58,3 +61,4 @@ registerMeParticipantIntentRoutes(userRouter);
 registerMeBadgesRoutes(userRouter);
 registerMeGoalsRoutes(userRouter);
 registerMeMapPinsRoutes(userRouter);
+registerMeWishlistRoutes(userRouter);

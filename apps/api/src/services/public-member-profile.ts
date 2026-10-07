@@ -6,7 +6,8 @@ import { resolveOwnedProfileType } from '../lib/tenant-store.js';
 import type { MemberProfileRoleLabel, ProfileViewerAccessLevel } from '@uaetrail/shared-types';
 import {
   computeProfileDetailExposure,
-  organisationProfilePath,
+  hostBrandProfilePath,
+  inferHostStorefrontKindFromTenantWire,
   shopPublicPath,
 } from '@uaetrail/shared-types';
 import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
@@ -83,7 +84,14 @@ const resolveHostProfilePath = (tenant: TenantRecord | null): string | null => {
   if (resolveOwnedProfileType(tenant) === 'shop') {
     return shopPublicPath({ slug: tenant.slug });
   }
-  return organisationProfilePath(tenant.slug);
+  return hostBrandProfilePath(
+    tenant.slug,
+    inferHostStorefrontKindFromTenantWire({
+      type: tenant.type,
+      businessMode: tenant.businessMode,
+      publishingPurpose: tenant.publishingPurpose,
+    })
+  );
 };
 
 const toProfileAccessLevel = (level: string): ProfileViewerAccessLevel => {

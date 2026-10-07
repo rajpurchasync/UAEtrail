@@ -6,11 +6,13 @@
  */
 export {
   EXPLORE_MAP_PATH,
+  LIST_DISCOVERY_PATH,
   PARTICIPANT_JOIN_REDIRECT,
   joinAuthPath,
   ADMIN_PLACES_PATH,
   HOST_PLACES_PATH,
   ORGANISATION_PUBLIC_PATH_PREFIX,
+  LEGACY_OPERATOR_PUBLIC_PATH_PREFIX,
   DOMAIN_GLOSSARY,
 } from './platform';
 
@@ -92,6 +94,11 @@ export {
   activityDetailInvitePath,
   exploreActivityInvitePath,
   organisationProfilePath,
+  hostBrandProfilePath,
+  guideProfilePath,
+  agencyProfilePath,
+  partnerProfilePath,
+  VENUE_PLACE_PATH_PREFIX,
   memberProfilePath,
   shopPublicPath,
   resolveEntityPath,
@@ -125,6 +132,12 @@ export {
   type VenueListFilterKey,
   type DetailBackKind,
 } from '../explore/routing';
+
+export {
+  listDiscoveryPath,
+  exploreMapPathFromListSearch,
+  listDiscoveryPathFromExploreSearch,
+} from '../list/routing';
 
 export {
   tripsPath,

@@ -39,6 +39,8 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getMerchantProducts\b/, hint: 'Use api.getShopOrganisationProducts' },
   { pattern: /\bapi\.updateMerchantProduct\b/, hint: 'Use api.updateShopOrganisationProduct' },
   { pattern: /\bapi\.deleteMerchantProduct\b/, hint: 'Use api.deleteShopOrganisationProduct' },
+  { pattern: /\bapi\.getMeFavorites\b/, hint: 'Use api.getMeWishlist' },
+  { pattern: /\bFavoriteDTO\b/, hint: 'Use WishlistItemDTO' },
   { pattern: /from ['"][^'"]*\/api\/services['"]/, hint: 'Import from api/index' },
   { pattern: /from ['"].*legacyApi/, hint: 'legacyApi removed — use src/api/domains/* canonical methods' },
   { pattern: /\.\.\.legacyApi\b/, hint: 'Do not spread legacyApi on api' },

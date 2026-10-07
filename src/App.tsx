@@ -19,8 +19,9 @@ import { useAuth } from './context/AuthContext';
 import { Home } from './pages/Home';
 import { Membership } from './pages/Membership';
 import { ExploreExperience } from './explore';
+import { BrowseListPage } from './list/BrowseListPage';
 
-import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter } from './config/routingCatalog';
+import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter, LIST_DISCOVERY_PATH } from './config/routingCatalog';
 import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
 import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
 
@@ -37,12 +38,18 @@ const LegacyMessagesRedirect = () => {
 
 const EventSpotRedirect = () => {
   const { id } = useParams<{ id: string }>();
-  return <Navigate to={`/event/${id ?? ''}`} replace />;
+  return <Navigate to={`/venue/${id ?? ''}`} replace />;
 };
 
 const CommunityActivityRedirect = () => {
   const { id } = useParams<{ id: string }>();
-  return <Navigate to={`/event/${id ?? ''}`} replace />;
+  return <Navigate to={`/venue/${id ?? ''}`} replace />;
+};
+
+/** Legacy place URLs — event venues moved to `/venue`; `/event` is reserved for activity semantics. */
+const LegacyEventPlaceRedirect = () => {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/venue/${id ?? ''}`} replace />;
 };
 
 const DiscoveryRedirect = () => {
@@ -118,6 +125,9 @@ const LegacyMerchantPublicRedirect = lazy(() =>
 const ShopPublic = lazy(() => import('./pages/ShopPublic').then((m) => ({ default: m.ShopPublic })));
 const ActivityDetail = lazy(() => import('./pages/ActivityDetail').then((m) => ({ default: m.ActivityDetail })));
 const OrganisationProfile = lazy(() => import('./pages/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
+const LegacyOperatorProfileRedirect = lazy(() =>
+  import('./pages/LegacyOperatorProfileRedirect').then((m) => ({ default: m.LegacyOperatorProfileRedirect }))
+);
 const MemberProfile = lazy(() => import('./pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
 const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
 const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
@@ -284,6 +294,7 @@ function App() {
             path="/explore"
             element={<ExploreExperience />}
           />
+          <Route path={LIST_DISCOVERY_PATH} element={<BrowseListPage />} />
           <Route path="/discovery" element={<DiscoveryRedirect />} />
           <Route
             path="/trail/:id"
@@ -302,13 +313,14 @@ function App() {
             }
           />
           <Route
-            path="/event/:id"
+            path="/venue/:id"
             element={
               <ProtectedRoute>
                 <EventDetail />
               </ProtectedRoute>
             }
           />
+          <Route path="/event/:id" element={<LegacyEventPlaceRedirect />} />
           <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
           <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
@@ -478,13 +490,30 @@ function App() {
             }
           />
           <Route
-            path="/operator/:id"
+            path="/guide/:id"
             element={
               <ProtectedRoute>
                 <OrganisationProfile />
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/agency/:id"
+            element={
+              <ProtectedRoute>
+                <OrganisationProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partner/:id"
+            element={
+              <ProtectedRoute>
+                <OrganisationProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/operator/:id" element={<LegacyOperatorProfileRedirect />} />
           <Route
             path="/member/:userId"
             element={

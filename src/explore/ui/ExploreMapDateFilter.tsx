@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { CalendarDays, Check } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown } from 'lucide-react';
 import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
 import {
   EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS,
@@ -14,6 +14,12 @@ interface ExploreMapDateFilterProps {
   includeAnyday?: boolean;
   /** Browse toolbar — calendar icon only (label in aria-label / title). */
   iconOnly?: boolean;
+  /** List category bar — text label + chevron (e.g. anyday). */
+  textTrigger?: boolean;
+  /** When `textTrigger`, show “anyday” instead of “Anyday”. */
+  lowercaseAnyday?: boolean;
+  /** Optional class for text trigger button (list category pills). */
+  textTriggerClassName?: string;
 }
 
 /** Map date preset — Today, Tomorrow, This week, This month (optional Anyday on list). */
@@ -22,6 +28,9 @@ export const ExploreMapDateFilter = ({
   onActivityDatePresetChange,
   includeAnyday = true,
   iconOnly = false,
+  textTrigger = false,
+  lowercaseAnyday = false,
+  textTriggerClassName,
 }: ExploreMapDateFilterProps) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -59,25 +68,45 @@ export const ExploreMapDateFilter = ({
   };
 
   const active = activityDatePreset !== 'anyday';
+  const textLabel =
+    lowercaseAnyday && activityDatePreset === 'anyday'
+      ? 'anyday'
+      : buttonLabel;
 
   return (
     <div ref={rootRef} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className={`${EXPLORE_FLOATING_CONTROL} inline-flex h-10 items-center justify-center text-emerald-950 ${
-          iconOnly ? 'w-10 shrink-0 px-0' : 'gap-1.5 px-3 text-sm font-bold leading-snug'
-        } ${active ? 'ring-2 ring-emerald-500/40' : ''}`}
+        className={
+          textTrigger
+            ? textTriggerClassName ??
+              `${EXPLORE_FLOATING_CONTROL} inline-flex h-9 items-center gap-0.5 px-3.5 text-[13px] font-semibold text-neutral-800 ${
+                active ? 'ring-2 ring-emerald-500/40' : ''
+              }`
+            : `${EXPLORE_FLOATING_CONTROL} inline-flex h-10 items-center justify-center text-emerald-950 ${
+                iconOnly ? 'w-10 shrink-0 px-0' : 'gap-1.5 px-3 text-sm font-bold leading-snug'
+              } ${active ? 'ring-2 ring-emerald-500/40' : ''}`
+        }
         aria-expanded={open}
         aria-controls={panelId}
         aria-haspopup="listbox"
         aria-label={`When: ${buttonLabel}`}
         title={buttonLabel}
       >
-        <CalendarDays className="h-5 w-5 shrink-0" strokeWidth={2.25} aria-hidden />
-        {!iconOnly && (buttonLabel !== 'When' || active) ? (
-          <span className="max-w-[6.5rem] truncate text-xs font-bold">{buttonLabel}</span>
-        ) : null}
+        {textTrigger ? (
+          <>
+            <span className="max-w-[7rem] truncate">{textLabel}</span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-neutral-500" strokeWidth={2.25} aria-hidden />
+          </>
+        ) : (
+          <>
+            <CalendarDays className="h-5 w-5 shrink-0" strokeWidth={2.25} aria-hidden />
+            {!iconOnly && (buttonLabel !== 'When' || active) ? (
+              <span className="max-w-[6.5rem] truncate text-xs font-bold">{buttonLabel}</span>
+            ) : null}
+          </>
+        )}
       </button>
 
       {open ? (

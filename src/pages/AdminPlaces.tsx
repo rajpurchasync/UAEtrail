@@ -742,7 +742,7 @@ export const AdminPlaces = () => {
                       <input type="checkbox" checked={Boolean(form.featured)}
                         onChange={(e) => setForm({ ...form, featured: e.target.checked })}
                         className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                      Featured
+                      Featured on discover (Near you)
                     </label>
                   </div>
                   {editingId && isCatalogMapPlace(form) && (

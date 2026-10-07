@@ -77,6 +77,13 @@ export const adminApi = {
     getAdminTenantDetail: (id: string) =>
     apiRequest<{ data: TenantDetail }>(`/admin/tenants/${id}`, { auth: true }),
 
+  setAdminTenantDiscoverFeatured: (id: string, featured: boolean) =>
+    apiRequest<{ message: string; discoverFeatured: boolean }>(`/admin/tenants/${id}/discover-featured`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ featured }),
+    }),
+
     updateAdminTenantStatus: (id: string, status: 'active' | 'suspended', comment?: string) =>
     apiRequest(`/admin/tenants/${id}/status`, {
       method: 'PATCH',

@@ -170,6 +170,7 @@ export type PublicMemberProfileDTO =
       };
       yearGoal: {
         activityFilter: 'hiking' | 'camping' | 'all_outings';
+        countMode?: 'join' | 'host';
         targetCount: number;
         targetDate: string;
         year: number;
@@ -341,6 +342,8 @@ export interface TenantDetail {
   slug: string;
   type: TenantType;
   status: TenantListDTO['status'];
+  businessMode?: string | null;
+  discoverFeatured?: boolean;
   owner: { id: string; email: string; displayName: string | null };
   createdAt: string;
   members: Array<{ userId: string; email: string; displayName: string | null; role: string; joinedAt: string }>;

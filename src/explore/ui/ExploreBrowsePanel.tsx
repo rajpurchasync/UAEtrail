@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PanelLeftClose, Search, X } from 'lucide-react';
+import { PanelLeftClose, Search, X, ChevronLeft } from 'lucide-react';
+import type { ExploreCardModel } from '../exploreCardModel';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
 import { tripsLegacyJoinedTabPath } from '../../config/routingCatalog';
@@ -32,7 +33,7 @@ import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
 import type { ExploreBrowseListMode, ExploreSocialTab } from './useExploreBrowseUrlState';
 import { ExploreSocialPanelTabs } from './ExploreSocialPanelTabs';
 import { ExploreFollowedSegmentTabs } from './ExploreFollowedSegmentTabs';
-import { ExploreFollowedSavedList } from './ExploreFollowedSavedList';
+import { ExploreFollowedEntityList } from './ExploreFollowedEntityList';
 import { ExploreSocialPeopleList } from './ExploreSocialPeopleList';
 import { ExploreMemberDiscoveryList } from './ExploreMemberDiscoveryList';
 import {
@@ -51,6 +52,8 @@ import type { UserRole } from '@uaetrail/shared-types';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import { ExploreMyTripsModeNotice } from './ExploreMyTripsModeNotice';
+import { ListFeedPosterCard } from '../../list/ui/feed/ListFeedPosterCard';
+import { LIST_FEED } from '../../list/listFeedTheme';
 
 export interface ExploreBrowsePanelProps {
   isDesktop: boolean;
@@ -107,14 +110,19 @@ export interface ExploreBrowsePanelProps {
   onOpenDiscoveryActivity?: (activityId: string) => void;
   followedSegment?: import('./useExploreBrowseUrlState').ExploreFollowedSegment;
   onFollowedSegmentChange?: (segment: import('./useExploreBrowseUrlState').ExploreFollowedSegment) => void;
-  followedSaves?: import('@uaetrail/shared-types').FavoriteDTO[];
-  followedSavesLoading?: boolean;
-  followedSavesError?: string | null;
+  entityFollows?: import('@uaetrail/shared-types').EntityFollowDTO[];
+  entityFollowsLoading?: boolean;
+  entityFollowsError?: string | null;
   isSignedIn?: boolean;
   userRole?: UserRole;
   buddyUserIds?: Set<string>;
   /** Filtered explore: only member trips + wishlist pins (`myTrips=1`). */
   myTripsMode?: boolean;
+  /** Full-screen mobile browse — poster cards instead of compact rows. */
+  usePosterFeed?: boolean;
+  posterFeedCards?: ExploreCardModel[];
+  /** Full-viewport browse modal (back affordance, no sheet handle). */
+  fullscreenBrowse?: boolean;
 }
 
 const listHeading = (
@@ -188,13 +196,16 @@ export const ExploreBrowsePanel = ({
   onOpenDiscoveryActivity,
   followedSegment = 'people',
   onFollowedSegmentChange,
-  followedSaves = [],
-  followedSavesLoading = false,
-  followedSavesError = null,
+  entityFollows = [],
+  entityFollowsLoading = false,
+  entityFollowsError = null,
   isSignedIn = false,
   userRole,
   buddyUserIds,
   myTripsMode = false,
+  usePosterFeed = false,
+  posterFeedCards = [],
+  fullscreenBrowse = false,
 }: ExploreBrowsePanelProps) => {
   const socialPanel = listMode === 'social';
   const heading = socialPanel
@@ -265,15 +276,24 @@ export const ExploreBrowsePanel = ({
       type="button"
       onClick={onClose}
       className={
-        isDesktop
-          ? 'rounded-full p-2 text-gray-500 hover:bg-neutral-50 hover:text-gray-800'
-          : 'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-neutral-100'
+        fullscreenBrowse && !isDesktop
+          ? 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-800 active:bg-neutral-100'
+          : isDesktop
+            ? 'rounded-full p-2 text-gray-500 hover:bg-neutral-50 hover:text-gray-800'
+            : 'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-neutral-100'
       }
       aria-label={
-        closePanelAriaLabel ?? (isDesktop ? 'Collapse list panel' : 'Close browse panel')
+        closePanelAriaLabel ??
+        (fullscreenBrowse && !isDesktop
+          ? 'Back to map'
+          : isDesktop
+            ? 'Collapse list panel'
+            : 'Close browse panel')
       }
     >
-      {isDesktop && closeButtonVariant === 'collapse' ? (
+      {fullscreenBrowse && !isDesktop ? (
+        <ChevronLeft className="h-6 w-6" aria-hidden />
+      ) : isDesktop && closeButtonVariant === 'collapse' ? (
         <PanelLeftClose className="h-4 w-4" />
       ) : (
         <X className="h-4 w-4" />
@@ -283,7 +303,9 @@ export const ExploreBrowsePanel = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
+      {!fullscreenBrowse ? (
+        <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
+      ) : null}
 
       {myTripsMode ? <ExploreMyTripsModeNotice /> : null}
 
@@ -298,6 +320,15 @@ export const ExploreBrowsePanel = ({
             {closeButton}
           </div>
           <p className="text-xs leading-relaxed text-neutral-600">{EXPLORE_SOCIAL_PANEL_SUBCOPY}</p>
+        </div>
+      ) : fullscreenBrowse && !isDesktop ? (
+        <div className="shrink-0 border-b border-neutral-200/70 px-2 pb-2 pt-1">
+          <div className="flex items-center gap-1">
+            {closeButton}
+            <h2 className="min-w-0 flex-1 truncate text-base font-bold tracking-tight text-neutral-900">
+              {heading}
+            </h2>
+          </div>
         </div>
       ) : (
         <div
@@ -382,7 +413,9 @@ export const ExploreBrowsePanel = ({
         className={
           isDesktop
             ? 'flex min-h-0 flex-1 flex-col overflow-visible'
-            : 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain'
+            : fullscreenBrowse
+              ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
+              : 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain'
         }
       >
         {socialPanel ? (
@@ -410,8 +443,13 @@ export const ExploreBrowsePanel = ({
             ) : null}
           </div>
         ) : (
-          <div ref={searchScopeAnchorRef} className="relative mb-2 shrink-0">
-            <p className={`mb-1.5 text-sm font-bold ${EXPLORE_TYPE.title} lg:hidden`}>{EXPLORE_SEARCH_PROMPT}</p>
+          <div
+            ref={searchScopeAnchorRef}
+            className={`relative mb-2 shrink-0 ${fullscreenBrowse && !isDesktop ? 'px-3' : ''}`}
+          >
+            {fullscreenBrowse && !isDesktop ? null : (
+              <p className={`mb-1.5 text-sm font-bold ${EXPLORE_TYPE.title} lg:hidden`}>{EXPLORE_SEARCH_PROMPT}</p>
+            )}
             <div className="flex items-stretch gap-2">
               <label className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-neutral-200/80 bg-white px-3 py-2 shadow-sm lg:rounded-2xl lg:bg-neutral-100 lg:py-2.5 lg:shadow-none">
                 <Search className="h-4 w-4 shrink-0 text-gray-400" />
@@ -495,13 +533,17 @@ export const ExploreBrowsePanel = ({
             onBuddySubtypeChange={onBuddySubtypeChange}
             outingTopic={outingTopic}
             onOutingTopicChange={onOutingTopicChange}
-            className="mb-2 shrink-0"
+            className={`mb-2 shrink-0 ${fullscreenBrowse && !isDesktop ? 'px-3' : ''}`}
           />
         ) : null}
 
         <div
           className={`${EXPLORE_SHEET.browseList} ${
-            isDesktop ? 'min-h-0 flex-1 overflow-y-auto lg:pb-8' : 'overflow-visible pb-[calc(var(--safe-bottom)+12px)]'
+            isDesktop
+              ? 'min-h-0 flex-1 overflow-y-auto lg:pb-8'
+              : fullscreenBrowse
+                ? 'min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 pb-4'
+                : 'overflow-visible pb-[calc(var(--safe-bottom)+12px)]'
           }`}
           onMouseLeave={onListItemHoverEnd}
         >
@@ -517,12 +559,11 @@ export const ExploreBrowsePanel = ({
             />
           ) : null}
           {socialPanel && socialTab === 'followed' && followedSegment !== 'people' ? (
-            <ExploreFollowedSavedList
+            <ExploreFollowedEntityList
               segment={followedSegment}
-              favorites={followedSaves}
-              loading={followedSavesLoading}
-              error={followedSavesError}
-              onOpenActivity={onOpenDiscoveryActivity}
+              follows={entityFollows}
+              loading={entityFollowsLoading}
+              error={entityFollowsError}
             />
           ) : null}
           {socialPanel && socialTab !== 'discover' && !(socialTab === 'followed' && followedSegment !== 'people') ? (
@@ -544,7 +585,7 @@ export const ExploreBrowsePanel = ({
             myTripsMode ? (
               <div className={`py-10 text-center text-sm ${EXPLORE_TYPE.muted}`}>
                 <p className="font-medium text-neutral-700">Nothing on your map yet</p>
-                <p className="mt-1">Join an outing or save a place from explore.</p>
+                <p className="mt-1">Join an outing or follow a place on explore.</p>
                 <Link
                   to={tripsLegacyJoinedTabPath()}
                   className="mt-3 inline-block font-semibold text-emerald-700"
@@ -563,7 +604,7 @@ export const ExploreBrowsePanel = ({
               </p>
             )
           ) : null}
-          {listItems.length > 0 && shopListSections ? (
+          {listItems.length > 0 && shopListSections && !usePosterFeed ? (
             <>
               {shopListSections.physical.length > 0 && (
                 <>
@@ -601,15 +642,25 @@ export const ExploreBrowsePanel = ({
               )}
             </>
           ) : !socialPanel ? (
-            listItems.map((item) => (
-              <ExploreListRow
-                key={item.id}
-                card={buildExploreCardModel(item)}
-                onClick={() => onOpenItem(item)}
-                buddyUserIds={buddyUserIds}
-                onPointerEnter={onListItemHover ? () => onListItemHover(item.id) : undefined}
-              />
-            ))
+            usePosterFeed && posterFeedCards.length > 0 ? (
+              <ul className={LIST_FEED.categoryList}>
+                {posterFeedCards.map((card) => (
+                  <li key={card.id}>
+                    <ListFeedPosterCard card={card} />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              listItems.map((item) => (
+                <ExploreListRow
+                  key={item.id}
+                  card={buildExploreCardModel(item)}
+                  onClick={() => onOpenItem(item)}
+                  buddyUserIds={buddyUserIds}
+                  onPointerEnter={onListItemHover ? () => onListItemHover(item.id) : undefined}
+                />
+              ))
+            )
           ) : null}
         </div>
       </div>

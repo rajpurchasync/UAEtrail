@@ -1,6 +1,7 @@
 import {
   activityDetailPath,
-  organisationProfilePath,
+  hostBrandProfilePath,
+  inferHostStorefrontKindFromTenantWire,
   placeDetailPath,
   shopPublicPath,
 } from '@uaetrail/shared-types';
@@ -56,10 +57,17 @@ const resolveTargetMeta = async (
     };
   }
 
-  const operatorPath = organisationProfilePath(tenant.slug);
+  const brandPath = hostBrandProfilePath(
+    tenant.slug,
+    inferHostStorefrontKindFromTenantWire({
+      type: tenant.type,
+      businessMode: tenant.businessMode,
+      publishingPurpose: tenant.publishingPurpose ?? null,
+    })
+  );
   return {
     targetLabel: tenant.name,
-    targetPath: operatorPath ? `${operatorPath}${reviewsHash}` : '/explore',
+    targetPath: brandPath ? `${brandPath}${reviewsHash}` : '/explore',
   };
 };
 

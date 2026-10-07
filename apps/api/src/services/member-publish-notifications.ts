@@ -7,8 +7,7 @@
  * - **Follow** — one-way subscription; notified **only when they host/publish an activity** (not demand/find posts).
  * - **Publish** — activity moved to published, or new participant demand on the map.
  *
- * Host `/operator/:slug` profiles represent a tenant; follow on that UI targets `tenant.ownerId`
- * until we add explicit tenant-level subscriptions.
+ * **Place / team / shop** subscriptions use `entity_follows` — see `entity-publish-notifications.ts`.
  */
 import { NotificationType } from '../domain/enums.js';
 import { listBuddiesForUser } from '../lib/buddy-store.js';

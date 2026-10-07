@@ -347,6 +347,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       websiteUrl,
       contactPhone: merchant?.contactPhone ?? null,
       shopPresence,
+      discoverFeatured: shop.discoverFeatured ?? false,
       featuredPerson: buildExploreFeaturedPerson({
         userId: owner?.userId,
         displayName: owner?.name,

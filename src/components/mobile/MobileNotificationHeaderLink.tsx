@@ -1,4 +1,4 @@
-import { NotificationHeaderLink } from '../layout/NotificationHeaderLink';
+import { NotificationBellPopover } from '../layout/NotificationBellPopover';
 
-/** @deprecated Use NotificationHeaderLink or ConsumerHeaderActions */
-export const MobileNotificationHeaderLink = () => <NotificationHeaderLink variant="tab" />;
+/** @deprecated Use NotificationBellPopover or ConsumerHeaderActions */
+export const MobileNotificationHeaderLink = () => <NotificationBellPopover triggerVariant="tab" />;

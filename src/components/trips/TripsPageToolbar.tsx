@@ -37,7 +37,9 @@ export const TripsPageToolbar = ({
         value={searchQuery}
         onChange={onSearchChange}
         placeholder={searchPlaceholder}
-        beforeAction={<TripsFilterTrigger active={filtersActive} onClick={onOpenFilters} />}
+        beforeAction={
+          <TripsFilterTrigger active={filtersActive} onClick={onOpenFilters} aria-label="More filters" />
+        }
       />
     ) : null}
 
